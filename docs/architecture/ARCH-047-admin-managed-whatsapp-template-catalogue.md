@@ -1,171 +1,238 @@
 ---
 id: ARCH-047
-title: Admin-managed WhatsApp template catalogue and merchant assignments
-status: agreed
+title: Moda-authored multilingual WhatsApp templates and conversation wrappers
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-23
-updated: 2026-10-23
+updated: 2026-10-24
 ---
 
-# ARCH-047 — Admin-managed WhatsApp template catalogue and merchant assignments
+# ARCH-047 — Moda-authored multilingual WhatsApp templates and conversation wrappers
 
 ## Status
 
-Agreed architecture; **portable task definitions, not materialised implementation worktrees**. This initiative is separate from ARCH-045/046 customer-consent work and the previously completed ARCH-045-BACKGROUND-004 implementation. There are no assumed runtime commits, published changes or deployment approvals under ARCH-047 yet.
+Agreed direction; **architecture and Background module-first execution plan updated on 24 October 2026**. The consolidated `ARCH-047-DATABASE-001` is a developer-owned, in-progress task (Attempt 1) in the supplied worktree. The revised `ARCH-047-BACKGROUND-001` remains **Pending**. `BACKGROUND-002`–`009` below are **proposed task definitions only**: no task files, branches, worktrees or implementations have been created by this plan. The legacy Admin and System Test task documents still need separate status/scope reconciliation. Do not treat a planned dependency as Complete.
+
+This document supersedes the prior ARCH-047 design permitting externally authored Meta-template imports and shop-to-shop copying as the catalogue master. Do not resume those flows.
 
 ## Problem
 
-`whatsapp.WhatsAppTemplateVariant` already stores a separate shop-scoped template row (`shopId`, `providerAccountId`, `purpose`, locale/name/ID, `status`, `enabled`), but the inspected Admin repository has no dedicated WhatsApp template management screen. Background's current merged implementation calls Meta's template-listing/metadata API to verify `verifiedCategory === "MARKETING"` at initial recovery, automated follow-up and selected human/outbound paths. This turns template metadata availability into a live sending dependency even when an approved and enabled assignment is already stored in PostgreSQL.
+Moda needs a single controlled way to create recovery WhatsApp templates, translate them, submit each language to Meta, reconcile approval and publish to merchants, plus internally published wrappers around AI- and human-authored checkout conversations. The existing `whatsapp.WhatsAppTemplateVariant` is a shop-assigned operational row, not an English master, multilingual authoring record or provider-submission history. The existing recovery sender has Meta metadata/category verification paths and a shop-scoped selector, but does not yet populate frozen multilingual parameter bindings for the six recovery purposes.
 
-The platform administrator needs to create and edit these **existing shop-scoped records**, assign them to a merchant or multiple merchants, apply them to **all currently eligible shops**, and update all assignments for a specific purpose/language as well as an individual shop's assignment.
+A workflow-stage-only implementation split would scatter template preparation, offer logic and wrapper behaviour across recovery, human handover, AI and final admission services. This amendment defines **five owned Background feature modules** and **four narrow call-site integration tasks**, while preserving existing outbound business-admission authority.
 
 ## Goals
 
-1. Admin is the sole management boundary for the Moda-side WhatsApp template catalogue. A privileged administrator registers metadata for an externally approved Meta template and marks its local status/availability. This task **does not create templates at Meta** or ask runtime services to confirm Meta approval/category.
-2. The existing `WhatsAppTemplateVariant` rows remain the operational source of truth. Background and merchant-facing recovery commands select a row assigned to the correct shop and configured sender WABA where `status=APPROVED` and `enabled=true`; there is **no Meta template-list/category preflight call** in initial outreach, automated follow-ups, merchant post-window templates or final dispatch.
-3. Admin supports individual assignment/update/enable/disable, selected shops, **Assign to all shops**, **Update for all shops**, and per-shop overrides. A deliberate Update for all overwrites individual overrides **in the selected template slot** after impact confirmation.
-4. Prevent duplicate selectable variants for a shop/WABA/purpose/canonical-language slot despite the existing database uniqueness being keyed by name and language; expose conflicts rather than silently sending an arbitrary variant.
-5. Preserve customer consent, STOP/no-contact, moderation, billing/credit, send fencing, shop eligibility, template language fallback, Meta delivery failure, idempotency and tenant security as independent safeguards.
+1. All Meta recovery templates and internal conversation wrappers are **created exclusively through Moda Admin**. Never import, register, adopt or publish templates authored outside Moda. Provider reads are permitted only to reconcile Moda-authored identities, statuses and drift.
+2. Template content is immutable once saved; content corrections, including rejected versions, use **Clone as New** with a new identity. No Meta edit-existing-template API calls. Operational status, review progress and assignment state may change independently.
+3. Author an English AST, persist it, durably request Background translation of the other 19 target languages, review immutable results, submit each Meta language, consume/reconcile Meta status events and **publish explicitly**. Internal wrappers skip Meta approval and instead use Admin-only activation.
+4. Predefine the six recovery purposes: INITIAL/FOLLOW_UP × NO_OFFER/CODE_OFFER/AUTOMATIC_OFFER. The purpose determines typed variables. Resolve and independently validate offer eligibility *before* the prepared template is used; AI is only a read-only offer recommendation mechanism.
+5. Keep template-selection/preparation and variable-binding behaviour in one Background module, distinct from offer resolution, Meta catalogue management, translation and conversation wrapping. Existing send flows delegate rather than replicate domain rules.
+6. Preserve consent, authoritative STOP, recipient scope, WhatsApp service window, moderation, billing, retries, compensation, one permitted sequence-two follow-up and final send fencing. No new path may bypass them.
+7. Support one/selected/all-current-eligible-shop publication with resumable **per-shop/per-language** targets and explicit replacement of overrides, using the existing shop-assignment table.
 
 ## Non-Goals
 
-- No new global-template or shop-assignment table; no `metaCategory`/`verifiedCategory` field, no provider metadata/category caching, and no automatic Meta template registration/approval API.
-- No changes to ARCH-045/046 consent semantics or their already accepted implementation history. No change to Meta's actual **send** API: delivery errors and failures still use existing operational handling.
-- No automatic assignment to *future* shops. “All shops” takes a bounded, confirmed snapshot of shops eligible at execution time; newly installed shops require a later explicit assignment unless separately designed.
-- No merchant-facing template editor, custom WordPress/Shopify template-management API, unrelated billing or conversation refactor.
+- No merchant-facing authoring or adoption of Meta-created templates; no in-place template edit, no Meta edit API and no provider-template creation on the ordinary send path.
+- No AI commerce mutation: no cart additions/removals, quantity changes, coupon application, checkout edits or order placement. Customers edit their own baskets on Shopify/WooCommerce.
+- No new cross-service generic logger, custom Batch runtime, bespoke AST parser or second moderation/send pipeline.
+- No change to ARCH-045/046 consent and STOP authority, historical completed tasks or billing semantics.
+- No repository-specific implementation or additional task files in this **module-planning** amendment.
 
-## Current Architecture — source evidence
+## Current Architecture and Source Evidence
 
-Inspected in `moda-interact-workspace(20261023-164023).zip` and verified against current repository sources:
+Inspected the uploaded 23 October workspace snapshots and the 24 October `ARCH-047-DATABASE-001` worktree/task amendment:
 
-- `moda-interact-database/prisma/schema.prisma`: `WhatsAppTemplateVariant` has `shopId`, `providerAccountId`, `purpose`, `languageTag`, `providerLanguageCode`, `providerTemplateName`, optional `providerTemplateId`, `status`, `enabled`; the existing unique key is `(shopId, providerAccountId, purpose, providerTemplateName, providerLanguageCode)`. It does **not** enforce one selectable template per purpose/canonical language slot.
-- `moda-interact-background/src/services/whatsapp-template-selector.service.ts`: currently selects from approved enabled shop rows but calls `verifyCategory` if supplied.
-- `moda-interact-background/src/services/whatsapp-template-category.service.ts`: performs Meta `message_templates` reads. Other callers include `checkout-recovery/recovery-initiation.service.ts`, `checkout-recovery/recovery-outreach-follow-up-processor.service.ts`, `recovery-conversation/human-command-dispatcher.service.ts`, and `outbound-whatsapp-admission/outbound-message-delivery.service.ts`.
-- `moda-interact/app/services/recoveries/recovery-human-commands.server.ts`: already enforces assigned shop, recovery purpose, approved and enabled records for merchant command selection.
-- `moda-interact-admin/src/components/admin/sidebar.tsx`, `src/app/(protected)/system-controls/store-categories/page.tsx`, `src/app/actions/store-categories.ts` and `src/lib/admin/store-categories.ts`: existing platform AdminShell, `SUPER_ADMIN` guard, form/server-action and transactional management patterns that should be reused.
-- `CommerceAuditEvent` already supports `actorAdminId`, `shopId`, `operationId`, `reason`, metadata and timestamp but its `CommerceAuditAction` enum has no WhatsApp-template management actions. This is the only approved Database change under this architecture.
+- `moda-interact-background/src/services/whatsapp-template-selector.service.ts` already owns shop/WABA/purpose/language fallback selection, but currently operates on `WhatsAppTemplateVariant` and exposes legacy metadata-verification state.
+- Existing call sites include `checkout-recovery/recovery-initiation.service.ts`, `checkout-recovery/recovery-outreach-follow-up-processor.service.ts`, `recovery-conversation/human-command-dispatcher.service.ts`, `recovery-conversation/outbound-send-fence.service.ts` and `outbound-whatsapp-admission/outbound-message-delivery.service.ts`.
+- `src/services/translation-batch-runtime/` supplies reusable Batch provider submission, polling, correlation, result membership, retry/failure and repair mechanics. Domain-specific Merchant Pricing translation orchestration exists separately; it is **not** a drop-in WhatsApp translation service.
+- `src/services/recovery-policy.service.ts` has `NONE`, `FIXED` and `AI_BEST_APPLICABLE` policy context, but currently does not provide the complete verified offer-outcome contract for six Meta template purposes.
+- The existing outbound and recovery-conversation components own final send eligibility, moderation, STOP, credits and follow-up limits. ARCH-047 modules must remain downstream helpers, not competing admission authorities.
+- The amended consolidated DB001 contract specifies **11 new tables** and nullable `WhatsAppTemplateVariant.metaRegistrationId`, without database-enforced template business rules. Its developer-owned implementation has not been accepted as Complete.
+
+Reinspect these paths at implementation start; this is snapshot evidence, not a claim about later Git commits.
 
 ## Proposed Architecture
 
-### Existing shop-scoped table as catalogue and assignment
-
-No additional template master/assignment entities. A configured template is persisted as one or more `WhatsAppTemplateVariant` rows, one per shop. An administrator chooses at least one initial shop when creating; a *global catalogue list* is a derived grouping of existing variant metadata and assignment counts, **not an unassigned persistent template**. An Admin operator can select an existing shop assignment as the source when copying to additional shops.
-
-Define the **assignment slot** as:
-
-`(shopId, providerAccountId, purpose, canonical(languageTag))`
-
-Within a slot, at most one row may be simultaneously **enabled AND APPROVED**. Admin uses server-side validation, transactionally locks affected shops in stable order (or a demonstrably equivalent PostgreSQL serialisation) and reconciles the slot before writes. A previous variant is disabled or updated when a new approved template replaces it. Existing ambiguous slots must be identified and corrected deliberately, not silently selected. Keep the existing provider-name/language unique constraint intact. No new uniqueness migration is required for this initial implementation; concurrent-writer tests are mandatory.
-
-`providerAccountId` must match the configured actual outbound WABA. Admin resolves/authorises this value server-side from existing trusted sender configuration and does not display Meta access tokens. No other shop's account may be assigned by arbitrary client input. If more than one WABA becomes supported, selecting it needs an explicit trusted account registry, not arbitrary string acceptance.
-
-Admin is responsible for correct entry of the approved Meta template's name/language/ID/status. `APPROVED` is an **Admin-maintained local assertion**, not a guarantee that Meta will accept an eventual send. Provider reclassification/revocation is handled as a delivery failure and by subsequent Admin correction, not a synchronous Meta metadata query.
-
-### Admin operations
-
-- **Create/Edit/Disable** (`ARCH-047-ADMIN-001`): `SUPER_ADMIN`-only template catalogue page under System Controls. Register at least one shop-scoped template, edit the exact existing row, mark `APPROVED`, disable/enable, list metadata, language/purpose and assigned shops; validate form and shop membership server-side. Display an explicit operator responsibility for keeping Meta template metadata current.
-- **Assign/Update all** (`ARCH-047-ADMIN-002`): single, selected or all eligible current shops; preview exact scope and affected count; confirm overwrite of existing individual modifications; use per-shop idempotent transactions and shared operation IDs/audit. Global update targets the **same WABA/purpose/canonical-language slot**, whether each shop's existing template name has been customised or not. Do not rely on mutable template names to find overrides.
-- Eligible bulk scope: `commerce.Shop.status = ACTIVE`; when `platform = WOOCOMMERCE`, require the installation to be `ACTIVE`. Both platforms may receive assignments; existing recovery entitlements and shop operation gates remain independent. Noneligible shops are excluded and counted. Scope is an execution-time snapshot, not a standing policy for future shops.
-- Bulk writes must not block on one unbounded request/transaction. Use bounded, resumable, idempotent batches with per-shop result recording in the existing audit structure and explicit partial-failure reporting. Overlapping operations against the same shop/slot must be serialised so they cannot leave two selectable records. Updating an individual shop does not modify siblings; explicitly confirmed Update for all replaces the slot in every selected eligible shop, including prior customisations.
-
-### Background read-only catalogue consumption
-
-`ARCH-047-BACKGROUND-001` removes all Meta template metadata-category reads from recovery send entry points. For every business-initiated recovery template, select an existing shop-scoped row from PostgreSQL with `status=APPROVED`, `enabled=true`, correct configured provider account and purpose, and deterministic language choice. Retain a final **database** check that the selected exact assignment still exists and is enabled/approved for the same shop and recipient flow before Meta **send**; that is NOT a provider metadata check. If missing or ambiguous, fail closed and preserve existing no-send/no-credit semantics. No category inference or new Meta `message_templates` call. The existing WhatsApp sending API remains necessary.
-
-### Authentication and audit
-
-Only `SUPER_ADMIN` may create, mutate, bulk assign or disable template rows; both UI route and server action independently enforce this. Existing `CommerceAuditEvent` records immutable admin actor, reason, operation ID, shop, action and bounded before/after metadata for each changed assignment. `ARCH-047-DATABASE-001` extends only the `CommerceAuditAction` enum and corresponding migration/tests. Do not invent a new audit table. Preserve no secrets/customer personal data in change payloads/logs.
-
-## Request / Event Flow
+### Authoring, translation and publication
 
 ```mermaid
 flowchart TD
- A[SUPER_ADMIN WhatsApp Templates] --> B[Create or select approved shop variant]
- B --> C{Scope}
- C --> D[One shop]
- C --> E[Selected shops]
- C --> F[All currently eligible shops]
- D --> G[Transactional slot reconcile and audit]
- E --> G
- F --> H[Preview and confirm affected shops]
- H --> I[Bounded idempotent batches]
- I --> G
- G --> J[(whatsapp.WhatsAppTemplateVariant)]
- J --> K[Background selects approved enabled assigned variant]
- K --> L[Existing consent STOP billing and final send gates]
- L --> M[Meta delivery API only]
+  A[Moda Admin English AST creation] --> B[(Immutable definition and English locale)]
+  B --> C[Durable translation request]
+  C --> D[Background Template Translation]
+  D --> E[Admin 20-language review]
+  E --> F{Template family}
+  F -->|Meta recovery| G[Background Meta Template Management]
+  G --> H[Meta review and template-status webhooks]
+  H --> I[Admin approval and per-shop language publication]
+  F -->|Conversation wrapper| J[Admin internal wrapper publication]
+  I --> K[(Shop-assigned WhatsAppTemplateVariant)]
+  J --> L[(Active wrapper pointer)]
 ```
+
+Meta approves or rejects **each submitted language**. Neither approval nor successful submission silently assigns the template to shops. External template IDs not linked to Moda-authored definitions cannot enter the catalogue. A rejected or drifted template is not edited; a new definition must be authored and submitted. For a changing provider status, keep immutable submitted components and binding snapshots while recording current observations/events separately.
+
+### Background module ownership (five modules)
+
+| Module / proposed directory | Primary responsibility and owned data | Not owned |
+|---|---|---|
+| **A — Template Translation** `src/services/template-translation/` | Claim durable translation runs, extract translatable AST text, reuse `translation-batch-runtime`, correlate locale results, validate structural/semantic variable preservation and persist progress/retries. | Meta creation/approval, shop publication, recovery sending, template selection. |
+| **B — Meta Template Management** `src/services/meta-template-management/` | Submit Moda-authored translated components via Meta **create** endpoint, reconcile uncertain outcomes, consume already-authenticated status events, track registration/event history and provider drift. | Webhook signature verification/ingress, Admin approvals, translations, recovery sending. |
+| **C — Recovery Offer Resolution** `src/services/recovery-offers/` | Resolve NONE/FIXED/AI policy against current read-only provider/commerce evidence and return one verified `NO_OFFER`, `CODE_OFFER` or `AUTOMATIC_OFFER` decision. | Meta template selection, message wording, coupon application, cart/checkout mutation. |
+| **D — Recovery Template Preparation** `src/services/recovery-template-preparation/` | Resolve the six-purpose slot, locally published and approved shop/WABA/language assignment, safe language fallback, frozen per-language parameter mapping and fully prepared Meta payload; expose a final-checkable assignment identity. | AI selection, Meta catalogue network calls, final outbound admission, sending/billing. |
+| **E — Conversation Wrapper Rendering** `src/services/conversation-wrappers/` | Select published SHARED/AI/HUMAN wrapper, resolve read-only checkout context, insert an existing response into the required slot **exactly once**, render optional valid URL/footer and return composed content. | Generating AI response, human authorship, moderation policy, provider sending, checkout mutation. |
+
+Module boundaries are behavioural, not arbitrary file count. A module may contain small coordinator, repository, provider adapter, mapper and pure helpers; it should expose one clearly typed facade to consumers. Keep BullMQ processors thin, inject external dependencies for testing, and avoid 300+ line catch-all files. Shared owns stable AST/variable compilation and reusable pure rendering semantics; no second service-local AST/codec implementation. Existing outbound admission remains the sole final-delivery control.
+
+### Core interfaces and error behaviour
+
+- `TemplateTranslationService.process(runId)` takes a **durable run ID**, not an unsaved AST. It updates only its translation tables, returns persisted progress, and handles stale/late/duplicate provider results idempotently. It cannot publish or mutate the original saved AST.
+- `MetaTemplateManagementService.submit(definitionId)` operates only on an Admin-confirmed source, persists frozen submitted components/`parameterBindingsSnapshot`, and reconciles unknown provider creates **before** resubmitting. `reconcile(event)` operates on trusted WABA/Meta identity and append-only event evidence; it never adopts outside templates or switches merchant assignments.
+- `RecoveryOfferResolver.resolve(context)` returns `{kind:'NO_OFFER'}` or one server-verified code/automatic offer with bounded provenance; an AI recommendation is not itself eligibility proof. Inability to verify produces a no-offer outcome without advertising unsupported savings.
+- `RecoveryTemplatePreparer.prepare({shopId, senderWabaId, stage, verifiedOffer, languageContext, checkoutContext})` returns a typed `PreparedRecoveryTemplate` (exact assigned variant/registration IDs, purpose, provider language/name and ordered component parameters) or a structured unavailable reason. It performs no provider metadata HTTP request and no outbound send. Final admission separately rechecks assignment/registration status and STOP/consent/send eligibility in its existing transaction/fence.
+- `ConversationWrapperRenderer.render({conversationId, source:'AI'|'HUMAN', responseBody, languageContext})` returns a tagged rendered result with wrapper definition/version and source-message identity so callers can avoid double wrapping. Its checkout context is resolved read-only and tenant-scoped; a missing/stale URL is omitted, never guessed. It does **not** choose whether the message is permitted for WhatsApp delivery.
+
+Typed interfaces should use published Shared contracts where cross-service semantics require them. Background-private ports may remain local. Module implementations must not directly import one another's repository internals or duplicate SQL/provider clients.
+
+### Recovery and conversation integrations (four thin integrations)
+
+- **Automated recovery:** Existing initial and scheduled follow-up orchestrators call C for a verified offer, then D for a prepared template and hand the result to the **existing** outbound admission/send path. The integration owns *when* to attempt outreach, not selecting discounts, interpreting AST or calling Meta catalogue APIs.
+- **Merchant post-window follow-up:** Existing human recovery command dispatcher passes an eligible sequence-two request through C as necessary and D. It retains the single permitted follow-up, purchase/credit rules and service-window boundary; it must not create another outbound path.
+- **AI in-window reply:** Existing AI conversation execution generates its response; E wraps it once; the **complete rendered output** goes through existing moderation and admission. AI prompt guardrails and the independent OpenAI Moderation API are separate mechanisms; neither is replaced by the wrapper.
+- **Human in-window reply:** Merchant-authored text is wrapped by E, shown consistently in merchant preview, fully moderated and dispatched through existing admission. Merchant-authored human replies within the valid 24-hour window are not subject to the AI exchange cap, but still obey consent/STOP/moderation and existing delivery policy. Shopify and WooCommerce UI preview integration is owned by their own repositories, not Background.
+
+Common final admission must check the exact assigned version again. To avoid conflicting changes to `outbound-message-delivery.service.ts`/send fence, **BACKGROUND-006 owns the common automated/final-fence adapter**; BACKGROUND-007 consumes that adapter and must not implement an independent final gate. AI/HUMAN wrapper integrations do not modify the generic outbound admission contract except through a separately reviewed narrowly scoped need.
+
+### Flow and lifecycle invariants
+
+1. Save immutable English AST; Admin starts a durable translation request after save. Progress flows `SAVED → TRANSLATION_QUEUED → TRANSLATING → READY_FOR_REVIEW`, with per-language failure/retry state.
+2. Meta submission is a separate Admin-confirmed operation. Background uses only provider create/read for Moda-owned IDs, never Meta edit/update-template APIs; `message_template_status_update` is authenticated by Messaging and reconciled by B. Meta status is not merchant publication.
+3. An approved 20-language definition may be published to one, selected or all **currently eligible** shops, with per-shop/per-language targets and explicit override impact confirmation. Old shop assignments remain active until Admin chooses replacement; publishing is idempotent/resumable and not automatic for future shops.
+4. Template content and frozen binding metadata are not changed in place. Operational status/progress and provider observation fields may change; application services enforce immutability, approval, kind, audience, 20/20 completeness, sender WABA compatibility and shop assignment. PostgreSQL retains technical keys/FKs/indexes only.
+5. Six recovery purposes are **INITIAL/FOLLOW_UP × NO_OFFER/CODE_OFFER/AUTOMATIC_OFFER**; the fixed and AI discount modes both feed the same verified-offer result. No unverified code/automatic discount promises. Follow-up must not contradict a now-invalid previous offer.
+6. Only approved, enabled, correctly assigned and locally non-revoked Meta records may be prepared. No ordinary send calls provider template-list/category endpoints. Disabling/pausing a provider language can block future sends; later approval does **not** silently reactivate a disabled merchant assignment.
+7. AI and human conversation content is related to the checkout, but the template module does not add a CheckoutRecovery row or guarantee checkout identity in the underlying current `Conversation` schema. Missing checkout context must fail safely or omit invalid fields. Enforcing conversation identity more broadly is a separate owning-architecture question.
+8. No checkout/cart/discount mutation by CommerceAgent; human/customer basket changes happen on merchant storefronts. No wrapper can reopen the WhatsApp service window or create a second recovery follow-up.
 
 ## Repository Responsibilities
 
-| Owner | Repository | Change |
+| Owner | Repository | Boundary |
 |---|---|---|
-| moda_database | moda-interact-database | Add audited WhatsApp-template actions to `CommerceAuditAction`; no new template tables or provider category columns |
-| moda_admin | moda-interact-admin | New guarded template catalogue UI/server mutations; merchant scope preview and individual/selected/global assignment |
-| moda_background | moda-interact-background | Remove provider metadata verification and consume assigned approved/enabled database records across all business-initiated recovery paths |
-| moda_system_test | moda-interact-system-test | Certify single/all-shop assignment, update propagation, no metadata calls, consent/STOP/billing protection |
-
-No Shopify, WooCommerce plugin, Gateway or Shared publication task is currently required. No new public endpoint/deployable/worker is introduced, so there is no Gateway topology change.
+| moda_database | `moda-interact-database/` | Consolidated `ARCH-047-DATABASE-001` exact 11-table contract, Prisma migration and technical integrity only. |
+| moda_shared | `moda-interact-shared/` | Published AST, typed variables, locale/provider mapping, canonical component/parameter compilation, Meta event contract and pure wrapper semantics. Planned `SHARED-001`, `002`, `004`, then publication `SHARED-003`. |
+| moda_admin | `moda-interact-admin/` | English-only authoring, Clone as New, translation request/review, explicit provider submission, Meta approval dashboard and shop assignment; separately publish wrappers. Original external-import ADMIN-001 and shop-to-shop ADMIN-002 workflows are superseded conceptually and must be marked so in their task files before execution. |
+| moda_background | `moda-interact-background/` | Five feature modules and four thin integration tasks below; never implement Admin approval or Messaging ingress. |
+| moda_messaging | `moda-interact-messaging/` | Verify Meta webhook authenticity and publish normalised template-status events for B. |
+| moda_app / moda_woocommerce | respective Shopify/Woo repositories | Human response preview and authenticated merchant interface; never duplicate wrapper rendering policy. |
+| moda_system_test | `moda-interact-system-test/` | Validate end-to-end flows only after required implementation/publication tasks are Complete. |
+| moda_gateway | `moda-interact-gateway/` | No additional Gateway implementation established yet; confirm existing Meta app callback and routing during Messaging handoff. Raise a bounded Gateway task only for a demonstrated missing route/configuration. |
 
 ## Data Model
 
-- Reuse `whatsapp.WhatsAppTemplateVariant` exactly as it exists; all assignments are shop-scoped rows, not references to a new master template.
-- Reuse `commerce.Shop` and `woocommerce.WooCommerceInstallation` for the eligibility scope.
-- Reuse `commerce.CommerceAuditEvent` for actor/operation/shop/old-new evidence. Extend only `CommerceAuditAction` via `ARCH-047-DATABASE-001`. This is a narrow, forward-safe enum migration with no template table rebuild.
-- Do not create a category column or treat locally assigned `purpose` as a provider-category proof; the operational rule explicitly trusts Admin-approved database records.
+The authoritative proposed persistence specification is the consolidated, developer-owned `ARCH-047-DATABASE-001` **Attempt 7** definition; do not create DATABASE-002–004. It has **11 new tables**, reuses `WhatsAppTemplateVariant` with nullable `metaRegistrationId` and existing `CommerceAuditEvent`, and deliberately has no distinct Release/ReleaseLocale. A `WhatsAppTemplateDefinition` is the content version; its locales, translation run/item/batch history, per-WABA Meta registration and event history, shop-language publication operations/targets and active wrapper pointers remain independently queryable. `parameterBindingsSnapshot` freezes the Meta-facing positional mapping at submission. Meta drift observations do not overwrite the frozen snapshot.
+
+This architecture does **not** instruct Database to enforce business rules via triggers, CHECK constraints, status-dependent unique keys or stored procedures. Application services own all authorization, lifecycle, eligibility, publication and version immutability policies. Preserve historic template rows without silently adopting externally authored ones: the new runtime refuses non-Moda-linked assignments when switched over.
 
 ## Contracts
 
-- Existing Prisma `WhatsAppTemplateVariant` is the shared database contract: **no new queue schema or Shared package**.
-- Admin variant mutation input: explicit intended WABA, `purpose`, canonical language, Meta template name, Meta language and optional template ID, `status`, `enabled`, target shop(s), reason, expected/current version token where applicable. Server resolves permissions/shop scope and rejects ambiguous slots. Do not permit client-supplied environment, actor, arbitrary provider credentials or operation status as trusted.
-- Bulk request: source variant/slot, exact target scope (`one`, `selected`, `all-current-eligible`), intended replacement values, impact-preview token/operation ID and confirmation. Server recomputes eligibility/impacts before changes; stale previews are rejected or re-previewed.
-- Background uses existing Prisma rows and the already established outbound permit/billing/message contracts; remove rather than replace Meta `verifiedCategory` metadata dependency. Preserve rolling compatibility: Admin records remain readable by preexisting Background during staged rollout; switch Background after Admin data and audit are accepted.
+Cross-repository AST/variable/locale and Meta status payloads are owned by `@modainteract/moda-interact-shared` and must be published before consuming them; do not copy definitions locally. Critical contracts include six purpose identifiers, canonical variable keys and required-field policy, a frozen per-language positional binding map, source/content hashes, normalized provider-status events keyed by WABA/template/language and typed prepared-message structure. Application-specific service ports remain Background-private where they do not cross a service boundary.
+
+Translation enqueueing uses persisted DB001 run IDs and the existing architecture-approved BullMQ/Batch handoff, not an in-memory job or synchronous Admin-to-worker HTTP call. Messaging webhook ingress has one verified producer and Background B the consumer; deduplicate/reconcile delayed, duplicated and out-of-order provider notifications. Status webhooks must not autonomously publish templates.
 
 ## Consistency and Transactions
 
-Idempotent upserts/updates per target shop and slot; stable row selection; transactional shop-scope lock/CAS; bounded batch sizes for large all-shop operations; durable audit on each committed change; explicit partial failures and safe retries. Do not call Meta/Redis from SQL transactions. Avoid duplicate active approved assignments under concurrent Admin mutations; after each chunk confirm actual status, not merely queued intent.
+PostgreSQL is durable state. Workers assume duplicate/out-of-order jobs. Business service operations use transactions/CAS and idempotency keys where required, not DB-owned template lifecycle constraints. No external Meta API, LLM or Redis operation inside a SQL transaction. Unknown Meta create outcomes require provider read/reconciliation before retry. Publication processes bounded targets with **shop-level all-selected-language atomicity or an explicit, reviewed partial policy**. Active shop slots are replaced only after operator confirmation. Frozen `parameterBindingsSnapshot` must correspond to exactly the submitted components; any mismatch makes runtime preparation fail closed. Only the existing final admission path can reserve/settle/compensate credits and commit sends.
 
-## Ordering
+## Ordering and Failure Handling
 
-Admin bulk and individual operations targeting the same shop/slot must serialise at that narrow scope, not globally across all shops. If an Admin changes an assignment while a send is being prepared, the final database fence should refuse a stale/deactivated assignment before provider dispatch, subject to the usual unavoidable SQL-to-provider network boundary.
-
-## Failure Handling
-
-- Wrong template metadata can cause a Meta **delivery** error, handled by the existing provider failure and credit compensation mechanisms; do not query Meta's template-catalogue API as a fallback.
-- Admin mutations with ambiguous/duplicate active entries return actionable errors or require an explicit safe replacement operation.
-- Bulk operation partial failure returns committed count, failed shop IDs and retry-safe operation scope; no false all-success response or blanket rollback claim.
-- Missing template must not consume a recovery credit or create duplicate outreach attempts.
+Per-definition translation/review, Meta provider events and per-shop publication use narrow concurrency identities. Provider status, drift, missing template, incomplete locale set or ambiguous shop-language slot is a structured failure, never an arbitrary fallback to an unverified template. If a verified offer is unavailable, C returns `NO_OFFER` instead of allowing invented discounts. Missing checkout URL is not fabricated. An admin's new release never silently replaces older eligible assignments. Duplicate response-wrapper application must be refused or idempotently recognised before sending.
 
 ## Scalability
 
-Typical recovery hot path requires indexed/filtered shop-scoped database selection; no added Meta metadata HTTP request. Bulk assignment scans current eligible shops by pages and writes bounded chunks. Avoid an unbounded single Next.js action or one transaction across every shop. No new job queue is required unless actual scale tests show a specific gap; return that to moda_architect before expanding infrastructure.
+Keep high-volume checkout-event filtering and ordinary send preparation bounded; expensive AI offer evaluation is invoked only for genuinely eligible `AI_BEST_APPLICABLE` outreach, not raw webhook events. Provider translation/Meta template creation run on separate low-throughput control-plane workloads with bounded retries; bulk publication uses paginated targets and does not lock all shops globally. Recovery selection uses indexed local database reads, not provider catalogue fetches. Reuse approved BullMQ/OTel infrastructure; any new queue routing or external API configuration must be justified by inspected capability gaps and assigned to its owner.
 
 ## Security
 
-Require `SUPER_ADMIN` on every write/read route and server action. Database lookups are shop- and WABA-bound. Never expose access tokens, Meta credentials or cross-tenant/customer data in browser payloads, audits or logs. Existing customer consent, local STOP, billing, moderation, installation eligibility, message-window and send-fence controls remain fully enforced. Template availability is never a substitute for customer consent.
+Meta credentials stay server-side. Meta webhooks are authenticated at Messaging ingress. Every lookup and prepared message is shop-, WABA-, conversation-/checkout- and recipient-scoped. Avoid logging sensitive AST samples, customer text, credentials or checkout URLs. Staff Admin operations require `SUPER_ADMIN` authorization. Do not treat an approved provider template as permission to contact a customer; consent, local authoritative STOP, service window, moderation and billing guards are independent. CommerceAgent can only retrieve read-only commerce information.
 
 ## Observability
 
-Admin emits bounded domain mutation outcomes using `@modainteract/moda-interact-shared/logging` and writes the existing durable audit. Background reuses current provider failure/attempt/credit telemetry rather than adding duplicate HTTP/queue metrics; expose a bounded `template-unavailable`/`ambiguous` outcome as appropriate. Backend monitoring unavailability must not prevent correct business processing. Environment-separated telemetry; no credentials, customer data or template secrets in logs.
+Modules emit bounded business-outcome logs (run/definition IDs, WABA/template IDs where non-secret, status, attempt, cause), through the shared logger. Reuse existing OTel/framework request and BullMQ instrumentation; do not duplicate generic telemetry. Failed or delayed translation, unknown Meta create, stale webhook, provider drift, ambiguous template slot, offer verification refusal and wrapper-application errors must be traceable without customer contents. Provider/observability outages must not turn otherwise ineligible sends into eligible ones.
 
 ## Rollout / Migration
 
-Rollout classification: production-compatible unless a verified pre-production deployment permits otherwise. Sequence: Database enum migration → Admin catalogue/assignment tasks accepted and Admin rows reviewed → Background database-only selection adopted → integrated system test. Do not delete historical template rows. A database row marked `APPROVED` may still be rejected by Meta at delivery; ensure operational correction is available. Rollback may restore the previous Background deployment while keeping enum additions and Admin rows (additive). No automatic future-installation assignments.
+Classify production compatibility at implementation time. The 11-table Database migration is additive and preserves existing shop assignments and audit records. Publish Shared contracts before Background module adoption. Implement and verify feature modules **before** touching caller services. Stage automated recovery integration and its shared final-fence adapter before merchant post-window integration; keep preexisting paths working until explicitly cut over. Deploy Messaging event support and provider management before enabling Meta-authoring submissions. Explicitly publish approved shop assignments; legacy unlinked assignments are not silently treated as Moda-authored. Internal wrapper activation and rollout are independent of recovery-template Meta submission. Run system tests only after all needed implementations are architect-accepted and the developer has performed any desired manual validation.
 
 ## Decisions / Tasks
 
-| Task | Owner | Status | Depends On |
+### Existing tasks and work outside Background
+
+| Task | State in supplied source | Required reconciliation |
+|---|---|---|
+| `ARCH-047-DATABASE-001` | Developer `in_progress`, Attempt 1 (per amended task) | Use consolidated Attempt 7 contract; no DATABASE-002–004. |
+| `ARCH-047-ADMIN-001` | Legacy `pending` | Supersede external-import authoring task; no external imports. |
+| `ARCH-047-ADMIN-002` | Legacy `pending` | Supersede shop-to-shop source copying; central Admin publication replaces it. |
+| `ARCH-047-SYSTEM-TEST-001` | Legacy `pending` | Re-scope to Moda-authored assignments/runtime, remove import tests. |
+| `ARCH-047-SHARED-001/002/004`, `SHARED-003` | Planned, not defined | Define AST/event/wrapper contracts and separate publication gate. |
+| `ARCH-047-MESSAGING-001` and new Admin tasks | Planned, not defined | Create after architect reconciliation; confirm route and provider event contracts. |
+
+### Module-first Background tasks — proposed final numbering
+
+Only the revised **`ARCH-047-BACKGROUND-001` file exists** in this amendment; it is narrowed to Module D. The other eight are proposals below; they are **not implementation task files**, and no task claim has been made.
+
+| Task | Responsibility | Bounded ownership | Planned prerequisites (not yet materialised as tasks) |
 |---|---|---|---|
-| ARCH-047-DATABASE-001 | moda_database | Ready | — |
-| ARCH-047-ADMIN-001 | moda_admin | Pending | ARCH-047-DATABASE-001 |
-| ARCH-047-ADMIN-002 | moda_admin | Pending | ARCH-047-ADMIN-001 |
-| ARCH-047-BACKGROUND-001 | moda_background | Pending | ARCH-047-ADMIN-001 |
-| ARCH-047-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-047-ADMIN-002, ARCH-047-BACKGROUND-001 |
+| **BACKGROUND-001** | Module D — Recovery Template Preparation | Local template selection, six-purpose slot, language fallback and frozen Meta parameter binding; no call-site edits or sending | DATABASE-001; published Shared AST/variable contracts (`SHARED-003`). |
+| **BACKGROUND-002** | Module A — Template Translation | Durable run/locale orchestration using existing Batch runtime, no Meta creation | DATABASE-001; `SHARED-003`. |
+| **BACKGROUND-003** | Module B — Meta Template Management | Template-create, reconciliation, webhook-status consumer and drift in one module; never ingress verification | DATABASE-001; `SHARED-003`; Messaging event ingress integrated before end-to-end activation. |
+| **BACKGROUND-004** | Module C — Recovery Offer Resolution | Read-only NONE/FIXED/AI policy strategies, one verified decision or no offer; no template work | Existing recovery policy/catalogue contracts; add a Commerce-owned prerequisite only if read-only offer evaluation is insufficient. |
+| **BACKGROUND-005** | Module E — Conversation Wrapper Rendering | Published wrapper lookup, read-only checkout context, exact-once composition | DATABASE-001; `SHARED-003`. |
+| **BACKGROUND-006** | Automated Recovery Integration | Thin initial/sequence-two call-site wiring to BG004 and BG001; common final-fence adapter | BACKGROUND-001; BACKGROUND-004. |
+| **BACKGROUND-007** | Merchant Post-Window Integration | Thin human follow-up template branch using shared preparer and common admission adapter | BACKGROUND-001; BACKGROUND-004; BACKGROUND-006 for common adapter. |
+| **BACKGROUND-008** | AI Conversation Integration | Thin AI response → wrapper → full-message moderation/admission adapter | BACKGROUND-005; existing AI conversation execution. |
+| **BACKGROUND-009** | Human Conversation Integration | Thin human response → wrapper → full-message moderation/admission adapter | BACKGROUND-005; existing human command/in-window admission. |
 
-## Open Questions
+### Execution dependency view
 
-No blocking architectural question for v1. “All shops” means existing eligible active shops at execution; future-shop default assignment is explicitly excluded. Provider template/category changes require Admin maintenance; no runtime Meta template metadata verification. Any newly discovered schema requirement beyond the narrow audit enum must return to moda_architect rather than being implemented opportunistically.
+```mermaid
+flowchart LR
+  DB[DATABASE-001] --> B1[BG001 Template Preparation]
+  DB --> B2[BG002 Translation]
+  DB --> B3[BG003 Meta Management]
+  DB --> B5[BG005 Wrapper Rendering]
+  S[Shared AST + events + wrapper publication] --> B1
+  S --> B2
+  S --> B3
+  S --> B5
+  B4[BG004 Offer Resolution] --> B6[BG006 Automated Integration]
+  B1 --> B6
+  B1 --> B7[BG007 Post-window Integration]
+  B4 --> B7
+  B6 --> B7
+  B5 --> B8[BG008 AI Integration]
+  B5 --> B9[BG009 Human Integration]
+  B2 --> T[Integrated System Test]
+  B3 --> T
+  B6 --> T
+  B7 --> T
+  B8 --> T
+  B9 --> T
+```
+
+The graph expresses necessary interfaces, not serial deployment of unrelated modules. `BACKGROUND-002`–`005` may proceed in parallel when prerequisites are met. `BACKGROUND-004` can be investigated without waiting for Meta template authoring. No implementation, Shared publication or Gateway task may depend on a system-test task.
+
+## Open Questions / Gates Before Implementation Handoff
+
+1. **Contracts first:** materialise and accept/publish the relevant Shared contracts before consumer implementation that needs them. Validate that `translation-batch-runtime` supplies usable generic hooks before introducing any new Batch infrastructure.
+2. **Offer evaluation:** verify fixed multi-offer and WooCommerce/Shopify AI candidate eligibility is backed by read-only provider evidence; if not, return the gap to the architect for an owning Commerce/API task rather than fabricating eligibility in Background.
+3. **Checkout association:** confirm the existing AI/human conversation path has a reliable tenant-scoped checkout context. If not, define the minimal separate owning task. BG005 must not silently broaden conversation schema.
+4. **Provider webhooks:** ensure the relevant Meta app/WABA template-status notifications reach authenticated Messaging ingress; add a narrowly scoped Gateway task only if actual routing/configuration is deficient.
+5. **Document frontier:** supersede legacy ADMIN-001/002 task metadata and revise the obsolete SYSTEM-TEST-001 separately. Keep all `docs/decisions/**/_index.md` unchanged until the user declares this architecture session complete.
 
 ## Change History
 
-- 2026-10-23 — Initial architecture agreed: Admin-owned template approval/assignment, existing shop rows, explicit all-shop overwrite, no runtime Meta metadata validation, focused audit enum extension.
+- 2026-10-23 — Initial shop-scoped Admin Meta import/assignment design (now superseded).
+- 2026-10-24 — User decisions: Moda Admin-only authoring, immutable new-version templates, English-first 20-language translation, Meta approval then explicit publication, six recovery purposes, checkout-related AI/human wrappers and strictly read-only CommerceAgent.
+- 2026-10-24 — Consolidated DATABASE-001 11-table Attempt 7 schema considered the database contract; business lifecycle enforcement remains in services.
+- 2026-10-24 — **Module-first Background plan adopted**: five feature modules and four thin call-site integrations, reusing Shared AST, provider Batch runtime and existing outbound admission. BG001 is narrowed; BG002–BG009 remain unmaterialised proposals.
