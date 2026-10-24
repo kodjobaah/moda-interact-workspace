@@ -77,23 +77,23 @@ Meta approves or rejects **each submitted language**. Neither approval nor succe
 
 | Module / proposed directory | Primary responsibility and owned data | Not owned |
 |---|---|---|
-| **A — Template Translation** `src/services/template-translation/` | Claim durable translation runs, extract translatable AST text, reuse `translation-batch-runtime`, correlate locale results, validate structural/semantic variable preservation and persist progress/retries. | Meta creation/approval, shop publication, recovery sending, template selection. |
-| **B — Meta Template Management** `src/services/meta-template-management/` | Submit Moda-authored translated components via Meta **create** endpoint, reconcile uncertain outcomes, consume already-authenticated status events, track registration/event history and provider drift. | Webhook signature verification/ingress, Admin approvals, translations, recovery sending. |
+| **A — Template Translation** `src/services/template-translation/` | Claim Admin-prepared keyed text segments from `TranslationRun.sourceSnapshot`, protect and restore placeholders, reuse `translation-batch-runtime`, correlate results and persist keyed translations in `TranslationItem.translatedAst`; never parse/rebuild Admin AST. | Meta creation/approval, shop publication, recovery sending, template selection. |
+| **B — Meta Template Management** `src/services/meta-template-management/` | Submit Admin-compiled frozen `MetaRegistration.componentsSnapshot` via Meta **create** endpoint unchanged, reconcile uncertain outcomes, consume queued authenticated status observations, and maintain registration/event/drift history. | Webhook signature verification/ingress, Admin approvals, translations, recovery sending. |
 | **C — Recovery Offer Resolution** `src/services/recovery-offers/` | Resolve NONE/FIXED/AI policy against current read-only provider/commerce evidence and return one verified `NO_OFFER`, `CODE_OFFER` or `AUTOMATIC_OFFER` decision. | Meta template selection, message wording, coupon application, cart/checkout mutation. |
 | **D — Recovery Template Preparation** `src/services/recovery-template-preparation/` | Resolve the six-purpose slot, locally published and approved shop/WABA/language assignment, safe language fallback, frozen per-language parameter mapping and fully prepared Meta payload; expose a final-checkable assignment identity. | AI selection, Meta catalogue network calls, final outbound admission, sending/billing. |
-| **E — Conversation Wrapper Rendering** `src/services/conversation-wrappers/` | Select published SHARED/AI/HUMAN wrapper, resolve read-only checkout context, insert an existing response into the required slot **exactly once**, render optional valid URL/footer and return composed content. | Generating AI response, human authorship, moderation policy, provider sending, checkout mutation. |
+| **E — Conversation Wrapper Rendering** `src/services/conversation-wrappers/` | Select published SHARED/AI/HUMAN wrapper, consume an **Admin-prepared runtime wrapper projection** (not authoring AST), resolve trusted checkout context, insert the original response exactly once and return composed content. | Generating AI response, human authorship, moderation policy, provider sending, checkout mutation. |
 
-Module boundaries are behavioural, not arbitrary file count. A module may contain small coordinator, repository, provider adapter, mapper and pure helpers; it should expose one clearly typed facade to consumers. Keep BullMQ processors thin, inject external dependencies for testing, and avoid 300+ line catch-all files. Shared owns stable AST/variable compilation and reusable pure rendering semantics; no second service-local AST/codec implementation. Existing outbound admission remains the sole final-delivery control.
+Module boundaries are behavioural, not arbitrary file count. A module may contain small coordinator, repository, provider adapter, mapper and pure helpers; it should expose one clearly typed facade to consumers. Keep BullMQ processors thin, inject external dependencies for testing, and avoid 300+ line catch-all files. Admin owns the source AST, validation, Meta compilation and wrapper-runtime preparation. Background owns keyed-segment translation, runtime variable substitution and prepared wrapper rendering. Existing Shared internationalisation/logging utilities may be reused; no new ARCH-047 Shared AST task is presumed. Existing outbound admission remains the sole final-delivery control.
 
 ### Core interfaces and error behaviour
 
-- `TemplateTranslationService.process(runId)` takes a **durable run ID**, not an unsaved AST. It updates only its translation tables, returns persisted progress, and handles stale/late/duplicate provider results idempotently. It cannot publish or mutate the original saved AST.
-- `MetaTemplateManagementService.submit(definitionId)` operates only on an Admin-confirmed source, persists frozen submitted components/`parameterBindingsSnapshot`, and reconciles unknown provider creates **before** resubmitting. `reconcile(event)` operates on trusted WABA/Meta identity and append-only event evidence; it never adopts outside templates or switches merchant assignments.
+- `TemplateTranslationService.process(runId)` takes a durable run ID and reads Admin-prepared keyed text segments from `TranslationRun.sourceSnapshot`. It restores/validates protected tokens and saves `{schemaVersion,segments:[{key,text}]}` in the existing `TranslationItem.translatedAst` JSONB; Admin subsequently assembles complete locale payloads. Background cannot publish or modify source AST.
+- `MetaTemplateManagementService.submit(registrationId)` sends the **already-persisted**, Admin-confirmed, frozen `componentsSnapshot`/`parameterBindingsSnapshot` for that registration without parsing or compiling authoring content, and reconciles unknown creates **before** retrying. `reconcile(event)` operates on trusted WABA/Meta identity and append-only event evidence; it never adopts outside templates or switches merchant assignments.
 - `RecoveryOfferResolver.resolve(context)` returns `{kind:'NO_OFFER'}` or one server-verified code/automatic offer with bounded provenance; an AI recommendation is not itself eligibility proof. Inability to verify produces a no-offer outcome without advertising unsupported savings.
 - `RecoveryTemplatePreparer.prepare({shopId, senderWabaId, stage, verifiedOffer, languageContext, checkoutContext})` returns a typed `PreparedRecoveryTemplate` (exact assigned variant/registration IDs, purpose, provider language/name and ordered component parameters) or a structured unavailable reason. It performs no provider metadata HTTP request and no outbound send. Final admission separately rechecks assignment/registration status and STOP/consent/send eligibility in its existing transaction/fence.
 - `ConversationWrapperRenderer.render({conversationId, source:'AI'|'HUMAN', responseBody, languageContext})` returns a tagged rendered result with wrapper definition/version and source-message identity so callers can avoid double wrapping. Its checkout context is resolved read-only and tenant-scoped; a missing/stale URL is omitted, never guessed. It does **not** choose whether the message is permitted for WhatsApp delivery.
 
-Typed interfaces should use published Shared contracts where cross-service semantics require them. Background-private ports may remain local. Module implementations must not directly import one another's repository internals or duplicate SQL/provider clients.
+Background-local typed module ports remain local. The Admin-prepared source segment, translated segment, Meta component/binding and wrapper-runtime JSON shapes are versioned persistence interface agreements; the database stores JSONB but does not semantically validate these formats. Reuse existing `@modainteract/moda-interact-shared` internationalisation and logging exports only where applicable. If the installed WhatsApp queue envelope cannot safely carry provider-defined template status observations, return the **minimal** new cross-repo contract gap to the architect instead of independently duplicating schemas.
 
 ### Recovery and conversation integrations (four thin integrations)
 
@@ -120,25 +120,27 @@ Common final admission must check the exact assigned version again. To avoid con
 | Owner | Repository | Boundary |
 |---|---|---|
 | moda_database | `moda-interact-database/` | Consolidated `ARCH-047-DATABASE-001` exact 11-table contract, Prisma migration and technical integrity only. |
-| moda_shared | `moda-interact-shared/` | Published AST, typed variables, locale/provider mapping, canonical component/parameter compilation, Meta event contract and pure wrapper semantics. Planned `SHARED-001`, `002`, `004`, then publication `SHARED-003`. |
-| moda_admin | `moda-interact-admin/` | English-only authoring, Clone as New, translation request/review, explicit provider submission, Meta approval dashboard and shop assignment; separately publish wrappers. Original external-import ADMIN-001 and shop-to-shop ADMIN-002 workflows are superseded conceptually and must be marked so in their task files before execution. |
+| moda_shared | `moda-interact-shared/` | Reuse existing internationalisation, logging and WhatsApp transports as appropriate; **no new ARCH-047 Shared AST/compiler task** is planned. Escalate a demonstrable missing canonical cross-repository queue schema before adding a new contract. |
+| moda_admin | `moda-interact-admin/` | English AST authoring/validation, Clone as New, **keyed protected-text extraction**, translation request/reconstruction/review, Meta components and binding compilation, explicit provider submission, Meta approval dashboard and shop assignment; separately prepare/publish runtime wrappers. Original external-import ADMIN-001 and shop-to-shop ADMIN-002 workflows are superseded conceptually and must be marked so in their task files before execution. |
 | moda_background | `moda-interact-background/` | Five feature modules and four thin integration tasks below; never implement Admin approval or Messaging ingress. |
-| moda_messaging | `moda-interact-messaging/` | Verify Meta webhook authenticity and publish normalised template-status events for B. |
+| moda_messaging | `moda-interact-messaging/` | Verify Meta webhook authenticity and publish a bounded `message_template_status_update` observation to existing BullMQ `whatsapp-events`; **no direct PostgreSQL writes**. |
 | moda_app / moda_woocommerce | respective Shopify/Woo repositories | Human response preview and authenticated merchant interface; never duplicate wrapper rendering policy. |
 | moda_system_test | `moda-interact-system-test/` | Validate end-to-end flows only after required implementation/publication tasks are Complete. |
 | moda_gateway | `moda-interact-gateway/` | No additional Gateway implementation established yet; confirm existing Meta app callback and routing during Messaging handoff. Raise a bounded Gateway task only for a demonstrated missing route/configuration. |
 
 ## Data Model
 
-The authoritative proposed persistence specification is the consolidated, developer-owned `ARCH-047-DATABASE-001` **Attempt 7** definition; do not create DATABASE-002–004. It has **11 new tables**, reuses `WhatsAppTemplateVariant` with nullable `metaRegistrationId` and existing `CommerceAuditEvent`, and deliberately has no distinct Release/ReleaseLocale. A `WhatsAppTemplateDefinition` is the content version; its locales, translation run/item/batch history, per-WABA Meta registration and event history, shop-language publication operations/targets and active wrapper pointers remain independently queryable. `parameterBindingsSnapshot` freezes the Meta-facing positional mapping at submission. Meta drift observations do not overwrite the frozen snapshot.
+The authoritative proposed persistence specification is the consolidated, developer-owned `ARCH-047-DATABASE-001` **Attempt 7** definition; do not create DATABASE-002–004. It has **11 new tables**, reuses `WhatsAppTemplateVariant` with nullable `metaRegistrationId` and existing `CommerceAuditEvent`, and deliberately has no distinct Release/ReleaseLocale. A `WhatsAppTemplateDefinition` is the content version; its locales, translation run/item/batch history, per-WABA Meta registration and event history, shop-language publication operations/targets and active wrapper pointers remain independently queryable. Admin writes keyed translation requests to `TranslationRun.sourceSnapshot`; Background stores language results (keyed segments) in `TranslationItem.translatedAst` **without creating a completed locale AST**; Admin writes final `localeAst` and precompiled `MetaRegistration.componentsSnapshot`/`parameterBindingsSnapshot` or a prepared wrapper projection into the appropriate existing JSONB records. `parameterBindingsSnapshot` freezes the Meta-facing positional mapping at submission. Meta drift observations do not overwrite the frozen snapshot.
 
 This architecture does **not** instruct Database to enforce business rules via triggers, CHECK constraints, status-dependent unique keys or stored procedures. Application services own all authorization, lifecycle, eligibility, publication and version immutability policies. Preserve historic template rows without silently adopting externally authored ones: the new runtime refuses non-Moda-linked assignments when switched over.
 
 ## Contracts
 
-Cross-repository AST/variable/locale and Meta status payloads are owned by `@modainteract/moda-interact-shared` and must be published before consuming them; do not copy definitions locally. Critical contracts include six purpose identifiers, canonical variable keys and required-field policy, a frozen per-language positional binding map, source/content hashes, normalized provider-status events keyed by WABA/template/language and typed prepared-message structure. Application-specific service ports remain Background-private where they do not cross a service boundary.
+**Admin-owned authoring contracts.** Admin is the only AST reader/compiler. It validates immutable source content on save, persists a versioned `TranslationRun.sourceSnapshot` containing keyed translatable text and an explicit protected-token map, and reconstructs each language after Background returns `{schemaVersion:1,segments:[{key,text}]}` in the existing `TranslationItem.translatedAst` JSONB. Protected variables such as `{{1}}` and `{{2}}` must be losslessly restored and checked by the translation module; no AST parser is required in Background. For Meta, Admin stores **fully compiled** `MetaRegistration.componentsSnapshot` and frozen `parameterBindingsSnapshot`, which BG003 submits without re-compiling. For internal wrappers, Admin stores an explicitly versioned **prepared runtime wrapper projection** in the applicable existing locale JSONB; BG005 interprets it without authoring-AST logic. Exact JSON transport examples belong in producer and consumer task fixtures, not a new Shared AST package.
 
-Translation enqueueing uses persisted DB001 run IDs and the existing architecture-approved BullMQ/Batch handoff, not an in-memory job or synchronous Admin-to-worker HTTP call. Messaging webhook ingress has one verified producer and Background B the consumer; deduplicate/reconcile delayed, duplicated and out-of-order provider notifications. Status webhooks must not autonomously publish templates.
+**Messaging handoff.** Meta `message_template_status_update` is authenticated by Messaging → enqueued to existing BullMQ `whatsapp-events` → consumed/reconciled by Background → persisted in `MetaEvent`/`MetaRegistration`. The current worker supports inbound `message-received` and provider `message-status`; the new event is a **distinct** job and is not parsed as `NormalizedWhatsAppInboundMessage`. Reuse existing queue envelope and Meta's defined WABA fields where safe. If a truly new canonical cross-repository wire contract is required, return that precise gap to the architect; do not independently invent two schemas. No new ARCH-047 Shared task is assumed in the nine Background task dependencies.
+
+**Runtime ports.** BG001 consumes stored compiled parameter maps and trusted customer/checkout values to produce a prepared Meta send. BG004 returns an internal verified offer decision. BG005 consumes the Admin-prepared wrapper projection. Their interfaces are Background-local; final consent/STOP, moderation, billing, service window and send fences remain owned by existing runtime.
 
 ## Consistency and Transactions
 
@@ -162,7 +164,7 @@ Modules emit bounded business-outcome logs (run/definition IDs, WABA/template ID
 
 ## Rollout / Migration
 
-Classify production compatibility at implementation time. The 11-table Database migration is additive and preserves existing shop assignments and audit records. Publish Shared contracts before Background module adoption. Implement and verify feature modules **before** touching caller services. Stage automated recovery integration and its shared final-fence adapter before merchant post-window integration; keep preexisting paths working until explicitly cut over. Deploy Messaging event support and provider management before enabling Meta-authoring submissions. Explicitly publish approved shop assignments; legacy unlinked assignments are not silently treated as Moda-authored. Internal wrapper activation and rollout are independent of recovery-template Meta submission. Run system tests only after all needed implementations are architect-accepted and the developer has performed any desired manual validation.
+Classify production compatibility at implementation time. The 11-table Database migration is additive and preserves existing shop assignments and audit records. Do not introduce a new Shared publication gate merely for Admin ASTs; confirm persisted JSON formats, the existing shared language registry and queue event handoff before Background adoption. Implement and verify feature modules **before** touching caller services. Stage automated recovery integration and its shared final-fence adapter before merchant post-window integration; keep preexisting paths working until explicitly cut over. Deploy Messaging event support and provider management before enabling Meta-authoring submissions. Explicitly publish approved shop assignments; legacy unlinked assignments are not silently treated as Moda-authored. Internal wrapper activation and rollout are independent of recovery-template Meta submission. Run system tests only after all needed implementations are architect-accepted and the developer has performed any desired manual validation.
 
 ## Decisions / Tasks
 
@@ -171,23 +173,29 @@ Classify production compatibility at implementation time. The 11-table Database 
 | Task | State in supplied source | Required reconciliation |
 |---|---|---|
 | `ARCH-047-DATABASE-001` | Developer `in_progress`, Attempt 1 (per amended task) | Use consolidated Attempt 7 contract; no DATABASE-002–004. |
-| `ARCH-047-ADMIN-001` | Legacy `pending` | Supersede external-import authoring task; no external imports. |
-| `ARCH-047-ADMIN-002` | Legacy `pending` | Supersede shop-to-shop source copying; central Admin publication replaces it. |
+| `ARCH-047-ADMIN-001` | **Superseded** by revised Admin task files | No external Meta template import. |
+| `ARCH-047-ADMIN-002` | **Superseded** by revised Admin task files | No shop-to-shop template copying. |
+| `ARCH-047-ADMIN-003` | Portable definition, **Pending** | English AST authoring and immutable save; `depends_on: [DATABASE-001]`. |
+| `ARCH-047-ADMIN-004` | Portable definition, **Pending** | Keyed translation requests/progress; `depends_on: [DATABASE-001]`. |
+| `ARCH-047-ADMIN-005` | Portable definition, **Pending** | Translation reconstruction/review/compilation; `depends_on: [DATABASE-001]`. |
+| `ARCH-047-ADMIN-006` | Portable definition, **Pending** | Meta submission confirmation and DB status UI; `depends_on: [DATABASE-001]`. |
+| `ARCH-047-ADMIN-007` | Portable definition, **Pending** | One/selected/all-shop publication; `depends_on: [DATABASE-001]`. |
+| `ARCH-047-ADMIN-008` | Portable definition, **Pending** | Internal wrapper activation; `depends_on: [DATABASE-001]`. |
 | `ARCH-047-SYSTEM-TEST-001` | Legacy `pending` | Re-scope to Moda-authored assignments/runtime, remove import tests. |
-| `ARCH-047-SHARED-001/002/004`, `SHARED-003` | Planned, not defined | Define AST/event/wrapper contracts and separate publication gate. |
-| `ARCH-047-MESSAGING-001` and new Admin tasks | Planned, not defined | Create after architect reconciliation; confirm route and provider event contracts. |
+| ARCH-047 Shared authoring tasks | Previously proposed, not materialised | **Not required** for Admin-only AST/compilation. Reuse existing Shared facilities. Escalate only a proven missing queue transport contract. |
+| `ARCH-047-MESSAGING-001` | Planned, not defined | Confirm webhook route and queued template-status observation handoff. |
 
 ### Module-first Background tasks — proposed final numbering
 
-Only the revised **`ARCH-047-BACKGROUND-001` file exists** in this amendment; it is narrowed to Module D. The other eight are proposals below; they are **not implementation task files**, and no task claim has been made.
+The revised `BACKGROUND-001` task is Module D. **`BACKGROUND-002`–`009` now have separately provided portable task files in this documentation patch**. No canonical worktree, branch, implementation claim or completion is implied until the developer applies/materialises the definitions.
 
 | Task | Responsibility | Bounded ownership | Planned prerequisites (not yet materialised as tasks) |
 |---|---|---|---|
-| **BACKGROUND-001** | Module D — Recovery Template Preparation | Local template selection, six-purpose slot, language fallback and frozen Meta parameter binding; no call-site edits or sending | DATABASE-001; published Shared AST/variable contracts (`SHARED-003`). |
-| **BACKGROUND-002** | Module A — Template Translation | Durable run/locale orchestration using existing Batch runtime, no Meta creation | DATABASE-001; `SHARED-003`. |
-| **BACKGROUND-003** | Module B — Meta Template Management | Template-create, reconciliation, webhook-status consumer and drift in one module; never ingress verification | DATABASE-001; `SHARED-003`; Messaging event ingress integrated before end-to-end activation. |
-| **BACKGROUND-004** | Module C — Recovery Offer Resolution | Read-only NONE/FIXED/AI policy strategies, one verified decision or no offer; no template work | Existing recovery policy/catalogue contracts; add a Commerce-owned prerequisite only if read-only offer evaluation is insufficient. |
-| **BACKGROUND-005** | Module E — Conversation Wrapper Rendering | Published wrapper lookup, read-only checkout context, exact-once composition | DATABASE-001; `SHARED-003`. |
+| **BACKGROUND-001** | Module D — Recovery Template Preparation | Local template selection, six-purpose slot, language fallback and frozen Meta parameter binding; no call-site edits or sending | DATABASE-001; the compiled-payload/parameter contract stored under DB001 (Admin-owned authoring). |
+| **BACKGROUND-002** | Module A — Template Translation | Durable **keyed-segment** translation in `TranslationItem.translatedAst` using existing Batch runtime; no AST reconstruction or Meta creation | DATABASE-001. |
+| **BACKGROUND-003** | Module B — Meta Template Management | Submit **Admin-prepared** Meta components unchanged; consume BullMQ status events, reconcile provider/drift; never ingress verification | DATABASE-001; no new Shared package; Messaging event ingress integrated before end-to-end activation. |
+| **BACKGROUND-004** | Module C — Recovery Offer Resolution | Read-only NONE/FIXED/AI policy strategies, one verified decision or no offer; no template work | No ARCH-047 DB prerequisite; existing recovery policy/catalogue contracts. Escalate any Commerce/API read capability gap. |
+| **BACKGROUND-005** | Module E — Conversation Wrapper Rendering | Prepared wrapper lookup, read-only checkout context, exactly-once response composition | DATABASE-001. |
 | **BACKGROUND-006** | Automated Recovery Integration | Thin initial/sequence-two call-site wiring to BG004 and BG001; common final-fence adapter | BACKGROUND-001; BACKGROUND-004. |
 | **BACKGROUND-007** | Merchant Post-Window Integration | Thin human follow-up template branch using shared preparer and common admission adapter | BACKGROUND-001; BACKGROUND-004; BACKGROUND-006 for common adapter. |
 | **BACKGROUND-008** | AI Conversation Integration | Thin AI response → wrapper → full-message moderation/admission adapter | BACKGROUND-005; existing AI conversation execution. |
@@ -201,10 +209,6 @@ flowchart LR
   DB --> B2[BG002 Translation]
   DB --> B3[BG003 Meta Management]
   DB --> B5[BG005 Wrapper Rendering]
-  S[Shared AST + events + wrapper publication] --> B1
-  S --> B2
-  S --> B3
-  S --> B5
   B4[BG004 Offer Resolution] --> B6[BG006 Automated Integration]
   B1 --> B6
   B1 --> B7[BG007 Post-window Integration]
@@ -224,15 +228,16 @@ The graph expresses necessary interfaces, not serial deployment of unrelated mod
 
 ## Open Questions / Gates Before Implementation Handoff
 
-1. **Contracts first:** materialise and accept/publish the relevant Shared contracts before consumer implementation that needs them. Validate that `translation-batch-runtime` supplies usable generic hooks before introducing any new Batch infrastructure.
+1. **Prepared data contract first:** confirm Admin will write versioned keyed `sourceSnapshot` and read `TranslationItem.translatedAst`, compile immutable Meta components/bindings, and persist a prepared wrapper projection. Check that `translation-batch-runtime` exposes reusable Batch hooks; do not require a new Shared AST publication gate.
 2. **Offer evaluation:** verify fixed multi-offer and WooCommerce/Shopify AI candidate eligibility is backed by read-only provider evidence; if not, return the gap to the architect for an owning Commerce/API task rather than fabricating eligibility in Background.
 3. **Checkout association:** confirm the existing AI/human conversation path has a reliable tenant-scoped checkout context. If not, define the minimal separate owning task. BG005 must not silently broaden conversation schema.
 4. **Provider webhooks:** ensure the relevant Meta app/WABA template-status notifications reach authenticated Messaging ingress; add a narrowly scoped Gateway task only if actual routing/configuration is deficient.
-5. **Document frontier:** supersede legacy ADMIN-001/002 task metadata and revise the obsolete SYSTEM-TEST-001 separately. Keep all `docs/decisions/**/_index.md` unchanged until the user declares this architecture session complete.
+5. **Document frontier:** ADMIN-001/002 are superseded and ADMIN-003–008 now have portable definitions. Re-scope obsolete SYSTEM-TEST-001 separately. Keep all `docs/decisions/**/_index.md` unchanged until the user declares this architecture session complete.
 
 ## Change History
 
 - 2026-10-23 — Initial shop-scoped Admin Meta import/assignment design (now superseded).
 - 2026-10-24 — User decisions: Moda Admin-only authoring, immutable new-version templates, English-first 20-language translation, Meta approval then explicit publication, six recovery purposes, checkout-related AI/human wrappers and strictly read-only CommerceAgent.
 - 2026-10-24 — Consolidated DATABASE-001 11-table Attempt 7 schema considered the database contract; business lifecycle enforcement remains in services.
-- 2026-10-24 — **Module-first Background plan adopted**: five feature modules and four thin call-site integrations, reusing Shared AST, provider Batch runtime and existing outbound admission. BG001 is narrowed; BG002–BG009 remain unmaterialised proposals.
+- 2026-10-24 — **Module-first Background plan adopted**: five feature modules and four thin integrations; Admin owns AST parsing, compilation and keyed translation preparation, Background consumes prepared data using existing Batch and outbound admission; BG002–BG009 portable task definitions prepared, not materialised.
+- 2026-10-24 — **Admin module-first task definitions created**: six independent, DATABASE-001-only-dependent tasks; ADMIN-001/002 superseded, with no Admin AST/Meta compiler work delegated to Shared or Background.
