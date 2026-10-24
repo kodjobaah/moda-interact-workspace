@@ -34,11 +34,11 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Lifecycle:** portable canonical task definition, **defined but not materialised**. The source ZIP permits design/review, not a claim of access to the developer's actual worktrees, Git remotes or integrated API branches. `ready` reflects the three complete prerequisite task states in the 2026-10-24 11:46 workspace snapshot; re-gate with the launcher before implementation. API-006 is a separate previously drafted but absent/unmaterialised handoff in this snapshot; do not require it to exist to start API-007.
+**Lifecycle:** the canonical task is materialised on parent `task/ARCH-046-API-007`, with developer execution claimed for Attempt 1 at `2026-10-24T12:41:51Z`. API implementation commit `220fa2b` was pushed to `origin/task/ARCH-046-API-007` in `moda-interact-api`. This handoff prepares the evidence while preserving `status: in_progress`: `/moda_developer_update ARCH-046-API-007` owns reconciliation/self-review and may transition it to `review` only after a passing review. `completion_mode: developer` remains in force, and an explicit developer completion decision is still required. The launcher preparation packet and start-of-attempt synchronization/submodule evidence were not supplied in the terminal log and require verification during review.
 
 ### Developer Takeover
 
-The developer explicitly invoked `/moda_developer_create ARCH-046-API-007` for this ready agent-owned task. Execution and completion authority are transferred to the developer; logical ownership remains `assigned_agent: moda_api`, and the task scope, dependencies, acceptance criteria and validation requirements are unchanged. The task remains `ready` at Attempt 0 until canonical launcher preparation verifies prerequisites and durably claims Attempt 1.
+The developer explicitly invoked `/moda_developer_create ARCH-046-API-007` for this ready agent-owned task. Execution and completion authority are transferred to the developer; logical ownership remains `assigned_agent: moda_api`, and the task scope, dependencies, acceptance criteria and validation requirements are unchanged. The launcher claimed Attempt 1, as reflected in the pre-review task metadata. The developer has supplied implementation and validation evidence for review; final completion is not implied.
 
 ## Objective
 
@@ -48,28 +48,28 @@ Make `POST /v1/woocommerce/whatsapp-consent` a minimal authenticated consent/evi
 
 Completed `ARCH-046-API-001` implements `woo.whatsapp-consent.v1` and is **not** reopened. In the uploaded `moda-interact-api` snapshot (`moda-interact-workspace-api(20261024-104830).zip`), `src/woocommerce/consent/contract.ts` parses an 11-field `checkoutAction` containing Classic/Blocks mode, nonce/session assertions, checkbox state, field identifier and a second phone. The API cannot independently verify those WordPress facts: the authenticated Woo server must do so. `service.ts` repeats phone canonicalisation against the second phone, performs a billing entitlement query for each nonduplicate GRANT, and issues separate transaction-time Shop and WooCommerceInstallation `FOR SHARE` reads. Those are candidates for simplification.
 
-The real durability/correctness contract is a tenant-authenticated event, an immutable evidence fact and an ordered atomic update of the existing `CustomerPhone`. The PHP producer is outside this API task; **do not break its currently deployed/pending v1 requests**. `ARCH-046-API-006` (shopper proof-backed status read) must wait for this write-contract correction to avoid overlapping changes.
+The real durability/correctness contract is a tenant-authenticated event, an immutable evidence fact and an ordered atomic update of the existing `CustomerPhone`. **Pre-production breaking change approved 2026-10-24:** there are no existing Moda customers; the API may remove v1 parsing without a dual-version migration. The Woo publisher is outside this task and must adopt v2 before integrated checkout consent is deployed. `ARCH-046-API-006` (shopper proof-backed status read) must wait for this write-contract correction to avoid overlapping changes.
 
 ## Scope
 
-- In `moda-interact-api` only, introduce the version discriminator `woo.whatsapp-consent.v2` **on the existing authenticated POST route**. Keep v1 request and response parsing supported during the transition; route both versions to one internally normalised consent-write service, without duplicating database mutation logic.
+- In `moda-interact-api` only, make `woo.whatsapp-consent.v2` the **sole accepted transport** on the existing authenticated POST route. Remove the legacy v1 parser/types/examples and its WordPress attestation fields. Do not add dual-version routing or transitional adapters.
 - Parse only the v2 wire fields specified below. Woo server verifies the active checkout/nonce/session, deliberate grant/withdrawal, canonical billing phone and consent wording **before** authenticating and POSTing to Moda. The hosted API checks payload size/shape and canonical recipient, but does not try to reconstruct WordPress UI semantics.
 - Keep merchant/shop identity from the already-authenticated Woo installation; never accept `shopId`, `customerId`, installation status, nonce-verified booleans, `merchantSiteUrl` or another recipient from v2 body. Derive the fixed purpose `WHATSAPP_CHECKOUT_RECOVERY` from the endpoint.
-- Remove `requireRecoveryFeature` and its subscription/plan/feature query from the consent write **for both v1 and v2**. Woo decides if the opt-in UI can be offered; the Background recovery-admission/final-send paths remain the authoritative feature/entitlement/consent/STOP gates. An authenticated valid GRANT may be stored even if recovery is currently disabled, but cannot create a recovery or cause a message.
+- Remove `requireRecoveryFeature` and its subscription/plan/feature query from the v2-only consent write. Woo decides if the opt-in UI can be offered; the Background recovery-admission/final-send paths remain the authoritative feature/entitlement/consent/STOP gates. An authenticated valid GRANT may be stored even if recovery is currently disabled, but cannot create a recovery or cause a message.
 - Combine the in-transaction Shop and WooCommerceInstallation authenticity/active-state checks into **one indexed SQL JOIN/read with appropriate row locking**, preserving the credential-version/status/revocation/tenant checks across rotation and revocation races. Keep initial request authentication; the recheck is intentionally not eliminated.
 - Retain one short, synchronous PostgreSQL transaction for unique event deduplication, one unambiguous shop/active-phone lookup or creation, current consent revision/decision sequencing, current phone update, and one immutable `commerce.WhatsAppConsentEvidence` insertion. Do not add Redis, BullMQ, external I/O, LLM, Meta, billing or recovery work in this route.
 - Update the existing API-owned docs, OpenAPI example/fixtures and focused unit/PostgreSQL tests. Record observed query count and latency/transaction timing before and after, without asserting an invented capacity benchmark.
 
 ## Out of Scope
 
-- No WooCommerce PHP/JS producer edits, WordPress checkout UI or Classic/Blocks capture changes. An independently owned Woo producer adoption task is required before v1 can be retired; API-007 must not mark that migration complete.
+- No WooCommerce PHP/JS producer edits, WordPress checkout UI or Classic/Blocks capture changes. An independently owned Woo v2 producer task is required **before end-to-end consent can work**; the existing Woo v1 publisher is intentionally incompatible with this breaking API correction.
 - No shopper status/read implementation (`ARCH-046-API-006`), no changes to completed API-001, no new database table/migration or Shared package contract without an architect-approved gap.
 - **No redesign of decision ordering or retry time policy in this task.** In particular do not replace ordering with arrival time, drop the five-minute GRANT freshness guard, accept future-dated events, remove per-recipient/event locks or weaken ambiguous-match/source-conflict behaviour without a separately reviewed correctness design and concurrency tests.
 - No cosmetic refactor of unrelated Woo routes, billing services, feature preferences, checkout recovery orchestration, WhatsApp STOP processing, or generic infrastructure/telemetry.
 
 ## Requirements
 
-**Minimal v2 transport (exact wire contract):**
+**Exclusive v2 transport (exact wire contract):**
 
 ```json
 {
@@ -89,18 +89,18 @@ The real durability/correctness contract is a tenant-authenticated event, an imm
 - Required top-level keys are **exactly** `schemaVersion`, `eventId`, `decision`, `canonicalPhone`, `occurredAt`, `disclosure`. `decision` is `GRANT` or `REVOKE`; `disclosure` must be populated for GRANT and `null` for REVOKE. Preserve the existing size/identifier/locale/version/text/timestamp bounds, strict JSON decoding and no-store responses. `canonicalPhone` remains **digits-only E.164**, matching the existing persisted `CustomerPhone.whatsappCanonicalPhone`; validate/canonicalise it **once** with the published Shared identity utility (using `+` + digits as its input if needed). Do not accept a second `serverObservedPhone` or `verifiedCountryCode` in v2.
 - v2 has **no** `purpose`, `checkoutAction`, `checkoutKey`, `checkoutMode`, `source`, `fieldId`, `selection`, `userInitiated`, `nonceVerified`, `sessionVerified`, `merchantSiteUrl`, `shopId` or `customerId`. Woo is solely responsible for establishing an explicit server-observed customer action and attaching the exact displayed text. The authenticated installation establishes shop/merchant attribution; API does not search disclosure prose for the merchant name or URL.
 - The API must **still** enforce authenticated active Woo installation/shop tenancy, a bounded well-formed canonical phone, a deliberate *decision as asserted by the authenticated Woo server*, stable event identity, disclosure evidence for GRANT, and durable per-phone ordering. These are inexpensive and/or correctness-critical; removing fake attestations is not permission to trust anonymous browser input.
-- Preserve `woo.whatsapp-consent.v1` behaviour during rollout, **except for the explicitly approved removal of its grant-time feature-eligibility query**; keep prior v1 digest/idempotency semantics for in-flight retry. Do not transform a persisted v1 retry into a different v2 payload using the same `eventId`. New v2 events must use distinct stable event IDs; same `(shopId,eventId)` with differing content or schema remains a replay conflict.
+- **Breaking rollout:** reject v1 requests as invalid (`400`); v2 is the only accepted transport. No production in-flight v1 retries or existing user consent evidence require compatibility. Same `(shopId,eventId)` with differing v2 content remains a replay conflict; a repeat of the same v2 event returns its original result.
 - Continue to reject older decisions, concurrent stale grants, ambiguous active phone matches and conflicting evidence; duplicate identical `(shopId,eventId)` must return its original acknowledged revision/sequence even after a later REVOKE or feature disable. Preserve independent `whatsappNoContact`/`CUSTOMER_STOP` fields and all STOP non-override guarantees. Failure must not partially update CustomerPhone or evidence.
-- Keep the existing provider-observed timestamp/monotonic revision rules, **including v1/v2 grant freshness and future-date rejection**, unless a later architecture task explicitly replaces them with a robust multi-tab/multi-device ordering protocol. The API may report a clock-skew limitation in the Completion Report but cannot silently trade withdrawal safety for permissiveness.
+- Keep the existing provider-observed timestamp/monotonic revision rules, **including v2 grant freshness and future-date rejection**, unless a later architecture task explicitly replaces them with a robust multi-tab/multi-device ordering protocol. The API may report a clock-skew limitation in the Completion Report but cannot silently trade withdrawal safety for permissiveness.
 - Preserve the existing explicit route errors (unauthorized, invalid input, conflict, unavailable) and safe structured logging; never log raw phone, event ID, disclosure text, credentials or sensitive payloads. A consent ACK is issued **only after commit**, and an outage cannot turn an unacknowledged consent into permission.
 
 ## Work Items
 
-- [ ] Map current v1 request → internal decision and add v2 parse → **same** decision; keep the existing authenticated route and type-safe response contract.
-- [ ] Move WordPress-only attestation interpretation out of the v2 contract; derive shop and purpose in the API. Validate one canonical recipient and exact disclosure evidence; preserve strict body-size/header protections.
-- [ ] Remove consent-write feature-eligibility query for v1/v2, without modifying Background feature/STOP admission and send checks or granting recovery work.
-- [ ] Consolidate in-transaction installation/shop recheck to one equivalent locking JOIN query; do not remove initial installation authentication, event/phone serialisation or durable transaction.
-- [ ] Update API OpenAPI/docs/fixtures and add unit/PostgreSQL regression tests for the contract, auth, tenancy, duplicate retry, races and no new side effects.
+- [x] Remove v1 parsing/types and accept only the six-field v2 request on the existing authenticated route; preserve the typed acknowledgement.
+- [x] Move WordPress-only attestation interpretation out of the v2 contract; derive shop and purpose in the API. Validate one canonical recipient and exact disclosure evidence; preserve strict body-size/header protections.
+- [x] Remove consent-write feature-eligibility query for v2, without modifying Background feature/STOP admission and send checks or granting recovery work.
+- [x] Consolidate in-transaction installation/shop recheck to one equivalent locking JOIN query; do not remove initial installation authentication, event/phone serialisation or durable transaction.
+- [x] Update API OpenAPI/docs/fixtures and add unit/PostgreSQL regression tests for the contract, auth, tenancy, duplicate retry, races and no new side effects.
 - [ ] Record baseline/new SQL operation counts (fresh GRANT, existing GRANT, REVOKE, duplicate retry), transaction duration and failure outcomes in the Completion Report, using the disposable PostgreSQL harness. Keep metrics cardinality low and do not add duplicate framework HTTP telemetry.
 
 ## Interfaces / Contracts
@@ -109,7 +109,7 @@ The real durability/correctness contract is a tenant-authenticated event, an imm
 - `woo.whatsapp-consent.v2` fields and semantics are specified under Requirements above; `REVOKE` uses the same envelope with `decision: "REVOKE"` and `disclosure: null`. `eventId` must be stable for retry; `occurredAt` is the verified server-observed Woo decision time and retains existing safe ordering guards. Merchant ID and fixed purpose are server-derived.
 - Result shape remains `{schemaVersion, status: "recorded" | "duplicate", decision, consentRevision, decisionSequence}`; the schema version equals the **accepted request version**. Preserve BIGINTs as decimal strings. Do not return full phone, PII, evidence details or secret material.
 - Database writes continue to use `commerce.Customer`/`CustomerPhone` and immutable `commerce.WhatsAppConsentEvidence` under the published schema from `ARCH-045-DATABASE-002`; runtime phone validation uses published `@modainteract/moda-interact-shared/identity`. Other services read current CustomerPhone state, not this HTTP event.
-- Producer compatibility: API must accept both v1 and v2 during migration. A future Woo-owned adoption task, after API-007 acceptance, switches the publisher and its golden request fixtures; a separate architect decision is required to remove v1 support.
+- Producer compatibility: no v1 compatibility required in this pre-production rollout. The separately owned Woo task must switch its publisher and golden fixtures to v2 before end-to-end tests. Do not claim producer integration as part of API-007.
 
 ## Dependencies
 
@@ -124,21 +124,21 @@ The real durability/correctness contract is a tenant-authenticated event, an imm
 
 ## Acceptance Criteria
 
-- [ ] v2 HTTP request with only the six top-level fields succeeds for valid authenticated GRANT/REVOKE; WordPress attestation fields, merchant URL and duplicate phone are not required or accepted in v2. v1 remains accepted for in-flight producer compatibility.
-- [ ] Initial installation authentication and **one** equivalent transaction-time shop/installation locking query both enforce tenant, active status, installed credential version and revocation, including in-flight rotate/revoke races.
-- [ ] No `Subscription`, `BillingPlan`, `BillingPlanFeature`, `Feature` or `ShopFeaturePreference` query executes on consent write for either version; feature-disabled consent evidence is passive, with no recovery/send/billing side effects.
-- [ ] Same event replay is idempotent with identical prior ACK; changed-body/same-ID, cross-shop evidence, ambiguous existing phones, conflicting sources, late GRANT, newer REVOKE and concurrent STOP cannot corrupt current permission or remove no-contact restrictions.
+- [x] The six-field v2 request succeeds for valid authenticated GRANT/REVOKE; v1 and all extra WordPress attestation, merchant URL, browser identity or duplicate phone fields are rejected.
+- [x] Initial installation authentication and **one** equivalent transaction-time shop/installation locking query both enforce tenant, active status, installed credential version and revocation, including in-flight rotate/revoke races.
+- [x] No `Subscription`, `BillingPlan`, `BillingPlanFeature`, `Feature` or `ShopFeaturePreference` query executes on the v2 consent write path; feature-disabled consent evidence is passive, with no recovery/send/billing side effects.
+- [x] Same event replay is idempotent with identical prior ACK; changed-body/same-ID, cross-shop evidence, ambiguous existing phones, conflicting sources, late GRANT, newer REVOKE and concurrent STOP cannot corrupt current permission or remove no-contact restrictions.
 - [ ] Consent state and **one immutable evidence row** commit together; SQL failure rolls both back. The API does no external network, queue, worker scheduling, customer outreach or billing inside the write.
-- [ ] The same status/decision/revision sequence result is returned for equivalent successful v1/v2 *new* events, and v1 old-event replay remains compatible. Unknown/malformed versions are rejected without falling back to weaker parsing.
+- [x] v2 events return typed status/decision/revision/sequence fields; identical v2 retries are idempotent. v1 and unknown/malformed schema versions are rejected without fallback.
 - [ ] Evidence from a fresh v2 GRANT remains queryable by the later proof-backed API-006 reader via the existing `(shopId,eventId,canonicalPhone,customerPhoneId,phoneConsentRevision)` keys; no status-read identity shortcut is introduced.
 - [ ] Focused test suite and disposable PostgreSQL races pass; query counts/transaction timings are reported as **measured**, with no unverified performance claim or new `_index.md` changes.
 
 ## Validation
 
-- [ ] `npm run test:arch046-woo-consent:unit` (v1 regression, v2 parse/route; extend existing suite).
-- [ ] `npm run test:arch046-woo-consent:postgres` (disposable PostgreSQL; extend tests for revoke/GRANT races, idempotency, feature-disabled grant, STOP and auth credential rotation).
-- [ ] `npm run typecheck` and `npm run lint` (declared scripts in inspected API package) plus applicable existing OpenAPI fixture validation.
-- [ ] `git diff --check` and source diff review for no incidental schema, Woo, Background, Shopify or `_index.md` edits.
+- [x] `npm run test:arch046-woo-consent:unit` (v2 parse/route, explicit v1 rejection, security regression).
+- [x] `npm run test:arch046-woo-consent:postgres` (disposable PostgreSQL; extend tests for revoke/GRANT races, idempotency, feature-disabled grant, STOP and auth credential rotation).
+- [x] `npm run typecheck` and `npm run lint` (declared scripts in inspected API package) plus applicable existing OpenAPI fixture validation.
+- [x] `git diff --check` and source diff review for no incidental schema, Woo, Background, Shopify or `_index.md` edits.
 
 ## Stop Condition
 
@@ -146,9 +146,9 @@ After Work Items, Acceptance Criteria and required Validation are complete, reco
 
 ## Implementation Notes
 
-**Files to inspect/change, if appropriate:** `src/woocommerce/consent/contract.ts`, `request.ts`, `routes.ts`, `service.ts`, authenticated installation helper under `src/auth/woo-installation/`, `docs/arch046-woo-consent-http.md`, `docs/openapi/arch046-woo-consent-v1.yaml` (extend/version; do not break v1), `tests/unit/woocommerce/consent/*.test.ts`, `tests/integration/woocommerce/consent/*.postgres.test.ts`, `tests/contracts/woocommerce/consent/*.json`, and the existing consent PostgreSQL runner. Update composer route registration only if existing v2 dispatch cannot reuse it. Actual file names/scripts must be rechecked against the prepared implementation branch before edit.
+**Files to inspect/change, if appropriate:** `src/woocommerce/consent/contract.ts`, `request.ts`, `routes.ts`, `service.ts`, authenticated installation helper under `src/auth/woo-installation/`, `docs/arch046-woo-consent-http.md`, `docs/openapi/arch046-woo-consent-v2.yaml` (replace legacy v1 spec), `tests/unit/woocommerce/consent/*.test.ts`, `tests/integration/woocommerce/consent/*.postgres.test.ts`, `tests/contracts/woocommerce/consent/*.json`, and the existing consent PostgreSQL runner. Update composer route registration only if existing v2 dispatch cannot reuse it. Actual file names/scripts must be rechecked against the prepared implementation branch before edit.
 
-**Suggested design:** parse a versioned transport envelope into a common server-side value, then run the single current consent transaction; do not fork v1/v2 database workflows. The existing v1 event digest may depend on JSON serialisation: preserve its exact replay behaviour, including structural keys and fields. A JOIN can replace separate locked Shop and installation reads, but row-lock equivalence (including credential-revocation race) is mandatory. Do **not** remove both advisory locks merely because a unique evidence index exists: reason about first-insert concurrent event/phone behaviour before proposing such a separate optimisation.
+**Suggested design:** parse only v2 into one server-side consent event, then run the existing single consent transaction; avoid dual-version code. There are no production v1 evidence digests to preserve. A JOIN can replace separate locked Shop and installation reads, but row-lock equivalence (including credential-revocation race) is mandatory. Do **not** remove both advisory locks merely because a unique evidence index exists: reason about first-insert concurrent event/phone behaviour before proposing such a separate optimisation.
 
 **Performance boundary:** removing a few constant-time TypeScript checks will not meaningfully improve capacity; avoid extra PostgreSQL round trips, contention and repeated synchronous billing joins. Measure SQL operations and lock waiting in the consent workload. Do not invent a target throughput or claim low p95 from unit tests; if a reliable before/after load test is unavailable, report that limitation clearly.
 
@@ -158,35 +158,87 @@ After Work Items, Acceptance Criteria and required Validation are complete, reco
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-24T12:41:51Z. Attempt 0 review history is preserved below.
+**Ready for Review — developer execution, Attempt 1.** The API code was committed/pushed as `220fa2b` on `moda-interact-api:task/ARCH-046-API-007`. This task handoff documents evidence for `/moda_developer_update ARCH-046-API-007`; it is not a completed self-review, architect acceptance or developer completion decision.
 
 ### Files Changed
 
-None.
+Implementation repository (`220fa2b`, 17 files; 500 insertions, 491 deletions, as reported by Git):
+
+- `src/woocommerce/consent/contract.ts`
+- `src/woocommerce/consent/service.ts`
+- `docs/arch046-woo-consent-http.md`
+- `docs/openapi/arch046-woo-consent-v1.yaml` (deleted)
+- `docs/openapi/arch046-woo-consent-v2.yaml` (created)
+- `scripts/test-arch046-woo-consent-postgres.mjs`
+- `tests/contracts/woocommerce/consent-grant.v1.json` (deleted)
+- `tests/contracts/woocommerce/consent-grant.v2.json` (created)
+- `tests/contracts/woocommerce/consent-revoke.v1.json` (deleted)
+- `tests/contracts/woocommerce/consent-revoke.v2.json` (created)
+- `tests/fixtures/woocommerce/consent/event.ts`
+- `tests/integration/woocommerce/consent/races.postgres.test.ts`
+- `tests/integration/woocommerce/consent/service.postgres.test.ts`
+- `tests/integration/woocommerce/consent/v2.postgres.test.ts` (created)
+- `tests/integration/woocommerce/recovery-selection/service.postgres.test.ts`
+- `tests/unit/woocommerce/consent/contract.test.ts`
+- `tests/unit/woocommerce/consent/routes.test.ts`
+
+The review-handoff patch changes only this task file and its parent ARCH-046 architecture document. No schema migration, WooCommerce source, Background source or domain `_index.md` modification is included.
 
 ### Work Completed
 
-None.
+- Removed the legacy v1 consent transport, fixtures and OpenAPI specification. The authenticated POST route now accepts the exact six-field `woo.whatsapp-consent.v2` request; v1 is intentionally rejected under the developer-approved pre-production breaking rollout.
+- Removed API interpretation of WooCommerce-specific checkbox/session/nonce attestations; the plugin retains responsibility for verifying the deliberate customer action. Merchant identity/purpose remain installation/endpoint-derived.
+- Removed the subscription/feature-eligibility read from consent recording, leaving Background responsible for eligibility to create recoveries or send messages.
+- Consolidated the in-transaction Shop/installation recheck using a locked join while retaining initial installation authentication, duplicate-event and per-recipient serialization, chronological ordering, immutable evidence and STOP non-override behavior.
+- Updated API documentation and fixtures, added the v2 PostgreSQL scenario and adjusted existing contract, route, concurrency and merchant-suppression tests. Applied the later one-line Attempt 3 lint correction to an unused test-helper parameter before final validation. These patch labels are source correction rounds within **one task execution Attempt 1**, not additional task claims.
+- Source commit/push evidenced by the terminal log: `220fa2b` / `feat(arch-046-api-007)`; pushed to `origin/task/ARCH-046-API-007` in the API repository. The untracked terminal recording named `typescript` was not staged.
 
 ### Validation Results
 
-Not run; implementation not started.
+| Check | Evidence and result |
+|---|---|
+| Focused API unit/route tests | **6/6 passed** in the earlier supplied Attempt 2 validation recording; not rerun in the latest lint-correction recording. |
+| `npm run lint` | Passed in terminal recording `typescript(20261024-131155)` after the correction; ESLint `--max-warnings=0` returned to the shell without an error. |
+| `npm run typecheck` | Passed in the same recording, including Prisma Client v6.19.3 generation and `tsc --noEmit`. |
+| `npm run test:arch046-woo-consent:postgres` | **10/10 passed, 0 failed** in a disposable PostgreSQL database after 59 migrations applied successfully; covers concurrent GRANT/REVOKE, CUSTOMER_STOP, changed phone, credential revocation/rotation, merchant suppression and tenant isolation. |
+| OpenAPI YAML | Previously checked by isolated tooling during patch preparation; a separate post-commit OpenAPI verification command is not evidenced in the latest terminal recording. |
+| `git apply --check --whitespace=error-all` / `git diff --check` | No errors shown for the one-line correction in the latest recording; source patch strict-application checks were also reported during preparation. |
+| Publish implementation branch | `git push` succeeded for commit `220fa2b`; remote branch `task/ARCH-046-API-007` created. |
+
+**Observed v2 consent SQL workload** (individual local test measurements; SQL statement counts and overall scenario wall time, **not** PostgreSQL transaction-only duration or p95 throughput):
+
+| Scenario | SQL statements | Scenario wall time |
+|---|---:|---:|
+| Fresh v2 grant | 14 | 76.37 ms |
+| Identical v2 duplicate retry | 9 | 23.06 ms |
+| Existing v2 revoke | 12 | 27.39 ms |
+| Existing v2 re-grant | 12 | 30.36 ms |
+
+**Measurement gap:** No comparable measured pre-change v1 baseline or separately instrumented transaction-only duration is present in the supplied logs. Do not interpret removed SQL branches as a measured throughput improvement. The final Work Item and performance Acceptance Criterion remain unchecked pending architect/developer disposition or additional evidence.
 
 ### Deviations
 
-None.
+- Developer explicitly authorised breaking API changes because the application has no existing production users. The approved v2-only contract supersedes the original task's transitional v1 compatibility language; this handoff reconciles the task and parent architecture.
+- Implementation was delivered through a standalone Attempt 2 source patch and an incremental Attempt 3 test-helper correction rather than a single agent-generated commit. Both were included in the developer's single implementation commit `220fa2b`.
+- The provided recording demonstrates a dedicated API task worktree and a developer claim but does **not** contain the launcher's complete preparation packet, parent-worktree isolation check, start-of-attempt synchronization or recursive database submodule materialisation evidence. The reviewer should request/verify those artefacts before acceptance.
 
 ### Assumptions
 
-Uploaded API snapshot is representative of the implementation branch; live branch integration and the completed prerequisite versions must be reverified at launch.
+- The source commit `220fa2b` is the actual implementation to review, as confirmed by the supplied terminal recording and matching remote task branch.
+- The reported 10 PostgreSQL integration checks validate the isolated API behaviour, **not** WooCommerce-to-API interoperability or live recovery sending.
+- Preserving existing STOP/order/idempotency controls is mandatory even in a pre-production breaking rollout.
 
 ### Unresolved Issues
 
-WooCommerce v2 producer adoption remains a **separate, as-yet-undefined task**. API-007 must retain v1 acceptance until that transition is agreed and validated.
+- WooCommerce currently publishes the v1 format. A separate WooCommerce-owned v2 producer task must be implemented before checkout consent will work end to end.
+- The proof-backed returning-customer status reader `ARCH-046-API-006` remains a separate, unmaterialised task in the supplied architecture view and must wait for API-007 to become **complete**, not merely `review`.
+- Measured pre-change SQL counts, transaction-only timing, specific rollback/read-key assertions and complete launcher preparation evidence have not been supplied for this review handoff. The architect/developer reviewer should either obtain the evidence or explicitly record a warranted scope/validation decision. Do not claim those criteria passed without evidence.
 
 ### Architectural Concerns
 
-Moving feature eligibility out of the consent write explicitly changes the current API-001 policy: an authenticated GRANT may be recorded while a feature is disabled. No recovery or send is permitted without the independent Background gates. Any proposal to relax chronological guards or durable locking must return to the architect for its own ordering design.
+- An authenticated opt-in now stores passive consent evidence even if Checkout Recovery is disabled. Background must still enforce recovery feature eligibility, current consent and authoritative WhatsApp STOP before creating work or sending messages.
+- The API still performs 14 counted SQL statements for a fresh grant in the local test scenario. This is a measured scenario count, not a capacity limit; any further SQL optimisation must retain tenant isolation, transactional idempotency and consent ordering.
+- Review the production rollout together with the Woo v2 producer change, since v1 is intentionally rejected immediately by this API branch. Do not claim integrated functionality or change any `_index.md` before session close.
 
 ## Architect Review
 
@@ -212,4 +264,4 @@ Not assessed.
 
 ### Follow-up
 
-Define the repository-owned WooCommerce v2 producer adoption task before removing v1 or claiming end-to-end v2 coverage.
+Define and complete the repository-owned WooCommerce v2 producer adoption task before claiming end-to-end v2 coverage. v1 is removed from the API as an explicit pre-production breaking decision.
