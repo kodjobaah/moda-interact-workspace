@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -39,7 +39,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Original portable architect definition prepared from the 23 October 2026 snapshot (proposal iteration 5). The developer claimed **Attempt 1** on 24 October 2026; after two Changes Requested review cycles, the canonical launcher claimed **Attempt 2** at `2026-10-24T02:18:44Z`. The original Background implementation is published at `95c108e`; the test-only integration correction is published at `cab3f9c`, and launcher synchronization merge `21f73ea` is now published to `origin/task/ARCH-048-BACKGROUND-003`. This report records the passing developer self-review for Attempt 2; because `completion_mode: developer`, explicit developer completion remains pending. The developer reports `ARCH-046-BACKGROUND-004` complete after the original snapshot; do not reopen it.
+Original portable architect definition prepared from the 23 October 2026 snapshot (proposal iteration 5). The developer claimed **Attempt 1** on 24 October 2026; after two Changes Requested review cycles, the canonical launcher claimed **Attempt 2** at `2026-10-24T02:18:44Z`. The original Background implementation is published at `95c108e`; the test-only integration correction is published at `cab3f9c`, and launcher synchronization merge `21f73ea` is published to `origin/task/ARCH-048-BACKGROUND-003`. The passing Attempt 2 developer self-review and explicit developer completion are recorded below. The developer reports `ARCH-046-BACKGROUND-004` complete after the original snapshot; do not reopen it.
 
 ## Objective
 
@@ -153,7 +153,7 @@ ARCH-046-BACKGROUND-002 may integrate its notice/consent decision implementation
 
 ### Status
 
-Developer Self-Review Passed — Attempt 2 claimed at `2026-10-24T02:18:44Z`; required correction coverage and focused validations pass. The task is submitted as `review`; explicit developer completion remains pending. Attempt 1 and both Changes Requested records are preserved below.
+Complete — developer explicit completion recorded for passing Attempt 2. Attempt 1 and both Changes Requested records are preserved below; the passing Attempt 2 self-review remains the basis for completion.
 
 ### Files Changed
 
@@ -317,4 +317,15 @@ Attempt 2 passes developer self-review. The previously requested PostgreSQL/Redi
 
 ### Completion Authority
 
-This is a passing developer self-review only. The developer must invoke `/moda_developer_update ARCH-048-BACKGROUND-003 complete` to record explicit completion. Do not merge either task branch into `main` as part of this review.
+The passing self-review is followed by the explicit developer completion decision below. Neither task branch is merged to `main` as part of review or completion.
+
+## Developer Completion Decision
+
+On 2026-10-24, the developer explicitly accepted the passing Attempt 2 self-review and completed this task. The task remains at `attempt: 2`; `status` is `complete`, and `executor`/`claimed_at` are null. `execution_mode: developer` and `completion_mode: developer` are preserved. Both implementation and parent task histories remain on their published task branches; neither branch is merged to `main` by this decision.
+
+### Dependency Frontier Reconciliation
+
+- `ARCH-046-BACKGROUND-002` remains `blocked`. Its task definition requires explicit architect unblocking after this accepted completion; developer completion does not waive that gate.
+- `ARCH-048-BACKGROUND-005` remains `pending`: its other required dependency `ARCH-048-BACKGROUND-004` is `ready`, and the explicitly gated `ARCH-046-BACKGROUND-002` remains blocked. No promotion is eligible.
+- `ARCH-048-SYSTEM-TEST-001` remains `pending` and manual-gated; its dependencies are not all complete and developer completion does not authorize a system-test claim.
+- No downstream task status was changed. The declared frontier was recalculated from the dependent task definitions and current resolver states.
