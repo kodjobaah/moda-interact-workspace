@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-24T14:54:35Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-046-API-001
@@ -34,7 +34,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Lifecycle:** developer execution was claimed for Attempt 1 at `2026-10-24T12:41:51Z`. The canonical launcher preparation packet was verified during reconciliation: the parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-API-007`; the isolated API implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-API-007`; both task branches were synchronized with their remotes; and recursive database submodule `508a89463ccb24dcc31e5f38e04be8cfd10ad690` is initialized. API implementation commit `220fa2b8fe0bc6e74dd88891083fd30572b8cfa7` is published. Developer self-review found required rollback, API-006 evidence-key, and before/after transaction measurement evidence incomplete; task is therefore returned to `ready` at Attempt 1 for corrections. `completion_mode: developer` remains in force; completion is not implied.
+**Lifecycle:** Attempt 1 was returned to `ready` after self-review identified missing rollback, API-006 proof-key, and comparative timing evidence. Attempt 2 was claimed by the canonical launcher at `2026-10-24T14:54:35Z` and passed developer self-review. The parent claim commit `de0542ed41ccbedad1c9189b712011cea902792a` is published. The launcher preparation packet records the canonical parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-API-007` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-API-007`; both were reused, already current with their task remotes and `origin/main`. Recursive database submodule sync/init passed at `508a89463ccb24dcc31e5f38e04be8cfd10ad690`. Implementation commit `b1ccf7842d1a6d732d900676d6e8c4250977b707` is published. Task is now `review`, Attempt 2, with cleared claim fields. `completion_mode: developer` remains in force; explicit developer completion is pending.
 
 ### Developer Takeover
 
@@ -158,7 +158,7 @@ After Work Items, Acceptance Criteria and required Validation are complete, reco
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-24T14:54:35Z. Attempt 1 review history is preserved below.
+Attempt 2 passed developer self-review on 2026-10-24. Task state is `review`, with cleared executor/claim fields and Attempt 2 retained. Attempt 1 Changes Requested history is preserved below. Because `completion_mode: developer`, explicit developer completion remains pending.
 
 ### Files Changed
 
@@ -203,7 +203,7 @@ No production consent service, database schema/migration, WooCommerce plugin, Ba
 
 ### Validation Results
 
-**Latest supplied terminal run (24 October 2026):**
+**Attempt 2 reconciliation rerun (24 October 2026, implementation head `b1ccf7842d1a6d732d900676d6e8c4250977b707`):**
 
 | Check | Observed result |
 |---|---|
@@ -212,7 +212,8 @@ No production consent service, database schema/migration, WooCommerce plugin, Ba
 | Disposable PostgreSQL migrations | 59 migrations applied successfully. |
 | `npm run typecheck` | Passed; Prisma Client v6.19.3 generated and `tsc --noEmit` completed without errors. |
 | `npm run lint` | Passed (`eslint . --max-warnings=0`), no error output. |
-| `git diff --check` | No whitespace errors reported during patch application; current implementation correction was subsequently committed. No post-commit whitespace-check output is shown. |
+| `git diff --check origin/main...HEAD` | Passed against the published implementation branch. |
+| Consent OpenAPI YAML | Parsed successfully with the repository's `yaml` package; OpenAPI `3.1.0` and the expected POST path are present. No dedicated consent OpenAPI test/script is declared in `package.json`. |
 | Git commit / push | `b1ccf78` pushed, updating `task/ARCH-046-API-007` from `220fa2b` to `b1ccf78`. |
 | Live WordPress and CommerceAgent end-to-end | Not executed; separate WooCommerce v2 producer/system-test ownership. |
 
@@ -220,30 +221,30 @@ No production consent service, database schema/migration, WooCommerce plugin, Ba
 
 | Scenario | SQL v1 → v2 | Prisma transaction client ms v1 → v2 | Scenario wall ms v1 → v2 | Outcome v1 / v2 |
 |---|---:|---:|---:|---|
-| Fresh GRANT | 14 → 12 | 45.93 → 41.42 | 49.50 → 44.78 | recorded / recorded |
-| Existing GRANT | 12 → 10 | 26.57 → 18.41 | 27.21 → 19.02 | recorded / recorded |
-| REVOKE | 11 → 10 | 22.13 → 17.85 | 22.40 → 18.09 | recorded / recorded |
-| Duplicate retry | 8 → 7 | 13.35 → 10.30 | 13.55 → 10.50 | duplicate / duplicate |
-| Stale GRANT rejection | 10 → 8 | 16.47 → 12.21 | 16.70 → 12.45 | rejected / rejected |
-| Injected evidence-write failure | 12 → 10 | 39.40 → 34.46 | 39.64 → 34.69 | rejected / rejected |
+| Fresh GRANT | 14 → 12 | 60.30 → 52.04 | 63.69 → 55.49 | recorded / recorded |
+| Existing GRANT | 12 → 10 | 27.75 → 25.88 | 28.56 → 26.52 | recorded / recorded |
+| REVOKE | 11 → 10 | 24.14 → 26.92 | 24.36 → 27.13 | recorded / recorded |
+| Duplicate retry | 8 → 7 | 16.29 → 16.63 | 16.50 → 16.83 | duplicate / duplicate |
+| Stale GRANT rejection | 10 → 8 | 23.06 → 17.03 | 23.30 → 17.26 | rejected / rejected |
+| Injected evidence-write failure | 12 → 10 | 48.18 → 40.70 | 48.45 → 40.93 | rejected / rejected |
 
-The benchmark captures the *elapsed client time around* Prisma `$transaction(...)`—including transaction initiation, query round trips, locking/commit or rollback, not PostgreSQL-server-only execution. It excludes scenario setup/HTTP work; the separately logged scenario wall duration includes the surrounding service call. These are **individual local samples**, not a p95 latency, load/capacity measurement, or proof of sustained throughput. The v1 GRANT scenarios emitted a billing read; v2 emits no billing read in any recorded scenario. Failure-outcome measurements were recorded for both stale decision and deliberately injected evidence-insert failure.
+The benchmark captures the *elapsed client time around* Prisma `$transaction(...)`—including transaction initiation, query round trips, locking/commit or rollback, not PostgreSQL-server-only execution. It excludes scenario setup/HTTP work; the separately logged scenario wall duration includes the surrounding service call. These are **single local samples per scenario**, not p95 latency, load/capacity measurements, or proof of sustained throughput. The v1 GRANT and failure scenarios emitted a billing read; v2 emitted no billing read in the comparison scenarios. Failure-outcome measurements were recorded for both stale decision and deliberately injected evidence-insert failure. SQL counts were lower in every comparison; timings were lower in most, but not all scenarios, so no generalized latency-improvement claim is made.
 
 **Review requirements cross-reference:**
 
 1. **Rollback after SQL failure:** satisfied by `v2.postgres.test.ts` evidence-trigger test and passing 11/11 PostgreSQL run.
 2. **Five-field API-006 evidence retrieval:** satisfied by `v2.postgres.test.ts` exact tuple query and negative tenant/revision checks.
-3. **Comparable SQL, transaction and failure measurements:** satisfied by `performance.postgres.test.ts`, the opt-in PostgreSQL runner and measured table above, subject to the reviewer accepting Prisma transaction-client elapsed time as the required transaction-duration metric.
+ 3. **Comparable SQL, transaction and failure measurements:** satisfied by `performance.postgres.test.ts`, the opt-in PostgreSQL runner and measured table above. Prisma transaction-client elapsed time is accepted as the transaction-duration measure, with its client/round-trip/commit-or-rollback scope explicitly documented.
 
 ### Deviations
 
 - The developer explicitly authorised a pre-production **v2-only breaking change** because there are no existing users. The original transitional v1-compatibility wording was superseded; API-001 remains Complete and is not reopened.
-- Attempt 1 implementation was published as `220fa2b`; the three in-scope review corrections were delivered in a separate, API-owned test/documentation commit `b1ccf78`. No unrelated production refactor was added.
-- The canonical parent and dedicated implementation worktree paths, preparation/synchronisation and recursive database submodule evidence were verified during the previous reconciliation review. The **new Attempt 2 launcher claim is not evidenced** in the latest terminal log; its absence must not be masked by changing task status directly.
+- Attempt 1 implementation was published as `220fa2b`; the three in-scope review corrections were delivered in API-owned commit `b1ccf78`. No unrelated production refactor was added.
+- Attempt 2 launcher packet confirms the dependency gate passed for API-001, DATABASE-002 and SHARED-002. Parent and implementation worktrees were reused on `task/ARCH-046-API-007`; remote task fast-forward was `not-needed` and `origin/main` was `already-current` for both. Recursive submodule sync/init passed with database at `508a89463ccb24dcc31e5f38e04be8cfd10ad690`. Claim commit `de0542ed41ccbedad1c9189b712011cea902792a` was committed and pushed.
 
 ### Assumptions
 
-- The supplied terminal log accurately reports the 24 October 2026 run on the published API branch head `b1ccf78`, and that head corresponds to the four-file correction inspected for this handoff.
+- Reconciliation verified implementation HEAD and `origin/task/ARCH-046-API-007` both equal `b1ccf7842d1a6d732d900676d6e8c4250977b707`; the worktree is clean. PostgreSQL, comparison, typecheck, lint, diff and OpenAPI parse validations were rerun against that worktree.
 - A test-only database trigger and a pinned historical v1 benchmark are valid means of proving rollback and relative work reduction; neither is introduced into live API behaviour.
 - Background admission/send, Meta messaging, WooCommerce checkout integration and future API-006 identity validation are separate ownership boundaries and are not claimed complete by API-007 tests.
 
@@ -251,8 +252,7 @@ The benchmark captures the *elapsed client time around* Prisma `$transaction(...
 
 - A separate WooCommerce-owned task must migrate the Woo consent publisher to the v2-only request before end-to-end checkout consent is functional.
 - The proof-backed returning-checkout reader `ARCH-046-API-006` remains a separate task and must stay gated until API-007 is actually `complete`.
-- The benchmark is one local comparison per scenario; sustained load, p95 and database-server-only execution time remain unmeasured, but are not claimed as task outcomes. The reviewer should explicitly confirm whether the recorded Prisma `$transaction` client timing satisfies the requested transaction-duration evidence.
-- The developer-owned workflow must establish a canonical Attempt 2 claim and complete the authorised self-review/status transition. This document does not change task lifecycle metadata or the Architect Review section.
+- The benchmark is one local comparison per scenario; sustained load, p95 and database-server-only execution time remain unmeasured and are not claimed. Prisma `$transaction` client elapsed time is the transaction-duration proxy measured here; it includes client/round-trip/commit-or-rollback time rather than server-only execution.
 
 **The following Attempt 1 Changes Requested record is retained verbatim for audit; its three evidence gaps are addressed above, subject to authorised review.**
 
@@ -269,8 +269,18 @@ The launcher/provenance evidence gap has been resolved and is not a requested co
 ### Architectural Concerns
 
 - An authenticated opt-in now stores passive consent evidence even if Checkout Recovery is disabled. Background must still enforce recovery feature eligibility, current consent and authoritative WhatsApp STOP before creating work or sending messages.
-- The API still performs 14 counted SQL statements for a fresh grant in the local test scenario. This is a measured scenario count, not a capacity limit; any further SQL optimisation must retain tenant isolation, transactional idempotency and consent ordering.
+- The direct-service comparison measured 12 SQL statements for a fresh v2 grant versus 14 on the pinned v1 baseline; the HTTP integration scenario separately counted 14 statements including route/auth work. These are scenario counts, not capacity limits; further optimisation must retain tenant isolation, transactional idempotency and consent ordering.
 - Review the production rollout together with the Woo v2 producer change, since v1 is intentionally rejected immediately by this API branch. Do not claim integrated functionality or change any `_index.md` before session close.
+
+## Developer Self-Review Passed (Attempt 2)
+
+- Reconciled Attempt 2 against the current task definition and published implementation branch `task/ARCH-046-API-007` at `b1ccf7842d1a6d732d900676d6e8c4250977b707`; implementation HEAD matches its remote and the worktree is clean.
+- The rollback criterion is covered by a disposable PostgreSQL trigger that aborts evidence insertion after the phone mutation; assertions prove rollback for an existing recipient and newly created customer/phone rows. The API-006 proof tuple is queried directly using all five keys, with wrong-tenant and wrong-revision negative assertions.
+- The same pre-change/v2 benchmark passed for both revisions and records SQL counts, Prisma transaction-client elapsed time, scenario wall time, and commit/rejection/rollback outcomes for fresh GRANT, existing GRANT, REVOKE, duplicate retry, stale GRANT and injected evidence-write failure. Measurements and limits are recorded above; no p95, capacity or generalized latency-improvement claim is made.
+- Attempt 2 validation passed: `npm run test:arch046-woo-consent:unit` (**6/6**); `ARCH046_CONSENT_COMPARE_BASELINE=1 npm run test:arch046-woo-consent:postgres` (**11/11** integration tests plus **1/1** v1 and **1/1** v2 comparison tests); `npm run typecheck`; `npm run lint`; `git diff --check origin/main...HEAD`; and parsing `docs/openapi/arch046-woo-consent-v2.yaml` with the installed `yaml` package. The disposable PostgreSQL suite applied 59 migrations.
+- Canonical Attempt 2 preparation passed the dependency gate. Both task worktrees were reused and already current with task remotes and `origin/main`; recursive submodule sync/init passed with database at `508a89463ccb24dcc31e5f38e04be8cfd10ad690`. Claim commit `de0542ed41ccbedad1c9189b712011cea902792a` is published on the parent task branch.
+- No material assigned-agent assistance was used. No Woo producer, API-006, schema migration, Background code, `_index.md`, or shared checkout changes are included. End-to-end Woo producer adoption remains separately owned.
+- State transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. `completion_mode: developer`; explicit developer completion is pending. Neither task branch was merged to `main`.
 
 ## Architect Review
 
