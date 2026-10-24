@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 32
 executor: developer
 claimed_at: 2026-10-23T23:55:19Z
@@ -21,7 +21,7 @@ depends_on:
 enables:
 - ARCH-048-BACKGROUND-005
 created: '2026-10-23'
-updated: 2026-10-23
+updated: 2026-10-24
 ---
 
 ## Execution Ownership Amendment
@@ -38,7 +38,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
+Originally a portable architect proposal drafted from the 23 October 2026 snapshot; subsequently materialised and claimed for **developer execution** through `/moda_developer_create ARCH-048-BACKGROUND-001`, as recorded in the Execution Ownership Amendment and frontmatter. The developer applied two implementation patch revisions within the same task **Attempt 1**, validated them, and pushed Background implementation commit `68d20c4` to `task/ARCH-048-BACKGROUND-001` on 24 October 2026. This record submits the task for review; no architect acceptance, developer completion, merge or release is claimed. The developer reports `ARCH-046-BACKGROUND-004` already complete; do not reopen it for BG001.
 
 ## Objective
 
@@ -74,10 +74,10 @@ The current `woo-checkout-capture.worker.ts` only validates/logs events. Shopify
 
 ## Work Items
 
-- [ ] Implement test-injected WooCheckoutActivityService and typed outcomes; add at most the local candidate metadata/evidence required for later maturity.
-- [ ] Add missing-job + existing MESSAGE_SENT recovery path, and candidate-present + existing recovery path; assert no scheduling in either.
-- [ ] Add tests: new checkout, update/reschedule, empty, refill, duplicate event, out-of-order, same-second conflict, oversized/missing items, order-first terminal fence, independent tenants and concurrent processing.
-- [ ] Confirm Shopify default legacy candidate shape and existing index scheduling still work.
+- [x] Implement test-injected WooCheckoutActivityService and typed outcomes; add only Background-local candidate evidence/index support for later maturity.
+- [x] Cover missing-job + existing MESSAGE_SENT recovery, and candidate-present + existing recovery; verify no first-send candidate is recreated.
+- [x] Add unit/integration coverage for new checkout, reschedule, empty, refill, duplicates/stale events, same-second conflicts, incomplete/oversized baskets, terminal order observation, tenant isolation and concurrency.
+- [x] Check legacy Shopify candidate source handling and existing index behavior in the focused candidate test suite.
 
 ## Interfaces / Contracts
 
@@ -110,16 +110,16 @@ interface WooCheckoutActivityHandler {
 
 ## Acceptance Criteria
 
-- [ ] Under no-candidate, existing `CheckoutRecovery` lookup prevents candidate creation for all existing first-send states; race recheck is under checkout-scoped guard.
-- [ ] Update reschedules one delayed candidate; empty event cancels; missing/oversized basket evidence and conflicting timestamps cannot become send-eligible.
-- [ ] Woo candidate is visibly typed and routed by source; no Shopify candidate/regression change.
-- [ ] Task is complete when business service and tests pass even though existing Woo capture worker remains capture-only until BG005.
+- [x] Existing `CheckoutRecovery` lookup, including the no-BullMQ-job/MESSAGE_SENT case, prevents creation of a second initial candidate under checkout-scoped coordination (unit and integration evidence).
+- [x] Updates reschedule one delayed candidate; explicit empty baskets cancel; incomplete/oversized evidence and time conflicts fail closed (focused unit evidence).
+- [x] New Woo candidates have an explicit source; the legacy Shopify candidate remains distinct and the existing index tests pass.
+- [x] Business service and tests are implemented without editing the Woo capture worker; BG005 alone owns worker composition. Architect acceptance remains pending.
 
 ## Validation
 
-- [ ] Focused service unit tests with injected queue/DB/order guard and deterministic clocks; no unrelated messaging/consent mocks.
-- [ ] PostgreSQL + Redis lifecycle tests including removed job/existing recovery and same-lineage concurrency.
-- [ ] Existing Shopify candidate index tests, repository-declared typecheck/lint/tests for touched modules and `git diff --check`.
+- [x] Focused service/unit tests with injected dependencies and deterministic clocks: 107/107 across 9 files (24 Oct log `typescript(20261024-010948)`). Tests predate the small Attempt 2 logging type-narrowing correction; no post-correction unit rerun is shown.
+- [x] PostgreSQL + Redis lifecycle integration: 1/1 passed, including removed job/MESSAGE_SENT existing recovery and competing updates (24 Oct log `typescript(20261024-012223)`).
+- [x] Existing Shopify candidate unit tests included in the 107-test run; repository TypeScript recheck passed after Attempt 2; touched-file ESLint, final service ESLint, `git diff --check` and `git diff --cached --check` ran without errors (24 Oct logs).
 
 ## Stop Condition
 
@@ -138,35 +138,71 @@ All input/output types must have reasoned explicit outcomes; no boolean `success
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-23T23:55:19Z. Attempt 0 review history is preserved below.
+Ready for Review — developer-executed Attempt 1, claimed at `2026-10-23T23:55:19Z` via `/moda_developer_create` and recorded on the parent task branch. Implementation commit `68d20c4` has been pushed. Implementation patch revisions 1 and 2 are corrections within this one task attempt, not additional task claims. The task remains `execution_mode: developer`, `completion_mode: developer`, and `executor: developer` pending the configured review/reconciliation path; the developer retains explicit completion authority after a passing review. Architect Review remains Pending; no acceptance or completion is implied.
 
 ### Files Changed
 
-None.
+Implementation repository (`moda-interact-background`, commit `68d20c4`; nine files):
+
+- `src/services/pending-recovery-candidate/candidate-index.store.ts`
+- `src/services/woocommerce-recovery/woo-activity-watermark.store.ts`
+- `src/services/woocommerce-recovery/woo-candidate-queue.service.ts`
+- `src/services/woocommerce-recovery/woo-checkout-activity.adapters.ts`
+- `src/services/woocommerce-recovery/woo-checkout-activity.service.ts`
+- `tests/unit/services/woocommerce-recovery/woo-candidate-queue.service.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-checkout-activity.adapters.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-checkout-activity.service.test.ts`
+- `tests/integration/woo-checkout-activity.integration.test.ts`
+
+This handoff patch updates **only this parent-workspace task definition**. No worker, entrypoint, BG006 contract, parent architecture or `docs/decisions/**/_index.md` is changed.
 
 ### Work Completed
 
-None.
+- Implemented `WooCheckoutActivityService` with typed outcomes and explicit `source: "woocommerce"` candidate projection; used injected shop/install eligibility, existing recovery repository, observed-order guard and checkout coordinator.
+- Preserved `(shopId, checkoutKey)` lineage isolation; read existing durable `CheckoutRecovery` regardless of the BullMQ job's presence or lifecycle; existing recovery cannot initiate another first-send candidate.
+- Added bounded candidate snapshot capture, Redis event watermarks, stable-ID dedupe, stale and same-second-conflict deferral, empty-basket cancellation, refill/reschedule and terminal/ambiguous-order suppression.
+- Extended existing candidate index only for Woo-specific retention/identity needs; preserved legacy Shopify candidate/index use. Queue/index/watermark write errors propagate for retries; the retry path can repair a previously written queue candidate after a watermark failure.
+- Kept checkout maturity orchestration, worker wiring, first-recovery persistence, consent, billing, WhatsApp delivery and merchant notices outside BG001. Those remain with their owning tasks, principally BG005 for wiring.
+- Produced implementation patch revision 1 and a narrow revision 2 fixing a discriminated-union `reason` logging access in `woo-checkout-activity.service.ts`; both are contained in pushed commit `68d20c4`.
+- Retention: watermark/index TTL is `max(0, maturityDueAt - now) + 24 hours`, capped at 30 days; an unsafe TTL or timestamp is rejected/deferred. The retained data are transient candidate evidence and bounded event identifiers, not proof of Woo changes Moda never received.
 
 ### Validation Results
 
-Not run by repository implementer; no developer repository worktree or remote is accessible from this review package.
+| Command / evidence | Result |
+| --- | --- |
+| `git apply --check --whitespace=error-all` and application of both incremental implementation patches | Pass, no reported conflicts (`typescript(20261024-010948)`, `typescript(20261024-012223)`) |
+| `npm run prisma:generate` | Pass: Prisma Client 6.19.3 generated from `database/prisma/schema.prisma` (`typescript(20261024-010948)`) |
+| `npx vitest run tests/unit/services/woocommerce-recovery tests/unit/services/pending-recovery-candidate.service.test.ts tests/unit/services/pending-recovery-candidate` | Pass: 9 files, 107 tests; executed before the narrow Attempt 2 logging fix (`typescript(20261024-010948)`) |
+| `npx tsc --noEmit -p tsconfig.json` | Initial Attempt 1 failed TS2339 for `outcome.reason`; after Attempt 2 correction, rerun completed without errors (`typescript(20261024-012223)`) |
+| `npx eslint src/services/pending-recovery-candidate/candidate-index.store.ts src/services/woocommerce-recovery/woo-*.ts tests/unit/services/woocommerce-recovery tests/integration/woo-checkout-activity.integration.test.ts` | No errors shown in initial validation log (`typescript(20261024-010948)`) |
+| `npx eslint src/services/woocommerce-recovery/woo-checkout-activity.service.ts` | Pass, no errors shown in final commit log (`typescript(20261024-012516)`) |
+| `npm run test:integration -- tests/integration/woo-checkout-activity.integration.test.ts` | Pass: 1 test on PostgreSQL + Redis; removed-job/MESSAGE_SENT and competing-checkout-updates (`typescript(20261024-012223)`) |
+| Direct `node scripts/test-integration.mjs` invocation | Initially blocked with `spawn prisma ENOENT`; rerunning via repository npm script resolved executable lookup and passed |
+| `git diff --check`, `git diff --cached --check` | Pass; run before commit (`typescript(20261024-012516)`) |
+| `git commit` then `git push origin task/ARCH-048-BACKGROUND-001` | Pass: `68d20c4` pushed to `https://github.com/kodjobaah/moda-interact-background.git` (`typescript(20261024-012516)`) |
 
 ### Deviations
 
-None.
+- The original agent-owned task was explicitly transferred to `execution_mode: developer` via `/moda_developer_create` before implementation; the durable Execution Ownership Amendment, `claimed_at`, and task Attempt 1 are preserved. The developer applied assistant-prepared code patches and performed validation/commit/push; no agent execution or additional claim is asserted. Full launcher preparation/synchronisation evidence has not been provided with these logs and remains for review.
+- Earlier direct integration invocation did not expose the `prisma` binary in PATH; `npm run test:integration -- ...` was successful without code changes.
 
 ### Assumptions
 
-Latest uploaded ZIP and proposed task files may lag active developer branches. Latest dependency state must be checked before materialisation. The developer reports `ARCH-046-BACKGROUND-004` complete; reuse accepted implementation without editing its task definition.
+- This review-handoff correction is generated against the **actual uploaded parent worktree task definition** (`moda-interact-workspace-ARCH-048-BACKGROUND-001.zip`), not the older unclaimed portable task proposal. Preserve that branch's claim and execution-mode changes.
+- The integration run used the developer's configured disposable PostgreSQL and Redis test services; their connection details are not part of this handoff.
+- Woo checkout source-state limitations still apply: a missing provider event cannot be verified by this service.
 
 ### Unresolved Issues
 
-Confirm actual approved cross-task dependency versions before implementation; raise missing canonical shared contracts or unimplementable business guarantees to the architect rather than inventing substitutes.
+- **Partial worktree evidence:** developer terminal output confirms the dedicated parent task worktree at `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-001` on `task/ARCH-048-BACKGROUND-001`. The implementation logs show `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-001` on the same branch. The task definition itself records a developer claim timestamp. These observations do **not** independently establish the launcher preparation packet, Git common-dir identity, start-of-attempt parent/implementation synchronization, or recursive submodule revision evidence. Supply these for review where required by the isolation policy.
+- **Parent review commit not yet evidenced:** apply and push this task/report change on parent workspace branch `task/ARCH-048-BACKGROUND-001`; record the resulting parent commit SHA for the reviewer. Do not invent it in this portable patch.
+- **Preparation evidence:** the task frontmatter contains the developer claim (`attempt: 1`, `claimed_at: 2026-10-23T23:55:19Z`); reviewer should verify the corresponding parent claim commit, launcher-resolved worktree evidence, and start-of-attempt synchronization rather than clearing or recreating a legitimate claim.
 
 ### Architectural Concerns
 
-The outbound-only event design cannot identify Woo updates/payments whose events never arrive; this limitation must remain explicit and Woo outbound disabled until reviewed.
+- `completion_mode: developer` requires an explicit developer completion action after a passing review; preparing this handoff does not advance BG005 or mark BG001 Complete.
+- This remains an event-observation-only candidate scheduler. It does not prove Woo checkout state when events never reach Moda; BG005 must keep final maturity/consent/terminal guards before any outbound action.
+- No code changes should be made solely to fabricate implementation-worktree evidence; review the existing commit and, where required, rerun validation in canonical worktrees before acceptance.
 
 ## Architect Review
 
