@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-24T14:54:35Z
+attempt: 2
 depends_on:
   - ARCH-046-API-001
   - ARCH-045-DATABASE-002
@@ -158,9 +158,7 @@ After Work Items, Acceptance Criteria and required Validation are complete, reco
 
 ### Status
 
-**Attempt 2 correction evidence assembled for developer self-review; architect acceptance is pending.** The API implementation is published as original commit `220fa2b8fe0bc6e74dd88891083fd30572b8cfa7` plus correction commit `b1ccf78` on `moda-interact-api:task/ARCH-046-API-007`.
-
-**Lifecycle guard:** The parent task's latest recorded metadata remains `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null` after the Attempt 1 Changes Requested review. The latest terminal log does **not** show a new launcher claim for Attempt 2. This evidence-only amendment deliberately does not manufacture `in_progress`, `review`, a new claim timestamp or a passing developer self-review. Reclaim through the canonical `/moda_developer_create ARCH-046-API-007` path, reconcile this evidence within the developer-owned Completion Report, then use `/moda_developer_update ARCH-046-API-007` for the authorised review transition.
+In Progress — Attempt 2 claimed by developer at 2026-10-24T14:54:35Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
