@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 34
 executor: null
@@ -26,6 +26,15 @@ updated: '2026-10-24'
 
 # ARCH-048-BACKGROUND-002 — Implement Woo order-reconciliation and terminal-state service
 
+## Developer Ownership Amendment
+
+On 2026-10-24, `/moda_developer_create ARCH-048-BACKGROUND-002` was invoked
+while this task was ready and agent-owned. This is an explicit developer
+takeover. `execution_mode` and `completion_mode` are now `developer`;
+`assigned_agent: moda_background`, repository ownership, dependencies, scope
+and acceptance criteria are unchanged. The task remains at Attempt 0 until
+canonical preparation claims Attempt 1.
+
 ## Architecture
 
 Architecture ID: `ARCH-048`
@@ -34,7 +43,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
+Materialised on parent branch `task/ARCH-048-BACKGROUND-002` from the architect proposal. No implementation claim existed before canonical preparation. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
 
 ## Objective
 
