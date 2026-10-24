@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-24T12:41:51Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-046-API-001
@@ -34,7 +34,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Lifecycle:** the canonical task is materialised on parent `task/ARCH-046-API-007`, with developer execution claimed for Attempt 1 at `2026-10-24T12:41:51Z`. API implementation commit `220fa2b` was pushed to `origin/task/ARCH-046-API-007` in `moda-interact-api`. This handoff prepares the evidence while preserving `status: in_progress`: `/moda_developer_update ARCH-046-API-007` owns reconciliation/self-review and may transition it to `review` only after a passing review. `completion_mode: developer` remains in force, and an explicit developer completion decision is still required. The launcher preparation packet and start-of-attempt synchronization/submodule evidence were not supplied in the terminal log and require verification during review.
+**Lifecycle:** developer execution was claimed for Attempt 1 at `2026-10-24T12:41:51Z`. The canonical launcher preparation packet was verified during reconciliation: the parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-API-007`; the isolated API implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-API-007`; both task branches were synchronized with their remotes; and recursive database submodule `508a89463ccb24dcc31e5f38e04be8cfd10ad690` is initialized. API implementation commit `220fa2b8fe0bc6e74dd88891083fd30572b8cfa7` is published. Developer self-review found required rollback, API-006 evidence-key, and before/after transaction measurement evidence incomplete; task is therefore returned to `ready` at Attempt 1 for corrections. `completion_mode: developer` remains in force; completion is not implied.
 
 ### Developer Takeover
 
@@ -182,7 +182,7 @@ Implementation repository (`220fa2b`, 17 files; 500 insertions, 491 deletions, a
 - `tests/unit/woocommerce/consent/contract.test.ts`
 - `tests/unit/woocommerce/consent/routes.test.ts`
 
-The review-handoff patch changes only this task file and its parent ARCH-046 architecture document. No schema migration, WooCommerce source, Background source or domain `_index.md` modification is included.
+The implementation changes only API-owned code, tests, fixtures and docs. This review update changes only this task record. No schema migration, WooCommerce source, Background source or domain `_index.md` modification is included.
 
 ### Work Completed
 
@@ -197,30 +197,30 @@ The review-handoff patch changes only this task file and its parent ARCH-046 arc
 
 | Check | Evidence and result |
 |---|---|
-| Focused API unit/route tests | **6/6 passed** in the earlier supplied Attempt 2 validation recording; not rerun in the latest lint-correction recording. |
-| `npm run lint` | Passed in terminal recording `typescript(20261024-131155)` after the correction; ESLint `--max-warnings=0` returned to the shell without an error. |
-| `npm run typecheck` | Passed in the same recording, including Prisma Client v6.19.3 generation and `tsc --noEmit`. |
+| Focused API unit/route tests | **6/6 passed** on the published `220fa2b` implementation during reconciliation. |
+| `npm run lint` | Passed during reconciliation on the published implementation; ESLint `--max-warnings=0` returned without warnings or errors. |
+| `npm run typecheck` | Passed during reconciliation, including Prisma Client v6.19.3 generation and `tsc --noEmit`. |
 | `npm run test:arch046-woo-consent:postgres` | **10/10 passed, 0 failed** in a disposable PostgreSQL database after 59 migrations applied successfully; covers concurrent GRANT/REVOKE, CUSTOMER_STOP, changed phone, credential revocation/rotation, merchant suppression and tenant isolation. |
 | OpenAPI YAML | Previously checked by isolated tooling during patch preparation; a separate post-commit OpenAPI verification command is not evidenced in the latest terminal recording. |
-| `git apply --check --whitespace=error-all` / `git diff --check` | No errors shown for the one-line correction in the latest recording; source patch strict-application checks were also reported during preparation. |
+| `git diff --check origin/main...HEAD` | Passed against the published implementation branch. |
 | Publish implementation branch | `git push` succeeded for commit `220fa2b`; remote branch `task/ARCH-046-API-007` created. |
 
 **Observed v2 consent SQL workload** (individual local test measurements; SQL statement counts and overall scenario wall time, **not** PostgreSQL transaction-only duration or p95 throughput):
 
 | Scenario | SQL statements | Scenario wall time |
 |---|---:|---:|
-| Fresh v2 grant | 14 | 76.37 ms |
-| Identical v2 duplicate retry | 9 | 23.06 ms |
-| Existing v2 revoke | 12 | 27.39 ms |
-| Existing v2 re-grant | 12 | 30.36 ms |
+| Fresh v2 grant | 14 | 91.51 ms |
+| Identical v2 duplicate retry | 9 | 28.16 ms |
+| Existing v2 revoke | 12 | 32.64 ms |
+| Existing v2 re-grant | 12 | 34.85 ms |
 
-**Measurement gap:** No comparable measured pre-change v1 baseline or separately instrumented transaction-only duration is present in the supplied logs. Do not interpret removed SQL branches as a measured throughput improvement. The final Work Item and performance Acceptance Criterion remain unchecked pending architect/developer disposition or additional evidence.
+**Measurement gap:** The reconciliation rerun confirms the v2 scenario SQL counts and end-to-end test wall times above. No comparable measured pre-change v1 baseline, transaction-only duration, or measured failure-outcome timing is present. These scenario timings include HTTP/test overhead and are not transaction duration or p95. Do not interpret removed SQL branches as a measured throughput improvement. The final Work Item and performance Acceptance Criterion remain unchecked.
 
 ### Deviations
 
 - Developer explicitly authorised breaking API changes because the application has no existing production users. The approved v2-only contract supersedes the original task's transitional v1 compatibility language; this handoff reconciles the task and parent architecture.
 - Implementation was delivered through a standalone Attempt 2 source patch and an incremental Attempt 3 test-helper correction rather than a single agent-generated commit. Both were included in the developer's single implementation commit `220fa2b`.
-- The provided recording demonstrates a dedicated API task worktree and a developer claim but does **not** contain the launcher's complete preparation packet, parent-worktree isolation check, start-of-attempt synchronization or recursive database submodule materialisation evidence. The reviewer should request/verify those artefacts before acceptance.
+- The initial implementation handoff did not include the full launcher packet. During reconciliation, the canonical launcher route, clean synchronized parent and implementation worktrees, matching remote branch heads, and initialized recursive database submodule were verified directly; this provenance gap is resolved.
 
 ### Assumptions
 
@@ -232,7 +232,17 @@ The review-handoff patch changes only this task file and its parent ARCH-046 arc
 
 - WooCommerce currently publishes the v1 format. A separate WooCommerce-owned v2 producer task must be implemented before checkout consent will work end to end.
 - The proof-backed returning-customer status reader `ARCH-046-API-006` remains a separate, unmaterialised task in the supplied architecture view and must wait for API-007 to become **complete**, not merely `review`.
-- Measured pre-change SQL counts, transaction-only timing, specific rollback/read-key assertions and complete launcher preparation evidence have not been supplied for this review handoff. The architect/developer reviewer should either obtain the evidence or explicitly record a warranted scope/validation decision. Do not claim those criteria passed without evidence.
+- Explicit SQL-failure rollback assertions, an API-006 tuple-key evidence-read assertion, comparable before/after SQL counts, transaction-only timing and failure-outcome measurements remain outstanding. Do not claim those criteria passed without evidence.
+
+### Developer Self-Review - Changes Requested
+
+Attempt 1 was reconciled against the current task definition and the published implementation commit `220fa2b8fe0bc6e74dd88891083fd30572b8cfa7`. Focused validation passed: unit tests **6/6**, disposable PostgreSQL tests **10/10**, `npm run typecheck`, `npm run lint`, and `git diff --check origin/main...HEAD`. The tests cover v2 contract/rejection, auth and tenancy, replay, ordering/races, STOP preservation, passive consent without billing reads, and scenario SQL counts. The following required evidence is not implemented or demonstrated, so this attempt does not pass review:
+
+- Add a PostgreSQL failure-injection regression that fails after the `CustomerPhone` mutation and before evidence insertion, then asserts the transaction leaves both consent state and `WhatsAppConsentEvidence` unchanged. The implementation uses one transaction, but no test currently proves rollback for this failure point.
+- Add a focused assertion that a fresh v2 grant's immutable evidence is retrievable by the existing API-006 proof tuple `(shopId, eventId, canonicalPhone, customerPhoneId, phoneConsentRevision)`. Current assertions read by `(shopId,eventId)` and separately inspect some evidence columns; they do not verify the complete tuple lookup contract.
+- Complete the performance Work Item with comparable measured pre-change and v2 SQL operation counts for fresh GRANT, existing GRANT, REVOKE and duplicate retry, plus transaction-only duration and failure outcomes using the disposable PostgreSQL harness. Keep scenario wall time clearly distinguished from transaction duration and make no capacity/p95 claim. If a comparable baseline cannot be produced, obtain and record an explicit scope disposition rather than marking the criterion satisfied.
+
+The launcher/provenance evidence gap has been resolved and is not a requested correction. `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`; the next canonical developer claim will create Attempt 2. Implementation branch remains published and unmodified by this review. Do not start API-006 or the Woo producer task, and do not mark this task complete.
 
 ### Architectural Concerns
 
