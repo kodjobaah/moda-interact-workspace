@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 48
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-24T10:15:12Z
+attempt: 2
 depends_on:
 - ARCH-048-BACKGROUND-006
 - ARCH-045-BACKGROUND-005
@@ -149,7 +149,7 @@ Investigate the actual pre-send fence exposed by accepted ARCH-046-BACKGROUND-00
 
 ### Status
 
-**Review resubmission preparation — correction work validated; next developer attempt not yet claimed in supplied evidence.** Attempt 1 was committed and pushed at implementation commit `722593e` (`feat(background)`) and subsequently returned to `ready` following the developer self-review Changes Requested (review record `bdc6ffd0`, as reported by the developer). This uploaded parent snapshot remains `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. The October 24 source and test snapshot contains the required correction, but the latest terminal capture ends without a new correction commit/push or a `/moda_developer_create` Attempt 2 claim. **This document-only patch records the evidence without fabricating a claim or moving the task to `review`.** To submit for review, use the canonical developer claim/reconciliation workflow, publish the corrected implementation branch and final parent task record, and transition to `review` only after verifying actual attempt/branch evidence. It does not mark the task `complete` or record an Accepted review.
+In Progress — Attempt 2 claimed by developer at 2026-10-24T10:15:12Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
