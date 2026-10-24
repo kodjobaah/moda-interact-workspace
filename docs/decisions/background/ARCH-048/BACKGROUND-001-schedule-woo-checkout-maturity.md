@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 32
 executor: null
 claimed_at: null
@@ -38,7 +38,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Originally a portable architect proposal drafted from the 23 October 2026 snapshot; subsequently materialised and claimed for **developer execution** through `/moda_developer_create ARCH-048-BACKGROUND-001`, as recorded in the Execution Ownership Amendment and frontmatter. The developer applied two implementation patch revisions within the same task **Attempt 1**, validated them, and pushed Background implementation commit `68d20c4` to `task/ARCH-048-BACKGROUND-001` on 24 October 2026. This record submits the task for review; no architect acceptance, developer completion, merge or release is claimed. The developer reports `ARCH-046-BACKGROUND-004` already complete; do not reopen it for BG001.
+Originally a portable architect proposal drafted from the 23 October 2026 snapshot; subsequently materialised and claimed for **developer execution** through `/moda_developer_create ARCH-048-BACKGROUND-001`, as recorded in the Execution Ownership Amendment and frontmatter. The developer applied two implementation patch revisions within the same task **Attempt 1**, validated them, and pushed Background implementation commit `68d20c4` to `task/ARCH-048-BACKGROUND-001` on 24 October 2026. This record was submitted for review and is now explicitly completed by the developer without merge or release. The developer reports `ARCH-046-BACKGROUND-004` already complete; do not reopen it for BG001.
 
 ## Objective
 
@@ -194,13 +194,13 @@ This handoff patch updates **only this parent-workspace task definition**. No wo
 
 ### Unresolved Issues
 
-- **Partial worktree evidence:** developer terminal output confirms the dedicated parent task worktree at `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-001` on `task/ARCH-048-BACKGROUND-001`. The implementation logs show `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-001` on the same branch. The task definition itself records a developer claim timestamp. These observations do **not** independently establish the launcher preparation packet, Git common-dir identity, start-of-attempt parent/implementation synchronization, or recursive submodule revision evidence. Supply these for review where required by the isolation policy.
-- **Parent review commit not yet evidenced:** apply and push this task/report change on parent workspace branch `task/ARCH-048-BACKGROUND-001`; record the resulting parent commit SHA for the reviewer. Do not invent it in this portable patch.
-- **Preparation evidence:** the task frontmatter contains the developer claim (`attempt: 1`, `claimed_at: 2026-10-23T23:55:19Z`); reviewer should verify the corresponding parent claim commit, launcher-resolved worktree evidence, and start-of-attempt synchronization rather than clearing or recreating a legitimate claim.
+- **Worktree evidence:** the dedicated parent task worktree and implementation worktree were verified during review on `task/ARCH-048-BACKGROUND-001`; both were clean and the implementation commit was published.
+- **Parent review commit:** review record commit `27e1304f` is published; this explicit completion decision is being published on the same parent task branch.
+- **Preparation evidence:** launcher preparation and the dependency gate were verified before review; Attempt 1 remains unchanged.
 
 ### Architectural Concerns
 
-- `completion_mode: developer` requires an explicit developer completion action after a passing review; preparing this handoff does not advance BG005 or mark BG001 Complete.
+- `completion_mode: developer` was satisfied by the explicit completion decision; BG005 eligibility is recalculated separately from this task completion.
 - This remains an event-observation-only candidate scheduler. It does not prove Woo checkout state when events never reach Moda; BG005 must keep final maturity/consent/terminal guards before any outbound action.
 - No code changes should be made solely to fabricate implementation-worktree evidence; review the existing commit and, where required, rerun validation in canonical worktrees before acceptance.
 
@@ -240,4 +240,8 @@ Review completed on 2026-10-24 against Attempt 1 and implementation commit `68d2
 - The implementation stays within BG001 scope: no worker or entrypoint wiring, first-recovery insertion, outbound messaging, consent, billing or BG006 contract redefinition.
 - Work Items and Acceptance Criteria are complete for this attempt. The event-observation limitation and BG005 wiring boundary remain documented.
 
-Developer self-review passes. Because `completion_mode` is `developer`, this task remains in `review` pending the explicit `/moda_developer_update ARCH-048-BACKGROUND-001 complete` decision; no completion or downstream enablement is claimed here.
+Developer self-review passed before the explicit completion decision recorded below.
+
+## Developer Completion Decision
+
+On 2026-10-24, the developer explicitly completed ARCH-048-BACKGROUND-001 after the durable passing self-review. Attempt 1 is accepted without increment. The implementation and parent task records are committed and published; no merge to `main` is required. Downstream eligibility is recalculated from this completion.
