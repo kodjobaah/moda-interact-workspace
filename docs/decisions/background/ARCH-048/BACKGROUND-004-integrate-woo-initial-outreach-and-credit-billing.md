@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 48
-executor: developer
-claimed_at: 2026-10-23T23:59:43Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-048-BACKGROUND-006
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-048-BACKGROUND-005
 created: '2026-10-23'
-updated: 2026-10-23
+updated: 2026-10-24
 ---
 
 ## Execution Ownership Amendment
@@ -37,7 +37,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
+The original architecture proposal was portable and unmaterialised. This task was subsequently materialised and claimed by the developer as **task Attempt 1**. The Background implementation was committed and pushed on `task/ARCH-048-BACKGROUND-004` at `722593e` (24 October 2026); this is a **review submission**, not architect acceptance or developer completion. The supplied parent snapshot still contains stale `ARCH-046-BACKGROUND-004` metadata; the developer reports that task complete externally. Verify the accepted guard interface when composing BG005; do not reopen the completed task.
 
 ## Objective
 
@@ -80,12 +80,12 @@ BG003 creates only an existing DB recovery. The completed ARCH-046-BACKGROUND-00
 
 ## Work Items
 
-- [ ] Implement isolated Woo outreach service with injected reservation, attempt, final guard, provider and refund/compensation interfaces.
-- [ ] Add explicit default-off send gate and follow-up disablement; leave all ingress/worker wiring for BG005.
-- [ ] Test duplicate enqueue/process, already-sent recovery after old queue job removed, payment concurrent with send, STOP/consent template gate, successful charge by bucket and rejection compensation.
-- [ ] Prove Shopify messaging/billing regression suites remain green; record failure boundary between durable DB operation and queue enqueue.
-- [ ] Inject shared structured logging into the outreach service, including safe enqueue/send/suppression/failure stage correlation.
-- [ ] Add fault-injection tests for credit reservation/attribution, guard, provider timeout/uncertain response, attempt persistence and compensation/release exceptions; prove failures propagate without a duplicate message or unearned charge.
+- [x] Implement isolated Woo outreach service with injected reservation, attempt, final guard, provider and refund/compensation interfaces.
+- [x] Add explicit default-off send gate and follow-up disablement; leave all ingress/worker wiring for BG005.
+- [x] Test duplicate enqueue/process, already-sent recovery after old queue job removed, payment concurrent with send, STOP/consent template gate, successful charge by bucket and rejection compensation.
+- [x] Prove Shopify messaging/billing regression suites remain green; record failure boundary between durable DB operation and queue enqueue.
+- [x] Inject shared structured logging into the outreach service, including safe enqueue/send/suppression/failure stage correlation.
+- [x] Add fault-injection tests for credit reservation/attribution, guard, provider timeout/uncertain response, attempt persistence and compensation/release exceptions; prove failures propagate without a duplicate message or unearned charge.
 
 ## Interfaces / Contracts
 
@@ -118,19 +118,19 @@ interface WooRecoveryOutreachDispatcher {
 
 ## Acceptance Criteria
 
-- [ ] One successful initial provider message and at most one charge per eligible recovery despite duplicates/retries, with correct source attribution and failure compensation.
-- [ ] Known paid/cancelled/placed order, revoked consent, local STOP or invalid Marketing template prevents irreversible send and inappropriate credit consumption.
-- [ ] Woo follow-up, sequence-2 and re-entry are gated off; release remains default-off.
-- [ ] Task can be unit/integration reviewed before worker integration; BG005 is the sole runtime-wiring owner.
-- [ ] No unexpectedly failed reservation, consent check, provider dispatch or compensation can produce a successful/suppressed/deferred acknowledgement; failures are logged through Shared and reach retry/failure handling without duplicating irreversible sends.
-- [ ] Structured outreach diagnostics retain safe `recoveryId`/`attemptId` correlation and explicit outcome/error distinctions without customer or provider secrets.
+- [x] One successful initial provider message and at most one charge per eligible recovery despite duplicates/retries, with correct source attribution and failure compensation.
+- [x] Known paid/cancelled/placed order, revoked consent, local STOP or invalid Marketing template prevents irreversible send and inappropriate credit consumption.
+- [x] Woo follow-up, sequence-2 and re-entry are gated off; release remains default-off.
+- [x] Task can be unit/integration reviewed before worker integration; BG005 is the sole runtime-wiring owner.
+- [x] No unexpectedly failed reservation, consent check, provider dispatch or compensation can produce a successful/suppressed/deferred acknowledgement; failures are logged through Shared and reach retry/failure handling without duplicating irreversible sends.
+- [x] Structured outreach diagnostics retain safe `recoveryId`/`attemptId` correlation and explicit outcome/error distinctions without customer or provider secrets.
 
 ## Validation
 
-- [ ] Focused injected-service unit tests for every exact sender/credit bucket, provider failure and idempotency state.
-- [ ] Postgres/Redis integration for concurrent reservations/attempts and terminal event racing final send.
-- [ ] Existing billing compensation, consent final-send, Shopify recovery regression and declared code checks plus `git diff --check`.
-- [ ] Assert injected logger events and propagation of rejected billing/dispatch/compensation dependencies; test uncertain provider outcomes against durable attempt idempotency and verify no log-and-return-success catch branches.
+- [x] Focused injected-service unit tests for every exact sender/credit bucket, provider failure and idempotency state.
+- [x] Postgres/Redis integration for concurrent reservations/attempts and terminal event racing final send.
+- [x] Existing billing compensation, consent final-send, Shopify recovery regression and declared code checks plus `git diff --check`.
+- [x] Assert injected logger events and propagation of rejected billing/dispatch/compensation dependencies; test uncertain provider outcomes against durable attempt idempotency and verify no log-and-return-success catch branches.
 
 ## Stop Condition
 
@@ -149,35 +149,74 @@ Investigate the actual pre-send fence exposed by accepted ARCH-046-BACKGROUND-00
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-23T23:59:43Z. Attempt 0 review history is preserved below.
+**Ready for Review — developer task Attempt 1.** Claimed by the developer at `2026-10-23T23:59:43Z`. The source was committed and pushed on the implementation-repository task branch at `722593e` (`feat(background)`). The three delivered implementation patch revisions (including the integration-fixture correction) were iterations **within this one developer task attempt**: the durable task `attempt` remains `1`. This handoff changes the parent task to `review` and clears the active executor/claim; it does **not** mark the task `complete`, record architect acceptance, or claim the parent branch has been pushed.
 
 ### Files Changed
 
-None.
+Five new files committed in `moda-interact-background` at `722593e`:
+
+- `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts` — initial outreach coordinator, guarded dispatch, dedupe, lifecycle and structured logging.
+- `src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts` — adapters to the existing recovery, recipient, consent, template, conversation, attempt and credit services; required injected guarded sender/queue/checkout coordinator.
+- `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` — focused mock/fault-injection coverage (39 tests).
+- `tests/integration/arch048-woo-initial-outreach.integration.test.ts` — disposable PostgreSQL/Redis validation (7 test cases, including three order race variants).
+- `tests/integration/fixtures/arch048-woo-outreach.fixture.ts` — real durable billing/attempt/queue fixture with an injected simulated provider permit. Attempt 3 corrected its ARCH-040 outbound-admission control-revision metadata.
+
+Parent workspace: only `docs/decisions/background/ARCH-048/BACKGROUND-004-integrate-woo-initial-outreach-and-credit-billing.md` is changed by this review-handoff patch. No architecture document, `_index.md`, another task definition, worker or entrypoint is edited.
 
 ### Work Completed
 
-None.
+- Implemented the BG006 `WooRecoveryOutreachDispatcher` (`enqueueInitial` and `processInitial`) for **existing committed** Woo recoveries. It never inserts a `CheckoutRecovery` or wires workers; those boundaries remain BG003 and BG005 respectively.
+- Serialised dispatch through an injected checkout-scoped coordinator, reused the unique sequence-1 attempt and deterministic provider dispatch identity, and re-enqueued an existing pending or confirmed-but-not-finalised attempt for reconciliation. Ambiguous/PENDING provider outcomes fail visibly rather than causing blind resends.
+- Rechecked recorded terminal order evidence, current recipient, stored Woo consent/local STOP, and Marketing template before send. The required `WooGuardedInitialSender` must additionally enforce the approved final consent/STOP/order fence at the irreversible provider boundary. **The uploaded source does not supply a production implementation of that port; BG005 owns providing and verifying it.** The integration tests use a test sender and do not prove a live ARCH-046 production permit.
+- Reused canonical recovery billing reservation, revalidation, exact credit-source attribution and successful initiation commit. Reused provider-failure compensation/release semantics; a delivered message remains chargeable even if payment arrives later. No new ledger or credit accounting schema was introduced.
+- Enforced Woo outbound disabled unless `NODE_ENV=test` **and** explicit test opt-in. No sequence-2/follow-up scheduling, recovery resume or Woo live provider lookup was implemented.
+- Used `StructuredLogger` from `@modainteract/moda-interact-shared/logging` with bounded shop/recovery/attempt/stage/outcome fields. Unexpected queue, billing, consent, provider and compensation exceptions are logged safely and rethrown; fault-injection tests exercise these boundaries.
 
 ### Validation Results
 
-Not run by repository implementer; no developer repository worktree or remote is accessible from this review package.
+Evidence: developer terminal captures `typescript(20261024-011142)`, `typescript(20261024-012324)`, `typescript(20261024-012934)`, `typescript(20261024-013719)`, `typescript(20261024-014356)`, `typescript(20261024-014918)`, and commit/push capture `typescript(20261024-015254)`; implementation source inspected from `moda-interact-workspace-ARCH-048-BACKGROUND-004.zip`.
+
+- `npx vitest run tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts`: **39/39 passed** (after Attempt 1 patch).
+- `npm run test:integration -- tests/integration/arch048-woo-initial-outreach.integration.test.ts`: **7/7 passed** using disposable PostgreSQL/Redis after the Attempt 3 fixture fix; exercises concurrent durable attempts, BullMQ publication, single usage/credit, order races, STOP and default-off gate.
+- Focused `npx vitest run` covering Woo outreach, recovery billing, outbound admission and Woo consent reader: **212/212 passed across 16 test files**.
+- Focused `npx vitest run` covering Shopify checkout-recovery services, Shopify WhatsApp consent/sync and recovery routing: **254/254 passed across 19 test files**.
+- `npm run build` (`prisma generate` followed by TypeScript compilation): returned to the shell without reported TypeScript errors in the latest captured build.
+- Incremental patch application/`git diff --check`: no whitespace errors reported in the developer application captures; full task code and tests were subsequently committed and pushed as `722593e` to `origin/task/ARCH-048-BACKGROUND-004`.
+- Earlier unsuccessful checks were resolved or replaced: a direct integration invocation initially could not resolve `prisma`; the npm runner fixed CLI resolution. First DB run was **6/7** because the simulated sender omitted ARCH-040 control-revision admission metadata; corrected to **7/7**. `npm run test:shopify` discovered no tests because the standard Vitest config excludes `tests/integration/**`; the specified **254/254** Shopify-recovery unit regression suite passed instead. The live Shopify integration test was **not** executed.
+- No live Meta delivery, production ARCH-046 final-permit integration, completed BG005 worker composition or end-to-end system test is claimed by these results.
+
+### Task-Branch / Worktree Evidence
+
+- Parent workspace task worktree **reported by the task archive helper**: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-004` (expected parent `task/ARCH-048-BACKGROUND-004`).
+- Dedicated implementation worktree **reported by the helper and developer shell**: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-004`; the shell reported branch `task/ARCH-048-BACKGROUND-004`. Archive helper overlaid this worktree into the parent task archive.
+- Implementation task revision: `722593e`, pushed to `origin/task/ARCH-048-BACKGROUND-004`. **Parent branch revision/push is not established in the supplied material**; applying and pushing this document patch is still required.
+- The supplied captures do **not** include the launcher-resolved startup packet, both worktrees' initial synchronization/`origin/main` merge records, recursive submodule state, `git worktree list --porcelain` identity output, or a parent task branch SHA. Therefore full mandatory start-of-attempt isolation/synchronization evidence remains **unverified** pending architect/developer review; worktree paths alone are not a substitute.
+- Before committing, the implementation worktree's `git status` described its branch as **two commits behind `origin/main`**. The reviewer must determine whether start-of-attempt synchronization complied with policy; do not infer it did from the successful push.
 
 ### Deviations
 
-None.
+- Initial delivery had only unit tests. The subsequent incremental implementation patch added a disposable PostgreSQL/Redis suite, and the final fixture-only correction added the current ARCH-040 dispatch control revision and admission metadata. These revisions did not represent new task claims.
+- A preliminary `npm run test:shopify` attempt was invalid due to the test-exclusion configuration; the relevant Shopify unit regression suite was run instead.
+- The snapshot did not contain a verifiable ARCH-046 Woo-compatible final SQL/provider-send implementation, so the service exposes a **required** guarded sender port with no insecure fallback. This integration must be supplied and verified by BG005, not silently replaced or attributed to completed ARCH-046 work.
+- An untracked implementation-worktree file named `typescript` (terminal recording) appeared in the developer's pre-commit `git status` and the submitted archive; the five committed implementation files do not include it. It should not be staged as task implementation code.
 
 ### Assumptions
 
-Latest uploaded ZIP and proposed task files may lag active developer branches. Latest dependency state must be checked before materialisation. The developer reports `ARCH-046-BACKGROUND-004` complete; reuse accepted implementation without editing its task definition.
+- BG006's local contracts and the existing billing/attempt/consent services are the established implementation dependencies. The injected `WooGuardedInitialSender` may only be implemented using an approved final Woo order/consent/STOP send fence; a generic unguarded template sender is not equivalent.
+- The developer reports `ARCH-046-BACKGROUND-004` Complete after this snapshot, although the **uploaded parent task file still shows `blocked`**. This handoff does not reopen or change that task or silently rewrite its canonical state.
+- Woo order evidence is limited to events received by Moda, and initial outbound remains default-disabled pending separate integrated validation and explicit approval.
 
 ### Unresolved Issues
 
-Confirm actual approved cross-task dependency versions before implementation; raise missing canonical shared contracts or unimplementable business guarantees to the architect rather than inventing substitutes.
+- **Workflow evidence for review:** Provide or validate launcher preparation packet, actual parent/implementation branch tips and dedicated worktree physical identity, start-of-attempt synchronization with `origin/main`, recursive submodule gitlinks, and proof of parent task-branch push. The current archive/terminal logs are not sufficient to certify all of these.
+- **Production final-send contract:** BG005 must supply and integration-test the real accepted ARCH-046 guarded final permit plus latest observed-order fence; BG004's test sender cannot establish live provider admission guarantees. Do not reopen ARCH-046 solely for this integration.
+- **Historical dependency metadata:** This task's narrative lists `ARCH-046-BACKGROUND-004`, but its frontmatter `depends_on` omits it and the snapshot shows stale `blocked` status. Architect to reconcile only against authoritative developer branch state; no speculative dependency or index change in this patch.
 
 ### Architectural Concerns
 
-The outbound-only event design cannot identify Woo updates/payments whose events never arrive; this limitation must remain explicit and Woo outbound disabled until reviewed.
+- Outbound-only Woo events cannot detect a paid/placed/cancelled order that was never delivered to Moda. The separate rollout gate and system testing must explicitly account for this known limitation before outbound activation.
+- Provider acknowledgement uncertainty must remain durable and retry-safe; do not wire BG005 in a way that treats a `failed-retryable` or thrown failure as a successfully completed send or sends the same initial message twice.
+- BG005 alone owns queue/worker and production sender composition. No BG005 implementation, default-on rollout, follow-ups, schema or ARCH-046 task modifications are included here.
 
 ## Architect Review
 
