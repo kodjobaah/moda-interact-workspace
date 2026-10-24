@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 40
 executor: null
 claimed_at: null
@@ -39,7 +39,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Original portable architect definition prepared from the 23 October 2026 snapshot (proposal iteration 5). The developer subsequently materialised and claimed this task as **execution Attempt 1** on 24 October 2026. Background implementation commit `95c108e` was pushed to `origin/task/ARCH-048-BACKGROUND-003`; this submission does **not** represent architect acceptance, parent-task-branch publication or merge to `main`. The developer reports `ARCH-046-BACKGROUND-004` complete after the original snapshot; do not reopen it.
+Original portable architect definition prepared from the 23 October 2026 snapshot (proposal iteration 5). The developer materialised and claimed **execution Attempt 1** on 24 October 2026. The original Background implementation is published at `95c108e`, and the subsequent test-only Changes Requested correction is published at `cab3f9c` on `origin/task/ARCH-048-BACKGROUND-003`. The parent task previously recorded a developer Changes Requested review; this update submits corrected evidence for review, **not** architect acceptance or completion. No fresh Attempt 2 launcher claim has been evidenced in the supplied recording, so `attempt: 1` is retained rather than incremented from a patch filename. The developer reports `ARCH-046-BACKGROUND-004` complete after the original snapshot; do not reopen it.
 
 ## Objective
 
@@ -132,7 +132,7 @@ type WooAdmissionOutcome =
 ## Validation
 
 - [x] Focused unit tests with injected current consent and order state/clock; rejection matrix and no network sends.
-- [ ] Postgres/Redis idempotency tests for materialise/cancel/update races and existing-sent/no-candidate path.
+- [x] Postgres/Redis idempotency tests for materialise/cancel/update races and existing-sent/no-candidate path.
 - [x] Shopify recovery admission regressions, repository-declared typecheck/lint and `git diff --check`.
 - [x] Run fault-injection unit tests with injected `StructuredLogger` and rejected consent/database/Redis dependencies; verify rejection, idempotent retry behaviour and absence of false `created`/`denied`/`deferred` results.
 
@@ -153,16 +153,17 @@ ARCH-046-BACKGROUND-002 may integrate its notice/consent decision implementation
 
 ### Status
 
-Ready for Review — developer-executed **Attempt 1**, claimed at `2026-10-24T01:11:20Z`. Implementation has been committed and pushed; architect review and explicit developer completion have **not** occurred.
+Ready for Review — correction to the published developer-executed work. Original Attempt 1 claim: `2026-10-24T01:11:20Z`; the task metadata remains `attempt: 1`, because no new `/moda_developer_create` claim or prepared launcher packet for Attempt 2 appears in the supplied evidence. The latest implementation commit `cab3f9c` is pushed; this is a **review submission**, not an Accepted review or explicit developer completion. The prior Developer Self-Review — Changes Requested record below is historical.
 
 ### Files Changed
 
-Implementation repository (`moda-interact-background`, commit `95c108e`):
+Implementation repository (`moda-interact-background`, original commit `95c108e`; correction commit `cab3f9c`):
 
 - `src/services/woocommerce-recovery/woo-recovery-admission.service.ts`
 - `src/services/woocommerce-recovery/woo-recovery-admission-evidence.ts`
 - `tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts`
 - `tests/integration/woo-recovery-admission.integration.test.ts`
+- `tests/integration/woo-recovery-admission-races.integration.test.ts` (test-only correction; 255 added lines)
 
 Parent workspace: this `BACKGROUND-003-admit-and-create-first-woo-recovery.md` task report and submission-state update only. No domain `_index.md`, parent architecture, worker wiring or implementation submodule gitlink is authorised by this submission.
 
@@ -172,11 +173,11 @@ Parent workspace: this `BACKGROUND-003-admit-and-create-first-woo-recovery.md` t
 - Checked existing durable recovery (all generations) independently of BullMQ candidate existence, and rechecked before the single generation-1 `DETECTED` row plus initial `CheckoutRecoveryStatusHistory` transaction. Returns typed outcomes only; creates no `RecoveryOutreachAttempt`, credit reservation or outbound message.
 - Added a transaction-time consent/STOP fence, proven-unique-constraint collision recovery, and an awaited injectable denied-admission hook for ARCH-046-BACKGROUND-002. Unanticipated reader, database, Redis/coordinator, transaction and hook errors are logged and rethrown.
 - Used `@modainteract/moda-interact-shared/logging` structured logs with bounded outcome/reason and hashed event/job correlation, not raw checkout tokens, phone numbers, customer fields or basket content.
-- Implemented 28 unit cases and two disposable PostgreSQL/Redis integration cases. The two changes supplied as implementation patch revisions (initial implementation and TypeScript narrowing/lint correction) were committed together in developer workflow **Attempt 1**.
+- Implemented 28 BG003 unit cases and the original two disposable PostgreSQL/Redis integration cases in the initial `95c108e` commit. The corrective commit `cab3f9c` adds four more PostgreSQL/Redis integration cases: stale candidate materialisation, same-timestamp checkout watermark update, cancellation while admission awaits the checkout lock, and persisted `MESSAGE_SENT` recovery with no candidate/job. Each verifies recovery/history or existing message/attempt/usage invariants as applicable. Total BG003 integration suite: **6 tests**. The correction modifies tests only; admission production code, BG005 wiring, outbound sending and billing remain unchanged.
 
 ### Validation Results
 
-Executed in the dedicated Background implementation worktree, as shown in the supplied developer terminal recordings (`typescript(20261024-012353)`, `typescript(20261024-012904)` and `typescript(20261024-013300)`):
+Initial implementation validation was recorded in `typescript(20261024-012353)`, `typescript(20261024-012904)` and `typescript(20261024-013300)`. These historical results apply to original implementation commit `95c108e`:
 
 - **PASS** — `npx vitest run tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts`: 28/28 tests.
 - **PASS** — `npm run test:integration -- tests/integration/woo-recovery-admission.integration.test.ts`: 2/2 disposable PostgreSQL/Redis tests (concurrent first insert and no outbound/charge; consent/STOP revision change before INSERT).
@@ -187,21 +188,31 @@ Executed in the dedicated Background implementation worktree, as shown in the su
 - **PASS (review rerun)** — admission unit suite: 28/28; admission PostgreSQL/Redis integration suite: 2/2; Shopify materialization/consent regressions: 22/22. Commands were rerun from the canonical implementation worktree.
 - Earlier attempts to run the integration launcher directly failed with `spawn prisma ENOENT`, and the initial TypeScript/ESLint checks found narrowing/unused-import problems. Running the repository's `npm run test:integration -- ...` and applying the incremental correction resolved those local failures; the passing evidence above is from the corrected source.
 
-**Coverage qualification:** The two BG003 PostgreSQL/Redis integration tests do **not** independently demonstrate the entire `materialise/cancel/update` event-race and existing-`MESSAGE_SENT`/missing-candidate matrix named in the second Validation checkbox. The unit suite covers order-placed/paid/cancelled, event-watermark supersession and existing sent/expired or missing-candidate cases. The broader integration matrix is left unchecked for reviewer disposition rather than claimed as complete.
+**Changes Requested correction validation (`typescript(20261024-015714)`, dedicated implementation worktree):**
+
+- **PASS** — `git apply --check --whitespace=error-all` and `git apply --whitespace=error-all` for `ARCH-048-BACKGROUND-003-attempt2-correction.patch`, followed by `git diff --check`; no errors reported.
+- **PASS** — `npm run test:integration -- tests/integration/woo-recovery-admission.integration.test.ts tests/integration/woo-recovery-admission-races.integration.test.ts`: **6/6** tests across two files (original 2 and new 4). The disposable PostgreSQL/Redis integration runner executed successfully.
+- **PASS** — `npx vitest run tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts tests/unit/services/checkout-recovery/recovery-consent-admission.service.test.ts`: **50/50** tests (28 BG003; 17 Shopify materialisation; 5 Shopify consent).
+- **PASS (no errors reported)** — `npx tsc --noEmit -p tsconfig.json`, `npx eslint tests/integration/woo-recovery-admission-races.integration.test.ts`, and `git diff --check`.
+- **PASS (publication)** — commit `cab3f9c` (`test(ARCH-048-BACKGROUND-003): cover admission event races`) created with 255 inserted lines in one new test file, then successfully pushed to `origin/task/ARCH-048-BACKGROUND-003` (`95c108e..cab3f9c`).
+
+**Coverage result:** The previously unchecked PostgreSQL/Redis race and existing-`MESSAGE_SENT`/no-candidate validation line is now supported by four new, passing integration tests in addition to the original two. No claim is made that the integration suite exercises the real BG005 worker wiring or a live WooCommerce provider; those are out of scope for BG003.
 
 **Physical worktree / synchronisation evidence:**
 
 - Implementation worktree reported by terminal: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-003`; branch: `task/ARCH-048-BACKGROUND-003` (confirmed by `git branch --show-current` and commit output).
-- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003`; revision `ecbf1ab7d7826c7ae728a01b31ad7d72e9f462d6`, equal to `origin/task/ARCH-048-BACKGROUND-003`. Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003`; revision `95c108eba1544145abc55a9631ccf75c2d1849b0`, equal to `origin/task/ARCH-048-BACKGROUND-003`.
-- Both canonical worktrees are clean and registered at the expected physical paths. The parent task branch is one commit ahead of `origin/main` at `e60005ecfee7e89f90fb80149e0ab6b5e197ed4f`. The implementation worktree's recursive submodule status reports database at `2e009298612133aace095db5d57245a5b01e773a` (`heads/main`).
-- Current clean/registered state and route establish physical isolation and publication, but do not independently prove the launcher's start-of-attempt synchronization packet or recursive submodule preparation at claim time. Those historical preparation details remain unverified.
-- Implementation commit/revision: `95c108eba1544145abc55a9631ccf75c2d1849b0`. Parent task/report revision: `ecbf1ab7d7826c7ae728a01b31ad7d72e9f462d6`, published to the matching task ref.
+- Canonical parent worktree from the prior review: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003`. The developer reports the prior Changes Requested self-review was pushed at parent commit `6971a9cb`. The latest recording does **not** show a fresh parent `git status`, `git rev-parse`, fetch/merge, or push of this review-submission task update; the next parent commit is pending application of this patch.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003` confirmed by `git branch --show-current` and commit output. Original revision `95c108eba1544145abc55a9631ccf75c2d1849b0`; corrected revision `cab3f9c` confirmed pushed to the matching task ref.
+- Earlier review checked both canonical worktree registrations and cleanliness, and observed the implementation's database submodule revision `2e009298612133aace095db5d57245a5b01e773a` (`heads/main`). That is **prior-state evidence**, not proof of fresh Attempt 2 start-of-attempt synchronization or recursive submodule preparation.
+- The recording demonstrates patch application, test execution, archive preparation, implementation commit and push in the task-specific implementation worktree. It does **not** include a new launcher-resolved prepared packet, synchronized parent/implementation revisions at a fresh claim, or recursive implementation-submodule materialization evidence. It also does not prove that shared/default checkouts were untouched; do not infer that solely from task-worktree usage.
+- **Attempt accounting:** the original task was returned to `ready` with `attempt: 1`, `executor: null`, `claimed_at: null`. No authorized next-claim transition is visible. The Attempt 2 *patch filename* is not itself an execution claim, so the metadata is retained unchanged pending reviewer/developer workflow reconciliation.
 
 ### Deviations
 
 - No change to BG003's approved runtime scope; BG005 owns worker wiring and BG004 owns send/billing.
-- The recorded integration validation does not yet cover every scenario described by its original combined checkbox; see Validation Results.
-- The materialised task uses `execution_mode: developer` and `completion_mode: developer`; submitting for review does not transfer completion authority or increment `attempt`.
+- The correction consists only of an integration-test file; it closes the missing integration matrix without modifying the approved runtime service scope.
+- The corrective commit was applied while the submitted task snapshot still recorded `status: ready`, `attempt: 1` after Changes Requested. Fresh claim/synchronization evidence has not been supplied; the reviewer must assess this workflow conformance gap. The task metadata is not retroactively incremented.
+- The materialised task retains `execution_mode: developer` and `completion_mode: developer`; submitting for review does not transfer completion authority.
 
 ### Assumptions
 
@@ -211,8 +222,9 @@ Executed in the dedicated Background implementation worktree, as shown in the su
 
 ### Unresolved Issues
 
-- The Validation requirement for PostgreSQL/Redis materialise/cancel/update races and the existing `MESSAGE_SENT` recovery with no candidate/job is not satisfied by the two current integration cases. Add focused integration coverage for these paths or document a specific blocker and obtain an approved scope amendment; do not mark the requirement complete without evidence.
-- The launcher's start-of-attempt synchronization packet and recursive submodule preparation at claim time remain unverified. Current clean worktrees and recorded submodule revision do not prove those historical preparation steps.
+- **Implementation-test correction resolved:** the new `woo-recovery-admission-races.integration.test.ts` adds four integration scenarios; the full BG003 PostgreSQL/Redis suite now passes 6/6. No remaining code/test gap is identified by the supplied validation run.
+- **Workflow evidence unresolved:** the fresh `/moda_developer_create` claim, start-of-attempt synchronization packet, recursive submodule preparation and exact checked-out parent/implementation revisions at correction start are not evidenced. A current Git branch/push does not prove those historical steps. The reviewer/developer must reconcile the deviation without inventing preparation records.
+- This parent task-file update is a portable patch, not a parent-branch push. The developer must apply, commit and push it from the dedicated parent task worktree before external review.
 
 ### Architectural Concerns
 
