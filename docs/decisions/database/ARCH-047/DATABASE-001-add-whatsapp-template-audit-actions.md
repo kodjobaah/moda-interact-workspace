@@ -34,7 +34,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Implement the **exact, simplified 11-table** Prisma/PostgreSQL persistence contract below in one additive ARCH-047 migration: Moda-authored template definitions and multilingual ASTs; background translation runs/items/Batch evidence; Meta registration and unified submission/status event history; resilient per-shop publication; one active pointer per internal conversation-wrapper audience; and existing Commerce audit integration. **No separate release or release-locale tables are introduced.** A new `WhatsAppTemplateDefinition` is the identity for each new content version; application services control its publication state.
+Implement the **exact, simplified 11-table** Prisma/PostgreSQL persistence contract below in one additive ARCH-047 migration: Moda-authored template definitions and multilingual ASTs; background translation runs/items/Batch evidence; Meta registration, frozen runtime parameter bindings, provider drift observations and unified submission/status event history; resumable per-shop/per-language publication; one active pointer per internal conversation-wrapper audience; and existing Commerce audit integration. **No separate release or release-locale tables are introduced.** A new `WhatsAppTemplateDefinition` is the identity for each new content version; application services control its publication state.
 
 The task is deliberately one cohesive database implementation. PostgreSQL owns technical relations, record-identity uniqueness and lookup indexes. **Template business rules are entirely application-owned**: authorisation, content immutability, supported types/languages, 20/20 review and Meta approval, active assignment choice, wrapper applicability and read-only checkout access.
 
@@ -55,7 +55,7 @@ Agreed behaviour: **create immutable English content in Moda Admin → request B
 |---|---|
 | `WhatsAppTemplateRelease`, `WhatsAppTemplateReleaseLocale` | Removed. The immutable definition is the version; approved/published/retired state is recorded on it by the application. The English source AST is stored only in its locale row. |
 | `WhatsAppTemplateMetaSubmission`, `MetaSubmissionAttempt`, `MetaStatusReceipt` | Replaced by `WhatsAppTemplateMetaRegistration` (current per-WABA/locale provider metadata and frozen submitted components) plus `WhatsAppTemplateMetaEvent` (one append-only event ledger for attempts, webhooks and reconciliation). |
-| Shop publication referencing a release | `WhatsAppTemplatePublicationOperation.definitionId`, with target records and `WhatsAppTemplateVariant.metaRegistrationId` for deployed provider-language identity. |
+| Shop publication referencing a release | `WhatsAppTemplatePublicationOperation.definitionId`, with one target per **shop and language**, referencing its Meta registration and eventual `WhatsAppTemplateVariant`; no separate release-locale table. |
 | Wrapper active pointer referencing a release | `WhatsAppConversationWrapperActiveSlot.definitionId`; application checks definition kind and approval. |
 | Four translation tables | Retained to support existing provider Batch retries, uncertain outcomes and per-language correlation. |
 
@@ -91,7 +91,9 @@ The migration path is fixed and follows the existing 2026-10-23 ARCH-047 audit m
 
 Database owns only primary keys, foreign keys, uniqueness of **technical identities**, nullable history/provenance references and ordinary indexes. `kind`, `purpose`, `offerType`, `audience`, workflow statuses, provider category and language tags are **strings**; their business meanings are validated in Admin/Background/Shared, not PostgreSQL enums or CHECK constraints. No new ARCH-047 business trigger/function/CHECK is permitted. The existing `WhatsAppTemplateStatus` enum for historical `WhatsAppTemplateVariant` is unchanged.
 
-Application services must transactionally enforce Admin-only authorship, new-definition identity for changed content, source/target consistency, 20-language completeness/review, Meta approval, WABA/shop matching, publish and retire decisions, no external adoption, wrapper eligibility, and read-only commerce behaviour. PostgreSQL may store combinations that an application would reject; this is intentional.
+Application services must transactionally enforce Admin-only authorship, new-definition identity for changed content, source/target consistency, 20-language completeness/review, Meta approval, configured-sender-WABA/shop matching, frozen parameter binding, provider drift response, publish and retire decisions, no external adoption, wrapper eligibility, and read-only commerce behaviour. PostgreSQL may store combinations that an application would reject; this is intentional.
+
+**State ownership:** `WhatsAppTemplateDefinition.status` is the authoring/internal-review lifecycle, not a guarantee that every locale is approved or every shop is published. Each `WhatsAppTemplateLocale.status` tracks that language's translation/review; `WhatsAppTemplateMetaRegistration.submissionState` and `providerStatus` track provider work per WABA/language; PublicationOperation/Target statuses track attempted assignment. `publishedAt` on Definition means the **first administrator-authorised publication** of the definition (or internal wrapper activation), not 100% shop-rollout completion; `retiredAt` records a separate application decision and never deletes provider or publication history. Applications calculate full approval and per-shop rollout readiness from the relevant records. These statuses/timestamps have no SQL lifecycle predicates.
 
 ### R2. Add `WhatsAppTemplateDefinition` and `WhatsAppTemplateLocale` **exactly**
 
@@ -102,7 +104,6 @@ model WhatsAppTemplateDefinition {
   purpose                String?   @db.VarChar(96)
   offerType              String?   @db.VarChar(32)
   audience               String?   @db.VarChar(24)
-  wabaId                 String?   @db.VarChar(191)
   providerTemplateName   String?   @db.VarChar(255)
   category               String?   @db.VarChar(32)
   sourceLanguageTag      String    @db.VarChar(16)
@@ -156,7 +157,7 @@ model WhatsAppTemplateLocale {
 }
 ```
 
-**One canonical AST per language.** The English AST is stored in the locale row whose `languageTag` equals the definition's `sourceLanguageTag`; it is **not** also copied to a definition-level `englishAst`. The definition retains the canonical source hash and authoring metadata, while the locale carries content. The application creates both in one transaction and prevents in-place content edits after save. The DB does not require an English locale, minimum/maximum locale count, or specific `kind`, `audience`, or language values. `clonedFromDefinitionId` is optional provenance; clone means a **new definition row**, not a write to the source.
+**One canonical AST per language.** The English AST is stored in the locale row whose `languageTag` equals the definition's `sourceLanguageTag`; it is **not** also copied to a definition-level `englishAst`. The definition retains the canonical source hash and authoring metadata, while the locale carries content. The application creates both in one transaction and prevents in-place content edits after save. The DB does not require an English locale, minimum/maximum locale count, or specific `kind`, `audience`, or language values. `clonedFromDefinitionId` is optional provenance; clone means a **new definition row**, not a write to the source. `providerTemplateName` is the proposed/common name for the definition's Meta locale submissions; it is not an authoritative sender/WABA identity. **Do not store `wabaId` on the definition.** The configured sender is resolved by the owning application from `messaging.sender`; the Meta registration stores the WABA under which that specific language was actually submitted, and the legacy assignment retains `providerAccountId`. Application code validates those identities match before publication/sending. Schema permits other combinations without new business checks.
 
 ### R3. Add translation run, item, batch and membership **exactly**
 
@@ -277,33 +278,39 @@ These tables persist partial, interrupted, duplicated and retried provider work.
 
 ```prisma
 model WhatsAppTemplateMetaRegistration {
-  id                   String    @id @default(cuid()) @db.Text
-  localeId             String    @db.Text
-  wabaId               String    @db.VarChar(191)
-  providerTemplateName String    @db.VarChar(255)
-  providerLanguageCode String    @db.VarChar(16)
-  category             String    @db.VarChar(32)
-  componentsSnapshot   Json      @db.JsonB
-  submittedContentHash String    @db.VarChar(64)
-  providerTemplateId   String?   @db.VarChar(191)
-  submissionState      String    @db.VarChar(32)
-  providerStatus       String?   @db.VarChar(32)
-  failureCode          String?   @db.VarChar(128)
-  lastSubmittedAt      DateTime? @db.Timestamptz(3)
-  nextRetryAt          DateTime? @db.Timestamptz(3)
-  lastReconciledAt     DateTime? @db.Timestamptz(3)
-  createdAt            DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt            DateTime  @default(now()) @updatedAt @db.Timestamptz(3)
+  id                        String    @id @default(cuid()) @db.Text
+  localeId                  String    @db.Text
+  wabaId                    String    @db.VarChar(191)
+  providerTemplateName      String    @db.VarChar(255)
+  providerLanguageCode      String    @db.VarChar(16)
+  category                  String    @db.VarChar(32)
+  componentsSnapshot        Json      @db.JsonB
+  parameterBindingsSnapshot Json      @db.JsonB
+  submittedContentHash      String    @db.VarChar(64)
+  providerTemplateId        String?   @db.VarChar(191)
+  submissionState           String    @db.VarChar(32)
+  providerStatus            String?   @db.VarChar(32)
+  failureCode               String?   @db.VarChar(128)
+  lastSubmittedAt           DateTime? @db.Timestamptz(3)
+  nextRetryAt               DateTime? @db.Timestamptz(3)
+  lastReconciledAt          DateTime? @db.Timestamptz(3)
+  lastObservedContentHash   String?   @db.VarChar(64)
+  lastObservedCategory      String?   @db.VarChar(32)
+  driftDetectedAt           DateTime? @db.Timestamptz(3)
+  createdAt                 DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt                 DateTime  @default(now()) @updatedAt @db.Timestamptz(3)
 
   locale   WhatsAppTemplateLocale @relation(fields: [localeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  events   WhatsAppTemplateMetaEvent[]
-  variants WhatsAppTemplateVariant[] @relation("WhatsAppTemplateVariantMetaRegistration")
+  events             WhatsAppTemplateMetaEvent[]
+  variants           WhatsAppTemplateVariant[] @relation("WhatsAppTemplateVariantMetaRegistration")
+  publicationTargets WhatsAppTemplatePublicationTarget[] @relation("WhatsAppTemplatePublicationTargetMetaRegistration")
 
   @@unique([wabaId, providerTemplateName, providerLanguageCode])
   @@unique([wabaId, providerTemplateId])
   @@index([localeId, createdAt])
   @@index([submissionState, nextRetryAt, createdAt])
   @@index([providerStatus, updatedAt])
+  @@index([driftDetectedAt])
   @@schema("whatsapp")
 }
 
@@ -338,7 +345,9 @@ model WhatsAppTemplateMetaEvent {
 }
 ```
 
-`WhatsAppTemplateMetaRegistration` is the mutable **current provider projection for a submitted locale on a specific WABA**. Its `componentsSnapshot`/`submittedContentHash` contain the exact frozen content originally submitted through Moda; provider status updates do not rewrite these payloads. App code ensures requests with changed content create a **new definition/name/registration**, never edit the old Meta template.
+`WhatsAppTemplateMetaRegistration` is the mutable **current provider projection for a submitted locale on a specific WABA**. Its `componentsSnapshot`, `parameterBindingsSnapshot` and `submittedContentHash` are frozen together when the Meta create request is recorded. The binding snapshot must preserve per-language **body/header/button component positions, semantic variable keys, compiler/schema version and a digest binding the mapping to the exact submitted components**. Database stores this JSONB opaquely; **Shared defines and validates its canonical structure**, and Background uses it to populate the exact positional parameters at send time. Language translations may change parameter ordering without changing semantics. Neither approval webhooks nor reconciliations may overwrite the submitted components, binding map or submitted hash; app code ensures a content change creates a **new definition/name/registration**, never edits the old Meta template.
+
+`lastObservedContentHash` and `lastObservedCategory` record the latest **verified GET/reconciliation observation** from Meta, not a new imported Moda authoring version. Background compares the observed provider components against `submittedContentHash` using the same canonicalisation/hash contract and sets/clears `driftDetectedAt` under its application policy. A status-only webhook is not evidence of content equivalence. A drifted template must be handled by application send/assignment gating; database does not add a content-matching CHECK. Unexpected external templates can be represented as unmatched `MetaEvent` receipts, never as an adopted registration. `wabaId` here is the stored provider registration identity, while `messaging.sender` supplies the configured sending WABA and existing shop variants carry `providerAccountId`. Matching remains application-owned.
 
 `WhatsAppTemplateMetaEvent` is one append-only **event ledger** for submission attempts/outcomes, Meta status webhooks and explicit provider reconciliation. `source`, `eventType`, `outcome`, `attemptNumber` and `providerStatus` are application-valued strings/numbers, not database workflow gates. `eventIdentity` deduplicates the same technical receipt/retry; `registrationId` is nullable so unmatched Meta notifications can be recorded **without importing/adopting external templates**. Persist bounded/redacted `evidence` only; never credentials, large raw webhook bodies or unnecessary customer data. After a timeout, application reconciliation checks Meta before retrying a create operation. Provider identity uniqueness is technical; approval and provenance are application checks.
 
@@ -372,24 +381,28 @@ model WhatsAppTemplatePublicationOperation {
 }
 
 model WhatsAppTemplatePublicationTarget {
-  id                String    @id @default(cuid()) @db.Text
-  operationId       String    @db.Text
-  shopId            String    @db.Text
-  previousVariantId String?   @db.Text
-  newVariantId      String?   @db.Text
-  status            String    @db.VarChar(32)
-  failureCode       String?   @db.VarChar(128)
-  retryCount        Int       @default(0)
-  processedAt       DateTime? @db.Timestamptz(3)
-  createdAt         DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt         DateTime  @default(now()) @updatedAt @db.Timestamptz(3)
+  id                 String    @id @default(cuid()) @db.Text
+  operationId        String    @db.Text
+  shopId             String    @db.Text
+  languageTag        String    @db.VarChar(16)
+  metaRegistrationId String    @db.Text
+  previousVariantId  String?   @db.Text
+  newVariantId       String?   @db.Text
+  status             String    @db.VarChar(32)
+  failureCode        String?   @db.VarChar(128)
+  retryCount         Int       @default(0)
+  processedAt        DateTime? @db.Timestamptz(3)
+  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime  @default(now()) @updatedAt @db.Timestamptz(3)
 
-  operation       WhatsAppTemplatePublicationOperation @relation(fields: [operationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  shop            Shop @relation("WhatsAppTemplatePublicationTargetShop", fields: [shopId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  previousVariant WhatsAppTemplateVariant? @relation("WhatsAppTemplatePublicationPreviousVariant", fields: [previousVariantId], references: [id], onDelete: SetNull, onUpdate: Restrict)
-  newVariant      WhatsAppTemplateVariant? @relation("WhatsAppTemplatePublicationNewVariant", fields: [newVariantId], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  operation        WhatsAppTemplatePublicationOperation @relation(fields: [operationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  shop             Shop                                 @relation("WhatsAppTemplatePublicationTargetShop", fields: [shopId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  metaRegistration WhatsAppTemplateMetaRegistration     @relation("WhatsAppTemplatePublicationTargetMetaRegistration", fields: [metaRegistrationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  previousVariant  WhatsAppTemplateVariant?             @relation("WhatsAppTemplatePublicationPreviousVariant", fields: [previousVariantId], references: [id], onDelete: SetNull, onUpdate: Restrict)
+  newVariant       WhatsAppTemplateVariant?             @relation("WhatsAppTemplatePublicationNewVariant", fields: [newVariantId], references: [id], onDelete: SetNull, onUpdate: Restrict)
 
-  @@unique([operationId, shopId])
+  @@unique([operationId, shopId, languageTag])
+  @@index([metaRegistrationId])
   @@index([shopId, status, createdAt])
   @@index([status, updatedAt])
   @@schema("whatsapp")
@@ -409,7 +422,9 @@ publicationNewTargets      WhatsAppTemplatePublicationTarget[] @relation("WhatsA
 @@index([metaRegistrationId])
 ```
 
-`metaRegistrationId` is **nullable, with no default**. A legacy or externally authored variant remains unlinked and is not silently adopted. Each new assignment uses a known Moda registration and the existing provider-template fields; Admin validates that registration, shop WABA, purpose and language match. No SQL release-locale table, state-dependent unique slot or Meta approval CHECK is added. Idempotent `operationKey` plus unique `(operationId, shopId)` permits retryable per-shop progress; authorised replacement is application logic.
+`metaRegistrationId` on **existing** `WhatsAppTemplateVariant` is **nullable, with no default**. A legacy or externally authored variant remains unlinked and is not silently adopted. A **PublicationTarget represents one `(operationId, shopId, languageTag)`**, references the intended Meta registration and records the previous/new shop variant for that language. The registration reference on the target is a technical FK only; the application validates the registration belongs to the intended definition, language and configured sender WABA. Duplicate targets for the same shop+language in one operation are rejected by technical uniqueness, but the same shop with 20 languages yields **20 distinct target rows**. No SQL release-locale table, state-dependent unique active slot or Meta approval CHECK is added.
+
+`totalTargets`, `succeededTargets` and `failedTargets` on the parent operation count **shop-language targets**, not distinct shops. For example, publishing all 20 languages to 100 eligible shops creates up to 2,000 targets. The application separately derives shop counts for the UI. An application-owned per-shop transaction should apply/switch all selected language assignments and mark their target rows together, or explicitly handle partial shop application under a documented policy; never imply an entire shop succeeded merely because one language row succeeded. Retrying the same `operationKey` must not silently retarget an already-confirmed operation or overwrite another shop's approved overrides. No stored procedures or cross-row business constraints are added.
 
 ### R6. Add platform-level conversation wrapper active pointer **exactly**
 
@@ -481,7 +496,7 @@ Use this fixed migration:
 prisma/migrations/20261024133000_arch047_template_persistence/migration.sql
 ```
 
-Create exactly the **11 new models** in R2–R6 (2 authoring + 4 translation + 2 Meta + 2 publication + 1 wrapper pointer) with all declared column types, defaults, PKs/FKs, technical unique keys and query indexes. Add nullable `WhatsAppTemplateVariant.metaRegistrationId` FK and index. Append the ten audit enum actions and minimally extend the existing audit-target CHECK as R8 describes. **Do not introduce or seed** a release table, release-locale table, separate Meta attempt/receipt table, templates, WABAs, language rows, publication pointers or initial shop assignments.
+Create exactly the **11 new models** in R2–R6 (2 authoring + 4 translation + 2 Meta + 2 publication + 1 wrapper pointer) with all declared column types, defaults, PKs/FKs, technical unique keys and query indexes. In particular, the migration must use the new `(operationId, shopId, languageTag)` publication-target unique key, its required `metaRegistrationId` FK, the frozen `parameterBindingsSnapshot` JSONB column, the three nullable provider-drift observation fields and no `wabaId` column on `WhatsAppTemplateDefinition`. Add nullable `WhatsAppTemplateVariant.metaRegistrationId` FK and index. Append the ten audit enum actions and minimally extend the existing audit-target CHECK as R8 describes. **Do not introduce or seed** a release table, release-locale table, separate Meta attempt/receipt table, templates, WABAs, language rows, publication pointers or initial shop assignments.
 
 This is an additive change. Preserve all existing `Shop`, `PlatformAdmin`, `WhatsAppTemplateVariant`, `CommerceAuditEvent`, provider and ARCH-031 translation data. Do not rewrite predecessor SQL, rebuild existing tables or add ARCH-047 business CHECKs/triggers/stored procedures. The migration must support both fresh and upgrade application, with documented ordering and enum rollback limitations.
 
@@ -506,7 +521,7 @@ Register **exactly** these package script names and preserve existing ARCH-047 a
 
 The schema validator must check the **exact** 11-model field types, nullability, defaults and `@db` annotations, relation names and target columns, `onDelete`/`onUpdate`, reverse fields, model/table set, indexes/uniques, new audit enum values and nullable existing-variant FK. The migration validator must verify real DDL semantics/objects (not comments or arbitrary identifier strings), absence of the removed release/Meta history tables and absence of new business CHECKs/triggers/functions/conditional uniques. They must reject incorrect-but-plausible changes for the expected contract reason.
 
-Mutation regressions must test at least these five changes on temporary copies: `WhatsAppTemplateLocale.localeAst` JsonB → String; a required FK `onDelete: Restrict` → `Cascade`; missing TranslationModelConfiguration FK; removed registration provider identity uniqueness; and `WhatsAppTemplateVariant.metaRegistrationId` changed from nullable to required. Include at least one probe introducing an obsolete `WhatsAppTemplateRelease` table. Do not change production files merely to execute mutation probes.
+Mutation regressions must test at least these incorrect changes on temporary copies: `WhatsAppTemplateLocale.localeAst` JsonB → String; a required FK `onDelete: Restrict` → `Cascade`; missing TranslationModelConfiguration FK; removed registration provider identity uniqueness; `WhatsAppTemplateVariant.metaRegistrationId` changed from nullable to required; missing/wrong-typed `WhatsAppTemplateMetaRegistration.parameterBindingsSnapshot`; removed or incorrectly typed `lastObservedContentHash`; `WhatsAppTemplatePublicationTarget` missing `languageTag` or retaining the old `@@unique([operationId, shopId])`; and `WhatsAppTemplateDefinition.wabaId` improperly reintroduced. Include at least one probe introducing an obsolete `WhatsAppTemplateRelease` table. A syntactically correct but semantically wrong contract must fail for the intended validation reason. Do not change production files merely to execute mutation probes.
 
 ### R11. Fresh/upgrade PostgreSQL validation and negative tests
 
@@ -514,9 +529,9 @@ Create `scripts/test-arch047-template-persistence-postgres.mjs` using repository
 
 - **Fresh:** Apply the migrations in order through this one. Verify 11 tables, columns/FKs/indexes/audit actions, no template/locale/registration seeds and successful Prisma validation/generation.
 - **Upgrade:** Apply predecessor migrations; seed representative historical `Shop`, `PlatformAdmin`, `WhatsAppTemplateVariant`, `CommerceAuditEvent` and ARCH-031 records where practicable. Snapshot them, apply ARCH-047 migration, and prove all historical IDs/data remain unchanged and old variants have `metaRegistrationId = NULL`.
-- **Round-trip:** Create a `META_RECOVERY` definition and English locale; persist translation run, target item, batch and membership, then a translated locale. Create a Meta registration with frozen component snapshot, a failed/uncertain submission-attempt `MetaEvent`, another attempt and a status-webhook event. Create publication operation with targets for two shops and link newly published existing-variant rows to registrations. Separately create a `MODA_CONVERSATION_WRAPPER` definition/locale, activate its definition for an audience, and read the pointer back.
-- **Technical negatives:** Reject duplicate `(definitionId, languageTag)`, duplicate `(runId, targetLanguageTag)`, duplicate provider Batch custom ID/membership, duplicate `(wabaId, providerTemplateName, providerLanguageCode)`, duplicate publication `operationKey`, duplicate `(operationId, shopId)`, duplicate `eventIdentity`, and invalid FK references. Prove valid rows and nullable unmatched events succeed.
-- **Business non-enforcement:** Prove PostgreSQL can store one locale only; nonstandard `kind`/`audience`; a definition marked `PUBLISHED` without 20 approved locales; a wrapper active pointer referencing a definition of another kind; and a `MetaRegistration` whose WABA differs from its definition. App validation must reject such cases later; PostgreSQL does not.
+- **Round-trip:** Create a `META_RECOVERY` definition and English locale; persist translation run, target item, batch and membership, then a translated locale. Create a Meta registration with frozen component snapshot, **language-specific positional parameter-binding JSONB**, submitted hash, a failed/uncertain submission-attempt `MetaEvent`, another attempt, status webhook and subsequent provider-content observation/drift fields. Create a publication operation with **two languages for each of two shops** (four shop-language targets), linking each target to its intended Meta registration and its newly published existing-variant row; verify parent target counters mean shop-language results, not shop counts. Separately create a `MODA_CONVERSATION_WRAPPER` definition/locale, activate its definition for an audience, and read the pointer back.
+- **Technical negatives:** Reject duplicate `(definitionId, languageTag)`, duplicate `(runId, targetLanguageTag)`, duplicate provider Batch custom ID/membership, duplicate `(wabaId, providerTemplateName, providerLanguageCode)`, duplicate publication `operationKey`, duplicate `(operationId, shopId, languageTag)`, duplicate `eventIdentity`, and invalid FK references (including a target with unknown `metaRegistrationId`). Prove two languages for the same shop/operation succeed, nullable unmatched Meta events succeed and valid registrations can store binding/observation metadata.
+- **Business non-enforcement:** Prove PostgreSQL can store one locale only; nonstandard `kind`/`audience`; a definition marked `PUBLISHED` without 20 approved locales; a wrapper active pointer referencing a definition of another kind; a published variant whose `providerAccountId` differs from its linked registration's `wabaId`; and a publication target whose registration resolves to a different language/definition than its operation. App validation must reject such cases later; PostgreSQL does not.
 - **Audit:** All ten new actions round-trip through the existing Commerce audit model, and historical actions/branches retain their previous behaviour.
 - Clean up test databases and fixtures on failure/success. Record exact commands, PostgreSQL/Prisma versions and preservation evidence.
 
@@ -528,8 +543,8 @@ The Database agent must demonstrate representative **Prisma/database storage ope
 2. **Queue translation:** Insert a run with source snapshot and 19 target items, with progress/retry statuses stored durably; app chooses targets/model and decides when work may start.
 3. **Batch correlation:** Insert Batch and BatchItem records; handle uncertain provider batches, polls and retried items without losing historical memberships.
 4. **Store output:** Update item/output and locale AST with the verified translation; application checks stale source hashes and prohibits overwriting published content.
-5. **Meta create and reconcile:** Insert a registration with frozen request components; append submission-attempt/unknown-outcome events and subsequent webhook/reconciliation events. App checks Meta before retrying unknown creates and chooses provider status transitions.
-6. **Publish to shops:** Transactionally insert an operation, target rows and new/replaced `WhatsAppTemplateVariant` references through `metaRegistrationId`, plus an authorised `CommerceAuditEvent` where applicable. Admin handles approval, WABA matching, assignment override and concurrency.
+5. **Meta create and reconcile:** Insert a registration with frozen request components and the **frozen compiled binding map**; append submission-attempt/unknown-outcome events and subsequent webhook/reconciliation events. Demonstrate nullable current observed hash/category and drift timestamp round-trip without rewriting frozen submissions. App checks Meta before retrying unknown creates, compares provider content using Shared's canonical digest, chooses provider status transitions and gates drifted sends.
+6. **Publish to shops:** Insert an operation and **shop-language target rows** with intended `metaRegistrationId`. Demonstrate a per-shop transactional example that creates/switches the relevant `WhatsAppTemplateVariant` assignments and updates all selected language targets together, plus an authorised `CommerceAuditEvent` where applicable. On error, the application chooses rollback/retry semantics. Admin handles approval, configured WABA matching, override decisions, matching target-definition/language provenance and concurrency; PostgreSQL only enforces the explicit FKs and technical identities.
 7. **Activate wrapper:** Upsert audience's `WhatsAppConversationWrapperActiveSlot` referencing a definition with app-managed `editVersion` CAS and relevant audit event. App validates published wrapper kind and chooses the fallback policy.
 8. **Read runtime:** Query variants by existing shop/provider/purpose/language indexes and include nullable registration → locale → definition provenance. Resolve active wrapper by audience and include its language content; no Meta fetch or checkout write.
 
@@ -543,8 +558,8 @@ Do not implement Admin UI, translation workers, Meta provider calls, approval po
 
 - [ ] Implement R2: Definition/Locale and reverse references; English AST lives only in `WhatsAppTemplateLocale`.
 - [ ] Implement R3: Translation Run/Item/Batch/BatchItem with existing ARCH-031-compatible technical correlations.
-- [ ] Implement R4: MetaRegistration + unified MetaEvent ledger, technical uniqueness and nullable unmatched events.
-- [ ] Implement R5: PublicationOperation/Target and nullable `WhatsAppTemplateVariant.metaRegistrationId` with reverse relations.
+- [ ] Implement R4: MetaRegistration + unified MetaEvent ledger, frozen component/parameter-binding snapshots, content-drift observations, technical uniqueness and nullable unmatched events.
+- [ ] Implement R5: PublicationOperation plus one **shop-language** Target, required target `metaRegistrationId`, nullable `WhatsAppTemplateVariant.metaRegistrationId`, all named reverse relations and application-ready per-shop transaction support.
 - [ ] Implement R6: central wrapper audience pointer referencing a definition, not a release.
 - [ ] Implement R7: all explicitly named reverse Prisma relation fields.
 - [ ] Implement R8: ten new audit actions and the narrowly amended historical audit-target CHECK.
@@ -565,14 +580,16 @@ English AST / translated AST         : WhatsAppTemplateLocale(definitionId, lang
 Translation item                     : (runId, targetLanguageTag)
 Provider Batch identity              : (provider, providerBatchId) and providerCustomId
 Provider registration                : (wabaId, providerTemplateName, providerLanguageCode)
+Frozen Meta components + bindings    : componentsSnapshot + parameterBindingsSnapshot + submittedContentHash
+Provider reconciliation / drift     : lastObservedContentHash + lastObservedCategory + driftDetectedAt
 Meta event receipt or attempt        : eventIdentity
 Publication request                  : operationKey
-Per-shop publication target          : (operationId, shopId)
+Per-shop-language publication target : (operationId, shopId, languageTag) + required metaRegistrationId
 Live runtime assignment              : existing WhatsAppTemplateVariant identity + nullable metaRegistrationId
 Internal wrapper selection          : audience primary key + definitionId; editVersion for app CAS
 ```
 
-Applications keep published provider payload snapshots and the immutable definition/locale references for provenance. Historical `WhatsAppTemplateVariant` rows remain valid but **unlinked**, not silently imported or treated as compliant Admin-created templates.
+Applications keep frozen provider components **and language-specific semantic-to-positional parameter bindings** with their immutable definition/locale references for provenance. Meta registrations, not definitions, persist observed WABA identity. The sender WABA is resolved from `messaging.sender` and must match the registration and shop assignment in application logic; no database constraint enforces it. Historical `WhatsAppTemplateVariant` rows remain valid but **unlinked**, not silently imported or treated as compliant Admin-created templates. A definition's authoring state never substitutes for per-locale Meta approval or per-shop publication results.
 
 ## Dependencies
 
@@ -584,14 +601,14 @@ After architect acceptance and explicit developer completion, new Shared/Admin/B
 
 ## Acceptance Criteria
 
-- [ ] Exactly **11 new `whatsapp` tables**, the specified legacy variant FK/reverse fields, ten new Commerce audit enum actions and matching technical indexes exist; no release/release-locale/third Meta history table is created.
-- [ ] Definition/Locale stores English and translated ASTs once per language; Meta registration stores submitted provider components; event ledger retains attempts/webhooks; shop targets and wrapper pointers reference definitions directly.
+- [ ] Exactly **11 new `whatsapp` tables**, the specified legacy variant FK/reverse fields, ten new Commerce audit enum actions and matching technical indexes exist; no release/release-locale/third Meta history table is created. Definition has **no WABA column**; MetaRegistration owns provider WABA, frozen binding JSONB, and drift observations.
+- [ ] Definition/Locale stores English and translated ASTs once per language; Meta registration stores submitted components **with language-specific parameter bindings and current provider observation fields**; event ledger retains attempts/webhooks; shop-language publication targets and wrapper pointers reference definitions directly.
 - [ ] All Prisma reverse relations are valid, FK delete/update actions and unique identities match R2–R7, and Prisma generates its client against the applied migration.
 - [ ] Existing `Shop`, `PlatformAdmin`, `CommerceAuditEvent`, `WhatsAppTemplateVariant`, audit-action semantics and ARCH-031 translations survive upgrades intact.
 - [ ] Legacy variants have `metaRegistrationId = NULL` until an explicitly authorised application migration/assignment; no external template is adopted by SQL.
-- [ ] Missing approvals, wrong kinds/WABAs, one-language definitions and wrong-type wrapper pointers are **not** rejected by new SQL business rules; technical FK/identity violations are rejected.
+- [ ] Missing approvals, wrong kinds/WABAs, one-language definitions, cross-definition or cross-language registration targets, and wrong-type wrapper pointers are **not** rejected by new SQL business rules; technical FK/identity violations are rejected. Publication operation can have multiple language targets for the same shop, uniquely keyed by `(operationId, shopId, languageTag)`.
 - [ ] New audit actions work without altering old `arch020_audit_targets` branches or introducing a new audit model.
-- [ ] Exact validators and mutation tests, isolated fresh/upgrade PostgreSQL tests, round-trip and negative cases, and `git diff --check` pass.
+- [ ] Exact validators catch wrong/missing binding/drift/WABA and publication-target declarations; mutation tests, isolated fresh/upgrade PostgreSQL tests, round-trip and negative cases, and `git diff --check` pass.
 
 ## Validation
 
@@ -625,7 +642,7 @@ On 23 October 2026, the developer invoked `/moda_developer_create ARCH-047-DATAB
 
 ### Scope Amendment
 
-24 October 2026: this task now combines all four proposed database tasks into one. The latest task-definition revision specifies the simplified 11-table contract, exact Prisma fields and migrations, and keeps all template business rules in applications. It does not attest to implementation. It does not attest to implemented database source or a successful migration.
+24 October 2026: this task now combines all four proposed database tasks into one. The latest task-definition revision specifies the simplified 11-table contract, exact Prisma fields and migrations, language-granular publication targets, frozen positional parameter bindings, provider drift observations and unambiguous registration-level WABA identity; all template business rules remain in applications. It does not attest to implementation. It does not attest to implemented database source or a successful migration.
 
 ### Files Changed
 
@@ -645,7 +662,7 @@ None recorded.
 
 ### Assumptions
 
-Snapshot from the developer task worktree ZIP supplied 24 October 2026; current live branch may have moved. Provider language mappings, AST/schema validation, Meta payload verification and release-eligibility checks are owned by Shared/Admin/Background, not Database.
+Snapshot from the developer task worktree ZIP supplied 24 October 2026; current live branch may have moved. Provider language mappings, AST/schema and frozen parameter-binding validation, Meta payload canonicalisation/drift decisions, configured sender-WABA/shop matching, 20-language publication readiness and release-eligibility checks are owned by Shared/Admin/Background, not Database. Publication target counters count shop-language rows.
 
 ### Unresolved Issues
 
