@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 48
 executor: null
 claimed_at: null
@@ -243,3 +243,15 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Changes Requested
+
+Review completed on 2026-10-24 against Attempt 1 and implementation commit `722593e`.
+
+The implementation behavior and focused runtime checks are promising, but the required touched-file lint check fails and the attempt cannot be accepted yet:
+
+- Add an explicit `cause` option when constructing the `AggregateError` instances in `releaseOrThrow` and `compensateProviderError`, preserving the original operation failure while still surfacing compensation failure.
+- Remove the unused `Fixture` type alias from `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` or use it meaningfully.
+- Rerun the focused unit suite, TypeScript check, touched-file ESLint, and the dedicated PostgreSQL/Redis integration test after the correction.
+
+This is a review correction for Attempt 1; do not increment the attempt here. The task is returned to `ready` for the next `/moda_developer_create ARCH-048-BACKGROUND-004` claim.
