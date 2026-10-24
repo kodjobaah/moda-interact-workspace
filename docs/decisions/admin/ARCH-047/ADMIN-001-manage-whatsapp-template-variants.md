@@ -9,19 +9,19 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-047-DATABASE-001
-enables:
-  - ARCH-047-ADMIN-002
-  - ARCH-047-BACKGROUND-001
+enables: []
 created: 2026-10-23
-updated: 2026-10-23
+updated: 2026-10-24
 ---
+
+> **SUPERSEDED — 24 October 2026.** This external-import / shop-to-shop-copy task must not be claimed or implemented. All templates are authored inside Moda Admin; `ARCH-047-ADMIN-003`–`ARCH-047-ADMIN-008` own its replacement capabilities. Original requirements below remain for historical provenance only and are **not** an implementation contract.
 
 # Create and import Meta WhatsApp templates in Admin
 
