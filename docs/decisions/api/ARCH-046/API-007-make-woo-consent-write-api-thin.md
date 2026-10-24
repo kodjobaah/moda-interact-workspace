@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 20
 executor: null
@@ -35,6 +35,10 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 Coordinator: `moda_architect`.
 
 **Lifecycle:** portable canonical task definition, **defined but not materialised**. The source ZIP permits design/review, not a claim of access to the developer's actual worktrees, Git remotes or integrated API branches. `ready` reflects the three complete prerequisite task states in the 2026-10-24 11:46 workspace snapshot; re-gate with the launcher before implementation. API-006 is a separate previously drafted but absent/unmaterialised handoff in this snapshot; do not require it to exist to start API-007.
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-046-API-007` for this ready agent-owned task. Execution and completion authority are transferred to the developer; logical ownership remains `assigned_agent: moda_api`, and the task scope, dependencies, acceptance criteria and validation requirements are unchanged. The task remains `ready` at Attempt 0 until canonical launcher preparation verifies prerequisites and durably claims Attempt 1.
 
 ## Objective
 
