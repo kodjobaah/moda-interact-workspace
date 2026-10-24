@@ -4,7 +4,7 @@ title: WooCommerce Moda checkbox consent and customer-phone admission
 status: proposed
 coordinator: moda_architect
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-10-24
 ---
 
 # ARCH-046 — WooCommerce WhatsApp consent-gated recovery
@@ -52,6 +52,15 @@ WooCommerce lacks a uniform WhatsApp recovery permission source comparable to Sh
 - **WOOCOMMERCE-002/003:** use supported Classic/Blocks hooks; verify that the customer actively selected/withdrew the checkbox during a current checkout (server-side field observation, normal WooCommerce nonce/session protections). A stale checkout page cannot submit a new GRANT after disconnect/feature-disable. Pre-submit acknowledgements determine when consent is valid; if checkout activity overtakes the consent ACK, that checkout may remain ineligible.
 - **API-001:** authenticate WooInstallation (derive shop), verify the deliberate checkbox action, canonicalise the server-observed number, look up by `Customer.shopId` + active `CustomerPhone` canonical phone. Reuse the single match or create an ordinary Customer/CustomerPhone when none exists; ambiguous matches deny the consent write without merging customers. **Matching a number never sets GRANTED**: only a verified affirmative checkbox event does. Withdrawals/regrants use monotonic revisions and stable idempotency IDs. Atomically store current decision and evidence fact.
 
+
+### 24 October 2026 — thin Woo consent-write API (`ARCH-046-API-007`)
+
+`ARCH-046-API-007` is a new, API-owned correction task; the completed `API-001` is not reopened. Add `woo.whatsapp-consent.v2` on the existing authenticated `POST /v1/woocommerce/whatsapp-consent` route with exactly six top-level fields: `schemaVersion`, `eventId`, `decision`, `canonicalPhone`, `occurredAt` and `disclosure`. For GRANT the disclosure contains `{version,locale,text}`; for REVOKE it is `null`. The authenticated WooCommerce plugin is responsible for nonce/session/cart-token checks, the deliberate customer grant/withdrawal action, phone canonicalisation and accurate translated disclosure. The API derives merchant and fixed consent purpose from installation authentication; it does not require Classic/Blocks mode, checkout key, checkbox IDs/states, attestation booleans, duplicate recipient, or merchant URL in v2. It still enforces authentication/tenant isolation, bounded contract/recipient validation and atomic, ordered and idempotent consent/evidence persistence.
+
+To shorten the hot write path, remove the Subscription/BillingPlan/Feature entitlement lookup from **both** v1 and v2 consent writes: a stored GRANT is passive permission evidence, never permission to create recovery work or send a message. Background remains the authoritative recovery-feature, consent and STOP gate. Replace separate transaction-time Shop and WooCommerceInstallation verification queries with one semantically equivalent indexed, row-locked join, preserving credential-rotation/revocation races. Keep initial installation authentication, immutable event facts, unambiguous shop/phone lookup, consent revision and decision ordering, replay-digest compatibility, existing per-event/recipient locks, STOP non-override and commit-before-ACK. Do not loosen five-minute freshness or timestamp-ordering semantics in this task without separately approved correctness work. Introduce no new database table, queue or infrastructure. Measure before/after SQL operations and transaction time rather than asserting an untested throughput gain.
+
+**Rollout:** keep accepting existing `woo.whatsapp-consent.v1` producer events and identical in-flight retries while the new v2 API is deployed. WooCommerce's migration to v2 must be defined as an independent Woo-owned task, and v1 may be retired only after a separately approved deployment and replay plan. The previously drafted proof-backed returning-checkout `ARCH-046-API-006`/`ARCH-046-WOOCOMMERCE-008` handoff is **not present in this supplied workspace snapshot**; it remains a separate materialisation step. When API-006 is materialised, make it depend on architect-accepted, `complete` API-007. Do not create or edit nonexistent API-006/WOOCOMMERCE-008 task files within API-007, or change any `docs/decisions/**/_index.md` before the architect session is explicitly completed.
+
 ### Current state and evidence
 
 - `commerce.CustomerPhone`: one current shop/phone/purpose decision, consent source `WOO_MODA_CHECKBOX`, verification/observation date and revision, local STOP/merchant no-contact. It is read for recovery admission.
@@ -93,17 +102,17 @@ Later normal Woo checkout reconciliation (once live recovery engine approved)
 
 - **Database:** shared `ARCH-045-DATABASE-002` only; CustomerPhone extension plus one new `commerce.WhatsAppConsentEvidence` table.
 - **Woo plugin:** checkbox + merchant guidance, validated pre-submit choice/withdrawal, merchant recovery suppression UI and optional Support notice reader.
-- **Hosted API:** authenticated consent write/merchant suppression on existing customer/phone, merchant Support reads, safe idempotency. No provider-source configuration API.
+- **Hosted API:** versioned, thin authenticated consent write with atomic current consent/evidence and safe ordering; merchant suppression, merchant Support reads and safe idempotency. After API-007 the consent write performs no billing feature-eligibility SQL. No provider-source configuration API.
 - **Background:** future current-consent reader, pre-creation and send gates only when approved Woo engine exists.
 - **System test:** LocalWP Classic/Blocks capture and eventual live recovery, with separate terminal gates.
 
 ## Data Model / Contracts
 
-Tenant identity is `Customer.shopId` and authenticated `WooCommerceInstallation.shopId`; canonical phone is joined through CustomerPhone. The only new relation object is `commerce.WhatsAppConsentEvidence`. `API-001` defines its Woo HTTP consent v1 contract; the PHP producer uses matching fixtures. `ARCH-045-SHARED-001/002` provide Node phone canonicalisation and Shopify sync contract. No Shared Woo queue event or Woo customer-session linking table is defined.
+Tenant identity is `Customer.shopId` and authenticated `WooCommerceInstallation.shopId`; canonical phone is joined through CustomerPhone. The only new relation object is `commerce.WhatsAppConsentEvidence`. `API-001` defines the existing Woo HTTP consent v1 contract; `API-007` adds a smaller v2 envelope on the same authenticated route while retaining the v1 producer and retry contract. v2 producer adoption is a separate WooCommerce-owned task. `ARCH-045-SHARED-001/002` provide Node phone canonicalisation and Shopify sync contract. No Shared Woo queue event or Woo customer-session linking table is defined.
 
 ## Consistency / Transactions / Failure Handling
 
-- The API accepts positive permission **only** from a deliberate validated checkout opt-in, not an arbitrary browser-provided `customerId`, phone match, checkbox appearance, merchant toggle or provider flag.
+- The Woo server validates deliberate checkout opt-in/withdrawal and its checkout authentication before publishing; the API accepts the resulting event **only from the authenticated installation**, not arbitrary browser-provided `customerId`, a phone match, checkbox appearance, merchant toggle or provider flag. The API does not independently re-verify Woo checkout-only assertions in v2.
 - CustomerPhone and the event evidence fact commit atomically; `(shopId,eventId)` supports idempotent replay and rejects same-ID/different-body conflicts; stale grants cannot override newer withdrawals or customer STOP; even a new Woo checkbox grant cannot automatically clear a WhatsApp STOP. Plugin checkout continues during hosted outages but no unacknowledged grant is considered verified.
 - Identical phone in another merchant's shop is never matched. Ambiguous duplicate active records within a shop must fail closed rather than silently merge identities. Phone changes do not carry a grant automatically.
 - Merchant suppression is distinct from customer permission: re-enable clears only merchant-owned suppression if the phone is already GRANTED, never clears customer STOP and never grants opt-in.
@@ -115,7 +124,7 @@ Use existing WordPress admin capabilities and REST nonces, trusted installation 
 
 ## Rollout / Migration
 
-DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted task-branch evidence; their dependency versions and integration must be reconciled during deployment. Next implement WordPress checkbox and pre-submit handling; release them only when targeted LocalWP system test passes. Consent collection can ship without authorising outbound Woo recovery. Live Woo BACKGROUND-002/004 and SYSTEM-TEST-002 remain **Blocked** until the independently approved recovery engine exists. Do not update `docs/decisions/**/_index.md` until this architecture session is explicitly completed.
+DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted task-branch evidence; their dependency versions and integration must be reconciled during deployment. Implement API-007 as an independently reviewed correction before materialising the previously drafted API-006 reader. Deploy v2 acceptance before the separately defined Woo v2 producer adoption; retain v1 during migration and preserve existing duplicate retries. Next implement/validate WordPress checkbox and pre-submit handling; release them only when targeted LocalWP system test passes. Consent collection can ship without authorising outbound Woo recovery. Live Woo BACKGROUND-002/004 and SYSTEM-TEST-002 remain **Blocked** until the independently approved recovery engine exists. Do not update `docs/decisions/**/_index.md` until this architecture session is explicitly completed.
 
 ## Decisions / Tasks
 
@@ -123,6 +132,7 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 |---|---|---|---|
 | `ARCH-046-DATABASE-001` | `moda_database` | superseded | — |
 | `ARCH-046-API-001` | `moda_api` | complete | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
+| `ARCH-046-API-007` | `moda_api` | ready | `ARCH-046-API-001`, `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
 | `ARCH-046-API-002` | `moda_api` | superseded | — |
 | `ARCH-046-API-003` | `moda_api` | superseded | — |
 | `ARCH-046-API-004` | `moda_api` | superseded | — |
@@ -148,6 +158,8 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 - Separate live Woo recovery engine task IDs are deliberately not fabricated. Consent integration does not make them Ready.
 
 ## Change History
+
+- 2026-10-24: Defined API-007 as a thin versioned consent-write API (v2 envelope with v1 compatibility), removed billing feature lookup from consent write, consolidated transaction-time installation checks, kept STOP/ordering/idempotency, and required before/after SQL measurements. Prior API-006/WooCommerce-008 draft remains a separate, not-yet-materialised handoff in the supplied snapshot. No runtime code or domain `_index.md` changed.
 
 - 2026-10-20: Initial Woo consent capture and recovery gate proposal.
 - 2026-10-21: Removed 72-hour consent expiry, consent-wakeup/poller and consent-blocked CheckoutRecovery rows.
