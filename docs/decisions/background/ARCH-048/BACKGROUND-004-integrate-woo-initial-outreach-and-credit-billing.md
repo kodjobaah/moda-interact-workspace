@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 48
 executor: null
 claimed_at: null
@@ -149,7 +149,7 @@ Investigate the actual pre-send fence exposed by accepted ARCH-046-BACKGROUND-00
 
 ### Status
 
-Review — Attempt 2 passed developer self-review. The task remains in `review` because `completion_mode: developer`; explicit developer completion is pending. Attempt 1 review history is preserved below.
+Complete — Attempt 2 passed developer self-review and the developer explicitly completed the task on 2026-10-24. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -274,4 +274,17 @@ Review completed on 2026-10-24 against Attempt 2 and implementation branch tip `
 - The canonical launcher preparation packet confirms Attempt 2 claim, passed dependency gate, reused dedicated worktrees, current mainline synchronization and recursive submodule readiness. The implementation branch and parent claim/report branch are published; review-report publication follows this record's commit.
 - No known required Work Item or Acceptance Criterion remains incomplete for this bounded service task. The production guarded-sender composition, worker wiring, live provider delivery and system rollout validation remain explicitly owned by BG005/system validation or outside this task's scope.
 
-With `completion_mode: developer`, the task transitions to `status: review`; explicit developer completion is pending. No merge to `main` is performed.
+## Developer Completion Decision
+
+On 2026-10-24, the developer explicitly invoked `/moda_developer_update ARCH-048-BACKGROUND-004 complete` after the durable Attempt 2 passing self-review. All required Work Items and Acceptance Criteria are checked, the required focused validation passed, and the implementation and parent task/report branches are committed and pushed. The task is Complete at Attempt 2; no merge to `main` is performed.
+
+### Dependency Frontier
+
+Reconciled after completion against canonical task frontmatter. No downstream task is promoted by this completion:
+
+- `ARCH-048-BACKGROUND-005` remains `pending`; its other required Background services (`ARCH-048-BACKGROUND-001` through `-003`) are `ready`, not complete, and `ARCH-046-BACKGROUND-002` is `blocked`.
+- `ARCH-048-SYSTEM-TEST-001` remains `pending` because it also depends on `ARCH-048-BACKGROUND-005` and other Woo/platform prerequisites that are not complete.
+- `ARCH-046-SYSTEM-TEST-002` remains `blocked` under its explicit architect approval and manual LocalWP execution gate; completing this task does not satisfy that gate.
+- `ARCH-048-BACKGROUND-006` is already `complete`; no update is needed.
+
+No downstream task record or architecture index was changed. No task branch was merged to `main`.
