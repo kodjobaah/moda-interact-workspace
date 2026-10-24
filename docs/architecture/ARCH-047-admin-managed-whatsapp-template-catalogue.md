@@ -11,7 +11,7 @@ updated: 2026-10-24
 
 ## Status
 
-Agreed direction; **Background module-first task-definition plan revised on 24 October 2026 for Admin-prepared segment translation and runtime payloads**. The consolidated `ARCH-047-DATABASE-001` is a developer-owned, in-progress task (Attempt 1) in the supplied worktree. The revised `ARCH-047-BACKGROUND-001` remains **Pending**. `BACKGROUND-002`–`009` are provided as **portable task definitions in the accompanying task-file patch**; their presence in an archive is not evidence that canonical task branches/worktrees were materialised or implementation claimed. Legacy `ADMIN-001` and `ADMIN-002` are now marked Superseded. Six **independent, DB001-gated** portable Admin task definitions (`ADMIN-003`–`008`) cover authoring, translation control, reconstruction/compilation, Meta status control, merchant publication and internal wrapper activation. The legacy System Test task still requires separate scope reconciliation. Do not treat a planned dependency as Complete.
+Agreed direction; **architecture and Background module-first execution plan updated on 24 October 2026**. The consolidated `ARCH-047-DATABASE-001` is a developer-owned, in-progress task (Attempt 1) in the supplied worktree. The revised `ARCH-047-BACKGROUND-001` remains **Pending**. `BACKGROUND-002`–`009` below are **proposed task definitions only**: no task files, branches, worktrees or implementations have been created by this plan. The legacy Admin and System Test task documents still need separate status/scope reconciliation. Do not treat a planned dependency as Complete.
 
 This document supersedes the prior ARCH-047 design permitting externally authored Meta-template imports and shop-to-shop copying as the catalogue master. Do not resume those flows.
 
@@ -25,7 +25,7 @@ A workflow-stage-only implementation split would scatter template preparation, o
 
 1. All Meta recovery templates and internal conversation wrappers are **created exclusively through Moda Admin**. Never import, register, adopt or publish templates authored outside Moda. Provider reads are permitted only to reconcile Moda-authored identities, statuses and drift.
 2. Template content is immutable once saved; content corrections, including rejected versions, use **Clone as New** with a new identity. No Meta edit-existing-template API calls. Operational status, review progress and assignment state may change independently.
-3. **Admin alone** authors/validates the English AST, extracts keyed text segments (with protected variables), and persists a durable translation request. Background translates the segments and writes keyed results into existing JSONB fields; **Admin reconstructs, reviews and compiles** 20 complete language payloads. Background sends those already-compiled payloads through the Meta create endpoint, reconciles Meta status and Admin **publishes explicitly**. Internal wrappers skip Meta approval and instead use Admin-only activation.
+3. Author an English AST, persist it, durably request Background translation of the other 19 target languages, review immutable results, submit each Meta language, consume/reconcile Meta status events and **publish explicitly**. Internal wrappers skip Meta approval and instead use Admin-only activation.
 4. Predefine the six recovery purposes: INITIAL/FOLLOW_UP × NO_OFFER/CODE_OFFER/AUTOMATIC_OFFER. The purpose determines typed variables. Resolve and independently validate offer eligibility *before* the prepared template is used; AI is only a read-only offer recommendation mechanism.
 5. Keep template-selection/preparation and variable-binding behaviour in one Background module, distinct from offer resolution, Meta catalogue management, translation and conversation wrapping. Existing send flows delegate rather than replicate domain rules.
 6. Preserve consent, authoritative STOP, recipient scope, WhatsApp service window, moderation, billing, retries, compensation, one permitted sequence-two follow-up and final send fencing. No new path may bypass them.
@@ -35,9 +35,9 @@ A workflow-stage-only implementation split would scatter template preparation, o
 
 - No merchant-facing authoring or adoption of Meta-created templates; no in-place template edit, no Meta edit API and no provider-template creation on the ordinary send path.
 - No AI commerce mutation: no cart additions/removals, quantity changes, coupon application, checkout edits or order placement. Customers edit their own baskets on Shopify/WooCommerce.
-- No new ARCH-047 Shared AST/compilation package, generic logger, custom Batch runtime, Background authoring-AST parser or second moderation/send pipeline. Preserve existing Shared internationalisation/logging and explicitly investigate a queue-format contract gap if one is demonstrated.
+- No new cross-service generic logger, custom Batch runtime, bespoke AST parser or second moderation/send pipeline.
 - No change to ARCH-045/046 consent and STOP authority, historical completed tasks or billing semantics.
-- No repository-specific implementation code in this **documentation-only** task-definition amendment.
+- No repository-specific implementation or additional task files in this **module-planning** amendment.
 
 ## Current Architecture and Source Evidence
 
@@ -58,40 +58,20 @@ Reinspect these paths at implementation start; this is snapshot evidence, not a 
 
 ```mermaid
 flowchart TD
-  A[Admin: English AST authoring + validation] --> B[(DB: definition + English locale)]
-  A --> C[(DB: keyed sourceSnapshot + translation run)]
-  C --> D[Background: token-safe keyed translations]
-  D --> E[(DB: TranslationItem.translatedAst segment results)]
-  E --> F[Admin: reconstruct/review 20 locale payloads]
-  F --> G{Template family}
-  G -->|Meta recovery| H[(DB: frozen componentsSnapshot + binding snapshot)]
-  H --> I[Background: Meta create + status reconcile]
-  I --> J[Admin: explicit shop-language publication]
-  G -->|Internal wrapper| K[Admin: prepared wrapper + active pointer]
-  J --> L[(Assigned WhatsAppTemplateVariant)]
+  A[Moda Admin English AST creation] --> B[(Immutable definition and English locale)]
+  B --> C[Durable translation request]
+  C --> D[Background Template Translation]
+  D --> E[Admin 20-language review]
+  E --> F{Template family}
+  F -->|Meta recovery| G[Background Meta Template Management]
+  G --> H[Meta review and template-status webhooks]
+  H --> I[Admin approval and per-shop language publication]
+  F -->|Conversation wrapper| J[Admin internal wrapper publication]
+  I --> K[(Shop-assigned WhatsAppTemplateVariant)]
+  J --> L[(Active wrapper pointer)]
 ```
 
 Meta approves or rejects **each submitted language**. Neither approval nor successful submission silently assigns the template to shops. External template IDs not linked to Moda-authored definitions cannot enter the catalogue. A rejected or drifted template is not edited; a new definition must be authored and submitted. For a changing provider status, keep immutable submitted components and binding snapshots while recording current observations/events separately.
-
-### Admin module ownership (six independently testable tasks)
-
-All six new Admin tasks have **only `ARCH-047-DATABASE-001` under `depends_on`**. Do not encode `ADMIN-003 → ADMIN-004 → ADMIN-005` or a Background/Shared publication dependency simply to mirror UI stages: Admin modules read/write the agreed DB001 persistence contract and prove their own boundaries with typed fixtures/stubbed sibling outcomes. Integration is validated end-to-end after implementation. The tasks are **defined but not materialised** in the developer's canonical Git workspace until the task launcher performs that step. With DB001 not yet proven Complete in the supplied snapshot, their task metadata is Pending.
-
-| Task | Owned Admin module | Durable responsibility | Not owned |
-|---|---|---|---|
-| `ARCH-047-ADMIN-003` | `template-authoring` | `WhatsAppTemplateDefinition` + immutable English `WhatsAppTemplateLocale`; purpose-aware AST, supported variables, safe preview and Clone as New | Translation execution, Meta Graph, shop publication |
-| `ARCH-047-ADMIN-004` | `template-translations` | Extract keyed protected text into `TranslationRun.sourceSnapshot`; create 19 target items, show durable queue/progress/retry | AST parsing in Background, provider Batch processing |
-| `ARCH-047-ADMIN-005` | `template-compilation` | Reconstruct each language from keyed `TranslationItem.translatedAst`, validate protected variables, review and freeze locale `localeAst` with Meta/wrapper prepared projection | Meta submission, new SQL schema |
-| `ARCH-047-ADMIN-006` | `meta-template-control` | Admin-confirmed, frozen `MetaRegistration` requests; DB-only Meta status/drift/rejection dashboard | Provider API creation/reconciliation, webhook ingress |
-| `ARCH-047-ADMIN-007` | `template-publication` | Approved definition → per-shop/per-language `PublicationOperation`/`Target`, transactional eligible shop slot replacement and audit | Importing another shop's template, Meta create |
-| `ARCH-047-ADMIN-008` | `wrapper-publication` | Review and activate `SHARED`/`AI`/`HUMAN` `WhatsAppConversationWrapperActiveSlot` with compare-and-swap | AI/human response generation, WhatsApp sending |
-
-`ADMIN-001` and `ADMIN-002` are **superseded**: external Meta import/refresh, editing provider templates and copying another shop's assignment are not offered. Keep only the legitimate complete previous/proposed comparison within central publication (`ADMIN-007`). The Shared package does **not** own an ARCH-047 AST/compiler; Admin is sole authoring/compilation owner. For immutable content, the English locale is stored with its prepared execution projection at creation and other languages receive their projections at first accepted reconstruction; neither is edited in place. `ADMIN-005` reuses the pure compiler owned by the Admin authoring module.
-
-**Database task-text reconciliation:** DB001 Attempt 7 currently describes `parameterBindingsSnapshot` as Shared-defined, but this agreed architecture assigns the prepared JSON format and semantic-variable mapping to the **Admin-owned compiler**; Background consumes the frozen result. The same Prisma JSONB columns and foreign keys remain valid. Reconcile that ownership sentence during DB001 architectural review; do not expand DB001 schema or create an ARCH-047 Shared AST task simply to mirror the old text.
- The existing Shared localisation and structured logging mechanisms remain available.
-
-**Persisted handoff:** Admin writes a versioned `sourceSnapshot` containing keyed translatable text and **opaque protected variable tokens**. Background translates it and writes keyed results to `TranslationItem.translatedAst` without parsing Admin's AST. Admin reconstructs complete locale content into `TemplateLocale.localeAst`, compiles final Meta components and frozen per-language parameter-binding metadata, and (only after confirmation) writes MetaRegistration. The Meta submission/approval workflow is driven by Background's existing durable workers, not an Admin Graph request. Prepared wrapper projections are also compiled in Admin; Background only renders them around the existing AI/human response.
 
 ### Background module ownership (five modules)
 
