@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -153,7 +153,7 @@ ARCH-046-BACKGROUND-002 may integrate its notice/consent decision implementation
 
 ### Status
 
-Ready for Review — correction to the published developer-executed work. Original Attempt 1 claim: `2026-10-24T01:11:20Z`; the task metadata remains `attempt: 1`, because no new `/moda_developer_create` claim or prepared launcher packet for Attempt 2 appears in the supplied evidence. The latest implementation commit `cab3f9c` is pushed; this is a **review submission**, not an Accepted review or explicit developer completion. The prior Developer Self-Review — Changes Requested record below is historical.
+Changes Requested — the test-only correction is published and its six PostgreSQL/Redis integration tests pass, but it was made without the required Attempt 2 launcher claim after the prior Changes Requested decision. The task remains `attempt: 1`, `executor: null`, `claimed_at: null`; do not treat the correction as an authorized Attempt 2. The implementation commit `cab3f9c` is published. The earlier integration-coverage request is resolved; the remaining correction is to prepare and claim the next attempt through the canonical launcher, then record its synchronization evidence before submitting again.
 
 ### Files Changed
 
@@ -201,9 +201,9 @@ Initial implementation validation was recorded in `typescript(20261024-012353)`,
 **Physical worktree / synchronisation evidence:**
 
 - Implementation worktree reported by terminal: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-003`; branch: `task/ARCH-048-BACKGROUND-003` (confirmed by `git branch --show-current` and commit output).
-- Canonical parent worktree from the prior review: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003`. The developer reports the prior Changes Requested self-review was pushed at parent commit `6971a9cb`. The latest recording does **not** show a fresh parent `git status`, `git rev-parse`, fetch/merge, or push of this review-submission task update; the next parent commit is pending application of this patch.
-- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003` confirmed by `git branch --show-current` and commit output. Original revision `95c108eba1544145abc55a9631ccf75c2d1849b0`; corrected revision `cab3f9c` confirmed pushed to the matching task ref.
-- Earlier review checked both canonical worktree registrations and cleanliness, and observed the implementation's database submodule revision `2e009298612133aace095db5d57245a5b01e773a` (`heads/main`). That is **prior-state evidence**, not proof of fresh Attempt 2 start-of-attempt synchronization or recursive submodule preparation.
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003`; current published revision `c9aab0fcf82edc50a9059121e1123f8a0d379573` equals `origin/task/ARCH-048-BACKGROUND-003`. It was clean at review.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003`; current revision `cab3f9c8100c896e840669156ff859d0ba1a9cca` equals `origin/task/ARCH-048-BACKGROUND-003`. It was clean and registered at the canonical path. Its configured upstream is `origin/main` at `01999c612f4538e87ac217d769d07756814c2638`, while the task remote is `cab3f9c`; use launcher/task-branch synchronization, not a generic push. The recursive database submodule currently resolves to `2e009298612133aace095db5d57245a5b01e773a` (`heads/main`).
+- These current branch/worktree facts do **not** prove that Attempt 2 was prepared or synchronized at correction start. The prior Changes Requested outcome required a new launcher claim before the next attempt; the report says no such claim occurred.
 - The recording demonstrates patch application, test execution, archive preparation, implementation commit and push in the task-specific implementation worktree. It does **not** include a new launcher-resolved prepared packet, synchronized parent/implementation revisions at a fresh claim, or recursive implementation-submodule materialization evidence. It also does not prove that shared/default checkouts were untouched; do not infer that solely from task-worktree usage.
 - **Attempt accounting:** the original task was returned to `ready` with `attempt: 1`, `executor: null`, `claimed_at: null`. No authorized next-claim transition is visible. The Attempt 2 *patch filename* is not itself an execution claim, so the metadata is retained unchanged pending reviewer/developer workflow reconciliation.
 
@@ -223,8 +223,7 @@ Initial implementation validation was recorded in `typescript(20261024-012353)`,
 ### Unresolved Issues
 
 - **Implementation-test correction resolved:** the new `woo-recovery-admission-races.integration.test.ts` adds four integration scenarios; the full BG003 PostgreSQL/Redis suite now passes 6/6. No remaining code/test gap is identified by the supplied validation run.
-- **Workflow evidence unresolved:** the fresh `/moda_developer_create` claim, start-of-attempt synchronization packet, recursive submodule preparation and exact checked-out parent/implementation revisions at correction start are not evidenced. A current Git branch/push does not prove those historical steps. The reviewer/developer must reconcile the deviation without inventing preparation records.
-- This parent task-file update is a portable patch, not a parent-branch push. The developer must apply, commit and push it from the dedicated parent task worktree before external review.
+- **Workflow evidence unresolved:** the correction was made without a fresh `/moda_developer_create` claim, start-of-attempt synchronization packet or confirmation of recursive submodule preparation. The next attempt must be claimed through the canonical launcher; record the launcher packet and synchronized parent/implementation revisions before any further work. Do not backdate or invent Attempt 2 evidence.
 
 ### Architectural Concerns
 
@@ -275,3 +274,21 @@ Attempt 1 is returned to `ready`. The implementation and parent task/report comm
 - Shopify recovery materialization and consent regression tests: 22 passed.
 - Parent task/report branch `ecbf1ab7d7826c7ae728a01b31ad7d72e9f462d6` and implementation branch `95c108eba1544145abc55a9631ccf75c2d1849b0` are each published to their matching task refs; both canonical worktrees were clean at review.
 - Attempt remains `1`; no next attempt was created. Execution and completion modes remain developer-controlled.
+
+## Developer Self-Review - Changes Requested (Correction Resubmission)
+
+### Review Decision
+
+The integration-coverage correction is verified, but this review does not accept it as a completed follow-up attempt. The prior Changes Requested decision returned the task to `ready`; the required next action was `/moda_developer_create ARCH-048-BACKGROUND-003`, which must claim Attempt 2 and synchronize the canonical worktrees before further work. The report explicitly says no such claim or preparation packet occurred. Attempt 1 is therefore preserved and the task remains `ready`, unclaimed.
+
+### Required Correction
+
+- Invoke the canonical developer-create workflow for this ready task. Verify the resulting `in_progress`, `executor: developer`, `attempt: 2` state and record its launcher preparation packet, including synchronized parent/implementation task refs and recursive submodule state. Do not backdate the claim or imply the already-published test correction was performed under Attempt 2. Once the claim is durable, reconcile the current test correction and any needed checks under that attempt, then resubmit for review.
+
+### Evidence Reviewed
+
+- Reran the BG003 PostgreSQL/Redis integration suite from the canonical implementation worktree: 6/6 passed, including the four added race/no-candidate cases.
+- Implementation revision `cab3f9c8100c896e840669156ff859d0ba1a9cca` equals `origin/task/ARCH-048-BACKGROUND-003`; the implementation worktree is clean and registered at the canonical path.
+- Parent report revision `c9aab0fcf82edc50a9059121e1123f8a0d379573` equals `origin/task/ARCH-048-BACKGROUND-003`; the parent worktree is clean.
+- The implementation worktree's configured upstream is `origin/main`, not its matching task ref. Its published task ref is verified separately. Launcher synchronization is required before the next claim.
+- The report confirms no fresh Attempt 2 claim or start-of-attempt launcher packet. Attempt remains `1`; execution and completion modes remain developer-controlled.
