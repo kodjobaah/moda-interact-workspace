@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-24T01:11:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-048-BACKGROUND-006
@@ -184,6 +184,7 @@ Executed in the dedicated Background implementation worktree, as shown in the su
 - **PASS (no errors reported)** — `npx tsc --noEmit -p tsconfig.json`, focused `npx eslint` on both BG003 service files and both test files, and `git diff --check`.
 - **PASS** — `npm run prisma:generate` after applying the implementation patch; Prisma Client generated from the canonical schema.
 - **PASS** — implementation commit `95c108e` (`feat(ARCH-048-BACKGROUND-003): implement Woo first-recovery admission`) pushed to `origin task/ARCH-048-BACKGROUND-003` in `moda-interact-background`. The terminal subsequently shows an unrelated untracked `typescript` recording; it was not part of the commit.
+- **PASS (review rerun)** — admission unit suite: 28/28; admission PostgreSQL/Redis integration suite: 2/2; Shopify materialization/consent regressions: 22/22. Commands were rerun from the canonical implementation worktree.
 - Earlier attempts to run the integration launcher directly failed with `spawn prisma ENOENT`, and the initial TypeScript/ESLint checks found narrowing/unused-import problems. Running the repository's `npm run test:integration -- ...` and applying the incremental correction resolved those local failures; the passing evidence above is from the corrected source.
 
 **Coverage qualification:** The two BG003 PostgreSQL/Redis integration tests do **not** independently demonstrate the entire `materialise/cancel/update` event-race and existing-`MESSAGE_SENT`/missing-candidate matrix named in the second Validation checkbox. The unit suite covers order-placed/paid/cancelled, event-watermark supersession and existing sent/expired or missing-candidate cases. The broader integration matrix is left unchecked for reviewer disposition rather than claimed as complete.
@@ -191,9 +192,10 @@ Executed in the dedicated Background implementation worktree, as shown in the su
 **Physical worktree / synchronisation evidence:**
 
 - Implementation worktree reported by terminal: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-003`; branch: `task/ARCH-048-BACKGROUND-003` (confirmed by `git branch --show-current` and commit output).
-- The supplied review ZIP is rooted at `moda-interact-workspace-task-ARCH-048-BACKGROUND-003`, but the launcher's absolute canonical primary workspace root, dedicated parent worktree path, parent branch revision and parent remote push are **not verified** by the archive or supplied terminal output.
-- The launcher's start-of-attempt parent/implementation fast-forward and `origin/main` reconciliation packet, recursive submodule preparation, and explicit shared-checkout isolation attestations are **not present** in the supplied recordings. Reviewer/developer should attach or verify that evidence; a ZIP alone is not proof of worktree isolation.
-- Implementation commit/revision: `95c108e`. Parent task-branch revision and parent report publication: pending the developer's application/commit/push of this patch.
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003`; revision `ecbf1ab7d7826c7ae728a01b31ad7d72e9f462d6`, equal to `origin/task/ARCH-048-BACKGROUND-003`. Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-003`; branch `task/ARCH-048-BACKGROUND-003`; revision `95c108eba1544145abc55a9631ccf75c2d1849b0`, equal to `origin/task/ARCH-048-BACKGROUND-003`.
+- Both canonical worktrees are clean and registered at the expected physical paths. The parent task branch is one commit ahead of `origin/main` at `e60005ecfee7e89f90fb80149e0ab6b5e197ed4f`. The implementation worktree's recursive submodule status reports database at `2e009298612133aace095db5d57245a5b01e773a` (`heads/main`).
+- Current clean/registered state and route establish physical isolation and publication, but do not independently prove the launcher's start-of-attempt synchronization packet or recursive submodule preparation at claim time. Those historical preparation details remain unverified.
+- Implementation commit/revision: `95c108eba1544145abc55a9631ccf75c2d1849b0`. Parent task/report revision: `ecbf1ab7d7826c7ae728a01b31ad7d72e9f462d6`, published to the matching task ref.
 
 ### Deviations
 
@@ -209,9 +211,8 @@ Executed in the dedicated Background implementation worktree, as shown in the su
 
 ### Unresolved Issues
 
-- Verify and attach launcher-prepared parent/implementation isolation, start-of-attempt synchronisation, implementation submodule and parent task-branch evidence before architect acceptance.
-- Determine whether the missing event-race/integration matrix requires another test-only correction in the same task; do not weaken or silently mark the existing Validation requirement satisfied.
-- Parent task/report branch must be committed and pushed separately using only this task file (do not stage the submodule gitlink or untracked terminal recording).
+- The Validation requirement for PostgreSQL/Redis materialise/cancel/update races and the existing `MESSAGE_SENT` recovery with no candidate/job is not satisfied by the two current integration cases. Add focused integration coverage for these paths or document a specific blocker and obtain an approved scope amendment; do not mark the requirement complete without evidence.
+- The launcher's start-of-attempt synchronization packet and recursive submodule preparation at claim time remain unverified. Current clean worktrees and recorded submodule revision do not prove those historical preparation steps.
 
 ### Architectural Concerns
 
@@ -243,3 +244,22 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Changes Requested
+
+### Review Decision
+
+Attempt 1 is returned to `ready`. The implementation and parent task/report commits are published and the focused unit, integration and Shopify regression suites pass, but the task's required PostgreSQL/Redis integration matrix remains incomplete. This is a validation gap, not a claim that the implementation behavior failed.
+
+### Required Corrections
+
+- Add and run focused PostgreSQL/Redis integration cases for candidate materialisation racing with cancellation and update, plus an existing `MESSAGE_SENT` recovery with no candidate/job. Assert no duplicate recovery, no reopened or second initial recovery, no outbound send and no billing side effect. Update the corresponding Validation checkbox only when the evidence exists.
+- Reconcile or explicitly explain the remaining uncertainty about launcher start-of-attempt synchronization and recursive submodule preparation; do not present current worktree cleanliness as proof of those historical preparation steps.
+
+### Evidence Reviewed
+
+- Admission service unit tests: 28 passed.
+- Admission PostgreSQL/Redis integration tests: 2 passed.
+- Shopify recovery materialization and consent regression tests: 22 passed.
+- Parent task/report branch `ecbf1ab7d7826c7ae728a01b31ad7d72e9f462d6` and implementation branch `95c108eba1544145abc55a9631ccf75c2d1849b0` are each published to their matching task refs; both canonical worktrees were clean at review.
+- Attempt remains `1`; no next attempt was created. Execution and completion modes remain developer-controlled.
