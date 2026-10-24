@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-24T17:18:52Z
+attempt: 1
 depends_on:
   - ARCH-045-BACKGROUND-002
 enables:
@@ -195,7 +195,7 @@ After completing only the specified extraction, Shopify migration and focused va
 
 ### Status
 
-Not Started — portable definition; awaiting materialisation and task claim.
+In Progress — Attempt 1 claimed by developer at 2026-10-24T17:18:52Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
