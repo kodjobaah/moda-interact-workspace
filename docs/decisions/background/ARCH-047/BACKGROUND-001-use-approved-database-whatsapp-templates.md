@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-047-BACKGROUND-006
   - ARCH-047-BACKGROUND-007
 created: 2026-10-23
-updated: 2026-10-24
+updated: 2026-10-25
 ---
 
 # Implement recovery WhatsApp template preparation module
