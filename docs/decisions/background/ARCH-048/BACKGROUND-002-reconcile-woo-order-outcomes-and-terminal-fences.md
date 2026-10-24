@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 34
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-24T01:16:28Z
+attempt: 1
 depends_on:
 - ARCH-048-BACKGROUND-006
 - ARCH-035-BACKGROUND-002
@@ -21,7 +21,7 @@ depends_on:
 enables:
 - ARCH-048-BACKGROUND-005
 created: '2026-10-23'
-updated: '2026-10-24'
+updated: 2026-10-24
 ---
 
 # ARCH-048-BACKGROUND-002 — Implement Woo order-reconciliation and terminal-state service
@@ -154,7 +154,7 @@ BG002 depends on BG006 interfaces, not on a completed BG001 implementation. Unit
 
 ### Status
 
-Not Started — portable task definition only.
+In Progress — Attempt 1 claimed by developer at 2026-10-24T01:16:28Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
