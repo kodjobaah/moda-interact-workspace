@@ -7,13 +7,13 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-25T19:11:32Z
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -31,7 +31,7 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-This is a **portable task definition** prepared from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It is not a repository implementation, task claim or evidence of a created worktree/branch. No new ARCH-047 Shared package is assumed. The parent architecture and `BACKGROUND-001` require reconciliation to the final Admin-owned AST/compilation and DB-backed keyed-segment translation decisions before dependent work is promoted.
+This task was originally defined from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It is now materialised and claimed for developer execution in canonical task worktrees after confirming the current DB001 prerequisite is complete and synchronizing the parent task branch with current workspace `origin/main`. No new ARCH-047 Shared package is assumed. Reconcile the current parent architecture and `BACKGROUND-001` implementation against the final Admin-owned AST/compilation and DB-backed contracts before implementation; retain the queue-contract stop condition below.
 
 ## Objective
 
@@ -127,7 +127,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Not Started — task definition only; no implementation was executed or validated in this artifact.
+In Progress — developer execution Attempt 1, claimed 2026-10-25T19:11:32Z. `ARCH-047-DATABASE-001` is complete. Canonical parent and implementation worktrees are prepared and synchronized; implementation has not started in this preparation workflow.
 
 ### Files Changed
 
@@ -182,3 +182,14 @@ To be assessed against the reconciled ARCH-047 parent architecture and current r
 ### Follow-up
 
 Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25.
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_background`, coordinator, repository, dependency, task scope, acceptance criteria and validation requirements.
+- Dependency check: `ARCH-047-DATABASE-001` is `complete` in its canonical task record.
+- Claim: Attempt 1 is claimed by `developer` at `2026-10-25T19:11:32Z` after canonical worktree preparation and synchronization.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-003`, branch `task/ARCH-047-BACKGROUND-003`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-003`, branch `task/ARCH-047-BACKGROUND-003`, created from current Background `origin/main` because no BACKGROUND-003 task branch existed locally or remotely.
+- The parent task branch was merged with current workspace `origin/main`; it is intentionally ahead of its previously published task-branch tip and will be published with this claim. No implementation changes were made during preparation. No branch was merged into `main`.
