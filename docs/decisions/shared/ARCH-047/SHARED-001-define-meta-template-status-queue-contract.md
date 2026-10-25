@@ -7,8 +7,8 @@ domain: shared
 repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 15
 executor: null
@@ -27,7 +27,7 @@ updated: 2026-10-25
 
 `ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`.
 
-This is a **portable task definition**; it is not materialised on a Git task branch. The old documentation-only `v1` content-hash-based observation ID is **superseded before production**. There is no deployed v1 producer/consumer requiring a compatibility adapter. This narrow task does **not** reinstate a Shared AST/translation/template compiler package.
+This definition was supplied as a **portable task definition** and is now materialized on the canonical parent task branch. The old documentation-only `v1` content-hash-based observation ID is **superseded before production**. There is no deployed v1 producer/consumer requiring a compatibility adapter. This narrow task does **not** reinstate a Shared AST/translation/template compiler package.
 
 ## Objective
 
@@ -132,7 +132,7 @@ Follow the repository's published entrypoint patterns and the canonical task lau
 
 ### Status
 
-Not Started — defined but not materialised.
+Materialized and ready for developer execution; Attempt 0 remains unclaimed until canonical preparation succeeds.
 
 ### Files Changed
 
@@ -187,3 +187,11 @@ Not reviewed.
 ### Follow-up
 
 None.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_shared`, coordinator, repository, dependency set, task scope, acceptance criteria and validation requirements.
+- Materialization: The existing portable architect definition was published on parent branch `task/ARCH-047-SHARED-001` in commit `ae96dda2`; no implementation or unrelated local-main history was copied.
+- Claim state: This amendment does not claim an implementation attempt; the canonical launcher records the claim after implementation worktree preparation and dependency verification.
