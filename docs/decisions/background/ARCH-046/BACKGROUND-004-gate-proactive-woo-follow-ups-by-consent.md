@@ -1,3 +1,4 @@
+No new database migration, new shared API, Woo follow-up engine or BG005 worker wiring is evidenced in the correction commit. The original focused test runs predate the correction changes; lint, typecheck and build passed afterward. The new database/Redis, cross-flow and regression tests were not shown executing in the supplied logs. The implementation commit was pushed while the parent task remained unclaimed; Attempt 2 later reconciled that workflow gap through canonical preparation and a published parent claim. No implementation changes followed that claim.
 ---
 id: ARCH-046-BACKGROUND-004
 architecture_id: ARCH-046
@@ -9,10 +10,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 38
-executor: developer
-claimed_at: 2026-10-25T19:17:50Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-046-BACKGROUND-001
@@ -165,7 +166,7 @@ The earlier BG004 definition required a Woo follow-up engine that ARCH-048 delib
 
 ### Status
 
-**In Progress — developer Attempt 2**, claimed at `2026-10-25T19:17:50Z`. Attempt 1 was returned to `ready` by self-review; its follow-up corrections remain published in implementation commit `984d568`. Attempt 2 preparation and dependency checks are recorded below. Required race/fault/regression tests and final Completion Report evidence remain outstanding. Do not mark this task `review` until those requirements are complete. Architect acceptance and developer completion are not claimed.
+**Changes Requested — developer self-review of Attempt 2 (2026-10-25).** Attempt 2 was claimed at `2026-10-25T19:17:50Z` after canonical preparation, but no implementation changes or required validation runs followed that claim. The implementation branch remains clean and published at `984d568`; required race/fault and cross-flow regressions remain unverified. Returned to `ready` with `executor: null`, `claimed_at: null`, and Attempt 2 unchanged. Architect acceptance and developer completion are not claimed.
 
 ### Files Changed
 
@@ -229,6 +230,7 @@ Evidence from the developer's terminal captures dated 25 October 2026:
 | Revised Woo final-permit and provider/HUMAN/AI unit regressions | **NOT VERIFIED after correction:** no focused Vitest output for commit `984d568` provided |
 | Existing general/Shopify STOP and human/AI in-window PostgreSQL regressions | **NOT VERIFIED:** no execution output for the targeted suites provided |
 | Canonical new-attempt preparation/physical isolation/synchronisation | **NOT VERIFIED:** paths identified, but no Attempt 2 launcher preparation packet or claim captured |
+| Canonical preparation/physical isolation/synchronisation | Attempt 1 evidence was incomplete; Attempt 2 launcher route, claim publication, canonical worktrees, synchronization and recursive submodule status were verified on 25 October 2026 (see evidence below) |
 
 Earlier incremental patch revisions exposed invalid **test-fixture** records for the recipient format and funded `UsageReservation`. Those errors were corrected without relaxing production database constraints. The final five-test PostgreSQL run is green. These four patch deliveries belong to the **same claimed developer workflow Attempt 1**; they are not four separately claimed workflow attempts.
 
@@ -307,3 +309,21 @@ Attempt 1 is not accepted for developer completion. The implementation branch is
 ### State Transition
 
 Returned to `ready`, with `executor: null`, `claimed_at: null`, and Attempt 1 unchanged. No new attempt is claimed by this review; the next `/moda_developer_create` invocation may claim Attempt 2.
+
+## Developer Self-Review - Changes Requested (Attempt 2)
+
+### Review Decision
+
+Attempt 2 is not accepted for developer completion. The implementation worktree is clean at `984d568`, with no new task implementation commit after the Attempt 2 claim. The parent task branch contains the published claim; required validation gaps from Attempt 1 remain open, and no evidence of those tests running during Attempt 2 was found.
+
+### Required Corrections
+
+- Run the focused unit regressions changed by `984d568`, including the Woo initial-delivery and outbound provider-failure tests; record exact commands and results.
+- Run `tests/integration/woo-initial-send-fence-races.integration.test.ts` and `tests/integration/woo-initial-send-redis-fault.integration.test.ts` against the required PostgreSQL/Redis test services. Include the STOP/order race, transaction rollback/retry, Redis failure, and no-duplicate-admission outcomes.
+- Run existing general/Shopify outbound guard and HUMAN/AI in-window STOP regressions; report concrete results for provider reconciliation, billing attribution and compensation.
+- Run relevant repository lint and build/typecheck commands after any corrections, plus `git diff --check`; preserve default-off Woo rollout and do not add BG005 wiring or follow-up scheduling.
+- Update Work Items, Acceptance Criteria, Validation and Completion Report only to match verified results. Keep the task at Attempt 2 during corrections; a later `/moda_developer_update` can reconcile the completed cycle.
+
+### State Transition
+
+Returned to `ready`, with `executor: null`, `claimed_at: null`, and Attempt 2 unchanged. The next `/moda_developer_create` invocation may claim Attempt 3 after synchronizing the canonical worktrees and verifying dependencies.
