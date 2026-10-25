@@ -1,4 +1,3 @@
-No new database migration, new shared API, Woo follow-up engine or BG005 worker wiring is evidenced in the correction commit. The original focused test runs predate the correction changes; lint, typecheck and build passed afterward. The new database/Redis, cross-flow and regression tests were not shown executing in the supplied logs. The implementation commit was pushed while the parent task remained unclaimed; Attempt 2 later reconciled that workflow gap through canonical preparation and a published parent claim. No implementation changes followed that claim.
 ---
 id: ARCH-046-BACKGROUND-004
 architecture_id: ARCH-046
@@ -229,7 +228,6 @@ Evidence from the developer's terminal captures dated 25 October 2026:
 | New `woo-initial-send-redis-fault.integration.test.ts` (real Redis failure/credit boundary) | **NOT VERIFIED:** test exists; no execution log provided |
 | Revised Woo final-permit and provider/HUMAN/AI unit regressions | **NOT VERIFIED after correction:** no focused Vitest output for commit `984d568` provided |
 | Existing general/Shopify STOP and human/AI in-window PostgreSQL regressions | **NOT VERIFIED:** no execution output for the targeted suites provided |
-| Canonical new-attempt preparation/physical isolation/synchronisation | **NOT VERIFIED:** paths identified, but no Attempt 2 launcher preparation packet or claim captured |
 | Canonical preparation/physical isolation/synchronisation | Attempt 1 evidence was incomplete; Attempt 2 launcher route, claim publication, canonical worktrees, synchronization and recursive submodule status were verified on 25 October 2026 (see evidence below) |
 
 Earlier incremental patch revisions exposed invalid **test-fixture** records for the recipient format and funded `UsageReservation`. Those errors were corrected without relaxing production database constraints. The final five-test PostgreSQL run is green. These four patch deliveries belong to the **same claimed developer workflow Attempt 1**; they are not four separately claimed workflow attempts.
