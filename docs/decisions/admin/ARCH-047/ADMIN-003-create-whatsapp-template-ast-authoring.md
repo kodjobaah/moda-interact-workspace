@@ -59,10 +59,10 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 
 ## Requirements
 
-- [ ] Server-side and editor AST rules agree on allowed component kinds, maximum bounded text/JSON size, variable names, Meta-placeholder limits, at most supported dynamic URL buttons, and wrapper `response.body` presence; reject malformed/unknown variables with precise errors.
-- [ ] Save is an atomic definition + English locale write and a bounded one-time audit; fail cleanly without half-saved source. No additional language, Meta registration or merchant assignment is created on save.
-- [ ] A saved template's `localeAst`, `sourceHash`, business purpose and provider name are read-only by application policy; cloning yields an independent, newly named definition. No edit control appears on saved definitions.
-- [ ] No external Meta import/registration, no editor-built promises of discounts without approved typed offer bindings, no customer data exposed.
+- [x] Server-side and editor AST rules agree on allowed component kinds, maximum bounded text/JSON size, variable names, Meta-placeholder limits, at most supported dynamic URL buttons, and wrapper `response.body` presence; reject malformed/unknown variables with precise errors.
+- [x] Save is an atomic definition + English locale write and a bounded one-time audit; fail cleanly without half-saved source. No additional language, Meta registration or merchant assignment is created on save.
+- [x] A saved template's `localeAst`, `sourceHash`, business purpose and provider name are read-only by application policy; cloning yields an independent, newly named definition. No edit control appears on saved definitions.
+- [x] No external Meta import/registration, no editor-built promises of discounts without approved typed offer bindings, no customer data exposed.
 
 
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
@@ -70,9 +70,9 @@ All server reads/mutations of template management require the existing authentic
 
 ## Work Items
 
-- [ ] Implement AST node definitions, semantic variable registry and renderer/validator in `authoring/` with small independently testable files.
-- [ ] Implement guarded pages, shared catalogue navigation, English editor and preview (responsive, keyboard-usable, clear validation and duplicate-save disable).
-- [ ] Implement transactional save/clone server actions and audit with focused auth, immutability and concurrency tests.
+- [x] Implement AST node definitions, semantic variable registry and renderer/validator in `authoring/` with small independently testable files.
+- [x] Implement guarded pages, shared catalogue navigation, English editor and preview (responsive, keyboard-usable, clear validation and duplicate-save disable).
+- [x] Implement transactional save/clone server actions and audit with focused auth, immutability and concurrency tests.
 
 
 ## Interfaces / Contracts
@@ -93,15 +93,15 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
-- [ ] Six recovery purposes and three wrapper audiences are selectable, have the correct variables and usable previews; both families save atomically and appear in the catalogue.
-- [ ] Unknown AST node, unbound variable, missing response slot or unsupported dynamic Meta component fails before save on the server. Duplicate submit makes at most one definition.
-- [ ] Existing content cannot be edited after saving; Clone as New creates a distinct identity and does not mutate its source. No external-import action is present.
-- [ ] Denied/unauthenticated caller cannot read or save across the platform; audited writes carry the actual SUPER_ADMIN actor.
+- [x] Six recovery purposes and three wrapper audiences are selectable, have the correct variables and usable previews; both families save atomically and appear in the catalogue.
+- [x] Unknown AST node, unbound variable, missing response slot or unsupported dynamic Meta component fails before save on the server. Duplicate submit makes at most one definition.
+- [x] Existing content cannot be edited after saving; Clone as New creates a distinct identity and does not mutate its source. No external-import action is present.
+- [x] Denied/unauthenticated caller cannot read or save across the platform; audited writes carry the actual SUPER_ADMIN actor.
 
 
 ## Validation
 
-- [ ] Admin-local AST schema/variable/preview unit tests; server-auth/transaction/idempotency tests including forced rollback, and component accessibility/mobile rendering.
+- [x] Admin-local AST schema/variable/preview unit tests; server-auth/transaction/idempotency tests including forced rollback, and component accessibility/mobile rendering.
 - [ ] Focused PostgreSQL test against the consolidated schema for definition + source locale + audit and clone; typecheck, scoped lint/tests and `git diff --check` using package scripts that actually exist.
 
 
@@ -118,36 +118,53 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-25T02:01:59Z. Attempt 0 review history is preserved below.
+In Progress — developer Attempt 1, claimed 2026-10-25T02:01:59Z. Implementation changes are prepared, but final local typecheck, lint, PostgreSQL rerun and Git/worktree reconciliation must pass before review. Preserve `execution_mode: developer`, `completion_mode: developer` and the existing claim until `/moda_developer_update` reviews the task.
 
 ### Files Changed
 
-None.
+`moda-interact-admin/` implementation branch (cumulative Attempts 1–4):
+
+- `package.json` and `scripts/test-arch047-admin-authoring-postgres.mjs` — focused validation scripts.
+- `src/app/(protected)/system-controls/whatsapp-templates/page.tsx` and `src/app/actions/whatsapp-template-authoring.ts` — guarded catalogue, authoring route and server action.
+- `src/components/admin/admin-shell.tsx` and `src/components/admin/sidebar.tsx` — catalogue navigation.
+- `src/components/admin/whatsapp-templates/authoring/` — all 18 task-owned editor, step navigation, preview, palette, catalogue and read-only detail modules.
+- `src/lib/admin/whatsapp-templates/authoring/` — AST/types, registry, compiler, validation, preview, canonical hashing, repository, service and reads modules.
+- `tests/unit/arch047-template-authoring-{ast,components,service}.test.ts[x]` — focused authoring/component/transaction service tests; Attempt 4 changes only the AST fixture.
+- `tests/integration/arch047-template-authoring.postgres.test.ts` — disposable PostgreSQL create/clone/replay/audit/rollback scenarios.
+
+Parent task file: this Completion Report and checklists only. No `_index.md`, sibling Admin task or Background implementation changes are part of this handoff.
 
 ### Work Completed
 
-None.
+- Implemented an Admin-only, versioned English AST with purpose-specific semantic variables and one reusable pure compiler for future translated locales.
+- Implemented six Meta recovery purposes and three wrapper audiences, including response slot/checkout conditional rules, immutable prepared English projections and server validation.
+- Delivered protected full-width catalogue and three-step Setup / Compose / Review & Save editor, keyboard-usable insertion controls, contextual ShopBrand variables, nonblocking example preview and Clone as New.
+- Implemented transactional definition/source-locale/audit creation, duplicate-submit protection, immutable read-only saved view and deterministic provider template naming.
+- Corrected the Attempt 3 AST test's union-typed `body` fixture without changing production code; Meta test bodies now contain only `ContentNode`s while wrapper tests retain the required `response.body` slot.
 
 ### Validation Results
 
-Not run.
+- User terminal log `typescript(20261025-124641)`: `npm run test:arch047-admin-authoring:unit` **28 passed, 0 failed**, before Attempt 4 correction; `npx tsc --noEmit -p tsconfig.json` reported one fixture-only TS2345 at `tests/unit/arch047-template-authoring-ast.test.ts:148` (addressed by Attempt 4).
+- Earlier user terminal log `typescript(20261025-020418)`: `npm run test:arch047-admin-authoring:postgres` **2 passed, 0 failed** using disposable PostgreSQL, covering creation/clone/replay/audit and rollback, before Attempts 3–4.
+- Attempt 4 independent checks against the supplied snapshot: AST test **14 passed, 0 failed** through a temporary TypeScript transpilation harness; **focused strict TypeScript check passed** using temporary minimal Node declarations. These are not a substitute for the repository-wide test/typecheck commands.
+- **Developer must still rerun and record:** `npx tsc --noEmit -p tsconfig.json`, `npm run test:arch047-admin-authoring:unit`, `npm run test:arch047-admin-authoring:postgres`, scoped `npx eslint` and `git diff --check` after applying Attempt 4. Mark the second Validation checkbox only after these pass or record any genuine blocker.
+- **Git/worktree evidence pending:** record launcher-prepared dedicated parent and implementation worktree paths, start-of-attempt synchronization and recursive submodule evidence, implementation commit SHA and task-branch push results using `/moda_developer_update` on the developer machine. The uploaded ZIP alone does not prove these.
 
 ### Deviations
 
-None.
+User-approved within-task authoring refinements: catalogue separated from editor, Setup/Compose/Review navigation, live preview with inline semantic token insertion, and nullable `ShopBrand` text-variable bindings. Runtime per-shop resolution, translations and Meta publication remain outside this task.
 
 ### Assumptions
 
-The consolidated `ARCH-047-DATABASE-001` Attempt 7 model contract is the intended schema; inspect generated Prisma Client and actual accepted database implementation when this task becomes executable. Where the proposed JSONB envelopes are not yet implemented, fixture-based tests use the explicitly documented shape.
+The accepted `ARCH-047-DATABASE-001` schema remains canonical. Preview values are fictional, and nullable ShopBrand field availability must be checked by the eventual delivery runtime. No Meta provider calls or merchant assignment occur during Admin source save.
 
 ### Unresolved Issues
 
-None at definition time. Return any missing persistence capability, provider-account configuration or cross-repository interface problem to `moda_architect` rather than silently changing DB/Background/Messaging ownership.
+Only completion evidence remains: final developer-side validation, implementation/parent Git commits and launcher worktree evidence. A failed final check requires a correction before transitioning this task to review.
 
 ### Architectural Concerns
 
-None at definition time.
-
+The English prepared AST now exposes ShopBrand semantic bindings. Their shop-scoped runtime resolution is a separate ARCH-047 Background contract and must not be claimed as implemented by ADMIN-003; no Background task is modified here.
 
 ## Architect Review
 
