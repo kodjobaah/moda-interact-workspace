@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-25T02:01:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
@@ -102,7 +102,7 @@ None at task-definition time. Completion of this task does not grant permission 
 ## Validation
 
 - [x] Admin-local AST schema/variable/preview unit tests; server-auth/transaction/idempotency tests including forced rollback, and component accessibility/mobile rendering.
-- [ ] Focused PostgreSQL test against the consolidated schema for definition + source locale + audit and clone; typecheck, scoped lint/tests and `git diff --check` using package scripts that actually exist.
+- [x] Focused PostgreSQL test against the consolidated schema for definition + source locale + audit and clone; typecheck, scoped lint/tests and `git diff --check` using package scripts that actually exist.
 
 
 ## Stop Condition
@@ -118,7 +118,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-In Progress — developer Attempt 1, claimed 2026-10-25T02:01:59Z. Implementation changes are prepared, but final local typecheck, lint, PostgreSQL rerun and Git/worktree reconciliation must pass before review. Preserve `execution_mode: developer`, `completion_mode: developer` and the existing claim until `/moda_developer_update` reviews the task.
+Ready for Architect Review — developer Attempt 1 passed self-review on 2026-10-25. Required focused tests, disposable PostgreSQL integration, TypeScript, production lint and diff checks passed. The implementation branch is pushed; the unrelated untracked `typescript` log was left untouched and is not part of the task changes. Completion mode remains developer, so this review does not complete the task.
 
 ### Files Changed
 
@@ -131,6 +131,7 @@ In Progress — developer Attempt 1, claimed 2026-10-25T02:01:59Z. Implementatio
 - `src/lib/admin/whatsapp-templates/authoring/` — AST/types, registry, compiler, validation, preview, canonical hashing, repository, service and reads modules.
 - `tests/unit/arch047-template-authoring-{ast,components,service}.test.ts[x]` — focused authoring/component/transaction service tests; Attempt 4 changes only the AST fixture.
 - `tests/integration/arch047-template-authoring.postgres.test.ts` — disposable PostgreSQL create/clone/replay/audit/rollback scenarios.
+- `src/components/admin/whatsapp-templates/authoring/use-template-authoring-draft.ts` — Attempt 1 final correction adds the current draft to preview memo dependencies so invalid-draft previews refresh correctly.
 
 Parent task file: this Completion Report and checklists only. No `_index.md`, sibling Admin task or Background implementation changes are part of this handoff.
 
@@ -141,14 +142,19 @@ Parent task file: this Completion Report and checklists only. No `_index.md`, si
 - Delivered protected full-width catalogue and three-step Setup / Compose / Review & Save editor, keyboard-usable insertion controls, contextual ShopBrand variables, nonblocking example preview and Clone as New.
 - Implemented transactional definition/source-locale/audit creation, duplicate-submit protection, immutable read-only saved view and deterministic provider template naming.
 - Corrected the Attempt 3 AST test's union-typed `body` fixture without changing production code; Meta test bodies now contain only `ContentNode`s while wrapper tests retain the required `response.body` slot.
+- Corrected the preview hook's missing `draft` dependency after scoped lint identified a stale-preview risk; the focused authoring suite passed again after the correction.
 
 ### Validation Results
 
-- User terminal log `typescript(20261025-124641)`: `npm run test:arch047-admin-authoring:unit` **28 passed, 0 failed**, before Attempt 4 correction; `npx tsc --noEmit -p tsconfig.json` reported one fixture-only TS2345 at `tests/unit/arch047-template-authoring-ast.test.ts:148` (addressed by Attempt 4).
-- Earlier user terminal log `typescript(20261025-020418)`: `npm run test:arch047-admin-authoring:postgres` **2 passed, 0 failed** using disposable PostgreSQL, covering creation/clone/replay/audit and rollback, before Attempts 3–4.
-- Attempt 4 independent checks against the supplied snapshot: AST test **14 passed, 0 failed** through a temporary TypeScript transpilation harness; **focused strict TypeScript check passed** using temporary minimal Node declarations. These are not a substitute for the repository-wide test/typecheck commands.
-- **Developer must still rerun and record:** `npx tsc --noEmit -p tsconfig.json`, `npm run test:arch047-admin-authoring:unit`, `npm run test:arch047-admin-authoring:postgres`, scoped `npx eslint` and `git diff --check` after applying Attempt 4. Mark the second Validation checkbox only after these pass or record any genuine blocker.
-- **Git/worktree evidence pending:** record launcher-prepared dedicated parent and implementation worktree paths, start-of-attempt synchronization and recursive submodule evidence, implementation commit SHA and task-branch push results using `/moda_developer_update` on the developer machine. The uploaded ZIP alone does not prove these.
+- `npm run test:arch047-admin-authoring:unit`: **28 passed, 0 failed**, rerun after the preview-hook correction.
+- `npm run test:arch047-admin-authoring:postgres`: **2 passed, 0 failed** against the disposable Docker PostgreSQL fixture; the harness refused external-database mode and removed its container after create/clone/replay/audit/rollback coverage.
+- `npx tsc --noEmit -p tsconfig.json`: passed after the fixture and preview-hook corrections.
+- Scoped `npx eslint` on task production files: passed with no warnings after the preview-hook correction. The broader initial lint invocation also named ignored test files; those ignore notices were avoided by rerunning on production files only.
+- `git diff --check`: passed after the final implementation correction.
+- Implementation commit `3844f22e3ce6b911d430b8dca6326e0d263b5f17` is pushed to `origin/task/ARCH-047-ADMIN-003`. The implementation worktree is on that branch with no tracked changes; an untracked `typescript` log remains and was not inspected, staged, or modified.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-003`, branch `task/ARCH-047-ADMIN-003`, current head `7d1b01a21a8bd23a9e38e01c24dfb0753742a8c7`, synchronized with its origin task branch at inspection.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-003`, branch `task/ARCH-047-ADMIN-003`, current head `3844f22e3ce6b911d430b8dca6326e0d263b5f17`; recursive submodule status is clean at `database` commit `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. Both branches include their respective `origin/main` histories; neither task branch was merged to main.
+- Launcher-start synchronization details were not present in the task record available during this reconciliation; the above branch heads and current synchronization were checked directly.
 
 ### Deviations
 
@@ -160,7 +166,7 @@ The accepted `ARCH-047-DATABASE-001` schema remains canonical. Preview values ar
 
 ### Unresolved Issues
 
-Only completion evidence remains: final developer-side validation, implementation/parent Git commits and launcher worktree evidence. A failed final check requires a correction before transitioning this task to review.
+No known task-scoped implementation or validation issue remains. The untracked `typescript` log is outside the committed task diff and was preserved. Architect review remains pending.
 
 ### Architectural Concerns
 
@@ -191,6 +197,28 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Developer Self-Review Passed (Attempt 1)
+
+### Review Outcome
+
+Attempt 1 passes developer self-review. The implementation satisfies the task scope and checked acceptance criteria. The focused authoring tests, disposable PostgreSQL integration, TypeScript check, scoped production lint and `git diff --check` all pass after the final correction. The implementation task branch is pushed. Because `completion_mode: developer`, this passing review returns the task to `review`; explicit developer completion remains pending.
+
+### Corrections and Validation
+
+- Fixed the Attempt 3 union-typed AST fixture in Attempt 4; the current full focused unit suite passes 28/28.
+- Added `draft` to the preview memo dependency after lint identified that invalid-draft preview state could otherwise become stale; focused tests pass after the change.
+- The disposable PostgreSQL suite passes 2/2, TypeScript passes, scoped production lint passes without warnings, and `git diff --check` passes.
+
+### Git and Worktree Evidence
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-003`, branch `task/ARCH-047-ADMIN-003`.
+- Implementation task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-003`, branch `task/ARCH-047-ADMIN-003`.
+- Implementation head `3844f22e3ce6b911d430b8dca6326e0d263b5f17` is pushed. This parent task record is committed and pushed with the review transition. The implementation worktree retains an unrelated untracked `typescript` log, which was not staged or altered.
+
+### State
+
+`status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. No explicit developer completion decision was made. No task branch was merged to `main`.
 
 ## Developer Takeover
 
