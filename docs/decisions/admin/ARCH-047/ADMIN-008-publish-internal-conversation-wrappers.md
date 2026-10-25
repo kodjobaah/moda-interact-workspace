@@ -11,8 +11,8 @@ execution_mode: developer
 completion_mode: developer
 status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-25T18:14:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
@@ -167,6 +167,7 @@ Recorded in the developer's 2026-10-25 validation terminal log (`typescript(2026
 - `git diff --check` — command is present in the patch-application transcript with no whitespace error reported. The review-submission patch is separately checked for whitespace and clean application before handoff.
 - No Meta API/client or provider network calls appear in the added wrapper activation code. Unit and PostgreSQL test execution exercises the path without a provider dependency; the supplied test log does not show a distinct network-spy/interception test.
 - Git: implementation commit `30cc9ef` created with **21 files changed, 1,217 insertions, 1 deletion**, followed by successful push of `task/ARCH-047-ADMIN-008` to `origin` in `moda-interact-admin`.
+- Independent developer self-review rerun from the canonical implementation worktree: `npm run test:arch047-admin-wrappers:unit` **PASS, 7/7**; `npm run test:arch047-admin-wrappers:components` **PASS, 3/3**; `npm run test:arch047-admin-wrappers:postgres` **PASS, 3/3** against disposable PostgreSQL; `npm run lint` **PASS, 0 errors, 1 existing warning** in `database/eslint.config.mjs`; `npx tsc --noEmit` **PASS**; `git diff --check origin/main...HEAD` **PASS**. Search of the added wrapper action/service/UI paths found no provider-network call patterns.
 
 ### Deviations
 
@@ -179,6 +180,8 @@ The accepted `ARCH-047-DATABASE-001` data model and existing Admin authoring/com
 ### Unresolved Issues
 
 No failing implementation tests are recorded. The canonical task's **Execution Ownership Amendment** records the dedicated parent and implementation worktree paths, task branches, initial synchronization and claim. The uploaded validation/commit logs do **not** include the full launcher-preparation packet or recursive-submodule/start-of-attempt synchronization transcript; the architect must confirm that evidence against the launcher/worktree policy before acceptance. The supplied logs also do not establish a clean post-commit Git status.
+
+Developer reconciliation update (2026-10-25): the evidence gaps noted above are resolved for this self-review. Canonical parent and implementation worktree registrations, expected task branches, matching local/remote refs, initialized recursive database submodule, and clean post-validation status were independently verified. The focused unit, component and PostgreSQL suites, lint, TypeScript check and committed diff check were rerun successfully. One existing, out-of-scope database ESLint warning remains.
 
 ### Architectural Concerns
 
@@ -221,3 +224,22 @@ None.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-008`, branch `task/ARCH-047-ADMIN-008`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-008`, branch `task/ARCH-047-ADMIN-008`, created from current Admin `origin/main` because no ADMIN-008 task branch existed locally or remotely.
 - No implementation changes were made during preparation. No branch was merged into `main`.
+
+## Developer Self-Review Passed
+
+### Review Decision
+
+Attempt 1 passes developer self-review. Required Work Items, Acceptance Criteria and task validation are complete; the implementation is committed and pushed, focused suites pass, and canonical worktree and dependency evidence has been reconciled. Completion remains pending because `completion_mode: developer`.
+
+### Evidence
+
+- Unit: wrapper domain/service suite, 7/7 passing.
+- Components: wrapper UI suite, 3/3 passing.
+- PostgreSQL: disposable schema-backed suite, 3/3 passing, including concurrent CAS and rollback.
+- Repository checks: lint passed with one existing out-of-scope warning; TypeScript and committed diff whitespace checks passed. The recorded production build passed.
+- Isolation: parent and implementation task worktrees are registered on the canonical task branch, their local/remote refs match, the recursive database submodule is initialized, and both worktrees are clean after validation.
+- Scope: no provider-network calls were found in the new wrapper paths; no Meta submission, merchant assignment, checkout mutation or Background behavior was added.
+
+### State Transition
+
+Remain in `review` with `executor: null`, `claimed_at: null`, and Attempt 1 unchanged. Explicit developer completion is pending; no branch was merged to `main`.
