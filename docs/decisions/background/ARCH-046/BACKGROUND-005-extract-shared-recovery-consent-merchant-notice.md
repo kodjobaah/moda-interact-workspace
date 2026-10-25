@@ -195,7 +195,7 @@ After completing only the specified extraction, Shopify migration and focused va
 
 ### Status
 
-Changes Requested — developer self-review found a canonical deduplication-key contract violation in Attempt 1. The implementation branch remains published; the next developer-create workflow may claim Attempt 2 after applying the correction below. No attempt was incremented by this review update.
+Changes Requested — Attempt 1 remains the latest claimed and reviewed attempt. The requested source-key correction has been implemented and pushed as `8c6f034`, with focused unit and PostgreSQL evidence below. **This evidence update does not claim Attempt 2 or transition the task to review.** The canonical developer launcher must claim Attempt 2 and the remaining required validation must be recorded before resubmission.
 
 ### Files Changed
 
@@ -215,6 +215,13 @@ Implementation repository: `moda-interact-background`.
 - `tests/unit/services/checkout-recovery/recovery-consent-notice.service.test.ts` — removed old fixture.
 - `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`.
 
+**Post-review correction in implementation commit `8c6f034` (four files):**
+
+- `src/services/checkout-recovery/recovery-consent-merchant-notice.formatter.ts`.
+- `tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.formatter.test.ts`.
+- `tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.service.test.ts`.
+- `tests/integration/recovery-consent-merchant-notice.integration.test.ts`.
+
 ### Work Completed
 
 - Added the common `RecoveryConsentMerchantNotifier` contract, formatter and
@@ -233,6 +240,14 @@ Implementation repository: `moda-interact-background`.
   concurrency test exposed a uniqueness race.
 - Verified that the integration, build and lint checks completed on the
   implementation task worktree and pushed the corrected implementation branch.
+- **Changes Requested correction, published in `8c6f034`:** the canonical
+  notice `sourceKey` now hashes exactly the six fields
+  `JSON.stringify(["recovery-consent", 1, platform, shopId, checkoutToken, reason])`.
+  `blockedOperation` and optional context no longer affect the identity.
+  The first committed notice retains its operation-specific body. Unit and real
+  PostgreSQL regressions cover both entrypoint orders, concurrent mixed-operation
+  requests, duplicate/no-rewrite behavior, reason/shop/platform/checkout
+  separation and `lastMessageAt` handling.
 
 ### Validation Results
 
@@ -267,6 +282,28 @@ Implementation worktree observed in terminal logs:
 - Terminal output showed an untracked `typescript` log file. It was **not**
   staged or included in commit `f204911`.
 
+**After the operation-independent source-key correction (2026-10-25 log):**
+
+- `npm test -- tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.formatter.test.ts tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.service.test.ts tests/unit/services/checkout-recovery/recovery-consent-admission.service.test.ts`:
+  **21/21 passed across 3 files** (formatter 7, notifier 8, admission 6).
+- `PATH="$PWD/node_modules/.bin:$PATH" node scripts/test-integration.mjs tests/integration/recovery-consent-merchant-notice.integration.test.ts`:
+  **3/3 passed** on disposable real PostgreSQL. The updated first scenario checks
+  mixed `CREATE_FIRST_RECOVERY` / `SEND_INITIAL_RECOVERY` operations from two
+  Prisma clients deduplicate, preserve the first body, isolate tenants and do
+  not regress thread timestamps; the other scenarios cover noncanonical
+  collision rejection and transaction rollback.
+- `git diff --cached --check`: **passed before commit**, with no error reported.
+- Implementation commit `8c6f034` changed the four scoped files and was pushed
+  successfully: `f204911..8c6f034` on
+  `origin/task/ARCH-046-BACKGROUND-005`.
+- Post-push `git status`: **tracked files clean and branch synchronized** with
+  `origin/task/ARCH-046-BACKGROUND-005`; the local `typescript` log remained
+  untracked and was not included in the correction commit.
+- **Not evidenced after `8c6f034`:** the requested checkout-reconciliation unit
+  test, complete five-file focused regression set, fresh `npm run build`,
+  `npm run lint`, or separate post-correction `git diff --check`. Earlier
+  passing results remain historical and are not represented as a fresh rerun.
+
 ### Deviations
 
 - **Concurrency-safe thread creation**: the task work item specifies
@@ -288,14 +325,20 @@ Implementation worktree observed in terminal logs:
 
 ### Unresolved Issues
 
-- The focused unit and PostgreSQL integration runs pass, but passing tests do
-  not establish conformance for the source-key identity invariant below.
-- Full seven-file focused unit selection was not rerun after the final
-  commit; the architect may require a fresh complete rerun.
-- The supplied terminal log establishes the **implementation** worktree,
-  but does not include launcher-resolved **parent** worktree evidence or
-  start-of-attempt synchronisation/submodule preparation evidence. These
-  are required to be reconciled before acceptance.
+- The Attempt 1 identity violation recorded in Developer Self-Review below is
+  corrected in published commit `8c6f034`; that review remains as historical
+  Changes Requested evidence, not an accepted review.
+- The latest log does not show a canonical Attempt 2 claim. Parent task YAML
+  therefore remains `status: ready`, `attempt: 1`, `executor: null`,
+  `claimed_at: null`. The developer launcher must claim Attempt 2 before
+  preparing a `review` status transition.
+- The architect requested a focused checkout-reconciliation unit rerun plus
+  build, lint and `git diff --check` after the correction; the latest log does
+  not evidence these. The original full seven-file selection was not rerun
+  after the fix either.
+- Launcher-prepared parent/implementation worktree isolation, attempt-2
+  synchronization and recursive submodule preparation evidence have not been
+  supplied in this latest log. Capture those in the claimed attempt report.
 
 ### Architectural Concerns
 
