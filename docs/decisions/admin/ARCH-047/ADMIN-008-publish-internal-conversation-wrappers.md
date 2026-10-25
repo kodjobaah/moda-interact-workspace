@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -114,7 +114,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Ready for Review — developer-executed Attempt 1 (`status: review`). Claim recorded at `2026-10-25T18:14:30Z`; the execution attempt remains `1`. The Admin implementation was committed as `30cc9ef` (`feat(arch-047-admin-008)`) and pushed to `origin/task/ARCH-047-ADMIN-008`. Formal architect review and the developer's explicit completion decision remain outstanding.
+Complete — developer-executed Attempt 1. The Admin implementation was committed as `30cc9ef` (`feat(arch-047-admin-008)`) and pushed to `origin/task/ARCH-047-ADMIN-008`. Developer self-review passed and the developer explicitly authorized completion; the attempt number remains `1`. This task is complete without merging its task branch to `main`.
 
 ### Files Changed
 
@@ -242,4 +242,14 @@ Attempt 1 passes developer self-review. Required Work Items, Acceptance Criteria
 
 ### State Transition
 
-Remain in `review` with `executor: null`, `claimed_at: null`, and Attempt 1 unchanged. Explicit developer completion is pending; no branch was merged to `main`.
+Transition to `complete` with `executor: null`, `claimed_at: null`, and Attempt 1 unchanged. No branch was merged to `main`.
+
+## Developer Completion Decision
+
+- Date: 2026-10-25
+- Decision: The developer explicitly invoked `/moda_developer_update ARCH-047-ADMIN-008 complete` after the durable passing self-review.
+- Accepted attempt: 1; unchanged.
+- Implementation: Commit `30cc9ef6e6eb5df90e29214051918d314894164d` is committed and pushed on `task/ARCH-047-ADMIN-008`.
+- State: `complete`, `executor: null`, `claimed_at: null`.
+- Dependency frontier: No active task has `ARCH-047-ADMIN-008` in its explicit `depends_on`; no downstream task state required adjustment.
+- Branch policy: No task branch was merged to or pushed to `main`.
