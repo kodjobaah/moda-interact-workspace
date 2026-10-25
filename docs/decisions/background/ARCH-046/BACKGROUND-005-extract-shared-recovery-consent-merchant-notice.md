@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-25T01:10:01Z
+attempt: 2
 depends_on:
   - ARCH-045-BACKGROUND-002
 enables:
@@ -193,7 +193,7 @@ After completing only the specified extraction, Shopify migration and focused va
 
 ### Status
 
-Changes Requested — Attempt 1 remains the latest claimed and reviewed attempt. The requested source-key correction has been implemented and pushed as `8c6f034`, with focused unit and PostgreSQL evidence below. **This evidence update does not claim Attempt 2 or transition the task to review.** The canonical developer launcher must claim Attempt 2 and the remaining required validation must be recorded before resubmission.
+In Progress — Attempt 2 claimed by developer at 2026-10-25T01:10:01Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
