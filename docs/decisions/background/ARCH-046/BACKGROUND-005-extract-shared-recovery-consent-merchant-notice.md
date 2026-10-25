@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-25T01:10:01Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-045-BACKGROUND-002
@@ -32,7 +32,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Lifecycle:** portable architect task definition; **defined but not materialised** in the developer's Git workspace. No implementation branch, worktree, commit or push has been created by this task definition.
+**Lifecycle:** materialised on parent branch `task/ARCH-046-BACKGROUND-005`; developer Attempt 2 is submitted for review on the mirrored implementation branch. Neither task branch has been merged to `main`.
 
 **Rollout classification:** **pre-production / breaking change permitted.** The developer confirmed on 2026-10-24 that previously sent development Support notices require **no backward compatibility, old-key recognition, backfill, dual-write or migration**. Use one canonical notice identity for all new Shopify/WooCommerce notices. Do not destroy existing development data or schema as part of this task.
 
@@ -193,7 +193,7 @@ After completing only the specified extraction, Shopify migration and focused va
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-25T01:10:01Z. Attempt 1 review history is preserved below.
+Review-ready — Attempt 2 passed developer self-review. The source-key correction is committed and pushed, required post-correction validation passed, and this is a review handoff, **not** an explicit developer completion decision. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -252,7 +252,7 @@ Implementation repository: `moda-interact-background`.
 Implementation worktree observed in terminal logs:
 `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-005`.
 
-- Original seven-file focused unit selection: **92 passed / 1 failed**;
+- Attempt 1 original seven-file focused unit selection: **92 passed / 1 failed**;
   the single failure was the expected source-key fixture, which was
   subsequently corrected. **The full selection was not rerun** as a unit after
   the final correction. During developer self-review, the current focused
@@ -297,10 +297,18 @@ Implementation worktree observed in terminal logs:
 - Post-push `git status`: **tracked files clean and branch synchronized** with
   `origin/task/ARCH-046-BACKGROUND-005`; the local `typescript` log remained
   untracked and was not included in the correction commit.
-- **Not evidenced after `8c6f034`:** the requested checkout-reconciliation unit
-  test, complete five-file focused regression set, fresh `npm run build`,
-  `npm run lint`, or separate post-correction `git diff --check`. Earlier
-  passing results remain historical and are not represented as a fresh rerun.
+- At Attempt 1 review time, the requested checkout-reconciliation unit test,
+  complete focused regression set, fresh build, lint and post-correction diff
+  check were not evidenced. Attempt 2 results below close those validation gaps.
+
+**Attempt 2 validation (2026-10-25):**
+
+- Focused unit selection: `npm test -- tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.formatter.test.ts tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.service.test.ts tests/unit/services/checkout-recovery/recovery-consent-admission.service.test.ts tests/unit/services/checkout-recovery/recovery-consent-checkout-reconciliation.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts` — **5 files / 57 tests passed**.
+- Disposable PostgreSQL integration: `PATH="$PWD/node_modules/.bin:$PATH" node scripts/test-integration.mjs tests/integration/recovery-consent-merchant-notice.integration.test.ts` — **1 file / 3 tests passed**, including mixed-operation concurrency, first-body preservation, synthetic Woo tenant isolation and rollback.
+- `npm run build` — **passed** (Prisma Client generation and TypeScript compilation).
+- `npm run lint` — **passed**.
+- `git diff --check origin/main...HEAD` — **passed**.
+- Implementation branch `task/ARCH-046-BACKGROUND-005` is clean and synchronized at `1110bfcb4e5a5b8307913f52ad1077ede56b27ad`, pushed to `origin`. This includes correction commit `8c6f034` and the current-main synchronization merge.
 
 ### Deviations
 
@@ -323,26 +331,19 @@ Implementation worktree observed in terminal logs:
 
 ### Unresolved Issues
 
-- The Attempt 1 identity violation recorded in Developer Self-Review below is
-  corrected in published commit `8c6f034`; that review remains as historical
-  Changes Requested evidence, not an accepted review.
-- The latest log does not show a canonical Attempt 2 claim. Parent task YAML
-  therefore remains `status: ready`, `attempt: 1`, `executor: null`,
-  `claimed_at: null`. The developer launcher must claim Attempt 2 before
-  preparing a `review` status transition.
-- The architect requested a focused checkout-reconciliation unit rerun plus
-  build, lint and `git diff --check` after the correction; the latest log does
-  not evidence these. The original full seven-file selection was not rerun
-  after the fix either.
-- Launcher-prepared parent/implementation worktree isolation, attempt-2
-  synchronization and recursive submodule preparation evidence have not been
-  supplied in this latest log. Capture those in the claimed attempt report.
+- No blocking implementation or validation issue remains for developer review.
+- Thread creation uses the documented concurrency-safe `createMany` plus
+  shop-scoped `findUniqueOrThrow` deviation instead of Prisma `upsert`. The
+  behavior is covered by the passing PostgreSQL concurrency/rollback tests and
+  is surfaced under Architectural Concerns for reviewer confirmation.
 
 ### Architectural Concerns
 
-- The concurrency-safe thread creation differs from the prescriptive
-  `upsert` wording; the service's transactional and tenant-scoped
-  behavioral contract is unchanged in the passing focused tests.
+- Thread creation uses `createMany({ skipDuplicates: true })` followed by
+  `findUniqueOrThrow` instead of Prisma `upsert`, after real PostgreSQL
+  concurrency exposed a `P2002` race. Attempt 2 validation confirms one
+  shop-scoped thread, duplicate safety and atomic rollback; architect review
+  should confirm this behavioral equivalent.
 - Do not promote `ARCH-046-BACKGROUND-002` before authorised review and
   explicit developer completion of this task.
 
@@ -369,6 +370,57 @@ Attempt 1 remains the reviewed attempt. The task returns to `ready` with `execut
 - Focused Vitest run completed 5 files / 56 tests successfully; the suite currently asserts operation-dependent hashes, so it cannot validate the task's operation-independent key requirement.
 - The source-key implementation and formatter test were inspected directly. Both include/assert `blockedOperation` in the digest, while the task contract explicitly says it is deliberately excluded.
 - No implementation files were modified during this review decision.
+
+## Developer Self-Review Passed (Attempt 2)
+
+### Review Outcome
+
+Attempt 2 passes developer self-review. The canonical source key now excludes
+`blockedOperation` and optional context, while the persisted first notice keeps
+its operation-specific body. Unit and PostgreSQL regressions verify both
+entrypoint orders, parallel mixed-operation requests, duplicate/no-rewrite
+behavior, platform/shop/checkout/reason isolation, tenant scoping, timestamp
+ordering and rollback. All requested focused validation, build, lint and diff
+checks passed. The task is submitted to `moda_architect`; because
+`completion_mode: developer`, an explicit developer completion decision remains
+pending.
+
+### Corrected Requirements
+
+- The digest hashes exactly
+  `JSON.stringify(["recovery-consent", 1, platform, shopId, checkoutToken, reason])`.
+- Formatter unit tests assert the same key for both blocked operations and
+  retain distinct keys for platform, shop, checkout and reason changes.
+- Notifier unit and PostgreSQL integration tests verify a replay with the other
+  blocked operation returns `duplicate`, inserts no second message and does not
+  rewrite the first body's operation-specific outcome.
+
+### Attempt and Launcher Evidence
+
+- Claim: Attempt 2, executor `developer`, claimed at `2026-10-25T01:10:01Z`;
+  durable parent claim commit `bc4691998dbd48cafaa363e911b91d899073431d` was
+  committed and pushed.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-BACKGROUND-005`, branch `task/ARCH-046-BACKGROUND-005`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-005`, branch `task/ARCH-046-BACKGROUND-005`.
+- Parent preparation: reused; remote task fast-forward `not-needed`; `origin/main` `already-current` at prepared head `3460caeed2bc97bb1e0d721dea2ffc9f88cd7060`.
+- Implementation preparation: reused; remote task fast-forward `not-needed`; `origin/main` `already-current` at prepared head `1110bfcb4e5a5b8307913f52ad1077ede56b27ad`.
+- Recursive submodule sync and update passed; `database` was initialized at the exact gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+- Dependency gate passed: `ARCH-045-BACKGROUND-002` was `complete`.
+- Shared/default workspace and implementation checkouts were not used for task implementation; no other task worktree was reused.
+- Final implementation branch head `1110bfcb4e5a5b8307913f52ad1077ede56b27ad` is pushed and clean. This parent report is being committed and pushed separately; neither task branch is merged to `main`.
+
+### Remaining Deviation
+
+Thread creation uses the tested concurrency-safe `createMany` plus
+`findUniqueOrThrow` sequence rather than Prisma `upsert`, following a reproduced
+PostgreSQL `P2002` race. No other unresolved implementation or validation issue
+is known. This deviation is explicitly left for architect review.
+
+### State
+
+`status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`.
+Explicit developer completion has not been invoked.
 
 ## Architect Review
 
