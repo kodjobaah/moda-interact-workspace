@@ -51,6 +51,19 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Persist only bounded review metadata/audit. Read existing model/runtime capabilities before enabling component types, and ensure full-language completeness checks remain application-owned.
 
 
+### Required React component decomposition
+
+Use a thin protected Server Component route and **separate** focused client components under `src/components/admin/whatsapp-templates/compilation/`:
+
+- `TranslationReviewWorkspace` — layout/orchestration shell only.
+- `ReviewLanguageSelector` — 20-locale selection and approval/failure indicators.
+- `SourceTranslationComparison` — complete English/target comparison; reuse ADMIN-003's read-only display primitive when available.
+- `ComponentAndVariableDiff` — header/body/footer/buttons, protected markers, bindings and diagnostics.
+- `MetaTemplateReviewPreview` and `ConversationWrapperReviewPreview` — distinct family-specific views; do not cram both template formats into one giant conditional component.
+- `TranslationReviewActions` — confirm/reject, pending/error states and no in-place editing controls.
+
+Use a dedicated `useTemplateTranslationReview` controller for client selection/action state. Split keyed-segment verification, placeholder restoration, locale reconstruction, Meta compilation adapter, wrapper projection compilation and database finalisation into **separate pure/service files** under `src/lib/admin/whatsapp-templates/compilation/`. Reuse the pure compiler **owned by ADMIN-003** rather than copying or redefining it; define the required compile port/typed inputs explicitly for fixtures in a separately prepared worktree. Route/action files must not host reconstruction logic, SQL or large JSX trees. Preserve the same exact preview DTO used by authoring wherever applicable.
+
 ## Out of Scope
 
 - No translation provider calls or Batch polling, Meta submission/status mutation, merchant assignment, wrapper activation, new Shared AST package or database migration.
@@ -93,6 +106,8 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
+- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+
 - [ ] Each language's complete preview and durable metadata reflect the same validated source; exactly 20 reviewed locales are required by application policy before the definition is eligible for the relevant publication path.
 - [ ] Header/body/footer/buttons and wrapper conditional segments map correctly; missing/duplicate/prohibited variable markers block reconstruction; reordered variables bind to the intended semantic values.
 - [ ] Approved locales contain Meta-ready or wrapper-ready projection with no dependency on a Background AST compiler. No content mutation of saved/approved templates occurs.
@@ -100,6 +115,8 @@ None at task-definition time. Completion of this task does not grant permission 
 
 
 ## Validation
+
+- [ ] Focused React component tests cover composition, user interactions, relevant loading/error/empty states and at least one mobile-width/accessibility scenario; controller hooks and pure business helpers are tested separately.
 
 - [ ] Token protection/reordering and variable-binding compiler unit tests for English/French/German and scripts with changed placeholder order; button/URL protections, malformed translator response tests.
 - [ ] Admin UI full-preview/a11y tests; PostgreSQL idempotent locale finalisation/auth/audit tests using fixture translation items; lint/typecheck/`git diff --check`.

@@ -51,6 +51,22 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Expose a stable module read interface for future subroutes: `getDefinitionDetail(id)` and an immutable, versioned authoring-record contract. Read existing definitions by ID and browse with bounded pagination; show family, purpose, source language and lifecycle honestly.
 
 
+### Required React component decomposition
+
+Implement the screen as a composition of **separate React component files**, not one large page/editor. The route's `page.tsx` is a thin **Server Component**: enforce page authorisation, load initial catalogue/detail data, and render the client workspace. At minimum provide distinct, focused components under `src/components/admin/whatsapp-templates/authoring/`:
+
+- `TemplateCatalogue` — bounded list, search, lifecycle/status and select/create navigation.
+- `TemplateAuthoringWorkspace` — composition/layout only; no AST parsing, database calls or provider rules.
+- `TemplateFamilyPurposeSelector` — Meta purpose/offer variant versus wrapper audience.
+- `TemplateContentEditor` — composition of separate `TemplateHeaderEditor`, `TemplateBodyEditor`, `TemplateFooterEditor`, and `TemplateButtonsEditor` (Meta) or `WrapperStructureEditor` (internal wrapper); only show supported components.
+- `TemplateVariablePalette` — eligible typed variable insertion, driven by selected purpose; never invent names.
+- `TemplateReadOnlyPreview` — reusable presentation-only preview accepting a small typed display DTO; do not have other tasks modify its source while implementing their own panels.
+- `TemplateSaveControls` — pending/duplicate-submit/error and Clone-as-New controls.
+
+Keep editable AST state, validation issue mapping, async submission/dirty-state logic in a separate `useTemplateAuthoringDraft` controller hook/reducer, with unit-tested pure operations. Keep AST types, registry, canonicalisation, validation, compiler and persistence/service functions in **separate non-React files** under `src/lib/admin/whatsapp-templates/authoring/`. The server action must be a thin authenticated adapter over that service. Components receive typed props/callbacks and never import Prisma, Meta SDKs or translation clients. The compiler must be importable by ADMIN-005 as a pure function without importing React or this feature's server actions.
+
+The work must not be delivered as one `page.tsx`, `template-editor.tsx`, `whatsapp-templates.tsx`, or equivalent catch-all with all UI, hooks and SQL. Prefer composable small files over arbitrary file-count targets; extract distinct concerns rather than splitting one component mechanically.
+
 ## Out of Scope
 
 - Translation requests/jobs, result reconstruction, Meta create/list/update API calls, provider status reconciliation, bulk shop assignment, wrapper activation, recovery sends and customer checkout mutations.
@@ -93,6 +109,8 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
+- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+
 - [ ] Six recovery purposes and three wrapper audiences are selectable, have the correct variables and usable previews; both families save atomically and appear in the catalogue.
 - [ ] Unknown AST node, unbound variable, missing response slot or unsupported dynamic Meta component fails before save on the server. Duplicate submit makes at most one definition.
 - [ ] Existing content cannot be edited after saving; Clone as New creates a distinct identity and does not mutate its source. No external-import action is present.
@@ -100,6 +118,8 @@ None at task-definition time. Completion of this task does not grant permission 
 
 
 ## Validation
+
+- [ ] Focused React component tests cover composition, user interactions, relevant loading/error/empty states and at least one mobile-width/accessibility scenario; controller hooks and pure business helpers are tested separately.
 
 - [ ] Admin-local AST schema/variable/preview unit tests; server-auth/transaction/idempotency tests including forced rollback, and component accessibility/mobile rendering.
 - [ ] Focused PostgreSQL test against the consolidated schema for definition + source locale + audit and clone; typecheck, scoped lint/tests and `git diff --check` using package scripts that actually exist.

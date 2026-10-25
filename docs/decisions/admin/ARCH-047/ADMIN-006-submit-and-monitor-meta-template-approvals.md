@@ -50,6 +50,18 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Show Meta status events/rejection reason and provider drift warning separately; a provider-status webhook never changes source content, snapshots or merchant assignments. No external template import/registration, no automatic publication. Prevent double-confirmation and stale confirmed content.
 
 
+### Required React component decomposition
+
+Use a thin protected Server Component route, with **separate** client components under `src/components/admin/whatsapp-templates/meta/`:
+
+- `MetaSubmissionReview` — read-only compiled components and current WABA/language information before confirming.
+- `MetaSubmissionConfirmation` — explicit irreversible submit action, duplicate-click disable and error state.
+- `MetaApprovalSummary` — overall status counters, clearly separating submitted from approved.
+- `MetaLocaleStatusTable` — per-language provider status, rejection reason and retry/reconciliation history.
+- `MetaDriftNotice` — provider-content drift/mismatch and blocked eligibility explanations.
+
+Use a `useMetaTemplateStatus` controller hook for bounded status refresh and stale-request handling (do not poll continuously after the admin selects a particular record). Split WABA resolution, payload fingerprint validation, registration snapshot transaction, status read-model queries and audit into **distinct server-only files** in `src/lib/admin/whatsapp-templates/meta/`. The action is a thin authorised adapter; React components never invoke Graph API or access PostgreSQL directly. Reuse already-compiled read-only preview data, not an independent AST compiler.
+
 ## Out of Scope
 
 - Background Meta Graph API client, webhook signature validation, BullMQ consumption, app/provider polling, translation or reconstruction, shop publication, template content mutation, new Shared event contracts.
@@ -91,6 +103,8 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
+- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+
 - [ ] One confirmed submission creates 20 immutable registration snapshots (one per supported provider locale) in a consistent WABA; repeat submits are no-ops and status polling does not duplicate snapshots or audit.
 - [ ] Rejected/pending/paused languages display independently, with reason and drift evidence; Meta API success never appears as Meta-approved or automatically published.
 - [ ] External Meta templates cannot be imported, and no Admin Graph template create/edit/delete request occurs.
@@ -98,6 +112,8 @@ None at task-definition time. Completion of this task does not grant permission 
 
 
 ## Validation
+
+- [ ] Focused React component tests cover composition, user interactions, relevant loading/error/empty states and at least one mobile-width/accessibility scenario; controller hooks and pure business helpers are tested separately.
 
 - [ ] Component/variable digest and trusted WABA identity tests; 20-language registration fixtures; forced partial transaction and concurrent-click tests.
 - [ ] Database-only Admin dashboard/action, auth/audit tests with simulated MetaEvent/registration updates from Background; no provider network; typecheck/lint/`git diff --check`.
