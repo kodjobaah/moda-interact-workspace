@@ -136,7 +136,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-**Ready for Review — developer workflow Attempt 1 (claimed at `2026-10-25T16:02:15Z`).** The supplied Attempt 2 implementation correction was applied within the existing developer claim; it is not a new launcher/review attempt. Implementation commit `8e2ddcc` has been pushed to the Admin repository's `task/ARCH-047-ADMIN-005` branch. This task is **not architect-accepted or developer-completed**.
+**Review — developer workflow Attempt 1 (claimed at `2026-10-25T16:02:15Z`).** Developer self-review passed on 25 October 2026. Implementation commit `8e2ddcc` is published to the Admin repository's `task/ARCH-047-ADMIN-005` branch. Because `completion_mode: developer`, explicit developer completion remains pending; this task is not Complete.
 
 ### Files Changed
 
@@ -192,14 +192,14 @@ Evidence: developer terminal transcripts `typescript(20261025-163303)` and `type
 | `npm run test:arch047-admin-compilation:unit` | **PASS — 13/13 tests**: token protection, key/source validation, language codes, positional bindings, template limits, idempotent/rejected reviews and `SUPER_ADMIN` checks. |
 | `npm run test:arch047-admin-compilation:components` | **PASS — 3/3 tests**: 20-language selector, full Meta/wrapper views, immutable-content review controls. |
 | `npm run test:arch047-admin-compilation:postgres` | **PASS — 3/3 disposable PostgreSQL tests**: unique/frozen concurrent finalisation, rejected review without content or live-pointer changes, and audit-failure transaction rollback. |
-| `npm run build` | **PASS**: Prisma Client generated, Next.js compilation, TypeScript checking and completed production build. Build emitted BullMQ optional `@valkey/valkey-glide`/dynamic-import warnings in queue-monitor and merchant-support imports; no build failure. |
-| `npm run lint` | **PASS (0 errors, 1 warning)**. Warning: `database/eslint.config.mjs` (`import/no-anonymous-default-export`), outside the changed implementation files. |
-| `git diff --check` | **PASS (no diagnostic output)** in the developer's terminal log before staging/commit. |
+| `npm run build` | **PASS during this review**: Prisma Client generated, Next.js compilation, TypeScript checking and completed production build. Build emitted BullMQ optional `@valkey/valkey-glide`/dynamic-import warnings in queue-monitor and merchant-support imports; no build failure. |
+| `npm run lint` | **PASS during this review (0 errors, 1 warning)**. Warning: `database/eslint.config.mjs` (`import/no-anonymous-default-export`), outside the changed implementation files. |
+| `git diff --check` | **PASS during this review** on both implementation diff and parent review-record diff. |
 | Implementation Git commit and push | **PASS**: `8e2ddcc` on `task/ARCH-047-ADMIN-005`, pushed to `origin/task/ARCH-047-ADMIN-005`. |
 
 The implementer did not provide a separate focused accessibility automation report beyond the three React component checks. Those tests include accessibility-oriented selector attributes (`aria-pressed`/labels), but no independent end-to-end a11y scan is evidenced.
 
-**Worktree evidence:** the developer's archive helper reported parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-005` and isolated implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-005`. The implementation terminal shows the matching `task/ARCH-047-ADMIN-005` branch and remote push. The archive does **not** contain the launcher-prepared execution packet or explicit start-of-attempt synchronisation/recursive-submodule evidence; architect review should request/check this evidence rather than infer it from a clean checkout or successful tests.
+**Worktree evidence verified during review:** canonical launcher routes to parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-005` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-005`. Both are registered on `task/ARCH-047-ADMIN-005`, clean, and contain current `origin/main`; implementation HEAD `8e2ddcc7bc251597639f4138dde30a077a663707` equals `origin/task/ARCH-047-ADMIN-005`. Recursive database submodule is materialised at gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. Thus the earlier archive omission is closed by live repository/worktree verification; the launcher packet itself is not retained as a separate artifact.
 
 ### Deviations
 
@@ -227,27 +227,35 @@ No new cross-repository schema/contract changes were introduced. The requirement
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Developer Self-Review Passed — Attempt 1. Explicit developer completion is pending.
 
 ### Review Notes
 
-None.
+Task scope and acceptance evidence were reconciled against the published implementation diff and task record. Route/action authorization, source/run identity checks, keyed-marker validation, compiler reuse, immutable locale finalisation, audit rollback behavior and full-language review presentation were inspected. No task-scoped acceptance gap was found. Missing standalone accessibility automation remains a minor evidence limitation; component coverage and semantic labels/pressed state are present. Existing build/lint warnings are recorded above and do not fail validation.
 
 ### Reviewed Files
 
-None.
+All 30 implementation files in commit `8e2ddcc`, including the review route/action, compilation services, components, focused tests and disposable PostgreSQL harness. No unrelated repository or task files are changed.
 
 ### Validation Reviewed
 
-None.
+Re-ran `npm run test:arch047-admin-compilation:unit` (13/13 pass), `npm run test:arch047-admin-compilation:components` (3/3 pass), `npm run test:arch047-admin-compilation:postgres` (3/3 pass), `npm run lint` (0 errors, 1 pre-existing warning), `npm run build` (pass with recorded BullMQ warnings), and `git diff --check` (pass).
 
 ### Architecture Conformance
 
-Not assessed.
+Conforms to the Admin-only immutable translation review/compilation boundary. No schema, Background, Messaging, Shared, caller integration, live assignment, wrapper activation or `_index.md` changes were found. Completion remains separate from review.
 
 ### Follow-up
 
-None.
+Developer may explicitly complete with `/moda_developer_update ARCH-047-ADMIN-005 complete`. No sibling or downstream task was started.
+
+## Developer Self-Review - Passed
+
+- Attempt: 1; reviewed 25 October 2026.
+- Result: Passing; no known required Work Item or Acceptance Criterion remains incomplete.
+- Implementation branch: `task/ARCH-047-ADMIN-005`, commit `8e2ddcc7bc251597639f4138dde30a077a663707`, pushed and clean.
+- Parent task branch: `task/ARCH-047-ADMIN-005`; this review record will be committed and pushed separately.
+- Completion decision: pending explicit developer action because `completion_mode: developer`; status remains `review`, attempt remains 1, executor and claim timestamp are null.
 
 ## Execution Ownership Amendment
 
