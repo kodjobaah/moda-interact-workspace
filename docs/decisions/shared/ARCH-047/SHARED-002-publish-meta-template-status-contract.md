@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-25T21:54:15Z
+attempt: 1
 depends_on:
   - ARCH-047-SHARED-001
 enables:
@@ -94,7 +94,7 @@ Use the repository's existing publication workflow and mirrored isolated task br
 
 ### Status
 
-Ready for developer takeover at Attempt 0. SHARED-001 is complete and Architect Review Accepted; no publication work has been claimed or performed.
+In Progress — Attempt 1 claimed by developer at 2026-10-25T21:54:15Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
