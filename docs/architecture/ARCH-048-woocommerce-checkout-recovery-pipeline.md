@@ -4,7 +4,7 @@ title: WooCommerce outbound event-driven recovery with service-oriented Backgrou
 status: proposed
 coordinator: moda_architect
 created: 2026-10-23
-updated: 2026-10-23
+updated: 2026-10-25
 ---
 
 # ARCH-048 — WooCommerce checkout recovery, business-service orchestration
@@ -116,7 +116,7 @@ Existing plugin event kinds + schemas via authenticated Moda API and existing pr
 - Event delivery is at least once; no exactly-once guarantee or complete-event assumption. Stable `eventId` dedupes retry; current `occurredAt` has insufficient granularity to order same-second different updates. Conflicts must defer/quarantine rather than assume a preferred payload is latest. Truly unknown/undelivered events cannot be inferred from Redis/Postgres.
 - BG001 and BG002 share **one checkout-scoped lock/fencing protocol**, but only BG002 owns order-policy changes; BG001 owns the candidate scheduling/index interface. BG001 and BG002 depend on BG006 contracts only; BG005 injects the accepted implementations. BG002 must not change BG001 candidate scheduling internals.
 - Every checkout/order event that can affect a previously initiated recovery must check PostgreSQL independently of BullMQ candidate presence. Known placed/paid/cancelled outcomes suppress abandoned-cart work; `ORDER_PLACED` does not imply payment. Post-send order transition suppresses further outreach without undoing legitimately delivered charges.
-- BG003 uses final row idempotency, exact customer and phone, current marketing consent, local STOP and order/watermark checks. Its row-only INSERT is never an implicit WhatsApp send. BG004 performs the independently rechecked final send/attempt/billing guard using completed ARCH-046-BACKGROUND-004.
+- BG003 uses final row idempotency, exact customer and phone, current marketing consent, local STOP and order/watermark checks. Its row-only INSERT is never an implicit WhatsApp send. ARCH-048 BG004 owns independent initial outreach/billing; its `WooGuardedInitialSender` remains an **unimplemented injection boundary** until narrowed ARCH-046-BG004 supplies a tested final SQL consent/STOP/Marketing permit.
 - Runtime wiring remains solely BG005; failed domain operations keep bounded BullMQ retry and preserve candidate indexes appropriately. Default Woo outbound disabled; no Woo follow-ups.
 - A fully undelivered Woo order/payment or checkout update is an acknowledged safety limit. Before enabling Woo outbound in production, developer must explicitly accept that limitation or commission a separate outbound-only Woo-side verification mechanism. ARCH-048 does **not** silently imply Shopify-equivalent current-state lookup.
 
@@ -126,30 +126,36 @@ Keep hot-path work bounded per event: parse, shop/checkout durable state lookup 
 
 ## Implementation dependency policy (Attempt 4)
 
-**Do not encode the runtime sequence as an implementation dependency.** The four business services consume stable internal interfaces declared by `ARCH-048-BACKGROUND-006`; each can compile and be tested with injected fakes. `ARCH-048-BACKGROUND-005` is the only integration/wiring task and therefore depends on all accepted services and ARCH-046 consent-notice integration. Woo plugin producer corrections are independent and gate **system testing and rollout**, not local Background service coding.
+**Do not encode the runtime sequence as an implementation dependency.** The four business services consume stable interfaces declared by `ARCH-048-BACKGROUND-006`; each compiled/tested independently. `ARCH-048-BACKGROUND-005` is the sole worker/composition task and depends on all four accepted services, ARCH-046-BG002 Woo notices **and** the narrowed ARCH-046-BG004 final initial-send guard. Woo plugin producer corrections are independent and gate **system testing and rollout**, not local Background service coding.
 
 ```text
-              ARCH-048-BACKGROUND-006 (internal interfaces)
-                   |           |           |           |
-                   v           v           v           v
-                 BG001       BG002       BG003        BG004
-                   |           |           |            |
-                   |           |           v            |
-                   |           |     ARCH-046-BG002      |
-                   |           |           |            |
-                   +-----------+-----------+------------+
-                                       |
-                                       v
-                          ARCH-048-BACKGROUND-005
-                                       |
-                                       v
-                       ARCH-048-SYSTEM-TEST-001
-                          ^                ^
-                          |                |
-                   WOOCOMMERCE-002   WOOCOMMERCE-003
+ ARCH-048-BG006 (completed contracts)
+      |                 |                 |                 |
+      v                 v                 v                 v
+ ARCH-048-BG001    ARCH-048-BG002    ARCH-048-BG003    ARCH-048-BG004
+      |                 |                 |                 |
+      |                 |                 v                 |
+      |                 |          ARCH-046-BG002            |
+      |                 |           (Woo notices)           |
+      |                 |                 |                 |
+      |                 +---------> ARCH-046-BG004 <--------+
+      |                         (final initial-send guard)
+      |                                  |
+      +-------------------+--------------+
+                          v
+                 ARCH-048-BG005
+                  (worker wiring)
+                          |
+                          v
+                 ARCH-048-SYSTEM-TEST-001
+                   ^              ^
+                   |              |
+                WOO-002        WOO-003
 ```
 
-The independent Woo tasks converge only at the terminal system test, **not at BG005**. All ARCH-035 API/Woo capture prerequisites remain unchanged. ARCH-046-BACKGROUND-004 was reported Complete by the developer; verify the accepted implementation before consumption without reopening it.
+`ARCH-046-BG002` additionally consumes the **completed** ARCH-046-BG005 shared notifier, BG003 and current consent/STOP readers. `ARCH-046-BG004` additionally depends on the completed consent and STOP tasks. ARCH-048-BG005 requires **all** BG001–BG004 services and **both** ARCH-046 integrations to be accepted Complete.
+
+The independent Woo plugin tasks converge only at the terminal system test, **not at BG005**. All ARCH-035 API/Woo capture prerequisites remain unchanged. The 25 October snapshot records ARCH-046-BG004 **blocked with no implementation**, so the task is now narrowed to the initial-send guard and awaits BG002 acceptance; do not treat prior conversational completion reports as implementation evidence.
 
 ### Canonical local contracts
 
@@ -172,7 +178,7 @@ Shared identity is always `(shopId, checkoutToken)`, where checkoutToken is the 
 
 ## Rollout / Migration
 
-Treat the user snapshot as a documentation baseline, not proof that code has been deployed. No database migration, new API route or new Shared publication is planned. Accept BG006 first; then BG001, BG002, BG003 and BG004 can be independently implemented/reviewed (including parallel work in dedicated task worktrees). Woo plugin WOOCOMMERCE-002 and WOOCOMMERCE-003 can proceed independently. After BG003, ARCH-046-BACKGROUND-002 attaches the missing-consent notice. BG005 waits for all four accepted business services and ARCH-046-BACKGROUND-002, wires workers, and preserves legacy Shopify routing. Woo producer tasks and BG005 are prerequisites of the integrated system test, not prerequisites of each other. Integrated ARCH-048-SYSTEM-TEST-001 and ARCH-046-SYSTEM-TEST-002 run only after implementation dependencies are architect-accepted, with manual developer validation before invocation if desired.
+Treat the user snapshot as a documentation baseline, not proof that code has been deployed. No database migration, new API route or new Shared publication is planned. Accept BG006 first; then BG001, BG002, BG003 and BG004 can be independently implemented/reviewed (including parallel work in dedicated task worktrees). Woo plugin WOOCOMMERCE-002 and WOOCOMMERCE-003 can proceed independently. With BG003 and the shared BG005 notifier now accepted, ARCH-046-BG002 is Ready to attach Woo merchant notices. ARCH-046-BG004 becomes Ready only after BG002 acceptance and implements the final initial-send provider fence. ARCH-048-BG005 waits for **both** ARCH-046 tasks plus the four accepted ARCH-048 business services, wires workers and preserves legacy Shopify routing. Woo producer tasks and BG005 are prerequisites of the integrated system test, not prerequisites of each other. Integrated ARCH-048-SYSTEM-TEST-001 and ARCH-046-SYSTEM-TEST-002 run only after implementation dependencies are architect-accepted, with manual developer validation before invocation if desired.
 
 Keep Woo outbound **off** until manual approval after system tests. On rollback disable Woo scheduling/send composition or feature gate safely without deleting historical rows or accidentally rerouting queued Woo candidates into Shopify materialisation; a rollback must quarantine/hold Woo-specific candidates if the old worker cannot parse their discriminator.
 
@@ -185,16 +191,17 @@ Keep Woo outbound **off** until manual approval after system tests. On rollback 
 | ARCH-048-API-002 | API | Superseded | Background→Moda API lookup rejected |
 | ARCH-048-WOOCOMMERCE-002 | Woo | Ready | Existing checkout producer; empty/refill coverage |
 | ARCH-048-WOOCOMMERCE-003 | Woo | Ready | Existing order producer; paid/cancelled coverage |
-| ARCH-048-BACKGROUND-006 | Background | Ready | Completed ARCH-035 capture contracts; define internal interfaces only |
-| ARCH-048-BACKGROUND-001 | Background | Pending | BG006 + completed checkout capture; independently implement scheduling |
-| ARCH-048-BACKGROUND-002 | Background | Pending | BG006 + completed order capture; independently implement terminal policy |
-| ARCH-048-BACKGROUND-003 | Background | Pending | BG006 + completed consent/STOP readers; independently implement first-row admission |
-| ARCH-048-BACKGROUND-004 | Background | Pending | BG006 + completed final pre-send guard/STOP capability; independently implement outreach |
-| ARCH-046-BACKGROUND-002 | ARCH-046 | Blocked | BG003 seam + current consent/STOP; notice adapter, no worker wiring |
-| ARCH-048-BACKGROUND-005 | Background | Pending | BG001, BG002, BG003, BG004 and ARCH-046-BG002; orchestrator/worker wiring |
+| ARCH-048-BACKGROUND-006 | Background | Complete | Internal interfaces accepted |
+| ARCH-048-BACKGROUND-001 | Background | Complete | Checkout scheduling service accepted |
+| ARCH-048-BACKGROUND-002 | Background | Complete | Order reconciliation/terminal service accepted |
+| ARCH-048-BACKGROUND-003 | Background | Complete | First-row admission and awaited denial hook accepted |
+| ARCH-048-BACKGROUND-004 | Background | Complete | Initial-outreach service accepted; concrete guarded sender still required from ARCH-046-BG004 |
+| ARCH-046-BACKGROUND-002 | ARCH-046 | Ready | Woo notice adapter consuming merged ARCH-046-BG005 notifier |
+| ARCH-046-BACKGROUND-004 | ARCH-046 | Pending | Final initial-send permit; depends on ARCH-046-BG002 and ARCH-048-BG004 |
+| ARCH-048-BACKGROUND-005 | Background | Pending | BG001–004 + ARCH-046-BG002 + ARCH-046-BG004; orchestrator/worker wiring |
 | ARCH-048-SYSTEM-TEST-001 | System Test | Pending | BG005 and all relevant ARCH-048/046 implementation dependencies |
 
-`ARCH-046-SYSTEM-TEST-002` also depends on ARCH-048-BACKGROUND-005 for integrated consent verification. **No non-system-test task depends on a system-test task.** Completed ARCH-046-BACKGROUND-004 is untouched. Domain `_index.md` files remain unchanged during this architecture session.
+`ARCH-046-SYSTEM-TEST-002` also depends on ARCH-048-BACKGROUND-005 for integrated consent verification. **No non-system-test task depends on a system-test task.** ARCH-046-BACKGROUND-004 is not Complete in the supplied snapshot; its revised task definition is a required prerequisite to BG005. Domain `_index.md` files remain unchanged during this architecture session.
 
 ## Open Questions / Decision Gates
 
@@ -210,3 +217,5 @@ Keep Woo outbound **off** until manual approval after system tests. On rollback 
 - 2026-10-23 — Attempt 2 removed remote read/guest-session validation, added existing PostgreSQL recovery lookup and order event reconciliation.
 - 2026-10-23 — Attempt 4 separates implementation dependencies from runtime order, defines new BG006 Background-local interfaces, makes BG001–004 independent and gates integration at BG005.
 - 2026-10-23 — Attempt 3 proposed **four dedicated Woo business services + BG005 thin orchestrator/worker composition**, explicit ownership, testable interfaces, provider-aware candidate routing and crash/retry handoff; ARCH-046 integration remains in its proper ownership boundary.
+
+- 2026-10-25 — Reconciled accepted ARCH-048 business services and merged ARCH-046 shared notifier; BG005 integration now depends on both Woo consent notice BG002 and narrowed final initial-send guard BG004. Woo follow-ups remain disabled.

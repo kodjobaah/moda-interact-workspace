@@ -20,10 +20,11 @@ depends_on:
 - ARCH-048-BACKGROUND-003
 - ARCH-048-BACKGROUND-004
 - ARCH-046-BACKGROUND-002
+- ARCH-046-BACKGROUND-004
 enables:
 - ARCH-048-SYSTEM-TEST-001
 created: '2026-10-23'
-updated: '2026-10-24'
+updated: '2026-10-25'
 ---
 
 # ARCH-048-BACKGROUND-005 — Compose Woo recovery services and wire event/maturity/outbound workers
@@ -36,7 +37,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
+Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. In the 2026-10-25 13:36 snapshot `ARCH-046-BACKGROUND-004` is **blocked** and awaiting its own approved initial-send final guard; it is NOT Complete. BG005 must not start until that task and ARCH-046-BG002 have both been accepted Complete.
 
 ## Objective
 
@@ -54,7 +55,7 @@ BG006 first freezes cross-service interfaces; BG001–BG004 independently implem
 - Route pending-recovery candidates using an **explicit internal Woo source discriminator** populated by BG001. `source === "woocommerce"` calls Woo admission; absent source remains the backward-compatible existing Shopify path; unknown source fails safely. Verify shop platform/tenant, do not infer routing merely from opaque checkoutKey prefixes or shopDomain.
 - On a mature Woo candidate, call BG003; for `created { recoveryId }`, enqueue initial outreach through BG004. For `already-exists { recoveryId, status }`, invoke **only** BG004's idempotent eligible-pending recovery/reenqueue path when a prior row INSERT succeeded but scheduling failed; BG004 must prove there is no previously sent or in-flight initial attempt. Denied/deferred/superseded cases never enqueue. This handles DB-insert → enqueue crash/retry without a new table.
 - Wire BG002 on Woo order events so known terminal outcomes cancel pending candidates **and** reconcile durable recoveries even when no candidate job exists. Wire BG001 on checkout updates; no worker may contain copied business branching.
-- Integrate ARCH-046-BACKGROUND-002 denial notification seam at the accepted admission boundary; reuse completed ARCH-046-BACKGROUND-004 final provider fence through BG004. Do not reopen either accepted implementation or duplicate notices.
+- Integrate accepted ARCH-046-BACKGROUND-002 via its `WooDeniedAdmissionNotifier` factory and inject it into BG003 `onDeniedAdmission`. Inject the **concrete accepted** ARCH-046-BACKGROUND-004 `WooGuardedInitialSender` into `createWooRecoveryOutreachService`; do not substitute the generic outbound `sendTemplate` or an unguarded preflight. At this snapshot BG004 is not implemented/accepted, so this is a hard integration dependency. Preserve the merged shared merchant-notice writer and do not duplicate it.
 - Preserve existing job cleanup/retry semantics and candidate index on success/defer/failure, including distinct Woo vs Shopify materialisation results; do not silently remove a retryable Woo candidate. Ensure the default-off Woo send gate cannot be bypassed by alternative worker/resume paths.
 - Build integration tests using actual worker entrypoints, test-injected service interfaces and Redis/Postgres fixtures for routing, failure, idempotency and source isolation. No unrelated worker rewrite.
 
@@ -83,7 +84,7 @@ BG006 first freezes cross-service interfaces; BG001–BG004 independently implem
 
 - [ ] Compose four already accepted services using the unchanged BG006 Background-local interface types through a small orchestrator, one code module and explicit constructor/factory injection; reuse existing deployed worker entrypoints.
 - [ ] Wire checkout capture worker to BG001, order capture worker to BG002, pending candidate worker to BG003→BG004 routing with explicit Woo source marker and Shopify legacy fallback.
-- [ ] Wire existing initial outbound processor to BG004 where necessary, and connect ARCH-046-BACKGROUND-002 notice interface. Retain correct queue ack/failure/cleanup behaviour.
+- [ ] Wire existing initial outbound processor to ARCH-048 BG004; compose the accepted ARCH-046-BG004 `WooGuardedInitialSender`, and inject ARCH-046-BG002 notice callback at BG003 admission. Reject missing guard dependencies (no live or test fallback to generic unguarded sending). Retain correct queue ack/failure/cleanup behaviour.
 - [ ] Add tests for Woo vs Shopify routing, nil job+existing recovery, checkout after first send, order after first send, duplicate/failed job, DB insert→enqueue interruption, disabled Woo send and no Woo follow-ups.
 - [ ] Run existing Shopify worker/maturity regressions and entrypoint startup/build checks; record exact changed files per orchestration boundary.
 - [ ] Wire the shared structured logger into the orchestrator and each affected worker path; record safe started/completed/deferred/failed events without duplicate business rule logging.
@@ -115,6 +116,7 @@ interface WooRecoveryOrchestrator {
 - `ARCH-048-BACKGROUND-003`
 - `ARCH-048-BACKGROUND-004`
 - `ARCH-046-BACKGROUND-002`
+- `ARCH-046-BACKGROUND-004`
 
 ## Enables
 
@@ -125,7 +127,7 @@ interface WooRecoveryOrchestrator {
 - [ ] Woo checkout/order capture workers invoke the new orchestrator, and no business decision is implemented inside workers.
 - [ ] Woo maturity candidates route exclusively to Woo admission and initial-send pipeline; existing Shopify/legacy candidates route unchanged.
 - [ ] `created` only queues one initial send; `already-exists`, denial and retry are safe; order-after-send / no candidate updates durable status and suppresses further outreach.
-- [ ] No active Woo send with default-off switch, no unguarded follow-ups, and approved ARCH-046 guards apply on the actual send path.
+- [ ] No active Woo send with default-off switch, no Woo sequence-two follow-ups, and accepted ARCH-046-BG004 consent/STOP/Marketing final provider guard is wired on **every** actual initial-send/reentry path. Runtime composition fails closed if the guarded sender is unavailable.
 - [ ] All runnable integration tests and existing Shopify worker regressions pass; work stops without enabling live send.
 - [ ] Unexpected failures from any injected service propagate through the awaited worker callback and are visible as failed/retried BullMQ jobs with a structured error log; neither candidates nor billing are silently advanced or discarded.
 - [ ] Known domain outcomes and `failed-retryable` receive intentionally distinct queue semantics; successful logging cannot occur after a rejected operation, and safe structured correlation fields contain no PII.
@@ -176,11 +178,11 @@ None.
 
 ### Assumptions
 
-Latest uploaded ZIP and proposed task files may lag active developer branches. Latest dependency state must be checked before materialisation. The developer reports `ARCH-046-BACKGROUND-004` complete; reuse accepted implementation without editing its task definition.
+Latest uploaded ZIP and proposed task files may lag active developer branches. Latest dependency state must be checked before materialisation. This 2026-10-25 snapshot records `ARCH-046-BACKGROUND-004` as blocked; do not infer completion from older conversation reports. Wait for the narrowed initial-send final guard to be implemented and accepted.
 
 ### Unresolved Issues
 
-Confirm actual approved cross-task dependency versions before implementation; raise missing canonical shared contracts or unimplementable business guarantees to the architect rather than inventing substitutes.
+Wait for both ARCH-046-BACKGROUND-002 and the narrowed ARCH-046-BACKGROUND-004 to become Complete. Confirm their accepted interfaces before worker composition; raise missing canonical contracts or unimplementable guards instead of inventing bypasses.
 
 ### Architectural Concerns
 
