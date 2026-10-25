@@ -44,6 +44,7 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 
 - Own translation request creation, status reads and retry-action UI under `src/lib/admin/whatsapp-templates/translations/`, `src/components/admin/whatsapp-templates/translations/` and `src/app/(protected)/system-controls/whatsapp-templates/[definitionId]/translations/`.
 - Read a saved English definition/locale and extract **stable keyed text segments** from supported translatable locations: text header, body, footer and button labels for Meta; wrapper header/footer/conditional display text for wrappers. Do not translate template names, category, Meta language codes, semantic variable identifiers, button URLs or runtime response body.
+- Treat the eight `ShopBrand` text-use semantic keys authored by ADMIN-003 as protected variables: `shopBrand.brandName`, `shopBrand.logoUrl`, `shopBrand.logoAltText`, `shopBrand.logoWidth`, `shopBrand.logoHeight`, `shopBrand.squareLogoUrl`, `shopBrand.squareLogoAltText` and `shopBrand.coverImageUrl`. These are **variable identifiers**, not live merchant values or translatable prose. Protect every occurrence, including a Meta text-header variable (where supported), body variables and wrapper header/footer/conditional text variables. Meta footer content remains static text; `response.body` is a structural insertion slot and must never become a translation segment. Preserve ADMIN-003's component-specific allowlists and header restrictions rather than granting every key every placement.
 - Produce a bounded, versioned `sourceSnapshot` JSONB with `definitionId`, `sourceHash`, `sourceLanguageTag`, `schemaVersion` and `segments:[{key,text,protectedTokens}]`. Each key is a deterministic path or AST node ID; placeholder occurrences use unique **opaque protected markers**, with an explicit map from each marker to its semantic variable, so translated words can reorder variables without changing meaning.
 - Transactionally create one `WhatsAppTemplateTranslationRun` and **19** `WhatsAppTemplateTranslationItem` rows using the model configuration chosen by the established Admin translation configuration; ensure durable source hash/model identity, per-language technical identity and no translation before the immutable English locale has committed. Duplicate requests do not generate a second active run for the same source/configuration; use application serialisation/idempotency.
 - The request is picked up asynchronously by `BACKGROUND-002` using the existing Batch worker mechanisms. **Do not call Background synchronously, translate inside an Admin action or invent a new cross-service queue schema.** If operational wake-up is required, use an existing approved handoff, with the database remaining durable truth.
@@ -71,6 +72,7 @@ Place polling, request/retry state, stale-response cancellation and selection-aw
 ## Requirements
 
 - [ ] The source snapshot contains exactly one stable entry per translatable component and protected token occurrences without leaking actual customer values or secrets; duplicate/missing segment keys are rejected on request creation.
+- [ ] Repeated `shopBrand.*` tokens remain independently protected, with stable semantic identifiers and unique per-occurrence opaque markers; translations cannot replace them with a preview value, a merchant's real branding, or a translated identifier.
 - [ ] A verified source hash and immutable source locale are captured; a later clone cannot receive an older run's outputs. Per-language progress comes from persisted items, not simulated UI state.
 - [ ] Translation request write and model identity assignment are atomic; repeated start/retry is idempotent and does not discard completed languages.
 
@@ -81,13 +83,14 @@ All server reads/mutations of template management require the existing authentic
 ## Work Items
 
 - [ ] Implement pure extraction/token-marker helpers with deterministic fixtures for header/body/footer/buttons and wrapper conditionals.
+- [ ] Exercise the ADMIN-003 variable registry for allowed `shopBrand.*` placements; protect Meta text-header/body and wrapper header/footer/conditional tokens while leaving Meta footers, URLs and the wrapper response slot unmodified.
 - [ ] Implement transactional run/item creation, deduplicated request action, progress/list/retry endpoints and bounded polling UI.
 - [ ] Add tests for duplicate starts, 19 target items, exact source-hash binding and meaningful failed/queued states.
 
 
 ## Interfaces / Contracts
 
-**Reads:** immutable English `WhatsAppTemplateLocale.localeAst`, definition, configured translation-model record. **Writes:** `WhatsAppTemplateTranslationRun.sourceSnapshot` and `WhatsAppTemplateTranslationItem` rows; status/progress UI reads Run/Item/Batch/BatchItem. Background's agreed contract is `{schemaVersion:1,segments:[{key:string,text:string,protectedTokens:[{marker:string,variable:string}]}]}` for source and `{schemaVersion:1,segments:[{key:string,text:string}]}` in `TranslationItem.translatedAst`. Protected marker strings are opaque and unique **per occurrence**. The compiler/reconstructor module (ADMIN-005) owns reinsertion of results by `key`. The database schema stays unchanged.
+**Reads:** immutable English `WhatsAppTemplateLocale.localeAst`, definition, configured translation-model record. **Writes:** `WhatsAppTemplateTranslationRun.sourceSnapshot` and `WhatsAppTemplateTranslationItem` rows; status/progress UI reads Run/Item/Batch/BatchItem. Background's agreed contract is `{schemaVersion:1,segments:[{key:string,text:string,protectedTokens:[{marker:string,variable:string}]}]}` for source and `{schemaVersion:1,segments:[{key:string,text:string}]}` in `TranslationItem.translatedAst`. Protected marker strings are opaque and unique **per occurrence**, including two occurrences of the same `shopBrand.*` key. The `variable` field retains the canonical `shopBrand.*` identifier, never a `ShopBrand` value. The compiler/reconstructor module (ADMIN-005) owns reinsertion of results by `key`. The database schema stays unchanged.
 
 
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/translations/`, components under `src/components/admin/whatsapp-templates/translations/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-translations.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
@@ -107,15 +110,14 @@ None at task-definition time. Completion of this task does not grant permission 
 
 - [ ] Saving an English template does not implicitly translate; explicit Generate persists one run and exactly 19 target-language items for supported target locales.
 - [ ] Source snapshots use stable component keys; source text markers survive opaque variable contract; untranslatable URLs, metadata and response slot never become translation work.
+- [ ] Header/body and wrapper translatable segments protect all supported `shopBrand.*` identifiers without leaking merchant-specific values; unsupported Meta footer variables are rejected by the source authoring contract, not silently included as translation work.
 - [ ] Progress, partial failures and retry controls reflect PostgreSQL; reloading/navigation does not lose progress or cause an extra run.
 - [ ] Repeated concurrent requests do not produce duplicate active work, and are audited and SUPER_ADMIN-only.
 
 
 ## Validation
 
-- [ ] Focused React component tests cover composition, user interactions, relevant loading/error/empty states and at least one mobile-width/accessibility scenario; controller hooks and pure business helpers are tested separately.
-
-- [ ] Pure keyed-segment extraction/marker tests; 20-locale mapping fixtures; Admin route/action auth/duplicate-submit tests.
+- [ ] Pure keyed-segment extraction/marker tests (including repeated brand name, brand alt text, header/body placement and wrapper footer/conditional text); 20-locale mapping fixtures; Admin route/action auth/duplicate-submit tests.
 - [ ] Database integration tests for run/items creation and idempotent retry requests using stubbed Background statuses; relevant lint/typecheck/build and `git diff --check`.
 
 
