@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-25T14:03:34Z
+attempt: 1
 depends_on:
   - ARCH-046-BACKGROUND-001
   - ARCH-045-BACKGROUND-005
@@ -177,7 +177,7 @@ Only the Woo adapter and its focused tests are implementation-owned here. The ac
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-25T14:03:34Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
