@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -137,7 +137,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Developer Self-Review Passed — developer-executed **workflow Attempt 1**, completed on 2026-10-25 after seven incremental correction patches within this claim. The focused implementation, PostgreSQL integration, lint and typecheck checks passed in the canonical worktree. The task remains `review` pending the developer's explicit completion decision; this self-review is not an architect acceptance.
+Developer Completed — explicit developer completion decision recorded on 2026-10-25 for workflow Attempt 1, following the passing developer self-review. Architect acceptance remains pending; this developer decision is not an architect acceptance.
 
 ### Files Changed
 
@@ -152,8 +152,7 @@ Task-owned implementation in `moda-interact-admin/`:
 - `tests/unit/arch047-template-publication-pure.test.ts`, `tests/unit/arch047-template-publication-components.test.tsx`, `tests/integration/arch047-template-publication.postgres.test.ts`
 - `package.json`, `package-lock.json` (task test scripts/dependencies and Shared version alignment)
 
-This handoff changes **only this task definition in the parent workspace**. No domain `_index.md`, parent architecture, schema/migration, or sibling task is changed by the review-handoff patch.
-This review update changes **only this task definition in the parent workspace**. No domain `_index.md`, parent architecture, schema/migration, or sibling task was changed by the review.
+This completion update changes **only this task definition in the parent workspace**. No domain `_index.md`, parent architecture, schema/migration, or sibling task was changed.
 
 ### Work Completed
 
@@ -174,14 +173,7 @@ Fresh canonical-worktree verification on 2026-10-25:
 - **PASS** — scoped `npx eslint` across the publication route, server action, publication services/components, helpers, tests and runners: 0 errors. ESLint emitted only three warnings because the configured ignore rules exclude the two unit test files and PostgreSQL integration test from lint.
 - **PASS** — `npx tsc --noEmit`; completed without diagnostics.
 - **PASS** — `git diff --check origin/main...HEAD` on the implementation task branch and `git diff --check` on the parent task record; no whitespace errors.
-| **ESLint:** the archived run lacked a final invocation; fresh scoped ESLint verification on 2026-10-25 completed with zero errors and three configured ignored-test warnings (see fresh results above). |
-
-- **PASS** — `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` for correction patch 7; no patch/whitespace errors were printed.
-- **PASS** — `npx tsc --noEmit` (no TypeScript errors reported).
-- **PASS** — `npm run test:arch047-admin-publication:unit`: **19 passed / 0 failed**, covering pure rules and server-rendered/component interactions.
-- **PASS** — `npm run test:arch047-admin-publication:postgres`: **5 passed / 0 failed**; disposable PostgreSQL schema setup completed and the runner reported `PASS ARCH-047 ADMIN-007 disposable PostgreSQL`.
-- **ESLint:** the previous validation log reported no errors (with ignored-file warning); the latest 2026-10-25 20:07 terminal capture does **not** include a fresh ESLint invocation after the final test-fixture correction. Reviewer may rerun scoped lint if desired.
-- **Git publication:** Admin implementation commit `83443cf` (`feat(arch-047-admin-007)`) was pushed successfully to `origin/task/ARCH-047-ADMIN-007` (`0ea2bd7..83443cf`). No parent documentation commit/push is claimed by this external review-handoff artifact.
+- **PASS** — implementation commit `83443cf83426a19462b3fd1e9a1fc3399bb6448b` is published to `origin/task/ARCH-047-ADMIN-007`; parent task/report changes are published to the matching workspace task branch.
 
 ### Worktree and Preparation Evidence
 
@@ -256,4 +248,8 @@ Reviewed the protected route/server actions, source and approval validation, pre
 
 ### State Transition
 
-Remain `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. Because `completion_mode: developer`, explicit developer completion is pending via `/moda_developer_update ARCH-047-ADMIN-007 complete`. Architect acceptance is also not implied by this self-review.
+The self-review left `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`, with explicit developer completion pending.
+
+## Developer Completion Decision
+
+On 2026-10-25, the developer explicitly invoked `/moda_developer_update ARCH-047-ADMIN-007 complete`. The durable passing review is present, all required Work Items and Acceptance Criteria are complete, implementation commit `83443cf83426a19462b3fd1e9a1fc3399bb6448b` is published, and the parent task/report changes are publishable. The task is now `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. This does not constitute architect acceptance or a merge to `main`.
