@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 25
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-047-DATABASE-001
 enables: []
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-10-25
 ---
 
 # Implement Meta template submission and reconciliation module
@@ -64,6 +64,8 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **R5 — Runtime safety.** Provider `APPROVED`, `PAUSED`, `DISABLED`, `REJECTED` and drift observations update provider state only; neither activate a shop variant nor clear STOP/consent suppression. A later APPROVED event cannot silently enable an assignment previously disabled by Admin. Provide explicit failure/unknown status outputs for consuming Background selector. Reconciliation may use Meta GET, ordinary WhatsApp sends may **not**.
 
+**R5a — Admin-authored image-header sample.** If the frozen `componentsSnapshot` describes a true Meta `IMAGE` header (not a body text token containing `shopBrand.logoUrl`), verify it has the required Meta-compatible **submission sample/media handle** and supported component structure supplied through the authorised Admin/media preparation path. This module may use its server-only Meta adapter for the required provider sample-media submission operation, but must not fetch original ShopBrand URLs, resize images, upload to R2, invent sample handles, change the template category, or silently mutate an immutable compiled snapshot. Return a typed submission-blocked result when a valid sample/handle is unavailable. The merchant's READY runtime R2 image is a separate value resolved at send time by BG001, not the one sample permanently sent to every shop.
+
 **R6 — Reliability.** Bounded retry/backoff, error taxonomy and observability, no secrets or full raw payloads in logs. Reuse existing queues/workers rather than deploying an unrelated ingress service.
 
 ## Work Items
@@ -94,6 +96,7 @@ None in this nine-task Background set.
 ## Acceptance Criteria
 
 - [ ] Unit tests show Meta POST receives the stored compiled payload **unchanged** and refuses any Meta edit endpoint, external template adoption or unpublished intent.
+- [ ] Image-header submissions use a valid authorised sample/media handle; a missing, invalid or external-original-URL sample is blocked before provider creation. Text-only templates continue unchanged. Submission never performs ShopBrand ingestion/R2 preprocessing.
 - [ ] Duplicate submission, provider timeout + GET reconciliation, provider rejection, rate limiting and WABA mismatch tests; no double POST after confirmed creation.
 - [ ] Authenticated queue observation tests, wrong job name/version, duplicate and reordered APPROVED/PAUSED/DISABLED, unmatched external template and provider-content drift.
 - [ ] PostgreSQL integration exercises unique event identities, registration status transitions and append-only event evidence; no automatic shop activation.

@@ -61,7 +61,9 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **R3 — Idempotency and audit.** One sequence-two claim per recovery, no duplicate sends from retries/double-clicks, do not consume another conversation/credit on refusal; persist provider and moderation evidence through existing mechanisms. Preserve authorised merchant identity, source and command audit.
 
-**R4 — Final gate.** Use the **same BG006** late template recheck/final admission adapter; respect STOP, consent, moderation, entitlement, credit compensation and terminal recovery/order checks. Do not add another final fence or metadata GET.
+**R3a — Prepared components in merchant follow-up.** Consume the same BG001-produced ordered text bindings, checkout CTA button parameter and optional separately typed READY image header as BG006. Preserve the already-compiled component shape; never fetch ShopBrand originals, process images, append a checkout URL a second time or permit unverified merchant-supplied image/header overrides. If a required brand/media/checkout binding is unavailable, return a normal typed human-command no-send result without consuming sequence two or a credit.
+
+**R4 — Final gate. Use the **same BG006** late template recheck/final admission adapter; respect STOP, consent, moderation, entitlement, credit compensation and terminal recovery/order checks. Do not add another final fence or metadata GET.
 
 **R5 — Failure.** No matching Follow-up template, stale consent, unavailable offer, revoked Meta registration or closed policy is a typed no-send/error communicated through existing human-command result, never fallback to unauthorised Meta template or free text.
 
@@ -90,6 +92,8 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 None in this nine-task Background set.
 
 ## Acceptance Criteria
+
+- [ ] The eligible post-window path forwards BG001 ShopBrand/body/header/button bindings unchanged; unavailable READY R2 media or a missing CTA checkout link refuses the send, and the in-window free-text path is unaffected.
 
 - [ ] In-window typed human text remains unchanged by this task; post-window uses only one eligible Follow-up Meta template with correct language/offer bindings.
 - [ ] Wrong-shop/WABA/wrong-variant, merchant template override, stale published slot and revoked Meta registration are refused.
