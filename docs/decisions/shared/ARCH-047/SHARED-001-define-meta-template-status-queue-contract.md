@@ -88,10 +88,10 @@ Messaging maps signed Meta webhook values and generates UUIDs; Background parses
 
 ## Work Items
 
-- [ ] Implement the strict nine-field v2 Zod schema, exported constants/types and deterministic UUID-based formatters.
-- [ ] Add browser-safe subpath export, build entry, canonical compatibility fixture and exact unit tests.
-- [ ] Verify the repeated-APPROVED transition is not coalesced by occurrence identity and that content fingerprint is not used as queue identity.
-- [ ] Run repository-declared typecheck, build, focused/full unit tests and `git diff --check`; document changed files and validation evidence.
+- [x] Implement the strict nine-field v2 Zod schema, exported constants/types and deterministic UUID-based formatters.
+- [x] Add browser-safe subpath export, build entry, canonical compatibility fixture and exact unit tests.
+- [x] Verify the repeated-APPROVED transition is not coalesced by occurrence identity and that content fingerprint is not used as queue identity.
+- [ ] Run repository-declared typecheck, build, focused/full unit tests and `git diff --check`; document changed files and validation evidence. (Typecheck rerun and launcher evidence outstanding.)
 
 ## Interfaces / Contracts
 
@@ -107,18 +107,18 @@ None. This bounded Shared contract can be implemented independently of DB001 bec
 
 ## Acceptance Criteria
 
-- [ ] v2 schema/formatters/fixture exact and independently importable through package subpath.
-- [ ] Different authenticated observations with identical Meta fields receive distinct occurrence identities and do not depend on queue retention/removal.
-- [ ] Zod rejects all malformed/oversized/unknown-key inputs and preserves well-formed unknown statuses.
-- [ ] Only cross-repository transport/schema mechanics are implemented; no template AST, provider status business policy or database operations.
-- [ ] Tests, typecheck and production build pass; `git diff --check` clean.
+- [x] v2 schema/formatters/fixture exact and independently importable through package subpath.
+- [x] Different authenticated observations with identical Meta fields receive distinct occurrence identities and do not depend on queue retention/removal.
+- [x] Zod rejects all malformed/oversized/unknown-key inputs and preserves well-formed unknown statuses.
+- [x] Only cross-repository transport/schema mechanics are implemented; no template AST, provider status business policy or database operations.
+- [ ] Tests, typecheck and production build pass; `git diff --check` clean. (Original full typecheck had TS2790; rerun after the supplied correction.)
 
 ## Validation
 
-- [ ] `npm run typecheck` (if provided in repository `package.json`).
-- [ ] Focused tests using the repository's `tsx --test` mechanism plus `npm test`.
-- [ ] `npm run build` and package subpath import/fixture validation.
-- [ ] `git diff --check` and completion/worktree branch evidence.
+- [ ] `npm run typecheck` (if provided in repository `package.json`). (Prior run failed TS2790; pending rerun.)
+- [x] Focused tests using the repository's `tsx --test` mechanism plus `npm test`.
+- [x] `npm run build` and package subpath import/fixture validation.
+- [ ] `git diff --check` and completion/worktree branch evidence. (`git diff --check` showed no output; launcher/synchronisation packet and push still to be confirmed.)
 
 ## Stop Condition
 
@@ -132,35 +132,62 @@ Follow the repository's published entrypoint patterns and the canonical task lau
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-25T21:18:09Z. Attempt 0 review history is preserved below.
+In Progress — Attempt 1, developer claim `2026-10-25T21:18:09Z`. The implementation candidate was committed locally as `b9a1473`; final TypeScript rerun, remote push and review handoff remain outstanding. Attempt 0 review history is retained below.
 
 ### Files Changed
 
-None.
+Implementation repository `moda-interact-shared` (8 files in the original implementation commit):
+
+- `README.md`
+- `fixtures/README.md`
+- `fixtures/meta-template-status-v2.json`
+- `package.json`
+- `scripts/validate-whatsapp-template-events-entrypoint.mjs`
+- `src/whatsapp-template-events.ts`
+- `src/whatsapp-template-events.test.ts`
+- `tsup.config.ts`
+
+The follow-up TypeScript-only correction changes `src/whatsapp-template-events.test.ts` again, replacing a `delete` expression with `Reflect.deleteProperty`. It must be committed separately after applying the corrective patch.
 
 ### Work Completed
 
-None.
+- Added strict, size-bounded Meta template status v2 observations with nine required own JSON keys and canonical receipt timestamps.
+- Added pure event-identity and BullMQ job-ID formatters using the same validated lowercase UUID v4 occurrence identity; Meta content and time are not used to deduplicate occurrences.
+- Added a browser-safe package subpath and tsup build entry, checked-in canonical fixture, package-export validator and contract tests.
+- Exercised repeat APPROVED/PAUSED/APPROVED observations, identical provider payloads with distinct UUIDs, unknown statuses, malformed values, timestamps, extra keys and 4096-byte size bounds.
+- Addressed the one TypeScript error surfaced by the initial validation log in the separately supplied test-only correction. The full repository typecheck must be rerun after application.
 
 ### Validation Results
 
-Not run.
+Evidence: developer terminal recording `typescript(20261025-212845)`.
+
+- `npm ci` — succeeded (211 packages installed); npm audit noted 3 dependency vulnerabilities (1 low, 2 high), not resolved inside this task.
+- `npm run typecheck` — **FAILED** at `src/whatsapp-template-events.test.ts:132` with TS2790, because `delete inherited.wabaId` targets a required index-signature property. The supplied follow-up patch replaces this with `Reflect.deleteProperty`; only an isolated strict TypeScript reproduction was run here and succeeded. Full project typecheck **pending** after applying it.
+- `npx tsx --test src/whatsapp-template-events.test.ts` — **PASS**, 9/9 tests.
+- `npm test` — **PASS**, 375 passed, 0 failed, 1 skipped (376 total).
+- `npm run build` — **PASS**, ESM build and generated declarations including `dist/whatsapp-template-events.*`.
+- `npm run validate:arch047-whatsapp-template-events` — **PASS**, package subpath, fixture and npm tarball validated.
+- `git diff --check` — invoked without a reported whitespace diagnostic; rerun after the correction.
+- Source commit — local `b9a1473` on `task/ARCH-047-SHARED-001` (8 files, 494 insertions, 2 deletions). Terminal log shows branch ahead of `origin/main` by one commit, **not** a successful remote push. Push verification is pending.
+- Worktree — the archive helper identified dedicated parent `moda-interact-workspace-task-ARCH-047-SHARED-001` and implementation `moda-interact-workspace.worktrees/ARCH-047-SHARED-001` paths. The launcher preparation packet, start-of-attempt synchronization and recursive submodule evidence were not included in the recording; supply for review.
 
 ### Deviations
 
-None.
+None in production-contract scope. A test-only TypeScript correction is needed before the task can advance to review.
 
 ### Assumptions
 
-No production v1 template-status job exists; check deployment state during implementation.
+This remains a pre-production replacement for the former unimplemented v1 content-hash contract; no existing production v1 jobs requiring compatibility are assumed. Verify this before consumer deployment.
 
 ### Unresolved Issues
 
-None known.
+- Apply and commit the test-only TS2790 fix; rerun `npm run typecheck`, tests, build, package validator and `git diff --check`.
+- Push the implementation branch, verify the remote commit and provide the worktree launcher/synchronization evidence.
+- After those checks pass, submit the developer-controlled review transition through `/moda_developer_update ARCH-047-SHARED-001`. No package publication is authorised here.
 
 ### Architectural Concerns
 
-None known.
+None identified in the v2 transport contract. SHARED-002 remains the separate publication gate; consumer tasks use the published subpath only.
 
 ## Architect Review
 
