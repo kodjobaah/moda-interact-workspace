@@ -216,8 +216,6 @@ Not reviewed.
 ### Follow-up
 
 None.
-<<<<<<< HEAD
-=======
 
 ## Execution Ownership Amendment
 
@@ -248,4 +246,3 @@ On 2026-10-25, the developer explicitly invoked `/moda_developer_update ARCH-047
 ### Dependency Frontier
 
 `ARCH-047-SHARED-002` remains `pending`: its explicit publication requirement is SHARED-001 status `complete` **and accepted Architect Review**. Developer completion satisfies the status prerequisite only; no package publication or consumer task eligibility is claimed. No other task declares SHARED-001 as a dependency in the current task inventory.
->>>>>>> 26898a38af9affd7117b1a74c895beac770dbe2d
