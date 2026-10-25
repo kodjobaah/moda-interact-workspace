@@ -18,11 +18,12 @@ depends_on:
 - ARCH-046-BACKGROUND-001
 - ARCH-045-BACKGROUND-005
 - ARCH-048-BACKGROUND-003
+- ARCH-046-BACKGROUND-005
 enables:
 - ARCH-048-BACKGROUND-005
 - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-23
+updated: 2026-10-24
 ---
 
 # Skip unconsented Woo recovery creation and notify merchant
@@ -37,7 +38,7 @@ Coordinator: `moda_architect`
 
 **Lifecycle:** portable definition from 2026-10-20 snapshot; not materialised, claimed, committed, implemented or architect-accepted. Status means definition eligibility only.
 
-**Execution gate:** This task remains `blocked` in the supplied snapshot. The separately approved ARCH-048 first-recovery insertion seam is its explicit dependency; it may become `ready` only once that task is architect-accepted Complete and the architect explicitly unblocks this task. ARCH-048 uses authenticated received events and existing database state, not a Woo guest-session read endpoint.
+**Execution gate:** Remain `blocked` until the accepted ARCH-048 first-recovery admission seam **and** `ARCH-046-BACKGROUND-005` shared notifier are both Complete, and the architect explicitly marks this task Ready. The implementation must only adapt Woo reason/context and wire the accepted notifier; it must not add another notice writer. ARCH-048 uses authenticated received events and existing database state, not a Woo guest-session read endpoint.
 
 ## Objective
 
@@ -51,7 +52,7 @@ ARCH-035 currently stops at **capture-only**. This task remains `blocked` even i
 
 - Integrate ARCH-046-BACKGROUND-001's exact-recipient consent policy with the **approved `WooRecoveryAdmissionService` row-only seam** (ARCH-048-BACKGROUND-003), **before the first CheckoutRecovery INSERT**. This is a business-service integration; **ARCH-048-BACKGROUND-005 owns worker/entrypoint wiring**, and ARCH-048-BACKGROUND-004 separately owns attempts, billing and outbound. Check active installation, last successfully received checkout/order evidence and terminal guards, exact current customer/phone, mature policy and entitlement independently; do not claim detection of undelivered Woo events.
 - On missing/revoked/unknown/ambiguous consent, local STOP or merchant suppression, create no first recovery row, attempt, WhatsApp send or credit. A stored `GRANTED` decision never overrides STOP; BACKGROUND-005 owns the merchant STOP notice so do not duplicate it as a missing-consent notice. Treat installation inactive and database/event-processing availability as distinct technical/configuration failures, not proof that the customer declined consent.
-- Write one idempotent `MerchantSupportMessage(kind=SYSTEM)` for the shop + **hashed** checkout reference + reason using the existing Support schema; do not require a nonexistent recovery ID or expose phone data. Preserve bounded notices and existing billing/idempotency behaviour.
+- Call the **accepted** `RecoveryConsentMerchantNotifier.notify(input)` from `ARCH-046-BACKGROUND-005`; do **not** build another SQL writer, formatter, hash/sourceKey helper or Support table. The shared service owns persistence/deduplication. This task owns Woo denial-reason mapping and lookup of **existing last-accepted, shop-scoped checkout/customer context** (name, email, basket value/currency, item count, last observed activity and a vetted merchant-visible reference when present); omit absent/unverified fields. Never present only a hash to the merchant or expose phone/session tokens.
 - Reuse the policy on any approved `DETECTED` initial retry, capacity resume or suppression re-entry; BACKGROUND-004 owns final pre-provider dispatch enforcement. A later customer grant can be considered **only** if a subsequent normal Woo checkout reconciliation event independently occurs.
 - Do not implement the unavailable Woo recovery engine as part of this task or interpret ARCH-035 capture activity as an approved recovery trigger.
 
@@ -70,18 +71,20 @@ ARCH-035 currently stops at **capture-only**. This task remains `blocked` even i
 ## Work Items
 
 - [ ] Once explicitly unblocked, implement the injectable consent/notice integration on the accepted `WooRecoveryAdmissionService` before-INSERT seam; do not modify any BullMQ worker or Background entrypoint.
-- [ ] Add existing checkout-keyed SYSTEM Support notices and distinct failure/denial reasons.
+- [ ] Implement the Woo-only adapter from `onDeniedAdmission` to the accepted Background-local `RecoveryConsentNoticeInput`, using the **exhaustive mapping** in `ARCH-046-BACKGROUND-005` Requirement R1: `CONSENT_NOT_GRANTED` → `NO_VERIFIED_OPT_IN`; `CONSENT_AMBIGUOUS` → `RECIPIENT_AMBIGUOUS`; `RECIPIENT_MISSING`, `RECIPIENT_INVALID`, `RECIPIENT_IDENTITY_MISMATCH`, `CONSENT_RECIPIENT_UNVERIFIED` → `RECIPIENT_UNVERIFIED`; skip `CONSENT_NO_CONTACT`, `CONSENT_CHANGED`, invalid/basket/shop/installation reasons, and deferred technical failures. Set `platform: "WOOCOMMERCE"` and `blockedOperation: "CREATE_FIRST_RECOVERY"`; only future approved send-stage adapters may use `SEND_INITIAL_RECOVERY`. Enrich only from matching shop + checkout snapshots and await `RecoveryConsentMerchantNotifier.notify`. **Never** duplicate its formatter, sourceKey or SQL writer.
+- [ ] Test accurate, readable optional customer/checkout context, no fabricated fields, operation-sensitive canonical `sourceKey` deduplication and failure propagation; do not duplicate the shared implementation.
 - [ ] Test valid grant, unknown/revoked/ambiguous, installation inactive, paid checkout, no-event/later-event, retries, billing and zero Meta sends on denial.
 
 ## Interfaces / Contracts
 
-Consumes ARCH-046-BACKGROUND-001 current consent reader, existing Woo installation, and the `WooRecoveryAdmissionService` before-INSERT decision/result interface from ARCH-048-BACKGROUND-003. Outputs a denial decision and at most one checkout-keyed deduplicated `MerchantSupportMessage`; does not consume BullMQ directly. `WooRecoveryOrchestratorService` / actual worker composition is owned by ARCH-048-BACKGROUND-005 after this task is accepted. Reuses Support and billing contracts. Does not depend on superseded ARCH-046-BACKGROUND-003 or read `WhatsAppConsentEvidence` as a recovery worklist.
+Consumes ARCH-046-BACKGROUND-001 current consent reader, existing Woo installation, and the `WooRecoveryAdmissionService` before-INSERT decision/result interface from ARCH-048-BACKGROUND-003. Maps the Woo admission denial into the shared `RecoveryConsentNoticeInput` (`platform: "WOOCOMMERCE"`, `blockedOperation: "CREATE_FIRST_RECOVERY"`, reason and safe optional context) and awaits `RecoveryConsentMerchantNotifier.notify`. The shared service owns the single checkout-keyed `MerchantSupportMessage`; this Woo adapter does not consume BullMQ directly. `WooRecoveryOrchestratorService` / actual worker composition is owned by ARCH-048-BACKGROUND-005 after this task is accepted. Reuses Support and billing contracts. Does not depend on superseded ARCH-046-BACKGROUND-003 or read `WhatsAppConsentEvidence` as a recovery worklist.
 
 ## Dependencies
 
 - `ARCH-046-BACKGROUND-001`
 - `ARCH-045-BACKGROUND-005`
 - `ARCH-048-BACKGROUND-003`
+- `ARCH-046-BACKGROUND-005`
 
 ## Enables
 
@@ -95,7 +98,7 @@ Consumes ARCH-046-BACKGROUND-001 current consent reader, existing Woo installati
 - [ ] No newly created recovery, attempt, Meta send or charge on missing/revoked/ambiguous permission, no-contact or inactive installation; checkout-keyed merchant notices are deduplicated.
 - [ ] A later valid opt-in by itself creates/schedules nothing; only a new normal reconciliation may create the first recovery under current paid/checkout eligibility.
 - [ ] First-send reentries reuse the same policy without circumventing the separate final dispatch fence; no new recovery state or queue is introduced.
-- [ ] Task remains Blocked until the actual ARCH-048-BACKGROUND-003 event-driven Woo recovery insertion seam is accepted and the architect explicitly marks this task Ready; no guest-session reader is required.
+- [ ] Task remains Blocked until the actual ARCH-048-BACKGROUND-003 event-driven Woo recovery insertion seam is accepted and the architect explicitly marks this task Ready; no guest-session reader is required. The shared notifier must also be accepted and reused without a second Support writer.
 
 ## Validation
 

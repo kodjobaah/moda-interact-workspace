@@ -108,6 +108,14 @@ Later normal Woo checkout reconciliation (once live recovery engine approved)
 - **Background:** future current-consent reader, pre-creation and send gates only when approved Woo engine exists.
 - **System test:** LocalWP Classic/Blocks capture and eventual live recovery, with separate terminal gates.
 
+### Shared recovery-consent merchant notifications (2026-10-24)
+
+`ARCH-046-BACKGROUND-005` extracts the existing Shopify `ARCH-045-BACKGROUND-002` merchant Support notification writer into one Background-local `RecoveryConsentMerchantNoticeService` implementing `RecoveryConsentMerchantNotifier`. Shopify consumes the extracted notifier; `ARCH-046-BACKGROUND-002` later supplies Woo-specific denial mapping and available, verified, shop-scoped customer/checkout context. The common notifier owns bounded plain-text formatting, deterministic deduplication, a single transactional `MerchantSupportMessage(kind=SYSTEM)` writer, and safe structured logging. Neither the shared notifier nor the Woo adapter recreates Shopify-native or Woo current-consent policy; STOP notifications retain their existing separate owner.
+
+The canonical notice input is `(shopId, platform, checkoutToken, reason, blockedOperation, optional merchant display context)`, with result `created | duplicate`. **Operation-sensitive identity:** `sourceKey = "recovery-consent:v1:" + sha256(JSON.stringify(["recovery-consent", 1, platform, shopId, checkoutToken, blockedOperation, reason]))` (lowercase hex). A denied first recovery and a later blocked initial send are distinct notices; duplicates of the same `(platform, shopId, checkoutToken, operation, reason)` are suppressed. The common service uses the exact fixed reason/outcome copy, optional bounded context formatting, duplicate-row verification, tenant isolation and one atomic Support transaction defined by `ARCH-046-BACKGROUND-005` Requirements R1–R7. It never uses the checkout hash as its merchant-facing description. Shopify forwards already accepted checkout/customer context where available; Woo enriches shop-scoped data in BG-002. Neither caller duplicates the writer.
+
+**Pre-production decision:** previously sent development Support messages and legacy Shopify `sourceKey` values need no backward-compatibility handling, adapter, migration or backfill. Use the new canonical contract for both platforms' future notices, without deleting existing development Support data. No new database table, Shared package, API endpoint or merchant UI is required. Shopify and WooCommerce denial/admission decisions remain platform-specific.
+
 ## Data Model / Contracts
 
 Tenant identity is `Customer.shopId` and authenticated `WooCommerceInstallation.shopId`; canonical phone is joined through CustomerPhone. The only new relation object is `commerce.WhatsAppConsentEvidence`. `API-001` defined the previous v1 contract; `API-007` **replaces** it with v2 as the only supported request on the existing authenticated route. v2 producer adoption is a separate WooCommerce-owned task. `ARCH-045-SHARED-001/002` provide Node phone canonicalisation and Shopify sync contract. No Shared Woo queue event or Woo customer-session linking table is defined.
@@ -147,9 +155,10 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 | `ARCH-046-WOOCOMMERCE-006` | `moda_woocommerce` | superseded | — |
 | `ARCH-046-WOOCOMMERCE-007` | `moda_woocommerce` | pending | `ARCH-046-API-005`, `ARCH-035-WOOCOMMERCE-016` |
 | `ARCH-046-BACKGROUND-001` | `moda_background` | complete | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
-| `ARCH-046-BACKGROUND-002` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-045-BACKGROUND-005` |
+| `ARCH-046-BACKGROUND-002` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-045-BACKGROUND-005`, `ARCH-048-BACKGROUND-003`, `ARCH-046-BACKGROUND-005` |
 | `ARCH-046-BACKGROUND-003` | `moda_background` | superseded | — |
 | `ARCH-046-BACKGROUND-004` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
+| `ARCH-046-BACKGROUND-005` | `moda_background` | ready | `ARCH-045-BACKGROUND-002` |
 | `ARCH-046-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-046-WOOCOMMERCE-001`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
 | `ARCH-046-SYSTEM-TEST-002` | `moda_system_test` | blocked | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-035-API-020`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-035-WOOCOMMERCE-016`, `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-046-BACKGROUND-004`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
 
@@ -161,6 +170,9 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 
 ## Change History
 
+- 2026-10-24: Defined API-007 as a thin versioned consent-write API (v2 envelope with v1 compatibility), removed billing feature lookup from consent write, consolidated transaction-time installation checks, kept STOP/ordering/idempotency, and required before/after SQL measurements. Prior API-006/WooCommerce-008 draft remains a separate, not-yet-materialised handoff in the supplied snapshot. No runtime code or domain `_index.md` changed.
+- 2026-10-24: Defined `ARCH-046-BACKGROUND-005` shared recovery-consent merchant notice extraction and added it as a prerequisite to Woo BG-002. New canonical cross-platform deduplication and richer merchant-facing context are permitted without compatibility for older development notices; no domain `_index.md` reconciliation.
+- 2026-10-24: Tightened the `ARCH-046-BACKGROUND-005` implementation contract: exact Shopify/Woo decision tables, truth-preserving reason/operation templates, field validation/bounds, operation-sensitive `sourceKey` vectors, duplicate verification and atomic thread/message persistence. No compatibility for older development notices or domain `_index.md` update.
 - 2026-10-24: Prepared developer Attempt 1 review handoff for API-007 at API commit `220fa2b` (10/10 PostgreSQL tests, lint/typecheck passed); preserved pending reviewer decision and recorded missing before/after SQL baseline and launcher isolation evidence. No `_index.md` changed.
 - 2026-10-24: Defined API-007 as a thin v2-only breaking consent-write API (no legacy v1 compatibility required by pre-production decision), removed billing feature lookup from consent write, consolidated transaction-time installation checks, kept STOP/ordering/idempotency, and required before/after SQL measurements. Prior API-006/WooCommerce-008 draft remains a separate, not-yet-materialised handoff in the supplied snapshot. No runtime code or domain `_index.md` changed.
 

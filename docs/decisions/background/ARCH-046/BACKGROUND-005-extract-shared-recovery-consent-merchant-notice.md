@@ -14,11 +14,7 @@ priority: 30
 executor: null
 claimed_at: null
 attempt: 1
-depends_on:
   - ARCH-045-BACKGROUND-002
-enables:
-  - ARCH-046-BACKGROUND-002
-created: 2026-10-24
 updated: 2026-10-25
 ---
 
@@ -107,7 +103,6 @@ export type RecoveryConsentNoticeReason =
   | "RECIPIENT_UNVERIFIED"
   | "RECIPIENT_AMBIGUOUS"
   | "VERIFICATION_UNAVAILABLE";
-
 export type RecoveryConsentBlockedOperation =
   | "CREATE_FIRST_RECOVERY"
   | "SEND_INITIAL_RECOVERY";
@@ -131,7 +126,6 @@ export type RecoveryConsentNoticeInput = Readonly<{
 }>;
 
 export type RecoveryConsentNoticeResult = "created" | "duplicate";
-
 export interface RecoveryConsentMerchantNotifier {
   notify(input: RecoveryConsentNoticeInput): Promise<RecoveryConsentNoticeResult>;
 }

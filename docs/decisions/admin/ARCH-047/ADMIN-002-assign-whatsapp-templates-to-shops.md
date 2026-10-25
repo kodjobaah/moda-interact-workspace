@@ -9,18 +9,19 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 30
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-047-ADMIN-001
-enables:
-  - ARCH-047-SYSTEM-TEST-001
+enables: []
 created: 2026-10-23
-updated: 2026-10-23
+updated: 2026-10-24
 ---
+
+> **SUPERSEDED — 24 October 2026.** This external-import / shop-to-shop-copy task must not be claimed or implemented. All templates are authored inside Moda Admin; `ARCH-047-ADMIN-007` own its replacement capabilities. Original requirements below remain for historical provenance only and are **not** an implementation contract.
 
 # Assign and update WhatsApp templates across shops
 
