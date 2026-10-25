@@ -305,3 +305,15 @@ focused validations are complete, and the implementation task branch is
 committed and pushed. The historical launcher preparation-packet gap remains
 disclosed and was accepted as non-blocking; no merge to `main` was required or
 performed.
+
+### Dependency Frontier
+
+- `ARCH-046-BACKGROUND-004` is promoted from `pending` to `ready` at Attempt 0:
+  its declared dependencies are complete after this decision. Its canonical
+  parent task record is published at commit `0a891f3c`; no attempt was claimed
+  or started.
+- `ARCH-048-BACKGROUND-005` remains `pending`: it still depends on BG004, which
+  is ready but not complete.
+- `ARCH-046-SYSTEM-TEST-002` remains `blocked` and terminal/manual-gated because
+  other declared implementation prerequisites remain incomplete. It was not
+  started or promoted solely by this completion.
