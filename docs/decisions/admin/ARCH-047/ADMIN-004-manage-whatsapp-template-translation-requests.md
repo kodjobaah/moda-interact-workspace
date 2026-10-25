@@ -71,10 +71,10 @@ Place polling, request/retry state, stale-response cancellation and selection-aw
 
 ## Requirements
 
-- [ ] The source snapshot contains exactly one stable entry per translatable component and protected token occurrences without leaking actual customer values or secrets; duplicate/missing segment keys are rejected on request creation.
-- [ ] Repeated `shopBrand.*` tokens remain independently protected, with stable semantic identifiers and unique per-occurrence opaque markers; translations cannot replace them with a preview value, a merchant's real branding, or a translated identifier.
-- [ ] A verified source hash and immutable source locale are captured; a later clone cannot receive an older run's outputs. Per-language progress comes from persisted items, not simulated UI state.
-- [ ] Translation request write and model identity assignment are atomic; repeated start/retry is idempotent and does not discard completed languages.
+- [x] The source snapshot contains exactly one stable entry per translatable component and protected token occurrences without leaking actual customer values or secrets; duplicate/missing segment keys are rejected on request creation.
+- [x] Repeated `shopBrand.*` tokens remain independently protected, with stable semantic identifiers and unique per-occurrence opaque markers; translations cannot replace them with a preview value, a merchant's real branding, or a translated identifier.
+- [x] A verified source hash and immutable source locale are captured; a later clone cannot receive an older run's outputs. Per-language progress comes from persisted items, not simulated UI state.
+- [x] Translation request write and model identity assignment are atomic; repeated start/retry is idempotent and does not discard completed languages.
 
 
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
@@ -82,10 +82,10 @@ All server reads/mutations of template management require the existing authentic
 
 ## Work Items
 
-- [ ] Implement pure extraction/token-marker helpers with deterministic fixtures for header/body/footer/buttons and wrapper conditionals.
-- [ ] Exercise the ADMIN-003 variable registry for allowed `shopBrand.*` placements; protect Meta text-header/body and wrapper header/footer/conditional tokens while leaving Meta footers, URLs and the wrapper response slot unmodified.
-- [ ] Implement transactional run/item creation, deduplicated request action, progress/list/retry endpoints and bounded polling UI.
-- [ ] Add tests for duplicate starts, 19 target items, exact source-hash binding and meaningful failed/queued states.
+- [x] Implement pure extraction/token-marker helpers with deterministic fixtures for header/body/footer/buttons and wrapper conditionals.
+- [x] Exercise the ADMIN-003 variable registry for allowed `shopBrand.*` placements; protect Meta text-header/body and wrapper header/footer/conditional tokens while leaving Meta footers, URLs and the wrapper response slot unmodified.
+- [x] Implement transactional run/item creation, deduplicated request action, progress/list/retry endpoints and bounded polling UI.
+- [x] Add tests for duplicate starts, 19 target items, exact source-hash binding and meaningful failed/queued states.
 
 
 ## Interfaces / Contracts
@@ -106,18 +106,18 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
-- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+- [x] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
 
-- [ ] Saving an English template does not implicitly translate; explicit Generate persists one run and exactly 19 target-language items for supported target locales.
-- [ ] Source snapshots use stable component keys; source text markers survive opaque variable contract; untranslatable URLs, metadata and response slot never become translation work.
-- [ ] Header/body and wrapper translatable segments protect all supported `shopBrand.*` identifiers without leaking merchant-specific values; unsupported Meta footer variables are rejected by the source authoring contract, not silently included as translation work.
-- [ ] Progress, partial failures and retry controls reflect PostgreSQL; reloading/navigation does not lose progress or cause an extra run.
-- [ ] Repeated concurrent requests do not produce duplicate active work, and are audited and SUPER_ADMIN-only.
+- [x] Saving an English template does not implicitly translate; explicit Generate persists one run and exactly 19 target-language items for supported target locales.
+- [x] Source snapshots use stable component keys; source text markers survive opaque variable contract; untranslatable URLs, metadata and response slot never become translation work.
+- [x] Header/body and wrapper translatable segments protect all supported `shopBrand.*` identifiers without leaking merchant-specific values; unsupported Meta footer variables are rejected by the source authoring contract, not silently included as translation work.
+- [x] Progress, partial failures and retry controls reflect PostgreSQL; reloading/navigation does not lose progress or cause an extra run.
+- [x] Repeated concurrent requests do not produce duplicate active work, and are audited and SUPER_ADMIN-only.
 
 
 ## Validation
 
-- [ ] Pure keyed-segment extraction/marker tests (including repeated brand name, brand alt text, header/body placement and wrapper footer/conditional text); 20-locale mapping fixtures; Admin route/action auth/duplicate-submit tests.
+- [x] Pure keyed-segment extraction/marker tests (including repeated brand name, brand alt text, header/body placement and wrapper footer/conditional text); 20-locale mapping fixtures; Admin route/action auth/duplicate-submit tests.
 - [ ] Database integration tests for run/items creation and idempotent retry requests using stubbed Background statuses; relevant lint/typecheck/build and `git diff --check`.
 
 
@@ -134,35 +134,60 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-In Progress — developer takeover of the ready agent-owned task; Attempt 1 claimed on 25 October 2026.
+Ready for developer review reconciliation — implementation Attempt 1 (claimed 2026-10-25T16:01:51Z). The implementation branch is pushed; this parent-task Completion Report is being prepared for submission. Preserve `status: in_progress`, `executor: developer`, `claimed_at` and `attempt: 1` until the authorised `/moda_developer_update ARCH-047-ADMIN-004` reconciliation/review process determines the transition. No acceptance or developer completion decision is claimed here.
 
 ### Files Changed
 
-None.
+The implementation is on `moda-interact-admin` branch `task/ARCH-047-ADMIN-004` (cumulative implementation patch revisions 1–5, not five task claims):
+
+- `package.json`, `package-lock.json` — dedicated validation scripts and Shared dependency alignment to 2.5.0.
+- `scripts/test-arch047-admin-translations-esm.mjs` and `scripts/test-arch047-admin-translations-postgres.mjs` — isolated ESM test execution, test deployment environment, Prisma generation and disposable PostgreSQL harness.
+- `src/app/actions/whatsapp-template-translations.ts` and `src/app/(protected)/system-controls/whatsapp-templates/[definitionId]/translations/page.tsx` — protected translation workflow entrypoints.
+- `src/components/admin/whatsapp-templates/authoring/template-saved-detail.tsx` — Translations link from immutable saved-template detail.
+- `src/components/admin/whatsapp-templates/translations/` — workspace, request controls, progress summary, per-language status list, error notice and polling controller.
+- `src/lib/admin/whatsapp-templates/translations/` — locale contract, keyed source extraction, protected-marker snapshots, progress projection, service and transaction-safe persistence.
+- `tests/unit/arch047-template-translations.test.ts`, `tests/unit/arch047-template-translation-components.test.tsx` and `tests/integration/arch047-template-translations.postgres.test.ts` — focused behaviour, UI and database checks.
+
+This parent-worktree patch changes only `docs/decisions/admin/ARCH-047/ADMIN-004-manage-whatsapp-template-translation-requests.md`; it does not update `_index.md`, other tasks or any Background repository.
 
 ### Work Completed
 
-None.
+- Implemented deterministic keyed extraction of translatable Meta header/body/footer/button text and internal wrapper header/footer/conditional text. Excluded URL/metadata fields and the structural wrapper `response.body` slot.
+- Preserved per-occurrence opaque placeholder mappings for all eight `shopBrand.*` semantic keys, including repeated values; Meta footer restrictions remain enforced by the English AST authoring contract.
+- Implemented explicit Generate with a committed-English/source-hash gate, configured translation-model identity, transactional Run creation and exactly 19 target Items. The database is the durable asynchronous handoff to Background; Admin does not invoke a translation provider or Background worker synchronously.
+- Implemented a PostgreSQL transaction-scoped advisory lock and replay/deduplication behaviour, audit recording, retry of eligible failed/pending work, persisted progress states and SUPER_ADMIN service enforcement.
+- Added a dedicated protected Translations route and modular React UI with English plus 19 targets, bounded polling, failure display and duplicate-request prevention.
+- Corrected test-runtime Shared ESM exports, missing test deployment environment/Prisma generation, and PostgreSQL void-result deserialization (using Prisma `$executeRaw` for `pg_advisory_xact_lock`). The final fix changes only the translation repository and its unit mock.
 
 ### Validation Results
 
-Not run.
+Evidence in the implementation-worktree terminal capture included with the 2026-10-25 parent worktree snapshot (`moda-interact-admin/typescript`), plus the 18:33 commit/push terminal capture:
+
+- `npx tsc --noEmit -p tsconfig.json` — completed with no reported compiler errors after Prisma generation.
+- `npm run test:arch047-admin-translations:unit` — **13 passed / 0 failed**, including twenty-locale mapping, immutable source hash, repeated ShopBrand markers, wrapper exclusions, concurrent Generate/replay, retry preservation, progress display and SUPER_ADMIN service rejection.
+- `npm run test:arch047-admin-translations:postgres` — **2 passed / 0 failed** against disposable PostgreSQL after migrations and Prisma Client generation. Verified one Run plus 19 Items under concurrent requests, and no premature Run/audit before committed English.
+- Scoped `npx eslint` — **0 errors, 1 warning**: one test file is ignored by the repository lint configuration. The warning is not a production-source lint error; retain it in review evidence.
+- `git diff --check` and `git diff --cached --check` — no whitespace errors reported in the terminal evidence.
+- Implementation Git correction commit **`918eb0b`** (`fix(ARCH-047-ADMIN-004): correct PostgreSQL advisory lock execution`) was pushed successfully to `origin/task/ARCH-047-ADMIN-004` (`08699be..918eb0b`). Subsequent `git status` reports the implementation branch tracking its remote; only an untracked `typescript` terminal log remained, which is not task source.
+- **Validation coverage to review:** a Next.js production build was not recorded; direct protected-route/action tests and an independent PostgreSQL retry scenario were not explicitly demonstrated in the supplied results. The passing unit tests cover service-level SUPER_ADMIN and retry-idempotency rules. The second Validation checkbox remains unchecked for reviewer determination or further evidence.
 
 ### Deviations
 
-None.
+Task-scoped validation infrastructure was added to accommodate Shared 2.5.0 ESM-only exports and disposable PostgreSQL tests. The installed Shared dependency and lockfile were aligned, and a focused ESM runner was introduced. The PostgreSQL lock call was corrected from `$queryRaw` to `$executeRaw` because the advisory-lock function returns `void`. No production translation/provider logic was moved to Background and no new queue/schema contract was introduced.
 
 ### Assumptions
 
-The consolidated `ARCH-047-DATABASE-001` Attempt 7 model contract is the intended schema; inspect generated Prisma Client and actual accepted database implementation when this task becomes executable. Where the proposed JSONB envelopes are not yet implemented, fixture-based tests use the explicitly documented shape.
+The accepted `ARCH-047-DATABASE-001` Prisma persistence contract is the source of truth. The saved English locale is immutable and translation work becomes eligible only after its commit. Background owns Batch processing/translated output delivery; Admin prepares persisted keyed work and displays state. Runtime merchant `ShopBrand` values are never substituted into the Admin translation source snapshot.
 
 ### Unresolved Issues
 
-Return any missing persistence capability, provider-account configuration or cross-repository interface problem to `moda_architect` rather than silently changing DB/Background/Messaging ownership.
+- Reviewer to confirm whether a production Next.js build, direct route/action authentication test, and an additional PostgreSQL retry scenario are required before acceptance; these are **not** claimed as executed.
+- Worktree evidence is partial: the task claim records launcher synchronization and the latest archive command identifies a dedicated parent worktree (`moda-interact-workspace-task-ARCH-047-ADMIN-004`) and implementation worktree (`moda-interact-workspace.worktrees/ARCH-047-ADMIN-004`). The supplied material does not independently show the prepared launcher packet, start-of-attempt Git synchronization hashes, or recursive submodule materialisation evidence. Reconcile these in `/moda_developer_update` before acceptance.
+- Parent task report commit/push still needs to occur after applying this patch. No architect or developer completion decision is recorded.
 
 ### Architectural Concerns
 
-None identified at claim time.
+None identified within ADMIN-004's ownership. Translation generation, provider Batch correlation and reconstruction/compilation remain with their separately owned ARCH-047 tasks. Do not treat Admin's persisted request as proof of Background execution or final locale publication.
 
 ## Execution Ownership Amendment
 
