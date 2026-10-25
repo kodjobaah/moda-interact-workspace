@@ -7,13 +7,13 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-25T16:01:51Z
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -25,7 +25,7 @@ updated: 2026-10-25
 
 ## Architecture
 
-`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This is a **defined but not materialised** task until the developer's launcher creates the canonical task branch/worktree.
+`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This task was materialised before takeover; Attempt 1 is now claimed for developer execution in the canonical task worktrees.
 
 ## Objective
 
@@ -134,7 +134,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — portable task definition, not materialised/claimed.
+In Progress — developer takeover of the ready agent-owned task; Attempt 1 claimed on 25 October 2026.
 
 ### Files Changed
 
@@ -158,11 +158,18 @@ The consolidated `ARCH-047-DATABASE-001` Attempt 7 model contract is the intende
 
 ### Unresolved Issues
 
-None at definition time. Return any missing persistence capability, provider-account configuration or cross-repository interface problem to `moda_architect` rather than silently changing DB/Background/Messaging ownership.
+Return any missing persistence capability, provider-account configuration or cross-repository interface problem to `moda_architect` rather than silently changing DB/Background/Messaging ownership.
 
 ### Architectural Concerns
 
-None at definition time.
+None identified at claim time.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-ADMIN-004` for this ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_admin`, repository, coordinator, dependencies, task scope and acceptance criteria.
+- Claim: Attempt 1 was claimed by `developer` after canonical worktree synchronization and dependency verification.
 
 
 ## Architect Review
