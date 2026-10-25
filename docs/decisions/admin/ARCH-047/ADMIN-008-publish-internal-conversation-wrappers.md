@@ -43,7 +43,7 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 ## Scope
 
 - Own `wrappers/` module and `/system-controls/whatsapp-templates/wrappers/` route/panel. Consume existing definition/locale records and the **Admin-compiled prepared runtime wrapper projection** in `TemplateLocale.localeAst`; never implement a second editor, translation extraction or AST compiler.
-- A wrapper has a required `response.body` insertion slot, optional header/footer, typed shop/customer variables and checkout-aware conditional URL sections. Provide a full example preview using an illustrative AI/human response, with disabled/stale checkout-link sections omitted. The inserted response is authored by AI/human at runtime, **never** stored in the template.
+- A wrapper has a required `response.body` insertion slot, optional header/footer, typed shop/customer/**`ShopBrand`** variables and checkout-aware conditional URL sections. Consume the canonical eight `shopBrand.*` keys from ADMIN-003's versioned prepared bindings, including permitted header/footer/conditional text placements; do not introduce an alternate wrapper AST/compiler or inline branding into the saved projection. `response.body` is a runtime insertion slot, not a translatable or stored brand value. Provide a full example preview using an illustrative AI/human response and clearly labelled **example** brand values; where a merchant-scoped preview is offered, use that shop's `ShopBrand` only and flag missing nullable fields rather than inventing or crossing tenant values. Omit disabled/stale checkout-link sections. The inserted response is authored by AI/human at runtime, **never** stored in the template.
 - Enforce application-only publication checks: centrally created template, correct wrapper kind/audience, immutable source/review hashes, all expected 20 reviewed locales and presence of a validated prepared runtime projection. No Meta registration or marketing template approval is required.
 - Explicit SUPER_ADMIN action selects activation audience(s): `SHARED` default, optional `AI` and `HUMAN` override. For each audience update `WhatsAppConversationWrapperActiveSlot.definitionId` with an optimistic compare-and-swap `editVersion` and transactional audit; no database business CHECK or second pointer table. Do not overwrite a concurrent newer activation without re-review.
 - Show existing versus proposed full wrapper (header, response slot, footer and conditional checkout link) in the selected language with audience, first-published time and rollback/replace impact. A new version is created with Clone as New; changing an active template's content in place is forbidden. An older already-reviewed definition can be reactivated through an explicit audited action without modifying its content.
@@ -59,6 +59,7 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 
 - [ ] Exactly one row per activated audience is maintained via technical `audience` PK and versioned CAS; semantic audience-kind/approval checks live in Admin.
 - [ ] No `response.body` insertion slot, invalid projection, unmatched 20 languages or incorrect family prevents activation; existing pointer remains unchanged on failure.
+- [ ] Validated wrapper projections keep `shopBrand.*` bindings typed in allowed header/footer/conditional sections for all 20 locales, with no merchant value frozen into the central definition or active pointer. Validation rejects unknown keys and disallowed placements; missing optional merchant branding is not silently invented.
 - [ ] The global `SHARED` pointer is fallback; optional AI/HUMAN overrides are explicitly selected and the UI shows which audience resolves to which definition.
 
 
@@ -68,13 +69,13 @@ All server reads/mutations of template management require the existing authentic
 ## Work Items
 
 - [ ] Implement activation eligibility/compare-and-swap and audit service for current pointers in `wrappers/`.
-- [ ] Create review/activation preview and concurrency/conflict UI without duplicating `authoring/` or `compilation/`.
+- [ ] Create review/activation preview (including brand-variable labels/example substitutions and missing-value disclosure) and concurrency/conflict UI without duplicating `authoring/` or `compilation/`.
 - [ ] Add audited activation/replacement/reactivation and unsafe/invalid projection tests using stubbed compiled locale records.
 
 
 ## Interfaces / Contracts
 
-**Reads:** `WhatsAppTemplateDefinition`/20 reviewed `WhatsAppTemplateLocale` prepared `localeAst` projections and existing `WhatsAppConversationWrapperActiveSlot`. **Writes:** slot `definitionId`, `editVersion`, `updatedByAdminId`, `updatedAt`, optionally definition `publishedAt` for first successful activation, and bounded `CommerceAuditEvent`. No `MetaRegistration`, `PublicationTarget` or `WhatsAppTemplateVariant` writes. Consumer `BACKGROUND-005` reads the prepared projection only; no Background authoring AST parser is required.
+**Reads:** `WhatsAppTemplateDefinition`/20 reviewed `WhatsAppTemplateLocale` prepared `localeAst` projections and existing `WhatsAppConversationWrapperActiveSlot`. Prepared projections carry canonical `shopBrand.*` references for the eligible wrapper sections; any optional merchant-context preview reads `ShopBrand` only under the requested shop scope and never persists its values into centrally activated content. **Writes:** slot `definitionId`, `editVersion`, `updatedByAdminId`, `updatedAt`, optionally definition `publishedAt` for first successful activation, and bounded `CommerceAuditEvent`. No `MetaRegistration`, `PublicationTarget` or `WhatsAppTemplateVariant` writes. Consumer `BACKGROUND-005` reads the prepared projection only; no Background authoring AST parser is required.
 
 
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/wrappers/`, components under `src/components/admin/whatsapp-templates/wrappers/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-wrapper-publication.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
@@ -90,14 +91,15 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
-- [ ] Platform admin can activate SHARED/AI/HUMAN slots independently, preview fully translated wrapper content and see the effective override/fallback selection.
+- [ ] Platform admin can activate SHARED/AI/HUMAN slots independently, preview fully translated wrapper content including header/footer/conditional brand variable references and see the effective override/fallback selection.
+- [ ] All eight supported brand identifiers survive the prepared projection in permitted sections without content mutation; example values are clearly distinguished from real per-shop values and missing optional values are not concealed.
 - [ ] Stale CAS, wrong kind/audience or incomplete translations cannot silently replace a current wrapper; no Meta call is made.
 - [ ] Activating new or previous immutable definition changes pointers/audit only; already sent AI/human response contents and checkout records are untouched.
 
 
 ## Validation
 
-- [ ] Schema-backed CAS race/replay tests, semantic eligibility and complete-locale fixture tests, exact preview/conditional section UI tests.
+- [ ] Schema-backed CAS race/replay tests, semantic eligibility and complete-locale fixture tests, exact preview/conditional section UI tests including `ShopBrand` header/footer/conditional bindings, unknown-key rejection, missing nullable values and clearly fictional previews.
 - [ ] Auth/audit/rollback and no-provider-network tests; declared lint/typecheck and `git diff --check`.
 
 
