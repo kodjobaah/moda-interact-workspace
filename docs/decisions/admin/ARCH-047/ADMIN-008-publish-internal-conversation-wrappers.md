@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
 executor: developer
 claimed_at: 2026-10-25T18:14:30Z
@@ -25,7 +25,7 @@ updated: 2026-10-25
 
 ## Architecture
 
-`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This task is materialised in its canonical parent task worktree; the developer is preparing Attempt 1 in its canonical implementation worktree.
+`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This task is materialised in its canonical parent task worktree; the developer has completed implementation Attempt 1 in the dedicated implementation worktree and submitted it for architect review.
 
 ## Objective
 
@@ -57,9 +57,9 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 
 ## Requirements
 
-- [ ] Exactly one row per activated audience is maintained via technical `audience` PK and versioned CAS; semantic audience-kind/approval checks live in Admin.
-- [ ] No `response.body` insertion slot, invalid projection, unmatched 20 languages or incorrect family prevents activation; existing pointer remains unchanged on failure.
-- [ ] The global `SHARED` pointer is fallback; optional AI/HUMAN overrides are explicitly selected and the UI shows which audience resolves to which definition.
+- [x] Exactly one row per activated audience is maintained via technical `audience` PK and versioned CAS; semantic audience-kind/approval checks live in Admin.
+- [x] No `response.body` insertion slot, invalid projection, unmatched 20 languages or incorrect family prevents activation; existing pointer remains unchanged on failure.
+- [x] The global `SHARED` pointer is fallback; optional AI/HUMAN overrides are explicitly selected and the UI shows which audience resolves to which definition.
 
 
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
@@ -67,9 +67,9 @@ All server reads/mutations of template management require the existing authentic
 
 ## Work Items
 
-- [ ] Implement activation eligibility/compare-and-swap and audit service for current pointers in `wrappers/`.
-- [ ] Create review/activation preview and concurrency/conflict UI without duplicating `authoring/` or `compilation/`.
-- [ ] Add audited activation/replacement/reactivation and unsafe/invalid projection tests using stubbed compiled locale records.
+- [x] Implement activation eligibility/compare-and-swap and audit service for current pointers in `wrappers/`.
+- [x] Create review/activation preview and concurrency/conflict UI without duplicating `authoring/` or `compilation/`.
+- [x] Add audited activation/replacement/reactivation and unsafe/invalid projection tests using stubbed compiled locale records.
 
 
 ## Interfaces / Contracts
@@ -90,15 +90,15 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
-- [ ] Platform admin can activate SHARED/AI/HUMAN slots independently, preview fully translated wrapper content and see the effective override/fallback selection.
-- [ ] Stale CAS, wrong kind/audience or incomplete translations cannot silently replace a current wrapper; no Meta call is made.
-- [ ] Activating new or previous immutable definition changes pointers/audit only; already sent AI/human response contents and checkout records are untouched.
+- [x] Platform admin can activate SHARED/AI/HUMAN slots independently, preview fully translated wrapper content and see the effective override/fallback selection.
+- [x] Stale CAS, wrong kind/audience or incomplete translations cannot silently replace a current wrapper; no Meta call is made.
+- [x] Activating new or previous immutable definition changes pointers/audit only; already sent AI/human response contents and checkout records are untouched.
 
 
 ## Validation
 
-- [ ] Schema-backed CAS race/replay tests, semantic eligibility and complete-locale fixture tests, exact preview/conditional section UI tests.
-- [ ] Auth/audit/rollback and no-provider-network tests; declared lint/typecheck and `git diff --check`.
+- [x] Schema-backed CAS race/replay tests, semantic eligibility and complete-locale fixture tests, exact preview/conditional section UI tests.
+- [x] Auth/audit/rollback and no-provider-network tests; declared lint/typecheck and `git diff --check`.
 
 
 ## Stop Condition
@@ -114,35 +114,75 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-In Progress — developer execution Attempt 1, claimed 2026-10-25T18:14:30Z. `ARCH-047-DATABASE-001` is complete. Canonical parent and implementation task worktrees are prepared and synchronized; implementation has not started in this preparation workflow.
+Ready for Review — developer-executed Attempt 1 (`status: review`). Claim recorded at `2026-10-25T18:14:30Z`; the execution attempt remains `1`. The Admin implementation was committed as `30cc9ef` (`feat(arch-047-admin-008)`) and pushed to `origin/task/ARCH-047-ADMIN-008`. Formal architect review and the developer's explicit completion decision remain outstanding.
 
 ### Files Changed
 
-None.
+Implementation repository: `moda-interact-admin` — 21 files in commit `30cc9ef`:
+
+- `package.json`
+- `scripts/test-arch047-admin-wrappers-postgres.mjs`
+- `src/app/(protected)/system-controls/whatsapp-templates/wrappers/page.tsx`
+- `src/app/actions/whatsapp-template-wrapper-publication.ts`
+- `src/components/admin/whatsapp-templates/wrappers/use-wrapper-publication.ts`
+- `src/components/admin/whatsapp-templates/wrappers/wrapper-activation-confirmation.tsx`
+- `src/components/admin/whatsapp-templates/wrappers/wrapper-active-slot-summary.tsx`
+- `src/components/admin/whatsapp-templates/wrappers/wrapper-audience-selector.tsx`
+- `src/components/admin/whatsapp-templates/wrappers/wrapper-before-after-preview.tsx`
+- `src/components/admin/whatsapp-templates/wrappers/wrapper-publication-workspace.tsx`
+- `src/lib/admin/whatsapp-templates/wrappers/contracts.ts`
+- `src/lib/admin/whatsapp-templates/wrappers/eligibility.ts`
+- `src/lib/admin/whatsapp-templates/wrappers/preview.ts`
+- `src/lib/admin/whatsapp-templates/wrappers/reads.ts`
+- `src/lib/admin/whatsapp-templates/wrappers/repository.ts`
+- `src/lib/admin/whatsapp-templates/wrappers/service.ts`
+- `tests/fixtures/arch047-wrapper-fixture.ts`
+- `tests/integration/arch047-template-wrappers.postgres.test.ts`
+- `tests/unit/arch047-template-wrappers-components.test.tsx`
+- `tests/unit/arch047-template-wrappers-service.test.ts`
+- `tests/unit/arch047-template-wrappers.test.ts`
+
+Only this canonical parent task definition is changed by the review-submission patch. No `_index.md`, parent architecture or other repository implementation changes are included in that patch.
 
 ### Work Completed
 
-None.
+- Implemented a dedicated SUPER_ADMIN-only wrapper publication route, read model and mutation action; the server determines the actor identity and does not accept client-supplied authorisation assertions.
+- Reused persisted, compiled wrapper projections and enforced immutable source/review hashes, family/audience compatibility, the required `response.body` insertion slot and complete, validated 20-language projections with protected ShopBrand variables.
+- Implemented independent `SHARED`, `AI`, and `HUMAN` active-slot activation with the existing `WhatsAppConversationWrapperActiveSlot` table; preview exposes `SHARED` fallback for unset audience-specific overrides.
+- Implemented optimistic `editVersion` compare-and-swap, idempotent replay, replacement and reactivation of previously approved immutable definitions within a serializable transaction; first-publication state and bounded `CommerceAuditEvent` persist with the pointer or roll back together.
+- Added before/after multilingual preview, conditional checkout-link suppression, first-publication display, deliberate confirmation with a reason, audit-history display and stale-pointer conflict handling.
+- Added focused service/eligibility, UI component and disposable PostgreSQL integration tests; no Meta publication integration, checkout writes, per-shop copying or Background runtime changes were introduced.
 
 ### Validation Results
 
-Not run.
+Recorded in the developer's 2026-10-25 validation terminal log (`typescript(20261025-182106)`) and follow-up implementation Git log (`typescript(20261025-183601)`):
+
+- `npm run prisma:generate` — **PASS** after materialising the Admin `database/` submodule; Prisma Client `6.19.3` generated. An earlier attempt failed because `database/prisma/schema.prisma` was absent before submodule initialisation.
+- `git apply --check --whitespace=error-all ~/Downloads/ARCH-047-ADMIN-008-attempt1.patch` followed by `git apply --whitespace=error-all ...` — **PASS on the subsequent attempt**; first attempt could not locate the patch in `~/Downloads`.
+- `npm run test:arch047-admin-wrappers:unit` — **PASS, 7/7**. Covers approval/eligibility checks, protected projections, non-SUPER_ADMIN rejection, immutable locale data, CAS, replay and audit rollback.
+- `npm run test:arch047-admin-wrappers:components` — **PASS, 3/3**. Covers audience/fallback display, full before/after preview with conditional URL and deliberate confirmation/conflict handling.
+- `npm run test:arch047-admin-wrappers:postgres` — **PASS, 3/3**, disposable PostgreSQL. Covers independent audience slots, actual DB CAS concurrency, replay/replacement/reactivation, audit writes and transaction rollback.
+- `npm run lint` — **PASS, 0 errors, 1 warning** in `database/eslint.config.mjs` (`import/no-anonymous-default-export`, outside the new wrapper implementation).
+- `npm run build` — **PASS** with Prisma generation, Next.js compilation, TypeScript checks and page generation. Non-blocking BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings originate from queue-monitor/merchant-support imports.
+- `git diff --check` — command is present in the patch-application transcript with no whitespace error reported. The review-submission patch is separately checked for whitespace and clean application before handoff.
+- No Meta API/client or provider network calls appear in the added wrapper activation code. Unit and PostgreSQL test execution exercises the path without a provider dependency; the supplied test log does not show a distinct network-spy/interception test.
+- Git: implementation commit `30cc9ef` created with **21 files changed, 1,217 insertions, 1 deletion**, followed by successful push of `task/ARCH-047-ADMIN-008` to `origin` in `moda-interact-admin`.
 
 ### Deviations
 
-None.
+No task-scope deviation reported. Initial Prisma generation required database-submodule setup; the initial patch application failed because the patch had not yet been placed in `~/Downloads`. Both conditions were resolved before the successful tests/build. The terminal capture file `typescript` was untracked in the pre-commit status and was not included in implementation commit `30cc9ef`.
 
 ### Assumptions
 
-The consolidated `ARCH-047-DATABASE-001` Attempt 7 model contract is the intended schema; inspect generated Prisma Client and actual accepted database implementation when this task becomes executable. Where the proposed JSONB envelopes are not yet implemented, fixture-based tests use the explicitly documented shape.
+The accepted `ARCH-047-DATABASE-001` data model and existing Admin authoring/compilation projections are the contracts for this implementation. The six Admin tasks remain independently scoped to their single formal database dependency; no additional task dependency was introduced.
 
 ### Unresolved Issues
 
-None at definition time. Return any missing persistence capability, provider-account configuration or cross-repository interface problem to `moda_architect` rather than silently changing DB/Background/Messaging ownership.
+No failing implementation tests are recorded. The canonical task's **Execution Ownership Amendment** records the dedicated parent and implementation worktree paths, task branches, initial synchronization and claim. The uploaded validation/commit logs do **not** include the full launcher-preparation packet or recursive-submodule/start-of-attempt synchronization transcript; the architect must confirm that evidence against the launcher/worktree policy before acceptance. The supplied logs also do not establish a clean post-commit Git status.
 
 ### Architectural Concerns
 
-None at definition time.
+No new database tables, shared contracts, Meta submission calls, merchant assignments or Background delivery semantics were introduced. Runtime fallback precedence and final WhatsApp send eligibility remain Background responsibilities. This is submitted for architect verification, not architect acceptance.
 
 
 ## Architect Review
