@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -64,7 +64,7 @@ Published package `@modainteract/moda-interact-shared/whatsapp-template-events` 
 
 ## Dependencies
 
-- `ARCH-047-SHARED-001` — architect-accepted and Complete.
+- `ARCH-047-SHARED-001` — architect-accepted and Complete. SHARED-001 Attempt 1 is complete and its Architect Review was accepted on 2026-10-25 (parent task commit `7ba6066f`).
 
 ## Enables
 
@@ -94,7 +94,7 @@ Use the repository's existing publication workflow and mirrored isolated task br
 
 ### Status
 
-Not Started.
+Ready for agent execution at Attempt 0. SHARED-001 is complete and Architect Review Accepted; no publication work has been claimed or performed.
 
 ### Files Changed
 
