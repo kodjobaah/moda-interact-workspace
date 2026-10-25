@@ -1,7 +1,10 @@
 # Moda Interact Workspace
 
-Moda Interact is a multi-service platform for Shopify checkout recovery and
-conversational commerce, including WhatsApp customer interactions.
+Moda Interact is a multi-service commerce platform for Shopify and WooCommerce
+merchants, with checkout recovery and conversational customer engagement,
+including WhatsApp interactions. The Shopify application and installable
+WooCommerce plugin are separate commerce entry points into shared hosted
+services; their capabilities are not yet at full feature parity.
 
 This repository is the top-level workspace for the platform. It ties together
 independently versioned services using Git submodules, so a workspace commit
@@ -10,20 +13,22 @@ records the exact compatible service commits that form a platform snapshot.
 
 ## Product status
 
-Moda Interact is being built as a company-backed commercial product, not a demo
-or isolated experiment.
-
-The company has being registered, the public website is live, and the platform is
-being prepared for release in the next few weeks.
+Moda Interact is an actively developed commercial product, not a demo or
+isolated experiment. The public website is live, and the platform now includes
+separate Shopify and WooCommerce commerce integrations alongside shared hosted
+services.
 
 Website: https://www.modainteract.com/
 
 ## Why this project matters
 
-Moda Interact is an AI-enabled customer engagement platform for Shopify merchants.
-It combines Shopify webhooks, BullMQ background workers, WhatsApp messaging,
-PostgreSQL state, and an AI CommerceAgent to recover abandoned checkouts through
-conversational workflows.
+Moda Interact is an AI-enabled customer engagement platform for commerce
+merchants. Shopify webhooks and the WooCommerce integration connect to platform
+services built around PostgreSQL, Redis/BullMQ, WhatsApp messaging and an AI
+CommerceAgent. Shopify recovery is an established workflow; WooCommerce
+connection, merchant overview and a separately gated checkout/order activity
+capture path are being integrated without routing WooCommerce events through
+Shopify recovery handlers.
 
 Key engineering areas demonstrated:
 - Multi-service architecture
@@ -32,7 +37,8 @@ Key engineering areas demonstrated:
 - External tool calling
 - PostgreSQL persistence
 - Redis/BullMQ queues
-- Shopify and WhatsApp integrations
+- Shopify and WooCommerce integrations
+- WhatsApp customer engagement
 - Idempotency and retry design
 - Production deployment planning
 
@@ -45,12 +51,14 @@ This project demonstrates hands-on experience with:
 - Processing high-volume webhook events asynchronously
 - Persisting business state outside the LLM
 - Building AI workflows with tool-calling and conversation state
-- Integrating with Shopify, WhatsApp/Meta, PostgreSQL, Redis and external AI providers
+- Integrating with Shopify, WooCommerce/WordPress, WhatsApp/Meta, PostgreSQL,
+  Redis and external AI providers
 - Designing for idempotency, retries, observability and independent worker scaling
 
 ## Quick navigation
 
 - [Platform overview](#platform-overview)
+- [Commerce integrations](#commerce-integrations)
 - [High-level architecture](#high-level-architecture)
 - [Inbound WhatsApp recovery flow](#inbound-whatsapp-recovery-flow)
 - [Architecture initiatives](#architecture-initiatives)
@@ -73,6 +81,8 @@ This project demonstrates hands-on experience with:
 Moda Interact is designed around a small set of explicit service boundaries:
 
 - Shopify-facing authentication, merchant UI and webhook ingress;
+- an installable WooCommerce/WordPress plugin and authenticated hosted API
+  boundary;
 - asynchronous checkout-recovery and CommerceAgent processing;
 - Meta/WhatsApp webhook ingress;
 - durable PostgreSQL state;
@@ -98,6 +108,34 @@ The platform follows several core principles:
 
 For the broader architecture overview, see
 [`docs/architecture/overview.md`](docs/architecture/overview.md).
+
+## Commerce integrations
+
+Merchants enter the platform through distinct commerce-specific integrations:
+
+- **Shopify:** the embedded Shopify application owns Shopify authentication,
+  webhooks, merchant UI, onboarding and Shopify billing. Its webhook events feed
+  the established Shopify recovery and conversation workflows.
+- **WooCommerce:** an installable WordPress plugin registers a Moda Interact
+  area in WooCommerce Admin. Connected areas include Overview, recoveries,
+  recovery settings, billing, promotions, usage and support. PHP calls the hosted
+  Moda API server-to-server; installation credentials and API secrets remain out
+  of browser JavaScript. The API authenticates the installation and provides a
+  bounded merchant bootstrap read model. Individual features are capability-
+  gated: for example, support messages and WooCommerce coupon selection are
+  explicitly unavailable in the current plugin.
+- **WooCommerce activity:** the API has a separate authenticated capture path for
+  checkout updates and order lifecycle events. These capture jobs are isolated
+  from Shopify queues and recovery handlers. Capture acceptance alone does not
+  create a recovery, send WhatsApp messages, or change billing/payment state;
+  consumer and publisher rollout is separately gated.
+
+The WooCommerce integration is not yet feature parity with Shopify: Shopify
+recovery, billing and CommerceAgent behavior must not be inferred from the
+WooCommerce connection or activity-capture surfaces. See the
+[WooCommerce plugin README](moda-interact-woocommerce/README.md) and
+[Moda API README](moda-interact-api/README.md) for implementation and validation
+details.
 
 ---
 
@@ -153,6 +191,21 @@ Public marketing site
       v
 moda-interact-site
 ```
+
+The WooCommerce integration follows a separate path:
+
+```text
+WooCommerce store
+  -> WordPress plugin in WooCommerce Admin
+  -> authenticated server-to-server HTTPS
+  -> public gateway -> moda-interact-api
+  -> dedicated WooCommerce checkout/order capture queues
+```
+
+The API validates installation identity before accepting activity. These
+capture-only queues are isolated from Shopify recovery; publisher and consumer
+rollout is gated separately, and capture acceptance does not itself trigger
+recovery or customer messaging.
 
 `moda-interact-database` is the authoritative owner of the shared Prisma schema
 and migration history.
@@ -356,13 +409,17 @@ Each service is independently versioned and has a bounded responsibility.
 | --- | --- |
 | [`moda-interact`](https://github.com/kodjobaah/moda-interact) | Shopify application, merchant UI, Shopify authentication/webhooks, onboarding, billing and subscriptions |
 | [`moda-interact-admin`](https://github.com/kodjobaah/moda-interact-admin) | Next.js platform administration console, platform-admin security, cross-merchant reporting and operational visibility |
-| [`moda-interact-background`](https://github.com/kodjobaah/moda-interact-background) | BullMQ workers, high-volume Shopify event inspection/filtering, checkout recovery, CommerceAgent orchestration, retries, entitlements and usage |
+| [`moda-interact-api`](https://github.com/kodjobaah/moda-interact-api) | Hosted HTTP boundary for WooCommerce installation authentication, merchant bootstrap and isolated checkout/order activity capture |
+| [`moda-interact-background`](https://github.com/kodjobaah/moda-interact-background) | BullMQ workers, Shopify event inspection/filtering, checkout recovery, CommerceAgent orchestration, retries, entitlements, usage and separately gated WooCommerce activity-consumer integration |
+| [`moda-interact-commerce`](https://github.com/kodjobaah/moda-interact-commerce) | Internal Commerce Agent Studio for authoring and publishing versioned commerce capabilities |
 | [`moda-interact-database`](https://github.com/kodjobaah/moda-interact-database) | Canonical Prisma schema, PostgreSQL migrations, constraints, indexes, seed/reference data and ERD |
 | [`moda-interact-gateway`](https://github.com/kodjobaah/moda-interact-gateway) | Thin public ingress, private-service routing, Render Blueprints/topology, scaling configuration and infrastructure wiring |
 | [`moda-interact-messaging`](https://github.com/kodjobaah/moda-interact-messaging) | Meta/WhatsApp webhook verification, normalisation and queue publication |
+| [`moda-interact-mcp`](https://github.com/kodjobaah/moda-interact-mcp) | Private MCP runtime with pinned published-tool authorization, tenant isolation and bounded read-only commerce tools |
 | [`moda-interact-shared`](https://github.com/kodjobaah/moda-interact-shared) | Canonical `@modainteract/moda-interact-shared` package for cross-service runtime contracts and reusable primitives |
 | [`moda-interact-site`](https://github.com/kodjobaah/moda-interact-site) | Public website, product content, SEO and public-facing material |
 | [`moda-interact-system-test`](https://github.com/kodjobaah/moda-interact-system-test) | Architecture-level integrated tests, architecture-specific fixtures and environment orchestration |
+| [`moda-interact-woocommerce`](https://github.com/kodjobaah/moda-interact-woocommerce) | Installable WordPress plugin with WooCommerce Admin UI, server-side API connection, merchant Overview and WooCommerce-specific provider boundary |
 
 For more detail, see
 [`docs/architecture/services.md`](docs/architecture/services.md).
@@ -380,13 +437,19 @@ The workspace records Gitlinks to specific service commits:
 moda-interact-workspace
 ├── moda-interact            @ <commit>
 ├── moda-interact-admin      @ <commit>
+├── moda-interact-api        @ <commit>
 ├── moda-interact-background @ <commit>
+├── moda-interact-commerce   @ <commit>
 ├── moda-interact-database   @ <commit>
 ├── moda-interact-gateway    @ <commit>
 ├── moda-interact-messaging  @ <commit>
+├── moda-interact-mcp        @ <commit>
 ├── moda-interact-shared     @ <commit>
 ├── moda-interact-site       @ <commit>
-└── moda-interact-system-test @ <commit>
+├── moda-interact-system-test @ <commit>
+├── moda-interact-woocommerce @ <commit>
+├── moda-interact-documentation @ <commit>
+└── shopify-webhook-payloads @ <commit>
 ```
 
 This gives the platform both:
@@ -445,13 +508,19 @@ moda-interact-workspace/
 ├── README.md
 ├── moda-interact/
 ├── moda-interact-admin/
+├── moda-interact-api/
 ├── moda-interact-background/
+├── moda-interact-commerce/
 ├── moda-interact-database/
+├── moda-interact-documentation/
 ├── moda-interact-gateway/
 ├── moda-interact-messaging/
+├── moda-interact-mcp/
 ├── moda-interact-shared/
 ├── moda-interact-site/
 ├── moda-interact-system-test/
+├── moda-interact-woocommerce/
+├── shopify-webhook-payloads/
 └── moda-interact.code-workspace
 ```
 
@@ -1394,7 +1463,10 @@ cat docs/agent-vcs-ownership-policy.md
 The workspace coordinates the platform without replacing independent service
 ownership.
 
-- Shopify-facing concerns belong in `moda-interact`.
+- Shopify-facing concerns belong in `moda-interact`; WooCommerce and WordPress
+  provider concerns belong in `moda-interact-woocommerce`.
+- Hosted WooCommerce installation authentication, merchant bootstrap and bounded
+  activity ingress belong in `moda-interact-api`.
 - Platform administration belongs in `moda-interact-admin`.
 - Long-running, retryable and state-correlating workflows belong in
   `moda-interact-background`.
@@ -1402,6 +1474,7 @@ ownership.
 - Public ingress, Render topology and infrastructure routing belong in
   `moda-interact-gateway`.
 - Messaging-provider ingress belongs in `moda-interact-messaging`.
+- Private published commerce-tool execution belongs in `moda-interact-mcp`.
 - Canonical cross-service runtime contracts belong in `moda-interact-shared`.
 - Public product and marketing content belongs in `moda-interact-site`.
 - Architecture-specific integrated validation belongs in
