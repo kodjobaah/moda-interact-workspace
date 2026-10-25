@@ -132,7 +132,7 @@ Follow the repository's published entrypoint patterns and the canonical task lau
 
 ### Status
 
-Developer Completed — explicit developer completion decision recorded on 2026-10-25 for workflow Attempt 1, following the passing developer self-review. Implementation commits and all focused/full validation are published and passing. Architect acceptance remains pending; this developer completion decision is not architect acceptance. Attempt 0 review history is retained below.
+Developer Completed and Architect Review Accepted — explicit developer completion was recorded on 2026-10-25 for workflow Attempt 1, followed by architect acceptance on 2026-10-25. Implementation commits and all focused/full validation are published and passing. Attempt 0 review history is retained below.
 
 ### Files Changed
 
@@ -227,7 +227,7 @@ Accepted. The implementation preserves the Messaging producer and Background con
 
 ### Follow-up
 
-Proceed with SHARED-002 publication task only after this acceptance is durable on the task branch. Do not publish from SHARED-001 or start consumer work early.
+SHARED-002 is now materialized and `ready` at Attempt 0 on its own parent task branch. Do not publish from SHARED-001 or start consumer work before package publication is verified.
 
 ## Execution Ownership Amendment
 
@@ -257,4 +257,4 @@ On 2026-10-25, the developer explicitly invoked `/moda_developer_update ARCH-047
 
 ### Dependency Frontier
 
-`ARCH-047-SHARED-002` remains `pending`: its explicit publication requirement is SHARED-001 status `complete` **and accepted Architect Review**. Developer completion satisfies the status prerequisite only; no package publication or consumer task eligibility is claimed. No other task declares SHARED-001 as a dependency in the current task inventory.
+`ARCH-047-SHARED-002` is `ready` at Attempt 0 because SHARED-001 is complete and its Architect Review is accepted. SHARED-002 has not been claimed and no package publication is claimed. Consumer tasks remain gated on actual package publication and their other explicit dependencies.
