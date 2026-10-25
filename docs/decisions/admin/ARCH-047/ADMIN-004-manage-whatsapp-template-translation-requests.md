@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-25T16:01:51Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
@@ -118,7 +118,7 @@ None at task-definition time. Completion of this task does not grant permission 
 ## Validation
 
 - [x] Pure keyed-segment extraction/marker tests (including repeated brand name, brand alt text, header/body placement and wrapper footer/conditional text); 20-locale mapping fixtures; Admin route/action auth/duplicate-submit tests.
-- [ ] Database integration tests for run/items creation and idempotent retry requests using stubbed Background statuses; relevant lint/typecheck/build and `git diff --check`.
+- [x] Database integration tests for run/items creation and idempotent retry requests using stubbed Background statuses; relevant lint/typecheck/build and `git diff --check`.
 
 
 ## Stop Condition
@@ -134,7 +134,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Ready for developer review reconciliation — implementation Attempt 1 (claimed 2026-10-25T16:01:51Z). The implementation branch is pushed; this parent-task Completion Report is being prepared for submission. Preserve `status: in_progress`, `executor: developer`, `claimed_at` and `attempt: 1` until the authorised `/moda_developer_update ARCH-047-ADMIN-004` reconciliation/review process determines the transition. No acceptance or developer completion decision is claimed here.
+Developer self-review passed — Attempt 1 (claimed 2026-10-25T16:01:51Z); reconciled 25 October 2026. Implementation and parent report are published. The task is submitted for architect review with `status: review`, `executor: null`, `claimed_at: null`, and `attempt: 1`. No completion decision or merge to `main` is claimed.
 
 ### Files Changed
 
@@ -146,7 +146,7 @@ The implementation is on `moda-interact-admin` branch `task/ARCH-047-ADMIN-004` 
 - `src/components/admin/whatsapp-templates/authoring/template-saved-detail.tsx` — Translations link from immutable saved-template detail.
 - `src/components/admin/whatsapp-templates/translations/` — workspace, request controls, progress summary, per-language status list, error notice and polling controller.
 - `src/lib/admin/whatsapp-templates/translations/` — locale contract, keyed source extraction, protected-marker snapshots, progress projection, service and transaction-safe persistence.
-- `tests/unit/arch047-template-translations.test.ts`, `tests/unit/arch047-template-translation-components.test.tsx` and `tests/integration/arch047-template-translations.postgres.test.ts` — focused behaviour, UI and database checks.
+- `tests/unit/arch047-template-translations.test.ts`, `tests/unit/arch047-template-translation-components.test.tsx`, `tests/unit/helpers/commerce-model-policy-module-harness.mjs` and `tests/integration/arch047-template-translations.postgres.test.ts` — focused behaviour, direct action-auth, UI and database checks.
 
 This parent-worktree patch changes only `docs/decisions/admin/ARCH-047/ADMIN-004-manage-whatsapp-template-translation-requests.md`; it does not update `_index.md`, other tasks or any Background repository.
 
@@ -157,19 +157,21 @@ This parent-worktree patch changes only `docs/decisions/admin/ARCH-047/ADMIN-004
 - Implemented explicit Generate with a committed-English/source-hash gate, configured translation-model identity, transactional Run creation and exactly 19 target Items. The database is the durable asynchronous handoff to Background; Admin does not invoke a translation provider or Background worker synchronously.
 - Implemented a PostgreSQL transaction-scoped advisory lock and replay/deduplication behaviour, audit recording, retry of eligible failed/pending work, persisted progress states and SUPER_ADMIN service enforcement.
 - Added a dedicated protected Translations route and modular React UI with English plus 19 targets, bounded polling, failure display and duplicate-request prevention.
+- Added direct Server Action authorization coverage for translation reads, Generate and Retry; non-SUPER_ADMIN requests are rejected before service calls. Extended the existing action test harness with an explicit workspace-root option for the bundled ESM test runner.
 - Corrected test-runtime Shared ESM exports, missing test deployment environment/Prisma generation, and PostgreSQL void-result deserialization (using Prisma `$executeRaw` for `pg_advisory_xact_lock`). The final fix changes only the translation repository and its unit mock.
 
 ### Validation Results
 
-Evidence in the implementation-worktree terminal capture included with the 2026-10-25 parent worktree snapshot (`moda-interact-admin/typescript`), plus the 18:33 commit/push terminal capture:
+Validation was rerun in the canonical implementation worktree on 25 October 2026:
 
-- `npx tsc --noEmit -p tsconfig.json` — completed with no reported compiler errors after Prisma generation.
-- `npm run test:arch047-admin-translations:unit` — **13 passed / 0 failed**, including twenty-locale mapping, immutable source hash, repeated ShopBrand markers, wrapper exclusions, concurrent Generate/replay, retry preservation, progress display and SUPER_ADMIN service rejection.
-- `npm run test:arch047-admin-translations:postgres` — **2 passed / 0 failed** against disposable PostgreSQL after migrations and Prisma Client generation. Verified one Run plus 19 Items under concurrent requests, and no premature Run/audit before committed English.
-- Scoped `npx eslint` — **0 errors, 1 warning**: one test file is ignored by the repository lint configuration. The warning is not a production-source lint error; retain it in review evidence.
-- `git diff --check` and `git diff --cached --check` — no whitespace errors reported in the terminal evidence.
-- Implementation Git correction commit **`918eb0b`** (`fix(ARCH-047-ADMIN-004): correct PostgreSQL advisory lock execution`) was pushed successfully to `origin/task/ARCH-047-ADMIN-004` (`08699be..918eb0b`). Subsequent `git status` reports the implementation branch tracking its remote; only an untracked `typescript` terminal log remained, which is not task source.
-- **Validation coverage to review:** a Next.js production build was not recorded; direct protected-route/action tests and an independent PostgreSQL retry scenario were not explicitly demonstrated in the supplied results. The passing unit tests cover service-level SUPER_ADMIN and retry-idempotency rules. The second Validation checkbox remains unchecked for reviewer determination or further evidence.
+- `npm run test:arch047-admin-translations:unit` — **14 passed / 0 failed**, including locale mapping, immutable source hash, repeated ShopBrand markers, wrapper exclusions, concurrent Generate/replay, retry preservation, progress display, service-level SUPER_ADMIN rejection and direct Server Action auth for Read/Generate/Retry.
+- `npm run test:arch047-admin-translations:postgres` — **2 passed / 0 failed** against disposable PostgreSQL after migrations and Prisma Client generation. Verified one Run plus 19 Items under concurrent requests, idempotent retry preserving completed/processing locales, and no premature Run/audit before committed English.
+- `npx tsc --noEmit -p tsconfig.json` — **PASS** with no TypeScript diagnostics.
+- Scoped `npx eslint` on production route/action/component/domain files — **PASS, 0 errors and 0 warnings**. Including the focused test files emits three repository-configured ignored-file warnings; no lint errors.
+- `npm run build` — **PASS**; Next.js production build and TypeScript completed. Existing BullMQ dynamic-import and optional `@valkey/valkey-glide` warnings remain.
+- `git diff --check origin/main...HEAD` — **PASS**; implementation task worktree remains clean.
+- Implementation commits `918eb0bd3ca03f35de805bb2cd2877b697b0c4ea` and `2c4f156` are pushed to `origin/task/ARCH-047-ADMIN-004`; local HEAD matches remote.
+- Route and action source guards were inspected: page requires platform-admin authentication and SUPER_ADMIN; all Server Actions require the corresponding platform-admin read/mutation boundary and SUPER_ADMIN, with a second service-level role check. Unit tests exercise both the action boundary and service-level denial.
 
 ### Deviations
 
@@ -181,9 +183,8 @@ The accepted `ARCH-047-DATABASE-001` Prisma persistence contract is the source o
 
 ### Unresolved Issues
 
-- Reviewer to confirm whether a production Next.js build, direct route/action authentication test, and an additional PostgreSQL retry scenario are required before acceptance; these are **not** claimed as executed.
-- Worktree evidence is partial: the task claim records launcher synchronization and the latest archive command identifies a dedicated parent worktree (`moda-interact-workspace-task-ARCH-047-ADMIN-004`) and implementation worktree (`moda-interact-workspace.worktrees/ARCH-047-ADMIN-004`). The supplied material does not independently show the prepared launcher packet, start-of-attempt Git synchronization hashes, or recursive submodule materialisation evidence. Reconcile these in `/moda_developer_update` before acceptance.
-- Parent task report commit/push still needs to occur after applying this patch. No architect or developer completion decision is recorded.
+- Worktree synchronization evidence is partial: current canonical worktree paths, branch/remote parity and clean implementation status were verified during reconciliation; the original launcher packet and recursive submodule materialisation evidence were not retained in the supplied report.
+- No implementation gap was found in the reviewed task scope. No architect acceptance or developer completion decision is recorded.
 
 ### Architectural Concerns
 
@@ -221,4 +222,12 @@ Not assessed.
 
 ### Follow-up
 
-None.
+Review the recorded worktree-evidence limitation; no sibling task was started and no dependency-frontier update is required by this review submission.
+
+## Developer Self-Review - Passed
+
+- Attempt: 1; reviewed 25 October 2026.
+- Result: Passing; all task Work Items and Acceptance Criteria are marked complete. Focused unit/UI and disposable PostgreSQL suites, TypeScript, production build, production-source lint and implementation diff checks pass.
+- Authorization: platform-admin and SUPER_ADMIN guards are present at the protected route and Server Action boundaries. Direct action tests verify Read/Generate/Retry reject non-SUPER_ADMIN principals before service calls; service-level role enforcement is also tested.
+- Implementation branch: `task/ARCH-047-ADMIN-004`, commit `2c4f156` (following `918eb0b`), pushed and clean.
+- Lifecycle: `status: review`, `attempt: 1`, `executor: null`, `claimed_at: null`. Completion remains pending architect review and explicit developer completion.
