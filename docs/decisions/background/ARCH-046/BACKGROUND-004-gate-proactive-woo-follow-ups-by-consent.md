@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 38
 executor: null
 claimed_at: null
@@ -36,7 +36,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Execution frontier (25 October 2026 snapshot): Pending, not Ready.** `ARCH-046-BACKGROUND-002` is newly eligible but is not yet implemented/accepted. Other declared dependencies are Complete. BG004 must not be claimed before **every** dependency is Complete and the architect promotes it to Ready. Its old external requirement for a Woo follow-up engine has been removed because this task is **narrowed to the initial-send/final-permit capability already required by ARCH-048**.
+**Execution frontier (25 October 2026): Ready, unclaimed, Attempt 0.** `ARCH-046-BACKGROUND-002` is explicitly Complete on its parent task branch at commit `64d20849`; the other declared dependencies are Complete. This task is promoted from `pending` to `ready` after all explicit dependencies became Complete. Its old external requirement for a Woo follow-up engine has been removed because this task is **narrowed to the initial-send/final-permit capability already required by ARCH-048**. No attempt is claimed or started by this promotion.
 
 ## Objective
 
@@ -185,7 +185,7 @@ No production compatibility requirement for this initially disabled Woo recovery
 
 ### Unresolved Issues
 
-`ARCH-046-BACKGROUND-002` must be accepted before this task can be promoted to Ready. Provider-admission SQL reuse must be validated against the current repository; it is not asserted complete by this task.
+`ARCH-046-BACKGROUND-002` is Complete at Attempt 1 on parent task commit `64d20849`. Provider-admission SQL reuse must be validated against the current repository during implementation; it is not asserted complete by this task.
 
 ### Architectural Concerns
 
