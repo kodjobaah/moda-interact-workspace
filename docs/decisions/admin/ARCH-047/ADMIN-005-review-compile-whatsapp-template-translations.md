@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-25T16:02:15Z
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -136,7 +136,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — portable task definition, not materialised/claimed.
+In Progress — Attempt 1 claimed by developer at 2026-10-25T16:02:15Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
