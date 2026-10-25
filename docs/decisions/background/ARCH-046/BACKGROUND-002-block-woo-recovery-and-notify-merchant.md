@@ -11,8 +11,8 @@ execution_mode: developer
 completion_mode: developer
 status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-25T14:03:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-046-BACKGROUND-001
@@ -178,7 +178,7 @@ Only the Woo adapter and its focused tests are implementation-owned here. The ac
 
 ### Status
 
-**Ready for Architectural Review — developer-executed Attempt 1, implementation committed and pushed on 25 October 2026.** The current parent task shows an active developer claim and the developer supplied implementation validation and publication evidence. The reviewer should inspect the actual commit and any outstanding launcher/synchronization evidence. There is no accepted architect implementation review or explicit developer completion decision yet.
+**Ready for Architectural Review — developer-executed Attempt 1, implementation committed and pushed on 25 October 2026.** The developer claim at `2026-10-25T14:03:34Z` is historical and cleared on review submission. The implementation and focused validation evidence are published; the reviewer should inspect the actual commit and the disclosed parent-branch synchronization evidence gap. There is no accepted architect implementation review or explicit developer completion decision yet.
 
 ### Files Changed
 
@@ -208,12 +208,14 @@ Evidence: developer-supplied terminal records `typescript(20261025-145026)`, `ty
 - **PASS — focused units:** `npm test -- tests/unit/services/woocommerce-recovery/woo-recovery-consent-notice.adapter.test.ts tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.service.test.ts tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.formatter.test.ts` — **3 files, 42/42 tests** (Woo adapter 27, shared service 8, formatter 7).
 - **PASS — real PostgreSQL integration:** `npm run test:integration -- tests/integration/woo-recovery-consent-notice.integration.test.ts tests/integration/recovery-consent-merchant-notice.integration.test.ts` — **2 files, 5/5 tests** (Woo 2, shared notifier 3). The same five integration tests passed again in a separate run. Coverage includes concurrent duplicate callbacks, shop isolation, immutable first-committed body and transactional write failure/retry.
 - **PASS — typecheck:** `npx tsc --noEmit && echo "TypeScript typecheck PASS"` printed `TypeScript typecheck PASS`.
+- **PASS — independent review rerun (25 October 2026):** from the canonical implementation task worktree, the focused unit selection passed **3 files / 42 tests**, the focused real PostgreSQL integration selection passed **2 files / 5 tests**, and `npx tsc --noEmit` passed.
 - **PASS — patch and staged diff checks:** `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all`, `git diff --check`, and `git diff --cached --check` completed without reported errors before commit.
 - **PASS — implementation version control:** commit `9b94c6d` created with exactly three new files; `git push -u origin task/ARCH-046-BACKGROUND-002` succeeded against `moda-interact-background.git`.
-- **RECORDED — developer claim:** current parent task YAML has `execution_mode: developer`, `completion_mode: developer`, `executor: developer`, `claimed_at: 2026-10-25T14:03:34Z`, `attempt: 1`, and an explicit Execution Ownership Amendment for `/moda_developer_create`.
-- **RECORDED — dedicated task locations/branches:** earlier terminal records show the implementation task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-002` on the correct task branch; the latest developer command shows the parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-BACKGROUND-002` on `task/ARCH-046-BACKGROUND-002`, clean and tracking `origin/task/ARCH-046-BACKGROUND-002`. The ZIP contains that currently claimed parent task file.
-- **NOT VERIFIED — preparation/isolation provenance:** the screenshots/logs do not provide the launcher-resolved Git-common-dir/mapping, start-of-attempt fetch/merge synchronization, or recursive implementation submodule status. Existence of plausible paths alone does not prove full preparation-policy compliance; the reviewer may request this evidence.
-- **PENDING — parent review-report publication:** the existing parent claim is recorded in the supplied task worktree; this rebased review-report patch has not yet been committed/pushed to the parent branch.
+- **RECORDED — developer claim:** Attempt 1 was claimed at `2026-10-25T14:03:34Z`; parent task claim commit `1674be4b4` records it. The claim is cleared on review submission (`executor: null`, `claimed_at: null`).
+- **VERIFIED — dedicated worktrees at review:** parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-BACKGROUND-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-002` are the canonical launcher-resolved paths, registered in Git on `task/ARCH-046-BACKGROUND-002`, clean and tracking their matching origin task branches. Parent HEAD is `fe50a5629fbe3e0a19d24eb89f99d7fd25ccc6c2`; implementation HEAD is `9b94c6d38703fe725a351a94b6b8e62110d65be8`.
+- **VERIFIED — implementation sync/submodule at review:** implementation HEAD contains `origin/main` at `2e0425c89eee086241b15a39a63894247e498629`; recursive submodule status shows nested `database` at exact gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+- **NOT VERIFIED — start-of-attempt packet:** the historical launcher Git-common-dir/mapping and fetch/merge/submodule preparation packet was not supplied. At review, current parent `origin/main` (`bba20335696ac988901ccf50eb24e6a3e45ee4fc`) is not an ancestor of the parent task branch. No synchronization merge was performed during this review; reviewer may request the original preparation evidence or separately authorize synchronization.
+- **PASS — parent review-report publication:** the existing parent review report is committed and pushed at `fe50a5629fbe3e0a19d24eb89f99d7fd25ccc6c2`, tracking `origin/task/ARCH-046-BACKGROUND-002`.
 - **NOT RUN / NOT SHOWN:** broad repository test suite, separate Shopify consumer end-to-end suite and cross-repository system tests. The accepted shared notifier's unit and PostgreSQL regression tests **did** pass; ARCH-046 system tests remain separate.
 
 ### Deviations
@@ -223,13 +225,12 @@ The task's developer ownership amendment and claim were already materialised in 
 ### Assumptions
 
 - The **latest uploaded parent worktree snapshot** (not the earlier unclaimed snapshot) is the source for this review-report patch. It already contains the developer claim, Attempt 1, and the execution-ownership amendment; the separately uploaded terminal record confirms implementation commit `9b94c6d`.
-- The task's four prerequisites were recorded Complete when execution was prepared, but current remote dependency metadata and the actual launcher preparation packet were not independently checked here.
+- The task's four prerequisites were independently resolved as `complete` through the canonical launcher during this review. That current state does not reconstruct the missing historical start-of-attempt preparation packet.
 - Existing `RecoveryConsentMerchantNoticeService` is the accepted canonical implementation from ARCH-046-BACKGROUND-005; ARCH-048-BACKGROUND-005 remains responsible for binding the adapter to runtime admission workers.
 
 ### Unresolved Issues
 
-- Obtain the launcher-resolved Git worktree mapping, start-of-attempt synchronization, and recursive submodule preparation evidence if the reviewer requests it. The developer claim itself **is recorded** in the parent task; dedicated directory names/branches are visible, but not sufficient alone to prove full physical isolation and preparation.
-- Commit and push this updated task file on the **already-claimed parent** workspace `task/ARCH-046-BACKGROUND-002` branch, without staging the `moda-interact-background` submodule pointer. Retain implementation commit `9b94c6d` on its separate branch; do not merge either branch for submission.
+- The original start-of-attempt preparation packet remains unavailable. Current dedicated worktree mapping, clean task-branch publication and implementation submodule gitlink are verified; the parent task branch does not contain the latest `origin/main` observed at review. No merge to `main` or cross-branch merge was performed.
 - Broad Shopify consumer and integrated system-test results are not provided; the existing shared notifier regression tests passed, and integration with the worker remains intentionally assigned to ARCH-048-BACKGROUND-005.
 
 ### Architectural Concerns
@@ -268,3 +269,29 @@ ARCH-046-BG004 becomes eligible once this task is accepted Complete.
 - Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
 - Preserved: `assigned_agent: moda_background`, coordinator, dependencies, task scope, and acceptance criteria.
 - Claim state: This amendment does not claim an implementation attempt; the canonical launcher records the claim after dependency and worktree preparation.
+
+## Developer Self-Review Passed (Attempt 1)
+
+### Outcome
+
+Attempt 1 passes developer self-review against the scoped Woo first-recovery
+denial adapter requirements. The adapter exhaustively maps the current BG003
+denial reasons, delegates qualifying notices to the accepted shared notifier,
+projects only tenant/checkout-verified candidate context, and propagates lookup
+and persistence failures. Focused units, real PostgreSQL integration tests and
+TypeScript typecheck passed, including independent review reruns.
+
+### Deviation and Evidence Gap
+
+No implementation-scope deviation was identified. The historical start-of-attempt
+launcher preparation packet was not supplied. At review, both dedicated task
+worktrees are registered and clean, implementation is synchronized with
+`origin/main` and its nested database gitlink is exact, but the parent task branch
+does not contain the latest `origin/main` observed during review. This is disclosed
+for architect review; no mainline or cross-task merge was performed.
+
+### Completion Boundary
+
+The task is submitted to `moda_architect` with `status: review`. Because
+`completion_mode: developer`, an explicit developer completion decision remains
+pending; this self-review does not mark the task complete.
