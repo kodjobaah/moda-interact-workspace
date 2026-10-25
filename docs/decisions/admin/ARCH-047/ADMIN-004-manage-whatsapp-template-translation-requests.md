@@ -7,13 +7,13 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -25,7 +25,7 @@ updated: 2026-10-25
 
 ## Architecture
 
-`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This is a **defined but not materialised** task until the developer's launcher creates the canonical task branch/worktree.
+`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This task was materialised before takeover; Attempt 1 is now claimed for developer execution in the canonical task worktrees.
 
 ## Objective
 
@@ -71,10 +71,10 @@ Place polling, request/retry state, stale-response cancellation and selection-aw
 
 ## Requirements
 
-- [ ] The source snapshot contains exactly one stable entry per translatable component and protected token occurrences without leaking actual customer values or secrets; duplicate/missing segment keys are rejected on request creation.
-- [ ] Repeated `shopBrand.*` tokens remain independently protected, with stable semantic identifiers and unique per-occurrence opaque markers; translations cannot replace them with a preview value, a merchant's real branding, or a translated identifier.
-- [ ] A verified source hash and immutable source locale are captured; a later clone cannot receive an older run's outputs. Per-language progress comes from persisted items, not simulated UI state.
-- [ ] Translation request write and model identity assignment are atomic; repeated start/retry is idempotent and does not discard completed languages.
+- [x] The source snapshot contains exactly one stable entry per translatable component and protected token occurrences without leaking actual customer values or secrets; duplicate/missing segment keys are rejected on request creation.
+- [x] Repeated `shopBrand.*` tokens remain independently protected, with stable semantic identifiers and unique per-occurrence opaque markers; translations cannot replace them with a preview value, a merchant's real branding, or a translated identifier.
+- [x] A verified source hash and immutable source locale are captured; a later clone cannot receive an older run's outputs. Per-language progress comes from persisted items, not simulated UI state.
+- [x] Translation request write and model identity assignment are atomic; repeated start/retry is idempotent and does not discard completed languages.
 
 
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
@@ -82,10 +82,10 @@ All server reads/mutations of template management require the existing authentic
 
 ## Work Items
 
-- [ ] Implement pure extraction/token-marker helpers with deterministic fixtures for header/body/footer/buttons and wrapper conditionals.
-- [ ] Exercise the ADMIN-003 variable registry for allowed `shopBrand.*` placements; protect Meta text-header/body and wrapper header/footer/conditional tokens while leaving Meta footers, URLs and the wrapper response slot unmodified.
-- [ ] Implement transactional run/item creation, deduplicated request action, progress/list/retry endpoints and bounded polling UI.
-- [ ] Add tests for duplicate starts, 19 target items, exact source-hash binding and meaningful failed/queued states.
+- [x] Implement pure extraction/token-marker helpers with deterministic fixtures for header/body/footer/buttons and wrapper conditionals.
+- [x] Exercise the ADMIN-003 variable registry for allowed `shopBrand.*` placements; protect Meta text-header/body and wrapper header/footer/conditional tokens while leaving Meta footers, URLs and the wrapper response slot unmodified.
+- [x] Implement transactional run/item creation, deduplicated request action, progress/list/retry endpoints and bounded polling UI.
+- [x] Add tests for duplicate starts, 19 target items, exact source-hash binding and meaningful failed/queued states.
 
 
 ## Interfaces / Contracts
@@ -106,19 +106,19 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
-- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+- [x] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
 
-- [ ] Saving an English template does not implicitly translate; explicit Generate persists one run and exactly 19 target-language items for supported target locales.
-- [ ] Source snapshots use stable component keys; source text markers survive opaque variable contract; untranslatable URLs, metadata and response slot never become translation work.
-- [ ] Header/body and wrapper translatable segments protect all supported `shopBrand.*` identifiers without leaking merchant-specific values; unsupported Meta footer variables are rejected by the source authoring contract, not silently included as translation work.
-- [ ] Progress, partial failures and retry controls reflect PostgreSQL; reloading/navigation does not lose progress or cause an extra run.
-- [ ] Repeated concurrent requests do not produce duplicate active work, and are audited and SUPER_ADMIN-only.
+- [x] Saving an English template does not implicitly translate; explicit Generate persists one run and exactly 19 target-language items for supported target locales.
+- [x] Source snapshots use stable component keys; source text markers survive opaque variable contract; untranslatable URLs, metadata and response slot never become translation work.
+- [x] Header/body and wrapper translatable segments protect all supported `shopBrand.*` identifiers without leaking merchant-specific values; unsupported Meta footer variables are rejected by the source authoring contract, not silently included as translation work.
+- [x] Progress, partial failures and retry controls reflect PostgreSQL; reloading/navigation does not lose progress or cause an extra run.
+- [x] Repeated concurrent requests do not produce duplicate active work, and are audited and SUPER_ADMIN-only.
 
 
 ## Validation
 
-- [ ] Pure keyed-segment extraction/marker tests (including repeated brand name, brand alt text, header/body placement and wrapper footer/conditional text); 20-locale mapping fixtures; Admin route/action auth/duplicate-submit tests.
-- [ ] Database integration tests for run/items creation and idempotent retry requests using stubbed Background statuses; relevant lint/typecheck/build and `git diff --check`.
+- [x] Pure keyed-segment extraction/marker tests (including repeated brand name, brand alt text, header/body placement and wrapper footer/conditional text); 20-locale mapping fixtures; Admin route/action auth/duplicate-submit tests.
+- [x] Database integration tests for run/items creation and idempotent retry requests using stubbed Background statuses; relevant lint/typecheck/build and `git diff --check`.
 
 
 ## Stop Condition
@@ -134,35 +134,68 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — portable task definition, not materialised/claimed.
+Complete — developer execution Attempt 1 (claimed 2026-10-25T16:01:51Z); self-review passed and explicit developer completion recorded 25 October 2026. Implementation and parent report are published. `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. No merge to `main` was performed.
 
 ### Files Changed
 
-None.
+The implementation is on `moda-interact-admin` branch `task/ARCH-047-ADMIN-004` (cumulative implementation patch revisions 1–5, not five task claims):
+
+- `package.json`, `package-lock.json` — dedicated validation scripts and Shared dependency alignment to 2.5.0.
+- `scripts/test-arch047-admin-translations-esm.mjs` and `scripts/test-arch047-admin-translations-postgres.mjs` — isolated ESM test execution, test deployment environment, Prisma generation and disposable PostgreSQL harness.
+- `src/app/actions/whatsapp-template-translations.ts` and `src/app/(protected)/system-controls/whatsapp-templates/[definitionId]/translations/page.tsx` — protected translation workflow entrypoints.
+- `src/components/admin/whatsapp-templates/authoring/template-saved-detail.tsx` — Translations link from immutable saved-template detail.
+- `src/components/admin/whatsapp-templates/translations/` — workspace, request controls, progress summary, per-language status list, error notice and polling controller.
+- `src/lib/admin/whatsapp-templates/translations/` — locale contract, keyed source extraction, protected-marker snapshots, progress projection, service and transaction-safe persistence.
+- `tests/unit/arch047-template-translations.test.ts`, `tests/unit/arch047-template-translation-components.test.tsx`, `tests/unit/helpers/commerce-model-policy-module-harness.mjs` and `tests/integration/arch047-template-translations.postgres.test.ts` — focused behaviour, direct action-auth, UI and database checks.
+
+This parent-worktree patch changes only `docs/decisions/admin/ARCH-047/ADMIN-004-manage-whatsapp-template-translation-requests.md`; it does not update `_index.md`, other tasks or any Background repository.
 
 ### Work Completed
 
-None.
+- Implemented deterministic keyed extraction of translatable Meta header/body/footer/button text and internal wrapper header/footer/conditional text. Excluded URL/metadata fields and the structural wrapper `response.body` slot.
+- Preserved per-occurrence opaque placeholder mappings for all eight `shopBrand.*` semantic keys, including repeated values; Meta footer restrictions remain enforced by the English AST authoring contract.
+- Implemented explicit Generate with a committed-English/source-hash gate, configured translation-model identity, transactional Run creation and exactly 19 target Items. The database is the durable asynchronous handoff to Background; Admin does not invoke a translation provider or Background worker synchronously.
+- Implemented a PostgreSQL transaction-scoped advisory lock and replay/deduplication behaviour, audit recording, retry of eligible failed/pending work, persisted progress states and SUPER_ADMIN service enforcement.
+- Added a dedicated protected Translations route and modular React UI with English plus 19 targets, bounded polling, failure display and duplicate-request prevention.
+- Added direct Server Action authorization coverage for translation reads, Generate and Retry; non-SUPER_ADMIN requests are rejected before service calls. Extended the existing action test harness with an explicit workspace-root option for the bundled ESM test runner.
+- Corrected test-runtime Shared ESM exports, missing test deployment environment/Prisma generation, and PostgreSQL void-result deserialization (using Prisma `$executeRaw` for `pg_advisory_xact_lock`). The final fix changes only the translation repository and its unit mock.
 
 ### Validation Results
 
-Not run.
+Validation was rerun in the canonical implementation worktree on 25 October 2026:
+
+- `npm run test:arch047-admin-translations:unit` — **14 passed / 0 failed**, including locale mapping, immutable source hash, repeated ShopBrand markers, wrapper exclusions, concurrent Generate/replay, retry preservation, progress display, service-level SUPER_ADMIN rejection and direct Server Action auth for Read/Generate/Retry.
+- `npm run test:arch047-admin-translations:postgres` — **2 passed / 0 failed** against disposable PostgreSQL after migrations and Prisma Client generation. Verified one Run plus 19 Items under concurrent requests, idempotent retry preserving completed/processing locales, and no premature Run/audit before committed English.
+- `npx tsc --noEmit -p tsconfig.json` — **PASS** with no TypeScript diagnostics.
+- Scoped `npx eslint` on production route/action/component/domain files — **PASS, 0 errors and 0 warnings**. Including the focused test files emits three repository-configured ignored-file warnings; no lint errors.
+- `npm run build` — **PASS**; Next.js production build and TypeScript completed. Existing BullMQ dynamic-import and optional `@valkey/valkey-glide` warnings remain.
+- `git diff --check origin/main...HEAD` — **PASS**; implementation task worktree remains clean.
+- Implementation commits `918eb0bd3ca03f35de805bb2cd2877b697b0c4ea` and `2c4f156` are pushed to `origin/task/ARCH-047-ADMIN-004`; local HEAD matches remote.
+- Route and action source guards were inspected: page requires platform-admin authentication and SUPER_ADMIN; all Server Actions require the corresponding platform-admin read/mutation boundary and SUPER_ADMIN, with a second service-level role check. Unit tests exercise both the action boundary and service-level denial.
 
 ### Deviations
 
-None.
+Task-scoped validation infrastructure was added to accommodate Shared 2.5.0 ESM-only exports and disposable PostgreSQL tests. The installed Shared dependency and lockfile were aligned, and a focused ESM runner was introduced. The PostgreSQL lock call was corrected from `$queryRaw` to `$executeRaw` because the advisory-lock function returns `void`. No production translation/provider logic was moved to Background and no new queue/schema contract was introduced.
 
 ### Assumptions
 
-The consolidated `ARCH-047-DATABASE-001` Attempt 7 model contract is the intended schema; inspect generated Prisma Client and actual accepted database implementation when this task becomes executable. Where the proposed JSONB envelopes are not yet implemented, fixture-based tests use the explicitly documented shape.
+The accepted `ARCH-047-DATABASE-001` Prisma persistence contract is the source of truth. The saved English locale is immutable and translation work becomes eligible only after its commit. Background owns Batch processing/translated output delivery; Admin prepares persisted keyed work and displays state. Runtime merchant `ShopBrand` values are never substituted into the Admin translation source snapshot.
 
 ### Unresolved Issues
 
-None at definition time. Return any missing persistence capability, provider-account configuration or cross-repository interface problem to `moda_architect` rather than silently changing DB/Background/Messaging ownership.
+- Worktree synchronization evidence is partial: current canonical worktree paths, branch/remote parity and clean implementation status were verified during reconciliation; the original launcher packet and recursive submodule materialisation evidence were not retained in the supplied report.
+- No implementation gap was found in the reviewed task scope. Direct downstream search found no task declaring `ARCH-047-ADMIN-004` in `depends_on`; no dependent task status required reconciliation.
 
 ### Architectural Concerns
 
-None at definition time.
+None identified within ADMIN-004's ownership. Translation generation, provider Batch correlation and reconstruction/compilation remain with their separately owned ARCH-047 tasks. Do not treat Admin's persisted request as proof of Background execution or final locale publication.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-ADMIN-004` for this ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_admin`, repository, coordinator, dependencies, task scope and acceptance criteria.
+- Claim: Attempt 1 was claimed by `developer` after canonical worktree synchronization and dependency verification.
 
 
 ## Architect Review
@@ -189,4 +222,19 @@ Not assessed.
 
 ### Follow-up
 
-None.
+The developer explicitly completed the task after the passing self-review. The original worktree synchronization and recursive submodule evidence limitation remains recorded; no sibling task was started.
+
+## Developer Self-Review - Passed
+
+- Attempt: 1; reviewed 25 October 2026.
+- Result: Passing; all task Work Items and Acceptance Criteria are marked complete. Focused unit/UI and disposable PostgreSQL suites, TypeScript, production build, production-source lint and implementation diff checks pass.
+- Authorization: platform-admin and SUPER_ADMIN guards are present at the protected route and Server Action boundaries. Direct action tests verify Read/Generate/Retry reject non-SUPER_ADMIN principals before service calls; service-level role enforcement is also tested.
+- Implementation branch: `task/ARCH-047-ADMIN-004`, commit `2c4f156` (following `918eb0b`), pushed and clean.
+- Lifecycle before explicit completion: `status: review`, `attempt: 1`, `executor: null`, `claimed_at: null`.
+
+## Developer Completion Decision
+
+- Date: 25 October 2026.
+- Decision: The developer explicitly completed Attempt 1 after the durable passing self-review. All Work Items and Acceptance Criteria are checked complete; implementation commit `2c4f1562153baaaa32ef288a1002bcd1a020e851` is published.
+- State: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. No merge to either repository's `main` branch was performed.
+- Dependency frontier: no task currently declares `ARCH-047-ADMIN-004` in `depends_on`; no dependent task status required reconciliation.
