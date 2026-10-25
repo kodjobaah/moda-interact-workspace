@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: blocked
+status: ready
 priority: 25
 executor: null
 claimed_at: null
@@ -31,7 +31,7 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-This task was originally defined from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It was materialised and claimed for developer execution in canonical task worktrees after verifying DB001 completion and synchronising with the workspace mainline. Attempt 1 implemented the module and is now blocked at the agreed Messaging queue-contract boundary; see the Completion Report. No new ARCH-047 Shared package is assumed. Preserve the cross-repository stop condition until the architect decides whether to narrow this task or separately define queue integration.
+This task was originally defined from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It was materialised and claimed for developer execution in canonical task worktrees after verifying DB001 completion and synchronising with the workspace mainline. Attempt 1 implemented and pushed the bounded Meta submission/reconciliation module, but did not wire a production queue consumer or a due-registration caller. The architect's 25 October Attempt 1 review now fixes the **exact** `whatsapp-events` job contract, caller, and correction tests below; this is the same task returned to `ready` for developer Attempt 2 with `executor`/`claimed_at` cleared. Preserve the Attempt 1 Completion Report as historical evidence. Messaging's producer remains separately owned: BG003 may implement/test its consumer against the frozen contract fixture without waiting for live producer deployment. No new ARCH-047 Shared AST package is assumed.
 
 ## Objective
 
@@ -43,7 +43,9 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Scope
 
-- Implement `src/services/meta-template-management/` with focused submission orchestrator, server-only Meta Graph API adapter, reconciliation reader, webhook-status consumer, Prisma repository and module-local ports. Wire `whatsapp-events` worker dispatch through a thin job-name handler when the Messaging producer contract is available.
+- Retain and complete the already-implemented `src/services/meta-template-management/` module (submission orchestrator, server-only Meta Graph API adapter, reconciliation reader, provider observation handler, Prisma repository and module-local ports). Amend rather than replace its existing Attempt 1 source and tests.
+- Wire a **separate** `meta-template-status-update` handler into the existing `whatsapp-events` consumer in `src/workers/whatsapp.worker.ts`. Implement its bounded, strictly validated decoder; it invokes the existing module port, never the inbound-message parser.
+- Wire the existing `processDueRegistrations(limit)` port to the production messaging-worker entrypoint (`src/entrypoints/messaging.ts`) using a bounded timer and the DB CAS/claim already owned by the module. No new public route, queue, deployment or database table.
 - Consume frozen `WhatsAppTemplateMetaRegistration` rows and append `WhatsAppTemplateMetaEvent` receipts. Background maintains current `providerStatus`, provider ID and drift observations, **not** authoring ASTs, translation content, shop assignments or publication permissions.
 - Reuse existing sender/WABA credential resolution, Meta API error/retry conventions, BullMQ worker orchestration and structured logging.
 
@@ -54,25 +56,79 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Requirements
 
-**R1 — Create-only provider operation.** The registration already contains an Admin-compiled `componentsSnapshot`, `parameterBindingsSnapshot`, unique new provider template name, language, WABA and `submittedContentHash`. Check operator-confirmed submission state and snapshot/digest association transactionally, but **do not compile or author** Meta components. Use Meta template **create** API only and record bounded request/response evidence; never call Meta edit-existing-template API. Protect credential material.
+**R1 — Exact create-only provider operation.** Admin-006 writes immutable, confirmed `WhatsAppTemplateMetaRegistration` rows with `submissionState = READY_TO_SUBMIT`; a registration is a *request for Background execution*, not proof that Meta accepted it. On claim, use its stored fields to send exactly:
 
-**R2 — Uncertain outcomes and retries.** Mark intent before external I/O; after timeouts/unknown responses reconcile by configured WABA + template name + language/provider ID before retry. When Meta has accepted the request, persist that identity without a duplicate POST. Deduplicate attempts/events through stable `eventIdentity` and application CAS. Never perform Meta network I/O inside a SQL transaction.
+```http
+POST /{wabaId}/message_templates
+Authorization: Bearer <server-only configured Meta credential>
+Content-Type: application/json
+```
 
-**R3 — Queue boundary.** Messaging authenticates webhook ingress and publishes a bounded Meta `message_template_status_update` observation onto the **existing** `whatsapp-events` BullMQ queue. The Background worker distinguishes its job name from `message-received`, `message-status` and `process-conversation-turn`; no attempt to feed status events through `NormalizedWhatsAppInboundMessageSchema`. Reuse the provider-defined fields and established queue envelope where possible. The detailed wire shape must be agreed with `ARCH-047-MESSAGING-001` and documented once; if existing contracts cannot represent it safely, report that limited cross-repository dependency to the architect **before implementing competing local schemas**.
+```json
+{
+  "name": "<registration.providerTemplateName>",
+  "language": "<registration.providerLanguageCode>",
+  "category": "<registration.category>",
+  "components": "<registration.componentsSnapshot: JSON array, unchanged>"
+}
+```
 
-**R4 — Reconciliation and drift.** Match only registrations that originate from Moda definitions. Persist provider event history with optional nullable registrationId for unknown external notifications; **never create a definition, locale, registration or assignment from those notifications**. Handle duplicates, out-of-order/stale statuses and missed webhooks through current Meta reads for the known identity. Store `lastObservedContentHash`, `lastObservedCategory`, `lastReconciledAt`, `driftDetectedAt` using the canonical frozen submission comparison; a status webhook is not proof that content still matches.
+`parameterBindingsSnapshot`, `submittedContentHash`, local definition/locale IDs and shop data are **never** provider request fields. Use the centrally configured `messaging.sender` WABA/token and require the stored WABA to match. Parse a successful create response's provider `id` as a **string**, record `SUBMITTED` and the provider template ID, but do not treat request success or a returned status as administrator publication. Store bounded provider outcome evidence. Reuse current module code; never use Meta's edit-existing-template endpoint or adopt an unrelated preexisting `(WABA,name,language)` match. For an image-header registration, pass only the frozen Admin-authorised sample/media handle; do not fetch merchant-original images or recompile the AST.
+
+**R2 — Durable claiming, unknown outcomes and retries.** `processDueRegistrations(25)` is the module-owned entrypoint for registrations due to be created or reconciled. Run it from the deployed `moda-messaging-worker` process at **60-second intervals**, with a bounded initial jitter (0–10 seconds), no overlapping cycle in one process, and a shutdown cleanup. Use the existing `WhatsAppTemplateMetaRegistration` `submissionState`/`nextRetryAt` and conditional-UPDATE (CAS) fields to arbitrate claims across replicas; no new queue/table/lease enum is authorised just to schedule this small control-plane workload. An empty scan must be cheap. On exceptions, use the shared structured logger and propagate/report the failure; the next cycle remains scheduled. Include a production-startup integration test proving that registrations do not stay at `READY_TO_SUBMIT` indefinitely.
+
+Persist create intent before any POST and a **POST-intent receipt** immediately before network dispatch. No network call inside a Prisma transaction. After a timeout, crash, 429/5xx or lost response, keep an **uncertain state** and perform Meta GET by the exact WABA/name/language (and provider ID when known) before any subsequent create attempt. A provider name collision *before* Moda's durable POST intent is not proof of Moda authorship and must be blocked, not adopted. A confirmed provider creation must never be POSTed twice, even after job/worker replay. Reconciliation must handle provider pagination or return explicit `UNCONFIRMED` on an incomplete listing; it must never interpret an incomplete response as absence. Distinguish definitive validation failures from transient/unknown outcomes, apply bounded backoff, and keep registered state and event evidence transactional via the existing Prisma repository. Do not turn reconciliation or later Meta approval into a shop activation.
+
+**R3 — Frozen Messaging → BullMQ → Background status contract (v1).** This task adopts the following precise architecture-owned boundary so the Background consumer can be implemented and tested independently of the separately owned Messaging producer. Do not ask an implementer to invent another payload. The producing task `ARCH-047-MESSAGING-001` must use this same payload and a shared compatibility fixture when it is defined/materialised; do not independently fork its semantics or create a general Shared AST package.
+
+- **Queue:** existing `whatsapp-events`; **job name:** `meta-template-status-update` (exact, case-sensitive). Do **not** reuse `message-status`, `message-received` or `process-conversation-turn`.
+- **Input:** Meta's authenticated `whatsapp_business_account.entry[].changes[]` with `field = message_template_status_update`. Messaging validates the signature and converts **each matching change** into exactly one bounded queue job. The `entry.id` is `wabaId`; the `value` fields map `message_template_id → providerTemplateId`, `message_template_name → providerTemplateName`, `message_template_language → providerLanguageCode`, `event → providerStatus` and `reason → reasonCode`. Never infer WABA from a phone-number ID. Messaging must not write PostgreSQL. Other Meta event types follow their preexisting ingress paths.
+- **Payload:** the following JSON shape, with no AST, full webhook, customer content, token or authorisation header. `schemaVersion` is the number `1`; `providerTemplateId` is a decimal **string** or `null` when not supplied; `reasonCode` is a bounded string or `null`; `receivedAt` is the time Messaging authenticated/received the observation, **not** an asserted Meta event time.
+
+```json
+{
+  "schemaVersion": 1,
+  "eventIdentity": "meta-template-status:v1:<64 lowercase hex SHA-256>",
+  "wabaId": "123456789",
+  "providerTemplateId": "987654321",
+  "providerTemplateName": "checkout_recovery_initial_v2",
+  "providerLanguageCode": "en_GB",
+  "providerStatus": "APPROVED",
+  "reasonCode": "NONE",
+  "receivedAt": "2026-10-25T19:00:00.000Z"
+}
+```
+
+- **Identity and retries:** when Meta supplies no stable event ID, calculate `eventIdentity` as `meta-template-status:v1:` plus SHA-256 of deterministic canonical JSON over **only** `(wabaId, providerTemplateId, providerTemplateName, providerLanguageCode, providerStatus, reasonCode)` after normalisation. Exclude `receivedAt` and the BullMQ attempt count. Identical observations then deduplicate on replay; because Meta may omit a unique event occurrence ID, this key represents an *observation identity*, not proof that separate identical real-world transitions never occurred. A linked duplicate still triggers a fresh current-state reconciliation, so effective provider state stays correct. For `jobId`, use `meta-template-status-v1-<same SHA-256>` (no colon); database `eventIdentity` remains the durable dedupe key.
+- **Canonicalisation test vector:** build the event-identity input as an object whose keys are sorted lexicographically, serialize as compact UTF-8 JSON without whitespace and hash with SHA-256. Preserve Meta's exact validated name/language/status strings; convert a safe provider numeric ID to its base-10 string; use `null` (not a blank string) when optional ID/reason is absent. Never hash `receivedAt`. For the example payload above, the exact canonical bytes are:
+
+```json
+{"providerLanguageCode":"en_GB","providerStatus":"APPROVED","providerTemplateId":"987654321","providerTemplateName":"checkout_recovery_initial_v2","reasonCode":"NONE","wabaId":"123456789"}
+```
+
+The resulting lowercase hex SHA-256 is `022da3c966c7197c8e225393be7963e771f032b148739e6f9156ee446c565ef4`. The queue `eventIdentity` and colon-free `jobId` must embed this digest; add a deterministic producer/consumer compatibility test. If a provider ID arrives as an unsafe JavaScript number that cannot be represented exactly, reject that delivery for reconciliation rather than persisting a rounded identity.
+- **Bounds and decoding:** reject any job with the wrong name, unknown `schemaVersion`, missing WABA/name/language/status, malformed ID, invalid ISO-8601 `receivedAt`, non-string required value, overlong metadata or an unexpected payload field. Limit the encoded job to **4 KiB**; WABA/ID decimal strings ≤32 chars, name ≤255 chars, language ≤16 chars, status ≤32 chars, reason ≤128 chars. Unknown-but-well-formed provider status labels must be recorded and treated as unavailable (`UNKNOWN`), not guessed as `APPROVED`. In the worker, convert `receivedAt` to the module port's existing `occurredAt` only at the adapter boundary; do not use it to order status transitions.
+- **Publication and error policy:** Messaging acknowledges the provider only **after** durable BullMQ acceptance; enqueue failure is retryable. The producer requests **5 attempts with exponential backoff starting at 5 seconds**. Background verifies the v1 envelope before invoking `metaTemplateManagementService.processTemplateStatusObservation(...)`. Malformed/unknown jobs fail visibly through the existing worker failure path (no silent successful acknowledgement), with bounded logs and no sensitive payload echo. Successful processing writes event evidence and reconciles the linked registration by Meta GET. The worker must continue to support the three existing WhatsApp job names unchanged.
+- **Delivery order:** Meta webhook values alone do not update an active shop assignment. Background loads the *current* provider state using Meta GET for the known registration; stale/duplicate `APPROVED` notifications cannot undo a later `PAUSED`/`DISABLED` or clear an Admin-disabled variant. If the provider is unavailable, keep current eligibility conservative and retry/reconcile later.
+
+The above wire contract is the architect-approved **BG003 consumer fixture**. Messaging's separate implementation must reproduce it exactly. A dedicated Shared runtime package may be proposed only if actual producer/consumer validation demonstrates this boundary cannot be maintained safely without one; do not block this task merely to create a speculative AST/translation Shared package.
+
+**R4 — Reconciliation and drift.** The v1 handler matches only registrations that originate from Moda definitions. Persist provider event history with optional nullable registrationId for unknown external notifications; **never create a definition, locale, registration or assignment from those notifications**. Handle duplicates, out-of-order/stale statuses and missed webhooks through current Meta reads for the known identity. Store `lastObservedContentHash`, `lastObservedCategory`, `lastReconciledAt`, `driftDetectedAt` using the canonical frozen submission comparison; a status webhook is not proof that content still matches.
 
 **R5 — Runtime safety.** Provider `APPROVED`, `PAUSED`, `DISABLED`, `REJECTED` and drift observations update provider state only; neither activate a shop variant nor clear STOP/consent suppression. A later APPROVED event cannot silently enable an assignment previously disabled by Admin. Provide explicit failure/unknown status outputs for consuming Background selector. Reconciliation may use Meta GET, ordinary WhatsApp sends may **not**.
 
 **R5a — Admin-authored image-header sample.** If the frozen `componentsSnapshot` describes a true Meta `IMAGE` header (not a body text token containing `shopBrand.logoUrl`), verify it has the required Meta-compatible **submission sample/media handle** and supported component structure supplied through the authorised Admin/media preparation path. This module may use its server-only Meta adapter for the required provider sample-media submission operation, but must not fetch original ShopBrand URLs, resize images, upload to R2, invent sample handles, change the template category, or silently mutate an immutable compiled snapshot. Return a typed submission-blocked result when a valid sample/handle is unavailable. The merchant's READY runtime R2 image is a separate value resolved at send time by BG001, not the one sample permanently sent to every shop.
 
-**R6 — Reliability.** Bounded retry/backoff, error taxonomy and observability, no secrets or full raw payloads in logs. Reuse existing queues/workers rather than deploying an unrelated ingress service.
+**R6 — Reliability and owned production wiring.** Keep `MetaTemplateManagementService` modular: current provider adapter/repository/status processor remain owned by `src/services/meta-template-management/`, the queue decoder/dispatch belongs in `src/workers/whatsapp.worker.ts`, and the due-registration timer belongs in `src/entrypoints/messaging.ts` or a small imported module controlled by that entrypoint. Use shared structured logging, existing BullMQ instrumentation and bounded outcomes, without a second logger, new queue, new database table or a catch-all 300+ line service. The timer is control-plane work; WhatsApp customer-message processing and final-send admission must not be delayed by Meta API calls. Provider/outbound admission tests must demonstrate no regression.
 
 ## Work Items
 
-- [ ] Implement `src/services/meta-template-management/` with focused submission orchestrator, server-only Meta Graph API adapter, reconciliation reader, webhook-status consumer, Prisma repository and module-local ports. Wire `whatsapp-events` worker dispatch through a thin job-name handler when the Messaging producer contract is available.
+- [ ] Preserve the Attempt 1 `src/services/meta-template-management/` implementation; address any exact R1/R2 contract mismatches without unrelated refactoring (notably production due-registration scheduling and incomplete provider pagination).
+- [ ] Add a **strict** v1 `meta-template-status-update` decoder and thin dispatch in the existing `whatsapp-events` worker, mapping `receivedAt → occurredAt` at its local port; do not alter inbound-message parsing.
+- [ ] Add bounded `processDueRegistrations(25)` production polling from the messaging-worker entrypoint (60-second cadence, jitter, no process-local overlap, clean shutdown, DB CAS-safe across replicas).
+- [ ] Record the exact queue JSON fixture and its deterministic event/job-identity generation in module tests so the future Messaging producer can reuse the same test vector; keep the contract in this task as the source for `ARCH-047-MESSAGING-001`.
 - [x] Consume frozen `WhatsAppTemplateMetaRegistration` rows and append `WhatsAppTemplateMetaEvent` receipts. Background maintains current `providerStatus`, provider ID and drift observations, **not** authoring ASTs, translation content, shop assignments or publication permissions.
-- [ ] Reuse existing sender/WABA credential resolution, Meta API error/retry conventions, BullMQ worker orchestration and structured logging.
+- [ ] Reuse existing sender/WABA credential resolution, Meta API error/retry conventions, BullMQ worker orchestration and structured logging; check that the present adapter maps POST/GET fields and template IDs exactly as in R1, and does not mistake incomplete paginated reads for absence.
 - [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
 - [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
@@ -80,14 +136,14 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **Consumes DB001** `WhatsAppTemplateMetaRegistration`, `WhatsAppTemplateMetaEvent` and immutable compiled JSON fields. **Produces/consumes** Meta's WABA template-management API via server-only client; authenticated input from the agreed Messaging producer via `whatsapp-events`. Only this module interprets provider status and writes Meta registration current-state projections.
 
-**Ports:** `submitPreparedRegistration(registrationId)`, `processTemplateStatusObservation(job)`, `reconcileRegistration(registrationId)`. Use locally documented typed inputs at module boundary, not a duplicate authoring AST. Do not introduce a new Shared publication dependency.
+**Ports:** `submitPreparedRegistration(registrationId)`, `processDueRegistrations(limit = 25)`, `processTemplateStatusObservation(observation)`, `reconcileRegistration(registrationId)`. The first three already exist in the Attempt 1 service; wire them rather than replace them. `processTemplateStatusObservation` receives the local `AuthenticatedTemplateObservation` after **strict parsing of the R3 BullMQ v1 payload**, not raw Meta webhooks, a duplicate authoring AST or the existing inbound-message schema. The production status event job name is exactly `meta-template-status-update`. Confirm Meta Graph POST/GET request and response mappings from R1 and R2. No Shared package publication is required solely for AST transport; the producer/consumer fixture contract is explicitly specified in R3.
 
 ## Dependencies
 
 - `ARCH-047-DATABASE-001`
 
 
-**Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 was confirmed `complete` for Attempt 1. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
+**Ready for developer Attempt 2.** The earlier cross-repository **wire-format uncertainty** that blocked Attempt 1 is resolved by the architect-approved R3 contract in this task. `ARCH-047-DATABASE-001` is its only formal prerequisite and was recorded `complete` when Attempt 1 was claimed; recheck its live canonical status before reclaiming. The Messaging **producer implementation** remains in a separately owned task and is **not** to be implemented here. Consumer tests may run against the frozen fixture without a deployed producer; the integrated webhook path is certified later by system tests.
 
 ## Enables
 
@@ -95,20 +151,20 @@ None in this nine-task Background set.
 
 ## Acceptance Criteria
 
-- [ ] Unit tests show Meta POST receives the stored compiled payload **unchanged** and refuses any Meta edit endpoint, external template adoption or unpublished intent.
+- [ ] Inspect/re-run tests proving `POST /{WABA}/message_templates` sends only name, language, category and the exact saved `componentsSnapshot`; does not send internal binding/hash data or call Meta edit-existing-template APIs. Retain old evidence where already sufficient; add focused tests only for a demonstrated gap.
 - [x] Image-header submissions use a valid authorised sample/media handle; a missing, invalid or external-original-URL sample is blocked before provider creation. Text-only templates continue unchanged. Submission never performs ShopBrand ingestion/R2 preprocessing.
-- [ ] Duplicate submission, provider timeout + GET reconciliation, provider rejection, rate limiting and WABA mismatch tests; no double POST after confirmed creation.
-- [ ] Authenticated queue observation tests, wrong job name/version, duplicate and reordered APPROVED/PAUSED/DISABLED, unmatched external template and provider-content drift.
+- [ ] Provider tests exercise duplicate create intent, uncertain timeout, 429/5xx, definitive rejection, WABA mismatch and an incomplete/paginated Meta template lookup. Never double POST after a known or uncertain provider create; no unauthorized external adoption.
+- [ ] Strict queue tests prove exact `meta-template-status-update` name and v1 payload, deterministic hash identity/job ID, multiple changes fan-out in the producer fixture, rejection of wrong name/version/unknown fields/oversized payload, and that existing `message-received`, `message-status`, `process-conversation-turn` jobs remain unaffected. Duplicate/reordered APPROVED/PAUSED/DISABLED, unsupported status, unmatched external identity and drift result in the expected bounded database evidence and provider reconciliation; provider GET failures do not falsely activate a template.
 - [x] PostgreSQL integration exercises unique event identities, registration status transitions and append-only event evidence; no automatic shop activation.
-- [ ] Existing inbound/message-status queue processing and final-send admission regressions pass; focused unit/build/typecheck and `git diff --check`. End-to-end Meta webhook receipt belongs to Messaging/System Test.
+- [ ] A test of the actual messaging-worker startup proves due `READY_TO_SUBMIT` registrations are scheduled and processed (or safely retried) without a manual service method call. Multi-replica claim CAS and clean timer shutdown are exercised. Existing inbound/message-status queue and final-send admission regressions pass; focused unit/build/typecheck and `git diff --check` are recorded. Live Meta webhook receipt remains with Messaging/System Test.
 - [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
 - [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
 ## Validation
 
-- [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
+- [ ] Run focused BG003 unit tests and disposable PostgreSQL integration; test the **actual** BullMQ worker's status-job dispatch using a fixture and its existing unknown-job rejection. Record exact commands/results; preserve currently passing Attempt 1 suites.
 - [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
+- [ ] Run the existing `whatsapp.worker`, `whatsapp-provider-status`, outbound/final-send admission and lifecycle regression suites affected by the new branch, plus `git diff --check`; record actual commands, pass/fail results, task-isolated restart/synchronisation and mirrored parent/implementation branch evidence.
 - [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
@@ -117,11 +173,11 @@ After finishing Work Items, Acceptance Criteria and Validation, fill the Complet
 
 ## Implementation Notes
 
-Meta template webhooks are WABA events and must reach the configured Meta app callback. `ARCH-047-MESSAGING-001` will own ingress enablement and publication; Background must **not** take over its callback route. Narrowly document queue job correlation and producer/consumer expectations without creating a second general WhatsApp event transport.
+Meta template status webhooks are WABA events and must reach the configured Meta app callback. **The exact producer/consumer contract is frozen in R3**; the separate `ARCH-047-MESSAGING-001` task owns Meta signature verification, app subscription, per-change normalisation and successful BullMQ publication. BG003 owns only the queue consumer/decoder, provider reconciliation and database projection. BG003 may complete its bounded implementation with producer-format fixtures; it must not claim end-to-end webhook certification, which belongs to system testing. Do not create another general WhatsApp event transport.
 
 Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md` and the deterministic `/moda-task` launcher packet. Use launcher-resolved dedicated parent and implementation worktrees, both on `task/ARCH-047-BACKGROUND-003`; synchronise from canonical roots, not a prior task worktree. Preserve exact source semantics and existing test expectations; use the published `@modainteract/moda-interact-shared/logging` for generic structured logs, not a second logger. Prefer small coordinator/repository/pure-helper files over 300+ line catch-all services.
 
-**Architectural concern:** If queue transport requires a new, genuinely cross-repository canonical contract unavailable in the installed Shared version, stop that slice and return the dependency gap to `moda_architect` instead of inventing a local duplicate.
+**Architectural resolution:** This amendment closes the previously unagreed wire format through one architecture-owned R3 contract and fixture. Do not invent an alternate Messaging format. If actual producer work discovers an incompatible installed Shared/queue transport interface that cannot carry the bounded v1 job, report that concrete compatibility gap to `moda_architect` rather than adding an undocumented adapter.
 
 ## Completion Report
 
@@ -200,27 +256,37 @@ The missing Messaging queue contract is a cross-repository interface gap. No new
 
 ### Review Status
 
-Pending — implementation not submitted.
+Changes Requested — Attempt 1 contract/call-site correction; task returned to `ready` for developer Attempt 2. This is **not** acceptance of the implementation.
 
 ### Review Notes
 
-Not reviewed.
+The supplied task worktree contains developer Attempt 1 implementation commit `568eed8` and its Completion Report, with a module-local Meta adapter, repository, service, contracts and focused tests. Attempt 1 deliberately stopped short of the production `whatsapp-events` queue decoder/handler because the Messaging producer wire format was unspecified; it also records no production due-registration startup caller and no verified outbound-admission regression. This amendment fixes the producer/consumer v1 envelope and gives an exact in-repository correction scope while preserving earlier completed module behaviour. Developer reclaims the **same** task as Attempt 2; do not start a new BG003 task or overwrite the historical Completion Report.
 
 ### Reviewed Files
 
-None yet.
+- `docs/decisions/background/ARCH-047/BACKGROUND-003-manage-meta-template-submission-and-status.md` (current task and Attempt 1 evidence)
+- `src/services/meta-template-management/{contracts,service,repository,meta-graph.adapter,index}.ts` (supplied Background snapshot)
+- `src/workers/whatsapp.worker.ts` and `src/entrypoints/messaging.ts` (existing queue consumer and production startup)
+- `docs/decisions/admin/ARCH-047/ADMIN-006-submit-and-monitor-meta-template-approvals.md` (completed DB-intent producer)
+- `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md` (authoritative boundaries)
 
 ### Validation Reviewed
 
-None yet.
+Attempt 1 Completion Report records 69/69 passing focused unit/status-worker tests, one disposable PostgreSQL integration test and a passing build/lint, but these commands were **not rerun** during this task-definition amendment. Neither BullMQ template-status dispatch nor the final-send regression was run in Attempt 1; both remain mandatory for Attempt 2.
 
 ### Architecture Conformance
 
-To be assessed against the reconciled ARCH-047 parent architecture and current repository code.
+The module-local create-only, no-AST, no-external-adoption approach matches ARCH-047. The **execution integration is incomplete**: no exact queue v1 decoder/worker handler, no durable-request production polling caller and no final-admission regression evidence. The R3 contract has been narrowed to an architecture-owned, bounded existing-BullMQ job without introducing a new Shared authoring package or modifying Messaging's ownership.
 
 ### Follow-up
 
-Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+**Attempt 2 correction contract (required source and tests):**
+
+1. Add the R3 v1 strict decoder and `meta-template-status-update` `switch` branch plus telemetry job-name registration in `src/workers/whatsapp.worker.ts`, delegating only to the existing BG003 observation service. Tests must reject wrong job name/schema version and preserve all prior WhatsApp jobs.
+2. Connect `processDueRegistrations(25)` to `src/entrypoints/messaging.ts` or a dedicated imported startup helper on a bounded, nonoverlapping 60-second cadence with safe shutdown and multi-process DB CAS protection; include production-startup tests.
+3. Compare the existing Meta adapter/Prisma service to R1–R2 and correct **only** demonstrated request, state, retry, pagination or snapshot-hash mismatches; do not churn already-conformant module code merely to force a new commit.
+4. Rerun focused unit, DB integration, WhatsApp-worker and final outbound-admission regression tests; record any baseline conditions, new source changes, explicit result counts, and the canonical developer worktree/branch synchronisation evidence.
+5. Preserve Meta-authored-only provenance, shop non-activation, STOP/consent and no checkout mutation. Do not implement the separate Messaging producer or claim the system test. On completion set task `review`, update the developer Completion Report with Attempt 2 evidence and return for architect/developer review through the configured completion mode.
 
 ## Execution Ownership Amendment
 
