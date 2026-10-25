@@ -408,7 +408,7 @@ pending.
 - Recursive submodule sync and update passed; `database` was initialized at the exact gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
 - Dependency gate passed: `ARCH-045-BACKGROUND-002` was `complete`.
 - Shared/default workspace and implementation checkouts were not used for task implementation; no other task worktree was reused.
-- Final implementation branch head `1110bfcb4e5a5b8307913f52ad1077ede56b27ad` is pushed and clean. This parent report is being committed and pushed separately; neither task branch is merged to `main`.
+- Final implementation branch head `1110bfcb4e5a5b8307913f52ad1077ede56b27ad` is pushed and clean. This parent report is committed and pushed separately; neither task branch is merged to `main`.
 
 ### Remaining Deviation
 
