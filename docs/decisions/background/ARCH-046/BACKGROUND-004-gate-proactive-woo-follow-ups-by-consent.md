@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 38
 executor: developer
 claimed_at: 2026-10-25T16:39:00Z
@@ -113,11 +113,11 @@ An initial-send reentry is still sequence **1** and follows the same final fence
 
 ## Work Items
 
-- [ ] Inspect accepted BG004 service and adapters, BG002 observed-order/coordination services, exact-recipient consent reader, STOP lock writer, existing outbound SQL permit and provider idempotency/billing capabilities.
-- [ ] Implement and inject one concrete `WooGuardedInitialSender`, using existing admission/attempt/credit primitives without copying the entire outbound sender.
-- [ ] Enforce the R2 matrix with correct durable permit, Meta request outside SQL and explicit compensation/uncertain-outcome handling.
+- [x] Inspect accepted BG004 service and adapters, BG002 observed-order/coordination services, exact-recipient consent reader, STOP lock writer, existing outbound SQL permit and provider idempotency/billing capabilities.
+- [x] Implement and inject one concrete `WooGuardedInitialSender`, using existing admission/attempt/credit primitives without copying the entire outbound sender.
+- [x] Enforce the R2 matrix with correct durable permit, Meta request outside SQL and explicit compensation/uncertain-outcome handling.
 - [ ] Add focused injected service tests, PostgreSQL/Redis concurrency/fault-injection tests and STOP/terminal/Marketing-category regression cases; validate read-after-commit existing admissions.
-- [ ] Record evidence for lock ordering, credential/tenant scope, absence of DB transaction I/O and shared logger/exception propagation.
+- [x] Record evidence for lock ordering, credential/tenant scope, absence of DB transaction I/O and shared logger/exception propagation.
 
 ## Interfaces / Contracts
 
@@ -139,16 +139,16 @@ If a provider-admission schema/contract gap prevents atomic final consent/STOP c
 
 ## Acceptance Criteria
 
-- [ ] A concrete, testable Woo `WooGuardedInitialSender` exists; the existing BG004 outreach service consumes it without a bare generic sender bypass.
-- [ ] Final permit correctly enforces all R2 cases, STOP lock ordering, exact recipient consent, observed terminal outcomes and verified Marketing template. Meta and Redis calls are **outside** the permit transaction.
-- [ ] No duplicate first send or credit on concurrent workers, retries or uncertain provider states; denial releases reversible reservations without permanently consuming sequence 1.
+- [x] A concrete, testable Woo `WooGuardedInitialSender` exists; the existing BG004 outreach service consumes it without a bare generic sender bypass.
+- [x] Final permit correctly enforces all R2 cases, STOP lock ordering, exact recipient consent, observed terminal outcomes and verified Marketing template. Meta and Redis calls are **outside** the permit transaction.
+- [x] No duplicate first send or credit on concurrent workers, retries or uncertain provider states; denial releases reversible reservations without permanently consuming sequence 1.
 - [ ] SHOPIFY/general in-window replies continue to use their existing guards; no Woo sequence-two follow-up is scheduled or authorised.
-- [ ] Shared structured logs are bounded, DB/Redis/provider faults propagate or reconcile and are never silently swallowed.
-- [ ] Default-off Woo send state is preserved until BG005 and terminal system-test acceptance; no assumption that an undelivered Woo event can be detected.
+- [x] Shared structured logs are bounded, DB/Redis/provider faults propagate or reconcile and are never silently swallowed.
+- [x] Default-off Woo send state is preserved until BG005 and terminal system-test acceptance; no assumption that an undelivered Woo event can be detected.
 
 ## Validation
 
-- [ ] Focused typecheck/unit + PostgreSQL permit/lock tests for current consent revisions, STOP/merchant suppression, installation/recipient change, template category and terminal recovery.
+- [x] Focused typecheck/unit + PostgreSQL permit/lock tests for current consent revisions, STOP/merchant suppression, installation/recipient change, template category and terminal recovery.
 - [ ] Two-client concurrent initial-attempt/send, STOP-versus-permit, paid/cancelled-order-versus-send, provider-confirmed/uncertain/failed-retry, billing source attribution and compensation tests.
 - [ ] Existing Shopify/outbound general guard and human/AI in-window STOP regressions; verify no new Woo follow-up path or Redis/HTTP under SQL lock.
 - [ ] Repository-declared relevant build/lint/test scripts, `git diff --check` and Completion Report with actual worktree/branch isolation evidence.
@@ -165,35 +165,79 @@ The earlier BG004 definition required a Woo follow-up engine that ARCH-048 delib
 
 ### Status
 
-In Progress.
+Ready for Review — developer-owned workflow **Attempt 1** (four incremental implementation patch revisions). Implementation committed and pushed; architect acceptance and explicit developer completion are not claimed.
 
 ### Files Changed
 
-Task ownership and Attempt 1 claim recorded in this task file. No implementation files changed.
+**Implementation repository:** `moda-interact-background`, branch `task/ARCH-046-BACKGROUND-004`, commit `0c92e12` (`feat(ARCH-046-BACKGROUND-004): enforce Woo final consent and STOP send fence`), pushed to `origin` on 25 October 2026. The commit contains **10 files, 1,131 insertions and 23 deletions**:
+
+- `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`
+- `src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts`
+- `src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts` (new)
+- `src/services/woocommerce-recovery/woo-initial-send-fence.service.ts` (new)
+- `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`
+- `tests/integration/woo-initial-send-fence.integration.test.ts` (new)
+- `tests/unit/services/woocommerce-recovery/woo-guarded-initial-sender.service.test.ts` (new)
+- `tests/unit/services/woocommerce-recovery/woo-initial-delivery.service.test.ts` (new)
+- `tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts` (new)
+- `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts`
+
+**Parent task branch:** This task definition alone is updated for review submission. No parent architecture, domain `_index.md`, unrelated task, implementation code or submodule gitlink is included in the review-report patch.
 
 ### Work Completed
 
-Developer takeover recorded while preserving `assigned_agent: moda_background`. All four explicit dependencies were rechecked as Complete. The canonical parent and Background implementation worktrees were synchronized with their respective `origin/main`; the implementation worktree and recursive database submodule were prepared and verified.
+- Implemented `WooGuardedInitialSenderService` against the existing `WooGuardedInitialSender` contract and `WooInitialSendFenceService` for final Woo sequence-one provider admission; existing outreach continues to own reservations, billing, compensation and attempt finalisation.
+- Reused the established outbound moderation, persisted `ConversationMessage` admission and provider delivery machinery. Final SQL permit locks Shop first, checks recovery/conversation/attempt identity, exact registered recipient, consent revision, active Woo installation, local STOP/suppression and durable terminal order evidence, and commits the provider dispatch key before the external provider call.
+- Preserved duplicate-admission protection, existing confirmed-send reconciliation and fail-closed behaviour for uncertain provider outcomes. Denied pre-permit sends release reversible credit reservations without permanently consuming sequence one.
+- Reused `@modainteract/moda-interact-shared/logging` for structured, bounded error diagnostics. Technical failures are logged and rethrown; a compensation failure retains the original error rather than being swallowed.
+- Added focused sender, permit, provider-delivery and outreach unit tests and real PostgreSQL tests for concurrent permit contenders, STOP ordering, terminal order evidence, consent/recipient/install changes and provider dispatch persistence.
+- Preserved default-off Woo outbound gating and absence of Woo follow-up scheduling or BG005 worker composition.
 
 ### Validation Results
 
-Canonical launcher route checks confirmed all four dependencies Complete. Parent and implementation worktrees are clean and contain their respective `origin/main`; recursive submodule initialization completed and the database submodule is at gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. No implementation tests were run because this command only prepares and claims the task.
+Evidence from the developer's terminal captures dated 25 October 2026:
+
+| Validation | Result / evidence |
+|---|---|
+| Focused `npm test -- ...` (five unit test files, including the existing outbound delivery suite) | **PASS: 5/5 suites, 89/89 tests**; recorded in `typescript(20261025-170947)` |
+| `npm run test:integration -- tests/integration/woo-initial-send-fence.integration.test.ts` | **PASS: 1/1 suite, 5/5 tests** against PostgreSQL after the fourth incremental patch revision; recorded in `typescript(20261025-172449)` |
+| `npx tsc --noEmit && echo "TypeScript PASS"` | **PASS**, explicit success marker in `typescript(20261025-180507)` |
+| `git diff --check` and `git diff --cached --check` | No errors shown in `typescript(20261025-180507)` |
+| `git commit` / `git push origin task/ARCH-046-BACKGROUND-004` | **PASS**; implementation commit `0c92e12` and new remote task branch confirmed in `typescript(20261025-180507)` |
+
+Earlier incremental patch revisions exposed invalid **test-fixture** records for the recipient format and funded `UsageReservation`. Those errors were corrected without relaxing production database constraints. The final five-test PostgreSQL run is green. These four patch deliveries belong to the **same claimed developer workflow Attempt 1**; they are not four separately claimed workflow attempts.
+
+The supplied logs do **not** establish a completed `npm run lint`, `npm run build`, full test suite, live Redis fault/concurrency integration run, or separately targeted Shopify/human/AI in-window STOP regression suites. Focused outbound delivery regression tests are included in the 89 passing unit tests, but should not be described as full cross-flow regression coverage. Such unverified items remain unchecked above for review.
+
+### Execution / Worktree Evidence
+
+- Canonical parent worktree named by the archive and startup record: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-BACKGROUND-004`.
+- Dedicated implementation worktree shown by the terminal archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-004`.
+- Implementation branch `task/ARCH-046-BACKGROUND-004` and the successful pushed commit are evidenced by the terminal log.
+- The task's existing developer claim states that both task worktrees were prepared/synchronised with `origin/main` and that the recursive database submodule was initialised at gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. The current terminal capture **does not independently include** the launcher-resolved preparation packet, parent branch's Git common-dir/isolation proof, or a fresh start-of-attempt synchronisation command. Those must be checked by the architect against available task preparation evidence.
+- The terminal log shows an untracked local `typescript` recording in the implementation worktree. It was **not included** in commit `0c92e12`.
 
 ### Deviations
 
-None.
+No new database migration, new shared API, Woo follow-up engine or BG005 worker wiring was introduced. The unit and PostgreSQL suites were run, but the broader validation originally requested by this task is not fully evidenced in the supplied logs; this is explicitly disclosed rather than reported as passed.
 
 ### Assumptions
 
-No production compatibility requirement for this initially disabled Woo recovery path; existing provider/STOP contracts must be inspected by the implementor and any actual missing mechanism referred to the architect.
+- `ARCH-048-BACKGROUND-004` continues to own the checkout lease, earlier observed-order preflight, first-send credit reservation and compensation. BG005 will compose the guarded sender when separately authorised.
+- Existing durable Woo order observations only reflect events received by Moda. A missing Woo event cannot be inferred by this sender, nor can a Redis-only observation be claimed to be SQL-locked.
+- Woo outbound remains default-off until the separate composition, developer activation and integrated system-test gates are satisfied.
 
 ### Unresolved Issues
 
-`ARCH-046-BACKGROUND-002` is Complete at Attempt 1 on parent task commit `64d20849`. Provider-admission SQL reuse must be validated against the current repository during implementation; it is not asserted complete by this task.
+- **Validation evidence gaps for review:** no completed broad repository lint/build, Redis-backed concurrency/fault-injection run, independently targeted Shopify/human/AI STOP regression suite or full billing source-attribution integration test was supplied. The architect should determine whether these require execution before acceptance and, if necessary, return specific Changes Requested to this same task.
+- The latest terminal capture proves the implementation commit/push but not the independent physical worktree preparation and synchronisation packet required by `docs/agent-worktree-isolation-policy.md`. Reconcile with the existing claim evidence before acceptance.
+- No BG005 worker wiring, Woo outbound activation, or end-to-end production send is claimed as part of this task.
 
 ### Architectural Concerns
 
-Potential read/write race between Redis-only observed order state and durable provider permit cannot be described as a transactionally protected checkout state. Fail closed on known terminal states and retain the documented undelivered-event limitation.
+- STOP committed before the Shop-locked provider permit blocks admission; STOP committed after the permit cannot retroactively retract a provider request. Tests exercise both orderings.
+- The permit uses durable PostgreSQL state for atomic decisions; the previously accepted Redis checkout/order observation remains an earlier guarded boundary, not a phantom SQL lock. Undelivered Woo events remain an explicit architectural limitation.
+- Provider-uncertain admissions must be reconciled, not blindly retried with a new first send or automatically compensated as though no dispatch occurred.
 
 ## Architect Review
 
