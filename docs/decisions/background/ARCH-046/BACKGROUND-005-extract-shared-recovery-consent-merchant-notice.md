@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -32,7 +32,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Lifecycle:** materialised on parent branch `task/ARCH-046-BACKGROUND-005`; developer Attempt 2 is submitted for review on the mirrored implementation branch. Neither task branch has been merged to `main`.
+**Lifecycle:** materialised on parent branch `task/ARCH-046-BACKGROUND-005`; developer Attempt 2 passed self-review and was explicitly completed on 2026-10-25. Neither task branch has been merged to `main`.
 
 **Rollout classification:** **pre-production / breaking change permitted.** The developer confirmed on 2026-10-24 that previously sent development Support notices require **no backward compatibility, old-key recognition, backfill, dual-write or migration**. Use one canonical notice identity for all new Shopify/WooCommerce notices. Do not destroy existing development data or schema as part of this task.
 
@@ -193,7 +193,7 @@ After completing only the specified extraction, Shopify migration and focused va
 
 ### Status
 
-Review-ready — Attempt 2 passed developer self-review. The source-key correction is committed and pushed, required post-correction validation passed, and this is a review handoff, **not** an explicit developer completion decision. Attempt 1 review history is preserved below.
+Complete — Attempt 2 passed developer self-review and the developer recorded the explicit completion decision on 2026-10-25. The source-key correction and required validation are committed/pushed on the implementation task branch. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -447,6 +447,14 @@ Pending.
 ### Follow-up
 
 After acceptance, promote `ARCH-046-BACKGROUND-002` if its remaining dependencies and implementation gate are satisfied; do not open the live Woo orchestration gate prematurely.
+
+## Developer Completion Decision
+
+- Date: 2026-10-25
+- Decision: The developer explicitly accepts the passing Attempt 2 self-review and completes this task under `completion_mode: developer`.
+- Evidence: The current attempt has a durable passing review record; all Work Items and Acceptance Criteria are complete; focused unit tests (57/57), disposable PostgreSQL integration tests (3/3), build, lint and `git diff --check` passed; and the implementation task branch is clean and synchronized with `origin/task/ARCH-046-BACKGROUND-005`.
+- State: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 2`. Both mirrored task branches remain unmerged to `main`.
+- Dependency frontier: `ARCH-046-BACKGROUND-002` now has its listed dependencies complete, but remains `blocked` pending the explicit architect Ready decision required by its execution gate. No downstream task was advanced or started.
 
 ## Execution Ownership Amendment
 
