@@ -7,13 +7,13 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -25,7 +25,7 @@ updated: 2026-10-25
 
 ## Architecture
 
-`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This is a **defined but not materialised** task until the developer's launcher creates the canonical task branch/worktree.
+`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. The task has been materialised and claimed through the developer workflow; the task-specific worktree paths are recorded in the Completion Report.
 
 ## Objective
 
@@ -70,11 +70,11 @@ Use a `useMetaTemplateStatus` controller hook for bounded status refresh and sta
 
 ## Requirements
 
-- [ ] Submission records freeze exactly what Admin has reviewed: component content, binding map, source/locale fingerprints and trusted sender account. They are not overwritten by subsequent status reads.
-- [ ] Frozen header/body/button binding maps preserve their component/position/`shopBrand.*` semantic keys for each locale; preview, hash verification and submission use the same immutable compiled projection, without substituting merchant brand values.
-- [ ] A failed/uncertain provider operation does not cause Admin to create another name/language registration; the existing registration is reconciled before Background retries.
-- [ ] A `REJECTED` locale/version cannot be edited or resubmitted with changed content; only Clone as New can correct it. All other approved locale registrations remain intact.
-- [ ] Admin status queries remain DB-only and bounded; provider secrets are never returned to client or logs.
+- [x] Submission records freeze exactly what Admin has reviewed: component content, binding map, source/locale fingerprints and trusted sender account. They are not overwritten by subsequent status reads.
+- [x] Frozen header/body/button binding maps preserve their component/position/`shopBrand.*` semantic keys for each locale; preview, hash verification and submission use the same immutable compiled projection, without substituting merchant brand values.
+- [x] A failed/uncertain provider operation does not cause Admin to create another name/language registration; the existing registration is reconciled before Background retries.
+- [x] A `REJECTED` locale/version cannot be edited or resubmitted with changed content; only Clone as New can correct it. All other approved locale registrations remain intact.
+- [x] Admin status queries remain DB-only and bounded; provider secrets are never returned to client or logs.
 
 
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
@@ -82,9 +82,9 @@ All server reads/mutations of template management require the existing authentic
 
 ## Work Items
 
-- [ ] Implement trusted sender-WABA lookup, frozen registration creation (including compiled header/body/button binding maps), status/reconcile request and audit in `meta/` service.
-- [ ] Build a 20-language submission preview and progress/rejection/drift dashboard with explicit confirmation and no misleading auto-approval.
-- [ ] Add idempotency/concurrent submit, auth and provider-identity collision tests with fixture approved locale records.
+- [x] Implement trusted sender-WABA lookup, frozen registration creation (including compiled header/body/button binding maps), status/reconcile request and audit in `meta/` service.
+- [x] Build a 20-language submission preview and progress/rejection/drift dashboard with explicit confirmation and no misleading auto-approval.
+- [x] Add idempotency/concurrent submit, auth and provider-identity collision tests with fixture approved locale records.
 
 
 ## Interfaces / Contracts
@@ -105,19 +105,19 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
-- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+- [x] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
 
-- [ ] One confirmed submission creates 20 immutable registration snapshots (one per supported provider locale) in a consistent WABA; repeat submits are no-ops and status polling does not duplicate snapshots or audit.
-- [ ] A header variable and a reordered body brand variable are stored with exactly their approved locale-specific positions; a mismatched binding digest prevents submission.
-- [ ] Rejected/pending/paused languages display independently, with reason and drift evidence; Meta API success never appears as Meta-approved or automatically published.
-- [ ] External Meta templates cannot be imported, and no Admin Graph template create/edit/delete request occurs.
-- [ ] Server authorization and transaction concurrency prohibit forged WABA, stale hash, duplicate submit and accidental resubmission of modified content.
+- [x] One confirmed submission creates 20 immutable registration snapshots (one per supported provider locale) in a consistent WABA; repeat submits are no-ops and status polling does not duplicate snapshots or audit.
+- [x] A header variable and a reordered body brand variable are stored with exactly their approved locale-specific positions; a mismatched binding digest prevents submission.
+- [x] Rejected/pending/paused languages display independently, with reason and drift evidence; Meta API success never appears as Meta-approved or automatically published.
+- [x] External Meta templates cannot be imported, and no Admin Graph template create/edit/delete request occurs.
+- [x] Server authorization and transaction concurrency prohibit forged WABA, stale hash, duplicate submit and accidental resubmission of modified content.
 
 
 ## Validation
 
-- [ ] Component/variable digest and trusted WABA identity tests (including header `shopBrand.brandName`, body `shopBrand.logoAltText` and per-language position changes); 20-language registration fixtures; forced partial transaction and concurrent-click tests.
-- [ ] Database-only Admin dashboard/action, auth/audit tests with simulated MetaEvent/registration updates from Background; no provider network; typecheck/lint/`git diff --check`.
+- [x] Component/variable digest and trusted WABA identity tests (including header `shopBrand.brandName`, body `shopBrand.logoAltText` and per-language position changes); 20-language registration fixtures; forced partial transaction and concurrent-click tests.
+- [x] Database-only Admin dashboard/action, auth/audit tests with simulated MetaEvent/registration updates from Background; no provider network; typecheck/lint/`git diff --check`.
 
 
 ## Stop Condition
@@ -133,59 +133,140 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — portable task definition, not materialised/claimed.
+Complete — developer execution Attempt 1, claimed 2026-10-25T16:05:41Z. The final implementation incorporates code patch revisions through Attempt 3; these are **not** three separate task claims. Developer self-review passed, and the developer explicitly completed this task on 25 October 2026. No merge to `main` was performed.
 
 ### Files Changed
 
-None.
+Implementation repository `moda-interact-admin` — 28 files committed on `task/ARCH-047-ADMIN-006`:
+
+- `package.json`; `package-lock.json` (Shared package alignment and test scripts).
+- `scripts/test-arch047-admin-meta-postgres.mjs`.
+- `src/app/(protected)/system-controls/whatsapp-templates/[definitionId]/meta/page.tsx`.
+- `src/app/actions/whatsapp-template-meta-control.ts`.
+- `src/components/admin/whatsapp-templates/meta/`: `meta-approval-summary.tsx`, `meta-drift-notice.tsx`, `meta-locale-status-table.tsx`, `meta-submission-confirmation.tsx`, `meta-submission-review.tsx`, `meta-template-dashboard.tsx`, `use-meta-template-status.ts`.
+- `src/lib/admin/whatsapp-templates/meta/`: `audit.ts`, `contracts.ts`, `languages.ts`, `reads.ts`, `reconcile.ts`, `repository.ts`, `sender.ts`, `snapshot.ts`, `status.ts`, `submission.ts`, `technical-retry.ts`.
+- `tests/helpers/arch047-template-meta-fixture.ts`.
+- `tests/integration/arch047-template-meta.postgres.test.ts`.
+- `tests/unit/`: `arch047-template-meta-components.test.mjs`, `arch047-template-meta-service.test.ts`, `arch047-template-meta-snapshots.test.ts`.
+
+Parent-workspace change for submission: **this task file only**. Do not stage or modify any domain `_index.md`, parent architecture, or implementation submodule gitlink.
 
 ### Work Completed
 
-None.
+- Implemented privileged DB-only Meta submission preview, using the existing authoring AST compiler and frozen `localeAst.prepared` projection. All 20 supported provider languages, trusted sender WABA, source/locale content fingerprints, immutable component snapshots and positional header/body/button bindings are checked before submission. Merchant `ShopBrand` values are not frozen.
+- Implemented serializable, atomic registration creation with exact-identity replay and conflict handling; only one set of 20 `READY_TO_SUBMIT` registrations is created for a confirmed content digest. Audits are committed in the same transaction; a forced audit failure rolls back registrations.
+- Implemented a thin, server-authorised action and protected route, composed from separate preview, confirmation, summary, locale status, drift and status-refresh UI components. Provider submission state is displayed independently from Meta approval; polling reads only stored registration and event state.
+- Implemented bounded reconciliation and tightly gated technical retry intent persisted for Background, with no Admin Graph API call, no external-template adoption and no rejected-content mutation.
+- Added injected-port unit tests, UI-structure test and disposable PostgreSQL integration tests covering concurrent confirmation, repeat submission, stale digests, WABA spoofing, full transaction rollback, event history, provider status, drift and reconciliation audit.
+- Refined the previous implementation patch revisions to align Admin's published Shared dependency with its language export, correct the test loader, resolve new ESLint findings and fix the PostgreSQL fixture's explicit database-port typing.
 
 ### Validation Results
 
-Not run.
+Evidence source: developer's attached terminal transcript `typescript(20261025-170412)` and the accompanying combined worktree archive, plus focused validation rerun in the canonical implementation worktree on 25 October 2026.
+
+- `git apply --check --whitespace=error-all "$PATCH"` — succeeded for the Attempt 3 incremental correction (no reported error).
+- `git apply --whitespace=error-all "$PATCH"` — succeeded; `git diff --check` — no errors reported.
+- `npm run test:arch047-admin-meta:unit` — **PASS, rerun: 12/12 behavioural tests and 1/1 UI-structure test**; Prisma Client 6.19.3 generated by the script prehook.
+- `npm run test:arch047-admin-meta:postgres` — **PASS, rerun: 2/2 disposable PostgreSQL integration tests**; script reported `PASS ARCH-047 ADMIN-006 disposable PostgreSQL`.
+- `npx tsc --noEmit` — **PASS, rerun: no TypeScript diagnostics**.
+- `npm run lint` — **PASS, rerun: 0 errors**; 1 warning in the pre-existing `database/eslint.config.mjs` (anonymous default export).
+- `npm run build` — **PASS, rerun** from the Admin worktree; Next.js production build and TypeScript completed. Existing BullMQ optional `@valkey/valkey-glide`/dynamic-import warnings remain.
+- `git diff --check origin/main...HEAD` — **PASS, rerun** after synchronization.
+- Commit/push shown in transcript: `0ea4128` (`feat(arch-047-admin-006)`) was pushed to `origin/task/ARCH-047-ADMIN-006` in `moda-interact-admin`.
+- No full integrated Meta Graph API/system test is claimed; provider operations belong to Background and terminal system testing is a separate architectural gate.
 
 ### Deviations
 
-None.
+No scope expansion into Prisma migrations, Meta Graph API, external template imports, or Background processing. Package/lockfile alignment and test-runner fixes were required to validate the Admin task.
 
 ### Assumptions
 
-The consolidated `ARCH-047-DATABASE-001` Attempt 7 model contract is the intended schema; inspect generated Prisma Client and actual accepted database implementation when this task becomes executable. Where the proposed JSONB envelopes are not yet implemented, fixture-based tests use the explicitly documented shape.
+- The completed `ARCH-047-DATABASE-001` Prisma model/migration in the supplied workspace is the accepted persistence contract (task frontmatter reads `status: complete`).
+- Background consumes durable registration/reconciliation/retry records and records provider events; this Admin task does not claim that cross-service consumption has passed end-to-end validation.
 
 ### Unresolved Issues
 
-None at definition time. Return any missing persistence capability, provider-account configuration or cross-repository interface problem to `moda_architect` rather than silently changing DB/Background/Messaging ownership.
+- The canonical worktrees and current synchronization state were verified live during self-review. The launcher execution packet itself is not retained as a separate artifact.
+The canonical worktrees, synchronization state, clean status and recursive submodule were verified live during self-review. The launcher execution packet itself is not retained as a separate artifact; this evidence limitation does not block task-scoped acceptance.
 
 ### Architectural Concerns
 
-None at definition time.
+Background owns provider submission, reconciliation and event interpretation; independent system testing must still verify the cross-repository workflow. This does not add a formal dependency to the present Admin task.
 
+### Git / VCS
+
+Task branch: `task/ARCH-047-ADMIN-006` (mirrored task-branch contract).
+
+Physical worktree isolation verified during this review:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, confirmed by launcher.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-006`, branch `task/ARCH-047-ADMIN-006`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-006`, branch `task/ARCH-047-ADMIN-006`.
+- Both task worktrees are clean, registered at their canonical paths and contain current workspace/Admin `origin/main` respectively. Shared checkouts were not used for implementation.
+- Recursive database submodule is materialised at expected gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+
+Start-of-attempt synchronization was not retained as a separate packet. Current synchronization is verified: both branches contain their respective current `origin/main`; the Admin implementation branch was merged with the completed ADMIN-005 mainline integration and the merge was pushed during this review.
+
+Implementation repository:
+
+- Repository: `moda-interact-admin`.
+- Commits: `0ea4128` (`feat(arch-047-admin-006)`) and synchronization merge `e2ef348`.
+- Remote branch: `origin/task/ARCH-047-ADMIN-006`.
+- Pushed: **yes**, both implementation and sync merge; remote HEAD `e2ef3485b537c74dbf7159c1be5092190d2e1abb`.
+- A local untracked `typescript` terminal log was noted in the supplied pre-commit snapshot but was not included in the implementation commit; the canonical implementation worktree is clean during this review.
+
+Parent workspace:
+
+- Task file: `docs/decisions/admin/ARCH-047/ADMIN-006-submit-and-monitor-meta-template-approvals.md`.
+- Parent task branch: `task/ARCH-047-ADMIN-006`, synchronized with workspace `origin/main`; review record and completion decision are published there.
+- Implementation submodule gitlink staged: **no change included in this documentation-only patch**.
+
+Merged to implementation `main`: no merge shown. Merged to workspace `main`: no merge shown.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Developer Self-Review Passed — Attempt 1. The explicit developer completion decision is recorded below.
 
 ### Review Notes
 
-None.
+All required Work Items and Acceptance Criteria are marked complete. The published 28-file implementation was reviewed against the task scope, tests rerun after integrating ADMIN-005, and no task-scoped acceptance gap was found. Admin creates durable registration intent only; Graph API submission, status polling and event interpretation remain with Background. Existing lint/build warnings are recorded above and are not failures.
 
 ### Reviewed Files
 
-None.
+All 28 implementation files in `0ea4128` plus synchronization merge `e2ef348`: the Meta dashboard route/actions, local status/submission/reconciliation modules, decomposed UI, and unit/PostgreSQL tests. No Prisma schema, Background, Messaging, Shared or `_index.md` changes were introduced by the task.
 
 ### Validation Reviewed
 
-None.
+`npm run test:arch047-admin-meta:unit` (12 behavioral + 1 UI pass); `npm run test:arch047-admin-meta:postgres` (2 pass); `npx tsc --noEmit` (pass); `npm run lint` (0 errors, 1 existing database config warning); `npm run build` (pass with existing BullMQ optional-module warnings); `git diff --check origin/main...HEAD` (pass).
 
 ### Architecture Conformance
 
-Not assessed.
+Conforms to the Admin-only submission-intent and DB-only status boundary. Confirmed snapshots use the trusted sender WABA and frozen compiled locale projections; Admin performs no Meta Graph request. The developer's explicit completion decision is recorded below; no merge to `main` is implied.
 
 ### Follow-up
 
-None.
+Task completion is recorded below. No sibling or downstream task was started.
+
+## Developer Self-Review - Passed
+
+- Attempt: 1; reviewed 25 October 2026.
+- Result: Passing; all task Work Items and Acceptance Criteria are marked complete and no known task-scoped gap remains.
+- Implementation branch: `task/ARCH-047-ADMIN-006`, commit `e2ef3485b537c74dbf7159c1be5092190d2e1abb`, pushed and clean; database submodule is at the expected gitlink.
+- Parent task branch: `task/ARCH-047-ADMIN-006`; review report and completion decision are published.
+- Lifecycle: `status: complete`, `attempt: 1`, `executor: null`, `claimed_at: null`.
+
+## Developer Completion Decision
+
+- Date: 25 October 2026.
+- Decision: The developer explicitly completed Attempt 1 after the durable passing self-review. All task Work Items and Acceptance Criteria are marked complete; implementation commit `e2ef3485b537c74dbf7159c1be5092190d2e1abb` is published.
+- State: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. No merge to either repository's `main` branch was performed.
+- Dependency frontier: no task currently declares `ARCH-047-ADMIN-006` in `depends_on`; no dependent task status required reconciliation.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_admin`, coordinator, repository, dependency, task scope, acceptance criteria and validation requirements.
+- Claim state: This amendment does not claim an implementation attempt; the canonical launcher records the claim after dependency and worktree preparation.

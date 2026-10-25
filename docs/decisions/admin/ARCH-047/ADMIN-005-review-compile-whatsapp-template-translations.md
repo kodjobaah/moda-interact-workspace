@@ -7,13 +7,13 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -73,11 +73,11 @@ Use a dedicated `useTemplateTranslationReview` controller for client selection/a
 
 ## Requirements
 
-- [ ] Reconstruct only when persisted source hash matches its translation run; late provider results and stale clones cannot overwrite accepted content.
-- [ ] Protected token multisets and component-key sets must match exactly; translation may reorder variables, compiler must derive correct per-language positional binding snapshots.
-- [ ] Meta header/body and wrapper header/footer/conditional `shopBrand.*` references survive reconstruction as typed identifiers, with no merchant data captured during translation or compilation; invalid component/key combinations fail validation.
-- [ ] English and all 19 translations are previewable; if rejected/malformed, locale stays unapproved with actionable diagnostics and does not silently become publishable.
-- [ ] Review writes are idempotent, guarded and audited. Template text changes always require a new definition; metadata/progress may update independently.
+- [x] Reconstruct only when persisted source hash matches its translation run; late provider results and stale clones cannot overwrite accepted content.
+- [x] Protected token multisets and component-key sets must match exactly; translation may reorder variables, compiler must derive correct per-language positional binding snapshots.
+- [x] Meta header/body and wrapper header/footer/conditional `shopBrand.*` references survive reconstruction as typed identifiers, with no merchant data captured during translation or compilation; invalid component/key combinations fail validation.
+- [x] English and all 19 translations are previewable; if rejected/malformed, locale stays unapproved with actionable diagnostics and does not silently become publishable.
+- [x] Review writes are idempotent, guarded and audited. Template text changes always require a new definition; metadata/progress may update independently.
 
 
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
@@ -85,9 +85,9 @@ All server reads/mutations of template management require the existing authentic
 
 ## Work Items
 
-- [ ] Implement typed, Admin-local reconstruction/validation and consume ADMIN-003's deterministic provider/wrapper compiler and variable registry via a focused adapter/fixtures; do not add a competing compiler.
-- [ ] Implement review screen with English/current-language side-by-side previews, variable/button comparison and approve/reject actions.
-- [ ] Add transactional locale finalisation and audit with stale/duplicate/concurrent review tests.
+- [x] Implement typed, Admin-local reconstruction/validation and consume ADMIN-003's deterministic provider/wrapper compiler and variable registry via a focused adapter/fixtures; do not add a competing compiler.
+- [x] Implement review screen with English/current-language side-by-side previews, variable/button comparison and approve/reject actions.
+- [x] Add transactional locale finalisation and audit with stale/duplicate/concurrent review tests.
 
 
 ## Interfaces / Contracts
@@ -108,19 +108,19 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
-- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+- [x] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
 
-- [ ] Each language's complete preview and durable metadata reflect the same validated source; exactly 20 reviewed locales are required by application policy before the definition is eligible for the relevant publication path.
-- [ ] Header/body/footer/buttons and wrapper conditional segments map correctly; missing/duplicate/prohibited variable markers block reconstruction; reordered variables bind to the intended semantic values.
-- [ ] Translated Meta headers retain their header position and `shopBrand.*` semantic key (where allowed); wrapper brand keys remain available in permitted header/footer/conditional slots, while Meta footers contain no variable bindings.
-- [ ] Approved locales contain Meta-ready or wrapper-ready projection with no dependency on a Background AST compiler. No content mutation of saved/approved templates occurs.
-- [ ] Rejection leaves prior live template assignments/active wrapper pointers unchanged; only newly authored content may replace them later.
+- [x] Each language's complete preview and durable metadata reflect the same validated source; exactly 20 reviewed locales are required by application policy before the definition is eligible for the relevant publication path.
+- [x] Header/body/footer/buttons and wrapper conditional segments map correctly; missing/duplicate/prohibited variable markers block reconstruction; reordered variables bind to the intended semantic values.
+- [x] Translated Meta headers retain their header position and `shopBrand.*` semantic key (where allowed); wrapper brand keys remain available in permitted header/footer/conditional slots, while Meta footers contain no variable bindings.
+- [x] Approved locales contain Meta-ready or wrapper-ready projection with no dependency on a Background AST compiler. No content mutation of saved/approved templates occurs.
+- [x] Rejection leaves prior live template assignments/active wrapper pointers unchanged; only newly authored content may replace them later.
 
 
 ## Validation
 
-- [ ] Token protection/reordering and variable-binding compiler unit tests for English/French/German and scripts with changed placeholder order; include Meta text-header `shopBrand.brandName`, body references, repeated brand variables, wrapper footer brand values, forbidden Meta footer tokens, button/URL protections and malformed translator responses.
-- [ ] Admin UI full-preview/a11y tests; PostgreSQL idempotent locale finalisation/auth/audit tests using fixture translation items; lint/typecheck/`git diff --check`.
+- [x] Token protection/reordering and variable-binding compiler unit tests for English/French/German and scripts with changed placeholder order; include Meta text-header `shopBrand.brandName`, body references, repeated brand variables, wrapper footer brand values, forbidden Meta footer tokens, button/URL protections and malformed translator responses.
+- [x] Admin UI full-preview/a11y tests; PostgreSQL idempotent locale finalisation/auth/audit tests using fixture translation items; lint/typecheck/`git diff --check`.
 
 
 ## Stop Condition
@@ -136,59 +136,137 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — portable task definition, not materialised/claimed.
+**Complete — developer workflow Attempt 1 (claimed at `2026-10-25T16:02:15Z`).** Developer self-review passed, and the developer explicitly completed the task on 25 October 2026. Implementation commit `8e2ddcc` is published to the Admin repository's `task/ARCH-047-ADMIN-005` branch. Attempt remains 1; no merge to `main` was performed.
 
 ### Files Changed
 
-None.
+Admin implementation commit `8e2ddcc` reports **30 changed files**:
+
+- `moda-interact-admin/package.json`
+- `moda-interact-admin/scripts/test-arch047-admin-compilation-postgres.mjs`
+- `moda-interact-admin/src/app/(protected)/system-controls/whatsapp-templates/[definitionId]/review/page.tsx`
+- `moda-interact-admin/src/app/actions/whatsapp-template-compilation.ts`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/authoring/template-read-only-preview.tsx`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/authoring/template-saved-detail.tsx`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/compilation/component-and-variable-diff.tsx`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/compilation/conversation-wrapper-review-preview.tsx`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/compilation/meta-template-review-preview.tsx`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/compilation/review-language-selector.tsx`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/compilation/source-translation-comparison.tsx`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/compilation/translation-review-actions.tsx`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/compilation/translation-review-workspace.tsx`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/compilation/use-template-translation-review.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/contracts.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/language-codes.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/locations.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/meta-compiler.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/reads.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/reconstruction.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/repository.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/restoration.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/segments.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/service.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/compilation/wrapper-compiler.ts`
+- `moda-interact-admin/tests/fixtures/arch047-translation-fixture.ts`
+- `moda-interact-admin/tests/integration/arch047-template-compilation.postgres.test.ts`
+- `moda-interact-admin/tests/unit/arch047-template-compilation-components.test.tsx`
+- `moda-interact-admin/tests/unit/arch047-template-compilation-service.test.ts`
+- `moda-interact-admin/tests/unit/arch047-template-compilation.test.ts`
+
+No database schema, Background, Messaging, Shared implementation, or `docs/decisions/**/_index.md` files were changed by this submission.
 
 ### Work Completed
 
-None.
+- Added Admin-owned keyed-segment parsing, source/run hash checking, protected-marker and key-multiplicity validation, typed semantic-variable restoration, and language/provider validation. Reordered variables compile with semantic bindings in the correct target-language position; altered/duplicated/dropped variables and forbidden component placements fail closed.
+- Reused the ADMIN-003 pure `compileTemplateAst` authoring compiler for Meta template components and prepared conversation-wrapper projections. New locale JSONB contains the immutable authoring representation and prepared projection, with a content digest; original English content is not modified.
+- Added the 20-language review workspace, the language selector, full source/target comparisons, section/variable diff, dedicated Meta and wrapper previews, review actions and controller hook. Incomplete or rejected translations remain non-publishable; `readyForPublication` requires all 20 language entries to be English source or approved.
+- Added `SUPER_ADMIN`-guarded server reads and approve/reject mutation; serializable transactional finalisation with a definition row lock, content immutability, retry/idempotency behaviour, review actor/time metadata and bounded `CommerceAuditEvent` records. Rejected locale content is not saved; existing live template/wrapper selection is not mutated.
+- Added translation fixtures, focused unit and React component tests, and disposable PostgreSQL tests for concurrent finalisation, audit rollback and rejection.
 
 ### Validation Results
 
-Not run.
+Evidence: developer terminal transcripts `typescript(20261025-163303)` and `typescript(20261025-164645)`, supplied with the task snapshot.
+
+| Command | Observed result |
+| --- | --- |
+| `npm run test:arch047-admin-compilation:unit` | **PASS — 13/13 tests**: token protection, key/source validation, language codes, positional bindings, template limits, idempotent/rejected reviews and `SUPER_ADMIN` checks. |
+| `npm run test:arch047-admin-compilation:components` | **PASS — 3/3 tests**: 20-language selector, full Meta/wrapper views, immutable-content review controls. |
+| `npm run test:arch047-admin-compilation:postgres` | **PASS — 3/3 disposable PostgreSQL tests**: unique/frozen concurrent finalisation, rejected review without content or live-pointer changes, and audit-failure transaction rollback. |
+| `npm run build` | **PASS during this review**: Prisma Client generated, Next.js compilation, TypeScript checking and completed production build. Build emitted BullMQ optional `@valkey/valkey-glide`/dynamic-import warnings in queue-monitor and merchant-support imports; no build failure. |
+| `npm run lint` | **PASS during this review (0 errors, 1 warning)**. Warning: `database/eslint.config.mjs` (`import/no-anonymous-default-export`), outside the changed implementation files. |
+| `git diff --check` | **PASS during this review** on both implementation diff and parent review-record diff. |
+| Implementation Git commit and push | **PASS**: `8e2ddcc` on `task/ARCH-047-ADMIN-005`, pushed to `origin/task/ARCH-047-ADMIN-005`. |
+
+The implementer did not provide a separate focused accessibility automation report beyond the three React component checks. Those tests include accessibility-oriented selector attributes (`aria-pressed`/labels), but no independent end-to-end a11y scan is evidenced.
+
+**Worktree evidence verified during review:** canonical launcher routes to parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-005` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-005`. Both are registered on `task/ARCH-047-ADMIN-005`, clean, and contain current `origin/main`; implementation HEAD `8e2ddcc7bc251597639f4138dde30a077a663707` equals `origin/task/ARCH-047-ADMIN-005`. Recursive database submodule is materialised at gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. Thus the earlier archive omission is closed by live repository/worktree verification; the launcher packet itself is not retained as a separate artifact.
 
 ### Deviations
 
-None.
+- Attempt 2 implementation corrections resolved three TypeScript errors, an unavailable Shared import, and a PostgreSQL test-runner module condition issue. They were applied in the same **workflow Attempt 1**; no new claim was made.
+- The submitted implementation commit's subject references `arch-007-admin-005`; its **actual branch, files and task identification are ARCH-047-ADMIN-005**, and the remote push succeeded. This is a commit-message typo, not a task-scope change.
+- Required provider/Background integration is exercised with documented keyed-segment fixtures pending independently owned tasks, rather than claiming end-to-end cross-repository verification here.
 
 ### Assumptions
 
-The consolidated `ARCH-047-DATABASE-001` Attempt 7 model contract is the intended schema; inspect generated Prisma Client and actual accepted database implementation when this task becomes executable. Where the proposed JSONB envelopes are not yet implemented, fixture-based tests use the explicitly documented shape.
+- The locally available generated Prisma Client and disposable PostgreSQL schema reflect the accepted `ARCH-047-DATABASE-001` persistence boundary.
+- Translation run/source snapshots and keyed translation items are validly produced by their owning task; this task validates them at the Admin boundary. Independent Background/provider integration remains the architecture-wide system-test responsibility.
+- This is a developer-executed task (`execution_mode: developer`, `completion_mode: developer`). The passing self-review and explicit completion decision are recorded below; architect acceptance and any mainline merge remain separate.
 
 ### Unresolved Issues
 
-None at definition time. Return any missing persistence capability, provider-account configuration or cross-repository interface problem to `moda_architect` rather than silently changing DB/Background/Messaging ownership.
+- Worktree isolation, current `origin/main` ancestry, clean state and recursive database submodule gitlink were verified live during developer self-review; the execution packet itself is not retained as a separate artifact.
+- No remaining task-scoped test or build failures were shown in the supplied validation logs. The build/lint warnings above remain visible for reviewer assessment.
 
 ### Architectural Concerns
 
-None at definition time.
+No new cross-repository schema/contract changes were introduced. The requirement to consume only keyed translation items and preserve Admin-only immutable authoring/compilation is covered by the implementation and fixture tests; final system-level interaction with the Background translator and publication tasks remains outside this task's scope.
 
 
 ## Architect Review
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Developer Self-Review Passed — Attempt 1. Explicit developer completion is pending.
 
 ### Review Notes
 
-None.
+Task scope and acceptance evidence were reconciled against the published implementation diff and task record. Route/action authorization, source/run identity checks, keyed-marker validation, compiler reuse, immutable locale finalisation, audit rollback behavior and full-language review presentation were inspected. No task-scoped acceptance gap was found. Missing standalone accessibility automation remains a minor evidence limitation; component coverage and semantic labels/pressed state are present. Existing build/lint warnings are recorded above and do not fail validation.
 
 ### Reviewed Files
 
-None.
+All 30 implementation files in commit `8e2ddcc`, including the review route/action, compilation services, components, focused tests and disposable PostgreSQL harness. No unrelated repository or task files are changed.
 
 ### Validation Reviewed
 
-None.
+Re-ran `npm run test:arch047-admin-compilation:unit` (13/13 pass), `npm run test:arch047-admin-compilation:components` (3/3 pass), `npm run test:arch047-admin-compilation:postgres` (3/3 pass), `npm run lint` (0 errors, 1 pre-existing warning), `npm run build` (pass with recorded BullMQ warnings), and `git diff --check` (pass).
 
 ### Architecture Conformance
 
-Not assessed.
+Conforms to the Admin-only immutable translation review/compilation boundary. No schema, Background, Messaging, Shared, caller integration, live assignment, wrapper activation or `_index.md` changes were found. Completion remains separate from review.
 
 ### Follow-up
 
-None.
+Task completion is recorded below. No sibling or downstream task was started; the dependent ARCH-049 system test remains pending on its other prerequisites.
+
+## Developer Self-Review - Passed
+
+- Attempt: 1; reviewed 25 October 2026.
+- Result: Passing; no known required Work Item or Acceptance Criterion remains incomplete.
+- Implementation branch: `task/ARCH-047-ADMIN-005`, commit `8e2ddcc7bc251597639f4138dde30a077a663707`, pushed and clean.
+- Parent task branch: `task/ARCH-047-ADMIN-005`; review record was committed and pushed as `b3dc79ba3c8272feddae73d25c90ab55e8ccf6d8`.
+- Completion decision: recorded below; status transitioned to `complete`, attempt remains 1, executor and claim timestamp are null.
+
+## Developer Completion Decision
+
+- Date: 25 October 2026.
+- Decision: The developer explicitly completed Attempt 1 after the durable passing self-review; all task-scoped Work Items and Acceptance Criteria are marked complete, and implementation commit `8e2ddcc7bc251597639f4138dde30a077a663707` is published.
+- State: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. No merge to either repository's `main` branch was performed.
+- Dependency frontier: `ARCH-049-SYSTEM-TEST-001` explicitly depends on this task and remains `pending` because its other required ARCH-049 implementation dependencies are not complete. It was not promoted or otherwise modified.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_admin`, coordinator, repository, dependency, task scope, acceptance criteria and validation requirements.
+- Claim state: This amendment does not claim an implementation attempt; the canonical launcher records the claim after dependency and worktree preparation.
