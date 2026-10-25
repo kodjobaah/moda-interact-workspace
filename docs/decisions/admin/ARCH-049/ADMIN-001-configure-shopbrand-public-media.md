@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-10-25T14:25:42Z
@@ -74,14 +74,14 @@ authorize the separate ShopBrand media pipeline.
 
 ## Work Items
 
-- [ ] Inspect the existing Admin platform-configuration read, save and
+- [x] Inspect the existing Admin platform-configuration read, save and
   authorization paths.
-- [ ] Add the typed `shopBrand.publicMedia` contract and defaults.
-- [ ] Implement non-persisting default resolution on read.
-- [ ] Implement validated explicit SUPER_ADMIN save using existing persistence.
-- [ ] Add focused tests for defaults, no-write-on-read, save round-trip,
+- [x] Add the typed `shopBrand.publicMedia` contract and defaults.
+- [x] Implement non-persisting default resolution on read.
+- [x] Implement validated explicit SUPER_ADMIN save using existing persistence.
+- [x] Add focused tests for defaults, no-write-on-read, save round-trip,
   validation, authorization and unchanged private R2 configuration.
-- [ ] Record worktree and synchronization evidence, changed files and validation
+- [x] Record worktree and synchronization evidence, changed files and validation
   results in the Completion Report.
 
 ## Interfaces / Contracts
@@ -102,24 +102,24 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] An absent setting reads as the exact agreed defaults and does not write
+- [x] An absent setting reads as the exact agreed defaults and does not write
   persistent state.
-- [ ] A valid explicit SUPER_ADMIN save persists both values and subsequent
+- [x] A valid explicit SUPER_ADMIN save persists both values and subsequent
   reads return them.
-- [ ] Unauthorized saves and invalid values fail without changing stored values.
-- [ ] `merchant.knowledge.r2` behavior and values are unchanged.
-- [ ] No database schema, migration, credential, media-processing, or delivery
+- [x] Unauthorized saves and invalid values fail without changing stored values.
+- [x] `merchant.knowledge.r2` behavior and values are unchanged.
+- [x] No database schema, migration, credential, media-processing, or delivery
   changes are made.
-- [ ] If the existing persistence mechanism is insufficient, the task is
-  returned blocked without a database workaround.
+- [x] Existing persistence supports the additional key without schema changes;
+  no database workaround was needed.
 
 ## Validation
 
-- [ ] Run the relevant checks declared by `moda-interact-admin` for the changed
+- [x] Run the relevant checks declared by `moda-interact-admin` for the changed
   surface; do not invent replacement validation commands.
-- [ ] Focused tests cover read defaults without writes, explicit save and
+- [x] Focused tests cover read defaults without writes, explicit save and
   read-back, invalid values, authorization, and private R2 non-regression.
-- [ ] `git diff --check`.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -138,19 +138,56 @@ not permission to expand scope.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact-admin/src/lib/admin/platform-configuration/contracts.ts`
+- `moda-interact-admin/src/lib/admin/platform-configuration/repository.ts`
+- `moda-interact-admin/tests/unit/arch043-platform-configuration-contracts.test.ts`
+- `moda-interact-admin/tests/unit/arch049-public-media-configuration.test.ts`
 
 ### Work Completed
 
-None
+- Added `shopBrand.publicMedia` as a distinct SUPER_ADMIN policy with the agreed
+  public origin and bucket defaults. The origin is required, HTTPS-only, and
+  restricted to an origin without a path; bucket input uses the existing
+  bounded bucket validator.
+- Missing-row reads return defaults in memory and do not write. Explicit saves
+  use the existing validated, versioned, audited platform-configuration writer.
+- The contract is not resettable, so defaults are not persisted through an
+  implicit reset action. `merchant.knowledge.r2` remains unchanged.
+- No schema, migration, credential, deployment, or media-pipeline changes were
+  made. The agreed values are code defaults only; they have not been explicitly
+  persisted to a live environment and no live write was attempted.
 
 ### Validation Results
 
-Not Run
+- `npm run test:arch043-admin-config:unit`: passed, 10 tests.
+- `npm run test:arch043-admin-config:components`: passed, 2 tests.
+- `npm exec -- tsx --test tests/unit/arch049-public-media-configuration.test.ts`:
+  passed, 4 tests covering defaults/no-write, save/read-back, invalid values,
+  SUPER_ADMIN authorization, and private R2 isolation.
+- `npm run lint -- src/lib/admin/platform-configuration/contracts.ts src/lib/admin/platform-configuration/repository.ts`:
+  passed with no warnings on changed production files.
+- `npm exec -- tsc --noEmit`: passed.
+- `npm exec -- prettier --check tests/unit/arch049-public-media-configuration.test.ts`:
+  passed. Existing compactly styled modules and tests were already flagged at
+  `HEAD`; no unrelated formatting churn was introduced.
+- `git diff --check`: passed.
+- Persistence round-trip was tested with an injected test database only; no live
+  database or environment configuration was written.
+
+### Worktree and Synchronization Evidence
+
+- Implementation worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-ADMIN-001`
+- Parent worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-ADMIN-001`
+- Both were clean before implementation and on `task/ARCH-049-ADMIN-001`;
+  both already contained `origin/main`, so no mainline merge was required.
+- Implementation commit `7cbe5b0` was pushed to
+  `origin/task/ARCH-049-ADMIN-001`.
 
 ### Deviations
 
@@ -158,13 +195,13 @@ None
 
 ### Assumptions
 
-The existing Admin platform-configuration facility can persist the new
-namespace without a database schema change.
+The existing platform-configuration table supports another environment/key
+record. The generic environment/key lookup and audited transactional
+create/update path were verified; no schema change was needed.
 
 ### Unresolved Issues
 
-None. If the assumption above is false, return the task blocked to
-moda_architect.
+None.
 
 ### Architectural Concerns
 
