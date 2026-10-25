@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-25T02:01:59Z
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -118,7 +118,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — materialised task definition; developer takeover recorded, awaiting canonical launcher preparation and claim.
+In Progress — Attempt 1 claimed by developer at 2026-10-25T02:01:59Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
