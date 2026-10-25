@@ -7,13 +7,13 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-25T18:14:30Z
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -25,7 +25,7 @@ updated: 2026-10-25
 
 ## Architecture
 
-`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This is a **defined but not materialised** task until the developer's launcher creates the canonical task branch/worktree.
+`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This task is materialised in its canonical parent task worktree; the developer is preparing Attempt 1 in its canonical implementation worktree.
 
 ## Objective
 
@@ -114,7 +114,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — portable task definition, not materialised/claimed.
+In Progress — developer execution Attempt 1, claimed 2026-10-25T18:14:30Z. `ARCH-047-DATABASE-001` is complete. Canonical parent and implementation task worktrees are prepared and synchronized; implementation has not started in this preparation workflow.
 
 ### Files Changed
 
@@ -170,3 +170,14 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25.
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_admin`, coordinator, repository, dependency, task scope, acceptance criteria and validation requirements.
+- Dependency check: `ARCH-047-DATABASE-001` is `complete` in its canonical task record.
+- Claim: Attempt 1 is claimed by `developer` at `2026-10-25T18:14:30Z` after canonical worktree preparation and synchronization.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-008`, branch `task/ARCH-047-ADMIN-008`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-008`, branch `task/ARCH-047-ADMIN-008`, created from current Admin `origin/main` because no ADMIN-008 task branch existed locally or remotely.
+- No implementation changes were made during preparation. No branch was merged into `main`.
