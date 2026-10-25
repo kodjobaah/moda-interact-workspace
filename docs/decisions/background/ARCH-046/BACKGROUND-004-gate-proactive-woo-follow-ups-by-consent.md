@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 38
-executor: developer
-claimed_at: 2026-10-25T16:39:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-046-BACKGROUND-001
@@ -264,3 +264,21 @@ Consistent with ARCH-048's initial-outreach-only boundary and default-off rollou
 ### Follow-up
 
 Only after BG002 complete may the architect promote this BG004 task to Ready. Woo follow-ups require separately approved future implementation work.
+
+## Developer Self-Review - Changes Requested
+
+### Review Decision
+
+Attempt 1 is not accepted for developer completion. The implementation branch is committed and pushed, but the current Completion Report marks required Work Items, Acceptance Criteria and Validation incomplete and explicitly records evidence gaps.
+
+### Required Corrections
+
+- Complete and report the task-owned concurrency and fault cases: two-client initial-send admission, STOP-versus-permit ordering, observed paid/cancelled order versus send, provider-confirmed/uncertain/failed retry behavior, billing source attribution and compensation. Include read-after-commit validation for existing admissions.
+- Complete and report the Shopify/general outbound and human/AI in-window STOP regressions. Add evidence that no Woo follow-up path was introduced and no Redis or HTTP operation occurs while SQL locks are held.
+- Run the repository-declared relevant lint/build checks and any remaining focused/full checks required by the task; record exact commands and results. Do not report the broad checks as passing without evidence.
+- Record canonical launcher preparation/synchronization evidence for the parent and implementation worktrees, including physical isolation and recursive submodule state, or attach the existing durable preparation packet that proves it.
+- Update the Completion Report and task checkboxes only to reflect verified work. Keep Woo outbound default-off; do not wire BG005 or broaden task scope.
+
+### State Transition
+
+Returned to `ready`, with `executor: null`, `claimed_at: null`, and Attempt 1 unchanged. No new attempt is claimed by this review; the next `/moda_developer_create` invocation may claim Attempt 2.
