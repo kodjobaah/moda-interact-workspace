@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 35
 executor: null
@@ -232,3 +232,10 @@ Defined scope and contracts conform to ARCH-046/048 consent and service-ownershi
 ### Follow-up
 
 ARCH-046-BG004 becomes eligible once this task is accepted Complete.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_background`, coordinator, dependencies, task scope, and acceptance criteria.
+- Claim state: This amendment does not claim an implementation attempt; the canonical launcher records the claim after dependency and worktree preparation.
