@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
 executor: developer
 claimed_at: 2026-10-25T14:03:34Z
@@ -37,7 +37,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Execution frontier (25 October 2026 snapshot): Ready.** All four YAML dependencies are recorded Complete. `WooRecoveryAdmissionService` has an awaited `onDeniedAdmission` callback. The merged Background code contains `RecoveryConsentMerchantNoticeService` and the Shopify consumer imports it. This task has **not** been claimed or implemented. The `/moda-task` launcher must recheck status, dependencies, branch/worktree isolation and start-of-attempt synchronization before execution.
+**Review handoff (25 October 2026): Developer-executed Attempt 1 submitted for architectural review.** The current parent task records a developer claim at `2026-10-25T14:03:34Z` (`/moda_developer_create`), and the user demonstrated the dedicated parent task directory on branch `task/ARCH-046-BACKGROUND-002`, tracking its origin branch. The Woo adapter and two new tests were committed and pushed in `moda-interact-background` as `9b94c6d`; focused unit tests (42/42), real PostgreSQL integration tests (5/5), and TypeScript typecheck passed. The user has not supplied the launcher preparation packet or direct Git worktree mapping/start-of-attempt synchronization and recursive submodule evidence. Record those as unverified for the reviewer. The task remains subject to architectural review and the explicit developer completion decision; no acceptance or completion is claimed.
 
 ## Objective
 
@@ -123,11 +123,11 @@ Use the accepted **pre-production canonical deduplication contract as implemente
 
 ## Work Items
 
-- [ ] Read the merged BG005 contracts/formatter/service, BG003 `onDeniedAdmission` seam, BG001 candidate store and existing merchant Support convention.
-- [ ] Implement the Woo-only adapter/factory and bounded provenance-checked optional checkout context resolver without altering accepted common formatter/writer.
-- [ ] Implement exhaustive R1 mapping, strict R2 inputs and awaited notifier delegation.
-- [ ] Add focused unit tests with injected notifier/candidate/lookup fakes, plus integration coverage with a real shop-scoped Support thread where a test DB is available.
-- [ ] Validate exception propagation, shared structured logs and zero extra side effects; leave workers for ARCH-048-BG005.
+- [x] Read the merged BG005 contracts/formatter/service, BG003 `onDeniedAdmission` seam, BG001 candidate store and existing merchant Support convention.
+- [x] Implement the Woo-only adapter/factory and bounded provenance-checked optional checkout context resolver without altering accepted common formatter/writer.
+- [x] Implement exhaustive R1 mapping, strict R2 inputs and awaited notifier delegation.
+- [x] Add focused unit tests with injected notifier/candidate/lookup fakes, plus integration coverage with a real shop-scoped Support thread where a test DB is available.
+- [x] Validate exception propagation, shared structured logs and zero extra side effects; leave workers for ARCH-048-BG005.
 
 ## Interfaces / Contracts
 
@@ -152,18 +152,19 @@ All were Complete in the uploaded 2026-10-25 13:36 snapshot.
 
 ## Acceptance Criteria
 
-- [ ] One awaited shared-notifier invocation per qualifying R1 denial; STOP, technical deferral and all excluded reasons create **no** consent notice.
-- [ ] Correct `WOOCOMMERCE`/`CREATE_FIRST_RECOVERY`/reason inputs; two identical denied events create at most one Support SYSTEM message using the **accepted** canonical source key.
-- [ ] Correct, shop-provenanced optional contact, basket currency/total, item count and activity fields where available; missing snapshot leaves readable, truthful notice, not an opaque checkout hash or fabricated customer.
-- [ ] Failures in candidate lookup, notification persistence or injected notifier reject and remain retryable; unexpected exceptions are not silently consumed.
-- [ ] No duplicate writer, no source-key compatibility shim, no new recovery, attempt, send, bill or worker edit; Shopify notifier regression tests stay green.
+- [x] One awaited shared-notifier invocation per qualifying R1 denial; STOP, technical deferral and all excluded reasons create **no** consent notice.
+- [x] Correct `WOOCOMMERCE`/`CREATE_FIRST_RECOVERY`/reason inputs; two identical denied events create at most one Support SYSTEM message using the **accepted** canonical source key.
+- [x] Correct, shop-provenanced optional contact, basket currency/total, item count and activity fields where available; missing snapshot leaves readable, truthful notice, not an opaque checkout hash or fabricated customer.
+- [x] Failures in candidate lookup, notification persistence or injected notifier reject and remain retryable; unexpected exceptions are not silently consumed.
+- [x] No duplicate writer, no source-key compatibility shim, no new recovery, attempt, send, bill or worker edit; Shopify notifier regression tests stay green.
 
 ## Validation
 
-- [ ] Unit matrix for every R1 reason, absent candidate, wrong-shop candidate, invalid optional data, deduplication, and first-committed body.
-- [ ] Focused Support/merchant-notice integration with two concurrent matching Woo denial callbacks and shop isolation, where test DB is configured.
-- [ ] Fault-injection tests for Redis/DB/notifier exceptions and shared logger sink failure isolation; run repository-declared typecheck and focused unit/integration scripts relevant to modified files.
-- [ ] `git diff --check`; Completion Report records tests, exact touched files, worktree isolation and any unavailable validation.
+- [x] Unit matrix for every R1 reason, absent candidate, wrong-shop candidate, invalid optional data, deduplication, and first-committed body.
+- [x] Focused Support/merchant-notice integration with two concurrent matching Woo denial callbacks and shop isolation, where test DB is configured.
+- [x] Fault-injection tests for Redis/DB/notifier exceptions and shared logger sink failure isolation; run repository-declared typecheck and focused unit/integration scripts relevant to modified files.
+- [x] `git diff --check` after patch application and `git diff --cached --check` before commit; Completion Report records exact changed files and supplied validation results.
+**Review-provenance item (unverified):** The launcher's paired-worktree mapping, start-of-attempt synchronization and recursive submodule preparation packet were not supplied. The parent branch and developer claim are recorded in the uploaded task snapshot; the updated parent task report still needs to be committed and pushed. This is disclosed for architectural review, not represented as an executed validation.
 
 ## Stop Condition
 
@@ -177,35 +178,63 @@ Only the Woo adapter and its focused tests are implementation-owned here. The ac
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-25T14:03:34Z. Attempt 0 review history is preserved below.
+**Ready for Architectural Review — developer-executed Attempt 1, implementation committed and pushed on 25 October 2026.** The current parent task shows an active developer claim and the developer supplied implementation validation and publication evidence. The reviewer should inspect the actual commit and any outstanding launcher/synchronization evidence. There is no accepted architect implementation review or explicit developer completion decision yet.
 
 ### Files Changed
 
-None.
+Implementation repository: `moda-interact-background`, commit `9b94c6d` (`feat(arch-046-background-002)`), branch `task/ARCH-046-BACKGROUND-002`, confirmed pushed to `origin/task/ARCH-046-BACKGROUND-002`.
+
+All three implementation paths were **added** (585 insertions total):
+
+- `src/services/woocommerce-recovery/woo-recovery-consent-notice.adapter.ts`
+- `tests/unit/services/woocommerce-recovery/woo-recovery-consent-notice.adapter.test.ts`
+- `tests/integration/woo-recovery-consent-notice.integration.test.ts`
+
+No accepted shared service/formatter, admission service, worker composition, schema or `_index.md` source files are included in that implementation commit.
 
 ### Work Completed
 
-None.
+- Implemented `createWooRecoveryConsentDeniedAdmissionNotifier`, an injectable, awaited callback compatible with `WooRecoveryAdmissionDependencies.onDeniedAdmission`.
+- Implemented explicit exhaustive mapping of the 13 existing `WooAdmissionDenialReason` variants: six qualifying cases map to the canonical shared notice reasons; STOP/no-contact, consent-changed and other non-consent denial cases are excluded. Unknown future reasons fail visibly.
+- Reused `RecoveryConsentMerchantNotifier.notify` with `platform: WOOCOMMERCE` and `blockedOperation: CREATE_FIRST_RECOVERY`; no new merchant Support writer, formatter, source-key scheme or database table was introduced.
+- Looked up optional context through the injected accepted Woo candidate reader using `(shopId, checkoutToken)`; validated source, tenant, checkout, event and activity evidence before projection. Omitted an unverified contact, missing/invalid basket attributes and a merchant-visible reference that the candidate contract does not supply.
+- Used the shared structured logger with bounded diagnostic fields. Candidate-store, notifier/persistence, malformed-input and unexpected-notifier-outcome failures propagate; a logger sink failure cannot convert a failed operation into success.
+- Added 27 Woo adapter unit tests and two Woo PostgreSQL integration tests; ran the existing shared merchant-notice unit and database integration suites as regressions. BullMQ worker wiring remains assigned to `ARCH-048-BACKGROUND-005`.
 
 ### Validation Results
 
-Not run; task definition only.
+Evidence: developer-supplied terminal records `typescript(20261025-145026)`, `typescript(20261025-145457)` and `typescript(20261025-150215)`.
+
+- **PASS — focused units:** `npm test -- tests/unit/services/woocommerce-recovery/woo-recovery-consent-notice.adapter.test.ts tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.service.test.ts tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.formatter.test.ts` — **3 files, 42/42 tests** (Woo adapter 27, shared service 8, formatter 7).
+- **PASS — real PostgreSQL integration:** `npm run test:integration -- tests/integration/woo-recovery-consent-notice.integration.test.ts tests/integration/recovery-consent-merchant-notice.integration.test.ts` — **2 files, 5/5 tests** (Woo 2, shared notifier 3). The same five integration tests passed again in a separate run. Coverage includes concurrent duplicate callbacks, shop isolation, immutable first-committed body and transactional write failure/retry.
+- **PASS — typecheck:** `npx tsc --noEmit && echo "TypeScript typecheck PASS"` printed `TypeScript typecheck PASS`.
+- **PASS — patch and staged diff checks:** `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all`, `git diff --check`, and `git diff --cached --check` completed without reported errors before commit.
+- **PASS — implementation version control:** commit `9b94c6d` created with exactly three new files; `git push -u origin task/ARCH-046-BACKGROUND-002` succeeded against `moda-interact-background.git`.
+- **RECORDED — developer claim:** current parent task YAML has `execution_mode: developer`, `completion_mode: developer`, `executor: developer`, `claimed_at: 2026-10-25T14:03:34Z`, `attempt: 1`, and an explicit Execution Ownership Amendment for `/moda_developer_create`.
+- **RECORDED — dedicated task locations/branches:** earlier terminal records show the implementation task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-002` on the correct task branch; the latest developer command shows the parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-BACKGROUND-002` on `task/ARCH-046-BACKGROUND-002`, clean and tracking `origin/task/ARCH-046-BACKGROUND-002`. The ZIP contains that currently claimed parent task file.
+- **NOT VERIFIED — preparation/isolation provenance:** the screenshots/logs do not provide the launcher-resolved Git-common-dir/mapping, start-of-attempt fetch/merge synchronization, or recursive implementation submodule status. Existence of plausible paths alone does not prove full preparation-policy compliance; the reviewer may request this evidence.
+- **PENDING — parent review-report publication:** the existing parent claim is recorded in the supplied task worktree; this rebased review-report patch has not yet been committed/pushed to the parent branch.
+- **NOT RUN / NOT SHOWN:** broad repository test suite, separate Shopify consumer end-to-end suite and cross-repository system tests. The accepted shared notifier's unit and PostgreSQL regression tests **did** pass; ARCH-046 system tests remain separate.
 
 ### Deviations
 
-None.
+The task's developer ownership amendment and claim were already materialised in the supplied parent worktree; `execution_mode: developer` and `completion_mode: developer` must be preserved. The implementation was applied from the supplied patch, tested, committed and pushed manually within the matching implementation task branch. The available logs do not independently verify all launcher preparation/synchronization steps; these are disclosed rather than treated as passed. No implementation-scope deviations were identified in the three-file commit.
 
 ### Assumptions
 
-This review uses the 25 October 13:36 snapshot; check the actual task worktree and dependency versions on claim.
+- The **latest uploaded parent worktree snapshot** (not the earlier unclaimed snapshot) is the source for this review-report patch. It already contains the developer claim, Attempt 1, and the execution-ownership amendment; the separately uploaded terminal record confirms implementation commit `9b94c6d`.
+- The task's four prerequisites were recorded Complete when execution was prepared, but current remote dependency metadata and the actual launcher preparation packet were not independently checked here.
+- Existing `RecoveryConsentMerchantNoticeService` is the accepted canonical implementation from ARCH-046-BACKGROUND-005; ARCH-048-BACKGROUND-005 remains responsible for binding the adapter to runtime admission workers.
 
 ### Unresolved Issues
 
-None known that blocks definition eligibility. The event-only Woo design cannot detect events never delivered to Moda.
+- Obtain the launcher-resolved Git worktree mapping, start-of-attempt synchronization, and recursive submodule preparation evidence if the reviewer requests it. The developer claim itself **is recorded** in the parent task; dedicated directory names/branches are visible, but not sufficient alone to prove full physical isolation and preparation.
+- Commit and push this updated task file on the **already-claimed parent** workspace `task/ARCH-046-BACKGROUND-002` branch, without staging the `moda-interact-background` submodule pointer. Retain implementation commit `9b94c6d` on its separate branch; do not merge either branch for submission.
+- Broad Shopify consumer and integrated system-test results are not provided; the existing shared notifier regression tests passed, and integration with the worker remains intentionally assigned to ARCH-048-BACKGROUND-005.
 
 ### Architectural Concerns
 
-Report interface or tenant-provenance gaps to the architect; do not bypass source validation.
+No new cross-repository contract, database schema, send or charging behaviour is introduced by the adapter. The candidate store's accepted payload does not provide a vetted merchant-facing checkout reference, so that optional field is omitted. The existing `## Architect Review` section below is a **pre-implementation readiness review** and is deliberately unchanged; only the authorized reviewer can assess acceptance. With `completion_mode: developer`, an accepted review still requires an explicit developer completion decision before downstream dependencies become Complete.
 
 ## Architect Review
 
