@@ -137,7 +137,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Ready for Review — developer-executed **workflow Attempt 1**, completed on 2026-10-25. Implementation was developed through seven incremental correction patches within this claim; patch attempt numbers do not increment the task claim's `attempt: 1`. Awaiting independent architect review and the developer's later explicit completion decision.
+Developer Self-Review Passed — developer-executed **workflow Attempt 1**, completed on 2026-10-25 after seven incremental correction patches within this claim. The focused implementation, PostgreSQL integration, lint and typecheck checks passed in the canonical worktree. The task remains `review` pending the developer's explicit completion decision; this self-review is not an architect acceptance.
 
 ### Files Changed
 
@@ -153,6 +153,7 @@ Task-owned implementation in `moda-interact-admin/`:
 - `package.json`, `package-lock.json` (task test scripts/dependencies and Shared version alignment)
 
 This handoff changes **only this task definition in the parent workspace**. No domain `_index.md`, parent architecture, schema/migration, or sibling task is changed by the review-handoff patch.
+This review update changes **only this task definition in the parent workspace**. No domain `_index.md`, parent architecture, schema/migration, or sibling task was changed by the review.
 
 ### Work Completed
 
@@ -166,6 +167,15 @@ This handoff changes **only this task definition in the parent workspace**. No d
 
 Developer terminal capture: `typescript(20261025-200718)`, dated 2026-10-25, against the supplied `moda-interact-workspace-ARCH-047-ADMIN-007.zip` snapshot.
 
+Fresh canonical-worktree verification on 2026-10-25:
+
+- **PASS** — `npm run test:arch047-admin-publication:unit`: 19 passed, 0 failed.
+- **PASS** — `npm run test:arch047-admin-publication:postgres`: 5 passed, 0 failed; the runner printed `PASS ARCH-047 ADMIN-007 disposable PostgreSQL`.
+- **PASS** — scoped `npx eslint` across the publication route, server action, publication services/components, helpers, tests and runners: 0 errors. ESLint emitted only three warnings because the configured ignore rules exclude the two unit test files and PostgreSQL integration test from lint.
+- **PASS** — `npx tsc --noEmit`; completed without diagnostics.
+- **PASS** — `git diff --check origin/main...HEAD` on the implementation task branch and `git diff --check` on the parent task record; no whitespace errors.
+| **ESLint:** the archived run lacked a final invocation; fresh scoped ESLint verification on 2026-10-25 completed with zero errors and three configured ignored-test warnings (see fresh results above). |
+
 - **PASS** — `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` for correction patch 7; no patch/whitespace errors were printed.
 - **PASS** — `npx tsc --noEmit` (no TypeScript errors reported).
 - **PASS** — `npm run test:arch047-admin-publication:unit`: **19 passed / 0 failed**, covering pure rules and server-rendered/component interactions.
@@ -175,9 +185,9 @@ Developer terminal capture: `typescript(20261025-200718)`, dated 2026-10-25, aga
 
 ### Worktree and Preparation Evidence
 
-- The supplied task record identifies an authorised developer takeover and a dependency-verified Attempt 1 claim on 2026-10-25.
-- The final archive-generation transcript names dedicated parent and implementation paths: `moda-interact-workspace-task-ARCH-047-ADMIN-007` and `moda-interact-workspace.worktrees/ARCH-047-ADMIN-007`. The task implementation branch and remote push are visible in the terminal capture.
-- **Review evidence limitation:** the supplied final terminal capture does not contain the original launcher-resolved preparation packet, complete start-of-attempt Git synchronisation transcript, or recursive submodule materialisation proof. The reviewer should verify those against the actual worktrees/preparation record; successful tests and a push are not substitutes for that evidence.
+- The canonical launcher resolved parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-007` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-007`, both registered on `task/ARCH-047-ADMIN-007` in their respective repositories.
+- At review, implementation worktree was clean at `83443cf83426a19462b3fd1e9a1fc3399bb6448b`, equal to `origin/task/ARCH-047-ADMIN-007` and containing current Admin `origin/main` (`ad6802d315aecb1cf47b8bc18884821ee0c7c2f5`). Recursive submodule status showed `database` at recorded gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`, with no uninitialized, mismatched or unresolved status.
+- Parent task worktree was clean at review start, fast-forwarded to its published review submission, and merged current workspace `origin/main` into the task branch as `21e30644d758abc7729547879eba2926c0c91baf`; merge completed without conflict. The review task-record update is published after that merge. No implementation or submodule changes were made during review.
 
 ### Deviations
 
@@ -193,13 +203,12 @@ Developer terminal capture: `typescript(20261025-200718)`, dated 2026-10-25, aga
 
 ### Unresolved Issues
 
-- No failing task-scoped tests are shown in the latest supplied validation log.
-- Original launcher preparation/synchronisation and recursive submodule evidence has not been independently reproduced from the archive. Verify during architect review; request evidence-only correction if required.
+- No failing task-scoped tests were observed in the fresh canonical-worktree review runs. The three ESLint warnings are configured ignores for test files, not lint errors.
 - Production deployment, live Meta provider state, and integrated ARCH-047 system tests are separate architectural verification steps and are not claimed as completed by this task.
 
 ### Architectural Concerns
 
-- Final acceptance still requires independent assessment of all scope, authorisation, concurrent publication and source-identity guarantees against the implementation branch. `status: review` is a handoff, **not** an architect acceptance or developer completion decision.
+- Developer self-review passed against the implementation and focused tests. Architect acceptance remains pending, and `status: review` still awaits the developer's explicit completion decision; this record does not claim production deployment, live Meta state, or integrated ARCH-047 system-test completion.
 
 ## Execution Ownership Amendment
 
@@ -234,3 +243,17 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Developer Self-Review Passed/Accepted
+
+### Review Decision
+
+Developer self-review of workflow Attempt 1 passed on 2026-10-25. The implementation branch is clean and published, the task's Work Items and Acceptance Criteria are complete, fresh focused unit and PostgreSQL tests passed, scoped ESLint reported zero errors, and TypeScript plus diff checks passed. Canonical parent/implementation worktree identity, synchronization, current-main ancestry and recursive submodule state were verified and recorded above. No implementation blocker or incomplete task-owned criterion was found in this review.
+
+### Review Scope and Residual Boundaries
+
+Reviewed the protected route/server actions, source and approval validation, preview/confirmation freshness, per-shop transactional assignment and idempotent paging/retry, component decomposition, and task-specific unit/PostgreSQL coverage. Production deployment, live Meta provider state and integrated ARCH-047 system tests remain outside this task's acceptance scope.
+
+### State Transition
+
+Remain `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. Because `completion_mode: developer`, explicit developer completion is pending via `/moda_developer_update ARCH-047-ADMIN-007 complete`. Architect acceptance is also not implied by this self-review.
