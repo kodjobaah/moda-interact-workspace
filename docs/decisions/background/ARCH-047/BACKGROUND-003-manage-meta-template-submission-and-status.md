@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: blocked
 priority: 25
-executor: developer
-claimed_at: 2026-10-25T19:11:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
@@ -31,7 +31,7 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-This task was originally defined from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It is now materialised and claimed for developer execution in canonical task worktrees after confirming the current DB001 prerequisite is complete and synchronizing the parent task branch with current workspace `origin/main`. No new ARCH-047 Shared package is assumed. Reconcile the current parent architecture and `BACKGROUND-001` implementation against the final Admin-owned AST/compilation and DB-backed contracts before implementation; retain the queue-contract stop condition below.
+This task was originally defined from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It was materialised and claimed for developer execution in canonical task worktrees after verifying DB001 completion and synchronising with the workspace mainline. Attempt 1 implemented the module and is now blocked at the agreed Messaging queue-contract boundary; see the Completion Report. No new ARCH-047 Shared package is assumed. Preserve the cross-repository stop condition until the architect decides whether to narrow this task or separately define queue integration.
 
 ## Objective
 
@@ -71,9 +71,9 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 ## Work Items
 
 - [ ] Implement `src/services/meta-template-management/` with focused submission orchestrator, server-only Meta Graph API adapter, reconciliation reader, webhook-status consumer, Prisma repository and module-local ports. Wire `whatsapp-events` worker dispatch through a thin job-name handler when the Messaging producer contract is available.
-- [ ] Consume frozen `WhatsAppTemplateMetaRegistration` rows and append `WhatsAppTemplateMetaEvent` receipts. Background maintains current `providerStatus`, provider ID and drift observations, **not** authoring ASTs, translation content, shop assignments or publication permissions.
+- [x] Consume frozen `WhatsAppTemplateMetaRegistration` rows and append `WhatsAppTemplateMetaEvent` receipts. Background maintains current `providerStatus`, provider ID and drift observations, **not** authoring ASTs, translation content, shop assignments or publication permissions.
 - [ ] Reuse existing sender/WABA credential resolution, Meta API error/retry conventions, BullMQ worker orchestration and structured logging.
-- [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
+- [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
 - [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
 ## Interfaces / Contracts
@@ -87,7 +87,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 - `ARCH-047-DATABASE-001`
 
 
-**Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 is developer-owned and may remain in progress pending explicit completion. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
+**Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 was confirmed `complete` for Attempt 1. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
 
 ## Enables
 
@@ -96,20 +96,20 @@ None in this nine-task Background set.
 ## Acceptance Criteria
 
 - [ ] Unit tests show Meta POST receives the stored compiled payload **unchanged** and refuses any Meta edit endpoint, external template adoption or unpublished intent.
-- [ ] Image-header submissions use a valid authorised sample/media handle; a missing, invalid or external-original-URL sample is blocked before provider creation. Text-only templates continue unchanged. Submission never performs ShopBrand ingestion/R2 preprocessing.
+- [x] Image-header submissions use a valid authorised sample/media handle; a missing, invalid or external-original-URL sample is blocked before provider creation. Text-only templates continue unchanged. Submission never performs ShopBrand ingestion/R2 preprocessing.
 - [ ] Duplicate submission, provider timeout + GET reconciliation, provider rejection, rate limiting and WABA mismatch tests; no double POST after confirmed creation.
 - [ ] Authenticated queue observation tests, wrong job name/version, duplicate and reordered APPROVED/PAUSED/DISABLED, unmatched external template and provider-content drift.
-- [ ] PostgreSQL integration exercises unique event identities, registration status transitions and append-only event evidence; no automatic shop activation.
+- [x] PostgreSQL integration exercises unique event identities, registration status transitions and append-only event evidence; no automatic shop activation.
 - [ ] Existing inbound/message-status queue processing and final-send admission regressions pass; focused unit/build/typecheck and `git diff --check`. End-to-end Meta webhook receipt belongs to Messaging/System Test.
-- [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
-- [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+- [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
+- [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
 ## Validation
 
 - [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
-- [ ] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
+- [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
 - [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
-- [ ] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
+- [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
 
@@ -127,35 +127,74 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — developer execution Attempt 1, claimed 2026-10-25T19:11:32Z. `ARCH-047-DATABASE-001` is complete. Canonical parent and implementation worktrees are prepared and synchronized; implementation has not started in this preparation workflow.
+Blocked — developer Attempt 1, initially claimed `2026-10-25T19:11:32Z`. The bounded Meta submission/reconciliation module has been implemented and committed, but the full BG003 task cannot yet satisfy the queued-status-job and final-send regression criteria. Returning the cross-repository boundary to `moda_architect` for a scoped decision; not claiming Accepted/Complete.
 
 ### Files Changed
 
-None yet.
+Implementation repository (`moda-interact-background/`, commit `568eed8`):
+
+- `src/services/meta-template-management/contracts.ts`
+- `src/services/meta-template-management/index.ts`
+- `src/services/meta-template-management/meta-graph.adapter.ts`
+- `src/services/meta-template-management/repository.ts`
+- `src/services/meta-template-management/service.ts`
+- `tests/unit/services/meta-template-management/meta-management.test.ts`
+- `tests/integration/arch047-meta-template-management.integration.test.ts`
+
+No parent architecture file, `_index.md`, existing WhatsApp worker, Messaging repository, or database schema was changed by this implementation commit.
 
 ### Work Completed
 
-None yet.
+- Implemented module-local create-only Meta submission, frozen compiled-component transport, private server-side WABA credential use, image-header sample validation and provider-name collision blocking.
+- Persisted a claim and POST intent before provider I/O; handled unknown create outcomes without blindly reposting; exposed reconciliation and bounded due-processing ports.
+- Added Prisma-backed append-only Meta event evidence, event identity deduplication, provider projection and drift detection; no automatic merchant/shop activation or external-template adoption.
+- Added injectable authenticated status-observation processing with repeat/reorder handling. This is **not** the production `whatsapp-events` queue decoder/handler.
+- Used `@modainteract/moda-interact-shared/logging` and preserved/propagated unexpected errors; logging and compensation-error behavior are covered in focused unit tests.
+- Implemented 16 new unit tests and one disposable-PostgreSQL integration scenario with multiple database assertions.
+- Developer terminal evidence records a successful implementation commit and push: `568eed8` (`feat(arch-047-background-003)`) to `origin/task/ARCH-047-BACKGROUND-003`. The recording does **not** establish a later parent task-branch push or architect acceptance.
 
 ### Validation Results
 
-Not run; implementation validation remains outstanding.
+Evidence: uploaded terminal recording `typescript(20261025-192158)` and the matching code snapshot `moda-interact-workspace-ARCH-047-BACKGROUND-003.zip`.
+
+| Check | Command / evidence | Outcome |
+|---|---|---|
+| Dependencies | `npm ci`; `npm run prisma:generate` | Completed; npm reported 20 audit advisories (8 moderate, 12 high), not investigated in this task |
+| Build/typecheck | `npm run build` (`prisma:generate` followed by `tsc`) | Passed; no TypeScript errors reported |
+| Focused lint | `npx eslint src/services/meta-template-management tests/unit/services/meta-template-management` | No ESLint diagnostics reported in captured run |
+| Unit + existing status/worker regression | `npx vitest run tests/unit/services/meta-template-management/meta-management.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts` | **69/69 passed in 3 test files** (16 new, 53 existing) |
+| Disposable PostgreSQL integration | `npm run test:integration -- tests/integration/arch047-meta-template-management.integration.test.ts` | **1/1 passed**, real Prisma persistence, concurrent claims, duplicate observation, reconciliation, stale CAS and no variant activation |
+| Local diff check | `git diff --check` appears in terminal during patch application | No whitespace diagnostic shown; final post-commit diff check is not independently recorded |
+| Branch publication | `git commit` and `git push -u origin task/ARCH-047-BACKGROUND-003` | Background implementation commit `568eed8` pushed |
+| Final outbound-admission regression | Not present in captured commands | **Not run/verified** |
+| Template-status BullMQ producer/consumer integration | No agreed ARCH-047 Messaging producer/job contract in supplied snapshot | **Not implemented/tested** |
+| Real Meta webhook end-to-end | Separate Messaging/system-test boundary | **Not run** |
+
+The existing database integration test is a **single combined scenario**, not a comprehensive matrix of independent database tests. It runs against the disposable test database (`TEST_DATABASE_URL`, `MODA_DISPOSABLE_INTEGRATION=1`); it does not exercise a BullMQ template-status job because that producer/consumer contract is absent.
 
 ### Deviations
 
-None recorded.
+- Did not wire a `message_template_status_update` job into `whatsapp-events`, or implement wrong-job-name/version rejection: the agreed Messaging producer and canonical cross-repository queue format are absent from this snapshot. A guessed local envelope would violate the task's explicit queue-contract stop condition.
+- Implemented module-owned due-processing entrypoint only; no production scheduling caller or independent new queue was added.
+- Did not run the existing final-send admission regression suite, so that acceptance condition is left unchecked.
+- An initial patch-application command failed because the downloaded patch was not yet at the named local path; a subsequent application and the committed implementation are visible in the recording. The failed command is not counted as successful validation.
 
 ### Assumptions
 
-The DB001 Attempt 7 model names and fields are authoritative design inputs, not proof of an accepted/applied production migration. Reinspect current implementation on claim.
+- `ARCH-047-DATABASE-001` was `complete` at claim time per the canonical task record. The tested Prisma schema provides the expected registration/event tables.
+- Admin owns preparation of immutable compiled components and authorised image sample handles; Background neither recompiles the AST nor ingests original merchant images.
+- Messaging owns verification and publication of future Meta template-status events. Background accepts only validated/authenticated observation data at its current module-level port.
 
 ### Unresolved Issues
 
-The parent ARCH-047 architecture and `BACKGROUND-001` still require final reconciliation with the Admin-owned AST/compilation and no-new-Shared-template-package decision before work begins.
+1. `ARCH-047-MESSAGING-001` is **planned but not defined** in the uploaded architecture. Agree and materialise its authenticated template-status BullMQ payload/job contract; then assign the correct owner to wire the existing Background `whatsapp-events` dispatcher and cover wrong name/version rejection.
+2. Architect to decide whether this BG003 task should remain blocked pending that integration or be explicitly **narrowed** to the now-validated module, with a separate dependent queue-integration task. Do not silently treat the present module as a wired consumer.
+3. Run and record the applicable outbound-admission/final-send regression suite before full BG003 acceptance. No passing result is claimed from the current terminal log.
+4. Inspect task-isolated start-of-attempt synchronisation evidence and both published mirrored task branches during review. The task preparation metadata documents worktree paths and initial synchronisation; the terminal recording independently confirms the implementation worktree and background push only.
 
 ### Architectural Concerns
 
-If queue transport requires a new, genuinely cross-repository canonical contract unavailable in the installed Shared version, stop that slice and return the dependency gap to `moda_architect` instead of inventing a local duplicate.
+The missing Messaging queue contract is a cross-repository interface gap. No new private schema or unapproved Shared package should be created inside Background. Do not infer readiness for production Meta webhook processing, background polling or customer sends from the module-only tests. There is no evidence of changing the consent, STOP or final outbound-admission safeguards.
 
 ## Architect Review
 
