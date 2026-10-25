@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 15
 executor: null
 claimed_at: null
@@ -132,7 +132,7 @@ Follow the repository's published entrypoint patterns and the canonical task lau
 
 ### Status
 
-Developer Self-Review Passed — developer-executed workflow Attempt 1, claimed at `2026-10-25T21:18:09Z`. The implementation and its TypeScript correction are committed and pushed; focused/full tests, typecheck, production build, package validation and diff checks pass. Task remains `review` until the developer makes the explicit completion decision required by `completion_mode: developer`. Attempt 0 review history is retained below.
+Developer Completed — explicit developer completion decision recorded on 2026-10-25 for workflow Attempt 1, following the passing developer self-review. Implementation commits and all focused/full validation are published and passing. Architect acceptance remains pending; this developer completion decision is not architect acceptance. Attempt 0 review history is retained below.
 
 ### Files Changed
 
@@ -237,4 +237,12 @@ Reviewed the strict nine-field schema, UUID v4 event/job identity formatters, br
 
 ### State Transition
 
-Set `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. Because `completion_mode: developer`, explicit developer completion remains pending via `/moda_developer_update ARCH-047-SHARED-001 complete`. This self-review is not architect acceptance.
+The self-review initially left `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`, with explicit developer completion pending.
+
+## Developer Completion Decision
+
+On 2026-10-25, the developer explicitly invoked `/moda_developer_update ARCH-047-SHARED-001 complete`. The durable passing review is present, all required Work Items and Acceptance Criteria are complete, implementation commits `b9a14730dad04df7cce8e3665783af663a284dae` and `6a01cba02351ebb7c0ea56be8d5f6eb20fdb121e` are published, and the parent task/report change is publishable. The task is now `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. This does not constitute architect acceptance or a merge to `main`.
+
+### Dependency Frontier
+
+`ARCH-047-SHARED-002` remains `pending`: its explicit publication requirement is SHARED-001 status `complete` **and accepted Architect Review**. Developer completion satisfies the status prerequisite only; no package publication or consumer task eligibility is claimed. No other task declares SHARED-001 as a dependency in the current task inventory.
