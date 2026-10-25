@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 15
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-25T21:18:09Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-047-SHARED-002
@@ -132,7 +132,7 @@ Follow the repository's published entrypoint patterns and the canonical task lau
 
 ### Status
 
-Materialized and ready for developer execution; Attempt 0 remains unclaimed until canonical preparation succeeds.
+In Progress — Attempt 1 claimed by developer at 2026-10-25T21:18:09Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
