@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -136,7 +136,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-**Review — developer workflow Attempt 1 (claimed at `2026-10-25T16:02:15Z`).** Developer self-review passed on 25 October 2026. Implementation commit `8e2ddcc` is published to the Admin repository's `task/ARCH-047-ADMIN-005` branch. Because `completion_mode: developer`, explicit developer completion remains pending; this task is not Complete.
+**Complete — developer workflow Attempt 1 (claimed at `2026-10-25T16:02:15Z`).** Developer self-review passed, and the developer explicitly completed the task on 25 October 2026. Implementation commit `8e2ddcc` is published to the Admin repository's `task/ARCH-047-ADMIN-005` branch. Attempt remains 1; no merge to `main` was performed.
 
 ### Files Changed
 
@@ -211,11 +211,11 @@ The implementer did not provide a separate focused accessibility automation repo
 
 - The locally available generated Prisma Client and disposable PostgreSQL schema reflect the accepted `ARCH-047-DATABASE-001` persistence boundary.
 - Translation run/source snapshots and keyed translation items are validly produced by their owning task; this task validates them at the Admin boundary. Independent Background/provider integration remains the architecture-wide system-test responsibility.
-- This is a developer-executed task (`execution_mode: developer`, `completion_mode: developer`); **no acceptance or completion decision is implied** by this submission.
+- This is a developer-executed task (`execution_mode: developer`, `completion_mode: developer`). The passing self-review and explicit completion decision are recorded below; architect acceptance and any mainline merge remain separate.
 
 ### Unresolved Issues
 
-- **Review evidence to verify:** the launcher's physical-isolation/start synchronisation/recursive submodule materialisation packet and the parent task branch publication; these are not established by the provided terminal transcripts/archive alone.
+- Worktree isolation, current `origin/main` ancestry, clean state and recursive database submodule gitlink were verified live during developer self-review; the execution packet itself is not retained as a separate artifact.
 - No remaining task-scoped test or build failures were shown in the supplied validation logs. The build/lint warnings above remain visible for reviewer assessment.
 
 ### Architectural Concerns
@@ -247,15 +247,22 @@ Conforms to the Admin-only immutable translation review/compilation boundary. No
 
 ### Follow-up
 
-Developer may explicitly complete with `/moda_developer_update ARCH-047-ADMIN-005 complete`. No sibling or downstream task was started.
+Task completion is recorded below. No sibling or downstream task was started; the dependent ARCH-049 system test remains pending on its other prerequisites.
 
 ## Developer Self-Review - Passed
 
 - Attempt: 1; reviewed 25 October 2026.
 - Result: Passing; no known required Work Item or Acceptance Criterion remains incomplete.
 - Implementation branch: `task/ARCH-047-ADMIN-005`, commit `8e2ddcc7bc251597639f4138dde30a077a663707`, pushed and clean.
-- Parent task branch: `task/ARCH-047-ADMIN-005`; this review record will be committed and pushed separately.
-- Completion decision: pending explicit developer action because `completion_mode: developer`; status remains `review`, attempt remains 1, executor and claim timestamp are null.
+- Parent task branch: `task/ARCH-047-ADMIN-005`; review record was committed and pushed as `b3dc79ba3c8272feddae73d25c90ab55e8ccf6d8`.
+- Completion decision: recorded below; status transitioned to `complete`, attempt remains 1, executor and claim timestamp are null.
+
+## Developer Completion Decision
+
+- Date: 25 October 2026.
+- Decision: The developer explicitly completed Attempt 1 after the durable passing self-review; all task-scoped Work Items and Acceptance Criteria are marked complete, and implementation commit `8e2ddcc7bc251597639f4138dde30a077a663707` is published.
+- State: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. No merge to either repository's `main` branch was performed.
+- Dependency frontier: `ARCH-049-SYSTEM-TEST-001` explicitly depends on this task and remains `pending` because its other required ARCH-049 implementation dependencies are not complete. It was not promoted or otherwise modified.
 
 ## Execution Ownership Amendment
 
