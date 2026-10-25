@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 38
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-25T19:17:50Z
+attempt: 2
 depends_on:
   - ARCH-046-BACKGROUND-001
   - ARCH-046-BACKGROUND-002
@@ -36,7 +36,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Execution frontier (25 October 2026): Ready, unclaimed, Attempt 0.** `ARCH-046-BACKGROUND-002` is explicitly Complete on its parent task branch at commit `64d20849`; the other declared dependencies are Complete. This task is promoted from `pending` to `ready` after all explicit dependencies became Complete. Its old external requirement for a Woo follow-up engine has been removed because this task is **narrowed to the initial-send/final-permit capability already required by ARCH-048**. No attempt is claimed or started by this promotion.
+**Execution frontier (25 October 2026): In Progress, developer Attempt 2.** All four declared dependencies are Complete. Attempt 1 was returned to `ready` by developer self-review; its implementation corrections remain preserved on the implementation task branch. Attempt 2 was claimed only after canonical worktree synchronization and recursive submodule verification. This task remains **narrowed to the initial-send/final-permit capability already required by ARCH-048**; outstanding tests and report evidence must be completed before review.
 
 ## Execution Ownership Amendment
 
@@ -165,7 +165,7 @@ The earlier BG004 definition required a Woo follow-up engine that ARCH-048 delib
 
 ### Status
 
-**Changes Requested — evidence update, not a new review submission.** Developer workflow Attempt 1 remains the last recorded claim and was returned to `ready` by self-review. The follow-up code/test corrections were pushed in implementation commit `984d568`, but the parent task snapshot still records `attempt: 1`, `status: ready`, `executor: null` and `claimed_at: null`; no canonical Attempt 2 claim is evidenced. Do not mark this task `review` until the developer preparation, required tests and Completion Report evidence are complete. Architect acceptance and developer completion are not claimed.
+**In Progress — developer Attempt 2**, claimed at `2026-10-25T19:17:50Z`. Attempt 1 was returned to `ready` by self-review; its follow-up corrections remain published in implementation commit `984d568`. Attempt 2 preparation and dependency checks are recorded below. Required race/fault/regression tests and final Completion Report evidence remain outstanding. Do not mark this task `review` until those requirements are complete. Architect acceptance and developer completion are not claimed.
 
 ### Files Changed
 
@@ -239,7 +239,7 @@ The latest log **does establish** repository lint, no-emit typecheck and product
 - Canonical parent worktree named by the archive and startup record: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-BACKGROUND-004`.
 - Dedicated implementation worktree shown by the terminal archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-004`.
 - The latest terminal log confirms implementation branch `task/ARCH-046-BACKGROUND-004`, correction commit `984d568`, and successful push to `origin/task/ARCH-046-BACKGROUND-004`. A bare `git push` initially failed because the local branch tracked `origin/main`; the later explicit task-branch push succeeded and established the correct upstream.
-- The archive helper identifies the two dedicated worktree **paths**, but a path and matching branch name do not themselves prove Git common-dir isolation, launcher resolution or start-of-attempt synchronization. The parent task is still `ready`, with Attempt 1, and no Attempt 2 preparation packet/claim appears in the supplied evidence. The earlier Attempt 1 claim records recursive database submodule gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`; the latest log does not independently revalidate it.
+- The Attempt 1 evidence did not prove Git common-dir isolation, launcher resolution or start-of-attempt synchronization. The canonical launcher and repository worktree registrations were checked for Attempt 2. Parent branch `task/ARCH-046-BACKGROUND-004` was clean, fast-forwarded to its remote task branch and merged with current workspace `origin/main` as `7df242e3b7d379971e511da6e02c54abd66ace8c`; the merge was conflict-free. Implementation branch `task/ARCH-046-BACKGROUND-004` was clean at `984d568968cc43f173a20e1b87d0fa6a0981ff6d`, equal to `origin/task/ARCH-046-BACKGROUND-004` and containing current Background `origin/main` (`3b7608e8f97a944b8bca51064658e07fd7b00d7f`). Recursive submodule sync/update/status completed; `database` is initialized at recorded gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`, with no uninitialized, mismatched or unresolved status. All four declared dependencies were verified `complete`. No implementation edits were made during preparation.
 - The terminal log shows an untracked `typescript` recording in the implementation worktree; it was **not included** in the eight-file commit `984d568`.
 
 ### Deviations
@@ -255,7 +255,7 @@ No new database migration, new shared API, Woo follow-up engine or BG005 worker 
 ### Unresolved Issues
 
 - **Still required before resubmission:** execute and capture the new independent-client Woo PostgreSQL lock/race/fault tests, the Redis failure/credit test, relevant modified provider and Woo sender unit tests, and the existing general/Shopify STOP and HUMAN/AI regression suites. Verify non-Woo behaviour, billing attribution and provider reconciliation from their actual assertions/results. Tests present in a commit do **not** substitute for passing results.
-- **Workflow evidence still required:** the parent snapshot has no formal Attempt 2 claim. Reclaim through `/moda_developer_create ARCH-046-BACKGROUND-004` and preserve its prepared execution packet, synchronization record, Git common-dir physical isolation and recursive submodule evidence; do not invent or backdate a claim.
+- **Workflow evidence:** Attempt 2 is now formally claimed; launcher-resolved worktrees, synchronization and recursive submodule state are recorded above. Physical worktree registrations and repository/branch identity were verified at the canonical paths.
 - No BG005 worker wiring, Woo outbound activation, or end-to-end production send is claimed as part of this task.
 
 ### Architectural Concerns
