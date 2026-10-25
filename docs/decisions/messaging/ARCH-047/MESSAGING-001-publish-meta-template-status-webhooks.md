@@ -9,12 +9,13 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 25
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: []
+depends_on:
+  - ARCH-047-SHARED-002
 enables: []
 created: 2026-10-25
 updated: 2026-10-25
@@ -30,9 +31,9 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-**Authoritative consumer contract:** `docs/decisions/background/ARCH-047/BACKGROUND-003-manage-meta-template-submission-and-status.md`, **Attempt 2, Requirement R3**. The normalized payload, SHA-256 identity and BullMQ options in this task reproduce that frozen consumer contract. They are **not** a second independently designed protocol. If the live BG003 contract differs, stop and return the difference to the architect; do not invent a compatible-looking local event.
+**Authoritative cross-repository contract:** published `@modainteract/moda-interact-shared/whatsapp-template-events` **v2** from `ARCH-047-SHARED-001/002`. BG003 consumes the same schema. The earlier document-only v1 hash-based event ID is superseded before production. No Admin AST contract is moved into Shared.
 
-This is a **portable task definition**: the source snapshot permits determining scope and readiness, but no task branch, task worktree, commit or push has been created by its authorship. `status: ready` means the task has no formal prerequisite; execution must still be materialised/claimed through the canonical task launcher.
+This is a **portable task definition**: the source snapshot permits determining scope and readiness, but no task branch, task worktree, commit or push has been created by its authorship. `status: pending` awaits the Shared publication gate; execution must still be materialised/claimed through the canonical task launcher.
 
 ## Objective
 
@@ -42,7 +43,7 @@ Extend the existing signed Meta WhatsApp webhook ingress to durably enqueue one 
 
 The current `moda-interact-messaging` code already authenticates the raw `POST /webhook/whatsapp` body in `app/routes/whatsapp.tsx`, stages existing inbound and delivery-status observations in `app/lib/whatsapp/webhook-preflight.ts`, dispatches in `app/lib/whatsapp/webhook-dispatch.server.ts` and publishes using `app/lib/whatsapp/whatsapp-job-publisher.server.ts` to the `whatsapp-events` BullMQ queue. Preflight currently ignores all change fields other than `messages`.
 
-`ARCH-047-BACKGROUND-003` already owns a Meta template management service and, in Attempt 2, owns the strict `whatsapp-events` consumer for **this exact job**. Messaging must not read/write PostgreSQL, interpret template approval, query Meta, create template registrations or activate merchant assignments.
+`ARCH-047-BACKGROUND-003` owns the Meta management consumer for **this exact published Shared v2 job**. Messaging must not read/write PostgreSQL, interpret template approval, query Meta, create template registrations or activate merchant assignments.
 
 Meta template-status webhooks are **WABA-level** events; unlike ordinary `messages` callbacks, they may arrive only at the Meta app's **default webhook callback URL**. Verify the actual app-level callback/subscription and route at handoff. A WABA/phone-specific `messages` callback override is not proof that template events will reach this service.
 
@@ -51,8 +52,8 @@ Meta template-status webhooks are **WABA-level** events; unlike ordinary `messag
 Only `moda-interact-messaging/` source/tests and this assigned task file. Required source ownership:
 
 ```text
-app/lib/whatsapp/template-status-normalizer.ts          NEW: pure Meta-change to bounded v1 field mapping
-app/lib/whatsapp/template-status-job-identity.server.ts NEW: canonical JSON/SHA-256 identity helper
+app/lib/whatsapp/template-status-normalizer.ts          NEW: pure Meta-change to bounded v2 field mapping
+app/lib/whatsapp/template-status-observation-id.server.ts NEW: generate a fresh UUID v4 per authenticated change; format using Shared v2 helper
 app/lib/whatsapp/webhook-preflight.ts                   EXTEND: stage template changes with existing events
 app/lib/whatsapp/webhook-dispatch.server.ts             EXTEND: dispatch new staged kind in sequence
 app/lib/whatsapp/whatsapp-job-publisher.server.ts       EXTEND: one narrow template-status publisher
@@ -67,9 +68,9 @@ The task may choose a smaller equivalent split only if it preserves focused, sep
 - No new REST/webhook endpoint, Meta app registration automation, provider GET/POST operations, database model/migration or PostgreSQL connection in Messaging.
 - No `MetaTemplateRegistration` lookup; do not filter out unknown/external templates at ingress. Background handles author provenance and current provider state.
 - No BG003 consumer, its polling scheduler, provider reconciliation, drift detection, WhatsApp sending, customer admission or automatic merchant publication. Those belong to Background.
-- No generic Shared AST/event package, template AST parsing, translation, image processing or R2 interaction.
+- No generic Shared AST package, template AST parsing, translation, image processing or R2 interaction.
 - No changes to the existing inbound v1, outbound provider-status v3 or conversation-turn queue contracts.
-- `message_template_components_update`, `message_template_quality_update` and `template_category_update` are outside this **status-only v1** producer; continue ignoring unrelated fields, reporting later feature gaps to the architect if necessary.
+- `message_template_components_update`, `message_template_quality_update` and `template_category_update` are outside this **status-only v2** producer; continue ignoring unrelated fields, reporting later feature gaps to the architect if necessary.
 
 ## Requirements
 
@@ -94,7 +95,7 @@ Preflight **all relevant changes before the first queue operation**. Preserve me
 
 In signed payloads, recognise **only** changes where `field === "message_template_status_update"` within `object: "whatsapp_business_account"`, `entry[]`, `changes[]`. Stage **one** template-status event per such change. For template events the surrounding `entry.id` is the authoritative **WABA ID**; never substitute `value.metadata.phone_number_id` or another phone-number identifier. Leave unrelated changes alone.
 
-The source-to-v1 mapping is exact:
+The source-to-v2 mapping is exact:
 
 | Meta path | Outbound property | Required handling |
 |---|---|---|
@@ -110,16 +111,14 @@ For any numeric provider ID, accept only a **safe nonnegative integer** that can
 
 Known statuses include `APPROVED`, `REJECTED`, `PENDING`, `PAUSED` and `DISABLED`; **do not implement an exhaustive status allowlist**. A new but bounded, well-formed Meta status string must be forwarded unchanged for BG003 to record as unknown/unavailable and reconcile. Never coerce an unrecognised status to `APPROVED`.
 
-### R3 — Exact `whatsapp-events` queue/job payload v1
+### R3 — Exact `whatsapp-events` queue/job payload v2
 
-Publish to the **existing queue** `whatsapp-events`, using the **case-sensitive job name** `meta-template-status-update`. Never use `message-received`, `message-status` or `process-conversation-turn` for template-status observations.
-
-The job `data` must be an object containing **exactly these nine properties**, with types/keys as shown; no raw provider webhook or extra internal fields:
+Use the **published Shared** `MetaTemplateStatusObservationV2Schema` and `META_TEMPLATE_STATUS_{QUEUE,JOB,SCHEMA_VERSION}`. Queue remains `whatsapp-events`, job name `meta-template-status-update` and retry options `attempts: 5`, exponential 5000ms. Payload has **exactly nine** fields:
 
 ```json
 {
-  "schemaVersion": 1,
-  "eventIdentity": "meta-template-status:v1:022da3c966c7197c8e225393be7963e771f032b148739e6f9156ee446c565ef4",
+  "schemaVersion": 2,
+  "eventIdentity": "meta-template-status:v2:550e8400-e29b-41d4-a716-446655440000",
   "wabaId": "123456789",
   "providerTemplateId": "987654321",
   "providerTemplateName": "checkout_recovery_initial_v2",
@@ -130,53 +129,29 @@ The job `data` must be an object containing **exactly these nine properties**, w
 }
 ```
 
-`schemaVersion` is the JSON number `1`, not the string `"1"`. `providerTemplateId` is a **string or null**, never a JSON number. `eventIdentity` must match R4. The encoded `JSON.stringify(job.data)` must be **at most 4096 UTF-8 bytes**; reject oversize changes during preflight rather than enqueuing a payload the Background decoder will reject. The producer must not forward webhook `object`/`entry`/`changes`, category, arbitrary provider metadata, message contents, credentials, headers or unneeded customer data.
+Reject missing/unknown fields, malformed identities, invalid timestamps, wrong schema version, malformed IDs, unsafe numeric source IDs and UTF-8 job data >4096 bytes **during whole-batch preflight**. Preserve Meta spelling and unknown bounded status values. `receivedAt` is Messaging's receipt time, not Meta event ordering. Do not include raw webhook/customer payloads, headers, Meta credentials or AST. The producer/consumer must run the **same published Shared fixture** and v2 validator; neither may redefine the event locally.
 
-### R4 — Deterministic cross-service event identity and BullMQ job ID
+### R4 — Occurrence identity rather than content-based dedupe
 
-Meta does not supply a stable occurrence ID for this event. Build the identity preimage using **only** the six normalised values below in this exact **lexicographic key order**:
-
-```json
-{"providerLanguageCode":"en_GB","providerStatus":"APPROVED","providerTemplateId":"987654321","providerTemplateName":"checkout_recovery_initial_v2","reasonCode":"NONE","wabaId":"123456789"}
-```
-
-Algorithm: construct an object with the six lexicographically sorted keys, serialise as **compact UTF-8 JSON** (no spaces/newlines, conventional JSON string escaping), SHA-256 the exact bytes and encode as lowercase 64-character hexadecimal. Use JSON `null` for missing optional values. **Do not** include `receivedAt`, queue attempt, transport timestamp, webhook entry index or any other field. Preserve the validated provider strings unchanged.
-
-For the frozen example, the SHA-256 digest **must** equal:
+When processing each authenticated `message_template_status_update` change, allocate a fresh `crypto.randomUUID()` **for that change** after successful signed whole-batch preflight, and call Shared's pure UUID identity and job-ID formatters. For the fixed UUID `550e8400-e29b-41d4-a716-446655440000`, the resulting identifiers are:
 
 ```text
-022da3c966c7197c8e225393be7963e771f032b148739e6f9156ee446c565ef4
+eventIdentity = meta-template-status:v2:550e8400-e29b-41d4-a716-446655440000
+jobId         = meta-template-status-v2-550e8400-e29b-41d4-a716-446655440000
 ```
 
-Set:
+A second independently received identical APPROVED (including APPROVED → PAUSED → APPROVED) must get a **new UUID**, so BullMQ's retained first job cannot coalesce it. A retry of the *same enqueued job* keeps the same ID. A Meta redelivery can lead to duplicate business information under a new UUID; BG003 reconciles current provider state and deduplicates effects. Do **not** hash just WABA/name/language/status/reason for job identity, rely on `removeOnComplete`, or assume provider `receivedAt` orders transitions. A content fingerprint may be logged as bounded diagnostics but is distinct from occurrence identity.
 
-```text
-eventIdentity = meta-template-status:v1:022da3c966c7197c8e225393be7963e771f032b148739e6f9156ee446c565ef4
-jobId         = meta-template-status-v1-022da3c966c7197c8e225393be7963e771f032b148739e6f9156ee446c565ef4
-```
+### R5 — Existing publisher and acknowledgement boundary
 
-The colon-free BullMQ `jobId` and colon-containing durable `eventIdentity` are **different strings**. Repeat deliveries carrying identical six-field observations produce the same digest even when `receivedAt` differs. This is an **observation-level dedupe key**, not proof that identical status transitions cannot recur in reality. Background owns final provider reconciliation; Messaging must not treat deduplication as authority to activate or reject a shop assignment.
+Publish one job per staged matching change into the existing queue using `getWhatsAppQueue()` and injected queue writer as in current module boundaries. Producer options remain `{jobId: formatMetaTemplateStatusJobId(observationId), attempts: 5, backoff: {type: "exponential", delay: 5000}}`. Stage/preflight **all** relevant changes before adding the first job; then await each queued add in source order. Return provider `200` only after durable acceptance of all jobs; an enqueue exception follows the existing retry/non-200 path. A mid-publish failure can leave earlier accepted jobs; the next Meta retry creates new occurrence IDs, and BG003 reconciles idempotently. Preserve existing inbound `message-received`, `message-status` and conversation-turn job payloads/options without modification.
 
-### R5 — Queue publication, retries and error propagation
-
-Add `enqueueMetaTemplateStatus(event, queue?)` beside the two existing narrow publisher functions, using `getWhatsAppQueue()` and an injected queue writer test seam. The exact BullMQ producer options are:
-
-```ts
-{
-  jobId: `meta-template-status-v1-${digest}`,
-  attempts: 5,
-  backoff: { type: "exponential", delay: 5000 }
-}
-```
-
-Do not alter the existing options for `message-received` or `message-status`. In the dispatcher publish only staged, preflight-validated events, in their established traversal order. **Await each queue `add`** and return `200` only when every add resolves as accepted. An enqueue failure must propagate to the existing route failure/ingress-telemetry path so Meta can retry; no catch-and-ack, silent skip or in-process fallback buffer. Already-accepted earlier jobs may remain when a later publication fails; deterministic IDs and Background idempotency handle redelivery.
-
-The deterministic `jobId` may suppress a repeat while a prior job is still retained by BullMQ. Do not assert that every identical Meta delivery creates a fresh job or forces a new Meta GET; this transport limitation must be covered by BG003's provider reconciliation and later system validation. This producer task does not change the architect-approved job-ID contract.
+BullMQ completed-job retention and lazy removal may remain at their current settings. Event occurrence IDs—not removal policy—guarantee distinct later observations can enqueue. The **independent BG003 due-registration reconciliation** remains a separate backstop when notifications fail or are lost; the producer does not poll Meta or write PostgreSQL.
 
 ### R6 — Module boundaries, security and monitoring
 
 - Messaging authenticates, validates, normalises and enqueues only. It does **not** read `WhatsAppTemplateMetaRegistration` or `WhatsAppTemplateMetaEvent`, query Meta, infer shop identity, approve a template or write PostgreSQL.
-- Keep `template-status-normalizer.ts` independently testable; keep the SHA/queue identity helper and queue adapter separate from route logic. Preserve the current webhook-preflight and dispatcher composition; no duplicate generic logger or queue client.
+- Keep `template-status-normalizer.ts` independently testable; keep the Shared UUID occurrence formatter and queue adapter separate from route logic. Preserve the current webhook-preflight and dispatcher composition; no duplicate generic logger or queue client.
 - Reuse the existing request telemetry and BullMQ telemetry; if adding generic runtime logs, use `@modainteract/moda-interact-shared/logging`. Log bounded event type/status, event identity and reason codes only as allowed by the shared redaction convention; never log raw webhook bodies, message text, bearer tokens, signed headers, full customer payloads or R2 media URLs.
 - Provider auth may be missing/invalid, Redis may be unavailable and Meta may redeliver: handle these through the existing fail-closed/HTTP retry paths; no unexpected business-state side effect is allowed at ingress.
 - Keep template-status functionality limited to the existing URL and service, and verify the real **Meta app-level default webhook callback** points to this publicly routed endpoint and subscribes to `message_template_status_update`. If deployment settings are outside the implementation agent's access, record the exact setting/verification needed; request a bounded Gateway change only for a demonstrated routing deficiency. Do not claim configuration verified without evidence.
@@ -189,7 +164,7 @@ An authenticated template-status webhook for an unknown/external template is sti
 
 - [ ] Inspect the current signed route, preflight/dispatcher, queue writer and existing `whatsapp-events` tests; preserve its request/response behaviour.
 - [ ] Implement the standalone Meta template-status field normaliser (R2) with strict bounded data and canonical `receivedAt`.
-- [ ] Implement the exact event/job identity helper and verify the frozen SHA-256 vector (R4).
+- [ ] Use the published Shared v2 formatter with fresh `crypto.randomUUID()` per authenticated observation; verify its UUID test fixture (R4).
 - [ ] Extend preflight and dispatch to stage and publish signed template-status changes, preserving whole-batch validation and existing ordering (R1, R5).
 - [ ] Add the narrow queue publisher with the exact job name, `jobId`, attempts and backoff, using the existing queue/telemetry adapter.
 - [ ] Add focused unit, signed-route, dispatch/producer, mixed-batch and disposable Redis tests described below.
@@ -198,19 +173,19 @@ An authenticated template-status webhook for an unknown/external template is sti
 
 ## Interfaces / Contracts
 
-**Producer:** `moda-interact-messaging` `POST /webhook/whatsapp` → existing BullMQ `whatsapp-events` job `meta-template-status-update`, `schemaVersion: 1`, precise R2–R5 format.
+**Producer:** `moda-interact-messaging` `POST /webhook/whatsapp` → existing BullMQ `whatsapp-events` job `meta-template-status-update`, `schemaVersion: 2`, exact Shared contract from R2–R5.
 
-**Consumer:** `moda-interact-background` `src/workers/whatsapp.worker.ts` strict v1 decoder → BG003 `processTemplateStatusObservation(...)` → existing PostgreSQL provider-registration/event tables. BG003 maps the producer's `receivedAt` to its local `occurredAt` adapter field; `receivedAt` is not provider ordering evidence.
+**Consumer:** `moda-interact-background` `src/workers/whatsapp.worker.ts` strict Shared v2 decoder → BG003 `processTemplateStatusObservation(...)` → existing PostgreSQL provider-registration/event tables. BG003 maps the producer's `receivedAt` to its local `occurredAt` adapter field; `receivedAt` is not provider ordering evidence.
 
-**Authoritative wire test fixture:** R3 and R4 of `ARCH-047-BACKGROUND-003`, including the exact example bytes, digest, eventIdentity and jobId. Both repositories must independently execute the **same canonical fixture**; do not publish a second incompatible schema or infer it from Prisma JSONB column types.
+**Authoritative wire test fixture:** the published `ARCH-047-SHARED-001` v2 nine-field fixture, strict Zod schema, UUID and expected job ID. Both repositories must import/test the same published contract. Do not derive semantics from Prisma JSONB columns.
 
 **Source fields:** Meta `entry[].id` is WABA, `changes[].field === message_template_status_update` and `changes[].value` fields are defined in R2; no customer phone ID or sender-WABA inference.
 
-**No other runtime contracts introduced.** Existing inbound v1 and provider-status v3 contracts remain unchanged; there is no ARCH-047 Shared package-release prerequisite for the AST or event.
+**No other runtime contracts introduced.** Existing inbound v1 and provider-status v3 remain unchanged. The only new Shared dependency is the narrow published status-event v2 contract; no Shared AST/translation contract.
 
 ## Dependencies
 
-None. This is a Messaging ingress/queue producer that does **not** require ARCH-047 database access or an already deployed BG003 consumer to be implemented and tested with producer fixtures. BG003 may be independently implemented against the same frozen R3 contract. Complete integration is deferred to the terminal ARCH-047 System Test after both owners are accepted.
+`ARCH-047-SHARED-002` — the canonical v2 schema/identity package must be published and accepted before Messaging claims this task. No ARCH-047 database access or live BG003 consumer is required to implement and test against Shared fixtures. Complete integration is deferred to the terminal ARCH-047 System Test after both owners are accepted.
 
 ## Enables
 
@@ -219,8 +194,8 @@ The eventual cross-service ARCH-047 system test can verify the real Meta webhook
 ## Acceptance Criteria
 
 - [ ] Valid signed Meta `message_template_status_update` produces **exactly one** `meta-template-status-update` add per matching change; multiple entries/changes retain source order, and mixed valid inbound/status/template batches preserve current event ordering.
-- [ ] The exact R3 payload has **nine** keys and no extra raw webhook/PII, with `schemaVersion = 1`, WABA from `entry.id`, decimal-string/null template ID and ISO `receivedAt`.
-- [ ] Hash/vector fixture yields the exact R4 digest, `eventIdentity` and `jobId`; replay with a different `receivedAt` yields the same identity; safe numeric ID conversion and unsafe-number rejection are demonstrated.
+- [ ] The exact Shared R3 payload has **nine** keys and no extra raw webhook/PII, with `schemaVersion = 2`, WABA from `entry.id`, decimal-string/null template ID and ISO `receivedAt`.
+- [ ] Shared UUID fixture yields the exact R4 event/job identities; two identical Meta observations with different UUIDs are independently enqueued while a retained completed job exists; safe numeric ID conversion and unsafe-number rejection are demonstrated.
 - [ ] The queue name, exact job name and producer retry options match R5, and existing message-received/message-status jobs retain their names, IDs, payloads and retry settings.
 - [ ] Missing fields, wrong ID types, unsafe numeric IDs, oversized fields, malformed template observation or outbound payload over 4096 bytes reject the signed batch **before any publication**; malformed *ordinary provider statuses* retain their existing skip semantics.
 - [ ] Unknown bounded provider status labels are forwarded unmodified, never interpreted as approved; unrelated fields are ignored, including category/quality/components updates.
@@ -254,7 +229,7 @@ Use the standard `scripts/start-agent-task.py --prepare` task launcher and its r
 
 ARCH-047 is pre-production, but raw webhook authentication, queue durable acceptance and existing message-status v3 compatibility remain security/correctness boundaries. Keep error logs bounded, do not substitute empty/invalid fields, and don't introduce implicit fallbacks for absent WABA identity. If existing installed Shared telemetry requires a missing export, report that specific dependency gap; do not create a competing generic logger.
 
-**Important transport limitation:** The identical six-field job ID intentionally deduplicates webhook retransmissions. With completed-job retention it can also suppress an identical later transition; that limitation belongs to BG003's verified provider-state reconciliation and terminal system testing, not a Messaging-only reinterpretation of the R3 identity. Surface any evidence that the consumer has no recovery path rather than silently changing the agreed v1 format.
+**Important transport limitation:** The published v2 occurrence-ID contract replaces the unsafe v1 six-field hash. Each independently authenticated status change must enqueue even when identical provider values previously occurred and BullMQ retains completed jobs. Surface any evidence that the consumer has no recovery path rather than silently changing the agreed v2 format.
 
 ## Completion Report
 
@@ -280,7 +255,7 @@ None.
 
 ### Assumptions
 
-The reviewed 25 October 2026 Messaging snapshot still uses the route, extracted preflight/publisher modules and existing `whatsapp-events` queue described above. Re-inspect the real task implementation worktree at claim time. BG003 Attempt 2 R3 is the fixed consumer format; there is no approved Shared AST/event package prerequisite.
+The inspected Messaging snapshot uses the existing signed route, preflight, publisher and `whatsapp-events` queue. Re-inspect at claim. `ARCH-047-SHARED-002` must publish the canonical v2 event contract first; no Shared AST package is required.
 
 ### Unresolved Issues
 
@@ -288,7 +263,7 @@ The Meta app's **default** webhook callback URL and live `message_template_statu
 
 ### Architectural Concerns
 
-Repeated identical provider transitions may be coalesced by the deterministic BullMQ job ID while a job is retained. Consumer reconciliation must preserve conservative provider eligibility; final integrated certification is separate.
+Ensure replay/retention tests use distinct UUID v2 occurrence IDs for genuine later transitions. Consumer and final-admission tests must prove UNKNOWN provider projection after a disabling observation survives Meta GET outage; final integrated certification is separate.
 
 ## Architect Review
 
@@ -310,7 +285,7 @@ None.
 
 ### Architecture Conformance
 
-Not assessed; review the implemented producer against BG003 R3 and the existing Messaging ingress/queue constraints.
+Not assessed; review the producer against published Shared event v2 and existing Messaging ingress/queue constraints.
 
 ### Follow-up
 
