@@ -7,8 +7,8 @@ domain: shared
 repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 20
 executor: null
@@ -94,7 +94,7 @@ Use the repository's existing publication workflow and mirrored isolated task br
 
 ### Status
 
-Ready for agent execution at Attempt 0. SHARED-001 is complete and Architect Review Accepted; no publication work has been claimed or performed.
+Ready for developer takeover at Attempt 0. SHARED-001 is complete and Architect Review Accepted; no publication work has been claimed or performed.
 
 ### Files Changed
 
@@ -149,3 +149,11 @@ Not reviewed.
 ### Follow-up
 
 None.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-SHARED-002` for this ready agent-owned publication task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_shared`, coordinator, repository, dependency set, publication-only scope, acceptance criteria and validation requirements.
+- Dependency verification: SHARED-001 is Complete with Architect Review Accepted (parent task record commit `7ba6066f`; current frontier reconciliation `9c616a4a`).
+- Claim: This amendment does not increment or claim an attempt. The canonical launcher will claim Attempt 1 after worktree synchronization and dependency verification.
