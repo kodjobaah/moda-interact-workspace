@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-047-DATABASE-001
 enables: []
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-10-25
 ---
 
 # Confirm Meta template submissions and monitor provider approval
@@ -43,12 +43,25 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 ## Scope
 
 - Own `meta/` module and `/system-controls/whatsapp-templates/[definitionId]/meta/` route with per-language provider status dashboard.
+- Preserve the prepared compiler's **header as well as body/button positional variable bindings**, including canonical `shopBrand.*` identifiers where supported. The registration snapshot contains semantic binding metadata, never merchant-specific `ShopBrand` values; `ShopBrand` images represented as text URL variables do not create media-header components.
 - Read the definition and all 20 reviewed locale `localeAst.prepared` projections (English included at initial save) and show exactly what will be sent for each provider language code. Confirm that each submitted language has one unambiguous **provider account WABA** from trusted `messaging.sender` configuration (not browser payload), immutable name/category/components and matching frozen variable bindings/content digests; any unsupported WABA/locale/Meta category fails before submission.
 - Require an explicit `SUPER_ADMIN` submission confirmation after preview. Transactionally create idempotent `WhatsAppTemplateMetaRegistration` rows (per WABA, name, provider-language identity) with frozen `componentsSnapshot`, `parameterBindingsSnapshot`, `submittedContentHash`, category and `submissionState=READY_TO_SUBMIT` (or the agreed literal). Persist request/audit evidence; **no Graph API call from Admin** and no template editing endpoint. `BACKGROUND-003` subsequently claims and submits these registration records asynchronously via Meta's create endpoint.
 - Display `READY_TO_SUBMIT`, `SUBMITTING`, `PENDING`, `APPROVED`, `REJECTED`, `PAUSED`, `DISABLED`, unknown/failure/retry states based on persisted registrations/events, distinguishing transport submission from approval. UI periodically reads while active, may be revisited, and never invents approval based on submission success.
 - Provide a bounded **Reconcile status** request that flags a registration for Background reconciliation using existing durable state/approved work handoff; Admin must not fetch external templates or call Meta directly. Allow retry of **technical uncertain submissions only** after Background reconciliation, never in-place content correction of a rejected template. Clone as New is the only content-correction action.
 - Show Meta status events/rejection reason and provider drift warning separately; a provider-status webhook never changes source content, snapshots or merchant assignments. No external template import/registration, no automatic publication. Prevent double-confirmation and stale confirmed content.
 
+
+### Required React component decomposition
+
+Use a thin protected Server Component route, with **separate** client components under `src/components/admin/whatsapp-templates/meta/`:
+
+- `MetaSubmissionReview` — read-only compiled components and current WABA/language information before confirming.
+- `MetaSubmissionConfirmation` — explicit irreversible submit action, duplicate-click disable and error state.
+- `MetaApprovalSummary` — overall status counters, clearly separating submitted from approved.
+- `MetaLocaleStatusTable` — per-language provider status, rejection reason and retry/reconciliation history.
+- `MetaDriftNotice` — provider-content drift/mismatch and blocked eligibility explanations.
+
+Use a `useMetaTemplateStatus` controller hook for bounded status refresh and stale-request handling (do not poll continuously after the admin selects a particular record). Split WABA resolution, payload fingerprint validation, registration snapshot transaction, status read-model queries and audit into **distinct server-only files** in `src/lib/admin/whatsapp-templates/meta/`. The action is a thin authorised adapter; React components never invoke Graph API or access PostgreSQL directly. Reuse already-compiled read-only preview data, not an independent AST compiler.
 
 ## Out of Scope
 
@@ -58,6 +71,7 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 ## Requirements
 
 - [ ] Submission records freeze exactly what Admin has reviewed: component content, binding map, source/locale fingerprints and trusted sender account. They are not overwritten by subsequent status reads.
+- [ ] Frozen header/body/button binding maps preserve their component/position/`shopBrand.*` semantic keys for each locale; preview, hash verification and submission use the same immutable compiled projection, without substituting merchant brand values.
 - [ ] A failed/uncertain provider operation does not cause Admin to create another name/language registration; the existing registration is reconciled before Background retries.
 - [ ] A `REJECTED` locale/version cannot be edited or resubmitted with changed content; only Clone as New can correct it. All other approved locale registrations remain intact.
 - [ ] Admin status queries remain DB-only and bounded; provider secrets are never returned to client or logs.
@@ -68,14 +82,14 @@ All server reads/mutations of template management require the existing authentic
 
 ## Work Items
 
-- [ ] Implement trusted sender-WABA lookup, frozen registration creation, status/reconcile request and audit in `meta/` service.
+- [ ] Implement trusted sender-WABA lookup, frozen registration creation (including compiled header/body/button binding maps), status/reconcile request and audit in `meta/` service.
 - [ ] Build a 20-language submission preview and progress/rejection/drift dashboard with explicit confirmation and no misleading auto-approval.
 - [ ] Add idempotency/concurrent submit, auth and provider-identity collision tests with fixture approved locale records.
 
 
 ## Interfaces / Contracts
 
-**Reads:** reviewed `WhatsAppTemplateDefinition`/`Locale.localeAst` prepared Meta projection. **Writes:** `WhatsAppTemplateMetaRegistration` with frozen `componentsSnapshot` + `parameterBindingsSnapshot` + `submittedContentHash`, trusted `wabaId`, `providerTemplateName`, `providerLanguageCode` and `submissionState`; bounded `CommerceAuditEvent`. **Reads only:** `WhatsAppTemplateMetaEvent`/registration status and drift for dashboard. Background owns Graph calls and `MetaEvent` status writes. Do not assume the Meta event comes via a Shared-specific ARCH-047 package; the agreed transport is Messaging → existing BullMQ → Background → PostgreSQL.
+**Reads:** reviewed `WhatsAppTemplateDefinition`/`Locale.localeAst` prepared Meta projection; its Admin-compiled positional bindings include header/body/button keys and optional `shopBrand.*` references. Never load or freeze `ShopBrand` row values for registration. **Writes:** `WhatsAppTemplateMetaRegistration` with frozen `componentsSnapshot` + `parameterBindingsSnapshot` + `submittedContentHash`, trusted `wabaId`, `providerTemplateName`, `providerLanguageCode` and `submissionState`; bounded `CommerceAuditEvent`. **Reads only:** `WhatsAppTemplateMetaEvent`/registration status and drift for dashboard. Background owns Graph calls and `MetaEvent` status writes. Do not assume the Meta event comes via a Shared-specific ARCH-047 package; the agreed transport is Messaging → existing BullMQ → Background → PostgreSQL.
 
 
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/meta/`, components under `src/components/admin/whatsapp-templates/meta/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-meta-control.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
@@ -91,7 +105,10 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
+- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+
 - [ ] One confirmed submission creates 20 immutable registration snapshots (one per supported provider locale) in a consistent WABA; repeat submits are no-ops and status polling does not duplicate snapshots or audit.
+- [ ] A header variable and a reordered body brand variable are stored with exactly their approved locale-specific positions; a mismatched binding digest prevents submission.
 - [ ] Rejected/pending/paused languages display independently, with reason and drift evidence; Meta API success never appears as Meta-approved or automatically published.
 - [ ] External Meta templates cannot be imported, and no Admin Graph template create/edit/delete request occurs.
 - [ ] Server authorization and transaction concurrency prohibit forged WABA, stale hash, duplicate submit and accidental resubmission of modified content.
@@ -99,7 +116,7 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Validation
 
-- [ ] Component/variable digest and trusted WABA identity tests; 20-language registration fixtures; forced partial transaction and concurrent-click tests.
+- [ ] Component/variable digest and trusted WABA identity tests (including header `shopBrand.brandName`, body `shopBrand.logoAltText` and per-language position changes); 20-language registration fixtures; forced partial transaction and concurrent-click tests.
 - [ ] Database-only Admin dashboard/action, auth/audit tests with simulated MetaEvent/registration updates from Background; no provider network; typecheck/lint/`git diff --check`.
 
 

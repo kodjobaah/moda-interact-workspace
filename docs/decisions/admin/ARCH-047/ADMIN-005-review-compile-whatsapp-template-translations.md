@@ -45,11 +45,25 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Own the `compilation/` module and `/system-controls/whatsapp-templates/[definitionId]/review/` interface. Read saved English locale structure and `TranslationItem.translatedAst` keyed segment results, not an AST returned by Background.
 - For each of the 19 target languages: verify all required segment keys exactly once; compare each protected marker's exact multiplicity and semantic identity with the original `sourceSnapshot`, allowing reordered text but rejecting mutated/duplicated/dropped tokens, invented variables, unexpected keys and stale source hashes. Restore semantic AST variable nodes using Admin's authoring registry and reconstruct complete language components while preserving nontranslatable structure/URLs/button actions. Reject invalid/unsafe output and display a per-locale reason.
 - Display all **20 complete language previews** (English + 19 generated) with text header/body/footer/ordered buttons or wrapper header/response slot/conditional footer. Provide source-vs-translation comparison, variable map and review status, not just a translated-count indicator. Admin may approve/reject results; **no in-place editing of a saved source or accepted locale**. A content correction uses Clone as New and a separate translation/review lifecycle.
-- Server-side revalidate reconstructed content, language/provider code compatibility and Meta-supported component limits. For Meta family, reuse the pure Admin authoring compiler to compile each approved locale into **final provider `components`** and frozen positional `parameterBindingsSnapshot` (body/header/button indices, canonical semantic keys, compile/schema version and content digest). Do not let a translated rearrangement silently swap runtime variable meanings.
+- Round-trip the canonical `shopBrand.*` identifiers from ADMIN-003 through protected-marker reconstruction; never resolve actual merchant brand values or embed fictional preview substitutions in saved locale content. Accept all eight defined keys only where the author's purpose/component registry permits them. A Meta text header supports at most the allowed single variable, a Meta footer stays static, and wrapper header/footer/conditional text retain their typed brand bindings.
+- Server-side revalidate reconstructed content, language/provider code compatibility and Meta-supported component limits. For Meta family, reuse the **existing ADMIN-003 pure authoring compiler and variable registry** (do not fork a second compiler) to compile each approved locale into **final provider `components`** and frozen positional `parameterBindingsSnapshot` (header/body/button indices, canonical semantic keys including `shopBrand.*`, compile/schema version and content digest). Do not let a translated rearrangement silently swap runtime variable meanings.
 - For wrapper family, compile a **prepared runtime projection** (literal header/footer segments, required response slot, optional checkout-URL conditional and typed runtime bindings) that Background can render without parsing Admin's authoring AST. The saved English locale already contains its prepared projection from ADMIN-003; do not rewrite it. Insert a prepared projection once for each newly reconstructed language.
 - Persist completed locale `localeAst`/`contentHash` exactly once with review evidence (`reviewedByAdminId`, `reviewedAt`, `status`); **do not alter an existing finalised locale's content** or source English AST. Store the prepared projection in the same locale JSONB envelope, e.g. `{schemaVersion, authoring, prepared}`: English is generated at its original save; translated locales are generated on first insertion. No subsequent in-place content or projection update is allowed. For Meta, later ADMIN-006 copies the approved compiled objects verbatim into frozen `MetaRegistration` snapshots after explicit confirmation.
 - Persist only bounded review metadata/audit. Read existing model/runtime capabilities before enabling component types, and ensure full-language completeness checks remain application-owned.
 
+
+### Required React component decomposition
+
+Use a thin protected Server Component route and **separate** focused client components under `src/components/admin/whatsapp-templates/compilation/`:
+
+- `TranslationReviewWorkspace` — layout/orchestration shell only.
+- `ReviewLanguageSelector` — 20-locale selection and approval/failure indicators.
+- `SourceTranslationComparison` — complete English/target comparison; reuse ADMIN-003's read-only display primitive when available.
+- `ComponentAndVariableDiff` — header/body/footer/buttons, protected markers, bindings and diagnostics.
+- `MetaTemplateReviewPreview` and `ConversationWrapperReviewPreview` — distinct family-specific views; do not cram both template formats into one giant conditional component.
+- `TranslationReviewActions` — confirm/reject, pending/error states and no in-place editing controls.
+
+Use a dedicated `useTemplateTranslationReview` controller for client selection/action state. Split keyed-segment verification, placeholder restoration, locale reconstruction, Meta compilation adapter, wrapper projection compilation and database finalisation into **separate pure/service files** under `src/lib/admin/whatsapp-templates/compilation/`. Reuse the pure compiler **owned by ADMIN-003** rather than copying or redefining it; define the required compile port/typed inputs explicitly for fixtures in a separately prepared worktree. Route/action files must not host reconstruction logic, SQL or large JSX trees. Preserve the same exact preview DTO used by authoring wherever applicable.
 
 ## Out of Scope
 
@@ -61,6 +75,7 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 
 - [ ] Reconstruct only when persisted source hash matches its translation run; late provider results and stale clones cannot overwrite accepted content.
 - [ ] Protected token multisets and component-key sets must match exactly; translation may reorder variables, compiler must derive correct per-language positional binding snapshots.
+- [ ] Meta header/body and wrapper header/footer/conditional `shopBrand.*` references survive reconstruction as typed identifiers, with no merchant data captured during translation or compilation; invalid component/key combinations fail validation.
 - [ ] English and all 19 translations are previewable; if rejected/malformed, locale stays unapproved with actionable diagnostics and does not silently become publishable.
 - [ ] Review writes are idempotent, guarded and audited. Template text changes always require a new definition; metadata/progress may update independently.
 
@@ -70,14 +85,14 @@ All server reads/mutations of template management require the existing authentic
 
 ## Work Items
 
-- [ ] Implement typed, Admin-local reconstruction/validation and deterministic provider/wrapper compilers in small pure modules.
+- [ ] Implement typed, Admin-local reconstruction/validation and consume ADMIN-003's deterministic provider/wrapper compiler and variable registry via a focused adapter/fixtures; do not add a competing compiler.
 - [ ] Implement review screen with English/current-language side-by-side previews, variable/button comparison and approve/reject actions.
 - [ ] Add transactional locale finalisation and audit with stale/duplicate/concurrent review tests.
 
 
 ## Interfaces / Contracts
 
-**Inputs:** `TranslationRun.sourceSnapshot` with keyed protected source segments; `TranslationItem.translatedAst` with keyed translated segments; English `TemplateLocale.localeAst`. **Writes:** 19 finished `WhatsAppTemplateLocale` rows, each `localeAst` containing its complete authoring structure **plus prepared runtime/provider projection**; `contentHash`, review metadata and bounded audit. **Prepared Meta envelope example:** `{schemaVersion:1, category:'MARKETING', components:[...], parameterBindings:{body:[{position:1,variable:'customer.firstName'}], buttons:[...]}, contentHash:'...'}`. For conversation wrappers use `{schemaVersion:1, header:[...], responseSlot:'response.body', footer:[...], conditionals:[...], variableBindings:[...]}`. These JSON payload formats are Admin-owned persistence contracts, not a separate Shared implementation. This task **does not create MetaRegistration**; ADMIN-006 freezes copies only on confirmed submission.
+**Inputs:** `TranslationRun.sourceSnapshot` with keyed protected source segments; `TranslationItem.translatedAst` with keyed translated segments; English `TemplateLocale.localeAst`. **Writes:** 19 finished `WhatsAppTemplateLocale` rows, each `localeAst` containing its complete authoring structure **plus prepared runtime/provider projection**; `contentHash`, review metadata and bounded audit. **Prepared Meta envelope example (illustrative; emit the canonical ADMIN-003 compiler shape):** `{schemaVersion:1, category:'MARKETING', components:[...], parameterBindings:{header:[{position:1,variable:'shopBrand.brandName'}],body:[{position:1,variable:'customer.firstName'}],buttons:[...]}, contentHash:'...'}`. Header bindings are present only for a variable-bearing header; brand values themselves are never frozen.  For conversation wrappers use `{schemaVersion:1, header:[...], responseSlot:'response.body', footer:[...], conditionals:[...], variableBindings:[...]}`. These JSON payload formats are Admin-owned persistence contracts, not a separate Shared implementation. This task **does not create MetaRegistration**; ADMIN-006 freezes copies only on confirmed submission.
 
 
 **Module ownership.** Keep this task modular: put its domain services under `src/lib/admin/whatsapp-templates/compilation/`, components under `src/components/admin/whatsapp-templates/compilation/`, and its server actions in a task-specific `src/app/actions/whatsapp-template-compilation.ts`. Avoid a global `whatsapp-templates.ts` catch-all or unrelated edits to sibling modules. Prefer small repository/domain, validation, orchestrator and view components. Only the English authoring task owns the shared navigation/catalogue shell; other tasks provide focused subroutes/panels, not a second editor or shell.
@@ -93,15 +108,18 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
+- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+
 - [ ] Each language's complete preview and durable metadata reflect the same validated source; exactly 20 reviewed locales are required by application policy before the definition is eligible for the relevant publication path.
 - [ ] Header/body/footer/buttons and wrapper conditional segments map correctly; missing/duplicate/prohibited variable markers block reconstruction; reordered variables bind to the intended semantic values.
+- [ ] Translated Meta headers retain their header position and `shopBrand.*` semantic key (where allowed); wrapper brand keys remain available in permitted header/footer/conditional slots, while Meta footers contain no variable bindings.
 - [ ] Approved locales contain Meta-ready or wrapper-ready projection with no dependency on a Background AST compiler. No content mutation of saved/approved templates occurs.
 - [ ] Rejection leaves prior live template assignments/active wrapper pointers unchanged; only newly authored content may replace them later.
 
 
 ## Validation
 
-- [ ] Token protection/reordering and variable-binding compiler unit tests for English/French/German and scripts with changed placeholder order; button/URL protections, malformed translator response tests.
+- [ ] Token protection/reordering and variable-binding compiler unit tests for English/French/German and scripts with changed placeholder order; include Meta text-header `shopBrand.brandName`, body references, repeated brand variables, wrapper footer brand values, forbidden Meta footer tokens, button/URL protections and malformed translator responses.
 - [ ] Admin UI full-preview/a11y tests; PostgreSQL idempotent locale finalisation/auth/audit tests using fixture translation items; lint/typecheck/`git diff --check`.
 
 
