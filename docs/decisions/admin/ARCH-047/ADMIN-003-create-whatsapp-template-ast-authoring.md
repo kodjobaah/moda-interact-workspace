@@ -51,6 +51,22 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Expose a stable module read interface for future subroutes: `getDefinitionDetail(id)` and an immutable, versioned authoring-record contract. Read existing definitions by ID and browse with bounded pagination; show family, purpose, source language and lifecycle honestly.
 
 
+### Required React component decomposition
+
+Implement the screen as a composition of **separate React component files**, not one large page/editor. The route's `page.tsx` is a thin **Server Component**: enforce page authorisation, load initial catalogue/detail data, and render the client workspace. At minimum provide distinct, focused components under `src/components/admin/whatsapp-templates/authoring/`:
+
+- `TemplateCatalogue` — bounded list, search, lifecycle/status and select/create navigation.
+- `TemplateAuthoringWorkspace` — composition/layout only; no AST parsing, database calls or provider rules.
+- `TemplateFamilyPurposeSelector` — Meta purpose/offer variant versus wrapper audience.
+- `TemplateContentEditor` — composition of separate `TemplateHeaderEditor`, `TemplateBodyEditor`, `TemplateFooterEditor`, and `TemplateButtonsEditor` (Meta) or `WrapperStructureEditor` (internal wrapper); only show supported components.
+- `TemplateVariablePalette` — eligible typed variable insertion, driven by selected purpose; never invent names.
+- `TemplateReadOnlyPreview` — reusable presentation-only preview accepting a small typed display DTO; do not have other tasks modify its source while implementing their own panels.
+- `TemplateSaveControls` — pending/duplicate-submit/error and Clone-as-New controls.
+
+Keep editable AST state, validation issue mapping, async submission/dirty-state logic in a separate `useTemplateAuthoringDraft` controller hook/reducer, with unit-tested pure operations. Keep AST types, registry, canonicalisation, validation, compiler and persistence/service functions in **separate non-React files** under `src/lib/admin/whatsapp-templates/authoring/`. The server action must be a thin authenticated adapter over that service. Components receive typed props/callbacks and never import Prisma, Meta SDKs or translation clients. The compiler must be importable by ADMIN-005 as a pure function without importing React or this feature's server actions.
+
+The work must not be delivered as one `page.tsx`, `template-editor.tsx`, `whatsapp-templates.tsx`, or equivalent catch-all with all UI, hooks and SQL. Prefer composable small files over arbitrary file-count targets; extract distinct concerns rather than splitting one component mechanically.
+
 ## Out of Scope
 
 - Translation requests/jobs, result reconstruction, Meta create/list/update API calls, provider status reconciliation, bulk shop assignment, wrapper activation, recovery sends and customer checkout mutations.

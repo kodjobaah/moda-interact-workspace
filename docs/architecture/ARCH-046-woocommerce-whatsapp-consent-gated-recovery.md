@@ -4,20 +4,20 @@ title: WooCommerce Moda checkbox consent and customer-phone admission
 status: proposed
 coordinator: moda_architect
 created: 2026-10-20
-updated: 2026-10-24
+updated: 2026-10-25
 ---
 
 # ARCH-046 — WooCommerce WhatsApp consent-gated recovery
 
 ## Status
 
-**Proposed; consent integration in progress.** `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, and `ARCH-046-BACKGROUND-001` are marked Complete, along with the Shared `2.5.0` publication. Consent capture does **not** imply live Woo recovery: ARCH-035 remains capture-only in the reviewed snapshot, and Woo recovery execution (`BACKGROUND-002/004`, `SYSTEM-TEST-002`) remains **Blocked** pending a separately approved engine. Task completion does not establish merge-to-main or end-to-end certification.
+**Proposed; consent integration in progress (25 October 2026 13:36 snapshot).** `ARCH-046-BACKGROUND-005` is recorded Complete and its shared notifier is present in merged Background source, including Shopify consumer integration. `ARCH-048-BACKGROUND-003/004` are Complete with row-only admission and initial-outreach services; `ARCH-046-BACKGROUND-002` has all prerequisites Complete and is now Ready for the Woo notice adapter. `ARCH-046-BACKGROUND-004` is Pending on BG002 and is narrowed to the Woo **initial-send** final consent/STOP permit; the Woo follow-up runtime remains disabled and out of scope. `ARCH-048-BACKGROUND-005` orchestrator and terminal system tests are still Pending/Blocked. This is not end-to-end Woo outbound certification or authorisation to enable live sends.
 
 ## 21 October 2026 — two-way Woo merchant Support integration replaces read-only notices
 
 The merchant has approved **full Shopify-equivalent two-way Support** in WooCommerce. The existing Woo Support UI (`ARCH-035-WOOCOMMERCE-001`, Complete) will be connected through `ARCH-035-API-020` (paginated history, idempotent send, mark-read) and `ARCH-035-WOOCOMMERCE-016` (privileged WordPress proxy and UI client). Both consume the existing shared Support tables; all consent-related SYSTEM notices remain in that one thread. The earlier read-only-only `ARCH-046-API-002` and `ARCH-046-WOOCOMMERCE-004` are **superseded**, not implemented. No duplicate notices endpoint, separate Support thread, notification queue, new database or direct Woo-to-Postgres path is allowed.
 
-`ARCH-046-WOOCOMMERCE-007` retains the independent no-contact action and now depends on `ARCH-035-WOOCOMMERCE-016` plus `ARCH-046-API-005`. The blocked `ARCH-046-SYSTEM-TEST-002` instead depends on the full Support tasks. These Support changes **do not unblock** the separately missing Woo checkout-state reader/live recovery engine or authorise consent-triggered recovery work. ARCH-035-SYSTEM-TEST-005 independently certifies two-way Support; ARCH-046-SYSTEM-TEST-002 later certifies consent/recovery/notice interplay.
+`ARCH-046-WOOCOMMERCE-007` retains the independent no-contact action and now depends on `ARCH-035-WOOCOMMERCE-016` plus `ARCH-046-API-005`. The blocked `ARCH-046-SYSTEM-TEST-002` instead depends on the full Support tasks. These Support changes **do not authorise** consent-triggered recovery work or a WordPress live-checkout reader: ARCH-048 instead uses only accepted Woo events and existing Moda state. ARCH-035-SYSTEM-TEST-005 independently certifies two-way Support; ARCH-046-SYSTEM-TEST-002 later certifies consent/recovery/notice interplay.
 
 ## Problem
 
@@ -72,12 +72,12 @@ To shorten the hot write path, remove the Subscription/BillingPlan/Feature entit
 
 ### Normal recovery only
 
-An eventual separately approved Woo checkout recovery engine reads the active installation and current CustomerPhone during **ordinary** checkout reconciliation. Missing/UNKNOWN/REVOKED/no-contact/ambiguous identity → no CheckoutRecovery, no attempt, no credit and checkout-keyed merchant Support notice when applicable. If consent is granted later, it updates CustomerPhone only; a later ordinary checkout event may create the first recovery after fresh eligibility checks. No guaranteed revisit of old carts and no consent-specific background wakeups.
+The accepted ARCH-048 Woo admission service reads the active installation and current CustomerPhone during **ordinary** event-driven checkout reconciliation; ARCH-048-BG005 still needs to wire that service into the workers. Missing/UNKNOWN/REVOKED/no-contact/ambiguous identity → no CheckoutRecovery, no attempt, no credit and checkout-keyed merchant Support notice when applicable. If consent is granted later, it updates CustomerPhone only; a later ordinary checkout event may create the first recovery after fresh eligibility checks. No guaranteed revisit of old carts and no consent-specific background wakeups.
 
 ### Marketing purpose and shared STOP behaviour
 
 - The Moda Woo checkout checkbox explicitly requests **WhatsApp abandoned-basket marketing** permission for the merchant; mere phone collection, checkout capture or a merchant recovery selection toggle is not consent. Checkout disclosure version/locale remain part of existing `commerce.WhatsAppConsentEvidence`.
-- Approved live Woo recovery (still blocked pending separate engine) must use **Meta-approved Marketing templates** for initial reminders, scheduled follow-ups and merchant post-window recovery messages; never substitute a Utility/Authentication or unknown-category template. Genuine customer-initiated in-window service messages remain separate. The inspected `WhatsAppTemplateVariant` catalogue does not show a Meta category column: verify category using a trustworthy provider approval source rather than assuming purpose/status proves it.
+- The approved initial Woo recovery capability must use a **Meta-approved Marketing template**; never substitute a Utility/Authentication or unknown-category template. Scheduled Woo follow-ups and merchant post-window recovery messages are disabled and require separately approved future implementation tasks. Genuine customer-initiated in-window service messages remain separate. The inspected `WhatsAppTemplateVariant` catalogue does not show a Meta category column: verify category using a trustworthy provider approval source rather than assuming purpose/status proves it.
 - Inbound WhatsApp STOP is owned by `ARCH-045-BACKGROUND-005` for **both** platforms: a quoted merchant message limits suppression to that merchant phone; standalone or unresolvable-quote STOP suppresses all currently registered merchants sharing the sender's canonical phone, including Woo. No Shopify unsubscribe API call is made. The Moda-owned STOP remains effective across all affected Shopify and WooCommerce `CustomerPhone` records, is never cleared by native Shopify permission refresh, a Woo consent grant or merchant re-enable, and causes an idempotent Support notification to each affected merchant. It blocks **all further outbound WhatsApp messages** to the affected shop/phone, including in-window customer-service replies. No new Woo consent/provider/reachability tables or separate STOP queue are added.
 
 ## Request / Event Flow
@@ -105,14 +105,14 @@ Later normal Woo checkout reconciliation (once live recovery engine approved)
 - **Database:** shared `ARCH-045-DATABASE-002` only; CustomerPhone extension plus one new `commerce.WhatsAppConsentEvidence` table.
 - **Woo plugin:** checkbox + merchant guidance, validated pre-submit choice/withdrawal, merchant recovery suppression UI and optional Support notice reader.
 - **Hosted API:** versioned, thin authenticated consent write with atomic current consent/evidence and safe ordering; merchant suppression, merchant Support reads and safe idempotency. After API-007 the consent write performs no billing feature-eligibility SQL. No provider-source configuration API.
-- **Background:** future current-consent reader, pre-creation and send gates only when approved Woo engine exists.
+- **Background:** accepted current-consent reader (BG001), accepted ARCH-048 first-row admission/outreach services, Woo merchant-notice adapter (BG002 Ready), final initial-send guard (BG004 Pending) and independent ARCH-048 worker composition.
 - **System test:** LocalWP Classic/Blocks capture and eventual live recovery, with separate terminal gates.
 
 ### Shared recovery-consent merchant notifications (2026-10-24)
 
-`ARCH-046-BACKGROUND-005` extracts the existing Shopify `ARCH-045-BACKGROUND-002` merchant Support notification writer into one Background-local `RecoveryConsentMerchantNoticeService` implementing `RecoveryConsentMerchantNotifier`. Shopify consumes the extracted notifier; `ARCH-046-BACKGROUND-002` later supplies Woo-specific denial mapping and available, verified, shop-scoped customer/checkout context. The common notifier owns bounded plain-text formatting, deterministic deduplication, a single transactional `MerchantSupportMessage(kind=SYSTEM)` writer, and safe structured logging. Neither the shared notifier nor the Woo adapter recreates Shopify-native or Woo current-consent policy; STOP notifications retain their existing separate owner.
+`ARCH-046-BACKGROUND-005` is Complete and the merged Background source contains the single `RecoveryConsentMerchantNoticeService` implementing `RecoveryConsentMerchantNotifier`. Shopify imports it now; the Ready `ARCH-046-BACKGROUND-002` task supplies only Woo-specific denial mapping, verified available shop-scoped checkout context and an awaited adapter. The common notifier owns bounded plain-text formatting, deterministic deduplication, a single transactional `MerchantSupportMessage(kind=SYSTEM)` writer, and safe structured logging. Neither the shared notifier nor the Woo adapter recreates Shopify-native or Woo current-consent policy; STOP notifications retain their existing separate owner.
 
-The canonical notice input is `(shopId, platform, checkoutToken, reason, blockedOperation, optional merchant display context)`, with result `created | duplicate`. **Operation-sensitive identity:** `sourceKey = "recovery-consent:v1:" + sha256(JSON.stringify(["recovery-consent", 1, platform, shopId, checkoutToken, blockedOperation, reason]))` (lowercase hex). A denied first recovery and a later blocked initial send are distinct notices; duplicates of the same `(platform, shopId, checkoutToken, operation, reason)` are suppressed. The common service uses the exact fixed reason/outcome copy, optional bounded context formatting, duplicate-row verification, tenant isolation and one atomic Support transaction defined by `ARCH-046-BACKGROUND-005` Requirements R1–R7. It never uses the checkout hash as its merchant-facing description. Shopify forwards already accepted checkout/customer context where available; Woo enriches shop-scoped data in BG-002. Neither caller duplicates the writer.
+The **merged accepted runtime** takes `(shopId, platform, checkoutToken, reason, blockedOperation, optional merchant display context)` and returns `created | duplicate`. Its current canonical `sourceKey` is `"recovery-consent:v1:" + sha256(JSON.stringify(["recovery-consent", 1, platform, shopId, checkoutToken, reason]))` (lowercase hex), **without** `blockedOperation`. Thus creation-stage and initial-send reentry notices with the same checkout/reason deduplicate to the first committed message; `blockedOperation` controls truthful body copy only. This reconciles older **operation-sensitive** task prose with the completed implementation: BG002 MUST consume the existing accepted contract rather than change the shared formatter/key. The common service owns fixed reason/outcome copy, optional bounded context, verified duplicate detection, tenant isolation and one atomic Support transaction. It never uses the checkout hash as its merchant-facing description. Shopify forwards already accepted checkout/customer context where available; Woo enriches shop-scoped data in BG-002. Neither caller duplicates the writer.
 
 **Pre-production decision:** previously sent development Support messages and legacy Shopify `sourceKey` values need no backward-compatibility handling, adapter, migration or backfill. Use the new canonical contract for both platforms' future notices, without deleting existing development Support data. No new database table, Shared package, API endpoint or merchant UI is required. Shopify and WooCommerce denial/admission decisions remain platform-specific.
 
@@ -134,7 +134,7 @@ Use existing WordPress admin capabilities and REST nonces, trusted installation 
 
 ## Rollout / Migration
 
-DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted task-branch evidence; their dependency versions and integration must be reconciled during deployment. Implement API-007 as an independently reviewed correction before materialising the previously drafted API-006 reader. Coordinate v2-only API deployment with a separately defined Woo v2 producer adoption (the current v1 producer becomes incompatible). No v1 migration or adapter is required because there are no production users. Next implement/validate WordPress checkbox and pre-submit handling; release them only when targeted LocalWP system test passes. Consent collection can ship without authorising outbound Woo recovery. Live Woo BACKGROUND-002/004 and SYSTEM-TEST-002 remain **Blocked** until the independently approved recovery engine exists. Do not update `docs/decisions/**/_index.md` until this architecture session is explicitly completed.
+DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted task-branch evidence; their dependency versions and integration must be reconciled during deployment. Implement API-007 as an independently reviewed correction before materialising the previously drafted API-006 reader. Coordinate v2-only API deployment with a separately defined Woo v2 producer adoption (the current v1 producer becomes incompatible). No v1 migration or adapter is required because there are no production users. Next implement/validate WordPress checkbox and pre-submit handling; release them only when targeted LocalWP system test passes. Consent collection can ship without authorising outbound Woo recovery. Woo BG002 is **Ready** now that the admission seam and shared notifier have been accepted. Woo BG004 remains **Pending** until BG002 completes; it is limited to the initial-send/final-provider fence. ARCH-048 BG005 still awaits both accepted guards, and SYSTEM-TEST-002 remains Blocked by outstanding implementation and platform prerequisites. Do not update `docs/decisions/**/_index.md` until this architecture session is explicitly completed.
 
 ## Decisions / Tasks
 
@@ -155,10 +155,10 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 | `ARCH-046-WOOCOMMERCE-006` | `moda_woocommerce` | superseded | — |
 | `ARCH-046-WOOCOMMERCE-007` | `moda_woocommerce` | pending | `ARCH-046-API-005`, `ARCH-035-WOOCOMMERCE-016` |
 | `ARCH-046-BACKGROUND-001` | `moda_background` | complete | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
-| `ARCH-046-BACKGROUND-002` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-045-BACKGROUND-005`, `ARCH-048-BACKGROUND-003`, `ARCH-046-BACKGROUND-005` |
+| `ARCH-046-BACKGROUND-002` | `moda_background` | ready | `ARCH-046-BACKGROUND-001`, `ARCH-045-BACKGROUND-005`, `ARCH-048-BACKGROUND-003`, `ARCH-046-BACKGROUND-005` |
 | `ARCH-046-BACKGROUND-003` | `moda_background` | superseded | — |
-| `ARCH-046-BACKGROUND-004` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
-| `ARCH-046-BACKGROUND-005` | `moda_background` | ready | `ARCH-045-BACKGROUND-002` |
+| `ARCH-046-BACKGROUND-004` | `moda_background` | pending | `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-045-BACKGROUND-005`, `ARCH-048-BACKGROUND-004`; initial-send final permit only |
+| `ARCH-046-BACKGROUND-005` | `moda_background` | complete | `ARCH-045-BACKGROUND-002` |
 | `ARCH-046-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-046-WOOCOMMERCE-001`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
 | `ARCH-046-SYSTEM-TEST-002` | `moda_system_test` | blocked | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-035-API-020`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-035-WOOCOMMERCE-016`, `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-046-BACKGROUND-004`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
 
@@ -166,7 +166,8 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 
 - Confirm real Classic/Blocks pre-submit ordering with LocalWP: no assumption that checkout capture arrives after consent acknowledgement.
 - Resolve duplicate active shop/phone rows as a data-quality problem; never accept an ambiguous match as customer opt-in.
-- Separate live Woo recovery engine task IDs are deliberately not fabricated. Consent integration does not make them Ready.
+- ARCH-048 row-only admission and initial outreach services are Complete, but worker orchestration/activation remain outstanding; no Woo follow-up engine is currently approved.
+- Before production Woo outreach, explicitly decide how to accept or mitigate the acknowledged risk of completely undelivered Woo payment/checkout updates.
 
 ## Change History
 
@@ -182,3 +183,5 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 - 2026-10-21: **Consolidated minimal consent model:** same existing Customer and CustomerPhone; shop-scoped canonical phone lookup allowed with no automatic grant; one `commerce.WhatsAppConsentEvidence` table; no added WooInstallation, reachability, customer-principal, guest-link or erasure structures. Privacy tasks are outside consent and remain superseded for traceability.
 - 2026-10-22: Architect coordination reconciled completed task reports, readiness frontier, and ARCH-046 terminal system-test Support dependencies without changing runtime source or architecture completion state.
 - 2026-10-22: Developer explicitly completed BACKGROUND-001 after passing self-review. Recalculated direct dependents: BACKGROUND-002, BACKGROUND-004 and SYSTEM-TEST-002 remain blocked by their separate recovery-engine, dependency and manual validation gates; no downstream task was promoted and `_index.md` files were left unchanged.
+
+- 2026-10-25: Verified ARCH-046-BG005 merged notifier in Background source. Promoted BG002 to Ready, narrowed BG004 to the initial-send final consent/STOP permit (pending BG002), aligned canonical sourceKey with accepted runtime and made ARCH-048 BG005 depend on both consent implementations. No follow-up activation or `_index.md` update.

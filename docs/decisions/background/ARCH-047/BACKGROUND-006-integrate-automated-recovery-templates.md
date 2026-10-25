@@ -62,7 +62,9 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **R3 — Final recheck.** Reverify the exact shop/variant/registration, local approved/enabled status, current provider revocation/drift state, sender WABA and recipient association as late as existing final permit/transaction permits. No external Meta/Redis operation inside a SQL transaction; no stale prepared payload can bypass changed publication/STOP/consent state.
 
-**R4 — Recovery invariants.** Preserve sequence-one idempotency, one permitted sequence-two follow-up, order-completion/checkout-change suppression, last inbound response ordering, consent and authoritative STOP, independent moderation, entitlement and credit reservation/settlement/compensation. Failed preparation/admission yields a controlled no-send result without wrongly consuming credits.
+**R3a — Prepared ShopBrand and CTA component pass-through.** BG001 owns resolving the ShopBrand text references and any separately typed READY image-header/checkout-button bindings. BG006 must forward **all prepared provider components unchanged** (ordered text/header parameters, validated `imageHeader.link` when supplied, and the one compiled dynamic URL-button suffix/parameter) through the existing WhatsApp send adapter; it must not read `ShopBrand`, rebuild compiled URLs, resize or fetch media, recalculate variable positions or silently drop media/button values. When the preparer returns an unavailable result (including `MEDIA_NOT_READY`, optional brand field missing or invalid checkout URL), do not invoke the provider or reserve/settle outreach charges. Media support cannot be activated until the separately owned R2-normalisation readiness contract and the existing sender's supported parameter shape have been proven.
+
+**R4 — Recovery invariants. Preserve sequence-one idempotency, one permitted sequence-two follow-up, order-completion/checkout-change suppression, last inbound response ordering, consent and authoritative STOP, independent moderation, entitlement and credit reservation/settlement/compensation. Failed preparation/admission yields a controlled no-send result without wrongly consuming credits.
 
 **R5 — Shared adapter ownership.** BG006 owns the narrow final template eligibility adapter/fence changes; BG007 **calls the same adapter** and must not implement a second copy. Existing Meta provider send mechanics remain unchanged except passing prepared body/button/header parameters.
 
@@ -94,6 +96,8 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 
 ## Acceptance Criteria
+
+- [ ] Initial and automated follow-up forwards a prepared ShopBrand text binding, trusted checkout CTA button parameter and optional READY image-header payload **without** rewriting/dropping a component; unavailable prepared media/URL produces no send or charge. Existing text-only paths remain compatible.
 
 - [ ] Initial NONE/FIXED/AI and sequence-two follow-up select expected six-purpose variants and preserve correct language; mapping of body and dynamic URL/button parameters tested with provider mock.
 - [ ] Provider category preflight no longer called; no normal-send Meta metadata GET; missing/revoked/drifted/disabled/ambiguous assignment fails closed.

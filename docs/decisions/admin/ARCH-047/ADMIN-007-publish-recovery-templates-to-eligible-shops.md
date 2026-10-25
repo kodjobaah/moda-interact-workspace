@@ -52,6 +52,19 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Implement idempotent batch progression for thousands of targets, retry only failed/pending shops, and report both **shop counts** and **shop-language target counts** (DB counters count target rows). Stale/overlapping publication attempts are explicitly conflicted/reconfirmed; no unbounded single-request transaction or generic background publishing worker is invented.
 
 
+### Required React component decomposition
+
+This is the most complex Admin screen and **must not** become a single bulk-publication React component or service. Use a thin protected Server Component route and separate client components under `src/components/admin/whatsapp-templates/publishing/`:
+
+- `PublicationScopeSelector` — one, selected or all currently eligible shops.
+- `PublicationEligibilitySummary` — included/excluded shop counts and reasons.
+- `PublicationImpactList` — bounded, paginated shop-level impact rows.
+- `ShopLanguageComparison` — full previous versus proposed template, per language, using a shared read-only presentation component instead of cloning editor logic.
+- `PublicationOverrideConfirmation` — explicit override confirmation, reason and stale-preview warning.
+- `PublicationProgressSummary` — separate shop and shop-language counts, partial failures and retry controls.
+
+Move UI state/selection/page-navigation/confirmation fingerprint handling into `useTemplatePublication` (or an equivalent dedicated controller hook). Split candidate discovery, eligibility, impact/diff computation, confirmation digest, per-shop transactional assignment, operation paging/retry and audit into separate **server-side repository/service files** in `src/lib/admin/whatsapp-templates/publishing/`. No JSX file may contain raw Prisma writes or bulk-loop orchestration; no server action may contain a giant combined preview/publish state machine. Large shop lists must never be rendered as one unbounded React array. Ensure a tested selected-shop/selected-language drill-down, not 20 full previews for all shops simultaneously.
+
 ## Out of Scope
 
 - No Meta template creation, translation, provider status reconciliation, Admin authoring edits, wrapper activation, storefront merchant custom authoring or Runtime WhatsApp sending.
@@ -94,6 +107,8 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
+- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+
 - [ ] One/selected/all current eligible merchants are targeted correctly; Shopify/Woo eligibility is enforced and newly appearing shops are excluded from the confirmed run.
 - [ ] Each affected shop has correct 20-language target history, one selectable slot per purpose/language, and preservation of historic variants; conflicting overrides require deliberate confirmation.
 - [ ] Multiple invocations of an operation neither multiply variants nor audit entries; concurrent individual and bulk commands cannot leave duplicate active assignments.
@@ -102,6 +117,8 @@ None at task-definition time. Completion of this task does not grant permission 
 
 
 ## Validation
+
+- [ ] Focused React component tests cover composition, user interactions, relevant loading/error/empty states and at least one mobile-width/accessibility scenario; controller hooks and pure business helpers are tested separately.
 
 - [ ] PostgreSQL integration tests for slot serialisation, 20-language per-shop transaction, 100-shop target cardinality, stale confirmation, cross-shop identity mismatch and interruptions/retries.
 - [ ] Guarded Admin preview/action/UI tests for full comparisons, frozen brand-binding differences, scoped `ShopBrand` availability (configured/null/no record/unknown), paging, accessible responsive display, partial-result clarity; typecheck/lint/`git diff --check`.

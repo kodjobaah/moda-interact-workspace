@@ -50,6 +50,17 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - Publishing is a platform-level pointer change, **not** copying 20 wrappers into every Shop. Background owns SHARED/AI/HUMAN fallback precedence and final rendering/send eligibility. Admin must not create out-of-window Meta sends or modify the customer checkout.
 
 
+### Required React component decomposition
+
+Use a thin protected Server Component route and **separate** components under `src/components/admin/whatsapp-templates/wrappers/`:
+
+- `WrapperAudienceSelector` — SHARED, AI and HUMAN audience selection.
+- `WrapperActiveSlotSummary` — current effective definitions/fallback and activation history.
+- `WrapperBeforeAfterPreview` — full existing/proposed prepared wrapper including an illustrative response and conditional checkout display.
+- `WrapperActivationConfirmation` — reason, stale CAS/version conflict and pending state.
+
+Place interactive audience/preview/confirmation state in a dedicated `useWrapperPublication` controller. Split eligibility checks, effective SHARED/AI/HUMAN lookup, optimistic compare-and-swap transaction, and audit into distinct server-only functions in `src/lib/admin/whatsapp-templates/wrappers/`. Reuse the read-only preview contract where possible; do not implement another AST editor, parser or translation controller. UI components must not perform database mutation or outbound WhatsApp operations.
+
 ## Out of Scope
 
 - No Meta template submission/status, per-shop recovery assignments, Background AST rendering, AI generation, human message authorship, moderation or checkout mutations.

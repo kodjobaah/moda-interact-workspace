@@ -51,6 +51,18 @@ The six Admin tasks have **only `ARCH-047-DATABASE-001` as a formal dependency**
 - UI shows `SAVED`, `TRANSLATION_QUEUED`, `TRANSLATING`, `PARTIALLY_FAILED`, `READY_FOR_REVIEW` from persisted run/item status. Show 1 English source + 19 language results distinctly, counts, per-language failure and bounded refresh (auto-poll only while active and stop on selection/unmount). The retry action requests only failed/pending work using the persisted fields; Background owns retry execution and provider Batch correlation.
 
 
+### Required React component decomposition
+
+Use a thin protected Server Component route and **separate** client components under `src/components/admin/whatsapp-templates/translations/`:
+
+- `TemplateTranslationWorkspace` — composes the view without executing translation operations.
+- `TranslationRequestControls` — explicit Generate/Retry actions and duplicate-request disable.
+- `TranslationProgressSummary` — English source + 19 target counts/states.
+- `TranslationLocaleStatusList` — paginated/scroll-safe per-locale progress and failure reasons.
+- `TranslationRunErrorNotice` — actionable failures and configuration guidance.
+
+Place polling, request/retry state, stale-response cancellation and selection-aware refresh in a dedicated `useTemplateTranslationRun` hook/controller. Automatic polling is enabled only for an active run, stops on unmount or while the administrator is inspecting a selected result, and must not create duplicate starts. Segment extraction, protected-marker assignment, source-hash calculation and transaction handling stay in separate **pure helpers and server-side service/repository files** under `src/lib/admin/whatsapp-templates/translations/`. The task-specific action is a thin authenticated adapter. JSX components must not contain provider Batch logic, Prisma queries or segment-extraction algorithms.
+
 ## Out of Scope
 
 - No AST redesign, new translation engine, provider Batch submit/poll, translated content reconstruction, Meta submission or wrapper/shop publication.
@@ -93,6 +105,8 @@ All server reads/mutations of template management require the existing authentic
 None at task-definition time. Completion of this task does not grant permission to start another task or skip an independently required system-test gate.
 
 ## Acceptance Criteria
+
+- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
 
 - [ ] Saving an English template does not implicitly translate; explicit Generate persists one run and exactly 19 target-language items for supported target locales.
 - [ ] Source snapshots use stable component keys; source text markers survive opaque variable contract; untranslatable URLs, metadata and response slot never become translation work.
