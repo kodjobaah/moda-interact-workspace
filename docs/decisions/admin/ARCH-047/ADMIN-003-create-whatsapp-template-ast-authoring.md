@@ -7,8 +7,8 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 20
 executor: null
@@ -25,7 +25,7 @@ updated: 2026-10-25
 
 ## Architecture
 
-`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This is a **defined but not materialised** task until the developer's launcher creates the canonical task branch/worktree.
+`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This task definition is materialised on parent branch `task/ARCH-047-ADMIN-003`; the canonical developer launcher will prepare the implementation worktree and claim execution.
 
 ## Objective
 
@@ -118,7 +118,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — portable task definition, not materialised/claimed.
+Not Started — materialised task definition; developer takeover recorded, awaiting canonical launcher preparation and claim.
 
 ### Files Changed
 
@@ -174,3 +174,10 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Developer Takeover
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-ADMIN-003` while this task was ready and agent-owned. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_admin`, coordinator, repository, dependency, scope, acceptance criteria and validation requirements.
+- Claim state: This amendment does not claim an implementation attempt. The canonical launcher records the claim after worktree preparation, synchronization and dependency verification.
