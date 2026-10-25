@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -195,9 +195,7 @@ After completing only the specified extraction, Shopify migration and focused va
 
 ### Status
 
-Ready for Review — developer-owned Attempt 1. The source implementation and follow-up
-corrections were committed and pushed to the Background task branch. This is an
-implementation handoff, **not** an architect acceptance or developer completion.
+Changes Requested — developer self-review found a canonical deduplication-key contract violation in Attempt 1. The implementation branch remains published; the next developer-create workflow may claim Attempt 2 after applying the correction below. No attempt was incremented by this review update.
 
 ### Files Changed
 
@@ -243,8 +241,10 @@ Implementation worktree observed in terminal logs:
 
 - Original seven-file focused unit selection: **92 passed / 1 failed**;
   the single failure was the expected source-key fixture, which was
-  subsequently corrected. **The full seven-file selection was not rerun**
-  as a unit after the final correction.
+  subsequently corrected. **The full selection was not rerun** as a unit after
+  the final correction. During developer self-review, the current focused
+  selection ran 5 files / 56 tests and passed, but its key-vector assertions
+  encode the same contract mismatch recorded below.
 - Corrected formatter unit test:
   `npm test -- tests/unit/services/checkout-recovery/recovery-consent-merchant-notice.formatter.test.ts`:
   **7/7 passed**.
@@ -288,8 +288,8 @@ Implementation worktree observed in terminal logs:
 
 ### Unresolved Issues
 
-- No failing focused notifier or PostgreSQL integration tests remain in
-  the supplied final validation log.
+- The focused unit and PostgreSQL integration runs pass, but passing tests do
+  not establish conformance for the source-key identity invariant below.
 - Full seven-file focused unit selection was not rerun after the final
   commit; the architect may require a fresh complete rerun.
 - The supplied terminal log establishes the **implementation** worktree,
@@ -304,6 +304,30 @@ Implementation worktree observed in terminal logs:
   behavioral contract is unchanged in the passing focused tests.
 - Do not promote `ARCH-046-BACKGROUND-002` before authorised review and
   explicit developer completion of this task.
+
+## Developer Self-Review - Changes Requested
+
+### Outcome
+
+Changes Requested — Attempt 1 does not satisfy the canonical source-key contract. The key currently includes `blockedOperation`, contrary to the identifier invariant, which explicitly excludes it so the same platform/shop/checkout/reason observed at first recovery creation and initial-send re-entry produces one notice.
+
+### Required Corrections
+
+- In `createRecoveryConsentNoticeSourceKey`, hash exactly `JSON.stringify(["recovery-consent", 1, platform, shopId, checkoutToken, reason])` in that order. Do not include `blockedOperation` or context.
+- Replace the formatter test's “including blocked operation” vectors with a regression asserting identical source keys for `CREATE_FIRST_RECOVERY` and `SEND_INITIAL_RECOVERY` when platform, shop, checkout token and reason match. Keep assertions that platform/shop/token/reason changes produce distinct keys.
+- Preserve operation-specific body copy. Add or retain a persistence-level replay test proving a second call with the same identity but a different `blockedOperation` returns `duplicate`, inserts no second message, and does not rewrite the original body.
+- Rerun the focused formatter, notifier, Shopify-admission and checkout-reconciliation unit tests, the disposable PostgreSQL integration test, build, lint and `git diff --check`; record final results on the next attempt.
+
+### Attempt State
+
+Attempt 1 remains the reviewed attempt. The task returns to `ready` with `executor: null` and `claimed_at: null`; no Attempt 2 claim was made by this review.
+
+### Review Evidence
+
+- The final published implementation branch is `f204911db4bc41f9eaf2037ced54364f566831dc` and is clean/synchronized with its remote. The parent task branch is `1a71c1079a2f19a7d8bcddf0dd885a4831cfe052` before this review record update.
+- Focused Vitest run completed 5 files / 56 tests successfully; the suite currently asserts operation-dependent hashes, so it cannot validate the task's operation-independent key requirement.
+- The source-key implementation and formatter test were inspected directly. Both include/assert `blockedOperation` in the digest, while the task contract explicitly says it is deliberately excluded.
+- No implementation files were modified during this review decision.
 
 ## Architect Review
 
