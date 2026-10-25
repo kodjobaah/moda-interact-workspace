@@ -280,52 +280,34 @@ workflow.
 
 ### Pricing and billing model
 
-Merchant billing and lifecycle behaviour is now governed by **ARCH-010**. ARCH-007 remains historical implementation/review evidence and retains non-superseded cost/safety primitives, but its old automatic-overage, Free-allowance-adjustment and capacity-order rules are not current product policy.
+The [Moda Interact Investor Report: Pricing 2026](Moda_Interact_Investor_Report_Pricing_2026.pdf) (24 October 2026) proposes one USD catalogue for Shopify and WooCommerce. These are commercial assumptions for planning, **not verified production provider offers or live charges**. Provider billing configuration, taxes and purchase/refund reconciliation must be verified before presenting these prices as available to merchants.
 
-The current target catalogue is:
+| Plan | Proposed price | Included recovery credits | Entitlement |
+| --- | ---: | ---: | --- |
+| **Free** | $0 | 2 | Lifetime grant, once per shop |
+| **Starter** | $35 | 20 | Per 30-day entitlement cycle |
+| **Growth** | $75 | 50 | Per 30-day entitlement cycle |
+| **Scale** | $149 | 100 | Per 30-day entitlement cycle |
 
-| Plan | Shopify recurring price* | Paid monthly included recoveries | Shop-lifetime Free grant | Automatic paid overage |
-| --- | ---: | ---: | ---: | --- |
-| **Free** | $0 | none | 5 once per shop | none |
-| **Starter** | $35/month | 200/current verified period | 5 once per shop | none |
-| **Growth** | $75/month | 500/current verified period | 5 once per shop | none |
-| **Scale** | $149/month | 1,200/current verified period | 5 once per shop | none |
+Paid-plan credits renew each 30-day entitlement cycle. Free credits are granted once and do not renew. All four plans may purchase one-off prepaid bundles; Free merchants can buy without subscribing.
 
-\* Shopify App Pricing is authoritative for the live commercial price, currency, billing cycle and pending plan change.
+| Plan | Bronze · 5 credits | Silver · 10 credits | Gold · 20 credits |
+| --- | ---: | ---: | ---: |
+| **Free** | $15 | $26 | $46 |
+| **Starter** | $14 | $24 | $42 |
+| **Growth** | $13 | $22 | $38 |
+| **Scale** | $12 | $20 | $34 |
 
-The five lifetime Free credits belong to the **Shop**, not to the Free subscription. They are granted once at first verified activation even when the merchant starts directly on a Paid plan, and they never reset on renewal, upgrade, downgrade, cancellation, uninstall or reinstall.
+The proposed merchant unit is one recovery credit per admitted proactive outreach attempt, not per WhatsApp message. An eligible follow-up consumes another credit; customer replies and in-window AI or human responses do not. The report proposes that Moda absorb WhatsApp delivery and bounded AI costs within fixed recovery prices, without per-message Moda overage. This all-inclusive treatment is also **not yet a verified live billing policy**. Taxes may apply.
 
-The canonical recovery-capacity order is:
+**Pricing source discrepancy:** the linked ARCH-010 product model below currently records different allowances (5 lifetime Free credits and 200/500/1,200 paid credits). It has not yet been reconciled with the investor report’s proposed 2 and 20/50/100 catalogue. Treat the investor figures above as the report’s proposal, not as canonical runtime or provider configuration, until that product/architecture decision is resolved. ARCH-010 lifecycle and implementation records remain authoritative for current system behavior.
 
-```text
-Paid:
-  selected promotional campaign
-  -> current-period monthly included
-  -> purchased lifetime top-ups
-  -> shop-lifetime Free
-  -> BLOCK NEW RECOVERY ADMISSION
-
-Free:
-  promotional
-  -> purchased lifetime top-ups
-  -> shop-lifetime Free
-  -> BLOCK NEW RECOVERY ADMISSION
-```
-
-`BLOCK NEW RECOVERY ADMISSION` means capacity exhaustion stops a **new** recovery from being admitted. It does not disable the merchant dashboard and does not terminate an already-admitted conversation solely because capacity later reaches zero.
-
-Promotions are optional Moda-funded offers targeted globally, to one BillingPlan tier, or to one Shop. Merchants see currently-running eligible offers and choose one; the selected promotion is consumed before every other recovery-capacity source. Campaigns are expiring, auditable and reopenable under the same ID without regranting previously claimed quantity. Purchased top-ups remain merchant-funded lifetime credits with FIFO lot accounting and partial-unused-credit refund support.
-
-Top-ups use the current Shopify App Pricing **usage meter + App Event** mechanism. A Free `$0` App Pricing plan may therefore still have a Shopify provider billing cycle for App Event scope; that billing cycle never replenishes the five lifetime Free credits.
-
-For the current product model and exact supersession boundary, start with:
+For the governed lifecycle model and its implementation status, see:
 
 - **[Current pricing, billing and recovery-capacity model](docs/product/pricing-and-billing-model.md)**
 - **[ARCH-010 merchant lifecycle state transitions](docs/architecture/ARCH-010-merchant-lifecycle-state-transitions.md)**
 - **[ARCH-010 billing/lifecycle supersession map](docs/architecture/ARCH-010-supersession-map.md)**
 - **[ARCH-010 implementation handoff](docs/architecture/ARCH-010-implementation-handoff.md)**
-
-Do not use the historical ARCH-007 overage/allowance-adjustment model to infer current merchant billing behaviour.
 
 ### Internationalisation and merchant communications
 
