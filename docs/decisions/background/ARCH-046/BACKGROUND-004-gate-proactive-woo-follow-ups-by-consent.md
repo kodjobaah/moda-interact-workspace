@@ -7,13 +7,13 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 38
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-25T16:39:00Z
+attempt: 1
 depends_on:
   - ARCH-046-BACKGROUND-001
   - ARCH-046-BACKGROUND-002
@@ -37,6 +37,10 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 Coordinator: `moda_architect`.
 
 **Execution frontier (25 October 2026): Ready, unclaimed, Attempt 0.** `ARCH-046-BACKGROUND-002` is explicitly Complete on its parent task branch at commit `64d20849`; the other declared dependencies are Complete. This task is promoted from `pending` to `ready` after all explicit dependencies became Complete. Its old external requirement for a Woo follow-up engine has been removed because this task is **narrowed to the initial-send/final-permit capability already required by ARCH-048**. No attempt is claimed or started by this promotion.
+
+## Execution Ownership Amendment
+
+On 25 October 2026, the developer explicitly took over this ready agent-owned task through `/moda_developer_create`. Execution and completion authority are now developer-controlled; `assigned_agent: moda_background`, task scope, dependencies and acceptance criteria are unchanged. Attempt 1 was claimed at `2026-10-25T16:39:00Z` after all explicit dependencies were verified Complete and both canonical task worktrees were prepared. This amendment records execution ownership only; no feature implementation has started.
 
 ## Objective
 
@@ -161,19 +165,19 @@ The earlier BG004 definition required a Woo follow-up engine that ARCH-048 delib
 
 ### Status
 
-Not Started.
+In Progress.
 
 ### Files Changed
 
-None.
+Task ownership and Attempt 1 claim recorded in this task file. No implementation files changed.
 
 ### Work Completed
 
-None.
+Developer takeover recorded while preserving `assigned_agent: moda_background`. All four explicit dependencies were rechecked as Complete. The canonical parent and Background implementation worktrees were synchronized with their respective `origin/main`; the implementation worktree and recursive database submodule were prepared and verified.
 
 ### Validation Results
 
-Not run; task definition only.
+Canonical launcher route checks confirmed all four dependencies Complete. Parent and implementation worktrees are clean and contain their respective `origin/main`; recursive submodule initialization completed and the database submodule is at gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. No implementation tests were run because this command only prepares and claims the task.
 
 ### Deviations
 
