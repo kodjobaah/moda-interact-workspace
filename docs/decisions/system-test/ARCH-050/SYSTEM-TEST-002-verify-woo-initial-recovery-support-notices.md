@@ -65,12 +65,19 @@ Add only supporting harness modules needed for the scenario; keep fixtures/asser
 - Assert STOP/consent, order completion/cancel, failed provider, duplicate jobs, disabled preference, human and follow-up negative paths; no extra charge/notice. Verify capability/nonce and installation-scoped host credentials throughout.
 - Separate provider-accepted-SENT evidence from WhatsApp delivery. Record production-outbound gate as known unrelated rollout dependency, not a feature defect.
 
+### Observability and failure acceptance
+
+- Under controlled first-outreach Support persistence failure, verify the owning Background logic produces a bounded Shared structured `recovery.initial_outreach_support_notice.failed` event, fails the operation for the existing retry mechanism, leaves no partially committed Support notice/attempt transition, and does not resend/recharge a confirmed provider message. If the existing local test harness cannot capture process logs, add a focused log-capture assertion to the harness or record the gap as incomplete; do not claim success merely because the UI is empty.
+- Validate `shopId`, `checkoutRecoveryId`, `outreachAttemptId` correlation (when valid) and absence of phone, customer name, message body, secret or provider payload in captured log fields. Normal `created`, `disabled`, `replayed` are informative events and must not be logged as errors. Do not introduce production OTLP/Grafana infrastructure just for this test.
+
 ## Work Items
 
 - [ ] Register Woo scenario and split fixtures/assertions/executor modules.
 - [ ] Test v2 policy and Support strict validators end-to-end, ON/OFF and exact local WP conversation link/anchor.
 - [ ] Test duplicate/replay/STOP/order/unauthorised paths and absence of second charges, with guarded test-only sender.
 - [ ] Record dependencies, release gate status, evidence and limitations.
+
+- [ ] Capture structured error/outcome event evidence for a controlled notification-persistence failure and verify retry propagation, original provider send/credit idempotency, and no PII in logs.
 
 ## Interfaces / Contracts
 
@@ -98,6 +105,8 @@ None. This task has no directly dependent ARCH-050 implementation task.
 - [ ] v2 PHP/browser/hosted contracts agree, and existing v1 compose/read receipts remain functional.
 - [ ] Wrong-tenant, missing IDs, invalid nonce/capability, STOP/order suppression, duplicate jobs and human cases fail closed.
 - [ ] Test harness does not open the Woo production sender gate or claim live outbound success.
+
+- [ ] Captured local structured log evidence distinguishes expected OFF/replay from an actual failed transaction and shows an observable, retryable failure; no silent-success false positive or secret leakage.
 
 ## Validation
 

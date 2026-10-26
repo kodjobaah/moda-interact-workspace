@@ -64,6 +64,8 @@ No new WordPress REST endpoint, public WordPress callback or schema. Do not chan
 - Add new accessible checkbox in `RecoveryBehaviourFields`; leave `followUpEnabled` and follow-up minute enable/disable independent. Save only on explicit `Save recovery behaviour`; conflicts preserve unsaved local edits, refresh replaces them.
 - Preserve `manage_woocommerce` permission, `X-WP-Nonce`, current-installation check and WordPress-to-hosted signature; never expose hosted credentials or use unauthenticated browser direct API calls.
 - Use WordPress native `__()` translation and existing plugin i18n extraction/20-language verification. Do not hardcode English-only strings or bypass localisation.
+- **Logger boundary:** WordPress PHP cannot consume a JavaScript logger; the WooCommerce browser bundle must not add `@modainteract/moda-interact-shared/logging` as a new dependency for this feature. Keep hosted `moda-interact-api` logging at its StructuredLogger boundary (API-001). In PHP, if this task adds/changes an operational `catch (\Throwable $error)` in `RecoveryPolicyController.php` or `ModaApiClient.php`, report the failure using the existing Woo/WordPress logging convention (`wc_get_logger()` with source `moda-interact`, stable operation/error class/code and no credential/request body) and preserve the existing `WP_Error`/HTTP response mapping. Do not create a new logging subsystem.
+- The Woo browser client/controller must reject and surface network, malformed-v2, stale-revision and save failures in the existing visible error state; do not `catch {}` and return the existing snapshot, silently reset the checkbox or show a success banner on failure. Validation failures are expected UX outcomes, not server crash logs. Never include merchant installation secrets, raw HTTP bodies or customer data in logs.
 
 ## Work Items
 
@@ -71,6 +73,7 @@ No new WordPress REST endpoint, public WordPress callback or schema. Do not chan
 - [ ] Upgrade browser `recovery-policy-client.js` v2 parsing/building/saved-value reconciliation.
 - [ ] Add preview/dirty/controlled checkbox UI, explicit save and conflict behaviour.
 - [ ] Extend PHP/JS tests for default OFF, ON/OFF save, stale revisions, malformed v2, nonce/capability and 20-language i18n checks.
+- [ ] Verify existing PHP/hosted failure logging and add bounded Woo logging at any newly introduced operational catch; test that rejected hosted saves/invalid responses are visible as failures rather than silently treated as success.
 
 ## Interfaces / Contracts
 
@@ -78,6 +81,7 @@ No new WordPress REST endpoint, public WordPress callback or schema. Do not chan
 - WordPress browser REST path unchanged: `/moda-interact/v1/merchant/recovery-policy` GET/PUT; PHP-to-hosted path unchanged: `/v1/merchant/recovery-policy` GET/PUT.
 - Draft preview: `{ recoveryDelayMinutes:string, followUpEnabled:boolean, followUpDelayMinutes:string, notifyOnInitialRecoveryOutreach:boolean }`; `makeRecoveryPolicyUpdate` sends this Boolean with revision and other fields.
 - No new `ShopRecoveryPolicyOverride` semantics and no separate config row in WordPress options.
+- Logging/exception boundary: canonical Shared Node logger lives **only in hosted API** (API-001); PHP uses its existing Woo/WP logger if it catches operational faults, browser uses existing error state and rejects failed promises. No new external log endpoint.
 
 ## Dependencies
 
@@ -93,11 +97,13 @@ No new WordPress REST endpoint, public WordPress callback or schema. Do not chan
 - [ ] Preference-only change counts as dirty and is persisted; stale updates fail with policy conflict.
 - [ ] Browser JS, WordPress PHP and hosted v2 validators agree on field set; extra/missing or invalid values fail closed.
 - [ ] WordPress capability/nonce/installation and no-store security stay enforced; no production outbound sends are triggered merely by enabling setting.
+- [ ] Transport/validator/persistence failure is not silently ignored or displayed as a successful save; caught PHP server errors have bounded non-sensitive operational logging.
 - [ ] 20-language source/compile checks pass.
 
 ## Validation
 
 - [ ] `npm run test:js:unit` for focused recovery-policy/behaviour/UI cases, `npm run test:php` for revised PHP validators/controller.
+- [ ] JS/PHP negative-path tests assert rejected requests and failed v2 response validation surface an error, retain merchant draft and do not produce false success; verify PHP catch/error logging if changed.
 - [ ] `npm run i18n:verify:20`, `npm run build` and targeted `npm run lint:js` / `npm run lint:php` where appropriate, `git diff --check`.
 
 ## Stop Condition

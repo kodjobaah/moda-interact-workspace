@@ -62,6 +62,8 @@ Do not modify unrelated billing notices, create new recovery query API or redire
 - `app/routes/app/recovery-detail/loader.server.ts` must continue to invoke existing `requireRecoveryHistory` and tenant-scoped read; Support link is not an authorization token.
 - Keep the existing billing `getMerchantSystemMessageAction()` resolver unchanged for billing codes. Add a new recovery resolver (or optional structured argument) without changing billing handling for existing messages.
 - Anchor should focus/scroll to the loaded transcript without breaking existing message section lazy loading/pagination; if the heading mounts asynchronously, account for anchor focus on initial load. Use all 20 merchant locale keys.
+- Use existing Shopify server-side `@modainteract/moda-interact-shared/logging` facilities if adding a catch for Support SQL/read or recovery detail navigation failures. An actual SQL/authorization infrastructure failure must log a bounded `merchant.support.recovery_action.read.failed` event (validated `shopId` when known, operation, safe error category and `{error}`) and propagate to existing error handling; **never** return an empty Support page, a fabricated `checkoutRecoveryId:null` or a successful page for a database exception. Expected absence, mismatch, unauthorized access, deleted recovery and invalid link IDs are explicitly handled non-error outcomes.
+- No new browser logger, console dumping of route errors, or messages containing customer/checkout data. If no new catch is introduced in a particular pure renderer or resolver, preserve normal error propagation rather than adding a catch solely to suppress it.
 
 ## Work Items
 
@@ -69,6 +71,7 @@ Do not modify unrelated billing notices, create new recovery query API or redire
 - [ ] Add recovery action resolver with `systemCode`, string version `"1"`, target validation, route guard.
 - [ ] Render localized action in `MessageCard` and stable `#recovery-conversation` anchor on transcript section.
 - [ ] Add negative security/availability tests, action routing tests, and 20-locale coverage.
+- [ ] Cover actual Support SQL failure separately from expected missing/unauthorised targets: fail through the existing server boundary with Shared structured failure visibility, never silently fall back to an empty/valid response.
 
 ## Interfaces / Contracts
 
@@ -86,6 +89,7 @@ export function getRecoverySupportMessageAction(input: {
 
 - Action is present only for `SYSTEM + AVAILABLE + RECOVERY_INITIAL_OUTREACH_SENT + "1" + tenant-validated id + RECOVERY_HISTORY route access`; `MessageCard` may separately check state.
 - Destination is precisely `/app/recoveries/<encoded recovery ID>#recovery-conversation`. No stored URL, provider-supplied target, cross-merchant redirect or new permission.
+- Server-side failure event (where an owning catch handles a new read failure): `merchant.support.recovery_action.read.failed`, via Shared logger; no client-side Shared/Node imports.
 
 ## Dependencies
 

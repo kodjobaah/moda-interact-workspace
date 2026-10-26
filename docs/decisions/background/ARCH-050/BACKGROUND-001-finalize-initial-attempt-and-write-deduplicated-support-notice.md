@@ -56,14 +56,17 @@ Do **not** edit Shopify finalisation, Woo adapters, billing or human-send paths 
 
 ## Requirements
 
-- Use the existing default `prisma` import and shared `@modainteract/moda-interact-shared/logging` logger. Expose constructor-injected database, clock, and logger for deterministic tests.
+- Use the existing default `prisma` import. Import `createLogger` / `type StructuredLogger` from `@modainteract/moda-interact-shared/logging`, reuse the existing Background environment resolver and `serviceName:"moda-recovery-worker"` pattern from `recovery-consent-merchant-notice.service.ts`. Constructor-inject database, clock and `Pick<StructuredLogger,"info"|"error">` for deterministic unit tests; do not create an alternative local generic logger.
 - At entry, validate finite `sentAt`, nonblank IDs, `followUpDueAt` consistency. Inside a **single interactive Prisma transaction**, lock the persisted sequence-1 attempt (`SELECT ... FOR UPDATE` via `Prisma.sql` or an equivalent concurrency-safe CAS), validate durable lineage and guarantee the first transition is the only opportunity to evaluate the preference.
 - Read `RecoveryOutreachAttempt`: `id`, `checkoutRecoveryId`, `sequence = 1`, `trigger = INITIAL`, `initiatedBy` must **not** be `HUMAN`, `status`, `sentAt`, `outboundMessageId` and `followUpDueAt`. Read `CheckoutRecovery.shopId` and its `Conversation.id`. Read persisted `ConversationMessage` with `conversationId` equal to the recovery conversation, `direction = OUTBOUND`, `senderType = AUTOMATION`, `status IN (SENT, DELIVERED, READ)` and non-null `sentAt`. `Conversation.shopId` when non-null must match. Never accept a caller's unauthenticated shop/recovery IDs as proof of tenancy.
 - On the **first confirmed transition**, require attempt `status IN (PENDING,CAPACITY_BLOCKED)` and `sentAt/outboundMessageId` absent; update status to `WAITING_FOR_RESPONSE`, set `sentAt`, `outboundMessageId` and specified `followUpDueAt` within that transaction. Query `ShopSettings.notifyOnInitialRecoveryOutreach`, treating a missing row as OFF. If OFF, commit transition without Support insertion and return `disabled`.
 - If ON, `createMany({ skipDuplicates: true })` a Support thread keyed by authoritative recovery `shopId`, `findUniqueOrThrow({ where: { shopId } })`, insert one `SYSTEM / AVAILABLE` Support message with `checkoutRecoveryId`, `readAt:null`, `availableAt:now()`, `systemCode:"RECOVERY_INITIAL_OUTREACH_SENT"`, `systemVersion:"1"`, `sourceKey:"recovery-initial-outreach:v1:<attempt.id>"`, bounded neutral originalBody, `sourceLanguageTag:"en-GB"`. Existing Support translation handling must not falsely flag it pending. Conditionally advance `thread.lastMessageAt`; never mutate `lastMerchantMessageAt`, `merchantMessageVersion` or `needsAdminResponse`.
 - If attempt already finalised with **the same** `outboundMessageId/sentAt`, return `replayed` after verifying lineage, including progressed `WAITING_FOR_RESPONSE/ENGAGED/NO_RESPONSE`; NEVER inspect a newly changed opt-in to backfill. Different message identity, failed/cancelled transition, mismatched recovery/shop, invalid sender or a conflicting sourceKey must throw.
 - Any exception before commit rolls back **attempt update + thread + message**. Propagate the error, do not suppress it, and do not call billing, Redis, Meta, an LLM, an API or outbound provider inside this transaction. Do not try to undo a confirmed external send.
-- Logging uses bounded non-PII IDs and result codes (`created`, `disabled`, `replayed`, `failed`), via shared logger; logging failure cannot turn an already committed success into a failure.
+- Emit exactly one shared-logger outcome event per `finalizeConfirmedInitial` invocation after the transaction commits or fails: `recovery.initial_outreach_support_notice.created`, `.disabled`, `.replayed` at `info`, or `.failed` at `error`. **Never log inside the interactive database transaction**. Do not mistake default OFF or replay for an exception.
+- On failure, catch **outside** `$transaction`, log `.failed` with a bounded category such as `INVALID_INPUT`, `LINEAGE_MISMATCH`, `FINALIZATION_CONFLICT` or `PERSISTENCE_FAILURE`, plus the original `{ error }` when safe, then `throw error` (same object). This must cover validation errors, duplicate/sourceKey integrity failures and Prisma/transaction errors; never use `catch {}`, return a success-shaped result, or silently skip Support persistence after the confirmed transition.
+- Use bounded, explicit correlation fields when valid (`shopId`, `checkoutRecoveryId`, `outreachAttemptId`, `outboundMessageId`, `outcome`, `errorCategory`). No phone, customer identity, checkout contents, provider payloads, message bodies, credentials, raw input objects, raw SQL or dynamic event names. Invalid/raw IDs must not be logged before validation.
+- Implement one narrow `logSafely(event, fields, level)` helper around the **injected logger call only**; a failing logger/sink must not undo committed writes or replace a pending exception. Catching a logger's own exception is the only intentionally ignored catch and must have a code comment explaining failure isolation. Do not use `console.*` or a new logging sink.
 
 ## Work Items
 
@@ -72,6 +75,7 @@ Do **not** edit Shopify finalisation, Woo adapters, billing or human-send paths 
 - [ ] Implement atomic Support thread/message insert using existing deduplication conventions, sourceKey and recovery FK; update `lastMessageAt` conditionally.
 - [ ] Implement replay protection for same-message finalisation, including a merchant opt-in flip between attempts.
 - [ ] Add dedicated unit tests (malformed inputs, status/ownership/type guards, logger failure) and **real PostgreSQL** tests (ON, OFF, OFF then ON replay, ON then OFF, duplicate/concurrent same attempt, cross-shop spoof, failure after transition before message insert, sourceKey collision).
+- [ ] Implement and test the shared-logger outcome/failure event contract, including a failing injected sink; demonstrate original exception identity survives a failing logger and the transaction is rolled back before the error log is emitted.
 
 ## Interfaces / Contracts
 
@@ -99,6 +103,17 @@ export interface ConfirmedInitialOutreachFinalizer {
 
 **Create implementation** `RecoveryInitialOutreachSupportNoticeService implements ConfirmedInitialOutreachFinalizer`, with default exported instance `recoveryInitialOutreachSupportNoticeService`. Dependencies may be injected through constructor `database: Pick<PrismaClient,"$transaction">`, `now:()=>Date`, `logger:Pick<StructuredLogger,"info"|"error">`, matching the existing consent notice service's patterns.
 
+**Stable structured events (owned by this task):**
+
+| Event | Level | Required safe data |
+|---|---|---|
+| `recovery.initial_outreach_support_notice.created` | `info` | `outcome:"created"`, validated shop/recovery/attempt IDs |
+| `recovery.initial_outreach_support_notice.disabled` | `info` | `outcome:"disabled"`, validated shop/recovery/attempt IDs |
+| `recovery.initial_outreach_support_notice.replayed` | `info` | `outcome:"replayed"`, validated shop/recovery/attempt IDs |
+| `recovery.initial_outreach_support_notice.failed` | `error` | `outcome:"failed"`, `errorCategory`, safe available IDs, `{error}` (bounded Shared serializer) |
+
+No additional Shared contract package is needed; the event names are service-local domain semantics implemented through the Shared logger.
+
 This is an **internal direct TypeScript call**, not a new BullMQ event, cross-service contract, public endpoint or Shared package export. The first-send state transition is moved to this primitive by BACKGROUND-002 and BACKGROUND-003; do not call the primitive after a separately committed `markWaitingAfterConfirmedSend`.
 
 ## Dependencies
@@ -118,11 +133,14 @@ This is an **internal direct TypeScript call**, not a new BullMQ event, cross-se
 - [ ] Invalid persisted `direction`, `senderType`, status, null sentAt, trigger, sequence, wrong shop/ID or mismatched conversation fails closed; HUMAN/sequence-2 are excluded.
 - [ ] Injected failure between attempt update and Support insert rolls back both writes; retry can complete without duplicate Support message.
 - [ ] Logger errors never roll back already committed notification; result is deterministic and has no PII.
+- [ ] Each created/disabled/replayed result and transaction/lineage failure emits its corresponding stable structured event; an exception is logged and rethrown as the same error, not swallowed or mapped to a successful outcome.
+- [ ] Failure with injected throwing logger preserves the original business exception; successful commit with throwing logger still returns created/disabled/replayed and never causes a second attempt.
 
 ## Validation
 
 - [ ] `npx vitest run tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts`.
 - [ ] `node scripts/test-integration.mjs tests/integration/recovery-initial-outreach-support-notice.integration.test.ts` against disposable real PostgreSQL (not mocked Prisma).
+- [ ] Unit log-spy assertions verify shared logger event name, level, bounded correlation fields, failure `errorCategory`, no PII and original-error rethrow; integration confirms rollback + retriable job failure on notification persistence error.
 - [ ] `npm run build` (defined in Background package.json), targeted ESLint for changed source/tests, `git diff --check`.
 
 ## Stop Condition

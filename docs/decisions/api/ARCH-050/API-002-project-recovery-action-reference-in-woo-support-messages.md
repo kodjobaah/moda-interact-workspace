@@ -59,12 +59,15 @@ Do not write Support notices or change Woo plugin here; BACKGROUND-001 and WOOCO
 - In `read.service.ts`, LEFT JOIN `"commerce"."CheckoutRecovery" r` with both `r.id = m.checkoutRecoveryId` AND `r.shopId = t.shopId`; CASE-project `r.id` only when `kind=SYSTEM`, `state=AVAILABLE`, `systemCode=RECOVERY_INITIAL_OUTREACH_SENT`, `systemVersion='1'`.
 - Preserve installed Woo principal check `assertSupportInstallation(..., {write:false,allowSuspended:true})`, exact validators, page sizes 10/25/50, unread, translation logic and message order.
 - Do not expose URLs, phone numbers, basket details, or any new write action. Coordinate API v2 rollout with WooCommerce plugin's strict PHP/browser v2 validation.
+- `src/merchant/support/routes.ts` already receives an injected `StructuredLogger` from `@modainteract/moda-interact-shared/logging`. Reuse it and existing `merchant.support.*` event names; do not add a feature-local logger, raw `console.*` or new telemetry transport.
+- A genuine Support SQL/query, projection or unexpected v2 DTO failure must reach the existing route catch, emit a bounded `logger.error("merchant.support.failed", {operation:"list", reason:"integrity"|"internal", error})`, and return the existing sanitized HTTP 500. Do **not** convert exceptions into an empty page, `checkoutRecoveryId:null`, `[]` or a fabricated successful v2 response. Expected unauthorized/missing/deleted/cross-shop recovery references remain **normal null** projections, not failures; keep handled auth/conflict status mapping. Logging sink failures cannot change the status. No SQL parameters, body, phone, URL, sensitive customer values or raw request payloads in logs.
 
 ## Work Items
 
 - [ ] Change history-page v2 types/exact validators and leave v1 compose/read receipts untouched.
 - [ ] Add joined same-shop CASE projection and nullable DTO property for all messages.
 - [ ] Test correct shop, mismatched shop, missing link, unexpected version, non-SYSTEM, v2 strictness and v1 receipt regressions.
+- [ ] Test a thrown Support read/query error separately from a valid nullable recovery projection: structured failure event + 500 (not a successful empty result); exercise throwing injected log sink.
 
 ## Interfaces / Contracts
 
@@ -85,6 +88,7 @@ type SupportPageV2 = {
 
 - `GET /v1/merchant/support/messages` returns v2; `POST /v1/merchant/support/messages` compose and `POST /v1/merchant/support/messages/:id/read` remain v1 receipts.
 - No absolute URL or authorization token in response. WordPress uses its own fixed route builder and separately protected recovery details API.
+- Existing API `logger:StructuredLogger` injection is the only required logger contract. On caught unexpected history-read failures emit `merchant.support.failed` with operation `list`, a stable reason and bounded error context.
 
 ## Dependencies
 
@@ -101,6 +105,7 @@ type SupportPageV2 = {
 - [ ] Forged cross-shop FK, missing recovery, malformed code/version or unrelated Support message returns null.
 - [ ] History page strict schemaVersion 2 accepted/rejected correctly; compose/read receipts still validate v1.
 - [ ] Existing page counts, translations and unread/read semantics have no regression.
+- [ ] Expected null recovery references remain non-errors; actual database read failures are logged with the canonical shared logger and returned as 500, not silently discarded.
 
 ## Validation
 

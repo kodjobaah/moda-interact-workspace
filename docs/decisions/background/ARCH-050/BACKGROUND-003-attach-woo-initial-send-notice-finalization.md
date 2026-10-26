@@ -55,18 +55,23 @@ Attach deduplicated merchant Support notifications to the existing guarded WooCo
 - Never schedule Shopify's `ensureScheduledInitialFollowUp`, never add Woo sequence 2, and never invoke the notice primitive for `HUMAN` messages.
 - Preserve `WooRecoveryOutreachService.enabled()` test-only outbound gate (`NODE_ENV==="test"` with injected `enableTestOutbound`), guarded provider sender and ARCH-046 final-send STOP/consent security. No setting is allowed to bypass these.
 - Preserve existing error propagation/compensation boundary: a confirmed external send + Support persistence failure is retried using the existing durable provider admission, not resent/charged again.
+- Reuse **the already required** `input.logger: StructuredLogger` of `createWooRecoveryOutreachService`; it uses the canonical `@modainteract/moda-interact-shared/logging` contract. Do **not** instantiate a new logger, use `console.*` or implement a Woo-specific serializer.
+- If the adapter's `finalize.confirmed` callback catches an operational exception from billing, shared notification writer or recovery-status update, call `input.logger.error("recovery.initial_outreach_support_notice.woocommerce_finalization_failed", {shopId:recovery.shopId, checkoutRecoveryId:recovery.id, outreachAttemptId:attempt.id, outboundMessageId:message.id, stage, error})` with a bounded stage (`billing` / `support_notice` / `recovery_status`) and **rethrow the identical original error**. Log after the DB transaction has ended; a failed sink must not mask the original error. Do not turn any failure into `disabled`, `replayed`, or a successful result.
+- The shared service also logs its own `.failed` event; this Woo-specific event is for finalisation-stage correlation, not duplicate notice persistence. Preserve existing worker compensation/retry/error logging and avoid logging customer data, credentials, message/template text, or full provider payloads. `created`, `disabled`, `replayed` are normal outcomes.
 
 ## Work Items
 
 - [ ] Import/consume BACKGROUND-001 finalisation interface and singleton inside Woo adapter's `finalize.confirmed` callback.
 - [ ] Remove only the now-redundant adapter-local attempt transition and replay check; leave Woo guard, billing and recovery status update unchanged.
 - [ ] Add tests for enabled/disabled, duplicate, exception after confirmed provider state, no Shopify follow-up, HUMAN exclusion and default test-only outbound gate.
+- [ ] Add stage-labelled Shared-logger error reporting through the existing Woo adapter logger, with tests for recorded error, unchanged rethrow and throwing log sink.
 
 ## Interfaces / Contracts
 
 - Same `ConfirmedInitialOutreachFinalizer.finalizeConfirmedInitial(ConfirmedInitialRecoveryOutreachInput)` port owned by BACKGROUND-001; Woo always passes `followUpDueAt: null`.
 - The existing `WooOutreachDependencies["finalize"]["confirmed"]` signature and Woo checkout/coordinator inputs remain unchanged; adapter consumes port internally.
 - No new API endpoint, BullMQ event, WordPress call or production sender enablement.
+- Structured logging: keep `logger:StructuredLogger` in the existing adapter factory input; call its `error` method with event `recovery.initial_outreach_support_notice.woocommerce_finalization_failed` only for caught failures. No extra logger constructor, no generic logging helper and no platform-secret payload.
 
 ## Dependencies
 
@@ -83,10 +88,12 @@ Attach deduplicated merchant Support notifications to the existing guarded WooCo
 - [ ] Retries/duplicate confirmed provider results do not create duplicate alerts, extra credits or new outbound messages.
 - [ ] Woo test-only gate and final-send consent/STOP protections remain enforced, follow-up scheduling stays absent.
 - [ ] Integration can run with existing Woo test fixtures and injected guarded sender; no production Meta send required.
+- [ ] Failure in billing/notice/status logs a sanitised Woo finalisation-stage event and propagates to the existing retry path; simulated sink failure cannot suppress or replace the original error.
 
 ## Validation
 
 - [ ] Focused Woo adapter unit test and `tests/integration/woo-recovery-composed-services.integration.test.ts`, plus existing `woo-initial-send-fence` integration tests via declared `scripts/test-integration.mjs` when relevant.
+- [ ] Mock `input.logger.error` to record and then throw: tests verify error category/context, original error object, retained provider admission/credit idempotency and no swallowed exception.
 - [ ] `npm run build`, targeted ESLint, `git diff --check`; record test-only outbound configuration as evidence.
 
 ## Stop Condition

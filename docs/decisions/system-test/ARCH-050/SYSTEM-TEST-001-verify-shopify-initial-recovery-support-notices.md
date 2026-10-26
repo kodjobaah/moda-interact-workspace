@@ -61,11 +61,18 @@ Separate fixtures/assertions/orchestration rather than adding a 300-line catch-a
 - Inject duplicate and concurrent job/replay cases; assert one Support thread, one notification, no duplicate credit. Verify different tenant cannot read target or detail, missing/deleted recovery has no action, `SUPPORT_ONLY` route restrictions remain.
 - Capture HTTP/UI action evidence and DB assertions, clearly separating provider fixture accepted-SENT from live Meta delivery. Do not require production WhatsApp for repeatable local test.
 
+### Observability and failure acceptance
+
+- Under controlled first-outreach Support persistence failure, verify the owning Background logic produces a bounded Shared structured `recovery.initial_outreach_support_notice.failed` event, fails the operation for the existing retry mechanism, leaves no partially committed Support notice/attempt transition, and does not resend/recharge a confirmed provider message. If the existing local test harness cannot capture process logs, add a focused log-capture assertion to the harness or record the gap as incomplete; do not claim success merely because the UI is empty.
+- Validate `shopId`, `checkoutRecoveryId`, `outreachAttemptId` correlation (when valid) and absence of phone, customer name, message body, secret or provider payload in captured log fields. Normal `created`, `disabled`, `replayed` are informative events and must not be logged as errors. Do not introduce production OTLP/Grafana infrastructure just for this test.
+
 ## Work Items
 
 - [ ] Add catalogued black-box scenario and separate fixtures/expectations/executor wiring.
 - [ ] Run ON/OFF/replay/concurrency/failed-send and unauthorized/missing target cases against integrated local services.
 - [ ] Record durable database evidence, verified link/anchor UI observation, credit count and provider status provenance.
+
+- [ ] Capture structured error/outcome event evidence for a controlled notification-persistence failure and verify retry propagation, original provider send/credit idempotency, and no PII in logs.
 
 ## Interfaces / Contracts
 
@@ -89,6 +96,8 @@ None. This task has no directly dependent ARCH-050 implementation task.
 - [ ] OFF, late enablement, retry, provider failure, human and sequence 2 cannot create erroneous notifications/credits.
 - [ ] Cross-shop URL and forged Support target are denied, no regressions in existing billing Support actions.
 - [ ] Catalogue/executor/evidence all validate with unique scenario ID and replayable test fixture.
+
+- [ ] Captured local structured log evidence distinguishes expected OFF/replay from an actual failed transaction and shows an observable, retryable failure; no silent-success false positive or secret leakage.
 
 ## Validation
 

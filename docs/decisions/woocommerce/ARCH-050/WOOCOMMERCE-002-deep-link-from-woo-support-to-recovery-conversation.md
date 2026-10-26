@@ -63,6 +63,8 @@ No new Woo public endpoint or background-provider callback is allowed.
 - Render a localized **View conversation** label for recovery notices (not View billing); keep WordPress `__()` translations and accessible link text. No HTML injected from message content; href never from remote provider/body.
 - Conversation panel section must have stable `id="recovery-conversation"`. If the detail is rendered asynchronously after initial navigation, ensure scrolling/heading focus executes once the panel is mounted; invalid/missing recovery still shows safe unavailable shell.
 - Existing WordPress `manage_woocommerce`, REST nonce and installation protections remain. Deep link does not bypass hosted recovery-details tenant authorization. Do not expose inaccessible recovery IDs if API returned null.
+- PHP/JS must **not** import the Node Shared logger. The hosted API-002 uses the canonical `@modainteract/moda-interact-shared/logging` logger for unexpected Support-history failures. If plugin PHP introduces a `\Throwable` catch around `SupportController.php` / `ModaApiClient.php`, use the existing Woo/WordPress logger (`wc_get_logger()` source `moda-interact`) with stable operation and redacted error code/class, then preserve the existing protected `WP_Error`/HTTP response. Avoid a competing generic PHP logger.
+- For browser errors, the current Support controller must show its existing error/retry state on transport or rejected strict-v2 contract responses; do not `catch {}` and return an empty successful Support inbox. A missing/deleted/other-shop recovery is an expected *null link*, while a failed API read is an exceptional error. No raw customer message, token, hosted response or full exception payload in client telemetry.
 
 ## Work Items
 
@@ -70,6 +72,7 @@ No new Woo public endpoint or background-provider callback is allowed.
 - [ ] Add pure safe `recoveryConversationHref(recoveryId)` based on current `recoveryDetailHref`; extend Support card action/label without altering billing actions.
 - [ ] Set transcript anchor and post-mount focus/scroll (if required by lazy render).
 - [ ] Test malformed, missing, cross-shop/null, wrong code/version, billing link regression and WordPress capability/nonce restrictions.
+- [ ] Add failure-path tests distinguishing intentionally unavailable recovery links from thrown Support transport/contract errors; verify plugin error state and non-swallowing PHP error boundary.
 
 ## Interfaces / Contracts
 
@@ -85,6 +88,7 @@ export function recoveryConversationHref(recoveryId) {
 
 - Navigation target must be `admin.php?page=moda-interact-recoveries&recoveryId=<encoded>#recovery-conversation`; generated locally in WP admin. Billing SYSTEM hrefs remain fixed at their existing pages.
 - No server-to-WordPress push, new polling mechanism or public webhook.
+- Logging/exception ownership: hosted route shared `StructuredLogger` (API-002) logs backend errors; PHP logs newly caught operational exceptions through existing Woo/WP logger; JS surfaces failures via Support error UI. Browser and PHP must not import Node Shared logging.
 
 ## Dependencies
 
@@ -101,10 +105,12 @@ export function recoveryConversationHref(recoveryId) {
 - [ ] PHP/browser validators both accept complete v2 history and reject malformed versions/unknown fields; v1 compose/read still work.
 - [ ] No billing action regression and no unauthorized recovery access through manually changed WP URL.
 - [ ] Async loading still lands at the transcript; WordPress auth/nonce/install checks stay unchanged.
+- [ ] Real Support read/contract failure is shown as failure rather than silently replaced with an empty page; intentional null recovery references simply omit the link.
 
 ## Validation
 
 - [ ] Focused Support/recovery detail JS tests via `npm run test:js:unit` and `npm run test:php` for PHP strict validator/controller.
+- [ ] Negative browser/PHP test verifies failed v2 history/transport does not show a successful empty inbox; check bounded PHP logging when a new catch is introduced.
 - [ ] `npm run i18n:verify:20`, `npm run build`, targeted lint, `git diff --check`.
 
 ## Stop Condition

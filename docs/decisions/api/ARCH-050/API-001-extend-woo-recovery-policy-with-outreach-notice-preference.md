@@ -61,12 +61,15 @@ Do not modify Woo plugin PHP/JS validators or Shopify settings code here (they h
 - `projection(...)` reads `settings?.notifyOnInitialRecoveryOutreach ?? false` separately from `ShopRecoveryPolicyOverride`. `matches(settings, update)` includes this Boolean so a preference-only write cannot be silently skipped.
 - Keep `assertCurrentShop()` row lock and `recovery_policy_conflict` revision behaviour; in current no-op path the Boolean must match too. Write the preference in the same ShopSettings transaction as existing delay/follow-up fields.
 - Keep Woo identity, onboarding and discount selection untouched; coordinate deployment with strict WordPress PHP/JS validators in WOOCOMMERCE-001.
+- `src/merchant/recovery-policy/routes.ts` already receives `logger: StructuredLogger` from the **canonical** `@modainteract/moda-interact-shared/logging` setup. Reuse that injected logger; do not instantiate another generic logger or add `console.*`. Preserve its existing `merchant.recovery_policy.*` event names, status codes and no-store responses.
+- Every newly caught unexpected persistence/validation-integrity exception must produce `logger.error("merchant.recovery_policy.access.failed", {operation, reason:"internal", error})` with safe context before the **existing** sanitized HTTP 500 mapping. Keep expected malformed request/auth failures as their defined 400/401/403 paths; stale revision 409 remains a handled `warn`, not an internal-error event. Do not log request bodies, installation credential, form payload or raw HTTP response. No catch may return a false 200/default-OFF on DB exception. Shared log-sink failure must not change API response/status.
 
 ## Work Items
 
 - [ ] Update v2 DTO/parser/response validator with top-level Boolean and strict field set.
 - [ ] Update projection, no-op comparison, and revision-protected persistence for this field.
 - [ ] Add unit/Postgres tests for default OFF, ON/OFF, preference-only save, stale revisions, admin override, unauthorised installation and malformed payloads.
+- [ ] Extend existing route/logger-spy tests for unexpected save failure: structured error event (with safe `error`), correct 500/no-store, and no fake successful preference result; conflicts remain 409 and warn only.
 
 ## Interfaces / Contracts
 
@@ -91,6 +94,7 @@ type RecoveryPolicyUpdateV2 = {
 ```
 
 Existing `GET|PUT /v1/merchant/recovery-policy` accepts only exact fields; no change to separate recovery summary or Support endpoints.
+- Logging boundary: use route-injected `StructuredLogger`; keep stable `merchant.recovery_policy.access`/`.access.failed` events, distinguish known 409 conflict from unexpected 500 and include safe operation/category. No new cross-repository logging contract.
 
 ## Dependencies
 
@@ -107,10 +111,12 @@ Existing `GET|PUT /v1/merchant/recovery-policy` accepts only exact fields; no ch
 - [ ] Notification-only update persists and advances settings revision, while unchanged update remains no-op.
 - [ ] Stale revisions, malformed/extra keys, unsupported shops and revoked installations fail closed.
 - [ ] Admin override never changes merchant opt-in; existing delay/follow-up/offer data survives.
+- [ ] Hosted API records a bounded structured failure for unhandled server exceptions and returns the pre-existing error status without exposing the exception or silently defaulting a failed read to OFF.
 
 ## Validation
 
 - [ ] Run focused `tsx --test` tests in `tests/unit/merchant/recovery-policy/` and corresponding disposable PostgreSQL integration tests.
+- [ ] Route failure test spies on the injected shared logger to verify error event and no secrets, while preserving response mapping for 400/401/409/500.
 - [ ] `npm run typecheck`, targeted lint/build checks defined by `package.json`, and `git diff --check`.
 
 ## Stop Condition

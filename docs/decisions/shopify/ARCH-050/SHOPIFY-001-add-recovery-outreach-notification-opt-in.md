@@ -61,6 +61,8 @@ Expose and persist the default-off notification toggle in existing Shopify Recov
 - Keep `lockSettingsShop`, row revision check, discount validation and existing merchant-policy values intact. For a real preference change, enforce expected `updatedAt` revision even if delay/offer/follow-up fields match. Concurrent stale preference saves must fail with 409.
 - Admin override remains a read-only discount/delay/follow-up mechanism; it does not replace or force the opt-in. Saving the checkbox cannot change credit accounting or initiate a recovery.
 - Use existing Shopify merchant i18n for all 20 language files, accessible checkbox label/help, no English-only hardcoded UI.
+- For server-side handling, reuse `@modainteract/moda-interact-shared/logging` and the existing Shopify process identity/environment, with no new JSON/console logger. `settings-save/route.ts` must preserve existing expected validation/conflict responses; when a newly caught or already-caught unexpected policy/Prisma exception occurs, record a bounded `merchant.recovery_settings.save.failed` error event (`shopId`, `operation:"recovery_notice_preference"`, safe error category, `{error}`) and rethrow to the existing framework error boundary. Do not log raw form data, customer data or discount IDs, or report `{ok:true}` on failure.
+- Do not add `catch {}` to parse/save/UI flows. An invalid Boolean is an intentional HTTP 400 and a stale revision is an intentional conflict; if a caught error is mapped to such a response, log at `warn` only where existing logging conventions require it, never as an internal failure. Logging sink trouble cannot alter HTTP success/failure semantics.
 
 ## Work Items
 
@@ -69,6 +71,7 @@ Expose and persist the default-off notification toggle in existing Shopify Recov
 - [ ] Add strict form key/Boolean validation to `settings-save/route.ts`.
 - [ ] Update save transaction/no-op comparison and revision protection to persist this field even when it is the only changed value.
 - [ ] Add all locale keys, unit/UI tests and stale-revision cases.
+- [ ] Add server-side shared structured failure logging at the recovery settings action boundary (reuse/create approved process logger), and tests showing unexpected save errors are logged and rethrown, not converted to success.
 
 ## Interfaces / Contracts
 
@@ -77,6 +80,7 @@ Expose and persist the default-off notification toggle in existing Shopify Recov
 - Loader: `loadRecoveryPolicySnapshot(...).notifyOnInitialRecoveryOutreach: boolean` (top-level). Existing `merchant`/`effective` `RecoveryPolicy` schemas remain unchanged.
 - `parseMerchantRecoveryPolicy(input)` and `saveMerchantRecoveryPolicy` accept the parsed Boolean alongside existing inputs; expect a true Boolean internally after parsing the strict form.
 - No API route version change, Shared package edit or change to shop onboarding.
+- Logging contract: existing shared `StructuredLogger`/`createLogger` mechanism; stable event `merchant.recovery_settings.save.failed` (`error`, validated `shopId`, stable `operation`, `errorCategory`), no raw form payload.
 
 ## Dependencies
 
@@ -92,10 +96,12 @@ Expose and persist the default-off notification toggle in existing Shopify Recov
 - [ ] Notification-only changes are persisted and advance the settings revision; unchanged saves are no-op.
 - [ ] Missing/duplicated/invalid Boolean, stale revision and unauthorised merchant save are rejected.
 - [ ] Admin override does not alter the persisted preference; all 20 locale catalogues validate.
+- [ ] Database/save exceptions are visible through structured logs and the existing route failure boundary; no swallowed catch or falsely successful preference update.
 
 ## Validation
 
 - [ ] Focused `vitest`/repository declared tests for `recovery-policy`, `recovery-settings-i18n`, `recovery-settings-submit-guard`, and settings route fixtures.
+- [ ] Route-level test stubs failing persistence and verifies safe shared-logger failure event plus unchanged 500/error-boundary behaviour; validation/conflict status remains unchanged.
 - [ ] Owning Shopify repository typecheck/lint/build **only where scripts exist**; check `package.json`, then `git diff --check`.
 - [ ] Verify 20 locale keys are present and exposed through the existing merchant-i18n utility.
 
