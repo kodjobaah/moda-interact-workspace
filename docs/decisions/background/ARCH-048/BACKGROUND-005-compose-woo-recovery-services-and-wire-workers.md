@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 54
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-26T05:53:16Z
+attempt: 1
 depends_on:
 - ARCH-048-BACKGROUND-001
 - ARCH-048-BACKGROUND-002
@@ -24,7 +24,7 @@ depends_on:
 enables:
 - ARCH-048-SYSTEM-TEST-001
 created: '2026-10-23'
-updated: '2026-10-26'
+updated: 2026-10-26
 ---
 
 # ARCH-048-BACKGROUND-005 — Compose Woo recovery services and wire event/maturity/outbound workers
@@ -158,7 +158,7 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 ### Status
 
-Ready — all six declared dependencies are Complete. The developer explicitly took over execution from the assigned agent; execution and completion are developer-owned. Attempt 0 remains unclaimed until canonical preparation.
+In Progress — Attempt 1 claimed by developer at 2026-10-26T05:53:16Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
