@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: pending
 priority: 25
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
   - ARCH-047-SHARED-002
 enables: []
 created: 2026-10-24
-updated: 2026-10-26
+updated: 2026-10-25
 ---
 
 # Implement Meta template submission and reconciliation module
@@ -32,7 +32,7 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-This task was originally defined from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It was materialised and claimed for developer execution in canonical task worktrees after verifying DB001 completion and synchronising with the workspace mainline. Attempt 1 implemented and pushed the bounded Meta submission/reconciliation module, but did not wire a production queue consumer or a due-registration caller. The architect's Attempt 1 review specified the worker integration; a further transport/safety review replaces the **pre-production v1 event-content-hash identity** with a narrow published Shared v2 occurrence contract and requires immediate fail-closed status fencing. The same task retains Attempt 1 history and the cleared developer claim. Its explicit dependencies, DB001 and Shared publication task SHARED-002, are now Complete; it is `ready` for a subsequent developer claim. Preserve the Attempt 1 Completion Report as historical evidence. Messaging's producer remains separately owned: BG003 may implement/test its consumer against the frozen contract fixture without waiting for live producer deployment. The new Shared package contains **only** template-status transport fields/identity; no Shared AST package is assumed.
+This task was originally defined from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It was materialised and claimed for developer execution in canonical task worktrees after verifying DB001 completion and synchronising with the workspace mainline. Attempt 1 implemented and pushed the bounded Meta submission/reconciliation module, but did not wire a production queue consumer or a due-registration caller. The architect's Attempt 1 review specified the worker integration; a further transport/safety review replaces the **pre-production v1 event-content-hash identity** with a narrow published Shared v2 occurrence contract and requires immediate fail-closed status fencing. The same task retains Attempt 1 history and the cleared developer claim, but remains `pending` until its new Shared publication dependency is Complete. Preserve the Attempt 1 Completion Report as historical evidence. Messaging's producer remains separately owned: BG003 may implement/test its consumer against the frozen contract fixture without waiting for live producer deployment. The new Shared package contains **only** template-status transport fields/identity; no Shared AST package is assumed.
 
 ## Objective
 
