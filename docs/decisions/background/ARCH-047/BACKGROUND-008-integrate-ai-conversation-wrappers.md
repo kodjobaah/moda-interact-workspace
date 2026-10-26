@@ -31,7 +31,7 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-This is a **portable task definition** prepared from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It is not a repository implementation, task claim or evidence of a created worktree/branch. No new ARCH-047 Shared package is assumed. The parent architecture and `BACKGROUND-001` require reconciliation to the final Admin-owned AST/compilation and DB-backed keyed-segment translation decisions before dependent work is promoted.
+This task definition was supplied as a portable architect handoff and materialized on 2026-10-26 in the canonical parent task worktree on `task/ARCH-047-BACKGROUND-008`. Materialization does not imply implementation or a claim. No new ARCH-047 Shared package is assumed. The parent architecture and `BACKGROUND-001` require reconciliation to the final Admin-owned AST/compilation and DB-backed keyed-segment translation decisions before dependent work is promoted.
 
 ## Objective
 
@@ -124,7 +124,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Not Started — task definition only; no implementation was executed or validated in this artifact.
+Ready — portable architect definition materialized in the canonical parent task worktree. The developer explicitly took over execution from the assigned agent; execution and completion are developer-owned. Attempt 0 remains unclaimed until canonical preparation.
 
 ### Files Changed
 
@@ -179,3 +179,12 @@ To be assessed against the reconciled ARCH-047 parent architecture and current r
 ### Follow-up
 
 Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-26.
+- Materialization: The portable architect definition was materialized in the canonical parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-008` on `task/ARCH-047-BACKGROUND-008`. No external implementation worktree or commit is asserted.
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-BACKGROUND-008` for this Ready agent-owned task. Execution ownership transfers to the developer and completion mode is set to developer review.
+- Preserved: `assigned_agent: moda_background`, coordinator, repository, task scope, acceptance criteria and validation requirements.
+- Dependency check: `ARCH-047-BACKGROUND-005` routes as `complete` in its canonical task record.
+- State before claim: `ready`, Attempt 0, `executor: null`, `claimed_at: null`. The canonical developer preparation workflow will synchronize the task worktrees and claim Attempt 1. No implementation or merge to `main` is performed by this ownership amendment.
