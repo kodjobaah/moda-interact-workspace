@@ -7,8 +7,8 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 15
 executor: null
@@ -31,7 +31,11 @@ updated: 2026-10-26
 - Architecture: `ARCH-040` — `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`.
 - Cross-architecture consumer: `ARCH-047-BACKGROUND-009`, which renders a Moda Admin-authored HUMAN/SHARED conversation wrapper.
 - Coordinator: `moda_architect`; owner: `moda_database` in `moda-interact-database/`.
-- **Portable task definition:** defined for handoff, not yet materialised, claimed, implemented, committed, pushed or accepted. This task is independent of the in-progress BG009 implementation attempt.
+- **Task definition:** materialised on parent branch `task/ARCH-040-DATABASE-007` in commit `78413186`. This task is independent of the in-progress BG009 implementation attempt.
+
+## Developer Ownership Amendment
+
+On 2026-10-26, `/moda_developer_create ARCH-040-DATABASE-007` was invoked to take over this ready agent-owned task. Execution and completion modes are now `developer`; `assigned_agent: moda_database`, coordinator, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged. The task remains Ready at Attempt 0 until the canonical implementation worktree is prepared and the developer claim is committed.
 
 ## Objective
 
@@ -213,7 +217,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Not Started — task defined but not materialised or claimed.
+Ready — task definition materialised and developer takeover recorded; no implementation attempt claimed yet.
 
 ### Files Changed
 
