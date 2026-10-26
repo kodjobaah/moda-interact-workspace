@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 15
-executor: developer
-claimed_at: 2026-10-26T08:27:09Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-DATABASE-001
@@ -217,7 +217,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-**Ready for Review** — developer-executed **Attempt 1**, claimed `2026-10-26T08:27:09Z`. Implementation and test correction were delivered as two incremental patches within this same claim, not as separate workflow attempts. The Database implementation commits were pushed to `origin/task/ARCH-040-DATABASE-007`:
+**Returned to Ready — Attempt 1.** Developer self-review found the technical implementation and focused validation passing, but the required attempt-start launcher/synchronization evidence is absent. Implementation and test correction were delivered as two incremental patches within the same claim, not as separate workflow attempts. The Database implementation commits remain pushed to `origin/task/ARCH-040-DATABASE-007`:
 
 - `26b3cd20a516419d6b74dde2d176ef03da90bcc3` — initial schema, forward migration, guards and test harness.
 - `12102f0b611973b1436f4c0d4ec33f3e15fa9a78` — PostgreSQL provider-permit test assertion correction, after the first run revealed that the existing dispatch-key consistency guard fires before the one-way permit guard.
@@ -264,6 +264,7 @@ Executed in the developer's dedicated Database task worktree, as recorded in the
 | `npm run test:arch040-follow-up-release:postgres:fresh` | Passed full existing follow-up PostgreSQL regression suite. |
 | `git apply --check --whitespace=error-all` and `git diff --check` | Patch checks reported successful; no whitespace errors were shown. |
 | Git publication | Initial `26b3cd2` and correction `12102f0` pushed to implementation `task/ARCH-040-DATABASE-007`; final push confirmed in the 11:41 terminal log. |
+| Reviewer rerun (2026-10-26) | From the canonical implementation worktree, `npm run prisma:validate`, `npm run prisma:generate`, `npm run test:arch040-human-prepared-schema`, `npm run test:arch040-human-prepared:postgres` (fresh and upgrade), `npm run test:arch040-recovery-human-handover`, `npm run test:arch040-moderation-schema`, `npm run test:arch040-follow-up-release-schema`, `npm run test:arch040-recovery-human-handover:postgres:fresh`, `npm run test:arch040-moderation:postgres:fresh`, `npm run test:arch040-follow-up-release:postgres:fresh`, and `git diff --check origin/main...HEAD` all completed successfully. Expected SQL errors in negative PostgreSQL cases were asserted by the harness; all four migration suites reported PASS. |
 
 `npm test`, `npm run typecheck`, `npm run build` and `npm run test:arch047-follow-up:postgres` are not declared scripts in this Database repository; their missing-script messages in an exploratory run are not failures of the task-defined validations. `npm run lint` was launched without a reported lint failure, but is not counted as one of the task's required acceptance checks.
 
@@ -279,7 +280,7 @@ Executed in the developer's dedicated Database task worktree, as recorded in the
 
 ### Unresolved Issues
 
-- **Worktree review evidence:** The supplied task snapshot and claim identify dedicated parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-007` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-007`, both on `task/ARCH-040-DATABASE-007`. The uploaded terminal logs establish the implementation branch, successful tests and pushes, but **do not include the launcher's resolved preparation packet or start-of-attempt parent/submodule synchronization record**. Architect review must verify these before accepting the workflow-isolation criterion; none is claimed verified here.
+- **Attempt 1 workflow evidence remains absent:** The report and uploaded terminal logs do not include the canonical launcher preparation packet or start-of-attempt synchronization evidence for both parent and implementation worktrees, including recursive submodule status. Current clean/published branch state and a reviewer rerun cannot establish historical attempt-start synchronization. The next canonical attempt must retain the launcher-resolved packet and synchronization/submodule evidence; do not fabricate or backdate Attempt 1 evidence.
 - Application-level BG009 wrapper rendering, fail-closed final send, and recompiled Prisma consumer are outside this task and remain gated on Database acceptance and developer-controlled completion.
 
 ### Architectural Concerns
@@ -310,4 +311,30 @@ Pending implementation.
 
 ### Follow-up
 
-After acceptance, re-gate `ARCH-047-BACKGROUND-009` on this task's `status: complete` and hand it back to its configured developer execution path.
+After a passing review and explicit developer completion, re-gate `ARCH-047-BACKGROUND-009` on this task's `status: complete` and hand it back to its configured developer execution path.
+
+## Developer Self-Review - Changes Requested (Attempt 1)
+
+### Review Decision
+
+The implementation diff is limited to the six Database-owned files specified by the task. The new SQL migration adds exactly the three nullable columns, replaces only the two existing guard functions, and the schema validator reconstructs the prior function bodies after reversing the authorized changes to verify preservation of unrelated guard logic. The disposable PostgreSQL tests cover fresh and upgrade migrations, set-once concurrent freeze, lease and permit denial cases, prepared-body moderation digests, passthrough, templates, nonhuman moderation and historical-row preservation. The required technical validations passed both in the submitted evidence and in a reviewer rerun.
+
+Review is nevertheless **Changes Requested** because the task's required physical worktree/start-of-attempt evidence is incomplete. The Completion Report expressly states that the launcher preparation packet and start-of-attempt parent/submodule synchronization record were not retained. Current route resolution, clean branches and current test results cannot prove that historical start condition.
+
+### Required Correction
+
+Use the next canonical `/moda_developer_create ARCH-040-DATABASE-007` attempt and retain its exact launcher-resolved preparation/claim output, parent and implementation synchronization results, and recursive submodule status. Rerun the task-required validations from the canonical implementation worktree after that synchronization and record the actual evidence in the Completion Report. Keep the implementation unchanged unless those checks reveal a concrete defect. Do not claim or recreate historical Attempt 1 evidence.
+
+### Validation Reviewed
+
+- **PASS** — `npm run prisma:validate` and `npm run prisma:generate`.
+- **PASS** — `npm run test:arch040-human-prepared-schema`.
+- **PASS** — `npm run test:arch040-human-prepared:postgres`; fresh and upgrade PostgreSQL migration/behavior suites passed.
+- **PASS** — `npm run test:arch040-recovery-human-handover`, `npm run test:arch040-moderation-schema`, and `npm run test:arch040-follow-up-release-schema`.
+- **PASS** — `npm run test:arch040-recovery-human-handover:postgres:fresh`, `npm run test:arch040-moderation:postgres:fresh`, and `npm run test:arch040-follow-up-release:postgres:fresh`.
+- **PASS** — `git diff --check origin/main...HEAD`; implementation diff is six task-scoped files, clean and published at `12102f0b611973b1436f4c0d4ec33f3e15fa9a78`; parent report branch was clean and published at `a791e34647a03d48fc93e2332932f336f4dc8d5c` before this review update.
+- **NOT EVIDENCED** — Attempt 1 canonical launcher packet and start-of-attempt parent/implementation synchronization plus recursive submodule proof.
+
+### State Transition
+
+Returned to `ready`; `executor: null`, `claimed_at: null`, Attempt 1 unchanged. The parent task branch will be committed and pushed with this review decision. No implementation change or merge to `main` was made by the review.
