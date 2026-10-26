@@ -120,14 +120,14 @@ Persist create intent before any POST and a **POST-intent receipt** immediately 
 
 ## Work Items
 
-- [ ] Preserve the Attempt 1 `src/services/meta-template-management/` implementation; address any exact R1/R2 contract mismatches without unrelated refactoring (notably production due-registration scheduling and incomplete provider pagination).
-- [ ] Add a **strict** Shared v2 `meta-template-status-update` decoder and thin dispatch in the existing `whatsapp-events` worker, mapping `receivedAt → occurredAt` at its local port; do not alter inbound-message parsing.
-- [ ] Add bounded `processDueRegistrations(25)` production polling from the messaging-worker entrypoint (60-second cadence, jitter, no process-local overlap, clean shutdown, DB CAS-safe across replicas).
-- [ ] Implement the R4 **single-transaction** event receipt + immediate `providerStatus = UNKNOWN` fence (with `processedAt = null`) before Meta GET; on errors retain due reconciliation, and mark receipt processed only after successful verified provider resolution.
+- [x] Preserve the Attempt 1 `src/services/meta-template-management/` implementation; address any exact R1/R2 contract mismatches without unrelated refactoring (notably production due-registration scheduling and incomplete provider pagination).
+- [x] Add a **strict** Shared v2 `meta-template-status-update` decoder and thin dispatch in the existing `whatsapp-events` worker, mapping `receivedAt → occurredAt` at its local port; do not alter inbound-message parsing.
+- [x] Add bounded `processDueRegistrations(25)` production polling from the messaging-worker entrypoint (60-second cadence, jitter, no process-local overlap, clean shutdown, DB CAS-safe across replicas).
+- [x] Implement the R4 **single-transaction** event receipt + immediate `providerStatus = UNKNOWN` fence (with `processedAt = null`) before Meta GET; on errors retain due reconciliation, and mark receipt processed only after successful verified provider resolution.
 - [ ] Ensure active assigned registrations reconcile at most every 30 minutes independently of webhook receipt; test failure and backoff plus 60-minute admission freshness fixtures consumed by BG006.
-- [ ] Consume the **published Shared v2** fixture/schema/identity helper. Verify two identical status observations with distinct UUIDs are independently processed; reject v1 and stale content-hash job identities.
+- [x] Consume the **published Shared v2** fixture/schema/identity helper. Verify two identical status observations with distinct UUIDs are independently processed; reject v1 and stale content-hash job identities.
 - [x] Consume frozen `WhatsAppTemplateMetaRegistration` rows and append `WhatsAppTemplateMetaEvent` receipts. Background maintains current `providerStatus`, provider ID and drift observations, **not** authoring ASTs, translation content, shop assignments or publication permissions.
-- [ ] Reuse existing sender/WABA credential resolution, Meta API error/retry conventions, BullMQ worker orchestration and structured logging; check that the present adapter maps POST/GET fields and template IDs exactly as in R1, and does not mistake incomplete paginated reads for absence.
+- [x] Reuse existing sender/WABA credential resolution, Meta API error/retry conventions, BullMQ worker orchestration and structured logging; check that the present adapter maps POST/GET fields and template IDs exactly as in R1, and does not mistake incomplete paginated reads for absence.
 - [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
 - [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
@@ -150,7 +150,7 @@ None in this nine-task Background set.
 
 ## Acceptance Criteria
 
-- [ ] Inspect/re-run tests proving `POST /{WABA}/message_templates` sends only name, language, category and the exact saved `componentsSnapshot`; does not send internal binding/hash data or call Meta edit-existing-template APIs. Retain old evidence where already sufficient; add focused tests only for a demonstrated gap.
+- [x] Inspect/re-run tests proving `POST /{WABA}/message_templates` sends only name, language, category and the exact saved `componentsSnapshot`; does not send internal binding/hash data or call Meta edit-existing-template APIs. Retain old evidence where already sufficient; add focused tests only for a demonstrated gap.
 - [x] Image-header submissions use a valid authorised sample/media handle; a missing, invalid or external-original-URL sample is blocked before provider creation. Text-only templates continue unchanged. Submission never performs ShopBrand ingestion/R2 preprocessing.
 - [ ] Provider tests exercise duplicate create intent, uncertain timeout, 429/5xx, definitive rejection, WABA mismatch and an incomplete/paginated Meta template lookup. Never double POST after a known or uncertain provider create; no unauthorized external adoption.
 - [ ] Strict worker tests parse published v2 Shared schema and verify two separately authenticated identical statuses generate distinct occurrence IDs/jobs despite completed-job retention. Reject wrong name/version/extra fields/oversized payload and preserve existing WhatsApp jobs. PostgreSQL tests cover immediate UNKNOWN + pending event **before** Meta GET, timeout and stale concurrent GET CAS, independent 30-minute reconciliation, and eventual verified clearance; failure never restores eligibility.
@@ -179,6 +179,8 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 **Architectural resolution:** This amendment closes the previously unagreed wire format through one architecture-owned R3 contract and fixture. Do not invent an alternate Messaging format. If actual producer work discovers an incompatible installed Shared/queue transport interface that cannot carry the bounded v1 job, report that concrete compatibility gap to `moda_architect` rather than adding an undocumented adapter.
 
 ## Completion Report
+
+> **Historical evidence:** The following original Status through Architectural Concerns entries describe developer Attempt 1, commit `568eed8`, and are retained unchanged. An independently recorded Attempt 2 implementation/validation addendum follows those entries. The current task frontmatter still says `ready`, `attempt: 1` because this uploaded parent task record contains no successful Attempt 2 claim; that fact must be reconciled through the authorised developer workflow before formal `review` submission.
 
 ### Status
 
@@ -250,6 +252,74 @@ The existing database integration test is a **single combined scenario**, not a 
 ### Architectural Concerns
 
 The missing Messaging queue contract is a cross-repository interface gap. No new private schema or unapproved Shared package should be created inside Background. Do not infer readiness for production Meta webhook processing, background polling or customer sends from the module-only tests. There is no evidence of changing the consent, STOP or final outbound-admission safeguards.
+
+### Attempt 2 — Implementation and validation addendum (26 October 2026)
+
+#### Review handoff status
+
+Implementation changes for the architect's Attempt 2 correction contract have been committed and pushed on the **implementation** `task/ARCH-047-BACKGROUND-003` branch. The captured terminal session shows commit **`4223b29`** (`feat(arch-047-background-003)`), which advances the implementation branch from `568eed8`. This addendum documents the work for architectural inspection; it does **not** retroactively assert a developer claim, a parent task-branch push, or that all mandatory acceptance criteria are complete. The canonical parent snapshot still has `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null`. Keep this record eligible for the authorised next claim rather than inventing metadata.
+
+#### Files changed in implementation repository
+
+The difference between the uploaded earlier BG003 implementation snapshot and the latest uploaded worktree covers these **16 files** (five added; eleven modified):
+
+- `package.json`
+- `package-lock.json`
+- `src/entrypoints/messaging.ts`
+- `src/services/meta-template-management/due-poller.ts` (new)
+- `src/services/meta-template-management/index.ts`
+- `src/services/meta-template-management/meta-graph.adapter.ts`
+- `src/services/meta-template-management/repository.ts`
+- `src/services/meta-template-management/service.ts`
+- `src/services/meta-template-management/status-job.ts` (new)
+- `src/services/meta-template-management/status-repository.ts` (new)
+- `src/workers/whatsapp.worker.ts`
+- `tests/integration/arch047-meta-template-management.integration.test.ts`
+- `tests/unit/runtime/arch047-meta-messaging-startup.test.ts` (new)
+- `tests/unit/services/meta-template-management/due-poller.test.ts` (new)
+- `tests/unit/services/meta-template-management/meta-management.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
+
+**Note:** The log records **16 files** and identifies five newly created files. The list above is derived from comparing the two supplied worktree archives; `status-job.ts`, `status-repository.ts`, `due-poller.ts`, `arch047-meta-messaging-startup.test.ts`, and `due-poller.test.ts` are new.
+
+#### Work completed
+
+- Upgraded Background's published Shared dependency from `2.5.0` to `2.5.1`; the worker consumes the canonical `whatsapp-template-events` v2 parser/identity helper, rejects inappropriate jobs and dispatches to the module-local status processor without using the inbound customer-message parser.
+- Wired production messaging startup to a bounded due-registration poller with 25-item scans, a 60-second cadence, initial jitter and close resources. Unit tests verify startup and shutdown; they inject a mocked due-processing service.
+- Preserved create-only Meta POST behaviour and extended provider list pagination handling, including cross-origin/incomplete pagination rejection and provider failure classification.
+- Introduced a focused status repository that durably records v2 observation receipts and fences linked registrations to `UNKNOWN` before Meta GET; checked retry-safe resolution, stale CAS races, provider-ID conflict and repeat observations using a real disposable PostgreSQL database.
+- Ensured published/assigned registrations become due for provider revalidation on the 30-minute cadence and prevented stale provider results from clearing a newer disabling observation. Maintained existing shared structured logging and error propagation.
+- Added focused regression coverage for the existing WhatsApp worker branch, module behavior, scheduler timing, outbound admission and provider status. No implementation was made in Messaging, BG006, Admin, or a schema migration.
+
+#### Attempt 2 validation evidence
+
+Source: developer terminal recording `typescript(20261026-025119)` and uploaded snapshot `moda-interact-workspace-ARCH-047-BACKGROUND-003(3).zip`.
+
+| Check | Developer command / evidence | Recorded result |
+|---|---|---|
+| Dependency install | `npm ci` | Succeeded; `npm audit` summary noted 20 vulnerabilities (8 moderate, 12 high), not attributed to this task without further review |
+| Build/typecheck | `npm run build` (Prisma client generation + TypeScript) | **Passed** |
+| Focused ESLint | `npx eslint src/services/meta-template-management src/workers/whatsapp.worker.ts src/entrypoints/messaging.ts tests/unit/services/meta-template-management tests/unit/workers/whatsapp.worker.test.ts tests/unit/runtime/arch047-meta-messaging-startup.test.ts` | Finished with no lint diagnostics in the captured run |
+| Focused unit/worker/status/outbound admission suites | `npx vitest run tests/unit/services/meta-template-management tests/unit/workers/whatsapp.worker.test.ts tests/unit/runtime/arch047-meta-messaging-startup.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts tests/unit/services/outbound-whatsapp-admission` | **153/153 passed**, **11/11 files** |
+| Disposable PostgreSQL integration | `npm run test:integration -- tests/integration/arch047-meta-template-management.integration.test.ts` | **1/1 passed**; covers durable claiming, status UNKNOWN/pending fence, stale CAS protection, provider failures and assigned-registration due scanning |
+| Diff/patch | `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all`, `git diff --check` | No errors reported in the captured command sequence; not an independent verification of post-commit branch cleanliness |
+| Implementation commit/push | `git commit` / `git push -u origin task/ARCH-047-BACKGROUND-003` | **`4223b29` pushed** to Background task branch, from `568eed8` |
+| Exact Shared-v2 Messaging producer -> Redis -> Background end-to-end | Separate `ARCH-047-MESSAGING-001` and eventual system-test ownership | **Not run**; consumer unit fixtures do not prove producer deployment |
+| Actual database-backed worker-startup admission | Startup unit test mocks `metaTemplateManagementService.processDueRegistrations` | **Not demonstrated**; no integration test shows a real `READY_TO_SUBMIT` row being picked up via messaging-worker startup without a manual service call |
+| Dedicated final-send 60-minute Meta eligibility adapter fixtures (BG006-owned) | Existing outbound-admission regression runs | **Regression suite passed**, but BG006's specific 60-minute Meta freshness adapter was not independently certified in this recording |
+| Canonical Attempt 2 launcher packet and mirrored **parent** push | Not present in supplied task metadata or terminal | **Not verified**; requires developer workflow reconciliation |
+
+#### Deviations and remaining requirements
+
+1. The production startup entrypoint and scheduler are present and unit-tested, but the required **real database-backed startup integration test** in Acceptance Criteria is not demonstrated. This must be completed or explicitly re-scoped by the architect; do not mark that criterion as passed from a mocked startup test.
+2. The current developer task record still represents the **cleared Attempt 1 claim**. The submitted code is called Attempt 2 and has a real implementation commit, but the provided parent record contains no authorised Attempt 2 claim. Recover/reconcile the task through `/moda_developer_create` and record physical worktree preparation, synchronization and parent branch evidence without inventing dates or a prior claim.
+3. Retained-job-id behaviour is addressed by the published v2 occurrence identity and unit fixtures. The observed validation does not prove a live Messaging producer/Redis/BullMQ end-to-end path; that belongs to MESSAGING-001 and system testing, not BG003's webhook producer implementation.
+4. Focused outbound-admission regressions now pass, but a BG006-owned late 60-minute Meta-registration admission policy is not proven by this Background service test suite. Do not infer production send readiness from these results.
+5. `npm ci` reported 20 dependency advisories. There is no evidence here to decide whether they are new or task-caused; preserve the warning for baseline/security triage instead of applying unrelated dependency updates.
+
+#### Architectural concerns and review request
+
+The shared contract gap from Attempt 1 is resolved through the published v2 Shared package. The remaining architecture boundaries are the separately owned Messaging producer, BG006's final-send safety adapter, and integrated system testing. The present record is suitable for **preliminary architect assessment of Attempt 2 source/validation evidence**, but **must not** be advanced to `status: review` until the required startup acceptance evidence and developer claim/branch reconciliation are complete. The earlier `## Architect Review` remains unchanged and authoritative for corrections.
 
 ## Architect Review
 
