@@ -158,7 +158,7 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 ### Status
 
-**Changes Requested — Developer self-review of Attempt 1.** The implementation and test corrections are committed and pushed, and focused BG005 behavior suites and lint pass on the synchronized task branch. After merging current `origin/main`, the full build fails because two newly merged files import `@modainteract/moda-interact-shared/whatsapp-template-events`, which is absent from pinned Shared `2.5.0`. Those files are outside this task's ownership/scope. Returned to `ready`, cleared the active claim, and preserved Attempt 1; no developer completion or architect acceptance is claimed.
+**Changes Requested — Developer self-review of Attempt 1.** The implementation and test corrections are committed and pushed. On the latest synchronized task branch, focused BG005 unit tests and lint pass, but the focused integration group has 9 failures out of 21 after newly merged template-preparation/final-permit behavior, and the full build fails on two Shared imports absent from pinned version `2.5.0`. These issues are recorded separately; no unrelated mainline source was changed. Returned to `ready`, cleared the active claim, and preserved Attempt 1; no developer completion or architect acceptance is claimed.
 
 ### Files Changed
 
@@ -231,14 +231,15 @@ The final changed-file set and complete commit ancestry should be reconciled wit
 
 **Current developer review evidence (26 October 2026, canonical BG005 worktrees):**
 
-- Implementation branch: `task/ARCH-048-BACKGROUND-005`, clean and published at `e66750e9d71eb38854cecec5adf0fbeca46531a0`, matching its remote. Current `origin/main` was merged forward in `a51b1cd`; `origin/main` is an ancestor of the implementation task tip. `git diff --check origin/main...HEAD` passes.
+- Implementation branch: `task/ARCH-048-BACKGROUND-005`, clean and published through `e66750e9d71eb38854cecec5adf0fbeca46531a0`, matching its remote before the latest forward synchronization. Latest `origin/main` (`d9504f5`) was merged forward locally in `6db7e6d`; it is an ancestor of the implementation task tip. The merge commit is pending publication as part of this review handoff. `git diff --check origin/main...HEAD` passes.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-005`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-005`. They are distinct registered physical worktrees on matching `task/ARCH-048-BACKGROUND-005` branches, with parent and Background submodule Git common directories respectively. The recursive `database` submodule is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
-- The parent worktree has current `origin/main` merged forward in `e7e9c0c`; its task branch is 36 commits ahead of the remote only because the synchronization merge has not yet been published. That merge will be included in the parent review publication.
+- The parent worktree has current `origin/main` (`e8759d6`) merged forward in `56ff357`; its task branch is 8 commits ahead of the remote only because that synchronization merge has not yet been published. The merge and this review update will be published together.
 - `npm run lint` — PASS.
-- `npm run test:integration -- tests/integration/woo-recovery-composed-services.integration.test.ts tests/integration/woo-recovery-shopify-legacy.integration.test.ts tests/integration/woo-recovery-worker-faults.integration.test.ts tests/integration/woo-recovery-worker-wiring.integration.test.ts tests/integration/arch048-woo-initial-outreach.integration.test.ts tests/integration/woo-initial-send-fence.integration.test.ts` — PASS: 6 files, 21 tests, using disposable PostgreSQL/Redis fixtures.
+- Before the latest mainline merge, `npm run test:integration -- tests/integration/woo-recovery-composed-services.integration.test.ts tests/integration/woo-recovery-shopify-legacy.integration.test.ts tests/integration/woo-recovery-worker-faults.integration.test.ts tests/integration/woo-recovery-worker-wiring.integration.test.ts tests/integration/arch048-woo-initial-outreach.integration.test.ts tests/integration/woo-initial-send-fence.integration.test.ts` passed: 6 files, 21 tests.
+- On latest synchronized `origin/main` (`d9504f5`), the same six-file integration command — FAIL: 3 files passed, 3 failed; 12 tests passed, 9 failed. The composed Woo lifecycle fixture retries to failure with `PlatformConfigurationFailure`; initial outreach and final-send-fence fixtures receive `suppressed` outcomes where their assertions expect dispatch/permit results. These disposable fixtures do not yet satisfy the newly merged prepared-template/registration contract. No BG001–BG004 service implementation was changed by BG005 to bypass that contract.
 - `npm test -- --run tests/unit/services/woocommerce-recovery/woo-initial-dispatch.queue.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-orchestrator.service.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-orchestrator-faults.test.ts tests/unit/workers/woo-checkout-capture.worker.test.ts tests/unit/workers/woo-order-capture.worker.test.ts tests/unit/workers/woo-recovery-routing.worker.test.ts` — PASS: 6 files, 44 tests.
 - `npm run test:integration -- tests/integration/arch048-woo-initial-outreach.integration.test.ts` — PASS: 1 file, 7 tests after the fixture correction.
-- `npm run build` — FAIL after Prisma Client generation. TypeScript reports TS2307 in `src/services/meta-template-management/status-job.ts` and `src/workers/whatsapp.worker.ts` for `@modainteract/moda-interact-shared/whatsapp-template-events`. Both files arrived from synchronized `origin/main`; installed Shared `2.5.0` has no matching export or dist file. The affected files are outside BG005's declared worker/composition scope and were not edited.
+- `npm run build` — FAIL after Prisma Client generation. TypeScript reports TS2307 in `src/services/meta-template-management/status-job.ts` and `src/workers/whatsapp.worker.ts` for `@modainteract/moda-interact-shared/whatsapp-template-events`. Both files arrived from synchronized `origin/main`; installed Shared `2.5.0` has no matching export or dist file. The affected files are outside BG005's declared worker/composition scope and were not edited. This same build failure remains after latest `origin/main` (`d9504f5`).
 - Earlier shell history included commands launched from the prior BG006 worktree; those runs are not counted here. All current review validations above were executed with an explicit `cd` into the canonical BG005 implementation worktree. The original start-of-attempt launcher packet remains unavailable; current isolation/synchronization evidence is not presented as historical launcher output.
 
 **Scope/limits:** Earlier BG005 tests cover real PostgreSQL, Redis and BullMQ and either injected domain services or a composed Woo lifecycle with controlled provider. Final SQL-permit tests cover the accepted consent/STOP/send fence. These are not a live Meta/WhatsApp production end-to-end test. Test results from different invocations are not aggregated into one fictional single-suite run.
@@ -255,9 +256,10 @@ The final changed-file set and complete commit ancestry should be reconciled wit
 
 ### Unresolved Issues
 
-1. **Resolve the synchronized build blocker:** publish the `whatsapp-template-events` Shared entrypoint consumed by the mainline Background imports, or route those imports through the appropriate owner/task. Do not modify those files within BG005 without an architect-approved scope change. Then rerun `npm run build` and the focused regressions.
-2. **Historical preparation packet:** the original launcher start-of-attempt packet is unavailable. Current dedicated worktree paths, mappings, branch publication, synchronization and recursive submodule state were independently verified; no historical packet is fabricated.
-3. **Next attempt:** once the build issue is resolved or explicitly authorized, `/moda_developer_create ARCH-048-BACKGROUND-005` may claim Attempt 2. This review does not increment the attempt.
+1. **Restore focused integration validity on current main:** update BG005's disposable composed-outreach and final-permit fixtures to provide the current prepared/approved template registration and any other required configuration, then verify expected admitted/suppressed behavior against the current contract. Keep production BG001–BG004 code and final permit safeguards unchanged.
+2. **Resolve the synchronized build blocker:** publish the `whatsapp-template-events` Shared entrypoint consumed by the mainline Background imports, or route those imports through the appropriate owner/task. Do not modify those files within BG005 without an architect-approved scope change. Then rerun `npm run build` and the focused regressions.
+3. **Historical preparation packet:** the original launcher start-of-attempt packet is unavailable. Current dedicated worktree paths, mappings, branch publication, synchronization and recursive submodule state were independently verified; no historical packet is fabricated.
+4. **Next attempt:** after both blockers are resolved/authorized, `/moda_developer_create ARCH-048-BACKGROUND-005` may claim Attempt 2. This review does not increment the attempt.
 
 ### Architectural Concerns
 
@@ -268,16 +270,17 @@ The final changed-file set and complete commit ancestry should be reconciled wit
 
 ### Review Decision
 
-Attempt 1 is returned to `ready`. The task-owned implementation and corrected integration fixture are committed and pushed, the focused worker behavior suites pass against synchronized `origin/main`, and lint passes. The synchronized full build does not pass: mainline-added `status-job.ts` and `whatsapp.worker.ts` import an entrypoint absent from installed `@modainteract/moda-interact-shared@2.5.0`. Those files are outside BG005's declared ownership, so the developer did not edit them. Resolve the Shared publication/import contract under its owner or obtain an architect-approved scope amendment, then rerun the build and focused tests.
+Attempt 1 is returned to `ready`. The task-owned implementation and fixture corrections are published; focused unit tests (44/44) and lint pass. On current main, 9 of 21 focused integration tests fail because the composed, initial-outreach and final-permit fixtures do not satisfy the newly merged prepared-template/registration contract. The full build also fails because mainline-added `status-job.ts` and `whatsapp.worker.ts` import an entrypoint absent from installed `@modainteract/moda-interact-shared@2.5.0`. Those production files are outside BG005's declared ownership, so the developer did not edit them. Correct the BG005 fixtures and resolve the Shared publication/import contract under its owner or obtain an architect-approved scope amendment; rerun focused validation afterward.
 
 ### Required Correction
 
+- Update the composed Woo, initial-outreach and send-fence disposable fixtures to meet current template-preparation/final-registration requirements, and make all six focused integration suites pass without weakening production guards.
 - Ensure `@modainteract/moda-interact-shared/whatsapp-template-events` is published and available to the Background package, or route the two upstream imports through an authorized owner/task. Do not complete BG005 while the synchronized build fails.
-- After the upstream correction is available, rerun `npm run build`, the six focused integration suites, the focused unit group, lint and `git diff --check` from the canonical BG005 implementation worktree. Preserve the default-off send gate and do not enable live WhatsApp traffic.
+- After both corrections are available, rerun `npm run build`, the six focused integration suites, the focused unit group, lint and `git diff --check` from the canonical BG005 implementation worktree. Preserve the default-off send gate and do not enable live WhatsApp traffic.
 
 ### State Transition
 
-Set `status: ready`, `executor: null`, and `claimed_at: null`; Attempt 1 remains unchanged. Implementation is clean and published at `e66750e9d71eb38854cecec5adf0fbeca46531a0`. No Attempt 2 is claimed.
+Set `status: ready`, `executor: null`, and `claimed_at: null`; Attempt 1 remains unchanged. Implementation is clean at synchronized task tip `6db7e6d`, with forward synchronization merge pending push. No Attempt 2 is claimed.
 
 ## Architect Review
 
