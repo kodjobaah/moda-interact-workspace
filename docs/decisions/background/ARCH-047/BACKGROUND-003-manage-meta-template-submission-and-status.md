@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-26T04:39:41Z
+attempt: 2
 depends_on:
   - ARCH-047-DATABASE-001
   - ARCH-047-SHARED-002
@@ -182,7 +182,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Ready — Attempt 1 implementation and Attempt 2 correction evidence are retained below. Awaiting canonical developer Attempt 2 claim.
+In Progress — Attempt 2 claimed by developer at 2026-10-26T04:39:41Z. Attempt 1 review history is preserved below.
 
 ### Attempt 1 Historical Status
 
