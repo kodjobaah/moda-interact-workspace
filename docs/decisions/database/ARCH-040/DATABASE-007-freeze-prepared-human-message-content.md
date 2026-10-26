@@ -195,7 +195,7 @@ For no wrapper, application writes `{"schemaVersion":1,"outcome":"PASSTHROUGH","
 - [x] New HUMAN_COMMAND/TEXT moderation digest is bound to the full prepared body and cannot be inserted against an unprepared command; template and message moderation are unchanged.
 - [x] Database rejects technical invalid writes but does not choose/validate wrappers, moderation outcomes, consent, 24-hour windows or send eligibility.
 - [x] Fresh and upgrade migrations plus direct PostgreSQL positive/negative cases pass; no unrelated existing record or trigger semantics regress.
-- [x] DB Completion Report contains dedicated worktree/branch/synchronisation, exact validation and migration evidence for architect review.
+- [ ] DB Completion Report contains dedicated worktree/branch/synchronisation, exact validation and migration evidence for architect review. Technical validation and paths are evidenced; the Attempt 2 launcher preparation/synchronisation packet is not present in the submitted materials.
 
 ## Validation
 
@@ -217,7 +217,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-26T12:10:12Z. Attempt 1 review history is preserved below.
+In Progress — Attempt 2 claimed by developer at 2026-10-26T12:10:12Z. All task-required technical validation passed in the 12:30–12:35 UTC rerun; the original Attempt 2 launcher preparation/synchronisation evidence remains unverified. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -260,6 +260,8 @@ Executed in the developer's dedicated Database task worktree, as recorded in the
 | `git apply --check --whitespace=error-all` and `git diff --check` | Patch checks reported successful; no whitespace errors were shown. |
 | Git publication | Initial `26b3cd2` and correction `12102f0` pushed to implementation `task/ARCH-040-DATABASE-007`; final push confirmed in the 11:41 terminal log. |
 | Reviewer rerun (2026-10-26) | From the canonical implementation worktree, `npm run prisma:validate`, `npm run prisma:generate`, `npm run test:arch040-human-prepared-schema`, `npm run test:arch040-human-prepared:postgres` (fresh and upgrade), `npm run test:arch040-recovery-human-handover`, `npm run test:arch040-moderation-schema`, `npm run test:arch040-follow-up-release-schema`, `npm run test:arch040-recovery-human-handover:postgres:fresh`, `npm run test:arch040-moderation:postgres:fresh`, `npm run test:arch040-follow-up-release:postgres:fresh`, and `git diff --check origin/main...HEAD` all completed successfully. Expected SQL errors in negative PostgreSQL cases were asserted by the harness; all four migration suites reported PASS. |
+| Attempt 2 rerun (2026-10-26, 12:30–12:35 UTC; supplied `typescript(20261026-123521)`) | PASS: `prisma:validate`, `prisma:generate`, `test:arch040-human-prepared-schema`, `test:arch040-human-prepared:postgres` (PostgreSQL 17.11 fresh and upgrade), the three ARCH-040 structural regression scripts, the three PostgreSQL fresh regression scripts, and `git diff --check origin/main...HEAD` (no whitespace errors). Deliberate negative-case SQL errors are followed by harness PASS. No production change is indicated by this rerun. |
+| Attempt 2 launcher/worktree preparation (claimed at 12:10:12 UTC) | **NOT EVIDENCED** in the supplied 12:30–12:35 terminal log or latest workspace ZIP: exact prepared execution packet, parent and implementation branch fetch/fast-forward/main sync, and recursive submodule status at attempt start. Current archive paths and a successful rerun do not establish these historical steps. |
 
 `npm test`, `npm run typecheck`, `npm run build` and `npm run test:arch047-follow-up:postgres` are not declared scripts in this Database repository; their missing-script messages in an exploratory run are not failures of the task-defined validations. `npm run lint` was launched without a reported lint failure, but is not counted as one of the task's required acceptance checks.
 
@@ -275,7 +277,7 @@ Executed in the developer's dedicated Database task worktree, as recorded in the
 
 ### Unresolved Issues
 
-- **Attempt 1 workflow evidence remains absent:** The report and uploaded terminal logs do not include the canonical launcher preparation packet or start-of-attempt synchronization evidence for both parent and implementation worktrees, including recursive submodule status. Current clean/published branch state and a reviewer rerun cannot establish historical attempt-start synchronization. The next canonical attempt must retain the launcher-resolved packet and synchronization/submodule evidence; do not fabricate or backdate Attempt 1 evidence.
+- **Attempt 2 start-of-attempt evidence pending:** The original Attempt 1 launcher/synchronisation evidence was not retained (as documented in the preserved Changes Requested review). Attempt 2 was claimed at `2026-10-26T12:10:12Z`, but the newly provided terminal recording begins around 12:30 with tests. It does not show the canonical `/moda_developer_create` preparation packet, both worktrees' synchronized branch/HEAD state, or recursive implementation submodule status for the start of Attempt 2. Provide the *actual* launcher/claim output from that invocation if retained. If it was not retained, return this evidence gap to the authorised reviewer for the appropriate next attempt; do not reconstruct or backdate the missing record. The `review` transition remains gated on this evidence.
 - Application-level BG009 wrapper rendering, fail-closed final send, and recompiled Prisma consumer are outside this task and remain gated on Database acceptance and developer-controlled completion.
 
 ### Architectural Concerns
