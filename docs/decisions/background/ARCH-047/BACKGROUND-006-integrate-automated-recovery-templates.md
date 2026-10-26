@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
 executor: developer
 claimed_at: 2026-10-26T07:14:49Z
@@ -75,15 +75,15 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Work Items
 
-- [ ] Modify only relevant automated recovery call sites (`checkout-recovery/recovery-initiation.service.ts`, `checkout-recovery/recovery-outreach-follow-up-processor.service.ts`, narrowly required outbound admission/final fence adapters) to delegate to BG004 and BG001 modules.
-- [ ] Implement **one narrow shared final-send template assignment/registration recheck adapter** at the established final admission point for both automated and later human sequence-two consumers. Do not create a parallel send pipeline.
-- [ ] Keep all recovery state, scheduling, reachability, billing and provider-delivery orchestration owned by their existing services; new code is orchestration glue and injection ports.
-- [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
-- [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
+- [x] Modify only relevant automated recovery call sites (`checkout-recovery/recovery-initiation.service.ts`, `checkout-recovery/recovery-outreach-follow-up-processor.service.ts`, narrowly required outbound admission/final fence adapters) to delegate to BG004 and BG001 modules.
+- [x] Implement **one narrow shared final-send template assignment/registration recheck adapter** at the established final admission point for both automated and later human sequence-two consumers. Do not create a parallel send pipeline.
+- [x] Keep all recovery state, scheduling, reachability, billing and provider-delivery orchestration owned by their existing services; new code is orchestration glue and injection ports.
+- [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
+- [x] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
-- [ ] Wire the WooCommerce automated initial path (`woo-recovery-outreach.adapters.ts`) as well as Shopify initial and scheduled follow-up through the same modules, without duplicating offer or template-selection rules.
-- [ ] Replace legacy template selector/category verifier imports and per-send Meta GET branches in migrated production call sites; update the matching tests and record any still-live imports explicitly for BG007.
-- [ ] Run both default-unavailable Shopify/Woo eligibility tests and injected independently verified positive-offer tests; report the actual external provider-evidence gap without claiming it implemented.
+- [x] Wire the WooCommerce automated initial path (`woo-recovery-outreach.adapters.ts`) as well as Shopify initial and scheduled follow-up through the same modules, without duplicating offer or template-selection rules.
+- [x] Replace legacy template selector/category verifier imports and per-send Meta GET branches in migrated production call sites; update the matching tests and record any still-live imports explicitly for BG007.
+- [x] Run both default-unavailable Shopify/Woo eligibility tests and injected independently verified positive-offer tests; report the actual external provider-evidence gap without claiming it implemented.
 
 ## Interfaces / Contracts
 
@@ -106,26 +106,26 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Acceptance Criteria
 
-- [ ] Initial and automated follow-up forwards a prepared ShopBrand text binding, trusted checkout CTA button parameter and optional READY image-header payload **without** rewriting/dropping a component; unavailable prepared media/URL produces no send or charge. Existing text-only paths remain compatible.
+- [x] Initial and automated follow-up forwards a prepared ShopBrand text binding, trusted checkout CTA button parameter and optional READY image-header payload **without** rewriting/dropping a component; unavailable prepared media/URL produces no send or charge. Existing text-only paths remain compatible.
 
-- [ ] Initial NONE/FIXED/AI and sequence-two follow-up select expected six-purpose variants and preserve correct language; mapping of body and dynamic URL/button parameters tested with provider mock.
-- [ ] Provider category preflight no longer called; no normal-send Meta metadata GET; missing/revoked/drifted/disabled/ambiguous assignment fails closed.
-- [ ] Simulate consent/STOP/recipient/assignment change between preparation and final permit; additionally simulate a previously APPROVED registration receiving PAUSED, BG003 storing UNKNOWN and Meta GET timing out. Final admission refuses all new sends without charge; later verified APPROVED restores only provider eligibility, not an Admin-disabled assignment. Stale `lastReconciledAt` over 60 minutes also denies without send.
-- [ ] Tests for order completion, duplicate initial and sequence-two jobs, response before follow-up and max-two outreach limit.
-- [ ] Re-run existing recovery-initiation/follow-up/fence/credit compensation tests, PostgreSQL admission race where available, build and `git diff --check`.
-- [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
-- [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+- [x] Initial NONE/FIXED/AI and sequence-two follow-up select expected six-purpose variants and preserve correct language; mapping of body and dynamic URL/button parameters tested with provider mock.
+- [x] Provider category preflight no longer called; no normal-send Meta metadata GET; missing/revoked/drifted/disabled/ambiguous assignment fails closed.
+- [x] Simulate consent/STOP/recipient/assignment change between preparation and final permit; additionally simulate a previously APPROVED registration receiving PAUSED, BG003 storing UNKNOWN and Meta GET timing out. Final admission refuses all new sends without charge; later verified APPROVED restores only provider eligibility, not an Admin-disabled assignment. Stale `lastReconciledAt` over 60 minutes also denies without send.
+- [x] Tests for order completion, duplicate initial and sequence-two jobs, response before follow-up and max-two outreach limit.
+- [x] Re-run existing recovery-initiation/follow-up/fence/credit compensation tests, PostgreSQL admission race where available, build and `git diff --check`.
+- [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
+- [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
-- [ ] Source-level regression shows **none** of the Shopify initial, scheduled follow-up or Woo automated initial paths still import/call `whatsappTemplateSelectorService` or `metaWhatsAppTemplateCategoryService`; no branch reaches `purpose: "checkout-recovery"` or an ordinary-send Meta category GET. Existing Woo readiness, billing, consent and send-fence tests still pass.
-- [ ] Without a checkout-specific provider eligibility adapter, FIXED and AI modes safely resolve to `NO_OFFER`; no code/automatic-offer wording, discount code, credit charge on failed admission, or falsely successful eligibility is produced. Verified-provider fixture covers CODE and AUTOMATIC selection without basket mutation.
-- [ ] Outdated tests/mocks and dead branches owned by this task are removed or rewritten; any live legacy module dependency retained for BG007 is listed by exact file and consumer in the Completion Report.
+- [x] Source-level regression shows **none** of the Shopify initial, scheduled follow-up or Woo automated initial paths still import/call `whatsappTemplateSelectorService` or `metaWhatsAppTemplateCategoryService`; no branch reaches `purpose: "checkout-recovery"` or an ordinary-send Meta category GET. Existing Woo readiness, billing, consent and send-fence tests still pass.
+- [x] Without a checkout-specific provider eligibility adapter, FIXED and AI modes safely resolve to `NO_OFFER`; no code/automatic-offer wording, discount code, credit charge on failed admission, or falsely successful eligibility is produced. Verified-provider fixture covers CODE and AUTOMATIC selection without basket mutation.
+- [x] Outdated tests/mocks and dead branches owned by this task are removed or rewritten; any live legacy module dependency retained for BG007 is listed by exact file and consumer in the Completion Report.
 
 ## Validation
 
-- [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
-- [ ] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
-- [ ] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
+- [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
+- [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
+- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence. (Git checks and worktree paths verified; launcher sync/submodule evidence is not in the supplied log.)
+- [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
 
@@ -143,35 +143,93 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-26T07:14:49Z. Attempt 0 review history is preserved below.
+Ready for Review — developer submission, Attempt 1. Repository implementation commit `6066b6f` (`feat(ARCH-047-BACKGROUND-006): integrate approved recovery templates`) was pushed to `origin/task/ARCH-047-BACKGROUND-006` on 2026-10-26. The parent task document is being submitted separately; no architect acceptance or developer completion is claimed.
 
 ### Files Changed
 
-None yet.
+**Implementation (`moda-interact-background/`): 25 files, 980 insertions and 242 deletions.**
+
+- `src/integration/whatsapp/types.ts`
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`
+- `src/services/conversation-moderation/automated-template-input.ts`
+- `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`
+- `src/services/outbound-whatsapp-admission/outbound-whatsapp-admission.types.ts`
+- `src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts` (new)
+- `src/services/recovery-template-integration/final-template-registration.service.ts` (new)
+- `src/services/recovery-template-integration/prepared-template-send.ts` (new)
+- `src/services/whatsapp.service.ts`
+- `src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts`
+- `src/services/woocommerce-recovery/woo-initial-send-fence.service.ts`
+- `src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts`
+- `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`
+- `tests/integration/conversation-moderation.integration.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts`
+- `tests/unit/services/outbound-whatsapp-admission.service.test.ts`
+- `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts` (new)
+- `tests/unit/services/recovery-template-integration/final-template-registration.service.test.ts` (new)
+- `tests/unit/services/recovery-template-integration/prepared-template-send.test.ts` (new)
+- `tests/unit/services/woocommerce-recovery/woo-guarded-initial-sender.service.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-initial-delivery.service.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts`
+
+No architecture index, migration, Shared package, or other repository-owned source file was changed by the implementation commit.
 
 ### Work Completed
 
-None yet.
+- Wired Shopify initial outreach, Shopify scheduled sequence-two follow-up, and Woo automated initial outreach through the existing BG004 offer resolver and BG001 frozen-template preparer, using a single `AutomatedRecoveryTemplateService` coordinator.
+- Forwarded the prepared template's ordered text/header/image/dynamic-URL-button parameters into the existing WhatsApp sender. Kept existing moderation, recovery billing, credit reservation/compensation, consent/STOP, reachability and worker delivery boundaries in their owning services.
+- Introduced `checkFinalTemplateRegistration` as a shared **database-only** registration identity/status/age check, invoked inside the existing Shopify recovery and Woo final SQL permit transactions. Checks include tenant/variant/registration/definition/locale identity, local enablement/publication, sender WABA, reconciled Meta APPROVED state, no drift or unresolved disabling observation, and a 60-minute maximum verification age. No Meta HTTP or Redis I/O was added inside these SQL transactions.
+- Removed `whatsappTemplateSelectorService` and `metaWhatsAppTemplateCategoryService` from the migrated automated send call sites. No automated `purpose: "checkout-recovery"` selector branch remains in the inspected snapshot.
+- Returned typed no-send outcomes for unprepared/unavailable templates and unsafe historical follow-ups. Default unavailable per-checkout discount verification continues to resolve to `NO_OFFER`; independently verified positive-code and automatic-discount behaviour is tested through injected fixtures, not misrepresented as a live provider implementation.
+- Added focused unit, send-path regression, and moderation integration coverage. New caught operational exceptions are logged with bounded fields using `@modainteract/moda-interact-shared/logging` and rethrown rather than silently acknowledged.
 
 ### Validation Results
 
-Not run; implementation validation remains outstanding.
+**Supplied development-terminal evidence: `typescript(20261026-074508)`, 2026-10-26 07:42–07:44 local time.**
+
+- `npm test -- tests/unit/services/recovery-template-integration/ tests/unit/services/checkout-recovery/ tests/unit/services/woocommerce-recovery/woo-guarded-initial-sender.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-delivery.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts` — PASS: **22 files, 259 tests**.
+- `npm run test:arch040-recovery-conversation` — PASS: **9 files, 71 tests**.
+- `npm run test:integration -- tests/integration/conversation-moderation.integration.test.ts` — PASS: **1 file, 10 tests**, exercising the repository's integration runner. This is **not** a dedicated real-PostgreSQL integration test of the newly added final-registration SQL projection.
+- `npm run build` — PASS: Prisma Client v6.19.3 generated; TypeScript compiler exited without reported errors.
+- `npx eslint src/services/recovery-template-integration/ src/services/checkout-recovery/recovery-initiation.service.ts src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts src/services/outbound-whatsapp-admission/ src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts src/services/woocommerce-recovery/woo-initial-send-fence.service.ts src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts src/services/woocommerce-recovery/woo-recovery-outreach.service.ts tests/unit/services/recovery-template-integration/` — exited without reported diagnostics.
+- `git diff --check` — no whitespace errors reported; initial patch application showed no reported errors.
+- `git commit -m "feat(ARCH-047-BACKGROUND-006): integrate approved recovery templates"` — created implementation commit `6066b6f` (25 files changed).
+- `git push -u origin task/ARCH-047-BACKGROUND-006` — PASS; remote task branch created, upstream changed to `origin/task/ARCH-047-BACKGROUND-006`.
+
+**Dedicated worktree evidence from the terminal log/archive:**
+
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-006`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-006`.
+- Implementation branch: `task/ARCH-047-BACKGROUND-006`; parent task branch and parent content are shown by the supplied worktree snapshot and claim metadata, but a parent `git branch --show-current` log was not provided.
+- The snapshot was generated by overlaying the implementation worktree into the dedicated parent worktree, as stated in the terminal output.
+- **Not supplied:** the original launcher-resolved preparation packet, Git-common-dir root proof, start-of-attempt fetch/fast-forward/synchronization records for *both* worktrees, or recursive submodule materialisation/status results. The architect must request/verify these; the existence of matching worktree paths does not replace this evidence.
 
 ### Deviations
 
-None recorded.
+- No unrelated source, schema, infrastructure, BG007 human-sender, architecture-index or cross-repository implementation was attempted.
+- The final Meta-registration projection is tested through SQL-mock unit tests and existing moderation integration regression; the supplied log does not demonstrate a dedicated live-PostgreSQL concurrent registration/STOP/permit race test. Reviewer should assess whether additional integration validation is required by the acceptance criteria.
+- The historic portable-definition note above describes the definition's origin; this report records the actual materialised development attempt and implementation commit.
 
 ### Assumptions
 
-The DB001 Attempt 7 model names and fields are authoritative design inputs, not proof of an accepted/applied production migration. Reinspect current implementation on claim.
+- BG001/BG004 accepted runtime interfaces and the currently materialised Prisma schema are the canonical inputs. No new Shared template contract is added.
+- Approved Meta registration and frozen compiled bindings are independently maintained by their existing Admin/BG003 owners; this task reads their durable state and does not author or mutate templates.
+- Sender media readiness is proven by the BG001 preparer and the supported existing provider parameter shape; a missing/invalid READY input remains a no-send outcome.
 
 ### Unresolved Issues
 
-The parent ARCH-047 architecture and `BACKGROUND-001` still require final reconciliation with the Admin-owned AST/compilation and no-new-Shared-template-package decision before work begins.
+- **Discount eligibility:** default Shopify and Woo per-checkout provider-rule evaluators remain unavailable; FIXED and AI requests safely use `NO_OFFER` when no independently verified checkout evidence is supplied. A separately owned evaluator is needed before live positive offers can be claimed. BG006 has not implemented that provider capability.
+- **Human BG007 migration:** `src/services/recovery-conversation/human-command-dispatcher.service.ts` still imports `metaWhatsAppTemplateCategoryService` (from `src/services/whatsapp-template-category.service.ts`). This is the remaining live consumer and must be handled by ARCH-047-BACKGROUND-007; selector and category modules were not prematurely deleted.
+- **Review proof:** the archived terminal log lacks original launcher synchronization and recursive-submodule evidence, and no dedicated real-PostgreSQL final-template admission race is proven. Request those artefacts or additional validation during review as necessary.
 
 ### Architectural Concerns
 
-No additional cross-repository issues identified at definition time; return any new gap to the architect.
+- The new final-send DB fence is a narrow SQL-only reuse point for BG007, not an independent provider delivery pipeline. Architect to verify correct Meta observation/source schema and ordering with concurrent Admin/BG003 changes when assessing integration adequacy.
+- Deferred provider eligibility is a cross-repository capability gap. Do not replace it with optimistic catalogue-based discount matching or an unverified checkout mutation.
+- `ARCH-047-BACKGROUND-007` remains pending until BG006 is architect accepted **and** explicitly completed (developer completion mode); a review submission does not unblock dependants.
 
 ## Architect Review
 
