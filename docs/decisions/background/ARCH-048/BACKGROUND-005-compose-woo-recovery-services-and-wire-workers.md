@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 54
-executor: developer
-claimed_at: 2026-10-26T12:43:09Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-048-BACKGROUND-001
@@ -158,7 +158,7 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-26T12:43:09Z. Attempt 1 review history is preserved below.
+Review — Attempt 2 passed developer self-review on 2026-10-26. The implementation and fixture correction are committed and pushed; explicit developer completion is pending because `completion_mode` is `developer`. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -315,3 +315,39 @@ None.
 - Preserved: `assigned_agent: moda_background`, coordinator, repository, dependencies, task scope, acceptance criteria and validation requirements.
 - Dependency check: `ARCH-048-BACKGROUND-001`, `ARCH-048-BACKGROUND-002`, `ARCH-048-BACKGROUND-003`, `ARCH-048-BACKGROUND-004`, `ARCH-046-BACKGROUND-002`, and `ARCH-046-BACKGROUND-004` each route as `complete` in their canonical task records. The latest Architect Review headings in the four ARCH-048 developer-completed service records remain Pending; their developer completion state is not represented as architect acceptance. `ARCH-046-BACKGROUND-004` has explicit Architect Review Accepted.
 - State before claim: `ready`, Attempt 0, `executor: null`, `claimed_at: null`. The canonical developer preparation workflow will create/reuse and synchronize the implementation worktree, then claim Attempt 1. No implementation or merge to `main` is performed by this ownership amendment.
+
+## Developer Self-Review - Attempt 2 Passed
+
+### Review Decision
+
+Attempt 2 passes developer self-review. The prepared/approved template registration fixture correction resolves the six focused integration-suite failures recorded in Attempt 1 without modifying production BG001–BG004 guards. The previously recorded Shared import build failure no longer reproduces on this synchronized branch. No live WhatsApp traffic was enabled. Explicit developer completion remains pending.
+
+### Corrections and Files
+
+- `tests/integration/fixtures/woo-approved-initial-template.fixture.ts` — added a persisted approved initial Woo template registration fixture.
+- `tests/integration/fixtures/arch048-woo-outreach.fixture.ts` — seed the approved registration in the composed outreach fixture.
+- `tests/integration/fixtures/woo-initial-send-fence.fixture.ts` — use the persisted registration identity for final-permit setup.
+- `tests/integration/arch048-woo-initial-outreach.integration.test.ts` — use the test WABA and real persisted template selection rather than mocking the selector.
+- `tests/integration/woo-recovery-composed-services.integration.test.ts` — use the same approved-registration contract and WABA setup.
+
+Implementation commit `16c8df64347948dec14490fbf32343146996f1a1` is pushed to `origin/task/ARCH-048-BACKGROUND-005`. The implementation worktree is clean and its task branch contains the synchronized `origin/main` tip `d9504f5`.
+
+### Validation
+
+- Six focused integration suites — **21/21 passed**: composed services, Shopify legacy routing, worker faults, worker wiring, initial outreach, and initial-send fence.
+- Six focused unit files — **44/44 passed**: dispatch queue, orchestrator, orchestrator faults, checkout worker, order worker, and recovery routing.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation; the prior `whatsapp-template-events` TS2307 errors did not recur.
+- `npm run lint` — passed.
+- `git diff --check origin/main...HEAD` and `git diff --check origin/task/ARCH-048-BACKGROUND-005..HEAD` — passed.
+
+### Worktree and Synchronization Evidence
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-005`, branch `task/ARCH-048-BACKGROUND-005`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-005`, branch `task/ARCH-048-BACKGROUND-005`.
+- Both are distinct canonical physical worktrees. Launcher preparation reused both and reported task branches already current with `origin/main` incorporated.
+- Recursive submodule preparation passed; `database` is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+- No task branch was merged to `main`.
+
+### State Transition
+
+Set `status: review`, `executor: null`, `claimed_at: null`, and preserve Attempt 2. The passing review/report is durable; per `completion_mode: developer`, only an explicit `/moda_developer_update ARCH-048-BACKGROUND-005 complete` may complete the task.
