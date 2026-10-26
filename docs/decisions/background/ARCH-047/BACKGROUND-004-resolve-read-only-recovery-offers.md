@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 25
 executor: null
 claimed_at: null
@@ -124,7 +124,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Developer self-review passed — Attempt 1 remains in `review`, awaiting architect review and the developer's separate explicit completion decision. The stale developer claim is cleared. Implementation commit `68063bd9395883a1d7ee26f5fcc0647dfa760103` is published on `origin/task/ARCH-047-BACKGROUND-004` in `moda-interact-background`. This record does not claim architect acceptance or developer completion.
+Complete — Attempt 1. The developer explicitly accepted completion on 2026-10-26 after the durable passing self-review and revalidation recorded below. Implementation commit `68063bd9395883a1d7ee26f5fcc0647dfa760103` is published on `origin/task/ARCH-047-BACKGROUND-004` in `moda-interact-background`. Architect review remains a separate review of architecture conformance and the documented evidence gaps; no merge to `main` is implied.
 
 ### Files Changed
 
@@ -241,7 +241,15 @@ Architect to reconcile the parent task graph and obsolete Admin/Shared reference
 - Resolver behavior was inspected: the default Shopify/Woo eligibility adapters return unavailable, and the resolver fails closed instead of returning an unverified offer. No provider mutation port exists in the repository interface.
 - Canonical route/worktree identities and current task-branch ancestry/publication were verified. Start-of-attempt launcher synchronization and recursive submodule preparation evidence remain unavailable and are called out above for architect review.
 - No changes were made to the untracked `typescript` log or the neighboring BACKGROUND-003/BACKGROUND-005 task records.
-- Self-review result: implementation and task acceptance criteria pass based on available evidence; architecture review remains pending. Since `completion_mode: developer`, status remains `review` and explicit `/moda_developer_update ARCH-047-BACKGROUND-004 complete` is still required to complete the task.
+- Self-review result: implementation and task acceptance criteria pass based on available evidence; architecture review remains pending.
+
+## Developer Completion Decision
+
+- Decision date: 2026-10-26; accepted attempt: 1.
+- The developer explicitly invoked `/moda_developer_update ARCH-047-BACKGROUND-004 complete` and accepts the task as complete based on the durable passing self-review, committed/pushed implementation and parent task records, and recorded validation.
+- Status is `complete`; `executor` and `claimed_at` remain null; attempt remains 1.
+- Dependency frontier checked: BACKGROUND-006 depends on BACKGROUND-001 and BACKGROUND-004 and remains `pending` in the primary workspace snapshot. BACKGROUND-007 additionally depends on BACKGROUND-006 and remains `pending`. Their canonical parent task worktrees are not present, and the primary workspace is dirty with unrelated user changes, so neither downstream task record was modified or promoted. The architect should recalculate readiness after this completed parent task branch is integrated through the normal developer-owned mainline workflow.
+- No task branch was merged or pushed to `main`.
 
 ## Execution Ownership Amendment
 
