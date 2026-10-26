@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -175,7 +175,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Developer self-review passed — Attempt 1 is in `review`. `completion_mode: developer`; explicit developer completion remains pending. Attempt 0 review history is preserved below.
+Developer self-review passed and explicit developer completion recorded — Attempt 1 is complete. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
@@ -213,11 +213,18 @@ No blocking issue remains for this module-only task. Existing consumer integrati
 
 No business lifecycle constraint should be pushed into PostgreSQL. No AI-initiated checkout mutation is authorised.
 
+### Developer Completion Decision
+
+- Date: 2026-10-26
+- Decision: Complete Attempt 1 after the durable passing developer self-review.
+- Evidence: All Work Items, Acceptance Criteria and Validation items are recorded complete; implementation commits `2ca83fda` and `2e9538e` are pushed; parent report changes are committed and publishable without merging to `main`.
+- Downstream frontier: `ARCH-047-BACKGROUND-006` and `ARCH-047-BACKGROUND-007` remain `pending`. Both still depend on pending `ARCH-047-BACKGROUND-004`; BG007 also depends on BG006. No downstream task is eligible for promotion from this completion alone.
+
 ## Architect Review
 
 ### Review Status
 
-Pending architect review — developer self-review passed below. Explicit developer completion remains required after authorized review.
+Developer self-review passed; explicit developer completion decision recorded below. No separate architect review was performed in this developer-completion action.
 
 ### Review Notes
 
