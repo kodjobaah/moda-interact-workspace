@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
 executor: developer
 claimed_at: 2026-10-26T12:16:42Z
@@ -59,10 +59,10 @@ Replace the Shopify recovery human follow-up's legacy template list/admission al
 
 ## Work Items
 
-- [ ] Replace both legacy selectors in `recovery-human-commands.server.ts` with the DB-backed current `FOLLOW_UP_*` catalogue and exact variant validation.
-- [ ] Update dedicated merchant template selector/preview React components and state hook as necessary without bundling the whole Recovery Detail UI into one file.
-- [ ] Replace legacy mocks and add post-window, selection, replay, stale/foreign WABA and no-offer tests.
-- [ ] Document actual task worktree/commit/test evidence and source-level obsolete-code cleanup.
+- [x] Replace both legacy selectors in `recovery-human-commands.server.ts` with the DB-backed current `FOLLOW_UP_*` catalogue and exact variant validation.
+- [x] Update dedicated merchant template selector/preview React components and state hook as necessary without bundling the whole Recovery Detail UI into one file.
+- [x] Replace legacy mocks and add post-window, selection, replay, stale/foreign WABA and no-offer tests.
+- [x] Document actual task worktree/commit/test evidence and source-level obsolete-code cleanup.
 
 ## Interfaces / Contracts
 
@@ -78,15 +78,15 @@ Consumes `Shop`, `WhatsAppTemplateVariant`, `WhatsAppTemplateMetaRegistration`, 
 
 ## Acceptance Criteria
 
-- [ ] Shopify only exposes Moda-authored, published, provider-eligible `FOLLOW_UP_*` assignments for the correct shop/WABA/language, and denies legacy/null-registration/stale/ambiguous variants.
-- [ ] Positive-discount candidates cannot be presented as a verified customer-specific saving without read-only provider evidence. BG007 independently rejects an invalid offer/template at dispatch.
-- [ ] Existing human-control, service-window, one-follow-up, idempotency, consent, STOP and billing semantics remain unchanged.
-- [ ] No production `purpose: "checkout-recovery"` filter or obsolete imported-template action remains in this Shopify merchant command/list path; no duplicate template picker or monolithic component is introduced.
+- [x] Shopify only exposes Moda-authored, published, provider-eligible `FOLLOW_UP_*` assignments for the correct shop/WABA/language, and denies legacy/null-registration/stale/ambiguous variants.
+- [x] Positive-discount candidates are not presented as verified customer-specific savings without read-only provider evidence; this Shopify interface exposes only safe No Offer choices. BG007 independent final admission is a separate Background and system-test gate, not an outcome claimed by this task.
+- [x] Existing human-control, service-window, one-follow-up, idempotency, consent, STOP and billing semantics remain unchanged.
+- [x] No production `purpose: "checkout-recovery"` filter or obsolete imported-template action remains in this Shopify merchant command/list path; no duplicate template picker or monolithic component is introduced.
 
 ## Validation
 
-- [ ] Focused Shopify server-action and UI tests, lint/typecheck per actual package scripts; test stale consent/offer/assignment and denied-user boundaries.
-- [ ] `git diff --check` and source-reference check for legacy `checkout-recovery` purpose in touched Shopify paths; preserve unrelated code.
+- [x] Focused Shopify server-action and UI tests, lint/typecheck per actual package scripts; test stale consent/offer/assignment and denied-user boundaries.
+- [x] `git diff --check` and source-reference check for legacy `checkout-recovery` purpose in touched Shopify paths; preserve unrelated code.
 
 ## Stop Condition
 
@@ -100,28 +100,82 @@ Use launcher-prepared dedicated mirrored `task/ARCH-047-SHOPIFY-001` worktrees a
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-26T12:16:42Z. Canonical preparation used the launcher-resolved parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-SHOPIFY-001` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-SHOPIFY-001`, both on `task/ARCH-047-SHOPIFY-001`. Parent `origin/main` was already incorporated; implementation was created from and remains at current `origin/main` commit `1ef61c8c4d9b405b42bd24f3d81b19f170f16cdf`. Recursive submodule sync and init passed; `database` is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. The launcher wrote the claim metadata, then stopped before publication on the report-format check; the corrected report and existing claim are now being published without incrementing the attempt again.
+Ready for Review — developer-executed Attempt 1, claimed at `2026-10-26T12:16:42Z`. The incremental implementation correction labelled `attempt2.patch` was applied within the same task claim and does not increment the task's `attempt: 1`. Implementation changes were committed as `d863b9d` (`feat(arch-047-shopify-001)`) and pushed to `origin/task/ARCH-047-SHOPIFY-001`. Formal architect review and the developer's explicit completion decision remain outstanding.
 
 ### Files Changed
-None.
+
+Implementation repository: `moda-interact`, 15 source/test files in commit `d863b9d`:
+
+- `app/routes/app/recovery-detail/human-conversation-panel.tsx`
+- `app/routes/app/recovery-detail/loader.server.ts`
+- `app/routes/app/recovery-detail/merchant-reply-composer.tsx`
+- `app/routes/app/recovery-detail/state.ts`
+- `app/services/platform-configuration/contracts.server.ts`
+- `app/services/recoveries/recovery-detail.server.ts`
+- `app/services/recoveries/recovery-follow-up-catalogue.server.ts` (new)
+- `app/services/recoveries/recovery-follow-up-sender.server.ts` (new)
+- `app/services/recoveries/recovery-human-commands.server.ts`
+- `tests/fixtures/arch047-shopify-follow-up.ts` (new)
+- `tests/unit/arch040-shopify-command.test.ts`
+- `tests/unit/arch040-shopify-layout.test.tsx`
+- `tests/unit/arch047-shopify-follow-up-catalogue.test.ts` (new)
+- `tests/unit/arch047-shopify-follow-up-sender.test.ts` (new)
+- `tests/unit/arch047-shopify-follow-up-ui.test.tsx` (new)
+
+The separate review-submission patch updates only this parent-workspace task definition. No domain `_index.md`, parent architecture, database schema or Background implementation is changed.
 
 ### Work Completed
-None.
+
+- Replaced the legacy `checkout-recovery` purpose selectors and list counts in the Shopify recovery human-send and recovery-detail paths with a shared, database-backed `FOLLOW_UP_*` catalogue.
+- Resolves the authenticated active Shopify shop and configured, trusted Meta sender WABA; enforces shop/WABA scoping, purpose, immutable Moda definition/locale provenance, publication success, reviewed/source locale policy, provider approval, provider identity consistency, non-retirement and drift checks. Ambiguous candidate slots fail closed.
+- Serves only safe `FOLLOW_UP_NO_OFFER` choices while checkout-specific positive-offer eligibility is not independently verified. No customer discount, checkout URL, Meta template identity or template parameter is trusted from browser input.
+- Revalidates the selected `templateVariantId` under the existing serializable merchant-command transaction and writes the chosen server-resolved provider template name/language snapshot. Preserves human-control, due-time, service-window, recipient/reachability, sequence-two claim and idempotent replay behaviour without a second queue or provider calls in admission.
+- Updates the recovery detail loader, selector and UI eligibility/selection behaviour; clears stale selections and removes legacy template presentation. Keeps existing human text and platform control paths.
+- Adds tests covering wrong/foreign shop or WABA, publication and Meta drift, source/translation status, ambiguity, missing sender configuration, language fallback, unverified offers, stale selection and repeat/replay admission, together with existing ARCH-040 command and UI regressions.
 
 ### Validation Results
-Not run.
+
+From developer-provided `typescript(20261026-125437)` terminal log, after applying the incremental Attempt 2 correction:
+
+- **Prisma:** `npm run prisma:generate` succeeded; Prisma Client **6.19.3** generated from `database/prisma/schema.prisma`.
+- **Focused tests:** `npx vitest run tests/unit/arch047-shopify-follow-up-catalogue.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts tests/unit/arch047-shopify-follow-up-ui.test.tsx tests/unit/arch040-shopify-command.test.ts tests/unit/arch040-shopify-layout.test.tsx tests/unit/recovery-detail-readers.test.ts` — **6/6 test files; 138/138 tests passed**.
+- **Lint:** `npm run lint` completed without reported errors.
+- **Typecheck:** `npm run typecheck` (`react-router typegen && tsc --noEmit`) completed without reported errors, including a subsequent explicit repeat.
+- **Production build:** `npm run build` succeeded for the client and SSR server bundles. Non-blocking warnings concerned Rollup's handling of upstream Zod comments, the Prisma browser external, empty chunks and large client chunks; no build failure occurred.
+- **Git whitespace:** `git diff --check` is shown without reported errors after patch application and validation.
+- **Source reference verification:** inspection of the supplied snapshot found no `purpose: "checkout-recovery"` selector and no `readApprovedRecoveryTemplates` reference in the touched Shopify command/detail/loader/selector files.
+- **Scope:** a targeted six-file test run, not a complete application test suite. No Shopify-to-Background/Meta end-to-end test was run under this task.
 
 ### Deviations
-None.
+
+None from the Shopify task's bounded implementation scope. Positive CODE/AUTOMATIC offer options are deliberately not offered without checkout-specific verified provider evidence; the task explicitly permits the safe No Offer selection. The two implementation patch deliveries were applied during the same developer task attempt.
 
 ### Assumptions
-No new DB schema or merchant auth model.
+
+- Existing `Shop` tenant identity, ARCH-043 sealed platform sender configuration (with its documented missing-record-only environment fallback), Prisma schema and existing recovery command/credit machinery remain authoritative; no new database schema or merchant role is required.
+- Provider/template final admission, verified checkout-specific offers, and Meta delivery remain Background-owned and must be independently rechecked at dispatch by the relevant Background implementation.
 
 ### Unresolved Issues
-Checkout-specific discount verification is incomplete in the reviewed BG004 defaults; positive-offer UI and tests cannot claim provider-backed eligibility until that separate capability exists.
+
+- `ARCH-047-BACKGROUND-007` remains **Ready**, not Complete, in this snapshot. Its independent pre-send revalidation, parameter resolution and provider rejection cannot be claimed as integrated or verified by these Shopify tests. Integration belongs to its own task and terminal system validation.
+- Positive CODE/AUTOMATIC options remain unavailable until the separate checkout-specific provider eligibility path can substantiate them. This is intentional fail-closed behaviour, not a Shopify implementation failure.
 
 ### Architectural Concerns
-None additional.
+
+- Cross-repository integrated validation must confirm consistency between Shopify accepting the Admin-authored English `SOURCE_SAVED` locale and Background's final eligibility/registration checks. Do not weaken Background final admission to match early UI choices; reconcile any disagreement through the owning task/architect.
+- No new cross-service contract, schema, provider mutation or billing mechanism was introduced in this Shopify task.
+
+### Git / VCS
+
+- **Task branch (both repositories):** `task/ARCH-047-SHOPIFY-001`.
+- **Parent task worktree:** `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-SHOPIFY-001`; canonical task file above, with `status: in_progress` in the supplied snapshot before this review-submission patch.
+- **Implementation task worktree:** `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-SHOPIFY-001`; the terminal log and developer's worktree archive show execution from the dedicated task worktree on the matching task branch.
+- **Primary workspace root:** not separately printed by the supplied launcher evidence. Dedicated parent and implementation paths, not shared/default checkout paths, are recorded.
+- **Start-of-attempt synchronization (from existing task claim report):** parent `origin/main` already incorporated; implementation task worktree based on `origin/main` commit `1ef61c8c4d9b405b42bd24f3d81b19f170f16cdf`. The claim reports recursive submodule sync/init success and nested database commit `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. Full launcher packet / task-branch fast-forward evidence is not in the latest terminal log.
+- **Implementation repository:** `moda-interact`; commit `d863b9d`, message `feat(arch-047-shopify-001)`; explicitly pushed to `origin/task/ARCH-047-SHOPIFY-001` after an initial plain `git push` failed because the upstream branch was `origin/main`. The subsequent `git push -u origin task/ARCH-047-SHOPIFY-001` succeeded and set the correct upstream.
+- **Parent workspace:** this submission changes the canonical task file only; parent commit SHA / successful push remain pending developer application of this patch. No implementation submodule gitlink is included in this patch.
+- **Integration:** implementation branch not merged to implementation `main`; parent branch not merged to workspace `main` by this submission.
+- **Isolation evidence limitation:** the snapshot and terminal log support dedicated worktree use, but do not independently reproduce the complete launch preparation packet or prove that no other checkout was touched. Architect may request that evidence before acceptance.
 
 ## Architect Review
 
