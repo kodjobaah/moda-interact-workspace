@@ -9,10 +9,10 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 25
-executor: developer
-claimed_at: 2026-10-26T04:35:14Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-047-SHARED-002
@@ -169,7 +169,7 @@ An authenticated template-status webhook for an unknown/external template is sti
 - [x] Add the narrow queue publisher with the exact job name, `jobId`, attempts and backoff, using the existing queue/telemetry adapter.
 - [x] Add focused unit, signed-route, dispatch/producer, mixed-batch and disposable Redis tests described below.
 - [x] Verify/document app-level Meta webhook callback/subscription configuration and any unresolved operational routing requirement without implementing unrelated Gateway work.
-- [ ] Record complete validation, changed files, task worktree isolation, start synchronisation, commit/push evidence and remaining issues in Completion Report.
+- [x] Record complete validation, changed files, task worktree isolation, start synchronisation, commit/push evidence and remaining issues in Completion Report.
 
 ## Interfaces / Contracts
 
@@ -235,7 +235,7 @@ ARCH-047 is pre-production, but raw webhook authentication, queue durable accept
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-26T04:35:14Z. Attempt 1 review history is preserved below.
+Complete — developer-executed Attempt 2, explicitly accepted on 2026-10-26. Attempt 2 made no implementation-source changes; it reconciled the launcher evidence and review decision. Implementation commit `c2aebd1054e886a378e9f1625d798c432dfbc1ee` remains published on `origin/task/ARCH-047-MESSAGING-001`. The developer explicitly accepted completion; no merge to `main` is implied.
 
 ### Files Changed
 
@@ -279,7 +279,8 @@ No parent architecture, other task definitions or `_index.md` files are changed 
 - **Typecheck:** `npm run typecheck` (`react-router typegen && tsc`) — passed, no TypeScript errors reported.
 - **Build:** `npm run build` (`react-router build`) — passed, client and server bundles produced. Vite printed browser-externalisation warnings for Node modules imported transitively from `ioredis`; they did not fail the build.
 - **Git:** `git diff --check` — passed in final transcript. `git commit -m "feat(arch-047-messaging-001)"` created **`c2aebd1`** (16 files, 779 insertions and 73 deletions). Push confirmed `58e7fb3..c2aebd1` on `origin/task/ARCH-047-MESSAGING-001`; the full SHA was independently located in GitHub's commit record.
-- **Physical worktrees shown in final export:** parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-MESSAGING-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-MESSAGING-001`. The archive's `compress-workspace-work-tree` output confirms the parent was overlaid with this implementation worktree. The preceding developer ownership amendment reports parent branch synchronization, **but the full launcher preparation packet, implementation start-of-attempt sync, and recursive-submodule evidence were not included in the supplied terminal transcript**; architect must verify them against the task launcher evidence before acceptance. The local `git status` transcript also showed an untracked file named `typescript` (not included in commit); ensure local cleanup as appropriate.
+- **Attempt 2 launcher preparation packet:** canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-MESSAGING-001` on `task/ARCH-047-MESSAGING-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-MESSAGING-001` on the same task branch. Both worktrees were reused; remote task-branch fast-forward was `not-needed`; parent `origin/main` incorporation was `yes`; implementation `origin/main` was `already-current`. Dependency gate passed (`ARCH-047-SHARED-002: complete`). Recursive implementation submodule sync and update/init passed; status `ready`, recursive `true`, no entries. The Attempt 2 claim was committed and pushed as parent commit `3f36555caf114b3793b31362c8e3dba7b82350b8` at `2026-10-26T04:35:14Z`.
+- Attempt 1's original launcher packet remains unavailable and is not retroactively certified by Attempt 2. The developer supplied the explicit “Architect Review Accepted” decision, accepting this historical provenance gap as non-blocking; Attempt 2's packet independently establishes its own preparation only. The local untracked `typescript` artifact noted in the Attempt 1 transcript was not part of the implementation commit; both canonical worktrees were clean during Attempt 2 preparation and finalization.
 
 ### Deviations
 
@@ -295,8 +296,9 @@ No parent architecture, other task definitions or `_index.md` files are changed 
 ### Unresolved Issues
 
 - **Meta app-level subscription not verified:** Confirm in the Meta App Dashboard that the app's **default** webhook callback URL points to the externally reachable, signed `/webhook/whatsapp` endpoint and that `message_template_status_update` is subscribed. This cannot be proven from the code or supplied logs; do not claim live delivery or production readiness. If Gateway routing is missing, return a bounded request to the architect rather than changing Gateway here.
-- **Task-launch workflow evidence:** Supply or review the canonical `scripts/start-agent-task.py --prepare` packet demonstrating launcher-resolved dedicated parent and implementation worktrees, start-of-attempt synchronization, dependency gate and recursive submodule materialisation. The archive paths and push alone are not a substitute for this evidence.
-- The local terminal log displayed an untracked `typescript` file before the implementation commit; it was not staged and is not part of the pushed implementation. The post-push repository cleanliness was not shown.
+- **Attempt 1 task-launch evidence:** The original packet remains unavailable; this is retained as an accepted non-blocking historical caveat per the explicit review decision below. Attempt 2 preparation is fully recorded and independently verified.
+- **Meta app-level subscription not verified:** The default callback URL and `message_template_status_update` subscription still require deployment-owner confirmation. This is explicitly within the task's documented operational handoff criterion; no live delivery or production readiness is claimed.
+- The earlier untracked `typescript` terminal artifact was not staged or included in the implementation commit. The canonical Attempt 2 worktrees were clean and synchronized at final verification.
 
 ### Architectural Concerns
 
@@ -308,15 +310,15 @@ No parent architecture, other task definitions or `_index.md` files are changed 
 
 ### Review Status
 
-Pending — implementation not reviewed.
+Accepted — Attempt 2, 2026-10-26. The developer explicitly supplied the decision “Architect Review Accepted.”
 
 ### Review Notes
 
-None.
+The implementation is accepted against the bounded Messaging producer contract and the validation recorded in this report. The unavailable Attempt 1 launcher packet is accepted as a non-blocking historical provenance caveat; Attempt 2's canonical preparation packet independently proves its own worktree isolation, synchronization, dependency gate and recursive submodule readiness. The Meta app-level callback/subscription remains an operational deployment-owner check; this acceptance does not claim live delivery or production readiness. The disclosed ARCH-034 baseline mismatch remains historical context and this decision does not rewrite that task's acceptance history.
 
 ### Reviewed Files
 
-None.
+Reviewed the task-scoped producer, normalizer, preflight, dispatcher and publisher changes recorded under Files Changed; focused Messaging tests; prior recorded Redis, full-suite, typecheck and build evidence; and the Attempt 2 canonical launcher packet.
 
 ### Validation Reviewed
 
@@ -324,11 +326,11 @@ None.
 
 ### Architecture Conformance
 
-Not assessed; review the producer against published Shared event v2 and existing Messaging ingress/queue constraints.
+Conforms to the published Shared v2 event contract and existing authenticated Messaging webhook/queue boundaries within this task scope. No database access, Meta management API operation, external-template adoption, customer send, billing or consent side effect was introduced. The Meta app-level callback/subscription remains an operational verification requirement.
 
 ### Follow-up
 
-After acceptance, coordinate integration with BG003 and the terminal ARCH-047 System Test; do not change upstream tasks or indexes from the Messaging implementation.
+After normal mainline integration, coordinate with BG003 and the terminal ARCH-047 System Test; do not change upstream tasks or indexes from the Messaging implementation.
 
 ## Execution Ownership Amendment
 
@@ -349,3 +351,20 @@ After acceptance, coordinate integration with BG003 and the terminal ARCH-047 Sy
 - The Meta app-level default callback and `message_template_status_update` subscription remain unverified operationally. The report accurately records this manual deployment-owner check; do not claim live delivery or production readiness without evidence.
 - No implementation defect was established by the focused suite. The ARCH-034 baseline mismatch remains disclosed for architect reconciliation and must not be silently rewritten as accepted history.
 - Lifecycle transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Do not increment the attempt here; the next canonical developer claim performs that transition.
+
+## Developer Self-Review - Passed
+
+- Review date: 2026-10-26; accepted attempt: 2.
+- Attempt 2 was limited to review-evidence reconciliation; the implementation branch remained at published commit `c2aebd1054e886a378e9f1625d798c432dfbc1ee` with no uncommitted changes.
+- Focused current-branch validation passed: 52 tests passed, 0 failed, 1 Redis-dependent retained-job test skipped because `TEST_REDIS_URL` was not supplied. The report retains prior full-suite (94 passed, 0 failed, 2 skipped), typecheck, build, and disposable Redis harness results; Attempt 2 changed no implementation source.
+- The canonical Attempt 2 launcher packet records dedicated parent and implementation worktrees, task branches, synchronization outcomes, passed dependency gate, recursive submodule preparation and durable claim commit. The original Attempt 1 packet is unavailable; its gap is explicitly accepted as non-blocking by the review decision below and is not represented as proven.
+- All scoped Work Items and Acceptance Criteria are complete. The app-level Meta callback/subscription is accurately documented as a deployment-owner verification requirement under the task's criterion; live delivery and production readiness are not claimed.
+- The ARCH-034 baseline mismatch remains disclosed and is not used to rewrite ARCH-034 history.
+
+## Developer Completion Decision
+
+- Decision date: 2026-10-26; accepted attempt: 2.
+- The developer explicitly invoked `/moda_developer_update ARCH-047-MESSAGING-001 complete` and supplied “Architect Review Accepted.”
+- Status is `complete`; `executor` and `claimed_at` are null; attempt remains 2.
+- Implementation commit `c2aebd1054e886a378e9f1625d798c432dfbc1ee` is published. The matching parent completion record is published separately; no task branch was merged or pushed to `main`.
+- The Meta app-level default callback/subscription remains an operational verification requirement; this completion decision does not claim it was live-verified.
