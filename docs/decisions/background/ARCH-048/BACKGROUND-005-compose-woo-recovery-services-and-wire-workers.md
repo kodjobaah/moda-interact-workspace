@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 54
-executor: developer
-claimed_at: 2026-10-26T05:53:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-048-BACKGROUND-001
@@ -86,7 +86,7 @@ BG006 first freezes cross-service interfaces; BG001–BG004 independently implem
 - [x] Wire checkout capture worker to BG001, order capture worker to BG002, pending candidate worker to BG003→BG004 routing with explicit Woo source marker and Shopify legacy fallback.
 - [x] Wire existing initial outbound processor to ARCH-048 BG004; compose the accepted ARCH-046-BG004 `WooGuardedInitialSender`, and inject ARCH-046-BG002 notice callback at BG003 admission. Reject missing guard dependencies (no live or test fallback to generic unguarded sending). Retain correct queue ack/failure/cleanup behaviour.
 - [x] Add tests for Woo vs Shopify routing, nil job+existing recovery, checkout after first send, order after first send, duplicate/failed job, DB insert→enqueue interruption, disabled Woo send and no Woo follow-ups.
-- [x] Run existing Shopify worker/maturity regressions and entrypoint startup/build checks; record exact changed files per orchestration boundary.
+- [ ] Run existing Shopify worker/maturity regressions and entrypoint startup/build checks on the synchronized task branch; record exact changed files per orchestration boundary. Focused BG005 tests pass, but the synchronized build currently fails on two origin/main imports absent from the pinned Shared package.
 - [x] Wire the shared structured logger into the orchestrator and each affected worker path; record safe started/completed/deferred/failed events without duplicate business rule logging.
 - [x] Add worker-level fault-injection tests for rejected BG001, BG002, BG003, BG004, merchant-notice, Redis and enqueue dependencies; confirm BullMQ failure/retry rather than silent success or candidate deletion.
 
@@ -137,7 +137,7 @@ interface WooRecoveryOrchestrator {
 - [x] Worker+orchestrator integration tests with real BullMQ/Redis, injected deterministic service results and explicit candidate discriminator fixtures.
 - [x] End-to-end local Background/Postgres test for Woo checkout→maturity→recovery→initial attempt and late order/update (Meta mocked/controlled).
 - [x] Shopify pre-existing candidate/recovery worker regression including legacy unmarked jobs; test crash after INSERT before enqueue and retry behaviour.
-- [x] All entrypoint typecheck, declared build/lint/test suites relevant to touched worker code and `git diff --check`.
+- [ ] All entrypoint typecheck, declared build/lint/test suites relevant to touched worker code and `git diff --check`. Focused tests, lint and diff checks pass; the synchronized `npm run build` fails on the upstream Shared export mismatch documented below.
 - [x] Test real BullMQ failed/retry states and deterministic injected exceptions from all four services; verify no `job.completed` on failure, preserved cause, retry attempt visibility and no unhandled promise rejections.
 - [x] Inject a failing logger sink where practical to verify shared logger's own sink-failure isolation does not convert a genuine worker exception into success or break otherwise successful processing.
 
@@ -158,7 +158,7 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 ### Status
 
-**Implementation validated locally; Developer Attempt 1 remains In Progress pending publication and worktree evidence.** The developer claim remains `2026-10-26T05:53:16Z` (`executor: developer`, `attempt: 1`). The original implementation and outstanding-validation changes have been pushed, but the final terminal record still shows one modified test file not committed. The canonical launcher start-of-attempt preparation packet is not in the supplied archive/log. These are evidence/workflow blockers to final developer self-review; do **not** claim the task is already `review`, `complete` or architect-accepted.
+**Changes Requested — Developer self-review of Attempt 1.** The implementation and test corrections are committed and pushed, and focused BG005 behavior suites and lint pass on the synchronized task branch. After merging current `origin/main`, the full build fails because two newly merged files import `@modainteract/moda-interact-shared/whatsapp-template-events`, which is absent from pinned Shared `2.5.0`. Those files are outside this task's ownership/scope. Returned to `ready`, cleared the active claim, and preserved Attempt 1; no developer completion or architect acceptance is claimed.
 
 ### Files Changed
 
@@ -166,7 +166,8 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 - `6ed1ee7` — original orchestrator, worker composition/routing, internal initial dispatch and focused tests (pushed). Original Git output: 17 files, 1,087 insertions and 190 deletions.
 - `e0342e6` — subsequent outstanding-validation and legacy-cleanup corrections (reported pushed in the developer's earlier terminal evidence).
-- **Uncommitted at the final 09:16 UTC terminal snapshot:** `tests/integration/arch048-woo-initial-outreach.integration.test.ts` — update the terminal-order cases to assert a released reservation and a retryable-but-suppressed `PENDING` initial attempt, with replay blocked. This must be committed and pushed before review. An unrelated local `typescript` terminal recording is untracked; do not stage it.
+- `71c0070` — corrected terminal-order assertions to retain an unadmitted attempt as `PENDING`, release its reservation, and prove replay is suppressed.
+- `e66750e` — added test-only `messaging.sender` configuration for the disposable initial-outreach fixture after mainline template preparation began requiring it. Both commits are pushed; no uncommitted implementation changes remain.
 
 Initial implementation source files:
 
@@ -220,20 +221,32 @@ The final changed-file set and complete commit ancestry should be reconciled wit
 - Additional BG005 cleanup/fault unit group: **25/25 PASS**; composed-service, worker-fault, Shopify legacy and worker-wiring integration group: **9/9 PASS**, four suites; lint/typecheck/build passed after the test corrections. `e0342e6` was pushed on the implementation task branch.
 - Existing pending-candidate and Woo outreach unit regressions: **67/67 PASS**. The first run of Woo initial-outreach integration exposed 3 obsolete expected `FAILED` states; these were corrected to the accepted `PENDING`/credit-release contract and retested below.
 
-**Latest uploaded developer terminal evidence:** `typescript(20261026-091609)` (26 October, test run began 09:04 UTC):
+**Earlier uploaded developer terminal evidence:** `typescript(20261026-091609)` (26 October, test run began 09:04 UTC; superseded for current repository state):
 
 - `npm run test:integration -- tests/integration/arch048-woo-initial-outreach.integration.test.ts tests/integration/woo-initial-send-fence.integration.test.ts`: **12/12 PASS across 2 files**, including all seven initial-outreach scenarios and all five final SQL permit scenarios. These verify placed/paid/cancelled orders block replay without provider send, STOP after reservation, default-off, concurrent permit idempotency and billing/credit assertions.
 - `npm run lint` (`eslint .`): **PASS** (no errors in terminal output).
 - `npx tsc --noEmit`: **PASS** (no errors in terminal output).
 - `npm run build` (`npm run prisma:generate && tsc`): **PASS**, Prisma Client v6.19.3 generated.
-- Git status: on `task/ARCH-048-BACKGROUND-005`, up to date with origin, **one modified integration test** and an untracked terminal recording `typescript`. `git add test` failed because there was no such path; it did not stage the file. No commit of the final test correction is evidenced by this log.
+- At that snapshot, Git showed one modified integration test and an untracked terminal recording. The test correction was subsequently committed and pushed; see current review evidence below. The terminal recording remains excluded from Git.
+
+**Current developer review evidence (26 October 2026, canonical BG005 worktrees):**
+
+- Implementation branch: `task/ARCH-048-BACKGROUND-005`, clean and published at `e66750e9d71eb38854cecec5adf0fbeca46531a0`, matching its remote. Current `origin/main` was merged forward in `a51b1cd`; `origin/main` is an ancestor of the implementation task tip. `git diff --check origin/main...HEAD` passes.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-005`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-005`. They are distinct registered physical worktrees on matching `task/ARCH-048-BACKGROUND-005` branches, with parent and Background submodule Git common directories respectively. The recursive `database` submodule is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+- The parent worktree has current `origin/main` merged forward in `e7e9c0c`; its task branch is 36 commits ahead of the remote only because the synchronization merge has not yet been published. That merge will be included in the parent review publication.
+- `npm run lint` — PASS.
+- `npm run test:integration -- tests/integration/woo-recovery-composed-services.integration.test.ts tests/integration/woo-recovery-shopify-legacy.integration.test.ts tests/integration/woo-recovery-worker-faults.integration.test.ts tests/integration/woo-recovery-worker-wiring.integration.test.ts tests/integration/arch048-woo-initial-outreach.integration.test.ts tests/integration/woo-initial-send-fence.integration.test.ts` — PASS: 6 files, 21 tests, using disposable PostgreSQL/Redis fixtures.
+- `npm test -- --run tests/unit/services/woocommerce-recovery/woo-initial-dispatch.queue.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-orchestrator.service.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-orchestrator-faults.test.ts tests/unit/workers/woo-checkout-capture.worker.test.ts tests/unit/workers/woo-order-capture.worker.test.ts tests/unit/workers/woo-recovery-routing.worker.test.ts` — PASS: 6 files, 44 tests.
+- `npm run test:integration -- tests/integration/arch048-woo-initial-outreach.integration.test.ts` — PASS: 1 file, 7 tests after the fixture correction.
+- `npm run build` — FAIL after Prisma Client generation. TypeScript reports TS2307 in `src/services/meta-template-management/status-job.ts` and `src/workers/whatsapp.worker.ts` for `@modainteract/moda-interact-shared/whatsapp-template-events`. Both files arrived from synchronized `origin/main`; installed Shared `2.5.0` has no matching export or dist file. The affected files are outside BG005's declared worker/composition scope and were not edited.
+- Earlier shell history included commands launched from the prior BG006 worktree; those runs are not counted here. All current review validations above were executed with an explicit `cd` into the canonical BG005 implementation worktree. The original start-of-attempt launcher packet remains unavailable; current isolation/synchronization evidence is not presented as historical launcher output.
 
 **Scope/limits:** Earlier BG005 tests cover real PostgreSQL, Redis and BullMQ and either injected domain services or a composed Woo lifecycle with controlled provider. Final SQL-permit tests cover the accepted consent/STOP/send fence. These are not a live Meta/WhatsApp production end-to-end test. Test results from different invocations are not aggregated into one fictional single-suite run.
 
 ### Deviations
 
 - Removed only the obsolete optional-orchestrator capture worker construction mode. Active unmarked Shopify candidate routing is retained intentionally.
-- The final integration test fixture correction is still local/uncommitted at the observed 09:16 UTC terminal snapshot; no claim is made that it is present on the pushed branch.
+- The terminal-order and sender-configuration fixture corrections are committed/pushed in `71c0070` and `e66750e`; the implementation worktree is clean.
 
 ### Assumptions
 
@@ -242,14 +255,29 @@ The final changed-file set and complete commit ancestry should be reconciled wit
 
 ### Unresolved Issues
 
-1. **Publish the last corrected regression test:** stage `tests/integration/arch048-woo-initial-outreach.integration.test.ts` only, validate the staged diff, commit and push on the Background `task/ARCH-048-BACKGROUND-005` implementation branch. Record the new commit ID; exclude untracked `typescript`.
-2. **Record canonical preparation evidence:** retrieve or revalidate the launcher-resolved dedicated parent and implementation worktree paths, their Git common-dir isolation, exact task branches/revisions, start-of-Attempt-1 fetch/fast-forward/merge/synchronization record, and recursive submodule materialisation. The prior claim timestamp and separate paths alone do not prove the full preparation contract. If the original launch packet cannot be recovered, document the missing historical proof and perform current non-destructive isolation/synchronization verification; do not manufacture an old packet or increment the attempt merely to obtain it.
-3. **Developer review transition:** after these two items are resolved, run `/moda_developer_update ARCH-048-BACKGROUND-005` to reconcile actual published changes and record the developer self-review. Only then set `status: review` with the authorized review history. Architect acceptance and developer-controlled final completion remain separate.
+1. **Resolve the synchronized build blocker:** publish the `whatsapp-template-events` Shared entrypoint consumed by the mainline Background imports, or route those imports through the appropriate owner/task. Do not modify those files within BG005 without an architect-approved scope change. Then rerun `npm run build` and the focused regressions.
+2. **Historical preparation packet:** the original launcher start-of-attempt packet is unavailable. Current dedicated worktree paths, mappings, branch publication, synchronization and recursive submodule state were independently verified; no historical packet is fabricated.
+3. **Next attempt:** once the build issue is resolved or explicitly authorized, `/moda_developer_create ARCH-048-BACKGROUND-005` may claim Attempt 2. This review does not increment the attempt.
 
 ### Architectural Concerns
 
 - None newly demonstrated by the final validation runs. The system still depends on Woo producer events arriving; this implementation does not provide external provider polling or permit live Meta sending by itself.
-- The acceptance checkboxes record implemented/tested technical behaviour, but an uncommitted correction and missing canonical start-of-attempt evidence are still workflow blockers. Preserve the original developer claim; do not mark this task `review` or `complete` solely from a passing test log.
+- The synchronized build mismatch is the current review blocker; focused behavior tests pass. The original launcher packet remains unavailable. Preserve Attempt 1; do not mark this task complete or architect-accepted.
+
+## Developer Self-Review - Changes Requested
+
+### Review Decision
+
+Attempt 1 is returned to `ready`. The task-owned implementation and corrected integration fixture are committed and pushed, the focused worker behavior suites pass against synchronized `origin/main`, and lint passes. The synchronized full build does not pass: mainline-added `status-job.ts` and `whatsapp.worker.ts` import an entrypoint absent from installed `@modainteract/moda-interact-shared@2.5.0`. Those files are outside BG005's declared ownership, so the developer did not edit them. Resolve the Shared publication/import contract under its owner or obtain an architect-approved scope amendment, then rerun the build and focused tests.
+
+### Required Correction
+
+- Ensure `@modainteract/moda-interact-shared/whatsapp-template-events` is published and available to the Background package, or route the two upstream imports through an authorized owner/task. Do not complete BG005 while the synchronized build fails.
+- After the upstream correction is available, rerun `npm run build`, the six focused integration suites, the focused unit group, lint and `git diff --check` from the canonical BG005 implementation worktree. Preserve the default-off send gate and do not enable live WhatsApp traffic.
+
+### State Transition
+
+Set `status: ready`, `executor: null`, and `claimed_at: null`; Attempt 1 remains unchanged. Implementation is clean and published at `e66750e9d71eb38854cecec5adf0fbeca46531a0`. No Attempt 2 is claimed.
 
 ## Architect Review
 
