@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 54
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ depends_on:
 enables:
 - ARCH-048-SYSTEM-TEST-001
 created: '2026-10-23'
-updated: '2026-10-25'
+updated: '2026-10-26'
 ---
 
 # ARCH-048-BACKGROUND-005 — Compose Woo recovery services and wire event/maturity/outbound workers
@@ -37,7 +37,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. In the 2026-10-25 13:36 snapshot `ARCH-046-BACKGROUND-004` is **blocked** and awaiting its own approved initial-send final guard; it is NOT Complete. BG005 must not start until that task and ARCH-046-BG002 have both been accepted Complete.
+Materialised in the canonical parent task worktree on `task/ARCH-048-BACKGROUND-005`. This task is Ready at Attempt 0 after all six declared dependencies were verified Complete, including architect-accepted `ARCH-046-BACKGROUND-004`. No implementation worktree, claim, implementation commit or release is implied. Before execution, re-read the canonical dependencies and latest Architect Reviews.
 
 ## Objective
 
@@ -55,7 +55,7 @@ BG006 first freezes cross-service interfaces; BG001–BG004 independently implem
 - Route pending-recovery candidates using an **explicit internal Woo source discriminator** populated by BG001. `source === "woocommerce"` calls Woo admission; absent source remains the backward-compatible existing Shopify path; unknown source fails safely. Verify shop platform/tenant, do not infer routing merely from opaque checkoutKey prefixes or shopDomain.
 - On a mature Woo candidate, call BG003; for `created { recoveryId }`, enqueue initial outreach through BG004. For `already-exists { recoveryId, status }`, invoke **only** BG004's idempotent eligible-pending recovery/reenqueue path when a prior row INSERT succeeded but scheduling failed; BG004 must prove there is no previously sent or in-flight initial attempt. Denied/deferred/superseded cases never enqueue. This handles DB-insert → enqueue crash/retry without a new table.
 - Wire BG002 on Woo order events so known terminal outcomes cancel pending candidates **and** reconcile durable recoveries even when no candidate job exists. Wire BG001 on checkout updates; no worker may contain copied business branching.
-- Integrate accepted ARCH-046-BACKGROUND-002 via its `WooDeniedAdmissionNotifier` factory and inject it into BG003 `onDeniedAdmission`. Inject the **concrete accepted** ARCH-046-BACKGROUND-004 `WooGuardedInitialSender` into `createWooRecoveryOutreachService`; do not substitute the generic outbound `sendTemplate` or an unguarded preflight. At this snapshot BG004 is not implemented/accepted, so this is a hard integration dependency. Preserve the merged shared merchant-notice writer and do not duplicate it.
+- Integrate accepted ARCH-046-BACKGROUND-002 via its `WooDeniedAdmissionNotifier` factory and inject it into BG003 `onDeniedAdmission`. Inject the **concrete accepted** ARCH-046-BACKGROUND-004 `WooGuardedInitialSender` into `createWooRecoveryOutreachService`; do not substitute the generic outbound `sendTemplate` or an unguarded preflight. BG004 is now architect-accepted and Complete; preserve the merged shared merchant-notice writer and do not duplicate it.
 - Preserve existing job cleanup/retry semantics and candidate index on success/defer/failure, including distinct Woo vs Shopify materialisation results; do not silently remove a retryable Woo candidate. Ensure the default-off Woo send gate cannot be bypassed by alternative worker/resume paths.
 - Build integration tests using actual worker entrypoints, test-injected service interfaces and Redis/Postgres fixtures for routing, failure, idempotency and source isolation. No unrelated worker rewrite.
 
@@ -158,7 +158,7 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 ### Status
 
-Not Started — portable task definition only.
+Ready — canonical parent task definition is materialised; all declared dependencies are Complete. Attempt 0; no implementation claim or worktree is created by this frontier update.
 
 ### Files Changed
 
@@ -178,11 +178,11 @@ None.
 
 ### Assumptions
 
-Latest uploaded ZIP and proposed task files may lag active developer branches. Latest dependency state must be checked before materialisation. This 2026-10-25 snapshot records `ARCH-046-BACKGROUND-004` as blocked; do not infer completion from older conversation reports. Wait for the narrowed initial-send final guard to be implemented and accepted.
+Latest uploaded ZIP and proposed task files may lag active developer branches. Recheck canonical dependencies and architect reviews before preparation. The narrowed initial-send guard in `ARCH-046-BACKGROUND-004` is architect-accepted and Complete; preserve its accepted interface and do not reopen it for BG005.
 
 ### Unresolved Issues
 
-Wait for both ARCH-046-BACKGROUND-002 and the narrowed ARCH-046-BACKGROUND-004 to become Complete. Confirm their accepted interfaces before worker composition; raise missing canonical contracts or unimplementable guards instead of inventing bypasses.
+No dependency gate remains at this frontier update. Confirm accepted interfaces before worker composition; raise missing canonical contracts or unimplementable guards instead of inventing bypasses.
 
 ### Architectural Concerns
 
