@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -156,7 +156,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-**Attempt 3 submitted for developer review on 2026-10-26.** The prior changes-requested review requested PostgreSQL evidence for raw-body digest rejection and prepared-body crash/reclaim under STOP/HUMAN-control loss. Correction commit `7b135b115efff28a1d32b91b6ef93333d8bc7dad` is pushed to `origin/task/ARCH-047-BACKGROUND-009`; its earlier recording reports 5 integration files / 28 tests passing. That correction predates the formal Attempt 3 claim and remains disclosed as pre-claim work. This cycle independently reran the relevant PostgreSQL tests, unit tests, build, and lint, and reconciled the BG007 dispatcher boundary. The passing self-review moves the task to `review`; explicit developer completion remains pending because `completion_mode: developer`.
+**Complete — developer decision recorded for Attempt 3 on 2026-10-26.** The prior changes-requested review requested PostgreSQL evidence for raw-body digest rejection and prepared-body crash/reclaim under STOP/HUMAN-control loss. Correction commit `7b135b115efff28a1d32b91b6ef93333d8bc7dad` is pushed to `origin/task/ARCH-047-BACKGROUND-009`; its earlier recording reports 5 integration files / 28 tests passing. That correction predates the formal Attempt 3 claim and remains disclosed as pre-claim work. The passing self-review independently reran the relevant PostgreSQL tests, unit tests, build, and lint, and reconciled the BG007 dispatcher boundary. The developer now explicitly accepts Attempt 3 as complete.
 
 **Prior Attempt 2 self-review (historical):** Implementation commit `ab55ed9a9d9de3aaf6791933db2574ed49a86f36` was pushed to `origin/task/ARCH-047-BACKGROUND-009` before the formal Attempt 2 claim and remains explicitly disclosed. The review returned the task to `ready` for two missing PostgreSQL proofs; that history is preserved below.
 
@@ -286,6 +286,8 @@ The uploaded `typescript(20261026-072937)` terminal recording shows:
 - BG005's completed renderer contract and tests cover HUMAN override/SHARED fallback, preservation of submitted text, verified checkout URL, and tenant mismatch; BG009 adds full-body moderation and send equality. No BG005-owned files were changed.
 - The earlier broad `npm run test:arch040-moderation` result remains **1 failed / 32 passed**, from the unchanged `automated-template-input.test.ts` expectation for omitted nullable header fields. BG009 did not change that serializer or test. The focused moderation unit selection and PostgreSQL moderation suite pass; the unrelated failure is not represented as a passing check.
 
+**Developer completion decision (2026-10-26):** The developer explicitly invoked `/moda_developer_update ARCH-047-BACKGROUND-009 complete`. The durable Attempt 3 passing self-review and required evidence are present above; implementation commit `7b135b1` is pushed, and no known required Work Item or Acceptance Criterion remains incomplete. The unrelated broad moderation-unit failure is disclosed and remains outside BG009 scope. Frontmatter is `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 3`.
+
 ### Deviations
 
 **Post-self-review correction:** The two missing PostgreSQL proofs were supplied by tests committed as `7b135b1` after the task had been returned to `ready` and before the formal Attempt 3 claim. The commit is now confirmed pushed. This ordering is disclosed above; it is not represented as implementation work performed under Attempt 3. The unrelated automated-template serialization unit failure remains outside BG009 scope.
@@ -308,12 +310,13 @@ The uploaded `typescript(20261026-072937)` terminal recording shows:
 
 ### Unresolved Issues
 
-**Attempt 3 review outcome:**
+**Attempt 3 completion outcome:**
 
 - **Resolved:** The PostgreSQL raw-text moderation-digest rejection and crash/reclaim plus STOP/HUMAN-control-loss cases now pass in the 28/28 integration run. These are not outstanding implementation changes.
 - **Claimed and published:** the canonical Attempt 3 developer claim is recorded below, and correction commit `7b135b1` is equal to the implementation task remote.
 - **Resolved:** Canonical worktree isolation, branch synchronization, final `git diff --check`, acceptance evidence, and BG007 shared-dispatcher coexistence were reconciled in the current update. The current combined run passed 45/45 PostgreSQL tests, including the BG007 regression paths.
-- **Review decision:** Self-review passed for Attempt 3. Frontmatter is `status: review`, `executor: null`, `claimed_at: null`, `attempt: 3`; task-owned implementation is committed and pushed. Because `completion_mode: developer`, the task remains awaiting the developer's explicit `/moda_developer_update ARCH-047-BACKGROUND-009 complete` decision.
+- **Review decision:** Self-review passed for Attempt 3; the developer then explicitly accepted completion. Frontmatter is `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 3`; task-owned implementation and parent completion record are committed and pushed.
+- **Dependency-frontier reconciliation:** `ARCH-047-SYSTEM-TEST-001` remains `pending`; its explicit dependencies still include `ARCH-047-BACKGROUND-007` (`ready`) and `ARCH-047-WOOCOMMERCE-001` (`pending`). No downstream eligibility promotion is warranted by this completion alone. No in-progress, review, or complete task was changed.
 - **Unrelated failure:** The full moderation unit suite's unchanged automated-template serializer expectation differs from emitted nullable header fields. It remains documented as out-of-scope; do not fix it inside BG009 without evidence of a regression caused by this task.
 
 **Historical Attempt 1 concerns (resolved by Database-007 and implemented in Attempt 2):**
