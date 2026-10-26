@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -177,3 +177,9 @@ To be assessed against the reconciled ARCH-047 parent architecture and current r
 ### Follow-up
 
 Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-26.
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-BACKGROUND-009` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_background`, coordinator, repository, task scope, acceptance criteria, validation requirements, dependency gate, Ready eligibility, and attempt 0. The existing Architect Review follow-up and BG007 shared-dispatcher reconciliation requirement remain unchanged. This amendment does not itself claim an implementation attempt.
