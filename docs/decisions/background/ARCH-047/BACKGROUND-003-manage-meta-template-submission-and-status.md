@@ -153,7 +153,7 @@ None in this nine-task Background set.
 - [x] Inspect/re-run tests proving `POST /{WABA}/message_templates` sends only name, language, category and the exact saved `componentsSnapshot`; does not send internal binding/hash data or call Meta edit-existing-template APIs. Retain old evidence where already sufficient; add focused tests only for a demonstrated gap.
 - [x] Image-header submissions use a valid authorised sample/media handle; a missing, invalid or external-original-URL sample is blocked before provider creation. Text-only templates continue unchanged. Submission never performs ShopBrand ingestion/R2 preprocessing.
 - [ ] Provider tests exercise duplicate create intent, uncertain timeout, 429/5xx, definitive rejection, WABA mismatch and an incomplete/paginated Meta template lookup. Never double POST after a known or uncertain provider create; no unauthorized external adoption.
-- [ ] Strict worker tests parse published v2 Shared schema and verify two separately authenticated identical statuses generate distinct occurrence IDs/jobs despite completed-job retention. Reject wrong name/version/extra fields/oversized payload and preserve existing WhatsApp jobs. PostgreSQL tests cover immediate UNKNOWN + pending event **before** Meta GET, timeout and stale concurrent GET CAS, independent 30-minute reconciliation, and eventual verified clearance; failure never restores eligibility.
+- [x] Strict worker tests parse published v2 Shared schema and verify two separately authenticated identical statuses generate distinct occurrence IDs/jobs despite completed-job retention. Reject wrong name/version/extra fields/oversized payload and preserve existing WhatsApp jobs. PostgreSQL tests cover immediate UNKNOWN + pending event **before** Meta GET, timeout and stale concurrent GET CAS, independent 30-minute reconciliation, and eventual verified clearance; failure never restores eligibility.
 - [x] PostgreSQL integration exercises unique event identities, registration status transitions and append-only event evidence; no automatic shop activation.
 - [ ] A test of the actual messaging-worker startup proves due `READY_TO_SUBMIT` registrations are scheduled and processed (or safely retried) without a manual service method call. Published active registrations are reconciled within 30 minutes independently of webhooks. Multi-replica claim CAS and clean timer shutdown are exercised. Existing inbound/message-status queue and final-send admission regressions pass; focused unit/build/typecheck and `git diff --check` are recorded. Live Meta webhook receipt remains with Messaging/System Test.
 - [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
@@ -161,7 +161,7 @@ None in this nine-task Background set.
 
 ## Validation
 
-- [ ] Run focused BG003 unit tests and disposable PostgreSQL integration; test the **actual** BullMQ worker's status-job dispatch using a fixture and its existing unknown-job rejection. Record exact commands/results; preserve currently passing Attempt 1 suites.
+- [x] Run focused BG003 unit tests and disposable PostgreSQL integration; test the **actual** BullMQ worker's status-job dispatch using a fixture and its existing unknown-job rejection. Record exact commands/results; preserve currently passing Attempt 1 suites.
 - [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
 - [ ] Run the existing `whatsapp.worker`, `whatsapp-provider-status`, outbound/final-send admission and lifecycle regression suites affected by the new branch, plus `git diff --check`; record actual commands, pass/fail results, task-isolated restart/synchronisation and mirrored parent/implementation branch evidence.
 - [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
@@ -320,6 +320,48 @@ Source: developer terminal recording `typescript(20261026-025119)` and uploaded 
 #### Architectural concerns and review request
 
 The shared contract gap from Attempt 1 is resolved through the published v2 Shared package. The remaining architecture boundaries are the separately owned Messaging producer, BG006's final-send safety adapter, and integrated system testing. The present record is suitable for **preliminary architect assessment of Attempt 2 source/validation evidence**, but **must not** be advanced to `status: review` until the required startup acceptance evidence and developer claim/branch reconciliation are complete. The earlier `## Architect Review` remains unchanged and authoritative for corrections.
+
+
+### Attempt 2 — Final database-backed startup validation (26 October 2026)
+
+#### Status and source evidence
+
+This addendum updates the **validation evidence** in the preceding Attempt 2 report; it does **not** rewrite or erase the original Attempt 1 Completion Report, the architect's Changes Requested review, or the prior Attempt 2 snapshot observations. The previous finding that a real database-backed worker-startup test was **not demonstrated** is now **resolved by the new test and run below**. The parent record in this uploaded worktree still says `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null`. No successful next-attempt claim or mirrored parent-branch publication is shown. Do not invent a claim timestamp or change the frontmatter to `review` from this archive alone.
+
+New evidence: terminal capture `typescript(20261026-042513)`; task-worktree archive `moda-interact-workspace-ARCH-047-BACKGROUND-003(4).zip`.
+
+#### Additional source and implementation Git evidence
+
+- New test (only file in the latest commit): `moda-interact-background/tests/integration/arch047-meta-messaging-startup.integration.test.ts` (210 insertions, no production source changes from commit `4223b29`).
+- The Background task branch received implementation commit **`674855b`** (`feat(arch-047-background-003)`); the terminal confirms its push to `origin/task/ARCH-047-BACKGROUND-003`, advancing **`4223b29..674855b`**.
+- The branch name is correct, and the terminal identifies the dedicated implementation worktree: `moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-003`. The combined archive identifies the matching parent task worktree. **Start-of-Attempt-2 launcher-resolved synchronisation, the durable Attempt 2 claim, and a matching parent task-branch push are not evidenced**, so this is not a claim of full workflow conformance.
+- The untracked terminal recording `typescript` is not included in the implementation commit; `git add tests` staged only the integration-test file.
+
+#### Final validation results
+
+| Check | Evidence | Recorded result |
+|---|---|---|
+| Locked dependencies / Zod | `npm ci`; `node --input-type=module -e "await import('zod'); console.log('Zod OK')"` | **Passed** (`Zod OK`); earlier missing-module startup blocker resolved |
+| Prisma and TypeScript | `npm run build` (Prisma client generation then `tsc`), executed twice in latest capture | **Passed**, no TypeScript diagnostics |
+| Focused unit/worker regression rerun | `npx vitest run tests/unit/services/meta-template-management tests/unit/runtime/arch047-meta-messaging-startup.test.ts tests/unit/workers/whatsapp.worker.test.ts` | **53/53 tests, 4/4 files passed**, rerun after new test addition |
+| Broader unit/status/outbound admission regressions | Earlier recorded `npx vitest run tests/unit/services/meta-template-management tests/unit/workers/whatsapp.worker.test.ts tests/unit/runtime/arch047-meta-messaging-startup.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts tests/unit/services/outbound-whatsapp-admission` | **153/153 tests, 11/11 files passed** before the subsequent **test-only** commit `674855b`; not rerun in latest capture |
+| Disposable PostgreSQL integration | `npm run test:integration -- tests/integration/arch047-meta-template-management.integration.test.ts tests/integration/arch047-meta-messaging-startup.integration.test.ts` | **2/2 tests, 2/2 files passed**, observed twice in latest capture |
+| New database-backed worker-startup test | `arch047-meta-messaging-startup.integration.test.ts` | **1/1 passed**; real entrypoint/poller/service/Prisma access, with mocked Meta requests and unrelated worker infrastructure. Seeds two `READY_TO_SUBMIT` registrations, verifies one `SUBMITTED` and one `SUBMISSION_UNKNOWN`, durable events/retry, no repeat POST, scheduler shutdown and shared-logger failure signal |
+| Existing database concurrency/status test | `arch047-meta-template-management.integration.test.ts` | **1/1 passed**; CAS claim race, v2 occurrence receipts, immediate `UNKNOWN`/pending fence, failed GET, stale projection protection, provider-ID conflict and 30-minute active-registration due eligibility |
+| ESLint | Focused `npx eslint tests/integration/arch047-meta-messaging-startup.integration.test.ts` in latest capture, plus earlier module/worker lint | **Passed**, no diagnostics in captured output |
+| Git change verification | Implementation `git status`, `git add tests`, commit and push | Only the new integration file was committed in `674855b`; no post-commit `git diff --check` output is captured from the developer's worktree |
+
+The test demonstrates worker startup invoking the **real** due-processing service backed by disposable PostgreSQL; it does not call that service manually. It injects a mock Meta transport to prevent external requests. It does not prove live Meta webhook ingestion or the separately owned Messaging producer. The existing worker switch test covers consumption of a strict Shared-v2 job fixture, not a live webhook-originated BullMQ event.
+
+#### Remaining review qualifications and workflow action
+
+1. **Database-backed startup gap: resolved.** This no longer justifies withholding the implementation solely for a mocked-startup test. The composite startup acceptance item also mentions independent active-refresh cadence, multi-replica CAS, final-send admission regression, and Git/worktree evidence; inspect the existing unit/integration evidence and obtain any further proof the architect requires before checking the whole item.
+2. **Developer claim/state reconciliation: outstanding.** The parent task is still `ready`, Attempt 1 in this snapshot. For formal submission, use the authorised `/moda_developer_create ARCH-047-BACKGROUND-003` route to prepare/claim the next developer attempt and record its real synchronisation evidence, then `/moda_developer_update ARCH-047-BACKGROUND-003` for the reconciled Completion Report, developer self-review and `review` transition. No developer task claim has been performed by this patch.
+3. **Other acceptance evidence:** the provider 5xx/definitive-rejection matrix and any stricter live BullMQ/multi-process validation remain subject to architect review. The existing passing status-job worker, PostgreSQL concurrency, error handling and due-refresh tests are recorded without extending claims beyond their fixtures. The 60-minute final-send freshness adapter belongs to BG006 and the authenticated Messaging producer belongs to MESSAGING-001; neither is implemented or certified here.
+4. `npm ci` reported **20 dependency audit advisories** (8 moderate, 12 high), and warnings about install scripts. These are recorded for separate dependency/security triage; no evidence establishes that BG003 introduced them, and no unrelated dependency remediation is included.
+
+**Handoff:** Implementation code and the new database-startup test are pushed and validated. This addendum is suitable for architect inspection immediately, but does not substitute for a valid developer claim and formal review transition under the canonical task workflow. The existing `## Architect Review` remains unchanged.
+
 
 ## Architect Review
 
