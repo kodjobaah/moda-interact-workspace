@@ -7,20 +7,20 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-047-DATABASE-001
 enables:
   - ARCH-047-BACKGROUND-008
   - ARCH-047-BACKGROUND-009
 created: 2026-10-24
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # Implement prepared AI and human conversation wrapper renderer
@@ -68,11 +68,11 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Work Items
 
-- [ ] Implement `src/services/conversation-wrappers/` with a wrapper lookup/read-only context adapter and pure **prepared-runtime** renderer, plus a small public facade and injected dependencies.
-- [ ] Resolve current `WhatsAppConversationWrapperActiveSlot` (`SHARED`, optional `AI` or `HUMAN` override), matching approved definition/locale and conversation language from DB001. Use `WhatsAppTemplateLocale.localeAst` only to read the **Admin-compiled prepared wrapper projection** stored there, not to parse/compile its authoring AST.
-- [ ] Resolve verified shop/customer/checkout fields from the existing conversation/recovery context without crossing tenant boundaries. Insert the already-authored response text in the one required response slot; return composed text plus provenance/version and typed refusal when unavailable.
-- [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
-- [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
+- [x] Implement `src/services/conversation-wrappers/` with a wrapper lookup/read-only context adapter and pure **prepared-runtime** renderer, plus a small public facade and injected dependencies.
+- [x] Resolve current `WhatsAppConversationWrapperActiveSlot` (`SHARED`, optional `AI` or `HUMAN` override), matching approved definition/locale and conversation language from DB001. Use `WhatsAppTemplateLocale.localeAst` only to read the **Admin-compiled prepared wrapper projection** stored there, not to parse/compile its authoring AST.
+- [x] Resolve verified shop/customer/checkout fields from the existing conversation/recovery context without crossing tenant boundaries. Insert the already-authored response text in the one required response slot; return composed text plus provenance/version and typed refusal when unavailable.
+- [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
+- [x] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -95,20 +95,20 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Acceptance Criteria
 
-- [ ] SHARED/AI/HUMAN precedence, activation CAS change, language fallback and unpublished/wrong-kind/wrong-shop negative cases.
-- [ ] Prepared header + `response.body` + footer with optional valid checkout URL; missing/expired checkout omits conditional section; no invented/cross-tenant URL.
-- [ ] Exact-once replay, already-wrapped input, malformed prepared projection, duplicate/missing response slot and total message size boundary.
-- [ ] Demonstrate no provider calls, AI calls, moderation writes or checkout mutations; verify preserved original response and bounded logs.
-- [ ] PostgreSQL integration with active slot and locale fixtures, focused unit/build/typecheck and `git diff --check`. Full AI/human send tests belong to BG008/009.
-- [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
-- [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+- [x] SHARED/AI/HUMAN precedence, activation CAS change, language fallback and unpublished/wrong-kind/wrong-shop negative cases.
+- [x] Prepared header + `response.body` + footer with optional valid checkout URL; missing/expired checkout omits conditional section; no invented/cross-tenant URL.
+- [x] Exact-once replay, already-wrapped input, malformed prepared projection, duplicate/missing response slot and total message size boundary.
+- [x] Demonstrate no provider calls, AI calls, moderation writes or checkout mutations; verify preserved original response and bounded logs.
+- [x] PostgreSQL integration with active slot and locale fixtures, focused unit/build/typecheck and `git diff --check`. Full AI/human send tests belong to BG008/009.
+- [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
+- [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
 ## Validation
 
-- [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
-- [ ] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
-- [ ] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
+- [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
+- [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
+- [x] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
+- [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
 
@@ -126,58 +126,146 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Not Started — task definition only; no implementation was executed or validated in this artifact.
+Ready for Architect Review — developer Attempt 2 was claimed at 2026-10-26T06:14:27Z, synchronized, revalidated and submitted on 2026-10-26. The wrapper implementation remains the ten-file `c25295a` change; the canonical mainline synchronization merge `9065a58` is now published on the implementation task branch. Attempt 1's original launcher packet remains unavailable and is not represented by Attempt 2 evidence. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
-None yet.
+Implementation repository `moda-interact-background` — 10 new files, as recorded by commit `c25295a`:
+
+- `src/services/conversation-wrappers/contracts.ts`
+- `src/services/conversation-wrappers/index.ts`
+- `src/services/conversation-wrappers/projection.ts`
+- `src/services/conversation-wrappers/render.ts`
+- `src/services/conversation-wrappers/repository.ts`
+- `src/services/conversation-wrappers/selection.ts`
+- `src/services/conversation-wrappers/service.ts`
+- `tests/unit/services/conversation-wrappers/projection-and-render.test.ts`
+- `tests/unit/services/conversation-wrappers/service.test.ts`
+- `tests/integration/conversation-wrapper-rendering.integration.test.ts`
+
+No database schema, merchant/Admin application, Meta provider, sending, billing, moderation, or `docs/decisions/**/_index.md` files were changed by BG005. This task-definition update is a separate parent-worktree documentation change.
 
 ### Work Completed
 
-None yet.
+- Implemented a modular, read-only wrapper repository, prepared projection validator, pure renderer, slot/language selector and injectable service facade using the Admin-persisted `localeAst.prepared` data; the authoring AST is not reparsed.
+- Resolved SHARED versus AI/HUMAN active-slot precedence, definition/locale eligibility, language fallbacks, versioned activation, prepared content digest, typed unavailability/rejection and a bounded output length.
+- Verified conversation/recovery/shop/customer relationships before using checkout context. Missing, cancelled or stale checkout information omits optional checkout content; stored checkout URLs are restricted to a matching merchant host.
+- Preserved original AI/human response text within the envelope, supplied deterministic application provenance/replay handling, and refused malformed/double-wrapped input.
+- Left AI/human calling integrations, moderation of the complete rendered message, final admission/STOP guards, and provider sending to BG008/BG009.
+- Logged operational outcomes through `@modainteract/moda-interact-shared/logging`; unexpected repository/service exceptions are logged with bounded identifiers and rethrown, without logging the response or checkout URL.
+- Fixed the three `no-control-regex` ESLint findings in the renderer and repository without changing the intended control-character policy.
 
 ### Validation Results
 
-Not run; implementation validation remains outstanding.
+All commands below were recorded from the dedicated Background implementation worktree; the run evidence is in `typescript(20261026-035450)`, `typescript(20261026-044857)`, and `typescript(20261026-050429)` as supplied for this review handoff.
+
+- `npm run build` — PASS. Prisma client generation and TypeScript compilation completed without reported errors (post-correction run, 2026-10-26).
+- `npx vitest run tests/unit/services/conversation-wrappers` — PASS: 2 test files, 14 tests, after the ESLint correction.
+- `npx eslint src/services/conversation-wrappers tests/unit/services/conversation-wrappers tests/integration/conversation-wrapper-rendering.integration.test.ts` — PASS: no reported errors after the correction. The preceding run had three `no-control-regex` errors, which were corrected and rechecked.
+- `npm run test:integration -- tests/integration/conversation-wrapper-rendering.integration.test.ts` — PASS: 1 file, 2 actual PostgreSQL integration tests on 2026-10-26 at 05:02. Covered versioned active-slot changes, verified checkout recovery context, replay provenance, stale/cancelled/missing checkout omission, and cross-shop/customer mismatch refusals. A preceding test run failed at disposable PostgreSQL startup (`P1001`), then the rerun passed; this was a setup failure before test execution, not a failing application assertion.
+- `git diff --check` — passed during this review for the implementation delta and parent task report delta.
+- Review reruns on 2026-10-26: `npx vitest run tests/unit/services/conversation-wrappers` — 2 files, 14 tests passed; focused `npx eslint ...` — no reported errors; `npm run build` — passed (Prisma generation and TypeScript compilation); `npm run test:integration -- tests/integration/conversation-wrapper-rendering.integration.test.ts` — 1 file, 2 PostgreSQL integration tests passed.
+- `git commit -m "feat(arch-047-background-005)"` — PASS: implementation commit `c25295a`, 10 files, 969 insertions.
+- `git push -u origin task/ARCH-047-BACKGROUND-005` — PASS: published `task/ARCH-047-BACKGROUND-005` to the Background origin (reported by Git in the terminal log).
+
+**Physical worktree / start-of-attempt evidence:**
+
+- Parent task worktree reported by the developer archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-005`.
+- Background implementation worktree reported by test output and archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-005`.
+- Implementation branch and pushed commit verified above. Parent task branch publication is **not** verified by the supplied log; this documentation patch must be committed/pushed separately on `task/ARCH-047-BACKGROUND-005` in the parent worktree.
+- The original `/moda_developer_create` launcher packet, canonical root identity, parent/implementation remote fast-forward and `origin/main` incorporation decisions, and recursive implementation submodule-preparation output are **not present** in the Attempt 1 transcript. Do not represent these checks as passed. Attempt 2's canonical packet must be recorded as Attempt 2 evidence only; it cannot prove Attempt 1 preparation.
+- Independent current comparison during review: implementation `task/ARCH-047-BACKGROUND-005` is 9 commits behind and 1 ahead of `origin/main`; parent task branch is 31 behind and 4 ahead. Neither branch has current `origin/main` as an ancestor. The implementation delta is limited to the ten wrapper files listed above and the parent delta is this task record. No merge was performed during review.
+- The local untracked `typescript` terminal capture was not staged in the implementation commit.
 
 ### Deviations
 
-None recorded.
+No production runtime scope expansion was identified. An incremental correction replaced control-character regexes to satisfy focused ESLint. The original integration retry initially failed to connect to its temporary PostgreSQL service and succeeded on the subsequent run.
 
 ### Assumptions
 
-The DB001 Attempt 7 model names and fields are authoritative design inputs, not proof of an accepted/applied production migration. Reinspect current implementation on claim.
+This record uses the supplied combined archive and validation terminal captures as implementation evidence; it is not an independent verification of Git remotes, launcher preparation, or runtime execution from this review environment. Versioned Admin-prepared wrapper projection remains the upstream runtime contract.
 
 ### Unresolved Issues
 
-The parent ARCH-047 architecture and `BACKGROUND-001` still require final reconciliation with the Admin-owned AST/compilation and no-new-Shared-template-package decision before work begins.
+- Historical launcher start-of-attempt synchronization and recursive submodule-preparation evidence remains unverified. Provide the original prepared execution packet if available. If it is unavailable, the reviewer must determine the policy-compliant worktree remediation/validation needed rather than fabricate historical records.
+- Parent task Completion Report updates for this review must be committed and pushed on the dedicated parent task branch.
 
 ### Architectural Concerns
 
-Shop/checkout read paths may currently be null for non-recovery conversations; never fabricate association. A missing verified checkout is a typed outcome, not permission to mutate another repository.
+- Non-recovery conversations may lack a verifiable checkout; the renderer intentionally omits optional checkout fragments rather than fabricate associations.
+- Merchant-host validation deliberately omits otherwise valid hosted checkout URLs with a different host until a trusted ownership contract exists. This is a safe limitation to consider in BG008/BG009 integration.
+- BG008/BG009 must preserve wrapper application provenance and moderate the complete rendered message before the established final-send gates; BG005 does not itself send or moderate.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — implementation not submitted.
+Accepted — architect review acceptance supplied with the explicit developer completion request on 2026-10-26.
 
 ### Review Notes
 
-Not reviewed.
+The Attempt 2 passing self-review and validation evidence above are accepted. No additional file-level review notes were supplied with the acceptance.
 
 ### Reviewed Files
 
-None yet.
+Accepted implementation scope: the ten wrapper service and test files listed in the Completion Report.
 
 ### Validation Reviewed
 
-None yet.
+Attempt 2 focused validation evidence recorded in the Developer Self-Review - Passed section.
 
 ### Architecture Conformance
 
-To be assessed against the reconciled ARCH-047 parent architecture and current repository code.
+Accepted for this task's prepared-runtime renderer scope. AI/human caller integration, whole-message moderation and final-send gates remain owned by BG008/BG009.
 
 ### Follow-up
 
-Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting BG008/BG009 to Ready.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-26
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_background`, coordinator, repository, task scope, acceptance criteria, validation requirements and current Ready eligibility.
+- Claim state: This amendment does not claim an implementation attempt; the canonical launcher records the claim after dependency and worktree preparation.
+
+## Developer Self-Review - Changes Requested
+
+- Review date: 2026-10-26; reviewed attempt: 1.
+- Current focused validation passed: wrapper unit tests 14/14, focused ESLint with no reported errors, `npm run build`, and the focused PostgreSQL integration test 2/2. `git diff --check` passed. These checks do not resolve the branch synchronization or historical launcher evidence gaps.
+- Required correction: keep the implementation changes scoped to the ten task files, then use the canonical developer launcher for Attempt 2 to synchronize both dedicated task branches with their task remotes and current `origin/main`. Inspect and resolve any merge conflicts or behavior changes introduced by that synchronization. Rerun the focused unit, lint, build, and PostgreSQL integration checks against the synchronized implementation. Update the Completion Report with the exact preparation packet, parent/implementation branch revisions, and validation outcomes.
+- Historical evidence: Attempt 1's launcher packet is unavailable. Do not rerun preparation to manufacture Attempt 1 evidence or label a later packet as proof of that attempt. Record the limitation truthfully; any explicit acceptance of this historical gap must be separately authorized and precisely scoped.
+- No implementation-source defect was established by the current focused checks. The task remains unaccepted until synchronized-branch revalidation and the report correction are complete.
+- Lifecycle transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. The next canonical developer claim increments the attempt exactly once.
+
+## Developer Self-Review - Passed (Attempt 2)
+
+### Attempt and worktree evidence
+
+- Attempt reviewed: 2. Canonical launcher preparation passed the dependency gate (`ARCH-047-DATABASE-001: complete`), reused both dedicated worktrees, synchronized them with current `origin/main`, initialized recursive submodules, and claimed the task for `developer` at `2026-10-26T06:14:27Z`. The durable parent claim commit is `6662b1f44829a7da1e69604834597703cea81e5b`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-005`, branch `task/ARCH-047-BACKGROUND-005`; launcher reused it, incorporated `origin/main`, and reported no task-remote fast-forward needed. Parent `HEAD` and `origin/task/ARCH-047-BACKGROUND-005` are both `52bc06c591056c6ddcb1cbdcbdeb2e7e207512eb` before this review-report commit.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-005`, branch `task/ARCH-047-BACKGROUND-005`; launcher reused it at `9065a582b101d8384bdeb4d4e30f1903a19b1da8`, incorporated `origin/main`, and reported no task-remote fast-forward needed. Recursive `git submodule sync/update --init` passed; `database` is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+- Implementation HEAD `9065a58` and `origin/task/ARCH-047-BACKGROUND-005` now match after publishing the launcher-created synchronization merge. Current `origin/main` is an ancestor; the branch is two mainline commits ahead of it. The only task implementation delta from `origin/main` is the ten wrapper files listed above, 969 insertions. Both worktrees were clean after synchronization/publication and before this parent report edit. No implementation source changes or material assigned-agent assistance occurred in Attempt 2.
+
+### Attempt 2 validation
+
+- `npm ci` — completed from the implementation repository lockfile. It reported 20 dependency advisories (8 moderate, 12 high); these are not attributed to this task and were not remediated here.
+- `npx vitest run tests/unit/services/conversation-wrappers` — **14 tests passed in 2 files**.
+- `npx eslint src/services/conversation-wrappers tests/unit/services/conversation-wrappers tests/integration/conversation-wrapper-rendering.integration.test.ts` — completed without diagnostics.
+- `npm run test:integration -- tests/integration/conversation-wrapper-rendering.integration.test.ts` — **2 PostgreSQL integration tests passed in 1 file**.
+- `npm run build` — passed after `npm ci`, including Prisma client generation and TypeScript compilation. The first build before dependency synchronization could not resolve the Shared `whatsapp-template-events` export because stale Shared `2.5.0` was installed while the lockfile requires `2.5.1`; no source edits were needed, and the clean locked install resolved it.
+- `git diff --check origin/main...HEAD` for the implementation branch and `git diff --check` for the parent report — passed.
+
+### Review disposition
+
+The required Attempt 1 correction is satisfied for the current cycle: the implementation is task-scoped, both canonical branches now include current mainline and are published, and the focused checks pass on the synchronized revision. Attempt 1's historical launcher packet remains unavailable; the Attempt 2 packet is recorded only as evidence for Attempt 2. The implementation and validation are submitted for architect review, not marked complete. `completion_mode: developer` remains in force, so explicit developer completion is pending after accepted review.
+
+## Developer Completion Decision
+
+- Date: 2026-10-26; completed attempt: 2.
+- Decision: The developer explicitly invoked `/moda_developer_update ARCH-047-BACKGROUND-005 complete` after the durable Attempt 2 passing self-review. All required Work Items, Acceptance Criteria and Validation checklists are complete; the task-owned implementation and synchronization merge are committed and pushed, and the parent report can be published.
+- Preserved: Attempt 2, the historical Attempt 1 evidence limitation, and the prior review record. No implementation source changes were made as part of this completion decision.
+- Dependency frontier: `ARCH-047-BACKGROUND-008` and `ARCH-047-BACKGROUND-009` remain pending. Their task records explicitly require architect reconciliation of the parent task graph and obsolete Admin/Shared references before promotion to Ready; this completion does not bypass that gate.
+- Review disposition: Architect Review Accepted was supplied with the explicit completion request and is recorded above; no additional file-level notes were provided.
+- Lifecycle transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 2`.
