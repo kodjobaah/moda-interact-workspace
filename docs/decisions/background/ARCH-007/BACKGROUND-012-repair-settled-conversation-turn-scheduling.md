@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 25
-executor: copilot
-claimed_at: 2026-10-26T22:09:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-007-BACKGROUND-010
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-007-SYSTEM-TEST-005
 created: 2026-10-26
-updated: 2026-10-26T22:30:00Z
+updated: 2026-10-26T23:28:00Z
 ---
 
 # ARCH-007-BACKGROUND-012: Repair settled conversation-turn scheduling under concurrent inbound fragments
@@ -184,24 +184,36 @@ None. The change is within Background ownership and preserves B010 settle calcul
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None.
+The implementation correction is sound and remains within task scope. `receiveMessage` now uses one receipt timestamp for message ordering and all B010 settle clocks while retaining provider `occurredAt` for recovery-engagement semantics. The delayed-event regression exercises timestamps 60 seconds before receipt and asserts that only version 3 is claimed, one agent call occurs, and one reply is sent. No implementation defect was found.
+
+The Completion Report does not record the required start-of-attempt synchronization outcomes for either task worktree. It gives the canonical paths, branches, starting revisions and launcher claim evidence, but omits whether each remote task branch was fast-forwarded/not-needed and whether `origin/main` was incorporated/already-current. The worktree paths themselves are canonical and show no evidence of shared-checkout execution; this request is limited to completing the mandatory synchronization evidence, not redoing source work.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-background/src/services/conversation.service.ts`
+- `moda-interact-background/tests/integration/conversation-turn-scheduling.integration.test.ts`
+- `moda-interact-background/tests/unit/services/conversation.service.test.ts`
+- `moda-interact-background/tests/unit/services/conversation-turn-processor/facade-claims-and-state.cases.ts`
+- `docs/decisions/background/ARCH-007/BACKGROUND-012-repair-settled-conversation-turn-scheduling.md`
 
 ### Validation Reviewed
 
-None.
+- Reported focused disposable integration: 2 passed; reviewer rerun: one initial 5-second timeout, followed by 2 passed on immediate rerun.
+- Reported focused service/processor unit validation: 68 passed; reviewer rerun: 68 passed.
+- Reported processor-only validation: 54 passed.
+- Reported full integration validation: 5 files and 13 tests passed.
+- Reported full unit validation: 287 files passed, 4 failed; 3,000 passed and 14 failed in four untouched files.
+- Reviewer reran `npm run build`: passed.
+- Reviewer ran `git diff --check` against the implementation commit: passed.
 
 ### Architecture Conformance
 
-Pending
+Implementation conforms to ARCH-007 and B010, including receipt-time settle semantics, provider event-time recovery engagement, unchanged quiet/max-settle/lease policy, deterministic version scheduling, and no cross-repository contract changes. Formal task acceptance is withheld only because required synchronization evidence is missing from the Completion Report.
 
 ### Follow-up
 
-Architect review only. Do not start `ARCH-007-SYSTEM-TEST-005` from this task.
+Changes Requested: update the Completion Report's Launcher and Worktree Evidence with the prepared launcher's actual start-of-attempt synchronization outcomes for both parent and implementation worktrees: remote task-branch fast-forward (`yes` or `not-needed`) and `origin/main` incorporation (`yes` or `already-current`). Include recursive submodule preparation evidence already provided by the launcher. Do not guess these values; consult the prepared execution packet/log. No source or test changes are requested. After correcting the evidence, return this same task for review. Do not start `ARCH-007-SYSTEM-TEST-005`.
