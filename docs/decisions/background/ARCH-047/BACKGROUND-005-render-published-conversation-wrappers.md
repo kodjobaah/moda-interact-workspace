@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-10-26T03:48:10Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
@@ -126,7 +126,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Ready for Review — Attempt 1, developer-executed. Functional implementation and focused validation are complete; the original launcher preparation evidence remains unverified (see below). The implementation was committed and pushed on 2026-10-26. Preserve `execution_mode: developer`, `completion_mode: developer`, `executor: developer`, `claimed_at: 2026-10-26T03:48:10Z` and `attempt: 1`; do not treat the ESLint correction as a new claim.
+Changes Requested — developer self-review of Attempt 1 on 2026-10-26. The implementation commit remains published, but the task is returned to `ready` because the implementation and parent task branches do not incorporate current `origin/main`, and the original launcher/start-of-attempt evidence is absent. `executor` and `claimed_at` are cleared; `attempt: 1` is preserved. No implementation changes were made during this review.
 
 ### Files Changed
 
@@ -163,7 +163,8 @@ All commands below were recorded from the dedicated Background implementation wo
 - `npx vitest run tests/unit/services/conversation-wrappers` — PASS: 2 test files, 14 tests, after the ESLint correction.
 - `npx eslint src/services/conversation-wrappers tests/unit/services/conversation-wrappers tests/integration/conversation-wrapper-rendering.integration.test.ts` — PASS: no reported errors after the correction. The preceding run had three `no-control-regex` errors, which were corrected and rechecked.
 - `npm run test:integration -- tests/integration/conversation-wrapper-rendering.integration.test.ts` — PASS: 1 file, 2 actual PostgreSQL integration tests on 2026-10-26 at 05:02. Covered versioned active-slot changes, verified checkout recovery context, replay provenance, stale/cancelled/missing checkout omission, and cross-shop/customer mismatch refusals. A preceding test run failed at disposable PostgreSQL startup (`P1001`), then the rerun passed; this was a setup failure before test execution, not a failing application assertion.
-- `git diff --check` — ran without reported whitespace errors in the validation transcript.
+- `git diff --check` — passed during this review for the implementation delta and parent task report delta.
+- Review reruns on 2026-10-26: `npx vitest run tests/unit/services/conversation-wrappers` — 2 files, 14 tests passed; focused `npx eslint ...` — no reported errors; `npm run build` — passed (Prisma generation and TypeScript compilation); `npm run test:integration -- tests/integration/conversation-wrapper-rendering.integration.test.ts` — 1 file, 2 PostgreSQL integration tests passed.
 - `git commit -m "feat(arch-047-background-005)"` — PASS: implementation commit `c25295a`, 10 files, 969 insertions.
 - `git push -u origin task/ARCH-047-BACKGROUND-005` — PASS: published `task/ARCH-047-BACKGROUND-005` to the Background origin (reported by Git in the terminal log).
 
@@ -172,8 +173,8 @@ All commands below were recorded from the dedicated Background implementation wo
 - Parent task worktree reported by the developer archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-005`.
 - Background implementation worktree reported by test output and archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-005`.
 - Implementation branch and pushed commit verified above. Parent task branch publication is **not** verified by the supplied log; this documentation patch must be committed/pushed separately on `task/ARCH-047-BACKGROUND-005` in the parent worktree.
-- The original `/moda_developer_create` launcher packet, canonical root identity, parent/implementation remote fast-forward and `origin/main` incorporation decisions, and recursive implementation submodule-preparation output are **not present** in the submitted transcript. Do not represent these checks as passed. The code can be reviewed, but the reviewer must reconcile this workflow-evidence gap before acceptance.
-- Prior to the `git push -u` command the implementation task branch `git status` reported it was behind `origin/main` by 9 commits. The log does not establish whether the expected start-of-attempt synchronization had previously succeeded; investigate rather than infer conformance or failure.
+- The original `/moda_developer_create` launcher packet, canonical root identity, parent/implementation remote fast-forward and `origin/main` incorporation decisions, and recursive implementation submodule-preparation output are **not present** in the Attempt 1 transcript. Do not represent these checks as passed. Attempt 2's canonical packet must be recorded as Attempt 2 evidence only; it cannot prove Attempt 1 preparation.
+- Independent current comparison during review: implementation `task/ARCH-047-BACKGROUND-005` is 9 commits behind and 1 ahead of `origin/main`; parent task branch is 31 behind and 4 ahead. Neither branch has current `origin/main` as an ancestor. The implementation delta is limited to the ten wrapper files listed above and the parent delta is this task record. No merge was performed during review.
 - The local untracked `typescript` terminal capture was not staged in the implementation commit.
 
 ### Deviations
@@ -187,7 +188,7 @@ This record uses the supplied combined archive and validation terminal captures 
 ### Unresolved Issues
 
 - Historical launcher start-of-attempt synchronization and recursive submodule-preparation evidence remains unverified. Provide the original prepared execution packet if available. If it is unavailable, the reviewer must determine the policy-compliant worktree remediation/validation needed rather than fabricate historical records.
-- Parent task branch commit and push of this Completion Report must be completed by the developer before invoking the authorized developer review path.
+- Parent task Completion Report updates for this review must be committed and pushed on the dedicated parent task branch.
 
 ### Architectural Concerns
 
@@ -227,3 +228,12 @@ Architect to reconcile the parent task graph and obsolete Admin/Shared reference
 - Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
 - Preserved: `assigned_agent: moda_background`, coordinator, repository, task scope, acceptance criteria, validation requirements and current Ready eligibility.
 - Claim state: This amendment does not claim an implementation attempt; the canonical launcher records the claim after dependency and worktree preparation.
+
+## Developer Self-Review - Changes Requested
+
+- Review date: 2026-10-26; reviewed attempt: 1.
+- Current focused validation passed: wrapper unit tests 14/14, focused ESLint with no reported errors, `npm run build`, and the focused PostgreSQL integration test 2/2. `git diff --check` passed. These checks do not resolve the branch synchronization or historical launcher evidence gaps.
+- Required correction: keep the implementation changes scoped to the ten task files, then use the canonical developer launcher for Attempt 2 to synchronize both dedicated task branches with their task remotes and current `origin/main`. Inspect and resolve any merge conflicts or behavior changes introduced by that synchronization. Rerun the focused unit, lint, build, and PostgreSQL integration checks against the synchronized implementation. Update the Completion Report with the exact preparation packet, parent/implementation branch revisions, and validation outcomes.
+- Historical evidence: Attempt 1's launcher packet is unavailable. Do not rerun preparation to manufacture Attempt 1 evidence or label a later packet as proof of that attempt. Record the limitation truthfully; any explicit acceptance of this historical gap must be separately authorized and precisely scoped.
+- No implementation-source defect was established by the current focused checks. The task remains unaccepted until synchronized-branch revalidation and the report correction are complete.
+- Lifecycle transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. The next canonical developer claim increments the attempt exactly once.
