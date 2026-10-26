@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 54
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-26T12:43:09Z
+attempt: 2
 depends_on:
 - ARCH-048-BACKGROUND-001
 - ARCH-048-BACKGROUND-002
@@ -158,7 +158,7 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 ### Status
 
-**Changes Requested — Developer self-review of Attempt 1.** The implementation and test corrections are committed and pushed. On the latest synchronized task branch, focused BG005 unit tests and lint pass, but the focused integration group has 9 failures out of 21 after newly merged template-preparation/final-permit behavior, and the full build fails on two Shared imports absent from pinned version `2.5.0`. These issues are recorded separately; no unrelated mainline source was changed. Returned to `ready`, cleared the active claim, and preserved Attempt 1; no developer completion or architect acceptance is claimed.
+In Progress — Attempt 2 claimed by developer at 2026-10-26T12:43:09Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
