@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 15
-executor: developer
-claimed_at: 2026-10-26T12:53:04Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-040-DATABASE-001
@@ -35,7 +35,7 @@ updated: 2026-10-26
 
 ## Developer Ownership Amendment
 
-On 2026-10-26, `/moda_developer_create ARCH-040-DATABASE-007` was invoked to take over this ready agent-owned task. Execution and completion modes are now `developer`; `assigned_agent: moda_database`, coordinator, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged. Attempt 1 was claimed and returned Changes Requested; Attempt 2 was subsequently claimed on 2026-10-26T12:10:12Z. The current lifecycle state and attempt are recorded in the frontmatter and Completion Report.
+On 2026-10-26, `/moda_developer_create ARCH-040-DATABASE-007` was invoked to take over this ready agent-owned task. Execution and completion modes are `developer`; `assigned_agent: moda_database`, coordinator, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged. Attempt 1 and Attempt 2 were returned Changes Requested. Attempt 3 was claimed at `2026-10-26T12:53:04Z`, its canonical preparation evidence and validations were recorded, and the task is now submitted to `review` with explicit developer completion pending.
 
 ## Objective
 
@@ -196,6 +196,7 @@ For no wrapper, application writes `{"schemaVersion":1,"outcome":"PASSTHROUGH","
 - [x] Database rejects technical invalid writes but does not choose/validate wrappers, moderation outcomes, consent, 24-hour windows or send eligibility.
 - [x] Fresh and upgrade migrations plus direct PostgreSQL positive/negative cases pass; no unrelated existing record or trigger semantics regress.
 - [ ] DB Completion Report contains dedicated worktree/branch/synchronisation, exact validation and migration evidence for architect review. Technical validation and paths are evidenced; the Attempt 2 launcher preparation/synchronisation packet is not present in the submitted materials.
+- [x] DB Completion Report contains dedicated worktree/branch/synchronisation, exact validation and migration evidence for architect review. Attempt 3 start-of-attempt route, synchronization and recursive submodule evidence is recorded. Attempt 2 historical evidence remains unavailable and has not been reconstructed.
 
 ## Validation
 
@@ -217,7 +218,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at `2026-10-26T12:53:04Z` after capturing the canonical route, both worktree synchronization checks, and recursive submodule preparation before validation. Attempt 1 and Attempt 2 Changes Requested reviews remain historical; their missing claim-time evidence has not been reconstructed. The current implementation is unchanged from `12102f0b611973b1436f4c0d4ec33f3e15fa9a78` at claim time.
+Submitted for developer review — Attempt 3 passed. The prior missing start-of-attempt evidence has been resolved for this attempt through actual pre-validation capture; Attempt 1 and Attempt 2 history remains preserved and their missing claim-time evidence has not been reconstructed. Implementation remains unchanged from `12102f0b611973b1436f4c0d4ec33f3e15fa9a78`. Because `completion_mode: developer`, explicit developer completion is pending review approval.
 
 ### Files Changed
 
@@ -240,6 +241,8 @@ No existing historical migration, other service, or domain `_index.md` was inten
 - Added structural validation and disposable PostgreSQL 17 fresh-install/upgrade exercises for command history, moderation evidence, terminal and provider-permit invariants, tenant isolation, contention and concurrency.
 - Corrected the test to assert the command/message dispatch-key mismatch separately from the one-way provider-permit timestamp immutability guard. No production migration or trigger changes were needed for that correction.
 - Prepared and claimed Attempt 3 without changing implementation files. Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-007`: fetch completed, clean before claim, local task tip matched `origin/task/ARCH-040-DATABASE-007` at `b8ccca6105e76865c1ae70ac3b4f17bd791dfd68`, and current parent `origin/main` `e8759d60fc6abef48fb02379fb8822d373a38d7e` was already an ancestor (no fast-forward or merge needed). Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-007`: fetch completed, clean before claim, local task tip matched `origin/task/ARCH-040-DATABASE-007` at `12102f0b611973b1436f4c0d4ec33f3e15fa9a78`, and current implementation `origin/main` `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9` was already an ancestor (no fast-forward or merge needed). `submodule sync --recursive` and `submodule update --init --recursive` completed; `submodule status --recursive` returned no entries.
+- Prepared and claimed Attempt 3 without changing implementation files. Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-007`: fetch completed, clean before claim, local task tip matched `origin/task/ARCH-040-DATABASE-007` at `b8ccca6105e76865c1ae70ac3b4f17bd791dfd68`, and current parent `origin/main` `e8759d60fc6abef48fb02379fb8822d373a38d7e` was already an ancestor (no fast-forward or merge needed). Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-007`: fetch completed, clean before claim, local task tip matched `origin/task/ARCH-040-DATABASE-007` at `12102f0b611973b1436f4c0d4ec33f3e15fa9a78`, and current implementation `origin/main` `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9` was already an ancestor (no fast-forward or merge needed). `submodule sync --recursive` and `submodule update --init --recursive` completed; `submodule status --recursive` returned no entries.
+- Completed the following Attempt 3 validations from the canonical implementation worktree with no implementation edits: `npm run prisma:validate`, `npm run prisma:generate`, `npm run test:arch040-human-prepared-schema`, `npm run test:arch040-human-prepared:postgres` (PostgreSQL 17.11, disposable fresh and upgrade), `npm run test:arch040-recovery-human-handover`, `npm run test:arch040-moderation-schema`, `npm run test:arch040-follow-up-release-schema`, `npm run test:arch040-recovery-human-handover:postgres:fresh`, `npm run test:arch040-moderation:postgres:fresh`, `npm run test:arch040-follow-up-release:postgres:fresh`, `npm run lint`, and `git diff --check origin/main...HEAD`. All passed. Expected PostgreSQL errors in negative cases were asserted by the harness. The chained run was stopped after a separate long-lived Render `psql` process was noticed; inspection confirmed the task moderation harness creates a uniquely named Docker PostgreSQL container on `--network none` and does not accept external `DATABASE_URL`; the isolated moderation and follow-up regression commands were then run independently and passed. The pre-existing Render `psql` process was not accessed or terminated.
 
 ### Validation Results
 
@@ -265,6 +268,7 @@ Executed in the developer's dedicated Database task worktree, as recorded in the
 | Attempt 2 launcher/worktree preparation (claimed at 12:10:12 UTC) | **NOT EVIDENCED** in the supplied 12:30–12:35 terminal log or latest workspace ZIP: exact prepared execution packet, parent and implementation branch fetch/fast-forward/main sync, and recursive submodule status at attempt start. Current archive paths and a successful rerun do not establish these historical steps. |
 | Later resume synchronization (2026-10-26) | Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-007` was clean at `eba8d67ac57eeaebf256a1e91369671f9f21870b`, matching `origin/task/ARCH-040-DATABASE-007`; parent `origin/main` `e8759d60fc6abef48fb02379fb8822d373a38d7e` was already an ancestor. Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-007` was clean at `12102f0b611973b1436f4c0d4ec33f3e15fa9a78`, matching `origin/task/ARCH-040-DATABASE-007`; implementation `origin/main` `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9` was already an ancestor. `submodule sync --recursive` and `submodule update --init --recursive` completed; `submodule status --recursive` returned no entries. This is actual later resume-time evidence only, not Attempt 2 start evidence. |
 | Attempt 3 start-of-attempt preparation (2026-10-26T12:53:04Z) | Canonical resolver returned `ready`, `execution_mode: developer`, parent path `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-007`, implementation path `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-007`, and task branch `task/ARCH-040-DATABASE-007`. Both worktrees were clean; fetches completed; local tips matched their remote task refs. Parent task revision `b8ccca6105e76865c1ae70ac3b4f17bd791dfd68` already contained parent `origin/main` `e8759d60fc6abef48fb02379fb8822d373a38d7e`. Implementation revision `12102f0b611973b1436f4c0d4ec33f3e15fa9a78` already contained implementation `origin/main` `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. No task-ref fast-forward or mainline merge was needed in either repository. Recursive submodule sync/update completed successfully; recursive status was empty. Captured before validation. |
+| Attempt 3 task validation (2026-10-26) | **PASS** — Prisma validate/generate, exact prepared-content schema validator, prepared-content disposable PostgreSQL fresh/upgrade suite (PostgreSQL 17.11), ARCH-040 human-handover/moderation/follow-up structural validators, and all three disposable PostgreSQL fresh regression suites. `npm run lint` and `git diff --check origin/main...HEAD` passed. The moderation and follow-up PostgreSQL suites were rerun independently after the initial chained command was stopped for inspection of a separate pre-existing remote `psql` process; both harnesses use isolated Docker containers. No implementation changes were made during Attempt 3. |
 
 `npm test`, `npm run typecheck`, `npm run build` and `npm run test:arch047-follow-up:postgres` are not declared scripts in this Database repository; their missing-script messages in an exploratory run are not failures of the task-defined validations. `npm run lint` was launched without a reported lint failure, but is not counted as one of the task's required acceptance checks.
 
@@ -280,7 +284,7 @@ Executed in the developer's dedicated Database task worktree, as recorded in the
 
 ### Unresolved Issues
 
-- Attempt 2's original start-of-attempt evidence remains historically unavailable and is not reconstructed. Attempt 3 now has its own pre-validation preparation evidence captured above. The prior review correction also calls for rerunning the task-required validation suite in this attempt; those results are pending.
+- Attempt 2's original start-of-attempt evidence remains historically unavailable and is not reconstructed; Attempt 3 has complete pre-validation evidence and passes the required validation suite. No known task-owned implementation or validation issue remains.
 - Application-level BG009 wrapper rendering, fail-closed final send, and recompiled Prisma consumer are outside this task and remain gated on Database acceptance and developer-controlled completion.
 
 ### Architectural Concerns
@@ -361,3 +365,23 @@ On the next `/moda_developer_create ARCH-040-DATABASE-007` claim, retain the lau
 ### State Transition
 
 Returned to `ready`; `executor: null`, `claimed_at: null`, Attempt 2 unchanged. No implementation change, new attempt claim, or merge to `main` was made.
+
+## Developer Self-Review Passed (Attempt 3)
+
+### Review Decision
+
+The prior actionable evidence gap is resolved for this attempt. The task report contains the actual launcher route, clean parent and implementation state, fetch results, remote task-branch parity, mainline ancestry, and recursive submodule result captured before validation. The implementation remains the six task-scoped Database files committed and pushed at `12102f0b611973b1436f4c0d4ec33f3e15fa9a78`; there are no uncommitted implementation changes. The task-defined migration, regression, lint and whitespace validations passed in Attempt 3.
+
+Developer self-review **Passed**. `completion_mode: developer`, so this transition only submits the task for review; explicit developer completion remains pending and is not performed here.
+
+### Validation Reviewed
+
+- **PASS** — `npm run prisma:validate`, `npm run prisma:generate`, `npm run test:arch040-human-prepared-schema`, and `npm run test:arch040-human-prepared:postgres` (disposable PostgreSQL 17.11 fresh and upgrade).
+- **PASS** — `npm run test:arch040-recovery-human-handover`, `npm run test:arch040-moderation-schema`, and `npm run test:arch040-follow-up-release-schema`.
+- **PASS** — `npm run test:arch040-recovery-human-handover:postgres:fresh`, `npm run test:arch040-moderation:postgres:fresh`, and `npm run test:arch040-follow-up-release:postgres:fresh` using their isolated Docker fixtures.
+- **PASS** — `npm run lint` and `git diff --check origin/main...HEAD`.
+- **PASS** — canonical attempt preparation/synchronization and empty recursive submodule status recorded under Attempt 3 in the Completion Report.
+
+### State Transition
+
+Submitted to `review`; `executor: null`, `claimed_at: null`, Attempt 3 unchanged. Explicit developer completion is pending review acceptance. Implementation and parent task branches remain separate; no merge to `main` was made.
