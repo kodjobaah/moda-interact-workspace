@@ -11,9 +11,9 @@ updated: 2026-10-25
 
 ## Status and source of truth
 
-**Proposed expansion of the existing ARCH-049 initiative.** The Admin configuration decision (`shopBrand.publicMedia`) was previously agreed; task `ARCH-049-ADMIN-001` is `review` in the uploaded 2026-10-25 15:13 snapshot and is **not** reset, edited or implicitly accepted here. The additional media-processing tasks below are **defined but not materialised**: no task branches, implementation or deployment changes have been made.
+**Proposed expansion of the existing ARCH-049 initiative.** The Admin configuration decision (`shopBrand.publicMedia`) was previously agreed, and `ARCH-049-ADMIN-001` has now been architect-reviewed and accepted. The additional media-processing tasks below remain separately gated by their declared dependencies; acceptance of ADMIN-001 does not approve the proposed media pipeline or make tasks with unmet dependencies executable.
 
-This document supersedes the configuration-only scope of the prior parent ARCH-049 document when this expanded architecture is explicitly accepted. The historical `ARCH-049-ShopBrand-Media-Architecture-Session-Kickoff.md` remains an unmodified proposal/handoff, not a second canonical parent plan. The `docs/decisions/**/_index.md` files are intentionally unchanged pending explicit session completion.
+This document supersedes the configuration-only scope of the prior parent ARCH-049 document when this expanded architecture is explicitly accepted. The historical `ARCH-049-ShopBrand-Media-Architecture-Session-Kickoff.md` remains an unmodified proposal/handoff, not a second canonical parent plan. The Admin-domain index reflects the accepted ADMIN-001 review; other domain indexes remain unchanged.
 
 ## Existing, confirmed baseline
 
@@ -152,7 +152,7 @@ There is **no active GATEWAY-001** and no separate `ShopBrandMediaAsset` table. 
 
 | Task | Owner | State in snapshot / proposal | Depends on |
 |---|---|---|---|
-| ARCH-049-ADMIN-001 | moda_admin | Review (existing; unchanged) | — |
+| ARCH-049-ADMIN-001 | moda_admin | Complete (architect-accepted) | — |
 | ARCH-049-DATABASE-001 | moda_database | Pending (proposed) | — |
 | ARCH-049-SHOPIFY-001 | moda_app | Pending (proposed scope-only) | — |
 | ARCH-049-BACKGROUND-001 | moda_background | Pending (proposed) | DATABASE-001, ADMIN-001 |
@@ -172,4 +172,5 @@ No unknown database tables are needed; the 3 fixed media roles and JSONB row-lev
 ## Change history
 
 - 2026-10-25: Agreed Admin platform configuration for the R2 public origin and bucket name (preserved as the existing ADMIN-001 task).
+- 2026-10-25: Architect-reviewed and accepted ARCH-049-ADMIN-001; downstream tasks remain gated by their other dependencies.
 - 2026-10-25: Proposed consolidated media-normalisation expansion: move ShopBrand into commerce; one JSONB processed-media field; Background-owned Shopify synchronisation; Woo plugin/API ingress; reuse already-created R2 custom domain; no Gateway provisioning implementation.

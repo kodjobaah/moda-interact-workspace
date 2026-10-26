@@ -7,20 +7,20 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables:
   - ARCH-047-BACKGROUND-006
   - ARCH-047-BACKGROUND-007
 created: 2026-10-23
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # Implement recovery WhatsApp template preparation module
@@ -79,7 +79,7 @@ The module maps stage + verified offer presentation to one of the **six agreed r
 
 ### R2. Database-authoritative selection
 
-Query only local Prisma records and current approved/enabled assignments. Require all of: matching shop, configured sender WABA, recovery purpose, available canonical language, non-null Moda `metaRegistrationId`, connected registration with `APPROVED` provider status, no blocking drift/revocation/disable, and exact template/provider identity. Refuse ambiguous active assignments in a slot; never select arbitrarily. Preserve deterministic exact → base → merchant default → explicitly configured platform fallback precedence consistent with the existing selector. No HTTP `message_templates` lookup, cached Meta category preflight or trust in user-supplied WABA values.
+Query only local Prisma records and current approved/enabled assignments. An unresolved BG003 observation sets the registration `providerStatus` to `UNKNOWN` until successful verification; never treat a previously cached APPROVED value as current. The local preparer rejects UNKNOWN/pending reconciliation and records the exact `metaRegistrationId` for the late BG006 admission recheck; the **60-minute reconciliation freshness limit is enforced again by BG006 at final send**. Require all of: matching shop, configured sender WABA, recovery purpose, available canonical language, non-null Moda `metaRegistrationId`, connected registration with `APPROVED` provider status, no blocking drift/revocation/disable, and exact template/provider identity. Refuse ambiguous active assignments in a slot; never select arbitrarily. Preserve deterministic exact → base → merchant default → explicitly configured platform fallback precedence consistent with the existing selector. No HTTP `message_templates` lookup, cached Meta category preflight or trust in user-supplied WABA values.
 
 The new module does not automatically accept historical variants lacking registration provenance. Until explicit publication of Moda-authored versions, an unavailable result is valid; do not silently use an external template.
 
@@ -116,14 +116,14 @@ Keep repository queries, language selection, variable resolution and facade coor
 
 ## Work Items
 
-- [ ] Inspect existing selector, DB001 Prisma models and Admin-persisted components/binding snapshots; identify minimal module-local ports.
-- [ ] Implement focused Prisma selection with shop/WABA/purpose/language/provenance filters and explicit ambiguity outcomes.
-- [ ] Implement frozen **Admin-prepared** parameter resolution, correct for language-specific reordered placeholders, without AST parsing.
-- [ ] Resolve the eight screenshot-exposed ShopBrand keys by exact type/source, including missing-field and non-Shopify-brand cases; separate text links from actual image media, and never use raw original image URLs as Meta media.
-- [ ] Prepare the existing Admin-compiled checkout CTA button from its trusted URL/prefix/encoded dynamic binding; provide an explicit unavailable result for missing checkout data or unsupported URL/media components.
-- [ ] Expose one typed `PreparedRecoveryTemplate` facade and structured unavailable outcomes for callers.
-- [ ] Add focused unit and database integration coverage, including legacy/unlinked rows, disabled/revoked/drifted providers and invalid bindings.
-- [ ] Record exact source changes, worktree/synchronisation evidence and validation commands in the Completion Report; return control to architect without touching callers.
+- [x] Inspect existing selector, DB001 Prisma models and Admin-persisted components/binding snapshots; identify minimal module-local ports.
+- [x] Implement focused Prisma selection with shop/WABA/purpose/language/provenance filters and explicit ambiguity outcomes.
+- [x] Implement frozen **Admin-prepared** parameter resolution, correct for language-specific reordered placeholders, without AST parsing.
+- [x] Resolve the eight screenshot-exposed ShopBrand keys by exact type/source, including missing-field and non-Shopify-brand cases; separate text links from actual image media, and never use raw original image URLs as Meta media.
+- [x] Prepare the existing Admin-compiled checkout CTA button from its trusted URL/prefix/encoded dynamic binding; provide an explicit unavailable result for missing checkout data or unsupported URL/media components.
+- [x] Expose one typed `PreparedRecoveryTemplate` facade and structured unavailable outcomes for callers.
+- [x] Add focused unit and database integration coverage, including legacy/unlinked rows, disabled/revoked/drifted providers and invalid bindings.
+- [x] Record exact source changes, worktree/synchronisation evidence and validation commands in the Completion Report; return control to architect without touching callers.
 
 ## Interfaces / Contracts
 
@@ -146,22 +146,22 @@ The enabled tasks are **planned**, not yet materialised. Do not start either fro
 
 ## Acceptance Criteria
 
-- [ ] For each of six purpose combinations the preparer selects only a valid local shop/WABA/locale-assigned **Moda-authored** registration and yields a fully parameterised provider payload.
-- [ ] English and a translated language with reordered placeholders produce different but semantically correct positional parameter arrays from one trusted variable set.
-- [ ] Wrong shop/WABA, no approval, disabled row, registration absent, drift/revocation, ambiguous slot and missing required variables yield explicit unavailable results and no provider call/charge.
-- [ ] `brandName` and text alt fields bind from the same shop; optional/null or wrong-shop ShopBrand data does not produce invented output. Width/height bind only as optional numeric **text**; they never alter a WhatsApp media header.
-- [ ] The three image-URL text bindings never use raw ShopBrand source URLs; a READY processed, approved R2 derivative is required. Actual image-header payloads use a separately typed media binding or return `TEMPLATE_UNAVAILABLE_MEDIA_NOT_READY` (or equivalent) until the separate asset-processing architecture is available.
-- [ ] The approved checkout dynamic CTA URL suffix is safely bound/encoded once; missing, stale or untrusted destination fails closed. Tests distinguish body URL text from an actual button parameter.
-- [ ] The implementation has a cohesive new module facade with isolated repository, matching, bindings and unit-test responsibilities; it has no direct dependants in the existing orchestration paths at handoff time.
-- [ ] Legacy recovery, merchant command, consent/STOP, final admission and existing outbound contracts are unchanged; no current send path is broken or migrated by this task.
+- [x] For each of six purpose combinations the preparer selects only a valid local shop/WABA/locale-assigned **Moda-authored** registration and yields a fully parameterised provider payload.
+- [x] English and a translated language with reordered placeholders produce different but semantically correct positional parameter arrays from one trusted variable set.
+- [x] Wrong shop/WABA, no approval, disabled row, registration absent, drift/revocation, ambiguous slot and missing required variables yield explicit unavailable results and no provider call/charge.
+- [x] `brandName` and text alt fields bind from the same shop; optional/null or wrong-shop ShopBrand data does not produce invented output. Width/height bind only as optional numeric **text**; they never alter a WhatsApp media header.
+- [x] The three image-URL text bindings never use raw ShopBrand source URLs; a READY processed, approved R2 derivative is required. Actual image-header payloads use a separately typed media binding or return `TEMPLATE_UNAVAILABLE_MEDIA_NOT_READY` (or equivalent) until the separate asset-processing architecture is available.
+- [x] The approved checkout dynamic CTA URL suffix is safely bound/encoded once; missing, stale or untrusted destination fails closed. Tests distinguish body URL text from an actual button parameter.
+- [x] The implementation has a cohesive new module facade with isolated repository, matching, bindings and unit-test responsibilities; it has no direct dependants in the existing orchestration paths at handoff time.
+- [x] Legacy recovery, merchant command, consent/STOP, final admission and existing outbound contracts are unchanged; no current send path is broken or migrated by this task.
 
 ## Validation
 
-- [ ] Focused selector/binding unit tests with malformed/duplicate/stale assignment and translation binding fixtures.
-- [ ] ShopBrand text/URL/media readiness matrix (all eight keys, missing/empty/wrong-shop/no-Woo brand, oversized values, remote-original URL refused, optional READY R2 fixture) and trusted HTTPS checkout CTA encoding/reordered language binding tests.
-- [ ] Task-owned PostgreSQL integration test of variant→registration→locale/definition provenance, language fallback and real Prisma queries, using disposable database targets and declared DB001 schema.
-- [ ] Source/static assertions that the new module contains no Graph template read/create or WhatsApp send calls, and that pre-existing call sites were not changed.
-- [ ] Repository-declared TypeScript/lint/test/build checks appropriate to changed code; `git diff --check`.
+- [x] Focused selector/binding unit tests with malformed/duplicate/stale assignment and translation binding fixtures.
+- [x] ShopBrand text/URL/media readiness matrix (all eight keys, missing/empty/wrong-shop/no-Woo brand, oversized values, remote-original URL refused, optional READY R2 fixture) and trusted HTTPS checkout CTA encoding/reordered language binding tests.
+- [x] Task-owned PostgreSQL integration test of variant→registration→locale/definition provenance, language fallback and real Prisma queries, using disposable database targets and declared DB001 schema.
+- [x] Source/static assertions that the new module contains no Graph template read/create or WhatsApp send calls, and that pre-existing call sites were not changed.
+- [x] Repository-declared TypeScript/lint/test/build checks appropriate to changed code; `git diff --check`.
 
 ## Stop Condition
 
@@ -175,45 +175,60 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — current portable amendment; no implementation claim or implementation code execution.
+Developer self-review passed and explicit developer completion recorded — Attempt 1 is complete. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None.
+Added the recovery-template-preparation module and focused unit, boundary and PostgreSQL integration tests. The integration test verifies merchant-language fallback through real Prisma reads. Source commits `2ca83fda` and `2e9538e` are pushed to `task/ARCH-047-BACKGROUND-001`.
 
 ### Work Completed
 
-None.
+Implemented the typed `RecoveryTemplatePreparer` facade, tenant/WABA-scoped Prisma repository, deterministic purpose/language selection, frozen Admin binding validation and resolution, ShopBrand text/media handling, trusted checkout CTA binding and typed unavailable outcomes. Added coverage for all six purposes, reordered translations, invalid/ambiguous/unlinked/drifted registrations, tenant isolation, brand readiness, URL safety and module-only/no-send boundaries. No existing caller was wired or changed.
 
 ### Validation Results
 
-Not run.
+Passed:
+- `npx vitest run tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts tests/unit/services/recovery-template-preparation/module-boundary.test.ts` — 2 files, 14 tests.
+- `npm exec -- node scripts/test-integration.mjs tests/integration/arch047-recovery-template-preparation.integration.test.ts` — disposable PostgreSQL integration, 1 test, including real-query merchant-language fallback.
+- `npm run build` — Prisma Client generation and TypeScript compilation.
+- `npm run lint`.
+- `git diff --check`.
+- `npx vitest run tests/unit/observability/genai-metrics.test.ts tests/unit/runtime/observability-startup.test.ts` — 2 files, 11 tests.
+
+The full `npm test` run passed 2,792 of 2,796 tests; four unrelated observability tests hit their 5-second timeout during the full run and all 11 tests in those two files passed when rerun alone. The integration harness initially lacked the local Prisma binary on `PATH`; rerunning through `npm exec` passed. No source issue was implicated.
 
 ### Deviations
 
-None.
+Added a test-only integration assertion and configured the disposable shop's persisted default language to validate the repository-authoritative merchant fallback. No production behavior or task scope changed.
 
 ### Assumptions
 
-The DB001 Attempt 7 schema and Admin-prepared compiled-payload contract must be available at execution. Recheck the actual accepted DB schema and Admin-frozen compiled data when the task worktree is prepared. No new Shared AST publication prerequisite is assumed.
+The accepted DB001 schema and Admin-prepared compiled-payload contract are available; `ARCH-047-DATABASE-001` is complete. No new Shared AST publication prerequisite is assumed.
 
 ### Unresolved Issues
 
-Prerequisite DB001 developer completion remains outstanding; no new Shared publication gate is required. Existing consumer task scopes must be reconciled before integration.
+No blocking issue remains for this module-only task. Existing consumer integration remains in the planned BG006/BG007 scopes; no new Shared publication gate is required.
 
 ### Architectural Concerns
 
 No business lifecycle constraint should be pushed into PostgreSQL. No AI-initiated checkout mutation is authorised.
 
+### Developer Completion Decision
+
+- Date: 2026-10-26
+- Decision: Complete Attempt 1 after the durable passing developer self-review.
+- Evidence: All Work Items, Acceptance Criteria and Validation items are recorded complete; implementation commits `2ca83fda` and `2e9538e` are pushed; parent report changes are committed and publishable without merging to `main`.
+- Downstream frontier: `ARCH-047-BACKGROUND-006` and `ARCH-047-BACKGROUND-007` remain `pending`. Both still depend on pending `ARCH-047-BACKGROUND-004`; BG007 also depends on BG006. No downstream task is eligible for promotion from this completion alone.
+
 ## Architect Review
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Developer self-review passed; explicit developer completion decision recorded below. No separate architect review was performed in this developer-completion action.
 
 ### Review Notes
 
-None.
+Developer self-review passed. The implementation branch is clean and synchronized with `origin/task/ARCH-047-BACKGROUND-001` at `2e9538e`. The parent task worktree was clean before this report update and its remote task ref is an ancestor, so publication can use a normal fast-forward. No unrelated shared-workspace files or submodules were changed.
 
 ### Reviewed Files
 
@@ -225,8 +240,15 @@ None.
 
 ### Architecture Conformance
 
-Not assessed; module-only implementation has not started.
+Conforms to the module-only boundary: no Meta/provider calls, sends, queue writes, billing or caller changes. The preparer remains a payload-preparation boundary, not send permission; final outbound admission and consent fences remain authoritative.
 
 ### Follow-up
 
 Reconcile the now-defined module-first Background task set and cross-repository Admin/Messaging transport handoffs before making dependencies Ready. Do not update `_index.md` until explicitly authorised by the user.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_background`, coordinator, repository, dependency, task scope, acceptance criteria and validation requirements.
+- Claim state: This amendment does not claim an implementation attempt; the canonical launcher records the claim after dependency and worktree preparation.

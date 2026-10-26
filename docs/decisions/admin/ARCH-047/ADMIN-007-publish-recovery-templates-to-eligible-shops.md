@@ -7,13 +7,13 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -25,7 +25,7 @@ updated: 2026-10-25
 
 ## Architecture
 
-`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This is a **defined but not materialised** task until the developer's launcher creates the canonical task branch/worktree.
+`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`. This task was materialised before developer takeover. Developer execution Attempt 1 has finished and has been submitted for review; seven incremental implementation patch iterations occurred inside that single workflow attempt.
 
 ## Objective
 
@@ -72,11 +72,11 @@ Move UI state/selection/page-navigation/confirmation fingerprint handling into `
 
 ## Requirements
 
-- [ ] Publication never proceeds on unapproved/drifted/mismatched template or without explicit impact review, including individual override replacement; all decisions are reverified within application transactions.
-- [ ] A single shop is all-or-nothing for its selected languages; other shops may succeed independently and failed shops remain retryable.
-- [ ] Publishing 100 shops × 20 languages produces 2,000 durable shop-language targets, not 100; UI must not mistake target counts for shops.
-- [ ] No assignment carries another WABA/provider identity or silently adopts an external/legacy row. Old content and audit history remain accessible for comparison/rollback via newly confirmed publication.
-- [ ] Per-shop brand-variable availability is displayed accurately and independently of Meta approval: missing nullable `ShopBrand` fields are flagged, no substitute/preview value is silently treated as real data, and no merchant branding is copied into another shop's publication.
+- [x] Publication never proceeds on unapproved/drifted/mismatched template or without explicit impact review, including individual override replacement; all decisions are reverified within application transactions.
+- [x] A single shop is all-or-nothing for its selected languages; other shops may succeed independently and failed shops remain retryable.
+- [x] Publishing 100 shops × 20 languages produces 2,000 durable shop-language targets, not 100; UI must not mistake target counts for shops.
+- [x] No assignment carries another WABA/provider identity or silently adopts an external/legacy row. Old content and audit history remain accessible for comparison/rollback via newly confirmed publication.
+- [x] Per-shop brand-variable availability is displayed accurately and independently of Meta approval: missing nullable `ShopBrand` fields are flagged, no substitute/preview value is silently treated as real data, and no merchant branding is copied into another shop's publication.
 
 
 All server reads/mutations of template management require the existing authenticated platform-admin boundary; mutations and privileged cross-shop reads require **`SUPER_ADMIN`**, verified server-side (`requirePlatformAdminPage` / `requirePlatformAdminMutation` or repository-equivalent). Reject client-supplied actor identity, WABA ownership, approval and shop eligibility assertions. Persist bounded/redacted audit records using the existing `commerce.CommerceAuditEvent` and ARCH-047 audit enum; do not log tokens, credentials or unnecessary customer/checkout data. Reuse the platform's shared structured logger only for needed semantic logs.
@@ -84,9 +84,9 @@ All server reads/mutations of template management require the existing authentic
 
 ## Work Items
 
-- [ ] Implement paginated target discovery, authoritative eligibility/slot preview (including bounded shop-scoped `ShopBrand` availability for referenced keys), confirmation digest and per-shop/app-synchronised publication transaction in focused `publishing/` files.
-- [ ] Build responsive complete previous/proposed comparisons, per-shop overrides, counts and progress/retry UI.
-- [ ] Add cross-shop leakage, stale confirmation, concurrent publication, per-shop rollback, partial-operation restart and audit tests.
+- [x] Implement paginated target discovery, authoritative eligibility/slot preview (including bounded shop-scoped `ShopBrand` availability for referenced keys), confirmation digest and per-shop/app-synchronised publication transaction in focused `publishing/` files.
+- [x] Build responsive complete previous/proposed comparisons, per-shop overrides, counts and progress/retry UI.
+- [x] Add cross-shop leakage, stale confirmation, concurrent publication, per-shop rollback, partial-operation restart and audit tests.
 
 
 ## Interfaces / Contracts
@@ -107,21 +107,21 @@ None at task-definition time. Completion of this task does not grant permission 
 
 ## Acceptance Criteria
 
-- [ ] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
+- [x] React views are composed from separately named, independently testable components; route pages, controller hooks, pure domain helpers, server actions and database services are in separate files with no monolithic screen/action implementation.
 
-- [ ] One/selected/all current eligible merchants are targeted correctly; Shopify/Woo eligibility is enforced and newly appearing shops are excluded from the confirmed run.
-- [ ] Each affected shop has correct 20-language target history, one selectable slot per purpose/language, and preservation of historic variants; conflicting overrides require deliberate confirmation.
-- [ ] Multiple invocations of an operation neither multiply variants nor audit entries; concurrent individual and bulk commands cannot leave duplicate active assignments.
-- [ ] Exact, complete previous/proposed UI renders text, component/button/variable differences (including frozen header/body brand-binding keys and positions) per shop and labels missing history accurately.
-- [ ] A shop with configured `ShopBrand` fields and one with missing/null fields receive distinct, accurate preview indicators without creating misleading sample branding, leaking values across tenants, or changing the existing eligibility policy.
+- [x] One/selected/all current eligible merchants are targeted correctly; Shopify/Woo eligibility is enforced and newly appearing shops are excluded from the confirmed run.
+- [x] Each affected shop has correct 20-language target history, one selectable slot per purpose/language, and preservation of historic variants; conflicting overrides require deliberate confirmation.
+- [x] Multiple invocations of an operation neither multiply variants nor audit entries; concurrent individual and bulk commands cannot leave duplicate active assignments.
+- [x] Exact, complete previous/proposed UI renders text, component/button/variable differences (including frozen header/body brand-binding keys and positions) per shop and labels missing history accurately.
+- [x] A shop with configured `ShopBrand` fields and one with missing/null fields receive distinct, accurate preview indicators without creating misleading sample branding, leaking values across tenants, or changing the existing eligibility policy.
 
 
 ## Validation
 
-- [ ] Focused React component tests cover composition, user interactions, relevant loading/error/empty states and at least one mobile-width/accessibility scenario; controller hooks and pure business helpers are tested separately.
+- [x] Focused React component tests cover composition, user interactions, relevant loading/error/empty states and at least one mobile-width/accessibility scenario; controller hooks and pure business helpers are tested separately.
 
-- [ ] PostgreSQL integration tests for slot serialisation, 20-language per-shop transaction, 100-shop target cardinality, stale confirmation, cross-shop identity mismatch and interruptions/retries.
-- [ ] Guarded Admin preview/action/UI tests for full comparisons, frozen brand-binding differences, scoped `ShopBrand` availability (configured/null/no record/unknown), paging, accessible responsive display, partial-result clarity; typecheck/lint/`git diff --check`.
+- [x] PostgreSQL integration tests for slot serialisation, 20-language per-shop transaction, 100-shop target cardinality, stale confirmation, cross-shop identity mismatch and interruptions/retries.
+- [x] Guarded Admin preview/action/UI tests for full comparisons, frozen brand-binding differences, scoped `ShopBrand` availability (configured/null/no record/unknown), paging, accessible responsive display, partial-result clarity; typecheck/lint/`git diff --check`.
 
 
 ## Stop Condition
@@ -137,35 +137,77 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Not Started — portable task definition, not materialised/claimed.
+Developer Completed — explicit developer completion decision recorded on 2026-10-25 for workflow Attempt 1, following the passing developer self-review. Architect acceptance remains pending; this developer decision is not an architect acceptance.
 
 ### Files Changed
 
-None.
+Task-owned implementation in `moda-interact-admin/`:
+
+- `src/app/(protected)/system-controls/whatsapp-templates/[definitionId]/publish/page.tsx`
+- `src/app/actions/whatsapp-template-publication.ts`
+- `src/lib/admin/whatsapp-templates/publishing/`: `validation.ts`, `types.ts`, `source.ts`, `sender.ts`, `discovery.ts`, `impact.ts`, `preview.ts`, `operation.ts`, `assignment.ts`, `audit.ts`
+- `src/components/admin/whatsapp-templates/publishing/`: `template-publication-workspace.tsx`, `use-template-publication.ts`, `publication-scope-selector.tsx`, `publication-eligibility-summary.tsx`, `publication-impact-list.tsx`, `shop-language-comparison.tsx`, `compiled-template-read-only.tsx`, `publication-override-confirmation.tsx`, `publication-progress-summary.tsx`
+- `src/lib/admin/platform-configuration/environment.ts`, `src/lib/admin/platform-configuration/service.ts` (narrow environment resolution extraction)
+- `scripts/run-arch047-admin-publication-tests.mjs`, `scripts/test-arch047-admin-publication-postgres.mjs`
+- `tests/unit/arch047-template-publication-pure.test.ts`, `tests/unit/arch047-template-publication-components.test.tsx`, `tests/integration/arch047-template-publication.postgres.test.ts`
+- `package.json`, `package-lock.json` (task test scripts/dependencies and Shared version alignment)
+
+This completion update changes **only this task definition in the parent workspace**. No domain `_index.md`, parent architecture, schema/migration, or sibling task was changed.
 
 ### Work Completed
 
-None.
+- Implemented the protected publication route and bounded one/selected/all-eligible-shop workflow, including server-verified `SUPER_ADMIN` access, current persisted Meta registration approval and WABA/identity/content checks, frozen confirmation fingerprints and explicit override reason/acknowledgement.
+- Added shop-specific brand-variable availability and a paginated, responsive previous-versus-proposed language comparison. Missing/nullable/unknown `ShopBrand` values remain warnings and are never copied between shops.
+- Added durable per-shop-language targets, per-shop all-or-nothing assignment transactions, application-level shop-slot serialisation, distinct deterministic audit identities, bounded five-shop progression, idempotency and retry of eligible failures.
+- Added focused React/pure tests and disposable PostgreSQL integration tests covering a 100-shop/2,000-target run, approval drift, rollback and retry, concurrent publication, and prevention of adoption of unlinked/external Meta identities.
+- Corrected execution/test issues during seven incremental patch iterations (TypeScript/React issues, ESM test launch, Node environment isolation, eligibility predicate, test fixture uniqueness, audit identity uniqueness and independent external-identity fixture).
 
 ### Validation Results
 
-Not run.
+Developer terminal capture: `typescript(20261025-200718)`, dated 2026-10-25, against the supplied `moda-interact-workspace-ARCH-047-ADMIN-007.zip` snapshot.
+
+Fresh canonical-worktree verification on 2026-10-25:
+
+- **PASS** — `npm run test:arch047-admin-publication:unit`: 19 passed, 0 failed.
+- **PASS** — `npm run test:arch047-admin-publication:postgres`: 5 passed, 0 failed; the runner printed `PASS ARCH-047 ADMIN-007 disposable PostgreSQL`.
+- **PASS** — scoped `npx eslint` across the publication route, server action, publication services/components, helpers, tests and runners: 0 errors. ESLint emitted only three warnings because the configured ignore rules exclude the two unit test files and PostgreSQL integration test from lint.
+- **PASS** — `npx tsc --noEmit`; completed without diagnostics.
+- **PASS** — `git diff --check origin/main...HEAD` on the implementation task branch and `git diff --check` on the parent task record; no whitespace errors.
+- **PASS** — implementation commit `83443cf83426a19462b3fd1e9a1fc3399bb6448b` is published to `origin/task/ARCH-047-ADMIN-007`; parent task/report changes are published to the matching workspace task branch.
+
+### Worktree and Preparation Evidence
+
+- The canonical launcher resolved parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-ADMIN-007` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-ADMIN-007`, both registered on `task/ARCH-047-ADMIN-007` in their respective repositories.
+- At review, implementation worktree was clean at `83443cf83426a19462b3fd1e9a1fc3399bb6448b`, equal to `origin/task/ARCH-047-ADMIN-007` and containing current Admin `origin/main` (`ad6802d315aecb1cf47b8bc18884821ee0c7c2f5`). Recursive submodule status showed `database` at recorded gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`, with no uninitialized, mismatched or unresolved status.
+- Parent task worktree was clean at review start, fast-forwarded to its published review submission, and merged current workspace `origin/main` into the task branch as `21e30644d758abc7729547879eba2926c0c91baf`; merge completed without conflict. The review task-record update is published after that merge. No implementation or submodule changes were made during review.
 
 ### Deviations
 
-None.
+- Introduced a narrow platform-configuration environment helper and task-specific ESM test runners to avoid importing NextAuth/Next.js runtime code into the disposable database test process.
+- Updated the Admin Shared dependency to the `2.5.0` version present in the snapshot's other consumers, so the canonical published internationalization contract resolves. No local replica of Shared's language contract was introduced.
+- No database-schema extension, imported external Meta-template authoring, background worker or unrelated task was introduced.
 
 ### Assumptions
 
-The consolidated `ARCH-047-DATABASE-001` Attempt 7 model contract is the intended schema; inspect generated Prisma Client and actual accepted database implementation when this task becomes executable. Where the proposed JSONB envelopes are not yet implemented, fixture-based tests use the explicitly documented shape.
+- `ARCH-047-DATABASE-001` is the accepted persistence contract. Meta approval is checked against the persisted Meta registration snapshot, which the owning approval/reconciliation workflow must keep current; this task does not perform a fresh Meta Graph API call or author provider templates.
+- Twenty supported languages are obtained from the published Shared internationalization export; shop brand fields are read-only preview context, not publication eligibility constraints.
+- Publication patch iterations 1–7 occurred during the single claimed workflow Attempt 1, as specified by the developer-task workflow (attempts are review cycles, not ordinary code commits or patches).
 
 ### Unresolved Issues
 
-None at definition time. Return any missing persistence capability, provider-account configuration or cross-repository interface problem to `moda_architect` rather than silently changing DB/Background/Messaging ownership.
+- No failing task-scoped tests were observed in the fresh canonical-worktree review runs. The three ESLint warnings are configured ignores for test files, not lint errors.
+- Production deployment, live Meta provider state, and integrated ARCH-047 system tests are separate architectural verification steps and are not claimed as completed by this task.
 
 ### Architectural Concerns
 
-None at definition time.
+- Developer self-review passed against the implementation and focused tests. Architect acceptance remains pending, and `status: review` still awaits the developer's explicit completion decision; this record does not claim production deployment, live Meta state, or integrated ARCH-047 system-test completion.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-ADMIN-007` for this ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_admin`, repository, coordinator, dependencies, task scope and acceptance criteria, including the latest ShopBrand preview and React decomposition requirements.
+- Claim: Attempt 1 was claimed by `developer` after canonical worktree synchronization and dependency verification.
 
 
 ## Architect Review
@@ -193,3 +235,21 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Developer Self-Review Passed/Accepted
+
+### Review Decision
+
+Developer self-review of workflow Attempt 1 passed on 2026-10-25. The implementation branch is clean and published, the task's Work Items and Acceptance Criteria are complete, fresh focused unit and PostgreSQL tests passed, scoped ESLint reported zero errors, and TypeScript plus diff checks passed. Canonical parent/implementation worktree identity, synchronization, current-main ancestry and recursive submodule state were verified and recorded above. No implementation blocker or incomplete task-owned criterion was found in this review.
+
+### Review Scope and Residual Boundaries
+
+Reviewed the protected route/server actions, source and approval validation, preview/confirmation freshness, per-shop transactional assignment and idempotent paging/retry, component decomposition, and task-specific unit/PostgreSQL coverage. Production deployment, live Meta provider state and integrated ARCH-047 system tests remain outside this task's acceptance scope.
+
+### State Transition
+
+The self-review left `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`, with explicit developer completion pending.
+
+## Developer Completion Decision
+
+On 2026-10-25, the developer explicitly invoked `/moda_developer_update ARCH-047-ADMIN-007 complete`. The durable passing review is present, all required Work Items and Acceptance Criteria are complete, implementation commit `83443cf83426a19462b3fd1e9a1fc3399bb6448b` is published, and the parent task/report changes are publishable. The task is now `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. This does not constitute architect acceptance or a merge to `main`.
