@@ -33,7 +33,14 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-This is a **portable task definition** prepared from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It is not a repository implementation, task claim or evidence of a created worktree/branch. No new ARCH-047 Shared package is assumed. The parent architecture and `BACKGROUND-001` require reconciliation to the final Admin-owned AST/compilation and DB-backed keyed-segment translation decisions before dependent work is promoted.
+**Architectural handoff clarified — 26 October 2026 (documentation only):** This task originated as a portable definition but was subsequently materialised and claimed as developer Attempt 1, as recorded in the unchanged YAML and Completion Report below. The ARCH-047 parent architecture and completed BACKGROUND-001 have a documentation-only reconciliation covering the final ownership boundary:
+
+- **Admin** exclusively authors and validates the AST, reconstructs accepted translations, and persists compiled Meta components plus frozen positional parameter bindings.
+- **BACKGROUND-001** consumes those compiled database snapshots, resolves trusted runtime values, and returns a `PreparedRecoveryTemplate` or typed unavailable result. It does not parse, reconstruct, authoring-validate or compile the Admin AST.
+- **BG007** integrates that prepared result and the completed BG006 late admission/final-send adapter into the merchant post-window recovery path. It does not duplicate template compilation, selection, parameter binding or provider-status reconciliation.
+- The completed ARCH-047 Shared package covers the **Meta template-status BullMQ v2 event** used by Messaging/BG003. There is **no Shared AST package**, no BG007 Shared-AST publication dependency and no requirement to introduce one.
+
+**Before resuming this existing developer claim**, verify that the parent-architecture/BG001 documentation reconciliation has been applied in the canonical task baseline and that BG001, BG004 and BG006 remain `complete`. This documentation correction neither resets the claim nor constitutes BG007 feature implementation or validation.
 
 ## Objective
 
@@ -93,7 +100,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 - `ARCH-047-BACKGROUND-006`
 
 
-**Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 is developer-owned and may remain in progress pending explicit completion. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
+**Dependency and resume gate (26 October 2026):** BG001, BG004 and BG006 are `complete` in the inspected snapshot, and BG007 is **already claimed by the developer in Attempt 1**; do not re-claim, increment `attempt`, reset `executor` or promote its task status as part of this amendment. Re-check the canonical task metadata and the applied ARCH-047/BG001 documentation reconciliation before resuming. DB001 is not an additional direct dependency of BG007, and the Shared Meta-status v2 package is not a BG007 authoring/AST prerequisite. Any newly discovered cross-repository blocker must be reported to the architect rather than implemented from Background.
 
 ## Enables
 
@@ -161,7 +168,7 @@ The DB001 Attempt 7 model names and fields are authoritative design inputs, not 
 
 ### Unresolved Issues
 
-The parent ARCH-047 architecture and `BACKGROUND-001` still require final reconciliation with the Admin-owned AST/compilation and no-new-Shared-template-package decision before work begins.
+**Design issue resolved; implementation handoff still requires verification.** The architect's 26 October 2026 documentation reconciliation confirms that Admin owns all AST authoring, validation, translation reconstruction and compilation; BG001 consumes frozen compiled database payloads; and Shared publishes only the Meta template-status event contract for Messaging/BG003. No new Shared AST package or BG007 AST implementation is needed. Before resuming the existing Attempt 1 claim, confirm that the reconciliation has been applied in the canonical parent/task worktree. This amendment does not perform BG007 feature work, execute validation or establish that all runtime admission/moderation requirements are satisfied. Record any subsequently encountered implementation-specific blocker separately.
 
 ### Architectural Concerns
 
@@ -175,7 +182,7 @@ Pending — implementation not submitted.
 
 ### Review Notes
 
-Not reviewed.
+**26 October 2026 — architectural documentation handoff only:** The parent ARCH-047/BG001 AST and Shared-package contradiction has been resolved in the architect's documentation reconciliation. BG007 must consume BG001's trusted prepared-template output and BG006's late send fence; it must not compile the Admin AST or depend on a Shared AST package. This is **not** an architectural acceptance of BG007 implementation: there is no completed implementation review or new test evidence, and the developer Attempt 1 claim and task status remain unchanged.
 
 ### Reviewed Files
 
@@ -191,7 +198,7 @@ To be assessed against the reconciled ARCH-047 parent architecture and current r
 
 ### Follow-up
 
-Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+Verify that the ARCH-047 parent and accepted BG001 reconciliation patch is present in the canonical development baseline. Once verified, the developer may **resume the existing claimed Attempt 1**, not start a second attempt: implement the post-window integration under R1–R7, preserve the current admission/moderation/consent/STOP/credit safeguards, run the task's declared tests, and complete the developer-owned Completion Report. If actual moderation or final-send contracts cannot safely cover prepared runtime parameters, return the specific issue to `moda_architect` rather than weakening the fence. Only the normal authorised review/completion workflow can close BG007.
 
 ## Execution Ownership Amendment
 
