@@ -303,24 +303,95 @@ remains blocked until that integration gate is resolved.
 
 ### Review Status
 
-Pending
+Changes Requested — report/evidence only
 
 ### Review Notes
 
-Not reviewed; this is the initial task definition.
+No implementation correction is requested. The reviewed implementation diff
+contains only four test files; the Shared version assertion and template input
+expectations agree with the accepted Shared 2.5.1 and automated-template
+contracts. The changed tests are not weakened, and no production behavior was
+changed.
+
+Before resubmission, correct the following report/evidence issues:
+
+1. Replace the broad starting-unit-run summary with the exact failure inventory
+   and reason for each failure. The initial locked-install run reported 16
+   failures / 2,997 passes across 291 files:
+   - `tests/unit/runtime/observability-startup.test.ts`: hosted export disable
+     subprocess timed out for `moda-recovery-worker` and
+     `moda-messaging-worker`; exact Shared release assertion expected 2.5.0 but
+     manifest/lock specify 2.5.1.
+   - `tests/unit/services/checkout-refresh.test.ts`: A1-L01 French-number
+     checkout expected a call to the retired `whatsappTemplateSelectorMock`.
+   - `tests/unit/services/matured-candidate.materialization.test.ts`: 11 cases
+     expected recovery conversation/template/billing/provider work but the old
+     selector mock was not used by current production wiring; preparation
+     failed closed with `RECOVERY_UNAVAILABLE`. Cases: creates recovery from
+     current Shopify data; uses current CustomerPhone; allows provider-check-
+     required templates; persists the non-English descriptor; routes definitive
+     provider rejection; routes free ambiguous provider response; routes paid
+     ambiguous provider response; does not send/commit when billing
+     revalidation blocks; admits the fifth Free recovery; allows paid recovery
+     beyond included units without duplicate send; uses merchant defaults.
+   - `tests/unit/services/conversation-moderation/automated-template-input.test.ts`:
+     expected JSON omitted the explicit `textHeader: null` and
+     `imageHeader: null` fields.
+   Compare identities with `ARCH025-BACKGROUND-TEST-001` explicitly. The
+   matured-candidate test identity overlaps that historical entry, but the
+   current failed behavior/reason was the stale selector mock; do not imply the
+   baseline proves identical cause.
+2. Record the missing launcher evidence from the prepared packet: canonical
+   workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent
+   task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-BACKGROUND-001`;
+   implementation worktree
+   `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-BACKGROUND-001`;
+   both task branches `task/ARCH-050-BACKGROUND-001`; start heads
+   `7ee13931154563c182dbf8084fb811ea22f05b5c` (parent) and
+   `6cce2b18f288d4cabc6f7dcea3ef251acbb15323` (implementation); both task refs
+   required no fast-forward and both already included `origin/main`; recursive
+   submodule sync/update passed with database commit
+   `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`; attempt 1 claim was pushed at
+   `2026-10-26T20:58:09Z` in commit
+   `5bb102a2c306b2a1c6f36655cf0ac92c169f40b7`.
+3. Keep the task incomplete while integration is unresolved. Use the report
+   status value `Ready for Review` on resubmission, reconcile acceptance
+   checkboxes to their evidence, and retain the full integration blocker rather
+   than reporting the suite green. The owner follow-up is
+   `ARCH-007-BACKGROUND-012` (Ready).
+4. Reconcile the ARCH-050 task index: it currently says `Ready` while this task
+   metadata is `blocked`.
 
 ### Reviewed Files
 
-None
+- `moda-interact-background/tests/unit/runtime/observability-startup.test.ts`
+- `moda-interact-background/tests/unit/services/checkout-refresh.test.ts`
+- `moda-interact-background/tests/unit/services/conversation-moderation/automated-template-input.test.ts`
+- `moda-interact-background/tests/unit/services/matured-candidate.materialization.test.ts`
+- `docs/decisions/background/ARCH-050/BACKGROUND-001-classify-and-remediate-test-suite-failures.md`
+- `docs/decisions/background/ARCH-050/_index.md`
 
 ### Validation Reviewed
 
-None
+- `npm ci`: passed on Node 24.19.0 / npm 11.17.0; Shared 2.5.1 resolved with
+  `./identity` and `./whatsapp-template-events` exports.
+- `npm run test:unit`: 291 files / 3,013 tests passed after test corrections.
+- Focused changed suites: 69 tests passed across the checkout refresh,
+  materialization, serialization and observability test files.
+- `npm run test:integration`: 4/5 files and 12/13 tests passed; the
+  conversation-turn scheduling case remains reproducibly blocked and is
+  assigned to `ARCH-007-BACKGROUND-012`.
+- `git diff --check`: passed.
+- Review-time rerun of the four changed files: 4 files / 69 tests passed.
 
 ### Architecture Conformance
 
-Pending implementation and review.
+Implementation conforms within scope. The report/evidence gaps above prevent
+acceptance. The task remains `blocked` until the report corrections are
+published and the full integration gate is resolved.
 
 ### Follow-up
 
-None
+Correct the report/index issues above on the canonical task branches, then
+resubmit for Architect Review after `ARCH-007-BACKGROUND-012` resolves the
+scheduling integration failure.
