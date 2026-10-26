@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-26T06:14:27Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-047-DATABASE-001
@@ -107,7 +107,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 - [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
 - [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
+- [x] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
 - [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
@@ -126,7 +126,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-26T06:14:27Z. Attempt 1 review history is preserved below.
+Ready for Architect Review — developer Attempt 2 was claimed at 2026-10-26T06:14:27Z, synchronized, revalidated and submitted on 2026-10-26. The wrapper implementation remains the ten-file `c25295a` change; the canonical mainline synchronization merge `9065a58` is now published on the implementation task branch. Attempt 1's original launcher packet remains unavailable and is not represented by Attempt 2 evidence. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -237,3 +237,26 @@ Architect to reconcile the parent task graph and obsolete Admin/Shared reference
 - Historical evidence: Attempt 1's launcher packet is unavailable. Do not rerun preparation to manufacture Attempt 1 evidence or label a later packet as proof of that attempt. Record the limitation truthfully; any explicit acceptance of this historical gap must be separately authorized and precisely scoped.
 - No implementation-source defect was established by the current focused checks. The task remains unaccepted until synchronized-branch revalidation and the report correction are complete.
 - Lifecycle transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. The next canonical developer claim increments the attempt exactly once.
+
+## Developer Self-Review - Passed (Attempt 2)
+
+### Attempt and worktree evidence
+
+- Attempt reviewed: 2. Canonical launcher preparation passed the dependency gate (`ARCH-047-DATABASE-001: complete`), reused both dedicated worktrees, synchronized them with current `origin/main`, initialized recursive submodules, and claimed the task for `developer` at `2026-10-26T06:14:27Z`. The durable parent claim commit is `6662b1f44829a7da1e69604834597703cea81e5b`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-005`, branch `task/ARCH-047-BACKGROUND-005`; launcher reused it, incorporated `origin/main`, and reported no task-remote fast-forward needed. Parent `HEAD` and `origin/task/ARCH-047-BACKGROUND-005` are both `52bc06c591056c6ddcb1cbdcbdeb2e7e207512eb` before this review-report commit.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-005`, branch `task/ARCH-047-BACKGROUND-005`; launcher reused it at `9065a582b101d8384bdeb4d4e30f1903a19b1da8`, incorporated `origin/main`, and reported no task-remote fast-forward needed. Recursive `git submodule sync/update --init` passed; `database` is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+- Implementation HEAD `9065a58` and `origin/task/ARCH-047-BACKGROUND-005` now match after publishing the launcher-created synchronization merge. Current `origin/main` is an ancestor; the branch is two mainline commits ahead of it. The only task implementation delta from `origin/main` is the ten wrapper files listed above, 969 insertions. Both worktrees were clean after synchronization/publication and before this parent report edit. No implementation source changes or material assigned-agent assistance occurred in Attempt 2.
+
+### Attempt 2 validation
+
+- `npm ci` — completed from the implementation repository lockfile. It reported 20 dependency advisories (8 moderate, 12 high); these are not attributed to this task and were not remediated here.
+- `npx vitest run tests/unit/services/conversation-wrappers` — **14 tests passed in 2 files**.
+- `npx eslint src/services/conversation-wrappers tests/unit/services/conversation-wrappers tests/integration/conversation-wrapper-rendering.integration.test.ts` — completed without diagnostics.
+- `npm run test:integration -- tests/integration/conversation-wrapper-rendering.integration.test.ts` — **2 PostgreSQL integration tests passed in 1 file**.
+- `npm run build` — passed after `npm ci`, including Prisma client generation and TypeScript compilation. The first build before dependency synchronization could not resolve the Shared `whatsapp-template-events` export because stale Shared `2.5.0` was installed while the lockfile requires `2.5.1`; no source edits were needed, and the clean locked install resolved it.
+- `git diff --check origin/main...HEAD` for the implementation branch and `git diff --check` for the parent report — passed.
+
+### Review disposition
+
+The required Attempt 1 correction is satisfied for the current cycle: the implementation is task-scoped, both canonical branches now include current mainline and are published, and the focused checks pass on the synchronized revision. Attempt 1's historical launcher packet remains unavailable; the Attempt 2 packet is recorded only as evidence for Attempt 2. The implementation and validation are submitted for architect review, not marked complete. `completion_mode: developer` remains in force, so explicit developer completion is pending after accepted review.
