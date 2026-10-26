@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-26T12:11:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-BACKGROUND-001
@@ -33,14 +33,14 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-**Architectural handoff clarified — 26 October 2026 (documentation only):** This task originated as a portable definition but was subsequently materialised and claimed as developer Attempt 1, as recorded in the unchanged YAML and Completion Report below. The ARCH-047 parent architecture and completed BACKGROUND-001 have a documentation-only reconciliation covering the final ownership boundary:
+**Architectural handoff clarified — 26 October 2026 (documentation only):** This task originated as a portable definition and was materialised and claimed as developer Attempt 1. The claim is now returned to `ready` for corrections, as recorded in the self-review below. The ARCH-047 parent architecture and completed BACKGROUND-001 have a documentation-only reconciliation covering the final ownership boundary:
 
 - **Admin** exclusively authors and validates the AST, reconstructs accepted translations, and persists compiled Meta components plus frozen positional parameter bindings.
 - **BACKGROUND-001** consumes those compiled database snapshots, resolves trusted runtime values, and returns a `PreparedRecoveryTemplate` or typed unavailable result. It does not parse, reconstruct, authoring-validate or compile the Admin AST.
 - **BG007** integrates that prepared result and the completed BG006 late admission/final-send adapter into the merchant post-window recovery path. It does not duplicate template compilation, selection, parameter binding or provider-status reconciliation.
 - The completed ARCH-047 Shared package covers the **Meta template-status BullMQ v2 event** used by Messaging/BG003. There is **no Shared AST package**, no BG007 Shared-AST publication dependency and no requirement to introduce one.
 
-**Before resuming this existing developer claim**, verify that the parent-architecture/BG001 documentation reconciliation has been applied in the canonical task baseline and that BG001, BG004 and BG006 remain `complete`. This documentation correction neither resets the claim nor constitutes BG007 feature implementation or validation.
+**Before the next developer claim**, verify that the parent-architecture/BG001 documentation reconciliation remains in the canonical task baseline and that BG001, BG004 and BG006 remain `complete`. This documentation correction neither resets the attempt nor constitutes BG007 feature implementation or validation.
 
 ## Objective
 
@@ -125,7 +125,7 @@ None in this nine-task Background set.
 
 - [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
 - [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
+- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence. Current implementation diff hygiene and clean mirrored branch state pass; original attempt-start preparation evidence remains unavailable.
 - [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
@@ -144,7 +144,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Developer Attempt 1 remains active. The canonical route confirms `execution_mode: developer`, `completion_mode: developer`, `executor: developer`, and the existing claim; no task lifecycle metadata was changed during this reconciliation. The parent architecture handoff reconciliation is present. BG001, BG004 and BG006 each have `status: complete` in the current parent task snapshot.
+Returned to Ready — developer Attempt 1 requires changes. The implementation branch remains published at `942e68b2a43f66bec35dfeaaaa1d70e82ca9703a`; this review changed no Background source. The initial developer claim remains Attempt 1 and is not incremented by this transition. BG001, BG004 and BG006 are recorded complete; the parent architecture/BG001 ownership clarification is present. Completion remains developer-controlled.
 
 ### Files Changed
 
@@ -171,6 +171,12 @@ Passed during this reconciliation from the canonical implementation worktree:
 - `npm run build` — Prisma Client v6.19.3 generation and TypeScript compilation passed.
 - Targeted `npx eslint` over changed human follow-up production files and their focused tests — passed without diagnostics.
 - `git diff --check origin/main...HEAD` — passed.
+- Current revalidation on 2026-10-26: `npx vitest run tests/unit/services/recovery-conversation/merchant-follow-up-template.service.test.ts tests/unit/services/recovery-conversation/start-human-command-dispatcher.test.ts` — **PASS, 2 files / 31 tests**.
+- Current revalidation: `npm run test:integration -- tests/integration/arch047-merchant-follow-up-final-permit.integration.test.ts` — **PASS, 1 PostgreSQL file / 4 tests**.
+- Current revalidation: `npm run build` — **PASS**, Prisma Client 6.19.3 generation and TypeScript compilation; targeted `npx eslint` on the changed production/focused test files — **PASS**, no diagnostics.
+- Current revalidation: `git diff --check origin/main...HEAD` — **PASS**; implementation worktree remains clean on `task/ARCH-047-BACKGROUND-007`, `HEAD` equals `origin/task/ARCH-047-BACKGROUND-007` at `942e68b2a43f66bec35dfeaaaa1d70e82ca9703a`, and `origin/main` is an ancestor. The Database submodule is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`.
+- Current attempt to rerun `npm run test:arch040-background-runtime:postgres` — **BLOCKED by local integration infrastructure**, before test execution: disposable PostgreSQL was unreachable at `127.0.0.1:32972` (`P1001`). Earlier recorded 9/9 results remain historical evidence, not a current rerun.
+- Current source audit found no references to the removed Background template selector/category services or `templateCategories.verify` in `src/` or `tests/`. The human template branch retains a separate `sendWhatsAppTemplate` path and sends the BG001-prepared components.
 - Final standalone developer validation, 26 October 2026: `npm run lint` completed with no ESLint diagnostics; `git diff --check` completed without errors; `git status --short` printed no entries, confirming a clean implementation worktree at that point.
 - Production and test reference audit for `whatsappTemplateSelectorService`, `metaWhatsAppTemplateCategoryService`, `templateCategories.verify`, and imports of the deleted modules returned no matches. One `purpose: "checkout-recovery"` literal remains in the unrelated `tests/unit/services/matured-candidate.materialization.test.ts`; it is not a human template caller and was not changed as an unrelated fixture.
 
@@ -186,11 +192,13 @@ The recorded current parent task states and existing implementation branch are t
 
 ### Unresolved Issues
 
-**Acceptance remains incomplete; task deliberately stays `in_progress`.** The focused tests establish tenant/recovery scoping, forged parameter rejection, prepared component pass-through, idempotent repeat processing, revoked-registration refusal without provider dispatch/usage, and missing identity refusal. The current evidence does not fully demonstrate all listed STOP-after-preparation, provider-timeout, credit compensation/refund and retry interleavings; the corresponding Acceptance Criteria remain unchecked.
+**Acceptance remains incomplete; Attempt 1 is returned to `ready`.** The focused tests establish tenant/recovery scoping, forged parameter rejection, prepared component pass-through, idempotent repeat processing, revoked-registration refusal without provider dispatch/usage, and missing identity refusal. They do not fully demonstrate STOP-after-preparation, provider-timeout/UNKNOWN recovery, credit compensation/refund, or retry interleavings; the corresponding Acceptance Criteria remain unchecked.
 
-**External merchant admission verification remains outside this Background checkout.** The parent snapshot contains Shopify `ARCH-047-SHOPIFY-001` and API `ARCH-047-API-001` implementation records describing the new `FOLLOW_UP_*` admission/catalogue and empty client-parameter contract. Woo `ARCH-047-WOOCOMMERCE-001` records that its UI remains unavailable until the hosted API catalogue is available. This reconciliation did not run those repositories' tests or independently inspect their implementation worktrees, so the R6 cross-service verification criterion remains unchecked.
+**External merchant admission verification remains incomplete.** Shopify `ARCH-047-SHOPIFY-001` and API `ARCH-047-API-001` are recorded complete and their reports document the `FOLLOW_UP_*` catalogue/admission and empty client-parameter contract. Woo `ARCH-047-WOOCOMMERCE-001` is currently pending and unclaimed; its definition depends on the now-complete API catalogue and requires its own proxy/UI implementation and tests. BG007 cannot verify the Woo-side admission/UI fixture until that owner task is implemented. This update did not run those repositories' tests or inspect their implementation worktrees, so the R6 cross-service verification criterion remains unchecked.
 
-**Workflow evidence gap.** The launcher route and current mirrored worktree branches are verified, but the original attempt-start synchronization/recursive submodule preparation packet is not present in this update's evidence. Do not infer it from current branch ancestry. The implementation worktree's untracked `typescript` text log is pre-existing developer data and remains untouched.
+**Workflow evidence gap.** The canonical launcher route, current mirrored worktree branches, clean implementation state, and current ancestry are verified. The original attempt-start synchronization/recursive submodule preparation packet is not present in this update's evidence; do not infer it from current branch ancestry. The earlier report documented an untracked `typescript` text log; the current implementation worktree is clean and no cleanup was performed during this update.
+
+**Required corrections before review:** add PostgreSQL integration cases for STOP/control loss after BG001 preparation but before final permit; provider timeout/UNKNOWN recovery and restart without duplicate submission; definitive provider rejection with exactly-once credit compensation; and safe retry/reclaim semantics. Verify the owner-side Woo admission/UI implementation and its fixture contract after WOOCOMMERCE-001 is implemented. Repeat the PostgreSQL dispatcher/race suite once the disposable database service is available, then update the full task-owned evidence and attempt-start preparation limitation honestly.
 
 ### Architectural Concerns
 
@@ -204,7 +212,7 @@ Pending — implementation not submitted.
 
 ### Review Notes
 
-**26 October 2026 — architectural documentation handoff only:** The parent ARCH-047/BG001 AST and Shared-package contradiction has been resolved in the architect's documentation reconciliation. BG007 must consume BG001's trusted prepared-template output and BG006's late send fence; it must not compile the Admin AST or depend on a Shared AST package. This is **not** an architectural acceptance of BG007 implementation: there is no completed implementation review or new test evidence, and the developer Attempt 1 claim and task status remain unchanged.
+**26 October 2026 — architectural documentation handoff only:** The parent ARCH-047/BG001 AST and Shared-package contradiction has been resolved in the architect's documentation reconciliation. BG007 must consume BG001's trusted prepared-template output and BG006's late send fence; it must not compile the Admin AST or depend on a Shared AST package. This is **not** an architectural acceptance of BG007 implementation.
 
 ### Reviewed Files
 
@@ -220,7 +228,7 @@ To be assessed against the reconciled ARCH-047 parent architecture and current r
 
 ### Follow-up
 
-Verify that the ARCH-047 parent and accepted BG001 reconciliation patch is present in the canonical development baseline. Once verified, the developer may **resume the existing claimed Attempt 1**, not start a second attempt: implement the post-window integration under R1–R7, preserve the current admission/moderation/consent/STOP/credit safeguards, run the task's declared tests, and complete the developer-owned Completion Report. If actual moderation or final-send contracts cannot safely cover prepared runtime parameters, return the specific issue to `moda_architect` rather than weakening the fence. Only the normal authorised review/completion workflow can close BG007.
+Historical follow-up: verify the ARCH-047 parent and accepted BG001 reconciliation before execution. That gate is documented as satisfied in the active claim. The implementation has since been submitted in the report, but Attempt 1 is returned for the concrete corrections above. If actual moderation or final-send contracts cannot safely cover prepared runtime parameters, return the specific issue to `moda_architect` rather than weakening the fence.
 
 ## Execution Ownership Amendment
 
@@ -228,3 +236,11 @@ Verify that the ARCH-047 parent and accepted BG001 reconciliation patch is prese
 - Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
 - Preserved: `assigned_agent: moda_background`, coordinator, repository, dependencies, task scope, acceptance criteria, and validation requirements.
 - Claim state: Developer Attempt 1 was claimed after confirming all dependencies complete and preparing the canonical worktrees.
+
+## Developer Self-Review - Changes Requested (Attempt 1)
+
+- Outcome: **changes requested**. Focused BG007 unit/integration tests, build, targeted lint and diff hygiene pass, and the implementation task branch is clean and published. Required STOP/control-loss, provider timeout/UNKNOWN and credit compensation/retry interleavings remain unverified; the current PostgreSQL dispatcher/race rerun was blocked by an unavailable local database at `127.0.0.1:32972`.
+- External verification: Shopify-001 and API-001 owner reports are complete. WooCommerce-001 remains pending/unclaimed, so its merchant-facing fixture/admission integration cannot yet be verified.
+- Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Attempt 1 is preserved; the next developer claim increments once. This is not acceptance or completion.
+- Required corrections are recorded under Unresolved Issues above. Keep implementation changes on the existing mirrored task branch and do not change BG007 scope or weaken the final admission fence.
+- Parent task/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-007`, branch `task/ARCH-047-BACKGROUND-007`. Implementation worktree remains `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-007`, branch `task/ARCH-047-BACKGROUND-007`, at `942e68b2a43f66bec35dfeaaaa1d70e82ca9703a`.
