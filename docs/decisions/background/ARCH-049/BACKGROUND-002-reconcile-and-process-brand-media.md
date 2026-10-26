@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-001"]
-enables: ["ARCH-049-BACKGROUND-003"]
+enables: ["ARCH-049-BACKGROUND-003", "ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
 updated: 2026-10-25
 ---
@@ -97,6 +97,7 @@ Consumes `commerce.ShopBrand` `whatsAppMedia` JSON schema version 1 and BG001 `p
 ## Enables
 
 - ARCH-049-BACKGROUND-003
+- ARCH-049-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 
