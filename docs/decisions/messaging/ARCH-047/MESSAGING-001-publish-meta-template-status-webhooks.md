@@ -7,8 +7,8 @@ domain: messaging
 repository: moda-interact-messaging
 assigned_agent: moda_messaging
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 25
 executor: null
@@ -235,7 +235,7 @@ ARCH-047 is pre-production, but raw webhook authentication, queue durable accept
 
 ### Status
 
-Not Started — defined but not materialised in the developer's Git environment.
+Ready — developer takeover recorded on 2026-10-26. Attempt 1 is not yet claimed; the canonical launcher will prepare/synchronize the implementation worktree, verify dependencies, and durably claim it.
 
 ### Files Changed
 
@@ -290,3 +290,13 @@ Not assessed; review the producer against published Shared event v2 and existing
 ### Follow-up
 
 After acceptance, coordinate integration with BG003 and the terminal ARCH-047 System Test; do not change upstream tasks or indexes from the Messaging implementation.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-26.
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-MESSAGING-001` to take over this Ready agent-owned task. Execution and completion modes are now `developer`; attempt remains 0 until the canonical launcher claims it.
+- Preserved: `assigned_agent: moda_messaging`, coordinator, repository, dependency, task scope, acceptance criteria and validation requirements.
+- Dependency check: `ARCH-047-SHARED-002` is `complete` in its canonical parent task record and published package contract is documented above.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-MESSAGING-001`, branch `task/ARCH-047-MESSAGING-001`, synchronized from remote and current `origin/main` before this amendment.
+- Implementation worktree: to be prepared by the canonical launcher at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-MESSAGING-001`.
+- No implementation changes are made by this ownership amendment. No branch is merged into `main`.
