@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 54
 executor: null
@@ -37,7 +37,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Materialised in the canonical parent task worktree on `task/ARCH-048-BACKGROUND-005`. This task is Ready at Attempt 0 after all six declared dependencies were verified Complete, including architect-accepted `ARCH-046-BACKGROUND-004`. No implementation worktree, claim, implementation commit or release is implied. Before execution, re-read the canonical dependencies and latest Architect Reviews.
+Materialised in the canonical parent task worktree on `task/ARCH-048-BACKGROUND-005`. This task is Ready at Attempt 0 after all six declared dependencies were verified Complete, including developer-completed `ARCH-046-BACKGROUND-004` with its accepted Architect Review. No implementation worktree, claim, implementation commit or release is implied. Before execution, re-read the canonical dependencies and latest Architect Reviews.
 
 ## Objective
 
@@ -158,7 +158,7 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 ### Status
 
-Ready — canonical parent task definition is materialised; all declared dependencies are Complete. Attempt 0; no implementation claim or worktree is created by this frontier update.
+Ready — all six declared dependencies are Complete. The developer explicitly took over execution from the assigned agent; execution and completion are developer-owned. Attempt 0 remains unclaimed until canonical preparation.
 
 ### Files Changed
 
@@ -213,3 +213,11 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-26.
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-048-BACKGROUND-005` for this Ready agent-owned task. Execution ownership transfers to the developer and completion mode is set to developer review.
+- Preserved: `assigned_agent: moda_background`, coordinator, repository, dependencies, task scope, acceptance criteria and validation requirements.
+- Dependency check: `ARCH-048-BACKGROUND-001`, `ARCH-048-BACKGROUND-002`, `ARCH-048-BACKGROUND-003`, `ARCH-048-BACKGROUND-004`, `ARCH-046-BACKGROUND-002`, and `ARCH-046-BACKGROUND-004` each route as `complete` in their canonical task records. The latest Architect Review headings in the four ARCH-048 developer-completed service records remain Pending; their developer completion state is not represented as architect acceptance. `ARCH-046-BACKGROUND-004` has explicit Architect Review Accepted.
+- State before claim: `ready`, Attempt 0, `executor: null`, `claimed_at: null`. The canonical developer preparation workflow will create/reuse and synchronize the implementation worktree, then claim Attempt 1. No implementation or merge to `main` is performed by this ownership amendment.
