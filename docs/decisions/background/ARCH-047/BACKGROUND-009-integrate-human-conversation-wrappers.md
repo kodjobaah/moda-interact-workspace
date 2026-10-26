@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: blocked
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -54,7 +54,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Requirements
 
-**ARCHITECT DECISION — blocked prerequisite (2026-10-26).** The current implementation worktree contains a preparation-only `HumanWrapperPreparationService`; do not connect it directly to WhatsApp while `MerchantConversationSendCommand.textBody` remains the SQL-validated moderation/send source. `ARCH-040-DATABASE-007` must first add nullable `preparedTextBody`, `preparedWrapperEvidence` and `preparedAt`, extend the set-once command guard, and make `HUMAN_COMMAND`/`TEXT` moderation use the frozen body. This is a new, separately owned database implementation; the BG009 task remains `blocked` until DATABASE-007 is Complete and the implementation's database submodule/Prisma client is synchronised. Existing developer Attempt 1 evidence and source work are preserved; no active claim survives this architectural handoff.
+**ARCHITECT DECISION — durable prepared-content prerequisite (2026-10-26; satisfied).** The existing implementation worktree contains a preparation-only `HumanWrapperPreparationService`; do not connect it directly to WhatsApp while `MerchantConversationSendCommand.textBody` remains the SQL-validated moderation/send source. `ARCH-040-DATABASE-007` has now been accepted Complete and adds nullable `preparedTextBody`, `preparedWrapperEvidence` and `preparedAt`, extends the set-once command guard, and makes `HUMAN_COMMAND`/`TEXT` moderation use the frozen body. Both explicit BG009 dependencies are Complete, so this task is returned to `ready` for its unchanged developer execution path at Attempt 1 (the next claim is Attempt 2). Before any Background source edits, its first work item is to update the canonical `database/` submodule to the developer-merged Database `main` containing DATABASE-007, regenerate the Prisma client, and validate the generated schema. The current Database task implementation is on its task branch and has not been merged to `main`; do not point the submodule at that unmerged task commit. Existing Attempt 1 evidence and preparation-only source are preserved; no claim is active.
 
 **R0 — Exact durable preparation and full-message admission.** Under the current `HUMAN_TEXT` command lease, before any HUMAN moderation assessment, call the existing BG005 wrapper through `HumanWrapperPreparationService` (or an equivalent small module). `not-applicable` must be limited to the separate post-window command kind. `prepared` freezes its exact body plus the BG005 wrapper definition/locale/audience/slot-edit-version/applicationKey and body digest. `passthrough` freezes the original text with explicit no-wrapper evidence. `refused` or unexpected errors **never** send raw text as a fallback. Atomically freeze the body, provenance and timestamp with a conditional DB `UPDATE ... WHERE state='CLAIMED' AND leaseToken=:token AND leaseExpiresAt>statement_timestamp() AND providerDispatchKey IS NULL AND preparedTextBody IS NULL RETURNING ...`. A stale lease or zero-row update must fail/re-read, never overwrite. If already frozen, reuse the identical bytes and provenance without calling the renderer again. Do not change `textBody` or `payloadSha256`.
 
@@ -76,7 +76,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Work Items
 
-- [ ] Confirm `ARCH-040-DATABASE-007` is accepted Complete, update the canonical `database/` submodule and regenerate the Prisma client before resuming code edits; retain BG009's existing preparation-only files and attempt history.
+- [ ] Before any Background source edits, update the canonical `database/` submodule to the developer-merged Database `main` containing accepted `ARCH-040-DATABASE-007`, regenerate the Prisma client, and validate the generated schema; retain BG009's existing preparation-only files and attempt history. Do not point the submodule at an unmerged Database task-branch commit.
 - [ ] Add a focused lease-protected prepared-content repository/seam; freeze full text and bounded wrapper evidence atomically once, read frozen content on replay, no direct `textBody` rewrite.
 - [ ] Make HUMAN_TEXT moderation canonical/effective text use `preparedTextBody`; preserve TEMPLATE_PARAMETERS behaviour for BG007.
 - [ ] Make `OutboundSendFenceService` persist `preparedTextBody` as the admitted `ConversationMessage.content` and bind approval to the exact digest/current policy; deliver the committed admitted message bytes through the existing provider path.
@@ -102,7 +102,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 ## Dependencies
 
 - `ARCH-047-BACKGROUND-005` (Complete)
-- `ARCH-040-DATABASE-007` (new database correction, not yet Complete)
+- `ARCH-040-DATABASE-007` (Complete; its merged Database `main` schema/client must be synchronized before Background source edits)
 
 
 **Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 is developer-owned and may remain in progress pending explicit completion. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
@@ -156,7 +156,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-**Blocked — developer Attempt 1 preserved, architect escalation accepted 2026-10-26.** The original claim at `2026-10-26T07:24:51Z` is historical evidence; task YAML now has `status: blocked`, `executor: null`, `claimed_at: null`. This amendment is **not** implementation acceptance, a completed review, a code patch or a new claim. Once `ARCH-040-DATABASE-007` is accepted Complete and code consumers have the migration, the architect may return this same task to `ready` for developer Attempt 2.
+**Ready for developer Attempt 2 — dependency frontier reconciled 2026-10-26.** The original Attempt 1 claim at `2026-10-26T07:24:51Z` and its preparation-only source remain historical evidence; task YAML is now `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Both explicit dependencies (`ARCH-047-BACKGROUND-005` and `ARCH-040-DATABASE-007`) resolve Complete. The next developer claim increments to Attempt 2. Its first required action is to synchronize `database/` to Database `main` after the developer merges DATABASE-007 there, regenerate Prisma Client, and validate before editing Background source. This readiness transition is not implementation acceptance or a new claim.
 
 ### Files Changed
 
@@ -198,10 +198,9 @@ The uploaded `typescript(20261026-072937)` terminal recording shows:
 
 ### Unresolved Issues
 
-**Blocking decision: durable prepared HUMAN_TEXT content.** The immutable raw accepted command, canonical moderation identity, final-admission message construction, and provider send must be reconciled before BG009 can meet R1/R2/R3/R6.
+**Resolved architecture decision; implementation synchronization remains first.** The immutable raw accepted command, canonical moderation identity, final-admission message construction, and provider send remain required BG009 implementation work under R1/R2/R3/R6. The durable prepared-content contract is now implemented and accepted by DATABASE-007.
 
-- The architect must decide the durable representation and consistency boundary; direct mutation of accepted `MerchantConversationSendCommand.textBody`, an unmoderated append, or in-memory/Redis-only prepared content is not acceptable.
-- A database-owned schema/migration and SQL moderation guard change (or an architect-approved equivalent durable design) is required before Background may safely wire the prepared text into the existing dispatcher and admission transaction. Assign a real task ID and update dependencies only through architecture coordination.
+- Before any Background source edit, DATABASE-007 must be available through the developer-merged Database `main`; then update the canonical `database/` submodule, regenerate Prisma Client, and validate the generated schema. Direct mutation of accepted `MerchantConversationSendCommand.textBody`, an unmoderated append, and in-memory/Redis-only prepared content remain unacceptable.
 - BG007 also changes `human-command-dispatcher.service.ts`. Reconcile its final branch before BG009 acceptance; do not modify BG007's post-window flow within this task.
 - Following the decision and prerequisite implementation, run the required unit, database integration, compensation/retry, and full-message/payload equality validations; capture branch/worktree/synchronisation evidence before formal review.
 
@@ -229,13 +228,13 @@ The uploaded `typescript(20261026-072937)` terminal recording shows:
 
 ### Review Status
 
-**Blocked — architectural dependency confirmed (2026-10-26).** Developer Attempt 1 preparation is not accepted as a completed BG009 integration.
+**Historical Attempt 1 review — blocked on architectural dependency (2026-10-26).** Developer Attempt 1 preparation is not accepted as a completed BG009 integration. The dependency has since been completed; the current task state is Ready for Attempt 2 after dependency-frontier reconciliation.
 
 ### Review Notes
 
 The inspected 26 October BG009 worktree shows a correct preparation-only `HumanWrapperPreparationService`, but `whatsapp.arch040_command_guard()` freezes the original `textBody`, and `whatsapp.arch040_moderation_subject_guard()` hashes that raw body. `PostgresModerationAssessmentService`, `OutboundSendFenceService` and `HumanCommandDispatcherService` consequently moderate, admit, persist and transmit `command.textBody`. Wiring a wrapped body only at the provider would break moderation-content identity; overwriting `textBody` would break accepted-command idempotency. Preserve the existing work and **do not** add an unsafe bypass.
 
-**Required correction before reclaim:** implement/accept `ARCH-040-DATABASE-007` (set-once prepared body + new HUMAN_TEXT digest). Then the BG009 developer reclaims this same task as Attempt 2, wires frozen prepared-body moderation/admission/provider equality, implements required tests, and reconciles BG007's shared dispatcher source without moving BG007 post-window scope into BG009.
+**Required first action for Attempt 2:** after the developer merges DATABASE-007 to Database `main`, synchronize the canonical `database/` submodule and regenerate/validate Prisma Client. Then the BG009 developer claims Attempt 2, wires frozen prepared-body moderation/admission/provider equality, implements required tests, and reconciles BG007's shared dispatcher source without moving BG007 post-window scope into BG009.
 
 
 ### Reviewed Files
@@ -264,4 +263,12 @@ Execute `ARCH-040-DATABASE-007`, accept its schema/migration and tests, sync `da
 
 - Date: 2026-10-26.
 - Change: The developer explicitly invoked `/moda_developer_create ARCH-047-BACKGROUND-009` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
-- Preserved: `assigned_agent: moda_background`, coordinator, repository, task scope, acceptance criteria, validation requirements, dependency gate, Ready eligibility, and attempt 0. The existing Architect Review follow-up and BG007 shared-dispatcher reconciliation requirement remain unchanged. This amendment does not itself claim an implementation attempt.
+- Preserved: `assigned_agent: moda_background`, coordinator, repository, task scope, acceptance criteria, validation requirements, and attempt history. Attempt 1 remains the prior developer attempt; this dependency-frontier reconciliation retains `attempt: 1` and does not claim Attempt 2. The existing BG007 shared-dispatcher reconciliation requirement remains unchanged.
+
+## Dependency Frontier Reconciliation (2026-10-26)
+
+- `ARCH-047-BACKGROUND-005`: Complete.
+- `ARCH-040-DATABASE-007`: Complete; implementation commit `12102f0b611973b1436f4c0d4ec33f3e15fa9a78` is published on its task branch. The Database implementation has not been merged to `main`.
+- Transition: `blocked` to `ready`; `attempt: 1` preserved, `executor: null`, `claimed_at: null`. The next claim is Attempt 2.
+- First Attempt 2 action: after DATABASE-007 is merged to Database `main`, synchronize the Background `database/` submodule to that merged commit, regenerate Prisma Client, and validate. Do not point the submodule at the unmerged Database task branch.
+- No implementation source, submodule gitlink, `main` branch, or unrelated task record was changed by this frontier update.

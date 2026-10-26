@@ -183,11 +183,11 @@ Modules emit bounded business-outcome logs (run/definition IDs, WABA/template ID
 Classify production compatibility at implementation time. The 11-table Database migration is additive and preserves existing shop assignments and audit records. Do not introduce a Shared publication gate for Admin ASTs. The **single minimal Shared publication gate** applies only to Meta template-status queue event v2. Confirm persisted JSON formats and the existing shared language registry before Background adoption. Implement and verify feature modules **before** touching caller services. Stage automated recovery integration and its shared final-fence adapter before merchant post-window integration; keep preexisting paths working until explicitly cut over. Deploy Messaging event support and provider management before enabling Meta-authoring submissions. Explicitly publish approved shop assignments; legacy unlinked assignments are not silently treated as Moda-authored. Internal wrapper activation and rollout are independent of recovery-template Meta submission. Run system tests only after all needed implementations are architect-accepted and the developer has performed any desired manual validation.
 
 
-### ARCH-047 BG009 blocked on ARCH-040 durable prepared-message correction (2026-10-26)
+### ARCH-047 BG009 durable prepared-message dependency reconciled (2026-10-26)
 
-`ARCH-047-BACKGROUND-009` is **blocked** after developer Attempt 1 identified a real moderation/delivery identity conflict. `MerchantConversationSendCommand.textBody` is immutable merchant intent; the installed `whatsapp.arch040_moderation_subject_guard()` and Background moderation/final-send/provider paths all use that raw body. A wrapper cannot be appended after moderation, and the accepted `textBody` cannot be rewritten.
+Developer Attempt 1 identified a real moderation/delivery identity conflict: `MerchantConversationSendCommand.textBody` is immutable merchant intent, while moderation, final admission and provider paths used that raw body. A wrapper cannot be appended after moderation, and the accepted `textBody` cannot be rewritten.
 
-Create `ARCH-040-DATABASE-007` to add a nullable, set-once `preparedTextBody`, `preparedWrapperEvidence` and `preparedAt` on the **existing** command and to validate HUMAN_COMMAND/TEXT moderation against the SHA-256 of the frozen complete body. No new table, AST format, or DB-owned wrapper-eligibility policy. After the database task is architect-accepted Complete, BG009's dependency is satisfied; the developer may reclaim the same task for Attempt 2 and wire freeze → whole-text moderation → exact durable `ConversationMessage.content` → provider text, with late wrapper/policy checks and no re-render on retries. The post-window BG007 template path remains unchanged and must be reconciled where it shares the dispatcher.
+`ARCH-040-DATABASE-007` is now Complete. It adds nullable, set-once `preparedTextBody`, `preparedWrapperEvidence` and `preparedAt` to the existing command and validates HUMAN_COMMAND/TEXT moderation against the SHA-256 of the frozen complete body. No new table, AST format, or DB-owned wrapper-eligibility policy was introduced. Both explicit BG009 dependencies (`ARCH-047-BACKGROUND-005` and `ARCH-040-DATABASE-007`) are Complete, so the same developer-owned BG009 task is **Ready** at its existing Attempt 1 count; its next claim is Attempt 2. Before Background source edits, the developer must merge DATABASE-007 into Database `main`, synchronize BG009's `database/` submodule to that merged commit, and regenerate/validate Prisma Client. Do not point the submodule at the unmerged Database task branch. Then BG009 wires freeze → whole-text moderation → exact durable `ConversationMessage.content` → provider text, with late wrapper/policy checks and no re-render on retries. The post-window BG007 template path remains unchanged and must be reconciled where it shares the dispatcher.
 
 `ARCH-047-SYSTEM-TEST-001` must prove wrapper-only moderation refusal, lease/replay immutability, changed wrapper before permit, final STOP/window fences, no-wrapper passthrough and exact moderated/persisted/provider-text identity. Do not mark BG009 Complete based solely on the preparation-only module.
 
@@ -224,7 +224,7 @@ Create `ARCH-040-DATABASE-007` to add a nullable, set-once `preparedTextBody`, `
 | **BACKGROUND-006** | Automated Recovery Integration | Thin initial/sequence-two call-site wiring to BG004 and BG001; common final-fence adapter | BACKGROUND-001; BACKGROUND-004. |
 | **BACKGROUND-007** | Merchant Post-Window Integration | Thin human follow-up template branch using shared preparer and common admission adapter | BACKGROUND-001; BACKGROUND-004; BACKGROUND-006 for common adapter. |
 | **BACKGROUND-008** | AI Conversation Integration | Thin AI response → wrapper → full-message moderation/admission adapter | BACKGROUND-005; existing AI conversation execution. |
-| **BACKGROUND-009** | Human Conversation Integration | Thin human response → wrapper → full-message moderation/admission adapter | BACKGROUND-005; existing human command/in-window admission. |
+| **BACKGROUND-009** | Human Conversation Integration | Thin human response → wrapper → full-message moderation/admission adapter | BACKGROUND-005; DATABASE-007; existing human command/in-window admission. |
 
 ### Execution dependency view
 
@@ -241,6 +241,7 @@ flowchart LR
   B6 --> B7
   B5 --> B8[BG008 AI Integration]
   B5 --> B9[BG009 Human Integration]
+  DB40[ARCH-040 DATABASE-007] --> B9
   B2 --> T[Integrated System Test]
   B3 --> T
   B6 --> T
