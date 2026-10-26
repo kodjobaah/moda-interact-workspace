@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 25
-executor: developer
-claimed_at: 2026-10-26T05:50:56Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-047-DATABASE-001
@@ -182,7 +182,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at 2026-10-26T05:50:56Z. Attempt 2 review history is preserved below.
+Ready for Architect Review — developer Attempt 3 was claimed at 2026-10-26T05:50:56Z, reconciled and submitted on 2026-10-26. The implementation remains at `8342e0e55e20e778c6bd5fa06a15eea4b38ced63`; no implementation files changed during Attempt 3. The developer self-review passed for BG003-owned scope. The BG006-owned late-send adapter has not consumed the supplied freshness fixtures: canonical BG006 remains `pending`. This cross-task acceptance item is left unchecked and explicitly referred for architect disposition; no BG006 implementation or live final-send eligibility result is claimed. Attempt 2 history is preserved below.
 
 ### Attempt 1 Historical Status
 
@@ -486,3 +486,26 @@ The module-local create-only, no-AST, no-external-adoption approach matches ARCH
 2. Supply the BG006-owned final-admission fixture required by R5: prove that a registration with a successful reconciliation older than 60 minutes is not eligible and that a fresh approved registration can pass the fixture contract. Keep production final-send adapter changes in BG006; if the fixture cannot be authored/consumed from the Background-owned boundary, obtain an explicit architect scope/contract decision and record the handoff rather than checking this requirement as complete.
 
 No source change is requested for the separately owned Messaging producer or BG006 production adapter, and this review does not claim end-to-end webhook certification or task completion. Frontmatter is returned to `ready` with `executor: null`, `claimed_at: null`, and `attempt: 2`; the next authorized developer create claim, if needed, will increment the attempt exactly once.
+
+## Developer Self-Review — Passed (Attempt 3)
+
+### Attempt and worktree evidence
+
+- Attempt reviewed: 3. The canonical launcher claimed the developer attempt at `2026-10-26T05:50:56Z`, passed the explicit dependency gate (`ARCH-047-DATABASE-001` and `ARCH-047-SHARED-002` both `complete`), committed and pushed the parent claim as `0deccb88c08ad8b99b9440ddc8b80f730e8238eb`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-003`, branch `task/ARCH-047-BACKGROUND-003`. Launcher reused it, incorporated current `origin/main`, and reported no task-remote fast-forward was needed. The claim commit is on the parent task remote. This review report is the only pending parent change until its review commit is published.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-003`, branch `task/ARCH-047-BACKGROUND-003`, reused at `8342e0e55e20e778c6bd5fa06a15eea4b38ced63`; its task remote is at the same commit and current `origin/main` is an ancestor. Recursive submodule sync/init passed; `database` is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+- Attempt 3 made no implementation-source changes. The task-owned implementation delta is the 21-file change set already published in `8342e0e`; no implementation commits or uncommitted implementation files are absent from the task remote.
+
+### Validation rerun for Attempt 3
+
+- `npx vitest run tests/unit/services/meta-template-management tests/unit/runtime/arch047-meta-messaging-startup.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts tests/unit/services/outbound-whatsapp-admission` — **161 tests passed in 12 files**.
+- `npm run test:integration -- tests/integration/arch047-meta-provider-failure.integration.test.ts tests/integration/arch047-meta-template-management.integration.test.ts tests/integration/arch047-meta-messaging-startup.integration.test.ts` — **4 tests passed in 3 files**, using the disposable PostgreSQL harness. This covers provider 503/definitive 400 durable outcomes, status fencing/CAS and assigned-registration refresh after 31 minutes, plus production messaging-worker startup processing due registrations.
+- `npm run build` — passed; Prisma client generation and TypeScript compilation completed without diagnostics.
+- Focused `npx eslint` over `src/services/meta-template-management`, `src/workers/whatsapp.worker.ts`, `src/entrypoints/messaging.ts`, the affected unit/runtime/integration tests and the BG006 fixture — completed without diagnostics.
+- `git diff --check origin/main...HEAD` on the implementation branch and `git diff --check` on the parent review edit — passed.
+- The BG006 fixture contract test checks seven freshness/suppression vectors, including fresh approval, the exact 60-minute boundary, stale approval, pending reconciliation, PAUSED and content drift. Canonical `ARCH-047-BACKGROUND-006` is currently `pending`; therefore the fixture is supplied and validated by BG003 but has **not** been consumed by BG006's production adapter. No live outbound-admission result for this adapter is claimed. The authenticated Messaging producer and live webhook-to-BullMQ path also remain separately owned and are not claimed as end-to-end validated here.
+
+### Review disposition
+
+The developer self-review passes for BG003-owned implementation and validation. In accordance with R5, BG003 supplies the focused shared fixtures while BG006 owns the final-send adapter. The explicit Work Item requiring BG006 to consume those fixtures remains unchecked because BG006 is pending; this cross-task acceptance boundary is submitted to `moda_architect` for decision. This submission is `review`, not `complete`; `completion_mode: developer` is preserved and no explicit developer completion decision is made.
