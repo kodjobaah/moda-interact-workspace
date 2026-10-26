@@ -94,35 +94,53 @@ Use the repository's existing publication workflow and mirrored isolated task br
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-25T21:54:15Z. Attempt 0 review history is preserved below.
+In Progress — Attempt 1, developer-claimed on 2026-10-25T21:54:15Z. Package version `2.5.1` is confirmed published by the developer-supplied npm registry inspection on 2026-10-25. This report is prepared for developer review reconciliation; the required published-artifact and prerequisite-review evidence noted below remains outstanding. Publication is not architect-accepted by this report.
 
 ### Files Changed
 
-None.
+- `moda-interact-shared/package.json` — the supplied publication-worktree snapshot declares package version `2.5.1` and the `./whatsapp-template-events` import/types export.
+- `moda-interact-shared/package-lock.json` — the supplied snapshot records `2.5.1` at the lockfile root and root package entry.
+
+The supplied archive is a workspace snapshot, not a release Git diff. It does not establish which metadata files changed during this publication attempt, whether a publication-only commit exists, or the exact source commit from which the registry tarball was built. No source implementation changes are claimed.
 
 ### Work Completed
 
-None.
+- Confirmed that the prerequisite task `ARCH-047-SHARED-001` is `status: complete` in the parent task snapshot, with its passing developer self-review and explicit developer completion decision recorded on 2026-10-25. Its separate `## Architect Review` still reads `Pending` and needs reconciliation with SHARED-002's architect-acceptance prerequisite.
+- Confirmed the local Shared manifest and lockfile identify `@modainteract/moda-interact-shared` version `2.5.1`.
+- Recorded the developer's successful registry lookup, `npm view @modainteract/moda-interact-shared@2.5.1`, which returned the published `2.5.1` package, its npm tarball, integrity metadata and the `latest` dist-tag.
+- Confirmed that the source snapshot's `package.json` declares `./whatsapp-template-events` with `import` and `types` entries. The published registry tarball's contents have not been independently inspected in the supplied evidence.
+- Made no consumer integration or follow-on task changes as part of this publication handoff.
 
 ### Validation Results
 
-Not run.
+- **PASS (developer-supplied registry output)** — `npm view @modainteract/moda-interact-shared@2.5.1` reports version `2.5.1`, `latest: 2.5.1`, and the tarball URL `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-2.5.1.tgz`.
+- **Recorded npm distribution SHA-1** — `00cf2087907c606daae87b9b4b4c7cd905d6d757`.
+- **Recorded npm distribution SHA-512 integrity** — `sha512-4Vs2lYY5f9r1B/lCd9nz0g41MGx3OykJ2q1uLVKWdjhbkW3d2sqMbAdZ4iutNo3aJo5wSa5nlCyLpKfP+tFEcQ==`.
+- **PASS (snapshot inspection only)** — the local `package.json` exports `./whatsapp-template-events` to `./dist/whatsapp-template-events.js` and `./dist/whatsapp-template-events.d.ts`; the local manifest and lockfile both use `2.5.1`.
+- **NOT PROVIDED** — the original `npm publish` command output or successful publication receipt; the registry lookup independently demonstrates the version exists, but not which command/commit produced it.
+- **NOT PROVIDED** — published `2.5.1` tarball contents or remote `exports` inspection proving that the new subpath and fixture were actually shipped.
+- **NOT PROVIDED** — the publication source commit, publication-only Git diff, and `git diff --check` evidence for release-specific changes. The SHARED-001 implementation's latest recorded commit is `6a01cba02351ebb7c0ea56be8d5f6eb20fdb121e`, but it cannot be asserted to be the `2.5.1` publication source without a release Git record.
+- Implementation tests, lint, typecheck and builds were deliberately **not repeated** during this publication task, as required by its release-only scope.
 
 ### Deviations
 
-None.
+- The package has been published while the prerequisite task's dedicated Architect Review remains `Pending` in the supplied snapshot; SHARED-001's developer self-review did pass and developer completion was recorded. The architecture gate must be reconciled during review rather than silently treated as architect acceptance.
+- None in the observed registry version or local package export declaration. The original publication command and release diff were not supplied, so no stronger claim is made.
 
 ### Assumptions
 
-None.
+- npmjs.org is the intended publication registry, consistent with the developer's `npm view` output and tarball URL.
+- Version `2.5.1` is the version intended for the canonical Meta template-status v2 subpath; formal version approval is not independently evidenced by the snapshot.
 
 ### Unresolved Issues
 
-None.
+- Verify the actual published `2.5.1` package tarball or registry export metadata includes `./whatsapp-template-events`, its import/typing targets and the required golden fixture.
+- Record the exact publication command/receipt, the release source commit and the metadata-only Git diff/whitespace check.
+- Reconcile SHARED-001's developer self-review/completion with the architect-accepted prerequisite stated in SHARED-002 before marking this publication task Accepted/Complete or unblocking consumers.
 
 ### Architectural Concerns
 
-None.
+Do not promote `ARCH-047-MESSAGING-001` or `ARCH-047-BACKGROUND-003` solely from this registry lookup. Their publication dependency is satisfied only once the release contract and prerequisite acceptance have been reviewed and the publication task is formally Complete.
 
 ## Architect Review
 
