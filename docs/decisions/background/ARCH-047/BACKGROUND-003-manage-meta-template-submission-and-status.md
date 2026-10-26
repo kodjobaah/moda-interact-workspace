@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 25
 executor: null
 claimed_at: null
@@ -124,12 +124,12 @@ Persist create intent before any POST and a **POST-intent receipt** immediately 
 - [x] Add a **strict** Shared v2 `meta-template-status-update` decoder and thin dispatch in the existing `whatsapp-events` worker, mapping `receivedAt → occurredAt` at its local port; do not alter inbound-message parsing.
 - [x] Add bounded `processDueRegistrations(25)` production polling from the messaging-worker entrypoint (60-second cadence, jitter, no process-local overlap, clean shutdown, DB CAS-safe across replicas).
 - [x] Implement the R4 **single-transaction** event receipt + immediate `providerStatus = UNKNOWN` fence (with `processedAt = null`) before Meta GET; on errors retain due reconciliation, and mark receipt processed only after successful verified provider resolution.
-- [ ] Ensure active assigned registrations reconcile at most every 30 minutes independently of webhook receipt; test failure and backoff plus 60-minute admission freshness fixtures consumed by BG006.
+- [x] Ensure active assigned registrations reconcile at most every 30 minutes independently of webhook receipt; test provider failure/backoff and provide the validated 60-minute admission freshness fixture handoff to BG006. Architect acceptance treats fixture supply as BG003's deliverable; BG006 retains ownership of adapter consumption and its DB-backed tests.
 - [x] Consume the **published Shared v2** fixture/schema/identity helper. Verify two identical status observations with distinct UUIDs are independently processed; reject v1 and stale content-hash job identities.
 - [x] Consume frozen `WhatsAppTemplateMetaRegistration` rows and append `WhatsAppTemplateMetaEvent` receipts. Background maintains current `providerStatus`, provider ID and drift observations, **not** authoring ASTs, translation content, shop assignments or publication permissions.
 - [x] Reuse existing sender/WABA credential resolution, Meta API error/retry conventions, BullMQ worker orchestration and structured logging; check that the present adapter maps POST/GET fields and template IDs exactly as in R1, and does not mistake incomplete paginated reads for absence.
 - [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
-- [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
+- [x] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -182,7 +182,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Ready for Architect Review — developer Attempt 3 was claimed at 2026-10-26T05:50:56Z, reconciled and submitted on 2026-10-26. The implementation remains at `8342e0e55e20e778c6bd5fa06a15eea4b38ced63`; no implementation files changed during Attempt 3. The developer self-review passed for BG003-owned scope. The BG006-owned late-send adapter has not consumed the supplied freshness fixtures: canonical BG006 remains `pending`. This cross-task acceptance item is left unchecked and explicitly referred for architect disposition; no BG006 implementation or live final-send eligibility result is claimed. Attempt 2 history is preserved below.
+Complete — developer Attempt 3 was claimed at 2026-10-26T05:50:56Z, reviewed and accepted on 2026-10-26, then explicitly completed by the developer. The implementation remains at `8342e0e55e20e778c6bd5fa06a15eea4b38ced63`; no implementation files changed during Attempt 3. Architect acceptance applies to BG003's validated 60-minute fixture handoff; BG006 still owns consuming the fixtures in its production late-send adapter, and no BG006 implementation or live final-send eligibility result is claimed. Attempt 2 history is preserved below.
 
 ### Attempt 1 Historical Status
 
@@ -508,4 +508,15 @@ No source change is requested for the separately owned Messaging producer or BG0
 
 ### Review disposition
 
-The developer self-review passes for BG003-owned implementation and validation. In accordance with R5, BG003 supplies the focused shared fixtures while BG006 owns the final-send adapter. The explicit Work Item requiring BG006 to consume those fixtures remains unchecked because BG006 is pending; this cross-task acceptance boundary is submitted to `moda_architect` for decision. This submission is `review`, not `complete`; `completion_mode: developer` is preserved and no explicit developer completion decision is made.
+At review submission, the developer self-review passed for BG003-owned implementation and validation. BG006 was pending, so this record referred the fixture-consumption boundary to the architect without claiming BG006 adapter implementation. The subsequent Architect Review below accepts BG003's fixture handoff as its deliverable; BG006 retains ownership of actual consumption and DB-backed adapter tests.
+
+## Architect Review — Accepted (Attempt 3)
+
+- Decision supplied with the developer's explicit completion request: **Architect Review Accepted** for Attempt 3.
+- Acceptance scope: BG003 completed its owned Meta submission/status consumer, due reconciliation, failure/backoff behavior, regression coverage and validated BG006 60-minute freshness fixture handoff.
+- Boundary: the fixture handoff satisfies BG003's deliverable. BG006 remains responsible for consuming the shared vectors in its DB-backed final-send adapter tests. This record does not claim BG006 is implemented, that its task is complete, or that the final-send adapter has passed those tests. The authenticated Messaging producer and live webhook-to-BullMQ path remain separately owned and are not claimed as end-to-end validated.
+- Reviewed evidence: Attempt 3 synchronization/claim packet and the focused unit (161/161), PostgreSQL integration (4/4), build, focused ESLint and whitespace checks documented above.
+
+## Developer Completion Decision (Attempt 3)
+
+The developer explicitly invokes completion after the accepted Attempt 3 review. Frontmatter is `status: complete`, `executor: null`, `claimed_at: null`, and `attempt: 3`; execution and completion modes remain `developer`. No task branch was merged into `main`.
