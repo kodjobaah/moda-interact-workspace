@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -260,3 +260,11 @@ Architect to reconcile the parent task graph and obsolete Admin/Shared reference
 ### Review disposition
 
 The required Attempt 1 correction is satisfied for the current cycle: the implementation is task-scoped, both canonical branches now include current mainline and are published, and the focused checks pass on the synchronized revision. Attempt 1's historical launcher packet remains unavailable; the Attempt 2 packet is recorded only as evidence for Attempt 2. The implementation and validation are submitted for architect review, not marked complete. `completion_mode: developer` remains in force, so explicit developer completion is pending after accepted review.
+
+## Developer Completion Decision
+
+- Date: 2026-10-26; completed attempt: 2.
+- Decision: The developer explicitly invoked `/moda_developer_update ARCH-047-BACKGROUND-005 complete` after the durable Attempt 2 passing self-review. All required Work Items, Acceptance Criteria and Validation checklists are complete; the task-owned implementation and synchronization merge are committed and pushed, and the parent report can be published.
+- Preserved: Attempt 2, the historical Attempt 1 evidence limitation, and the prior review record. No implementation source changes were made as part of this completion decision.
+- Dependency frontier: `ARCH-047-BACKGROUND-008` and `ARCH-047-BACKGROUND-009` remain pending. Their task records explicitly require architect reconciliation of the parent task graph and obsolete Admin/Shared references before promotion to Ready; this completion does not bypass that gate.
+- Lifecycle transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 2`.
