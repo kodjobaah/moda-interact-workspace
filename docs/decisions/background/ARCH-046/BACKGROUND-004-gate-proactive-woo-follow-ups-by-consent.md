@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 38
 executor: null
 claimed_at: null
@@ -36,7 +36,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Execution frontier (26 October 2026): Attempt 3 validation passed; developer self-review handed to architect.** All four dependencies were verified Complete by the canonical launcher. Attempt 3 was claimed at `2026-10-26T03:59:19Z`; the implementation worktree was synchronized with current Background `origin/main` in merge `e88d9345015202e915a9198d4c6803f41e9adfdb`. Focused unit, PostgreSQL/Redis, HUMAN/AI/general STOP, lint, typecheck, build and diff checks passed after that synchronization. The task is now `review`, with Attempt 3 preserved and claim fields cleared. Scope remains limited to initial send and sequence-one retries; Woo follow-ups remain out of scope.
+**Execution frontier (26 October 2026): Architect review accepted; developer explicitly completed Attempt 3.** All four dependencies were verified Complete by the canonical launcher. Attempt 3 was claimed at `2026-10-26T03:59:19Z`; the implementation worktree was synchronized with current Background `origin/main` in merge `e88d9345015202e915a9198d4c6803f41e9adfdb`. Focused unit, PostgreSQL/Redis, HUMAN/AI/general STOP, lint, typecheck, build and diff checks passed after that synchronization. Architect acceptance and the developer completion decision are recorded below. Scope remains limited to initial send and sequence-one retries; Woo follow-ups remain out of scope.
 
 ## Execution Ownership Amendment
 
@@ -165,7 +165,7 @@ The earlier BG004 definition required a Woo follow-up engine that ARCH-048 delib
 
 ### Status
 
-Ready for architect review — Attempt 3 developer self-review passed. Attempt 2 review history is preserved below.
+Complete — Attempt 3 developer review passed and the developer explicitly completed the task after architect acceptance. Attempt 2 review history is preserved below.
 
 ### Files Changed
 
@@ -213,9 +213,9 @@ The seven HUMAN suites retain the original 27 test definitions/28 executable cas
 - `scripts/integration-startup-retry.test.mjs` (new): seven exception-preservation, retry and non-retry unit tests.
 - `scripts/test-integration.mjs`: integrates the bounded startup retry without changing production message delivery.
 
-These commits record implementation Git history; they do **not** establish a later canonical developer workflow claim. Preserve `0c92e12`, `984d568`, `5e7a6d0` and `ac5d455` without rewriting history.
+These commits record the implementation and validation corrections and remain preserved on the implementation task branch. The canonical developer claim, review handoff and explicit completion are recorded on the parent task branch; no implementation history was rewritten.
 
-**Parent task branch:** This evidence-only task-record correction preserves `ready` until the canonical developer claim/review cycle is reconciled. The requisite tests are now evidenced as passing, but the supplied parent task state cannot be promoted by inference. No parent architecture, domain `_index.md`, unrelated task, implementation code or submodule gitlink is included in this patch.
+**Parent task branch:** Attempt 3 was claimed, reconciled to `review`, and explicitly completed after architect acceptance. The task record is published on `task/ARCH-046-BACKGROUND-004`. No parent architecture, domain `_index.md`, unrelated implementation code or submodule gitlink was changed.
 
 ### Work Completed
 
@@ -252,9 +252,9 @@ Earlier evidence below spans 25–26 October 2026 and is retained as historical 
 | Repository TypeScript | **PASS:** `npx tsc --noEmit` completed without diagnostics in `typescript(20261026-033946)`. |
 | Production build | **PASS:** `npm run build` (`npm run prisma:generate && tsc`) completed without diagnostics; Prisma Client v6.19.3 generation succeeded in `typescript(20261026-033946)`. |
 | Implementation task branch | **PASS:** current tip `e88d9345015202e915a9198d4c6803f41e9adfdb` equals `origin/task/ARCH-046-BACKGROUND-004`; it includes the preserved implementation head `ac5d455` and the launcher synchronization merge. |
-| Canonical developer Attempt 3 launch, synchronization and claim | **PASS:** parent claim commit `0e41dc305038de33e6685354e782f032d13534e1`; launcher verified four dependencies complete and prepared the implementation worktree. Current review transition preserves Attempt 3 and clears claim fields. |
+| Canonical developer Attempt 3 launch, synchronization and claim | **PASS:** parent claim commit `0e41dc305038de33e6685354e782f032d13534e1`; launcher verified four dependencies complete and prepared the implementation worktree. Review and completion preserve Attempt 3 and clear claim fields. |
 
-The prior test-fixture violations (digits-only attempt recipient and funded `UsageReservation`) were corrected without loosening database constraints. The earlier PostgreSQL Docker readiness timeout was addressed with a narrowly bounded startup retry. Attempt 3 validation was rerun after the launcher synchronization and all selected checks passed. No task-level validation blocker remains; architect review and any separately gated BG005/system-test work remain outstanding.
+The prior test-fixture violations (digits-only attempt recipient and funded `UsageReservation`) were corrected without loosening database constraints. The earlier PostgreSQL Docker readiness timeout was addressed with a narrowly bounded startup retry. Attempt 3 validation was rerun after the launcher synchronization and all selected checks passed. No task-level validation blocker remains; separately gated BG005/system-test work remains outstanding.
 
 ### Execution / Worktree Evidence
 
@@ -280,7 +280,7 @@ The prior test-fixture violations (digits-only attempt recipient and funded `Usa
 ### Unresolved Issues
 
 - **No current functional/test failure is evidenced.** The previously failing HUMAN races and Docker startup were addressed; the latest supplied logs show the selected unit, PostgreSQL/Redis, HUMAN/AI/general STOP regression, lint, typecheck and build checks passing.
-- No unresolved developer validation or workflow blocker remains. The task is handed to architect review; do not mark it complete, wire BG005, activate Woo outreach or broaden the task scope here.
+- No unresolved developer validation blocker remains. Completion does not wire BG005, activate Woo outreach or authorize Woo sequence-two follow-ups.
 - As before, this task does not integrate BG005 worker composition, activate Woo outreach or cover end-to-end production sending. Such work remains separately gated.
 
 ### Architectural Concerns
@@ -293,19 +293,19 @@ The prior test-fixture violations (digits-only attempt recipient and funded `Usa
 
 ### Review Status
 
-Pending.
+Accepted — “Architect Review Accepted” was explicitly supplied with the developer completion request on 26 October 2026.
 
 ### Review Notes
 
-Task definition narrowed to initial send + sequence-one retries; no implementation acceptance claimed.
+Accepted the implementation for the defined initial-send and sequence-one retry consent/STOP fence. The Attempt 3 review and Completion Report were accepted; this does not approve BG005 composition, enable Woo sending, or waive the separate system-test gate.
 
 ### Reviewed Files
 
-ARCH-048-BG004 service/adapters, existing general SQL STOP fence, ARCH-046-BG001, BG002 task definitions.
+Woo guarded sender and final permit services, outbound provider-admission/delivery services, Woo recovery outreach integration, task-owned unit and PostgreSQL/Redis regressions, and Attempt 3 validation results.
 
 ### Validation Reviewed
 
-Static code review only; no BG004 implementation tests run.
+Attempt 3: 78 focused unit tests, 54 tests across 13 disposable PostgreSQL/Redis integration suites, 7 startup-retry tests, lint, TypeScript, production build and `git diff --check` passed after synchronization. The full repository test suite was not run.
 
 ### Architecture Conformance
 
@@ -313,7 +313,7 @@ Consistent with ARCH-048's initial-outreach-only boundary and default-off rollou
 
 ### Follow-up
 
-Only after BG002 complete may the architect promote this BG004 task to Ready. Woo follow-ups require separately approved future implementation work.
+BG005 may become dependency-ready after this acceptance and satisfaction of its other dependencies. Woo follow-ups and live sending remain separately gated.
 
 ## Developer Self-Review - Changes Requested
 
@@ -360,3 +360,13 @@ Passed for developer review handoff. The canonical Attempt 3 claim, implementati
 ### State Transition
 
 Set to `review`; `executor` and `claimed_at` are cleared, and Attempt 3 is preserved. No completion action was requested or applied. Architect review remains pending.
+
+## Developer Completion Decision - Attempt 3
+
+The developer explicitly invoked completion on 26 October 2026 after the accepted Architect Review. All required Work Items, Acceptance Criteria and Validation items are complete. The implementation task branch is committed, pushed and clean at `e88d9345015202e915a9198d4c6803f41e9adfdb`; the parent report is committed and pushed on `task/ARCH-046-BACKGROUND-004`. The task is `complete`; `executor` and `claimed_at` are null; Attempt 3 is unchanged. No task branch was merged to `main`.
+
+### Dependency Frontier Update
+
+- `ARCH-048-BACKGROUND-005` has all six declared dependencies Complete. Its canonical parent task record is Ready at Attempt 0, published as `d9affe0a`; no implementation attempt was claimed.
+- `ARCH-046-SYSTEM-TEST-002` remains `blocked` because its other implementation prerequisites and manual LocalWP gate remain outstanding. It was not modified or claimed.
+- `ARCH-048-SYSTEM-TEST-001` and other downstream tasks were not promoted without verifying all of their explicit dependencies and manual gates.
