@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 15
 executor: developer
 claimed_at: 2026-10-26T08:27:09Z
@@ -139,11 +139,11 @@ Implement focused schema/migration validation that checks field types/nullabilit
 
 ## Work Items
 
-- [ ] Add the three exact Prisma nullable fields and the additive migration.
-- [ ] Preserve the existing command guard while adding precise set-once/pre-lease invariants.
-- [ ] Update the HUMAN_COMMAND/TEXT moderation guard to use only frozen prepared content.
-- [ ] Add focused validators and PostgreSQL tests including regression and negative cases from R6.
-- [ ] Record migration, changed files, exact test commands, DB version, branch/worktree evidence and deviations in the Completion Report.
+- [x] Add the three exact Prisma nullable fields and the additive migration.
+- [x] Preserve the existing command guard while adding precise set-once/pre-lease invariants.
+- [x] Update the HUMAN_COMMAND/TEXT moderation guard to use only frozen prepared content.
+- [x] Add focused validators and PostgreSQL tests including regression and negative cases from R6.
+- [x] Record migration, changed files, exact test commands, DB version, branch/worktree evidence and deviations in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -190,20 +190,20 @@ For no wrapper, application writes `{"schemaVersion":1,"outcome":"PASSTHROUGH","
 
 ## Acceptance Criteria
 
-- [ ] Exact three-field additive persistence and Prisma relation stability, no extra table.
-- [ ] Original merchant intent and idempotency remain immutable; set-once prepared body/provenance/timestamp cannot be rewritten or cleared.
-- [ ] New HUMAN_COMMAND/TEXT moderation digest is bound to the full prepared body and cannot be inserted against an unprepared command; template and message moderation are unchanged.
-- [ ] Database rejects technical invalid writes but does not choose/validate wrappers, moderation outcomes, consent, 24-hour windows or send eligibility.
-- [ ] Fresh and upgrade migrations plus direct PostgreSQL positive/negative cases pass; no unrelated existing record or trigger semantics regress.
-- [ ] DB Completion Report contains dedicated worktree/branch/synchronisation, exact validation and migration evidence for architect review.
+- [x] Exact three-field additive persistence and Prisma relation stability, no extra table.
+- [x] Original merchant intent and idempotency remain immutable; set-once prepared body/provenance/timestamp cannot be rewritten or cleared.
+- [x] New HUMAN_COMMAND/TEXT moderation digest is bound to the full prepared body and cannot be inserted against an unprepared command; template and message moderation are unchanged.
+- [x] Database rejects technical invalid writes but does not choose/validate wrappers, moderation outcomes, consent, 24-hour windows or send eligibility.
+- [x] Fresh and upgrade migrations plus direct PostgreSQL positive/negative cases pass; no unrelated existing record or trigger semantics regress.
+- [x] DB Completion Report contains dedicated worktree/branch/synchronisation, exact validation and migration evidence for architect review.
 
 ## Validation
 
-- [ ] `npm run prisma:validate` and `npm run prisma:generate` using scripts declared by `moda-interact-database/package.json`.
-- [ ] Add and pass `npm run test:arch040-human-prepared-schema` (focused exact schema/migration validator).
-- [ ] Add and pass `npm run test:arch040-human-prepared:postgres` (fresh, upgrade and negative SQL cases in disposable PostgreSQL).
-- [ ] Re-run the repository's existing focused ARCH-040 human command/moderation regression commands as discovered in `package.json`; record actual names/results rather than assuming a uniform test script.
-- [ ] `git diff --check` and inspect changes against the exact task scope.
+- [x] `npm run prisma:validate` and `npm run prisma:generate` using scripts declared by `moda-interact-database/package.json`.
+- [x] Add and pass `npm run test:arch040-human-prepared-schema` (focused exact schema/migration validator).
+- [x] Add and pass `npm run test:arch040-human-prepared:postgres` (fresh, upgrade and negative SQL cases in disposable PostgreSQL).
+- [x] Re-run the repository's existing focused ARCH-040 human command/moderation regression commands as discovered in `package.json`; record actual names/results rather than assuming a uniform test script.
+- [x] `git diff --check` and inspect changes against the exact task scope.
 
 ## Stop Condition
 
@@ -217,35 +217,74 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — developer Attempt 1 claimed at `2026-10-26T08:27:09Z`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-007`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-007`; both use `task/ARCH-040-DATABASE-007`. The matching remote branches are published. No implementation source changes have been made.
+**Ready for Review** — developer-executed **Attempt 1**, claimed `2026-10-26T08:27:09Z`. Implementation and test correction were delivered as two incremental patches within this same claim, not as separate workflow attempts. The Database implementation commits were pushed to `origin/task/ARCH-040-DATABASE-007`:
+
+- `26b3cd20a516419d6b74dde2d176ef03da90bcc3` — initial schema, forward migration, guards and test harness.
+- `12102f0b611973b1436f4c0d4ec33f3e15fa9a78` — PostgreSQL provider-permit test assertion correction, after the first run revealed that the existing dispatch-key consistency guard fires before the one-way permit guard.
+
+This is **not** architect acceptance or task completion. `completion_mode: developer` remains unchanged, so explicit developer completion will be required after an Accepted review.
 
 ### Files Changed
 
-None.
+Six files in `moda-interact-database/` (combined implementation commits):
+
+- `prisma/schema.prisma`
+- `prisma/migrations/20261026080000_arch040_prepared_human_message_content/migration.sql` (new)
+- `scripts/validate-arch040-human-prepared-schema.mjs` (new)
+- `scripts/test-arch040-human-prepared-postgres.mjs` (new; corrected in `12102f0`)
+- `scripts/test-arch040-moderation-postgres.mjs` (focused existing-fixture adjustment)
+- `package.json` (task-specific validation scripts)
+
+No existing historical migration, other service, or domain `_index.md` was intentionally changed.
 
 ### Work Completed
 
-None.
+- Added nullable `preparedTextBody` (`TEXT`), `preparedWrapperEvidence` (`JSONB`) and `preparedAt` (`TIMESTAMPTZ(3)`) to the existing `whatsapp.MerchantConversationSendCommand` model and one forward-only SQL migration; original `textBody` and `payloadSha256` remain the accepted merchant intent.
+- Preserved the existing command guard and added a tightly scoped first-write freeze under a current `CLAIMED` lease, followed by immutable replay/retry behavior. Invalid partial, blank, wrong-kind, expired-lease, post-permit and rewrite attempts fail with SQLSTATE `23514`.
+- Bound `HUMAN_COMMAND`/`TEXT` moderation to SHA-256 of the complete, durably prepared body, not the raw merchant text; retained the existing template-parameter and nonhuman-message moderation contracts.
+- Added structural validation and disposable PostgreSQL 17 fresh-install/upgrade exercises for command history, moderation evidence, terminal and provider-permit invariants, tenant isolation, contention and concurrency.
+- Corrected the test to assert the command/message dispatch-key mismatch separately from the one-way provider-permit timestamp immutability guard. No production migration or trigger changes were needed for that correction.
 
 ### Validation Results
 
-Not run.
+Executed in the developer's dedicated Database task worktree, as recorded in the supplied terminal logs dated **26 October 2026**:
+
+| Check | Result / Evidence |
+| --- | --- |
+| `npm ci` | Completed; npm reported five high-severity audit advisories, not investigated within this task's scope. |
+| `npm run prisma:validate` | Passed; Prisma schema validated. |
+| `npm run prisma:generate` | Passed; generated Prisma Client v6.19.3. |
+| `npm run test:arch040-human-prepared-schema` | Passed exact columns, migration order, trigger-preservation and moderation-guard structural checks. |
+| `npm run test:arch040-human-prepared:postgres` | **Passed both modes in final 11:39–11:41 run** on disposable PostgreSQL **17.11**: fresh install and upgrade; tested frozen-body moderation, lease and provider permits, historical upgrade preservation and concurrent first-writer-wins. Expected `23514` errors in negative test cases were asserted. |
+| `npm run test:arch040-recovery-human-handover` | Passed structural contract checks. |
+| `npm run test:arch040-moderation-schema` | Passed structural contract checks. |
+| `npm run test:arch040-follow-up-release-schema` | Passed structural contract checks. |
+| `npm run test:arch040-recovery-human-handover:postgres:fresh` | Passed full existing fresh PostgreSQL regression suite. |
+| `npm run test:arch040-moderation:postgres:fresh` | Passed full existing moderation PostgreSQL regression suite. |
+| `npm run test:arch040-follow-up-release:postgres:fresh` | Passed full existing follow-up PostgreSQL regression suite. |
+| `git apply --check --whitespace=error-all` and `git diff --check` | Patch checks reported successful; no whitespace errors were shown. |
+| Git publication | Initial `26b3cd2` and correction `12102f0` pushed to implementation `task/ARCH-040-DATABASE-007`; final push confirmed in the 11:41 terminal log. |
+
+`npm test`, `npm run typecheck`, `npm run build` and `npm run test:arch047-follow-up:postgres` are not declared scripts in this Database repository; their missing-script messages in an exploratory run are not failures of the task-defined validations. `npm run lint` was launched without a reported lint failure, but is not counted as one of the task's required acceptance checks.
 
 ### Deviations
 
-None.
+- One focused change to the existing `scripts/test-arch040-moderation-postgres.mjs` fixture was necessary to comply with the new prepared HUMAN_TEXT moderation contract; production scope remains unchanged.
+- The provider-permit test was refined in a second patch because the database first rejects a divergent dispatch key through an existing earlier guard. The corrected test separately verifies dispatch-key consistency and one-way provider-permit immutability. Both PostgreSQL modes passed thereafter.
 
 ### Assumptions
 
-The 26 October 2026 BG009 worktree snapshot contains the existing accepted command/moderation triggers and migration chain described above.
+- The task executes in the pre-production development environment described by the parent architecture; no historical accepted migration is rewritten and no existing command is backfilled.
+- BG009 and its consumers will regenerate their Prisma Client from the accepted Database version before attempting prepared HUMAN_TEXT writes. This handoff does not implement those consumers.
 
 ### Unresolved Issues
 
-The task needs an authorised launcher materialisation and execution; a portable definition alone does not modify the developer's Prisma repository.
+- **Worktree review evidence:** The supplied task snapshot and claim identify dedicated parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-007` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-007`, both on `task/ARCH-040-DATABASE-007`. The uploaded terminal logs establish the implementation branch, successful tests and pushes, but **do not include the launcher's resolved preparation packet or start-of-attempt parent/submodule synchronization record**. Architect review must verify these before accepting the workflow-isolation criterion; none is claimed verified here.
+- Application-level BG009 wrapper rendering, fail-closed final send, and recompiled Prisma consumer are outside this task and remain gated on Database acceptance and developer-controlled completion.
 
 ### Architectural Concerns
 
-None beyond the cross-architecture dependency recorded in this task.
+None identified within Database ownership. Preserve the cross-architecture `ARCH-047-BACKGROUND-009` dependency: do not promote it until `ARCH-040-DATABASE-007` is architect-accepted and explicitly marked `complete` by the developer.
 
 ## Architect Review
 
