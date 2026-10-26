@@ -9,11 +9,11 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-26T04:35:14Z
+attempt: 2
 depends_on:
   - ARCH-047-SHARED-002
 enables: []
@@ -235,7 +235,7 @@ ARCH-047 is pre-production, but raw webhook authentication, queue durable accept
 
 ### Status
 
-Ready for Review — **developer claim Attempt 1**, claimed 2026-10-26T02:37:31Z and submitted 2026-10-26. The *Attempt 1–3 patch revisions* were incremental corrections during this single claimed task attempt; they are not separate launcher attempts. Implementation commit `c2aebd1054e886a378e9f1625d798c432dfbc1ee` was pushed to `origin/task/ARCH-047-MESSAGING-001` on 2026-10-26. `completion_mode: developer` remains in force; no architect acceptance or developer completion is claimed.
+In Progress — Attempt 2 claimed by developer at 2026-10-26T04:35:14Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
