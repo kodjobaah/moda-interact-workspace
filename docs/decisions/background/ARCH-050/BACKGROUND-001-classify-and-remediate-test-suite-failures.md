@@ -284,17 +284,20 @@ None
 ### Unresolved Issues
 
 The independently reproduced ARCH-007 conversation-turn scheduling failure
-requires owner triage/follow-up. The durable ARCH-025 baseline is historical and
-does not cover this failure; ARCH-028-BACKGROUND-007 specifically records the
-same test identity as unresolved follow-up. The original stale Shared export
-load errors were installation-only and did not recur after `npm ci`.
+is assigned to `ARCH-007-BACKGROUND-012` (Ready), owned by `moda_background`.
+That follow-up preserves the original settle/lease contract and requires a
+root-cause fix rather than a timeout-only change. The durable ARCH-025 baseline
+is historical and does not cover this failure; ARCH-028-BACKGROUND-007 also
+records the same test identity as unresolved follow-up. The original stale
+Shared export load errors were installation-only and did not recur after
+`npm ci`.
 
 ### Architectural Concerns
 
 No Shared export or workspace dependency-manifest defect was found. The
 conversation-turn scheduling failure is outside the confirmed test-fixture
-corrections in this task and is returned to `moda_architect` for owner
-assignment; this task remains blocked until the integration gate is resolved.
+corrections in this task and is tracked by `ARCH-007-BACKGROUND-012`; this task
+remains blocked until that integration gate is resolved.
 
 ## Architect Review
 
