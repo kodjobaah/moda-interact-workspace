@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 25
 executor: developer
 claimed_at: 2026-10-26T03:02:29Z
@@ -32,7 +32,7 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-This is a **portable task definition** prepared from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It is not a repository implementation, task claim or evidence of a created worktree/branch. No new ARCH-047 Shared package is assumed. The parent architecture and `BACKGROUND-001` require reconciliation to the final Admin-owned AST/compilation and DB-backed keyed-segment translation decisions before dependent work is promoted.
+This task was originally defined as a portable handoff from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. Attempt 1 implementation and validation evidence is now recorded in the Completion Report. No new ARCH-047 Shared package is assumed. The parent architecture and `BACKGROUND-001` still require architect-owned reconciliation to the final Admin-owned AST/compilation and DB-backed keyed-segment translation decisions before dependent work is promoted.
 
 ## Objective
 
@@ -67,11 +67,11 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Work Items
 
-- [ ] Add `src/services/recovery-offers/` with a small `RecoveryOfferResolver` facade, policy strategies for NONE/FIXED/AI_BEST_APPLICABLE, read-only discount/checkout provider adapters and deterministic eligibility verification.
-- [ ] Reuse `RecoveryPolicyService`, existing Shopify discount/eligibility tools, Woo coupon catalogue/normalisation, and Commerce's approved read-only discount capabilities where actually available. Keep customer-specific offer evaluation on the **actionable recovery path**, not the raw webhook hot path.
-- [ ] Return an immutable, typed offer-decision value for `BACKGROUND-001`/integrations; preserve existing policy snapshot meanings unless deliberately changed by a separate owning task.
-- [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
-- [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
+- [x] Add `src/services/recovery-offers/` with a small `RecoveryOfferResolver` facade, policy strategies for NONE/FIXED/AI_BEST_APPLICABLE, read-only discount/checkout provider adapters and deterministic eligibility verification.
+- [x] Reuse `RecoveryPolicyService`, existing Shopify discount/eligibility tools, Woo coupon catalogue/normalisation, and Commerce's approved read-only discount capabilities where actually available. Keep customer-specific offer evaluation on the **actionable recovery path**, not the raw webhook hot path.
+- [x] Return an immutable, typed offer-decision value for `BACKGROUND-001`/integrations; preserve existing policy snapshot meanings unless deliberately changed by a separate owning task.
+- [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
+- [x] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -93,20 +93,20 @@ None — the module can be developed in isolation from new ARCH-047 schema; stil
 
 ## Acceptance Criteria
 
-- [ ] Unit scenarios for NONE (zero LLM calls), valid/expired FIXED, one/multiple candidates, deterministic ranking/tie, wrong-shop/currency restrictions and no verified offer.
-- [ ] AI suggests valid, ineligible and fabricated offers; only verified offers can be returned; model/provider timeout never promises an offer.
-- [ ] Shopify/Woo fixtures including code and automatic discount differences; Woo multiple-selected-coupons anchor must not incorrectly imply chosen coupon.
-- [ ] Retry/stale-checkout and sequence-two offer consistency tests; assert no cart/checkout/discount mutation API invoked.
-- [ ] Focused tests/build/typecheck and `git diff --check`; record unsupported provider evaluation as an architectural gap, not fabricated eligibility.
-- [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
-- [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+- [x] Unit scenarios for NONE (zero LLM calls), valid/expired FIXED, one/multiple candidates, deterministic ranking/tie, wrong-shop/currency restrictions and no verified offer.
+- [x] AI suggests valid, ineligible and fabricated offers; only verified offers can be returned; model/provider timeout never promises an offer.
+- [x] Shopify/Woo fixtures including code and automatic discount differences; Woo multiple-selected-coupons anchor must not incorrectly imply chosen coupon.
+- [x] Retry/stale-checkout and sequence-two offer consistency tests; assert no cart/checkout/discount mutation API invoked.
+- [x] Focused tests/build/typecheck and `git diff --check`; record unsupported provider evaluation as an architectural gap, not fabricated eligibility.
+- [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
+- [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
 ## Validation
 
-- [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
-- [ ] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
-- [ ] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
+- [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
+- [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
+- [x] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
+- [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
 
@@ -124,35 +124,82 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-26T03:02:29Z. Attempt 0 review history is preserved below.
+Ready for Review — Attempt 1 (developer-executed). Claimed at `2026-10-26T03:02:29Z`; implementation commit `68063bd` has been pushed to `origin/task/ARCH-047-BACKGROUND-004` in `moda-interact-background`. This is a submission for review, **not** architect acceptance or developer completion.
 
 ### Files Changed
 
-None yet.
+Implementation repository (`moda-interact-background/`), 11 new files:
+
+- `src/services/recovery-offers/recovery-offer-resolver.service.ts`
+- `src/services/recovery-offers/recovery-offer-evidence.ts`
+- `src/services/recovery-offers/recovery-offer-providers.ts`
+- `src/services/recovery-offers/recovery-offer-repository.ts`
+- `src/services/recovery-offers/recovery-offer-timeout.ts`
+- `src/services/recovery-offers/recovery-offer.types.ts`
+- `tests/unit/services/recovery-offers/fixtures.ts`
+- `tests/unit/services/recovery-offers/recovery-offer-ai.test.ts`
+- `tests/unit/services/recovery-offers/recovery-offer-repository.test.ts`
+- `tests/unit/services/recovery-offers/recovery-offer-resolver.test.ts`
+- `tests/integration/recovery-offer-postgres.integration.test.ts`
+
+Parent-workspace change submitted separately: this canonical task file only. No `docs/decisions/**/_index.md` or parent architecture document is modified in this handoff.
 
 ### Work Completed
 
-None yet.
+- Implemented the Background-local read-only `RecoveryOfferResolver` with `NONE`, `FIXED` and `AI_BEST_APPLICABLE` policy strategies. `NONE` performs no provider or AI eligibility calls.
+- Added tenant-scoped PostgreSQL shop/recovery/discount catalogue reads, fixed merchant-authorised discount selection, Shopify automatic/code and Woo code-only candidate handling, and deterministic ranking by independently verified savings with stable tie-breaking.
+- Added immutable typed offer decisions and evidence validation, including checkout fingerprint, provider discount identity, currency, current redeem code/description, expiry and previously promised offer consistency for sequence two.
+- Added injectable read-only eligibility and AI recommendation ports. Only provider-verified candidates can be selected; the AI cannot invent an offer or mutate checkout state. Provider and AI calls have bounded timeouts; candidate count and AI output are bounded.
+- Implemented fail-closed `NO_OFFER` results for expected unavailability. Unexpected exceptions are logged through `@modainteract/moda-interact-shared/logging` with bounded, non-sensitive context and rethrown; no silent exception suppression.
+- Added focused unit and disposable PostgreSQL integration tests. No outbound sends, billing changes, checkout writes, Meta template modification or additional database migrations were introduced.
 
 ### Validation Results
 
-Not run; implementation validation remains outstanding.
+Observed in the uploaded `typescript(20261026-035151)` terminal log on 2026-10-26:
+
+| Command | Observed outcome |
+| --- | --- |
+| `npm ci` | Completed (603 packages added); reported 20 dependency audit advisories (8 moderate, 12 high). No dependency remediation undertaken as part of this task. |
+| `npm run prisma:generate` | Passed; Prisma Client v6.19.3 generated. |
+| `npm test -- tests/unit/services/recovery-offers/` | Passed: 3 test files, **21/21** tests. |
+| `npm run test:integration -- tests/integration/recovery-offer-postgres.integration.test.ts` | Passed: 1 file, **1/1** PostgreSQL integration test. |
+| `npm run build` | Passed: Prisma generation followed by `tsc`; shell returned to prompt with no errors. |
+| `npx eslint src/services/recovery-offers/ tests/unit/services/recovery-offers/ tests/integration/recovery-offer-postgres.integration.test.ts` | Invoked in the logged command sequence; no lint errors reported. |
+| `git diff --check` and `git diff --cached --check` | Invoked; no whitespace errors reported. |
+| `git commit` / `git push -u origin task/ARCH-047-BACKGROUND-004` | Passed: commit `68063bd`, 11 files and 1,112 insertions; remote task branch created and upstream configured. |
+
+The uploaded log does **not** show full repository-wide regression tests or a live provider-eligibility end-to-end test; those are not claimed to have passed. The compiled module was inspected in the uploaded snapshot, but this submission is not an architect acceptance review.
+
+### Physical Isolation and Synchronisation Evidence
+
+The uploaded terminal log and the combined worktree archive corroborate the following **paths**, but they do not contain the original launcher preparation packet:
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-004` (shown by the developer's worktree compression command).
+- Implementation task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-004` (shown by Vitest's execution path and the worktree compression output).
+- Implementation branch: `task/ARCH-047-BACKGROUND-004` (verified by terminal output after commit/push).
+- Expected parent branch: `task/ARCH-047-BACKGROUND-004` (must be checked in the developer's parent worktree before applying this review patch).
+- Canonical primary workspace root and launcher-resolved identity: **not independently established** by the uploaded evidence.
+- Start-of-attempt synchronization (both task branches, `origin/main` incorporation), recursive implementation-submodule preparation, and absence of shared/other-task worktree execution: **not independently verifiable** without the launcher packet. Architect/developer reviewer should request that evidence before acceptance.
 
 ### Deviations
 
-None recorded.
+No out-of-scope source modifications were identified in the 11-file task commit. Provider adapters intentionally default to an unavailable result when no trustworthy live per-checkout eligibility evaluator is supplied; this is the explicit fail-closed behaviour required by R3, rather than an assertion of provider eligibility.
 
 ### Assumptions
 
-The DB001 Attempt 7 model names and fields are authoritative design inputs, not proof of an accepted/applied production migration. Reinspect current implementation on claim.
+- The existing merchant recovery policy snapshot remains authoritative; no new published Shared offer contract or schema migration is required.
+- Eligible-offer evidence must be confirmed by a trusted read-only checkout-specific evaluator, not inferred from a discount catalogue row or Woo anchor ID.
+- The reported test environment's disposable PostgreSQL setup is representative for the focused repository integration scenario; production provider evaluation was not exercised.
 
 ### Unresolved Issues
 
-The parent ARCH-047 architecture and `BACKGROUND-001` still require final reconciliation with the Admin-owned AST/compilation and no-new-Shared-template-package decision before work begins.
+- **Provider capability gap:** the snapshot lacks an approved Background-accessible live per-checkout Shopify/WooCommerce discount eligibility evaluator proving all relevant provider/customer/checkout rules. Injectable adapter ports exist, but positive offers must remain unavailable until the appropriate Commerce/API/provider owner supplies and validates that capability. The architect should decide the owning follow-up task and integration dependency.
+- **Review evidence gap:** the original task launcher synchronization/recursive-submodule preparation packet is not included; verify separately before accepting the task under `docs/agent-worktree-isolation-policy.md`.
+- `npm ci` surfaced 20 audit advisories. No audit remediation was attempted under this bounded task; separate triage may be needed.
 
 ### Architectural Concerns
 
-No additional cross-repository issues identified at definition time; return any new gap to the architect.
+The resolver is deliberately read-only, uses the shared structured logger, and fails closed without checkout eligibility proof. The remaining live provider evaluation is cross-repository integration work; do not invent eligibility from catalogue rows or silently implement Commerce/API-owned capabilities inside Background. Downstream integration must also preserve final consent/STOP admission, messaging and billing boundaries. `ARCH-047-BACKGROUND-006` and `ARCH-047-BACKGROUND-007` remain subject to architect-controlled task dependencies and must not be started merely because this implementation has been submitted for review.
 
 ## Architect Review
 
