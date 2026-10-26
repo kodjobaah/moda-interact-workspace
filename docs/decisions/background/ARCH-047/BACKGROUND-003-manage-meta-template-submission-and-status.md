@@ -180,9 +180,13 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ## Completion Report
 
-> **Historical evidence:** The following original Status through Architectural Concerns entries describe developer Attempt 1, commit `568eed8`, and are retained unchanged. An independently recorded Attempt 2 implementation/validation addendum follows those entries. The current task frontmatter still says `ready`, `attempt: 1` because this uploaded parent task record contains no successful Attempt 2 claim; that fact must be reconciled through the authorised developer workflow before formal `review` submission.
-
 ### Status
+
+Ready — Attempt 1 implementation and Attempt 2 correction evidence are retained below. Awaiting canonical developer Attempt 2 claim.
+
+### Attempt 1 Historical Status
+
+> The following original Status through Architectural Concerns entries describe developer Attempt 1, commit `568eed8`, and are retained unchanged. An independently recorded Attempt 2 implementation/validation addendum follows those entries. The previous parent snapshot had `status: ready`, `attempt: 1`, `executor: null`, and `claimed_at: null`; Attempt 2 must be established through the authorised developer workflow before formal review submission.
 
 Blocked — developer Attempt 1, initially claimed `2026-10-25T19:11:32Z`. The bounded Meta submission/reconciliation module has been implemented and committed, but the full BG003 task cannot yet satisfy the queued-status-job and final-send regression criteria. Returning the cross-repository boundary to `moda_architect` for a scoped decision; not claiming Accepted/Complete.
 
