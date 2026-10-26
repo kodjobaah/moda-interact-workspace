@@ -7,8 +7,8 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 35
 executor: null
@@ -26,7 +26,7 @@ updated: 2026-10-26
 
 ## Architecture
 
-Architecture: `ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`; coordinator `moda_architect`. Defined against the 26 October 2026, 06:28 workspace snapshot. Defined but **not materialised**; no branch, worktree or implementation is claimed.
+Architecture: `ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`; coordinator `moda_architect`. Defined against the 26 October 2026, 06:28 workspace snapshot. The task definition was published on `origin/main` in `5c329bbc`; this developer takeover is being materialised on its canonical parent task branch. No implementation is claimed before the canonical launcher claim.
 
 ## Objective
 
@@ -141,3 +141,9 @@ Not assessed.
 
 ### Follow-up
 Review the final integration with BG007; do not use system testing as an implementation dependency.
+
+## Developer Ownership Amendment
+
+- Date: 2026-10-26.
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-SHOPIFY-001` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_app`, coordinator, repository, task scope, acceptance criteria, validation requirements, dependency gate, Ready eligibility, and attempt 0. The explicit dependency `ARCH-047-DATABASE-001` was verified complete. This amendment does not itself claim an implementation attempt.
