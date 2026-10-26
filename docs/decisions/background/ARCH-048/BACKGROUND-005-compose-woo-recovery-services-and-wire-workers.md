@@ -84,11 +84,11 @@ BG006 first freezes cross-service interfaces; BG001–BG004 independently implem
 
 - [x] Compose four already accepted services using the unchanged BG006 Background-local interface types through a small orchestrator, one code module and explicit constructor/factory injection; reuse existing deployed worker entrypoints.
 - [x] Wire checkout capture worker to BG001, order capture worker to BG002, pending candidate worker to BG003→BG004 routing with explicit Woo source marker and Shopify legacy fallback.
-- [ ] Wire existing initial outbound processor to ARCH-048 BG004; compose the accepted ARCH-046-BG004 `WooGuardedInitialSender`, and inject ARCH-046-BG002 notice callback at BG003 admission. Reject missing guard dependencies (no live or test fallback to generic unguarded sending). Retain correct queue ack/failure/cleanup behaviour.
-- [ ] Add tests for Woo vs Shopify routing, nil job+existing recovery, checkout after first send, order after first send, duplicate/failed job, DB insert→enqueue interruption, disabled Woo send and no Woo follow-ups.
-- [ ] Run existing Shopify worker/maturity regressions and entrypoint startup/build checks; record exact changed files per orchestration boundary.
-- [ ] Wire the shared structured logger into the orchestrator and each affected worker path; record safe started/completed/deferred/failed events without duplicate business rule logging.
-- [ ] Add worker-level fault-injection tests for rejected BG001, BG002, BG003, BG004, merchant-notice, Redis and enqueue dependencies; confirm BullMQ failure/retry rather than silent success or candidate deletion.
+- [x] Wire existing initial outbound processor to ARCH-048 BG004; compose the accepted ARCH-046-BG004 `WooGuardedInitialSender`, and inject ARCH-046-BG002 notice callback at BG003 admission. Reject missing guard dependencies (no live or test fallback to generic unguarded sending). Retain correct queue ack/failure/cleanup behaviour.
+- [x] Add tests for Woo vs Shopify routing, nil job+existing recovery, checkout after first send, order after first send, duplicate/failed job, DB insert→enqueue interruption, disabled Woo send and no Woo follow-ups.
+- [x] Run existing Shopify worker/maturity regressions and entrypoint startup/build checks; record exact changed files per orchestration boundary.
+- [x] Wire the shared structured logger into the orchestrator and each affected worker path; record safe started/completed/deferred/failed events without duplicate business rule logging.
+- [x] Add worker-level fault-injection tests for rejected BG001, BG002, BG003, BG004, merchant-notice, Redis and enqueue dependencies; confirm BullMQ failure/retry rather than silent success or candidate deletion.
 
 ## Interfaces / Contracts
 
@@ -126,20 +126,20 @@ interface WooRecoveryOrchestrator {
 
 - [x] Woo checkout/order capture workers invoke the new orchestrator, and no business decision is implemented inside workers.
 - [x] Woo maturity candidates route exclusively to Woo admission and initial-send pipeline; existing Shopify/legacy candidates route unchanged.
-- [ ] `created` only queues one initial send; `already-exists`, denial and retry are safe; order-after-send / no candidate updates durable status and suppresses further outreach.
-- [ ] No active Woo send with default-off switch, no Woo sequence-two follow-ups, and accepted ARCH-046-BG004 consent/STOP/Marketing final provider guard is wired on **every** actual initial-send/reentry path. Runtime composition fails closed if the guarded sender is unavailable.
-- [ ] All runnable integration tests and existing Shopify worker regressions pass; work stops without enabling live send.
-- [ ] Unexpected failures from any injected service propagate through the awaited worker callback and are visible as failed/retried BullMQ jobs with a structured error log; neither candidates nor billing are silently advanced or discarded.
-- [ ] Known domain outcomes and `failed-retryable` receive intentionally distinct queue semantics; successful logging cannot occur after a rejected operation, and safe structured correlation fields contain no PII.
+- [x] `created` only queues one initial send; `already-exists`, denial and retry are safe; order-after-send / no candidate updates durable status and suppresses further outreach.
+- [x] No active Woo send with default-off switch, no Woo sequence-two follow-ups, and accepted ARCH-046-BG004 consent/STOP/Marketing final provider guard is wired on **every** actual initial-send/reentry path. Runtime composition fails closed if the guarded sender is unavailable.
+- [x] All runnable integration tests and existing Shopify worker regressions pass; work stops without enabling live send.
+- [x] Unexpected failures from any injected service propagate through the awaited worker callback and are visible as failed/retried BullMQ jobs with a structured error log; neither candidates nor billing are silently advanced or discarded.
+- [x] Known domain outcomes and `failed-retryable` receive intentionally distinct queue semantics; successful logging cannot occur after a rejected operation, and safe structured correlation fields contain no PII.
 
 ## Validation
 
 - [x] Worker+orchestrator integration tests with real BullMQ/Redis, injected deterministic service results and explicit candidate discriminator fixtures.
-- [ ] End-to-end local Background/Postgres test for Woo checkout→maturity→recovery→initial attempt and late order/update (Meta mocked/controlled).
-- [ ] Shopify pre-existing candidate/recovery worker regression including legacy unmarked jobs; test crash after INSERT before enqueue and retry behaviour.
+- [x] End-to-end local Background/Postgres test for Woo checkout→maturity→recovery→initial attempt and late order/update (Meta mocked/controlled).
+- [x] Shopify pre-existing candidate/recovery worker regression including legacy unmarked jobs; test crash after INSERT before enqueue and retry behaviour.
 - [x] All entrypoint typecheck, declared build/lint/test suites relevant to touched worker code and `git diff --check`.
-- [ ] Test real BullMQ failed/retry states and deterministic injected exceptions from all four services; verify no `job.completed` on failure, preserved cause, retry attempt visibility and no unhandled promise rejections.
-- [ ] Inject a failing logger sink where practical to verify shared logger's own sink-failure isolation does not convert a genuine worker exception into success or break otherwise successful processing.
+- [x] Test real BullMQ failed/retry states and deterministic injected exceptions from all four services; verify no `job.completed` on failure, preserved cause, retry attempt visibility and no unhandled promise rejections.
+- [x] Inject a failing logger sink where practical to verify shared logger's own sink-failure isolation does not convert a genuine worker exception into success or break otherwise successful processing.
 
 ## Stop Condition
 
@@ -158,83 +158,98 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 ### Status
 
-In Progress — Developer Attempt 1, claimed at `2026-10-26T05:53:16Z`. The implementation was committed and pushed, but required architectural acceptance and remaining task validation are not yet complete. Retain `status: in_progress`, `attempt: 1` and the original claim; do not submit `status: review` until the remaining acceptance criteria and validation have been demonstrated.
+**Implementation validated locally; Developer Attempt 1 remains In Progress pending publication and worktree evidence.** The developer claim remains `2026-10-26T05:53:16Z` (`executor: developer`, `attempt: 1`). The original implementation and outstanding-validation changes have been pushed, but the final terminal record still shows one modified test file not committed. The canonical launcher start-of-attempt preparation packet is not in the supplied archive/log. These are evidence/workflow blockers to final developer self-review; do **not** claim the task is already `review`, `complete` or architect-accepted.
 
 ### Files Changed
 
-**Implementation repository:** `moda-interact-background`, commit `6ed1ee7` on `task/ARCH-048-BACKGROUND-005` (pushed to `origin/task/ARCH-048-BACKGROUND-005` on 2026-10-26). Git reported 17 files changed, 1,087 insertions and 190 deletions.
+**Implementation repository:** `moda-interact-background`; branch `task/ARCH-048-BACKGROUND-005`.
 
-Source files (9):
+- `6ed1ee7` — original orchestrator, worker composition/routing, internal initial dispatch and focused tests (pushed). Original Git output: 17 files, 1,087 insertions and 190 deletions.
+- `e0342e6` — subsequent outstanding-validation and legacy-cleanup corrections (reported pushed in the developer's earlier terminal evidence).
+- **Uncommitted at the final 09:16 UTC terminal snapshot:** `tests/integration/arch048-woo-initial-outreach.integration.test.ts` — update the terminal-order cases to assert a released reservation and a retryable-but-suppressed `PENDING` initial attempt, with replay blocked. This must be committed and pushed before review. An unrelated local `typescript` terminal recording is untracked; do not stage it.
+
+Initial implementation source files:
 
 - `src/entrypoints/recovery.ts`
 - `src/entrypoints/shopify-event.ts`
 - `src/index.ts`
-- `src/services/woocommerce-recovery/woo-initial-dispatch.queue.ts` (new)
-- `src/services/woocommerce-recovery/woo-recovery-composition.ts` (new)
-- `src/services/woocommerce-recovery/woo-recovery-orchestrator.service.ts` (new)
+- `src/services/woocommerce-recovery/woo-initial-dispatch.queue.ts`
+- `src/services/woocommerce-recovery/woo-recovery-composition.ts`
+- `src/services/woocommerce-recovery/woo-recovery-orchestrator.service.ts`
 - `src/workers/pending-recovery-candidate.worker.ts`
 - `src/workers/woo-checkout-capture.worker.ts`
 - `src/workers/woo-order-capture.worker.ts`
 
-Test files (8):
+Initial focused test files:
 
 - `tests/integration/woo-checkout-capture.integration.test.ts`
 - `tests/integration/woo-order-capture.integration.test.ts`
-- `tests/integration/woo-recovery-worker-wiring.integration.test.ts` (new)
-- `tests/unit/services/woocommerce-recovery/woo-initial-dispatch.queue.test.ts` (new)
-- `tests/unit/services/woocommerce-recovery/woo-recovery-orchestrator.service.test.ts` (new)
+- `tests/integration/woo-recovery-worker-wiring.integration.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-initial-dispatch.queue.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-recovery-orchestrator.service.test.ts`
 - `tests/unit/workers/woo-checkout-capture.worker.test.ts`
 - `tests/unit/workers/woo-order-capture.worker.test.ts`
-- `tests/unit/workers/woo-recovery-routing.worker.test.ts` (new)
+- `tests/unit/workers/woo-recovery-routing.worker.test.ts`
 
-The untracked terminal recording `typescript` was not staged in the displayed commit.
+Additional BG005 validation/cleanup files confirmed present in the supplied worktree:
+
+- `tests/integration/woo-recovery-composed-services.integration.test.ts`
+- `tests/integration/woo-recovery-worker-faults.integration.test.ts`
+- `tests/integration/woo-recovery-shopify-legacy.integration.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-recovery-orchestrator-faults.test.ts`
+- `src/workers/woo-checkout-capture.worker.ts` and `src/workers/woo-order-capture.worker.ts` (remove obsolete optional-orchestrator construction paths)
+- `tests/unit/workers/woo-checkout-capture.worker.test.ts` and `tests/unit/workers/woo-order-capture.worker.test.ts` (mandatory dependency coverage)
+
+The final changed-file set and complete commit ancestry should be reconciled with `git diff origin/main...HEAD` (or the canonical task baseline) during developer self-review; the ZIP is not a Git history record.
 
 ### Work Completed
 
-- Added `WooRecoveryOrchestratorService` as a thin facade over the accepted BG001 checkout, BG002 order, BG003 admission and BG004 outreach ports.
-- Composed `WooCheckoutCoordinatorService`, observed-order reader, candidate queue/index, shared merchant consent-denial notifier and concrete `WooGuardedInitialSender`; a missing guarded sender causes startup failure rather than a fallback to generic WhatsApp sending.
-- Wired Woo checkout and order capture workers and the recovery candidate/initial-dispatch worker into the existing process entrypoints. Explicit `source: woocommerce` maturity jobs use Woo orchestration; unmarked jobs retain the Shopify materialisation branch; unknown sources fail.
-- Added an internal deterministic initial-dispatch job on the existing recovery queue, with retry and attempt-ownership validation; the orchestrator preserves candidate state when an exception interrupts admission/enqueue.
-- Reused `@modainteract/moda-interact-shared/logging` in changed worker paths, with structured job outcome logs and exception rethrowing. No new generic logger, database table or merchant-facing API was introduced.
-- Added focused unit tests and a disposable Redis/BullMQ/PostgreSQL worker integration test. The latter deliberately injects deterministic domain-service test doubles: it does **not** establish the complete production consent/STOP/billing/guarded-send workflow.
+- Implemented thin `WooRecoveryOrchestratorService` composition of accepted BG001 checkout, BG002 terminal order, BG003 recovery admission, BG004 initial outreach, ARCH-046-BG002 consent-denial notice and ARCH-046-BG004 concrete guarded sender, with no generic unguarded sender fallback.
+- Wired Woo checkout/order capture, explicitly marked Woo maturity and initial dispatch into existing Background entrypoints. Unmarked Shopify candidates continue down the existing materialiser; unknown sources fail safely. Insert-before-enqueue replay uses the same durable recovery, not a second initial send.
+- Preserved default-off Woo outbound sending, local STOP/final SQL provider permit, consent, terminal order and credit accounting guards, and no Woo sequence-two follow-up. Business logic remains in BG001–BG004.
+- Removed the obsolete Woo capture-worker construction mode that allowed a missing orchestrator. Required composition now fails closed. The live Shopify compatibility path is **not** dead code and remains supported.
+- Used `@modainteract/moda-interact-shared/logging` in changed worker/orchestrator paths. Tests exercise bounded identifiers, sink-failure isolation, awaited failure propagation and BullMQ failure/retry states; no exceptions are intentionally swallowed.
+- Added small, separated tests for composed service execution, worker faults/retries, legacy Shopify routing, and logger failure isolation. The Meta provider is mocked/controlled; tests do not send real WhatsApp messages.
+- Corrected the three obsolete terminal-order regression assertions: unadmitted initial attempts remain `PENDING`/retryable, the credit reservation is released, and replay is denied by terminal-order evidence without sending or charging.
 
 ### Validation Results
 
-**Developer terminal evidence:** `typescript(20261026-063211)` (2026-10-26, ~06:29–06:32 UTC).
+**Prior developer terminal evidence in this conversation (26 October 2026):**
 
-- `git apply --check --whitespace=error-all` and `git apply --whitespace=error-all` for the Attempt 1 validation-correction patch: no application errors in the captured output; subsequent tests ran against the corrected worktree.
-- `npm test -- tests/unit/services/woocommerce-recovery/woo-recovery-orchestrator.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-dispatch.queue.test.ts tests/unit/workers/woo-recovery-routing.worker.test.ts tests/unit/workers/woo-checkout-capture.worker.test.ts tests/unit/workers/woo-order-capture.worker.test.ts`: **PASS, 34/34 tests across 5 files**.
-- `npm run test:integration -- tests/integration/woo-recovery-worker-wiring.integration.test.ts tests/integration/woo-checkout-capture.integration.test.ts tests/integration/woo-order-capture.integration.test.ts`: **PASS, 4/4 tests across 3 files**, including real BullMQ/Redis processing and PostgreSQL persistence with injected domain-service doubles.
-- `npm run lint` (`eslint .`): completed without an error displayed.
-- `npx tsc --noEmit`: completed without an error displayed.
-- `npm run build` (`npm run prisma:generate && tsc`): completed successfully; Prisma Client v6.19.3 generated.
-- `git diff --check`: run without reported errors before the implementation commit. Repository worktree is not shown as clean after the commit because no post-commit status was captured.
-- `git commit`: `6ed1ee7` (`feat(arch-048-background-005)`); `git push -u origin task/ARCH-048-BACKGROUND-005`: successful. This proves only the implementation branch push, not an updated parent task-branch push or canonical launcher evidence.
+- Original BG005 unit group: **34/34 PASS** across five files; Redis/BullMQ/PostgreSQL wiring/capture integration: **4/4 PASS** across three files; lint, `npx tsc --noEmit`, and build passed.
+- Additional BG005 cleanup/fault unit group: **25/25 PASS**; composed-service, worker-fault, Shopify legacy and worker-wiring integration group: **9/9 PASS**, four suites; lint/typecheck/build passed after the test corrections. `e0342e6` was pushed on the implementation task branch.
+- Existing pending-candidate and Woo outreach unit regressions: **67/67 PASS**. The first run of Woo initial-outreach integration exposed 3 obsolete expected `FAILED` states; these were corrected to the accepted `PENDING`/credit-release contract and retested below.
 
-**Not yet evidenced and therefore deliberately unchecked:** true composition-level consent/STOP/final-send and default-off execution, actual BG001–BG004 fault injection and failed/retried BullMQ states across all boundaries, existing Shopify/legacy regression suite, logger sink-failure isolation, initial-send crash/re-enqueue under actual BG004, and canonical start-of-attempt preparation packet.
+**Latest uploaded developer terminal evidence:** `typescript(20261026-091609)` (26 October, test run began 09:04 UTC):
+
+- `npm run test:integration -- tests/integration/arch048-woo-initial-outreach.integration.test.ts tests/integration/woo-initial-send-fence.integration.test.ts`: **12/12 PASS across 2 files**, including all seven initial-outreach scenarios and all five final SQL permit scenarios. These verify placed/paid/cancelled orders block replay without provider send, STOP after reservation, default-off, concurrent permit idempotency and billing/credit assertions.
+- `npm run lint` (`eslint .`): **PASS** (no errors in terminal output).
+- `npx tsc --noEmit`: **PASS** (no errors in terminal output).
+- `npm run build` (`npm run prisma:generate && tsc`): **PASS**, Prisma Client v6.19.3 generated.
+- Git status: on `task/ARCH-048-BACKGROUND-005`, up to date with origin, **one modified integration test** and an untracked terminal recording `typescript`. `git add test` failed because there was no such path; it did not stage the file. No commit of the final test correction is evidenced by this log.
+
+**Scope/limits:** Earlier BG005 tests cover real PostgreSQL, Redis and BullMQ and either injected domain services or a composed Woo lifecycle with controlled provider. Final SQL-permit tests cover the accepted consent/STOP/send fence. These are not a live Meta/WhatsApp production end-to-end test. Test results from different invocations are not aggregated into one fictional single-suite run.
 
 ### Deviations
 
-- No production-scope deviation established from the supplied snapshot. Validation coverage remains narrower than the task's full acceptance contract.
-- The integration wiring test uses real worker/queue/DB infrastructure but mocked checkout, order, admission, outreach, and final-delivery behaviour. It must not be described as a live production composition end-to-end test.
+- Removed only the obsolete optional-orchestrator capture worker construction mode. Active unmarked Shopify candidate routing is retained intentionally.
+- The final integration test fixture correction is still local/uncommitted at the observed 09:16 UTC terminal snapshot; no claim is made that it is present on the pushed branch.
 
 ### Assumptions
 
-- The accepted BG001–BG004 and ARCH-046 shared notifier/guard interfaces continue to apply at `6ed1ee7`. The task should consume those services rather than change their internal business rules.
-- Woo initial sending remains default-off; this report does not authorise enabling live Woo sends or schedule sequence-two Woo follow-ups.
+- Accepted BG001–BG004 and ARCH-046 notifier/guard interfaces remain authoritative. No independent Woo sequence-two sending is enabled.
+- `completion_mode: developer` requires an explicit developer completion action **after** authorized review; the implementation commit does not complete the task.
 
 ### Unresolved Issues
 
-- Execute and record the **actual** Background composition path from valid Woo checkout through maturity/admission, initial outreach with mocked Meta, final consent/STOP check, durable attempt and billing, then late terminal order. The currently passing integration test substitutes business-service doubles.
-- Run existing Shopify pending-candidate and recovery-worker regressions, including legacy unmarked jobs and insert-before-enqueue crash/retry; verify no Shopify behaviour is changed.
-- Prove awaited failure/retry behaviour in real BullMQ for injected BG001, BG002, BG003, BG004, merchant-notice, Redis and enqueue failures. Confirm durable failed/retried states, no success log after failure, no candidate/index deletion or billing advance on failed work, and no unhandled rejections.
-- Verify the default-off sender and absence of Woo follow-ups at runtime, and test a throwing structured-logger sink without suppressing genuine worker exceptions. Review generic and Woo failure-log duplication on initial-dispatch jobs.
-- Add canonical task-preparation evidence: launcher packet, dedicated parent/implementation worktree isolation, start-of-attempt synchronization, recursively materialised submodules, task branches/revisions and worktree state. The terminal log only establishes the implementation worktree path and branch; the archive helper reports both paths after the fact.
+1. **Publish the last corrected regression test:** stage `tests/integration/arch048-woo-initial-outreach.integration.test.ts` only, validate the staged diff, commit and push on the Background `task/ARCH-048-BACKGROUND-005` implementation branch. Record the new commit ID; exclude untracked `typescript`.
+2. **Record canonical preparation evidence:** retrieve or revalidate the launcher-resolved dedicated parent and implementation worktree paths, their Git common-dir isolation, exact task branches/revisions, start-of-Attempt-1 fetch/fast-forward/merge/synchronization record, and recursive submodule materialisation. The prior claim timestamp and separate paths alone do not prove the full preparation contract. If the original launch packet cannot be recovered, document the missing historical proof and perform current non-destructive isolation/synchronization verification; do not manufacture an old packet or increment the attempt merely to obtain it.
+3. **Developer review transition:** after these two items are resolved, run `/moda_developer_update ARCH-048-BACKGROUND-005` to reconcile actual published changes and record the developer self-review. Only then set `status: review` with the authorized review history. Architect acceptance and developer-controlled final completion remain separate.
 
 ### Architectural Concerns
 
-- Event-driven capture cannot infer Woo checkout/order changes whose upstream events never arrive; preserve this limitation and the default-off outbound gate until integrated system validation.
-- Formal submission requires the outstanding acceptance criteria to be demonstrably met. Do not relabel an in-progress, partially validated task as `review` or `complete` solely because the focused tests and Git push succeeded.
+- None newly demonstrated by the final validation runs. The system still depends on Woo producer events arriving; this implementation does not provide external provider polling or permit live Meta sending by itself.
+- The acceptance checkboxes record implemented/tested technical behaviour, but an uncommitted correction and missing canonical start-of-attempt evidence are still workflow blockers. Preserve the original developer claim; do not mark this task `review` or `complete` solely from a passing test log.
 
 ## Architect Review
 
