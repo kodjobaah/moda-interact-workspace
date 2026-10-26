@@ -122,35 +122,74 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-26T07:24:51Z. Attempt 0 review history is preserved below.
+**In Progress — Attempt 1, blocked on an architectural decision.** The developer's existing claim at `2026-10-26T07:24:51Z` remains recorded in task YAML. This report is an escalation for the architect, **not** a completed implementation, formal review submission, or new attempt. The developer/architect workflow must authorise any later transition to `blocked` or `ready`; this documentation patch does not change the claim.
 
 ### Files Changed
 
-None yet.
+Preparation-only source present in the supplied BG009 implementation worktree:
+
+- `moda-interact-background/src/services/recovery-conversation/human-wrapper-preparation.service.ts` (new).
+- `moda-interact-background/tests/unit/services/recovery-conversation/human-wrapper-preparation.test.ts` (new; execution not evidenced).
+
+This handoff patch changes only `docs/decisions/background/ARCH-047/BACKGROUND-009-integrate-human-conversation-wrappers.md`. The uploaded archive does not establish whether the implementation files have been committed or pushed.
 
 ### Work Completed
 
-None yet.
+- Added a preparation-only seam over BG005's `renderConversationResponse(source: 'HUMAN')`, using the accepted command ID as stable rendering identity and the original merchant text as input.
+- The preparer distinguishes rendered, explicitly unconfigured passthrough, refusal, and non-applicable post-window commands. It does **not** grant moderation approval or provider-send permission.
+- Added unit-test source for identity and exact merchant text, passthrough/refusal behaviour, exclusion of the post-window command kind, and shared-logger exception propagation. The tests have **not** been shown to execute in the supplied terminal log.
+- Deliberately **did not** connect prepared text to `HumanCommandDispatcherService`, the moderation assessment service, `OutboundSendFenceService`, or the WhatsApp provider. These would currently disagree on the authoritative content.
 
 ### Validation Results
 
-Not run; implementation validation remains outstanding.
+The uploaded `typescript(20261026-072937)` terminal recording shows:
+
+- `npm run prisma:generate` — completed successfully (Prisma Client 6.19.3 generated).
+- `git apply --check --whitespace=error-all` for the preparation patch — no error reported.
+- `git apply --whitespace=error-all` — no error reported.
+- `git diff --check` — no error reported.
+- The archive was created by the task-worktree compressor using separate reported parent and implementation paths. This is **not** a substitute for launcher-resolved start-of-attempt synchronisation/branch evidence.
+
+**Not evidenced or claimed passed:** focused Vitest, build/typecheck after the preparation patch, ESLint, PostgreSQL integration, moderation/final-send/provider equality, or an implementation commit/push. All corresponding task Validation and Acceptance Criteria remain unchecked.
 
 ### Deviations
 
-None recorded.
+**Intentional preparation-only implementation.** The task's in-window dispatcher/moderation/final-send integration remains incomplete, because the currently installed durable command and moderation constraints do not permit the prepared wrapped body to become the canonical moderated and sent content. No insecure workaround or parallel raw-text send path was introduced.
 
 ### Assumptions
 
-The DB001 Attempt 7 model names and fields are authoritative design inputs, not proof of an accepted/applied production migration. Reinspect current implementation on claim.
+- The provided 26 October worktree snapshot is the inspected development baseline; schema and migration files in this archive do not by themselves prove deployment state.
+- `ARCH-047-BACKGROUND-005` is recorded `complete` in the uploaded task definitions.
+- The existing ARCH-040 tenant/control/window/STOP/final-send/moderation guards remain mandatory; BG007 retains the separately owned post-window Meta-template path.
 
 ### Unresolved Issues
 
-The parent ARCH-047 architecture and `BACKGROUND-001` still require final reconciliation with the Admin-owned AST/compilation and no-new-Shared-template-package decision before work begins.
+**Blocking decision: durable prepared HUMAN_TEXT content.** The immutable raw accepted command, canonical moderation identity, final-admission message construction, and provider send must be reconciled before BG009 can meet R1/R2/R3/R6.
+
+- The architect must decide the durable representation and consistency boundary; direct mutation of accepted `MerchantConversationSendCommand.textBody`, an unmoderated append, or in-memory/Redis-only prepared content is not acceptable.
+- A database-owned schema/migration and SQL moderation guard change (or an architect-approved equivalent durable design) is required before Background may safely wire the prepared text into the existing dispatcher and admission transaction. Assign a real task ID and update dependencies only through architecture coordination.
+- BG007 also changes `human-command-dispatcher.service.ts`. Reconcile its final branch before BG009 acceptance; do not modify BG007's post-window flow within this task.
+- Following the decision and prerequisite implementation, run the required unit, database integration, compensation/retry, and full-message/payload equality validations; capture branch/worktree/synchronisation evidence before formal review.
 
 ### Architectural Concerns
 
-No additional cross-repository issues identified at definition time; return any new gap to the architect.
+**Evidence in the supplied repository:**
+
+1. `database/prisma/migrations/20261017214500_arch040_remove_outreach_sequence_policy/migration.sql` enforces immutable accepted-command identity/payload, including `textBody`, through `whatsapp.arch040_command_guard()`.
+2. `src/services/conversation-moderation/moderation-assessment.service.ts` resolves a HUMAN_TEXT command's canonical moderation content from `command.textBody`, and rejects a supplied `effectiveText` that differs (`moderation_content_identity_mismatch`).
+3. `database/prisma/migrations/20261018092000_arch040_moderation_template_content_digest/migration.sql` enforces the HUMAN_COMMAND/TEXT moderation digest against the same command text in `whatsapp.arch040_moderation_subject_guard()`.
+4. `src/services/recovery-conversation/outbound-send-fence.service.ts` constructs the admitted HUMAN_TEXT `ConversationMessage` from `command.textBody`; `src/services/recovery-conversation/human-command-dispatcher.service.ts` also sends `command.textBody` to WhatsApp. A prepared wrapper currently has no durable, authoritative pre-moderation handoff to either step.
+
+**Architect decision requested:** Choose and document an architecture-owned contract (for example, an immutable, set-once prepared body plus provenance/digest on the command, **or an equivalent durable one-to-one prepared-message record**) satisfying all of the following:
+
+- Preserve the original accepted merchant text, request payload identity, idempotency key, tenant/conversation/command relationship and audit history unchanged.
+- Atomically freeze the complete customer-visible body and selected wrapper provenance under a valid command claim **before** moderation; retry/restart/replay must reuse that frozen body rather than re-render under a changed assignment.
+- Make the frozen full body the canonical HUMAN_TEXT moderation subject, including database digest validation and existing ALLOW/BLOCK/REVIEW_REQUIRED, model/policy-version and fail-closed requirements. Do not reclassify HUMAN text as AGENT/AUTOMATION to bypass the guard.
+- Bind final admission to the exact moderated digest, current tenant/HUMAN control/24-hour window/STOP/consent and wrapper-publication policy, then persist `ConversationMessage.content` from that same frozen body. The provider-send payload must equal the durably admitted message. Decide explicitly what happens when the wrapper assignment changes after freezing but before admission (suppress/reprepare under a safe revision contract, never silently change admitted text).
+- Preserve one-way provider permits, existing UNKNOWN/compensation/idempotency handling, and the separate BG007 post-window template/billing behaviour.
+- Require PostgreSQL integration coverage for uniqueness, concurrent leases, restart/replay, mid-flight control or wrapper changes, wrapper-only moderation denial, stale moderation, and exact moderated/persisted/provider-text equality. Preserve structured error reporting through `@modainteract/moda-interact-shared/logging` without swallowing unexpected failures.
+
+**Ownership and sequencing decision requested:** `moda_architect` to approve a `moda_database` prerequisite and any necessary cross-repository contracts, update the ARCH-047 execution graph/task dependencies, and then return BG009 to its existing developer execution path for the bounded Background wiring/tests. If the architect selects a different design, explicitly revise BG009's acceptance criteria and track the remaining full-content moderation/final-send obligation. Until that decision, **do not treat the preparation-only patch as BG009 acceptance evidence**.
 
 ## Architect Review
 
