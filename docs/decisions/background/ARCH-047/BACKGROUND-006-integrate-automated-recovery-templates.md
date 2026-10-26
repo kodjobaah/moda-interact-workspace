@@ -9,9 +9,9 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 35
-executor: developer
+executor: null
 claimed_at: null
 attempt: 2
 depends_on:
@@ -124,7 +124,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 - [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
 - [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence. (Git checks and worktree paths verified; launcher sync/submodule evidence is not in the supplied log.)
+- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence. Current review verification: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-006` is clean at `c4acbf5b380ff35ca04d900457907d31e2c7c48f`, matching `origin/task/ARCH-047-BACKGROUND-006`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-006` is clean at `7a2bac9c2addb8c2756c8fee585034599e422848`, matching its task remote, and contains current `origin/main` (`9ae3fdada9c60a3645dd824330d39ce4229a4ddb`) as an ancestor. Recursive database submodule is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. Both diff checks pass. The historical Attempt 2 launcher/start-synchronization packet is unavailable; these current-state checks do not replace it.
 - [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
@@ -143,7 +143,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Ready for Review — **Attempt 2 correction submitted**. The previously blocking, real-PostgreSQL final-send permit/revocation tests now pass (four tests in two files), and the test-only correction is published at implementation commit `7a2bac9` after the original `6066b6f`. No architect acceptance or developer completion is claimed. **Evidence caveat:** the supplied Attempt 2 materials do not include a launcher preparation/claim packet or `claimed_at` timestamp; the latter remains `null` rather than being invented, and the dedicated worktree/branch evidence must be verified by the reviewer.
+Changes Requested — **Attempt 2 review**. The real-PostgreSQL final-send permit/revocation tests pass (four tests in two files), and the test-only correction is published at implementation commit `7a2bac9` after the original `6066b6f`. Current worktree isolation, branch synchronization and submodule state were independently verified during this review. The original Attempt 2 launcher preparation/claim and start-of-attempt synchronization packet was not retained, so the required historical workflow evidence remains incomplete; no `claimed_at` timestamp is inferred. No architect acceptance or developer completion is claimed.
 
 ### Files Changed
 
@@ -303,3 +303,25 @@ Attempt 1 is not accepted for developer completion. The production adapter locks
 ### State Transition
 
 Returned to `ready`, with `executor: null`, `claimed_at: null`, and Attempt 1 unchanged. The next canonical `/moda_developer_create ARCH-047-BACKGROUND-006` claim will create Attempt 2 and provide fresh launcher synchronization/submodule evidence. No implementation source was modified during this review.
+
+## Developer Self-Review - Changes Requested (Attempt 2)
+
+### Review Decision
+
+Attempt 2 implementation and its focused PostgreSQL correction pass review, but the required task-isolation/start-of-attempt evidence is incomplete. The task report explicitly states that no Attempt 2 canonical launcher preparation/claim packet or start-of-attempt synchronization evidence was retained. Current branch/worktree/submodule checks were completed during this review and are recorded under Validation Results; they cannot establish that the launcher synchronization protocol ran at the start of Attempt 2. Return the task to `ready` so the next canonical developer attempt can capture the required launcher evidence. No implementation source correction is requested.
+
+### Validation Reviewed
+
+- **PASS** — `npm run test:integration -- tests/integration/arch047-final-template-status-admission.integration.test.ts tests/integration/arch047-final-template-permit-races.integration.test.ts`, run from the canonical BG006 implementation worktree: 2 PostgreSQL test files, 4 tests passed. A prior invocation from the BG008 worktree found no BG006 tests and is discarded, not counted as evidence.
+- **PASS** — implementation worktree is clean at `7a2bac9c2addb8c2756c8fee585034599e422848`, equal to `origin/task/ARCH-047-BACKGROUND-006`; current implementation `origin/main` is an ancestor.
+- **PASS** — parent worktree is clean at `c4acbf5b380ff35ca04d900457907d31e2c7c48f`, equal to `origin/task/ARCH-047-BACKGROUND-006`.
+- **PASS** — recursive database submodule is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`; parent and implementation `git diff --check` pass.
+- **NOT EVIDENCED** — Attempt 2 launcher claim/preparation packet and start-of-attempt synchronization for both mirrored worktrees. Current state was checked directly and is not represented as historical launcher output.
+
+### Required Correction
+
+On the next canonical developer attempt, retain the launcher-resolved preparation/claim output and start synchronization evidence for both parent and implementation worktrees, including recursive submodule status. Keep the current passing implementation unchanged unless a later validation identifies a code defect. Do not fabricate a `claimed_at` value or infer historical synchronization from the current clean state.
+
+### State Transition
+
+Returned to `ready`; `executor: null`, `claimed_at: null`, Attempt 2 unchanged. No implementation files were modified. A subsequent `/moda_developer_create ARCH-047-BACKGROUND-006` will claim Attempt 3 and must retain the canonical launcher evidence requested above.
