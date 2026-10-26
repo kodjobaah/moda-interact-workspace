@@ -11,8 +11,8 @@ execution_mode: developer
 completion_mode: developer
 status: review
 priority: 40
-executor: developer
-claimed_at: 2026-10-26T07:16:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-BACKGROUND-005
@@ -72,7 +72,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 - [x] Keep the existing AI conversation ordering, ownership checks, generation budgets, abuse/moderation gates and outbound WhatsApp admission unchanged except for inserting the prepared wrapper step.
 - [x] Add narrow tests and dependency-injected facade call rather than duplicating wrapper rendering, checkout reads or AST logic.
 - [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
-- [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report. Code, test and commit evidence is recorded below; the original launcher start-of-attempt packet and recursive submodule-preparation evidence remain unverified.
+- [x] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report. The original launcher start-of-attempt packet was not retained; current physical and branch evidence and this evidence limitation are recorded below.
 
 ## Interfaces / Contracts
 
@@ -93,7 +93,7 @@ None in this nine-task Background set.
 
 - [x] AI answer unchanged when wrapper disabled; enabled SHARED/AI wrapper adds correct shop and current valid checkout context.
 - [x] Full rendered text is moderated, including forbidden content introduced by wrapper; provider must not receive blocked content. Integration uses a real PostgreSQL projection and an injected moderation/delivery seam, not live Meta delivery.
-- [ ] Human takeover before/during/after model generation, service window closure, STOP/consent, credit and ordering regressions. Focused takeover and stale-turn cases passed, but the supplied logs do not independently enumerate all previously existing service-window, STOP/consent and credit regression cases.
+- [x] Human takeover before/during/after model generation, service window closure, STOP/consent, credit and ordering regressions. BG008 takeover/stale-turn tests, STOP/admission unit coverage, expired-window human-dispatch integration, credit reservation/policy tests and follow-up claim-race integration passed; see the current review evidence below.
 - [x] Retry/double-wrap protection and one provider send; read-only commerce tool assertion. Unit tests and source inspection confirm a single wrapper insertion before the existing sender; no Commerce tool mutation was added.
 - [x] Focused conversation-turn, moderation and WhatsApp worker tests; integration/build/`git diff --check`. See Validation Results for the latest rerun and earlier broader-suite reports.
 - [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
@@ -103,10 +103,10 @@ None in this nine-task Background set.
 
 ## Validation
 
-- [x] Run the focused new tests and relevant existing regression suites identified above; record outcomes. The latest terminal capture includes the 54-test conversation-turn suite; earlier task validation reported 131 passing unit tests and 6 passing PostgreSQL integration tests. The exact earlier command output is not in the newest recording.
+- [x] Run the focused new tests and relevant existing regression suites identified above; record outcomes. Current review reruns and exact outcomes are listed under Validation Results.
 - [x] Run the repository-declared build/typecheck (`npm run build`) and focused ESLint; both completed without reported errors on 2026-10-26.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence. Diff/changed-file/branch evidence is present; the launcher preparation/synchronisation and recursive submodule packet is not reproduced in the supplied capture.
-- [x] PostgreSQL integration: six tests passed in the earlier local validation; the new integration suite exercises real database state and an injected moderation/delivery seam. The latest capture reran the corrected unit test, not the database suite.
+- [x] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence. Dedicated worktree paths, clean branch states, task commits/remotes, current `origin/main` ancestry and recursive submodule state were verified during review. The original machine-readable start-of-attempt packet was not retained and is recorded as a workflow evidence limitation.
+- [x] PostgreSQL integration: current review passed the BG008 wrapper integration suite (2 tests) and existing human-dispatch, follow-up-race and moderation integration suites (19 tests total); the new wrapper suite uses real database state and an injected moderation/delivery seam.
 
 ## Stop Condition
 
@@ -124,7 +124,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Ready for Review — Attempt 1, developer execution. Implementation commit `db627fe` was pushed to `origin/task/ARCH-047-BACKGROUND-008` on 2026-10-26. This is a submission for review, **not** architect acceptance or explicit developer completion.
+Developer Self-Review Passed — Attempt 1, developer execution. Implementation commit `db627fe` is pushed to `origin/task/ARCH-047-BACKGROUND-008`. Explicit developer completion remains pending; architect review is not asserted by this self-review.
 
 ### Files Changed
 
@@ -161,10 +161,17 @@ No database schema, Admin, Meta template authoring, Shared contract or `_index.m
 - `npx vitest run tests/unit/services/conversation-turn-processor.service.test.ts`: **PASS — 54/54** in the latest terminal capture.
 - `npx eslint src/services/conversation-turn-processor.service.ts tests/unit/services/conversation-turn-processor/ai-wrapper.cases.ts`: **PASS**, no lint errors reported after the correction.
 - `git diff --check`: **PASS**, no whitespace errors reported.
-- Broader focused validation from the preceding task report: **131 unit tests passed and 6 PostgreSQL integration tests passed**. Those results were reported before the two-line lint correction; the latest capture independently reran build, 54 affected unit tests and lint, but not the integration suite.
+- Current review rerun: `npx vitest run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/services/conversation-wrappers/compose-ai-outbound.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts tests/unit/services/conversation-moderation` — **150 tests passed in 9 files**.
+- Current review rerun: `npm run test:integration -- tests/integration/conversation-ai-wrapper.integration.test.ts` — **2 PostgreSQL integration tests passed**.
+- Current review rerun: `npm run test:arch040-background-wiring` — **120 tests passed in 6 files**.
+- Current review rerun: `npm run test:integration -- tests/integration/recovery-human-dispatch.integration.test.ts tests/integration/recovery-follow-up-claim-races.integration.test.ts tests/integration/conversation-moderation.integration.test.ts` — **19 PostgreSQL integration tests passed in 3 files**.
+- Current review rerun: `npx vitest run tests/unit/services/outbound-whatsapp-admission/outbound-admission-reservation.service.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-admission-policy.service.test.ts tests/unit/services/conversation-turn-processor/facade-outbound.cases.ts` — **21 tests passed in 2 files**.
+- `npm run build` — **PASS** during current review; Prisma Client generated and TypeScript compiled.
+- Focused `npx eslint` over the implementation and directly affected tests — **PASS**, no diagnostics. `git diff --check origin/main...HEAD` — **PASS**.
+- The first direct integration-runner invocation failed before tests because `prisma` was not on PATH; rerunning via the declared npm script supplied the local binary and passed. This was an invocation/setup issue, not an application test failure.
 - Source review against the submitted snapshot: BG005 is invoked after model completion, the same prepared-send path receives the final text in either case, and no separate direct AI-result-to-provider send branch was identified.
 - Git evidence: implementation task branch `task/ARCH-047-BACKGROUND-008`, commit **`db627fe`** (`feat(arch-047-background)`), successful GitHub push with upstream tracking established. The log shows the dedicated implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-008`, and the snapshot names the separate parent task worktree.
-- The original launcher-resolved start-of-attempt synchronization packet and recursive implementation-submodule materialization evidence are **not present in the supplied terminal recording**. The presence of worktrees or a successful push does not substitute for that evidence.
+- The original launcher-resolved start-of-attempt synchronization packet is **not retained**. Current review verified the canonical dedicated worktree paths, clean task branches, implementation `HEAD` and `origin/task/ARCH-047-BACKGROUND-008` both at `db627fe2fbb7083d2f46ee027cb03640e794a428`, parent `HEAD` and its remote both at `cdef3453cca0fa2da50a9e682311e3fd8b3ab93f`, `origin/main` as an ancestor of both branches, and recursive database submodule `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. The historical packet is recorded as a workflow evidence limitation; no historical steps are fabricated.
 
 ### Deviations
 
@@ -178,8 +185,7 @@ No out-of-scope implementation changes identified. Full end-to-end Meta delivery
 
 ### Unresolved Issues
 
-- Task-isolation/start-of-attempt packet and recursive submodule/synchronisation evidence remain unverified and must be provided or explicitly recorded as workflow non-conformance during review.
-- The reviewer should confirm the full service-window, STOP/consent, credits and existing delivery regression evidence required by the composite Acceptance Criterion above, since the latest terminal capture does not enumerate all those cases.
+- The original machine-readable start-of-attempt packet was not retained. Physical isolation, current synchronization, submodule state and mirrored branch publication were independently verified during this review; this historical evidence limitation remains recorded.
 
 ### Architectural Concerns
 
@@ -218,4 +224,13 @@ Architect to reconcile the parent task graph and obsolete Admin/Shared reference
 - Change: The developer explicitly invoked `/moda_developer_create ARCH-047-BACKGROUND-008` for this Ready agent-owned task. Execution ownership transfers to the developer and completion mode is set to developer review.
 - Preserved: `assigned_agent: moda_background`, coordinator, repository, task scope, acceptance criteria and validation requirements.
 - Dependency check: `ARCH-047-BACKGROUND-005` routes as `complete` in its canonical task record.
-- State before claim: `ready`, Attempt 0, `executor: null`, `claimed_at: null`. The canonical developer preparation workflow will synchronize the task worktrees and claim Attempt 1. No implementation or merge to `main` is performed by this ownership amendment.
+- State before claim: `ready`, Attempt 0, `executor: null`, `claimed_at: null`. The canonical developer workflow subsequently claimed Attempt 1. No implementation or merge to `main` was performed by this ownership amendment.
+
+## Developer Self-Review - Passed (Attempt 1)
+
+- Review date: 2026-10-26; reviewed attempt: 1.
+- Disposition: The implementation is task-scoped; BG005 runs after model completion and before the existing single prepared-send path. Wrapped and no-wrapper results share whole-message moderation and final admission. Human takeover/stale-turn, STOP, expired-window, moderation, reservation/credit and follow-up ordering regressions passed in the focused unit and PostgreSQL suites recorded above.
+- Validation: Focused unit suites passed (150 tests in 9 files; 120 tests in 6 files; and 21 tests in 2 files). The BG008 PostgreSQL wrapper suite passed 2/2; human-dispatch, follow-up-race and moderation integration suites passed 19/19. Build, focused ESLint and `git diff --check` passed.
+- Publication and isolation: Implementation commit `db627fe` and parent report commit `cdef3453` are pushed to their respective `task/ARCH-047-BACKGROUND-008` branches. Both canonical worktrees were clean; both branches include current `origin/main`. Recursive database submodule is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+- Evidence limitation: The original machine-readable launcher packet was not retained. Current physical worktree, branch, remote and submodule evidence is recorded above; no historical launcher evidence is claimed or reconstructed.
+- Lifecycle: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. `completion_mode: developer` remains in force; explicit developer completion is pending. Architect review remains pending.
