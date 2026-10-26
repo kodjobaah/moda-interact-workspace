@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 15
-executor: developer
-claimed_at: 2026-10-26T12:10:12Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-040-DATABASE-001
@@ -35,7 +35,7 @@ updated: 2026-10-26
 
 ## Developer Ownership Amendment
 
-On 2026-10-26, `/moda_developer_create ARCH-040-DATABASE-007` was invoked to take over this ready agent-owned task. Execution and completion modes are now `developer`; `assigned_agent: moda_database`, coordinator, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged. The task remains Ready at Attempt 0 until the canonical implementation worktree is prepared and the developer claim is committed.
+On 2026-10-26, `/moda_developer_create ARCH-040-DATABASE-007` was invoked to take over this ready agent-owned task. Execution and completion modes are now `developer`; `assigned_agent: moda_database`, coordinator, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged. Attempt 1 was claimed and returned Changes Requested; Attempt 2 was subsequently claimed on 2026-10-26T12:10:12Z. The current lifecycle state and attempt are recorded in the frontmatter and Completion Report.
 
 ## Objective
 
@@ -217,7 +217,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-26T12:10:12Z. All task-required technical validation passed in the 12:30–12:35 UTC rerun; the original Attempt 2 launcher preparation/synchronisation evidence remains unverified. Attempt 1 review history is preserved below.
+Changes Requested — Attempt 2 reviewed. All task-required technical validation passed in the 12:30–12:35 UTC rerun; implementation remains clean, task-scoped and published. The original Attempt 2 launcher preparation/synchronisation packet is still unavailable. During a later resume/review invocation, both canonical worktrees were verified clean and remote-synchronized, current `origin/main` was already an ancestor of each task branch, and implementation recursive submodule preparation completed with an empty status. That later evidence is recorded below but does not prove the historical start condition. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -262,6 +262,7 @@ Executed in the developer's dedicated Database task worktree, as recorded in the
 | Reviewer rerun (2026-10-26) | From the canonical implementation worktree, `npm run prisma:validate`, `npm run prisma:generate`, `npm run test:arch040-human-prepared-schema`, `npm run test:arch040-human-prepared:postgres` (fresh and upgrade), `npm run test:arch040-recovery-human-handover`, `npm run test:arch040-moderation-schema`, `npm run test:arch040-follow-up-release-schema`, `npm run test:arch040-recovery-human-handover:postgres:fresh`, `npm run test:arch040-moderation:postgres:fresh`, `npm run test:arch040-follow-up-release:postgres:fresh`, and `git diff --check origin/main...HEAD` all completed successfully. Expected SQL errors in negative PostgreSQL cases were asserted by the harness; all four migration suites reported PASS. |
 | Attempt 2 rerun (2026-10-26, 12:30–12:35 UTC; supplied `typescript(20261026-123521)`) | PASS: `prisma:validate`, `prisma:generate`, `test:arch040-human-prepared-schema`, `test:arch040-human-prepared:postgres` (PostgreSQL 17.11 fresh and upgrade), the three ARCH-040 structural regression scripts, the three PostgreSQL fresh regression scripts, and `git diff --check origin/main...HEAD` (no whitespace errors). Deliberate negative-case SQL errors are followed by harness PASS. No production change is indicated by this rerun. |
 | Attempt 2 launcher/worktree preparation (claimed at 12:10:12 UTC) | **NOT EVIDENCED** in the supplied 12:30–12:35 terminal log or latest workspace ZIP: exact prepared execution packet, parent and implementation branch fetch/fast-forward/main sync, and recursive submodule status at attempt start. Current archive paths and a successful rerun do not establish these historical steps. |
+| Later resume synchronization (2026-10-26) | Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-007` was clean at `eba8d67ac57eeaebf256a1e91369671f9f21870b`, matching `origin/task/ARCH-040-DATABASE-007`; parent `origin/main` `e8759d60fc6abef48fb02379fb8822d373a38d7e` was already an ancestor. Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-007` was clean at `12102f0b611973b1436f4c0d4ec33f3e15fa9a78`, matching `origin/task/ARCH-040-DATABASE-007`; implementation `origin/main` `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9` was already an ancestor. `submodule sync --recursive` and `submodule update --init --recursive` completed; `submodule status --recursive` returned no entries. This is actual later resume-time evidence only, not Attempt 2 start evidence. |
 
 `npm test`, `npm run typecheck`, `npm run build` and `npm run test:arch047-follow-up:postgres` are not declared scripts in this Database repository; their missing-script messages in an exploratory run are not failures of the task-defined validations. `npm run lint` was launched without a reported lint failure, but is not counted as one of the task's required acceptance checks.
 
@@ -277,7 +278,7 @@ Executed in the developer's dedicated Database task worktree, as recorded in the
 
 ### Unresolved Issues
 
-- **Attempt 2 start-of-attempt evidence pending:** The original Attempt 1 launcher/synchronisation evidence was not retained (as documented in the preserved Changes Requested review). Attempt 2 was claimed at `2026-10-26T12:10:12Z`, but the newly provided terminal recording begins around 12:30 with tests. It does not show the canonical `/moda_developer_create` preparation packet, both worktrees' synchronized branch/HEAD state, or recursive implementation submodule status for the start of Attempt 2. Provide the *actual* launcher/claim output from that invocation if retained. If it was not retained, return this evidence gap to the authorised reviewer for the appropriate next attempt; do not reconstruct or backdate the missing record. The `review` transition remains gated on this evidence.
+- **Attempt 2 start-of-attempt evidence remains unavailable:** Attempt 2 was claimed at `2026-10-26T12:10:12Z`, but the supplied terminal recording begins around 12:30 with tests. It does not show the canonical `/moda_developer_create` preparation packet, both worktrees' synchronized branch/HEAD state, or recursive implementation submodule status at attempt start. Later resume-time synchronization was performed and is recorded below; it cannot establish the earlier historical start condition. Do not reconstruct or backdate the missing record. The review transition remains gated on the actual start evidence or the authorized reviewer explicitly changing that evidence requirement.
 - Application-level BG009 wrapper rendering, fail-closed final send, and recompiled Prisma consumer are outside this task and remain gated on Database acceptance and developer-controlled completion.
 
 ### Architectural Concerns
@@ -288,7 +289,7 @@ None identified within Database ownership. Preserve the cross-architecture `ARCH
 
 ### Review Status
 
-Pending — no implementation to review.
+Pending — developer self-review returned Changes Requested for Attempt 2; architectural review awaits a corrected submission.
 
 ### Review Notes
 
@@ -335,3 +336,26 @@ Use the next canonical `/moda_developer_create ARCH-040-DATABASE-007` attempt an
 ### State Transition
 
 Returned to `ready`; `executor: null`, `claimed_at: null`, Attempt 1 unchanged. The parent task branch will be committed and pushed with this review decision. No implementation change or merge to `main` was made by the review.
+
+## Developer Self-Review - Changes Requested (Attempt 2)
+
+### Review Decision
+
+The implementation remains limited to the six Database-owned files listed above. The implementation task branch is clean, published, synchronized with its remote, and contains current `origin/main`. The recorded Attempt 2 technical validations pass, including the fresh and upgrade PostgreSQL migration suites and focused ARCH-040 regressions. No production correction is indicated by the reviewed diff or reported validation.
+
+Review is nevertheless **Changes Requested** because the task's architect-review evidence criterion and the preserved Attempt 1 correction require the canonical launcher preparation and start-of-attempt worktree/submodule evidence for the current attempt. The Completion Report states that this packet was not retained. The later resume synchronization is accurately recorded but cannot prove what was true at the 12:10:12Z claim. Historical evidence must not be reconstructed or backdated.
+
+### Required Correction
+
+On the next `/moda_developer_create ARCH-040-DATABASE-007` claim, retain the launcher-resolved preparation output, both worktrees' actual fetch/fast-forward/main synchronization results, and recursive implementation submodule status before beginning implementation or validation. Then rerun the task-required validations from the canonical implementation worktree and update the Completion Report with that actual evidence. Keep the implementation unchanged unless a concrete defect is found. This review returns Attempt 2 to `ready`; it does not claim Attempt 3.
+
+### Validation Reviewed
+
+- **PASS (reported Attempt 2 evidence)** — Prisma validate/generate, the prepared-content schema validator, prepared-content PostgreSQL fresh/upgrade cases, all three focused ARCH-040 structural regressions, all three PostgreSQL fresh regression suites, and `git diff --check origin/main...HEAD`.
+- **PASS (reviewed worktree state)** — implementation diff is six task-scoped files, clean at `12102f0b611973b1436f4c0d4ec33f3e15fa9a78` and matching its remote; parent task report was clean at `eba8d67ac57eeaebf256a1e91369671f9f21870b` and matching its remote.
+- **PASS (later resume synchronization only)** — both task branches already contained current `origin/main`; recursive submodule sync/update completed and status was empty. This is not represented as Attempt 2 start evidence.
+- **NOT EVIDENCED** — canonical launcher packet and parent/implementation/submodule state at the original Attempt 2 claim time.
+
+### State Transition
+
+Returned to `ready`; `executor: null`, `claimed_at: null`, Attempt 2 unchanged. No implementation change, new attempt claim, or merge to `main` was made.
