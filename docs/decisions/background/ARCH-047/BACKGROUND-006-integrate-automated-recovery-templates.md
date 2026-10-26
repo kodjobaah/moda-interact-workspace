@@ -281,7 +281,7 @@ Architect to reconcile the parent task graph and obsolete Admin/Shared reference
 - Decision: Complete Attempt 3 after the explicit developer instruction `Architect Review Accepted`.
 - Evidence: The durable Attempt 3 developer self-review passed; all Work Items, Acceptance Criteria, and Validation items are checked. The implementation branch is clean and published at `07f3d0f32e443ef7c12b2b5211212ebbd96f3640`; the parent task record is being committed and pushed on its canonical task branch. No implementation changes or merge to `main` were made during completion.
 - Unresolved capabilities preserved: checkout-specific Shopify/Woo discount eligibility remains a separately owned capability gap; `src/services/recovery-conversation/human-command-dispatcher.service.ts` remains the BG007-owned consumer of the legacy Meta category verifier.
-- Dependency frontier: BG001 and BG004 are complete. BG007 declares those dependencies plus BG006 and is eligible by dependency state after this completion. Its canonical parent worktree and branch are absent, so readiness reconciliation requires canonical worktree creation; no shared checkout or architecture index was modified.
+- Dependency frontier: BG001 and BG004 were already complete. After BG006 completion, BG007's canonical parent worktree was created from `origin/main`; its three explicit dependencies were verified complete, and its unclaimed task was promoted from `pending` to `ready` at Attempt 0. The readiness report was committed and pushed on `task/ARCH-047-BACKGROUND-007` as `2e7422f5`. No implementation worktree or attempt was started, and no shared checkout or architecture index was modified.
 
 ## Execution Ownership Amendment
 
