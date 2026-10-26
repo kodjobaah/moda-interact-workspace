@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-26T08:26:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
@@ -77,14 +77,14 @@ Hosted GET wire contract v1 exactly: `{ schemaVersion: 1, templates: Array<{ nam
 
 ## Acceptance Criteria
 
-- [ ] Only authenticated Woo installation for the correct shop/conversation can read eligible, published, approved Moda Follow-up choices; wrong shop, unapproved, legacy, expired provider state, wrong WABA and ambiguous variants do not leak. **Implementation and unit coverage inspected; disposable PostgreSQL verification pending.**
-- [ ] Template admission rejects nonempty caller parameter arrays and old-purpose-only templates while preserving command idempotency and single sequence-two claim. **Implementation and unit coverage inspected; disposable PostgreSQL verification pending.**
+- [x] Only authenticated Woo installation for the correct shop/conversation can read eligible, published, approved Moda Follow-up choices; wrong shop, unapproved, legacy, expired provider state, wrong WABA and ambiguous variants do not leak. Verified by focused unit tests and the 4/4 disposable PostgreSQL integration suite.
+- [x] Template admission rejects nonempty caller parameter arrays and old-purpose-only templates while preserving command idempotency and single sequence-two claim. Verified by focused unit tests and the 4/4 disposable PostgreSQL integration suite.
 - [x] All other human-text, payment, window, consent and STOP guards are unchanged; BG007 still owns final admission.
 - [x] No remaining production `purpose: "checkout-recovery"` allowlist in API merchant follow-up code; stale tests replaced.
 
 ## Validation
 
-- [ ] API route/contract/authentication and PostgreSQL integration tests in repository's declared harness, including GET-only and hostile-parameter negative cases. **Route/contract unit tests passed as part of 611/611; `npm run test:arch047-follow-up:postgres` was not executed in supplied log.**
+- [x] API route/contract/authentication and PostgreSQL integration tests in repository's declared harness, including GET-only and hostile-parameter negative cases. `npm test`: 611/611; `npm run test:arch047-schema:unit`: 7/7; `npm run test:arch047-follow-up:postgres`: 4/4.
 - [x] Lint, typecheck/build where declared and `git diff --check`.
 
 ## Stop Condition
@@ -108,11 +108,13 @@ Use isolated worktrees with exact mirrored task branches. Keep GET/POST tenant s
 
 ### Status
 
-In Progress — developer Attempt 1 implementation finished and committed as `ef4578b` (`feat(api)`) on `task/ARCH-047-API-001`; terminal log shows a successful push to `origin/task/ARCH-047-API-001`. Awaiting mandatory disposable PostgreSQL integration validation before changing task status to `review`. Patch iteration Attempt 2 does not alter the durable developer task attempt number (`attempt: 1`).
+Ready for Review — developer task Attempt 1. Implementation is committed and pushed on `task/ARCH-047-API-001` (`ef4578b` followed by `c75710e`). All required functional and repository validation results are recorded below. Review-submission preparation is not architect acceptance or the developer's explicit completion decision. The separate launcher preparation/synchronisation evidence remains to be supplied during review.
+
+Patch iterations 1–5 are implementation corrections within the one durable developer execution attempt; `attempt: 1` remains unchanged.
 
 ### Files Changed
 
-API implementation (from the `ef4578b` commit output; 22 files in total):
+The implementation commit `ef4578b` covered 22 API files:
 
 - `src/composition/merchant.ts`
 - `src/merchant/conversations/messages/admission.service.ts`
@@ -137,53 +139,65 @@ API implementation (from the `ef4578b` commit output; 22 files in total):
 - `tests/unit/merchant/conversations/messages/routes.test.ts`
 - `tests/unit/platform-configuration/service.test.ts`
 
-The present handoff patch updates only this canonical task definition; it does not alter implementation files, domain `_index.md`, parent architecture, or the `## Architect Review` section.
+The final correction commit `c75710e` also added:
+
+- `scripts/arch047-canonical-schema.mjs` (new)
+- `tests/scripts/arch047-canonical-schema.test.mjs` (new)
+
+It updated `package.json`, `scripts/test-arch040-woo-human-send-postgres.mjs`, `tests/integration/merchant/conversations/messages.follow-up-policy.postgres.test.ts`, and `tests/integration/merchant/conversations/messages.service.postgres.test.ts` (already in the list above). No other application repository or schema was changed for this task.
+
+This review-submission patch changes only the parent task file. Domain `_index.md`, the parent architecture, and the `## Architect Review` section are untouched.
 
 ### Work Completed
 
-- Added authenticated, tenant-scoped, no-store `GET /v1/merchant/conversations/{conversationId}/follow-up-templates`, returning schema v1 with at most 30 bounded `{name, language}` choices.
-- Added a read-only, bounded catalogue query against canonical ARCH-047 template variants, Meta registrations, reviewed locales, and published definition state. Provider sender WABA is read from sealed platform configuration on the server; stale reconciliation, drift, mismatched WABA, unlinked/ambiguous or unapproved registrations fail closed.
-- Replaced merchant POST's `purpose: "checkout-recovery"` allowlist with registration-backed `FOLLOW_UP_*` admission; nonempty client template parameters are rejected and the durable command's parameter intent is empty. Existing idempotent replay, HUMAN control, service-window and sequence-two claim remain.
-- Preserved Background BG007 ownership of final consent/STOP, offer and provider delivery validation. No Shopify provider identity or Woo checkout mutation was introduced.
-- Added/updated unit, route/OpenAPI and disposable PostgreSQL test fixtures. Because a customer-specific positive-offer evidence reader is not available for Woo, catalogue choices intentionally remain `FOLLOW_UP_NO_OFFER` only.
+- Implemented authenticated, tenant-scoped, no-store `GET /v1/merchant/conversations/{conversationId}/follow-up-templates`, returning schema v1 with at most 30 `{name, language}` choices.
+- Resolved choices against current shop assignments, immutable Moda-authored template definitions, reviewed locales, linked Meta registrations, published state, provider approval/freshness and drift fences. The sender WABA is read from sealed platform configuration on the server.
+- Replaced the legacy `purpose: "checkout-recovery"` POST allowlist with registration-backed `FOLLOW_UP_*` admission. Rejected nonempty client template parameters; the durable command records an empty parameter intent.
+- Preserved Woo authentication, HUMAN control, service-window/due-time checks, idempotency, sequence-two uniqueness and Background BG007 ownership of final consent, STOP, offer, moderation and delivery checks.
+- Added route/OpenAPI/unit and disposable PostgreSQL regression tests, including tenant separation, stale/ambiguous/wrong-WABA registrations, caller parameter injection, replay and sequence-two enforcement.
+- Corrected disposable PostgreSQL schema discovery for linked task worktrees, verified the canonical migration lineage, handled macOS canonical paths, and removed test registration uniqueness collisions. The final one-line `node:process` import resolves the lint error.
+- Because Woo has no verified customer-specific positive-offer evidence reader in this task, the catalogue intentionally returns only `FOLLOW_UP_NO_OFFER` choices.
 
 ### Validation Results
 
-Observed in supplied `typescript(20261026-115208)` terminal log:
+Evidence from the supplied developer logs and implementation snapshot:
 
-- Attempt 2 correction: `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all`, and `git diff --check` returned without reported errors.
-- `npm test`: **611 passed / 0 failed / 0 skipped**, including the new catalogue and route unit tests.
-- `npm run typecheck`: **passed**, using generated Prisma Client v6.19.3.
-- `npm run lint`: **passed** with `--max-warnings=0`.
-- `npm run build`: **passed**.
-- `git commit -m "feat(api)"`: created implementation commit `ef4578b`, reporting 22 changed files and five new files.
-- `git push -u origin task/ARCH-047-API-001`: **succeeded** according to terminal output.
-- `npm run test:arch047-follow-up:postgres`: **NOT RUN / no result shown**. The new PostgreSQL integration test exists, but `npm test` runs `tests/unit/**/*.test.ts` only; it is not equivalent to the PostgreSQL test. This acceptance gate remains open.
+- `npm test`: **611 passed, 0 failed** (earlier full-suite run).
+- `npm run test:arch047-schema:unit`: **7/7 passed** (Attempt 4 resolver validation).
+- `npm run test:arch047-follow-up:postgres`: **4/4 passed**, using the approved canonical schema and migration chain in a disposable PostgreSQL environment (Attempt 4 validation).
+- `npm run typecheck`: **passed** (Attempt 4 validation).
+- `npm run build`: **passed** (Attempt 4 validation).
+- `npm run lint`: **passed** with `--max-warnings=0` in `typescript(20261026-130430)` after the Attempt 5 `node:process` import fix.
+- `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all`, and `git diff --check`: **completed without reported errors** for the Attempt 5 correction in the latest log.
+- `git commit`: **`c75710e`** (`feat(arch-047-api-001)`), 6 changed files, on `task/ARCH-047-API-001`.
+- `git push -u origin task/ARCH-047-API-001`: **succeeded**; log shows remote branch advanced `ef4578b..c75710e`.
+- The comprehensive suites were run before the final import-only correction. The final log reran lint, not every suite; the correction adds an explicit Node built-in import and does not change business logic.
 
-Physical worktree isolation evidenced by the archive helper's terminal output:
+Physical-worktree evidence recorded by the archive helper and Git output:
 
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-API-001` on `task/ARCH-047-API-001` (task-file metadata).
-- API implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-API-001` on `task/ARCH-047-API-001` (Git output).
-- Canonical primary workspace root, start-of-attempt fast-forward/mainline synchronization, recursive submodule preparation, and confirmation that no shared checkout was mutated: **not independently demonstrated by the attached terminal log**. Supply the launcher preparation packet or equivalent evidence for architect review; do not infer compliance from the ZIP alone.
+- Dedicated parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-API-001`.
+- Dedicated API implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-API-001`, on `task/ARCH-047-API-001`.
+- **Outstanding review evidence**: the provided logs/ZIP do not independently establish the launcher-resolved primary workspace root, start-of-attempt parent/implementation synchronisation, or recursive implementation submodule preparation. The launcher's prepared execution packet, or equivalent canonical evidence, should be included with the review; the physical paths alone do not prove these policy requirements.
 
 ### Deviations
 
-The API's pinned Prisma schema predates canonical ARCH-047. The catalogue therefore uses a bounded SQL read of the accepted canonical ARCH-047 tables without modifying the API database submodule or creating new migrations. This approach requires the accepted migration to be deployed and must be exercised by the disposable PostgreSQL suite.
+The API's pinned Prisma-generated schema predates accepted ARCH-047. The catalogue therefore uses a bounded read-only SQL query over canonical ARCH-047 tables without changing the database submodule or introducing a migration. Its disposable PostgreSQL runner uses the accepted canonical schema/migration chain and checks lineage rather than pretending the older API schema contains the new models.
 
 ### Assumptions
 
-- The accepted `ARCH-047-DATABASE-001` migration is available to the disposable test harness and the deployment environment.
-- Positive offer choices are excluded until a customer-specific, provider-verified Woo offer eligibility source exists; no eligibility is inferred from the merchant's chosen template.
+- The accepted `ARCH-047-DATABASE-001` migration is deployed before the API needs these catalogue tables in a shared runtime.
+- The verified current sender WABA is available through sealed server-side platform configuration.
+- Without a verified Woo customer-specific positive-offer source, no `FOLLOW_UP_CODE_OFFER` or `FOLLOW_UP_AUTOMATIC_OFFER` choice is advertised.
 
 ### Unresolved Issues
 
-- **Review blocker:** run `npm run test:arch047-follow-up:postgres` using the approved disposable PostgreSQL harness; attach the full result, then mark the remaining acceptance and validation checkboxes and transition the task to `review`.
-- **Workflow evidence gap:** attach or transcribe the start-of-attempt launcher synchronization/submodule/isolation evidence before acceptance. The supplied log establishes the task-worktree paths but does not establish every required policy check.
-- A local untracked file named `typescript` appears in `git status` after the implementation commit; it was not part of the 22-file implementation commit. Do not stage it as task source.
+- **Workflow evidence for architect review:** provide the original launcher preparation packet (or equivalent worktree, start-of-attempt synchronisation and recursive-submodule evidence). The implementation is submitted for review without claiming that this evidence was independently verified.
+- A local file named `typescript` was untracked in the implementation worktree during the latest Git-status capture. It was not staged with the six task source files committed as `c75710e`; do not include this terminal log artifact in the source commit.
+- No known outstanding implementation test failure from the supplied validation logs. The task is **not** architect-accepted or explicitly developer-completed.
 
 ### Architectural Concerns
 
-No new cross-repository contract or schema ownership requested. The API provides advisory template choices and durable human-send admission only; Background BG007 remains the final eligibility, provider, moderation and delivery boundary. The task is not architect-accepted, and enabling `ARCH-047-WOOCOMMERCE-001` must await developer completion.
+No new cross-repository runtime contract or schema ownership is requested. The API only exposes advisory template choices and durable human-send admission; Background BG007 independently validates actual sends. `ARCH-047-WOOCOMMERCE-001` remains dependent on this task attaining `status: complete`, not merely `review`.
 
 ## Architect Review
 
