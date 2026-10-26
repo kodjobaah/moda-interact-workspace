@@ -200,27 +200,27 @@ This record uses the supplied combined archive and validation terminal captures 
 
 ### Review Status
 
-Pending — implementation not submitted.
+Accepted — architect review acceptance supplied with the explicit developer completion request on 2026-10-26.
 
 ### Review Notes
 
-Not reviewed.
+The Attempt 2 passing self-review and validation evidence above are accepted. No additional file-level review notes were supplied with the acceptance.
 
 ### Reviewed Files
 
-None yet.
+Accepted implementation scope: the ten wrapper service and test files listed in the Completion Report.
 
 ### Validation Reviewed
 
-None yet.
+Attempt 2 focused validation evidence recorded in the Developer Self-Review - Passed section.
 
 ### Architecture Conformance
 
-To be assessed against the reconciled ARCH-047 parent architecture and current repository code.
+Accepted for this task's prepared-runtime renderer scope. AI/human caller integration, whole-message moderation and final-send gates remain owned by BG008/BG009.
 
 ### Follow-up
 
-Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting BG008/BG009 to Ready.
 
 ## Execution Ownership Amendment
 
@@ -267,4 +267,5 @@ The required Attempt 1 correction is satisfied for the current cycle: the implem
 - Decision: The developer explicitly invoked `/moda_developer_update ARCH-047-BACKGROUND-005 complete` after the durable Attempt 2 passing self-review. All required Work Items, Acceptance Criteria and Validation checklists are complete; the task-owned implementation and synchronization merge are committed and pushed, and the parent report can be published.
 - Preserved: Attempt 2, the historical Attempt 1 evidence limitation, and the prior review record. No implementation source changes were made as part of this completion decision.
 - Dependency frontier: `ARCH-047-BACKGROUND-008` and `ARCH-047-BACKGROUND-009` remain pending. Their task records explicitly require architect reconciliation of the parent task graph and obsolete Admin/Shared references before promotion to Ready; this completion does not bypass that gate.
+- Review disposition: Architect Review Accepted was supplied with the explicit completion request and is recorded above; no additional file-level notes were provided.
 - Lifecycle transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 2`.
