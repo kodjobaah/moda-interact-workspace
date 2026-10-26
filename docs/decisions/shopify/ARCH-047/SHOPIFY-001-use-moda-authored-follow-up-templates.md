@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-26T12:16:42Z
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables:
@@ -99,7 +99,8 @@ Use launcher-prepared dedicated mirrored `task/ARCH-047-SHOPIFY-001` worktrees a
 ## Completion Report
 
 ### Status
-Not Started — defined but not materialised.
+
+In Progress — Attempt 1 claimed by developer at 2026-10-26T12:16:42Z. Canonical preparation used the launcher-resolved parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-SHOPIFY-001` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-SHOPIFY-001`, both on `task/ARCH-047-SHOPIFY-001`. Parent `origin/main` was already incorporated; implementation was created from and remains at current `origin/main` commit `1ef61c8c4d9b405b42bd24f3d81b19f170f16cdf`. Recursive submodule sync and init passed; `database` is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. The launcher wrote the claim metadata, then stopped before publication on the report-format check; the corrected report and existing claim are now being published without incrementing the attempt again.
 
 ### Files Changed
 None.
