@@ -168,7 +168,7 @@ The final correction commit `c75710e` also added:
 
 It updated `package.json`, `scripts/test-arch040-woo-human-send-postgres.mjs`, `tests/integration/merchant/conversations/messages.follow-up-policy.postgres.test.ts`, and `tests/integration/merchant/conversations/messages.service.postgres.test.ts` (already in the list above). No other application repository or schema was changed for this task.
 
-This review-submission patch changes only the parent task file. Domain `_index.md`, the parent architecture, and the `## Architect Review` section are untouched.
+Attempt 2 changed only the listed API integration fixture. The completion and review records are maintained on the parent task branch; no domain `_index.md` or shared architecture document was changed as part of this completion.
 
 ### Work Completed
 
@@ -209,7 +209,7 @@ Physical-worktree evidence recorded by the archive helper and Git output:
 
 - Dedicated parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-API-001`.
 - Dedicated API implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-API-001`, on `task/ARCH-047-API-001`.
-- **Outstanding review evidence**: the provided logs/ZIP do not independently establish the launcher-resolved primary workspace root, start-of-attempt parent/implementation synchronisation, or recursive implementation submodule preparation. The launcher's prepared execution packet, or equivalent canonical evidence, should be included with the review; the physical paths alone do not prove these policy requirements.
+- Attempt 1 lacked the original preparation packet; Attempt 2's fresh canonical preparation and recursive submodule evidence is recorded in the section above.
 
 ### Deviations
 
@@ -225,17 +225,16 @@ The API's pinned Prisma-generated schema predates accepted ARCH-047. The catalog
 
 - **Historical workflow evidence:** Attempt 1's original preparation packet remains unavailable and is not reconstructed. Attempt 2's complete fresh evidence is recorded above.
 - The `typescript` artifact appeared in an earlier Attempt 1 snapshot only; the Attempt 2 implementation worktree is clean after pushing `b08307f`.
-- No known outstanding implementation or validation failure remains. The task is **not** architect-accepted or explicitly developer-completed.
 - No known outstanding implementation or validation failure remains. Attempt 1's original preparation evidence remains historically unavailable and was not reconstructed; Attempt 2's required preparation packet is complete. No implementation issue remains open.
+- No new cross-repository runtime contract or schema ownership is requested. The API only exposes advisory template choices and durable human-send admission; Background BG007 independently validates actual sends. `ARCH-047-WOOCOMMERCE-001` is now `ready` and unclaimed.
 
 ### Architectural Concerns
 
-No new cross-repository runtime contract or schema ownership is requested. The API only exposes advisory template choices and durable human-send admission; Background BG007 independently validates actual sends. `ARCH-047-WOOCOMMERCE-001` remains dependent on this task attaining `status: complete`, not merely `review`.
+No new cross-repository runtime contract or schema ownership is requested. The API only exposes advisory template choices and durable human-send admission; Background BG007 independently validates actual sends.
 
 ## Developer Self-Review - Passed (Attempt 2)
 
-- Review result: Passed. Both functional acceptance criteria groups and all Work Items are complete; Attempt 2 workflow evidence is recorded; implementation and parent task branches are committed/pushed; Attempt 2 focused validation passed.
-- Review result: Passed. Both functional acceptance criteria groups and all Work Items are complete; Attempt 2 workflow evidence is recorded; implementation commit `b08307f3bdcfb5f7606656de2dad0551103c452c` is pushed; Attempt 2 focused validation passed. The parent completion record is being published with this lifecycle update.
+- Review result: Passed. Both functional acceptance criteria groups and all Work Items are complete; Attempt 2 workflow evidence is recorded; implementation commit `b08307f3bdcfb5f7606656de2dad0551103c452c` and parent completion record are pushed; Attempt 2 focused validation passed.
 - Reviewed implementation change: API-004 PostgreSQL fixture now obtains a current HUMAN_TEXT claim and freezes prepared passthrough body/evidence before creating moderation, matching the DATABASE-007 trigger contract. No production API behavior was changed in Attempt 2.
 - Validation: focused schema/catalogue unit tests 7/7; disposable PostgreSQL integration 4/4; typecheck, build, lint and `git diff --check` passed.
 - Attempt 1 history: Changes Requested solely for missing original claim-time preparation evidence. That historical gap remains unavailable and is not reconstructed; fresh Attempt 2 evidence satisfies the active attempt's requirement.
@@ -245,7 +244,6 @@ No new cross-repository runtime contract or schema ownership is requested. The A
 
 - Decision: Complete, following the explicit “Architect Review Accepted” instruction supplied with `/moda_developer_update ARCH-047-API-001 complete`.
 - Accepted attempt: 2; attempt count unchanged.
-- Basis: passing Attempt 2 developer self-review above; all Work Items, Acceptance Criteria and active-attempt Validation items are complete; implementation commit `b08307f3bdcfb5f7606656de2dad0551103c452c` and parent completion record are pushed; no merge to `main` is required.
 - Basis: passing Attempt 2 developer self-review above; all Work Items, Acceptance Criteria and active-attempt Validation items are complete; implementation commit `b08307f3bdcfb5f7606656de2dad0551103c452c` is pushed; this parent completion record is published on the task branch; no merge to `main` is required.
 - Architect-review attribution: the user explicitly supplied “Architect Review Accepted” in the completion request. This record reflects that supplied decision and does not invent an external reviewer identity.
 - State: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 2`.
@@ -256,9 +254,8 @@ No new cross-repository runtime contract or schema ownership is requested. The A
 - Review result: Changes Requested for missing required workflow evidence; this review found no source-code defect.
 - Evidence discrepancy: the Completion Report states that Attempt 1's launcher preparation, synchronization, and recursive-submodule packet was not established. Physical paths and current branch cleanliness do not prove start-of-attempt preparation. Do not reconstruct or relabel later evidence as Attempt 1 evidence.
 - Required correction: completed in Attempt 2. Fresh canonical route/synchronization evidence is recorded, the stale API-004 fixture was aligned to DATABASE-007, and focused validations passed.
-- Required correction: completed in Attempt 2. Fresh canonical route/synchronization evidence is recorded, the stale API-004 fixture was aligned to DATABASE-007, and focused validations passed.
 - Historical transition: Attempt 1 returned to `ready`, `executor: null`, `claimed_at: null`, `attempt: 1`; Attempt 2 was then claimed exactly once.
-- Scope/frontier at that review: WooCommerce-001 remained pending until API-001 completed.
+- Scope/frontier at that review: WooCommerce-001 remained pending until API-001 completed; it is now ready.
 
 ## Architect Review
 
@@ -281,4 +278,4 @@ Attempt 2 implementation and evidence reviewed. The final Attempt 2 PostgreSQL f
 Accepted. The Attempt 2 change is limited to the PostgreSQL test fixture and preserves the accepted DATABASE-007 prepared-content contract; production ownership boundaries remain unchanged.
 
 ### Follow-up
-Promote `ARCH-047-WOOCOMMERCE-001` to Ready after this completion is published; Background BG007 continues to own final send admission.
+`ARCH-047-WOOCOMMERCE-001` is Ready and unclaimed; Background BG007 continues to own final send admission.
