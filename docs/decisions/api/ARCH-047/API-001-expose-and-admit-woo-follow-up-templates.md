@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -62,6 +62,7 @@ Replace the hosted Woo merchant command's legacy template allowlist and add one 
 - [x] Replace the legacy follow-up allowlist and client-parameter acceptance with the current registration-backed catalogue in the existing admission service.
 - [x] Add status/no-store, tenant, WABA, language, provider-state, window, due-time, idempotency, empty-parameters and replay tests.
 - [x] Remove obsolete filters/mocks and record exact file/test changes in Completion Report.
+- [ ] Capture and record canonical launcher preparation and start-of-attempt synchronization evidence for both task worktrees, including recursive implementation-submodule synchronization/status, before running the Attempt 2 validation suite. Do not reconstruct this evidence for Attempt 1.
 
 ## Interfaces / Contracts
 
@@ -86,6 +87,7 @@ Hosted GET wire contract v1 exactly: `{ schemaVersion: 1, templates: Array<{ nam
 
 - [x] API route/contract/authentication and PostgreSQL integration tests in repository's declared harness, including GET-only and hostile-parameter negative cases. `npm test`: 611/611; `npm run test:arch047-schema:unit`: 7/7; `npm run test:arch047-follow-up:postgres`: 4/4.
 - [x] Lint, typecheck/build where declared and `git diff --check`.
+- [ ] Record the Attempt 2 canonical resolver route, exact parent/implementation worktree and branch identities, fetch/ancestry checks, clean status, and recursive submodule sync/update/status before validation. Attempt 1's original packet is unavailable and remains historical.
 
 ## Stop Condition
 
@@ -108,7 +110,7 @@ Use isolated worktrees with exact mirrored task branches. Keep GET/POST tenant s
 
 ### Status
 
-Ready for Review — developer task Attempt 1. Implementation is committed and pushed on `task/ARCH-047-API-001` (`ef4578b` followed by `c75710e`). All required functional and repository validation results are recorded below. Review-submission preparation is not architect acceptance or the developer's explicit completion decision. The separate launcher preparation/synchronisation evidence remains to be supplied during review.
+Changes Requested — developer self-review of Attempt 1. Implementation is committed and pushed on `task/ARCH-047-API-001` (`ef4578b` followed by `c75710e`). Functional and repository validation results are recorded below. The canonical launcher preparation, start-of-attempt synchronization, and recursive submodule evidence are unavailable. Attempt 1 is returned to `ready` without incrementing the attempt or changing implementation. Capture fresh canonical evidence before validation in Attempt 2, rerun the task-focused validation, and resubmit for review. This is not architect acceptance or explicit developer completion.
 
 Patch iterations 1–5 are implementation corrections within the one durable developer execution attempt; `attempt: 1` remains unchanged.
 
@@ -191,13 +193,22 @@ The API's pinned Prisma-generated schema predates accepted ARCH-047. The catalog
 
 ### Unresolved Issues
 
-- **Workflow evidence for architect review:** provide the original launcher preparation packet (or equivalent worktree, start-of-attempt synchronisation and recursive-submodule evidence). The implementation is submitted for review without claiming that this evidence was independently verified.
-- A local file named `typescript` was untracked in the implementation worktree during the latest Git-status capture. It was not staged with the six task source files committed as `c75710e`; do not include this terminal log artifact in the source commit.
+- **Workflow evidence:** Attempt 1's original launcher preparation packet and start-of-attempt synchronization/recursive-submodule evidence are unavailable. This historical gap is not reconstructed. Before validation in Attempt 2, capture and record the canonical resolver route; exact parent and implementation paths and branch identities; fetch and task/main ancestry checks for both repositories; clean task-owned working-tree state; and `submodule sync --recursive`, `submodule update --init --recursive`, and recursive status in the implementation worktree. Clearly distinguish the new packet from Attempt 1 history.
+- A local file named `typescript` appeared untracked in an earlier implementation-worktree status capture, but the current canonical implementation worktree is clean and the artifact is not part of the pushed implementation commit.
 - No known outstanding implementation test failure from the supplied validation logs. The task is **not** architect-accepted or explicitly developer-completed.
 
 ### Architectural Concerns
 
 No new cross-repository runtime contract or schema ownership is requested. The API only exposes advisory template choices and durable human-send admission; Background BG007 independently validates actual sends. `ARCH-047-WOOCOMMERCE-001` remains dependent on this task attaining `status: complete`, not merely `review`.
+
+## Developer Self-Review - Changes Requested (Attempt 1)
+
+- Review result: Changes Requested for missing required workflow evidence; this review found no source-code defect.
+- Evidence discrepancy: the Completion Report states that Attempt 1's launcher preparation, synchronization, and recursive-submodule packet was not established. Physical paths and current branch cleanliness do not prove start-of-attempt preparation. Do not reconstruct or relabel later evidence as Attempt 1 evidence.
+- Required correction for Attempt 2: before validation, capture the canonical resolver route; exact parent and implementation worktree/branch identities; fetch and task/main ancestry checks in both repositories; clean worktree status; and recursive submodule sync/update/status in the implementation worktree.
+- Revalidation: rerun `npm run test:arch047-schema:unit`, `npm run test:arch047-follow-up:postgres`, `npm run typecheck`, `npm run build`, `npm run lint`, and `git diff --check` from the canonical implementation worktree. Preserve the recorded Attempt 1 `npm test` result as historical evidence and clearly label any newly run suite results by attempt.
+- State: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Do not create Attempt 2 here; the next developer claim increments once.
+- Scope/frontier: implementation files and branch remain unchanged. `ARCH-047-WOOCOMMERCE-001` remains pending until API-001 is Complete.
 
 ## Architect Review
 
