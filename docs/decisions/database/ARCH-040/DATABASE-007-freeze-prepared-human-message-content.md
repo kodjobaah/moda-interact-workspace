@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 15
 executor: null
 claimed_at: null
@@ -35,7 +35,7 @@ updated: 2026-10-26
 
 ## Developer Ownership Amendment
 
-On 2026-10-26, `/moda_developer_create ARCH-040-DATABASE-007` was invoked to take over this ready agent-owned task. Execution and completion modes are `developer`; `assigned_agent: moda_database`, coordinator, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged. Attempt 1 and Attempt 2 were returned Changes Requested. Attempt 3 was claimed at `2026-10-26T12:53:04Z`, its canonical preparation evidence and validations were recorded, and the task is now submitted to `review` with explicit developer completion pending.
+On 2026-10-26, `/moda_developer_create ARCH-040-DATABASE-007` was invoked to take over this ready agent-owned task. Execution and completion modes are `developer`; `assigned_agent: moda_database`, coordinator, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged. Attempt 1 and Attempt 2 were returned Changes Requested. Attempt 3 was claimed at `2026-10-26T12:53:04Z`, its canonical preparation evidence and validations were recorded, it passed review, and the developer explicitly completed it after the supplied “Architect Review Accepted” decision.
 
 ## Objective
 
@@ -195,7 +195,6 @@ For no wrapper, application writes `{"schemaVersion":1,"outcome":"PASSTHROUGH","
 - [x] New HUMAN_COMMAND/TEXT moderation digest is bound to the full prepared body and cannot be inserted against an unprepared command; template and message moderation are unchanged.
 - [x] Database rejects technical invalid writes but does not choose/validate wrappers, moderation outcomes, consent, 24-hour windows or send eligibility.
 - [x] Fresh and upgrade migrations plus direct PostgreSQL positive/negative cases pass; no unrelated existing record or trigger semantics regress.
-- [ ] DB Completion Report contains dedicated worktree/branch/synchronisation, exact validation and migration evidence for architect review. Technical validation and paths are evidenced; the Attempt 2 launcher preparation/synchronisation packet is not present in the submitted materials.
 - [x] DB Completion Report contains dedicated worktree/branch/synchronisation, exact validation and migration evidence for architect review. Attempt 3 start-of-attempt route, synchronization and recursive submodule evidence is recorded. Attempt 2 historical evidence remains unavailable and has not been reconstructed.
 
 ## Validation
@@ -218,7 +217,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Submitted for developer review — Attempt 3 passed. The prior missing start-of-attempt evidence has been resolved for this attempt through actual pre-validation capture; Attempt 1 and Attempt 2 history remains preserved and their missing claim-time evidence has not been reconstructed. Implementation remains unchanged from `12102f0b611973b1436f4c0d4ec33f3e15fa9a78`. Because `completion_mode: developer`, explicit developer completion is pending review approval.
+Complete — Attempt 3 passed review and was explicitly completed by the developer on 2026-10-26 after the invocation supplied “Architect Review Accepted.” Attempt 1 and Attempt 2 Changes Requested history remains preserved; their missing claim-time evidence has not been reconstructed. The implementation is unchanged from `12102f0b611973b1436f4c0d4ec33f3e15fa9a78`.
 
 ### Files Changed
 
@@ -284,7 +283,7 @@ Executed in the developer's dedicated Database task worktree, as recorded in the
 
 ### Unresolved Issues
 
-- Attempt 2's original start-of-attempt evidence remains historically unavailable and is not reconstructed; Attempt 3 has complete pre-validation evidence and passes the required validation suite. No known task-owned implementation or validation issue remains.
+- Attempt 2's original start-of-attempt evidence remains historically unavailable and is not reconstructed; Attempt 3 has complete pre-validation evidence and passes the required validation suite. No known task-owned implementation or validation issue remains. Downstream `ARCH-047-BACKGROUND-009` remains `blocked` until its owner synchronizes the Database submodule and Prisma client and the architect reconciles its readiness; this task completion does not claim that downstream work is ready.
 - Application-level BG009 wrapper rendering, fail-closed final send, and recompiled Prisma consumer are outside this task and remain gated on Database acceptance and developer-controlled completion.
 
 ### Architectural Concerns
@@ -295,27 +294,32 @@ None identified within Database ownership. Preserve the cross-architecture `ARCH
 
 ### Review Status
 
-Pending — developer self-review returned Changes Requested for Attempt 2; architectural review awaits a corrected submission.
+Accepted — the developer supplied the explicit “Architect Review Accepted” decision with `/moda_developer_update ARCH-040-DATABASE-007 complete` on 2026-10-26. This records the user's decision as supplied; it does not claim an unobserved external architect identity or alter the preserved Attempt 1/2 history.
 
 ### Review Notes
 
-None.
+Attempt 3's task-scoped Database implementation and validation evidence were reviewed. The current implementation branch is clean, pushed, and contains the six task-owned files. Attempt 3 preparation/synchronization evidence and all required validations are recorded above. Attempt 2's historical evidence gap is preserved as history and is not a blocker to this accepted Attempt 3, whose own required evidence is complete.
 
 ### Reviewed Files
 
-None.
+- `prisma/schema.prisma`
+- `prisma/migrations/20261026080000_arch040_prepared_human_message_content/migration.sql`
+- `scripts/validate-arch040-human-prepared-schema.mjs`
+- `scripts/test-arch040-human-prepared-postgres.mjs`
+- `scripts/test-arch040-moderation-postgres.mjs`
+- `package.json`
 
 ### Validation Reviewed
 
-None.
+- **PASS** — Attempt 3 task-specific Prisma, schema, fresh/upgrade PostgreSQL, ARCH-040 structural and regression PostgreSQL validations, lint, and `git diff --check`; exact commands and outcomes are in the Completion Report.
 
 ### Architecture Conformance
 
-Pending implementation.
+Accepted within Database ownership. The additive migration preserves immutable accepted merchant intent, freezes prepared HUMAN_TEXT content once under a valid claim, validates moderation against the frozen body, and leaves wrapper selection/send eligibility to Background. No historical migration, other service, or `_index.md` was changed.
 
 ### Follow-up
 
-After a passing review and explicit developer completion, re-gate `ARCH-047-BACKGROUND-009` on this task's `status: complete` and hand it back to its configured developer execution path.
+`ARCH-047-BACKGROUND-009` depends on this task and remains `blocked` pending synchronization of the Database submodule/Prisma client in its implementation worktree and architect dependency-frontier reconciliation. Do not mark BG009 ready or claim it in this completion action.
 
 ## Developer Self-Review - Changes Requested (Attempt 1)
 
@@ -384,4 +388,13 @@ Developer self-review **Passed**. `completion_mode: developer`, so this transiti
 
 ### State Transition
 
-Submitted to `review`; `executor: null`, `claimed_at: null`, Attempt 3 unchanged. Explicit developer completion is pending review acceptance. Implementation and parent task branches remain separate; no merge to `main` was made.
+Submitted to `review`; `executor: null`, `claimed_at: null`, Attempt 3 unchanged. Explicit developer completion was subsequently recorded in the Developer Completion Decision below. Implementation and parent task branches remain separate; no merge to `main` was made.
+
+## Developer Completion Decision (Attempt 3)
+
+- Decision: Complete, following the explicit “Architect Review Accepted” instruction supplied with `/moda_developer_update ARCH-040-DATABASE-007 complete`.
+- Accepted attempt: 3; attempt count unchanged.
+- Review basis: durable Attempt 3 Passed self-review, the supplied acceptance decision recorded under Architect Review, complete required Work Items/Acceptance Criteria, clean pushed implementation branch, and passing task-required validations.
+- State: `status: complete`, `executor: null`, `claimed_at: null`.
+- Publication: this decision is committed and pushed on parent `task/ARCH-040-DATABASE-007`; the implementation branch remains at its independently pushed task commit. No branch was merged to `main`.
+- Dependency frontier: `ARCH-047-BACKGROUND-009` remains blocked pending Database submodule/Prisma-client synchronization and architect reconciliation; no downstream task record was changed.
