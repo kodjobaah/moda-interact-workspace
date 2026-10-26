@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 45
 executor: null
 claimed_at: null
@@ -26,7 +26,7 @@ updated: 2026-10-26
 
 ## Architecture
 
-Architecture: `ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`; coordinator `moda_architect`. Defined against the 26 October 2026, 06:28 snapshot; not materialised.
+Architecture: `ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`; coordinator `moda_architect`. The task definition is materialised on its canonical parent branch. The current architecture document was not edited as part of this dependency-frontier update.
 
 ## Objective
 
@@ -97,7 +97,7 @@ Use canonical Woo task parent/implementation worktrees and preserve existing nat
 ## Completion Report
 
 ### Status
-Not Started — defined but not materialised.
+Ready — materialised in the canonical parent task worktree on `task/ARCH-047-WOOCOMMERCE-001` from fetched `origin/main`. Its sole dependency, `ARCH-047-API-001`, resolves `complete`. No executor or claim is set; implementation worktree has not been created.
 
 ### Files Changed
 None.
