@@ -9,11 +9,11 @@ assigned_agent: moda_site
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-26T02:58:56Z
+attempt: 1
 depends_on: []
 enables: []
 created: 2026-10-26
@@ -126,7 +126,7 @@ After completing the defined Work Items, Acceptance Criteria and required Valida
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-26T02:58:56Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
