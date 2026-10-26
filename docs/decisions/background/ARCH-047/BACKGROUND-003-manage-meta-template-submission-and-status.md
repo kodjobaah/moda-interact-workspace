@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: 2026-10-26T05:50:56Z
+attempt: 3
 depends_on:
   - ARCH-047-DATABASE-001
   - ARCH-047-SHARED-002
@@ -182,7 +182,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Evidence updated after the Attempt 2 Changes Requested self-review. The previously missing Meta HTTP 5xx/definitive-rejection tests and BG006 60-minute freshness fixture are now supplied, validated and pushed in implementation commit `8342e0e`. The task **remains `ready`, `attempt: 2`, without an Attempt 3 claim**; this is a review-evidence handoff, not a fabricated formal `review` submission. Prior Completion Reports and the architect review are preserved below.
+In Progress — Attempt 3 claimed by developer at 2026-10-26T05:50:56Z. Attempt 2 review history is preserved below.
 
 ### Attempt 1 Historical Status
 
