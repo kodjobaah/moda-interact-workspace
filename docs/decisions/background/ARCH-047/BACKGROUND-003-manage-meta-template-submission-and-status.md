@@ -152,10 +152,10 @@ None in this nine-task Background set.
 
 - [x] Inspect/re-run tests proving `POST /{WABA}/message_templates` sends only name, language, category and the exact saved `componentsSnapshot`; does not send internal binding/hash data or call Meta edit-existing-template APIs. Retain old evidence where already sufficient; add focused tests only for a demonstrated gap.
 - [x] Image-header submissions use a valid authorised sample/media handle; a missing, invalid or external-original-URL sample is blocked before provider creation. Text-only templates continue unchanged. Submission never performs ShopBrand ingestion/R2 preprocessing.
-- [ ] Provider tests exercise duplicate create intent, uncertain timeout, 429/5xx, definitive rejection, WABA mismatch and an incomplete/paginated Meta template lookup. Never double POST after a known or uncertain provider create; no unauthorized external adoption.
+- [x] Provider tests exercise duplicate create intent, uncertain timeout, 429/5xx, definitive rejection, WABA mismatch and an incomplete/paginated Meta template lookup. Never double POST after a known or uncertain provider create; no unauthorized external adoption.
 - [x] Strict worker tests parse published v2 Shared schema and verify two separately authenticated identical statuses generate distinct occurrence IDs/jobs despite completed-job retention. Reject wrong name/version/extra fields/oversized payload and preserve existing WhatsApp jobs. PostgreSQL tests cover immediate UNKNOWN + pending event **before** Meta GET, timeout and stale concurrent GET CAS, independent 30-minute reconciliation, and eventual verified clearance; failure never restores eligibility.
 - [x] PostgreSQL integration exercises unique event identities, registration status transitions and append-only event evidence; no automatic shop activation.
-- [ ] A test of the actual messaging-worker startup proves due `READY_TO_SUBMIT` registrations are scheduled and processed (or safely retried) without a manual service method call. Published active registrations are reconciled within 30 minutes independently of webhooks. Multi-replica claim CAS and clean timer shutdown are exercised. Existing inbound/message-status queue and final-send admission regressions pass; focused unit/build/typecheck and `git diff --check` are recorded. Live Meta webhook receipt remains with Messaging/System Test.
+- [x] A test of the actual messaging-worker startup proves due `READY_TO_SUBMIT` registrations are scheduled and processed (or safely retried) without a manual service method call. Published active registrations are reconciled within 30 minutes independently of webhooks. Multi-replica claim CAS and clean timer shutdown are exercised. Existing inbound/message-status queue and final-send admission regressions pass; focused unit/build/typecheck and `git diff --check` are recorded. Live Meta webhook receipt remains with Messaging/System Test.
 - [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
 - [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
@@ -163,7 +163,7 @@ None in this nine-task Background set.
 
 - [x] Run focused BG003 unit tests and disposable PostgreSQL integration; test the **actual** BullMQ worker's status-job dispatch using a fixture and its existing unknown-job rejection. Record exact commands/results; preserve currently passing Attempt 1 suites.
 - [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] Run the existing `whatsapp.worker`, `whatsapp-provider-status`, outbound/final-send admission and lifecycle regression suites affected by the new branch, plus `git diff --check`; record actual commands, pass/fail results, task-isolated restart/synchronisation and mirrored parent/implementation branch evidence.
+- [x] Run the existing `whatsapp.worker`, `whatsapp-provider-status`, outbound/final-send admission and lifecycle regression suites affected by the new branch, plus `git diff --check`; record actual commands, pass/fail results, task-isolated restart/synchronisation and mirrored parent/implementation branch evidence.
 - [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
@@ -182,7 +182,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Changes Requested — developer self-review of Attempt 2. The implementation and the required database-backed startup test are present and the focused validations rerun successfully, but the provider 5xx/definitive-rejection test cases and the BG006 60-minute freshness fixture required by this task are not evidenced. Returned to `ready` without incrementing Attempt 2; Attempt 1 review history and both Attempt 2 evidence addenda are preserved below.
+Evidence updated after the Attempt 2 Changes Requested self-review. The previously missing Meta HTTP 5xx/definitive-rejection tests and BG006 60-minute freshness fixture are now supplied, validated and pushed in implementation commit `8342e0e`. The task **remains `ready`, `attempt: 2`, without an Attempt 3 claim**; this is a review-evidence handoff, not a fabricated formal `review` submission. Prior Completion Reports and the architect review are preserved below.
 
 ### Attempt 1 Historical Status
 
@@ -365,6 +365,50 @@ The test demonstrates worker startup invoking the **real** due-processing servic
 4. `npm ci` reported **20 dependency audit advisories** (8 moderate, 12 high), and warnings about install scripts. These are recorded for separate dependency/security triage; no evidence establishes that BG003 introduced them, and no unrelated dependency remediation is included.
 
 **Handoff:** Implementation code and the new database-startup test are pushed and validated. This addendum is suitable for architect inspection immediately, but does not substitute for a valid developer claim and formal review transition under the canonical task workflow. The existing `## Architect Review` remains unchanged.
+
+
+
+### Post-Attempt-2 corrections — review evidence awaiting an authorised developer claim (26 October 2026)
+
+#### Status and files changed
+
+The two corrections in **Developer Self-Review — Changes Requested**, after Attempt 2, are implemented as **test/fixture-only changes** on the Background task branch. Implementation commit **`8342e0e`** (`feat(arch-047-background)`) was pushed to `origin/task/ARCH-047-BACKGROUND-003`, advancing `674855b..8342e0e`. The captured commit shows four changed files (293 insertions, no production service or send-admission adapter changes):
+
+- `moda-interact-background/tests/unit/services/meta-template-management/meta-management.test.ts` — adds HTTP 503 and HTTP 400 Meta Graph adapter classification tests.
+- `moda-interact-background/tests/integration/arch047-meta-provider-failure.integration.test.ts` — real Prisma/PostgreSQL 503 and definitive 400 durable-outcome tests.
+- `moda-interact-background/tests/fixtures/arch047-bg006-final-admission-freshness.fixture.ts` — seven data-only BG006 late-admission freshness vectors.
+- `moda-interact-background/tests/unit/services/meta-template-management/bg006-freshness-fixtures.test.ts` — validates fixture completeness, the exact 60-minute threshold and fail-closed cases.
+
+The corrected worktree archive is `moda-interact-workspace-ARCH-047-BACKGROUND-003(6).zip`; the command evidence is `typescript(20261026-052128)` and `typescript(20261026-052258)`. The task-isolated implementation path and branch are visible in the terminal; the start-of-Attempt-2 canonical launcher, synchronized parent and implementation worktree, recursive submodules and parent claim evidence were recorded in the existing Developer Self-Review. The newly pushed correction is **not** evidence that another attempt has been formally claimed.
+
+#### Required correction 1 — provider HTTP failure/rejection matrix
+
+- **HTTP 503:** Graph adapter classifies the provider create result as `uncertain`; the service records `SUBMISSION_UNKNOWN`, `META_HTTP_503`, a future `nextRetryAt`, `CREATE_INTENT`, `POST_INTENT` and `CREATE_RESULT` evidence. A later exact-WABA/name/language Meta GET reconciles an identified Moda-posted template to `SUBMITTED` without issuing a second POST. The unit test checks the adapter classification; PostgreSQL integration checks durable state and retry/reconciliation outcomes.
+- **HTTP 400 validation rejection:** Graph adapter classifies `definitive`; the service persists `FAILED`, `META_HTTP_400`, clears `nextRetryAt`, and excludes the registration from retry discovery. Repeated submission does not POST again or reinterpret the terminal outcome as uncertain. Integration also verifies durable create-result evidence.
+- Both scenarios assert bounded shared-log error diagnostics and the absence of credentials/provider response bodies. The existing 429, timeout, WABA, pagination and immutable create-only tests remain covered by the previously validated suites.
+
+#### Required correction 2 — BG006 60-minute fixture handoff
+
+`arch047-bg006-final-admission-freshness.fixture.ts` supplies seven reproducible late-admission input/expected-outcome pairs: APPROVED at 30 minutes, APPROVED at exactly 60 minutes, APPROVED older than 60 minutes, no `lastReconciledAt`, UNKNOWN with pending reconciliation, PAUSED and drift-detected APPROVED. The companion unit test passed and checks the strict age boundary and suppression reasons. **BG006 owns the future production late-send admission adapter and must consume these same fixtures against its DB-backed read/permit path.** This task does not assert that those adapter-level tests or a live outbound send have already passed. The architectural reviewer can accept the **fixture supply/handoff** as BG003's correction while retaining adapter implementation and execution as BG006-owned.
+
+#### Validation performed for the correction
+
+| Check | Command / source | Result |
+|---|---|---|
+| New and existing meta-management unit tests | `npx vitest run tests/unit/services/meta-template-management` | **26/26 passed; 3/3 files** |
+| Durable provider failure plus prior database/startup integrations | `npm run test:integration -- tests/integration/arch047-meta-provider-failure.integration.test.ts tests/integration/arch047-meta-template-management.integration.test.ts tests/integration/arch047-meta-messaging-startup.integration.test.ts` | **4/4 passed; 3/3 files**, disposable PostgreSQL |
+| Prisma client and TypeScript | `npm run build` | **Passed**, Prisma client generated; no `tsc` errors shown |
+| Focused lint | `npx eslint tests/unit/services/meta-template-management tests/integration/arch047-meta-provider-failure.integration.test.ts tests/fixtures/arch047-bg006-final-admission-freshness.fixture.ts` | Completed without reported diagnostics |
+| Whitespace checks | `git diff --check` in terminal; separate review-patch application check | No reported whitespace violations; no build/validation failure reported |
+| Earlier impacted WhatsApp worker/status/outbound-admission regressions | Attempt 2 Developer Self-Review (prior to this test/fixture-only commit) | **158/158 passed, 11/11 files**, not rerun in the latest correction capture |
+| Branch publication | `git commit` and `git push` in terminal | `8342e0e` pushed to `task/ARCH-047-BACKGROUND-003` |
+
+#### Remaining ownership and submission conditions
+
+1. The current canonical task frontmatter is **`ready`, `attempt: 2`, `executor: null`, `claimed_at: null`** following the developer's Changes Requested review. The new correction commit is not a valid substitute for `/moda_developer_create ARCH-047-BACKGROUND-003` claiming **Attempt 3** through the authorised launcher. Do not manufacture claim timestamps, parent commits or clean-worktree evidence.
+2. After the real claim, reconcile the parent/implementation task branches and the exact launcher synchronization packet; rerun validation if the claimed base differs, then use the developer update path to record **Ready for Review**, transition to `review`, and commit/push the parent task state for architect assessment. Because `completion_mode: developer`, architect acceptance alone does not mark the task Complete.
+3. The Work Item requiring the fixture to be **consumed by BG006** remains unchecked: only the shared fixture contract, not the future BG006 production adapter, is available. The reviewer must explicitly accept this repository/task boundary or retain the consumer test as BG006-owned outstanding work. `ARCH-047-MESSAGING-001` still separately owns authenticated webhook production.
+4. Do not modify `docs/decisions/**/_index.md`, the parent architecture, BG006's production implementation or the historical `## Architect Review` in this handoff.
 
 
 ## Architect Review
