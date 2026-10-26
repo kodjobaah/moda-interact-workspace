@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 35
-executor: developer
-claimed_at: 2026-10-26T07:14:49Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-BACKGROUND-001
@@ -110,7 +110,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 - [x] Initial NONE/FIXED/AI and sequence-two follow-up select expected six-purpose variants and preserve correct language; mapping of body and dynamic URL/button parameters tested with provider mock.
 - [x] Provider category preflight no longer called; no normal-send Meta metadata GET; missing/revoked/drifted/disabled/ambiguous assignment fails closed.
-- [x] Simulate consent/STOP/recipient/assignment change between preparation and final permit; additionally simulate a previously APPROVED registration receiving PAUSED, BG003 storing UNKNOWN and Meta GET timing out. Final admission refuses all new sends without charge; later verified APPROVED restores only provider eligibility, not an Admin-disabled assignment. Stale `lastReconciledAt` over 60 minutes also denies without send.
+- [ ] Simulate consent/STOP/recipient/assignment change between preparation and final permit; additionally simulate a previously APPROVED registration receiving PAUSED, BG003 storing UNKNOWN and Meta GET timing out. Final admission refuses all new sends without charge; later verified APPROVED restores only provider eligibility, not an Admin-disabled assignment. Stale `lastReconciledAt` over 60 minutes also denies without send. Unit tests cover the final SQL projection and BG003 integration separately, but a real PostgreSQL test joining the pending revocation to the final permit/lock race is still required.
 - [x] Tests for order completion, duplicate initial and sequence-two jobs, response before follow-up and max-two outreach limit.
 - [x] Re-run existing recovery-initiation/follow-up/fence/credit compensation tests, PostgreSQL admission race where available, build and `git diff --check`.
 - [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
@@ -143,7 +143,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Ready for Review — developer submission, Attempt 1. Repository implementation commit `6066b6f` (`feat(ARCH-047-BACKGROUND-006): integrate approved recovery templates`) was pushed to `origin/task/ARCH-047-BACKGROUND-006` on 2026-10-26. The parent task document is being submitted separately; no architect acceptance or developer completion is claimed.
+Changes Requested — developer self-review of Attempt 1. Implementation commit `6066b6f` and the parent report are published, and focused unit/PostgreSQL preparation checks pass. The required final-permit PostgreSQL concurrency case combining a durable BG003 pending revocation with the BG006 registration fence is not demonstrated. Returned to `ready` without incrementing Attempt 1; no architect acceptance or developer completion is claimed.
 
 ### Files Changed
 
@@ -223,7 +223,7 @@ No architecture index, migration, Shared package, or other repository-owned sour
 
 - **Discount eligibility:** default Shopify and Woo per-checkout provider-rule evaluators remain unavailable; FIXED and AI requests safely use `NO_OFFER` when no independently verified checkout evidence is supplied. A separately owned evaluator is needed before live positive offers can be claimed. BG006 has not implemented that provider capability.
 - **Human BG007 migration:** `src/services/recovery-conversation/human-command-dispatcher.service.ts` still imports `metaWhatsAppTemplateCategoryService` (from `src/services/whatsapp-template-category.service.ts`). This is the remaining live consumer and must be handled by ARCH-047-BACKGROUND-007; selector and category modules were not prematurely deleted.
-- **Review proof:** the archived terminal log lacks original launcher synchronization and recursive-submodule evidence, and no dedicated real-PostgreSQL final-template admission race is proven. Request those artefacts or additional validation during review as necessary.
+- **Review proof:** the submitted terminal log lacks the original launcher preparation packet. Current branch/worktree and recursive-submodule state were independently inspected during review, but that is not presented as historical launcher output. No dedicated real-PostgreSQL final-template admission race is proven.
 
 ### Architectural Concerns
 
@@ -262,3 +262,24 @@ Architect to reconcile the parent task graph and obsolete Admin/Shared reference
 - Date: 2026-10-26.
 - Change: The developer explicitly invoked `/moda_developer_create ARCH-047-BACKGROUND-006` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
 - Preserved: `assigned_agent: moda_background`, coordinator, repository, task scope, acceptance criteria, validation requirements, dependency gate, Ready eligibility, and attempt 0. This amendment does not itself claim an implementation attempt.
+
+## Developer Self-Review - Changes Requested
+
+### Review Decision
+
+Attempt 1 is not accepted for developer completion. The production adapter locks and re-reads the exact template registration inside the existing final permit transaction, and focused unit tests cover approved, unavailable, UNKNOWN/PAUSED, pending observation, drift, null/old/future reconciliation timestamps, and SQL error propagation. BG003's separate PostgreSQL integration covers the durable UNKNOWN/pending fence after a PAUSED observation and failed Meta GET. However, the evidence does not exercise those components together against PostgreSQL at the authoritative final-send permit boundary, so the critical ordering/locking behavior remains unverified at the database level.
+
+### Validation Reviewed
+
+- **PASS** — `npx vitest run tests/unit/services/recovery-template-integration/final-template-registration.service.test.ts tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts`: 97 tests across 5 files.
+- **PASS** — `npm run test:integration -- tests/integration/arch047-recovery-template-preparation.integration.test.ts`: 1 PostgreSQL integration test passed. This verifies prepared-template lookup/provenance, not the final registration permit race.
+- The submitted report's build, focused ESLint, broader regression and moderation integration results are retained as supplied evidence; they were not rerun for this review.
+- Current Git inspection: implementation branch `task/ARCH-047-BACKGROUND-006` is clean and matches `origin/task/ARCH-047-BACKGROUND-006` at `6066b6f`; `origin/main` is an ancestor. Parent branch is clean and published at `38d34ac`. Recursive database submodule is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. The original launcher packet is not present in the submitted report, so current state is not misrepresented as historical launcher output.
+
+### Required Correction
+
+- Add and run a disposable-PostgreSQL integration test that seeds an approved/enabled assigned registration and exercises the actual BG006 final permit transaction. Coordinate a BG003 status-observation transaction for PAUSED that durably sets `providerStatus = UNKNOWN` and leaves a `RECONCILIATION_PENDING` event when mocked Meta GET fails. Prove the final permit denies with `TEMPLATE_PROVIDER_STATUS_UNRESOLVED` and makes no provider dispatch or charge; also cover the concurrency ordering so either a permit that acquired the authoritative lock first completes according to the defined ordering, or a committed revocation fences the next permit. Include stale greater-than-60-minute reconciliation denial in a database-backed permit fixture. Do not move Meta/network I/O into SQL transactions or alter BG003 ownership.
+
+### State Transition
+
+Returned to `ready`, with `executor: null`, `claimed_at: null`, and Attempt 1 unchanged. The next canonical `/moda_developer_create ARCH-047-BACKGROUND-006` claim will create Attempt 2 and provide fresh launcher synchronization/submodule evidence. No implementation source was modified during this review.
