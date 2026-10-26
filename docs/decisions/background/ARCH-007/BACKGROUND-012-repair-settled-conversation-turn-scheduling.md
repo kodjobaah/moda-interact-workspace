@@ -9,18 +9,18 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-10-26T23:30:31Z
+attempt: 2
 depends_on:
   - ARCH-007-BACKGROUND-010
   - ARCH-007-BACKGROUND-011
 enables:
   - ARCH-007-SYSTEM-TEST-005
 created: 2026-10-26
-updated: 2026-10-26T23:28:00Z
+updated: 2026-10-26
 ---
 
 # ARCH-007-BACKGROUND-012: Repair settled conversation-turn scheduling under concurrent inbound fragments
