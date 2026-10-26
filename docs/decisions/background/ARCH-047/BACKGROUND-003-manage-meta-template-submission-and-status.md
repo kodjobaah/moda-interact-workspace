@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 25
-executor: developer
-claimed_at: 2026-10-26T04:39:41Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-047-DATABASE-001
@@ -182,7 +182,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-26T04:39:41Z. Attempt 1 review history is preserved below.
+Changes Requested — developer self-review of Attempt 2. The implementation and the required database-backed startup test are present and the focused validations rerun successfully, but the provider 5xx/definitive-rejection test cases and the BG006 60-minute freshness fixture required by this task are not evidenced. Returned to `ready` without incrementing Attempt 2; Attempt 1 review history and both Attempt 2 evidence addenda are preserved below.
 
 ### Attempt 1 Historical Status
 
@@ -415,3 +415,30 @@ The module-local create-only, no-AST, no-external-adoption approach matches ARCH
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-003`, branch `task/ARCH-047-BACKGROUND-003`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-003`, branch `task/ARCH-047-BACKGROUND-003`, created from current Background `origin/main` because no BACKGROUND-003 task branch existed locally or remotely.
 - The parent task branch was merged with current workspace `origin/main`; it is intentionally ahead of its previously published task-branch tip and will be published with this claim. No implementation changes were made during preparation. No branch was merged into `main`.
+
+## Developer Self-Review — Changes Requested
+
+### Attempt and worktree evidence
+
+- Attempt reviewed: 2. The canonical launcher claimed this attempt for `developer` at `2026-10-26T04:39:41Z`; the claim commit `0bfb5747f` and report-structure repair `50ea85c32` are published on the parent `task/ARCH-047-BACKGROUND-003` branch.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-003`, branch `task/ARCH-047-BACKGROUND-003`; clean and up to date with its remote after the claim.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-003`, branch `task/ARCH-047-BACKGROUND-003`; clean. Implementation commits `4223b29` and `674855b` are published. The launcher reported remote fast-forward `not-needed` and `origin/main` `already-current`; the synchronized local head is `9117cbd145ed5b75cd0fc13230a6681f16ec95fd`, 14 commits ahead of the task remote solely due to synchronized mainline ancestry.
+- Recursive submodule sync and initialization passed; `database` is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. The shared workspace checkout was not used for implementation. No material assigned-agent assistance was used.
+- Attempt 2 implementation delta from `568eed8` to `674855b`: 17 files changed (1,021 insertions, 145 deletions), including the due poller, strict Shared-v2 worker dispatch, status repository, messaging startup integration, and unit/PostgreSQL tests. No implementation changes are uncommitted.
+
+### Validation rerun for this review
+
+- `npx vitest run tests/unit/services/meta-template-management tests/unit/runtime/arch047-meta-messaging-startup.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts tests/unit/services/outbound-whatsapp-admission` — **158 tests passed in 11 files**.
+- `npm run test:integration -- tests/integration/arch047-meta-template-management.integration.test.ts tests/integration/arch047-meta-messaging-startup.integration.test.ts` — **2 tests passed in 2 files** using the disposable PostgreSQL harness.
+- `npm run build` — passed, including Prisma client generation and TypeScript compilation.
+- Focused `npx eslint` over the BG003 service, worker, messaging entrypoint and affected unit/integration tests — passed with no diagnostics.
+- `git diff --check HEAD^ HEAD` on the implementation branch and parent worktree `git diff --check` — passed.
+- The real startup integration seeds `READY_TO_SUBMIT` rows and exercises entrypoint-started polling, durable success/uncertain outcomes, no repeat POST, and timer shutdown. The status integration exercises concurrent CAS claims, the immediate UNKNOWN/pending-event fence, stale-result rejection, provider-ID conflict, and due refresh after 31 minutes. These results do not establish live Messaging-producer-to-BullMQ end-to-end behavior, which remains separately owned.
+
+### Required corrections before review can pass
+
+1. Add focused adapter/service tests for an HTTP 5xx create outcome and a definitive provider validation rejection. Assert the 5xx remains uncertain and is reconciled before any later create, while the definitive rejection is persisted as blocked/rejected and is not retried as an uncertain create. The current implementation classifies these dispositions, but the required test matrix in R2 / Acceptance Criteria does not demonstrate both cases.
+2. Supply the BG006-owned final-admission fixture required by R5: prove that a registration with a successful reconciliation older than 60 minutes is not eligible and that a fresh approved registration can pass the fixture contract. Keep production final-send adapter changes in BG006; if the fixture cannot be authored/consumed from the Background-owned boundary, obtain an explicit architect scope/contract decision and record the handoff rather than checking this requirement as complete.
+
+No source change is requested for the separately owned Messaging producer or BG006 production adapter, and this review does not claim end-to-end webhook certification or task completion. Frontmatter is returned to `ready` with `executor: null`, `claimed_at: null`, and `attempt: 2`; the next authorized developer create claim, if needed, will increment the attempt exactly once.
