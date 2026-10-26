@@ -80,13 +80,13 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Work Items
 
-- [ ] Update only the **post-24-hour** Meta template branch of `recovery-conversation/human-command-dispatcher.service.ts` and its narrow command-evaluation/selection adapters to use BG001 prepared follow-up and BG004 verified offer decision where required.
-- [ ] Reuse BG006's late DB template-admission check and established human recovery claim, reserve/send/compensate pipeline. Keep merchant authentication/authorization in the existing API/Shopify/Woo boundaries; Background rechecks tenant/recipient/recovery claims.
+- [x] Update only the **post-24-hour** Meta template branch of `recovery-conversation/human-command-dispatcher.service.ts` and its narrow command-evaluation/selection adapters to use BG001 prepared follow-up and BG004 verified offer decision where required.
+- [x] Reuse BG006's late DB template-admission check and established human recovery claim, reserve/send/compensate pipeline. Keep merchant authentication/authorization in the existing API/Shopify/Woo boundaries; Background rechecks tenant/recipient/recovery claims.
 - [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
 - [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
-- [ ] Remove the human-dispatcher's obsolete Meta category verifier/preflight and caller-provided parameter trust; pass BG001-prepared complete body/header/button components through the BG006 final admission adapter.
-- [ ] Audit references to both legacy template-selector/category services in all Background production code and tests after BG006; delete unused modules and stale tests/mocks once no real caller remains, or record the exact unretired consumer as a blocking architectural gap.
+- [x] Remove the human-dispatcher's obsolete Meta category verifier/preflight and caller-provided parameter trust; pass BG001-prepared complete body/header/button components through the BG006 final admission adapter.
+- [x] Audit references to both legacy template-selector/category services in all Background production code and tests after BG006; delete unused modules and stale tests/mocks once no real caller remains, or record the exact unretired consumer as a blocking architectural gap.
 - [ ] Verify separate Shopify and Woo merchant admission changes against their owning tasks and fixtures; do not implement them from Background.
 
 ## Interfaces / Contracts
@@ -108,25 +108,25 @@ None in this nine-task Background set.
 
 ## Acceptance Criteria
 
-- [ ] The eligible post-window path forwards BG001 ShopBrand/body/header/button bindings unchanged; unavailable READY R2 media or a missing CTA checkout link refuses the send, and the in-window free-text path is unaffected.
+- [x] The eligible post-window path forwards BG001 ShopBrand/body/header/button bindings unchanged; unavailable READY R2 media or a missing CTA checkout link refuses the send, and the in-window free-text path is unaffected.
 
-- [ ] In-window typed human text remains unchanged by this task; post-window uses only one eligible Follow-up Meta template with correct language/offer bindings.
-- [ ] Wrong-shop/WABA/wrong-variant, merchant template override, stale published slot and revoked Meta registration are refused.
+- [x] In-window typed human text remains unchanged by this task; post-window uses only one eligible Follow-up Meta template with correct language/offer bindings.
+- [x] Wrong-shop/WABA/wrong-variant, merchant template override, stale published slot and revoked Meta registration are refused.
 - [ ] Rapid duplicate commands, provider timeout, STOP after preparation, credits consumed/refunded and retry safety.
-- [ ] Existing ARCH-040 human command, follow-up claim and final admission tests pass, plus focused integration/build/`git diff --check`.
-- [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
-- [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+- [x] Existing ARCH-040 human command, follow-up claim and final admission tests pass, plus focused integration/build/`git diff --check`.
+- [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
+- [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
-- [ ] Post-window human commands reject unsupported legacy purpose, externally originated/unlinked variants, wrong WABA/language, ambiguous assignments, unverified offers and client-supplied parameter overrides; no sequence-two or credit is consumed on refusal.
-- [ ] The production human template branch no longer calls the Meta category API or assembles body-only placeholder arrays from untrusted merchant command data. It uses the same BG006 late database fence and prepared components (including trusted checkout button and optional READY image header).
-- [ ] Obsolete Background template selector/category implementation is deleted after verified last-caller removal; all legacy tests/fixtures are rewritten or removed appropriately. If a production caller outside task ownership still requires the old module, record the exact blocker and do **not** claim complete removal.
+- [x] Post-window human commands reject unsupported legacy purpose, externally originated/unlinked variants, wrong WABA/language, ambiguous assignments, unverified offers and client-supplied parameter overrides; no sequence-two or credit is consumed on refusal.
+- [x] The production human template branch no longer calls the Meta category API or assembles body-only placeholder arrays from untrusted merchant command data. It uses the same BG006 late database fence and prepared components (including trusted checkout button and optional READY image header).
+- [x] Obsolete Background template selector/category implementation is deleted after verified last-caller removal; all legacy tests/fixtures are rewritten or removed appropriately. If a production caller outside task ownership still requires the old module, record the exact blocker and do **not** claim complete removal.
 
 ## Validation
 
-- [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
-- [ ] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
+- [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
+- [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
 - [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
-- [ ] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
+- [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
 
@@ -144,35 +144,57 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 1. The developer explicitly took over this Ready agent-owned task through `/moda_developer_create`. Dependencies ARCH-047-BACKGROUND-001, -004, and -006 are confirmed `complete`. Canonical worktrees are synchronized and clean at attempt start: parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-007`, parent revision `e8759d60fc6abef48fb02379fb8822d373a38d7e`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-007`, implementation revision `d9504f5f373201635433ffee79ce56d6d2dd90dd`.
+In Progress — Developer Attempt 1 remains active. The canonical route confirms `execution_mode: developer`, `completion_mode: developer`, `executor: developer`, and the existing claim; no task lifecycle metadata was changed during this reconciliation. The parent architecture handoff reconciliation is present. BG001, BG004 and BG006 each have `status: complete` in the current parent task snapshot.
 
 ### Files Changed
 
-None yet.
+The published implementation branch `task/ARCH-047-BACKGROUND-007` is at `942e68b2a43f66bec35dfeaaaa1d70e82ca9703a`, equal to `origin/task/ARCH-047-BACKGROUND-007`. Relative to `origin/main`, the branch changes 21 paths (884 insertions, 596 deletions):
+
+- `scripts/integration-prisma-path.mjs`, `scripts/integration-prisma-path.test.mjs`, `scripts/test-integration.mjs`
+- `src/services/recovery-conversation/follow-up-claim-cancellation.service.ts`, `human-command-dispatcher.service.ts`, `human-send-policy.service.ts`, `merchant-follow-up-template.service.ts`, `outbound-send-fence.service.ts`
+- Deletes `src/services/whatsapp-template-category.service.ts` and `src/services/whatsapp-template-selector.service.ts`
+- Adds `tests/integration/arch047-merchant-follow-up-final-permit.integration.test.ts`; updates `tests/integration/arch048-woo-initial-outreach.integration.test.ts`, `tests/integration/fixtures/recovery-human-dispatch.fixture.ts`, and `tests/integration/woo-initial-send-redis-fault.integration.test.ts`
+- Updates `tests/unit/services/checkout-recovery.capacity-resume.test.ts`, `checkout-refresh.test.ts`, `matured-candidate.materialization.test.ts`, and `tests/unit/services/recovery-conversation/human-synchronous-rejection.test.ts`; adds `tests/unit/services/recovery-conversation/merchant-follow-up-template.service.test.ts`; deletes the two legacy selector/category unit test files
 
 ### Work Completed
 
-Prepared the canonical task worktrees and claimed developer Attempt 1. Implementation work has not started.
+The implementation integrates the human post-window branch with the BG001 prepared-template result and BG006 final database fence, rejects untrusted merchant template parameters and mismatched tenant/recovery/template identity, and preserves prepared body/header/button data. The legacy Background selector/category modules and their tests are removed after the implementation/test reference audit found no remaining references under `src/` or `tests/`. No source change was made during this reconciliation.
 
 ### Validation Results
 
-Not run; implementation validation remains outstanding.
+Passed during this reconciliation from the canonical implementation worktree:
+
+- `npx vitest run tests/unit/services/recovery-conversation/merchant-follow-up-template.service.test.ts tests/unit/services/recovery-conversation/start-human-command-dispatcher.test.ts` — 2 files, 31 tests passed.
+- `npm run test:integration -- tests/integration/arch047-merchant-follow-up-final-permit.integration.test.ts` — 1 PostgreSQL integration file, 4 tests passed.
+- `npm run test:arch040-recovery-conversation` — 10 files, 108 tests passed.
+- `npm run test:arch040-background-runtime:postgres` — 2 PostgreSQL integration files, 9 tests passed.
+- `npm run build` — Prisma Client v6.19.3 generation and TypeScript compilation passed.
+- Targeted `npx eslint` over changed human follow-up production files and their focused tests — passed without diagnostics.
+- `git diff --check origin/main...HEAD` — passed.
+- Final standalone developer validation, 26 October 2026: `npm run lint` completed with no ESLint diagnostics; `git diff --check` completed without errors; `git status --short` printed no entries, confirming a clean implementation worktree at that point.
+- Production and test reference audit for `whatsappTemplateSelectorService`, `metaWhatsAppTemplateCategoryService`, `templateCategories.verify`, and imports of the deleted modules returned no matches. One `purpose: "checkout-recovery"` literal remains in the unrelated `tests/unit/services/matured-candidate.materialization.test.ts`; it is not a human template caller and was not changed as an unrelated fixture.
+
+Current branch evidence: the earlier reconciliation observed a pre-existing untracked top-level `typescript` text log, which it inspected and did not modify. The developer's later final standalone `git status --short` output was empty; that newer observation is recorded without inferring how the earlier log ceased appearing. Implementation HEAD was verified at `origin/task/ARCH-047-BACKGROUND-007`, with `origin/main` an ancestor. The dedicated parent worktree was on `task/ARCH-047-BACKGROUND-007`, clean before the earlier report edit, with HEAD `a9539e5baea15d28a940bcf6d0d8b1e51f07d4fe` equal to its origin task ref and `origin/main` an ancestor. No commit or push was made as part of this documentation update. Current-state evidence does not independently prove the original attempt-start synchronization or recursive-submodule preparation packet.
 
 ### Deviations
 
-None recorded.
+No implementation source change or unrelated artifact cleanup was made during the evidence reconciliation. The implementation commit includes integration-harness path scripts in addition to the human follow-up feature tests; build, lint and focused integration validation passed with these files present.
 
 ### Assumptions
 
-The DB001 Attempt 7 model names and fields are authoritative design inputs, not proof of an accepted/applied production migration. Reinspect current implementation on claim.
+The recorded current parent task states and existing implementation branch are the snapshot being reconciled. Current worktree cleanliness and ancestry are observations from this update, not retroactive proof of launcher preparation at attempt start.
 
 ### Unresolved Issues
 
-**Design issue resolved; implementation handoff still requires verification.** The architect's 26 October 2026 documentation reconciliation confirms that Admin owns all AST authoring, validation, translation reconstruction and compilation; BG001 consumes frozen compiled database payloads; and Shared publishes only the Meta template-status event contract for Messaging/BG003. No new Shared AST package or BG007 AST implementation is needed. Before resuming the existing Attempt 1 claim, confirm that the reconciliation has been applied in the canonical parent/task worktree. This amendment does not perform BG007 feature work, execute validation or establish that all runtime admission/moderation requirements are satisfied. Record any subsequently encountered implementation-specific blocker separately.
+**Acceptance remains incomplete; task deliberately stays `in_progress`.** The focused tests establish tenant/recovery scoping, forged parameter rejection, prepared component pass-through, idempotent repeat processing, revoked-registration refusal without provider dispatch/usage, and missing identity refusal. The current evidence does not fully demonstrate all listed STOP-after-preparation, provider-timeout, credit compensation/refund and retry interleavings; the corresponding Acceptance Criteria remain unchecked.
+
+**External merchant admission verification remains outside this Background checkout.** The parent snapshot contains Shopify `ARCH-047-SHOPIFY-001` and API `ARCH-047-API-001` implementation records describing the new `FOLLOW_UP_*` admission/catalogue and empty client-parameter contract. Woo `ARCH-047-WOOCOMMERCE-001` records that its UI remains unavailable until the hosted API catalogue is available. This reconciliation did not run those repositories' tests or independently inspect their implementation worktrees, so the R6 cross-service verification criterion remains unchecked.
+
+**Workflow evidence gap.** The launcher route and current mirrored worktree branches are verified, but the original attempt-start synchronization/recursive submodule preparation packet is not present in this update's evidence. Do not infer it from current branch ancestry. The implementation worktree's untracked `typescript` text log is pre-existing developer data and remains untouched.
 
 ### Architectural Concerns
 
-No additional cross-repository issues identified at definition time; return any new gap to the architect.
+No new cross-repository code was added. Preserve the separately owned Shopify/API/Woo admission and UI boundaries; any gap found by their owners should be coordinated by `moda_architect`.
 
 ## Architect Review
 
