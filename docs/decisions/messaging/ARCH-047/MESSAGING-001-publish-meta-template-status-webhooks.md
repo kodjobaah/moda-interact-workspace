@@ -9,7 +9,7 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 25
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-047-SHARED-002
 enables: []
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # Authenticate and publish Meta template-status webhooks to BullMQ
@@ -33,7 +33,7 @@ Coordinator: `moda_architect`.
 
 **Authoritative cross-repository contract:** published `@modainteract/moda-interact-shared/whatsapp-template-events` **v2** from `ARCH-047-SHARED-001/002`. BG003 consumes the same schema. The earlier document-only v1 hash-based event ID is superseded before production. No Admin AST contract is moved into Shared.
 
-This is a **portable task definition**: the source snapshot permits determining scope and readiness, but no task branch, task worktree, commit or push has been created by its authorship. `status: pending` awaits the Shared publication gate; execution must still be materialised/claimed through the canonical task launcher.
+This is a materialized task definition. `ARCH-047-SHARED-002` completed on 2026-10-26 and published the accepted `2.5.1` subpath; the dependency gate is satisfied. Execution must still be claimed through the canonical task launcher.
 
 ## Objective
 
