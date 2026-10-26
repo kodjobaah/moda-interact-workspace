@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 40
 executor: null
 claimed_at: null
@@ -82,7 +82,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 - [x] Update only the **post-24-hour** Meta template branch of `recovery-conversation/human-command-dispatcher.service.ts` and its narrow command-evaluation/selection adapters to use BG001 prepared follow-up and BG004 verified offer decision where required.
 - [x] Reuse BG006's late DB template-admission check and established human recovery claim, reserve/send/compensate pipeline. Keep merchant authentication/authorization in the existing API/Shopify/Woo boundaries; Background rechecks tenant/recipient/recovery claims.
-- [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
+- [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases, including late STOP/control loss, provider UNKNOWN, compensation and retry/reclaim.
 - [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
 - [x] Remove the human-dispatcher's obsolete Meta category verifier/preflight and caller-provided parameter trust; pass BG001-prepared complete body/header/button components through the BG006 final admission adapter.
@@ -112,7 +112,7 @@ None in this nine-task Background set.
 
 - [x] In-window typed human text remains unchanged by this task; post-window uses only one eligible Follow-up Meta template with correct language/offer bindings.
 - [x] Wrong-shop/WABA/wrong-variant, merchant template override, stale published slot and revoked Meta registration are refused.
-- [ ] Rapid duplicate commands, provider timeout, STOP after preparation, credits consumed/refunded and retry safety.
+- [x] Rapid duplicate commands, provider timeout, STOP after preparation, credits consumed/refunded and retry safety.
 - [x] Existing ARCH-040 human command, follow-up claim and final admission tests pass, plus focused integration/build/`git diff --check`.
 - [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
 - [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
@@ -144,11 +144,13 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Returned to Ready — developer Attempt 1 requires changes. The implementation branch remains published at `942e68b2a43f66bec35dfeaaaa1d70e82ca9703a`; this review changed no Background source. The initial developer claim remains Attempt 1 and is not incremented by this transition. BG001, BG004 and BG006 are recorded complete; the parent architecture/BG001 ownership clarification is present. Completion remains developer-controlled.
+**Submitted for architect review — implementation correction evidence attached, not accepted or complete.** The implementation branch is published at `7a2bb53` (`origin/task/ARCH-047-BACKGROUND-007`). Its preceding implementation commit is `942e68b2a43f66bec35dfeaaaa1d70e82ca9703a`. The late STOP/control-loss, provider UNKNOWN, credit compensation and retry/reclaim coverage requested by the previous developer self-review has passed.
+
+**Lifecycle qualification:** This canonical snapshot was returned to `ready` after the Attempt 1 self-review. No separate `/moda_developer_create` Attempt 2 claim/preparation packet has been supplied. Preserve the recorded `attempt: 1` and null executor/claim metadata rather than inventing an Attempt 2 or a timestamp. The reviewer must reconcile this workflow gap before acceptance. BG001, BG004 and BG006 are recorded Complete. Developer completion authority is unchanged (`completion_mode: developer`).
 
 ### Files Changed
 
-The published implementation branch `task/ARCH-047-BACKGROUND-007` is at `942e68b2a43f66bec35dfeaaaa1d70e82ca9703a`, equal to `origin/task/ARCH-047-BACKGROUND-007`. Relative to `origin/main`, the branch changes 21 paths (884 insertions, 596 deletions):
+The initial implementation branch reached `942e68b2a43f66bec35dfeaaaa1d70e82ca9703a` (21 changed paths relative to `origin/main` at that inspection). The subsequent correction commit `7a2bb53` was pushed to `origin/task/ARCH-047-BACKGROUND-007` and adds two test files while modifying two existing test/fixture files. The original changed-file inventory below remains historical evidence for the first commit:
 
 - `scripts/integration-prisma-path.mjs`, `scripts/integration-prisma-path.test.mjs`, `scripts/test-integration.mjs`
 - `src/services/recovery-conversation/follow-up-claim-cancellation.service.ts`, `human-command-dispatcher.service.ts`, `human-send-policy.service.ts`, `merchant-follow-up-template.service.ts`, `outbound-send-fence.service.ts`
@@ -156,11 +158,34 @@ The published implementation branch `task/ARCH-047-BACKGROUND-007` is at `942e68
 - Adds `tests/integration/arch047-merchant-follow-up-final-permit.integration.test.ts`; updates `tests/integration/arch048-woo-initial-outreach.integration.test.ts`, `tests/integration/fixtures/recovery-human-dispatch.fixture.ts`, and `tests/integration/woo-initial-send-redis-fault.integration.test.ts`
 - Updates `tests/unit/services/checkout-recovery.capacity-resume.test.ts`, `checkout-refresh.test.ts`, `matured-candidate.materialization.test.ts`, and `tests/unit/services/recovery-conversation/human-synchronous-rejection.test.ts`; adds `tests/unit/services/recovery-conversation/merchant-follow-up-template.service.test.ts`; deletes the two legacy selector/category unit test files
 
+Additional files from commit `7a2bb53`:
+
+- Adds `tests/integration/arch047-merchant-follow-up-failure-recovery.integration.test.ts` and `tests/integration/fixtures/arch047-human-follow-up.fixture.ts`.
+- Updates `tests/integration/arch047-merchant-follow-up-final-permit.integration.test.ts` and `tests/integration/fixtures/recovery-human-dispatch.fixture.ts`.
+
 ### Work Completed
+
+**Correction after changes requested:** Reused the ARCH-047 PostgreSQL/Redis harness and existing BG006 final permit to demonstrate late authoritative STOP, control loss, UNKNOWN provider timeout/reconciliation, crash recovery, exact-once billing compensation and lease-based retry without duplicate sequence-two sends. The follow-up correction commit `7a2bb53` changes only integration tests/fixtures, not production dispatch, Meta admission, billing or shared logging.
 
 The implementation integrates the human post-window branch with the BG001 prepared-template result and BG006 final database fence, rejects untrusted merchant template parameters and mismatched tenant/recovery/template identity, and preserves prepared body/header/button data. The legacy Background selector/category modules and their tests are removed after the implementation/test reference audit found no remaining references under `src/` or `tests/`. No source change was made during this reconciliation.
 
 ### Validation Results
+
+**Final correction validation — 26 October 2026, captured in `typescript(20261026-232626)`:**
+
+- `npm run test:integration -- tests/integration/arch047-merchant-follow-up-final-permit.integration.test.ts tests/integration/arch047-merchant-follow-up-failure-recovery.integration.test.ts` — **PASS, 2 files / 10 PostgreSQL/Redis integration tests** (4 final-permit, 6 failure/recovery).
+- Late STOP after preparation and provisional credit reservation — PASS: no provider send; local no-contact reader sees committed STOP and reserved credit is released.
+- HUMAN-control loss before final permit — PASS: no provider request and no charged follow-up.
+- Provider timeout/UNKNOWN after restart, verified reconciliation, and expired committed permit — PASS: no duplicate Meta submission.
+- Definitive provider rejection — PASS: durable credit release happens once; replay cannot double-refund or resubmit.
+- Deferred command reclaim — PASS: fresh lease preserves the same sequence-two attempt.
+- `npm run build` — **PASS** (Prisma Client v6.19.3 generation and TypeScript compilation).
+- `npm run lint` — **PASS** (`eslint .`, no reported diagnostics).
+- `git commit` — `7a2bb53` (`feat(background)`), four test/fixture files changed; `git push` published the commit on `task/ARCH-047-BACKGROUND-007`.
+- The log shows an untracked local `typescript` transcript before commit. It was **not** part of the four committed test/fixture files. A post-push clean `git status --short` was not recorded in that transcript; do not infer final worktree cleanliness from the push.
+- `git diff --check` passed on the prior implementation validation; the current documentation patch has separately passed whitespace checks. A post-correction full branch diff check and the original launcher start-of-attempt packet have **not** been supplied with this evidence.
+
+**Historical implementation evidence (initial commit `942e68b`):**
 
 Passed during this reconciliation from the canonical implementation worktree:
 
@@ -184,7 +209,9 @@ Current branch evidence: the earlier reconciliation observed a pre-existing untr
 
 ### Deviations
 
-No implementation source change or unrelated artifact cleanup was made during the evidence reconciliation. The implementation commit includes integration-harness path scripts in addition to the human follow-up feature tests; build, lint and focused integration validation passed with these files present.
+The additional correction was committed as test-only changes; the production dispatch and shared logger are unchanged. After the Attempt 1 self-review returned the task to `ready`, the correction commit was published without a visible new `/moda_developer_create` claim packet. This submission does not fabricate a subsequent attempt or claim.
+
+No implementation source change or unrelated artifact cleanup was made during the earlier evidence reconciliation. The implementation commit includes integration-harness path scripts in addition to the human follow-up feature tests; build, lint and focused integration validation passed with these files present.
 
 ### Assumptions
 
@@ -192,13 +219,15 @@ The recorded current parent task states and existing implementation branch are t
 
 ### Unresolved Issues
 
-**Acceptance remains incomplete; Attempt 1 is returned to `ready`.** The focused tests establish tenant/recovery scoping, forged parameter rejection, prepared component pass-through, idempotent repeat processing, revoked-registration refusal without provider dispatch/usage, and missing identity refusal. They do not fully demonstrate STOP-after-preparation, provider-timeout/UNKNOWN recovery, credit compensation/refund, or retry interleavings; the corresponding Acceptance Criteria remain unchecked.
+**Previously blocking runtime coverage is now demonstrated.** The 10/10 passing PostgreSQL/Redis scenarios cover late STOP/control loss, provider timeout/UNKNOWN reconciliation and restart, exactly-once credit compensation, stale permits and safe retry/reclaim. The prior developer self-review below remains intact as historical Changes Requested evidence; its missing-coverage statement has been superseded by the correction tests recorded here.
 
-**External merchant admission verification remains incomplete.** Shopify `ARCH-047-SHOPIFY-001` and API `ARCH-047-API-001` are recorded complete and their reports document the `FOLLOW_UP_*` catalogue/admission and empty client-parameter contract. Woo `ARCH-047-WOOCOMMERCE-001` is currently pending and unclaimed; its definition depends on the now-complete API catalogue and requires its own proxy/UI implementation and tests. BG007 cannot verify the Woo-side admission/UI fixture until that owner task is implemented. This update did not run those repositories' tests or inspect their implementation worktrees, so the R6 cross-service verification criterion remains unchecked.
+**External merchant admission verification remains open.** The inspected task snapshot records `ARCH-047-SHOPIFY-001` and `ARCH-047-API-001` as Complete, but `ARCH-047-WOOCOMMERCE-001` as Pending. The separate WooCommerce plugin/UI admission implementation and its fixture verification cannot be claimed as passed. The Work Item remains unchecked; only the owning repository task can provide that evidence. The architect must determine whether this is a prerequisite to BG007 acceptance or a separate downstream integration gate.
 
-**Workflow evidence gap.** The canonical launcher route, current mirrored worktree branches, clean implementation state, and current ancestry are verified. The original attempt-start synchronization/recursive submodule preparation packet is not present in this update's evidence; do not infer it from current branch ancestry. The earlier report documented an untracked `typescript` text log; the current implementation worktree is clean and no cleanup was performed during this update.
+**Original launcher/preparation evidence remains unavailable.** Both dedicated task paths and mirrored task branches were previously recorded, but there is no original start-of-attempt synchronisation/recursive-submodule preparation packet in the supplied evidence. The task was previously returned to `ready` at attempt 1; no subsequent developer claim is visible. The current request to review the implemented correction is not proof of a valid claim. The remaining workflow/validation checkboxes are therefore left unchecked, and the reviewer must reconcile them before acceptance.
 
-**Required corrections before review:** add PostgreSQL integration cases for STOP/control loss after BG001 preparation but before final permit; provider timeout/UNKNOWN recovery and restart without duplicate submission; definitive provider rejection with exactly-once credit compensation; and safe retry/reclaim semantics. Verify the owner-side Woo admission/UI implementation and its fixture contract after WOOCOMMERCE-001 is implemented. Repeat the PostgreSQL dispatcher/race suite once the disposable database service is available, then update the full task-owned evidence and attempt-start preparation limitation honestly.
+**Current worktree hygiene not independently rechecked after commit.** The final log shows an untracked `typescript` transcript before the correction commit; it was not staged with the four test/fixture files. A clean final `git status --short` and `git diff --check origin/main...HEAD` for `7a2bb53` have not been supplied, although earlier branch-diff checks passed and the submitted patch itself is checked.
+
+**Review disposition requested.** The completed BG007 code and 10/10 integration evidence are submitted for architectural assessment. This does not claim that the remaining external WooCommerce or workflow items are satisfied, or that the task has been accepted or completed.
 
 ### Architectural Concerns
 
@@ -244,3 +273,12 @@ Historical follow-up: verify the ARCH-047 parent and accepted BG001 reconciliati
 - Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Attempt 1 is preserved; the next developer claim increments once. This is not acceptance or completion.
 - Required corrections are recorded under Unresolved Issues above. Keep implementation changes on the existing mirrored task branch and do not change BG007 scope or weaken the final admission fence.
 - Parent task/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-007`, branch `task/ARCH-047-BACKGROUND-007`. Implementation worktree remains `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-007`, branch `task/ARCH-047-BACKGROUND-007`, at `942e68b2a43f66bec35dfeaaaa1d70e82ca9703a`.
+
+## Developer Correction Submission — 26 October 2026
+
+- **Requested disposition:** Architect review of the BG007 implementation after the previously requested failure-path coverage was added.
+- **Implementation branch:** `task/ARCH-047-BACKGROUND-007` at `7a2bb53`, pushed to origin after `942e68b`.
+- **Evidence:** 10/10 focused PostgreSQL/Redis integration tests, TypeScript build and ESLint pass; previous 228 focused unit tests and 13 integration tests remain earlier evidence, not rerun in the final correction log.
+- **Ownership:** BG001 preparation, BG004 offer verification and BG006 final admission reused; no new logger and no new silent exception catch paths introduced by the correction tests.
+- **Outstanding for review:** WooCommerce admission/UI task remains separately pending; no verified Attempt 2 launcher claim, start-of-attempt isolation packet or final branch-cleanliness output was supplied. Do not infer them.
+- **Submission state:** `review` requests an architect decision, not acceptance. The prior Changes Requested self-review remains a historical record. If review policy requires a fresh developer claim before submission, return the task to the canonical `/moda_developer_create` and `/moda_developer_update` workflow rather than manufacturing claim evidence in this file.
