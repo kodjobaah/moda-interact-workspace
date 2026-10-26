@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 20
-executor: copilot
-claimed_at: 2026-10-26T20:58:09Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -115,17 +115,17 @@ do not assume every reported failure is new or code-owned.
 
 ## Work Items
 
-- [ ] Capture exact starting revision, runtime/tool versions, declared and
+- [x] Capture exact starting revision, runtime/tool versions, declared and
   installed dependency state, and full unit/integration failure identities.
-- [ ] Establish a reproducible baseline after resolving local dependency
+- [x] Establish a reproducible baseline after resolving local dependency
   installation mismatches without masking package/export defects.
-- [ ] Classify each reported failure and identify its owning repository or
+- [x] Classify each reported failure and identify its owning repository or
   environment boundary before source/test edits.
-- [ ] Report any confirmed Shared/workspace-owned issue to `moda_architect` and
+- [x] Report any confirmed Shared/workspace-owned issue to `moda_architect` and
   stop affected work until the correct dependency is accepted.
-- [ ] Correct confirmed Background-owned defects and add/adjust focused tests
+- [x] Correct confirmed Background-owned defects and add/adjust focused tests
   without weakening behavioral coverage.
-- [ ] Run complete Background unit and integration validation on the final
+- [x] Run complete Background unit and integration validation on the final
   task revision; update this Completion Report with exact totals and remaining
   failures.
 
@@ -172,15 +172,16 @@ None.
 
 ## Validation
 
-- [ ] Baseline `npm run test:unit` on the exact starting revision after dependency
+- [x] Baseline `npm run test:unit` on the exact starting revision after dependency
   state is recorded.
-- [ ] Baseline `npm run test:integration` on the exact starting revision after
+- [x] Baseline `npm run test:integration` on the exact starting revision after
   dependency state is recorded.
-- [ ] Final full `npm run test:unit`.
-- [ ] Final full `npm run test:integration`.
-- [ ] Focused reruns for corrected Background-owned failures and any intermittent
+- [x] Final full `npm run test:unit` — 291 files / 3,013 tests passed.
+- [x] Final full `npm run test:integration` — executed; 4/5 files and 12/13 tests
+  passed, with the unresolved scheduling failure recorded below.
+- [x] Focused reruns for corrected Background-owned failures and any intermittent
   failures, with exact commands and outcomes recorded.
-- [ ] `git diff --check`.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -203,23 +204,78 @@ modify production/test code.
 
 ### Status
 
-Not Started
+Blocked — Background unit suite is green; full disposable integration remains
+blocked by the independently reproduced ARCH-007 conversation-turn scheduling
+failure documented below.
 
 ### Files Changed
 
-None
+- `moda-interact-background/tests/unit/runtime/observability-startup.test.ts`
+- `moda-interact-background/tests/unit/services/checkout-refresh.test.ts`
+- `moda-interact-background/tests/unit/services/conversation-moderation/automated-template-input.test.ts`
+- `moda-interact-background/tests/unit/services/matured-candidate.materialization.test.ts`
 
 ### Work Completed
 
-None
+- Recorded the exact starting revision and environment: Background implementation
+  worktree at `6cce2b18f288d4cabc6f7dcea3ef251acbb15323`, Node `v24.19.0`, npm
+  `11.17.0`, declared and locked Shared `2.5.1`. The initial implementation
+  worktree had no `node_modules`; `npm ci` installed from the committed lockfile.
+- Confirmed the installed Shared `2.5.1` artifact exports both `./identity` and
+  `./whatsapp-template-events` and installed its locked `libphonenumber-js`
+  `1.12.30`. This resolves the original module-load failure as stale local
+  installation state; no Shared or Background dependency-manifest change was
+  required.
+- Corrected the stale observability release assertion to the accepted Shared
+  `2.5.1` dependency and updated checkout-flow tests to mock the current
+  automated-template preparation boundary and assert canonical template
+  purpose. Updated moderation serialization coverage to include the explicit
+  null header fields emitted by the established contract.
+- Classified the two observability subprocess timeouts as intermittent: the
+  initial full unit run had two timeouts, and the focused observability rerun
+  passed 10/10.
+- Classified the scheduling integration timeout as a persistent, pre-existing
+  follow-up failure: the full integration rerun and the correctly invoked
+  isolated integration command each reproduced it. With a temporary diagnostic
+  outer timeout (removed afterward), the internal wait reported state stuck at
+  `inboundVersion: 3`, `lastProcessedVersion: 0`,
+  `processingInboundVersion: 2`, with version 3 still pending after 6.8 seconds.
+  ARCH-028-BACKGROUND-007 already records this unchanged test identity and says
+  not to mask it by changing unrelated runtime behavior or merely raising the
+  timeout. No source change for that separate scheduling path was made.
 
 ### Validation Results
 
-Not run. Task authoring does not execute remediation or Background tests.
+- Starting revision, after locked install: `npm run test:unit` failed with 16
+  failures and 2,997 passes across 291 files. The identities were two
+  intermittent observability subprocess timeouts, the stale Shared version
+  assertion, stale selector-based checkout/materialization expectations, and
+  the nullable-header serializer expectation.
+- Starting revision: `npm run test:integration` passed 5 files / 13 tests on
+  its first run.
+- Focused after corrections: `npx vitest run
+  tests/unit/services/matured-candidate.materialization.test.ts` passed 31/31;
+  `npx vitest run tests/unit/services/checkout-refresh.test.ts
+  tests/unit/services/conversation-moderation/automated-template-input.test.ts`
+  passed 28/28; `npx vitest run tests/unit/runtime/observability-startup.test.ts`
+  passed 10/10.
+- Final `npm run test:unit`: passed, 291 files / 3,013 tests.
+- Final `npm run test:integration`: 4/5 files passed; 12/13 tests passed, with
+  `tests/integration/conversation-turn-scheduling.integration.test.ts` timing
+  out. `npm run test:integration --
+  tests/integration/conversation-turn-scheduling.integration.test.ts` reproduced
+  the same timeout (1/2 tests passed); the diagnostic rerun captured the stuck
+  turn state noted above. This failure identity is also documented in
+  `ARCH-028-BACKGROUND-007` and is not represented as passing.
+- `git diff --check`: passed. `npm ci` passed; npm reported 20 audit findings
+  (8 moderate, 12 high), which were not changed by this task.
 
 ### Deviations
 
-None
+The task is returned `blocked`, not complete: its full integration acceptance
+criterion remains unmet by an unrelated but reproducible turn-scheduling
+failure. No timeout was raised in the submitted changes, and no unrelated
+production behavior was changed to force a green suite.
 
 ### Assumptions
 
@@ -227,14 +283,18 @@ None
 
 ### Unresolved Issues
 
-Failure ownership and same-revision baseline remain to be established by the
-assigned agent.
+The independently reproduced ARCH-007 conversation-turn scheduling failure
+requires owner triage/follow-up. The durable ARCH-025 baseline is historical and
+does not cover this failure; ARCH-028-BACKGROUND-007 specifically records the
+same test identity as unresolved follow-up. The original stale Shared export
+load errors were installation-only and did not recur after `npm ci`.
 
 ### Architectural Concerns
 
-Any actual Shared export defect or workspace-level installation defect must be
-returned to `moda_architect` for cross-repository ownership and dependency
-coordination.
+No Shared export or workspace dependency-manifest defect was found. The
+conversation-turn scheduling failure is outside the confirmed test-fixture
+corrections in this task and is returned to `moda_architect` for owner
+assignment; this task remains blocked until the integration gate is resolved.
 
 ## Architect Review
 
