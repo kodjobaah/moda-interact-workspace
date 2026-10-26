@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 3
 depends_on:
   - ARCH-047-BACKGROUND-005
   - ARCH-040-DATABASE-007
@@ -54,7 +54,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Requirements
 
-**ARCHITECT DECISION — durable prepared-content prerequisite (2026-10-26; satisfied).** The existing implementation worktree contains a preparation-only `HumanWrapperPreparationService`; do not connect it directly to WhatsApp while `MerchantConversationSendCommand.textBody` remains the SQL-validated moderation/send source. `ARCH-040-DATABASE-007` has now been accepted Complete and adds nullable `preparedTextBody`, `preparedWrapperEvidence` and `preparedAt`, extends the set-once command guard, and makes `HUMAN_COMMAND`/`TEXT` moderation use the frozen body. Both explicit BG009 dependencies are Complete, so this task is returned to `ready` for its unchanged developer execution path at Attempt 1 (the next claim is Attempt 2). Before any Background source edits, its first work item is to update the canonical `database/` submodule to the developer-merged Database `main` containing DATABASE-007, regenerate the Prisma client, and validate the generated schema. The current Database task implementation is on its task branch and has not been merged to `main`; do not point the submodule at that unmerged task commit. Existing Attempt 1 evidence and preparation-only source are preserved; no claim is active.
+**ARCHITECT DECISION — durable prepared-content prerequisite (2026-10-26; satisfied).** At the time of the original decision, the existing implementation worktree contained only a preparation seam, so it was not safe to connect directly to WhatsApp while `MerchantConversationSendCommand.textBody` remained the SQL-validated moderation/send source. `ARCH-040-DATABASE-007` is now Complete and adds nullable `preparedTextBody`, `preparedWrapperEvidence` and `preparedAt`, extends the set-once command guard, and makes `HUMAN_COMMAND`/`TEXT` moderation use the frozen body. Both explicit BG009 dependencies are Complete. The historical Attempt 1 readiness and first-action instructions below are superseded: the canonical Attempt 2 claim is recorded at the end of this report, and the Background `database/` submodule is synchronized to Database `origin/main` at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`, followed by successful Prisma generation and build.
 
 **R0 — Exact durable preparation and full-message admission.** Under the current `HUMAN_TEXT` command lease, before any HUMAN moderation assessment, call the existing BG005 wrapper through `HumanWrapperPreparationService` (or an equivalent small module). `not-applicable` must be limited to the separate post-window command kind. `prepared` freezes its exact body plus the BG005 wrapper definition/locale/audience/slot-edit-version/applicationKey and body digest. `passthrough` freezes the original text with explicit no-wrapper evidence. `refused` or unexpected errors **never** send raw text as a fallback. Atomically freeze the body, provenance and timestamp with a conditional DB `UPDATE ... WHERE state='CLAIMED' AND leaseToken=:token AND leaseExpiresAt>statement_timestamp() AND providerDispatchKey IS NULL AND preparedTextBody IS NULL RETURNING ...`. A stale lease or zero-row update must fail/re-read, never overwrite. If already frozen, reuse the identical bytes and provenance without calling the renderer again. Do not change `textBody` or `payloadSha256`.
 
@@ -76,18 +76,18 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Work Items
 
-- [ ] Before any Background source edits, update the canonical `database/` submodule to the developer-merged Database `main` containing accepted `ARCH-040-DATABASE-007`, regenerate the Prisma client, and validate the generated schema; retain BG009's existing preparation-only files and attempt history. Do not point the submodule at an unmerged Database task-branch commit.
-- [ ] Add a focused lease-protected prepared-content repository/seam; freeze full text and bounded wrapper evidence atomically once, read frozen content on replay, no direct `textBody` rewrite.
-- [ ] Make HUMAN_TEXT moderation canonical/effective text use `preparedTextBody`; preserve TEMPLATE_PARAMETERS behaviour for BG007.
-- [ ] Make `OutboundSendFenceService` persist `preparedTextBody` as the admitted `ConversationMessage.content` and bind approval to the exact digest/current policy; deliver the committed admitted message bytes through the existing provider path.
-- [ ] Recheck frozen wrapper activation before admission, and fail closed if stale; no re-render or second permit after admission.
-- [ ] Remove only obsolete HUMAN_TEXT raw-send/formatting branches after an import/reference audit; preserve BG007 post-window logic and all ARCH-040 security/follow-up safeguards.
-- [ ] Add focused PostgreSQL integration, lease/replay, moderation denial, no-wrapper, wrapper-change and provider-text equality tests; run required repository validation and record it in Completion Report.
+- [x] Before any Background source edits, update the canonical `database/` submodule to the developer-merged Database `main` containing accepted `ARCH-040-DATABASE-007`, regenerate the Prisma client, and validate the generated schema; retain BG009's existing preparation-only files and attempt history. Do not point the submodule at an unmerged Database task-branch commit.
+- [x] Add a focused lease-protected prepared-content repository/seam; freeze full text and bounded wrapper evidence atomically once, read frozen content on replay, no direct `textBody` rewrite.
+- [x] Make HUMAN_TEXT moderation canonical/effective text use `preparedTextBody`; preserve TEMPLATE_PARAMETERS behaviour for BG007.
+- [x] Make `OutboundSendFenceService` persist `preparedTextBody` as the admitted `ConversationMessage.content` and bind approval to the exact digest/current policy; deliver the committed admitted message bytes through the existing provider path.
+- [x] Recheck frozen wrapper activation before admission, and fail closed if stale; no re-render or second permit after admission.
+- [x] Remove only obsolete HUMAN_TEXT raw-send/formatting branches after an import/reference audit; preserve BG007 post-window logic and all ARCH-040 security/follow-up safeguards.
+- [x] Add focused PostgreSQL integration, lease/replay, moderation denial, no-wrapper, wrapper-change and provider-text equality tests; run required repository validation and record it in Completion Report. The formerly missing raw-digest and crash/reclaim/eligibility cases now pass as part of the 28/28 integration run; formal review workflow remains outstanding.
 
-- [ ] Wire BG005 only into the existing **in-window free-text** branch of the merchant human command path (`recovery-conversation/human-command-dispatcher.service.ts`, related command/message record) after authorisation and before final content moderation.
-- [ ] Preserve exactly the merchant-authored response inside prepared SHARED/HUMAN wrapper and store/send the same complete customer-visible content. Use existing tenant, recovery, human-takeover and provider send code.
-- [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
-- [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
+- [x] Wire BG005 only into the existing **in-window free-text** branch of the merchant human command path (`recovery-conversation/human-command-dispatcher.service.ts`, related command/message record) after authorisation and before final content moderation.
+- [x] Preserve exactly the merchant-authored response inside prepared SHARED/HUMAN wrapper and store/send the same complete customer-visible content. Use existing tenant, recovery, human-takeover and provider send code.
+- [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
+- [x] Complete all required repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report. The two named PostgreSQL gaps are closed; the final post-correction branch/worktree checks, remote push and next claim remain to be reconciled before formal review submission.
 
 ## Interfaces / Contracts
 
@@ -113,32 +113,32 @@ None in this nine-task Background set.
 
 ## Acceptance Criteria
 
-- [ ] Database prerequisite complete; original `textBody`/`payloadSha256` unchanged by wrapping, prepared body and evidence frozen atomically once under current claim.
-- [ ] Complete wrapped body (or explicit no-wrapper passthrough) is identical across HUMAN_TEXT moderation input/digest, final-admission `ConversationMessage.content` and actual provider-send text; wrapper-only forbidden content is moderated before any provider permit.
-- [ ] SQL rejects raw-body moderation digest when it differs from the frozen body; stale/absent prepared body, invalid lease, replay mutation and current wrapper change cannot reach provider dispatch.
-- [ ] Concurrent claim, retry after worker crash, change of published wrapper, `STOP`/control/window loss and existing UNKNOWN/provider compensation covered by actual PostgreSQL-integrated tests.
-- [ ] `RECOVERY_FOLLOW_UP_TEMPLATE` retains original template-parameter moderation, BG007 sequence-two and billing semantics; no new human free-text route is reachable after window close.
-- [ ] Only orphaned raw HUMAN_TEXT branches/tests are removed; existing final admission security invariants and BG007 integration remain intact.
+- [x] Database prerequisite complete; original `textBody`/`payloadSha256` unchanged by wrapping, prepared body and evidence frozen atomically once under current claim.
+- [x] Complete wrapped body (or explicit no-wrapper passthrough) is identical across HUMAN_TEXT moderation input/digest, final-admission `ConversationMessage.content` and actual provider-send text; wrapper-only forbidden content is moderated before any provider permit.
+- [x] SQL rejects raw-body moderation digest when it differs from the frozen body; stale/absent prepared body, invalid lease, replay mutation and current wrapper change cannot reach provider dispatch.
+- [x] Concurrent claim, retry after worker crash, change of published wrapper, `STOP`/control/window loss and existing UNKNOWN/provider compensation covered by actual PostgreSQL-integrated tests.
+- [x] `RECOVERY_FOLLOW_UP_TEMPLATE` retains original template-parameter moderation, BG007 sequence-two and billing semantics; no new human free-text route is reachable after window close.
+- [x] Only orphaned raw HUMAN_TEXT branches/tests are removed; existing final admission security invariants and BG007 integration remain intact.
 
-- [ ] Human in-window reply retains verbatim merchant text with deterministic wrapper; HUMAN override/SHARED fallback and valid checkout URL tested.
-- [ ] Wrapper-only forbidden content blocked by full-message moderation; durable message/provider payload equality verified.
-- [ ] 24-hour expiry prevents unapproved free text; post-window sequence two untouched; STOP, consent, tenant scope and HUMAN ownership preserved.
-- [ ] Retry/replay, template activation change and double-wrap refusal; no AI cap applied to eligible merchant text.
-- [ ] Existing human command/moderation/compensation tests plus focused integration/build and `git diff --check`.
-- [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
-- [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+- [x] Human in-window reply retains verbatim merchant text with deterministic wrapper; HUMAN override/SHARED fallback and valid checkout URL tested.
+- [x] Wrapper-only forbidden content blocked by full-message moderation; durable message/provider payload equality verified.
+- [x] 24-hour expiry prevents unapproved free text; post-window sequence two untouched; STOP, consent, tenant scope and HUMAN ownership preserved.
+- [x] Retry/replay, template activation change and double-wrap refusal; eligible merchant text does not consume the automated-message usage ledger.
+- [x] Existing human command/compensation regressions plus focused integration/build and `git diff --check`; the complete moderation unit suite has one unrelated failure documented below.
+- [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
+- [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
-- [ ] Old human raw-text bypass/duplicated formatting path is absent; unwrapped fallback (if no wrapper is published) uses the same full-message moderation and final-send logic. BG007's post-window processing remains isolated and compatible.
+- [x] Old human raw-text bypass/duplicated formatting path is absent; unwrapped fallback (if no wrapper is published) uses the same full-message moderation and final-send logic. BG007's post-window processing remains isolated and compatible.
 
 ## Validation
 
-- [ ] Fresh/upgrade PostgreSQL schema guard evidence is supplied by accepted `ARCH-040-DATABASE-007`; BG009 itself runs focused PostgreSQL integration for frozen preparation, moderation INSERT digest, final-send message content and provider-send equality.
-- [ ] Regression tests: valid wrapper, passthrough, missing/invalid wrapper refusal, wrapper-only moderation denial, malformed evidence, blocked moderation, concurrent/reclaimed claims, retry/restart, stale wrapper activation, window/STOP/control loss, and BG007 template command untouched.
-- [ ] Audit all production callers of `command.textBody` and remove/redirect the obsolete HUMAN_TEXT sender path; inspect no stale direct sender remains before review.
-- [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
-- [ ] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
-- [ ] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
+- [x] Fresh/upgrade PostgreSQL schema guard evidence is supplied by accepted `ARCH-040-DATABASE-007`; BG009 PostgreSQL integration passed for frozen preparation, moderation INSERT digest, final-send message content and provider-send equality. The previously missing negative INSERT of the original raw-body digest is now covered in `arch047-human-prepared-reclaim.integration.test.ts` (passing in the 28/28 run).
+- [x] Regression tests: valid wrapper, passthrough, missing/invalid wrapper refusal, wrapper-only moderation denial, malformed evidence, blocked moderation, concurrent/reclaimed claims, retry/restart, stale wrapper activation, window/STOP/control loss, and BG007 template command untouched.
+- [x] Audit all production callers of `command.textBody` and remove/redirect the obsolete HUMAN_TEXT sender path; inspect no stale direct sender remains before review.
+- [x] Run the focused new tests and relevant existing regression suites identified above; exact executable commands and outcomes are recorded in the current developer update below.
+- [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
+- [x] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
+- [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
 
@@ -156,9 +156,42 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
+**Complete — developer decision recorded for Attempt 3 on 2026-10-26.** The prior changes-requested review requested PostgreSQL evidence for raw-body digest rejection and prepared-body crash/reclaim under STOP/HUMAN-control loss. Correction commit `7b135b115efff28a1d32b91b6ef93333d8bc7dad` is pushed to `origin/task/ARCH-047-BACKGROUND-009`; its earlier recording reports 5 integration files / 28 tests passing. That correction predates the formal Attempt 3 claim and remains disclosed as pre-claim work. The passing self-review independently reran the relevant PostgreSQL tests, unit tests, build, and lint, and reconciled the BG007 dispatcher boundary. The developer now explicitly accepts Attempt 3 as complete.
+
+**Prior Attempt 2 self-review (historical):** Implementation commit `ab55ed9a9d9de3aaf6791933db2574ed49a86f36` was pushed to `origin/task/ARCH-047-BACKGROUND-009` before the formal Attempt 2 claim and remains explicitly disclosed. The review returned the task to `ready` for two missing PostgreSQL proofs; that history is preserved below.
+
+**Historical Attempt 1 status (superseded as implementation progress, retained for audit):**
+
 **Ready for developer Attempt 2 — dependency frontier reconciled 2026-10-26.** The original Attempt 1 claim at `2026-10-26T07:24:51Z` and its preparation-only source remain historical evidence; task YAML is now `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Both explicit dependencies (`ARCH-047-BACKGROUND-005` and `ARCH-040-DATABASE-007`) resolve Complete. The next developer claim increments to Attempt 2. Its first required action is to synchronize `database/` to Database `main` after the developer merges DATABASE-007 there, regenerate Prisma Client, and validate before editing Background source. This readiness transition is not implementation acceptance or a new claim.
 
 ### Files Changed
+
+**Additional acceptance-test correction committed and pushed at `7b135b1` before the Attempt 3 claim:**
+
+- `moda-interact-background/tests/integration/arch047-human-prepared-reclaim.integration.test.ts` — new: PostgreSQL raw-digest rejection; crash/lease reclaim with STOP and HUMAN-control-loss cases.
+- `moda-interact-background/tests/integration/fixtures/recovery-human-dispatch.fixture.ts` — updated: recipient fixture option needed for the STOP scenario.
+
+The terminal records `2 files changed, 190 insertions(+), 2 deletions(-)` for this commit. The associated earlier terminal log records an untracked `typescript` capture; it is not part of the implementation commit and the current implementation worktree is clean.
+
+**Attempt 2 implementation, from developer `git status` and commit `ab55ed9`:**
+
+- `moda-interact-background/database/` — synchronized canonical Database submodule (accepted prepared-command fields are present in the uploaded schema).
+- `moda-interact-background/src/services/conversation-moderation/moderation-assessment.service.ts`
+- `moda-interact-background/src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `moda-interact-background/src/services/recovery-conversation/human-prepared-command.service.ts` (new)
+- `moda-interact-background/src/services/recovery-conversation/human-wrapper-preparation.service.ts` (new)
+- `moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `moda-interact-background/tests/integration/arch047-human-prepared-send.integration.test.ts` (new)
+- `moda-interact-background/tests/integration/fixtures/recovery-human-dispatch.fixture.ts`
+- `moda-interact-background/tests/integration/recovery-human-dispatch.integration.test.ts`
+- `moda-interact-background/tests/integration/recovery-human-provider-recovery.integration.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-conversation/human-prepared-command.test.ts` (new)
+- `moda-interact-background/tests/unit/services/recovery-conversation/human-synchronous-rejection.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-conversation/human-wrapper-preparation.test.ts` (new)
+
+The uploaded archive is an overlay of parent and implementation worktrees. These paths are the implementation-repository changes reported at commit time, not a claim that the parent task file or implementation `main` was pushed. No `_index.md` files are changed by this review-evidence patch.
+
+**Historical Attempt 1 file list:**
 
 Preparation-only source present in the supplied BG009 implementation worktree:
 
@@ -169,12 +202,67 @@ This handoff patch changes only `docs/decisions/background/ARCH-047/BACKGROUND-0
 
 ### Work Completed
 
+**Post-self-review correction evidence (local commit `7b135b1`):**
+
+- Added an actual PostgreSQL `ConversationModerationAssessment` INSERT rejection test for a raw merchant-text SHA-256 digest when a different full wrapped `preparedTextBody` has been frozen; the same scenario verifies that the correct frozen-body digest is accepted.
+- Added real PostgreSQL lease expiry and a different worker's reclaim. The frozen body, wrapper evidence and preparation timestamp are verified unchanged, a second render is refused, and the old lease cannot be used.
+- Verified a committed local STOP **or** HUMAN-control revision loss after reclaim blocks final admission and prevents both free-text and template provider calls while preserving the original frozen evidence.
+- These are tests and a fixture update only; no production send/moderation code was changed by commit `7b135b1`.
+
+**Attempt 2:**
+
+- Reused the accepted `ARCH-040-DATABASE-007` schema (`preparedTextBody`, `preparedWrapperEvidence`, `preparedAt`) via the canonical Background database submodule; Prisma Client generation succeeds.
+- Added lease-fenced, set-once PostgreSQL prepared-content freezing, immutable wrapper provenance/body digest and frozen replay. Original merchant intent (`textBody` and accepted payload identity) remains separate.
+- Connected BG005 preparation only to HUMAN_TEXT in-window dispatch, with an explicit `NOT_CONFIGURED` passthrough using the same moderation/admission path; no raw fallback after refusal.
+- Switched HUMAN_COMMAND/TEXT moderation canonical content, final SQL admission, `ConversationMessage.content` and provider text to the frozen complete body. Stale wrapper assignment suppresses the final send without re-rendering.
+- Preserved the distinct BG007 post-window template branch and existing control/window, billing, unknown-provider and compensation mechanisms.
+- Added/updated unit and real PostgreSQL integration fixtures. The latest correction records sender-preflight and provider-dispatch exceptions through `@modainteract/moda-interact-shared/logging` using bounded metadata; expected uncertain outcomes stay in durable reconciliation instead of blindly retrying WhatsApp.
+
+**Historical Attempt 1 work (preparation only):**
+
 - Added a preparation-only seam over BG005's `renderConversationResponse(source: 'HUMAN')`, using the accepted command ID as stable rendering identity and the original merchant text as input.
 - The preparer distinguishes rendered, explicitly unconfigured passthrough, refusal, and non-applicable post-window commands. It does **not** grant moderation approval or provider-send permission.
 - Added unit-test source for identity and exact merchant text, passthrough/refusal behaviour, exclusion of the post-window command kind, and shared-logger exception propagation. The tests have **not** been shown to execute in the supplied terminal log.
 - Deliberately **did not** connect prepared text to `HumanCommandDispatcherService`, the moderation assessment service, `OutboundSendFenceService`, or the WhatsApp provider. These would currently disagree on the authoritative content.
 
 ### Validation Results
+
+**Pre-claim post-self-review correction recording `typescript(20261026-204952)` (26 October 2026):**
+
+- `npm run test:integration -- tests/integration/arch047-human-prepared-reclaim.integration.test.ts tests/integration/arch047-human-prepared-send.integration.test.ts tests/integration/recovery-human-dispatch.integration.test.ts tests/integration/conversation-moderation.integration.test.ts tests/integration/recovery-human-provider-recovery.integration.test.ts` — **PASS, 5/5 files, 28/28 tests** against the repository's disposable PostgreSQL integration runner. Three tests in `arch047-human-prepared-reclaim.integration.test.ts` directly close the two explicit acceptance-evidence gaps from the prior self-review. The 28-test total includes the existing regression tests; it is not 28 additional tests.
+- `npm run build` — **PASS**, generating Prisma Client 6.19.3 and compiling TypeScript without a reported error.
+- The focused `npx eslint tests/integration/arch047-human-prepared-reclaim.integration.test.ts tests/integration/fixtures/recovery-human-dispatch.fixture.ts` command appears in the terminal sequence with no reported diagnostics; the recording does not separately print an ESLint exit code. An earlier focused ESLint run over the prior implementation was independently recorded as passing.
+- The terminal showed local commit **`7b135b1`** (`feat(background-009)`, 2 test/fixture files) and the branch one commit ahead of origin at that point. Current Attempt 3 preparation now verifies `HEAD == origin/task/ARCH-047-BACKGROUND-009 == 7b135b115efff28a1d32b91b6ef93333d8bc7dad`; the correction is pushed. The earlier `typescript` capture is not part of the code commit.
+- This latest log does **not** separately show `git diff --check`; the earlier implementation report records `git diff --check origin/main...HEAD` passing before `7b135b1`. Whitespace of this documentation-only patch has been verified separately. The developer must capture final post-correction Git/worktree evidence when formally submitting.
+
+**Attempt 2 developer terminal recording `typescript(20261026-154602)` (26 October 2026):**
+
+- `npm run test:integration -- tests/integration/arch047-human-prepared-send.integration.test.ts tests/integration/recovery-human-dispatch.integration.test.ts tests/integration/conversation-moderation.integration.test.ts tests/integration/recovery-human-provider-recovery.integration.test.ts` — **PASS, 4/4 files, 25/25 tests**, using the repository's disposable integration runner. Covers durable frozen-body moderation and delivery, passthrough, wrapper-only moderation BLOCK, changed-slot suppression, command concurrency, customer-window expiry and provider UNKNOWN/compensation regressions.
+- `npx eslint src/services/recovery-conversation/human-prepared-command.service.ts src/services/recovery-conversation/human-command-dispatcher.service.ts src/services/recovery-conversation/outbound-send-fence.service.ts src/services/conversation-moderation/moderation-assessment.service.ts tests/integration/fixtures/recovery-human-dispatch.fixture.ts tests/integration/recovery-human-dispatch.integration.test.ts tests/integration/recovery-human-provider-recovery.integration.test.ts tests/integration/arch047-human-prepared-send.integration.test.ts` — completed without errors in the recording.
+- `npm run build` — **PASS** (`prisma generate` version 6.19.3 and TypeScript compilation without errors).
+- Developer `git add database src tests`, commit **`ab55ed9`** (`feat(arch-047-background-009)`), and push to **`origin/task/ARCH-047-BACKGROUND-009`** — recorded successful. The `typescript` terminal recording remained untracked and was not included in the `git add database src tests` command.
+- Workspace compressor reported a separate parent task worktree and implementation task worktree. That diagnostic is not a substitute for canonical launcher start-of-attempt synchronization/physical isolation evidence.
+
+**Not evidenced by the historical implementation terminal recording:** a fresh standalone focused unit-test run, implementation `git diff --check`, durable Attempt 2 claim, parent report branch publication, or a final call-site/negative-test matrix audit. The current developer update below addresses the checks that can be established and records remaining coverage gaps without treating unrun cases as passing.
+
+**Current developer update validation (2026-10-26):**
+
+- `npm run test:integration -- tests/integration/arch047-human-prepared-send.integration.test.ts tests/integration/recovery-human-dispatch.integration.test.ts tests/integration/conversation-moderation.integration.test.ts tests/integration/recovery-human-provider-recovery.integration.test.ts` — **PASS, 4/4 files, 25/25 tests**.
+- `npx vitest run tests/unit/services/recovery-conversation/human-prepared-command.test.ts tests/unit/services/recovery-conversation/human-wrapper-preparation.test.ts tests/unit/services/recovery-conversation/human-synchronous-rejection.test.ts` — **PASS, 3/3 files, 17/17 tests**.
+- `npm run test:arch040-background-runtime:postgres` — **PASS, 2/2 files, 9/9 tests**, including dispatcher replica concurrency, HUMAN_TEXT window expiry, and follow-up claim races.
+- `npm run test:arch040-recovery-conversation` — **PASS, 11/11 files, 81/81 tests**.
+- `npm run test:arch040-moderation:postgres` — **PASS, 1/1 file, 10/10 tests**.
+- `npm run test:integration -- tests/integration/recovery-human-follow-up-billing.integration.test.ts tests/integration/recovery-human-follow-up-cancellation-races.integration.test.ts tests/integration/recovery-follow-up-purchased-release.integration.test.ts tests/integration/recovery-human-provider-status.integration.test.ts` — **PASS, 4/4 files, 15/15 tests**, covering BG007 follow-up billing, cancellation, purchase release, and provider-status recovery.
+- `npx vitest run tests/unit/services/conversation-moderation -t "HUMAN|human|template input|prepared"` — **PASS, 1 test; 32 tests skipped by filter**.
+- Focused `npx eslint` over all 11 changed production/integration/unit files — **PASS**, no diagnostics.
+- `npm run build` — **PASS**, Prisma Client 6.19.3 generation and TypeScript compilation.
+- `git diff --check origin/main...HEAD` — **PASS**. Implementation worktree is clean at `ab55ed9a9d9de3aaf6791933db2574ed49a86f36`, equal to `origin/task/ARCH-047-BACKGROUND-009`; Database submodule is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`, equal to Database `origin/main`.
+- `npm run test:arch040-moderation` — **FAIL, 1 failed / 32 passed**. `tests/unit/services/conversation-moderation/automated-template-input.test.ts` expects serialization without `imageHeader: null` and `textHeader: null`, while the unchanged serializer now emits both. Neither file is changed by BG009; the focused moderation unit filter and PostgreSQL moderation suite pass. This out-of-scope failure was not modified.
+- Production call-site audit: remaining `command.textBody` use in `human-command-evaluation.service.ts` is policy screening, not a provider sender. HUMAN_TEXT provider delivery uses the committed `permit.messageContent`; RECOVERY_FOLLOW_UP_TEMPLATE remains on the separate `sendWhatsAppTemplate` branch. The Database migration requires frozen HUMAN_TEXT content and validates the moderation digest against `preparedTextBody`.
+
+The two explicitly identified PostgreSQL acceptance-evidence gaps from the Attempt 2 self-review are **closed**: raw-body-digest rejection and lease-reclaimed frozen-body reuse under STOP/HUMAN-control loss. Attempt 3 independently reran these cases as part of the 45/45 PostgreSQL integration run below. The historical unrelated automated-template serialization unit failure remains disclosed; no out-of-scope serializer change was made.
+
+**Historical Attempt 1 validation (retained):**
 
 The uploaded `typescript(20261026-072937)` terminal recording shows:
 
@@ -186,11 +274,35 @@ The uploaded `typescript(20261026-072937)` terminal recording shows:
 
 **Not evidenced or claimed passed:** focused Vitest, build/typecheck after the preparation patch, ESLint, PostgreSQL integration, moderation/final-send/provider equality, or an implementation commit/push. All corresponding task Validation and Acceptance Criteria remain unchecked.
 
+**Current developer update validation (Attempt 3, 2026-10-26):**
+
+- `npm run test:integration -- tests/integration/arch047-human-prepared-reclaim.integration.test.ts tests/integration/arch047-human-prepared-send.integration.test.ts tests/integration/recovery-human-dispatch.integration.test.ts tests/integration/conversation-moderation.integration.test.ts tests/integration/recovery-human-provider-recovery.integration.test.ts tests/integration/recovery-follow-up-claim-races.integration.test.ts tests/integration/recovery-human-follow-up-billing.integration.test.ts tests/integration/recovery-human-follow-up-cancellation-races.integration.test.ts tests/integration/recovery-follow-up-purchased-release.integration.test.ts tests/integration/recovery-human-provider-status.integration.test.ts` — **PASS, 10/10 files, 45/45 tests** using the disposable PostgreSQL integration harness. This includes frozen-body/raw-digest/reclaim and control-loss tests, exact moderation/message/provider equality, window expiry, provider UNKNOWN and compensation, and BG007 follow-up/billing/cancellation/recovery tests.
+- `npx vitest run tests/unit/services/recovery-conversation/human-prepared-command.test.ts tests/unit/services/recovery-conversation/human-wrapper-preparation.test.ts tests/unit/services/recovery-conversation/human-synchronous-rejection.test.ts tests/unit/services/conversation-moderation -t "HUMAN|human|template input|prepared"` — **PASS, 4 selected files, 14 passed; 36 filtered tests skipped**.
+- `npm run build` — **PASS**, including Prisma Client 6.19.3 generation and TypeScript compilation.
+- Focused `npx eslint` over the 12 changed production/integration/unit paths — **PASS**, no diagnostics.
+- Implementation `git diff --check origin/main...HEAD` — **PASS**. Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-009` is clean on `task/ARCH-047-BACKGROUND-009` at `7b135b115efff28a1d32b91b6ef93333d8bc7dad`, equal to `origin/task/ARCH-047-BACKGROUND-009`; `origin/main` (`6cce2b18f288d4cabc6f7dcea3ef251acbb15323`) is an ancestor. The task diff is 13 paths, 921 insertions and 28 deletions. Database submodule is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`, equal to Database `origin/main`.
+- Canonical launcher route was resolved with `python3 scripts/start-agent-task.py ARCH-047-BACKGROUND-009 --route-only --json`; it returned the required parent and implementation worktree paths. Parent task worktree was clean before this report update at `e529b8e84a5a1b175cb0d39c812a9d84f3306b7b`, equal to its task remote; `origin/main` was an ancestor. Both worktrees are the canonical physical worktrees, on the mirrored task branch. Parent report `git diff --check` passes after this update.
+- Source audit confirms `command.textBody` remains as immutable intent/wrapper input and policy screening only. `OutboundSendFenceService` inserts `preparedTextBody`, checks its current wrapper/effective moderation evidence, and returns the admitted message content; the HUMAN_TEXT provider call sends `permit.messageContent`. The separate `RECOVERY_FOLLOW_UP_TEMPLATE` branch retains template parameters, Meta category verification, BG007 sequence-two admission and billing. Existing eligible HUMAN dispatch test asserts no `OUTBOUND_AUTOMATED_MESSAGE` usage event.
+- BG005's completed renderer contract and tests cover HUMAN override/SHARED fallback, preservation of submitted text, verified checkout URL, and tenant mismatch; BG009 adds full-body moderation and send equality. No BG005-owned files were changed.
+- The earlier broad `npm run test:arch040-moderation` result remains **1 failed / 32 passed**, from the unchanged `automated-template-input.test.ts` expectation for omitted nullable header fields. BG009 did not change that serializer or test. The focused moderation unit selection and PostgreSQL moderation suite pass; the unrelated failure is not represented as a passing check.
+
+**Developer completion decision (2026-10-26):** The developer explicitly invoked `/moda_developer_update ARCH-047-BACKGROUND-009 complete`. The durable Attempt 3 passing self-review and required evidence are present above; implementation commit `7b135b1` is pushed, and no known required Work Item or Acceptance Criterion remains incomplete. The unrelated broad moderation-unit failure is disclosed and remains outside BG009 scope. Frontmatter is `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 3`.
+
 ### Deviations
 
-**Intentional preparation-only implementation.** The task's in-window dispatcher/moderation/final-send integration remains incomplete, because the currently installed durable command and moderation constraints do not permit the prepared wrapped body to become the canonical moderated and sent content. No insecure workaround or parallel raw-text send path was introduced.
+**Post-self-review correction:** The two missing PostgreSQL proofs were supplied by tests committed as `7b135b1` after the task had been returned to `ready` and before the formal Attempt 3 claim. The commit is now confirmed pushed. This ordering is disclosed above; it is not represented as implementation work performed under Attempt 3. The unrelated automated-template serialization unit failure remains outside BG009 scope.
+
+**Attempt 2 history:** No deliberate departure from the approved prepared-content architecture is reported. Commit `ab55ed9` predates the formal Attempt 2 claim and remains explicitly disclosed. At that time the task was returned to `ready` for the two previously unproven PostgreSQL cases (now covered by the correction above).
+
+**Historical Attempt 1:** **Intentional preparation-only implementation.** The task's in-window dispatcher/moderation/final-send integration remains incomplete, because the currently installed durable command and moderation constraints do not permit the prepared wrapped body to become the canonical moderated and sent content. No insecure workaround or parallel raw-text send path was introduced.
 
 ### Assumptions
+
+- Post-self-review correction evidence is sourced from the earlier BG009 terminal log dated 2026-10-26. Its 28/28 tests are observed; Attempt 3 now independently confirms the correction commit is pushed and both task worktrees are clean.
+- Attempt 2 source and build use the accepted Database-main prepared-content schema; the implementation gitlink is verified at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`, equal to Database `origin/main`.
+- The formal developer claim is durable in the parent task record. This update reconciles the claim and validation but does not accept completion or alter implementation source.
+
+**Historical Attempt 1 assumptions:**
 
 - The provided 26 October worktree snapshot is the inspected development baseline; schema and migration files in this archive do not by themselves prove deployment state.
 - `ARCH-047-BACKGROUND-005` is recorded `complete` in the uploaded task definitions.
@@ -198,13 +310,30 @@ The uploaded `typescript(20261026-072937)` terminal recording shows:
 
 ### Unresolved Issues
 
-**Resolved architecture decision; implementation synchronization remains first.** The immutable raw accepted command, canonical moderation identity, final-admission message construction, and provider send remain required BG009 implementation work under R1/R2/R3/R6. The durable prepared-content contract is now implemented and accepted by DATABASE-007.
+**Attempt 3 completion outcome:**
+
+- **Resolved:** The PostgreSQL raw-text moderation-digest rejection and crash/reclaim plus STOP/HUMAN-control-loss cases now pass in the 28/28 integration run. These are not outstanding implementation changes.
+- **Claimed and published:** the canonical Attempt 3 developer claim is recorded below, and correction commit `7b135b1` is equal to the implementation task remote.
+- **Resolved:** Canonical worktree isolation, branch synchronization, final `git diff --check`, acceptance evidence, and BG007 shared-dispatcher coexistence were reconciled in the current update. The current combined run passed 45/45 PostgreSQL tests, including the BG007 regression paths.
+- **Review decision:** Self-review passed for Attempt 3; the developer then explicitly accepted completion. Frontmatter is `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 3`; task-owned implementation and parent completion record are committed and pushed.
+- **Dependency-frontier reconciliation:** `ARCH-047-SYSTEM-TEST-001` remains `pending`; its explicit dependencies still include `ARCH-047-BACKGROUND-007` (`ready`) and `ARCH-047-WOOCOMMERCE-001` (`pending`). No downstream eligibility promotion is warranted by this completion alone. No in-progress, review, or complete task was changed.
+- **Unrelated failure:** The full moderation unit suite's unchanged automated-template serializer expectation differs from emitted nullable header fields. It remains documented as out-of-scope; do not fix it inside BG009 without evidence of a regression caused by this task.
+
+**Historical Attempt 1 concerns (resolved by Database-007 and implemented in Attempt 2):**
+
+**Historical Attempt 1 action plan, superseded by the Attempt 2 claim and implementation.** The immutable raw accepted command, canonical moderation identity, final-admission message construction, and provider send were required BG009 implementation work under R1/R2/R3/R6. The durable prepared-content contract is implemented and accepted by DATABASE-007.
 
 - Before any Background source edit, DATABASE-007 must be available through the developer-merged Database `main`; then update the canonical `database/` submodule, regenerate Prisma Client, and validate the generated schema. Direct mutation of accepted `MerchantConversationSendCommand.textBody`, an unmoderated append, and in-memory/Redis-only prepared content remain unacceptable.
 - BG007 also changes `human-command-dispatcher.service.ts`. Reconcile its final branch before BG009 acceptance; do not modify BG007's post-window flow within this task.
 - Following the decision and prerequisite implementation, run the required unit, database integration, compensation/retry, and full-message/payload equality validations; capture branch/worktree/synchronisation evidence before formal review.
 
 ### Architectural Concerns
+
+**Attempt 3 self-review:** The PostgreSQL digest and lease-reclaim safety gaps are demonstrated in the integration tests without changing production send policy in the correction commit. BG007's template path remains separate in the shared dispatcher, and the fresh regression set passed. The unrelated full-moderation-unit failure remains documented and out of scope.
+
+**Attempt 2 history:** The previously escalated prepared-content architecture dependency was accepted as `ARCH-040-DATABASE-007` and implemented in the current BG009 source. The earlier review required the two now-closed PostgreSQL proof cases. Its developer-execution chronology remains part of the record.
+
+**Historical Attempt 1 blocker (preserved for context, not a new decision request):**
 
 **Evidence in the supplied repository:**
 
@@ -228,13 +357,30 @@ The uploaded `typescript(20261026-072937)` terminal recording shows:
 
 ### Review Status
 
-**Historical Attempt 1 review — blocked on architectural dependency (2026-10-26).** Developer Attempt 1 preparation is not accepted as a completed BG009 integration. The dependency has since been completed; the current task state is Ready for Attempt 2 after dependency-frontier reconciliation.
+**Historical Attempt 1 review — blocked on architectural dependency (2026-10-26).** Developer Attempt 1 preparation was not accepted as a completed BG009 integration. The dependency has since been completed and Attempt 2 was claimed; the subsequent Attempt 2 self-review below returns this task to Ready for corrections.
 
 ### Review Notes
 
 The inspected 26 October BG009 worktree shows a correct preparation-only `HumanWrapperPreparationService`, but `whatsapp.arch040_command_guard()` freezes the original `textBody`, and `whatsapp.arch040_moderation_subject_guard()` hashes that raw body. `PostgresModerationAssessmentService`, `OutboundSendFenceService` and `HumanCommandDispatcherService` consequently moderate, admit, persist and transmit `command.textBody`. Wiring a wrapped body only at the provider would break moderation-content identity; overwriting `textBody` would break accepted-command idempotency. Preserve the existing work and **do not** add an unsafe bypass.
 
-**Required first action for Attempt 2:** after the developer merges DATABASE-007 to Database `main`, synchronize the canonical `database/` submodule and regenerate/validate Prisma Client. Then the BG009 developer claims Attempt 2, wires frozen prepared-body moderation/admission/provider equality, implements required tests, and reconciles BG007's shared dispatcher source without moving BG007 post-window scope into BG009.
+**Historical Attempt 1 follow-up, superseded:** synchronize the canonical `database/` submodule after DATABASE-007 reaches Database `main`, then claim Attempt 2 and implement frozen prepared-body moderation/admission/provider equality while reconciling BG007's shared dispatcher without moving its post-window scope into BG009. The synchronization and implementation are now evidenced in the Attempt 2 claim and validation records above.
+
+## Developer Self-Review Passed (Attempt 3)
+
+- Outcome: **passed; submitted for developer completion review**. The previously missing PostgreSQL raw-body-digest rejection and crash/reclaim with STOP/HUMAN-control-loss evidence now pass. Fresh combined PostgreSQL validation passed 10 files / 45 tests; focused unit validation passed 14 tests; build and focused ESLint passed.
+- Compatibility: BG009 freezes and moderates the full HUMAN_TEXT body, inserts it into the final admitted message and sends the admitted bytes. BG007 remains on the distinct approved-template path with sequence-two/billing behavior; its PostgreSQL regressions passed in the same run.
+- Repository state: implementation branch `task/ARCH-047-BACKGROUND-009` is clean and pushed at `7b135b115efff28a1d32b91b6ef93333d8bc7dad`; parent report branch was clean and pushed at claim commit `e529b8e84a5a1b175cb0d39c812a9d84f3306b7b` before this report commit. Canonical physical worktrees and Database `main` submodule synchronization were verified. No task branch was merged to `main`.
+- Known unrelated validation failure: the previously recorded full moderation unit run has one serializer expectation failure (`imageHeader`/`textHeader` nullable fields) in unchanged code. Focused moderation unit tests and PostgreSQL moderation integration pass; this unrelated failure was not changed.
+- Transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 3`. Completion is not decided by this self-review because `completion_mode: developer`; the developer retains the explicit completion decision.
+
+## Developer Execution Claim (Attempt 3)
+
+- Claim: `status: in_progress`, `executor: developer`, `claimed_at: 2026-10-26T21:42:20Z`, `attempt: 3`; `assigned_agent: moda_background` is unchanged.
+- Dependency verification before claim: `ARCH-047-BACKGROUND-005` and `ARCH-040-DATABASE-007` both resolve `complete` in the canonical parent task baseline.
+- Canonical launcher route: `scripts/start-agent-task.py ARCH-047-BACKGROUND-009 --route-only --json` returned parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-009`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-009`, and branch `task/ARCH-047-BACKGROUND-009`.
+- Parent synchronization: fetched `origin --prune`; parent HEAD was clean and equal to `origin/task/ARCH-047-BACKGROUND-009` at `eb7abb3636f441b2f66fcc93144143dfc5455de6`; current `origin/main` was an ancestor's ancestor at `cda92824e2875baf9f114e41d244a35666fe5b86`. The task branch had 11 mainline commits to merge and 4 task commits. Merged `origin/main` into the task branch without conflict; merge commit `3f542bfebe8b8a55061252b90a2b8bdb63718fc7` was pushed. After fetch, parent HEAD equals origin task, `origin/main` is an ancestor, and the worktree is clean.
+- Implementation synchronization: fetched `origin --prune`; implementation HEAD was clean and equal to `origin/task/ARCH-047-BACKGROUND-009` at `7b135b115efff28a1d32b91b6ef93333d8bc7dad`; current implementation `origin/main` `6cce2b18f288d4cabc6f7dcea3ef251acbb15323` is an ancestor. No merge was required. The Database submodule is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`, equal to Database `origin/main`.
+- Pre-claim implementation disclosure: commit `7b135b1` and the reported 28/28 PostgreSQL integration run predate this formal claim. Current Attempt 3 begins with those tests committed and pushed; no implementation source edits were made during claim preparation.
 
 
 ### Reviewed Files
@@ -265,10 +411,29 @@ Execute `ARCH-040-DATABASE-007`, accept its schema/migration and tests, sync `da
 - Change: The developer explicitly invoked `/moda_developer_create ARCH-047-BACKGROUND-009` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
 - Preserved: `assigned_agent: moda_background`, coordinator, repository, task scope, acceptance criteria, validation requirements, and attempt history. Attempt 1 remains the prior developer attempt; this dependency-frontier reconciliation retains `attempt: 1` and does not claim Attempt 2. The existing BG007 shared-dispatcher reconciliation requirement remains unchanged.
 
-## Dependency Frontier Reconciliation (2026-10-26)
+## Historical Dependency Frontier Reconciliation (2026-10-26)
 
 - `ARCH-047-BACKGROUND-005`: Complete.
 - `ARCH-040-DATABASE-007`: Complete; implementation commit `12102f0b611973b1436f4c0d4ec33f3e15fa9a78` is published on its task branch. The Database implementation has not been merged to `main`.
 - Transition: `blocked` to `ready`; `attempt: 1` preserved, `executor: null`, `claimed_at: null`. The next claim is Attempt 2.
 - First Attempt 2 action: after DATABASE-007 is merged to Database `main`, synchronize the Background `database/` submodule to that merged commit, regenerate Prisma Client, and validate. Do not point the submodule at the unmerged Database task branch.
 - No implementation source, submodule gitlink, `main` branch, or unrelated task record was changed by this frontier update.
+
+## Developer Execution Claim (Attempt 2)
+
+- Claim: `status: in_progress`, `executor: developer`, `claimed_at: 2026-10-26T19:37:18Z`, `attempt: 2`; `assigned_agent: moda_background` is unchanged.
+- Dependency verification immediately before claim: `ARCH-047-BACKGROUND-005` and `ARCH-040-DATABASE-007` both resolved `complete`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-009`, branch `task/ARCH-047-BACKGROUND-009`, clean at `ba938dba3971cb6425c406887b9b9f4d9f98aeb8`; current `origin/main` `2624d6445e6d642568d521d18f3e277ea629950e` is an ancestor.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-009`, branch `task/ARCH-047-BACKGROUND-009`, clean at `ab55ed9a9d9de3aaf6791933db2574ed49a86f36`, equal to `origin/task/ARCH-047-BACKGROUND-009`; current `origin/main` `6cce2b18f288d4cabc6f7dcea3ef251acbb15323` is an ancestor.
+- Database prerequisite: implementation `database/` submodule is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`, equal to Database `origin/main`.
+- Synchronization: fetched `origin --prune` in both canonical task worktrees; both were clean and task branches matched their remotes before the claim. No merge was required.
+- Pre-existing implementation disclosure: commit `ab55ed9` and its source/test changes were already present and pushed before this canonical Attempt 2 claim. Claim preparation made no implementation edits; the report and remaining required validation must be reconciled against that actual history during this attempt.
+
+## Developer Self-Review - Changes Requested (Attempt 2)
+
+- Outcome: **changes requested**. The implementation branch is committed, pushed, clean, builds, and passes the focused prepared-send and BG007 regression suites. The explicit acceptance matrix is incomplete because the PostgreSQL raw-body-digest rejection and combined prepared-body crash/reclaim plus control-loss cases are not directly tested.
+- Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. This returns Attempt 2 for corrections and does not create Attempt 3. The next developer claim increments the attempt once.
+- Required corrections: add and run the two PostgreSQL cases listed under Attempt 2 changes requested; preserve BG007's post-window template branch; record exact results and re-run focused validation.
+- Parent task/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-009`, branch `task/ARCH-047-BACKGROUND-009`; this task-report transition is committed and pushed with the update. Implementation worktree remains `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-009`, branch `task/ARCH-047-BACKGROUND-009`, clean at `ab55ed9a9d9de3aaf6791933db2574ed49a86f36`.
+
+**Subsequent correction evidence (26 October 2026; not a claim or new review decision):** Local implementation commit `7b135b1` adds the exact negative digest and crashed-lease/STOP/HUMAN-control-loss PostgreSQL tests; 5/5 integration files, 28/28 tests, build and focused ESLint completed without reported errors. The terminal shows the implementation branch one commit ahead of origin and does not show a push. Preserve `status: ready`, `attempt: 2` and the historical Changes Requested outcome until `/moda_developer_create` and `/moda_developer_update` reconcile the next attempt and submit it for review.
