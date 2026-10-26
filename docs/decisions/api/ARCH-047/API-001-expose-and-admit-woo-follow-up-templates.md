@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-26T13:25:05Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-047-DATABASE-001
@@ -85,8 +85,8 @@ Hosted GET wire contract v1 exactly: `{ schemaVersion: 1, templates: Array<{ nam
 
 ## Validation
 
-- [ ] API route/contract/authentication and PostgreSQL integration tests in repository's declared harness, including GET-only and hostile-parameter negative cases. Attempt 1 recorded `npm test`: 611/611; `npm run test:arch047-schema:unit`: 7/7; `npm run test:arch047-follow-up:postgres`: 4/4. Rerun task-focused suites in Attempt 2.
-- [ ] Lint, typecheck/build where declared and `git diff --check`; rerun and record results in Attempt 2.
+- [x] API route/contract/authentication and PostgreSQL integration tests in repository's declared harness, including GET-only and hostile-parameter negative cases. Attempt 2: `npm run test:arch047-schema:unit` 7/7; `npm run test:arch047-follow-up:postgres` 4/4, including disposable PostgreSQL application of the canonical 63-migration chain.
+- [x] Lint, typecheck/build where declared and `git diff --check`; Attempt 2: `npm run typecheck`, `npm run build`, `npm run lint`, and `git diff --check` passed.
 - [x] Record the Attempt 2 canonical resolver route, exact parent/implementation worktree and branch identities, fetch/ancestry checks, clean status, and recursive submodule sync/update/status before validation. Attempt 1's original packet is unavailable and remains historical.
 
 ## Stop Condition
@@ -118,9 +118,9 @@ Use isolated worktrees with exact mirrored task branches. Keep GET/POST tenant s
 
 ### Status
 
-In Progress — developer Attempt 2 claimed at `2026-10-26T13:25:05Z`. The Attempt 2 canonical launcher, parent/implementation synchronization, ancestry, clean-state and recursive submodule evidence is recorded above. Attempt 1's original packet remains unavailable and is not reconstructed. Implementation source remains at the existing pushed commit pending task-focused revalidation in this attempt.
+Submitted for developer review — Attempt 2 passed required focused revalidation and is now `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. The Attempt 2 canonical launcher, parent/implementation synchronization, ancestry, clean-state and recursive submodule evidence is recorded above. Attempt 1's original packet remains unavailable and is not reconstructed. This submission is not architect acceptance or explicit developer completion.
 
-Patch iterations 1–5 were implementation corrections within Attempt 1. Attempt 2 is an evidence/revalidation cycle; `attempt: 2` is now active.
+Patch iterations 1–5 were implementation corrections within Attempt 1. Attempt 2 captured fresh preparation evidence, reran validation, and corrected one PostgreSQL fixture so it follows the DATABASE-007 prepared-content lease/freeze contract.
 
 
 ### Attempt 1 Review (Historical)
@@ -128,6 +128,11 @@ Patch iterations 1–5 were implementation corrections within Attempt 1. Attempt
 Changes Requested because the original canonical launcher preparation, start-of-attempt synchronization, and recursive-submodule evidence was unavailable. That packet remains unavailable and has not been reconstructed. The task was returned to `ready` at Attempt 1; the next claim is now the active Attempt 2 recorded above.
 
 Patch iterations 1–5 were implementation corrections within Attempt 1. Attempt 2 is an evidence/revalidation cycle; its claim did not change implementation source.
+
+### Attempt 2 Implementation Change
+
+- `tests/integration/merchant/conversations/messages.service.postgres.test.ts`: the ARCH-040 API-004 fixture now acquires a current HUMAN_TEXT command lease and freezes passthrough prepared content plus matching body digest before creating the moderation assessment. This preserves production code and updates the test to satisfy the accepted DATABASE-007 guard.
+- Implementation task commit: `b08307f` (`test(arch-047-api-001): freeze prepared body in moderation fixture`), pushed to `origin/task/ARCH-047-API-001`.
 
 ### Files Changed
 
@@ -177,7 +182,17 @@ This review-submission patch changes only the parent task file. Domain `_index.m
 
 ### Validation Results
 
-Attempt 1 validation evidence from the supplied developer logs and implementation snapshot; these results are historical and the required suites must be rerun during Attempt 2 before review:
+Attempt 2 validation from the canonical API implementation worktree:
+
+- `npm run test:arch047-schema:unit`: **7/7 passed**.
+- `npm run test:arch047-follow-up:postgres`: **4/4 passed** after correcting the API-004 fixture to claim and freeze prepared content. This applied all 63 canonical migrations, including `20261026080000_arch040_prepared_human_message_content`.
+- `npm run typecheck`: **passed**.
+- `npm run build`: **passed**.
+- `npm run lint`: **passed** with `--max-warnings=0`.
+- `git diff --check`: **passed**.
+- The first Attempt 2 PostgreSQL run exposed that the API-004 fixture created moderation before durable prepared content. A first fixture correction used a frozen test clock that had already expired according to database `statement_timestamp`; the final fixture uses a current wall-clock lease and the rerun passed 4/4.
+
+Attempt 1 validation evidence from the supplied developer logs is retained as historical context:
 
 - `npm test`: **611 passed, 0 failed** (earlier full-suite run).
 - `npm run test:arch047-schema:unit`: **7/7 passed** (Attempt 4 resolver validation).
@@ -208,9 +223,9 @@ The API's pinned Prisma-generated schema predates accepted ARCH-047. The catalog
 
 ### Unresolved Issues
 
-- **Workflow evidence:** Attempt 1's original launcher preparation packet and start-of-attempt synchronization/recursive-submodule evidence are unavailable. This historical gap is not reconstructed. Before validation in Attempt 2, capture and record the canonical resolver route; exact parent and implementation paths and branch identities; fetch and task/main ancestry checks for both repositories; clean task-owned working-tree state; and `submodule sync --recursive`, `submodule update --init --recursive`, and recursive status in the implementation worktree. Clearly distinguish the new packet from Attempt 1 history.
-- A local file named `typescript` appeared untracked in an earlier implementation-worktree status capture, but the current canonical implementation worktree is clean and the artifact is not part of the pushed implementation commit.
-- No known outstanding implementation test failure from the supplied validation logs. The task is **not** architect-accepted or explicitly developer-completed.
+- **Historical workflow evidence:** Attempt 1's original preparation packet remains unavailable and is not reconstructed. Attempt 2's complete fresh evidence is recorded above.
+- The `typescript` artifact appeared in an earlier Attempt 1 snapshot only; the Attempt 2 implementation worktree is clean after pushing `b08307f`.
+- No known outstanding implementation or validation failure remains. The task is **not** architect-accepted or explicitly developer-completed.
 
 ### Architectural Concerns
 
@@ -220,9 +235,8 @@ No new cross-repository runtime contract or schema ownership is requested. The A
 
 - Review result: Changes Requested for missing required workflow evidence; this review found no source-code defect.
 - Evidence discrepancy: the Completion Report states that Attempt 1's launcher preparation, synchronization, and recursive-submodule packet was not established. Physical paths and current branch cleanliness do not prove start-of-attempt preparation. Do not reconstruct or relabel later evidence as Attempt 1 evidence.
-- Required correction for Attempt 2: before validation, capture the canonical resolver route; exact parent and implementation worktree/branch identities; fetch and task/main ancestry checks in both repositories; clean worktree status; and recursive submodule sync/update/status in the implementation worktree.
-- Revalidation: rerun `npm run test:arch047-schema:unit`, `npm run test:arch047-follow-up:postgres`, `npm run typecheck`, `npm run build`, `npm run lint`, and `git diff --check` from the canonical implementation worktree. Preserve the recorded Attempt 1 `npm test` result as historical evidence and clearly label any newly run suite results by attempt.
-- State: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Do not create Attempt 2 here; the next developer claim increments once.
+- Required correction: completed in Attempt 2. Fresh canonical route/synchronization evidence is recorded, the stale API-004 fixture was aligned to DATABASE-007, and focused validations passed.
+- State: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. Review approval and explicit developer completion remain pending.
 - Scope/frontier: implementation files and branch remain unchanged. `ARCH-047-WOOCOMMERCE-001` remains pending until API-001 is Complete.
 
 ## Architect Review
