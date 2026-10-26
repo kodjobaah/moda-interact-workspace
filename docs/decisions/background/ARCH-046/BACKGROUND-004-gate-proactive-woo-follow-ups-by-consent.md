@@ -23,7 +23,7 @@ enables:
   - ARCH-048-BACKGROUND-005
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # Enforce final Woo initial-recovery WhatsApp send consent and STOP fence
@@ -36,7 +36,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Execution frontier (25 October 2026): In Progress, developer Attempt 2.** All four declared dependencies are Complete. Attempt 1 was returned to `ready` by developer self-review; its implementation corrections remain preserved on the implementation task branch. Attempt 2 was claimed only after canonical worktree synchronization and recursive submodule verification. This task remains **narrowed to the initial-send/final-permit capability already required by ARCH-048**; outstanding tests and report evidence must be completed before review.
+**Execution frontier (26 October 2026): Ready, with Attempt 2 the last recorded claim.** All four declared dependencies were verified Complete in the earlier preparation evidence. Attempts 1 and 2 were returned to `ready` following separate developer self-reviews; the latest archived task file does **not** record a developer Attempt 3 claim or a new launcher preparation packet. The Background implementation branch now contains a pushed test-refactor commit (`5e7a6d0`), and a four-case Woo PostgreSQL race suite passed, but remaining Redis, full refactored HUMAN/AI/Shopify STOP, and post-commit repository checks are not evidenced. Keep this task **narrowed to the initial-send/final-permit capability** and do not move it to `review` or mark it Complete without the required evidence and canonical workflow reconciliation.
 
 ## Execution Ownership Amendment
 
@@ -165,7 +165,7 @@ The earlier BG004 definition required a Woo follow-up engine that ARCH-048 delib
 
 ### Status
 
-**Changes Requested — developer self-review of Attempt 2 (2026-10-25).** Attempt 2 was claimed at `2026-10-25T19:17:50Z` after canonical preparation, but no implementation changes or required validation runs followed that claim. The implementation branch remains clean and published at `984d568`; required race/fault and cross-flow regressions remain unverified. Returned to `ready` with `executor: null`, `claimed_at: null`, and Attempt 2 unchanged. Architect acceptance and developer completion are not claimed.
+**Corrections in progress; not ready for review (evidence updated 2026-10-26).** Attempt 2 was returned to `ready` after developer self-review, with `executor: null`, `claimed_at: null` and `attempt: 2`. The latest implementation capture confirms that the seven-file HUMAN integration-test refactor, Woo race test correction and integration-suite isolation change were committed as `5e7a6d0` and pushed, and that the four Woo PostgreSQL race/fault scenarios passed. It does **not** show the remaining required suites passing or a canonical developer Attempt 3 claim. The historical Attempt 1/2 review decisions remain unchanged; architect acceptance and developer completion are not claimed.
 
 ### Files Changed
 
@@ -193,7 +193,21 @@ The earlier BG004 definition required a Woo follow-up engine that ARCH-048 delib
 - `tests/unit/services/outbound-whatsapp-admission/outbound-provider-failure.service.test.ts` (updated)
 - `tests/unit/services/woocommerce-recovery/woo-initial-delivery.service.test.ts` (updated)
 
-This is implementation Git history, **not proof that the developer-task workflow claimed Attempt 2**. The correction commit is preserved alongside `0c92e12`; no history rewrite is required.
+**Additional implementation validation/refactor commit:** `5e7a6d0` (`feat(arch-046-background)`), pushed to `origin/task/ARCH-046-BACKGROUND-004` in the terminal capture ending 26 October 2026. Git reports **9 files changed, 806 insertions and 774 deletions**:
+
+- `tests/integration/recovery-human-dispatch.integration.test.ts` (reduced to 202 lines)
+- `tests/integration/recovery-human-ai-ownership.integration.test.ts` (new)
+- `tests/integration/recovery-human-provider-recovery.integration.test.ts` (new)
+- `tests/integration/recovery-human-provider-status.integration.test.ts` (new)
+- `tests/integration/recovery-human-follow-up-billing.integration.test.ts` (new)
+- `tests/integration/recovery-human-follow-up-claims.integration.test.ts` (new)
+- `tests/integration/recovery-human-follow-up-cancellation-races.integration.test.ts` (new)
+- `tests/integration/woo-initial-send-fence-races.integration.test.ts` (corrected test transaction `$queryRaw` forwarding)
+- `vitest.config.ts` (sequential execution of disposable integration test files sharing PostgreSQL/Redis; concurrency within individual race tests remains)
+
+The seven HUMAN suites retain the original 27 test definitions/28 executable cases based on the supplied test-file comparison; **test-case preservation is static evidence, not a passing runtime result**. The latest `git status` shows only the untracked `typescript` terminal recording after the commit/push. No production source file was changed by `5e7a6d0`.
+
+These commits record implementation Git history; they do **not** establish a later canonical developer workflow claim. Preserve `0c92e12`, `984d568`, and `5e7a6d0` without rewriting history.
 
 **Parent task branch:** This evidence-only task-record correction preserves `ready` until the required validation and canonical claim are demonstrated. No parent architecture, domain `_index.md`, unrelated task, implementation code or submodule gitlink is included in this patch.
 
@@ -207,6 +221,7 @@ This is implementation Git history, **not proof that the developer-task workflow
 - Preserved default-off Woo outbound gating and absence of Woo follow-up scheduling or BG005 worker composition.
 - After developer Changes Requested, added race cases using separate PostgreSQL clients for STOP-before-permit and already-observed completed/cancelled order before a waiting permit, with durable dispatch-key assertions; a database rollback/logging/retry case; and a real Redis read-failure scenario using the existing test-only outreach sender. The latter is **not** proof of production worker composition.
 - Added provider failure/uncertain-outcome and ordinary HUMAN/AI existing-fence regression assertions in unit tests, and refined fixtures and exception-chain handling to satisfy lint. These are **implemented test cases**, not claimed passing results until executed.
+- Split the former 975-line HUMAN dispatch integration test into seven independently focused suites (each at most 202 lines in the supplied snapshot) without intentionally removing coverage; restricted disposable integration **file-level** parallelism to avoid cross-suite interference through global due-command claims, while preserving within-test concurrency. This test-only refactor and corrected Woo race test are included in `5e7a6d0`; the full split suite has not yet been rerun successfully.
 
 ### Validation Results
 
@@ -224,15 +239,18 @@ Evidence from the developer's terminal captures dated 25 October 2026:
 | `npx tsc --noEmit` | **PASS**, command finishes without diagnostics, `typescript(20261025-190132)` |
 | `npm run build` (`npm run prisma:generate && tsc`) | **PASS**, Prisma client generation reported successful and TypeScript compilation completed without diagnostics, `typescript(20261025-190132)` |
 | `git commit` / `git push -u origin task/ARCH-046-BACKGROUND-004` | **PASS**, correction commit `984d568` pushed (`0c92e12..984d568`), `typescript(20261025-190132)` |
-| New `woo-initial-send-fence-races.integration.test.ts` (STOP/order locks, rollback/retry) | **NOT VERIFIED:** tests exist in uploaded snapshot; no execution log provided |
-| New `woo-initial-send-redis-fault.integration.test.ts` (real Redis failure/credit boundary) | **NOT VERIFIED:** test exists; no execution log provided |
+| `npm run test:integration -- tests/integration/woo-initial-send-fence-races.integration.test.ts` (separate PostgreSQL clients; STOP/order lock races and rollback/retry) | **PASS: 1/1 suite, 4/4 tests**, terminal `typescript(20261026-014840)` at 22:06 on 25 October; run before committing `5e7a6d0`, after applying its Woo test correction |
+| New `woo-initial-send-redis-fault.integration.test.ts` (real Redis failure/credit boundary) | **NOT VERIFIED by the latest log:** test exists; earlier run evidence was reported in the preceding development cycle, but no full post-refactor run/captured result was supplied |
 | Revised Woo final-permit and provider/HUMAN/AI unit regressions | **NOT VERIFIED after correction:** no focused Vitest output for commit `984d568` provided |
-| Existing general/Shopify STOP and human/AI in-window PostgreSQL regressions | **NOT VERIFIED:** no execution output for the targeted suites provided |
+| Existing general/Shopify STOP and human/AI in-window PostgreSQL regressions | **NOT VERIFIED after split:** the latest capture opens an older regression log showing 16 passing tests in three suites and a pre-split duplicate-variable transform failure in the old HUMAN dispatch file; this is not a successful run of the seven newly split files |
+| `git commit`/`git push` after HUMAN test split and isolation | **PASS:** commit `5e7a6d0` (9 files), push `984d568..5e7a6d0`, clean tracked worktree afterward; untracked `typescript` recording remains |
+| `npm run lint`, `npx tsc --noEmit`, `npm run build` after `5e7a6d0` | **NOT VERIFIED:** the earlier PASS results apply to the pre-refactor `984d568` state; rerun on the final change set |
+| Canonical developer Attempt 3 claim / preparation | **NOT VERIFIED:** the supplied parent task metadata still says `ready`, `attempt: 2`, with no active claim; prior Attempt 2 launcher proof remains documented |
 | Canonical preparation/physical isolation/synchronisation | Attempt 1 evidence was incomplete; Attempt 2 launcher route, claim publication, canonical worktrees, synchronization and recursive submodule status were verified on 25 October 2026 (see evidence below) |
 
 Earlier incremental patch revisions exposed invalid **test-fixture** records for the recipient format and funded `UsageReservation`. Those errors were corrected without relaxing production database constraints. The final five-test PostgreSQL run is green. These four patch deliveries belong to the **same claimed developer workflow Attempt 1**; they are not four separately claimed workflow attempts.
 
-The latest log **does establish** repository lint, no-emit typecheck and production build passing. It does **not** establish runs of the new PostgreSQL race/Redis fault suites, the modified unit suites after commit `984d568`, the existing cross-flow STOP/HUMAN/AI regression suites, or the broader tests requested by self-review. The old 89-unit/5-PostgreSQL results predate these corrections and must not be presented as verification of the new tests. Relevant composite Work Item, Acceptance Criteria and Validation checkboxes remain unchecked.
+The newest terminal capture establishes the four-case Woo PostgreSQL race/fault suite passing and the `5e7a6d0` commit/push, but not the complete BG004 validation contract. Earlier developer logs show a subsequent focused unit run of 102/102 passing, a mixed Woo PostgreSQL/Redis group with one failure before the race-test correction, and partial general/Shopify STOP regressions; these results predate the final split/isolation commit and must not be represented as a complete passing final run. The latest capture also shows an old pre-split HUMAN suite transform failure when an earlier log was opened in an editor, not a new post-split test run. The `984d568` lint/typecheck/build PASS results likewise predate `5e7a6d0`. Because the required Redis, full HUMAN/AI/Shopify STOP, focused provider/billing and post-change repository validation remain incomplete or unverified, the composite Work Item, Acceptance Criteria and Validation checkboxes remain unchecked.
 
 ### Execution / Worktree Evidence
 
@@ -240,11 +258,12 @@ The latest log **does establish** repository lint, no-emit typecheck and product
 - Dedicated implementation worktree shown by the terminal archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-004`.
 - The latest terminal log confirms implementation branch `task/ARCH-046-BACKGROUND-004`, correction commit `984d568`, and successful push to `origin/task/ARCH-046-BACKGROUND-004`. A bare `git push` initially failed because the local branch tracked `origin/main`; the later explicit task-branch push succeeded and established the correct upstream.
 - The Attempt 1 evidence did not prove Git common-dir isolation, launcher resolution or start-of-attempt synchronization. The canonical launcher and repository worktree registrations were checked for Attempt 2. Parent branch `task/ARCH-046-BACKGROUND-004` was clean, fast-forwarded to its remote task branch and merged with current workspace `origin/main` as `7df242e3b7d379971e511da6e02c54abd66ace8c`; the merge was conflict-free. Implementation branch `task/ARCH-046-BACKGROUND-004` was clean at `984d568968cc43f173a20e1b87d0fa6a0981ff6d`, equal to `origin/task/ARCH-046-BACKGROUND-004` and containing current Background `origin/main` (`3b7608e8f97a944b8bca51064658e07fd7b00d7f`). Recursive submodule sync/update/status completed; `database` is initialized at recorded gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`, with no uninitialized, mismatched or unresolved status. All four declared dependencies were verified `complete`. No implementation edits were made during preparation.
-- The terminal log shows an untracked `typescript` recording in the implementation worktree; it was **not included** in the eight-file commit `984d568`.
+- The terminal log shows an untracked `typescript` recording in the implementation worktree; it was **not included** in commits `984d568` or `5e7a6d0`.
+- The 26 October terminal capture confirms the named implementation worktree and `task/ARCH-046-BACKGROUND-004` branch, and the task-branch push of `5e7a6d0`. It does **not** add a launcher-resolved Attempt 3 preparation packet or prove the parent task file was newly claimed; according to the supplied parent archive it remains `ready` at `attempt: 2`. Do not infer a new claimed attempt from the names of local log files.
 
 ### Deviations
 
-No new database migration, new shared API, Woo follow-up engine or BG005 worker wiring is evidenced in the correction commit. The original focused test runs predate the correction changes; lint, typecheck and build passed afterward. The new database/Redis, cross-flow and regression tests were not shown executing in the supplied logs. The implementation commit was pushed while the parent task remained unclaimed; that workflow discrepancy needs reconciliation through the canonical developer preparation path before review.
+No new database migration, shared API, Woo follow-up engine or BG005 worker wiring is evidenced. The `5e7a6d0` change is a test-suite split, Woo race-test correction and test-runner configuration change, not production sending logic. The four-case PostgreSQL race suite is now verified passing; the Redis fault and broader cross-flow suites, plus post-refactor lint/typecheck/build, still require fresh passing evidence. The implementation change was committed/pushed while the supplied parent task record remained `ready` at Attempt 2; reconcile the actual preparation/claim history through the canonical developer path before review. Do not conflate implementation patch revisions or Git commits with developer workflow attempts.
 
 ### Assumptions
 
@@ -254,8 +273,9 @@ No new database migration, new shared API, Woo follow-up engine or BG005 worker 
 
 ### Unresolved Issues
 
-- **Still required before resubmission:** execute and capture the new independent-client Woo PostgreSQL lock/race/fault tests, the Redis failure/credit test, relevant modified provider and Woo sender unit tests, and the existing general/Shopify STOP and HUMAN/AI regression suites. Verify non-Woo behaviour, billing attribution and provider reconciliation from their actual assertions/results. Tests present in a commit do **not** substitute for passing results.
-- **Workflow evidence:** Attempt 2 is now formally claimed; launcher-resolved worktrees, synchronization and recursive submodule state are recorded above. Physical worktree registrations and repository/branch identity were verified at the canonical paths.
+- **Still required before resubmission:** run and capture the Redis failure/credit integration test; full Woo final-send, provider-confirmed/uncertain/failed-retry and billing attribution/compensation validations; all seven refactored HUMAN integration suites and general/Shopify STOP plus AI in-window regressions. The four-case PostgreSQL STOP/order/rollback race suite has passed; no need to relabel it as untested. Rerun repository lint, no-emit typecheck, build and `git diff --check` after `5e7a6d0`; record exact commands/results and any failures.
+- **Workflow evidence:** Earlier canonical Attempt 2 preparation (parent/implementation worktree identity, synchronization and recursive submodule status) is documented above. The latest uploaded parent task file remains `ready`, `attempt: 2`, with claim fields cleared. Before an Attempt 3 review submission, establish the genuine launcher claim/preparation packet rather than setting `attempt: 3` by inference.
+- **Test infrastructure:** An earlier run timed out starting disposable PostgreSQL; the latest four-case PostgreSQL race run now passes, but that does not substitute for the other missing suites.
 - No BG005 worker wiring, Woo outbound activation, or end-to-end production send is claimed as part of this task.
 
 ### Architectural Concerns
