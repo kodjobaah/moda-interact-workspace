@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -100,7 +100,7 @@ Use launcher-prepared dedicated mirrored `task/ARCH-047-SHOPIFY-001` worktrees a
 
 ### Status
 
-Review — developer-executed Attempt 1 passed developer self-review on 2026-10-26. The incremental implementation correction labelled `attempt2.patch` was applied within the same task claim and does not increment the task's `attempt: 1`. Implementation changes were committed as `d863b9d` (`feat(arch-047-shopify-001)`) and pushed to `origin/task/ARCH-047-SHOPIFY-001`. Formal architect review and the developer's explicit completion decision remain outstanding.
+Complete — developer-executed Attempt 1 passed self-review and was explicitly accepted and completed on 2026-10-26. The incremental implementation correction labelled `attempt2.patch` was applied within the same task claim and does not increment the task's `attempt: 1`. Implementation changes were committed as `d863b9d` (`feat(arch-047-shopify-001)`) and pushed to `origin/task/ARCH-047-SHOPIFY-001`. Cross-repository integration with BG007 remains a separate follow-up and is not claimed by this task.
 
 ### Files Changed
 
@@ -157,7 +157,7 @@ None from the Shopify task's bounded implementation scope. Positive CODE/AUTOMAT
 
 ### Unresolved Issues
 
-- `ARCH-047-BACKGROUND-007` remains **Ready**, not Complete, in this snapshot. Its independent pre-send revalidation, parameter resolution and provider rejection cannot be claimed as integrated or verified by these Shopify tests. Integration belongs to its own task and terminal system validation.
+- `ARCH-047-BACKGROUND-007` is **in_progress** under its own developer attempt. Its independent pre-send revalidation, parameter resolution and provider rejection cannot be claimed as integrated or verified by these Shopify tests. Integration belongs to its own task and terminal system validation; this remains a cross-task follow-up, not an incomplete SHOPIFY-001 acceptance criterion.
 - Positive CODE/AUTOMATIC options remain unavailable until the separate checkout-specific provider eligibility path can substantiate them. This is intentional fail-closed behaviour, not a Shopify implementation failure.
 
 ### Architectural Concerns
@@ -168,34 +168,34 @@ None from the Shopify task's bounded implementation scope. Positive CODE/AUTOMAT
 ### Git / VCS
 
 - **Task branch (both repositories):** `task/ARCH-047-SHOPIFY-001`.
-- **Parent task worktree:** `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-SHOPIFY-001`; canonical task file above, with `status: in_progress` in the supplied snapshot before this review-submission patch.
+- **Parent task worktree:** `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-SHOPIFY-001`; canonical task/report branch `task/ARCH-047-SHOPIFY-001`, now recording `status: complete` at Attempt 1.
 - **Implementation task worktree:** `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-SHOPIFY-001`; the terminal log and developer's worktree archive show execution from the dedicated task worktree on the matching task branch.
 - **Primary workspace root:** not separately printed by the supplied launcher evidence. Dedicated parent and implementation paths, not shared/default checkout paths, are recorded.
 - **Start-of-attempt synchronization (from existing task claim report):** parent `origin/main` already incorporated; implementation task worktree based on `origin/main` commit `1ef61c8c4d9b405b42bd24f3d81b19f170f16cdf`. The claim reports recursive submodule sync/init success and nested database commit `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. Full launcher packet / task-branch fast-forward evidence is not in the latest terminal log.
 - **Implementation repository:** `moda-interact`; commit `d863b9d`, message `feat(arch-047-shopify-001)`; explicitly pushed to `origin/task/ARCH-047-SHOPIFY-001` after an initial plain `git push` failed because the upstream branch was `origin/main`. The subsequent `git push -u origin task/ARCH-047-SHOPIFY-001` succeeded and set the correct upstream.
-- **Parent workspace:** this submission changes the canonical task file only; parent commit SHA / successful push remain pending developer application of this patch. No implementation submodule gitlink is included in this patch.
-- **Integration:** implementation branch not merged to implementation `main`; parent branch not merged to workspace `main` by this submission.
+- **Parent workspace:** the canonical task file is the only parent-workspace file changed for review/completion; it is committed and pushed on `origin/task/ARCH-047-SHOPIFY-001`. No implementation submodule gitlink is included.
+- **Integration:** implementation branch not merged to implementation `main`; parent branch not merged to workspace `main`.
 - **Isolation evidence limitation:** the snapshot and terminal log support dedicated worktree use, but do not independently reproduce the complete launch preparation packet or prove that no other checkout was touched. Architect may request that evidence before acceptance.
 
 ## Architect Review
 
 ### Review Status
-Pending.
+Accepted — the developer explicitly supplied “Architect Review Accepted” together with the completion instruction on 2026-10-26. This acceptance applies to SHOPIFY-001 Attempt 1 and its recorded implementation and validation evidence.
 
 ### Review Notes
-No implementation reviewed.
+Accepted for Attempt 1. The Shopify merchant path uses a tenant-scoped, persisted Moda-authored follow-up catalogue, validates the selected variant at transactional admission, and exposes only safe No Offer choices pending independent positive-offer verification. The focused tests, lint, typecheck and production build pass. BG007's final dispatch integration remains independently owned and is not represented as verified here.
 
 ### Reviewed Files
-None.
+The 15 implementation and test files listed under Completion Report. No files outside the task's Shopify ownership boundary were changed.
 
 ### Validation Reviewed
-None.
+The six focused test files (138/138 tests), `npm run lint`, `npm run typecheck`, `npm run build`, and `git diff --check origin/main...HEAD` passed in the canonical implementation worktree on 2026-10-26.
 
 ### Architecture Conformance
-Not assessed.
+Accepted within the bounded Shopify task scope. Cross-repository BG007 behavior remains a separate integration gate; no Shopify task result substitutes for its final send fence.
 
 ### Follow-up
-Review the final integration with BG007; do not use system testing as an implementation dependency.
+Reconcile Shopify selection with BG007 final dispatch during the separately owned Background/system validation. Do not use system testing as an implementation dependency for this completed Shopify task.
 
 ## Developer Ownership Amendment
 
@@ -223,4 +223,8 @@ The implementation worktree had no uncommitted changes and implementation commit
 
 ### State Transition
 
-Keep `status: review`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. Architect review and explicit developer completion are not performed by this self-review.
+The passing developer self-review is followed by the explicit acceptance and completion below; Attempt 1 remains unchanged.
+
+## Developer Completion Decision - Attempt 1
+
+On 2026-10-26, the developer explicitly completed ARCH-047-SHOPIFY-001 after the passing self-review and supplied “Architect Review Accepted” decision. All task work items and acceptance criteria are complete. The implementation commit `d863b9d` is pushed on `origin/task/ARCH-047-SHOPIFY-001`; the parent report and completion decision are published on the matching parent task branch. Attempt remains 1. No task branch was merged to `main`. BG007 final dispatch integration remains a separately owned follow-up and is not claimed as part of this completion.
