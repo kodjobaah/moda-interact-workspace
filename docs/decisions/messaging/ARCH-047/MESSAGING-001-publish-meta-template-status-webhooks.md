@@ -9,11 +9,11 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-26T02:37:31Z
+attempt: 1
 depends_on:
   - ARCH-047-SHARED-002
 enables: []
@@ -235,7 +235,7 @@ ARCH-047 is pre-production, but raw webhook authentication, queue durable accept
 
 ### Status
 
-Ready — developer takeover recorded on 2026-10-26. Attempt 1 is not yet claimed; the canonical launcher will prepare/synchronize the implementation worktree, verify dependencies, and durably claim it.
+In Progress — Attempt 1 claimed by developer at 2026-10-26T02:37:31Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
