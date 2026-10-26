@@ -9,13 +9,16 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: copilot
 claimed_at: 2026-10-25T14:25:42Z
 attempt: 1
 depends_on: []
-enables: []
+enables:
+  - ARCH-049-ADMIN-002
+  - ARCH-049-BACKGROUND-001
+  - ARCH-049-SYSTEM-TEST-001
 created: 2026-10-25
 updated: 2026-10-25
 ---
@@ -184,10 +187,10 @@ Ready for Review
   `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-ADMIN-001`
 - Parent worktree:
   `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-ADMIN-001`
-- Both were clean before implementation and on `task/ARCH-049-ADMIN-001`;
-  both already contained `origin/main`, so no mainline merge was required.
-- Implementation commit `7cbe5b0` was pushed to
-  `origin/task/ARCH-049-ADMIN-001`.
+- Both task worktrees were verified clean on `task/ARCH-049-ADMIN-001` during
+  review. The parent task branch was fast-forwarded to current `origin/main`
+  (`21e30644`) before the architect review update; implementation commit
+  `7cbe5b0` remains on `origin/task/ARCH-049-ADMIN-001`.
 
 ### Deviations
 
@@ -211,24 +214,58 @@ None
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation review.
+The implementation matches the agreed configuration-only scope. The typed
+`shopBrand.publicMedia` policy uses the exact agreed defaults, validates both
+values, resolves defaults for a missing row without persistence, and persists
+only through the existing versioned/audited save path. The server mutation
+service enforces SUPER_ADMIN before writes, and `canReset: false` prevents an
+implicit reset from saving defaults. Focused tests verify no-write reads,
+explicit save/read-back, invalid-value rejection without mutation,
+authorization, and isolation from `merchant.knowledge.r2`.
+
+Reviewed implementation commit `7cbe5b0` in the dedicated Admin task worktree.
+No live configuration or database write was performed. The parent task branch
+was fast-forwarded from `01ba966c` to current `origin/main` (`21e30644`) before
+these architect-owned updates; the implementation branch was not modified.
 
 ### Reviewed Files
 
-None
+- `moda-interact-admin/src/lib/admin/platform-configuration/contracts.ts`
+- `moda-interact-admin/src/lib/admin/platform-configuration/repository.ts`
+- `moda-interact-admin/src/lib/admin/platform-configuration/mutate.ts`
+- `moda-interact-admin/tests/unit/arch043-platform-configuration-contracts.test.ts`
+- `moda-interact-admin/tests/unit/arch049-public-media-configuration.test.ts`
+- `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`
+- `docs/decisions/admin/ARCH-049/ADMIN-001-configure-shopbrand-public-media.md`
 
 ### Validation Reviewed
 
-None
+- `npm run test:arch043-admin-config:unit` — passed, 10 tests.
+- `npm run test:arch043-admin-config:components` — passed, 2 tests.
+- `npm exec -- tsx --test tests/unit/arch049-public-media-configuration.test.ts` — passed, 4 tests.
+- `npm run lint -- src/lib/admin/platform-configuration/contracts.ts src/lib/admin/platform-configuration/repository.ts` — passed.
+- `npm exec -- tsc --noEmit` — passed.
+- `npm exec -- prettier --check tests/unit/arch049-public-media-configuration.test.ts` — passed.
+- `git diff --check` — passed.
+- The parent task worktree was clean before architect-owned updates. The
+  implementation worktree was verified clean on `task/ARCH-049-ADMIN-001`, and
+  implementation commit `7cbe5b0` remains on its task branch.
 
 ### Architecture Conformance
 
-Not Reviewed
+Conforms to the agreed ARCH-049 configuration decision and task scope. No
+database/schema, media pipeline, credentials, deployment, or live configuration
+changes were made. The existing private `merchant.knowledge.r2` configuration
+remains distinct and unchanged. Completion does not establish that the public
+R2 domain is operational or that media is available.
 
 ### Follow-up
 
-None
+No correction is required. `ARCH-049-ADMIN-002` and
+`ARCH-049-BACKGROUND-001` remain pending because each also depends on
+`ARCH-049-DATABASE-001`; accepting ADMIN-001 alone does not make either task
+eligible. No other downstream task is newly Ready.

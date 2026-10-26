@@ -7,13 +7,13 @@ domain: shared
 repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 15
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
   - ARCH-047-SHARED-002
@@ -27,7 +27,7 @@ updated: 2026-10-25
 
 `ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`. Coordinator: `moda_architect`.
 
-This is a **portable task definition**; it is not materialised on a Git task branch. The old documentation-only `v1` content-hash-based observation ID is **superseded before production**. There is no deployed v1 producer/consumer requiring a compatibility adapter. This narrow task does **not** reinstate a Shared AST/translation/template compiler package.
+This definition was supplied as a **portable task definition** and is now materialized on the canonical parent task branch. The old documentation-only `v1` content-hash-based observation ID is **superseded before production**. There is no deployed v1 producer/consumer requiring a compatibility adapter. This narrow task does **not** reinstate a Shared AST/translation/template compiler package.
 
 ## Objective
 
@@ -88,10 +88,10 @@ Messaging maps signed Meta webhook values and generates UUIDs; Background parses
 
 ## Work Items
 
-- [ ] Implement the strict nine-field v2 Zod schema, exported constants/types and deterministic UUID-based formatters.
-- [ ] Add browser-safe subpath export, build entry, canonical compatibility fixture and exact unit tests.
-- [ ] Verify the repeated-APPROVED transition is not coalesced by occurrence identity and that content fingerprint is not used as queue identity.
-- [ ] Run repository-declared typecheck, build, focused/full unit tests and `git diff --check`; document changed files and validation evidence.
+- [x] Implement the strict nine-field v2 Zod schema, exported constants/types and deterministic UUID-based formatters.
+- [x] Add browser-safe subpath export, build entry, canonical compatibility fixture and exact unit tests.
+- [x] Verify the repeated-APPROVED transition is not coalesced by occurrence identity and that content fingerprint is not used as queue identity.
+- [x] Run repository-declared typecheck, build, focused/full unit tests and `git diff --check`; document changed files and validation evidence.
 
 ## Interfaces / Contracts
 
@@ -107,18 +107,18 @@ None. This bounded Shared contract can be implemented independently of DB001 bec
 
 ## Acceptance Criteria
 
-- [ ] v2 schema/formatters/fixture exact and independently importable through package subpath.
-- [ ] Different authenticated observations with identical Meta fields receive distinct occurrence identities and do not depend on queue retention/removal.
-- [ ] Zod rejects all malformed/oversized/unknown-key inputs and preserves well-formed unknown statuses.
-- [ ] Only cross-repository transport/schema mechanics are implemented; no template AST, provider status business policy or database operations.
-- [ ] Tests, typecheck and production build pass; `git diff --check` clean.
+- [x] v2 schema/formatters/fixture exact and independently importable through package subpath.
+- [x] Different authenticated observations with identical Meta fields receive distinct occurrence identities and do not depend on queue retention/removal.
+- [x] Zod rejects all malformed/oversized/unknown-key inputs and preserves well-formed unknown statuses.
+- [x] Only cross-repository transport/schema mechanics are implemented; no template AST, provider status business policy or database operations.
+- [x] Tests, typecheck and production build pass; `git diff --check` clean.
 
 ## Validation
 
-- [ ] `npm run typecheck` (if provided in repository `package.json`).
-- [ ] Focused tests using the repository's `tsx --test` mechanism plus `npm test`.
-- [ ] `npm run build` and package subpath import/fixture validation.
-- [ ] `git diff --check` and completion/worktree branch evidence.
+- [x] `npm run typecheck` (if provided in repository `package.json`).
+- [x] Focused tests using the repository's `tsx --test` mechanism plus `npm test`.
+- [x] `npm run build` and package subpath import/fixture validation.
+- [x] `git diff --check` and completion/worktree branch evidence.
 
 ## Stop Condition
 
@@ -132,35 +132,64 @@ Follow the repository's published entrypoint patterns and the canonical task lau
 
 ### Status
 
-Not Started — defined but not materialised.
+Developer Completed — explicit developer completion decision recorded on 2026-10-25 for workflow Attempt 1, following the passing developer self-review. Implementation commits and all focused/full validation are published and passing. Architect acceptance remains pending; this developer completion decision is not architect acceptance. Attempt 0 review history is retained below.
 
 ### Files Changed
 
-None.
+Implementation repository `moda-interact-shared` (8 files in the original implementation commit):
+
+- `README.md`
+- `fixtures/README.md`
+- `fixtures/meta-template-status-v2.json`
+- `package.json`
+- `scripts/validate-whatsapp-template-events-entrypoint.mjs`
+- `src/whatsapp-template-events.ts`
+- `src/whatsapp-template-events.test.ts`
+- `tsup.config.ts`
+
+The follow-up TypeScript-only correction changes `src/whatsapp-template-events.test.ts`, replacing a `delete` expression with `Reflect.deleteProperty`; it is committed and published in `6a01cba02351ebb7c0ea56be8d5f6eb20fdb121e`.
+
+Implementation commits `b9a14730dad04df7cce8e3665783af663a284dae` and `6a01cba02351ebb7c0ea56be8d5f6eb20fdb121e` are both published to `origin/task/ARCH-047-SHARED-001`.
 
 ### Work Completed
 
-None.
+- Added strict, size-bounded Meta template status v2 observations with nine required own JSON keys and canonical receipt timestamps.
+- Added pure event-identity and BullMQ job-ID formatters using the same validated lowercase UUID v4 occurrence identity; Meta content and time are not used to deduplicate occurrences.
+- Added a browser-safe package subpath and tsup build entry, checked-in canonical fixture, package-export validator and contract tests.
+- Exercised repeat APPROVED/PAUSED/APPROVED observations, identical provider payloads with distinct UUIDs, unknown statuses, malformed values, timestamps, extra keys and 4096-byte size bounds.
+- Corrected the test-only required-property deletion using `Reflect.deleteProperty`, then reran the complete validation sequence successfully.
 
 ### Validation Results
 
-Not run.
+Fresh canonical-worktree verification on 2026-10-25 (`typescript(20261025-214030)`):
+
+- **PASS** — `npm run typecheck`, after the test-only TS2790 correction.
+- **PASS** — `npx tsx --test src/whatsapp-template-events.test.ts`: 9 passed, 0 failed, 0 skipped.
+- **PASS** — `npm test`: 375 passed, 0 failed, 1 skipped (376 total).
+- **PASS** — `npm run build`; generated ESM output and declarations for `whatsapp-template-events`.
+- **PASS** — `npm run validate:arch047-whatsapp-template-events`; package subpath, fixture and npm tarball validated.
+- **PASS** — `git diff --check origin/main...HEAD`; no whitespace errors.
+- `npm ci` previously succeeded (211 packages installed). npm audit reported 3 dependency vulnerabilities (1 low, 2 high); dependency remediation is outside this contract task and was not performed.
+- Canonical launcher resolved parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-SHARED-001` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-SHARED-001`, both on `task/ARCH-047-SHARED-001`.
+- Parent task worktree was clean at `02ac1f6b60411f63a4275e9457219c28f83a24be`, equal to its origin task branch, and contains current workspace `origin/main` (`c90273ccee9301374390ad8fca625c0561698e15`).
+- Implementation worktree was clean at `6a01cba02351ebb7c0ea56be8d5f6eb20fdb121e`, equal to `origin/task/ARCH-047-SHARED-001`; its task diff is based on Shared `origin/main` `7e7448506987624cb634c1df0b39887251f34405`. No submodules are registered for this package.
 
 ### Deviations
 
-None.
+None in production-contract scope. One test-only TS2790 correction was made and validated before review.
 
 ### Assumptions
 
-No production v1 template-status job exists; check deployment state during implementation.
+This remains a pre-production replacement for the former unimplemented v1 content-hash contract; no existing production v1 jobs requiring compatibility are assumed. Verify this before consumer deployment.
 
 ### Unresolved Issues
 
-None known.
+- No task-scoped validation failures remain. npm audit findings are noted above and remain outside this task's scope.
+- The package is not published by this task. SHARED-002 remains the separate publication gate; no consumer implementation or cutover is authorized here.
 
 ### Architectural Concerns
 
-None known.
+None identified in the v2 transport contract. SHARED-002 remains the separate publication gate; consumer tasks use the published subpath only.
 
 ## Architect Review
 
@@ -187,3 +216,33 @@ Not reviewed.
 ### Follow-up
 
 None.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_shared`, coordinator, repository, dependency set, task scope, acceptance criteria and validation requirements.
+- Materialization: The existing portable architect definition was published on parent branch `task/ARCH-047-SHARED-001` in commit `ae96dda2`; no implementation or unrelated local-main history was copied.
+- Claim state: This amendment does not claim an implementation attempt; the canonical launcher records the claim after implementation worktree preparation and dependency verification.
+
+## Developer Self-Review Passed/Accepted
+
+### Review Decision
+
+Developer self-review of Attempt 1 passed on 2026-10-25. All task Work Items and Acceptance Criteria are complete, implementation changes are committed and pushed, and focused/full tests, typecheck, production build, package-entrypoint validation and diff checks pass. The canonical parent and implementation worktrees are clean, their task branches are published, and the parent branch contains current workspace `origin/main`. No task-scoped blocker was found.
+
+### Review Scope and Residual Boundaries
+
+Reviewed the strict nine-field schema, UUID v4 event/job identity formatters, browser-safe package export, canonical fixture and tests, and package build/tarball validation. Production deployment, package publication, consumer wiring, and verification of any live v1 jobs remain outside this task's implementation scope; SHARED-002 is the publication gate.
+
+### State Transition
+
+The self-review initially left `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`, with explicit developer completion pending.
+
+## Developer Completion Decision
+
+On 2026-10-25, the developer explicitly invoked `/moda_developer_update ARCH-047-SHARED-001 complete`. The durable passing review is present, all required Work Items and Acceptance Criteria are complete, implementation commits `b9a14730dad04df7cce8e3665783af663a284dae` and `6a01cba02351ebb7c0ea56be8d5f6eb20fdb121e` are published, and the parent task/report change is publishable. The task is now `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. This does not constitute architect acceptance or a merge to `main`.
+
+### Dependency Frontier
+
+`ARCH-047-SHARED-002` remains `pending`: its explicit publication requirement is SHARED-001 status `complete` **and accepted Architect Review**. Developer completion satisfies the status prerequisite only; no package publication or consumer task eligibility is claimed. No other task declares SHARED-001 as a dependency in the current task inventory.
