@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 54
 executor: null
 claimed_at: null
@@ -37,7 +37,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Materialised in the canonical parent task worktree on `task/ARCH-048-BACKGROUND-005`. This task is Ready at Attempt 0 after all six declared dependencies were verified Complete, including developer-completed `ARCH-046-BACKGROUND-004` with its accepted Architect Review. No implementation worktree, claim, implementation commit or release is implied. Before execution, re-read the canonical dependencies and latest Architect Reviews.
+Materialised in the canonical parent task worktree on `task/ARCH-048-BACKGROUND-005`. Attempt 2 is complete after all six declared dependencies were verified Complete, including developer-completed `ARCH-046-BACKGROUND-004` with its accepted Architect Review. The implementation and parent task record are published on their dedicated task branches; no merge to `main` or live WhatsApp send is implied.
 
 ## Objective
 
@@ -86,7 +86,7 @@ BG006 first freezes cross-service interfaces; BG001–BG004 independently implem
 - [x] Wire checkout capture worker to BG001, order capture worker to BG002, pending candidate worker to BG003→BG004 routing with explicit Woo source marker and Shopify legacy fallback.
 - [x] Wire existing initial outbound processor to ARCH-048 BG004; compose the accepted ARCH-046-BG004 `WooGuardedInitialSender`, and inject ARCH-046-BG002 notice callback at BG003 admission. Reject missing guard dependencies (no live or test fallback to generic unguarded sending). Retain correct queue ack/failure/cleanup behaviour.
 - [x] Add tests for Woo vs Shopify routing, nil job+existing recovery, checkout after first send, order after first send, duplicate/failed job, DB insert→enqueue interruption, disabled Woo send and no Woo follow-ups.
-- [ ] Run existing Shopify worker/maturity regressions and entrypoint startup/build checks on the synchronized task branch; record exact changed files per orchestration boundary. Focused BG005 tests pass, but the synchronized build currently fails on two origin/main imports absent from the pinned Shared package.
+- [x] Run existing Shopify worker/maturity regressions and entrypoint startup/build checks on the synchronized task branch; record exact changed files per orchestration boundary. Six focused integration suites, build and lint pass on Attempt 2.
 - [x] Wire the shared structured logger into the orchestrator and each affected worker path; record safe started/completed/deferred/failed events without duplicate business rule logging.
 - [x] Add worker-level fault-injection tests for rejected BG001, BG002, BG003, BG004, merchant-notice, Redis and enqueue dependencies; confirm BullMQ failure/retry rather than silent success or candidate deletion.
 
@@ -137,7 +137,7 @@ interface WooRecoveryOrchestrator {
 - [x] Worker+orchestrator integration tests with real BullMQ/Redis, injected deterministic service results and explicit candidate discriminator fixtures.
 - [x] End-to-end local Background/Postgres test for Woo checkout→maturity→recovery→initial attempt and late order/update (Meta mocked/controlled).
 - [x] Shopify pre-existing candidate/recovery worker regression including legacy unmarked jobs; test crash after INSERT before enqueue and retry behaviour.
-- [ ] All entrypoint typecheck, declared build/lint/test suites relevant to touched worker code and `git diff --check`. Focused tests, lint and diff checks pass; the synchronized `npm run build` fails on the upstream Shared export mismatch documented below.
+- [x] All entrypoint typecheck, declared build/lint/test suites relevant to touched worker code and `git diff --check`. Attempt 2 build, lint, focused unit/integration tests and diff checks pass.
 - [x] Test real BullMQ failed/retry states and deterministic injected exceptions from all four services; verify no `job.completed` on failure, preserved cause, retry attempt visibility and no unhandled promise rejections.
 - [x] Inject a failing logger sink where practical to verify shared logger's own sink-failure isolation does not convert a genuine worker exception into success or break otherwise successful processing.
 
@@ -158,7 +158,7 @@ File-diff review gate: BG005 should primarily change wiring/orchestrator/tests a
 
 ### Status
 
-Review — Attempt 2 passed developer self-review on 2026-10-26. The implementation and fixture correction are committed and pushed; explicit developer completion is pending because `completion_mode` is `developer`. Attempt 1 review history is preserved below.
+Complete — Attempt 2 passed developer self-review, received the developer-supplied Architect Review Accepted decision, and was explicitly completed on 2026-10-26. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -286,27 +286,27 @@ Set `status: ready`, `executor: null`, and `claimed_at: null`; Attempt 1 remains
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Accepted — the developer explicitly supplied “Architect Review Accepted” with the completion instruction on 2026-10-26. This acceptance applies to Attempt 2 and its recorded validation evidence.
 
 ### Review Notes
 
-None.
+Accepted for Attempt 2. The prepared-template fixture correction restores current integration behavior without weakening the production admission, consent, STOP or send guards. The previously reported Shared export build error no longer reproduces; current build and focused validations pass.
 
 ### Reviewed Files
 
-None.
+Implementation and test changes are recorded in the Attempt 2 developer self-review above. No production BG001–BG004 service internals were changed by this correction.
 
 ### Validation Reviewed
 
-None.
+Six focused integration suites (21/21), six focused unit files (44/44), `npm run build`, `npm run lint`, and both `git diff --check` invocations passed on the canonical implementation worktree.
 
 ### Architecture Conformance
 
-Not assessed.
+Conforms to the task scope and preserves the default-off send gate, accepted final permit and Shopify legacy route. No live WhatsApp traffic was enabled.
 
 ### Follow-up
 
-None.
+ARCH-048-SYSTEM-TEST-001 remains pending because its other declared dependencies are not all complete; its manual gate is unchanged.
 
 ## Execution Ownership Amendment
 
@@ -320,7 +320,7 @@ None.
 
 ### Review Decision
 
-Attempt 2 passes developer self-review. The prepared/approved template registration fixture correction resolves the six focused integration-suite failures recorded in Attempt 1 without modifying production BG001–BG004 guards. The previously recorded Shared import build failure no longer reproduces on this synchronized branch. No live WhatsApp traffic was enabled. Explicit developer completion remains pending.
+Attempt 2 passes developer self-review. The prepared/approved template registration fixture correction resolves the six focused integration-suite failures recorded in Attempt 1 without modifying production BG001–BG004 guards. The previously recorded Shared import build failure no longer reproduces on this synchronized branch. No live WhatsApp traffic was enabled. The developer explicitly completed the task after supplying Architect Review Accepted.
 
 ### Corrections and Files
 
@@ -350,4 +350,8 @@ Implementation commit `16c8df64347948dec14490fbf32343146996f1a1` is pushed to `o
 
 ### State Transition
 
-Set `status: review`, `executor: null`, `claimed_at: null`, and preserve Attempt 2. The passing review/report is durable; per `completion_mode: developer`, only an explicit `/moda_developer_update ARCH-048-BACKGROUND-005 complete` may complete the task.
+Set `status: complete`, `executor: null`, `claimed_at: null`, and preserve Attempt 2. This passing review is followed by the explicit developer completion decision below.
+
+## Developer Completion Decision - Attempt 2
+
+On 2026-10-26, the developer explicitly completed ARCH-048-BACKGROUND-005 after the passing Attempt 2 self-review and explicit Architect Review Accepted. All required work items and acceptance criteria are complete; the implementation commit and this parent task record are pushed on their respective task branches. Attempt remains 2. No merge to `main` was performed. The system-test dependent remains pending behind its other incomplete dependencies and its normal manual gate.
