@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -54,9 +54,9 @@ No source implementation changes, dependency redesign, tests/lint/typecheck re-r
 
 ## Work Items
 
-- [ ] Verify prerequisite acceptance and choose an architecture-approved, semver-conforming release version. SHARED-001 acceptance is verified; `2.5.1` was published but is not accepted as the correct version.
+- [x] Verify prerequisite acceptance and choose the release version. SHARED-001 acceptance was verified; `2.5.1` was accepted by the explicit Architect Review Accepted decision below, as an exception to the package README's recommended minor increment for additive public capabilities.
 - [x] Publish the selected package version using `npm publish`; registry metadata confirms `2.5.1` was published.
-- [x] Verify the published subpath and fixture from the actual registry tarball and record evidence. Completion remains blocked on resolving the version issue.
+- [x] Verify the published subpath and fixture from the actual registry tarball and record evidence.
 
 ## Interfaces / Contracts
 
@@ -73,7 +73,7 @@ Published package `@modainteract/moda-interact-shared/whatsapp-template-events` 
 ## Acceptance Criteria
 
 - [x] Source implementation accepted before publication.
-- [ ] Architecture-approved package version available from registry and exact new export present. The artifact is present in `2.5.1`, but the version conflicts with the repository's semver guidance and lacks architecture approval.
+- [x] Architect-approved package version available from registry and exact new export present. Version `2.5.1` was accepted by explicit architect decision as an exception to the README's recommended minor-version increment.
 - [x] Release evidence recorded and no implementation behaviour altered.
 
 ## Validation
@@ -94,14 +94,14 @@ Use the repository's existing publication workflow and mirrored isolated task br
 
 ### Status
 
-Changes Requested — Attempt 1, developer-claimed on 2026-10-25T21:54:15Z. The prerequisite Architect Review was accepted before release, and package `2.5.1` was published and independently verified. The review fails because this new public subpath is an additive package capability, while the repository's versioning guidance requires a minor increment for additive capabilities; `2.5.1` is a patch increment from `2.5.0`. Do not treat `2.5.1` as the approved consumer version. The task is returned to `ready` at Attempt 1; no Attempt 2 is claimed.
+Complete — developer execution Attempt 1, explicitly completed on 2026-10-26 after the user's `Architect Review Accepted` direction. Version `2.5.1` is published and its exact subpath and fixture were verified from the npm tarball. The architect explicitly accepted `2.5.1` as an exception to the package README's recommended minor increment for additive public capabilities. The earlier Changes Requested review is preserved below as history; no corrective release or Attempt 2 was required.
 
 ### Files Changed
 
 - `package.json` — version changed from `2.5.0` to `2.5.1`; the existing `./whatsapp-template-events` export and fixture export are included in the published manifest.
 - `package-lock.json` — root package version changed from `2.5.0` to `2.5.1`.
 
-The release-only implementation commit is `580de0a06dfc129f046cc311089a9bf9c18509c6`, tagged `v2.5.1`, and is pushed to `origin/task/ARCH-047-SHARED-002`; no source implementation changes were made. The npm publish invocation followed this commit. The commit and tag do not establish that `2.5.1` is the architecture-approved semver choice.
+The release-only implementation commit is `580de0a06dfc129f046cc311089a9bf9c18509c6`, tagged `v2.5.1`, and is pushed to `origin/task/ARCH-047-SHARED-002`; no source implementation changes were made. The npm publish invocation followed this commit. The explicit architect decision accepts this version despite the README's minor-version recommendation.
 
 ### Work Completed
 
@@ -122,7 +122,7 @@ The release-only implementation commit is `580de0a06dfc129f046cc311089a9bf9c1850
 
 ### Deviations
 
-- Version `2.5.1` was published before the version choice was reconciled with the package's documented semver policy. The package README says an additive public API capability should receive a minor increment; the new subpath was released as a patch increment. A published npm version cannot be overwritten, so a corrective release requires architect approval and a higher version.
+- The package README recommends a minor increment for additive public capabilities. The explicit `Architect Review Accepted` decision accepts `2.5.1` as an exception; no replacement version was published.
 
 ### Assumptions
 
@@ -131,34 +131,33 @@ The release-only implementation commit is `580de0a06dfc129f046cc311089a9bf9c1850
 
 ### Unresolved Issues
 
-- Obtain an explicit architect decision on the semver-conforming corrective release version. The repository README's additive-capability guidance points to a minor increment; do not assume or publish a replacement version without that decision.
-- In the next attempt, publish the approved higher version without changing source behavior, capture the command result, verify its actual registry tarball and export, and record the release commit. Treat `2.5.1` as superseded for consumer adoption.
+None. The architect-approved version and exact published artifact are recorded above.
 
 ### Architectural Concerns
 
-Do not promote `ARCH-047-MESSAGING-001` or `ARCH-047-BACKGROUND-003` from `2.5.1`. The prerequisite acceptance and artifact export are verified, but the version choice conflicts with documented semver guidance; consumer adoption remains blocked until an architect-approved corrective release is published and this task is accepted.
+`ARCH-047-MESSAGING-001` and `ARCH-047-BACKGROUND-003` may consume `2.5.1` once their other explicit dependencies are satisfied. The additive-capability minor-version recommendation was explicitly waived for this release by the Architect Review Accepted decision.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — 2026-10-26, per the user's explicit `Architect Review Accepted` completion instruction. The accepted release is `@modainteract/moda-interact-shared@2.5.1`, including the verified `./whatsapp-template-events` entrypoint and fixture. This decision accepts the patch increment as an exception to the package README's recommendation that additive public capabilities use a minor increment.
 
 ### Review Notes
 
-None.
+The prerequisite SHARED-001 Architect Review was accepted before publication. The exact `2.5.1` npm tarball, export targets and fixture were independently inspected. No source implementation behavior changed. The README's additive-capability minor-version guidance is a recommendation; the explicit architect decision accepts this release version and authorizes downstream use, subject to their other dependencies.
 
 ### Reviewed Files
 
-None.
+`package.json`, `package-lock.json`; published npm tarball `@modainteract/moda-interact-shared@2.5.1`.
 
 ### Validation Reviewed
 
-None.
+`npm publish` invocation recorded in the local npm debug log; npm registry timestamp `2026-10-25T21:57:05.768Z`; `npm view` version/tarball/integrity; actual tarball file and manifest inspection; release commit `580de0a06dfc129f046cc311089a9bf9c18509c6`; `git diff --check origin/main...HEAD` passed.
 
 ### Architecture Conformance
 
-Not reviewed.
+Accepted. The published version and patch-level increment were explicitly accepted by the developer-as-architect for this task.
 
 ### Follow-up
 
@@ -187,3 +186,15 @@ Attempt 1 review did not pass on 2026-10-26. The implementation is limited to pa
 ### State Transition
 
 Set `status: ready`, `executor: null`, `claimed_at: null`, and keep `attempt: 1`. No Attempt 2 is claimed by this review.
+
+## Developer Self-Review Passed/Accepted
+
+Attempt 1 passed on 2026-10-26 after the developer-as-architect explicitly accepted the published version. All Work Items, Acceptance Criteria and required publication validation are complete. The implementation task branch and release tag are pushed, the worktree is clean, and the actual npm tarball contains the expected runtime module, declarations, fixture and manifest exports. The README's minor-version guidance is recorded as an accepted exception, not silently treated as a semver-conforming change.
+
+## Developer Completion Decision
+
+On 2026-10-26, the developer explicitly invoked `/moda_developer_update ARCH-047-SHARED-002 complete` and supplied `Architect Review Accepted`. The passing Attempt 1 review is durable above; the implementation release commit `580de0a06dfc129f046cc311089a9bf9c18509c6`, tag `v2.5.1`, and parent task record are committed and pushed. The task is `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. No task branch was merged to `main`.
+
+## Dependency Frontier Reconciliation
+
+On 2026-10-26, the canonical parent task records were recalculated after SHARED-002 completed. `ARCH-047-MESSAGING-001` was promoted from `pending` to `ready` because SHARED-002 is its only dependency. `ARCH-047-BACKGROUND-003` was promoted from `pending` to `ready` because both `ARCH-047-DATABASE-001` and SHARED-002 are complete; its existing Attempt 1 history and claim fields were preserved. Neither downstream task was claimed or started.
