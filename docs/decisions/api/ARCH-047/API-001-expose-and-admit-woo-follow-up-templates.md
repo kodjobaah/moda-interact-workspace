@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 35
 executor: null
@@ -26,7 +26,7 @@ updated: 2026-10-26
 
 ## Architecture
 
-Architecture: `ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`; coordinator `moda_architect`. Based on 26 October 2026, 06:28 snapshot. Defined but not materialised.
+Architecture: `ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`; coordinator `moda_architect`. Based on 26 October 2026, 06:28 snapshot. Materialised on the canonical parent task branch from the published definition; developer takeover is recorded below.
 
 ## Objective
 
@@ -95,10 +95,19 @@ Return current task to `review` with tests and Completion Report, then STOP. Do 
 
 Use isolated worktrees with exact mirrored task branches. Keep GET/POST tenant scoping in the owning API service, never trust browser role or supplied WABA. Consumers remain free to show fewer template candidates but may never manufacture new ones.
 
+## Execution Ownership Amendment
+
+- Date: 2026-10-26.
+- Materialisation: The supplied canonical task definition was already published in the workspace history. Its dedicated parent worktree and `task/ARCH-047-API-001` branch were created from the current published `origin/main`; implementation preparation has not yet been claimed.
+- Change: The developer explicitly invoked `/moda_developer_create ARCH-047-API-001` for this Ready agent-owned task. Execution ownership transfers to the developer and completion mode is set to developer review.
+- Preserved: `assigned_agent: moda_api`, coordinator, repository, task scope, acceptance criteria and validation requirements.
+- Dependency check: `ARCH-047-DATABASE-001` routes as `complete` in its canonical task record.
+- State before claim: `ready`, Attempt 0, `executor: null`, `claimed_at: null`. The canonical developer workflow will claim Attempt 1 after synchronizing both task worktrees.
+
 ## Completion Report
 
 ### Status
-Not Started — defined but not materialised.
+Ready — developer takeover recorded; canonical implementation preparation and Attempt 1 claim are pending.
 
 ### Files Changed
 None.
