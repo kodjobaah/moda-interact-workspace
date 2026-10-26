@@ -11,9 +11,9 @@ updated: 2026-10-24
 
 ## Status
 
-Agreed direction; **Background module-first task-definition plan revised on 24 October 2026 for Admin-prepared segment translation and runtime payloads**. The consolidated `ARCH-047-DATABASE-001` is a developer-owned, in-progress task (Attempt 1) in the supplied worktree. The revised `ARCH-047-BACKGROUND-001` remains **Pending**. `BACKGROUND-002`–`009` are provided as **portable task definitions in the accompanying task-file patch**; their presence in an archive is not evidence that canonical task branches/worktrees were materialised or implementation claimed. Legacy `ADMIN-001` and `ADMIN-002` are now marked Superseded. Six **independent, DB001-gated** portable Admin task definitions (`ADMIN-003`–`008`) cover authoring, translation control, reconstruction/compilation, Meta status control, merchant publication and internal wrapper activation. The legacy System Test task still requires separate scope reconciliation. Do not treat a planned dependency as Complete.
+Agreed direction; **architecture and Background module-first execution plan updated on 24 October 2026**. The consolidated `ARCH-047-DATABASE-001` was developer-owned/in progress in the earlier source snapshot; its **current authoritative status must be read from the live task file** before dependency promotion. The revised `ARCH-047-BACKGROUND-001` remains **Pending**. `BACKGROUND-002`–`009` have portable task definitions, but the earlier architecture-planning snapshot does not establish their canonical task-branch materialisation, implementation or acceptance. The legacy Admin and System Test task documents still need separate status/scope reconciliation. Do not treat a planned dependency as Complete.
 
-This document supersedes the prior ARCH-047 design permitting externally authored Meta-template imports and shop-to-shop copying as the catalogue master. Do not resume those flows.
+This document includes the 25 October 2026 Meta-status event/safety correction and supersedes the prior ARCH-047 design permitting externally authored Meta-template imports and shop-to-shop copying as the catalogue master. Do not resume those flows.
 
 ## Problem
 
@@ -25,7 +25,7 @@ A workflow-stage-only implementation split would scatter template preparation, o
 
 1. All Meta recovery templates and internal conversation wrappers are **created exclusively through Moda Admin**. Never import, register, adopt or publish templates authored outside Moda. Provider reads are permitted only to reconcile Moda-authored identities, statuses and drift.
 2. Template content is immutable once saved; content corrections, including rejected versions, use **Clone as New** with a new identity. No Meta edit-existing-template API calls. Operational status, review progress and assignment state may change independently.
-3. **Admin alone** authors/validates the English AST, extracts keyed text segments (with protected variables), and persists a durable translation request. Background translates the segments and writes keyed results into existing JSONB fields; **Admin reconstructs, reviews and compiles** 20 complete language payloads. Background sends those already-compiled payloads through the Meta create endpoint, reconciles Meta status and Admin **publishes explicitly**. Internal wrappers skip Meta approval and instead use Admin-only activation.
+3. Author an English AST, persist it, durably request Background translation of the other 19 target languages, review immutable results, submit each Meta language, consume/reconcile Meta status events and **publish explicitly**. Internal wrappers skip Meta approval and instead use Admin-only activation.
 4. Predefine the six recovery purposes: INITIAL/FOLLOW_UP × NO_OFFER/CODE_OFFER/AUTOMATIC_OFFER. The purpose determines typed variables. Resolve and independently validate offer eligibility *before* the prepared template is used; AI is only a read-only offer recommendation mechanism.
 5. Keep template-selection/preparation and variable-binding behaviour in one Background module, distinct from offer resolution, Meta catalogue management, translation and conversation wrapping. Existing send flows delegate rather than replicate domain rules.
 6. Preserve consent, authoritative STOP, recipient scope, WhatsApp service window, moderation, billing, retries, compensation, one permitted sequence-two follow-up and final send fencing. No new path may bypass them.
@@ -35,9 +35,9 @@ A workflow-stage-only implementation split would scatter template preparation, o
 
 - No merchant-facing authoring or adoption of Meta-created templates; no in-place template edit, no Meta edit API and no provider-template creation on the ordinary send path.
 - No AI commerce mutation: no cart additions/removals, quantity changes, coupon application, checkout edits or order placement. Customers edit their own baskets on Shopify/WooCommerce.
-- No new ARCH-047 Shared AST/compilation package, generic logger, custom Batch runtime, Background authoring-AST parser or second moderation/send pipeline. Preserve existing Shared internationalisation/logging and explicitly investigate a queue-format contract gap if one is demonstrated.
+- No new cross-service generic logger, custom Batch runtime, bespoke AST parser or second moderation/send pipeline.
 - No change to ARCH-045/046 consent and STOP authority, historical completed tasks or billing semantics.
-- No repository-specific implementation code in this **documentation-only** task-definition amendment.
+- No repository-specific implementation or additional task files in this **module-planning** amendment.
 
 ## Current Architecture and Source Evidence
 
@@ -58,40 +58,20 @@ Reinspect these paths at implementation start; this is snapshot evidence, not a 
 
 ```mermaid
 flowchart TD
-  A[Admin: English AST authoring + validation] --> B[(DB: definition + English locale)]
-  A --> C[(DB: keyed sourceSnapshot + translation run)]
-  C --> D[Background: token-safe keyed translations]
-  D --> E[(DB: TranslationItem.translatedAst segment results)]
-  E --> F[Admin: reconstruct/review 20 locale payloads]
-  F --> G{Template family}
-  G -->|Meta recovery| H[(DB: frozen componentsSnapshot + binding snapshot)]
-  H --> I[Background: Meta create + status reconcile]
-  I --> J[Admin: explicit shop-language publication]
-  G -->|Internal wrapper| K[Admin: prepared wrapper + active pointer]
-  J --> L[(Assigned WhatsAppTemplateVariant)]
+  A[Moda Admin English AST creation] --> B[(Immutable definition and English locale)]
+  B --> C[Durable translation request]
+  C --> D[Background Template Translation]
+  D --> E[Admin 20-language review]
+  E --> F{Template family}
+  F -->|Meta recovery| G[Background Meta Template Management]
+  G --> H[Meta review and template-status webhooks]
+  H --> I[Admin approval and per-shop language publication]
+  F -->|Conversation wrapper| J[Admin internal wrapper publication]
+  I --> K[(Shop-assigned WhatsAppTemplateVariant)]
+  J --> L[(Active wrapper pointer)]
 ```
 
 Meta approves or rejects **each submitted language**. Neither approval nor successful submission silently assigns the template to shops. External template IDs not linked to Moda-authored definitions cannot enter the catalogue. A rejected or drifted template is not edited; a new definition must be authored and submitted. For a changing provider status, keep immutable submitted components and binding snapshots while recording current observations/events separately.
-
-### Admin module ownership (six independently testable tasks)
-
-All six new Admin tasks have **only `ARCH-047-DATABASE-001` under `depends_on`**. Do not encode `ADMIN-003 → ADMIN-004 → ADMIN-005` or a Background/Shared publication dependency simply to mirror UI stages: Admin modules read/write the agreed DB001 persistence contract and prove their own boundaries with typed fixtures/stubbed sibling outcomes. Integration is validated end-to-end after implementation. The tasks are **defined but not materialised** in the developer's canonical Git workspace until the task launcher performs that step. With DB001 not yet proven Complete in the supplied snapshot, their task metadata is Pending.
-
-| Task | Owned Admin module | Durable responsibility | Not owned |
-|---|---|---|---|
-| `ARCH-047-ADMIN-003` | `template-authoring` | `WhatsAppTemplateDefinition` + immutable English `WhatsAppTemplateLocale`; purpose-aware AST, supported variables, safe preview and Clone as New | Translation execution, Meta Graph, shop publication |
-| `ARCH-047-ADMIN-004` | `template-translations` | Extract keyed protected text into `TranslationRun.sourceSnapshot`; create 19 target items, show durable queue/progress/retry | AST parsing in Background, provider Batch processing |
-| `ARCH-047-ADMIN-005` | `template-compilation` | Reconstruct each language from keyed `TranslationItem.translatedAst`, validate protected variables, review and freeze locale `localeAst` with Meta/wrapper prepared projection | Meta submission, new SQL schema |
-| `ARCH-047-ADMIN-006` | `meta-template-control` | Admin-confirmed, frozen `MetaRegistration` requests; DB-only Meta status/drift/rejection dashboard | Provider API creation/reconciliation, webhook ingress |
-| `ARCH-047-ADMIN-007` | `template-publication` | Approved definition → per-shop/per-language `PublicationOperation`/`Target`, transactional eligible shop slot replacement and audit | Importing another shop's template, Meta create |
-| `ARCH-047-ADMIN-008` | `wrapper-publication` | Review and activate `SHARED`/`AI`/`HUMAN` `WhatsAppConversationWrapperActiveSlot` with compare-and-swap | AI/human response generation, WhatsApp sending |
-
-`ADMIN-001` and `ADMIN-002` are **superseded**: external Meta import/refresh, editing provider templates and copying another shop's assignment are not offered. Keep only the legitimate complete previous/proposed comparison within central publication (`ADMIN-007`). The Shared package does **not** own an ARCH-047 AST/compiler; Admin is sole authoring/compilation owner. For immutable content, the English locale is stored with its prepared execution projection at creation and other languages receive their projections at first accepted reconstruction; neither is edited in place. `ADMIN-005` reuses the pure compiler owned by the Admin authoring module.
-
-**Database task-text reconciliation:** DB001 Attempt 7 currently describes `parameterBindingsSnapshot` as Shared-defined, but this agreed architecture assigns the prepared JSON format and semantic-variable mapping to the **Admin-owned compiler**; Background consumes the frozen result. The same Prisma JSONB columns and foreign keys remain valid. Reconcile that ownership sentence during DB001 architectural review; do not expand DB001 schema or create an ARCH-047 Shared AST task simply to mirror the old text.
- The existing Shared localisation and structured logging mechanisms remain available.
-
-**Persisted handoff:** Admin writes a versioned `sourceSnapshot` containing keyed translatable text and **opaque protected variable tokens**. Background translates it and writes keyed results to `TranslationItem.translatedAst` without parsing Admin's AST. Admin reconstructs complete locale content into `TemplateLocale.localeAst`, compiles final Meta components and frozen per-language parameter-binding metadata, and (only after confirmation) writes MetaRegistration. The Meta submission/approval workflow is driven by Background's existing durable workers, not an Admin Graph request. Prepared wrapper projections are also compiled in Admin; Background only renders them around the existing AI/human response.
 
 ### Background module ownership (five modules)
 
@@ -135,6 +115,16 @@ Common final admission must check the exact assigned version again. To avoid con
 7. AI and human conversation content is related to the checkout, but the template module does not add a CheckoutRecovery row or guarantee checkout identity in the underlying current `Conversation` schema. Missing checkout context must fail safely or omit invalid fields. Enforcing conversation identity more broadly is a separate owning-architecture question.
 8. No checkout/cart/discount mutation by CommerceAgent; human/customer basket changes happen on merchant storefronts. No wrapper can reopen the WhatsApp service window or create a second recovery follow-up.
 
+
+### Meta template-status transport and fail-closed provider eligibility (25 October 2026 correction)
+
+- **Producer/consumer boundary:** Existing signed Messaging webhook → existing `whatsapp-events` BullMQ job `meta-template-status-update` → Background BG003 → `WhatsAppTemplateMetaEvent` / `WhatsAppTemplateMetaRegistration`. Messaging has no PostgreSQL access; Background does not verify raw webhook signatures.
+- **Canonical Shared-only transport:** `ARCH-047-SHARED-001` owns strict, nine-field `schemaVersion: 2` Meta template-status observation schema and occurrence-ID / BullMQ job-ID formatters; `ARCH-047-SHARED-002` publishes that package before BG003/MESSAGING-001 consume it. No Admin AST/translation/Meta compiler/wrapper renderer belongs in Shared. The prior v1 six-provider-field SHA hash was a **content fingerprint**, not an event occurrence identity, and is superseded before production.
+- **Occurrence and replay:** Messaging creates a fresh UUID v4 for each authenticated template-status change; the same ID is preserved on BullMQ retry. Identical provider content delivered again receives a new occurrence ID, so a retained completed BullMQ job cannot suppress a later APPROVED after PAUSED. Background provider-state reconciliation is idempotent and cannot use receipt time as provider-event ordering.
+- **Immediate safety fence:** A linked authenticated status observation is durably persisted with `processedAt = null`, and BG003 writes `providerStatus = UNKNOWN` plus due retry **in the same transaction, before Meta GET**. A GET timeout leaves UNKNOWN and the receipt unresolved; stale GET cannot erase a later observation. BG003 independently reconciles assigned/eligible registrations at most every 30 minutes, with bounded retries and rate limits.
+- **Final outbound fence:** BG006 re-reads exact shop/variant/registration at the authoritative final-send boundary; require provider APPROVED, no drift/pending status and `lastReconciledAt` ≤60 minutes old. Otherwise refuse with no provider send or permanent charge. BG001 provides a prepared payload only; BG007 reuses the BG006 fence. Meta approval never restores Admin-disabled assignments or bypasses consent/STOP/moderation/billing.
+- **Rollout:** The earlier v1 event is not a deployed contract. Should a v1 job be found in a live queue, stop and return compatibility sequencing to the architect; do not silently parse v1 or migrate it ad hoc.
+
 ## Repository Responsibilities
 
 | Owner | Repository | Boundary |
@@ -158,9 +148,15 @@ This architecture does **not** instruct Database to enforce business rules via t
 
 **Admin-owned authoring contracts.** Admin is the only AST reader/compiler. It validates immutable source content on save, persists a versioned `TranslationRun.sourceSnapshot` containing keyed translatable text and an explicit protected-token map, and reconstructs each language after Background returns `{schemaVersion:1,segments:[{key,text}]}` in the existing `TranslationItem.translatedAst` JSONB. Protected variables such as `{{1}}` and `{{2}}` must be losslessly restored and checked by the translation module; no AST parser is required in Background. For Meta, Admin stores **fully compiled** `MetaRegistration.componentsSnapshot` and frozen `parameterBindingsSnapshot`, which BG003 submits without re-compiling. For internal wrappers, Admin stores an explicitly versioned **prepared runtime wrapper projection** in the applicable existing locale JSONB; BG005 interprets it without authoring-AST logic. Exact JSON transport examples belong in producer and consumer task fixtures, not a new Shared AST package.
 
-**Messaging handoff.** Meta `message_template_status_update` is authenticated by Messaging → enqueued to existing BullMQ `whatsapp-events` → consumed/reconciled by Background → persisted in `MetaEvent`/`MetaRegistration`. The current worker supports inbound `message-received` and provider `message-status`; the new event is a **distinct** job and is not parsed as `NormalizedWhatsAppInboundMessage`. Reuse existing queue envelope and Meta's defined WABA fields where safe. If a truly new canonical cross-repository wire contract is required, return that precise gap to the architect; do not independently invent two schemas. No new ARCH-047 Shared task is assumed in the nine Background task dependencies.
+**Messaging handoff.** Meta `message_template_status_update` is authenticated by Messaging → enqueued to existing BullMQ `whatsapp-events` → consumed/reconciled by Background → persisted in `MetaEvent`/`MetaRegistration`. The current worker supports inbound `message-received` and provider `message-status`; the new event is a **distinct** job and is not parsed as `NormalizedWhatsAppInboundMessage`. Reuse existing queue envelope and Meta's defined WABA fields where safe. The minimal canonical cross-repository queue event contract is owned by ARCH-047-SHARED-001/002; do not independently duplicate it in Messaging and Background. No Shared authoring AST package is needed.
 
 **Runtime ports.** BG001 consumes stored compiled parameter maps and trusted customer/checkout values to produce a prepared Meta send. BG004 returns an internal verified offer decision. BG005 consumes the Admin-prepared wrapper projection. Their interfaces are Background-local; final consent/STOP, moderation, billing, service window and send fences remain owned by existing runtime.
+
+### ShopBrand bindings and separate image-ingestion ownership (25 October 2026)
+
+The Admin composer currently exposes `shopBrand.brandName`, `logoUrl`, `logoAltText`, `logoWidth`, `logoHeight`, `squareLogoUrl`, `squareLogoAltText`, and `coverImageUrl` as **text-token candidates**, plus trusted checkout-link buttons. Admin owns their typed prepared binding representation; BG001 resolves only the frozen referenced keys from the correct ShopBrand/shop and trusted checkout context, without parsing Admin AST. Image URL strings in body text are **not WhatsApp media headers**. ShopBrand originals are not acceptable runtime image media merely because a URL was stored. Width/height fields are display metadata, not provider resize instructions; absent values fail the relevant required binding without cross-shop fallback. BG006 and BG007 pass the prepared component arrays, button parameters and separately typed image header unchanged through the existing sender and final admission path.
+
+A **separate proposed ARCH-049 ShopBrand media-normalisation architecture session** will define the secure brand-image ingress, resizing/encoding and versioned R2 derivative/readiness contract across Shopify and WooCommerce. ARCH-047 does **not** author the asset processor, introduce media storage columns, fetch originals during sends or depend on a hypothetical READY asset. Until an approved prepared-media interface exists, real image-header sending fails closed; text-only templates work independently. BG003 uses a Meta-compatible approved sample for image-header template creation and never substitutes a merchant original URL as the sample. No new ARCH-047 Shared AST task is necessary merely for these bindings.
 
 ## Consistency and Transactions
 
@@ -184,7 +180,7 @@ Modules emit bounded business-outcome logs (run/definition IDs, WABA/template ID
 
 ## Rollout / Migration
 
-Classify production compatibility at implementation time. The 11-table Database migration is additive and preserves existing shop assignments and audit records. Do not introduce a new Shared publication gate merely for Admin ASTs; confirm persisted JSON formats, the existing shared language registry and queue event handoff before Background adoption. Implement and verify feature modules **before** touching caller services. Stage automated recovery integration and its shared final-fence adapter before merchant post-window integration; keep preexisting paths working until explicitly cut over. Deploy Messaging event support and provider management before enabling Meta-authoring submissions. Explicitly publish approved shop assignments; legacy unlinked assignments are not silently treated as Moda-authored. Internal wrapper activation and rollout are independent of recovery-template Meta submission. Run system tests only after all needed implementations are architect-accepted and the developer has performed any desired manual validation.
+Classify production compatibility at implementation time. The 11-table Database migration is additive and preserves existing shop assignments and audit records. Do not introduce a Shared publication gate for Admin ASTs. The **single minimal Shared publication gate** applies only to Meta template-status queue event v2. Confirm persisted JSON formats and the existing shared language registry before Background adoption. Implement and verify feature modules **before** touching caller services. Stage automated recovery integration and its shared final-fence adapter before merchant post-window integration; keep preexisting paths working until explicitly cut over. Deploy Messaging event support and provider management before enabling Meta-authoring submissions. Explicitly publish approved shop assignments; legacy unlinked assignments are not silently treated as Moda-authored. Internal wrapper activation and rollout are independent of recovery-template Meta submission. Run system tests only after all needed implementations are architect-accepted and the developer has performed any desired manual validation.
 
 ## Decisions / Tasks
 
@@ -202,8 +198,9 @@ Classify production compatibility at implementation time. The 11-table Database 
 | `ARCH-047-ADMIN-007` | Portable definition, **Pending** | One/selected/all-shop publication; `depends_on: [DATABASE-001]`. |
 | `ARCH-047-ADMIN-008` | Portable definition, **Pending** | Internal wrapper activation; `depends_on: [DATABASE-001]`. |
 | `ARCH-047-SYSTEM-TEST-001` | Legacy `pending` | Re-scope to Moda-authored assignments/runtime, remove import tests. |
-| ARCH-047 Shared authoring tasks | Previously proposed, not materialised | **Not required** for Admin-only AST/compilation. Reuse existing Shared facilities. Escalate only a proven missing queue transport contract. |
-| `ARCH-047-MESSAGING-001` | Planned, not defined | Confirm webhook route and queued template-status observation handoff. |
+| `ARCH-047-SHARED-001` | Ready, defined not materialised | Implement only the v2 Meta template-status BullMQ schema and deterministic UUID formatting helpers; no AST. |
+| `ARCH-047-SHARED-002` | Pending publication gate | Publish accepted SHARED-001; BG003 and MESSAGING-001 consume the released subpath. |
+| `ARCH-047-MESSAGING-001` | Pending, defined but not materialised | Signed Meta status webhook → published Shared v2 event → existing BullMQ queue; await SHARED-002. |
 
 ### Module-first Background tasks — proposed final numbering
 
@@ -213,7 +210,7 @@ The revised `BACKGROUND-001` task is Module D. **`BACKGROUND-002`–`009` now ha
 |---|---|---|---|
 | **BACKGROUND-001** | Module D — Recovery Template Preparation | Local template selection, six-purpose slot, language fallback and frozen Meta parameter binding; no call-site edits or sending | DATABASE-001; the compiled-payload/parameter contract stored under DB001 (Admin-owned authoring). |
 | **BACKGROUND-002** | Module A — Template Translation | Durable **keyed-segment** translation in `TranslationItem.translatedAst` using existing Batch runtime; no AST reconstruction or Meta creation | DATABASE-001. |
-| **BACKGROUND-003** | Module B — Meta Template Management | Submit **Admin-prepared** Meta components unchanged; consume BullMQ status events, reconcile provider/drift; never ingress verification | DATABASE-001; no new Shared package; Messaging event ingress integrated before end-to-end activation. |
+| **BACKGROUND-003** | Module B — Meta Template Management | Submit **Admin-prepared** Meta components unchanged; consume BullMQ status events, reconcile provider/drift; never ingress verification | DATABASE-001, SHARED-002; Messaging event ingress integrated before end-to-end activation. |
 | **BACKGROUND-004** | Module C — Recovery Offer Resolution | Read-only NONE/FIXED/AI policy strategies, one verified decision or no offer; no template work | No ARCH-047 DB prerequisite; existing recovery policy/catalogue contracts. Escalate any Commerce/API read capability gap. |
 | **BACKGROUND-005** | Module E — Conversation Wrapper Rendering | Prepared wrapper lookup, read-only checkout context, exactly-once response composition | DATABASE-001. |
 | **BACKGROUND-006** | Automated Recovery Integration | Thin initial/sequence-two call-site wiring to BG004 and BG001; common final-fence adapter | BACKGROUND-001; BACKGROUND-004. |
@@ -261,3 +258,5 @@ The graph expresses necessary interfaces, not serial deployment of unrelated mod
 - 2026-10-24 — Consolidated DATABASE-001 11-table Attempt 7 schema considered the database contract; business lifecycle enforcement remains in services.
 - 2026-10-24 — **Module-first Background plan adopted**: five feature modules and four thin integrations; Admin owns AST parsing, compilation and keyed translation preparation, Background consumes prepared data using existing Batch and outbound admission; BG002–BG009 portable task definitions prepared, not materialised.
 - 2026-10-24 — **Admin module-first task definitions created**: six independent, DATABASE-001-only-dependent tasks; ADMIN-001/002 superseded, with no Admin AST/Meta compiler work delegated to Shared or Background.
+
+- 2026-10-25 — Clarified Meta template-status v2 occurrence identity, Shared producer/consumer contract, atomic UNKNOWN provider observation fence and BG006 late-check freshness gate; no additional database table.
