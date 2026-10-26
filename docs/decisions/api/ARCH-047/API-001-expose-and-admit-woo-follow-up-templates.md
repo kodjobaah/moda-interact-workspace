@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-26T08:26:05Z
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables:
@@ -107,7 +107,8 @@ Use isolated worktrees with exact mirrored task branches. Keep GET/POST tenant s
 ## Completion Report
 
 ### Status
-Ready — developer takeover recorded; canonical implementation preparation and Attempt 1 claim are pending.
+
+In Progress — developer Attempt 1 claimed at `2026-10-26T08:26:05Z`; the canonical API implementation worktree is prepared on `task/ARCH-047-API-001` at `31382d75e11d9df53f15254b595cfcca26248005` (`origin/main`). Implementation has not started.
 
 ### Files Changed
 None.
