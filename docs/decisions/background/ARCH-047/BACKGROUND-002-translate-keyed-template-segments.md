@@ -7,13 +7,13 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
 enables: []
@@ -31,7 +31,7 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-This is a **portable task definition** prepared from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It is not a repository implementation, task claim or evidence of a created worktree/branch. No new ARCH-047 Shared package is assumed. The parent architecture and `BACKGROUND-001` require reconciliation to the final Admin-owned AST/compilation and DB-backed keyed-segment translation decisions before dependent work is promoted.
+This task was originally defined from the 24 October 2026 workspace snapshot and consolidated DB001 Attempt 7 contract. It is now materialised and claimed for developer execution in canonical task worktrees after confirming the current DB001 prerequisite is complete and synchronizing the parent task branch with current workspace `origin/main`. No new ARCH-047 Shared package is assumed; inspect the current parent architecture and repository state before implementation.
 
 ## Objective
 
@@ -67,12 +67,12 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Work Items
 
-- [ ] Implement a cohesive `src/services/template-translation/` module with a small coordinator, Prisma repository, segment/token codec, Batch adapter and typed outcome port. Wire thin workers/queues using the existing ARCH-031 generic `translation-batch-runtime/` mechanisms.
-- [ ] Use `whatsapp.WhatsAppTemplateTranslationRun`, `Item`, `Batch` and `BatchItem`. One **run** refers to one immutable template definition/source hash; one **item** represents the complete segment set for one target language, normally 19 non-English items.
-- [ ] Consume `sourceSnapshot` prepared by Admin, and persist translated keyed segments in the **existing** `WhatsAppTemplateTranslationItem.translatedAst` JSONB column. Its historical column name does not make the contents a complete AST. Do not add/rename tables or columns.
-- [ ] Reuse the installed translation provider/model configuration and existing provider Batch submission, polling, result-membership correlation, retry and repair primitives. A provider-specific adapter may be needed; do not duplicate generic mechanisms.
-- [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
-- [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
+- [x] Implement a cohesive `src/services/template-translation/` module with a small coordinator, Prisma repository, segment/token codec, Batch adapter and typed outcome port. Wire thin workers/queues using the existing ARCH-031 generic `translation-batch-runtime/` mechanisms.
+- [x] Use `whatsapp.WhatsAppTemplateTranslationRun`, `Item`, `Batch` and `BatchItem`. One **run** refers to one immutable template definition/source hash; one **item** represents the complete segment set for one target language, normally 19 non-English items.
+- [x] Consume `sourceSnapshot` prepared by Admin, and persist translated keyed segments in the **existing** `WhatsAppTemplateTranslationItem.translatedAst` JSONB column. Its historical column name does not make the contents a complete AST. Do not add/rename tables or columns.
+- [x] Reuse the installed translation provider/model configuration and existing provider Batch submission, polling, result-membership correlation, retry and repair primitives. A provider-specific adapter may be needed; do not duplicate generic mechanisms.
+- [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
+- [x] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -93,20 +93,20 @@ None in this nine-task Background set.
 
 ## Acceptance Criteria
 
-- [ ] Unit fixtures for keyed `HEADER`/`BODY`/`FOOTER`/button text and mixed languages; preserve variable identity when translation reorders `{{1}}` and `{{2}}`.
-- [ ] Negative fixtures for missing, duplicated, invented, modified and misplaced tokens; duplicate/unknown segment keys, extra/missing components, malformed provider output and unsupported segment transport version.
-- [ ] Batch retry/correlation tests: duplicate jobs/results, partial results, stale run hash, late results from an old batch, provider timeout and recovery without re-translating successful items.
-- [ ] PostgreSQL integration with actual DB001 run/item/batch records, proving translated **segments** are persisted only in `translatedAst` and locale AST is untouched.
-- [ ] Run focused Vitest unit tests, required repository build/typecheck and `git diff --check`; inspect `package.json` rather than inventing test commands.
-- [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
-- [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+- [x] Unit fixtures for keyed `HEADER`/`BODY`/`FOOTER`/button text and mixed languages; preserve variable identity when translation reorders `{{1}}` and `{{2}}`.
+- [x] Negative fixtures for missing, duplicated, invented, modified and misplaced tokens; duplicate/unknown segment keys, extra/missing components, malformed provider output and unsupported segment transport version.
+- [x] Batch retry/correlation tests: duplicate jobs/results, partial results, stale run hash, late results from an old batch, provider timeout and recovery without re-translating successful items.
+- [x] PostgreSQL integration with actual DB001 run/item/batch records, proving translated **segments** are persisted only in `translatedAst` and locale AST is untouched.
+- [x] Run focused Vitest unit tests, required repository build/typecheck and `git diff --check`; inspect `package.json` rather than inventing test commands.
+- [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
+- [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
 ## Validation
 
-- [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
-- [ ] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
-- [ ] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
+- [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
+- [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
+- [x] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
+- [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
 
@@ -124,23 +124,31 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Not Started — task definition only; no implementation was executed or validated in this artifact.
+Complete — developer execution Attempt 1 passed developer-as-architect review and was explicitly completed by the developer on 2026-10-26. The developer claim is cleared. `ARCH-047-DATABASE-001` is complete.
 
 ### Files Changed
 
-None yet.
+Implementation commit `7e31d5885b77e20f1acbf48c1c77642d38267c67` changes 14 task-owned files in `moda-interact-background` (1,601 insertions, 6 deletions): three existing provider/worker/entrypoint files; the five-file `src/services/template-translation/` module; its thin worker; one integration fixture and integration test; and three focused unit test files. No migration, new Prisma schema or shared package was added. The implementation task branch is `task/ARCH-047-BACKGROUND-002`; local HEAD and `origin/task/ARCH-047-BACKGROUND-002` both resolve to the implementation commit above. The implementation worktree has one unrelated untracked path, `typescript`, which was left untouched; all task-owned paths are committed and clean. The canonical parent task worktree was clean at claim commit `e757239fe9e80c34ded4c9957da82b644cd66e1c` before this report update.
 
 ### Work Completed
 
-None yet.
+- Added Admin-prepared source snapshot validation and keyed segment translation with deterministic protected-token sentinels, per-segment token identity/multiplicity checks, exact output-key membership, token restoration and content hashing.
+- Added durable run/batch coordination, row-locked item assignment, provider submission/poll/result lifecycle, ambiguity correlation, deterministic BullMQ job repair, bounded retry/terminal handling and persistence of keyed JSON only in `translatedAst`.
+- Registered thin submit/poll/results worker handlers and recurring reconciliation in the existing merchant communications worker. The existing provider supports `keyed-segments-v1` requests without changing default translation behavior.
+- Added focused unit and PostgreSQL/BullMQ integration fixtures. Integration coverage proves concurrent allocation, successful keyed persistence without locale AST mutation, language-isolated retry, uncertain-create recovery, poll retry/stale sequence behavior and stale-source rejection.
+- Reviewed against the current module-first ARCH-047 architecture. The earlier unresolved note about waiting for BACKGROUND-001/parent reconciliation is preparation-time text and is not a prerequisite: BACKGROUND-001 is a separate module and is not in this task's dependency list.
 
 ### Validation Results
 
-Not run; implementation validation remains outstanding.
+- Focused translation regression suite: all seven `tests/unit/services/translation-batch-runtime/` files, `tests/unit/services/template-translation/`, and five existing merchant-pricing translation regression files; 14 files passed, 63 tests passed.
+- `npm run build`: passed; Prisma Client generated and TypeScript compilation completed.
+- `npm run test:integration -- tests/integration/whatsapp-template-translation.integration.test.ts`: passed; 1 integration file, 5 tests passed against the configured disposable PostgreSQL/BullMQ harness. Direct invocation of the Node script initially failed because `prisma` was not on PATH; the declared npm script supplies the required PATH and the harness then passed.
+- `npm exec eslint -- src/services/template-translation src/workers/template-translation.worker.ts tests/unit/services/template-translation tests/integration/whatsapp-template-translation.integration.test.ts`: passed with no diagnostics.
+- `git diff --check origin/main...HEAD`: passed. Implementation branch equals its published remote task branch. Scoped status confirms task-owned files are committed; unrelated untracked `typescript` was preserved.
 
 ### Deviations
 
-None recorded.
+No scope or architecture deviations. The integration harness was run through `npm run test:integration` after direct script invocation exposed a PATH issue; all five integration tests passed. No other-task files or downstream readiness records were changed.
 
 ### Assumptions
 
@@ -148,34 +156,53 @@ The DB001 Attempt 7 model names and fields are authoritative design inputs, not 
 
 ### Unresolved Issues
 
-The parent ARCH-047 architecture and `BACKGROUND-001` still require final reconciliation with the Admin-owned AST/compilation and no-new-Shared-template-package decision before work begins.
+None identified within this task. The architecture document describes the module-first boundary: Admin owns AST compilation, Background consumes keyed prepared segments, and no new Shared template package is presumed. Remaining architecture-wide status reconciliation is outside this task and does not block this module's review.
 
 ### Architectural Concerns
 
 No additional cross-repository issues identified at definition time; return any new gap to the architect.
 
-## Architect Review
+## Developer Self-Review - Passed/Accepted
 
 ### Review Status
 
-Pending — implementation not submitted.
+Passed/Accepted — developer-as-architect review of Attempt 1. Required Work Items, Acceptance Criteria and Validation are complete; implementation and task report are committed and pushed on their mirrored task branches.
 
 ### Review Notes
 
-Not reviewed.
+No blocking review findings. The implementation consumes versioned Admin-prepared keyed segments, validates protected-token identity and output membership, persists only the keyed result projection, and reuses existing Batch lifecycle primitives. It does not reconstruct the authoring AST, mutate Meta templates, write locale AST, or introduce an outbound send path. PostgreSQL/BullMQ integration evidence and all required focused validation passed.
 
 ### Reviewed Files
 
-None yet.
+`src/services/template-translation/`; `src/workers/template-translation.worker.ts`; `src/providers/translation.provider.ts`; `src/workers/merchant-communications.worker.ts`; `src/entrypoints/merchant-communications.ts`; the new template translation unit and integration tests.
 
 ### Validation Reviewed
 
-None yet.
+Focused translation regression suite (14 files / 63 tests), repository build, PostgreSQL/BullMQ integration suite (5 tests), scoped ESLint, and `git diff --check` all passed. See Completion Report for exact commands and branch evidence.
 
 ### Architecture Conformance
 
-To be assessed against the reconciled ARCH-047 parent architecture and current repository code.
+Accepted as conformant to the keyed-segment module boundary in ARCH-047: Admin owns authoring AST compilation; Background consumes prepared snapshots, protects/restores tokens, persists keyed projections only, reuses ARCH-031 runtime primitives, and leaves Meta management, publication and final-send admission outside this module.
 
 ### Follow-up
 
-Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+No task-local follow-up is required. No downstream task explicitly depends on BACKGROUND-002; no dependency frontier changes were identified. No adjacent task was started and `_index.md` was not changed.
+
+## Developer Completion Decision
+
+- Date: 2026-10-26.
+- Action: The developer explicitly invoked `/moda_developer_update ARCH-047-BACKGROUND-002 complete` after the durable Passed/Accepted review above.
+- Decision: All required Work Items and Acceptance Criteria are complete; implementation commit `7e31d5885b77e20f1acbf48c1c77642d38267c67` and the parent task report are committed and published on their canonical mirrored task branches. No merge to `main` is required or performed.
+- State: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1` (unchanged).
+- Dependency frontier: No other ARCH-047 task declares BACKGROUND-002 in `depends_on`; no downstream task promotion or regression was needed.
+
+## Execution Ownership Amendment
+
+- Date: 2026-10-25.
+- Change: The developer explicitly invoked `/moda_developer_create` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
+- Preserved: `assigned_agent: moda_background`, coordinator, repository, dependency, task scope, acceptance criteria and validation requirements.
+- Dependency check: `ARCH-047-DATABASE-001` is `complete` in its canonical task record.
+- Claim: Attempt 1 is claimed by `developer` at `2026-10-25T19:09:28Z` after canonical worktree preparation and synchronization.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-002`, branch `task/ARCH-047-BACKGROUND-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-002`, branch `task/ARCH-047-BACKGROUND-002`, created from current Background `origin/main` because no BACKGROUND-002 task branch existed locally or remotely.
+- The parent task branch was merged with current workspace `origin/main` during claim preparation and published at claim commit `e757239fe9e80c34ded4c9957da82b644cd66e1c`. Implementation was committed and pushed on the mirrored task branch. The Accepted review/report was committed and pushed as `fac0de03a7bfb9e2036b73ab551392eb5b7219d2`; this explicit completion decision is recorded on the same parent task branch. No branch was merged into `main`.
