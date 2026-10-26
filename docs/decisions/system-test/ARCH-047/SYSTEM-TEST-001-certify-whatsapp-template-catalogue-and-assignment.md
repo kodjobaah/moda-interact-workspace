@@ -1,7 +1,7 @@
 ---
 id: ARCH-047-SYSTEM-TEST-001
 architecture_id: ARCH-047
-title: Certify Meta import classification and database-only template sending
+title: Certify Moda-authored multilingual recovery templates and conversation wrappers
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -10,72 +10,94 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 50
+priority: 80
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-047-ADMIN-002
+  - ARCH-047-DATABASE-001
+  - ARCH-047-ADMIN-003
+  - ARCH-047-ADMIN-004
+  - ARCH-047-ADMIN-005
+  - ARCH-047-ADMIN-006
+  - ARCH-047-ADMIN-007
+  - ARCH-047-ADMIN-008
+  - ARCH-047-SHARED-002
+  - ARCH-047-MESSAGING-001
   - ARCH-047-BACKGROUND-001
+  - ARCH-047-BACKGROUND-002
+  - ARCH-047-BACKGROUND-003
+  - ARCH-047-BACKGROUND-004
+  - ARCH-047-BACKGROUND-005
+  - ARCH-047-BACKGROUND-006
+  - ARCH-047-BACKGROUND-007
+  - ARCH-047-BACKGROUND-008
+  - ARCH-047-BACKGROUND-009
+  - ARCH-047-SHOPIFY-001
+  - ARCH-047-API-001
+  - ARCH-047-WOOCOMMERCE-001
 enables: []
 created: 2026-10-23
-updated: 2026-10-23
+updated: 2026-10-26
 ---
 
-# Certify Meta import classification and database-only template sending
+# Certify Moda-authored multilingual recovery templates and conversation wrappers
 
 ## Architecture
 
-`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`; coordinator `moda_architect`. Source snapshot: 23 October 2026, 16:40.
+`ARCH-047` — `docs/architecture/ARCH-047-admin-managed-whatsapp-template-catalogue.md`; coordinator `moda_architect`. This supersedes the former import-and-copy testing **scope**, but retains the canonical `SYSTEM-TEST-001` task identity and its terminal system-validation role.
 
 ## Objective
 
-Independently certify that Admin distinguishes **new** and **updated** Meta templates, safely imports/refreshes shop-scoped assignments individually and globally, and that the integrated recovery sending paths use only approved assigned database rows without Meta metadata validation.
+Independently certify the real integrated Moda Admin → Background/Messaging → PostgreSQL → Meta workflow for immutable centrally authored, multilingual recovery templates and checkout-associated AI/human response wrappers, including failure safety, merchant-facing parity and **absence of superseded sending code**.
 
 ## Context
 
-Implementation prerequisites are completed Admin CRUD, bulk management, and Background read-only selection (plus DATABASE-001). Tests must validate the operational merchant and customer workflow, not merely whether an Admin React component renders.
+The initial ARCH-047 test specified externally authored Meta imports, refreshed snapshots, and shop-to-shop copying. Those behaviours are forbidden. There are now six recovery purposes, 20 translation locales, per-language provider approvals, Admin publication, a DB-backed final provider fence, and prepared AI/HUMAN wrappers. The completed BG004 offer resolver contains default **unavailable** Shopify and Woo checkout-specific eligibility adapters: a passing No Offer fallback is not proof that positive discounts are supported. Shopify and hosted Woo admission still contained legacy `purpose: "checkout-recovery"` filters in the source snapshot, and the Woo UI hard-disabled template selection. Separate owning tasks must remove those gaps before certification.
 
 ## Scope
 
-- Add black-box scenarios in `moda-interact-system-test` with self-contained fixtures for at least three shops (two Shopify and one WooCommerce installation where applicable), one WABA, multiple locales, enabled/disabled templates and an individually customised variant.
-- Exercise SUPER_ADMIN Meta Import/Refresh through an authenticated Admin-only Meta-list emulator: complete multi-page retrieval; brand-new Meta ID; same-ID body/buttons-only edit; status/category change; unchanged re-import; legacy manual row with no snapshot; ID collision under same WABA/name/language; missing provider ID on a complete listing; incomplete listing failure. Verify accurate NEW/UPDATED/UNCHANGED/UNTRACKED/CONFLICT/MISSING classification and **browser-visible complete labelled Previous (last applied)/Current (fresh Meta) template panels** for UPDATED, with identity/language, category/status, HEADER/BODY/FOOTER/BUTTONS and highlighted changed variables/buttons, not only a change count. Assert previous content comes from the stored snapshot and preview does not write it. Verify UNTRACKED shows unavailable prior content instead of inventing a baseline.
-- Exercise authenticated single creation/assignment, selected/all-shop assignment, individual edit, global update of an imported template, disable-all and duplicate/ambiguous/stale-preview rejection; assert existing Moda row identity, per-shop snapshots, PostgreSQL assignments and audit records. For a bulk update with distinct shop baselines/overrides, verify each affected shop's browser-visible complete **previous-shop versus proposed-confirmed-source** preview and explicit overwrite confirmation without an extra Meta listing request.
-- Exercise Shopify recovery initial outreach, scheduled follow-up and merchant post-window template paths against a Meta send emulator. Assert **no Meta template metadata/listing requests**, but actual approved template send attempts still occur through the existing send interface.
-- Exercise race where an Admin disables/reassigns a template after selection and before the SQL final send permit; assert no provider send or committed recovery credit.
-- Preserve consent/STOP, no-checkout-recovery-without-consent, billing/idempotency, template-language fallback, provider-send rejection compensation, platform/tenant scoping and in-window free-text handling.
-- Produce evidence/coverage report and identify any environmental or provider-emulation limitation without claiming live Meta validation.
+Implement isolated black-box scenarios in `moda-interact-system-test`, with tests split into fixtures, executors, assertions, orchestration and data helpers; avoid oversized catch-all files. Exercise real authenticated service boundaries with disposable PostgreSQL/Redis where required and controlled Meta/translation-provider emulators. Include representative Shopify and WooCommerce shops, both recovery stages, all six purposes where independently verifiable, correct WABA/languages and a second shop to test isolation.
 
 ## Out of Scope
 
-- No reimplementation of Admin, Background, Meta SDK or database schema in system-test fixtures; tests must use public/authenticated Admin boundaries and application-owned data contracts.
-- No live Meta approval tests or assertions that `APPROVED` guarantees the provider still approves the template; Admin is the trusted local catalogue authority.
-- No new Shopify/WooCommerce consent or recovery engine task and no simulation of production deployment without evidence.
+- No creating/editing application code, provider SDKs, schema/migrations or task implementations in system-test.
+- No external Meta-template import, same-ID in-place content editing, shop-to-shop assignment copying, or unsupported provider checkout mutations.
+- No external R2 image-header certification before ARCH-049 READY media is available; validate text-only flow and media-unavailable fail-closed independently of the separate media initiative.
 
 ## Requirements
 
-- [ ] Run only after all `depends_on` tasks are architect-accepted Complete.
-- [ ] Tests prove a new Meta template creates an assignment only when confirmed, a provider content change under the **same Meta ID** updates the existing Moda row rather than creating another, and one-shop mutations leave other shops untouched while confirmed Update-all overwrites a chosen individual override. The Admin UI exposes the full previous/current content for UPDATED and full previous/proposed per-shop content before bulk overwrite, including meaningful component/variable/button highlights.
-- [ ] Tests prove all-shop scope includes all current eligible shops and excludes inactive/uninstalled shops; a future new shop is not automatically assigned. Repeated unchanged imports are no-ops with no mutation audits.
-- [ ] Meta template-listing requests occur **only** on explicit authenticated Admin import/refresh, and no provider template-category/listing operation is invoked on successful or negative recovery paths; actual send requests remain observable.
-- [ ] Approved/disabled/ambiguous/stale catalogue rows produce the expected action/no-action/billing results.
-- [ ] Every tested mutation is securely authorised, durably audited and idempotent where appropriate.
+**R1 — Source and translations.** Through authenticated Admin author a new English AST, immutable-save and Clone as New, persist keyed translation segments and protected placeholders, process 19 target languages with retry/partial failure, review, compile and persist frozen text/body/button mappings. A malformed/lost/duplicated placeholder fails before Meta submission. No old template is mutated.
+
+**R2 — Meta lifecycle.** Submit only Admin-created compiled components, each WABA/language separately; verify recorded provider ID/status, approved/pending/rejected cases, provider drift, duplicate and repeating approval transitions through Messaging → `whatsapp-events` BullMQ → BG003 → PostgreSQL. A PAUSED/DISABLED observation immediately makes registration unavailable before a failed Meta GET, and stale provider verification over 60 minutes blocks final send. No imported/external registration is adopted.
+
+**R3 — Publication and selection.** One, selected and all eligible shop publication with per-shop/per-language targets, true old/new comparison, override confirmation, out-of-scope shop protection, idempotency and concurrency races. No template becomes active merely because Meta approved it.
+
+**R4 — Automated initial and follow-up.** Shopify and Woo initial plus scheduled follow-up must use BG004/BG001 six-purpose selection, frozen params and same authoritative late send fence. Exercise trustable shop name/checkout CTA and absent READY image no-send. Verify language fallback, prior-offer consistency, one sequence-two, order-completion suppression, consent/STOP, moderation, credit compensation and recipient isolation.
+
+**R5 — Discount capability is an explicit gate.** Run a no-live-evaluator fixture for both Shopify and Woo: FIXED/AI safely produce `NO_OFFER` and never claim a verified saving or add/apply a coupon. Run separately injected, independently validated checkout-specific provider-evidence scenarios proving CODE and AUTOMATIC selection/expiry/currency/fingerprint, as available. **Do not certify live positive-offer support** merely from injected fixtures or the completed BG004 status. If no approved provider-read adapter exists in production, record a named **blocking functional gap** and keep full six-purpose certification blocked until an architect-defined owner closes it. Do not waive or relabel this as passed.
+
+**R6 — Merchant interfaces and human/AI wrappers.** Shopify merchant's current Follow-up picker/admission and Woo API/plugin authorised list must expose only published approved `FOLLOW_UP_*` variants (no legacy `checkout-recovery`), respect WABA/language, human control, rolling window, sequence-two due/used and server-side parameters; forged template parameters/variant IDs are rejected. In-window HUMAN and AI responses are each wrapped exactly once, use valid checkout context and undergo whole-message moderation. Outside the window no free-form wrapper is sent.
+
+**R7 — Delete obsolete runtime code.** Inspect the actual integrated source after BG006/BG007 and merchant-interface tasks: ensure no active old selector/category verifier/API per-send Meta category GET, deprecated `purpose: "checkout-recovery"` server allowlists, obsolete imported-template UI, or hardcoded Woo `canTemplate: false` path is reachable. All production references removed where superseded; do not delete unrelated legacy provider safeguards still used by other approved paths. Obsolete tests must be replaced with authoritative regression tests, not merely skipped.
+
+**R8 — Deployment/evidence boundaries.** System Test begins only after all formal `depends_on` implementation/publication dependencies are accepted and complete. Developer manual validation may precede execution. Never depend on an unfinished system test from application tasks. For live Meta/R2-dependent scenarios, explicitly record emulation boundaries and any residual readiness limitation.
 
 ## Work Items
 
-- [ ] Define fixture shop/provider/template/locale variants, changed-components snapshots (HEADER/BODY/FOOTER/BUTTONS, variables, provider status/category) and realistic Admin Meta-import operations that exercise visible old/new component comparisons, including different shop baselines.
-- [ ] Execute Admin mutation and bulk assignment scenarios via their real authenticated boundaries.
-- [ ] Execute end-to-end recovery selection, final-send/no-Meta-metadata, error-compensation and safety regression scenarios.
-- [ ] Save deterministic logs/results under approved system-test evidence paths and write Completion Report.
+- [ ] Build per-domain fixtures for template authoring/translations, approved releases, WABA/locale/merchant scope, discount evidence, billing, consent/STOP and Meta provider events.
+- [ ] Run separate integrated scenario executors for Admin lifecycle, Messaging/BullMQ/provider reconciliation, automated recovery, Shopify/Woo human follow-up and AI/HUMAN wrappers.
+- [ ] Run negative/replay/race and source-level legacy-path absence checks; store actual results/evidence in the repository's approved evidence layout.
+- [ ] Record explicit positive-discount provider-evidence capability status; if absent, return a blocking architect follow-up rather than claiming end-to-end completion.
+- [ ] Return terminal Completion Report with actual commands, skips and evidence paths.
 
 ## Interfaces / Contracts
 
-Consumes approved published implementation and existing Admin/Background/PostgreSQL/Meta-send interfaces. No new Shared schema, Kafka queue or provider metadata client. System-test dependencies are terminal: no implementation task depends on this test.
+Consumes current Admin DB-first compiled payloads; shared Meta status event v2; `WhatsAppTemplateMetaRegistration`, `WhatsAppTemplateVariant`; BG001/BG004 prepared decisions; the existing provider/outbound-admission, Shopify recovery-server action, hosted Woo messages GET/POST and Woo WordPress proxy/client. Never import an AST compiler into the system-test repository or invent a new API shape. Respect independent versioned provider fixture contracts.
 
 ## Dependencies
 
-- `ARCH-047-ADMIN-002`
-- `ARCH-047-BACKGROUND-001`
+All entries in YAML `depends_on` are terminal prerequisites; the superseded `ARCH-047-ADMIN-002` dependency has been **removed**. No system-test task appears in an implementation task's `depends_on`.
 
 ## Enables
 
@@ -83,87 +105,68 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] New-versus-updated classification agrees with complete Meta fixture data, including stable-ID body-only edit, category/status change, legacy UNTRACKED and ID collision, and requires explicit confirmation. UPDATED shows full labelled side-by-side previous-applied/current-fetched components and highlighted changes; bulk overwrite shows the corresponding full per-shop previous/proposed components and labels source provenance honestly. Single/selected/all assignment and intentional overwrite of Shop B's custom entry alter DB selection only for intended shops.
-- [ ] Recovery for a shop with an approved enabled variant may proceed when all existing consent/STOP/billing guards pass; disallowed or stale variant cannot send or charge.
-- [ ] Runtime performs zero Meta `message_templates`/category lookup operations, while Meta send emulator receives expected names/languages for eligible assignments.
-- [ ] Concurrent or duplicate bulk actions and repeat Meta refresh cannot produce multiple active approved choices, false new-template classification or false full-success outcomes; audit evidence identifies actor/scope/operation.
-- [ ] A provider delivery error is surfaced through existing failed-send/compensation workflow; no template metadata API is required even on error.
+- [ ] Admin-only immutable authoring, protected-keyed 20-language translation, Meta submission/approval/rejection and explicit merchant publication are proven via actual permitted boundaries.
+- [ ] PAUSED + failed provider GET, drift, duplicate webhook, stale-status final fence, tenant/WABA/recipient isolation and STOP/credit races fail closed without sending or charging.
+- [ ] Both Shopify and Woo automated outreach and human post-window selection are integrated; no obsolete `checkout-recovery` purpose allowlist, old Meta category GET or unowned template parameter injection remains in active send paths.
+- [ ] No Offer fallback is proven separately from real positive-offer eligibility. A missing production checkout-specific evaluator is marked a **blocking gap**, not disguised as passing all six purposes.
+- [ ] Human/AI wrappers, in-window checks, whole-message moderation and idempotency are proven independently.
+- [ ] All necessary consumer tasks are accepted/merged and no outdated code, test fixture or duplicate send path persists after intended cutover.
 
 ## Validation
 
-- [ ] Use the repository's real scenario runner/fixture layout and declared validation commands (inspect its `package.json` before executing; do not invent unsupported flags).
-- [ ] Black-box Admin/Background integration evidence, Meta import-page emulator plus runtime send-only request capture, billing/STOP regression, `git diff --check`.
-- [ ] Attach status/results, skipped environment-dependent scenarios and clear release gate to Completion Report.
+- [ ] Inspect and run only actual `moda-interact-system-test` package/scenario runner commands. Do **not** use unsupported `--workspace-root` argument.
+- [ ] Validate isolated fixture cleanup, worker/HTTP/Meta requests, relevant PostgreSQL/Redis integration, regression probes, coverage evidence and `git diff --check`.
 
 ## Stop Condition
 
-After completing the defined Work Items, Acceptance Criteria and required Validation, record task-isolated parent and implementation worktrees, start-of-attempt synchronisation and relevant commit evidence in the Completion Report; set `status: review`, return control to `moda_architect`, and **STOP**. Do not implement dependent tasks or modify domain `_index.md` files.
+After required Work Items, Acceptance Criteria and Validation complete, update Completion Report, set `status: review`, return to `moda_architect`, STOP. If a required production discount evaluator or merchant integration is missing, record `blocked` with evidence rather than calling it Complete; do not implement another repository's missing code. Do not touch `_index.md`.
 
 ## Implementation Notes
 
-Respect `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/task-definition-materialization.md` and `docs/developer-task-workflow.md`. `/moda-task` owns preparation and the canonical claim; never infer worktrees from a previous task or operate in shared/default checkouts. Existing application code has evolved: inspect current implementation immediately before claiming and return cross-domain contract gaps to `moda_architect`. Use the shared structured logger where new runtime domain logging is needed, not a duplicate generic logger. All tasks are portable definitions until materialised in the developer's real workspace.
-
-
-Additional task-specific guidance:
-
-Do not run automatically when task becomes Ready: developer/user may manually validate the Admin feature first, as required by the architecture's terminal system-test protocol.
+Use the approved system-test fixture/executor/assertion/orchestration split with black-box focus. Follow `docs/agent-vcs-ownership-policy.md` and dedicated mirrored task worktrees. Treat normal Meta template-status API reads by BG003 as reconciliation, not ordinary send-time category validation. No claim that live Meta accepted a template unless that was actually observed.
 
 ## Completion Report
 
 ### Status
-
-Not Started — portable definition; not materialised or claimed.
+Not Started — pending terminal validation.
 
 ### Files Changed
-
 None.
 
 ### Work Completed
-
 None.
 
 ### Validation Results
-
 Not run.
 
 ### Deviations
-
 None.
 
 ### Assumptions
-
-Based on `moda-interact-workspace(20261023-164023).zip`; revalidate against launcher-resolved task worktree when execution begins.
+Text-only ARCH-047 can be certified independently of ARCH-049 image readiness.
 
 ### Unresolved Issues
-
-None recorded at definition time.
+Actual provider-specific read-only checkout discount eligibility remains unverified for positive-offer certification in the snapshot.
 
 ### Architectural Concerns
-
-None recorded at definition time.
+Source had legacy merchant allowlists and automated per-send Meta template metadata paths.
 
 ## Architect Review
 
 ### Review Status
-
 Pending — no implementation reviewed.
 
 ### Review Notes
-
 None.
 
 ### Reviewed Files
-
 None.
 
 ### Validation Reviewed
-
 None.
 
 ### Architecture Conformance
-
 Not assessed.
 
 ### Follow-up
-
-None.
+Reconcile verified implementation evidence and final architecture only after all required tests pass.

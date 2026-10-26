@@ -20,7 +20,7 @@ depends_on:
   - ARCH-047-BACKGROUND-006
 enables: []
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-10-26
 ---
 
 # Integrate merchant post-window recovery follow-up templates
@@ -67,12 +67,20 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **R5 — Failure.** No matching Follow-up template, stale consent, unavailable offer, revoked Meta registration or closed policy is a typed no-send/error communicated through existing human-command result, never fallback to unauthorised Meta template or free text.
 
+**R6 — Merchant admission contracts remain owned by their service.** The current Shopify server action (`moda-interact/app/services/recoveries/recovery-human-commands.server.ts`) and Woo hosted API admission (`moda-interact-api/src/merchant/conversations/messages/admission.service.ts`) still permit the legacy `purpose: "checkout-recovery"`. Their merchant-facing eligibility, selectable Follow-up catalogue and request validation must be corrected by their owning Shopify/API/Woo tasks. BG007 receives a durable authenticated merchant command; it MUST independently re-resolve the chosen name/language or variant identity against the current shop/WABA, appropriate `FOLLOW_UP_*` purpose, verified offer decision and approved Moda-authored assignment before any provider admission. Never trust caller-supplied `templateParameters` as verified discounts, brand text, checkout URL or image-header values. If the merchant's requested variant conflicts with the BG001-prepared eligible variant, return a typed `template_not_allowed`/`follow_up_unavailable` and cancel/release the unconsumed sequence-two claim safely. BG007 is not authorised to modify Shopify, API or Woo plugin code.
+
+**R7 — Remove obsolete human-path Meta verification.** Replace the existing `recovery-conversation/human-command-dispatcher.service.ts` live Meta `templateCategories.verify()` preflight and legacy body-parameters-only assembly with BG001's complete provider-ready components and the BG006 late database status fence. After both automated and human production callers have migrated, remove `whatsapp-template-selector.service.ts` and `whatsapp-template-category.service.ts` and related service registrations **only if** an import/reference audit proves no other live consumers remain. Do not remove the independent consent, authoritative STOP, moderation, final-send admission or credit safeguards. Replace old category-specific tests with fail-closed registration/late-admission tests.
+
 ## Work Items
 
 - [ ] Update only the **post-24-hour** Meta template branch of `recovery-conversation/human-command-dispatcher.service.ts` and its narrow command-evaluation/selection adapters to use BG001 prepared follow-up and BG004 verified offer decision where required.
 - [ ] Reuse BG006's late DB template-admission check and established human recovery claim, reserve/send/compensate pipeline. Keep merchant authentication/authorization in the existing API/Shopify/Woo boundaries; Background rechecks tenant/recipient/recovery claims.
 - [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
 - [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
+
+- [ ] Remove the human-dispatcher's obsolete Meta category verifier/preflight and caller-provided parameter trust; pass BG001-prepared complete body/header/button components through the BG006 final admission adapter.
+- [ ] Audit references to both legacy template-selector/category services in all Background production code and tests after BG006; delete unused modules and stale tests/mocks once no real caller remains, or record the exact unretired consumer as a blocking architectural gap.
+- [ ] Verify separate Shopify and Woo merchant admission changes against their owning tasks and fixtures; do not implement them from Background.
 
 ## Interfaces / Contracts
 
@@ -101,6 +109,10 @@ None in this nine-task Background set.
 - [ ] Existing ARCH-040 human command, follow-up claim and final admission tests pass, plus focused integration/build/`git diff --check`.
 - [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
 - [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+
+- [ ] Post-window human commands reject unsupported legacy purpose, externally originated/unlinked variants, wrong WABA/language, ambiguous assignments, unverified offers and client-supplied parameter overrides; no sequence-two or credit is consumed on refusal.
+- [ ] The production human template branch no longer calls the Meta category API or assembles body-only placeholder arrays from untrusted merchant command data. It uses the same BG006 late database fence and prepared components (including trusted checkout button and optional READY image header).
+- [ ] Obsolete Background template selector/category implementation is deleted after verified last-caller removal; all legacy tests/fixtures are rewritten or removed appropriately. If a production caller outside task ownership still requires the old module, record the exact blocker and do **not** claim complete removal.
 
 ## Validation
 

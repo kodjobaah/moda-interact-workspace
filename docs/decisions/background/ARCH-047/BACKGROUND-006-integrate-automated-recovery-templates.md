@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-047-BACKGROUND-007
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-10-26
 ---
 
 # Integrate offer decisions and prepared templates into automated recovery
@@ -45,7 +45,8 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Scope
 
-- Modify only relevant automated recovery call sites (`checkout-recovery/recovery-initiation.service.ts`, `checkout-recovery/recovery-outreach-follow-up-processor.service.ts`, narrowly required outbound admission/final fence adapters) to delegate to BG004 and BG001 modules.
+- Replace the legacy template-selection/category-check calls in `checkout-recovery/recovery-initiation.service.ts`, `checkout-recovery/recovery-outreach-follow-up-processor.service.ts` **and** the WooCommerce automated-initial adapter `woocommerce-recovery/woo-recovery-outreach.adapters.ts` with calls to BG004/BG001. Preserve each caller's checkout eligibility, recovery sequence and provider-fence ownership; do not create separate Shopify and Woo template-selection algorithms.
+- Migrate the affected outbound delivery/admission adapter from live Meta-category verification to the existing DB-backed, fail-closed BG006 final-registration fence; remove outdated category verifier injection only after all production callers have migrated.
 - Implement **one narrow shared final-send template assignment/registration recheck adapter** at the established final admission point for both automated and later human sequence-two consumers. Do not create a parallel send pipeline.
 - Keep all recovery state, scheduling, reachability, billing and provider-delivery orchestration owned by their existing services; new code is orchestration glue and injection ports.
 
@@ -68,6 +69,10 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **R5 — Shared adapter ownership.** BG006 owns the narrow final template eligibility adapter/fence changes; BG007 **calls the same adapter** and must not implement a second copy. Existing Meta provider send mechanics remain unchanged except passing prepared body/button/header parameters.
 
+**R6 — Record unresolved discount-evidence capability accurately.** The completed BG004 resolver has read-only provider-evaluation ports, but its default Shopify and Woo implementations currently return `outcome: "unavailable"`. `NONE` is a fully supported No Offer case; `FIXED` and `AI_BEST_APPLICABLE` must not be labelled as successfully advertising a verified discount unless a checkout-specific provider evaluator supplies the existing `CheckoutRuleEvidence` contract. Where the provider capability is absent, retain BG004's typed `NO_OFFER` result, prepare only an eligible No Offer variant, do not call Meta with a coupon promise, and emit a bounded, non-sensitive capability-gap signal. BG006 does **not** implement Shopify/Woo discount evaluation or turn catalogue listing into eligibility evidence. Document this unresolved capability in the Completion Report and return it to the architect for a separately owned read-only capability task; no checkout/cart mutation is permitted.
+
+**R7 — Legacy path retirement is part of implementation, not optional cleanup.** Remove legacy `whatsappTemplateSelectorService` and `metaWhatsAppTemplateCategoryService.verify()` usage from **all automated Shopify and Woo initial/follow-up call sites** after the BG001/BG004 equivalent is wired and exercised. Replace corresponding stale mocks, fixtures and tests that expect `purpose: "checkout-recovery"`, `verifiedCategory` or per-send Meta template-category GET. Do not delete the selector/category modules yet if BG007's human path or other real production consumers still use them: identify remaining imports in the Completion Report for BG007 to retire. No compatibility fallback to legacy unlinked `WhatsAppTemplateVariant` rows is permitted in the migrated production flow.
+
 ## Work Items
 
 - [ ] Modify only relevant automated recovery call sites (`checkout-recovery/recovery-initiation.service.ts`, `checkout-recovery/recovery-outreach-follow-up-processor.service.ts`, narrowly required outbound admission/final fence adapters) to delegate to BG004 and BG001 modules.
@@ -75,6 +80,10 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 - [ ] Keep all recovery state, scheduling, reachability, billing and provider-delivery orchestration owned by their existing services; new code is orchestration glue and injection ports.
 - [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
 - [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
+
+- [ ] Wire the WooCommerce automated initial path (`woo-recovery-outreach.adapters.ts`) as well as Shopify initial and scheduled follow-up through the same modules, without duplicating offer or template-selection rules.
+- [ ] Replace legacy template selector/category verifier imports and per-send Meta GET branches in migrated production call sites; update the matching tests and record any still-live imports explicitly for BG007.
+- [ ] Run both default-unavailable Shopify/Woo eligibility tests and injected independently verified positive-offer tests; report the actual external provider-evidence gap without claiming it implemented.
 
 ## Interfaces / Contracts
 
@@ -106,6 +115,10 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 - [ ] Re-run existing recovery-initiation/follow-up/fence/credit compensation tests, PostgreSQL admission race where available, build and `git diff --check`.
 - [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
 - [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+
+- [ ] Source-level regression shows **none** of the Shopify initial, scheduled follow-up or Woo automated initial paths still import/call `whatsappTemplateSelectorService` or `metaWhatsAppTemplateCategoryService`; no branch reaches `purpose: "checkout-recovery"` or an ordinary-send Meta category GET. Existing Woo readiness, billing, consent and send-fence tests still pass.
+- [ ] Without a checkout-specific provider eligibility adapter, FIXED and AI modes safely resolve to `NO_OFFER`; no code/automatic-offer wording, discount code, credit charge on failed admission, or falsely successful eligibility is produced. Verified-provider fixture covers CODE and AUTOMATIC selection without basket mutation.
+- [ ] Outdated tests/mocks and dead branches owned by this task are removed or rewritten; any live legacy module dependency retained for BG007 is listed by exact file and consumer in the Completion Report.
 
 ## Validation
 

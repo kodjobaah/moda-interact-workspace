@@ -4,16 +4,16 @@ title: Moda-authored multilingual WhatsApp templates and conversation wrappers
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-23
-updated: 2026-10-24
+updated: 2026-10-26
 ---
 
 # ARCH-047 — Moda-authored multilingual WhatsApp templates and conversation wrappers
 
 ## Status
 
-Agreed direction; **architecture and Background module-first execution plan updated on 24 October 2026**. The consolidated `ARCH-047-DATABASE-001` was developer-owned/in progress in the earlier source snapshot; its **current authoritative status must be read from the live task file** before dependency promotion. The revised `ARCH-047-BACKGROUND-001` remains **Pending**. `BACKGROUND-002`–`009` have portable task definitions, but the earlier architecture-planning snapshot does not establish their canonical task-branch materialisation, implementation or acceptance. The legacy Admin and System Test task documents still need separate status/scope reconciliation. Do not treat a planned dependency as Complete.
+**In Progress — snapshot review 26 October 2026, 06:28.** Individual task YAML is authoritative. This snapshot has 15 `complete`, 2 `superseded`, 3 Background integrations whose prerequisites have become Complete and are promoted to `ready` by this amendment (`BG006`, `BG008`, `BG009`), `BG007` Pending after BG006, and the obsolete System Test Pending for replacement. BG004 is `complete` in task YAML but its separate Architect Review still says Pending; do not represent that as independently architect-accepted without checking the durable review. This amendment also defines Shopify/API/Woo merchant-interface tasks whose code is not yet implemented or merged.
 
-This document includes the 25 October 2026 Meta-status event/safety correction and supersedes the prior ARCH-047 design permitting externally authored Meta-template imports and shop-to-shop copying as the catalogue master. Do not resume those flows.
+Only Moda Admin may author immutable templates. The former external Meta import/shop-copy workflow and its system-test contract are superseded. Do not assume the completed BG004 read-only offer module has a real checkout-specific provider evaluator; the default Shopify/Woo adapter returns `unavailable`.
 
 ## Problem
 
@@ -48,7 +48,7 @@ Inspected the uploaded 23 October workspace snapshots and the 24 October `ARCH-0
 - `src/services/translation-batch-runtime/` supplies reusable Batch provider submission, polling, correlation, result membership, retry/failure and repair mechanics. Domain-specific Merchant Pricing translation orchestration exists separately; it is **not** a drop-in WhatsApp translation service.
 - `src/services/recovery-policy.service.ts` has `NONE`, `FIXED` and `AI_BEST_APPLICABLE` policy context, but currently does not provide the complete verified offer-outcome contract for six Meta template purposes.
 - The existing outbound and recovery-conversation components own final send eligibility, moderation, STOP, credits and follow-up limits. ARCH-047 modules must remain downstream helpers, not competing admission authorities.
-- The amended consolidated DB001 contract specifies **11 new tables** and nullable `WhatsAppTemplateVariant.metaRegistrationId`, without database-enforced template business rules. Its developer-owned implementation has not been accepted as Complete.
+- The consolidated DB001 task is marked `complete` in the 26 October snapshot, with **11 new tables** and nullable `WhatsAppTemplateVariant.metaRegistrationId`; no business eligibility is enforced in PostgreSQL. Implementation acceptance and merge evidence are separate from task YAML.
 
 Reinspect these paths at implementation start; this is snapshot evidence, not a claim about later Git commits.
 
@@ -184,27 +184,26 @@ Classify production compatibility at implementation time. The 11-table Database 
 
 ## Decisions / Tasks
 
-### Existing tasks and work outside Background
+### Existing tasks and cross-repository consumer ownership (26 October snapshot)
 
-| Task | State in supplied source | Required reconciliation |
+| Task group | Snapshot status | Implementation meaning |
 |---|---|---|
-| `ARCH-047-DATABASE-001` | Developer `in_progress`, Attempt 1 (per amended task) | Use consolidated Attempt 7 contract; no DATABASE-002–004. |
-| `ARCH-047-ADMIN-001` | **Superseded** by revised Admin task files | No external Meta template import. |
-| `ARCH-047-ADMIN-002` | **Superseded** by revised Admin task files | No shop-to-shop template copying. |
-| `ARCH-047-ADMIN-003` | Portable definition, **Pending** | English AST authoring and immutable save; `depends_on: [DATABASE-001]`. |
-| `ARCH-047-ADMIN-004` | Portable definition, **Pending** | Keyed translation requests/progress; `depends_on: [DATABASE-001]`. |
-| `ARCH-047-ADMIN-005` | Portable definition, **Pending** | Translation reconstruction/review/compilation; `depends_on: [DATABASE-001]`. |
-| `ARCH-047-ADMIN-006` | Portable definition, **Pending** | Meta submission confirmation and DB status UI; `depends_on: [DATABASE-001]`. |
-| `ARCH-047-ADMIN-007` | Portable definition, **Pending** | One/selected/all-shop publication; `depends_on: [DATABASE-001]`. |
-| `ARCH-047-ADMIN-008` | Portable definition, **Pending** | Internal wrapper activation; `depends_on: [DATABASE-001]`. |
-| `ARCH-047-SYSTEM-TEST-001` | Legacy `pending` | Re-scope to Moda-authored assignments/runtime, remove import tests. |
-| `ARCH-047-SHARED-001` | Ready, defined not materialised | Implement only the v2 Meta template-status BullMQ schema and deterministic UUID formatting helpers; no AST. |
-| `ARCH-047-SHARED-002` | Pending publication gate | Publish accepted SHARED-001; BG003 and MESSAGING-001 consume the released subpath. |
-| `ARCH-047-MESSAGING-001` | Pending, defined but not materialised | Signed Meta status webhook → published Shared v2 event → existing BullMQ queue; await SHARED-002. |
+| `ARCH-047-DATABASE-001` | Complete | Consolidated 11-table schema; no DATABASE-002–004 |
+| `ARCH-047-ADMIN-001/002` | Superseded | No externally authored import or shop-to-shop template copying |
+| `ARCH-047-ADMIN-003`–`008` | Complete | Admin AST, translation, compilation, Meta control and publication; acceptance/merge still requires evidence |
+| `ARCH-047-SHARED-001/002` | Complete | Minimal Meta status event v2 + published package; no Shared AST |
+| `ARCH-047-MESSAGING-001` | Complete | Authenticated Meta status webhook producer |
+| `ARCH-047-BACKGROUND-001`–`005` | Complete | Five modular capabilities; **BG004 does not guarantee live per-checkout verified offers** |
+| `ARCH-047-BACKGROUND-006/008/009` | Ready after completed prerequisites | Integration and obsolete-path retirement outstanding |
+| `ARCH-047-BACKGROUND-007` | Pending, depends on BG006 | Merchant post-window integration outstanding |
+| `ARCH-047-SHOPIFY-001` | New, Ready by completed DB001 | Shopify merchant follow-up selector/admission correction |
+| `ARCH-047-API-001` | New, Ready by completed DB001 | Woo hosted follow-up list/admission and untrusted-parameter correction |
+| `ARCH-047-WOOCOMMERCE-001` | New, Pending on API001 | WordPress follow-up template selector/transport; remove hardcoded unavailable UI |
+| `ARCH-047-SYSTEM-TEST-001` | Pending; task scope replaced | Terminal end-to-end validation, no longer imports/same-ID edits/shop copying |
 
 ### Module-first Background tasks — proposed final numbering
 
-The revised `BACKGROUND-001` task is Module D. **`BACKGROUND-002`–`009` now have separately provided portable task files in this documentation patch**. No canonical worktree, branch, implementation claim or completion is implied until the developer applies/materialises the definitions.
+`BACKGROUND-001`–`005` have task YAML status `complete` in the current snapshot. `BACKGROUND-006`, `008` and `009` are now eligible for Ready; `BACKGROUND-007` remains Pending on BG006. These statuses do not prove all task branches were merged to main.
 
 | Task | Responsibility | Bounded ownership | Planned prerequisites (not yet materialised as tasks) |
 |---|---|---|---|
@@ -243,10 +242,27 @@ flowchart LR
 
 The graph expresses necessary interfaces, not serial deployment of unrelated modules. `BACKGROUND-002`–`005` may proceed in parallel when prerequisites are met. `BACKGROUND-004` can be investigated without waiting for Meta template authoring. No implementation, Shared publication or Gateway task may depend on a system-test task.
 
+## Verified gaps and required ownership — 26 October 2026
+
+These are **implementation gaps**, not evidence that the completed core modules failed their own bounded tasks. They must be closed or explicitly carried as blockers before declaring ARCH-047 Implemented.
+
+| Gap and source evidence | Owner | Required action and objective verification |
+|---|---|---|
+| **Checkout-specific discount eligibility:** `recovery-offers/recovery-offer-providers.ts` defaults Shopify and Woo to `{outcome:"unavailable"}`. BG004 safely returns `NO_OFFER` but cannot thereby promise CODE/AUTOMATIC. | Recovery offer module / provider-read owner (additional bounded contract task if no approved read capability exists) | Prove trusted tenant/checkout/discount/currency-specific read-only eligibility with saved evidence, tests for usage/stacking/customer restrictions and verified saving. No AI/cart mutation. Until then no positive discount promises, and System Test must record a **blocking** positive-offer capability gap, not claim six-purpose production readiness. |
+| **Automated legacy template path:** Shopify initiation and scheduled follow-up plus `woocommerce-recovery/woo-recovery-outreach.adapters.ts` still import `whatsappTemplateSelectorService` and live `metaWhatsAppTemplateCategoryService`; outbound delivery can still perform per-send Meta category verification. | `ARCH-047-BACKGROUND-006` | Migrate *all* Shopify/Woo automated call sites and outbound admission to BG001/BG004 and one late local provider-status fence, then remove obsolete imports/branches/tests after an import graph audit. |
+| **Merchant post-window branch:** `human-command-dispatcher.service.ts` still invokes live category GET and client-supplied parameter arrays; old `purpose: "checkout-recovery"` remains in shop merchant admission. | `ARCH-047-BACKGROUND-007`, `ARCH-047-SHOPIFY-001`, `ARCH-047-API-001` | BG007 re-resolves the current prepared variant/offer and removes legacy Meta-category sends; Shopify/API own authenticated caller allowlists and forbid untrusted parameter injection. Do not make BG007 edit other repositories. |
+| **Woo merchant follow-up UI:** `humanActionAvailability()` hardcodes `canTemplate: false`; there is no exposed eligible template catalogue. | `ARCH-047-API-001`, `ARCH-047-WOOCOMMERCE-001` | Hosted authenticated template-list GET + nonce-protected WP proxy + modular picker, only for eligible HUMAN post-window sequence-two; no second outreach or provider credentials in WordPress. |
+| **AI/human response wrappers:** BG005 exists but production AI/human call sites are not wired; old raw-send bypasses may remain. | `ARCH-047-BACKGROUND-008`, `ARCH-047-BACKGROUND-009` | One prepared wrapper and full-message moderation path per source, delete superseded direct bypasses while preserving no-wrapper fallback and existing final admission. |
+| **System Test obsolete:** `SYSTEM-TEST-001` still targets external Meta import, same-ID edits and shop-copy. | `ARCH-047-SYSTEM-TEST-001` | Replace old task acceptance/fixtures and dependencies with immutable Admin-only creation, keyed translation, BullMQ provider states, published assignments, offer evidence/fallback and merchant parity. Never mark unknown live positive-offer eligibility passed. |
+
+**Legacy-code retirement rule:** A completed replacement is not sufficient if the old production send path remains callable. Each owning implementation task must include a file-level reference audit, delete only newly orphaned selector/verifier/legacy UI branches and update tests; do not remove unrelated consent, STOP, moderation, compensation or order/follow-up safeguards. The overall source-level absence of superseded code is a terminal system-test assertion.
+
+**Architecture/task sequencing:** BG006, BG008, BG009 and Shopify/API merchant tasks may proceed independently once their real task prerequisites are Complete and appropriately materialised. BG007 follows BG006; Woo plugin work follows API001. The System Test is terminal after all required implementation/Shared publication tasks; **no** implementation task depends on it. Text-only ARCH-047 need not wait for ARCH-049 media normalisation, but an actual image-header send must have a verified READY media source.
+
 ## Open Questions / Gates Before Implementation Handoff
 
 1. **Prepared data contract first:** confirm Admin will write versioned keyed `sourceSnapshot` and read `TranslationItem.translatedAst`, compile immutable Meta components/bindings, and persist a prepared wrapper projection. Check that `translation-batch-runtime` exposes reusable Batch hooks; do not require a new Shared AST publication gate.
-2. **Offer evaluation:** verify fixed multi-offer and WooCommerce/Shopify AI candidate eligibility is backed by read-only provider evidence; if not, return the gap to the architect for an owning Commerce/API task rather than fabricating eligibility in Background.
+2. **Offer evaluation remains unresolved:** the default provider adapters are unavailable (verified in source). Keep `NO_OFFER` fail-safe; define an approved provider-read implementation contract and owner before enabling/claiming real positive FIXED/AI promotional support. System Test reports the gap as blocking rather than pretending the completed BG004 module proves it.
 3. **Checkout association:** confirm the existing AI/human conversation path has a reliable tenant-scoped checkout context. If not, define the minimal separate owning task. BG005 must not silently broaden conversation schema.
 4. **Provider webhooks:** ensure the relevant Meta app/WABA template-status notifications reach authenticated Messaging ingress; add a narrowly scoped Gateway task only if actual routing/configuration is deficient.
 5. **Document frontier:** ADMIN-001/002 are superseded and ADMIN-003–008 now have portable definitions. Re-scope obsolete SYSTEM-TEST-001 separately. Keep all `docs/decisions/**/_index.md` unchanged until the user declares this architecture session complete.
@@ -260,3 +276,5 @@ The graph expresses necessary interfaces, not serial deployment of unrelated mod
 - 2026-10-24 — **Admin module-first task definitions created**: six independent, DATABASE-001-only-dependent tasks; ADMIN-001/002 superseded, with no Admin AST/Meta compiler work delegated to Shared or Background.
 
 - 2026-10-25 — Clarified Meta template-status v2 occurrence identity, Shared producer/consumer contract, atomic UNKNOWN provider observation fence and BG006 late-check freshness gate; no additional database table.
+
+- 2026-10-26 — Reconciled current task YAML, identified checkout-specific verified-offer and merchant admission gaps, defined separately owned Shopify/API/Woo follow-ups, required removal of superseded runtime code after replacement, and rewrote SYSTEM-TEST-001 as terminal six-purpose/merchant safety certification.

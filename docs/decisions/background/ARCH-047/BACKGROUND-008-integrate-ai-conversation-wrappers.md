@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-047-BACKGROUND-005
 enables: []
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-10-26
 ---
 
 # Integrate prepared wrappers into AI conversation responses
@@ -64,6 +64,8 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **R5 — Read-only CommerceAgent.** The integration cannot add products, change quantities, apply codes or alter the basket. Its only new effect is deterministic message composition.
 
+**R6 — Remove superseded AI composition paths.** Once BG005 is integrated, remove any obsolete direct raw-response-to-provider branch that bypasses the prepared wrapper and full-message moderation. Preserve the intentionally unwrapped result when no published wrapper applies: it must still pass through the same moderation and admission path, not a second legacy send path. Remove no-longer-used adapters/mocks only after a reference audit; do not delete AI ownership/order or provider-window safeguards.
+
 ## Work Items
 
 - [ ] Integrate BG005 into the existing `ConversationTurnProcessor`/CommerceAgent outbound turn after an AI response is generated but before persisted moderated outbound message and provider delivery.
@@ -96,6 +98,8 @@ None in this nine-task Background set.
 - [ ] Focused conversation-turn, moderation and WhatsApp worker tests; integration/build/`git diff --check`.
 - [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
 - [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+
+- [ ] A source-level check confirms there is one AI outbound composition/admission path (with a no-wrapper case), no hidden second raw-response send path, and no duplicate legacy wrapper helpers. Old mocks expecting bypass behaviour have been updated.
 
 ## Validation
 

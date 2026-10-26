@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-047-BACKGROUND-005
 enables: []
 created: 2026-10-24
-updated: 2026-10-24
+updated: 2026-10-26
 ---
 
 # Integrate prepared wrappers into human conversation replies
@@ -63,6 +63,8 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **R5 — Separation.** Post-window commands must continue to the Meta recovery-template path (BG007), never use a free-form conversation wrapper in place of an approved template.
 
+**R6 — One human in-window path; no obsolete bypass.** Replace any separate in-window direct raw-text dispatch that would evade BG005 and full-message moderation, while retaining a no-wrapper case through the *same* final admission path. Remove dead local wrapper/formatting helpers and superseded tests after a reference audit, not by deleting the original human-control, service-window or moderation protections. BG007 separately owns the post-window template branch; both tasks touch `human-command-dispatcher.service.ts`, so require explicit final-branch reconciliation before acceptance.
+
 ## Work Items
 
 - [ ] Wire BG005 only into the existing **in-window free-text** branch of the merchant human command path (`recovery-conversation/human-command-dispatcher.service.ts`, related command/message record) after authorisation and before final content moderation.
@@ -94,6 +96,8 @@ None in this nine-task Background set.
 - [ ] Existing human command/moderation/compensation tests plus focused integration/build and `git diff --check`.
 - [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
 - [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+
+- [ ] Old human raw-text bypass/duplicated formatting path is absent; unwrapped fallback (if no wrapper is published) uses the same full-message moderation and final-send logic. BG007's post-window processing remains isolated and compatible.
 
 ## Validation
 
