@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
 executor: developer
 claimed_at: 2026-10-26T03:48:10Z
@@ -68,11 +68,11 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Work Items
 
-- [ ] Implement `src/services/conversation-wrappers/` with a wrapper lookup/read-only context adapter and pure **prepared-runtime** renderer, plus a small public facade and injected dependencies.
-- [ ] Resolve current `WhatsAppConversationWrapperActiveSlot` (`SHARED`, optional `AI` or `HUMAN` override), matching approved definition/locale and conversation language from DB001. Use `WhatsAppTemplateLocale.localeAst` only to read the **Admin-compiled prepared wrapper projection** stored there, not to parse/compile its authoring AST.
-- [ ] Resolve verified shop/customer/checkout fields from the existing conversation/recovery context without crossing tenant boundaries. Insert the already-authored response text in the one required response slot; return composed text plus provenance/version and typed refusal when unavailable.
-- [ ] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
-- [ ] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
+- [x] Implement `src/services/conversation-wrappers/` with a wrapper lookup/read-only context adapter and pure **prepared-runtime** renderer, plus a small public facade and injected dependencies.
+- [x] Resolve current `WhatsAppConversationWrapperActiveSlot` (`SHARED`, optional `AI` or `HUMAN` override), matching approved definition/locale and conversation language from DB001. Use `WhatsAppTemplateLocale.localeAst` only to read the **Admin-compiled prepared wrapper projection** stored there, not to parse/compile its authoring AST.
+- [x] Resolve verified shop/customer/checkout fields from the existing conversation/recovery context without crossing tenant boundaries. Insert the already-authored response text in the one required response slot; return composed text plus provenance/version and typed refusal when unavailable.
+- [x] Build focused unit/integration fixtures for the specified inputs, outputs and negative/failure cases.
+- [x] Complete repository-declared validation and record actual changed paths, task isolation, branch commits and test evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -95,20 +95,20 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Acceptance Criteria
 
-- [ ] SHARED/AI/HUMAN precedence, activation CAS change, language fallback and unpublished/wrong-kind/wrong-shop negative cases.
-- [ ] Prepared header + `response.body` + footer with optional valid checkout URL; missing/expired checkout omits conditional section; no invented/cross-tenant URL.
-- [ ] Exact-once replay, already-wrapped input, malformed prepared projection, duplicate/missing response slot and total message size boundary.
-- [ ] Demonstrate no provider calls, AI calls, moderation writes or checkout mutations; verify preserved original response and bounded logs.
-- [ ] PostgreSQL integration with active slot and locale fixtures, focused unit/build/typecheck and `git diff --check`. Full AI/human send tests belong to BG008/009.
-- [ ] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
-- [ ] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
+- [x] SHARED/AI/HUMAN precedence, activation CAS change, language fallback and unpublished/wrong-kind/wrong-shop negative cases.
+- [x] Prepared header + `response.body` + footer with optional valid checkout URL; missing/expired checkout omits conditional section; no invented/cross-tenant URL.
+- [x] Exact-once replay, already-wrapped input, malformed prepared projection, duplicate/missing response slot and total message size boundary.
+- [x] Demonstrate no provider calls, AI calls, moderation writes or checkout mutations; verify preserved original response and bounded logs.
+- [x] PostgreSQL integration with active slot and locale fixtures, focused unit/build/typecheck and `git diff --check`. Full AI/human send tests belong to BG008/009.
+- [x] No source/template authoring, shopper checkout mutation, Meta edit-existing-template call, externally authored Meta template adoption, or bypass of existing WhatsApp final-send safeguards is introduced.
+- [x] Task implementation is modular, separately testable, and stays within `moda-interact-background/`; externally owned gaps are reported, not silently implemented.
 
 ## Validation
 
-- [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
-- [ ] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
+- [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
+- [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
 - [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
-- [ ] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
+- [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
 
@@ -126,35 +126,74 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-26T03:48:10Z. Attempt 0 review history is preserved below.
+Ready for Review — Attempt 1, developer-executed. Functional implementation and focused validation are complete; the original launcher preparation evidence remains unverified (see below). The implementation was committed and pushed on 2026-10-26. Preserve `execution_mode: developer`, `completion_mode: developer`, `executor: developer`, `claimed_at: 2026-10-26T03:48:10Z` and `attempt: 1`; do not treat the ESLint correction as a new claim.
 
 ### Files Changed
 
-None yet.
+Implementation repository `moda-interact-background` — 10 new files, as recorded by commit `c25295a`:
+
+- `src/services/conversation-wrappers/contracts.ts`
+- `src/services/conversation-wrappers/index.ts`
+- `src/services/conversation-wrappers/projection.ts`
+- `src/services/conversation-wrappers/render.ts`
+- `src/services/conversation-wrappers/repository.ts`
+- `src/services/conversation-wrappers/selection.ts`
+- `src/services/conversation-wrappers/service.ts`
+- `tests/unit/services/conversation-wrappers/projection-and-render.test.ts`
+- `tests/unit/services/conversation-wrappers/service.test.ts`
+- `tests/integration/conversation-wrapper-rendering.integration.test.ts`
+
+No database schema, merchant/Admin application, Meta provider, sending, billing, moderation, or `docs/decisions/**/_index.md` files were changed by BG005. This task-definition update is a separate parent-worktree documentation change.
 
 ### Work Completed
 
-None yet.
+- Implemented a modular, read-only wrapper repository, prepared projection validator, pure renderer, slot/language selector and injectable service facade using the Admin-persisted `localeAst.prepared` data; the authoring AST is not reparsed.
+- Resolved SHARED versus AI/HUMAN active-slot precedence, definition/locale eligibility, language fallbacks, versioned activation, prepared content digest, typed unavailability/rejection and a bounded output length.
+- Verified conversation/recovery/shop/customer relationships before using checkout context. Missing, cancelled or stale checkout information omits optional checkout content; stored checkout URLs are restricted to a matching merchant host.
+- Preserved original AI/human response text within the envelope, supplied deterministic application provenance/replay handling, and refused malformed/double-wrapped input.
+- Left AI/human calling integrations, moderation of the complete rendered message, final admission/STOP guards, and provider sending to BG008/BG009.
+- Logged operational outcomes through `@modainteract/moda-interact-shared/logging`; unexpected repository/service exceptions are logged with bounded identifiers and rethrown, without logging the response or checkout URL.
+- Fixed the three `no-control-regex` ESLint findings in the renderer and repository without changing the intended control-character policy.
 
 ### Validation Results
 
-Not run; implementation validation remains outstanding.
+All commands below were recorded from the dedicated Background implementation worktree; the run evidence is in `typescript(20261026-035450)`, `typescript(20261026-044857)`, and `typescript(20261026-050429)` as supplied for this review handoff.
+
+- `npm run build` — PASS. Prisma client generation and TypeScript compilation completed without reported errors (post-correction run, 2026-10-26).
+- `npx vitest run tests/unit/services/conversation-wrappers` — PASS: 2 test files, 14 tests, after the ESLint correction.
+- `npx eslint src/services/conversation-wrappers tests/unit/services/conversation-wrappers tests/integration/conversation-wrapper-rendering.integration.test.ts` — PASS: no reported errors after the correction. The preceding run had three `no-control-regex` errors, which were corrected and rechecked.
+- `npm run test:integration -- tests/integration/conversation-wrapper-rendering.integration.test.ts` — PASS: 1 file, 2 actual PostgreSQL integration tests on 2026-10-26 at 05:02. Covered versioned active-slot changes, verified checkout recovery context, replay provenance, stale/cancelled/missing checkout omission, and cross-shop/customer mismatch refusals. A preceding test run failed at disposable PostgreSQL startup (`P1001`), then the rerun passed; this was a setup failure before test execution, not a failing application assertion.
+- `git diff --check` — ran without reported whitespace errors in the validation transcript.
+- `git commit -m "feat(arch-047-background-005)"` — PASS: implementation commit `c25295a`, 10 files, 969 insertions.
+- `git push -u origin task/ARCH-047-BACKGROUND-005` — PASS: published `task/ARCH-047-BACKGROUND-005` to the Background origin (reported by Git in the terminal log).
+
+**Physical worktree / start-of-attempt evidence:**
+
+- Parent task worktree reported by the developer archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-005`.
+- Background implementation worktree reported by test output and archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-005`.
+- Implementation branch and pushed commit verified above. Parent task branch publication is **not** verified by the supplied log; this documentation patch must be committed/pushed separately on `task/ARCH-047-BACKGROUND-005` in the parent worktree.
+- The original `/moda_developer_create` launcher packet, canonical root identity, parent/implementation remote fast-forward and `origin/main` incorporation decisions, and recursive implementation submodule-preparation output are **not present** in the submitted transcript. Do not represent these checks as passed. The code can be reviewed, but the reviewer must reconcile this workflow-evidence gap before acceptance.
+- Prior to the `git push -u` command the implementation task branch `git status` reported it was behind `origin/main` by 9 commits. The log does not establish whether the expected start-of-attempt synchronization had previously succeeded; investigate rather than infer conformance or failure.
+- The local untracked `typescript` terminal capture was not staged in the implementation commit.
 
 ### Deviations
 
-None recorded.
+No production runtime scope expansion was identified. An incremental correction replaced control-character regexes to satisfy focused ESLint. The original integration retry initially failed to connect to its temporary PostgreSQL service and succeeded on the subsequent run.
 
 ### Assumptions
 
-The DB001 Attempt 7 model names and fields are authoritative design inputs, not proof of an accepted/applied production migration. Reinspect current implementation on claim.
+This record uses the supplied combined archive and validation terminal captures as implementation evidence; it is not an independent verification of Git remotes, launcher preparation, or runtime execution from this review environment. Versioned Admin-prepared wrapper projection remains the upstream runtime contract.
 
 ### Unresolved Issues
 
-The parent ARCH-047 architecture and `BACKGROUND-001` still require final reconciliation with the Admin-owned AST/compilation and no-new-Shared-template-package decision before work begins.
+- Historical launcher start-of-attempt synchronization and recursive submodule-preparation evidence remains unverified. Provide the original prepared execution packet if available. If it is unavailable, the reviewer must determine the policy-compliant worktree remediation/validation needed rather than fabricate historical records.
+- Parent task branch commit and push of this Completion Report must be completed by the developer before invoking the authorized developer review path.
 
 ### Architectural Concerns
 
-Shop/checkout read paths may currently be null for non-recovery conversations; never fabricate association. A missing verified checkout is a typed outcome, not permission to mutate another repository.
+- Non-recovery conversations may lack a verifiable checkout; the renderer intentionally omits optional checkout fragments rather than fabricate associations.
+- Merchant-host validation deliberately omits otherwise valid hosted checkout URLs with a different host until a trusted ownership contract exists. This is a safe limitation to consider in BG008/BG009 integration.
+- BG008/BG009 must preserve wrapper application provenance and moderate the complete rendered message before the established final-send gates; BG005 does not itself send or moderate.
 
 ## Architect Review
 
