@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 15
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-26T12:10:12Z
+attempt: 2
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-DATABASE-005
@@ -217,12 +217,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-**Returned to Ready — Attempt 1.** Developer self-review found the technical implementation and focused validation passing, but the required attempt-start launcher/synchronization evidence is absent. Implementation and test correction were delivered as two incremental patches within the same claim, not as separate workflow attempts. The Database implementation commits remain pushed to `origin/task/ARCH-040-DATABASE-007`:
-
-- `26b3cd20a516419d6b74dde2d176ef03da90bcc3` — initial schema, forward migration, guards and test harness.
-- `12102f0b611973b1436f4c0d4ec33f3e15fa9a78` — PostgreSQL provider-permit test assertion correction, after the first run revealed that the existing dispatch-key consistency guard fires before the one-way permit guard.
-
-This is **not** architect acceptance or task completion. `completion_mode: developer` remains unchanged, so explicit developer completion will be required after an Accepted review.
+In Progress — Attempt 2 claimed by developer at 2026-10-26T12:10:12Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
