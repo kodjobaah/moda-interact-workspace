@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 38
-executor: developer
-claimed_at: 2026-10-26T03:59:19Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-046-BACKGROUND-001
@@ -36,7 +36,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`.
 
-**Execution frontier (26 October 2026): Technical validation evidenced; lifecycle review handoff pending.** All four dependencies were previously verified Complete. Attempts 1 and 2 were returned to `ready` after separate developer self-reviews. The Background implementation branch is pushed through `ac5d455`, with focused unit tests, Woo/PostgreSQL and Redis faults, HUMAN/AI and general STOP regressions, startup retry tests, lint, typecheck and build evidenced in developer terminal captures. The supplied **parent** task archive still records `status: ready`, `attempt: 2`, and no active claim or canonical Attempt 3 launcher preparation packet. Do not fabricate `in_progress`/`review` metadata or mark Complete; use `/moda_developer_create ARCH-046-BACKGROUND-004` to establish the next canonical claim and `/moda_developer_update ARCH-046-BACKGROUND-004` to reconcile the validation and developer self-review. Keep scope limited to initial send and sequence-one retries; Woo follow-ups remain out of scope.
+**Execution frontier (26 October 2026): Attempt 3 validation passed; developer self-review handed to architect.** All four dependencies were verified Complete by the canonical launcher. Attempt 3 was claimed at `2026-10-26T03:59:19Z`; the implementation worktree was synchronized with current Background `origin/main` in merge `e88d9345015202e915a9198d4c6803f41e9adfdb`. Focused unit, PostgreSQL/Redis, HUMAN/AI/general STOP, lint, typecheck, build and diff checks passed after that synchronization. The task is now `review`, with Attempt 3 preserved and claim fields cleared. Scope remains limited to initial send and sequence-one retries; Woo follow-ups remain out of scope.
 
 ## Execution Ownership Amendment
 
@@ -151,7 +151,7 @@ If a provider-admission schema/contract gap prevents atomic final consent/STOP c
 - [x] Focused typecheck/unit + PostgreSQL permit/lock tests for current consent revisions, STOP/merchant suppression, installation/recipient change, template category and terminal recovery.
 - [x] Two-client concurrent initial-attempt/send, STOP-versus-permit, paid/cancelled-order-versus-send, provider-confirmed/uncertain/failed-retry, billing source attribution and compensation tests.
 - [x] Existing Shopify/outbound general guard and human/AI in-window STOP regressions; verify no new Woo follow-up path or Redis/HTTP under SQL lock.
-- [ ] Repository-declared relevant build/lint/test scripts, `git diff --check` and Completion Report with actual worktree/branch isolation evidence.
+- [x] Repository-declared relevant build/lint/test scripts, `git diff --check` and Completion Report with actual worktree/branch isolation evidence.
 
 ## Stop Condition
 
@@ -165,7 +165,7 @@ The earlier BG004 definition required a Woo follow-up engine that ARCH-048 delib
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at 2026-10-26T03:59:19Z. Attempt 2 review history is preserved below.
+Ready for architect review — Attempt 3 developer self-review passed. Attempt 2 review history is preserved below.
 
 ### Files Changed
 
@@ -232,11 +232,17 @@ These commits record implementation Git history; they do **not** establish a lat
 
 ### Validation Results
 
-Evidence is drawn from the developer's terminal captures spanning 25–26 October 2026. Individual groups ran at different points in the same implementation branch history; the results are **not** a single all-suite run.
+Earlier evidence below spans 25–26 October 2026 and is retained as historical context. The Attempt 3 results are separate reruns against the synchronized implementation branch and are identified explicitly.
 
 | Validation | Verified result / source |
 |---|---|
-| Focused Woo/outbound unit regressions | **PASS: 102/102 tests** in `typescript(20261025-200807)` (earlier 89/89 suite also passed in `typescript(20261025-170947)`). Includes initial delivery, final fence and outbound provider failure assertions. |
+| Attempt 3 focused Woo/outbound unit regressions | **PASS: 78/78 tests across 5 files** using `npx vitest run` on `woo-guarded-initial-sender`, `woo-initial-delivery`, `woo-initial-send-fence`, `woo-recovery-outreach`, and `outbound-provider-failure` tests. |
+| Attempt 3 disposable PostgreSQL/Redis regressions | **PASS: 54/54 tests across 13 files** using `npm exec -- node scripts/test-integration.mjs` for Woo final permit/races/Redis faults; HUMAN/AI ownership, dispatch, billing, cancellation, claims and provider recovery/status; conversation services; and general/routing STOP fences. |
+| Attempt 3 bounded PostgreSQL startup-retry tests | **PASS: 7/7** via `node --test scripts/integration-startup-retry.test.mjs`. |
+| Attempt 3 repository lint | **PASS:** `npm run lint` (`eslint .`) completed without errors. |
+| Attempt 3 TypeScript and production build | **PASS:** `npx tsc --noEmit` completed without diagnostics; `npm run build` completed with Prisma Client v6.19.3 generation and TypeScript compilation. |
+| Attempt 3 Git validation | **PASS:** `git diff --check` reported no errors; implementation worktree remained clean and synchronized after validation. |
+| Earlier focused Woo/outbound unit regressions | **PASS: 102/102 tests** in `typescript(20261025-200807)` (earlier 89/89 suite also passed in `typescript(20261025-170947)`). Includes initial delivery, final fence and outbound provider failure assertions. |
 | Base Woo final-permit PostgreSQL integration | **PASS: 5/5** in `typescript(20261025-172449)`; current consent/recipient and installation changes, STOP, terminal state and idempotent provider permit. |
 | Concurrent Woo STOP/order/transaction rollback races | **PASS: 4/4** in `typescript(20261026-014840)` and again within the later 32/32 group; separate SQL-client lock ordering and rollback/retry. |
 | Seven refactored HUMAN/AI and provider/billing suites plus Woo race suite | **PASS: 8/8 suites, 32/32 tests** in `typescript(20261026-030803)`, including HUMAN dispatch, AI ownership/handover, provider recovery/status, follow-up billing, follow-up claims, cancellation races and Woo concurrency. No regression remains from the earlier parallel-suite interference. |
@@ -245,28 +251,25 @@ Evidence is drawn from the developer's terminal captures spanning 25–26 Octobe
 | Repository lint | **PASS:** `npm run lint` (`eslint .`) completed without errors in `typescript(20261026-033946)`. |
 | Repository TypeScript | **PASS:** `npx tsc --noEmit` completed without diagnostics in `typescript(20261026-033946)`. |
 | Production build | **PASS:** `npm run build` (`npm run prisma:generate && tsc`) completed without diagnostics; Prisma Client v6.19.3 generation succeeded in `typescript(20261026-033946)`. |
-| Git validation | `git diff --check` reported no errors before the newest commit; last `git status` showed no tracked modifications, only untracked terminal recording `typescript`. |
-| Latest implementation Git commit/push | **PASS:** `ac5d455` pushed (`5e7a6d0..ac5d455`) to `origin/task/ARCH-046-BACKGROUND-004` in `typescript(20261026-033946)`. Commit subject mentions `arch-047` in error; actual branch, files and task are ARCH-046. No history rewrite requested. |
-| Canonical developer Attempt 3 launch, synchronization and claim | **NOT VERIFIED:** the latest supplied parent task is still `ready`, `attempt: 2`, without a new `claimed_at` or launcher packet. The earlier Attempt 2 worktree preparation and recursive submodule evidence remains documented below. |
+| Implementation task branch | **PASS:** current tip `e88d9345015202e915a9198d4c6803f41e9adfdb` equals `origin/task/ARCH-046-BACKGROUND-004`; it includes the preserved implementation head `ac5d455` and the launcher synchronization merge. |
+| Canonical developer Attempt 3 launch, synchronization and claim | **PASS:** parent claim commit `0e41dc305038de33e6685354e782f032d13534e1`; launcher verified four dependencies complete and prepared the implementation worktree. Current review transition preserves Attempt 3 and clears claim fields. |
 
-The prior test-fixture violations (digits-only attempt recipient and funded `UsageReservation`) were corrected without loosening database constraints. The earlier PostgreSQL Docker readiness timeout was addressed with a narrowly bounded startup retry; the latest integration runs did start and passed. The last required task-level blocker is **canonical developer Attempt 3 claim/review reconciliation**, not a demonstrated failing test. Developer review must verify whether its workflow requires repeating validation after the synchronized claim and record that evidence rather than retroactively asserting that these runs occurred after a claim.
+The prior test-fixture violations (digits-only attempt recipient and funded `UsageReservation`) were corrected without loosening database constraints. The earlier PostgreSQL Docker readiness timeout was addressed with a narrowly bounded startup retry. Attempt 3 validation was rerun after the launcher synchronization and all selected checks passed. No task-level validation blocker remains; architect review and any separately gated BG005/system-test work remain outstanding.
 
 ### Execution / Worktree Evidence
 
-- Canonical parent worktree named by the archive and startup record: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-BACKGROUND-004`.
-- Dedicated implementation worktree shown by the terminal archive helper: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-004`.
-- The latest terminal log confirms implementation branch `task/ARCH-046-BACKGROUND-004`, correction commit `984d568`, and successful push to `origin/task/ARCH-046-BACKGROUND-004`. A bare `git push` initially failed because the local branch tracked `origin/main`; the later explicit task-branch push succeeded and established the correct upstream.
-- The Attempt 1 evidence did not prove Git common-dir isolation, launcher resolution or start-of-attempt synchronization. The canonical launcher and repository worktree registrations were checked for Attempt 2. Parent branch `task/ARCH-046-BACKGROUND-004` was clean, fast-forwarded to its remote task branch and merged with current workspace `origin/main` as `7df242e3b7d379971e511da6e02c54abd66ace8c`; the merge was conflict-free. Implementation branch `task/ARCH-046-BACKGROUND-004` was clean at `984d568968cc43f173a20e1b87d0fa6a0981ff6d`, equal to `origin/task/ARCH-046-BACKGROUND-004` and containing current Background `origin/main` (`3b7608e8f97a944b8bca51064658e07fd7b00d7f`). Recursive submodule sync/update/status completed; `database` is initialized at recorded gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`, with no uninitialized, mismatched or unresolved status. All four declared dependencies were verified `complete`. No implementation edits were made during preparation.
-- The terminal log shows an untracked `typescript` recording in the implementation worktree; it was **not included** in commits `984d568`, `5e7a6d0` or `ac5d455`.
-- The 26 October terminal capture `typescript(20261026-033946)` confirms the named implementation worktree and `task/ARCH-046-BACKGROUND-004` branch, 22/22 remaining integration tests, 7/7 startup retry unit tests, lint/typecheck/build without errors and final task-branch push of `ac5d455`. The archive helper reports the canonical parent worktree and overlaid implementation worktree. Tracked implementation files are clean, with only an untracked terminal recording.
-- **Current workflow gap:** No launcher-resolved **Attempt 3** preparation packet, parent-branch claim commit, new synchronization evidence or `claimed_at` timestamp appears in these files. The supplied parent task file still reads `ready`, `attempt: 2` with cleared claim fields. The prior Attempt 2 isolation/synchronization packet cannot be relabelled as Attempt 3 evidence. Reclaim and reconcile through the canonical developer workflow before submitting a `review` status.
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-BACKGROUND-004`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-BACKGROUND-004`.
+- The canonical launcher claimed Attempt 3 in parent commit `0e41dc305038de33e6685354e782f032d13534e1`. It verified all four declared dependencies complete and synchronized the implementation worktree with current Background `origin/main`; synchronization merge `e88d9345015202e915a9198d4c6803f41e9adfdb` was pushed to `origin/task/ARCH-046-BACKGROUND-004`.
+- Physical isolation was verified: parent worktree root uses common Git directory `/Users/kwadwoadomafriyie/project/moda-interact-workspace/.git`; implementation worktree root uses `/Users/kwadwoadomafriyie/project/moda-interact-workspace/.git/modules/moda-interact-background`. Both local task branches matched their respective `origin/task/ARCH-046-BACKGROUND-004` refs before the report edit.
+- `git submodule status --recursive` in the implementation worktree reports initialized `database` at gitlink `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`. Both worktrees were clean before this task-record edit; implementation validation left the implementation worktree clean.
+- The parent task record was modified only after these checks. No implementation source changes were made during Attempt 3; the feature implementation and prior corrections remain in the published history through `ac5d455`, with `e88d934` as the current synchronized tip.
 
 ### Deviations
 
 - No new database migration, cross-service contract, Woo follow-up engine, BG005 worker wiring, Woo activation or production sending logic was introduced after the earlier final-permit implementation.
 - The test-only changes in `5e7a6d0` split the HUMAN integration suite and serialize disposable integration files; `ac5d455` changes only the integration test infrastructure with a bounded PostgreSQL readiness retry. Both are covered by the passing tests above.
 - The newest commit subject inadvertently says `arch-047`; the actual repository/branch and implemented task remain **ARCH-046-BACKGROUND-004**. Preserve the published commit ID; no amend/force-push is necessary.
-- **Workflow non-conformance remains for handoff:** implementation changes and validation were pushed while the supplied parent record remained `ready`, `attempt: 2`, rather than under an evidenced new canonical Attempt 3 claim. Report this explicitly; do not silently fabricate review metadata.
+- No Attempt 3 implementation changes were needed; this review reran the required validation on the synchronized implementation tree and reconciled the parent task record through the canonical claim branch.
 
 ### Assumptions
 
@@ -277,7 +280,7 @@ The prior test-fixture violations (digits-only attempt recipient and funded `Usa
 ### Unresolved Issues
 
 - **No current functional/test failure is evidenced.** The previously failing HUMAN races and Docker startup were addressed; the latest supplied logs show the selected unit, PostgreSQL/Redis, HUMAN/AI/general STOP regression, lint, typecheck and build checks passing.
-- **Workflow action required before formal self-review:** use `/moda_developer_create ARCH-046-BACKGROUND-004` to establish the genuine canonical Attempt 3 claim and synchronized worktree/submodule evidence; preserve the claim packet and parent branch commit. Then use `/moda_developer_update ARCH-046-BACKGROUND-004` to reconcile the record and move it to review only if that workflow accepts the evidence and any required post-claim reruns. This evidence-only report does not pre-authorize the transition.
+- No unresolved developer validation or workflow blocker remains. The task is handed to architect review; do not mark it complete, wire BG005, activate Woo outreach or broaden the task scope here.
 - As before, this task does not integrate BG005 worker composition, activate Woo outreach or cover end-to-end production sending. Such work remains separately gated.
 
 ### Architectural Concerns
@@ -347,3 +350,13 @@ Attempt 2 is not accepted for developer completion. The implementation worktree 
 ### State Transition
 
 Returned to `ready`, with `executor: null`, `claimed_at: null`, and Attempt 2 unchanged. The next `/moda_developer_create` invocation may claim Attempt 3 after synchronizing the canonical worktrees and verifying dependencies.
+
+## Developer Self-Review - Attempt 3
+
+### Review Decision
+
+Passed for developer review handoff. The canonical Attempt 3 claim, implementation synchronization, dependency state, worktree isolation and recursive submodule state were verified. Focused unit and disposable PostgreSQL/Redis integration regressions passed after synchronization, as did startup-retry tests, lint, TypeScript, production build and `git diff --check`. No new implementation change was required.
+
+### State Transition
+
+Set to `review`; `executor` and `claimed_at` are cleared, and Attempt 3 is preserved. No completion action was requested or applied. Architect review remains pending.
