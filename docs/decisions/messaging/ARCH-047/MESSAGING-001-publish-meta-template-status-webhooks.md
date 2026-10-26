@@ -9,10 +9,10 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 25
-executor: developer
-claimed_at: 2026-10-26T02:37:31Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-SHARED-002
@@ -169,7 +169,7 @@ An authenticated template-status webhook for an unknown/external template is sti
 - [x] Add the narrow queue publisher with the exact job name, `jobId`, attempts and backoff, using the existing queue/telemetry adapter.
 - [x] Add focused unit, signed-route, dispatch/producer, mixed-batch and disposable Redis tests described below.
 - [x] Verify/document app-level Meta webhook callback/subscription configuration and any unresolved operational routing requirement without implementing unrelated Gateway work.
-- [x] Record complete validation, changed files, task worktree isolation, start synchronisation, commit/push evidence and remaining issues in Completion Report.
+- [ ] Record complete validation, changed files, task worktree isolation, start synchronisation, commit/push evidence and remaining issues in Completion Report.
 
 ## Interfaces / Contracts
 
@@ -339,3 +339,13 @@ After acceptance, coordinate integration with BG003 and the terminal ARCH-047 Sy
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-MESSAGING-001`, branch `task/ARCH-047-MESSAGING-001`, synchronized from remote and current `origin/main` before this amendment.
 - Implementation worktree: to be prepared by the canonical launcher at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-MESSAGING-001`.
 - No implementation changes are made by this ownership amendment. No branch is merged into `main`.
+
+## Developer Self-Review - Changes Requested
+
+- Review date: 2026-10-26; reviewed attempt: 1.
+- Focused current-branch validation passed: 52 tests passed, 0 failed, and 1 Redis-dependent retained-job test was skipped because the focused command did not provide `TEST_REDIS_URL`.
+- The Completion Report states that the original canonical `start-agent-task.py --prepare` packet, implementation start-of-attempt synchronization, and recursive-submodule evidence were not included in the supplied transcript. The corresponding Work Item is therefore not complete and is now unchecked. Current worktree cleanliness, branch publication, or a new route-only lookup does not establish historical preparation.
+- Correction required before resubmission: recover and record the original prepared-execution packet with both launcher-resolved worktree paths/branches, dependency-gate result, both task-branch and `origin/main` synchronization outcomes, and recursive submodule sync/update/status. Do not rerun preparation to manufacture Attempt 1 evidence. If the original packet is unavailable, obtain an explicit architect-approved evidence amendment and record its exact scope and decision; otherwise keep the Work Item incomplete.
+- The Meta app-level default callback and `message_template_status_update` subscription remain unverified operationally. The report accurately records this manual deployment-owner check; do not claim live delivery or production readiness without evidence.
+- No implementation defect was established by the focused suite. The ARCH-034 baseline mismatch remains disclosed for architect reconciliation and must not be silently rewritten as accepted history.
+- Lifecycle transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Do not increment the attempt here; the next canonical developer claim performs that transition.
