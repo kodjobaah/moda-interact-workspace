@@ -11,8 +11,8 @@ execution_mode: developer
 completion_mode: developer
 status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-26T12:16:42Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-DATABASE-001
@@ -100,7 +100,7 @@ Use launcher-prepared dedicated mirrored `task/ARCH-047-SHOPIFY-001` worktrees a
 
 ### Status
 
-Ready for Review — developer-executed Attempt 1, claimed at `2026-10-26T12:16:42Z`. The incremental implementation correction labelled `attempt2.patch` was applied within the same task claim and does not increment the task's `attempt: 1`. Implementation changes were committed as `d863b9d` (`feat(arch-047-shopify-001)`) and pushed to `origin/task/ARCH-047-SHOPIFY-001`. Formal architect review and the developer's explicit completion decision remain outstanding.
+Review — developer-executed Attempt 1 passed developer self-review on 2026-10-26. The incremental implementation correction labelled `attempt2.patch` was applied within the same task claim and does not increment the task's `attempt: 1`. Implementation changes were committed as `d863b9d` (`feat(arch-047-shopify-001)`) and pushed to `origin/task/ARCH-047-SHOPIFY-001`. Formal architect review and the developer's explicit completion decision remain outstanding.
 
 ### Files Changed
 
@@ -202,3 +202,25 @@ Review the final integration with BG007; do not use system testing as an impleme
 - Date: 2026-10-26.
 - Change: The developer explicitly invoked `/moda_developer_create ARCH-047-SHOPIFY-001` for this Ready agent-owned task. Execution ownership is transferred to the developer, and completion is set to developer review.
 - Preserved: `assigned_agent: moda_app`, coordinator, repository, task scope, acceptance criteria, validation requirements, dependency gate, Ready eligibility, and attempt 0. The explicit dependency `ARCH-047-DATABASE-001` was verified complete. This amendment does not itself claim an implementation attempt.
+
+## Developer Self-Review Passed - Attempt 1
+
+### Review Decision
+
+The developer self-review passes for Attempt 1. The published implementation diff is limited to the 15 Shopify source/test files listed above, is clean against `origin/main`, and passes whitespace validation. The touched Shopify command/detail/loader/selector path has no `purpose: "checkout-recovery"` selector or `readApprovedRecoveryTemplates` reference. Focused tests, lint, typecheck and production build pass. This review does not claim integrated Shopify-to-Background/Meta behavior: `ARCH-047-BACKGROUND-007` is currently `in_progress` under its own developer attempt. The Architect Review remains Pending, and explicit developer completion remains outstanding.
+
+### Current Validation
+
+Executed on 2026-10-26 from `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-SHOPIFY-001`:
+
+- `npx vitest run tests/unit/arch047-shopify-follow-up-catalogue.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts tests/unit/arch047-shopify-follow-up-ui.test.tsx tests/unit/arch040-shopify-command.test.ts tests/unit/arch040-shopify-layout.test.tsx tests/unit/recovery-detail-readers.test.ts` — **6 files, 138 tests passed**.
+- `npm run lint` — passed.
+- `npm run typecheck` — passed (`react-router typegen && tsc --noEmit`).
+- `npm run build` — passed for client and SSR production bundles; non-blocking dependency/chunk warnings only.
+- `git diff --check origin/main...HEAD` — passed.
+
+The implementation worktree had no uncommitted changes and implementation commit `d863b9d` matched `origin/task/ARCH-047-SHOPIFY-001`. The canonical parent and implementation task worktrees are distinct. No task branch was merged to `main`.
+
+### State Transition
+
+Keep `status: review`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. Architect review and explicit developer completion are not performed by this self-review.
