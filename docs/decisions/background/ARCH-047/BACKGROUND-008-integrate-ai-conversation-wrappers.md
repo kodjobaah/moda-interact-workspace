@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -124,7 +124,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-Developer Self-Review Passed — Attempt 1, developer execution. Implementation commit `db627fe` is pushed to `origin/task/ARCH-047-BACKGROUND-008`. Explicit developer completion remains pending; architect review is not asserted by this self-review.
+Complete — Attempt 1, developer execution. Architect Review Accepted and the explicit Developer Completion Decision are recorded below. Implementation commit `db627fe` is pushed to `origin/task/ARCH-047-BACKGROUND-008`; this completion report is published on the matching parent task branch.
 
 ### Files Changed
 
@@ -195,27 +195,27 @@ No new cross-repository contract or schema change was introduced. Any required c
 
 ### Review Status
 
-Pending — implementation not submitted.
+Accepted — Architect Review Accepted was explicitly supplied with the developer completion instruction.
 
 ### Review Notes
 
-Not reviewed.
+Accepted per the supplied Architect Review Accepted disposition. No additional file-level review notes were supplied.
 
 ### Reviewed Files
 
-None yet.
+The 11 implementation files listed under Completion Report / Files Changed.
 
 ### Validation Reviewed
 
-None yet.
+Focused unit suites (150, 120 and 21 tests); BG008 wrapper PostgreSQL integration (2 tests); human-dispatch, follow-up-race and moderation PostgreSQL integrations (19 tests); build, focused ESLint and `git diff --check`, as detailed under Validation Results.
 
 ### Architecture Conformance
 
-To be assessed against the reconciled ARCH-047 parent architecture and current repository code.
+Accepted per the supplied Architect Review Accepted disposition.
 
 ### Follow-up
 
-Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+Retain the existing architect task-graph reconciliation follow-up before promoting any remaining tasks to Ready. BG009 remains blocked on its explicit `ARCH-040-DATABASE-007` prerequisite; this completion does not promote or modify BG009.
 
 ## Execution Ownership Amendment
 
@@ -231,6 +231,14 @@ Architect to reconcile the parent task graph and obsolete Admin/Shared reference
 - Review date: 2026-10-26; reviewed attempt: 1.
 - Disposition: The implementation is task-scoped; BG005 runs after model completion and before the existing single prepared-send path. Wrapped and no-wrapper results share whole-message moderation and final admission. Human takeover/stale-turn, STOP, expired-window, moderation, reservation/credit and follow-up ordering regressions passed in the focused unit and PostgreSQL suites recorded above.
 - Validation: Focused unit suites passed (150 tests in 9 files; 120 tests in 6 files; and 21 tests in 2 files). The BG008 PostgreSQL wrapper suite passed 2/2; human-dispatch, follow-up-race and moderation integration suites passed 19/19. Build, focused ESLint and `git diff --check` passed.
-- Publication and isolation: Implementation commit `db627fe` and parent report commit `cdef3453` are pushed to their respective `task/ARCH-047-BACKGROUND-008` branches. Both canonical worktrees were clean; both branches include current `origin/main`. Recursive database submodule is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
+- Publication and isolation: Implementation commit `db627fe` and parent review-report commit `dc4173f5` are pushed to their respective `task/ARCH-047-BACKGROUND-008` branches. Both canonical worktrees were clean; both branches include current `origin/main`. Recursive database submodule is initialized at `3f1f50b91c9e93ff9647a3d1d7f6fd46b9b888b9`.
 - Evidence limitation: The original machine-readable launcher packet was not retained. Current physical worktree, branch, remote and submodule evidence is recorded above; no historical launcher evidence is claimed or reconstructed.
-- Lifecycle: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. `completion_mode: developer` remains in force; explicit developer completion is pending. Architect review remains pending.
+- Lifecycle at self-review submission: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. `completion_mode: developer` remained in force; explicit developer completion and architect review were pending at that point.
+
+## Developer Completion Decision
+
+- Decision: The developer explicitly requested completion after the current Attempt 1 passed self-review and supplied Architect Review Accepted.
+- Review disposition: Architect Review Accepted, recorded above without adding unsupported file-level notes.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`; the accepted attempt number is unchanged.
+- Publication: Implementation commit `db627fe2fbb7083d2f46ee027cb03640e794a428` is pushed. Parent task branch `task/ARCH-047-BACKGROUND-008` was synchronized at `dc4173f570610a3188ebeb3ada5234a3a3aefd6f` before this completion record; this completion decision is committed and pushed on that same branch.
+- Dependency frontier: No current task declares BG008 as a dependency (`enables: []`). BG009 remains `blocked` on `ARCH-040-DATABASE-007` (`ready`), and was not modified or promoted.
