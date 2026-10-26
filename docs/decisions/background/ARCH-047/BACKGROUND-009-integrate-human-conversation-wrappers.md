@@ -9,13 +9,14 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: blocked
 priority: 40
-executor: developer
-claimed_at: 2026-10-26T07:24:51Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-BACKGROUND-005
+  - ARCH-040-DATABASE-007
 enables: []
 created: 2026-10-24
 updated: 2026-10-26
@@ -35,7 +36,7 @@ This is a **portable task definition** prepared from the 24 October 2026 workspa
 
 ## Objective
 
-Apply BG005 to merchant-authored in-window text before moderation and sending, preserving the merchant response and checkout context.
+Apply BG005 to merchant-authored in-window HUMAN_TEXT commands using an **immutable, once-prepared customer-visible body**. Preserve the accepted raw text as merchant intent, but make the frozen **wrapped** body the one moderated, persisted in `ConversationMessage.content`, and sent to WhatsApp. Do not re-render on retries or bypass the post-window BG007 route.
 
 ## Context
 
@@ -53,19 +54,35 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Requirements
 
+**ARCHITECT DECISION — blocked prerequisite (2026-10-26).** The current implementation worktree contains a preparation-only `HumanWrapperPreparationService`; do not connect it directly to WhatsApp while `MerchantConversationSendCommand.textBody` remains the SQL-validated moderation/send source. `ARCH-040-DATABASE-007` must first add nullable `preparedTextBody`, `preparedWrapperEvidence` and `preparedAt`, extend the set-once command guard, and make `HUMAN_COMMAND`/`TEXT` moderation use the frozen body. This is a new, separately owned database implementation; the BG009 task remains `blocked` until DATABASE-007 is Complete and the implementation's database submodule/Prisma client is synchronised. Existing developer Attempt 1 evidence and source work are preserved; no active claim survives this architectural handoff.
+
+**R0 — Exact durable preparation and full-message admission.** Under the current `HUMAN_TEXT` command lease, before any HUMAN moderation assessment, call the existing BG005 wrapper through `HumanWrapperPreparationService` (or an equivalent small module). `not-applicable` must be limited to the separate post-window command kind. `prepared` freezes its exact body plus the BG005 wrapper definition/locale/audience/slot-edit-version/applicationKey and body digest. `passthrough` freezes the original text with explicit no-wrapper evidence. `refused` or unexpected errors **never** send raw text as a fallback. Atomically freeze the body, provenance and timestamp with a conditional DB `UPDATE ... WHERE state='CLAIMED' AND leaseToken=:token AND leaseExpiresAt>statement_timestamp() AND providerDispatchKey IS NULL AND preparedTextBody IS NULL RETURNING ...`. A stale lease or zero-row update must fail/re-read, never overwrite. If already frozen, reuse the identical bytes and provenance without calling the renderer again. Do not change `textBody` or `payloadSha256`.
+
+**R0a — Moderation/final-send identity.** Modify `ModerationAssessmentService`'s HUMAN_COMMAND/HUMAN_TEXT canonical reader to return only persisted `preparedTextBody` and fail closed if it is absent. Ensure moderation `effectiveText`, the INSERT guard digest, `requireCurrentAllowance`, final SQL admission and the persisted outbound `ConversationMessage.content` all use precisely the frozen prepared UTF-8 body. Immediately before the provider permit, re-check current wrapper slot/definition validity against frozen evidence and refuse if the selected wrapper has changed or been retired; a changed slot must not trigger an in-place re-render. At final send, use the **committed admitted `ConversationMessage.content`** (or an exactly equivalent frozen read backed by that message) rather than `command.textBody`. If the committed content or moderation digest cannot be proven identical, do not call Meta. After a provider permit, preserve existing UNKNOWN/reconciliation rules; no second send/retry may be authorised by a mismatch.
+
+**R0b — Strict isolation.** All changes above apply only to `HUMAN_TEXT` inside the verified open customer-service window. Post-window `RECOVERY_FOLLOW_UP_TEMPLATE` retains the existing TEMPLATE_PARAMETERS moderation input, BG007 preparation, sequence-2 credit and Meta template send. The wrapper has no authority to relax consent, STOP, HUMAN control, tenant ownership, the window or billing. Keep logs free of raw message content and checkout URLs.
+
 **R1 — Intent and content.** For a human-authored ordinary response within the valid rolling WhatsApp 24-hour service window, resolve SHARED/HUMAN wrapper through BG005 and insert the submitted merchant text unchanged. Checkout URL and shop name come from read-only verified conversation context; never use a customer-supplied arbitrary URL as the trusted basket URL.
 
-**R2 — Final message consistency.** Moderate the complete rendered text (including header/footer) independently. Persist, audit, bill and deliver exactly the same content that was approved; no moderation of only the raw merchant fragment followed by unmoderated append. Merchant previews in Shopify/Woo should use identical prepared-wrapper semantics under their separate owning tasks; do not create UI from Background.
+**R2 — Final message consistency.** Moderate the complete **frozen `preparedTextBody`** (including header/footer) independently. The SQL guard must validate SHA-256 of that body; `OutboundSendFenceService` must insert that body as `ConversationMessage.content`, and the provider request must send the exact admitted content. Do not moderate only `command.textBody` and then append unmoderated material. Preserve the original merchant text and accepted-request idempotency unchanged. Merchant previews in Shopify/Woo should use identical prepared-wrapper semantics under their separate owning tasks; do not create UI from Background.
 
 **R3 — Admission invariants.** Reuse current merchant authentication, tenant scoping, HUMAN control, the 24-hour window, consent/STOP, support moderation, provider compensation/idempotency and billing policy. Existing merchant-authored replies within the window are not subjected to AI-exchange caps. No additional paid follow-up is created by wrapper rendering.
 
-**R4 — Retry/error.** Stable command/message ID prevents applying the wrapper twice. If a wrapper's checkout context, schema projection or length is invalid, return an explicit failure/safe no-wrapper policy rather than sending mismatched or partially rendered content.
+**R4 — Retry/error.** `preparedTextBody` and evidence are immutable after first freeze. Worker restarts, deferred moderation, lease reclaims and replay reuse those exact bytes even if Admin activates a different wrapper. If checkout context, prepared projection or length is invalid, refuse rather than silently sending raw text; only explicit `NOT_CONFIGURED` permits frozen passthrough through the **same** moderation/admission path. A stale/outdated wrapper at final admission suppresses sending; do not silently rewrite a frozen message.
 
 **R5 — Separation.** Post-window commands must continue to the Meta recovery-template path (BG007), never use a free-form conversation wrapper in place of an approved template.
 
 **R6 — One human in-window path; no obsolete bypass.** Replace any separate in-window direct raw-text dispatch that would evade BG005 and full-message moderation, while retaining a no-wrapper case through the *same* final admission path. Remove dead local wrapper/formatting helpers and superseded tests after a reference audit, not by deleting the original human-control, service-window or moderation protections. BG007 separately owns the post-window template branch; both tasks touch `human-command-dispatcher.service.ts`, so require explicit final-branch reconciliation before acceptance.
 
 ## Work Items
+
+- [ ] Confirm `ARCH-040-DATABASE-007` is accepted Complete, update the canonical `database/` submodule and regenerate the Prisma client before resuming code edits; retain BG009's existing preparation-only files and attempt history.
+- [ ] Add a focused lease-protected prepared-content repository/seam; freeze full text and bounded wrapper evidence atomically once, read frozen content on replay, no direct `textBody` rewrite.
+- [ ] Make HUMAN_TEXT moderation canonical/effective text use `preparedTextBody`; preserve TEMPLATE_PARAMETERS behaviour for BG007.
+- [ ] Make `OutboundSendFenceService` persist `preparedTextBody` as the admitted `ConversationMessage.content` and bind approval to the exact digest/current policy; deliver the committed admitted message bytes through the existing provider path.
+- [ ] Recheck frozen wrapper activation before admission, and fail closed if stale; no re-render or second permit after admission.
+- [ ] Remove only obsolete HUMAN_TEXT raw-send/formatting branches after an import/reference audit; preserve BG007 post-window logic and all ARCH-040 security/follow-up safeguards.
+- [ ] Add focused PostgreSQL integration, lease/replay, moderation denial, no-wrapper, wrapper-change and provider-text equality tests; run required repository validation and record it in Completion Report.
 
 - [ ] Wire BG005 only into the existing **in-window free-text** branch of the merchant human command path (`recovery-conversation/human-command-dispatcher.service.ts`, related command/message record) after authorisation and before final content moderation.
 - [ ] Preserve exactly the merchant-authored response inside prepared SHARED/HUMAN wrapper and store/send the same complete customer-visible content. Use existing tenant, recovery, human-takeover and provider send code.
@@ -74,11 +91,18 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 ## Interfaces / Contracts
 
+**New mandatory dependency:** `ARCH-040-DATABASE-007` — nullable, set-once `MerchantConversationSendCommand.preparedTextBody`, `preparedWrapperEvidence`, `preparedAt`; database HUMAN_COMMAND/TEXT digest against `SHA256(UTF8(preparedTextBody))`. The new fields and guard are authored in Database, not here.
+
+**BG009 application-owned prepared evidence:** JSONB includes `schemaVersion:1`, either `outcome:'RENDERED'` with `wrapperDefinitionId`, `localeId`, `audience`, `slotEditVersion`, `applicationKey`, `bodySha256`, or `outcome:'PASSTHROUGH'` with `reason:'NOT_CONFIGURED'` and `bodySha256`. No customer text or full AST is duplicated in evidence; Database does not enforce its semantic fields.
+
+**Execution equality:** `command.textBody` = original intent; `command.preparedTextBody` = complete moderated text; `ConversationModerationAssessment.contentSha256` = SHA-256 of the prepared body; `ConversationMessage.content` = approved prepared body; the actual `sendWhatsAppText` payload = committed message content. Require equality under tests. The post-window template path remains keyed to `arch040_moderation_template_input_v1` and Meta approved template parameters.
+
 **Consumes** BG005 wrapper `renderConversationResponse(source:'HUMAN')`, existing `MerchantSendCommandService`, `HumanCommandDispatcherService` and moderation/admission services. No Shared AST. UI preview endpoints remain owned by Shopify/Woo/API; this task exposes only its established prepared render result to the existing command path.
 
 ## Dependencies
 
-- `ARCH-047-BACKGROUND-005`
+- `ARCH-047-BACKGROUND-005` (Complete)
+- `ARCH-040-DATABASE-007` (new database correction, not yet Complete)
 
 
 **Important:** Tasks are not Ready merely because their files exist. Confirm each dependency has `status: complete` (not only Passing tests / Accepted review) before claiming. DB001 is developer-owned and may remain in progress pending explicit completion. Dependencies outside this task must be resolved by their owners; do not implement across repositories.
@@ -88,6 +112,13 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 None in this nine-task Background set.
 
 ## Acceptance Criteria
+
+- [ ] Database prerequisite complete; original `textBody`/`payloadSha256` unchanged by wrapping, prepared body and evidence frozen atomically once under current claim.
+- [ ] Complete wrapped body (or explicit no-wrapper passthrough) is identical across HUMAN_TEXT moderation input/digest, final-admission `ConversationMessage.content` and actual provider-send text; wrapper-only forbidden content is moderated before any provider permit.
+- [ ] SQL rejects raw-body moderation digest when it differs from the frozen body; stale/absent prepared body, invalid lease, replay mutation and current wrapper change cannot reach provider dispatch.
+- [ ] Concurrent claim, retry after worker crash, change of published wrapper, `STOP`/control/window loss and existing UNKNOWN/provider compensation covered by actual PostgreSQL-integrated tests.
+- [ ] `RECOVERY_FOLLOW_UP_TEMPLATE` retains original template-parameter moderation, BG007 sequence-two and billing semantics; no new human free-text route is reachable after window close.
+- [ ] Only orphaned raw HUMAN_TEXT branches/tests are removed; existing final admission security invariants and BG007 integration remain intact.
 
 - [ ] Human in-window reply retains verbatim merchant text with deterministic wrapper; HUMAN override/SHARED fallback and valid checkout URL tested.
 - [ ] Wrapper-only forbidden content blocked by full-message moderation; durable message/provider payload equality verified.
@@ -101,6 +132,9 @@ None in this nine-task Background set.
 
 ## Validation
 
+- [ ] Fresh/upgrade PostgreSQL schema guard evidence is supplied by accepted `ARCH-040-DATABASE-007`; BG009 itself runs focused PostgreSQL integration for frozen preparation, moderation INSERT digest, final-send message content and provider-send equality.
+- [ ] Regression tests: valid wrapper, passthrough, missing/invalid wrapper refusal, wrapper-only moderation denial, malformed evidence, blocked moderation, concurrent/reclaimed claims, retry/restart, stale wrapper activation, window/STOP/control loss, and BG007 template command untouched.
+- [ ] Audit all production callers of `command.textBody` and remove/redirect the obsolete HUMAN_TEXT sender path; inspect no stale direct sender remains before review.
 - [ ] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
 - [ ] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
 - [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence.
@@ -122,7 +156,7 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-**In Progress — Attempt 1, blocked on an architectural decision.** The developer's existing claim at `2026-10-26T07:24:51Z` remains recorded in task YAML. This report is an escalation for the architect, **not** a completed implementation, formal review submission, or new attempt. The developer/architect workflow must authorise any later transition to `blocked` or `ready`; this documentation patch does not change the claim.
+**Blocked — developer Attempt 1 preserved, architect escalation accepted 2026-10-26.** The original claim at `2026-10-26T07:24:51Z` is historical evidence; task YAML now has `status: blocked`, `executor: null`, `claimed_at: null`. This amendment is **not** implementation acceptance, a completed review, a code patch or a new claim. Once `ARCH-040-DATABASE-007` is accepted Complete and code consumers have the migration, the architect may return this same task to `ready` for developer Attempt 2.
 
 ### Files Changed
 
@@ -195,27 +229,36 @@ The uploaded `typescript(20261026-072937)` terminal recording shows:
 
 ### Review Status
 
-Pending — implementation not submitted.
+**Blocked — architectural dependency confirmed (2026-10-26).** Developer Attempt 1 preparation is not accepted as a completed BG009 integration.
 
 ### Review Notes
 
-Not reviewed.
+The inspected 26 October BG009 worktree shows a correct preparation-only `HumanWrapperPreparationService`, but `whatsapp.arch040_command_guard()` freezes the original `textBody`, and `whatsapp.arch040_moderation_subject_guard()` hashes that raw body. `PostgresModerationAssessmentService`, `OutboundSendFenceService` and `HumanCommandDispatcherService` consequently moderate, admit, persist and transmit `command.textBody`. Wiring a wrapped body only at the provider would break moderation-content identity; overwriting `textBody` would break accepted-command idempotency. Preserve the existing work and **do not** add an unsafe bypass.
+
+**Required correction before reclaim:** implement/accept `ARCH-040-DATABASE-007` (set-once prepared body + new HUMAN_TEXT digest). Then the BG009 developer reclaims this same task as Attempt 2, wires frozen prepared-body moderation/admission/provider equality, implements required tests, and reconciles BG007's shared dispatcher source without moving BG007 post-window scope into BG009.
+
 
 ### Reviewed Files
 
-None yet.
+- `moda-interact-background/src/services/recovery-conversation/human-wrapper-preparation.service.ts`
+- `moda-interact-background/src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `moda-interact-background/src/services/conversation-moderation/moderation-assessment.service.ts`
+- `moda-interact-background/database/prisma/schema.prisma`
+- `moda-interact-background/database/prisma/migrations/20261017214500_arch040_remove_outreach_sequence_policy/migration.sql`
+- `moda-interact-background/database/prisma/migrations/20261018092000_arch040_moderation_template_content_digest/migration.sql`
 
 ### Validation Reviewed
 
-None yet.
+Inspected developer's recorded `prisma:generate`, patch-apply and whitespace evidence. Focused BG009 tests, build, database integration and provider equality are **not yet proven**.
 
 ### Architecture Conformance
 
-To be assessed against the reconciled ARCH-047 parent architecture and current repository code.
+Preparation module respects source/owner boundaries, but full delivery architecture cannot conform until the durable HUMAN_TEXT moderation subject and admitted/provider text agree. Preserve ARCH-040 consent, STOP, claim/window/billing/UNKNOWN rules.
 
 ### Follow-up
 
-Architect to reconcile the parent task graph and obsolete Admin/Shared references before promoting these tasks to Ready.
+Execute `ARCH-040-DATABASE-007`, accept its schema/migration and tests, sync `database/` in BG009 implementation, then explicitly re-gate/reclaim BG009 as developer Attempt 2. Review BG007 shared dispatcher changes before final BG009 acceptance; downstream ARCH-047 system tests must assert original/approved/persisted/provider equality. No `_index.md` modification before architecture-session closure.
 
 ## Execution Ownership Amendment
 

@@ -182,6 +182,15 @@ Modules emit bounded business-outcome logs (run/definition IDs, WABA/template ID
 
 Classify production compatibility at implementation time. The 11-table Database migration is additive and preserves existing shop assignments and audit records. Do not introduce a Shared publication gate for Admin ASTs. The **single minimal Shared publication gate** applies only to Meta template-status queue event v2. Confirm persisted JSON formats and the existing shared language registry before Background adoption. Implement and verify feature modules **before** touching caller services. Stage automated recovery integration and its shared final-fence adapter before merchant post-window integration; keep preexisting paths working until explicitly cut over. Deploy Messaging event support and provider management before enabling Meta-authoring submissions. Explicitly publish approved shop assignments; legacy unlinked assignments are not silently treated as Moda-authored. Internal wrapper activation and rollout are independent of recovery-template Meta submission. Run system tests only after all needed implementations are architect-accepted and the developer has performed any desired manual validation.
 
+
+### ARCH-047 BG009 blocked on ARCH-040 durable prepared-message correction (2026-10-26)
+
+`ARCH-047-BACKGROUND-009` is **blocked** after developer Attempt 1 identified a real moderation/delivery identity conflict. `MerchantConversationSendCommand.textBody` is immutable merchant intent; the installed `whatsapp.arch040_moderation_subject_guard()` and Background moderation/final-send/provider paths all use that raw body. A wrapper cannot be appended after moderation, and the accepted `textBody` cannot be rewritten.
+
+Create `ARCH-040-DATABASE-007` to add a nullable, set-once `preparedTextBody`, `preparedWrapperEvidence` and `preparedAt` on the **existing** command and to validate HUMAN_COMMAND/TEXT moderation against the SHA-256 of the frozen complete body. No new table, AST format, or DB-owned wrapper-eligibility policy. After the database task is architect-accepted Complete, BG009's dependency is satisfied; the developer may reclaim the same task for Attempt 2 and wire freeze → whole-text moderation → exact durable `ConversationMessage.content` → provider text, with late wrapper/policy checks and no re-render on retries. The post-window BG007 template path remains unchanged and must be reconciled where it shares the dispatcher.
+
+`ARCH-047-SYSTEM-TEST-001` must prove wrapper-only moderation refusal, lease/replay immutability, changed wrapper before permit, final STOP/window fences, no-wrapper passthrough and exact moderated/persisted/provider-text identity. Do not mark BG009 Complete based solely on the preparation-only module.
+
 ## Decisions / Tasks
 
 ### Existing tasks and cross-repository consumer ownership (26 October snapshot)
