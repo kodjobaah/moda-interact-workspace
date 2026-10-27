@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -119,7 +119,7 @@ The hosted API v2 and Woo plugin v2 are a coordinated rollout in development. Do
 
 ### Status
 
-Ready for Architect Review after addressing the Attempt 1 Changes Requested items.
+Accepted by architect at Attempt 1; task completed automatically after the requested correction and validation.
 
 ### Files Changed
 
@@ -197,3 +197,43 @@ Keep `attempt: 1`; clear executor and claimed_at, make the logger failure path s
 ## Architect Dependency Frontier Reconciliation — 27 October 2026
 
 `ARCH-050-API-001` was accepted and completed at Attempt 1. This task's sole declared dependency is therefore satisfied, so its status advances from `pending` to `ready`. It remains unclaimed at Attempt 0 (`executor: null`, `claimed_at: null`); no implementation worktree or attempt was started.
+
+## Architect Review — Attempt 1 — Accepted after Changes Requested — 27 October 2026
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+The Attempt 1 logger correction catches failures from both `wc_get_logger()` and its `error()` sink, uses the plugin's bounded fallback diagnostic, and still returns the existing sanitized `REMOTE_UNAVAILABLE` 503. The new throwing-logger test verifies that mapping. The v2 DTO, exact Boolean validation, explicit ON/OFF form value, independent top-level preference, revision-checked save, read-after-save equality, visible failure state, and 20-language UI remain consistent with the task. No new endpoint or browser logger dependency was added.
+
+### Reviewed Files
+
+- `moda-interact-woocommerce/includes/Api/RecoveryPolicyResponseValidator.php`
+- `moda-interact-woocommerce/includes/Rest/RecoveryPolicyController.php`
+- `moda-interact-woocommerce/src/recovery-policy-client.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-validation.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-fields.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-panel.js`
+- PHP/JS contract and UI tests, locale catalogs, test configuration updates, and Attempt 1 Completion Report.
+
+### Validation Reviewed
+
+- `npm run test:js:unit`: 61 files / 460 tests passed.
+- `npm run test:php`: 198 tests / 1,509 assertions passed, including the throwing Woo logger case and sanitized 503 response.
+- `npm run lint:js`, `npm run lint:php`, and `npm run i18n:verify:20` passed (557 source messages; 19/19 translation packs).
+- `npm run build` passed with webpack bundle-size performance warnings. Targeted PHP/JS syntax checks and `git diff --check` passed.
+- Implementation branch `task/ARCH-050-WOOCOMMERCE-001` is clean and published at `0cb22afcc6521939fcb2e2e41a6fc9594cdce855`. Neither task branch was merged to `main`.
+
+### Architecture Conformance
+
+Conforms to ARCH-050 and the hosted API/WooCommerce boundary. The opt-in is merchant-controlled, independently persisted through the existing authenticated proxy, and does not change billing, outbound enablement, or Support inbox behavior.
+
+### Dependency Frontier
+
+This task uses `completion_mode: automatic`; architect acceptance completes Attempt 1. `ARCH-050-SYSTEM-TEST-002` remains pending because `ARCH-050-API-002` is still `ready` and `ARCH-050-WOOCOMMERCE-002` is still `pending`. System testing remains terminal/manual-gated and is not started by this acceptance.
+
+### Lifecycle
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. Neither task branch was merged to `main`.
