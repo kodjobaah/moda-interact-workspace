@@ -917,7 +917,7 @@ SYSTEM TESTS
 Current architect-accepted/published Shared release is `@modainteract/moda-interact-shared@0.8.0`.
 The SHOPIFY-003 correction deliberately restores its previously accepted consumer baseline to 0.7.4 rather than opportunistically consuming the pack-contract release.
 
-ARCH-050-BACKGROUND-001 independently reproduced the existing ARCH-007-BACKGROUND-010 scheduling integration timeout on 2026-10-26. ARCH-007-BACKGROUND-012 owns the bounded Background diagnosis/correction; SYSTEM-TEST-005 remains terminal/manual-gated until B012 is complete.
+ARCH-051-BACKGROUND-001 (originally materialised under the conflicting ARCH-050 identity) independently reproduced the existing ARCH-007-BACKGROUND-010 scheduling integration timeout on 2026-10-26. ARCH-007-BACKGROUND-012 completed the bounded Background diagnosis/correction; SYSTEM-TEST-005 remains terminal/manual-gated until its own prerequisites and developer checkpoint are satisfied.
 
 ## Open Questions
 

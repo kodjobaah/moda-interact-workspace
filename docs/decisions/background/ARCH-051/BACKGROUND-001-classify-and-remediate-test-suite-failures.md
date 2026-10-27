@@ -1,6 +1,6 @@
 ---
-id: ARCH-050-BACKGROUND-001
-architecture_id: ARCH-050
+id: ARCH-051-BACKGROUND-001
+architecture_id: ARCH-051
 title: Classify and remediate Background test-suite failures
 task_kind: implementation
 domain: background
@@ -9,24 +9,25 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 20
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: []
+depends_on:
+  - ARCH-007-BACKGROUND-012
 enables: []
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Classify and remediate Background test-suite failures
 
 ## Architecture
 
-Architecture ID: `ARCH-050`
+Architecture ID: `ARCH-051`
 
-Architecture document: `docs/architecture/ARCH-050-background-test-suite-stabilisation.md`
+Architecture document: `docs/architecture/ARCH-051-moda-interact-background-test-suite-stabilisation.md`
 
 Coordinator: `moda_architect`
 
@@ -139,10 +140,9 @@ dependency update.
 
 ## Dependencies
 
-None. Baseline reproduction and ownership classification can begin independently.
-If classification finds a required Shared-owned fix, `moda_architect` must create
-the appropriate Shared task and publication gate if needed, then update this
-task's dependency before affected Background remediation resumes.
+- `ARCH-007-BACKGROUND-012` — Complete. Its scheduling correction must be present before the final full integration rerun can establish the task acceptance gate.
+
+If classification finds a required Shared-owned fix, `moda_architect` must create the appropriate Shared task and publication gate if needed, then update this task dependency before affected Background remediation resumes.
 
 ## Enables
 
@@ -193,6 +193,8 @@ the task to `blocked`, record exact evidence and return control to
 
 ## Implementation Notes
 
+This task was promoted from the conflicting `ARCH-050-BACKGROUND-001` identity. Attempt 1 implementation and review history remain recorded below and on the original `task/ARCH-050-BACKGROUND-001` branches. The new task retains `attempt: 1`; the next claim is Attempt 2 on mirrored `task/ARCH-051-BACKGROUND-001` branches. The new implementation worktree/branch is left for the execution launcher to establish.
+
 The Background repository declares `@modainteract/moda-interact-shared` 2.5.1.
 The supplied run's integration suite passed after replacing a local installed
 2.4.3 package and supplying declared `libphonenumber-js@1.12.30`; verify current
@@ -204,9 +206,7 @@ modify production/test code.
 
 ### Status
 
-Blocked — Background unit suite is green; full disposable integration remains
-blocked by the independently reproduced ARCH-007 conversation-turn scheduling
-failure documented below.
+Attempt 1 was Blocked at review because full integration reproduced the ARCH-007 scheduling failure. `ARCH-007-BACKGROUND-012` is now Complete; this task is Ready for Attempt 2, not claimed. The final integration rerun and requested report corrections remain outstanding.
 
 ### Files Changed
 
@@ -283,14 +283,7 @@ None
 
 ### Unresolved Issues
 
-The independently reproduced ARCH-007 conversation-turn scheduling failure
-is assigned to `ARCH-007-BACKGROUND-012` (Ready), owned by `moda_background`.
-That follow-up preserves the original settle/lease contract and requires a
-root-cause fix rather than a timeout-only change. The durable ARCH-025 baseline
-is historical and does not cover this failure; ARCH-028-BACKGROUND-007 also
-records the same test identity as unresolved follow-up. The original stale
-Shared export load errors were installation-only and did not recur after
-`npm ci`.
+During Attempt 1, the independently reproduced ARCH-007 conversation-turn scheduling failure was assigned to `ARCH-007-BACKGROUND-012`; that task is now Complete. Attempt 2 must rerun the full integration suite on its prepared task revision to establish whether the fix resolves the failure. The durable ARCH-025 baseline is historical and does not cover this failure; ARCH-028-BACKGROUND-007 also records the same test identity as unresolved follow-up. The original stale Shared export load errors were installation-only and did not recur after `npm ci`.
 
 ### Architectural Concerns
 
@@ -360,7 +353,13 @@ Before resubmission, correct the following report/evidence issues:
    than reporting the suite green. The owner follow-up is
    `ARCH-007-BACKGROUND-012` (Ready).
 4. Reconcile the ARCH-050 task index: it currently says `Ready` while this task
-   metadata is `blocked`.
+   metadata is `blocked`. **Promotion update:** the test-suite task is now under
+   ARCH-051 with its own index; ARCH-050 index has been restored to the merchant
+   notification tasks.
+
+### Promotion / Re-gating Update — 2026-10-27
+
+This remediation initiative is now `ARCH-051-BACKGROUND-001`; the prior `ARCH-050-BACKGROUND-001` identity collided with the independent merchant-notification architecture. Attempt 1 and this Changes Requested review are retained as provenance. The required dependency `ARCH-007-BACKGROUND-012` is Complete, so the task is Ready for Attempt 2. The prior report/evidence corrections remain required; no implementation claim is carried forward under the new task branch.
 
 ### Reviewed Files
 
@@ -387,11 +386,8 @@ Before resubmission, correct the following report/evidence issues:
 ### Architecture Conformance
 
 Implementation conforms within scope. The report/evidence gaps above prevent
-acceptance. The task remains `blocked` until the report corrections are
-published and the full integration gate is resolved.
+acceptance. At the time of this review, the task remained `blocked` until report corrections were published and the full integration gate resolved. The integration dependency is now Complete; the task is Ready for Attempt 2 while the report corrections and final full-suite evidence remain required.
 
 ### Follow-up
 
-Correct the report/index issues above on the canonical task branches, then
-resubmit for Architect Review after `ARCH-007-BACKGROUND-012` resolves the
-scheduling integration failure.
+On Attempt 2, complete the report/evidence corrections above, rerun the full unit and integration suites after `ARCH-007-BACKGROUND-012`, and resubmit for Architect Review. The dependency is Complete and the task is Ready; no claim has been made.

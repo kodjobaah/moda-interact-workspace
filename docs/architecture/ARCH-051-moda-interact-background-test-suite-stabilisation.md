@@ -1,17 +1,17 @@
 ---
-id: ARCH-050
+id: ARCH-051
 title: moda-interact-background test-suite stabilisation
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
-# ARCH-050: moda-interact-background test-suite stabilisation
+# ARCH-051: moda-interact-background test-suite stabilisation
 
 ## Status
 
-Proposed. One Background-owned baseline-triage and remediation task is Ready.
+In Progress. The sole Background task is Ready for Attempt 2 after its ARCH-007 scheduling-failure dependency completed.
 
 ## Problem
 
@@ -62,7 +62,7 @@ or assumed to explain every current failure.
 
 ## Proposed Architecture
 
-`ARCH-050-BACKGROUND-001` owns baseline reproduction and Background-only
+`ARCH-051-BACKGROUND-001` owns baseline reproduction and Background-only
 corrections. Dependency installation and Shared package resolution are
 diagnosed first. A wrong local install is corrected in the task environment
 without adding Background shims or unrelated manifest changes. If the published
@@ -118,7 +118,7 @@ customer payloads in test diagnostics.
 
 | Task | Owner | Status | Depends On |
 |------|-------|--------|------------|
-| ARCH-050-BACKGROUND-001 | moda_background | Ready | - |
+| ARCH-051-BACKGROUND-001 | moda_background | Ready | ARCH-007-BACKGROUND-012 (Complete) |
 
 Integrated `moda_system_test` validation is not applicable: this initiative
 validates an existing repository test suite and does not add a cross-service
@@ -131,6 +131,8 @@ task. Any Shared-owned dependency gap is returned to `moda_architect` for a
 separate task and dependency update.
 
 ## Change History
+
+- 2026-10-27 — Promoted the test-suite stabilisation initiative from the conflicting ARCH-050 identity to ARCH-051; recorded the completed ARCH-007 scheduling repair as a satisfied task dependency. Attempt 1 evidence remains in the task record.
 
 - 2026-10-26: Created from the full Background test-run evidence; no test or
   implementation changes were made during task authoring.

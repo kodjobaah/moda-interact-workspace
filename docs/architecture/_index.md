@@ -21,6 +21,8 @@
 | ARCH-011 | pending 9, ready 3 | [Pro-rated same-cycle subscription upgrades](ARCH-011-pro-rated-same-cycle-subscription-upgrades.md) |
 | ARCH-012 | pending 7, ready 3 | [Moda-managed WhatsApp communications](ARCH-012-moda-managed-whatsapp-communications.md) |
 | ARCH-013 | complete 2 | [Merchant application routing, navigation and lifecycle coherence](ARCH-013-merchant-application-routing-navigation.md) |
+| ARCH-050 | complete 1, pending 6, ready 5 | [Merchant recovery initial outreach Support notifications](ARCH-050-merchant-recovery-initial-outreach-support-notifications.md) |
+| ARCH-051 | ready 1 | [Background test-suite stabilisation](ARCH-051-moda-interact-background-test-suite-stabilisation.md) |
 
 ## Current execution highlights
 

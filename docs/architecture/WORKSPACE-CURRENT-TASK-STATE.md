@@ -3,6 +3,7 @@
 > Synchronized by `moda_architect` on 2026-09-08 from individual task YAML frontmatter,
 > with explicit restoration of previously accepted task records where the supplied workspace had drifted.
 > ARCH-005 was reconciled again on 2026-10-08 after SHOPIFY-004 Attempt 2 acceptance.
+> ARCH-050 and ARCH-051 were reconciled on 2026-10-27 after task identity promotion and frontier review.
 > Individual task files remain authoritative for execution/correction contracts.
 
 ## Workflow rules
@@ -1857,3 +1858,26 @@ current Render plan is claimed capacity-proven.
 
 COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 are promoted Ready; none is
 automatically claimed or launched.
+
+## ARCH-050 — Merchant recovery initial outreach Support notifications
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-050-API-001 | api | Ready | 0 | ARCH-050-DATABASE-001 |
+| ARCH-050-API-002 | api | Ready | 0 | ARCH-050-DATABASE-001 |
+| ARCH-050-BACKGROUND-001 | background | Ready | 0 | ARCH-050-DATABASE-001 |
+| ARCH-050-BACKGROUND-002 | background | Pending | 0 | ARCH-050-BACKGROUND-001 |
+| ARCH-050-BACKGROUND-003 | background | Pending | 0 | ARCH-050-BACKGROUND-001, ARCH-048-BACKGROUND-005 |
+| ARCH-050-DATABASE-001 | database | Complete | 1 | — |
+| ARCH-050-SHOPIFY-001 | shopify | Ready | 0 | ARCH-050-DATABASE-001 |
+| ARCH-050-SHOPIFY-002 | shopify | Ready | 0 | ARCH-050-DATABASE-001 |
+| ARCH-050-SYSTEM-TEST-001 | system-test | Pending | 0 | ARCH-050-BACKGROUND-002, ARCH-050-SHOPIFY-001, ARCH-050-SHOPIFY-002 |
+| ARCH-050-SYSTEM-TEST-002 | system-test | Pending | 0 | ARCH-050-BACKGROUND-003, ARCH-050-API-001, ARCH-050-API-002, ARCH-050-WOOCOMMERCE-001, ARCH-050-WOOCOMMERCE-002, ARCH-048-WOOCOMMERCE-002, ARCH-048-WOOCOMMERCE-003 |
+| ARCH-050-WOOCOMMERCE-001 | woocommerce | Pending | 0 | ARCH-050-API-001 |
+| ARCH-050-WOOCOMMERCE-002 | woocommerce | Pending | 0 | ARCH-050-API-002 |
+
+## ARCH-051 — Background test-suite stabilisation
+
+| Task | Domain | Status | Attempt | Dependencies |
+|---|---|---|---:|---|
+| ARCH-051-BACKGROUND-001 | background | Ready | 1 | ARCH-007-BACKGROUND-012 |

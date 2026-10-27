@@ -45,7 +45,7 @@ Correct the reproducible Background conversation-turn scheduling failure where a
 
 ## Context
 
-The `ARCH-050-BACKGROUND-001` validation at Background revision `6cce2b18f288d4cabc6f7dcea3ef251acbb15323` passes all 291 unit files / 3,013 tests after `npm ci`, but disposable integration validation times out in `tests/integration/conversation-turn-scheduling.integration.test.ts` at `coalesces three persisted fragments and claims only the settled current version`.
+The `ARCH-051-BACKGROUND-001` validation (originally recorded under the conflicting `ARCH-050-BACKGROUND-001` identity) at Background revision `6cce2b18f288d4cabc6f7dcea3ef251acbb15323` passes all 291 unit files / 3,013 tests after `npm ci`, but disposable integration validation times out in `tests/integration/conversation-turn-scheduling.integration.test.ts` at `coalesces three persisted fragments and claims only the settled current version`.
 
 The failure reproduces under the repository's npm-isolated integration invocation. Diagnostic state showed `inboundVersion: 3`, `lastProcessedVersion: 0`, `processingInboundVersion: 2`, and version 3 still pending after the test's five-second wait. `ARCH-028-BACKGROUND-007` previously recorded this exact test identity as an unresolved follow-up. This task owns diagnosis and correction of the Background scheduling/lease behavior; it does not assume the observed state alone proves the root cause.
 
