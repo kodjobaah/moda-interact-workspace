@@ -9,17 +9,17 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 45
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-10-27T18:09:11Z
+attempt: 1
 depends_on:
   - ARCH-047-API-001
 enables:
   - ARCH-047-SYSTEM-TEST-001
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Display authenticated recovery follow-up template choices in WooCommerce
