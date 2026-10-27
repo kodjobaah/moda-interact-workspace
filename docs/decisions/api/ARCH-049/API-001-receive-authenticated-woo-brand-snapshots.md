@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
 executor: developer
 claimed_at: 2026-10-27T12:46:54Z
@@ -79,10 +79,10 @@ Authenticate using the existing Woo installation boundary, enforce tenant/platfo
 
 ## Work Items
 
-- [ ] Define exact request/response decoder and authenticated route.
-- [ ] Implement PostgreSQL transaction with per-role generations and stale ordering.
-- [ ] Register route and add integration tests with current auth harness.
-- [ ] Verify no image fetch, WordPress inbound auth change or R2 code.
+- [x] Define exact request/response decoder and authenticated route.
+- [x] Implement PostgreSQL transaction with per-role generations and stale ordering.
+- [x] Register route and add integration tests with current auth harness.
+- [x] Verify no image fetch, WordPress inbound auth change or R2 code.
 
 ## Interfaces / Contracts
 
@@ -98,18 +98,18 @@ Producer: Woo plugin `ModaApiClient`. Consumer: Moda API-owned HTTP contract; bo
 
 ## Acceptance Criteria
 
-- [ ] Unauthenticated and cross-installation requests cannot mutate ShopBrand.
-- [ ] Valid complete snapshot writes source generations atomically and responds only after PostgreSQL commit.
-- [ ] Duplicate/older observations do not create new generations or overwrite newer source.
-- [ ] Missing/removed source is distinguished from failed request.
-- [ ] No new table/queue contract or WordPress server endpoint.
+- [x] Unauthenticated and cross-installation requests cannot mutate ShopBrand.
+- [x] Valid complete snapshot writes source generations atomically and responds only after PostgreSQL commit.
+- [x] Duplicate/older observations do not create new generations or overwrite newer source.
+- [x] Missing/removed source is distinguished from failed request.
+- [x] No new table/queue contract or WordPress server endpoint.
 
 ## Validation
 
-- [ ] API contract and body-size/headers/security tests.
-- [ ] Database-backed tenant/idempotent/ordering/multi-role update integration tests.
-- [ ] Register route in existing composition and verify startup/typecheck/lint/test commands.
-- [ ] `git diff --check`.
+- [x] API contract and body-size/headers/security tests.
+- [x] Database-backed tenant/idempotent/ordering/multi-role update integration tests.
+- [x] Register route in existing composition and verify startup/typecheck/lint/test commands.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -125,35 +125,78 @@ Ensure the plugin uses the existing installation credential scheme; no source da
 
 ### Status
 
-In Progress - Developer Attempt 1; canonical task worktrees synchronized and claim published.
+Ready for Review — developer Attempt 1 (claim `2026-10-27T12:46:54Z`). Four incremental delivery patches were applied within this **one** developer workflow attempt; the canonical task `attempt` remains 1. Implementation was committed and pushed. The post-validation upstream merge and remaining publication/verification caveat are recorded below for the reviewer.
 
 ### Files Changed
 
-None.
+Task-owned implementation changes in `moda-interact-api` (14 entries including database gitlink):
+
+- `database` (nested database submodule gitlink; advanced to the accepted ARCH-049 ShopBrand schema during implementation; verify the final gitlink after the upstream merge).
+- `package.json` (focused unit and disposable-PostgreSQL integration test scripts).
+- `scripts/test-arch049-shop-brand-postgres.mjs`.
+- `src/composition/routes.ts`.
+- `src/composition/woocommerce.ts`.
+- `src/index.ts`.
+- `src/woocommerce/shop-brand/contract.ts`.
+- `src/woocommerce/shop-brand/request.ts`.
+- `src/woocommerce/shop-brand/routes.ts`.
+- `src/woocommerce/shop-brand/service.ts`.
+- `tests/integration/woocommerce/shop-brand/service.postgres.test.ts`.
+- `tests/unit/woocommerce/shop-brand/contract.test.ts`.
+- `tests/unit/woocommerce/shop-brand/routes.test.ts`.
+- `tests/unit/woocommerce/shop-brand/service.test.ts`.
+
+An **additional** merge from API `origin/main` occurred after the successful validation. Its log shows incoming changes to the *merchant recovery-policy* OpenAPI/source/tests and a database-submodule merge conflict, resolved by staging the database gitlink. These incoming upstream files are not claimed as features implemented under this task.
 
 ### Work Completed
 
-None.
+- Implemented tenant-authenticated `POST /v1/woocommerce/shop-brand` using the existing Woo installation authenticator, rejecting untrusted `shopId` and authenticating before body parsing.
+- Added the strict `woo.shop-brand.v1` contract: canonical observedAt, 16 KiB maximum body, exact JSON fields, duplicate-header/key rejection, UTF-8 and HTTPS source validation, and no-store `200` (`updated`/`unchanged`), `400`, `401`, `413` and `503` responses.
+- Used a short PostgreSQL transaction with Shop/ShopBrand row locks and in-transaction installation revalidation. Persisted the original brand fields and JSON role source generations for `LOGO`, `SQUARE_LOGO`, and `COVER_IMAGE`; protected newer observations and READY assets, preserved other roles and handled explicit source removal as `MISSING`.
+- Retained Background ownership of media processing: no WordPress server calls, image decoding, R2 activity or BullMQ publication in the API transaction. Shared structured logging emits bounded, redacted diagnostics rather than source URLs or credentials.
+- Added unit/contract/HTTP tests and executable PostgreSQL integration coverage for tenant isolation, revoked/suspended installations, malformed payloads, duplicate/stale observations, role generation transitions, metadata-only updates and concurrent worker writes.
+- Corrected three test-fixture defects in incremental patches: optional PostgreSQL URL typing, global count isolation, and valid `(status, revokedAt)` transitions. No production-code changes were required for those three corrections.
 
 ### Validation Results
 
-Not run.
+Validated **before** the subsequent upstream merge; evidence: developer terminal capture `typescript(20261027-143455)`:
+
+| Command/check | Result |
+| --- | --- |
+| `npm run test:arch049-shop-brand:postgres` | **PASS** — 3/3 real PostgreSQL integration tests (including actual Woo installation HTTP auth and concurrency), 65 migrations applied to disposable database. |
+| `npm run test:arch049-shop-brand:unit` | **PASS** — 9/9 unit, contract and HTTP tests. |
+| `npm run typecheck` | **PASS** — Prisma client generated successfully; `tsc --noEmit -p tsconfig.json` completed without errors. |
+| `npm run lint` | **PASS** — `eslint . --max-warnings=0`. |
+| `npm run build` | **PASS** — Prisma generation and `tsc -p tsconfig.build.json`. |
+| `git diff --check` and `git diff --cached --check` | **PASS** — no whitespace errors reported. |
+
+Git/worktree and publication evidence:
+
+- Parent task worktree: `moda-interact-workspace-task-ARCH-049-API-001`; implementation worktree: `moda-interact-workspace.worktrees/ARCH-049-API-001`, both reported as canonical dedicated paths in the launcher-origin task claim and latest snapshot archive creation.
+- Both task branches: `task/ARCH-049-API-001`. Task claim records start-of-attempt parent/API synchronisation, clean worktrees and verified dependency `ARCH-049-DATABASE-001: complete`.
+- Implementation commit: **`83c801d`** (`feat(arch-049-api-001)`), successfully pushed to `origin/task/ARCH-049-API-001` in the supplied log.
+- Later local merge commit: **`7a55571`** (`Merge remote-tracking branch 'origin/main' into task/ARCH-049-API-001`), created after tests; the log does **not** show a subsequent test run or push of this merge commit. The final database gitlink also needs verification after its manual submodule-conflict resolution.
+- At the end of the log, Git reported no staged or unstaged tracked changes, but an untracked `typescript` log file remained. This is non-task output and should not be included in the commit.
 
 ### Deviations
 
-None.
+- The API task branch was updated from `origin/main` **after** the tests. Git reported a database-submodule merge conflict that the developer resolved by staging the gitlink and committing a merge. The post-merge result has not been independently regression-tested or confirmed remotely by the supplied evidence.
+- No intentional changes to the task's agreed API behaviour or repository ownership. Four patch delivery numbers are not four workflow attempts.
 
 ### Assumptions
 
-None beyond the explicit architecture/task contract.
+- `ARCH-049-DATABASE-001` provides the accepted `commerce.ShopBrand.whatsAppMedia` schema; the nested database commit should remain aligned after the upstream merge.
+- `ARCH-049-BACKGROUND-002` owns the durable due scanner for `PENDING` media; API success is based on PostgreSQL commit, not queue publication.
+- Existing Woo installation credentials and principal resolution are authoritative; source payloads do not supply tenant authority.
 
 ### Unresolved Issues
 
-None; live environment availability is a validation prerequisite and must be reported if missing.
+- **Pre-acceptance verification:** From the current merged API task tip (`7a55571`), verify `git submodule status --recursive`, rerun the focused PostgreSQL/unit tests and repository typecheck/lint/build (or provide equivalent evidence demonstrating no post-merge regression), then push `task/ARCH-049-API-001` and record its final published commit. The supplied log proves `83c801d` was pushed, **not** that `7a55571` was pushed.
+- A complete launcher-resolved execution packet is not attached to the validation log; the existing task claim records its start-of-attempt synchronisation and isolation. Architect/developer reviewer should reconcile against the actual Git worktree and branch state before acceptance.
 
 ### Architectural Concerns
 
-None reported.
+No new cross-repository contract, queue, provider or schema architecture change is proposed by this task. Verify that the database gitlink retained the accepted ARCH-049 migration after the manual merge resolution. No dependent task was started by this implementation.
 
 ## Architect Review
 
