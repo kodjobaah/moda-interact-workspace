@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-27T13:20:22Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-001"]
 enables: ["ARCH-049-BACKGROUND-003", "ARCH-049-SYSTEM-TEST-001"]
@@ -80,10 +80,10 @@ Expose per-role retry and failureCode metadata, bound memory/worker concurrency 
 
 ## Work Items
 
-- [ ] Implement row-locked source updater and lease/CAS repository.
-- [ ] Implement bounded due scanner and optional wake handling.
-- [ ] Implement retry, crash recovery and seven-day content refresh.
-- [ ] Test two workers, multi-role writes, stale completion, source removal, duplicate source event and status reconstruction.
+- [x] Implement row-locked source updater and lease/CAS repository.
+- [x] Implement bounded due scanner and optional wake handling.
+- [x] Implement retry, crash recovery and seven-day content refresh.
+- [x] Test two workers, multi-role writes, stale completion, source removal, duplicate source event and status reconstruction.
 
 ## Interfaces / Contracts
 
@@ -101,18 +101,18 @@ Consumes `commerce.ShopBrand` `whatsAppMedia` JSON schema version 1 and BG001 `p
 
 ## Acceptance Criteria
 
-- [ ] Duplicate or concurrent source updates do not lose another role or duplicate current generation.
-- [ ] Lost queue wakes and worker crashes are recovered by due-row scan.
-- [ ] Old generation or old lease holder cannot publish READY.
-- [ ] Failed fetch/R2 calls are retried within bounded policy; permanent errors visible without endless retry.
-- [ ] A same-URL updated image is eventually detected and atomically replaces READY without forcing a send-time download.
+- [x] Duplicate or concurrent source updates do not lose another role or duplicate current generation.
+- [x] Lost queue wakes and worker crashes are recovered by due-row scan.
+- [x] Old generation or old lease holder cannot publish READY.
+- [x] Failed fetch/R2 calls are retried within bounded policy; permanent errors visible without endless retry.
+- [x] A same-URL updated image is eventually detected and atomically replaces READY without forcing a send-time download.
 
 ## Validation
 
-- [ ] PostgreSQL integration tests for per-role row-lock/CAS/unique shop and multi-worker contention.
-- [ ] Unit tests for retry backoff, due-scan bounds and lease expiry.
-- [ ] Deterministic output-stale and revalidation fixture tests.
-- [ ] Relevant Background lint/typecheck/tests and `git diff --check`.
+- [x] PostgreSQL integration tests for per-role row-lock/CAS/unique shop and multi-worker contention.
+- [x] Unit tests for retry backoff, due-scan bounds and lease expiry.
+- [x] Deterministic output-stale and revalidation fixture tests.
+- [x] Relevant Background lint/typecheck/tests and `git diff --check`.
 
 ## Stop Condition
 
@@ -128,35 +128,73 @@ No additional assumptions are authorised.
 
 ### Status
 
-In Progress - Developer Attempt 1; canonical task worktrees synchronized and claim published.
+Ready for Review — developer Attempt 1. The Attempt 1 implementation and subsequent correction-patch iterations (through logging-corrected Attempt 3) are committed to the implementation task branch. This submission records validation and implementation evidence; it is **not** an architect acceptance or a developer completion decision.
 
 ### Files Changed
 
-None.
+Implementation repository: `moda-interact-background`, 12 files in commit `6617d97` (`feat(arch-049-background-002)`):
+
+- `docs/arch049-shopbrand-media-orchestration.md`
+- `src/entrypoints/recovery.ts`
+- `src/services/shop-brand-media-orchestration/contracts.ts`
+- `src/services/shop-brand-media-orchestration/index.ts`
+- `src/services/shop-brand-media-orchestration/repository.ts`
+- `src/services/shop-brand-media-orchestration/runner.ts`
+- `src/services/shop-brand-media-orchestration/service.ts`
+- `src/services/shop-brand-media-orchestration/state.ts`
+- `tests/integration/shop-brand-media-orchestration.integration.test.ts`
+- `tests/unit/services/shop-brand-media-orchestration/repository-logging.test.ts`
+- `tests/unit/services/shop-brand-media-orchestration/service.test.ts`
+- `tests/unit/services/shop-brand-media-orchestration/state.test.ts`
+
+This report changes only the canonical parent task file. It does not modify implementation code, either repository's `main`, a submodule gitlink or any domain `_index.md`.
 
 ### Work Completed
 
-None.
+- Implemented `ShopBrandMediaRepository.observeSource` with transactional first-row upsert, PostgreSQL `FOR UPDATE`, observation-order protection, role-local JSONB edits and source generation/fingerprint updates.
+- Implemented generation-, fingerprint-, source URL-, lease-owner- and lease-expiry-qualified claim/complete/fail transitions. Processing and R2 I/O occur outside database transactions; expired processing leases are reclaimable and stale completion is rejected.
+- Implemented bounded keyset reconciliation (five-minute Recovery-worker tick, 50 rows/page, 500 rows/tick, 20 claims/tick, two concurrent media operations by default), round-robin cursor progress and correctness without a BullMQ wake. Exposed optional local `reconcileShop` wake.
+- Implemented seven-day content rechecks using separate refresh metadata, retaining same-generation last-verified READY on transient refresh failure and atomically replacing READY when verified content changes. Source removal or generation change makes historical READY ineligible.
+- Added structured error handling through `@modainteract/moda-interact-shared/logging`: each intercepted transaction retry, terminal database error, scan-page/row error, per-claim failure, processor exception, optional wake failure and reconciliation-run failure is logged with bounded reason codes and identifiers. Raw exception messages, credentials and untrusted source URLs are excluded from those events.
+- Added focused state, scanner, logger and disposable-PostgreSQL integration regression tests, including contention, multi-role preservation, crash reconstruction, stale claims, refresh retention, bounded retries and logging redaction.
 
 ### Validation Results
 
-Not run.
+Developer-run evidence: `typescript(20261027-143828)` terminal log, uploaded with the task worktree snapshot on 2026-10-27. The code and tests listed below are present in the accompanying overlaid Background repository snapshot.
+
+| Command | Result |
+| --- | --- |
+| `npm run prisma:generate` | PASS — Prisma Client 6.19.3 generated against `database/prisma/schema.prisma`. |
+| `npm test -- tests/unit/services/shop-brand-media-orchestration` | PASS — 23 tests in 3 files, including 3 transaction-exception logging tests. |
+| `node scripts/test-integration.mjs tests/integration/shop-brand-media-orchestration.integration.test.ts` | PASS — 3 PostgreSQL integration tests. |
+| `npm run lint` | PASS — ESLint completed without reported errors. |
+| `npm run build` | PASS — Prisma generation and TypeScript compilation completed without reported errors. |
+| `git diff --check` | PASS — no whitespace errors reported. |
+| `git status` after commit/push | Branch up to date with `origin/task/ARCH-049-BACKGROUND-002`; only untracked local terminal capture `typescript` remains. |
+
+Implementation branch `task/ARCH-049-BACKGROUND-002`: commit `6617d97`, followed by successful `git push -u origin task/ARCH-049-BACKGROUND-002` as shown in the terminal evidence. These are evidence reported by the local terminal, not Git remote actions performed by the architect in this sandbox.
+
+Isolation evidence: canonical parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-BACKGROUND-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-BACKGROUND-002` are identified by the claim record and the final task archive-generation output. The existing **Execution Ownership Amendment and Claim** below records start-of-attempt branch synchronisation and successful dependency gating. The architect reviewer should cross-check the launcher packet / Git common-dir identity because the supplied ZIP alone cannot independently prove Git worktree identities or the exact starting commits.
 
 ### Deviations
 
-None.
+- No required separate BullMQ wake implementation: the five-minute durable reconciliation sweep is the correctness path, and an optional in-process `reconcileShop` wake is exposed; no new queue or Render deployment was introduced.
+- The retry table contains delays of 1m, 5m, 30m, 2h and 24h, but the enforced ceiling of **five total processing attempts** permits only four retry intervals (1m/5m/30m/2h). The 24-hour fifth delay is unreachable without authorising a sixth attempt. The implementation prioritises the explicit five-attempt ceiling; the architectural ambiguity is escalated below.
 
 ### Assumptions
 
-None beyond the explicit architecture/task contract.
+- `MEDIA_MAX_ATTEMPTS = 5` means five **total** attempts per generation, not one initial attempt followed by five retries.
+- PostgreSQL state/leases are sufficient for durable acceptance; media scanner co-location with the existing Recovery worker is permitted by the task and parent architecture.
 
 ### Unresolved Issues
 
-None; live environment availability is a validation prerequisite and must be reported if missing.
+- Actual Cloudflare R2 credentials, public custom-domain propagation and a live provider media GET are not certified by this task's isolated tests; those require the approved external preflight and integrated system validation. No claim of production R2 reachability is made here.
+- Architect to confirm the contradictory fifth backoff/maximum-attempt wording before relying on a 24-hour automatic retry; this does not invalidate the observed bounded-retry tests.
+- Architect should verify the developer-prepared worktree packet and original synchronization evidence before final acceptance. No task worktree was created, committed or pushed from this sandbox.
 
 ### Architectural Concerns
 
-None reported.
+The design contract simultaneously proposes five backoff intervals and caps total processing attempts at five. Four delays between five attempts are mathematically consistent; a fifth scheduled 24-hour retry would require six total attempts. Recommend documenting the accepted interpretation (retain five attempts, or separately authorise six). Other source-generation, transactional and lease boundaries conform to the inspected ARCH-049 implementation.
 
 ## Architect Review
 
@@ -166,7 +204,7 @@ Pending.
 
 ### Review Notes
 
-None.
+Implementation and local validation submitted for architect review; no architect acceptance recorded yet.
 
 ### Reviewed Files
 
