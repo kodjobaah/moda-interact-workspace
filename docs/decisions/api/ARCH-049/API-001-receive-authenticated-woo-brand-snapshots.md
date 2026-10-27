@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-27T12:46:54Z
+attempt: 1
 depends_on: ["ARCH-049-DATABASE-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
@@ -24,7 +24,7 @@ updated: 2026-10-27
 
 ## Architecture
 
-`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. **Portable task definition, not materialised in a developer Git worktree.**
+`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. This task is materialised on its canonical parent task branch and prepared for developer Attempt 1.
 
 ## Objective
 
@@ -125,7 +125,7 @@ Ensure the plugin uses the existing installation credential scheme; no source da
 
 ### Status
 
-Not Started — defined but not materialised.
+In Progress - Developer Attempt 1; canonical task worktrees synchronized and claim published.
 
 ### Files Changed
 
@@ -184,4 +184,10 @@ None.
 ## Dependency Frontier Reconciliation
 
 - Promoted from `pending` to `ready` on 2026-10-27 after its only declared dependency, `ARCH-049-DATABASE-001`, was explicitly completed.
-- Attempt remains 0; `executor` and `claimed_at` remain null. This is eligibility only; no implementation attempt or implementation worktree was created.
+- At promotion, Attempt remained 0 with no executor or claim timestamp; no implementation attempt or implementation worktree had yet been created.
+
+## Execution Ownership Amendment and Claim
+
+- On 2026-10-27, `/moda_developer_create ARCH-049-API-001` explicitly took over the ready agent-owned task for developer execution. `assigned_agent: moda_api` is unchanged; `execution_mode` and `completion_mode` are now `developer`.
+- Developer Attempt 1 was claimed at `2026-10-27T12:46:54Z` after verifying `ARCH-049-DATABASE-001` was complete and synchronizing both canonical task worktrees.
+- Parent task branch `task/ARCH-049-API-001` merged current parent `origin/main`; implementation branch `task/ARCH-049-API-001` was created from current API `origin/main`. Both task worktrees were clean before the claim. The shared API source checkout's existing `start-dev.sh` modification and untracked `typescript` file were left untouched.
