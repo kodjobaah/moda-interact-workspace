@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-050-SYSTEM-TEST-002
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Add the WooCommerce recovery-outreach notification opt-in
@@ -177,3 +177,7 @@ Not yet reviewed.
 ### Follow-up
 
 None.
+
+## Architect Dependency Frontier Reconciliation — 27 October 2026
+
+`ARCH-050-API-001` was accepted and completed at Attempt 1. This task's sole declared dependency is therefore satisfied, so its status advances from `pending` to `ready`. It remains unclaimed at Attempt 0 (`executor: null`, `claimed_at: null`); no implementation worktree or attempt was started.
