@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-050-DATABASE-001
 enables:
@@ -70,12 +70,12 @@ Do **not** edit Shopify finalisation, Woo adapters, billing or human-send paths 
 
 ## Work Items
 
-- [ ] Create contracts and implement the explicit `finalizeConfirmedInitial` method with typed discriminated result.
-- [ ] Implement row lock/CAS and first-transition-only preference sample, with correct persisted outbound/attempt/recovery/shop checks.
-- [ ] Implement atomic Support thread/message insert using existing deduplication conventions, sourceKey and recovery FK; update `lastMessageAt` conditionally.
-- [ ] Implement replay protection for same-message finalisation, including a merchant opt-in flip between attempts.
-- [ ] Add dedicated unit tests (malformed inputs, status/ownership/type guards, logger failure) and **real PostgreSQL** tests (ON, OFF, OFF then ON replay, ON then OFF, duplicate/concurrent same attempt, cross-shop spoof, failure after transition before message insert, sourceKey collision).
-- [ ] Implement and test the shared-logger outcome/failure event contract, including a failing injected sink; demonstrate original exception identity survives a failing logger and the transaction is rolled back before the error log is emitted.
+- [x] Create contracts and implement the explicit `finalizeConfirmedInitial` method with typed discriminated result.
+- [x] Implement row lock/CAS and first-transition-only preference sample, with correct persisted outbound/attempt/recovery/shop checks.
+- [x] Implement atomic Support thread/message insert using existing deduplication conventions, sourceKey and recovery FK; update `lastMessageAt` conditionally.
+- [x] Implement replay protection for same-message finalisation, including a merchant opt-in flip between attempts.
+- [x] Add dedicated unit tests (malformed inputs, status/ownership/type guards, logger failure) and **real PostgreSQL** tests (ON, OFF, OFF then ON replay, ON then OFF, duplicate/concurrent same attempt, cross-shop spoof, failure after transition before message insert, sourceKey collision).
+- [x] Implement and test the shared-logger outcome/failure event contract, including a failing injected sink; demonstrate original exception identity survives a failing logger and the transaction is rolled back before the error log is emitted.
 
 ## Interfaces / Contracts
 
@@ -127,21 +127,21 @@ This is an **internal direct TypeScript call**, not a new BullMQ event, cross-se
 
 ## Acceptance Criteria
 
-- [ ] One real-Postgres atomic transition creates **exactly one** SYSTEM Support notification for enabled first send, no second charge/provider send.
-- [ ] OFF first transition commits no notice; enabling later and replaying the same attempt still leaves zero notifications.
-- [ ] Real concurrent finalisers serialize on the same attempt and produce exactly one Support message and one thread.
-- [ ] Invalid persisted `direction`, `senderType`, status, null sentAt, trigger, sequence, wrong shop/ID or mismatched conversation fails closed; HUMAN/sequence-2 are excluded.
-- [ ] Injected failure between attempt update and Support insert rolls back both writes; retry can complete without duplicate Support message.
-- [ ] Logger errors never roll back already committed notification; result is deterministic and has no PII.
-- [ ] Each created/disabled/replayed result and transaction/lineage failure emits its corresponding stable structured event; an exception is logged and rethrown as the same error, not swallowed or mapped to a successful outcome.
-- [ ] Failure with injected throwing logger preserves the original business exception; successful commit with throwing logger still returns created/disabled/replayed and never causes a second attempt.
+- [x] One real-Postgres atomic transition creates **exactly one** SYSTEM Support notification for enabled first send, no second charge/provider send.
+- [x] OFF first transition commits no notice; enabling later and replaying the same attempt still leaves zero notifications.
+- [x] Real concurrent finalisers serialize on the same attempt and produce exactly one Support message and one thread.
+- [x] Invalid persisted `direction`, `senderType`, status, null sentAt, trigger, sequence, wrong shop/ID or mismatched conversation fails closed; HUMAN/sequence-2 are excluded.
+- [x] Injected failure between attempt update and Support insert rolls back both writes; retry can complete without duplicate Support message.
+- [x] Logger errors never roll back already committed notification; result is deterministic and has no PII.
+- [x] Each created/disabled/replayed result and transaction/lineage failure emits its corresponding stable structured event; an exception is logged and rethrown as the same error, not swallowed or mapped to a successful outcome.
+- [x] Failure with injected throwing logger preserves the original business exception; successful commit with throwing logger still returns created/disabled/replayed and never causes a second attempt.
 
 ## Validation
 
-- [ ] `npx vitest run tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts`.
-- [ ] `node scripts/test-integration.mjs tests/integration/recovery-initial-outreach-support-notice.integration.test.ts` against disposable real PostgreSQL (not mocked Prisma).
-- [ ] Unit log-spy assertions verify shared logger event name, level, bounded correlation fields, failure `errorCategory`, no PII and original-error rethrow; integration confirms rollback + retriable job failure on notification persistence error.
-- [ ] `npm run build` (defined in Background package.json), targeted ESLint for changed source/tests, `git diff --check`.
+- [x] `npx vitest run tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts`.
+- [x] `node scripts/test-integration.mjs tests/integration/recovery-initial-outreach-support-notice.integration.test.ts` against disposable real PostgreSQL (not mocked Prisma). Run through `npm run test:integration -- ...` so the repository supplies local binaries on `PATH`.
+- [x] Unit log-spy assertions verify shared logger event name, level, bounded correlation fields, failure `errorCategory`, no PII and original-error rethrow; integration confirms rollback + retriable job failure on notification persistence error.
+- [x] `npm run build` (defined in Background package.json), targeted ESLint for changed source/tests, `git diff --check`.
 
 ## Stop Condition
 
@@ -159,39 +159,107 @@ Canonical task branch and worktree evidence is required at execution. No `_index
 
 ### Status
 
-Not Started.
+Complete — Attempt 3 was accepted by `moda_architect` on 2026-10-27 after the requested task-record reconciliation and unexpected-error logging correction. Attempt 1 remains recorded as blocked before source changes while the Background checkout lacked the accepted ARCH-050 database schema.
+
+### Attempt 3 Architect Review Corrections
+
+1. **Completion markers reconciled:** checked all six Work Items, eight Acceptance Criteria and four Validation entries after reviewing the implementation and the focused unit/PostgreSQL evidence recorded below. The integration harness was run via `npm run test:integration -- ...`, which invokes the required `scripts/test-integration.mjs` with local binaries on `PATH`.
+2. **Unexpected persistence errors logged through Shared:** `recovery-initial-outreach-support-notice.service.ts` now passes the original error as `error` for every failed event. The Shared logger applies the documented bounded Error serialization; the service preserves `PERSISTENCE_FAILURE` classification and rethrows the same object. The focused unit assertion in `recovery-initial-outreach-support-notice.service.test.ts` verifies the failed event receives that error and that a throwing sink does not replace it.
 
 ### Files Changed
 
-None (definition only).
+- `src/services/checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts`
+- `src/services/checkout-recovery/recovery-initial-outreach-support-notice.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts`
+- `tests/integration/recovery-initial-outreach-support-notice.integration.test.ts`
+- Background `database` submodule gitlink updated to the accepted schema commit `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
 
 ### Work Completed
 
-None.
+- Added the Background-local typed finalizer contract and default service instance.
+- Locked the persisted attempt row in one interactive PostgreSQL transaction, validated attempt/recovery/shop/conversation/outbound-message lineage, and guarded the first state transition with a compare-and-set update.
+- Sampled `notifyOnInitialRecoveryOutreach` only on the first transition. Missing or disabled settings commit the transition without Support data; replay never resamples the setting.
+- Added deduplicated SYSTEM/AVAILABLE Support notices with the recovery foreign key, stable source key, bounded neutral body, and conditional `lastMessageAt` update that preserves merchant-response metadata.
+- Added outcome logging through the shared logger after transaction completion, with logger failure isolation and safe error-field handling.
+- Updated failed-event logging to pass unexpected transaction/persistence errors to the Shared logger's bounded Error serializer, retaining `PERSISTENCE_FAILURE` and exact rethrow behavior.
+- Added injected-collaborator unit coverage and real disposable PostgreSQL coverage for enabled/disabled/replayed outcomes, opt-in changes, concurrent finalizers, tenant and lineage guards, rollback/retry, and source-key collisions.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+- `npx vitest run tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts` — passed, 8 tests, including the `PERSISTENCE_FAILURE` Shared logger error-field and exact-rethrow assertion with a throwing sink.
+- `npm run test:integration -- tests/integration/recovery-initial-outreach-support-notice.integration.test.ts` — passed against disposable PostgreSQL, 8 tests. This invokes the repository's `scripts/test-integration.mjs` harness with local binaries on `PATH`.
+- `npm run build` — passed; regenerated Prisma Client from the updated database schema and completed TypeScript compilation.
+- Targeted ESLint for the changed service and unit test — passed.
+- `git diff --check` — passed for the Attempt 3 source and test changes.
 
 ### Deviations
 
-None.
+The direct `node scripts/test-integration.mjs ...` invocation initially could not resolve the local `prisma` executable (`spawn prisma ENOENT`) before tests started. The same harness and test file passed when run through the repository's `test:integration` npm script, which supplies `node_modules/.bin` on `PATH`. No implementation scope changed.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+`followUpDueAt` may be null for WooCommerce and, when present, must be a valid date later than `sentAt`. Replays must match the persisted follow-up due date as well as message identity.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+None.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+None identified.
+
+### Previous Attempt 1 — Blocked
+
+Attempt 1 stopped before source edits because the synchronized Background database submodule was pinned at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`, which lacked the new preference field and Support recovery relation. The database fix is now consumed from `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`; the database dependency update was committed and pushed as `57d32270ffc586128a3587d269ed714eec0b9b29`.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-BACKGROUND-001`
+  parent branch: `task/ARCH-050-BACKGROUND-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-BACKGROUND-001`
+  implementation branch: `task/ARCH-050-BACKGROUND-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recorded submodule commit: `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`
+
+Implementation repository:
+  repository: `moda-interact-background`
+  Attempt 2 implementation commit: `a4ec3b17da9b6d158243b1b6fb953aa2dd9c173c`
+  Attempt 3 correction commit: `7a8906278dfd053ac896dfa99d8d6d988410c889`
+  remote branch: `origin/task/ARCH-050-BACKGROUND-001`
+  pushed: yes (both implementation commits)
+
+Parent workspace:
+  task file: `docs/decisions/background/ARCH-050/BACKGROUND-001-finalize-initial-attempt-and-write-deduplicated-support-notice.md`
+  claim commit: `62d41b1523d298a49bc061bcb50f8df6d37948e7` (pushed by launcher)
+  report commit: `0f4c8ca0ca65510fa6a3096ac762a57a34c71b22`
+  remote branch: `origin/task/ARCH-050-BACKGROUND-001`
+  pushed: yes
+  submodule gitlink staged: no
+
+### Attempt 3 Publication Evidence
+
+  launcher claim commit: `d66729925e39bc83c42bb9e2a96f2b026cf2883d` (pushed)
+  parent task report commit: this Attempt 3 completion report (pushed on the parent task branch)
+  parent remote branch: `origin/task/ARCH-050-BACKGROUND-001`
+  implementation correction commit: `7a8906278dfd053ac896dfa99d8d6d988410c889` (pushed)
+  Background ARCH-050 index changed: no (architect-owned reconciliation)
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
@@ -218,3 +286,95 @@ Not yet reviewed.
 ### Follow-up
 
 None.
+
+## Developer Override
+
+### Decision
+
+Reopened on 2026-10-27 by explicit developer request after resolving the database dependency blocker.
+
+### Previous Attempt
+
+Attempt 1 remains preserved as the blocked attempt; it stopped before implementation source changes because the Background database submodule lacked the ARCH-050 schema. This reopen does not increment the attempt.
+
+### Reason
+
+The database fix is available at commit `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`. The Background task worktree now points its `database` submodule at that commit, with gitlink update committed and pushed as `57d3227`. Prisma Client was regenerated successfully from the updated schema. The dependency blocker is resolved, so the task can resume through the normal launcher.
+
+### Reopen Transition
+
+`blocked` to `ready`; `executor` and `claimed_at` cleared; `attempt` remains 1. This override does not claim the task.
+
+## Architect Review — Attempt 3 — Accepted — 27 October 2026
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+Attempt 3 resolves both corrections from the Attempt 2 review. The six Work Items, eight Acceptance Criteria and four Validation entries are checked and supported by the implementation and recorded evidence. Unexpected persistence/transaction failures now pass the original `{ error }` to the Shared logger's bounded Error serializer, retain `PERSISTENCE_FAILURE`, and rethrow the same error. The focused unit test asserts the error field and exact exception identity with a throwing logger; the real PostgreSQL integration suite covers rollback and retry after persistence failure.
+
+### Reviewed Files
+
+- `moda-interact-background/src/services/checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-initial-outreach-support-notice.service.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts`
+- `moda-interact-background/tests/integration/recovery-initial-outreach-support-notice.integration.test.ts`
+- This task's Attempt 3 Completion Report and canonical branch/worktree evidence.
+
+### Validation Reviewed
+
+- Focused unit suite: 8 tests passed, including `PERSISTENCE_FAILURE`, serialized error presence and exact rethrow with a throwing sink.
+- Disposable PostgreSQL integration suite: 8 tests passed through `npm run test:integration -- tests/integration/recovery-initial-outreach-support-notice.integration.test.ts`.
+- `npm run build`, targeted ESLint and `git diff --check` passed.
+- Implementation branch `task/ARCH-050-BACKGROUND-001` is clean and published at `7a8906278dfd053ac896dfa99d8d6d988410c889`; the database submodule is pinned to `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+
+### Architecture Conformance
+
+Conforms to the ARCH-050 transaction, lineage, idempotency, opt-in sampling, Support deduplication and structured logging requirements. The implementation remains Background-local and does not change Shopify, WooCommerce, billing, human-send or sequence-two behavior.
+
+### Dependency Frontier and Coordination
+
+This task uses `completion_mode: automatic`; architect acceptance transitions Attempt 3 to Complete. `ARCH-050-BACKGROUND-002` is eligible because its sole dependency is now Complete. `ARCH-050-BACKGROUND-003` is eligible because both `ARCH-050-BACKGROUND-001` and `ARCH-048-BACKGROUND-005` are Complete. Promote each unclaimed task on its canonical parent task branch without claiming it. The ARCH-050 architecture intentionally defers domain `_index.md` updates until the architecture session closes; preserve that decision and reconcile the stale Background index at that point.
+
+### Lifecycle
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 3`. The implementation and parent task branches remain unmerged to `main`.
+
+## Architect Review — Attempt 2 — Changes Requested — 27 October 2026
+
+### Review Status
+
+Changes Requested.
+
+### Review Notes
+
+The implementation is otherwise aligned with the task contract: the finalizer locks and validates persisted attempt/recovery/conversation/outbound-message lineage; the first transition, preference sample and optional deduplicated Support insert share one PostgreSQL transaction; replay does not resample preference; and the report records the focused PostgreSQL, unit, build, lint and diff-check evidence.
+
+Required corrections before acceptance:
+
+1. **Reconcile task completion markers.** All six Work Items, eight Acceptance Criteria and four Validation entries are still unchecked, although the Attempt 2 Completion Report says they are complete and records passing validation. In the next attempt, check only items supported by the implementation and evidence. Explain any item that cannot be substantiated; do not infer completion from the report alone.
+2. **Log unexpected transaction errors safely.** The failed event currently includes `{ error }` only for `FinalizationError`. Include the original unexpected persistence/transaction error as `{ error }` so the Shared logger's bounded Error serializer can process it. Preserve the `PERSISTENCE_FAILURE` category and exact rethrow behavior. Add an assertion that the logger receives the error field for this category and that a throwing logger does not replace the original business exception.
+
+The Background ARCH-050 domain index currently points to a different architecture/task set. This is architect-owned coordination state and will be reconciled during acceptance; it does not authorize implementation changes to the index in this task.
+
+### Reviewed Files
+
+- `src/services/checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts`
+- `src/services/checkout-recovery/recovery-initial-outreach-support-notice.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts`
+- `tests/integration/recovery-initial-outreach-support-notice.integration.test.ts`
+- Attempt 2 Completion Report and canonical worktree/publication evidence.
+
+### Validation Reviewed
+
+The recorded 8/8 focused unit tests, 8/8 disposable PostgreSQL integration tests, build, targeted ESLint and diff check are consistent with the reviewed implementation. No validation was rerun as part of this architect review.
+
+### Architecture Conformance
+
+No architecture or interface change is requested. Implement only the safe error serialization correction and task-record reconciliation; keep the transaction and first-transition design intact.
+
+### Transition
+
+`status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Attempt 3 requires the canonical task launcher claim. Preserve the current implementation branch and worktrees; no merge to `main` is authorized.

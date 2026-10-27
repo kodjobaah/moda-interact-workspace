@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-050-DATABASE-001
 enables:
@@ -66,12 +66,12 @@ Expose and persist the default-off notification toggle in existing Shopify Recov
 
 ## Work Items
 
-- [ ] Project `ShopSettings.notifyOnInitialRecoveryOutreach` in settings loader with default false.
-- [ ] Add checkbox and explicit Boolean form serialization to `RecoverySettingsView` under existing `SettingsForm`.
-- [ ] Add strict form key/Boolean validation to `settings-save/route.ts`.
-- [ ] Update save transaction/no-op comparison and revision protection to persist this field even when it is the only changed value.
-- [ ] Add all locale keys, unit/UI tests and stale-revision cases.
-- [ ] Add server-side shared structured failure logging at the recovery settings action boundary (reuse/create approved process logger), and tests showing unexpected save errors are logged and rethrown, not converted to success.
+- [x] Project `ShopSettings.notifyOnInitialRecoveryOutreach` in settings loader with default false.
+- [x] Add checkbox and explicit Boolean form serialization to `RecoverySettingsView` under existing `SettingsForm`.
+- [x] Add strict form key/Boolean validation to `settings-save/route.ts`.
+- [x] Update save transaction/no-op comparison and revision protection to persist this field even when it is the only changed value.
+- [x] Add all locale keys, unit/UI tests and stale-revision cases.
+- [x] Add server-side shared structured failure logging at the recovery settings action boundary (reuse/create approved process logger), and tests showing unexpected save errors are logged and rethrown, not converted to success.
 
 ## Interfaces / Contracts
 
@@ -92,18 +92,18 @@ Expose and persist the default-off notification toggle in existing Shopify Recov
 
 ## Acceptance Criteria
 
-- [ ] Settings UI starts OFF for existing and new shops; a merchant can toggle and save ON/OFF without touching recovery delay/follow-up/offer values.
-- [ ] Notification-only changes are persisted and advance the settings revision; unchanged saves are no-op.
-- [ ] Missing/duplicated/invalid Boolean, stale revision and unauthorised merchant save are rejected.
-- [ ] Admin override does not alter the persisted preference; all 20 locale catalogues validate.
-- [ ] Database/save exceptions are visible through structured logs and the existing route failure boundary; no swallowed catch or falsely successful preference update.
+- [x] Settings UI starts OFF for existing and new shops; a merchant can toggle and save ON/OFF without touching recovery delay/follow-up/offer values.
+- [x] Notification-only changes are persisted and advance the settings revision; unchanged saves are no-op.
+- [x] Missing/duplicated/invalid Boolean, stale revision and unauthorised merchant save are rejected.
+- [x] Admin override does not alter the persisted preference; all 20 locale catalogues validate.
+- [x] Database/save exceptions are visible through structured logs and the existing route failure boundary; no swallowed catch or falsely successful preference update.
 
 ## Validation
 
-- [ ] Focused `vitest`/repository declared tests for `recovery-policy`, `recovery-settings-i18n`, `recovery-settings-submit-guard`, and settings route fixtures.
-- [ ] Route-level test stubs failing persistence and verifies safe shared-logger failure event plus unchanged 500/error-boundary behaviour; validation/conflict status remains unchanged.
-- [ ] Owning Shopify repository typecheck/lint/build **only where scripts exist**; check `package.json`, then `git diff --check`.
-- [ ] Verify 20 locale keys are present and exposed through the existing merchant-i18n utility.
+- [x] Focused `vitest`/repository declared tests for `recovery-policy`, `recovery-settings-i18n`, `recovery-settings-submit-guard`, and settings route fixtures.
+- [x] Route-level test stubs failing persistence and verifies safe shared-logger failure event plus unchanged 500/error-boundary behaviour; validation/conflict status remains unchanged.
+- [x] Owning Shopify repository typecheck/lint/build **only where scripts exist**; check `package.json`, then `git diff --check`.
+- [x] Verify 20 locale keys are present and exposed through the existing merchant-i18n utility.
 
 ## Stop Condition
 
@@ -119,19 +119,38 @@ Follow mirrored task branch/worktree policy; no `_index.md` update until user cl
 
 ### Status
 
-Not Started.
+Accepted by architect at Attempt 1; task completed automatically.
 
 ### Files Changed
 
-None (definition only).
+- `app/services/recovery-policy/recovery-policy.server.ts`
+- `app/routes/app/settings-save/route.ts`
+- `app/routes/app/recovery-settings/RecoverySettingsView.tsx`
+- `app/i18n/locales/*.json` (all 20 supported merchant locales)
+- `tests/unit/recovery-policy.test.ts`
+- `tests/unit/recovery-policy-save.test.ts`
+- `tests/unit/recovery-policy-snapshot.test.ts`
+- `tests/unit/recovery-settings-i18n.test.ts`
+- `tests/unit/settings-save-recovery-route.test.ts`
+- `tests/integration/merchant-feature-preferences.test.ts` (existing direct save fixture now supplies default false)
 
 ### Work Completed
 
-None.
+- Loaded the persisted preference as a top-level, default-off snapshot field; it is not included in the Shared merchant/effective policy structures, so admin overrides do not control it.
+- Added an accessible localized Recovery Settings checkbox with an explicit hidden `true`/`false` form value, including explicit false.
+- Added exact form allowlisting and rejection for missing, duplicated, or non-Boolean preference fields.
+- Persisted ON/OFF changes in the existing locked ShopSettings transaction. The unchanged comparison now includes the preference; preference-only changes require the expected `updatedAt` revision and stale writes return conflict.
+- Added Shared structured failure logging for unexpected recovery settings persistence errors (`merchant.recovery_settings.save.failed`, bounded error field, validated shop id, fixed operation/category) and rethrow to the existing framework failure boundary. Expected validation/conflict responses retain their existing status behavior.
+- Added translated title/help strings and locale contract coverage across all 20 supported merchant locales.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+- Focused Vitest: **passed**, 6 files / 25 tests, covering recovery policy parsing, ON and OFF preference-only saves, stale revision, no-op, default-off snapshot, all locale catalogs, submit guard, strict route inputs, Shared failure event and rethrow, and conflict response.
+- `npm run typecheck`: **passed**.
+- `npm run lint`: **passed** after removing one unused test import found on the first run.
+- `npm run build`: **passed**. Bundler emitted warnings for an unresolved Prisma browser import, Zod annotation comments and bundle size; both client and server builds completed.
+- `git diff --check`: **passed**.
+- PostgreSQL integration suite was not run; transaction and stale-revision cases were covered by focused mocked-client tests.
 
 ### Deviations
 
@@ -139,42 +158,79 @@ None.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+The existing `ShopSettings.notifyOnInitialRecoveryOutreach Boolean @default(false)` field from the completed database dependency is authoritative and requires no schema or migration change in this repository task.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+None.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+None discovered.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-SHOPIFY-001`
+  parent branch: `task/ARCH-050-SHOPIFY-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-SHOPIFY-001`
+  implementation branch: `task/ARCH-050-SHOPIFY-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
 
-## Architect Review
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recorded database submodule commit: `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`
+
+Claim evidence: Attempt 1, executor `codex`, claim commit `8fc3b0b5a3a95150dc01a1e7fad73d49e4f0db43` pushed by the deterministic launcher.
+Implementation evidence: commit `cab6f08` on `task/ARCH-050-SHOPIFY-001`, pushed to `origin`.
+
+## Architect Review — Attempt 1 — Accepted — 27 October 2026
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Awaiting implementation.
+The Shopify settings snapshot exposes the persisted notification preference at the top level with default OFF; the shared effective recovery policy remains unchanged. The recovery settings UI initializes from that field and submits explicit `true`/`false`. The route allowlist rejects missing, repeated, or invalid Boolean values, and the save service includes the setting in its existing locked ShopSettings transaction and no-op comparison. A preference-only change therefore checks the expected revision and persists atomically with existing recovery policy values. Admin overrides do not alter the merchant preference.
+
+Unexpected recovery preference persistence failures are logged through the existing Shared logger with the specified stable event, shop and operation context, category, and original error, then rethrown to the framework boundary. Existing validation and conflict responses remain intact. The checkbox title/help are localized across all 20 supported merchant locales. No Support UI, send behavior, billing, or Shared policy schema changes were introduced.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/recovery-policy/recovery-policy.server.ts`
+- `moda-interact/app/routes/app/settings-save/route.ts`
+- `moda-interact/app/routes/app/recovery-settings/RecoverySettingsView.tsx`
+- All 20 changed locale files.
+- Focused recovery policy, save route, snapshot, i18n, and submit guard tests.
+- Attempt 1 Completion Report and canonical worktree/publication evidence.
 
 ### Validation Reviewed
 
-None.
+- Focused Vitest: 6 files / 25 tests passed, per the task report, including ON/OFF preference-only persistence, stale revisions, default-off snapshot, locale catalogs, strict inputs, Shared failure logging/rethrow, and conflict handling.
+- `npm run typecheck`, `npm run lint`, and `npm run build` passed. The build reported non-fatal Prisma browser import, Zod annotation, and bundle-size warnings.
+- `git diff --check` passed.
+- PostgreSQL integration was not run; transaction and stale-revision behavior were covered by focused mocked-client tests.
+- Implementation branch `task/ARCH-050-SHOPIFY-001` is clean and published at `cab6f0822a4cc1369f56414f0322bcd31829beaf`; database submodule is at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`. Neither task branch was merged to `main`.
 
 ### Architecture Conformance
 
-Not yet reviewed.
+Conforms to ARCH-050: the opt-in is an independent merchant setting, remains default-off, and does not affect the shared recovery-policy shape, admin override semantics, credit accounting, or send behavior.
 
-### Follow-up
+### Dependency Frontier
 
-None.
+This task uses `completion_mode: automatic`; architect acceptance completes Attempt 1. All declared prerequisites of `ARCH-050-SYSTEM-TEST-001` are now complete: BACKGROUND-002, SHOPIFY-001, and SHOPIFY-002. Its canonical task advances from `pending` to `ready` at Attempt 0; it remains unclaimed and manual-gated for developer validation before execution. No implementation task is enabled by this terminal test task.
+
+### Lifecycle
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. Neither task branch was merged to `main`.
