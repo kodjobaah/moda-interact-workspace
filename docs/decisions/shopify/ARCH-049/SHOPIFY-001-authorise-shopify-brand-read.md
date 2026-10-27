@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -114,7 +114,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-Developer Self-Review Passed — Attempt 1, claimed at `2026-10-27T10:21:58Z`. Implementation commit `884d08346bee33227f2f009209cda1ceeaca5311` is published on `origin/task/ARCH-049-SHOPIFY-001`; its worktree is clean. The canonical parent review handoff is committed and pushed at `20aca762f56a18bb738f22b829576d2c1c621ca8`. Review transition clears `executor` and `claimed_at`; `attempt: 1` is unchanged. Current `origin/main` advanced after the attempt began; no mainline merge is performed during review.
+Developer completed Attempt 1 on 2026-10-27 after the durable passing self-review. Implementation commit `884d08346bee33227f2f009209cda1ceeaca5311` is published on `origin/task/ARCH-049-SHOPIFY-001`; its worktree is clean. The parent review record was published at `f08529f31cf38443c88b56cae8db94822436d2e2`; the explicit completion decision is recorded below. Lifecycle state is `complete`, with `executor: null`, `claimed_at: null`, and `attempt: 1` unchanged. No task branch was merged to `main`.
 
 ### Files Changed
 
@@ -166,8 +166,7 @@ Both supplied Shopify app TOML variants are relevant to local validation, but th
 
 ### Unresolved Issues
 
-- **Review evidence:** The 11:54 log names dedicated parent and implementation worktree paths and shows the implementation-branch push, but the launcher-prepared start-of-attempt synchronization packet and parent task-branch publication evidence were not included. Supply these for final architectural review; the task is not architect-accepted on the basis of this handoff.
-- **RESOLVED — review evidence:** The canonical parent branch now contains the review handoff at `20aca762f56a18bb738f22b829576d2c1c621ca8`; both task branch heads and clean worktrees were independently checked during this reconciliation. The original launcher-prepared packet is not reconstructed; report only the observed current worktree, commit and ancestry evidence.
+- **Review evidence note:** The original launcher-prepared start-of-attempt packet was not reconstructed. Current canonical worktree, commit, remote publication and ancestry evidence was independently verified; no historical packet is claimed.
 - **RESOLVED — validation gap:** Post-Prisma-generation `npm run typecheck` passed during this reconciliation. The focused ARCH-049 suites also passed 22/22.
 ## Developer Self-Review Passed — Attempt 1
 
@@ -200,6 +199,31 @@ passed.
 Transitioned to `review`; `executor: null`, `claimed_at: null`, `attempt: 1`.
 `completion_mode: developer` remains in force, so explicit developer completion
 is pending. No dependent task was started, and no branch was merged to `main`.
+
+## Architect Review
+## Developer Completion Decision
+
+- The developer explicitly completed `ARCH-049-SHOPIFY-001` Attempt 1 on
+	2026-10-27 after verifying the durable passing self-review, all checked Work
+	Items and Acceptance Criteria, required validation, and clean/published
+	canonical task worktrees.
+- Lifecycle state: `complete`; `executor: null`; `claimed_at: null`;
+	`attempt: 1` (unchanged). The parent review/report revision immediately before
+	this decision was `f08529f31cf38443c88b56cae8db94822436d2e2`; the completion
+	decision is committed and pushed on the same parent task branch.
+- Published implementation branch: `task/ARCH-049-SHOPIFY-001` at
+	`884d08346bee33227f2f009209cda1ceeaca5311`.
+- No Shopify live deployment, merchant scope approval, effective runtime
+	`SCOPES`, or live offline grant is claimed. These remain rollout checks before
+	Background performs brand reads.
+- Dependency-frontier reconciliation from current task records:
+	`ARCH-049-BACKGROUND-003` remains `pending`. Its Shopify and database
+	dependencies are now complete, but `ARCH-049-BACKGROUND-002` is still
+	`pending`; that task depends on `ARCH-049-BACKGROUND-001`, currently `ready`.
+	`ARCH-049-SYSTEM-TEST-001` remains `pending` and manual-gated because its
+	remaining declared dependencies are incomplete. No downstream status or
+	attempt was changed, and no dependent task was started.
+- No task branch was merged to `main`.
 
 ## Architect Review
 - **Separate baseline issue:** ARCH-045 consent webhook configuration test mismatch remains in its owning scope.
