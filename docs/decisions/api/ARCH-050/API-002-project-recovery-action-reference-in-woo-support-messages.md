@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-050-WOOCOMMERCE-002
   - ARCH-050-SYSTEM-TEST-002
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Project a tenant-validated recovery reference in Woo hosted Support reads

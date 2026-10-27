@@ -1,17 +1,17 @@
 ---
 id: ARCH-050
 title: Opt-in initial recovery outreach notifications with merchant Support deep links
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # ARCH-050 — Initial recovery outreach notifications in merchant Support
 
 ## Status
 
-**Proposed; task definitions only.** Baseline: uploaded `moda-interact-workspace(20261026-211959).zip` and `moda_architect(20261026-212016).toml`. The proposed `ARCH-050` identifier does not occur in the uploaded architecture/task inventory; `ARCH-049` is already allocated. The available artifact is a portable patch, not a materialised task branch. No repository implementation, branch creation, merge or Git push has occurred. **Do not update any `docs/decisions/**/_index.md` until the user explicitly confirms this architecture session is complete.**
+**In Progress.** The task definition has been materialised on the mirrored `task/ARCH-050-DATABASE-001` branches. `ARCH-050-DATABASE-001` is architect-accepted and Complete; five direct implementation tasks are now Ready. The architecture originated from the 2026-10-26 uploaded workspace snapshot and portable definition. Domain task indexes remain intentionally deferred until the architecture session is explicitly closed.
 
 ## Problem
 
@@ -167,20 +167,20 @@ Merchant recovery setting (Shopify UI or WooCommerce UI -> hosted API)
 
 ## Repository Responsibilities and Implementation Tasks
 
-| Task | Owner | Status on definition | Depends on |
+| Task | Owner | Status | Depends on |
 |---|---|---|---|
-| ARCH-050-DATABASE-001 | moda_database | **Ready** | None |
-| ARCH-050-BACKGROUND-001 | moda_background | Pending | DATABASE-001 |
-| ARCH-050-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001 |
-| ARCH-050-BACKGROUND-003 | moda_background | Pending | BACKGROUND-001; accepted ARCH-048-BACKGROUND-005 |
-| ARCH-050-SHOPIFY-001 | moda_app | Pending | DATABASE-001 |
-| ARCH-050-SHOPIFY-002 | moda_app | Pending | DATABASE-001 |
-| ARCH-050-API-001 | moda_api | Pending | DATABASE-001 |
-| ARCH-050-API-002 | moda_api | Pending | DATABASE-001 |
-| ARCH-050-WOOCOMMERCE-001 | moda_woocommerce | Pending | API-001 |
-| ARCH-050-WOOCOMMERCE-002 | moda_woocommerce | Pending | API-002 |
-| ARCH-050-SYSTEM-TEST-001 | moda_system_test | Pending | BACKGROUND-002; SHOPIFY-001; SHOPIFY-002 |
-| ARCH-050-SYSTEM-TEST-002 | moda_system_test | Pending | BACKGROUND-003; API-001/002; WOOCOMMERCE-001/002; ARCH-048-WOOCOMMERCE-002/003 |
+| ARCH-050-DATABASE-001 | moda_database | Complete | None |
+| ARCH-050-BACKGROUND-001 | moda_background | Ready | ARCH-050-DATABASE-001 |
+| ARCH-050-BACKGROUND-002 | moda_background | Pending | ARCH-050-BACKGROUND-001 |
+| ARCH-050-BACKGROUND-003 | moda_background | Pending | ARCH-050-BACKGROUND-001; ARCH-048-BACKGROUND-005 (Complete) |
+| ARCH-050-SHOPIFY-001 | moda_app | Ready | ARCH-050-DATABASE-001 |
+| ARCH-050-SHOPIFY-002 | moda_app | Ready | ARCH-050-DATABASE-001 |
+| ARCH-050-API-001 | moda_api | Ready | ARCH-050-DATABASE-001 |
+| ARCH-050-API-002 | moda_api | Ready | ARCH-050-DATABASE-001 |
+| ARCH-050-WOOCOMMERCE-001 | moda_woocommerce | Pending | ARCH-050-API-001 |
+| ARCH-050-WOOCOMMERCE-002 | moda_woocommerce | Pending | ARCH-050-API-002 |
+| ARCH-050-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-050-BACKGROUND-002; ARCH-050-SHOPIFY-001; ARCH-050-SHOPIFY-002 |
+| ARCH-050-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-050-BACKGROUND-003; ARCH-050-API-001; ARCH-050-API-002; ARCH-050-WOOCOMMERCE-001; ARCH-050-WOOCOMMERCE-002; ARCH-048-WOOCOMMERCE-002/003 |
 
 Task status derives from canonical task metadata and verified prerequisites, not from this planning table. Complete prerequisite tasks do not need to be re-opened. The two terminal system-test tasks allow Shopify testing independently of the Woo plugin work; no implementation task depends on either system test. The developer may validate manually before invoking Ready system-test tasks.
 
@@ -233,6 +233,8 @@ Task status derives from canonical task metadata and verified prerequisites, not
 3. Existing Support inbox is the only merchant notification channel for v1. No browser live push; existing unread/pagination behaviour is retained.
 
 ## Change History
+
+- 2026-10-27 — Accepted ARCH-050-DATABASE-001; promoted its five eligible direct dependants to Ready.
 
 - 2026-10-26 — Attempt 3: made shared structured logging, explicit exception reporting/rethrow, log-sink isolation and test expectations normative across Background, hosted API and merchant surfaces; no new runtime service or schema change.
 
