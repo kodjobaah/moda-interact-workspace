@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-049-SYSTEM-TEST-001
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Bind verified ShopBrand R2 media into prepared recovery templates
@@ -183,3 +183,8 @@ Not reviewed.
 ### Follow-up
 
 None.
+
+## Dependency Frontier Reconciliation
+
+- Promoted from `pending` to `ready` on 2026-10-27 after `ARCH-049-DATABASE-001`, `ARCH-049-ADMIN-001`, `ARCH-047-ADMIN-003`, `ARCH-047-ADMIN-005`, and `ARCH-047-BACKGROUND-001` were verified complete.
+- Attempt remains 0; `executor` and `claimed_at` remain null. This is eligibility only; no implementation attempt or implementation worktree was created.
