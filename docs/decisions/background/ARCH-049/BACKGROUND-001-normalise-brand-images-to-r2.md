@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -132,7 +132,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-Developer self-review **passed** for canonical workflow Attempt 1 (`attempt: 1`); architect review and explicit developer completion remain pending. The implementation was corrected through the supplied Attempt 1/Attempt 2 patch iterations without starting a new architecture-task attempt. Implementation commit `75c93f5` is published to `origin/task/ARCH-049-BACKGROUND-001`; the parent self-review record is published in commit `2751e537` on the same-named parent task branch.
+Complete — Developer Attempt 1. The developer explicitly invoked `/moda_developer_update ARCH-049-BACKGROUND-001 complete` on 2026-10-27 after the durable passing Attempt 1 self-review. Implementation commit `75c93f5` is published to `origin/task/ARCH-049-BACKGROUND-001`; the passing review and completion decision are published on the parent task branch. No separate architect-specific file review is claimed.
 
 ### Files Changed
 
@@ -207,7 +207,6 @@ No new repository-boundary or data-model changes identified. `ARCH-049-BACKGROUN
 
 **Task isolation evidence:** the existing Developer Execution Claim below documents launcher-resolved dedicated parent and Background implementation worktrees, both prepared from their own `origin/main` at the start of Attempt 1 after `fetch origin --prune`; the developer's terminal log independently shows validation and commit/push from the `task/ARCH-049-BACKGROUND-001` implementation worktree. The ZIP helper also identified and overlaid that implementation worktree. The original launcher preparation packet was not independently supplied with this submission.
 
-## Developer Execution Ownership Amendment
 ## Developer Self-Review Passed (Attempt 1, 2026-10-27)
 
 - Outcome: **passed**. The task-scoped processor requirements, Work Items and Acceptance Criteria are implemented in the published Background task branch; no required task work item is known incomplete.
@@ -216,6 +215,15 @@ No new repository-boundary or data-model changes identified. `ARCH-049-BACKGROUN
 - Implementation publication and isolation: canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-BACKGROUND-001`, branch `task/ARCH-049-BACKGROUND-001`, is clean at `75c93f53f5b94b33dc1fc125f90e2fa4d314330b`, equal to `origin/task/ARCH-049-BACKGROUND-001`. Canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-BACKGROUND-001` is registered on the matching task branch, clean before this review edit, and published at `66fc8bd9aa0d1231f27f00b4f2e95db887e47a89` before this record.
 - `ARCH-049-ADMIN-001` is complete. `origin/main` is not an ancestor of the implementation task branch; no merge or push to `main` was performed. The recorded external live R2/custom-domain preflight remains outstanding as permitted by R4, and is not claimed as tested.
 - Transition: retain `status: review`, `executor: null`, `claimed_at: null`, and `attempt: 1`. `completion_mode: developer` means architect review and the developer's explicit completion decision are still required. No enabled task was started or promoted.
+
+## Developer Completion Decision (Attempt 1, 2026-10-27)
+
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-049-BACKGROUND-001 complete` after the durable passing self-review.
+- Accepted attempt: Attempt 1; `attempt` remains 1. The task is `status: complete`, `executor: null`, and `claimed_at: null`.
+- Implementation publication: the canonical Background task branch remains clean and published at `75c93f53f5b94b33dc1fc125f90e2fa4d314330b`; no implementation changes were required for completion.
+- Review scope: completion relies on the recorded developer self-review and explicit developer completion authority. No separate architect-specific review notes or live R2/custom-domain preflight are claimed.
+- Dependency frontier: `ARCH-049-BACKGROUND-002` is now eligible (`ready`) because `ARCH-049-DATABASE-001` and this task are complete. `ARCH-049-SYSTEM-TEST-001` remains pending with other declared dependencies incomplete and remains manual-gated.
+- Integration: neither task branch was merged to `main`. The shared checkout's unrelated dirty changes were left untouched.
 
 ## Developer Execution Ownership Amendment
 
@@ -237,7 +245,7 @@ No new repository-boundary or data-model changes identified. `ARCH-049-BACKGROUN
 
 ### Review Status
 
-Pending.
+Not separately conducted. The developer's explicit completion decision follows the durable passing self-review; no separate architect-specific review notes are claimed.
 
 ### Review Notes
 
@@ -257,4 +265,4 @@ Not reviewed.
 
 ### Follow-up
 
-None.
+The external Cloudflare R2/custom-domain live readiness preflight remains outstanding as recorded in Unresolved Issues; it was not a task validation prerequisite under R4.
