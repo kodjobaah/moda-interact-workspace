@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: codex
-claimed_at: 2026-10-27T19:15:48Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-050-API-002
@@ -125,7 +125,7 @@ Use the already-existing WP `recoveryDetailHref` sanitization instead of constru
 
 ### Status
 
-Ready for architect review.
+Ready for architect review. Attempt 2 is a report-only correction; implementation remains at commit `540a36533071cd9e51a5b8a817877839e97aa049`, and functional validation evidence below remains from Attempt 1.
 
 ### Files Changed
 
@@ -137,7 +137,7 @@ Woo Support history now strictly validates schema v2 with a required nullable, s
 
 ### Validation Results
 
-`npm run test:js:unit`: passed, 61 files / 464 tests. `npm run test:php`: passed, 217 tests / 1,670 assertions with one warning. `npm run i18n:verify:20`: passed as part of `npm run build` (558 source messages; 19/19 translation packs); build passed with existing webpack bundle-size warnings. PHP lint passed. Targeted JS lint passed on all changed JS files. `git diff --check` passed. Full-repository JS lint reports existing issues in unrelated integration files; changed task files pass targeted lint.
+`npm run test:js:unit`: passed, 61 files / 464 tests. `npm run test:php`: passed, 217 tests / 1,670 assertions with one PHP warning. A diagnostic `vendor/bin/phpunit --display-warnings` run identified it: `RecoveryPolicyControllerTest.php:14` reads the unset global `$moda_interact_test_logger` when `wc_get_logger()` is called by `ConnectionControllerTest::test_connect_challenge_persists_only_server_state_then_probe_returns_safe_principal` and `ConnectionControllerTest::test_persistence_failure_keeps_previous_connection_and_never_returns_new_credential`. The test-only logger stub is defined by the recovery-policy test file, but those connection tests run before that test class's `setUp()` initializes the global. This is a test-fixture initialization warning, not a failed assertion or product runtime failure; all tests and assertions completed and PHPUnit exited 0. The diagnostic run also printed a separate PHP warning after completion because the sandbox denied PHPUnit's write to `.phpunit.cache/test-results`; it did not change the test count or result. No implementation change was made for either warning. `npm run i18n:verify:20`: passed as part of `npm run build` (558 source messages; 19/19 translation packs); build passed with existing webpack bundle-size warnings. PHP lint passed. Targeted JS lint passed on all changed JS files. `git diff --check` passed. Full-repository JS lint reports existing issues in unrelated integration files; changed task files pass targeted lint.
 
 ### Deviations
 
@@ -157,7 +157,15 @@ None discovered. Existing capability, REST nonce, installation identity and host
 
 ### Task Branch / Worktree Evidence
 
-Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-WOOCOMMERCE-002`, branch `task/ARCH-050-WOOCOMMERCE-002`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-WOOCOMMERCE-002`, branch `task/ARCH-050-WOOCOMMERCE-002`. The original launcher claim was durable; a later prepare correctly refused to overwrite the active Attempt 1.
+Physical isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-WOOCOMMERCE-002` on `task/ARCH-050-WOOCOMMERCE-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-WOOCOMMERCE-002` on `task/ARCH-050-WOOCOMMERCE-002`. Neither shared checkout was switched for task work; no other task worktree was reused.
+
+Attempt 1 start-of-attempt synchronization, from its original prepared packet:
+
+- Parent starting HEAD: `c78aee0260461190e617b1ec456192049c83c6a7`; remote task-branch fast-forward: not needed; `origin/main` incorporated: yes, by synchronization merge `01f29cf9ca61ce85c6b5f85f1cb1031671462230`.
+- Implementation starting HEAD: `68887350ae485bcdc354581f26096006b73afbe1`; remote task-branch fast-forward: not needed; `origin/main` incorporated: already current at that HEAD.
+- Recursive implementation submodule sync and update passed. The prepared packet had no submodule entries; the WooCommerce repository has no registered submodules, so there are no submodule commit IDs to list.
+
+Attempt 2 report-correction launcher packet: parent worktree was at `5800b789dac347e4d3ba5b99d7119f58648adb6a`; implementation worktree was at `540a36533071cd9e51a5b8a817877839e97aa049`. For both, remote task-branch fast-forward was not needed and `origin/main` was already incorporated. Recursive submodule sync/update passed and reported no entries. The launcher claimed Attempt 2 and pushed claim commit `8c8eca91eee92694ae0e8e9bc27ce8b3d29a246a`; the Attempt 2 report correction preserves the Attempt 1 implementation and functional validation.
 
 ## Architect Review
 
