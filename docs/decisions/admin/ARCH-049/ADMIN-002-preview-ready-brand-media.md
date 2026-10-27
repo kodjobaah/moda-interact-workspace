@@ -7,13 +7,13 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-27T12:55:06Z
+attempt: 1
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-ADMIN-001", "ARCH-047-ADMIN-003", "ARCH-047-ADMIN-005"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
@@ -24,7 +24,7 @@ updated: 2026-10-27
 
 ## Architecture
 
-`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. **Portable task definition, not materialised in a developer Git worktree.**
+`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. This task is materialised on its canonical parent task branch and prepared for developer Attempt 1.
 
 ## Objective
 
@@ -128,7 +128,7 @@ Separate existing ShopBrand **text** placeholders from actual image-header asset
 
 ### Status
 
-Not Started — defined but not materialised.
+In Progress - Developer Attempt 1; canonical task worktrees synchronized and claim published.
 
 ### Files Changed
 
@@ -187,4 +187,10 @@ None.
 ## Dependency Frontier Reconciliation
 
 - Promoted from `pending` to `ready` on 2026-10-27 after `ARCH-049-DATABASE-001`, `ARCH-049-ADMIN-001`, `ARCH-047-ADMIN-003`, and `ARCH-047-ADMIN-005` were verified complete.
-- Attempt remains 0; `executor` and `claimed_at` remain null. This is eligibility only; no implementation attempt or implementation worktree was created.
+- At promotion, Attempt remained 0 with no executor or claim timestamp; no implementation attempt or implementation worktree had yet been created.
+
+## Execution Ownership Amendment and Claim
+
+- On 2026-10-27, `/moda_developer_create ARCH-049-ADMIN-002` explicitly took over the ready agent-owned task for developer execution. `assigned_agent: moda_admin` is unchanged; `execution_mode` and `completion_mode` are now `developer`.
+- Developer Attempt 1 was claimed at `2026-10-27T12:55:06Z` after verifying all four declared dependencies were complete and synchronizing both canonical task worktrees.
+- Parent task branch `task/ARCH-049-ADMIN-002` merged current parent `origin/main`; implementation branch `task/ARCH-049-ADMIN-002` was created from current Admin `origin/main`. Both task worktrees were clean before the claim.
