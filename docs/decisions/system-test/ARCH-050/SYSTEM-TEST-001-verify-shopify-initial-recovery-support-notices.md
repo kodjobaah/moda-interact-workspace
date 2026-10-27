@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
   - ARCH-050-SHOPIFY-002
 enables: []
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Verify Shopify opt-in initial outreach Support notification end to end
@@ -73,6 +73,10 @@ Separate fixtures/assertions/orchestration rather than adding a 300-line catch-a
 - [ ] Record durable database evidence, verified link/anchor UI observation, credit count and provider status provenance.
 
 - [ ] Capture structured error/outcome event evidence for a controlled notification-persistence failure and verify retry propagation, original provider send/credit idempotency, and no PII in logs.
+
+## Architect Dependency Frontier Reconciliation — 27 October 2026
+
+`ARCH-050-BACKGROUND-002`, `ARCH-050-SHOPIFY-001`, and `ARCH-050-SHOPIFY-002` are complete. All declared implementation dependencies are therefore satisfied, so this terminal system-test task advances from `pending` to dependency-ready `ready`. It remains unclaimed at Attempt 0 (`executor: null`, `claimed_at: null`); the manual validation checkpoint remains in force before execution. No implementation worktree or attempt was started.
 
 ## Interfaces / Contracts
 
