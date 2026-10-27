@@ -128,7 +128,7 @@ Separate existing ShopBrand **text** placeholders from actual image-header asset
 
 ### Status
 
-**Ready for Review — developer execution Attempt 1 (2026-10-27).** Implementation committed and pushed to the Admin task branch. The implementation's separately labelled Attempt 2 patch corrected a TypeScript test narrowing issue **within this same developer claim**; no new task claim or increment to `attempt` occurred. This submission requests review only; it is **not** architect acceptance or explicit developer completion.
+**Developer self-review passed — Attempt 1 (2026-10-27).** Implementation is committed and pushed to the Admin task branch. The implementation's separately labelled Attempt 2 patch corrected a TypeScript test narrowing issue **within this same developer claim**; no new task claim or increment to `attempt` occurred. Architect review and explicit developer completion remain pending.
 
 ### Files Changed
 
@@ -198,6 +198,7 @@ Evidence: developer terminal recordings `typescript(20261027-131801)` (after ini
 | `npm run lint` | **PASS with 0 errors, 1 warning** in the Database submodule's `eslint.config.mjs` (anonymous default export); not changed by this task. |
 | `git diff --check` | No whitespace errors reported in the terminal validation sequence. |
 | Review snapshot vs corrected patch | **PASS** in this review-submission preparation: 35/35 task implementation files match the corrected Attempt 2 patch byte-for-byte. |
+| Fresh developer-update rerun (27 October) | **PASS**: media/security 19/19, disposable PostgreSQL 1/1, ARCH-047 authoring 28/28, ARCH-047 Meta 13/13, `npx tsc --noEmit`, and `npm run build`; `npm run lint` had 0 errors and the same one Database-submodule warning. `git show --check HEAD` passed. |
 
 The React tests validate native labelled radio controls, disabled non-READY states, alt text and responsive Tailwind breakpoint markup. **Real-browser keyboard/screen-reader interaction and mobile viewport layout were not recorded as manually tested**; the handoff recommends this for final integration review, and static rendering is not misrepresented as a browser smoke test.
 
@@ -216,7 +217,7 @@ No unapproved in-scope behaviour changes identified. The failed early Prisma/typ
 - **Meta provider IMAGE sample handle:** valid IMAGE header creation/submission to Meta remains unavailable until a separately authorised trusted server-produced handle exists. This task deliberately fails closed and records the gap for architect ownership; do not present IMAGE templates as already registered or sendable.
 - **Rollout coordination:** deploy `ARCH-049-DATABASE-001` schema migration and this Admin consumer only in a safe coordinated compatibility window. Do not deploy Admin against a missing `commerce."ShopBrand"` or move the table while required old-schema consumers remain live.
 - **System integration:** browser responsive/accessibility smoke checks and Background-004 consumption of the frozen projection-vector fixture remain follow-on validation, not falsely claimed completed here.
-- **Parent Git publication:** this review-task update still needs its own parent `task/ARCH-049-ADMIN-002` commit/push; its commit SHA cannot exist until the developer applies and commits this patch.
+- **Parent Git publication:** the canonical parent task record was published at `8266a921415b41b3036025ee065dcae62e292822` before this self-review update; this self-review update must be committed and pushed on the same parent task branch.
 
 ### Architectural Concerns
 
@@ -231,7 +232,7 @@ The immutable Admin `headerMediaRole` projection must agree exactly with Backgro
 - Admin implementation commit: **`75fc8ee`** (abbreviated SHA exactly as reported by `git commit`); subject `feat(arch-049-admin-002)`; **35 files changed**.
 - Admin branch publication: `git push -u origin task/ARCH-049-ADMIN-002` **succeeded**, creating `origin/task/ARCH-049-ADMIN-002` as shown in the terminal log.
 - The Admin working tree subsequently had only untracked `typescript` (terminal recording); it was not staged in the commit.
-- Parent task/report commit and publication: **pending developer application and push of this review submission patch**; do not invent a parent commit SHA or claim either branch has merged to `main`.
+- Parent task/report branch before this self-review update: `8266a921415b41b3036025ee065dcae62e292822`, equal to `origin/task/ARCH-049-ADMIN-002`. The parent worktree was clean before this review edit; do not claim this new self-review record is published until its commit/push is verified.
 
 ## Architect Review
 
@@ -258,6 +259,16 @@ Not reviewed.
 ### Follow-up
 
 None.
+
+## Developer Self-Review Passed (Attempt 1, 2026-10-27)
+
+- Outcome: **passed**. All task Work Items, Acceptance Criteria and validation checks are complete in the published Admin implementation branch. No known required task criterion is incomplete.
+- Source review: the media reader exposes only exact-shop safe projections and accepts READY media only when source generation/fingerprint, content type, size, dimensions, digest, immutable shop/role key and HTTPS origin validate. The existing authoring compiler emits semantic IMAGE role bindings without a merchant URL; frozen projection vectors pin the digest and role identity. Submission remains fail-closed without a trusted Meta sample handle.
+- Fresh validation in the canonical Admin implementation worktree: media/compiler/accessibility/security tests **19/19**; disposable PostgreSQL integration **1/1**; ARCH-047 authoring regressions **28/28**; ARCH-047 Meta regressions **13/13**; `npx tsc --noEmit` passed; `npm run build` passed with existing non-fatal BullMQ/optional Valkey warnings; `npm run lint` passed with 0 errors and one unchanged Database-submodule warning; `git show --check HEAD` passed.
+- Implementation publication and isolation: canonical Admin worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-ADMIN-002`, branch `task/ARCH-049-ADMIN-002`, is at `75fc8ee924f128f1245a0ad78ba70d7ec8cea99f`, equal to `origin/task/ARCH-049-ADMIN-002`. Only the previously disclosed untracked `typescript` terminal recording remains; it is not task deliverable and was not staged. Canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-ADMIN-002` is registered on the matching task branch, clean before this edit, at `8266a921415b41b3036025ee065dcae62e292822` equal to its remote task ref.
+- All four declared dependencies were verified `complete`. `origin/main` is an ancestor of the Admin implementation task branch. No merge or push to `main` was performed.
+- Remaining limitations are disclosed, not misrepresented as passed: live browser keyboard/screen-reader/mobile smoke tests were not performed; the Meta sample-handle producer remains an architect-owned gap; rollout must coordinate with DATABASE-001; Background-004 interoperability remains follow-on integration validation.
+- Transition: retain `status: review`, `executor: null`, `claimed_at: null`, and `attempt: 1`. Since `completion_mode: developer`, explicit developer completion is pending. No downstream task was started or promoted.
 
 ## Dependency Frontier Reconciliation
 
