@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -232,6 +232,16 @@ The recorded current parent task states and existing implementation branch are t
 ### Architectural Concerns
 
 No new cross-repository code was added. Preserve the separately owned Shopify/API/Woo admission and UI boundaries; any gap found by their owners should be coordinated by `moda_architect`.
+
+## Developer Self-Review - Changes Requested (Attempt 1, 27 October 2026)
+
+- Outcome: **changes requested**. The previously submitted correction commit was followed by an `origin/main` merge commit `a67c8f8` on the implementation task branch. Conflict resolution preserved BG007 merchant follow-up handling and the newer prepared HUMAN_TEXT path. The merge commit is local and has not been pushed.
+- Current focused validation from the canonical implementation worktree: four Vitest files / 41 tests passed; `npm exec -- tsc --noEmit --pretty false` passed; targeted ESLint for `human-command-dispatcher.service.ts` and `recovery-human-dispatch.fixture.ts` passed; `git diff --check HEAD^1 HEAD` passed. Database-backed integration tests were not run after the merge.
+- Worktree evidence: parent task worktree is clean on `task/ARCH-047-BACKGROUND-007`; implementation task worktree is on the same branch and has only the pre-existing untracked `typescript` transcript. The implementation branch is seven commits ahead of its remote after the local merge. Do not stage or delete the transcript.
+- Required correction 1: the prior Changes Requested transition returned Attempt 1 to `ready`; no canonical Attempt 2 claim/preparation packet exists. Do not treat the later correction commit or merge as a new claim. The developer must use the canonical `/moda_developer_create ARCH-047-BACKGROUND-007` flow before resuming and record its preparation evidence.
+- Required correction 2: after that claim, publish the implementation task branch, including `a67c8f8`, and rerun the task's relevant PostgreSQL/Redis integration coverage against the merged branch. Record exact outcomes; do not infer passing integration from unit tests/typecheck/lint.
+- Required correction 3: resolve the unchecked Shopify/Woo merchant-admission verification work item. `ARCH-047-WOOCOMMERCE-001` remains pending and its implementation/fixtures are not evidence for this task yet. Obtain the Woo owner task's result or ask `moda_architect` to amend BG007's scope/acceptance if this is a downstream gate rather than a prerequisite; do not implement Woo code in Background.
+- Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Preserve the existing attempt number; the next canonical developer claim increments it exactly once.
 
 ## Architect Review
 
