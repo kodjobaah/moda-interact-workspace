@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
-executor: codex
-claimed_at: 2026-10-27T18:09:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-047-API-001
@@ -84,7 +84,7 @@ Hosted API-001 GET v1 response: `{schemaVersion:1, templates:[{name,language}]}`
 
 ## Validation
 
-- [ ] Focused PHP tests for GET proxy and authentication, JS tests for human composer/state/polling and build lint according to repo scripts, `git diff --check`.
+- [x] Focused PHP tests for GET proxy and authentication, JS tests for human composer/state/polling and build lint according to repo scripts, `git diff --check`.
 
 ## Stop Condition
 
@@ -97,7 +97,7 @@ Use canonical Woo task parent/implementation worktrees and preserve existing nat
 ## Completion Report
 
 ### Status
-Ready for Review. The authenticated WooCommerce catalogue proxy, eligible template picker and idempotent submission are implemented and pushed on task/ARCH-047-WOOCOMMERCE-001.
+Accepted. The authenticated WooCommerce catalogue proxy, eligible template picker and idempotent submission are implemented and pushed on task/ARCH-047-WOOCOMMERCE-001.
 
 ### Files Changed
 - includes/Rest/RecoveryConversationCommandController.php
@@ -171,19 +171,31 @@ Ready for Review. The authenticated WooCommerce catalogue proxy, eligible templa
 ## Architect Review
 
 ### Review Status
-Pending.
+Accepted — Attempt 1, 2026-10-27. The implementation satisfies the task scope and acceptance criteria. The authenticated proxy derives the conversation from the authorized recovery, validates the bounded catalogue response, and preserves installation/nonce checks. The UI only submits a choice present in the current hosted catalogue, sends empty parameters, and uses the established idempotent command/polling path. The implementation branch is clean and published at `550d468`.
 
 ### Review Notes
-No implementation reviewed.
+Reviewed the implementation diff and task report. No architecture or security correction remains outstanding. The repository-wide JavaScript lint report contains unrelated existing findings; the report records targeted lint passing for changed JavaScript, and the PHP lint, focused PHP/JS suites, build, i18n verification and diff check as passing. These reported results were reviewed, not rerun during this review.
 
 ### Reviewed Files
-None.
+- `includes/Rest/RecoveryConversationCommandController.php`
+- `includes/Api/ModaApiClient.php`
+- `includes/Api/ConversationCommandContracts.php`
+- `src/recoveries/detail/human/conversation-command-client.js`
+- `src/recoveries/detail/human/conversation-command-contract.js`
+- `src/recoveries/detail/human/human-conversation-controller.js`
+- `src/recoveries/detail/human/follow-up-template-picker.js`
+- `src/recoveries/detail/human/human-reply-composer.js`
+- `tests/RecoveryConversationCommandControllerTest.php`
+- `tests/js/recovery-human-conversation.test.js`
+- task-owned localization catalogues listed in Completion Report
 
 ### Validation Reviewed
-None.
+- Completion Report evidence: 5 focused PHP tests / 39 assertions; 10 focused JavaScript tests; changed-file JavaScript lint; PHP syntax checks and `npm run lint:php`; build and strict i18n verification; `git diff --check`.
+- Repository-wide `npm run lint:js` reports unrelated existing lint findings; this exception is retained transparently in the Completion Report.
+- Implementation branch `task/ARCH-047-WOOCOMMERCE-001` is clean and pushed at `550d468`.
 
 ### Architecture Conformance
-Not assessed.
+Conforms. WooCommerce remains a nonce-protected proxy over the installation-authenticated hosted API. It neither accepts arbitrary conversation/shop/provider identifiers nor supplies customer-specific template parameters; API-001 remains the authoritative eligibility/admission boundary and BG007 remains authoritative for final provider resolution.
 
 ### Follow-up
-System test validates Shopify/Woo merchant parity after integration.
+`ARCH-047-API-001` is complete. `ARCH-047-SYSTEM-TEST-001` remains pending and manually gated for integrated certification; this review does not claim system-test completion.
