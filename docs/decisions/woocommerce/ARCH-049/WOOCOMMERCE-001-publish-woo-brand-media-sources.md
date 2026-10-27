@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -87,7 +87,8 @@ None. The `woo.shop-brand.v1` API route, request and response contract are alrea
 ## Acceptance Criteria
 
 - [x] Against the frozen authenticated `woo.shop-brand.v1` HTTP fixture, a fresh Woo connection queues one initial branding publication, and an already-connected installation is bootstrapped once; subsequent WordPress changes **do not** publish without an explicit future sync request. The reusable `requestSync()` captures changed/removed assets correctly. Real hosted API delivery is certified only after API001 acceptance in SYSTEM-TEST-001.
-- [x] No new public WP route and no checkout latency regression.
+- [x] No new public WP route.
+- [ ] No recurring Action Scheduler/store lookup on already-bootstrapped requests; checkout latency remains unaffected.
 - [x] Stable retries do not duplicate observations or leak installation credentials.
 - [x] Removed logo/icon becomes a null source rather than retaining a false current READY.
 
@@ -111,7 +112,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-**Ready for Review — Developer Attempt 1.** The implementation was committed as `5b12eba` (`feat(arch-049-woocommerce)`) and the terminal transcript records a successful push of implementation branch `task/ARCH-049-WOOCOMMERCE-001` to `origin`. This report is prepared for review; it is not architect acceptance or the developer's explicit completion decision. `completion_mode: developer` and `attempt: 1` are preserved.
+**Developer Self-Review - Changes Requested — Attempt 1.** Implementation commit `5b12eba` is published on `task/ARCH-049-WOOCOMMERCE-001`; current checks found the focused PHPUnit suite passing and the commit whitespace-clean. The review identified unresolved recurring request work and an unapproved PHP logging deviation. Attempt remains 1; the task is returned to `ready` for correction. This is not architect acceptance or a completion decision.
 
 ### Developer Takeover and Worktree Evidence
 
@@ -181,8 +182,25 @@ Evidence from the developer-supplied terminal recording dated **2026-10-27**, su
 
 ### Architectural Concerns
 
-- Confirm the PHP-native logging choice against the architect's shared-logging policy; an npm/Node logging import is not executable in merchant-hosted PHP.
+- The PHP-native logging choice has not been approved against the task's shared-logging instruction. Request an explicit architect decision documenting the PHP-compatible boundary or prescribing an approved adapter; do not claim this deviation is accepted by the developer self-review.
 - The implementation contains no new public WordPress endpoint, direct Moda database/R2 connection, or automatic brand-change polling. Idempotency and authoritative tenant selection on the hosted API are reserved for API-001 and system validation.
+
+## Developer Self-Review - Changes Requested
+
+### Required Corrections
+
+- Make legacy recurring-action cleanup a one-time migration/bootstrap operation rather than running `as_has_scheduled_action()` on every request after `action_scheduler_init`. Keep the initial connected-installation bootstrap and legacy cleanup correct, but ensure already-bootstrapped requests avoid repeated Action Scheduler/store lookups. Add a regression test that counts legacy-action lookups across repeated initialization and proves the steady-state path performs none; retain coverage that pre-existing legacy schedules are removed.
+- Resolve the PHP logging deviation with `moda_architect`: record explicit approval of the WooCommerce logger as the PHP runtime boundary, or implement the architect-prescribed PHP-compatible shared logging adapter. Keep credential/source-URL redaction and ensure logging failures do not affect publication behavior.
+
+### Review Evidence
+
+- `composer test -- --filter ShopBrandPublicationTest`: PASS, 16 tests / 133 assertions.
+- `git show --check 5b12ebacb1dd34b4aede037d0ee8ecea2d02e828`: PASS.
+- Implementation worktree was clean at published commit `5b12eba`; parent task branch was clean and matched its published task ref before this review update.
+
+### Review Decision
+
+Attempt 1 requires the corrections above. No new attempt is created by this review. `status` is `ready`, `executor` and `claimed_at` are null, and `attempt` remains 1. Re-enter with `/moda_developer_create ARCH-049-WOOCOMMERCE-001` after the corrections are ready for a new cycle.
 
 ## Architect Review
 
