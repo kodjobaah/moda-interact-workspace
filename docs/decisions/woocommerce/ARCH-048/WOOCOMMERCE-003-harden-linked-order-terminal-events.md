@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 26
-executor: developer
-claimed_at: '2026-10-27T11:04:41Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-035-WOOCOMMERCE-008
@@ -93,12 +93,13 @@ Ensure every confirmed checkout-linked order placement, paid transition and canc
 
 ## Validation
 
-- [x] `npm run test:php`: **190 tests, 1,434 assertions, 0 failures** in the developer's 26 October Attempt 2 log; this preceded the final checkout-test-only commit, and PHPUnit was not rerun in this review environment (missing PHP extensions).
-- [x] `WP_ENV_PORT=8899 npm run test:integration:wordpress`: **passed** on 27 October against the `ARCH-048-WOOCOMMERCE-003` plugin, including guest/customer COD unpaid guards, confirmed paid transitions, transaction-backed status-only payment, cancellation, replay, 503 retries, HPOS, and successful environment cleanup.
-- [x] `npm run build`: passed in the developer's 26 October Attempt 2 log, including strict 20-locale verification; webpack reported non-fatal performance warnings.
-- [x] `composer lint`: passed in the developer's 26 October Attempt 2 log. PHP syntax checks also passed against the uploaded final snapshot. A final implementation-branch `git diff --check` after `6818b8a` was not separately shown.
-- [x] `node --test tests/integration/*.test.mjs tests/integration/scenarios/*.test.mjs tests/i18n/*.test.mjs`: **65/65 passed** against the supplied final snapshot in the review-preparation environment, including 8/8 checkout Action Scheduler tests.
-- [ ] `npm run test:js`: no complete rerun supplied after the final implementation commit; the earlier run had **456 passed, 1 failed** in unrelated `tests/js/recovery-human-conversation.test.js` (ARCH-040; `never sends twice on pending click; ambiguous retry reuses the same key`). Record as an unrelated previously reproduced failure, not as a passing suite.
+- [x] `npm run test:php` — Attempt 3 fresh run: **190 tests, 1,434 assertions, 0 failures**.
+- [x] `WP_ENV_PORT=8899 npm run test:integration:wordpress` — Attempt 3 fresh run passed. Guest and customer ARCH-048 order scenarios confirmed COD unpaid guard, confirmed payment and transaction-backed status-only gateway, cancellation, replay, HTTP 503 handling and HPOS. Related Classic/Blocks checkout capture and retry scenarios passed; the disposable environment stopped cleanly.
+- [x] `npm run build` — Attempt 3 passed strict 20-locale source/catalogue verification and webpack compilation; webpack emitted non-fatal asset/entrypoint size warnings.
+- [x] `composer lint` — Attempt 3 passed PHP syntax checks across plugin and test files.
+- [x] `npm run test:js:node` — Attempt 3 passed **65/65** Node integration/i18n tests, including 8/8 checkout Action Scheduler tests.
+- [x] `git diff --check origin/main...HEAD` — Attempt 3 passed on the implementation branch, which remains clean and published at `6818b8a62fd8ce2f558ce6e554569ef5174aeddf`.
+- [ ] `npm run test:js:unit` — Attempt 3 rerun: **456 passed, 1 failed**. The sole test failure is the previously reproduced unrelated ARCH-040 assertion in `tests/js/recovery-human-conversation.test.js` (“never sends twice on pending click; ambiguous retry reuses the same key”). `wp-scripts test-unit-js` also attempted to collect Node `.mjs` integration/i18n tests and reported 19 “No test suite found” collection errors; those tests pass through the dedicated `npm run test:js:node` script. No ARCH-048 failure was observed.
 
 ## Stop Condition
 
@@ -114,7 +115,7 @@ After only this task's work, criteria and required validation, complete the Comp
 
 ### Status
 
-**In Progress — Developer Attempt 3.** Attempt 2 was returned for missing canonical claim/preparation evidence. The developer-create flow has now claimed Attempt 3, synchronized both canonical task worktrees, verified both dependencies complete, and published this claim on the parent task branch. The existing implementation remains at published commit `6818b8a`; no feature changes have been made during preparation.
+**Ready for Review — Developer Attempt 3.** The previous claim-evidence correction is resolved and recorded. Attempt 3 made no implementation changes; fresh PHPUnit, Node integration/i18n, build, PHP lint and WordPress/HPOS validation pass against the published implementation at `6818b8a`. The broad JavaScript unit command's unrelated ARCH-040 failure and Node-test collection mismatch are documented above. This is a passing developer self-review submitted for architectural review, not developer completion.
 
 ### Files Changed
 
@@ -144,19 +145,18 @@ Parent workspace: **this task definition and Completion Report only**. No archit
 
 - **Developer PHPUnit (26 October, Attempt 2):** `npm run test:php` passed **190 tests, 1,434 assertions**. This predates the final two-file integration-test commit; no production PHP files changed in that final commit, based on the developer's commit summary. A fresh PHPUnit rerun is not claimed.
 - **Developer build/lint (26 October, Attempt 2):** `npm run build` and `composer lint` passed; build reported warnings about bundle size, not build errors.
-- **Developer real WordPress integration (27 October):** `WP_ENV_PORT=8899 npm run test:integration:wordpress` completed on the WOOCOMMERCE-003 worktree. The runner explicitly reported `ARCH-048 Order guest` and `ARCH-048 Order customer` COD/unpaid, confirmed-payment, status-only gateway, cancellation, replay, 503 and HPOS **PASS**. Guest/customer checkout 503/retry scenarios also passed, and the disposable WordPress environment stopped cleanly. This resolves the Attempt 1 COD failure and subsequent nondeterministic checkout retry assertion seen in earlier logs.
+- **Developer real WordPress integration (Attempt 3, 27 October):** `WP_ENV_PORT=8899 npm run test:integration:wordpress` completed on the canonical WOOCOMMERCE-003 worktree. The runner reported `ARCH-048 Order guest` and `ARCH-048 Order customer` COD unpaid guard, confirmed-payment/status-only gateway, cancellation, replay, 503 and HPOS **PASS**. Related guest/customer Classic/Blocks checkout and retry scenarios also passed. The disposable WordPress environment stopped cleanly; `npx wp-env status` reports `stopped`.
 - **Snapshot Node verification (27 October, review preparation):** `node --test tests/integration/*.test.mjs tests/integration/scenarios/*.test.mjs tests/i18n/*.test.mjs` passed **65/65**; the focused checkout Action Scheduler tests passed **8/8**. JavaScript syntax and changed PHP-file syntax checks passed against the uploaded snapshot.
-- **PHPUnit review-environment limit:** `php vendor/bin/phpunit` was unavailable in this container because `dom`, `mbstring` and `xmlwriter` extensions are missing. This is not recorded as a code failure; rely on the developer-run PHPUnit log above.
-- **Full JS limitation:** the earlier `npm run test:js` run had **456 passing and one separately reproduced ARCH-040 failure** in `recovery-human-conversation.test.js`. No final full-suite rerun is evidenced; the Node integration/i18n subset is passing. No unrelated ARCH-040 code was changed here.
+- **Full JS limitation:** `npm run test:js:unit` was rerun in Attempt 3. It reports 456 passing tests, one unrelated previously observed ARCH-040 human-conversation assertion failure, and 19 Vitest “No test suite found” collection errors for Node `.mjs` tests. The same Node integration/i18n files pass under their declared `npm run test:js:node` command (65/65); no unrelated ARCH-040 code was changed.
 - **Git publication:** user-provided terminal output confirms implementation commit `6818b8a` and push `0af46df..6818b8a` to the implementation task branch. The snapshot is a Git-metadata-free archive; remote commit integrity and the final implementation-branch diff must be inspected by the authorised reviewer.
-- **Worktree evidence:** the historical Attempt 1 ownership amendment below documents the dedicated parent/implementation worktrees and initial synchronisation. The supplied current task file remained `ready` at `attempt: 1`, so an Attempt 2 launcher claim, `claimed_at` time, start-of-attempt synchronisation and preparation packet **cannot be verified from this archive**. This retrospective report does not invent that evidence. The reviewing developer/architect should reconcile the actual task-workflow record before accepting.
+- **Attempt 3 worktree evidence:** canonical paths, branch heads, pre-claim cleanliness, dependency check, fetch/mainline synchronization results and submodule status are recorded in the Developer Execution Claim (Attempt 3) section. The parent claim/review record is published on its task branch; the implementation task branch remains published at `6818b8a`.
 - **Beyond task scope:** no external commerce/API/background end-to-end system test or production delivery trace is claimed.
 
 ### Deviations
 
 - The developer applied external patch deliverables under the developer-execution workflow rather than an assigned repository agent writing all code directly. `assigned_agent: moda_woocommerce`, `execution_mode: developer` and `completion_mode: developer` are preserved.
 - The integration tests moved from the legacy flat paths to `tests/integration/scenarios/` during branch reconciliation; the final test correction is scoped to the modular layout.
-- The uploaded parent task definition does not show the Attempt 2 claim transition. Recording `attempt: 2` and `status: review` in this review-submission patch reconciles the reported completed work for review; it does **not** establish that `/moda_developer_create` ran or supply its launcher packet.
+- Attempt 2 was a retrospective review submission without a verifiable canonical claim packet. It was returned for corrections and preserved as history. Attempt 3 was claimed via the canonical developer-create flow, with its claim and preparation evidence recorded below.
 
 ### Assumptions
 
@@ -166,8 +166,8 @@ Parent workspace: **this task definition and Completion Report only**. No archit
 
 ### Unresolved Issues
 
-- **Review workflow evidence:** verify the canonical Attempt 2 `/moda_developer_create` claim and both worktrees' start-of-attempt synchronisation/physical isolation evidence, or explicitly record the workflow non-conformance and its remediation. Do not fabricate a `claimed_at` timestamp.
-- **Validation limitation:** the full JS suite's previously reproduced ARCH-040 failure remains outside this task; no final full-suite rerun was supplied. The final implementation-branch diff check and remote commit content should be verified during review.
+- **Unrelated JavaScript unit failure:** `tests/js/recovery-human-conversation.test.js` still fails its ARCH-040 pending-click/idempotency assertion in the full unit runner. This is outside ARCH-048-WOOCOMMERCE-003; the dedicated Node integration/i18n suite passes. The full runner also miscollects `.mjs` Node tests as Vitest suites.
+- No task-scoped functional blocker remains in Attempt 3 validation. Attempt 2's missing-claim workflow issue is remediated by the canonical Attempt 3 claim and preparation record below.
 - No reproduced task-scoped functional blocker remains in the supplied final real WordPress/HPOS integration output.
 
 ### Architectural Concerns
@@ -244,3 +244,11 @@ None.
 - Implementation synchronization: fetched `origin --prune`; implementation HEAD `6818b8a62fd8ce2f558ce6e554569ef5174aeddf` equals `origin/task/ARCH-048-WOOCOMMERCE-003`. `origin/main` is `4f2d0db19931e14127a8399b3e4629ede3d2e280` and is already an ancestor; no merge was needed. The worktree was clean before the claim.
 - Physical isolation: both canonical directories were registered to the task branch in their respective repositories and clean before preparation; neither shared/default checkout was used for implementation. `git submodule status --recursive` returned no entries for the WooCommerce implementation repository.
 - Attempt 3 begins with the existing implementation at `6818b8a`; no source or test changes were made during claim preparation. The task is handed back for implementation and the task-scoped validation listed above.
+
+## Developer Self-Review - Passed (Attempt 3, 2026-10-27)
+
+- Outcome: **passed; explicit developer completion is pending**. The Attempt 2 workflow-evidence correction is resolved: Attempt 3 was claimed through the canonical developer-create flow, both dedicated worktrees were synchronized/verified, dependencies were confirmed complete, and the parent claim was published.
+- Implementation: Attempt 3 contains no implementation diff. The existing implementation branch is clean and published at `6818b8a62fd8ce2f558ce6e554569ef5174aeddf`, equal to `origin/task/ARCH-048-WOOCOMMERCE-003`; current `origin/main` is an ancestor and `git diff --check origin/main...HEAD` passes.
+- Validation: fresh Attempt 3 PHP (190/190), Node integration/i18n (65/65), build, PHP lint and real WordPress/HPOS guest/customer scenarios pass. `npm run test:js:unit` remains unsuccessful only due to the separately identified ARCH-040 assertion and 19 Node `.mjs` collection errors; the Node files pass in their dedicated runner. No ARCH-048 test failure was observed.
+- Work Items and Acceptance Criteria remain satisfied by the implementation and recorded regression evidence. No scope deviation or material assigned-agent assistance occurred in Attempt 3.
+- Transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 3`. Because `completion_mode: developer`, explicit developer completion remains pending after architectural review. No task branch was merged to `main`.
