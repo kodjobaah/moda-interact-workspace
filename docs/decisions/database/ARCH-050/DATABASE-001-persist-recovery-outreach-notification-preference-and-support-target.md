@@ -22,7 +22,7 @@ enables:
   - ARCH-050-API-001
   - ARCH-050-API-002
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Persist the merchant notification preference and optional Support recovery target
@@ -100,10 +100,10 @@ ALTER TABLE "support"."MerchantSupportMessage"
 
 ## Work Items
 
-- [ ] Insert the three Prisma model modifications above, with matching relation names and proper spacing/ordering.
-- [ ] Generate and inspect a single additive migration, including `DEFAULT false`, nullable FK, `ON DELETE SET NULL` and index.
-- [ ] Add isolated database validation for old row migration, default false, FK reference, deletion nulling and unaffected Support sourceKey dedupe.
-- [ ] Regenerate Prisma client in the database repository and record schema/migration validation, fresh and upgrade Postgres test evidence.
+- [x] Insert the three Prisma model modifications above, with matching relation names and proper spacing/ordering.
+- [x] Generate and inspect a single additive migration, including `DEFAULT false`, nullable FK, `ON DELETE SET NULL` and index.
+- [x] Add isolated database validation for old row migration, default false, FK reference, deletion nulling and unaffected Support sourceKey dedupe.
+- [x] Regenerate Prisma client in the database repository and record schema/migration validation, fresh and upgrade Postgres test evidence.
 
 ## Interfaces / Contracts
 
@@ -127,11 +127,11 @@ None. This is the initial eligible architecture implementation task.
 
 ## Acceptance Criteria
 
-- [ ] Prisma `validate` succeeds with all `shopify`, `commerce`, and `support` schema references.
-- [ ] New/old `ShopSettings` rows have `notifyOnInitialRecoveryOutreach === false` until explicitly updated.
-- [ ] New Support messages can link to an existing recovery; deleting the recovery leaves the Support message but nulls its link.
-- [ ] Existing Support messages/threads and unique `sourceKey` remain valid; migration applies to populated and fresh disposable databases.
-- [ ] Migration SQL is only additive (plus non-destructive FK/index) and does not modify unrelated tables.
+- [x] Prisma `validate` succeeds with all `shopify`, `commerce`, and `support` schema references.
+- [x] New/old `ShopSettings` rows have `notifyOnInitialRecoveryOutreach === false` until explicitly updated.
+- [x] New Support messages can link to an existing recovery; deleting the recovery leaves the Support message but nulls its link.
+- [x] Existing Support messages/threads and unique `sourceKey` remain valid; migration applies to populated and fresh disposable databases.
+- [x] Migration SQL is only additive (plus non-destructive FK/index) and does not modify unrelated tables.
 
 ## Validation
 
@@ -153,39 +153,68 @@ The architect supplied a portable task definition only (**defined but not materi
 
 ### Status
 
-Not Started.
+Implementation Complete; awaiting authorized branch publication.
 
 ### Files Changed
 
-None (definition only).
+`prisma/schema.prisma`; `prisma/migrations/20261026235000_arch050_initial_recovery_support_notification/migration.sql`; `scripts/test-arch050-initial-recovery-support-notification-postgres.mjs`; `package.json`.
 
 ### Work Completed
 
-None.
+Added `ShopSettings.notifyOnInitialRecoveryOutreach` with a false default. Added a nullable `MerchantSupportMessage.checkoutRecoveryId` relation to `CheckoutRecovery`, its inverse relation and index. Preserved `systemVersion` as `String?` and `sourceKey @unique`. Added one additive cross-schema migration and an isolated PostgreSQL test for fresh and upgraded databases.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+`npm run validate` — passed.
+`npm run prisma:generate` — passed with Prisma Client v6.19.3.
+`prisma migrate diff --from-schema-datamodel /tmp/arch050-schema-before.prisma --to-schema-datamodel prisma/schema.prisma --script` — generated the same two column additions, index and qualified foreign key as the checked-in migration.
+`npm run test:arch050-initial-recovery-support-notification:postgres:fresh` — passed against disposable pgvector/PostgreSQL 17; 64 migrations applied.
+`npm run test:arch050-initial-recovery-support-notification:postgres:upgrade` — passed against a populated disposable PostgreSQL database; legacy settings defaulted false and existing Support message/sourceKey remained intact.
+`git diff --check` — passed.
 
 ### Deviations
 
-None.
+Prisma 6.19.3 rejects the task’s illustrative multiline `@relation(...)` syntax; the equivalent relation was formatted as one valid Prisma field declaration.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+The generated SQL from Prisma’s schema-to-schema diff is the source for the checked-in migration. Existing and new settings rows default OFF.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+None.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+No cross-repository or contract issue discovered. Service writers/read APIs remain responsible for same-shop association checks as specified by the task.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-DATABASE-001`
+  parent branch: `task/ARCH-050-DATABASE-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-DATABASE-001`
+  implementation branch: `task/ARCH-050-DATABASE-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recorded submodule commits: none (no submodules)
+
+Implementation branch commit: `2f702f52372d648abc5f080f02f722046d0e9271`.
+Implementation branch push: blocked by automatic review because configured GitHub destination ownership is unverified.
+Configured implementation origin: `https://github.com/kodjobaah/moda-interact-database.git` (matches the task’s assigned repository name).
+Parent task branch report commit and push: pending; parent task remains `in_progress` until both branch pushes are authorized and completed.
 
 ## Architect Review
 
