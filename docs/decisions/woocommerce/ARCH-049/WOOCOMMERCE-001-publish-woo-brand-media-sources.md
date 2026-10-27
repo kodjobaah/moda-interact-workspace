@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: '2026-10-27T12:06:02Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: ["ARCH-049-WOOCOMMERCE-002", "ARCH-049-SYSTEM-TEST-001"]
@@ -24,7 +24,7 @@ updated: 2026-10-27
 
 ## Architecture
 
-`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. **Portable task definition, not materialised in a developer Git worktree.**
+`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. **Materialised developer-executed task.** The dedicated parent and implementation worktrees, preparation evidence, and implementation commit are recorded in the Completion Report.
 
 ## Objective
 
@@ -65,11 +65,11 @@ Only locally read WordPress settings/attachment metadata. Never install a public
 
 ## Work Items
 
-- [ ] Create PHP source reader and normalised payload builder.
-- [ ] Add authenticated Moda API client publication and bounded retry hooks.
-- [ ] Test source changes/removals and missing logo/icon through an explicit new snapshot.
-- [ ] Ensure installation/connection bootstrap is idempotent; remove brand-change hooks and daily reconciliation, clean up legacy recurring actions, and expose reusable internal `requestSync()`.
-- [ ] Document rollout/reconnect and version support, including that post-install branding changes are not automatically synchronised.
+- [x] Create PHP source reader and normalised payload builder.
+- [x] Add authenticated Moda API client publication and bounded retry hooks.
+- [x] Test source changes/removals and missing logo/icon through an explicit new snapshot.
+- [x] Ensure installation/connection bootstrap is idempotent; remove brand-change hooks and daily reconciliation, clean up legacy recurring actions, and expose reusable internal `requestSync()`.
+- [x] Document rollout/reconnect and version support, including that post-install branding changes are not automatically synchronised.
 
 ## Interfaces / Contracts
 
@@ -81,20 +81,21 @@ None. The `woo.shop-brand.v1` API route, request and response contract are alrea
 
 ## Enables
 
+- ARCH-049-WOOCOMMERCE-002
 - ARCH-049-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 
-- [ ] Against the frozen authenticated `woo.shop-brand.v1` HTTP fixture, a fresh Woo connection queues one initial branding publication, and an already-connected installation is bootstrapped once; subsequent WordPress changes **do not** publish without an explicit future sync request. The reusable `requestSync()` captures changed/removed assets correctly. Real hosted API delivery is certified only after API001 acceptance in SYSTEM-TEST-001.
-- [ ] No new public WP route and no checkout latency regression.
-- [ ] Stable retries do not duplicate observations or leak installation credentials.
-- [ ] Removed logo/icon becomes a null source rather than retaining a false current READY.
+- [x] Against the frozen authenticated `woo.shop-brand.v1` HTTP fixture, a fresh Woo connection queues one initial branding publication, and an already-connected installation is bootstrapped once; subsequent WordPress changes **do not** publish without an explicit future sync request. The reusable `requestSync()` captures changed/removed assets correctly. Real hosted API delivery is certified only after API001 acceptance in SYSTEM-TEST-001.
+- [x] No new public WP route and no checkout latency regression.
+- [x] Stable retries do not duplicate observations or leak installation credentials.
+- [x] Removed logo/icon becomes a null source rather than retaining a false current READY.
 
 ## Validation
 
-- [ ] PHP unit tests with stubbed WP Site Identity APIs and attachment data.
-- [ ] Client API/auth body/response tests, bounded Action Scheduler retries, absence of automatic/daily triggers, cleanup of existing recurring jobs and explicit sync reuse.
-- [ ] Woo plugin build/lint/JS or PHP tests required by affected code and `git diff --check`.
+- [x] PHP unit tests with stubbed WP Site Identity APIs and attachment data.
+- [x] Client API/auth body/response tests, bounded Action Scheduler retries, absence of automatic/daily triggers, cleanup of existing recurring jobs and explicit sync reuse.
+- [x] Woo plugin build/lint/JS or PHP tests required by affected code and `git diff --check`.
 
 ## Stop Condition
 
@@ -110,48 +111,78 @@ No additional assumptions are authorised.
 
 ### Status
 
-In Progress — Developer Attempt 1 claimed at `2026-10-27T12:06:02Z`. The developer explicitly took over this ready agent-owned task; `assigned_agent: moda_woocommerce` and the task scope are unchanged. Canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-WOOCOMMERCE-001` is on `task/ARCH-049-WOOCOMMERCE-001`, clean at `286a2bf371efc4bb122842943d7f1bb1ee8543c5`, created from and current with `origin/main`; no remote task branch existed at preparation. Canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-WOOCOMMERCE-001` is on `task/ARCH-049-WOOCOMMERCE-001`, clean at `29c1d7afd94a074d6b5de2410b4d19a2adc73a1c`, created from and current with `origin/main`; no remote task branch existed at preparation. Recursive submodule status is empty (no submodules are declared). The task has no dependencies. Claim and developer takeover are committed and published on the parent task branch; implementation work begins in the canonical implementation worktree.
+**Ready for Review — Developer Attempt 1.** The implementation was committed as `5b12eba` (`feat(arch-049-woocommerce)`) and the terminal transcript records a successful push of implementation branch `task/ARCH-049-WOOCOMMERCE-001` to `origin`. This report is prepared for review; it is not architect acceptance or the developer's explicit completion decision. `completion_mode: developer` and `attempt: 1` are preserved.
 
-### Developer Takeover
+### Developer Takeover and Worktree Evidence
 
-On 2026-10-27, `/moda_developer_create ARCH-049-WOOCOMMERCE-001` was invoked
-for this ready agent-owned task. Execution and completion authority transfer
-to the developer: `execution_mode: developer`, `completion_mode: developer`.
-Logical ownership remains `assigned_agent: moda_woocommerce`; task scope,
-acceptance criteria, dependencies and validation requirements are unchanged.
-Attempt 1 is claimed by `developer`. The canonical parent and implementation
-worktrees were created from current `origin/main`, synchronized and verified
-clean before the claim. There was no pre-existing local or remote task branch
-and no conflicting worktree registration. Recursive implementation submodule
-status was empty.
+On 2026-10-27, `/moda_developer_create ARCH-049-WOOCOMMERCE-001` transferred execution and completion authority to the developer while preserving `assigned_agent: moda_woocommerce`. The launcher-established dedicated worktrees are:
+
+- Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-WOOCOMMERCE-001`, prepared on `task/ARCH-049-WOOCOMMERCE-001` from synced `origin/main` at `286a2bf371efc4bb122842943d7f1bb1ee8543c5`.
+- Implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-WOOCOMMERCE-001`, prepared on `task/ARCH-049-WOOCOMMERCE-001` from synced `origin/main` at `29c1d7afd94a074d6b5de2410b4d19a2adc73a1c`.
+- No declared implementation submodules; start-of-attempt task metadata recorded clean branch state, no conflicting worktree, and satisfied empty dependency set. The supplied execution log shows tests, commit and push from the dedicated implementation worktree. The log also shows an unrelated untracked local `typescript` terminal capture, not included in the commit.
 
 ### Files Changed
 
-None.
+The implementation commit contains 15 WooCommerce-repository files:
+
+- `composer.json`
+- `docs/arch049-woo-shop-brand.md`
+- `includes/Api/ModaApiClient.php`
+- `includes/Connection/ConnectionCoordinator.php`
+- `includes/Runtime.php`
+- `includes/ShopBrand/Publisher.php` (new)
+- `includes/ShopBrand/SnapshotBuilder.php` (new)
+- `includes/ShopBrand/SourceReader.php` (new)
+- `package.json`
+- `tests/ShopBrandPublicationTest.php` (new)
+- `tests/integration/run-wordpress.mjs`
+- `tests/integration/scenarios/connection-wordpress.mjs`
+- `tests/integration/scenarios/shop-brand-wordpress.mjs` (new)
+- `tests/integration/wordpress-api-fixture.mjs`
+- `tests/integration/wordpress-api-fixture.test.mjs`
 
 ### Work Completed
 
-None.
+- Added native WordPress Site Identity reader for brand name, selected classic/block-theme Site Logo, Site Icon, attachment URL/dimensions/alt metadata, and explicit `null` for unavailable, deleted or non-HTTPS source media; `coverImage` remains `null`.
+- Implemented exact `woo.shop-brand.v1` canonical source snapshots with installation-scoped deterministic `eventId`, capture-time `observedAt`, strict source/payload validation, and no credentials or caller-authoritative shop ID in the body.
+- Added authenticated `ModaApiClient::publishShopBrand()` to `POST /v1/woocommerce/shop-brand`, using existing installation credentials and verifying the `updated|unchanged` response.
+- Integrated one-time initial publication on successful connection and initial bootstrap for previously connected installations. Capture is asynchronous, Action Scheduler readiness is checked before store operations, and marker state means *enqueued*, not delivered.
+- Exposed internal `ShopBrand\Publisher::requestSync()` for a future capability/nonce-protected merchant action. No WordPress-brand-change hooks, daily reconciliation, public WP REST endpoint, or synchronous checkout publication; old recurring reconciliation jobs are unscheduled after Action Scheduler initialisation.
+- Implemented coalescing, transient-failure retries at 20s/60s/5m/15m (five total attempts), no retry on definitive 4xx, immutable retry payload, stale-installation/site-identity protection, and bounded redacted error codes.
+- Added PHPUnit coverage, local HTTPS API fixture contract tests and Docker-backed real WordPress/Action Scheduler integration coverage for initial/upgrade/bootstrap, no automatic sync, explicit sync, removal, retry and failure cases.
 
 ### Validation Results
 
-Not run.
+Evidence from the developer-supplied terminal recording dated **2026-10-27**, supplemented by independent snapshot checks:
+
+- **PASS** — `npm run test:integration:shop-brand`. Docker `wp-env` started, exercised real WordPress/WooCommerce + Action Scheduler + authenticated HTTPS fixture, and emitted `ARCH-049 Woo ShopBrand native WordPress + Action Scheduler + authenticated HTTPS integration PASS`. It stopped WordPress normally. The previously reported Action Scheduler premature-store warning and connection `200 !== 404` assertion did not recur in this run.
+- **PASS** — `composer test -- --filter ShopBrandPublicationTest`: PHPUnit 11.5.56, PHP 8.5.11, **16 tests / 133 assertions**, no failures.
+- **PASS** — `composer lint`: reported no PHP syntax errors across the repository's declared lint targets, including the new ShopBrand files and PHP tests.
+- **PASS** — Reviewer independently ran `node --test tests/integration/wordpress-api-fixture.test.mjs` using files extracted from the uploaded worktree: **3/3** fixture tests passed, including the `woo.shop-brand.v1` contract case.
+- **PASS** — Reviewer independently checked PHP syntax of modified ShopBrand, Runtime and ConnectionCoordinator files, and JavaScript syntax of the changed integration files.
+- **PASS (reconstructed source diff)** — Reviewer ran `git diff --check` on all 15 changed implementation files against the earlier uploaded workspace baseline, including the six newly added files; no whitespace errors. The terminal transcript does not show a separate `git diff --check` invocation in the developer's original Git worktree; the developer may repeat `git show --check 5b12eba` before submitting review.
+- **PASS (publication evidence)** — Developer terminal transcript records implementation commit `5b12eba` and successful push to `origin task/ARCH-049-WOOCOMMERCE-001`. Remote branch identity is taken from that log rather than independently queried.
+- **Not part of this task's completion gate** — Hosted API-001/PostgreSQL end-to-end acceptance and final ARCH-049 system tests; these remain separately owned downstream work.
 
 ### Deviations
 
-None.
+- **Logging implementation boundary:** The WordPress extension runs in PHP and cannot load the Node-only `@modainteract/moda-interact-shared/logging` package. It uses the existing WooCommerce logger (`wc_get_logger`) with bounded semantic reason codes and optional numeric HTTP status/attempt, falling back to PHP `error_log`. No raw URLs, exception messages or credentials are logged. The reviewer should explicitly confirm this platform-specific logging accommodation.
+- No other deviations from the *revised* explicit-only synchronisation task contract were identified in the inspected implementation and test evidence.
 
 ### Assumptions
 
-None beyond the explicit architecture/task contract.
+- WordPress 7.0+/WooCommerce 11.0+ native Site Identity APIs and HTTPS sources as documented in `docs/arch049-woo-shop-brand.md`.
+- `ARCH-049-API-001` is the separate owner of hosted request validation and PostgreSQL persistence; this task validates its frozen HTTP contract using a local fixture.
 
 ### Unresolved Issues
 
-None; live environment availability is a validation prerequisite and must be reported if missing.
+- `ARCH-049-API-001` remains an independent prerequisite for real hosted publication and the later `ARCH-049-SYSTEM-TEST-001`. The WooCommerce implementation may be reviewed before those tasks are Complete.
+- No known WooCommerce-local blocker remains after the reported WordPress/Action Scheduler and PHPUnit passes. Architect review may identify further changes.
 
 ### Architectural Concerns
 
-None reported.
+- Confirm the PHP-native logging choice against the architect's shared-logging policy; an npm/Node logging import is not executable in merchant-hosted PHP.
+- The implementation contains no new public WordPress endpoint, direct Moda database/R2 connection, or automatic brand-change polling. Idempotency and authoritative tenant selection on the hosted API are reserved for API-001 and system validation.
 
 ## Architect Review
 
