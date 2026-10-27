@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-002", "ARCH-049-SHOPIFY-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-10-27
 ---
 
 # Synchronise Shopify Brand API sources into commerce.ShopBrand
