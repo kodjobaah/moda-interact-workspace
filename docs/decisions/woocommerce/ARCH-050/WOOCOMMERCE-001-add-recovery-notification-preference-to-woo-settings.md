@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: codex
-claimed_at: 2026-10-27T16:41:45Z
-attempt: 2
+executor: null
+claimed_at: null
+attempt: 1
 depends_on:
   - ARCH-050-API-001
 enables:
@@ -93,19 +93,19 @@ No new WordPress REST endpoint, public WordPress callback or schema. Do not chan
 
 ## Acceptance Criteria
 
-- [ ] Woo merchant can switch ON/OFF independently, save, reload and see persisted value.
-- [ ] Preference-only change counts as dirty and is persisted; stale updates fail with policy conflict.
-- [ ] Browser JS, WordPress PHP and hosted v2 validators agree on field set; extra/missing or invalid values fail closed.
-- [ ] WordPress capability/nonce/installation and no-store security stay enforced; no production outbound sends are triggered merely by enabling setting.
-- [ ] Transport/validator/persistence failure is not silently ignored or displayed as a successful save; caught PHP server errors have bounded non-sensitive operational logging.
-- [ ] 20-language source/compile checks pass.
+- [x] Woo merchant can switch ON/OFF independently, save, reload and see persisted value.
+- [x] Preference-only change counts as dirty and is persisted; stale updates fail with policy conflict.
+- [x] Browser JS, WordPress PHP and hosted v2 validators agree on field set; extra/missing or invalid values fail closed.
+- [x] WordPress capability/nonce/installation and no-store security stay enforced; no production outbound sends are triggered merely by enabling setting.
+- [x] Transport/validator/persistence failure is not silently ignored or displayed as a successful save; caught PHP server errors have bounded non-sensitive operational logging.
+- [x] 20-language source/compile checks pass.
 
 ## Validation
 
-- [ ] `npm run test:js:unit` could not start: this worktree has no `node_modules`, so `wp-scripts` is unavailable. `npm run test:php` could not run: `vendor/bin/phpunit` is absent.
-- [ ] JS/PHP negative-path tests were added but could not be executed for the same missing dependencies; PHP/JS syntax checks pass, and the caught-error logging assertion is present.
-- [x] `npm run i18n:verify:20` passed (557 source messages, 19/19 packs); `npm run lint:php` passed; targeted PHP/JS syntax checks and `git diff --check` passed.
-- [ ] `npm run build` and `npm run lint:js` could not complete because `wp-scripts` is unavailable in this worktree.
+- [x] `npm run test:js:unit` passed: 61 test files, 460 tests. `npm run test:php` passed: 198 tests, 1,509 assertions.
+- [x] Negative-path coverage passed for failed hosted response reconciliation, preserved failed-save state, bounded exception logging, and a throwing Woo logger preserving the sanitized 503.
+- [x] `npm run i18n:verify:20` passed (557 source messages, 19/19 packs); `npm run lint:php` and `git diff --check` passed.
+- [x] `npm run build` passed with webpack's existing bundle-size performance warnings. `npm run lint:js` passed repository-wide after resolving reported formatting/style errors.
 
 ## Stop Condition
 
@@ -119,23 +119,27 @@ The hosted API v2 and Woo plugin v2 are a coordinated rollout in development. Do
 
 ### Status
 
-Architect review requested changes at Attempt 1; task is ready for correction and re-review.
+Ready for Architect Review after addressing the Attempt 1 Changes Requested items.
 
 ### Files Changed
 
-`includes/Api/RecoveryPolicyResponseValidator.php`; `includes/Rest/RecoveryPolicyController.php`; `src/recovery-policy-client.js`; `src/recovery-settings/recovery-behaviour-validation.js`; `src/recovery-settings/recovery-behaviour-fields.js`; `src/recovery-settings/recovery-behaviour-panel.js`; `tests/RecoveryPolicyControllerTest.php`; `tests/js/recovery-policy-integration.test.js`; `tests/js/recovery-behaviour-preview.test.js`; `languages/moda-interact.pot`; all 19 supported `.po` catalogues.
+`includes/Api/RecoveryPolicyResponseValidator.php`; `includes/Rest/RecoveryPolicyController.php`; `src/recovery-policy-client.js`; `src/recovery-settings/recovery-behaviour-validation.js`; `src/recovery-settings/recovery-behaviour-fields.js`; `src/recovery-settings/recovery-behaviour-panel.js`; `tests/RecoveryPolicyControllerTest.php`; `tests/js/recovery-policy-integration.test.js`; `tests/js/recovery-behaviour-preview.test.js`; `tests/js/recovery-human-conversation.test.js`; `tests/i18n/locale-batch-010.test.mjs`; `tests/i18n/locale-batch-011.test.mjs`; `tests/i18n/locale-batch-012.test.mjs`; `tests/i18n/locale-batch-013.test.mjs`; `tests/i18n/release-source.test.mjs`; `tests/i18n/release-assets.test.mjs`; `tests/integration/action-scheduler-sql.test.mjs`; `tests/integration/run-wordpress.mjs`; `tests/integration/scenarios/checkout-clear-refill-wordpress.mjs`; `tests/integration/scenarios/checkout-clear-refill-wordpress.test.mjs`; `tests/integration/scenarios/checkout-wordpress.mjs`; `tests/integration/scenarios/order-wordpress.mjs`; `vitest.config.mjs`; `languages/moda-interact.pot`; all 19 supported `.po` catalogues.
 
 ### Work Completed
 
 Implemented strict v2 response/request validation with the top-level Boolean preference, persisted it through the existing privileged proxy, added an accessible localized independent checkbox and dirty-state handling, and verified the returned Boolean on save. Added malformed v2, both preference values, notification-only dirty, mismatched save response, failed-save state and bounded PHP logging coverage. No new route or browser dependency was added.
 
+**Attempt 1 review correction 1 — implemented:** Isolated `wc_get_logger()` and `logger->error()` failures in the unexpected-error path. If the Woo logger throws, a bounded PHP `error_log()` fallback records only operation and exception class/code, then the controller still returns the sanitized `REMOTE_UNAVAILABLE` 503. `RecoveryPolicyControllerTest` verifies the throwing logger path.
+
+**Attempt 1 review correction 2 — implemented:** Installed the exact `package-lock.json` and `composer.lock` dependencies in the implementation worktree; all requested JS/PHP tests, JS lint and build were executed. Added a Vitest include config for the repository's actual JS unit suite, refreshed message-count expectations after adding four gettext strings, and corrected repository lint findings so the full JS lint passes.
+
 ### Validation Results
 
-`npm run i18n:verify:20` passed (557 source messages; all 19 translation packs compiled strictly). `npm run lint:php` passed across the plugin. Targeted PHP `-l`, JavaScript `node --check`, and `git diff --check` passed. `npm run test:js:unit` and `npm run build`/`lint:js` were unavailable because this implementation worktree contains no `node_modules` and `wp-scripts` is not installed. `npm run test:php` was unavailable because `vendor/bin/phpunit` is absent. Dependencies were not installed. Full behavioral tests and build therefore remain for review/CI validation.
+`npm run test:js:unit` passed (61 test files, 460 tests). `npm run test:php` passed (198 tests, 1,509 assertions), including the logger-sink failure case. `npm run lint:js` passed repository-wide; `npm run lint:php` passed. `npm run build` passed with webpack bundle-size performance warnings. `npm run i18n:verify:20` passed (557 source messages; all 19 translation packs compiled strictly). Targeted PHP/JS syntax checks and `git diff --check` passed.
 
 ### Deviations
 
-Full JS/PHP test suites, JavaScript lint and production build remain unverified because the task worktree has no `node_modules` or `vendor` dependencies. No product-scope deviation.
+The installed locked dependencies and build/test outputs are ignored worktree artifacts and are not committed. Four source strings increased catalogue expectations from 553 to 557. Repository JS lint required formatting and a small unused assertion-result cleanup in existing integration tests. The production build emits bundle-size recommendations but exits successfully. No product behavior deviation.
 
 ### Assumptions
 
@@ -143,7 +147,7 @@ Full JS/PHP test suites, JavaScript lint and production build remain unverified 
 
 ### Unresolved Issues
 
-Automated JS/PHP test execution and JS build/lint need an environment with the repository dependencies installed.
+None.
 
 ### Architectural Concerns
 
@@ -151,7 +155,7 @@ Return newly discovered cross-repository/schema/security/contract issues to `mod
 
 ### Task Branch / Worktree Evidence
 
-Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-WOOCOMMERCE-001`, branch `task/ARCH-050-WOOCOMMERCE-001`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-WOOCOMMERCE-001`, branch `task/ARCH-050-WOOCOMMERCE-001`, commit `f292140` (`feat(woocommerce): add recovery outreach notice preference`), pushed to `origin/task/ARCH-050-WOOCOMMERCE-001`.
+Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-WOOCOMMERCE-001`, branch `task/ARCH-050-WOOCOMMERCE-001`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-WOOCOMMERCE-001`, branch `task/ARCH-050-WOOCOMMERCE-001`, latest implementation commit `0cb22af` (`fix(woocommerce): preserve recovery policy 503 on logger failure`), pushed to `origin/task/ARCH-050-WOOCOMMERCE-001`. Per the Architect Review follow-up, the resubmitted task metadata retains `attempt: 1` and clears executor/claimed_at; the deterministic launcher recorded the correction claim as Attempt 2 (`64646302`).
 
 ## Architect Review — Attempt 1 — Changes Requested — 27 October 2026
 
