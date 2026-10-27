@@ -7,13 +7,13 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-27T15:57:14Z
+attempt: 1
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-002", "ARCH-049-SHOPIFY-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
@@ -24,7 +24,7 @@ updated: 2026-10-27
 
 ## Architecture
 
-`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. **Portable task definition, not materialised in a developer Git worktree.**
+`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. This task is materialised on its canonical parent task branch and prepared for developer Attempt 1.
 
 ## Objective
 
@@ -120,7 +120,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-Not Started — defined but not materialised.
+In Progress - Developer Attempt 1; canonical task worktrees synchronized and claim published.
 
 ### Files Changed
 
@@ -175,3 +175,9 @@ Not reviewed.
 ### Follow-up
 
 None.
+
+## Execution Ownership Amendment and Claim
+
+- On 2026-10-27, `/moda_developer_create ARCH-049-BACKGROUND-003` explicitly took over the ready agent-owned task for developer execution. `assigned_agent: moda_background` is unchanged; `execution_mode` and `completion_mode` are now `developer`.
+- Developer Attempt 1 was claimed at `2026-10-27T15:57:14Z` after verifying `ARCH-049-DATABASE-001`, `ARCH-049-BACKGROUND-002`, and `ARCH-049-SHOPIFY-001` were complete and preparing both canonical task worktrees.
+- Parent task branch `task/ARCH-049-BACKGROUND-003` was created from current parent `origin/main`; implementation branch `task/ARCH-049-BACKGROUND-003` was created from current Background `origin/main`. Both task worktrees were clean before the claim. The shared Background `main` checkout's nine local-only commits were not used or modified.
