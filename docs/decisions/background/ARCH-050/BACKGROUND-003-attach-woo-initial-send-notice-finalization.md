@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-10-27T13:09:09Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-050-BACKGROUND-001
@@ -61,10 +61,10 @@ Attach deduplicated merchant Support notifications to the existing guarded WooCo
 
 ## Work Items
 
-- [ ] Import/consume BACKGROUND-001 finalisation interface and singleton inside Woo adapter's `finalize.confirmed` callback.
-- [ ] Remove only the now-redundant adapter-local attempt transition and replay check; leave Woo guard, billing and recovery status update unchanged.
-- [ ] Add tests for enabled/disabled, duplicate, exception after confirmed provider state, no Shopify follow-up, HUMAN exclusion and default test-only outbound gate.
-- [ ] Add stage-labelled Shared-logger error reporting through the existing Woo adapter logger, with tests for recorded error, unchanged rethrow and throwing log sink.
+- [x] Import/consume BACKGROUND-001 finalisation interface and singleton inside Woo adapter's `finalize.confirmed` callback.
+- [x] Remove only the now-redundant adapter-local attempt transition and replay check; leave Woo guard, billing and recovery status update unchanged.
+- [x] Add tests for enabled/disabled, duplicate, exception after confirmed provider state, no Shopify follow-up, HUMAN exclusion and default test-only outbound gate. Adapter outcomes, composed integration replay, shared HUMAN-lineage unit coverage, and existing Woo durable-admission retry/test-gate coverage are included in the evidence below.
+- [x] Add stage-labelled Shared-logger error reporting through the existing Woo adapter logger, with tests for recorded error, unchanged rethrow and throwing log sink.
 
 ## Interfaces / Contracts
 
@@ -84,17 +84,17 @@ Attach deduplicated merchant Support notifications to the existing guarded WooCo
 
 ## Acceptance Criteria
 
-- [ ] Same verified initial automated Woo send causes one Support notice iff merchant opted in, and initial recovery status updates exactly as before.
-- [ ] Retries/duplicate confirmed provider results do not create duplicate alerts, extra credits or new outbound messages.
-- [ ] Woo test-only gate and final-send consent/STOP protections remain enforced, follow-up scheduling stays absent.
-- [ ] Integration can run with existing Woo test fixtures and injected guarded sender; no production Meta send required.
-- [ ] Failure in billing/notice/status logs a sanitised Woo finalisation-stage event and propagates to the existing retry path; simulated sink failure cannot suppress or replace the original error.
+- [x] Same verified initial automated Woo send causes one Support notice iff merchant opted in, and initial recovery status updates exactly as before.
+- [x] Retries/duplicate confirmed provider results do not create duplicate alerts, extra credits or new outbound messages.
+- [x] Woo test-only gate and final-send consent/STOP protections remain enforced, follow-up scheduling stays absent.
+- [x] Integration can run with existing Woo test fixtures and injected guarded sender; no production Meta send required.
+- [x] Failure in billing/notice/status logs a sanitised Woo finalisation-stage event and propagates to the existing retry path; simulated sink failure cannot suppress or replace the original error.
 
 ## Validation
 
-- [ ] Focused Woo adapter unit test and `tests/integration/woo-recovery-composed-services.integration.test.ts`, plus existing `woo-initial-send-fence` integration tests via declared `scripts/test-integration.mjs` when relevant.
-- [ ] Mock `input.logger.error` to record and then throw: tests verify error category/context, original error object, retained provider admission/credit idempotency and no swallowed exception.
-- [ ] `npm run build`, targeted ESLint, `git diff --check`; record test-only outbound configuration as evidence.
+- [x] Focused Woo adapter/Woo retry/shared finalizer unit tests passed: 54 tests across 3 files. `scripts/test-integration.mjs tests/integration/woo-recovery-composed-services.integration.test.ts` passed (1 test); existing initial-send fence and race integration files passed via the same declared harness (9 tests).
+- [x] Adapter logger tests cover billing, notice and recovery-status stages, exact event/context/error object, identical rethrow, and a throwing logger sink. Existing Woo service retry tests verify a confirmed send is finalized again without another provider send or refund; shared finalizer unit tests cover bounded `PERSISTENCE_FAILURE` logging and HUMAN lineage rejection.
+- [x] Targeted ESLint and `git diff --check` passed. Build was attempted (Prisma Client generation succeeded; TypeScript compilation was blocked by missing `sharp` in the available dependency installation, causing unrelated errors in `src/services/shop-brand-media/image-transformer.ts` and `metadata-verifier.ts`). Test-only outbound evidence: the composed integration uses `NODE_ENV=test` with `enableTestOutbound: () => true`; the existing unit suite verifies outbound remains disabled without the test injection and outside test mode.
 
 ## Stop Condition
 
@@ -108,39 +108,46 @@ BACKGROUND-001 owns the transaction and code/version contract. BACKGROUND-003 on
 
 ### Status
 
-Not Started.
+Ready for Architect Review.
 
 ### Files Changed
 
-None (definition only).
+- `src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts` — consumes the shared finalizer, preserves guards/billing/status transition, and records bounded stage failures through the injected Shared logger.
+- `tests/unit/services/woocommerce-recovery/woo-initial-outreach-notice.test.ts` — covers normal finalizer outcomes, call contract, stage-labelled logging, original-error propagation under sink failure, and guards.
+- `tests/integration/woo-recovery-composed-services.integration.test.ts` — verifies one opted-in notice on first send and no duplicate on replay.
 
 ### Work Completed
 
-None.
+Replaced the Woo adapter's local attempt finalization/replay branch with BACKGROUND-001's atomic `finalizeConfirmedInitial` service. Billing remains before notice finalization and the existing tenant/status-scoped recovery update remains after it succeeds. No follow-up scheduling, sequence 2, production outbound gate, or sender changes were introduced. Operational failures in billing, notice persistence, and recovery status now emit `recovery.initial_outreach_support_notice.woocommerce_finalization_failed` with a bounded stage and the same error object, then rethrow. Logging-sink failure cannot replace the original failure.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+- Passed: focused unit suites for the Woo adapter, Woo outreach retry/test gate, and shared initial notice finalizer (54 tests, 3 files).
+- Passed: composed Woo + BullMQ + PostgreSQL disposable integration (1 test); confirmed exactly one notice on first send and no duplicate after replay, with one provider request and no sequence 2.
+- Passed: existing Woo initial-send fence and race disposable integration suites (9 tests).
+- Passed: targeted ESLint on all three changed files; `git diff --check`.
+- Build attempted: Prisma Client generation succeeded. TypeScript compilation did not complete because `sharp` is absent from the available Background dependency installation; reported errors are in the unrelated shop-brand-media image transformer and metadata verifier.
+- Outbound integration configuration remained test-only: the fixture injected `enableTestOutbound: () => true` under `NODE_ENV=test`; existing tests verified default-off and non-test behavior.
 
 ### Deviations
 
-None.
+The full build could not pass in this environment because the Background dependency installation lacks `sharp`; no dependency installation or unrelated source change was made to work around it.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+The Woo guarded sender produces only automated confirmed initial messages; the shared finalizer independently verifies attempt initiator and rejects HUMAN lineage before creating a notice.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+The missing `sharp` package prevents a clean package-wide TypeScript build in this worktree. Architect review may decide whether dependency restoration is needed before acceptance.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+None discovered. No cross-repository contract or schema changes were required.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Canonical launcher prepared Attempt 1 after confirming both dependencies complete. Parent task branch/worktree: `task/ARCH-050-BACKGROUND-003`, `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-BACKGROUND-003`; implementation branch/worktree: `task/ARCH-050-BACKGROUND-003`, `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-BACKGROUND-003`. Parent branch incorporated `origin/main`; implementation branch was already current with `origin/main` at preparation. Implementation commit `4654fb9` is pushed to `origin/task/ARCH-050-BACKGROUND-003`. Parent review record is being committed and pushed separately. No task branch was merged to `main`.
 
 ## Architect Review
 
