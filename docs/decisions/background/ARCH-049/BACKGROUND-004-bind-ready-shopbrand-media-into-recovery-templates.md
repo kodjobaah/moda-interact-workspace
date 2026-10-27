@@ -7,13 +7,13 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-27T15:56:42Z
+attempt: 1
 depends_on:
   - ARCH-049-DATABASE-001
   - ARCH-049-ADMIN-001
@@ -29,7 +29,14 @@ updated: 2026-10-27
 
 ## Architecture
 
-`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator: `moda_architect`. This is a **new, portable, not-yet-materialised** task definition. It closes an identified integration gap in the completed ARCH-047 runtime without reopening its accepted core tasks.
+`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator: `moda_architect`. This is a materialised task in the canonical parent task worktree. It closes an identified integration gap in the completed ARCH-047 runtime without reopening its accepted core tasks.
+
+## Execution Ownership Amendment
+
+On 2026-10-27, `/moda_developer_create ARCH-049-BACKGROUND-004` was invoked
+as an explicit developer takeover. Execution and completion authority are now
+`developer`; logical ownership remains `assigned_agent: moda_background` and
+`repository: moda-interact-background`.
 
 ## Objective
 
@@ -128,7 +135,27 @@ Read relevant ARCH-047 BG001/BG006 accepted tasks and ARCH-049 DB001/ADMIN002 co
 
 ### Status
 
-Not Started — defined but not materialised.
+In Progress — Attempt 1 claimed by developer at `2026-10-27T15:56:42Z`.
+
+### Developer Takeover and Worktree Evidence
+
+- Parent task worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-BACKGROUND-004`
+  on `task/ARCH-049-BACKGROUND-004`. The existing task branch was clean and
+  matched `origin/task/ARCH-049-BACKGROUND-004` before synchronization. Current
+  parent `origin/main` was merged into the task branch without conflicts; the
+  published eligibility commit was preserved.
+- Implementation worktree:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-BACKGROUND-004`
+  on `task/ARCH-049-BACKGROUND-004`, created from refreshed implementation
+  `origin/main` at `c37d644d90ef726c841c71b68650a43cd81f4abb` because no task
+  branch or canonical worktree existed in the implementation repository.
+- The pinned `database` submodule was initialized at
+  `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`; implementation and submodule
+  worktrees were clean at claim preparation. No source implementation has been
+  started yet.
+- Attempt 1 was claimed and recorded on the parent task branch. No merge or push
+  to `main` was performed. The concurrent WooCommerce task file was not edited.
 
 ### Files Changed
 
