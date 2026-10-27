@@ -33,7 +33,7 @@ Architecture document: `docs/architecture/ARCH-047-admin-managed-whatsapp-templa
 
 Coordinator: `moda_architect`.
 
-This is the **first module-first Background task**, replacing the original broad `BACKGROUND-001` specification. Source snapshot: 23 October 2026 with the consolidated DB001 Attempt 7 authoring/publishing model reviewed 24 October 2026. This task is `pending` until its real prerequisites are Complete; No new ARCH-047 Shared template package is required; Admin persists compiled payload and binding data for this module to consume.
+**Post-completion documentation reconciliation (26 October 2026):** This module-first task is already **Complete (developer Attempt 1)**. The original scope and all Work Items, validation, Completion Report, Developer Completion Decision and Architect Review history are preserved. Its only recorded dependency was the now-Complete `ARCH-047-DATABASE-001`. **Moda Admin alone owns AST authoring/validation, translation reconstruction and Meta component/parameter-binding compilation**; this completed module reads frozen, Admin-compiled provider payloads and binding snapshots from PostgreSQL. The **only** new ARCH-047 Shared contract is the completed/published Meta template-status event v2 used between Messaging and BG003—not an AST package or a prerequisite for BG001/BG007.
 
 ## Objective
 
@@ -41,9 +41,9 @@ Provide **one reusable, independently testable `RecoveryTemplatePreparer` module
 
 ## Context
 
-The existing `src/services/whatsapp-template-selector.service.ts` performs shop/WABA/purpose/language selection from `WhatsAppTemplateVariant`, exposing historical provider metadata-category verification semantics. Existing initiation, automated follow-up, human command and final outbound paths contain logic that the original ARCH-047 task attempted to change together. Under the agreed modular plan those caller changes are explicitly deferred to `BACKGROUND-006` and `BACKGROUND-007`.
+**Historical baseline for this already completed module:** `src/services/whatsapp-template-selector.service.ts` previously performed shop/WABA/purpose/language selection from `WhatsAppTemplateVariant` and exposed provider metadata-category verification semantics. Rather than changing initial recovery, automated follow-up, human command and final outbound callers inside BG001, the agreed module-first implementation deferred those integrations to `BACKGROUND-006` (now Complete) and `BACKGROUND-007` (Ready, implementation paused for this documentation review).
 
-DB001 adds `WhatsAppTemplateDefinition`, multilingual locales, Meta registrations with immutable `componentsSnapshot`/`parameterBindingsSnapshot` and a nullable `WhatsAppTemplateVariant.metaRegistrationId` provenance relation. Template content is Moda-authored only; a missing relation means a legacy/unproven assignment and must not become selectable through this new module.
+DB001 introduced `WhatsAppTemplateDefinition`, multilingual locales, Meta registrations with immutable `componentsSnapshot`/`parameterBindingsSnapshot` and a nullable `WhatsAppTemplateVariant.metaRegistrationId` provenance relation. Template content is Moda-authored only; a missing relation means a legacy/unproven assignment and must not become selectable through this new module.
 
 ## Scope
 
@@ -85,7 +85,7 @@ The new module does not automatically accept historical variants lacking registr
 
 ### R3. Frozen language-specific bindings
 
-Read only the **Admin-compiled** frozen `WhatsAppTemplateMetaRegistration.parameterBindingsSnapshot` and `componentsSnapshot` for the exact selected language. Never parse/compile the Admin AST. Resolve parameters from trusted values only, including customer name when safe, shop name, valid current checkout URL and independently verified offer details. Preserve the approved component index, button index and variable order for that language; translations may reorder variables. Do not substitute a guessed checkout link, coupon, amount or expiry. Validate the stored component/binding snapshot compatibility and fail closed on missing required variables, unsupported component types, corrupt fingerprints, provider/locale mismatch or malformed values.
+Read only the **Admin-compiled** frozen `WhatsAppTemplateMetaRegistration.parameterBindingsSnapshot` and `componentsSnapshot` for the exact selected language. Never parse, reconstruct, authoring-validate or compile the Admin AST; there is no BG001-owned AST schema or Shared AST dependency. Resolve parameters from trusted values only, including customer name when safe, shop name, valid current checkout URL and independently verified offer details. Preserve the approved component index, button index and variable order for that language; translations may reorder variables. Do not substitute a guessed checkout link, coupon, amount or expiry. Perform **consumption-time integrity and runtime-value checks** on the stored compiled components/bindings, and fail closed on missing required variables, unsupported provider components, corrupt fingerprints, provider/locale mismatch or malformed runtime values. These checks do **not** repeat the Admin AST authoring validation or recompile source content.
 
 ### R3a. ShopBrand text variables and typed URL references from the Admin editor
 
@@ -127,7 +127,7 @@ Keep repository queries, language selection, variable resolution and facade coor
 
 ## Interfaces / Contracts
 
-Consumes accepted `ARCH-047-DATABASE-001` schema and Admin-prepared `MetaRegistration.componentsSnapshot`/`parameterBindingsSnapshot`; reuses existing published Shared language canonicalisation utilities only where applicable. There is **no new ARCH-047 Shared authoring contract prerequisite**. For the module-private facade define a bounded `PreparedRecoveryTemplate` / `TemplateUnavailable` result. BG004 owns the verified offer decision; BG006/BG007 own integration, not duplicate selector/binding implementations.
+Consumes completed `ARCH-047-DATABASE-001` schema and the **Admin-persisted, fully compiled** `MetaRegistration.componentsSnapshot`/`parameterBindingsSnapshot`; it has **no dependence on an AST representation, a Shared AST compiler or a new Shared authoring package**. Reuse existing Shared language canonicalisation/logging utilities where applicable. The already-published `ARCH-047-SHARED-001/002` contract is **only** the v2 template-status BullMQ event used by Messaging/BG003; it is not a BG001 or BG007 prerequisite. For the module-private facade define a bounded `PreparedRecoveryTemplate` / `TemplateUnavailable` result. BG004 owns the verified offer decision; BG006/BG007 own integration, not duplicate selector/binding implementations.
 
 `WhatsAppTemplateVariant.metaRegistrationId → WhatsAppTemplateMetaRegistration → WhatsAppTemplateLocale/Definition` is provenance, not permission to create a new Meta template. A successful prepared payload is not permission to send: existing consent/STOP, service-window, moderation, billing and final database fences remain authoritative at the outbound boundary.
 
@@ -142,7 +142,7 @@ No Admin import task dependency. Approved published fixtures are sufficient to v
 - `ARCH-047-BACKGROUND-006` — Automated Recovery Integration.
 - `ARCH-047-BACKGROUND-007` — Merchant Post-Window Integration (also requires the common adapter provided by BG006).
 
-The enabled tasks are **planned**, not yet materialised. Do not start either from this task.
+**Current frontier (26 October 2026, 14:48 task YAML):** BG006 is `complete`; BG007 is `ready`/Attempt 0 and remains paused for review of the architectural documentation handoff. This does not change the historical completion evidence or claim BG007 implementation. BG007 must reuse this completed preparer plus the BG006 late-admission adapter, without interpreting Admin AST or duplicating provider selection.
 
 ## Acceptance Criteria
 
@@ -170,6 +170,17 @@ After the Work Items, Acceptance Criteria and required Validation are met, updat
 ## Implementation Notes
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/developer-task-workflow.md` and the logical `moda_background` instructions. The task launcher owns dedicated parent and implementation worktrees, branch synchronisation, recursive submodules and attempt claiming. Preserve the accepted ARCH-045/046 consent/STOP work. Route any missing prepared-payload contract or DB relation to `moda_architect` rather than making a cross-repository workaround. Structured logging uses `@modainteract/moda-interact-shared/logging`; observability failures never alter send eligibility.
+
+### Post-completion contract/handoff clarification — 26 October 2026
+
+This is **documentation only**, not an additional implementation attempt or a change to accepted behaviour. The responsibilities are finalised as follows:
+
+1. **Admin** creates and validates the English AST, extracts keyed protected translation segments, reconstructs translated locales and persists immutable compiled Meta components/positional parameter bindings and prepared wrapper projections.
+2. **BG001** performs local shop/WABA/purpose/language selection and resolves only the frozen Admin-compiled provider bindings to trusted runtime values. It does **not** parse, compile, reconstruct or authoring-validate the AST. A stored-payload integrity check is not AST authoring validation.
+3. **Shared** publishes the already completed **v2 Meta status-event queue contract** for Messaging and BG003 only; it does not own Admin template formats and is **not** a new BG001/BG007 dependency.
+4. **BG007** consumes BG001's `PreparedRecoveryTemplate` or typed unavailable result and the completed BG006 final-send fence. It must not reimplement selection/compilation or request a new Shared authoring package. Its own task record, execution state and implementation validation remain independently controlled.
+
+All existing Completion Report, execution metadata and Architect Review evidence below is **historical** and is intentionally unchanged.
 
 ## Completion Report
 

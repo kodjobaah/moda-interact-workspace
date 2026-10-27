@@ -14,10 +14,10 @@ priority: 90
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-049-ADMIN-001", "ARCH-049-DATABASE-001", "ARCH-049-SHOPIFY-001", "ARCH-049-BACKGROUND-001", "ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-API-001", "ARCH-049-WOOCOMMERCE-001", "ARCH-049-ADMIN-002", "ARCH-047-ADMIN-005", "ARCH-047-BACKGROUND-001", "ARCH-047-BACKGROUND-003", "ARCH-047-BACKGROUND-006", "ARCH-047-BACKGROUND-007"]
+depends_on: ["ARCH-049-ADMIN-001", "ARCH-049-DATABASE-001", "ARCH-049-SHOPIFY-001", "ARCH-049-BACKGROUND-001", "ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-API-001", "ARCH-049-WOOCOMMERCE-001", "ARCH-049-WOOCOMMERCE-002", "ARCH-049-ADMIN-002", "ARCH-049-BACKGROUND-004", "ARCH-047-ADMIN-005", "ARCH-047-BACKGROUND-001", "ARCH-047-BACKGROUND-003", "ARCH-047-BACKGROUND-006"]
 enables: []
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-10-27
 ---
 
 # Certify ShopBrand source ingestion, R2 READY media and WhatsApp image headers
@@ -32,12 +32,13 @@ Independently validate the integrated Shopify and WooCommerce brand-source flows
 
 ## Context
 
-This terminal task starts only when its complete implementation/infrastructure and ARCH-047 consumer dependencies are Complete. The user may manually test first; System Test validates the system after final integration, not as a prerequisite for more feature implementation.
+This terminal task starts only when its complete ARCH-049 implementation and the **relevant, already-accepted ARCH-047 automated-recovery** consumer dependencies are Complete. Its scope deliberately does not require ARCH-047-BACKGROUND-007 (merchant post-window dispatch). The user may manually test first; System Test validates the system after final integration, not as a prerequisite for more feature implementation.
 
 ## Scope
 
 - Build modular black-box fixture/executor/assertion/orchestration/test-data helpers in `moda-interact-system-test` rather than a giant catch-all script.
 - Run source ingestion for a Shopify test shop and a Woo WordPress test site through normal authenticated boundaries, then inspect ShopBrand source and processed R2 state.
+- In the connected WooCommerce merchant settings, exercise the new manual Sync branding command after a changed logo; verify the local last-accepted status only advances on hosted API acceptance, and no automatic Woo brand refresh occurs when WP settings alone change.
 - Run local test public HTTPS/R2/Meta media mocks plus at least one real custom-domain fetch with approved disposable asset when credentials/environment permit.
 - Exercise missing/unsafe/transient/stale media, retries, duplicate events, lost wakes, cross-tenant access and full ARCH-047 image-header payload.
 
@@ -57,11 +58,11 @@ Valid JPEG/PNG and padded logo/cover produce immutable content-addressed R2 deri
 
 ### R3. R2 external preflight
 
-Verify the user's configured custom domain changes from the screenshot's Initializing to Active, minimum TLS is >=1.2, a disposable image GET returns actual image bytes and matching content-type, and only Background has upload credentials. `r2.dev` public development URL is not used for production media. If the external environment is unavailable, record blocked validation, not a fabricated PASS.
+Verify the user's configured custom domain changes from the screenshot's Initializing to Active, minimum TLS is >=1.2, a disposable image GET returns actual image bytes and matching content-type, and only Background has upload credentials. `r2.dev` public development URL is not used for production media. If the external environment is unavailable, record blocked validation, not a fabricated PASS. If Meta image-header example upload/handle acquisition is missing from the implemented Admin/Background services, record that missing provider prerequisite and stop image-template certification; do not claim full IMAGE-template create/send coverage from mocks alone.
 
 ### R4. ARCH-047 consumer behaviour
 
-Admin selects only READY IMAGE role, Meta sample media is distinct from per-shop READY logo, and the prepared recovery message sends one compliant image header from the matching shop. If no matching READY asset exists, fall back only to an independently approved text-only template or typed no-send; do not send original unprocessed images. Consent/STOP/billing/final-send guards and text-only messages remain unchanged. Verify no AI cart/checkout mutation.
+Admin selects only READY IMAGE role, Meta sample media is distinct from per-shop READY logo, and the ARCH-049-BACKGROUND-004 prepared-media adapter sends one compliant image header from the matching shop in **automated initial and scheduled follow-up recovery**. Merchant-initiated post-window recovery is validated separately by ARCH-047-SYSTEM-TEST-001 after ARCH-047-BACKGROUND-007; it is not an ARCH-049 implementation prerequisite. If no matching READY asset exists, fall back only to an independently approved text-only template or typed no-send; do not send original unprocessed images. Consent/STOP/billing/final-send guards and text-only messages remain unchanged. Verify no AI cart/checkout mutation.
 
 ### R5. Evidence
 
@@ -71,7 +72,7 @@ Record actual scenario IDs, seed/cleanup, commands, stdout excerpts/log paths, p
 
 - [ ] Implement black-box scenarios separated into fixtures/executors/assertions/orchestration.
 - [ ] Run valid/error/duplicate/out-of-order/retry/R2 public-delivery paths.
-- [ ] Validate ARCH-047 image header and text-only recovery safety.
+- [ ] Validate ARCH-047 automated recovery image header using the real READY-media resolver and text-only recovery safety. Record that Meta IMAGE creation requires a genuine provider sample handle; do not treat a mock handle as evidence of real provider approval.
 - [ ] Record evidence and return for architect acceptance.
 
 ## Interfaces / Contracts
@@ -88,12 +89,13 @@ Consumes accepted production implementation and its agreed contracts, including 
 - ARCH-049-BACKGROUND-003
 - ARCH-049-API-001
 - ARCH-049-WOOCOMMERCE-001
+- ARCH-049-WOOCOMMERCE-002
 - ARCH-049-ADMIN-002
+- ARCH-049-BACKGROUND-004
 - ARCH-047-ADMIN-005
 - ARCH-047-BACKGROUND-001
 - ARCH-047-BACKGROUND-003
 - ARCH-047-BACKGROUND-006
-- ARCH-047-BACKGROUND-007
 
 ## Enables
 

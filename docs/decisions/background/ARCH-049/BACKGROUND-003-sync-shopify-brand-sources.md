@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-002", "ARCH-049-SHOPIFY-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-10-27
 ---
 
 # Synchronise Shopify Brand API sources into commerce.ShopBrand
@@ -32,7 +32,7 @@ Use the existing Background authenticated Shopify GraphQL client to read the mer
 
 ## Context
 
-The Shopify app needs `read_brand`, supplied by the narrow SHOPIFY-001 task. The provided snapshot has a token-fetching service and generic GraphQL client path but no ShopBrand writer. Background source sync must reuse BG002's role update algorithm, not implement a parallel JSONB state machine.
+The Shopify app needs `read_brand`, supplied by the narrow SHOPIFY-001 task. The provided snapshot has a token-fetching service and generic GraphQL client path but no ShopBrand writer. Background source sync must reuse BG002's exported row-locked source-update module, not implement a parallel JSONB state machine. The BG002 prerequisite is intentional: this task imports that implementation across Background module boundaries; Shopify grant configuration alone does not supply its persistence operations.
 
 ## Scope
 
@@ -87,8 +87,8 @@ Consumes existing Shopify app authentication (`getShopifyAccessToken`) and the B
 ## Dependencies
 
 - ARCH-049-DATABASE-001
-- ARCH-049-BACKGROUND-002
-- ARCH-049-SHOPIFY-001
+- ARCH-049-BACKGROUND-002 — owns the source-update helper consumed by this synchroniser.
+- ARCH-049-SHOPIFY-001 — owns the `read_brand` permission and reauthorisation.
 
 ## Enables
 
