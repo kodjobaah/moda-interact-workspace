@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: codex
-claimed_at: 2026-10-27T10:53:45Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-050-DATABASE-001
@@ -159,35 +159,52 @@ Canonical task branch and worktree evidence is required at execution. No `_index
 
 ### Status
 
-Blocked — the synchronized Background database submodule does not contain the completed ARCH-050 database contract required by this task.
+Attempt 2 implementation and required validation are complete. Submitted for `moda_architect` review. Attempt 1 remains recorded as blocked before source changes while the Background checkout lacked the accepted ARCH-050 database schema.
 
 ### Files Changed
 
-No implementation files changed. Only this task report was updated.
+- `src/services/checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts`
+- `src/services/checkout-recovery/recovery-initial-outreach-support-notice.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts`
+- `tests/integration/recovery-initial-outreach-support-notice.integration.test.ts`
+- Background `database` submodule gitlink updated to the accepted schema commit `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
 
 ### Work Completed
 
-Preparation succeeded and claimed attempt 1. Source inspection confirmed that `database/prisma/schema.prisma` at the launcher-pinned submodule commit `7cd7e955c8ede2ce76631ee40c655daba91bfdd6` lacks `ShopSettings.notifyOnInitialRecoveryOutreach`, `MerchantSupportMessage.checkoutRecoveryId`, and the inverse Support relation. The generated Prisma client likewise exposes no `notifyOnInitialRecoveryOutreach` field. The task cannot satisfy its typed Prisma transaction and `createMany` contract against this checkout.
+- Added the Background-local typed finalizer contract and default service instance.
+- Locked the persisted attempt row in one interactive PostgreSQL transaction, validated attempt/recovery/shop/conversation/outbound-message lineage, and guarded the first state transition with a compare-and-set update.
+- Sampled `notifyOnInitialRecoveryOutreach` only on the first transition. Missing or disabled settings commit the transition without Support data; replay never resamples the setting.
+- Added deduplicated SYSTEM/AVAILABLE Support notices with the recovery foreign key, stable source key, bounded neutral body, and conditional `lastMessageAt` update that preserves merchant-response metadata.
+- Added outcome logging through the shared logger after transaction completion, with logger failure isolation and safe error-field handling.
+- Added injected-collaborator unit coverage and real disposable PostgreSQL coverage for enabled/disabled/replayed outcomes, opt-in changes, concurrent finalizers, tenant and lineage guards, rollback/retry, and source-key collisions.
 
 ### Validation Results
 
-Required unit, PostgreSQL integration, ESLint and build validation were not run because the required database contract is absent from the synchronized Prisma schema/client. `rg` inspection confirmed the missing fields in `database/prisma/schema.prisma` and generated Prisma client declarations.
+- `npx vitest run tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts` — passed, 8 tests.
+- `npm run test:integration -- tests/integration/recovery-initial-outreach-support-notice.integration.test.ts` — passed against disposable PostgreSQL, 8 tests. This invokes the repository's `scripts/test-integration.mjs` harness with local binaries on `PATH`.
+- `npm run build` — passed; regenerated Prisma Client from the updated database schema and completed TypeScript compilation.
+- Targeted ESLint for the four changed source/test files — passed.
+- `git diff --cached --check` — passed before commit.
 
 ### Deviations
 
-Implementation stopped before source edits; no raw-SQL or type-cast workaround was introduced.
+The direct `node scripts/test-integration.mjs ...` invocation initially could not resolve the local `prisma` executable (`spawn prisma ENOENT`) before tests started. The same harness and test file passed when run through the repository's `test:integration` npm script, which supplies `node_modules/.bin` on `PATH`. No implementation scope changed.
 
 ### Assumptions
 
-The launcher dependency gate passed because `ARCH-050-DATABASE-001` is Complete, but the current Background task branch still pins an older database submodule commit.
+`followUpDueAt` may be null for WooCommerce and, when present, must be a valid date later than `sentAt`. Replays must match the persisted follow-up due date as well as message identity.
 
 ### Unresolved Issues
 
-Update the Background repository's `database` submodule to the accepted ARCH-050 database schema/client commit and regenerate/verify the Prisma client, then resume this task on the same task branch. The current pinned commit is `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`.
+None.
 
 ### Architectural Concerns
 
-The Background checkout does not contain the completed database contract even though its dependency gate passed. `moda_architect` must coordinate updating the consumed database submodule/client before this service can implement the required typed preference read and Support relation write.
+None identified.
+
+### Previous Attempt 1 — Blocked
+
+Attempt 1 stopped before source edits because the synchronized Background database submodule was pinned at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`, which lacked the new preference field and Support recovery relation. The database fix is now consumed from `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`; the database dependency update was committed and pushed as `57d32270ffc586128a3587d269ed714eec0b9b29`.
 
 ### Task Branch / Worktree Evidence
 
@@ -203,16 +220,31 @@ Physical worktree isolation:
 
 Start-of-attempt synchronization:
   parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: yes (final sync: already-current)
+  parent origin/main incorporated: yes
   implementation remote task branch fast-forwarded: not-needed
-  implementation origin/main incorporated: yes
+  implementation origin/main incorporated: already-current
 
 Recursive implementation submodules:
   git submodule sync --recursive: passed
   git submodule update --init --recursive: passed
-  recorded submodule commit: `database` at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`
+  recorded submodule commit: `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`
 
-Task claim commit: `118d11a90ae9d33d89fba4699620c953e27359c6` (pushed by launcher).
+Implementation repository:
+  repository: `moda-interact-background`
+  implementation commit: `a4ec3b17da9b6d158243b1b6fb953aa2dd9c173c`
+  remote branch: `origin/task/ARCH-050-BACKGROUND-001`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/background/ARCH-050/BACKGROUND-001-finalize-initial-attempt-and-write-deduplicated-support-notice.md`
+  claim commit: `62d41b1523d298a49bc061bcb50f8df6d37948e7` (pushed by launcher)
+  report commit: pending
+  remote branch: `origin/task/ARCH-050-BACKGROUND-001`
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
