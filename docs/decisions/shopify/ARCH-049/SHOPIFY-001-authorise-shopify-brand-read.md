@@ -11,8 +11,8 @@ execution_mode: developer
 completion_mode: developer
 status: review
 priority: 10
-executor: developer
-claimed_at: 2026-10-27T10:21:58Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: ["ARCH-049-BACKGROUND-003"]
@@ -114,7 +114,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-Ready for Review — Attempt 1. Developer claim: `2026-10-27T10:21:58Z`. Implementation pushed as commit `884d083` on implementation repository branch `task/ARCH-049-SHOPIFY-001`, as shown in the 11:54 terminal log. The parent task-file review-handoff commit/push remains a separate developer step.
+Developer Self-Review Passed — Attempt 1, claimed at `2026-10-27T10:21:58Z`. Implementation commit `884d08346bee33227f2f009209cda1ceeaca5311` is published on `origin/task/ARCH-049-SHOPIFY-001`; its worktree is clean. The canonical parent review handoff is committed and pushed at `20aca762f56a18bb738f22b829576d2c1c621ca8`. Review transition clears `executor` and `claimed_at`; `attempt: 1` is unchanged. Current `origin/main` advanced after the attempt began; no mainline merge is performed during review.
 
 ### Files Changed
 
@@ -150,7 +150,10 @@ This parent-workspace handoff updates only this canonical task file; it does not
 - **PASS — lint, as recorded (11:54 log):** `npm run lint` emitted no ESLint diagnostic; shell continued into the build. An explicit `echo $?` was not captured.
 - **PASS — production build (11:54 log):** `npm run build` completed both the client and server React Router builds. Non-fatal Vite/Rollup/Prisma-browser warnings are present; no build failure is shown.
 - **INVALID TEST TARGETS — later `npm test -- ...` (11:54 log):** `tests/unit/services/shop-brand-media` and `tests/unit/services/platform-configuration/service.test.ts` do not exist in this Shopify worktree. Vitest returned `No test files found` (exit 1); this does **not** replace the successful ARCH-049-focused test run above.
-- **TYPECHECK NOT PROVEN AFTER GENERATION:** Earlier `npm run typecheck` (11:05 log) reported 429 errors/63 files before Prisma Client generation, including missing Prisma exports. No `npm run typecheck` execution after the successful Prisma generation appears in the later log. Do not claim a passing typecheck; a reviewer may require a repeat.
+- **PASS — post-Prisma-generation typecheck (2026-10-27 review):** `npm run typecheck` passed in the canonical implementation worktree after Prisma Client v6.19.3 generation; `react-router typegen && tsc --noEmit` emitted no diagnostics. This resolves the earlier evidence gap; the pre-generation failure remains historical and is not represented as a current failure.
+- **PASS — focused task suites independently rerun (2026-10-27 review):** from the canonical implementation worktree, the four task suites `shopify-brand-scope-config.test.ts`, `shopify-brand-read-scope.test.ts`, `scopes-update.test.jsx`, and `auth-catchall.test.ts` passed **22/22**. An initial invocation from the shared checkout resolved aliases against that checkout and failed to import `@/shopify.server`; the rerun from the canonical task worktree passed and is the authoritative result.
+- **PASS — patch checks (2026-10-27 review):** parent task `git diff --check` and implementation `git diff --check origin/main...HEAD` passed.
+- **CURRENT WORKTREE/PUBLICATION EVIDENCE:** parent HEAD `20aca762f56a18bb738f22b829576d2c1c621ca8` equals `origin/task/ARCH-049-SHOPIFY-001`; implementation HEAD `884d08346bee33227f2f009209cda1ceeaca5311` equals `origin/task/ARCH-049-SHOPIFY-001`. Both canonical worktrees are clean and registered on the expected branch. Recursive submodule status is `8f3d58542372fb9a71d97e5b340c2fc33a7ac8cf database (heads/main)`; this records the currently checked-out pinned gitlink, not a claim that submodules were absent.
 - **LIVE CONFIG/GRANT NOT VERIFIED:** No Shopify CLI deployment, installed-shop approval, effective runtime `SCOPES` value, or live `currentAppInstallation.accessScopes` result is included. The rollout runbook explicitly gates Background brand reads on an actual offline grant.
 
 ### Deviations
@@ -164,7 +167,41 @@ Both supplied Shopify app TOML variants are relevant to local validation, but th
 ### Unresolved Issues
 
 - **Review evidence:** The 11:54 log names dedicated parent and implementation worktree paths and shows the implementation-branch push, but the launcher-prepared start-of-attempt synchronization packet and parent task-branch publication evidence were not included. Supply these for final architectural review; the task is not architect-accepted on the basis of this handoff.
-- **Validation gap:** Post-Prisma-generation `npm run typecheck` has not been evidenced. Earlier missing-Prisma-type errors are not proof the current generated-client state fails or passes.
+- **RESOLVED — review evidence:** The canonical parent branch now contains the review handoff at `20aca762f56a18bb738f22b829576d2c1c621ca8`; both task branch heads and clean worktrees were independently checked during this reconciliation. The original launcher-prepared packet is not reconstructed; report only the observed current worktree, commit and ancestry evidence.
+- **RESOLVED — validation gap:** Post-Prisma-generation `npm run typecheck` passed during this reconciliation. The focused ARCH-049 suites also passed 22/22.
+## Developer Self-Review Passed — Attempt 1
+
+### Review Decision
+
+Attempt 1 passes developer self-review. Required Work Items and Acceptance
+Criteria are checked complete. The implementation is limited to Shopify
+configuration, permission observation, documentation and focused tests; it does
+not implement brand retrieval or persistence. The missing post-generation
+typecheck evidence is resolved by a passing rerun. The known ARCH-045 baseline
+test discrepancy and live deployment/merchant-grant verification remain
+explicitly outside this task's local validation and must not be presented as
+passed.
+
+### Evidence Reviewed
+
+- Parent task worktree is clean on `task/ARCH-049-SHOPIFY-001` at
+	`20aca762f56a18bb738f22b829576d2c1c621ca8`, matching its origin task branch.
+- Shopify implementation worktree is clean on `task/ARCH-049-SHOPIFY-001` at
+	`884d08346bee33227f2f009209cda1ceeaca5311`, matching its origin task branch.
+- `npm run typecheck` passed after Prisma Client generation.
+- The four focused ARCH-049 suites passed 22/22 from the canonical
+	implementation worktree; both task diffs pass `git diff --check`.
+- The existing separate ARCH-045 consent webhook configuration test mismatch
+	remains unchanged. Live app deployment, merchant scope approval and effective
+	runtime `SCOPES` remain unverified rollout checks; no such result is claimed.
+
+### Attempt State
+
+Transitioned to `review`; `executor: null`, `claimed_at: null`, `attempt: 1`.
+`completion_mode: developer` remains in force, so explicit developer completion
+is pending. No dependent task was started, and no branch was merged to `main`.
+
+## Architect Review
 - **Separate baseline issue:** ARCH-045 consent webhook configuration test mismatch remains in its owning scope.
 - **Deployment:** Live scope approval, installed-offline-token verification and deployment selection remain untested; record at rollout, before any Background brand GraphQL read.
 
