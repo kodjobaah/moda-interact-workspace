@@ -9,12 +9,12 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 **Materialised developer-executed task definition.** Its canonical parent task worktree is recorded in the Completion Report. No implementation worktree or execution claim exists yet.
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-27T18:07:35Z
+attempt: 1
 depends_on: ["ARCH-049-WOOCOMMERCE-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-27
@@ -164,12 +164,7 @@ The WooCommerce plugin runs in merchant-controlled PHP and cannot import `@modai
 
 ### Status
 
-Ready — the canonical parent task definition is materialised on
-`task/ARCH-049-WOOCOMMERCE-002` at
-`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-WOOCOMMERCE-002`.
-The accepted dependency `ARCH-049-WOOCOMMERCE-001` is complete at Attempt 2.
-This task remains unclaimed at Attempt 0; its implementation worktree has not
-been created.
+In Progress — Attempt 1 claimed by developer at 2026-10-27T18:07:35Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
