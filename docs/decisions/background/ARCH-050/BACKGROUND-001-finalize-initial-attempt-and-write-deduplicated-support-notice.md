@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-050-BACKGROUND-002
   - ARCH-050-BACKGROUND-003
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Atomically sample preference and create a deduplicated first-outreach Support notice

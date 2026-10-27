@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-10-26T23:50:36Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -220,24 +220,28 @@ Parent task branch report: committed on `task/ARCH-050-DATABASE-001` and pushed 
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Awaiting implementation.
+The Database implementation matches the ARCH-050 persistence contract. The new preference is non-null with a false default; the nullable Support-to-recovery relation uses the required schema-qualified FK, index and `ON DELETE SET NULL`; existing `sourceKey` uniqueness and `systemVersion` type are preserved. The migration is additive. The isolated fresh/upgrade PostgreSQL test covers defaults, FK enforcement, deletion nulling and legacy Support data. The report's validation checkboxes, materialisation note and parent report commit SHA were corrected in commit `44a614094354b550e24d54173fc23bab9aa147a8`.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261026235000_arch050_initial_recovery_support_notification/migration.sql`
+- `moda-interact-database/scripts/test-arch050-initial-recovery-support-notification-postgres.mjs`
+- `moda-interact-database/package.json`
+- Completion Report and task-branch VCS evidence in this task file
 
 ### Validation Reviewed
 
-None.
+Reviewed reported results for `npm run validate`, `npm run prisma:generate`, the fresh and upgrade ARCH-050 PostgreSQL tests, schema-to-schema migration diff, and `git diff --check`. These checks passed according to the Completion Report; they were not rerun during architect review. The implementation branch commit `2f702f52372d648abc5f080f02f722046d0e9271` and isolated task worktree evidence were inspected.
 
 ### Architecture Conformance
 
-Not yet reviewed.
+Accepted. The implementation conforms to ARCH-050, the task scope, cross-schema persistence contract, additive migration requirement, tenant-ownership boundary, and Database repository ownership. No consumer client code or unrelated repository source was included.
 
 ### Follow-up
 
-None.
+Promote the five direct ARCH-050 dependants to Ready. No implementation correction is required.
