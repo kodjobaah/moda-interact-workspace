@@ -9,18 +9,18 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: '2026-10-27T08:41:09Z'
+attempt: 3
 depends_on:
   - ARCH-047-BACKGROUND-001
   - ARCH-047-BACKGROUND-004
   - ARCH-047-BACKGROUND-006
 enables: []
 created: 2026-10-24
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Integrate merchant post-window recovery follow-up templates
@@ -144,9 +144,9 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-**Attempt 2 returned to `ready` for changes requested (2026-10-27).** The canonical developer-create flow claimed Attempt 2, synchronized both task worktrees, and published the implementation merge. Fresh PostgreSQL/Redis integration, focused unit tests, build, lint and diff checks now pass on the merged branch. The explicit WooCommerce owner-verification work item remains blocked because `ARCH-047-WOOCOMMERCE-001` is still pending; see the Attempt 2 self-review. The next developer claim increments to Attempt 3.
+**In Progress — developer Attempt 3 claimed 2026-10-27.** Attempt 2 was returned to `ready` with the WooCommerce admission evidence/scope correction outstanding. The canonical developer-create flow has now synchronized and verified both dedicated task worktrees and claimed Attempt 3. The next action is to resolve that external-owner verification or obtain an architect scope amendment; do not modify Woo-owned code.
 
-**Lifecycle:** Attempt 1 Changes Requested remains historical and intact. Attempt 2 is returned to `ready` with `attempt: 2`; its canonical claim, preparation and validation evidence are recorded below. BG001, BG004 and BG006 were verified Complete before claim. Developer completion authority is unchanged (`completion_mode: developer`).
+**Lifecycle:** Attempt 1 and Attempt 2 Changes Requested records remain historical and intact. Attempt 3 is active. BG001, BG004 and BG006 were verified Complete before claim. Developer completion authority is unchanged (`completion_mode: developer`).
 
 ### Files Changed
 
@@ -312,3 +312,13 @@ Historical follow-up: verify the ARCH-047 parent and accepted BG001 reconciliati
 - Canonical Attempt 2 launcher preparation, dependency states, synchronized parent/implementation worktrees, published merge and recursive submodule evidence are recorded in the Developer Execution Claim (Attempt 2) section above. Attempt 1 preparation gaps remain historical and are not attributed to Attempt 2.
 - Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Attempt 2 is returned for the external-owner/scope-gate correction; do not increment the attempt here. The next canonical `/moda_developer_create ARCH-047-BACKGROUND-007` claim increments exactly once.
 - The implementation remains on `task/ARCH-047-BACKGROUND-007`; no merge to `main` was performed.
+
+## Developer Execution Claim (Attempt 3)
+
+- Claim: `status: in_progress`, `executor: developer`, `claimed_at: 2026-10-27T08:41:09Z`, `attempt: 3`; `assigned_agent: moda_background` and developer completion mode are unchanged.
+- Canonical launcher: `python3 scripts/start-agent-task.py ARCH-047-BACKGROUND-007 --route-only --json` from `/Users/kwadwoadomafriyie/project/moda-interact-workspace` resolved parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-BACKGROUND-007`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-BACKGROUND-007`, task branch `task/ARCH-047-BACKGROUND-007`, and `repository: moda-interact-background`.
+- Dependencies checked before claim: `ARCH-047-BACKGROUND-001`, `ARCH-047-BACKGROUND-004`, and `ARCH-047-BACKGROUND-006` are all `complete`.
+- Parent synchronization: fetched `origin --prune`; parent branch was clean at `3e375ef529ff28fc976d223108fcc9a6dd328070`, equal to `origin/task/ARCH-047-BACKGROUND-007`; `origin/main` was `628d43f194862ffba002c477a5af9fb589ee6701` and an ancestor. No merge was needed.
+- Implementation synchronization: fetched `origin --prune`; implementation branch was clean at `a67c8f8e6c3527a416d0100253b4cd78dc408545`, equal to `origin/task/ARCH-047-BACKGROUND-007`; `origin/main` was `e19dda170eb381dadc25706f7212933979805dc7` and an ancestor. No merge was needed.
+- Recursive implementation submodule: Database is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`; `git submodule status --recursive` reports the recorded gitlink with no uninitialized or mismatched entry.
+- The shared/default workspace checkout contains pre-existing unrelated modifications and untracked files. It was not used for task edits; all claim changes are isolated to the canonical parent task worktree. No implementation source changes were made as part of claim preparation.
