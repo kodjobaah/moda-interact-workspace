@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -128,7 +128,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-Ready for Review — developer Attempt 1. The Attempt 1 implementation and subsequent correction-patch iterations (through logging-corrected Attempt 3) are committed to the implementation task branch. This submission records validation and implementation evidence; it is **not** an architect acceptance or a developer completion decision.
+Complete — developer Attempt 1 following the passing self-review and the developer-supplied “Architect Review Accepted” statement. The implementation and completion report are published on their respective task branches. Attempt 1 is unchanged; the acceptance statement is not represented as an independently authored architect review.
 
 ### Files Changed
 
@@ -200,11 +200,11 @@ The design contract simultaneously proposes five backoff intervals and caps tota
 
 ### Review Status
 
-Pending.
+Accepted — the developer supplied the statement “Architect Review Accepted” with the explicit completion request on 2026-10-27. This task record does not claim an independently authored architect review.
 
 ### Review Notes
 
-Implementation and local validation submitted for architect review; no architect acceptance recorded yet.
+The developer-supplied acceptance follows the durable passing Attempt 1 self-review and the fresh focused validation recorded above. The five-total-attempt retry interpretation is accepted for this task; the 24-hour delay remains unreachable unless a future architecture change authorizes a sixth total attempt.
 
 ### Reviewed Files
 
@@ -216,7 +216,7 @@ None.
 
 ### Architecture Conformance
 
-Not reviewed.
+Accepted for this task with the known retry-policy limitation recorded above; no change to the five-attempt implementation was requested.
 
 ### Follow-up
 
@@ -237,3 +237,12 @@ None.
 - Retry interpretation: retain the explicit ceiling of **five total attempts**, so four retry intervals (1m/5m/30m/2h) are scheduled and the listed 24h delay remains unreachable. This is a specification ambiguity, not an unbounded retry or a failed acceptance criterion; the architect should confirm whether to retain five total attempts or authorize a sixth attempt before relying on the 24h retry.
 - Review disposition: pass to architect review with that retry-policy decision recorded as a follow-up. This is not an architect acceptance or a developer completion decision.
 - Transition: preserve `status: review`, `executor: null`, `claimed_at: null`, and `attempt: 1`. `completion_mode: developer` means the task remains in review pending the architect's review and the developer's explicit completion decision. No dependent task was started or promoted.
+
+## Developer Completion Decision (Attempt 1, 2026-10-27)
+
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-049-BACKGROUND-002 complete` and supplied the acceptance statement “Architect Review Accepted.” The statement is recorded as developer-supplied; no independent architect-authored review is implied.
+- Accepted attempt: Attempt 1; `attempt` remains 1. The task is `status: complete`, `executor: null`, and `claimed_at: null`.
+- Implementation publication: Background task branch `task/ARCH-049-BACKGROUND-002` is clean and published at `df7dea9f64f618f28d77f46b4f53a093822d4162`.
+- Parent publication: this completion and dependency-frontier update is committed and pushed on parent task branch `task/ARCH-049-BACKGROUND-002`; no task branch was merged to `main`.
+- Dependency frontier: `ARCH-049-BACKGROUND-003` is eligible and promoted from `pending` to `ready` because DATABASE-001, SHOPIFY-001, and BACKGROUND-002 are complete. Its attempt remains 0 with no executor or claim timestamp. `ARCH-049-SYSTEM-TEST-001` remains pending/manual-gated because its other declared dependencies are incomplete.
+- Retry policy: retain the explicit five-total-attempt ceiling. Four delays are reachable; the 24-hour delay remains a documented contract clarification and no retry behavior was changed in this completion.
