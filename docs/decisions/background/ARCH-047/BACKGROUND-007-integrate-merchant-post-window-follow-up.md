@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: '2026-10-27T08:17:05Z'
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-047-BACKGROUND-001
@@ -125,7 +125,7 @@ None in this nine-task Background set.
 
 - [x] Run the focused new tests and relevant existing regression suites identified above; record exact executable commands and outcomes.
 - [x] Run the repository-declared build/typecheck (for this snapshot: `npm run build`) and focused ESLint where applicable; do not assume every repository has identical scripts.
-- [ ] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence. Current implementation diff hygiene and clean mirrored branch state pass; original attempt-start preparation evidence remains unavailable.
+- [x] `git diff --check`, inspect changed-file scope and capture task-isolated start-of-attempt and mirrored-branch evidence. Attempt 2 canonical start-of-attempt, parent/implementation branch, and submodule evidence is recorded above; both worktrees are clean and implementation is published.
 - [x] When integration depends on a real PostgreSQL/BullMQ service, run the repository's declared integration harness or record the missing environment explicitly; do not claim an unrun test passed.
 
 ## Stop Condition
@@ -144,9 +144,9 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-**In Progress — developer Attempt 2 claimed 2026-10-27.** Attempt 1 was returned to `ready` by the self-review below. The canonical developer-create flow has now claimed Attempt 2, synchronized both task worktrees, published the implementation merge, and recorded the launcher-resolved preparation evidence below. Required work remains: rerun PostgreSQL/Redis integration on the merged implementation and resolve the external WooCommerce admission verification gate without changing Woo-owned code.
+**Attempt 2 returned to `ready` for changes requested (2026-10-27).** The canonical developer-create flow claimed Attempt 2, synchronized both task worktrees, and published the implementation merge. Fresh PostgreSQL/Redis integration, focused unit tests, build, lint and diff checks now pass on the merged branch. The explicit WooCommerce owner-verification work item remains blocked because `ARCH-047-WOOCOMMERCE-001` is still pending; see the Attempt 2 self-review. The next developer claim increments to Attempt 3.
 
-**Lifecycle:** Attempt 1 Changes Requested remains historical and intact. The current task is claimed at Attempt 2. BG001, BG004 and BG006 were verified Complete before claim. Developer completion authority is unchanged (`completion_mode: developer`).
+**Lifecycle:** Attempt 1 Changes Requested remains historical and intact. Attempt 2 is returned to `ready` with `attempt: 2`; its canonical claim, preparation and validation evidence are recorded below. BG001, BG004 and BG006 were verified Complete before claim. Developer completion authority is unchanged (`completion_mode: developer`).
 
 ### Files Changed
 
@@ -302,3 +302,13 @@ Historical follow-up: verify the ARCH-047 parent and accepted BG001 reconciliati
 - **Ownership:** BG001 preparation, BG004 offer verification and BG006 final admission reused; no new logger and no new silent exception catch paths introduced by the correction tests.
 - **Outstanding for review:** WooCommerce admission/UI task remains separately pending; no verified Attempt 2 launcher claim, start-of-attempt isolation packet or final branch-cleanliness output was supplied. Do not infer them.
 - **Submission state:** `review` requests an architect decision, not acceptance. The prior Changes Requested self-review remains a historical record. If review policy requires a fresh developer claim before submission, return the task to the canonical `/moda_developer_create` and `/moda_developer_update` workflow rather than manufacturing claim evidence in this file.
+
+## Developer Self-Review - Changes Requested (Attempt 2, 2026-10-27)
+
+- Outcome: **changes requested**. The merged BG007 implementation is published and clean; fresh PostgreSQL/Redis integration, focused unit, build and lint checks all pass. No BG007 production code changes were made in Attempt 2.
+- Required correction: complete the explicit Work Item “Verify separate Shopify and Woo merchant admission changes against their owning tasks and fixtures.” Shopify-001 and API-001 are complete, but WooCommerce-001 remains `pending` and not materialized. Obtain the Woo owner task's implementation/fixture evidence, or ask `moda_architect` to amend BG007's scope and acceptance if Woo verification is an independent downstream gate. Do not edit WooCommerce-owned code in Background. Keep this Work Item unchecked until owner evidence or an architect scope amendment resolves it.
+- Attempt 2 validation: `npm run test:integration -- tests/integration/arch047-merchant-follow-up-final-permit.integration.test.ts tests/integration/arch047-merchant-follow-up-failure-recovery.integration.test.ts` passed 2 files / 10 PostgreSQL/Redis tests; `npx vitest run tests/unit/services/recovery-conversation/merchant-follow-up-template.service.test.ts tests/unit/services/recovery-conversation/start-human-command-dispatcher.test.ts` passed 2 files / 31 tests; `npm run build` and `npm run lint` passed.
+- Implementation evidence: `git diff --check origin/main...HEAD` passed. Implementation branch `task/ARCH-047-BACKGROUND-007` is clean and published at `a67c8f8e6c3527a416d0100253b4cd78dc408545`, equal to its origin task ref; `origin/main` at `e19dda170eb381dadc25706f7212933979805dc7` is an ancestor. Database submodule is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`; recursive status confirms the recorded gitlink.
+- Canonical Attempt 2 launcher preparation, dependency states, synchronized parent/implementation worktrees, published merge and recursive submodule evidence are recorded in the Developer Execution Claim (Attempt 2) section above. Attempt 1 preparation gaps remain historical and are not attributed to Attempt 2.
+- Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Attempt 2 is returned for the external-owner/scope-gate correction; do not increment the attempt here. The next canonical `/moda_developer_create ARCH-047-BACKGROUND-007` claim increments exactly once.
+- The implementation remains on `task/ARCH-047-BACKGROUND-007`; no merge to `main` was performed.
