@@ -87,7 +87,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 - [x] Remove the human-dispatcher's obsolete Meta category verifier/preflight and caller-provided parameter trust; pass BG001-prepared complete body/header/button components through the BG006 final admission adapter.
 - [x] Audit references to both legacy template-selector/category services in all Background production code and tests after BG006; delete unused modules and stale tests/mocks once no real caller remains, or record the exact unretired consumer as a blocking architectural gap.
-- [ ] Verify separate Shopify and Woo merchant admission changes against their owning tasks and fixtures; do not implement them from Background.
+
 
 ## Interfaces / Contracts
 
