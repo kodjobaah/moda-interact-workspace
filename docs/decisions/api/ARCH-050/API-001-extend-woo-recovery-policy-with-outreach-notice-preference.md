@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 30
-executor: codex
-claimed_at: 2026-10-27T13:36:31Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-050-DATABASE-001
@@ -66,10 +66,10 @@ Do not modify Woo plugin PHP/JS validators or Shopify settings code here (they h
 
 ## Work Items
 
-- [ ] Update v2 DTO/parser/response validator with top-level Boolean and strict field set.
-- [ ] Update projection, no-op comparison, and revision-protected persistence for this field.
-- [ ] Add unit/Postgres tests for default OFF, ON/OFF, preference-only save, stale revisions, admin override, unauthorised installation and malformed payloads.
-- [ ] Extend existing route/logger-spy tests for unexpected save failure: structured error event (with safe `error`), correct 500/no-store, and no fake successful preference result; conflicts remain 409 and warn only.
+- [x] Update v2 DTO/parser/response validator with top-level Boolean and strict field set.
+- [x] Update projection, no-op comparison, and revision-protected persistence for this field. Typecheck is currently blocked because the pinned Prisma client lacks the completed database field.
+- [x] Add unit/Postgres tests for default OFF, ON/OFF, preference-only save, stale revisions, admin override, unauthorised installation and malformed payloads. PostgreSQL assertions are written but cannot execute until the API submodule points at the accepted schema revision.
+- [x] Extend existing route/logger-spy tests for unexpected save failure: structured error event (with safe `error`), correct 500/no-store, and no fake successful preference result; conflicts remain 409 and warn only.
 
 ## Interfaces / Contracts
 
@@ -107,17 +107,17 @@ Existing `GET|PUT /v1/merchant/recovery-policy` accepts only exact fields; no ch
 
 ## Acceptance Criteria
 
-- [ ] Unconfigured shop reads OFF in v2 response; ON/OFF survives save and reload.
-- [ ] Notification-only update persists and advances settings revision, while unchanged update remains no-op.
+- [ ] Unconfigured shop reads OFF in v2 response; ON/OFF survives save and reload. Unit coverage passes; PostgreSQL persistence remains blocked on the pinned schema.
+- [ ] Notification-only update persists and advances settings revision, while unchanged update remains no-op. Unit coverage passes; PostgreSQL persistence remains blocked on the pinned schema.
 - [ ] Stale revisions, malformed/extra keys, unsupported shops and revoked installations fail closed.
 - [ ] Admin override never changes merchant opt-in; existing delay/follow-up/offer data survives.
 - [ ] Hosted API records a bounded structured failure for unhandled server exceptions and returns the pre-existing error status without exposing the exception or silently defaulting a failed read to OFF.
 
 ## Validation
 
-- [ ] Run focused `tsx --test` tests in `tests/unit/merchant/recovery-policy/` and corresponding disposable PostgreSQL integration tests.
-- [ ] Route failure test spies on the injected shared logger to verify error event and no secrets, while preserving response mapping for 400/401/409/500.
-- [ ] `npm run typecheck`, targeted lint/build checks defined by `package.json`, and `git diff --check`.
+- [x] Focused `tsx --test tests/unit/merchant/recovery-policy/*.test.ts` passed (25 tests). PostgreSQL integration test coverage was updated but not run because the API worktree's pinned database submodule does not contain the required column.
+- [x] Route failure tests spy on the injected Shared logger and verify original error, operation, reason, sanitized 500/no-store response, and sink-failure isolation for 200/409/500. Existing 400/401/409 mappings pass.
+- [x] `npm run typecheck` was run and failed with TS2339 because `notifyOnInitialRecoveryOutreach` does not exist on the generated `ShopSettings` type from pinned database commit `508a89463ccb24dcc31e5f38e04be8cfd10ad690`. Targeted ESLint and `git diff --check` passed.
 
 ## Stop Condition
 
@@ -131,39 +131,54 @@ API is the **HTTP contract owner**; WordPress PHP/JS validators will mirror the 
 
 ### Status
 
-Not Started.
+Blocked — the API worktree's pinned database submodule predates the accepted ARCH-050 schema change.
 
 ### Files Changed
 
-None (definition only).
+Partial implementation in the API task worktree:
+- `src/merchant/recovery-policy/contract.ts`
+- `src/merchant/recovery-policy/service.ts`
+- `src/merchant/recovery-policy/routes.ts`
+- `openapi/woocommerce-merchant-recovery-policy-v1.yaml`
+- `tests/unit/merchant/recovery-policy/contract.test.ts`
+- `tests/unit/merchant/recovery-policy/service.test.ts`
+- `tests/unit/merchant/recovery-policy/routes.test.ts`
+- `tests/unit/merchant/recovery-policy/openapi-contract.test.ts`
+- `tests/integration/merchant/recovery-policy/service.postgres.test.ts`
 
 ### Work Completed
 
-None.
+Drafted the API v2 DTO/parser/validator and OpenAPI contract with the top-level notice preference. Added the preference to the independent ShopSettings projection, no-op comparison and revision-checked write. Added unit and PostgreSQL assertions for defaults, ON/OFF, preference-only revision changes and route error logging. Unexpected read/write failures log the original error via the injected Shared logger with safe operation context; logger-sink exceptions do not alter API response semantics.
+
+The implementation cannot be completed or safely submitted for review yet: the API task's exact database submodule commit does not contain the prerequisite column. The generated Prisma client therefore cannot typecheck the new persistence access.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+- Passed: focused recovery-policy unit tests, `tsx --test tests/unit/merchant/recovery-policy/*.test.ts` (25 tests).
+- Passed: targeted ESLint for all changed TypeScript files and `git diff --check`.
+- Blocked: `npm run typecheck` regenerated the client from the API worktree's pinned database schema and failed with TS2339 at the service projection/write and integration assertion because `ShopSettings.notifyOnInitialRecoveryOutreach` is absent.
+- Not run: disposable PostgreSQL integration test; it depends on that missing Prisma/schema field.
+- No changes were made to the database submodule or its gitlink.
 
 ### Deviations
 
-None.
+Updated the existing OpenAPI description/schema so its strict response and request documents match the required schemaVersion 2 payload. The API repository's nested database submodule was not advanced because the assigned API agent VCS policy forbids publishing an unmerged implementation gitlink.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+The accepted ARCH-050-DATABASE-001 implementation must first be incorporated into the database revision pinned by the API repository. The API change should resume against that synchronized schema/client rather than stage a gitlink to an unmerged feature branch.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+Dependency mismatch: the accepted database task adds `ShopSettings.notifyOnInitialRecoveryOutreach Boolean @default(false)`, but API implementation preparation pinned its `database` submodule at `508a89463ccb24dcc31e5f38e04be8cfd10ad690`, where the field is absent. The resulting Prisma Client has no such property. `moda_architect`/the repository maintainer must reconcile and publish the API repository's database submodule pointer to the accepted database revision before this task can finish. The source and test changes are retained in the API task worktree for continuation.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+The canonical dependency metadata is complete, but the API implementation checkout does not include that dependency's schema commit. This must be reconciled without an API task agent staging an unmerged database gitlink.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Canonical launcher claimed Attempt 1 after the dependency status gate passed. Parent branch/worktree: `task/ARCH-050-API-001`, `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-API-001`; implementation branch/worktree: `task/ARCH-050-API-001`, `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-API-001`. Both branches were already current with `origin/main`; the implementation submodule was initialized at `database` commit `508a89463ccb24dcc31e5f38e04be8cfd10ad690`. The accepted ARCH-050-DATABASE-001 report records its implementation commit as `2f702f52372d648abc5f080f02f722046d0e9271` and confirms the schema field exists there. Partial API implementation commit `dd12c25` is pushed to `origin/task/ARCH-050-API-001` for continuation after the dependency pointer is reconciled. No task branch is merged to `main`.
 
 ## Architect Review
 
