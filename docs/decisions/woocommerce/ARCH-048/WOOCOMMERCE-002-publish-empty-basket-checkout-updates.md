@@ -65,9 +65,9 @@ Make every meaningful checkout basket-clear/refill transition observable through
 
 ## Work Items
 
-- [ ] Cover Classic and Blocks empty/refill transitions and cart changes after checkout starts.
-- [ ] Add 51+ item, invalid snapshot, unchanged empty and transport retry/idempotency cases.
-- [ ] Verify actual Woo hooks and existing API payload validator integration.
+- [x] Cover Classic and Blocks empty/refill transitions and cart changes after checkout starts.
+- [x] Add 51+ item, invalid snapshot, unchanged empty and transport retry/idempotency cases.
+- [x] Verify actual Woo hooks and existing API payload validator integration.
 
 ## Interfaces / Contracts
 
@@ -86,14 +86,14 @@ Make every meaningful checkout basket-clear/refill transition observable through
 
 ## Acceptance Criteria
 
-- [ ] Genuine empty basket publishes `items: []`, once per meaningful transition, and no unexpected recovery is scheduled from a vanished/oversized snapshot.
-- [ ] Empty-to-refilled checkout creates a newer ordinary event; Woo and Moda existing checkout identity remain consistent.
-- [ ] Existing valid checkout/order publisher and 20-locale UI behaviour are unchanged; no HTTP endpoint is introduced.
+- [x] Genuine empty basket publishes `items: []`, once per meaningful transition, and no unexpected recovery is scheduled from a vanished/oversized snapshot.
+- [x] Empty-to-refilled checkout creates a newer ordinary event; Woo and Moda existing checkout identity remain consistent.
+- [x] Existing valid checkout/order publisher and 20-locale UI behaviour are unchanged; no HTTP endpoint is introduced.
 
 ## Validation
 
-- [ ] Focused PHPUnit/plugin Classic/Blocks/cart mutation and Action Scheduler retry tests.
-- [ ] API event-parser fixture validation for empty vs absent items, plugin declared lint/build scripts and `git diff --check`.
+- [x] Focused PHPUnit/plugin Classic/Blocks/cart mutation and Action Scheduler retry tests.
+- [x] API event-parser fixture validation for empty vs absent items, plugin declared lint/build scripts and `git diff --check`.
 
 ## Stop Condition
 
@@ -209,3 +209,89 @@ Attempt 1 is returned to `ready`. The focused and full PHPUnit suites, declared 
 ### Attempt State
 
 Attempt remains 1. No Attempt 2 claim is created by this review. The next `/moda_developer_create ARCH-048-WOOCOMMERCE-002` invocation may claim Attempt 2 after the developer decides to continue.
+
+## Attempt 2 Validation Evidence — Developer Reconciliation Handoff (2026-10-27)
+
+This section is a **supplement** to the historical Attempt 1 Changes Requested
+record above; it does not overwrite that review. The newest uploaded task
+snapshot still has `status: ready`, `attempt: 1`, and no active executor. This
+portable evidence patch **does not claim Attempt 2** or set a review/completion
+state. The developer must reconcile the actual canonical task branch using
+`/moda_developer_create ARCH-048-WOOCOMMERCE-002` (if not already claimed)
+followed by `/moda_developer_update ARCH-048-WOOCOMMERCE-002`.
+
+### Corrective Work Delivered
+
+- Retain the Attempt 1 production change in `CheckoutSnapshot.php`,
+  `CheckoutCapture.php`, `CheckoutActivityPublisher.php` and its focused PHPUnit
+  coverage: verified keyed empty carts publish `items: []`; never-active carts
+  do not; refill reuses the checkout key; oversized/unknown snapshots omit
+  `items`; retries preserve event payload/identity.
+- Add a genuine HTTP-driven Classic and Store API clear/refill scenario, then
+  align it with the modular integration suite under
+  `tests/integration/scenarios/checkout-clear-refill-wordpress.mjs`.
+- Use `tests/integration/action-scheduler-sql.mjs` to observe durable all-status
+  Action Scheduler history for publication assertions (count first-attempt
+  publications, not retries). Preserve pending-only queries for the explicit
+  retry/transport tests. Add focused helper and scenario regression tests.
+- Update the modular checkout scenarios and runner under
+  `tests/integration/scenarios/checkout-wordpress.mjs` and
+  `tests/integration/run-wordpress.mjs`. The new harness does not add a hosted
+  API contract, WordPress REST endpoint, database migration or merchant-facing
+  feature.
+- `tests/integration/checkout-hook-audit.md` records upstream signatures and
+  ordering for the cart-removal, cart-empty, Store API order-update and
+  customer-update hooks against WooCommerce tags 11.0.1 and 11.1.2, including
+  checkout draft/PATCH behaviour.
+
+### Validation Results for Review
+
+- **PASS (Attempt 1 baseline)** — Checkout PHPUnit: 12 tests, 109 assertions;
+  full PHPUnit: 187 tests, 1,414 assertions; declared Composer PHP lint;
+  changed-file syntax and diff checks.
+- **PASS (Attempt 1 baseline)** — API activity contract suite: 21 tests,
+  covering explicit `items: []`, omitted items and the 51-line bound.
+- **PASS (Attempt 1 baseline)** — `npm run build` compiled the WordPress assets;
+  webpack reported performance-size warnings, not a build failure.
+- **PASS (Attempt 2 focused checks)** — Modular integration helper tests: 38/38;
+  checkout-focused Node tests: 19/19; JavaScript syntax, patch-application and
+  whitespace checks. These are developer/assistant checks from the submitted
+  correction artifacts and do not replace live WordPress tests.
+- **PASS (live WordPress scenarios)** — `set -o pipefail; npm run
+  test:integration:wordpress 2>&1 | tee
+  arch048-woocommerce-002-attempt2-final-validation.log` drove the real local
+  WooCommerce/WordPress HTTP routes. The final 2026-10-27 log contains:
+  - `ARCH-048 never-active empty Store API/Classic requests PASS`
+  - `ARCH-048 guest Classic: clear once, repeat no-op, refill with same key PASS`
+  - `ARCH-048 guest Store API: clear once, repeat no-op, refill with same key PASS`
+  - `ARCH-048 customer Classic: clear once, repeat no-op, refill with same key PASS`
+  - `ARCH-048 customer Store API: clear once, repeat no-op, refill with same key PASS`
+  - All logged ARCH-035 Classic/Blocks checkout, placed/paid/cancelled,
+    deduplication, retry and HPOS regressions also report PASS. Other Woo
+    integration checks (WOO-003/007/008/014) report PASS.
+  - The completed run cleans up fixture state and ends with
+    `✔ Stopped WordPress.` without a reported assertion or uncaught exception.
+    The shell transcript records command completion and a subsequent `exit`,
+    but **does not print a numeric process exit status**. Do not claim that
+    `echo $?` or an explicit numeric `0` was captured.
+- An earlier command invocation was interrupted before completion; only the
+  subsequent full run is used as successful scenario evidence.
+
+### Review/Publication Checks Still Owned by Developer
+
+- Confirm the local `wp-env` was disposable and that the execution used the
+  launcher-resolved, dedicated implementation worktree.
+- Confirm the latest modular test corrections are committed and published to
+  `origin/task/ARCH-048-WOOCOMMERCE-002`, and record their real commit SHA;
+  no later commit/remote ref is inferred from the uploaded test log.
+- Inspect the canonical parent task frontmatter. If still `ready`, use
+  `/moda_developer_create ARCH-048-WOOCOMMERCE-002` to claim Attempt 2 with its
+  real timestamp, worktree/synchronisation evidence and parent claim commit.
+  Do not fabricate the claim or overwrite a different live attempt state.
+- Use `/moda_developer_update ARCH-048-WOOCOMMERCE-002` to reconcile the actual
+  committed implementation and validation, add the final Attempt 2 Completion
+  Report, perform developer self-review, and transition to `review` if it
+  passes. With `completion_mode: developer`, do not set `complete` without the
+  separate explicit completion decision.
+- Leave `## Architect Review`, domain `_index.md`, parent architecture and
+  unrelated tasks unchanged.
