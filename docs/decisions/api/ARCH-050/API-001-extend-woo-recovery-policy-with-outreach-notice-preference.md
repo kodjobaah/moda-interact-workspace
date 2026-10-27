@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -131,7 +131,7 @@ API is the **HTTP contract owner**; WordPress PHP/JS validators will mirror the 
 
 ### Status
 
-Ready for Architect Review. The accepted ARCH-050 database schema is available in the API task worktree, and focused validation passes against it.
+Accepted by architect at Attempt 1; task completed automatically. The accepted ARCH-050 database schema is available in the API task worktree, and focused validation passes against it.
 
 ### Files Changed
 
@@ -178,28 +178,43 @@ None identified. The API remains the HTTP contract owner; the preference is top-
 
 Parent branch/worktree: `task/ARCH-050-API-001`, `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-API-001`. Implementation branch/worktree: `task/ARCH-050-API-001`, `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-API-001`. The implementation worktree is isolated and points its `database` submodule at accepted commit `2f702f52372d648abc5f080f02f722046d0e9271`. Implementation branch tip `ba2541ef869836c20953ae236dd401cde104dbd1` is pushed to `origin/task/ARCH-050-API-001`. Neither task branch is merged to `main`.
 
-## Architect Review
+## Architect Review — Attempt 1 — Accepted — 27 October 2026
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Awaiting implementation.
+The API upgrades the existing authenticated GET/PUT contract to schema version 2 with a strict top-level `notifyOnInitialRecoveryOutreach` Boolean. The merchant/effective policy shape remains unchanged, the parser requires the exact five PUT fields, and the response validator rejects missing or extra fields. The service projects the setting independently from admin overrides, includes it in idempotency comparison and persists preference-only changes under the existing revision check and transaction. The existing Woo identity/onboarding checks, installation locking, conflict behavior, and no-store route response remain intact.
+
+Unexpected service failures and invalid service response integrity are logged through the injected Shared logger with safe operation context and the original `Error`, then retain the sanitized 500 response. Expected malformed requests and handled conflict/integrity cases preserve their established status mappings; logger-sink failures cannot alter the response. OpenAPI documents the v2 payload. Changes stay within the hosted API contract, service, route, documentation, and focused tests.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/src/merchant/recovery-policy/contract.ts`
+- `moda-interact-api/src/merchant/recovery-policy/service.ts`
+- `moda-interact-api/src/merchant/recovery-policy/routes.ts`
+- `moda-interact-api/openapi/woocommerce-merchant-recovery-policy-v1.yaml`
+- Recovery-policy unit/PostgreSQL tests and Attempt 1 Completion Report.
+- Implementation/database submodule branch and publication evidence.
 
 ### Validation Reviewed
 
-None.
+- Prisma Client generation and `tsc --noEmit -p tsconfig.json --pretty false` passed, per the task report.
+- Focused recovery-policy unit tests: 25 passed, including strict DTO validation, default OFF, preference-only updates, revision behavior, admin override, authorization, malformed payloads, and Shared logger failure handling.
+- Disposable PostgreSQL migration harness passed, applying all 64 migrations including the ARCH-050 migration and passing both included integration tests.
+- Targeted ESLint and `git diff --check` passed.
+- Implementation branch `task/ARCH-050-API-001` is clean and published at `ba2541ef869836c20953ae236dd401cde104dbd1`; its database submodule is at accepted commit `2f702f52372d648abc5f080f02f722046d0e9271`. Neither task branch was merged to `main`.
 
 ### Architecture Conformance
 
-Not yet reviewed.
+Conforms to ARCH-050: the API remains the HTTP contract owner, and the preference is top-level and independent of admin-overridable policy values. No WooCommerce plugin, Shopify, Background, or database source changes were introduced; the database gitlink points to the separately accepted schema implementation.
 
-### Follow-up
+### Dependency Frontier
 
-None.
+This task uses `completion_mode: automatic`; architect acceptance completes Attempt 1. `ARCH-050-WOOCOMMERCE-001` depends on this task and is otherwise eligible, so its canonical task status advances from `pending` to `ready` at Attempt 0. `ARCH-050-SYSTEM-TEST-002` remains pending because its WooCommerce and other declared implementation prerequisites are incomplete; system testing remains terminal and does not gate implementation.
+
+### Lifecycle
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. Neither task branch was merged to `main`.
