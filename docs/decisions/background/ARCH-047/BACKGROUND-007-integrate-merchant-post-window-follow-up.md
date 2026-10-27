@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: '2026-10-27T08:41:09Z'
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-047-BACKGROUND-001
@@ -143,9 +143,9 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-**In Progress — developer Attempt 3 claimed 2026-10-27.** Attempt 2 was returned to `ready` with the WooCommerce admission evidence/scope correction outstanding. The canonical developer-create flow has now synchronized and verified both dedicated task worktrees and claimed Attempt 3. The next action is to resolve that external-owner verification or obtain an architect scope amendment; do not modify Woo-owned code.
+**Attempt 3 returned to ready for changes requested (2026-10-27).** No implementation changes were made in this attempt. The canonical developer-update review confirmed the published implementation remains unchanged and the required external-owner verification/scope decision is still unresolved: `ARCH-047-WOOCOMMERCE-001` remains pending. Obtain owner-side admission/fixture evidence or an explicit architect amendment to BG007's acceptance boundary before resuming; do not modify Woo-owned code.
 
-**Lifecycle:** Attempt 1 and Attempt 2 Changes Requested records remain historical and intact. Attempt 3 is active. BG001, BG004 and BG006 were verified Complete before claim. Developer completion authority is unchanged (`completion_mode: developer`).
+**Lifecycle:** Attempt 1, Attempt 2 and Attempt 3 Changes Requested records remain historical and intact. Attempt 3 is returned to `ready` with `attempt: 3`; the next canonical developer claim increments exactly once. BG001, BG004 and BG006 remain complete. Developer completion authority is unchanged (`completion_mode: developer`).
 
 ### Files Changed
 
@@ -321,3 +321,11 @@ Historical follow-up: verify the ARCH-047 parent and accepted BG001 reconciliati
 - Implementation synchronization: fetched `origin --prune`; implementation branch was clean at `a67c8f8e6c3527a416d0100253b4cd78dc408545`, equal to `origin/task/ARCH-047-BACKGROUND-007`; `origin/main` was `e19dda170eb381dadc25706f7212933979805dc7` and an ancestor. No merge was needed.
 - Recursive implementation submodule: Database is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`; `git submodule status --recursive` reports the recorded gitlink with no uninitialized or mismatched entry.
 - The shared/default workspace checkout contains pre-existing unrelated modifications and untracked files. It was not used for task edits; all claim changes are isolated to the canonical parent task worktree. No implementation source changes were made as part of claim preparation.
+
+## Developer Self-Review - Changes Requested (Attempt 3, 2026-10-27)
+
+- Outcome: **changes requested**. The canonical implementation worktree has no Attempt 3 changes; it remains clean on `task/ARCH-047-BACKGROUND-007` at published `a67c8f8e6c3527a416d0100253b4cd78dc408545`, equal to its origin task ref. The recorded Attempt 2 validation remains applicable to that unchanged implementation; no tests/build were rerun in Attempt 3.
+- Required correction: resolve the outstanding merchant-admission boundary. Current `ARCH-047-WOOCOMMERCE-001` is still `pending` and not materialized, so no Woo owner implementation or fixture evidence is available. Obtain and record that evidence, or ask `moda_architect` to explicitly amend BG007's scope/acceptance to make Woo verification a separate downstream gate. Do not edit WooCommerce-owned code in Background. Keep external merchant behavior unclaimed until owner evidence or an accepted architect amendment closes this gate.
+- Review basis: BG007's implementation and recorded validations are unchanged from Attempt 2; this review does not claim newly rerun tests. The task report continues to record the 10/10 PostgreSQL/Redis integration tests, 31/31 focused unit tests, build, lint and diff-check from Attempt 2. The unresolved owner boundary prevents a passing review under the current record.
+- Parent task synchronization: canonical parent branch was clean and synchronized to current `origin/main` at `d09811cebcdc7498203a9156932be7a34eb4a84b`; the published BG007 task branch `f285878fe2e0487acd71920fc0d272f2a968dfd9` is an ancestor. The task record is committed/pushed on the same mirrored task branch; no merge to `main` is performed by this review.
+- Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 3`. Do not increment the attempt here. A later `/moda_developer_create ARCH-047-BACKGROUND-007` claim increments to Attempt 4.
