@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -119,7 +119,7 @@ Follow mirrored task branch/worktree policy; no `_index.md` update until user cl
 
 ### Status
 
-Ready for Review.
+Accepted by architect at Attempt 1; task completed automatically.
 
 ### Files Changed
 
@@ -194,28 +194,43 @@ Recursive implementation submodules:
 Claim evidence: Attempt 1, executor `codex`, claim commit `8fc3b0b5a3a95150dc01a1e7fad73d49e4f0db43` pushed by the deterministic launcher.
 Implementation evidence: commit `cab6f08` on `task/ARCH-050-SHOPIFY-001`, pushed to `origin`.
 
-## Architect Review
+## Architect Review — Attempt 1 — Accepted — 27 October 2026
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Awaiting implementation.
+The Shopify settings snapshot exposes the persisted notification preference at the top level with default OFF; the shared effective recovery policy remains unchanged. The recovery settings UI initializes from that field and submits explicit `true`/`false`. The route allowlist rejects missing, repeated, or invalid Boolean values, and the save service includes the setting in its existing locked ShopSettings transaction and no-op comparison. A preference-only change therefore checks the expected revision and persists atomically with existing recovery policy values. Admin overrides do not alter the merchant preference.
+
+Unexpected recovery preference persistence failures are logged through the existing Shared logger with the specified stable event, shop and operation context, category, and original error, then rethrown to the framework boundary. Existing validation and conflict responses remain intact. The checkbox title/help are localized across all 20 supported merchant locales. No Support UI, send behavior, billing, or Shared policy schema changes were introduced.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/recovery-policy/recovery-policy.server.ts`
+- `moda-interact/app/routes/app/settings-save/route.ts`
+- `moda-interact/app/routes/app/recovery-settings/RecoverySettingsView.tsx`
+- All 20 changed locale files.
+- Focused recovery policy, save route, snapshot, i18n, and submit guard tests.
+- Attempt 1 Completion Report and canonical worktree/publication evidence.
 
 ### Validation Reviewed
 
-None.
+- Focused Vitest: 6 files / 25 tests passed, per the task report, including ON/OFF preference-only persistence, stale revisions, default-off snapshot, locale catalogs, strict inputs, Shared failure logging/rethrow, and conflict handling.
+- `npm run typecheck`, `npm run lint`, and `npm run build` passed. The build reported non-fatal Prisma browser import, Zod annotation, and bundle-size warnings.
+- `git diff --check` passed.
+- PostgreSQL integration was not run; transaction and stale-revision behavior were covered by focused mocked-client tests.
+- Implementation branch `task/ARCH-050-SHOPIFY-001` is clean and published at `cab6f0822a4cc1369f56414f0322bcd31829beaf`; database submodule is at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`. Neither task branch was merged to `main`.
 
 ### Architecture Conformance
 
-Not yet reviewed.
+Conforms to ARCH-050: the opt-in is an independent merchant setting, remains default-off, and does not affect the shared recovery-policy shape, admin override semantics, credit accounting, or send behavior.
 
-### Follow-up
+### Dependency Frontier
 
-None.
+This task uses `completion_mode: automatic`; architect acceptance completes Attempt 1. All declared prerequisites of `ARCH-050-SYSTEM-TEST-001` are now complete: BACKGROUND-002, SHOPIFY-001, and SHOPIFY-002. Its canonical task advances from `pending` to `ready` at Attempt 0; it remains unclaimed and manual-gated for developer validation before execution. No implementation task is enabled by this terminal test task.
+
+### Lifecycle
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. Neither task branch was merged to `main`.
