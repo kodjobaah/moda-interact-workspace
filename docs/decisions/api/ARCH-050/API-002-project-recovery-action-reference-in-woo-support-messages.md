@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-10-27T17:54:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-050-DATABASE-001
@@ -64,10 +64,10 @@ Do not write Support notices or change Woo plugin here; BACKGROUND-001 and WOOCO
 
 ## Work Items
 
-- [ ] Change history-page v2 types/exact validators and leave v1 compose/read receipts untouched.
-- [ ] Add joined same-shop CASE projection and nullable DTO property for all messages.
-- [ ] Test correct shop, mismatched shop, missing link, unexpected version, non-SYSTEM, v2 strictness and v1 receipt regressions.
-- [ ] Test a thrown Support read/query error separately from a valid nullable recovery projection: structured failure event + 500 (not a successful empty result); exercise throwing injected log sink.
+- [x] Change history-page v2 types/exact validators and leave v1 compose/read receipts untouched.
+- [x] Add joined same-shop CASE projection and nullable DTO property for all messages.
+- [x] Test correct shop, mismatched shop, missing link, unexpected version, non-SYSTEM, v2 strictness and v1 receipt regressions.
+- [x] Test a thrown Support read/query error separately from a valid nullable recovery projection: structured failure event + 500 (not a successful empty result); exercise throwing injected log sink.
 
 ## Interfaces / Contracts
 
@@ -101,16 +101,17 @@ type SupportPageV2 = {
 
 ## Acceptance Criteria
 
-- [ ] Recognised v1-code SYSTEM notice returns linked recovery ID only when same-shop, available and nondeleted.
-- [ ] Forged cross-shop FK, missing recovery, malformed code/version or unrelated Support message returns null.
-- [ ] History page strict schemaVersion 2 accepted/rejected correctly; compose/read receipts still validate v1.
-- [ ] Existing page counts, translations and unread/read semantics have no regression.
-- [ ] Expected null recovery references remain non-errors; actual database read failures are logged with the canonical shared logger and returned as 500, not silently discarded.
+- [x] Recognised v1-code SYSTEM notice returns linked recovery ID only when same-shop, available and nondeleted.
+- [x] Forged cross-shop FK, missing recovery, malformed code/version or unrelated Support message returns null.
+- [x] History page strict schemaVersion 2 accepted/rejected correctly; compose/read receipts still validate v1.
+- [x] Existing page counts, translations and unread/read semantics have no regression.
+- [x] Expected null recovery references remain non-errors; actual database read failures are logged with the canonical shared logger and returned as 500, not silently discarded.
 
 ## Validation
 
-- [ ] Extend `npm run test:arch035-woo-support:unit` and `npm run test:arch035-woo-support:postgres` fixtures.
-- [ ] `npm run typecheck`, relevant lint, `git diff --check`.
+- [x] `npm run test:arch035-woo-support:unit` passed (14 tests).
+- [x] `npm run test:arch035-woo-support:postgres` passed (1 integration test; disposable PostgreSQL migration and fixture run).
+- [x] `npm run typecheck`, `npm run lint`, and `git diff --check` passed.
 
 ## Stop Condition
 
@@ -124,39 +125,51 @@ Do not expose `m.checkoutRecoveryId` blindly: an FK proves the recovery exists b
 
 ### Status
 
-Not Started.
+Ready for Architect Review after completing the v2 history projection and failure-path logging requirements.
 
 ### Files Changed
 
-None (definition only).
+`src/merchant/support/contract.ts`; `src/merchant/support/read.service.ts`; `src/merchant/support/routes.ts`; `openapi/merchant-support-v1.yaml`; `tests/unit/merchant/support/contract.test.ts`; `tests/unit/merchant/support/openapi.test.ts`; `tests/unit/merchant/support/routes.test.ts`; `tests/integration/merchant/support/service.postgres.test.ts`.
 
 ### Work Completed
 
-None.
+Implemented strict history-page v2 validation with required nullable `checkoutRecoveryId`; compose and mark-read receipts remain strict v1. Read SQL now LEFT JOINs CheckoutRecovery by both message reference and Support-thread shop, then projects the ID only for available SYSTEM notices with code `RECOVERY_INITIAL_OUTREACH_SENT` and version `1`. Missing, deleted, cross-shop, malformed, wrong-version and unrelated records return `null`. Pagination, translations, unread counts, ordering, installation checks and existing command routes remain unchanged.
+
+Unexpected Support read and v2 response failures now reach `merchant.support.failed` with operation, stable reason and the original `Error` passed to the Shared logger for bounded serialization; the route returns the existing sanitized 500. A throwing log sink cannot interrupt that response. Unit coverage verifies query failure/error fields, DTO integrity failure and logger-sink isolation; PostgreSQL coverage verifies valid and invalid recovery references.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+`npm run test:arch035-woo-support:unit` passed (14 tests). `npm run test:arch035-woo-support:postgres` passed (1 integration test after applying all 64 migrations to disposable PostgreSQL). `npm run typecheck`, `npm run lint`, and `git diff --check` passed. The initial unit run identified and corrected an OpenAPI schema-version mismatch; the final run passed.
 
 ### Deviations
 
-None.
+No product-scope deviations. Dependency installation and test execution required the isolated worktree’s permitted filesystem/runtime access; install artifacts remain ignored and are not part of the commit.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+The recorded ARCH-050 database submodule commit from the prepared packet is authoritative for this attempt.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+None.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+None discovered; hosted API v2 remains aligned with the task’s coordinated WooCommerce contract.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Task branch: `task/ARCH-050-API-002`.
+
+Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-API-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-API-002`. Both use branch `task/ARCH-050-API-002`; neither shared workspace checkout was switched, neither shared implementation checkout was switched, and no other task worktree was reused.
+
+Start-of-attempt synchronization: parent remote task branch fast-forwarded `not-needed`, parent `origin/main` `already-current`; implementation remote task branch fast-forwarded `not-needed`, implementation `origin/main` `already-current`.
+
+Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; database submodule `database` initialized at `2f702f52372d648abc5f080f02f722046d0e9271`.
+
+Implementation repository: `moda-interact-api`, commit `651c04e4a3cfc6b10ec7e81daf1274d54bcabe8`, pushed to `origin/task/ARCH-050-API-002`.
+
+Parent workspace claim commit: `6265a655f812b5035f90550fa0be22490c3ce824`, pushed. Parent review submission will be committed and pushed on the same branch. The implementation submodule gitlink was not staged; neither task branch was merged into `main`.
 
 ## Architect Review
 
