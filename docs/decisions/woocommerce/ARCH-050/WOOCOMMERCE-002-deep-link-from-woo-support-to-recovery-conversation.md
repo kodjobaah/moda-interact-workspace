@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: codex
-claimed_at: 2026-10-27T18:26:24Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-050-API-002
@@ -68,11 +68,11 @@ No new Woo public endpoint or background-provider callback is allowed.
 
 ## Work Items
 
-- [ ] Upgrade PHP history validator and JS page validator to exact Support v2 item shape; preserve v1 command receipts.
-- [ ] Add pure safe `recoveryConversationHref(recoveryId)` based on current `recoveryDetailHref`; extend Support card action/label without altering billing actions.
-- [ ] Set transcript anchor and post-mount focus/scroll (if required by lazy render).
-- [ ] Test malformed, missing, cross-shop/null, wrong code/version, billing link regression and WordPress capability/nonce restrictions.
-- [ ] Add failure-path tests distinguishing intentionally unavailable recovery links from thrown Support transport/contract errors; verify plugin error state and non-swallowing PHP error boundary.
+- [x] Upgrade PHP history validator and JS page validator to exact Support v2 item shape; preserve v1 command receipts.
+- [x] Add pure safe `recoveryConversationHref(recoveryId)` based on current `recoveryDetailHref`; extend Support card action/label without altering billing actions.
+- [x] Set transcript anchor and post-mount focus/scroll after the async detail component mounts.
+- [x] Test malformed, missing, null/cross-shop reference, wrong code/version, billing link regression and WordPress capability/nonce restrictions.
+- [x] Add failure-path tests distinguishing intentionally unavailable recovery links from thrown Support transport/contract errors; verify plugin error state and non-swallowing PHP error boundary.
 
 ## Interfaces / Contracts
 
@@ -100,18 +100,18 @@ export function recoveryConversationHref(recoveryId) {
 
 ## Acceptance Criteria
 
-- [ ] Recognised notification displays localized View conversation and opens the exact Woo recovery conversation panel.
-- [ ] Malformed/null ID, unrelated/wrong-version code, non-SYSTEM or unavailable message produces no recovery link.
-- [ ] PHP/browser validators both accept complete v2 history and reject malformed versions/unknown fields; v1 compose/read still work.
-- [ ] No billing action regression and no unauthorized recovery access through manually changed WP URL.
-- [ ] Async loading still lands at the transcript; WordPress auth/nonce/install checks stay unchanged.
-- [ ] Real Support read/contract failure is shown as failure rather than silently replaced with an empty page; intentional null recovery references simply omit the link.
+- [x] Recognised notification displays localized View conversation and opens the exact Woo recovery conversation panel.
+- [x] Malformed/null ID, unrelated/wrong-version code, non-SYSTEM or unavailable message produces no recovery link.
+- [x] PHP/browser validators both accept complete v2 history and reject malformed versions/unknown fields; v1 compose/read still work.
+- [x] No billing action regression and no unauthorized recovery access through manually changed WP URL.
+- [x] Async loading still lands at the transcript; WordPress auth/nonce/install checks stay unchanged.
+- [x] Real Support read/contract failure is shown as failure rather than silently replaced with an empty page; intentional null recovery references simply omit the link.
 
 ## Validation
 
-- [ ] Focused Support/recovery detail JS tests via `npm run test:js:unit` and `npm run test:php` for PHP strict validator/controller.
-- [ ] Negative browser/PHP test verifies failed v2 history/transport does not show a successful empty inbox; check bounded PHP logging when a new catch is introduced.
-- [ ] `npm run i18n:verify:20`, `npm run build`, targeted lint, `git diff --check`.
+- [x] Focused Support/recovery detail JS tests via `npm run test:js:unit` and `npm run test:php` for PHP strict validator/controller.
+- [x] Negative browser/PHP test verifies failed v2 history/transport does not show a successful empty inbox; check bounded PHP logging when a new catch is introduced.
+- [x] `npm run i18n:verify:20`, `npm run build`, targeted lint, `git diff --check`.
 
 ## Stop Condition
 
@@ -125,39 +125,39 @@ Use the already-existing WP `recoveryDetailHref` sanitization instead of constru
 
 ### Status
 
-Not Started.
+Ready for architect review.
 
 ### Files Changed
 
-None (definition only).
+Support PHP/JS contracts and controller logging; recovery detail navigation and conversation section; Support and recovery detail tests; gettext POT and all 19 PO catalogs.
 
 ### Work Completed
 
-None.
+Woo Support history now strictly validates schema v2 with a required nullable, safe `checkoutRecoveryId` on every message. Compose/read receipts remain v1. Eligible recovery outreach notices get a local, validated conversation link and translated label; the existing billing destinations and labels remain intact. The conversation section has a stable anchor, and the connected detail screen scrolls to it after mount when the URL carries the anchor. Unexpected Support proxy exceptions are logged through `wc_get_logger()` with a stable operation and bounded class/code context; logger failures preserve the sanitized 503 response. PHP and browser failure paths are covered.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+`npm run test:js:unit`: passed, 61 files / 464 tests. `npm run test:php`: passed, 217 tests / 1,670 assertions with one warning. `npm run i18n:verify:20`: passed as part of `npm run build` (558 source messages; 19/19 translation packs); build passed with existing webpack bundle-size warnings. PHP lint passed. Targeted JS lint passed on all changed JS files. `git diff --check` passed. Full-repository JS lint reports existing issues in unrelated integration files; changed task files pass targeted lint.
 
 ### Deviations
 
-None.
+No `ModaApiClient.php` change was needed because `merchantSupportHistory()` already routes successful history responses through `SupportResponseValidator::history()`.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+The completed API-002 schema is the source of truth for the v2 history shape. Existing Woo `wc_get_logger()` is the appropriate plugin-side exception logger; the Node Shared logger is not imported into the PHP plugin.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+The repository-wide JS lint command reports pre-existing formatting/rule violations in unrelated integration files. All changed task JavaScript files pass targeted lint.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+None discovered. Existing capability, REST nonce, installation identity and hosted tenant authorization paths remain unchanged.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-WOOCOMMERCE-002`, branch `task/ARCH-050-WOOCOMMERCE-002`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-WOOCOMMERCE-002`, branch `task/ARCH-050-WOOCOMMERCE-002`. The original launcher claim was durable; a later prepare correctly refused to overwrite the active Attempt 1.
 
 ## Architect Review
 
