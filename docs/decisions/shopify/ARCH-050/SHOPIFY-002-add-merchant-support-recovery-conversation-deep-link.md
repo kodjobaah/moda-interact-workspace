@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -126,7 +126,7 @@ Treat the recovery FK as a **reference to validate**, never as an authorization 
 
 ### Status
 
-Ready for Architect Review. Attempt 1 implements the localized Support action and transcript deep link while preserving existing billing action behavior and recovery authorization.
+Accepted by architect at Attempt 1; task completed automatically. Attempt 1 implements the localized Support action and transcript deep link while preserving existing billing action behavior and recovery authorization.
 
 ### Files Changed
 
@@ -193,28 +193,44 @@ Start-of-attempt synchronization:
 
 No task branch is merged to `main`.
 
-## Architect Review
+## Architect Review — Attempt 1 — Accepted — 27 October 2026
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Awaiting implementation.
+The Support query adds only a left join to CheckoutRecovery, joined by both recovery ID and thread shop ID, and projects a target only for the matching AVAILABLE SYSTEM initial-outreach notice at version 1. Other and deleted/mismatched targets remain null; existing count, unread, paging, translation, and read behavior is retained. The recovery action validates the identifier, notice code/version, and RECOVERY_HISTORY access before building an encoded first-party link. The route renders it only for AVAILABLE SYSTEM messages, while the recovery detail loader continues to enforce `requireRecoveryHistory` and tenant-scoped access.
+
+The transcript anchor is stable and focuses/scrolls the existing heading on fragment navigation without changing lazy message loading or pagination. All 20 merchant locales contain the action label, and the existing billing action resolver remains unchanged. Support SQL failures are logged through the Shared server logger with bounded context and rethrown to existing error handling. No new authorization, endpoint, external redirect, or unrelated Support data exposure was introduced.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/merchant-support/merchant-support.service.ts`
+- `moda-interact/app/services/merchant-support/merchant-support-observability.server.ts`
+- `moda-interact/app/services/merchant-support/system-message-actions.ts`
+- `moda-interact/app/routes/app/merchant-support/route.jsx`
+- `moda-interact/app/routes/app/recovery-detail/recovery-conversation-thread.tsx`
+- `moda-interact/app/routes/app/recovery-detail/loader.server.ts`
+- All 20 changed locale files and focused Support/action/anchor/authorization tests.
+- Attempt 1 Completion Report and canonical worktree/publication evidence.
 
 ### Validation Reviewed
 
-None.
+- Seven focused test files: 98 tests passed, per the task report.
+- `npm run typecheck`, `npm run lint`, and `npm run build` passed; the build emitted non-fatal Zod annotation and chunk-size warnings.
+- `git diff --check` passed.
+- Implementation branch `task/ARCH-050-SHOPIFY-002` is clean and published at `7a4fccac6b0c38a70b695adbbbc841a090d44732`; database submodule was initialized at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`. Neither task branch was merged to `main`.
 
 ### Architecture Conformance
 
-Not yet reviewed.
+Conforms to ARCH-050 ownership and security boundaries. The Support projection supplies a navigation hint only; the existing recovery detail loader remains the authorization boundary. Billing actions and existing recovery detail behavior are preserved.
 
-### Follow-up
+### Dependency Frontier
 
-None.
+This task uses `completion_mode: automatic`; architect acceptance completes Attempt 1. `ARCH-050-SYSTEM-TEST-001` remains pending because its other declared prerequisite `ARCH-050-SHOPIFY-001` is still `ready`, not complete. System testing remains terminal and does not gate implementation.
+
+### Lifecycle
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. Neither task branch was merged to `main`.
