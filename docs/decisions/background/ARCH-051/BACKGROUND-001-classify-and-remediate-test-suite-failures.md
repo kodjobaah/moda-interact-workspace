@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: codex
-claimed_at: 2026-10-27T09:40:22Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-007-BACKGROUND-012
@@ -150,24 +150,24 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Starting-revision unit and integration outcomes are reproducible or
+- [x] Starting-revision unit and integration outcomes are reproducible or
   explicitly classified as intermittent with supporting rerun evidence.
-- [ ] Every failure from the reported run is classified as install/export,
+- [x] Every failure from the reported run is classified as install/export,
   workspace environment, Shared-owned, Background-owned, established baseline,
   or non-reproducible; no failure is assumed to be a code regression solely
   because it appeared in the full run.
-- [ ] The `./identity` and `./whatsapp-template-events` resolution is proven to
+- [x] The `./identity` and `./whatsapp-template-events` resolution is proven to
   be either a stale local installation or a Shared package/release defect; no
   Background workaround duplicates or hides the Shared export.
-- [ ] Any Shared-owned work is separately task-tracked and explicitly gated by
+- [x] Any Shared-owned work is separately task-tracked and explicitly gated by
   architect-managed dependencies before the corresponding Background fix.
-- [ ] Confirmed Background-owned failures are corrected without weakening
+- [x] Confirmed Background-owned failures are corrected without weakening
   unrelated assertions or changing behavior to match an unverified expectation.
-- [ ] Full `npm run test:unit` and `npm run test:integration` pass on the final
+- [x] Full `npm run test:unit` and `npm run test:integration` pass on the final
   task revision. If an external owner/environment blocker prevents completion,
   the task is returned as blocked with exact evidence rather than reported as
   complete.
-- [ ] No new or worsened failure identity is left unexplained; full-suite
+- [x] No new or worsened failure identity is left unexplained; full-suite
   results and any proposed baseline changes are reported to `moda_architect`.
 
 ## Validation
@@ -176,9 +176,11 @@ None.
   state is recorded.
 - [x] Baseline `npm run test:integration` on the exact starting revision after
   dependency state is recorded.
-- [x] Final full `npm run test:unit` — 291 files / 3,013 tests passed.
-- [x] Final full `npm run test:integration` — executed; 4/5 files and 12/13 tests
-  passed, with the unresolved scheduling failure recorded below.
+- [x] Attempt 2 full `npm run test:unit` on merged commit
+  `caa415fe5743e16693da79da8ab5e81f3d09259f` — 293 files / 3,024 tests passed.
+- [x] Attempt 2 full `npm run test:integration` on merged commit
+  `caa415fe5743e16693da79da8ab5e81f3d09259f` — 5/5 files and 13/13 tests
+  passed; the prior scheduling failure did not recur.
 - [x] Focused reruns for corrected Background-owned failures and any intermittent
   failures, with exact commands and outcomes recorded.
 - [x] `git diff --check`.
@@ -193,7 +195,7 @@ the task to `blocked`, record exact evidence and return control to
 
 ## Implementation Notes
 
-This task was promoted from the conflicting `ARCH-050-BACKGROUND-001` identity. Attempt 1 implementation and review history remain recorded below and on the original `task/ARCH-050-BACKGROUND-001` branches. The new task retains `attempt: 1`; the next claim is Attempt 2 on mirrored `task/ARCH-051-BACKGROUND-001` branches. The new implementation worktree/branch is left for the execution launcher to establish.
+This task was promoted from the conflicting `ARCH-050-BACKGROUND-001` identity. Attempt 1 implementation and review history remain recorded below and on the original `task/ARCH-050-BACKGROUND-001` branches. Attempt 2 was claimed on mirrored `task/ARCH-051-BACKGROUND-001` branches. No Background source changes were made during Attempt 2; the merged implementation was revalidated on the launcher-prepared revision.
 
 The Background repository declares `@modainteract/moda-interact-shared` 2.5.1.
 The supplied run's integration suite passed after replacing a local installed
@@ -206,7 +208,7 @@ modify production/test code.
 
 ### Status
 
-Attempt 1 was Blocked at review because full integration reproduced the ARCH-007 scheduling failure. `ARCH-007-BACKGROUND-012` is now Complete; this task is Ready for Attempt 2, not claimed. The final integration rerun and requested report corrections remain outstanding.
+Attempt 1 was blocked at review because full integration reproduced the ARCH-007 scheduling failure and the report needed corrections. After `ARCH-007-BACKGROUND-012` completed, Attempt 2 validated the merged implementation and reconciled the requested report evidence. Current status: Ready for Architect Review; no implementation changes were needed in Attempt 2.
 
 ### Files Changed
 
@@ -259,23 +261,25 @@ Attempt 1 was Blocked at review because full integration reproduced the ARCH-007
   tests/unit/services/conversation-moderation/automated-template-input.test.ts`
   passed 28/28; `npx vitest run tests/unit/runtime/observability-startup.test.ts`
   passed 10/10.
-- Final `npm run test:unit`: passed, 291 files / 3,013 tests.
-- Final `npm run test:integration`: 4/5 files passed; 12/13 tests passed, with
-  `tests/integration/conversation-turn-scheduling.integration.test.ts` timing
-  out. `npm run test:integration --
-  tests/integration/conversation-turn-scheduling.integration.test.ts` reproduced
-  the same timeout (1/2 tests passed); the diagnostic rerun captured the stuck
-  turn state noted above. This failure identity is also documented in
-  `ARCH-028-BACKGROUND-007` and is not represented as passing.
+- Attempt 1 final `npm run test:unit`: passed, 291 files / 3,013 tests.
+- Attempt 1 final `npm run test:integration`: 4/5 files passed; 12/13 tests passed,
+  with `tests/integration/conversation-turn-scheduling.integration.test.ts`
+  timing out. Its isolated rerun reproduced the timeout; the diagnostic rerun
+  captured the stuck turn state noted above. This failure identity is also
+  documented in `ARCH-028-BACKGROUND-007` and was not represented as passing.
+- Attempt 2 merged-state `npm run test:unit`: passed, 293 files / 3,024 tests.
+- Attempt 2 merged-state `npm run test:integration`: passed, 5 files / 13 tests;
+  the ARCH-007 scheduling failure was resolved on the merged revision.
 - `git diff --check`: passed. `npm ci` passed; npm reported 20 audit findings
   (8 moderate, 12 high), which were not changed by this task.
 
 ### Deviations
 
-The task is returned `blocked`, not complete: its full integration acceptance
-criterion remains unmet by an unrelated but reproducible turn-scheduling
-failure. No timeout was raised in the submitted changes, and no unrelated
-production behavior was changed to force a green suite.
+Attempt 1 was returned blocked while the ARCH-007 scheduling failure remained.
+Attempt 2 confirmed that the ARCH-007 fix is present in the merged revision and
+both full suites pass. No timeout was raised and no unrelated production
+behavior was changed. The task is returned to architect review, not marked
+complete by the implementation agent.
 
 ### Assumptions
 
@@ -283,14 +287,92 @@ None
 
 ### Unresolved Issues
 
-During Attempt 1, the independently reproduced ARCH-007 conversation-turn scheduling failure was assigned to `ARCH-007-BACKGROUND-012`; that task is now Complete. Attempt 2 must rerun the full integration suite on its prepared task revision to establish whether the fix resolves the failure. The durable ARCH-025 baseline is historical and does not cover this failure; ARCH-028-BACKGROUND-007 also records the same test identity as unresolved follow-up. The original stale Shared export load errors were installation-only and did not recur after `npm ci`.
+No unresolved implementation or validation issue remains from Attempt 1. The ARCH-007 conversation-turn scheduling failure was assigned to `ARCH-007-BACKGROUND-012`, which is Complete; Attempt 2's full integration rerun on the merged revision passed. `ARCH-028-BACKGROUND-007` retains historical context for the prior failure identity. The original stale Shared export load errors were installation-only and did not recur after locked installation. The durable ARCH-025 baseline remains historical and was not changed.
 
 ### Architectural Concerns
 
-No Shared export or workspace dependency-manifest defect was found. The
-conversation-turn scheduling failure is outside the confirmed test-fixture
-corrections in this task and is tracked by `ARCH-007-BACKGROUND-012`; this task
-remains blocked until that integration gate is resolved.
+No Shared export or workspace dependency-manifest defect was found. The prior
+conversation-turn scheduling failure was resolved by `ARCH-007-BACKGROUND-012`
+and did not recur in Attempt 2's merged-state integration run.
+
+### Attempt 2 — merged-state validation and report reconciliation
+
+#### Merge and validation target
+
+The implementation was merged under its prior identity `ARCH-050-BACKGROUND-001`
+in GitHub PR #136. Merge commit:
+`caa415fe5743e16693da79da8ab5e81f3d09259f` (`Merge pull request #136 from
+kodjobaah/task/ARCH-050-BACKGROUND-001`). Its second parent is implementation
+commit `c5e019621274545d17b773380aa8364303e2d377`; its first parent
+`e19dda170eb381dadc25706f7212933979805dc7` contains the completed ARCH-007
+scheduling correction. The launcher prepared Attempt 2 directly at the merge
+commit. The full suites below validate the combined merged tree.
+
+#### Exact starting-revision unit failure inventory
+
+The initial locked-install run had 16 failures and 2,997 passes across 291
+files:
+
+- `tests/unit/runtime/observability-startup.test.ts`: hosted export-disable
+  subprocesses timed out for `moda-recovery-worker` and
+  `moda-messaging-worker`; the release assertion expected Shared 2.5.0 while
+  the manifest and lockfile specify 2.5.1.
+- `tests/unit/services/checkout-refresh.test.ts`: the A1-L01 French-number
+  checkout expected a call to the retired `whatsappTemplateSelectorMock`.
+- `tests/unit/services/matured-candidate.materialization.test.ts`: 11 cases
+  expected recovery conversation/template/billing/provider work, but current
+  production wiring did not use the old selector mock and preparation failed
+  closed with `RECOVERY_UNAVAILABLE`. The cases covered current Shopify data;
+  current `CustomerPhone`; provider-check-required templates; non-English
+  descriptors; definitive provider rejection; free and paid ambiguous provider
+  responses; billing revalidation blocking send/commit; the fifth Free recovery;
+  paid recovery beyond included units without duplicate send; and merchant
+  defaults.
+- `tests/unit/services/conversation-moderation/automated-template-input.test.ts`:
+  expected JSON omitted the explicit `textHeader: null` and
+  `imageHeader: null` fields.
+
+Compared with `ARCH025-BACKGROUND-TEST-001`, the matured-candidate test identity
+overlaps a historical entry, but the current failed behavior and cause were the
+stale selector mock; the historical baseline does not establish the same cause.
+The intermittent observability subprocess timeouts passed the focused rerun
+10/10. All reported unit failures were classified; confirmed Background-owned
+test expectation defects were corrected in the four changed test files.
+
+#### Attempt 2 validation
+
+- `npm ci` passed from the committed lockfile on Node `v24.19.0` / npm `11.17.0`.
+  The install reported 20 audit findings (8 moderate, 12 high); no dependency
+  files changed.
+- `npm run test:unit` passed: 293 files / 3,024 tests.
+- `npm run test:integration` passed: 5 files / 13 tests. The prior
+  `conversation-turn-scheduling.integration.test.ts` timeout did not recur with
+  the ARCH-007 correction present.
+- `git diff --check` passed on the implementation worktree; it remained clean at
+  merged commit `caa415fe5743e16693da79da8ab5e81f3d09259f`.
+
+#### Attempt 2 launcher and worktree evidence
+
+- Claim: Attempt 2, executor `codex`, claimed `2026-10-27T09:40:22Z`; parent
+  claim commit `272e86b027c5365d5b4a602099209bcc6965f78c` was committed and pushed.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-051-BACKGROUND-001`, branch `task/ARCH-051-BACKGROUND-001`; it was correctly reused. Start head `c2d2808a3bb376d54d0131a180a1b0b126dbdbd1`; remote task fast-forward not needed; `origin/main` already incorporated.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-051-BACKGROUND-001`, branch `task/ARCH-051-BACKGROUND-001`; it was newly created at merged head `caa415fe5743e16693da79da8ab5e81f3d09259f`. Remote task fast-forward not needed; `origin/main` already incorporated.
+- Recursive submodule sync and update passed; `database` was initialized at
+  `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`.
+- The shared workspace checkout and shared implementation checkout were not
+  switched or mutated; no other task worktree was reused.
+
+#### Architect review correction disposition
+
+1. The exact starting failure inventory and ARCH025 comparison are recorded
+   above.
+2. Attempt 2 launcher evidence is recorded above.
+3. Acceptance checkboxes now reflect the passing merged-state suites. The task
+   report is `Ready for Review`; Attempt 1's failure remains as historical
+   evidence, and no integration blocker remains on the validated merge.
+4. The ARCH-050 task index was reconciled during promotion to ARCH-051; no index
+   changes were made in this implementation attempt.
 
 ## Architect Review
 
