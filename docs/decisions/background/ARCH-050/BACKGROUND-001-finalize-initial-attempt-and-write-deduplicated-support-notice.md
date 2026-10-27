@@ -238,9 +238,9 @@ Implementation repository:
 Parent workspace:
   task file: `docs/decisions/background/ARCH-050/BACKGROUND-001-finalize-initial-attempt-and-write-deduplicated-support-notice.md`
   claim commit: `62d41b1523d298a49bc061bcb50f8df6d37948e7` (pushed by launcher)
-  report commit: pending
+  report commit: `0f4c8ca0ca65510fa6a3096ac762a57a34c71b22`
   remote branch: `origin/task/ARCH-050-BACKGROUND-001`
-  pushed: pending
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
