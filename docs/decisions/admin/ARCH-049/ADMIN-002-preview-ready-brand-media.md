@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -128,7 +128,7 @@ Separate existing ShopBrand **text** placeholders from actual image-header asset
 
 ### Status
 
-**Developer self-review passed — Attempt 1 (2026-10-27).** Implementation is committed and pushed to the Admin task branch. The implementation's separately labelled Attempt 2 patch corrected a TypeScript test narrowing issue **within this same developer claim**; no new task claim or increment to `attempt` occurred. Architect review and explicit developer completion remain pending.
+**Complete — Developer Attempt 1 (2026-10-27).** The developer explicitly invoked `/moda_developer_update ARCH-049-ADMIN-002 complete` after the durable passing Attempt 1 self-review. Implementation is committed and pushed to the Admin task branch. The implementation's separately labelled Attempt 2 patch corrected a TypeScript test narrowing issue within this same developer claim; no new task claim or increment to `attempt` occurred. No separate architect-specific file review is claimed.
 
 ### Files Changed
 
@@ -238,7 +238,7 @@ The immutable Admin `headerMediaRole` projection must agree exactly with Backgro
 
 ### Review Status
 
-Pending.
+No separate architect-specific review supplied. Completion records the developer's explicit authority after the durable passing self-review; no architect review notes are implied.
 
 ### Review Notes
 
@@ -258,7 +258,7 @@ Not reviewed.
 
 ### Follow-up
 
-None.
+Coordinate the DATABASE-001 migration and Admin consumer rollout; complete browser accessibility/mobile smoke validation and Background-004 interoperability before end-to-end certification. The Meta sample-handle gap remains subject to architect resolution.
 
 ## Developer Self-Review Passed (Attempt 1, 2026-10-27)
 
@@ -269,6 +269,15 @@ None.
 - All four declared dependencies were verified `complete`. `origin/main` is an ancestor of the Admin implementation task branch. No merge or push to `main` was performed.
 - Remaining limitations are disclosed, not misrepresented as passed: live browser keyboard/screen-reader/mobile smoke tests were not performed; the Meta sample-handle producer remains an architect-owned gap; rollout must coordinate with DATABASE-001; Background-004 interoperability remains follow-on integration validation.
 - Transition: retain `status: review`, `executor: null`, `claimed_at: null`, and `attempt: 1`. Since `completion_mode: developer`, explicit developer completion is pending. No downstream task was started or promoted.
+
+## Developer Completion Decision (Attempt 1, 2026-10-27)
+
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-049-ADMIN-002 complete` after the durable passing Attempt 1 self-review.
+- Accepted attempt: Attempt 1; `attempt` remains 1. The task is `status: complete`, `executor: null`, and `claimed_at: null`.
+- Implementation publication: `moda-interact-admin` task branch `task/ARCH-049-ADMIN-002` remains clean with respect to tracked files and published at `75fc8ee924f128f1245a0ad78ba70d7ec8cea99f`. The disclosed untracked `typescript` terminal recording was not staged or changed.
+- Parent publication: this completion record is to be committed and pushed on parent `task/ARCH-049-ADMIN-002`.
+- Dependency frontier: `ARCH-049-SYSTEM-TEST-001` remains pending because its other explicit dependencies are incomplete; it remains manual-gated and is not promoted by this completion alone.
+- Integration: no task branch was merged to `main`.
 
 ## Dependency Frontier Reconciliation
 
