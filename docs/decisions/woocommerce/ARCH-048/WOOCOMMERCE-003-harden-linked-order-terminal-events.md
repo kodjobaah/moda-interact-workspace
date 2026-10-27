@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 26
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 2
 depends_on:
 - ARCH-035-WOOCOMMERCE-008
 - ARCH-035-API-019
@@ -21,7 +21,7 @@ enables:
 - ARCH-048-BACKGROUND-003
 - ARCH-048-SYSTEM-TEST-001
 created: '2026-10-23'
-updated: '2026-10-26'
+updated: '2026-10-27'
 ---
 
 # ARCH-048-WOOCOMMERCE-003 — Harden checkout-linked Woo paid and cancellation event coverage
@@ -34,7 +34,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Developer Attempt 1 was returned to `ready` after self-review found a real WordPress integration failure: a COD guest order emitted `ORDER_PAID` at placement, before any confirmed payment action. The implementation commit `30360d3` remains published on `moda-interact-woocommerce` branch `task/ARCH-048-WOOCOMMERCE-003`; correct the payment-evidence predicate and add a regression before resubmitting. Attempt 1 remains the current attempt; the next developer claim increments it once.
+Attempt 1 was returned to `ready` after an unpaid COD order emitted `ORDER_PAID` at placement. Attempt 2 corrected the payment-evidence predicate and reconciled the integration tests with the modular runner. The real WordPress/Woo HPOS COD and delivery-retry scenarios passed on 27 October 2026; the developer reports that implementation revision `6818b8a` was committed and pushed on `task/ARCH-048-WOOCOMMERCE-003`. This is a **review submission**, not architect acceptance or developer completion. The uploaded task file did not contain an Attempt 2 launcher claim/synchronisation packet; that workflow evidence still requires verification.
 
 ## Objective
 
@@ -64,7 +64,7 @@ Ensure every confirmed checkout-linked order placement, paid transition and canc
 
 ## Work Items
 
-- [ ] Implement paid-state status-transition coverage using Woo order APIs and PHP lifecycle fixtures without treating unpaid COD placement as paid.
+- [x] Implement paid-state status-transition coverage using Woo order APIs and PHP lifecycle fixtures without treating unpaid COD placement as paid; validate the unpaid COD guard in real WordPress/HPOS guest and customer flows.
 - [x] Extend fixture coverage for HPOS-compatible Woo APIs, Classic/Blocks linkage and gateway placed→paid→cancelled/failed/refunded branches.
 - [x] Test duplicate callbacks, bounded retry exhaustion and explicit replay retaining the original event ID and checkout correlation.
 
@@ -85,17 +85,18 @@ Ensure every confirmed checkout-linked order placement, paid transition and canc
 
 ## Acceptance Criteria
 
-- [x] Confirmed paid or cancelled Woo status transitions with `_moda_checkout_key` produce the existing bounded event even without a gateway `payment_complete` hook (fixture-verified).
-- [ ] No unproven `ORDER_PAID` signal, duplicate terminal action, unscoped order linkage or merchant WordPress checkout-reading route is emitted (the real COD guest checkout currently fails this criterion).
+- [x] Confirmed paid or cancelled Woo status transitions with `_moda_checkout_key` produce the existing bounded event; a gateway status-only paid transition requires a transaction reference (PHP fixtures and WordPress/HPOS integration).
+- [x] No unproven `ORDER_PAID` signal, duplicate terminal action, unscoped order linkage or merchant WordPress checkout-reading route is emitted (real guest/customer COD-before-payment, confirmed-payment, cancellation, duplicate and replay scenarios passed).
 - [x] Bounded retry exhaustion produces explicit Action Scheduler failure and privacy-safe diagnostics rather than being counted as successful delivery (fixture-verified).
 
 ## Validation
 
-- [x] `npm run test:php`: **187 tests, 1,413 assertions, 0 failures** (PHP 8.5.11); fixture suite passes but did not detect the real COD false-paid event.
-- [ ] `npm run test:integration:wordpress`: **failed** in the isolated WordPress/Woo HPOS environment at `tests/integration/order-wordpress.mjs:40`: guest COD placement produced one `ORDER_PAID` where zero was expected. The harness cleaned up and stopped its disposable wp-env.
-- [x] `npm run build`: passed, including strict 20-locale verification; webpack emitted three bundle-size/performance warnings.
-- [x] `composer lint`: passed for PHP syntax; implementation `git diff --check origin/main...HEAD` passed.
-- [ ] `npm run test:js`: **456 passed, 1 failed** in unrelated `tests/js/recovery-human-conversation.test.js` (ARCH-040; `never sends twice on pending click; ambiguous retry reuses the same key`). Isolated rerun reproduced it. Do not change that unrelated behavior under this task without a separately scoped finding.
+- [x] `npm run test:php`: **190 tests, 1,434 assertions, 0 failures** in the developer's 26 October Attempt 2 log; this preceded the final checkout-test-only commit, and PHPUnit was not rerun in this review environment (missing PHP extensions).
+- [x] `WP_ENV_PORT=8899 npm run test:integration:wordpress`: **passed** on 27 October against the `ARCH-048-WOOCOMMERCE-003` plugin, including guest/customer COD unpaid guards, confirmed paid transitions, transaction-backed status-only payment, cancellation, replay, 503 retries, HPOS, and successful environment cleanup.
+- [x] `npm run build`: passed in the developer's 26 October Attempt 2 log, including strict 20-locale verification; webpack reported non-fatal performance warnings.
+- [x] `composer lint`: passed in the developer's 26 October Attempt 2 log. PHP syntax checks also passed against the uploaded final snapshot. A final implementation-branch `git diff --check` after `6818b8a` was not separately shown.
+- [x] `node --test tests/integration/*.test.mjs tests/integration/scenarios/*.test.mjs tests/i18n/*.test.mjs`: **65/65 passed** against the supplied final snapshot in the review-preparation environment, including 8/8 checkout Action Scheduler tests.
+- [ ] `npm run test:js`: no complete rerun supplied after the final implementation commit; the earlier run had **456 passed, 1 failed** in unrelated `tests/js/recovery-human-conversation.test.js` (ARCH-040; `never sends twice on pending click; ambiguous retry reuses the same key`). Record as an unrelated previously reproduced failure, not as a passing suite.
 
 ## Stop Condition
 
@@ -111,59 +112,66 @@ After only this task's work, criteria and required validation, complete the Comp
 
 ### Status
 
-Changes Requested — Developer Attempt 1. The implementation branch remains committed and pushed, but the real COD guest checkout emitted an unproven `ORDER_PAID` event. The task is `ready` for a corrective Attempt 2; Attempt 1 remains recorded as the reviewed attempt. **Not architect-accepted and not developer-completed.**
+**Ready for Review — Developer Attempt 2.** The original unpaid-COD defect and the Action Scheduler checkout retry test blocker have passing real WordPress/HPOS evidence. The developer reports final commit `6818b8a` was pushed to the implementation task branch. **Not architect-accepted; explicit developer completion remains pending.**
 
 ### Files Changed
 
-Implementation repository `moda-interact-woocommerce` (commit `30360d3`):
+Implementation repository `moda-interact-woocommerce`, over Attempt 1 and Attempt 2:
 
-- `includes/Checkout/CheckoutActivityPublisher.php`
-- `includes/Checkout/OrderLifecycleCapture.php`
-- `tests/OrderLifecycleCaptureTest.php`
-- `tests/integration/order-wordpress.mjs`
+- `includes/Checkout/CheckoutActivityPublisher.php` — Attempt 1 delivery exhaustion/replay handling (unchanged by the latest test-only commit).
+- `includes/Checkout/OrderLifecycleCapture.php` — payment-evidence predicate corrected in Attempt 2.
+- `tests/OrderLifecycleCaptureTest.php` — COD, confirmed-payment, transaction-backed transitions and duplicate-event fixtures.
+- `tests/integration/scenarios/order-wordpress.mjs` — modular real WordPress/HPOS order lifecycle regression.
+- `tests/integration/scenarios/checkout-wordpress.mjs` — event-specific Action Scheduler checkout delivery/retry assertions.
+- `tests/integration/scenarios/checkout-actions.test.mjs` — deterministic action selection and 503 event-identity tests.
 
-Parent workspace: this task definition and Completion Report only. No architecture, domain `_index.md`, or implementation gitlink modifications are included in the documentation patch.
+Attempt 1 used the former `tests/integration/order-wordpress.mjs` path before the modular integration-test reorganisation. The final snapshot uses the `tests/integration/scenarios/` structure. Commit history reported by the developer: `30360d3` (Attempt 1), `0af46df` (Attempt 2 payment correction) and `6818b8a` (final two-file checkout retry test change).
+
+Parent workspace: **this task definition and Completion Report only**. No architecture index, parent architecture, application code or implementation gitlink is modified by the review-documentation patch.
 
 ### Work Completed
 
-- Added status-transition observation for confirmed paid orders, complementing `woocommerce_payment_complete`. Woo's `wc_get_is_paid_statuses()`/`WC_Order::is_paid()` semantics are used with guards excluding known unpaid and terminal statuses; order placement alone does not assert payment.
-- Preserved `_moda_checkout_key` linkage and the existing `ORDER_PLACED`, `ORDER_PAID` and `ORDER_CANCELLED` API event kinds, with stable event IDs and duplicate-callback suppression.
-- Preserved actionable cancellation evidence when enqueue fails, and handled repeat cancellation callbacks safely.
-- Ensured terminal delivery failures fail the Action Scheduler action with bounded diagnostic fields; explicit replay is constrained to a failed order action and the original installation/site identity, reusing its original payload and event ID.
-- Added PHP lifecycle, duplicate-callback, retry/failure and replay fixtures, plus Node integration fixture coverage.
-- Developer committed and pushed `30360d3` (`feat(arc-048-woocomerce-003)`) to `origin/task/ARCH-048-WOOCOMMERCE-003` in `moda-interact-woocommerce`, per the terminal log dated 26 October 2026.
+- Retained the WooCommerce paid-status and `woocommerce_payment_complete` observers while requiring evidence beyond the paid-labelled order status: a payment-complete callback or a non-empty gateway transaction reference, together with the paid-state checks. COD `processing` and status-derived `date_paid` alone do not constitute payment.
+- Preserved exact `_moda_checkout_key` correlation, the existing `ORDER_PLACED`, `ORDER_PAID` and `ORDER_CANCELLED` contract, event identity and callback deduplication. No new Woo customer lookup or merchant-side API route was added.
+- Retained bounded retry exhaustion, diagnostic failure visibility, installation-bound replay and the original event ID in replay/retry payloads.
+- Added real WordPress/HPOS regression coverage for unpaid guest/customer COD orders, later confirmed payment, transaction-backed status-only gateways, cancellation, replay and HTTP 503 handling.
+- Reconciled tests with the modular scenario layout and removed nondeterministic generic Action Scheduler batch selection from the checkout retry assertion: the test runs the **selected persisted action ID** and verifies that the exact outage event received HTTP 503 and its attempt-2 retry retained the original event identity.
+- Developer committed/pushed the final two-file correction as `6818b8a` to `origin/task/ARCH-048-WOOCOMMERCE-003`, moving the remote branch from `0af46df` to `6818b8a` (developer-supplied Git output).
 
 ### Validation Results
 
-- **Developer environment:** `npm ci` succeeded; `npm run build` succeeded, including the twenty-language i18n source/translation verification (553 source messages, 19 translation packs). Webpack emitted three bundle/performance warnings, not errors.
-- **Developer environment:** `npm run test:php` / `composer test` **passed all 187 tests and 1,413 assertions**, using PHP 8.5.11. The earlier two asset-enqueue fixture failures did not recur after building the Admin assets.
-- **Patch-authoring environment:** focused PHP fixture runner **16/16 passed**; focused Node checkout regression tests **11/11 passed**; PHP/JS syntax checks and implementation diff whitespace validation passed.
-- **Developer Git evidence:** `git commit` created `30360d3` (four files; 361 insertions, 31 deletions). Push output confirms `fe0c9de..30360d3` to `origin/task/ARCH-048-WOOCOMMERCE-003` in the WooCommerce repository. The untracked `typescript` terminal-log file was not included in that commit.
-- **Task-start evidence:** the pre-existing Developer Execution Ownership Amendment below records the dedicated parent and implementation worktree locations, initial Git revisions, dependency checks, and `origin --prune` synchronization. The uploaded ZIP is not a substitute for independently inspecting the launcher's execution packet or current Git worktree registrations.
-- **Not validated here:** live WordPress HPOS/Blocks with real payment gateways and Action Scheduler delivery/replay; full cross-service API/background system testing; a final implementation-worktree `git diff --check` after developer commit. These are not claimed as passing.
-- **Non-blocking diagnostics:** `npm ci` reported 36 dependency advisories (3 low, 21 moderate, 10 high, 2 critical) and peer-dependency/install-script warnings. No dependency upgrades are included in this task; any security remediation needs separate review.
+- **Developer PHPUnit (26 October, Attempt 2):** `npm run test:php` passed **190 tests, 1,434 assertions**. This predates the final two-file integration-test commit; no production PHP files changed in that final commit, based on the developer's commit summary. A fresh PHPUnit rerun is not claimed.
+- **Developer build/lint (26 October, Attempt 2):** `npm run build` and `composer lint` passed; build reported warnings about bundle size, not build errors.
+- **Developer real WordPress integration (27 October):** `WP_ENV_PORT=8899 npm run test:integration:wordpress` completed on the WOOCOMMERCE-003 worktree. The runner explicitly reported `ARCH-048 Order guest` and `ARCH-048 Order customer` COD/unpaid, confirmed-payment, status-only gateway, cancellation, replay, 503 and HPOS **PASS**. Guest/customer checkout 503/retry scenarios also passed, and the disposable WordPress environment stopped cleanly. This resolves the Attempt 1 COD failure and subsequent nondeterministic checkout retry assertion seen in earlier logs.
+- **Snapshot Node verification (27 October, review preparation):** `node --test tests/integration/*.test.mjs tests/integration/scenarios/*.test.mjs tests/i18n/*.test.mjs` passed **65/65**; the focused checkout Action Scheduler tests passed **8/8**. JavaScript syntax and changed PHP-file syntax checks passed against the uploaded snapshot.
+- **PHPUnit review-environment limit:** `php vendor/bin/phpunit` was unavailable in this container because `dom`, `mbstring` and `xmlwriter` extensions are missing. This is not recorded as a code failure; rely on the developer-run PHPUnit log above.
+- **Full JS limitation:** the earlier `npm run test:js` run had **456 passing and one separately reproduced ARCH-040 failure** in `recovery-human-conversation.test.js`. No final full-suite rerun is evidenced; the Node integration/i18n subset is passing. No unrelated ARCH-040 code was changed here.
+- **Git publication:** user-provided terminal output confirms implementation commit `6818b8a` and push `0af46df..6818b8a` to the implementation task branch. The snapshot is a Git-metadata-free archive; remote commit integrity and the final implementation-branch diff must be inspected by the authorised reviewer.
+- **Worktree evidence:** the historical Attempt 1 ownership amendment below documents the dedicated parent/implementation worktrees and initial synchronisation. The supplied current task file remained `ready` at `attempt: 1`, so an Attempt 2 launcher claim, `claimed_at` time, start-of-attempt synchronisation and preparation packet **cannot be verified from this archive**. This retrospective report does not invent that evidence. The reviewing developer/architect should reconcile the actual task-workflow record before accepting.
+- **Beyond task scope:** no external commerce/API/background end-to-end system test or production delivery trace is claimed.
 
 ### Deviations
 
-- An external, bounded Attempt 1 implementation patch was applied by the developer rather than authored entirely through the repository-specific agent. The task was explicitly taken over via `/moda_developer_create`, with `execution_mode: developer` and `completion_mode: developer`; original implementation ownership remains `moda_woocommerce`.
-- The parent report patch is provided for application/commit/push in the dedicated parent worktree; no parent push, implementation merge or `main` update is claimed by this report.
+- The developer applied external patch deliverables under the developer-execution workflow rather than an assigned repository agent writing all code directly. `assigned_agent: moda_woocommerce`, `execution_mode: developer` and `completion_mode: developer` are preserved.
+- The integration tests moved from the legacy flat paths to `tests/integration/scenarios/` during branch reconciliation; the final test correction is scoped to the modular layout.
+- The uploaded parent task definition does not show the Attempt 2 claim transition. Recording `attempt: 2` and `status: review` in this review-submission patch reconciles the reported completed work for review; it does **not** establish that `/moda_developer_create` ran or supply its launcher packet.
 
 ### Assumptions
 
-- The 26 October 2026 developer log and uploaded worktree snapshot represent the task's submission evidence. The reviewer must inspect the pushed implementation commit and authoritative task branch.
-- Woo lifecycle tests use order-API fixtures rather than proving behaviour on a running HPOS/Blocks store.
-- The existing `/v1/woocommerce/activity` API contract and prerequisite implementations remain unchanged.
+- The developer's terminal output correctly identifies `6818b8a` as the final pushed implementation commit; this report has not fetched GitHub or inspected remote Git history independently.
+- The uploaded `(5)` workspace archive represents the post-correction implementation source used for snapshot Node/syntax checks; the independent WordPress run is evidenced by the separately supplied terminal log.
+- The existing `/v1/woocommerce/activity` contract remains unchanged. A gateway supplying neither a payment-complete callback nor a transaction reference cannot safely be classified as confirmed-paid from status alone.
 
 ### Unresolved Issues
 
-- **Blocking:** `OrderLifecycleCapture::confirmedPaid()` accepts paid status membership plus `WC_Order::is_paid()`. In the disposable real Woo HPOS flow, a guest COD order emits `ORDER_PAID` during placement. Use payment evidence that does not classify this unpaid COD order as paid; retain support for genuinely confirmed gateways that change Woo status without `woocommerce_payment_complete`.
-- Add a real WordPress regression proving COD/unpaid placement emits only `ORDER_PLACED`, then a confirmed paid transition emits exactly one `ORDER_PAID`; retain the existing on-hold, duplicate callback, cancellation, and replay cases.
-- The full JS run has one reproduced ARCH-040 failure outside the changed files. Keep it documented as unrelated; do not fold an unrelated fix into this task.
+- **Review workflow evidence:** verify the canonical Attempt 2 `/moda_developer_create` claim and both worktrees' start-of-attempt synchronisation/physical isolation evidence, or explicitly record the workflow non-conformance and its remediation. Do not fabricate a `claimed_at` timestamp.
+- **Validation limitation:** the full JS suite's previously reproduced ARCH-040 failure remains outside this task; no final full-suite rerun was supplied. The final implementation-branch diff check and remote commit content should be verified during review.
+- No reproduced task-scoped functional blocker remains in the supplied final real WordPress/HPOS integration output.
 
 ### Architectural Concerns
 
-- Transport retries and explicit replay do not guarantee recovery of an event that was never captured or enqueued locally. No new provider read endpoint was introduced for this case.
-- The replay capability is an internal publisher mechanism, not a new public route. Authorised operational invocation should be checked during integrated validation.
+- A payment that provides neither Woo's explicit completion callback nor a durable gateway transaction reference will not produce `ORDER_PAID` solely because the order has a paid-labelled status. This is deliberate false-positive prevention, and any uncovered gateway semantics require separate architecture review.
+- Bounded delivery retries and explicit replay do not recover an event that was never captured or enqueued. Operational replay remains an internal facility; caller authorisation should be assessed during integrated validation.
 
 ## Architect Review
 
@@ -208,3 +216,12 @@ None.
 - Required validation: rerun `npm run test:php`, `npm run test:integration:wordpress`, `npm run build`, `composer lint`, `git diff --check`, and the task-scoped JS integration checks. The existing full `npm run test:js` failure is ARCH-040 and was reproduced in isolation; report it, but do not modify unrelated code absent a task-scoped cause.
 - Other validation: PHP suite 187/187 passed; build, Composer PHP lint, and implementation diff whitespace check passed. The full JS suite reported 456 passed and one unrelated ARCH-040 failure. No implementation changes were made during this review.
 - State transition: `review` -> `ready`; `executor: null`, `claimed_at: null`, `attempt: 1` unchanged. The next `/moda_developer_create ARCH-048-WOOCOMMERCE-003` claim must increment to Attempt 2.
+
+## Developer Attempt 2 Review Submission Evidence (2026-10-27)
+
+- **Submission state:** This is a retrospective documentation handoff from the supplied parent task snapshot (`status: ready`, `attempt: 1`) to an Attempt 2 review submission (`status: review`, `attempt: 2`, `executor: null`, `claimed_at: null`). It must not be represented as proof that an Attempt 2 launcher claim or start-of-attempt synchronisation occurred.
+- **Implementation:** `moda-interact-woocommerce` branch `task/ARCH-048-WOOCOMMERCE-003`; developer reports `0af46df` followed by `6818b8a`, and published push `0af46df..6818b8a`. No integration into `main` is claimed.
+- **Physical task paths:** the existing Attempt 1 ownership amendment records the dedicated parent and implementation worktree paths. Their continued use and fresh Attempt 2 synchronisation must be independently verified, not inferred from the archive name or a clean Git status.
+- **Functional evidence:** 27 October WordPress/HPOS guest and customer COD false-paid regression plus confirmed-payment/status-only/cancellation/replay/503 checks passed; checkout Action Scheduler retry check passed in the same WOOCOMMERCE-003 runner.
+- **Validation caveats:** PHP suite 190/190 and build/lint were evidenced earlier in Attempt 2; snapshot Node tests 65/65 passed; full JS rerun and Attempt 2 launcher claim packet were not supplied. Retain the separate ARCH-040 failure in review context.
+- **Review authority:** the `## Architect Review` section remains unchanged. `completion_mode: developer` requires a durable passing review followed by the developer's explicit `/moda_developer_update ARCH-048-WOOCOMMERCE-003 complete` decision. Downstream tasks must not be marked newly Ready from this submission alone.
