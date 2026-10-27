@@ -213,5 +213,5 @@ None.
 
 ## Dependency Frontier Reconciliation
 
-- Promoted from `pending` to `ready` on 2026-10-27 after `ARCH-049-DATABASE-001`, `ARCH-049-ADMIN-001`, `ARCH-047-ADMIN-003`, `ARCH-047-ADMIN-005`, and `ARCH-047-BACKGROUND-001` were verified complete.
-- Attempt remains 0; `executor` and `claimed_at` remain null. This is eligibility only; no implementation attempt or implementation worktree was created.
+- Historical note: promoted from `pending` to `ready` on 2026-10-27 after `ARCH-049-DATABASE-001`, `ARCH-049-ADMIN-001`, `ARCH-047-ADMIN-003`, `ARCH-047-ADMIN-005`, and `ARCH-047-BACKGROUND-001` were verified complete. At that time, attempt was 0 and no implementation worktree existed.
+- Current claim supersedes that eligibility-only state: Attempt 1 is `in_progress`, executor is `developer`, and `claimed_at` is `2026-10-27T15:56:42Z`. The declared dependencies remain complete; no downstream task was started or promoted as part of this claim.
