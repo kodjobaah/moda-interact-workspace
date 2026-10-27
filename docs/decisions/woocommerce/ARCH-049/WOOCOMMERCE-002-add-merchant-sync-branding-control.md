@@ -9,7 +9,8 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
+**Materialised developer-executed task definition.** Its canonical parent task worktree is recorded in the Completion Report. No implementation worktree or execution claim exists yet.
 priority: 35
 executor: null
 claimed_at: null
@@ -29,6 +30,7 @@ Architecture: `ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-
 Coordinator: `moda_architect`. Owner: `moda_woocommerce` in `moda-interact-woocommerce/`.
 
 **Portable canonical definition — defined but not materialised in the developer's Git task worktrees.** A task worktree/branch, execution claim, implementation or push must not be inferred from this patch. Materialise only through the normal task launcher after prerequisite completion.
+**Canonical task definition materialised, execution not started.** The parent branch is `task/ARCH-049-WOOCOMMERCE-002`; no implementation worktree or execution claim exists. The task became ready after accepted completion of WOOCOMMERCE-001.
 
 ## Objective
 
@@ -120,7 +122,7 @@ Explicit sync must only enqueue existing Action Scheduler capture, not synchrono
 
 ## Dependencies
 
-- `ARCH-049-WOOCOMMERCE-001` — must be `complete` and accepted, with the **connection-only/manual-ready Attempt 2 correction** incorporated before this task can be Ready. The source snapshot still has that task `in_progress`, so this new task starts **pending**.
+- `ARCH-049-WOOCOMMERCE-001` — complete and accepted at developer Attempt 2. The accepted correction-only publisher contract is reconciled in the dependency task snapshot on this branch. This satisfies the sole explicit dependency and makes this task ready; no implementation attempt has been claimed.
 
 The API-001 fixture is sufficient to implement/test the UI and local REST contract. Live hosted API integration is required at system-test time, not a second production implementation dependency here.
 
@@ -154,7 +156,7 @@ After required work, acceptance evidence and validation, update only this task's
 
 ## Implementation Notes
 
-Use launcher-resolved primary workspace and sibling dedicated parent and implementation worktrees for `task/ARCH-049-WOOCOMMERCE-002`. Record both physical worktree paths, start-of-attempt synchronisation, recursively materialised submodule evidence where relevant, repository branch/commit and validation in the Completion Report. Do not infer a worktree path from the previous task directory. No Git branch/worktree or push has been created by this portable task definition.
+The definition is materialised on the canonical parent task branch `task/ARCH-049-WOOCOMMERCE-002` at the launcher-resolved parent worktree. Create/reuse the implementation worktree only when a developer claims this ready task. Record both launcher-resolved paths, start-of-attempt synchronisation, recursively materialised submodule evidence where relevant, repository branch/commit and validation in the Completion Report. Do not infer a worktree path from the previous task directory.
 
 The WooCommerce plugin runs in merchant-controlled PHP and cannot import `@modainteract/moda-interact-shared/logging`; use existing WooCommerce `wc_get_logger()` bounded semantic events with a bounded WordPress/PHP fallback. Log exceptions and failed status persistence safely; never log raw API exceptions, secret headers, provider tokens, full source URLs or customer data. Use existing capability, nonce and tenancy enforcement rather than a new security framework. This is **not** a recurring-sync task: browser status refresh after a button click is allowed, but permanent scheduled refresh is not.
 
@@ -162,7 +164,12 @@ The WooCommerce plugin runs in merchant-controlled PHP and cannot import `@modai
 
 ### Status
 
-Not Started — defined but not materialised.
+Ready — the canonical parent task definition is materialised on
+`task/ARCH-049-WOOCOMMERCE-002` at
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-WOOCOMMERCE-002`.
+The accepted dependency `ARCH-049-WOOCOMMERCE-001` is complete at Attempt 2.
+This task remains unclaimed at Attempt 0; its implementation worktree has not
+been created.
 
 ### Files Changed
 
@@ -186,7 +193,8 @@ None beyond the explicit architecture and task contract.
 
 ### Unresolved Issues
 
-Dependency `ARCH-049-WOOCOMMERCE-001` is in progress in the supplied snapshot; execution is gated until it is Complete and accepted.
+No unresolved explicit dependencies. Hosted API integration remains a terminal
+system-test gate; it is not a prerequisite for this task's local implementation.
 
 ### Architectural Concerns
 
