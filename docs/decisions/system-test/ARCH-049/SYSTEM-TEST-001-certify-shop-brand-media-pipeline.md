@@ -14,10 +14,10 @@ priority: 90
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-049-ADMIN-001", "ARCH-049-DATABASE-001", "ARCH-049-SHOPIFY-001", "ARCH-049-BACKGROUND-001", "ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-API-001", "ARCH-049-WOOCOMMERCE-001", "ARCH-049-ADMIN-002", "ARCH-049-BACKGROUND-004", "ARCH-047-ADMIN-005", "ARCH-047-BACKGROUND-001", "ARCH-047-BACKGROUND-003", "ARCH-047-BACKGROUND-006"]
+depends_on: ["ARCH-049-ADMIN-001", "ARCH-049-DATABASE-001", "ARCH-049-SHOPIFY-001", "ARCH-049-BACKGROUND-001", "ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-API-001", "ARCH-049-WOOCOMMERCE-001", "ARCH-049-WOOCOMMERCE-002", "ARCH-049-ADMIN-002", "ARCH-049-BACKGROUND-004", "ARCH-047-ADMIN-005", "ARCH-047-BACKGROUND-001", "ARCH-047-BACKGROUND-003", "ARCH-047-BACKGROUND-006"]
 enables: []
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-10-27
 ---
 
 # Certify ShopBrand source ingestion, R2 READY media and WhatsApp image headers
@@ -38,6 +38,7 @@ This terminal task starts only when its complete ARCH-049 implementation and the
 
 - Build modular black-box fixture/executor/assertion/orchestration/test-data helpers in `moda-interact-system-test` rather than a giant catch-all script.
 - Run source ingestion for a Shopify test shop and a Woo WordPress test site through normal authenticated boundaries, then inspect ShopBrand source and processed R2 state.
+- In the connected WooCommerce merchant settings, exercise the new manual Sync branding command after a changed logo; verify the local last-accepted status only advances on hosted API acceptance, and no automatic Woo brand refresh occurs when WP settings alone change.
 - Run local test public HTTPS/R2/Meta media mocks plus at least one real custom-domain fetch with approved disposable asset when credentials/environment permit.
 - Exercise missing/unsafe/transient/stale media, retries, duplicate events, lost wakes, cross-tenant access and full ARCH-047 image-header payload.
 
@@ -88,6 +89,7 @@ Consumes accepted production implementation and its agreed contracts, including 
 - ARCH-049-BACKGROUND-003
 - ARCH-049-API-001
 - ARCH-049-WOOCOMMERCE-001
+- ARCH-049-WOOCOMMERCE-002
 - ARCH-049-ADMIN-002
 - ARCH-049-BACKGROUND-004
 - ARCH-047-ADMIN-005

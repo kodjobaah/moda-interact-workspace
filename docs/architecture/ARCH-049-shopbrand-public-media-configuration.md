@@ -114,7 +114,7 @@ For `SQUARE_LOGO`, use `squareLogoUrl` when available; if absent, an explicitly 
 
 ```text
 Shopify: (SH-001 app grant for read_brand) → BG003 brand sync → commerce.ShopBrand
-WooCommerce: plugin reads WP Site Identity → authenticated API001 writes commerce.ShopBrand
+WooCommerce: plugin initial connection / future explicit Sync branding → read WP Site Identity → authenticated API001 writes commerce.ShopBrand
 commerce.ShopBrand source generations → BG002 due-row reconciliation/claim
 BG002 → BG001 safe fetch/resize/verify/put immutable R2 object
 BG002 → ShopBrand.whatsAppMedia READY (atomic version check)
@@ -123,7 +123,7 @@ ARCH-049-BG004 adapts READY metadata to ARCH-047-BG001 media bindings and automa
 ARCH-047-BG003 accepts a valid Meta image-header sample handle during template creation; its existing implementation does not obtain that handle itself
 ```
 
-**Responsibility boundaries:** Database only schema/migration; Shopify app only read_brand permission and reauthorisation; Background synchronises Shopify sources, processes images and owns due-state reconciliation; API authenticates and persists Woo brand metadata; Woo plugin reads local WP settings and posts changes; Admin displays processed READY images. None sends checkout messages or edits Meta templates under ARCH-049.
+**Responsibility boundaries:** Database only schema/migration; Shopify app only read_brand permission and reauthorisation; Background synchronises Shopify sources, processes images and owns due-state reconciliation; API authenticates and persists Woo brand metadata; Woo plugin sends an initial authenticated Site Identity snapshot and exposes an internal explicit re-sync method (no automatic WordPress brand-change hooks or daily Woo reconciliation); Admin displays processed READY images. None sends checkout messages or edits Meta templates under ARCH-049.
 
 ## Processing limits and security policy
 
@@ -132,7 +132,7 @@ ARCH-047-BG003 accepts a valid Meta image-header sample handle during template c
 - Deterministic internal preset: 1125 × 600 pixel canvas for WhatsApp media headers; fit/pad logos without distortion, cover may centre-crop to fill with preview; preserve transparency using PNG when necessary. `logoWidth` and `logoHeight` are source display fields and do not override output dimensions. Keep original images out of publicly readable R2 objects.
 - Use `shop-brands/<shopId>/<role-lowercase>/sha256-<full-digest>.<jpg|png>` keys. Include immutable caching headers. S3-compatible uploads use bucket name from validated `shopBrand.publicMedia` and **worker-only** `SHOPBRAND_R2_ENDPOINT`, `SHOPBRAND_R2_ACCESS_KEY_ID`, `SHOPBRAND_R2_SECRET_ACCESS_KEY` (proposed exact environment variable names). Never expose these secrets to Admin, Shopify, WooCommerce, customer content, generated links or logs.
 - The user's R2 bucket and custom domain already exist; verify domain is Active, public image fetch is 200 with correct image content-type over HTTPS, and minimum TLS is at least 1.2. Disable the public `r2.dev` URL when no longer required for development. These are **preflight/operational checks**, not a new Gateway provisioning task. If modifying the canonical Render Blueprint is demonstrably required, request a narrowly scoped Gateway amendment; do not silently edit Gateway files from Background.
-- Refresh schedule (agreed initial defaults subject to runtime validation): source sync for active Shopify shops at most once per 24 hours; BG002 due-row sweep every 5 minutes; media content recheck every 7 days for READY records so changed bytes behind an unchanged URL are detected. Recheck must keep previously valid current-generation READY media available during a transient fetch failure, but must replace it atomically on verified new bytes. Trigger source updates promptly when receiving authenticated Woo changes. Rate-limit by tenant/provider and bound retries (suggested exponential delays 1m/5m/30m/2h/24h, max 5 attempts per generation) with an explicit operator retry path.
+- Refresh schedule (agreed initial defaults subject to runtime validation): source sync for active Shopify shops at most once per 24 hours; BG002 due-row sweep every 5 minutes; media content recheck every 7 days for READY records so changed bytes behind an unchanged URL are detected. Recheck must keep previously valid current-generation READY media available during a transient fetch failure, but must replace it atomically on verified new bytes. Process authenticated Woo source snapshots promptly when sent; the Woo plugin publishes once on first connection/upgrade and later only on an explicit merchant-initiated sync (future UI). This restriction does **not** remove BG002 due-row/media reconciliation or Shopify source refresh. Rate-limit by tenant/provider and bound retries (suggested exponential delays 1m/5m/30m/2h/24h, max 5 attempts per generation) with an explicit operator retry path.
 - Retain prior R2 versions for at least 30 days and longer while referenced by in-flight messages; a GC implementation is outside initial task scope unless an existing safe lifecycle mechanism can guarantee these conditions. No deletes on original-source refresh.
 
 ## Failure, idempotency and observability
@@ -148,6 +148,12 @@ Development/architecture expansion is pre-production for this feature, but exist
 
 There is **no active GATEWAY-001** and no separate `ShopBrandMediaAsset` table. `ARCH-049-SHOPIFY-001` exists only for the confirmed missing `read_brand` authorisation, **not** for brand-data synchronisation.
 
+## WooCommerce merchant-initiated Store branding sync (ARCH-049-WOOCOMMERCE-002)
+
+Once the one-time plugin connection/upgrade capture is in place, **no WooCommerce daily brand reconciliation or automatic WordPress branding-change publication** is performed. A merchant can update their WordPress Site Name, Site Logo or Site Icon and then explicitly choose **Sync branding** within Moda Interact → Recovery Settings. The new WooCommerce-owned task adds a capability/nonce-protected WordPress REST GET status + POST enqueue command and a connected merchant UI; both reuse the existing `ShopBrand\Publisher::requestSync()` and bounded Action Scheduler delivery. No new Moda hosted API, cross-service payload, schema or public unauthenticated WordPress endpoint is required.
+
+The panel distinguishes *queued*, *retrying*, *failed* and *accepted by hosted Moda API* rather than calling a queued job “synchronised”. A last-accepted timestamp is persisted per installation only after a validated `updated|unchanged` API acknowledgement, never from the one-time bootstrap marker. That timestamp does **not** assert that Background R2 media has reached READY or Meta approved an image template. A failed new request retains any prior successful time, and reconnecting invalidates stale installation status. Clicks coalesce safely without losing changes requested during an in-flight capture. The terminal ARCH-049 system test additionally covers this explicit merchant path. Shopify synchronisation and Background source/media recheck schedules are unaffected.
+
 ## Tasks and dependencies
 
 Task YAML is authoritative. `ready` is eligibility of a portable definition, **not** a claim that a task branch or implementation has been materialised. Cross-architecture dependencies below are shown explicitly when they govern source integration; completed ARCH-047 modules are **already satisfied** in the snapshot.
@@ -161,7 +167,8 @@ Task YAML is authoritative. `ready` is eligibility of a portable definition, **n
 | ARCH-049-BACKGROUND-002 | moda_background | Pending | ARCH-049-DATABASE-001, ARCH-049-BACKGROUND-001 |
 | ARCH-049-BACKGROUND-003 | moda_background | Pending | ARCH-049-DATABASE-001, ARCH-049-BACKGROUND-002, ARCH-049-SHOPIFY-001 |
 | ARCH-049-API-001 | moda_api | Pending | ARCH-049-DATABASE-001 |
-| ARCH-049-WOOCOMMERCE-001 | moda_woocommerce | Ready (API contract fixtures) | — |
+| ARCH-049-WOOCOMMERCE-001 | moda_woocommerce | In progress (Attempt 1, developer in supplied snapshot) | — |
+| ARCH-049-WOOCOMMERCE-002 | moda_woocommerce | Pending (new, not materialised) | ARCH-049-WOOCOMMERCE-001 |
 | ARCH-049-ADMIN-002 | moda_admin | Pending | ARCH-049-DATABASE-001, ARCH-049-ADMIN-001, ARCH-047-ADMIN-003, ARCH-047-ADMIN-005 (all prior Admin prerequisites Complete) |
 | ARCH-049-BACKGROUND-004 | moda_background | Pending | ARCH-049-DATABASE-001, ARCH-049-ADMIN-001, ARCH-047-BACKGROUND-001, ARCH-047-BACKGROUND-006 (prior prerequisites Complete) |
 | ARCH-049-SYSTEM-TEST-001 | moda_system_test | Pending | All ARCH-049 implementations above plus accepted ARCH-047 Admin/compiler, BG001/BG003/BG006; **not** ARCH-047-BACKGROUND-007 |
@@ -182,3 +189,4 @@ No unknown database tables are needed; the 3 fixed media roles and JSONB row-lev
 - 2026-10-25: Architect-reviewed and accepted ARCH-049-ADMIN-001; downstream tasks remain gated by their other dependencies.
 - 2026-10-25: Proposed consolidated media-normalisation expansion: move ShopBrand into commerce; one JSONB processed-media field; Background-owned Shopify synchronisation; Woo plugin/API ingress; reuse already-created R2 custom domain; no Gateway provisioning implementation.
 - 2026-10-26: Reconciled completed ARCH-047 task statuses, removed unnecessary DB001 dependency from pure BG001 processing and unnecessary API001 dependency from Woo producer development, preserved true BG002→BG003 module reuse, added BG004 for missing role-aware READY-media adapter, clarified IMAGE-header compiler/sample boundaries, and removed unrelated ARCH-047 merchant post-window BG007 from ARCH-049 system certification prerequisites.
+- 2026-10-27: Revised Woo source initiation: once on first authenticated plugin connection (or one initial capture for existing connected installations), no automatic WordPress change hooks and no daily Woo reconciliation. Preserve bounded delivery retries, clean up legacy schedules and prepare an internal method for a future merchant-triggered Sync branding UI. Background media rechecks and Shopify refresh remain unchanged.
