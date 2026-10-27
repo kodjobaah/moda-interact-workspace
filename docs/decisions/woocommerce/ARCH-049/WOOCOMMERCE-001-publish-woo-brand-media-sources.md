@@ -9,15 +9,15 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-049-API-001"]
+depends_on: []
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # Publish WooCommerce Site Identity branding through the Moda API
@@ -32,7 +32,7 @@ Read site branding locally within the installed WordPress/WooCommerce plugin and
 
 ## Context
 
-WooCommerce does not have Shopify's single Brand Admin object. WordPress Site Logo, Site Icon, site title and attachment metadata are available through native PHP functions; the plugin already owns secure server-side Moda API communication and Action Scheduler workflows.
+WooCommerce does not have Shopify's single Brand Admin object. WordPress Site Logo, Site Icon, site title and attachment metadata are available through native PHP functions; the plugin already owns secure server-side Moda API communication and Action Scheduler workflows. This task does not modify the hosted API, and can be independently tested with a contract fixture while that API is implemented.
 
 ## Scope
 
@@ -76,7 +76,7 @@ Produces `woo.shop-brand.v1` to `POST /v1/woocommerce/shop-brand`; consumes the 
 
 ## Dependencies
 
-- ARCH-049-API-001
+None. The `woo.shop-brand.v1` API route, request and response contract are already fully specified in the separately owned `ARCH-049-API-001` definition. Implement and test the plugin independently against an authenticated local HTTP fixture; do not require an API implementation commit to author a producer client. Production activation and the end-to-end System Test still require accepted API-001.
 
 ## Enables
 
@@ -84,7 +84,7 @@ Produces `woo.shop-brand.v1` to `POST /v1/woocommerce/shop-brand`; consumes the 
 
 ## Acceptance Criteria
 
-- [ ] Fresh Woo connection publishes site branding, and subsequent changes update it.
+- [ ] Against the frozen authenticated `woo.shop-brand.v1` HTTP fixture, a fresh Woo connection publishes site branding and subsequent changes update it. Real hosted API delivery is certified only after API001 acceptance in SYSTEM-TEST-001.
 - [ ] No new public WP route and no checkout latency regression.
 - [ ] Stable retries do not duplicate observations or leak installation credentials.
 - [ ] Removed logo/icon becomes a null source rather than retaining a false current READY.

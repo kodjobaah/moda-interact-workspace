@@ -9,15 +9,15 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-ADMIN-001"]
+depends_on: ["ARCH-049-ADMIN-001"]
 enables: ["ARCH-049-BACKGROUND-002"]
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # Normalise trusted brand sources and upload verified R2 derivatives
@@ -32,7 +32,7 @@ Create one focused, injectable Background media-processor module that safely fet
 
 ## Context
 
-Do not build another bucket/proxy. Use validated `shopBrand.publicMedia` for bucket name/public origin, and separate worker-only R2 credentials. The source URL is untrusted even when Shopify or Woo supplied it.
+Do not build another bucket/proxy. Use validated `shopBrand.publicMedia` for bucket name/public origin, and separate worker-only R2 credentials. The source URL is untrusted even when Shopify or Woo supplied it. This is a pure media-transform-and-R2-writer module: its input is provided by callers, and it does not read/write ShopBrand or its JSONB schema. Consequently DATABASE-001 is not an implementation prerequisite; BG002 owns the later durable DB integration.
 
 ## Scope
 
@@ -93,11 +93,10 @@ Before returning verified metadata, prove the current custom HTTPS domain can se
 
 ## Interfaces / Contracts
 
-Consumes source+generation from `commerce.ShopBrand` (read by BG002), returns verified derivative metadata without mutating PostgreSQL or owning leases. Shares `shopBrand.publicMedia` read contract from accepted ARCH-049-ADMIN-001. The public URL is constructed only from the validated configured origin plus trusted, encoded immutable object key.
+Consumes the caller-supplied source URL, shop/role, fingerprint and generation (BG002 will later read them from `commerce.ShopBrand`); returns verified derivative metadata without reading/mutating PostgreSQL or owning leases. Shares `shopBrand.publicMedia` read contract from accepted ARCH-049-ADMIN-001. The public URL is constructed only from the validated configured origin plus trusted, encoded immutable object key.
 
 ## Dependencies
 
-- ARCH-049-DATABASE-001
 - ARCH-049-ADMIN-001
 
 ## Enables

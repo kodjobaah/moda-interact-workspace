@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: ["ARCH-049-DATABASE-001"]
-enables: ["ARCH-049-WOOCOMMERCE-001", "ARCH-049-SYSTEM-TEST-001"]
+enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
 updated: 2026-10-25
 ---
@@ -86,7 +86,7 @@ Authenticate using the existing Woo installation boundary, enforce tenant/platfo
 
 ## Interfaces / Contracts
 
-Producer: Woo plugin `ModaApiClient`. Consumer: Moda API-owned HTTP contract; both implement the same documented `woo.shop-brand.v1` payload. Durable result: `commerce.ShopBrand` source fields and `whatsAppMedia` generation/work statuses. BG002 later processes the PENDING media without a direct API→Background call.
+Producer: Woo plugin `ModaApiClient`. Consumer: Moda API-owned HTTP contract; both implement the same documented `woo.shop-brand.v1` payload. The corresponding Woo plugin implementation can be developed in parallel using fixed HTTP fixtures; production activation and integrated validation require this API task to be accepted. Durable result: `commerce.ShopBrand` source fields and `whatsAppMedia` generation/work statuses. BG002 later processes the PENDING media without a direct API→Background call.
 
 ## Dependencies
 
@@ -94,7 +94,6 @@ Producer: Woo plugin `ModaApiClient`. Consumer: Moda API-owned HTTP contract; bo
 
 ## Enables
 
-- ARCH-049-WOOCOMMERCE-001
 - ARCH-049-SYSTEM-TEST-001
 
 ## Acceptance Criteria

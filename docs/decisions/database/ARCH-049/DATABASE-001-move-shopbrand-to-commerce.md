@@ -9,15 +9,15 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables: ["ARCH-049-BACKGROUND-001", "ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-API-001", "ARCH-049-ADMIN-002"]
+enables: ["ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-BACKGROUND-004", "ARCH-049-API-001", "ARCH-049-ADMIN-002"]
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # Move ShopBrand to commerce and add WhatsApp media JSONB
@@ -111,9 +111,9 @@ None.
 
 ## Enables
 
-- ARCH-049-BACKGROUND-001
 - ARCH-049-BACKGROUND-002
 - ARCH-049-BACKGROUND-003
+- ARCH-049-BACKGROUND-004
 - ARCH-049-API-001
 - ARCH-049-ADMIN-002
 
