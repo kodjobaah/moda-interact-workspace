@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 40
 executor: null
 claimed_at: null
@@ -74,7 +74,7 @@ ARCH-047 permits only immutable, Moda Admin-authored template definitions. Admin
 
 **R5 — Failure.** No matching Follow-up template, stale consent, unavailable offer, revoked Meta registration or closed policy is a typed no-send/error communicated through existing human-command result, never fallback to unauthorised Meta template or free text.
 
-**R6 — Merchant admission contracts remain owned by their service.** The current Shopify server action (`moda-interact/app/services/recoveries/recovery-human-commands.server.ts`) and Woo hosted API admission (`moda-interact-api/src/merchant/conversations/messages/admission.service.ts`) still permit the legacy `purpose: "checkout-recovery"`. Their merchant-facing eligibility, selectable Follow-up catalogue and request validation must be corrected by their owning Shopify/API/Woo tasks. BG007 receives a durable authenticated merchant command; it MUST independently re-resolve the chosen name/language or variant identity against the current shop/WABA, appropriate `FOLLOW_UP_*` purpose, verified offer decision and approved Moda-authored assignment before any provider admission. Never trust caller-supplied `templateParameters` as verified discounts, brand text, checkout URL or image-header values. If the merchant's requested variant conflicts with the BG001-prepared eligible variant, return a typed `template_not_allowed`/`follow_up_unavailable` and cancel/release the unconsumed sequence-two claim safely. BG007 is not authorised to modify Shopify, API or Woo plugin code.
+**R6 — Preserve merchant admission ownership and validate Background admission.** Shopify/API owner work for the authenticated merchant catalogue and command admission is recorded Complete in `ARCH-047-SHOPIFY-001` and `ARCH-047-API-001`. BG007 receives a durable authenticated merchant command and MUST independently re-resolve the chosen name/language or variant identity against the current shop/WABA, appropriate `FOLLOW_UP_*` purpose, verified offer decision and approved Moda-authored assignment before provider admission. Never trust caller-supplied `templateParameters` as verified discounts, brand text, checkout URL or image-header values. If the merchant request conflicts with the BG001-prepared eligible variant, return typed `template_not_allowed`/`follow_up_unavailable` and safely cancel/release the unconsumed sequence-two claim. The WooCommerce picker/proxy and its merchant-facing fixture verification are owned by `ARCH-047-WOOCOMMERCE-001` and are not BG007 acceptance criteria or dependencies; integrated Woo behavior is verified by `ARCH-047-SYSTEM-TEST-001`. BG007 does not modify Shopify, API or WooCommerce code.
 
 **R7 — Remove obsolete human-path Meta verification.** Replace the existing `recovery-conversation/human-command-dispatcher.service.ts` live Meta `templateCategories.verify()` preflight and legacy body-parameters-only assembly with BG001's complete provider-ready components and the BG006 late database status fence. After both automated and human production callers have migrated, remove `whatsapp-template-selector.service.ts` and `whatsapp-template-category.service.ts` and related service registrations **only if** an import/reference audit proves no other live consumers remain. Do not remove the independent consent, authoritative STOP, moderation, final-send admission or credit safeguards. Replace old category-specific tests with fail-closed registration/late-admission tests.
 
@@ -260,23 +260,32 @@ Accepted
 
 ### Review Notes
 
-**26 October 2026 — architectural documentation handoff only:** The parent ARCH-047/BG001 AST and Shared-package contradiction has been resolved in the architect's documentation reconciliation. BG007 must consume BG001's trusted prepared-template output and BG006's late send fence; it must not compile the Admin AST or depend on a Shared AST package. This is **not** an architectural acceptance of BG007 implementation.
+**26 October 2026 — architectural documentation handoff only:** The parent ARCH-047/BG001 AST and Shared-package contradiction was resolved in the architect's documentation reconciliation. BG007 consumes BG001's trusted prepared-template output and BG006's late send fence; it does not compile the Admin AST or depend on a Shared AST package. This was not an implementation acceptance.
+
+**27 October 2026 — implementation review after scope amendment:** Accepted for BG007 Attempt 3 against the amended task boundary. The implementation independently resolves the durable command against current recovery/template assignment state, rejects caller-supplied parameter overrides, and passes prepared provider components through the existing BG006 final admission fence. Completed Shopify/API owner records support the merchant-admission contract. WooCommerce picker/proxy fixture evidence is not required for this Background task and remains gated by `ARCH-047-WOOCOMMERCE-001` and terminal `ARCH-047-SYSTEM-TEST-001`.
 
 ### Reviewed Files
 
-None yet.
+- `moda-interact-background/src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `moda-interact-background/src/services/recovery-conversation/merchant-follow-up-template.service.ts`
+- `moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts`
+- Focused BG007 unit and PostgreSQL/Redis integration tests listed in the Completion Report.
+- `docs/decisions/shopify/ARCH-047/SHOPIFY-001-use-moda-authored-follow-up-templates.md`
+- `docs/decisions/api/ARCH-047/API-001-expose-and-admit-woo-follow-up-templates.md`
+- `docs/decisions/woocommerce/ARCH-047/WOOCOMMERCE-001-display-authorised-recovery-follow-up-choices.md`
+- `docs/decisions/system-test/ARCH-047/SYSTEM-TEST-001-certify-whatsapp-template-catalogue-and-assignment.md`
 
 ### Validation Reviewed
 
-None yet.
+Attempt 2 evidence, unchanged in Attempt 3: focused PostgreSQL/Redis integration tests passed 10/10; focused unit tests passed 31/31; `npm run build` and `npm run lint` passed; implementation task branch is clean and published at `a67c8f8e6c3527a416d0100253b4cd78dc408545`, equal to `origin/task/ARCH-047-BACKGROUND-007`; `git diff --check origin/main...HEAD` passed; recursive Database submodule is clean at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`. Attempt 3 made no implementation changes and did not rerun tests.
 
 ### Architecture Conformance
 
-To be assessed against the reconciled ARCH-047 parent architecture and current repository code.
+Conforms to the amended BG007 scope and ARCH-047 ownership boundaries. BG007 preserves its own server-side identity, purpose, offer, assignment and parameter validation; Shopify/API admission remains with its completed owner tasks; WooCommerce UI/picker integration remains separately owned and is not a BG007 prerequisite. No dependency on `ARCH-047-WOOCOMMERCE-001` was added.
 
 ### Follow-up
 
-Historical follow-up: verify the ARCH-047 parent and accepted BG001 reconciliation before execution. That gate is documented as satisfied in the active claim. The implementation has since been submitted in the report, but Attempt 1 is returned for the concrete corrections above. If actual moderation or final-send contracts cannot safely cover prepared runtime parameters, return the specific issue to `moda_architect` rather than weakening the fence.
+Architect acceptance is recorded. Because `completion_mode: developer`, leave task `status: review` with claim fields clear. The developer may now perform the explicit completion action. Keep `ARCH-047-WOOCOMMERCE-001` and `ARCH-047-SYSTEM-TEST-001` on their independent execution path.
 
 ## Execution Ownership Amendment
 
@@ -329,3 +338,15 @@ Historical follow-up: verify the ARCH-047 parent and accepted BG001 reconciliati
 - Review basis: BG007's implementation and recorded validations are unchanged from Attempt 2; this review does not claim newly rerun tests. The task report continues to record the 10/10 PostgreSQL/Redis integration tests, 31/31 focused unit tests, build, lint and diff-check from Attempt 2. The unresolved owner boundary prevents a passing review under the current record.
 - Parent task synchronization: canonical parent branch was clean and synchronized to current `origin/main` at `d09811cebcdc7498203a9156932be7a34eb4a84b`; the published BG007 task branch `f285878fe2e0487acd71920fc0d272f2a968dfd9` is an ancestor. The task record is committed/pushed on the same mirrored task branch; no merge to `main` is performed by this review.
 - Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 3`. Do not increment the attempt here. A later `/moda_developer_create ARCH-047-BACKGROUND-007` claim increments to Attempt 4.
+
+
+## Architect Scope Amendment — 27 October 2026
+
+The prior Changes Requested record is preserved as history. This amendment resolves its open merchant-admission boundary without changing implementation ownership or dependencies:
+
+- BG007 continues to validate its own server-side admission: current shop/WABA, selected Follow-up purpose and variant, verified offer and Moda-authored assignment; it rejects caller-supplied template parameters and safely releases an unconsumed sequence-two claim on refusal.
+- The completed owner evidence remains `ARCH-047-SHOPIFY-001` and `ARCH-047-API-001`; their task records are Complete.
+- WooCommerce picker/proxy implementation and merchant-facing fixtures remain `ARCH-047-WOOCOMMERCE-001` scope. This work is downstream integration, not a BG007 acceptance criterion or dependency. `ARCH-047-SYSTEM-TEST-001` remains the terminal cross-platform verification gate and already depends on both BG007 and WOOCOMMERCE-001.
+- No `depends_on` entry was added. Historical self-review statements describing Woo evidence as a BG007 blocker are superseded by this dated amendment and remain intact for audit.
+
+The Attempt 3 implementation is accepted against this clarified boundary. Since `completion_mode: developer`, the task is set to `review`, with `executor` and `claimed_at` clear and Attempt 3 preserved. Explicit developer completion remains outstanding.
