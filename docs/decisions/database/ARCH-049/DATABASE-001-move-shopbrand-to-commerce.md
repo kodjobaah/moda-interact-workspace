@@ -7,24 +7,24 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: '2026-10-27T10:08:36Z'
+attempt: 1
 depends_on: []
 enables: ["ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-BACKGROUND-004", "ARCH-049-API-001", "ARCH-049-ADMIN-002"]
 created: 2026-10-25
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Move ShopBrand to commerce and add WhatsApp media JSONB
 
 ## Architecture
 
-`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. **Portable task definition, not materialised in a developer Git worktree.**
+`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. This task was supplied as a portable definition and is now materialised in the canonical developer parent task worktree.
 
 ## Objective
 
@@ -145,7 +145,7 @@ Coordinated rollout must update `moda-interact-admin/src/lib/admin/merchant-supp
 
 ### Status
 
-Not Started — defined but not materialised.
+In Progress — developer Attempt 1 claimed 2026-10-27 after materializing the portable definition in the canonical task worktrees.
 
 ### Files Changed
 
@@ -174,6 +174,22 @@ None; live environment availability is a validation prerequisite and must be rep
 ### Architectural Concerns
 
 None reported.
+
+## Developer Execution Ownership Amendment
+
+- Date: 2026-10-27.
+- The developer explicitly invoked `/moda_developer_create ARCH-049-DATABASE-001` for this ready agent-owned task. Execution and completion ownership are transferred to the developer (`execution_mode: developer`, `completion_mode: developer`) for this task lifecycle.
+- Preserved logical ownership: `assigned_agent: moda_database`, `repository: moda-interact-database`, coordinator, task scope, dependencies, acceptance criteria and validation requirements are unchanged.
+- Materialisation: this portable task definition was present in the shared workspace but had no canonical task worktree or task branch. It was materialised in `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-DATABASE-001` from parent `origin/main`; the matching Database implementation worktree was created from Database `origin/main`. The shared checkout was not edited.
+
+## Developer Execution Claim (Attempt 1)
+
+- Claim: `status: in_progress`, `executor: developer`, `claimed_at: 2026-10-27T10:08:36Z`, `attempt: 1`.
+- Canonical launcher: `python3 scripts/start-agent-task.py ARCH-049-DATABASE-001 --route-only --json` from `/Users/kwadwoadomafriyie/project/moda-interact-workspace` resolved repository `moda-interact-database`, parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-DATABASE-001`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-DATABASE-001`, and branch `task/ARCH-049-DATABASE-001`.
+- Dependencies: none (`depends_on: []`).
+- Parent preparation: fetched `origin --prune`; no existing local/remote task branch or stale worktree registration existed. Created the canonical parent worktree from parent `origin/main` at `d09811cebcdc7498203a9156932be7a34eb4a84b`; the worktree is clean before this claim edit.
+- Implementation preparation: fetched `origin --prune`; no existing local/remote task branch or stale worktree registration existed. Created the canonical implementation worktree from Database `origin/main` at `8f3d58542372fb9a71d97e5b340c2fc33a7ac8cf`; the worktree is clean. No implementation changes were made during preparation.
+- No changes were made to the shared/default workspace checkout or unrelated untracked files.
 
 ## Architect Review
 
