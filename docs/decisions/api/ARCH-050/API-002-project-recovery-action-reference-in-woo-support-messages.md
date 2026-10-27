@@ -169,7 +169,7 @@ Recursive implementation submodules: `git submodule sync --recursive` passed; `g
 
 Implementation repository: `moda-interact-api`, commit `651c04e4a3cfc6b10ec7e81daf1274d54bcabe8`, pushed to `origin/task/ARCH-050-API-002`.
 
-Parent workspace claim commit: `6265a655f812b5035f90550fa0be22490c3ce824`, pushed. Parent review submission will be committed and pushed on the same branch. The implementation submodule gitlink was not staged; neither task branch was merged into `main`.
+Parent workspace claim commit: `6265a655f812b5035f90550fa0be22490c3ce824`, pushed. Parent review submission commit: `233e034649dfc942ce3bf0a5c3268b99b1c4420c`, pushed to `origin/task/ARCH-050-API-002`. The implementation submodule gitlink was not staged; neither task branch was merged into `main`.
 
 ## Architect Review
 
