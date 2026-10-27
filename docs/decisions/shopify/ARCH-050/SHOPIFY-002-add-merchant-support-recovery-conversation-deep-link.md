@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-10-27T14:24:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-050-DATABASE-001
@@ -67,11 +67,11 @@ Do not modify unrelated billing notices, create new recovery query API or redire
 
 ## Work Items
 
-- [ ] Extend Support SQL/history typing and strict recovery target projection using `r.shopId=t.shopId`.
-- [ ] Add recovery action resolver with `systemCode`, string version `"1"`, target validation, route guard.
-- [ ] Render localized action in `MessageCard` and stable `#recovery-conversation` anchor on transcript section.
-- [ ] Add negative security/availability tests, action routing tests, and 20-locale coverage.
-- [ ] Cover actual Support SQL failure separately from expected missing/unauthorised targets: fail through the existing server boundary with Shared structured failure visibility, never silently fall back to an empty/valid response.
+- [x] Extend Support SQL/history typing and strict recovery target projection using `r.shopId=t.shopId`.
+- [x] Add recovery action resolver with `systemCode`, string version `"1"`, target validation, route guard.
+- [x] Render localized action in `MessageCard` and stable `#recovery-conversation` anchor on transcript section.
+- [x] Add negative security/availability tests, action routing tests, and 20-locale coverage.
+- [x] Cover actual Support SQL failure separately from expected missing/unauthorised targets: fail through the existing server boundary with Shared structured failure visibility, never silently fall back to an empty/valid response.
 
 ## Interfaces / Contracts
 
@@ -101,15 +101,18 @@ export function getRecoverySupportMessageAction(input: {
 
 ## Acceptance Criteria
 
-- [ ] Correct merchant sees a localized View conversation action only on matching available ARCH-050 SYSTEM notice.
-- [ ] Clicking navigates within Shopify to the correct existing Recovery Detail and focuses/scrolls to transcript; page still loads historical conversation.
-- [ ] Missing, deleted, mismatched-tenant, malformed ID, wrong systemVersion, non-SYSTEM code or inaccessible recovery state causes no action.
-- [ ] Direct URL to another merchant recovery remains forbidden by existing loader; pagination/unread and billing action links regressions are absent.
+- [x] Correct merchant sees a localized View conversation action only on matching available ARCH-050 SYSTEM notice.
+- [x] Clicking navigates within Shopify to the correct existing Recovery Detail and focuses/scrolls to transcript; page still loads historical conversation.
+- [x] Missing, deleted, mismatched-tenant, malformed ID, wrong systemVersion, non-SYSTEM code or inaccessible recovery state causes no action.
+- [x] Direct URL to another merchant recovery remains forbidden by existing loader; pagination/unread and billing action links regressions are absent.
 
 ## Validation
 
-- [ ] Focused tests: `tests/unit/merchant-support-service.test.ts`, `tests/unit/merchant-support-route.test.ts`, new action-resolver and recovery anchor tests.
-- [ ] Run declared Shopify typecheck/lint/build commands and locale completeness tests; `git diff --check`.
+- [x] Focused tests passed across seven files (98 tests): Support service/query projection, Support route, Shared observability, action resolver/access, transcript anchor, all 20 locale labels, and existing recovery-detail route authorization behavior.
+- [x] `npm run typecheck` passed.
+- [x] `npm run lint` passed.
+- [x] `npm run build` passed. The build emitted non-fatal bundler warnings about Zod annotation comments and chunk size.
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -123,39 +126,72 @@ Treat the recovery FK as a **reference to validate**, never as an authorization 
 
 ### Status
 
-Not Started.
+Ready for Architect Review. Attempt 1 implements the localized Support action and transcript deep link while preserving existing billing action behavior and recovery authorization.
 
 ### Files Changed
 
-None (definition only).
+- `app/services/merchant-support/merchant-support.service.ts`
+- `app/services/merchant-support/merchant-support-observability.server.ts`
+- `app/services/merchant-support/system-message-actions.ts`
+- `app/routes/app/merchant-support/route.jsx`
+- `app/routes/app/recovery-detail/recovery-conversation-thread.tsx`
+- `app/i18n/locales/*.json` (20 supported merchant locales)
+- `tests/unit/merchant-support-service.test.ts`
+- `tests/unit/merchant-support-route.test.ts`
+- `tests/unit/merchant-support-observability.test.ts`
+- `tests/unit/merchant-system-message-actions.test.ts`
+- `tests/unit/recovery-conversation-anchor.test.ts`
+- `tests/unit/merchant-support-recovery-i18n.test.ts`
 
 ### Work Completed
 
-None.
+Extended the Support history result with a nullable recovery target. The query uses a left join on both recovery ID and thread shop ID and projects the ID only for an AVAILABLE SYSTEM notice with code `RECOVERY_INITIAL_OUTREACH_SENT`, version `1`, and a matching recovery row. Count, unread, paging, translation and mark-read behavior remain unchanged.
+
+Added a separate recovery action resolver. It requires the expected system code/version, an ID of 1–191 characters without path separators/control characters, and `RECOVERY_HISTORY` access. The route renders it only for AVAILABLE SYSTEM messages and uses an internal React Router `Link` to the existing recovery route. The recovery loader still calls `requireRecoveryHistory` and performs its existing tenant-scoped read.
+
+Added the stable `recovery-conversation` section anchor and initial-fragment focus/scroll behavior for the existing transcript heading. Added the localized action label in all 20 merchant locales. Existing billing action resolution is unchanged.
+
+Added a server-only Shared logger adapter. Support SQL failures log a bounded `merchant.support.recovery_action.read.failed` event with validated shop ID, operation, error category and serialized error, then rethrow to the existing route error handling. Unexpected compose failures and best-effort translation dispatch failures also log through Shared; invalid authored bodies are rejected before persistence/logging.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+- Passed: seven focused test files, 98 tests total. Coverage includes query join/projection shape, propagated read failures and Shared logs, guarded action links, billing mapping, anchor focus, locale completeness, and existing recovery-detail access checks.
+- Passed: `npm run typecheck`.
+- Passed: `npm run lint`.
+- Passed: `npm run build`; only non-fatal bundler warnings were emitted.
+- Passed: `git diff --check`.
 
 ### Deviations
 
-None.
+Added structured Shared logging for the pre-existing Support compose and best-effort translation-dispatch catches to satisfy the developer's instruction not to silently swallow exceptions. Authored-body validation remains an expected 400 path and is not logged as an internal failure.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+The Support projection is a navigation hint only. The existing recovery detail loader remains the authorization and tenant-ownership boundary.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+None known within this task's validation contract.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+None identified. The action does not introduce a new query endpoint, permission, stored URL or authorization token.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Physical worktree isolation:
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-SHOPIFY-002`, `task/ARCH-050-SHOPIFY-002`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-SHOPIFY-002`, `task/ARCH-050-SHOPIFY-002`.
+- Shared workspace and shared implementation checkouts were not switched or used for task edits; no other task worktree was reused.
+
+Start-of-attempt synchronization:
+- Parent remote task branch fast-forwarded: not needed; parent `origin/main` was already incorporated.
+- Implementation remote task branch fast-forwarded: not needed; implementation `origin/main` was already incorporated.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` was initialized at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+- Launcher claim: Attempt 1, executor `codex`, claimed at `2026-10-27T14:24:29Z`, parent claim commit `83ef12853d80e20ec2e2be68f102c1522e727af5` pushed.
+
+No task branch is merged to `main`.
 
 ## Architect Review
 
