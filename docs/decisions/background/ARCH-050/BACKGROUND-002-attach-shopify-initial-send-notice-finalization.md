@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -109,7 +109,7 @@ Use an explicit dependency injection rather than embedding a raw SQL Support ins
 
 ### Status
 
-Ready for `moda_architect` review. Attempt 1 implementation and required validation are complete.
+Complete — Attempt 1 was accepted by `moda_architect` on 2026-10-27. The sequence-1 integration delegates to BACKGROUND-001's atomic finalizer, retains Shopify billing/status/follow-up behavior, and preserves the existing sequence-2 path.
 
 ### Files Changed
 
@@ -208,3 +208,40 @@ None.
 ## Architect Dependency Frontier Reconciliation — 27 October 2026
 
 `ARCH-050-BACKGROUND-001` was accepted and completed at Attempt 3. This task's sole declared dependency is now complete, so its status advances from `pending` to `ready`. The task remains unclaimed at Attempt 0 (`executor: null`, `claimed_at: null`); no implementation worktree or attempt was started.
+
+## Architect Review — Attempt 1 — Accepted — 27 October 2026
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+The implementation replaces only the sequence-1 transition with the accepted BACKGROUND-001 finalizer, providing the persisted `shopId`, recovery/attempt/message identities and policy-derived follow-up due time. Billing remains before the shared finalizer; recovery status and follow-up scheduling remain after success, including replay. Sequence 2 retains its established billing and attempt transition path. The new Shopify boundary logs the specified stage-scoped failure event and rethrows the exact error, with a sink failure isolated from the original exception.
+
+### Reviewed Files
+
+- `moda-interact-background/src/services/checkout-recovery/recovery-outreach-finalization.service.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+- Attempt 1 Completion Report and canonical worktree/publication evidence.
+
+### Validation Reviewed
+
+- Focused finalizer/initiation/follow-up/wiring tests: 77 tests passed across four files.
+- Existing follow-up regression tests: 6 passed; recovery billing tests: 7 passed.
+- BACKGROUND-001 disposable PostgreSQL integration suite: 8 tests passed.
+- `npm run build`, targeted ESLint and `git diff --check` passed.
+- Implementation branch `task/ARCH-050-BACKGROUND-002` is clean and published at `3b5dc7d06205a69e4a814a3005048731c3368b1b`; the recorded Database submodule is `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+
+### Architecture Conformance
+
+Conforms to the ARCH-050 ownership and ordering boundaries. Changes are limited to the Shopify-specific Background finalizer and its focused tests; no Woo, human-send, billing-contract, provider-admission or database behavior was changed.
+
+### Dependency Frontier
+
+This task uses `completion_mode: automatic`; architect acceptance transitions Attempt 1 to Complete. `ARCH-050-SYSTEM-TEST-001` remains pending because its other declared dependencies `ARCH-050-SHOPIFY-001` and `ARCH-050-SHOPIFY-002` are ready but not complete. No downstream status promotion is applicable. The ARCH-050 architecture defers domain `_index.md` changes until the architecture session closes.
+
+### Lifecycle
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. Neither task branch was merged to `main`.
