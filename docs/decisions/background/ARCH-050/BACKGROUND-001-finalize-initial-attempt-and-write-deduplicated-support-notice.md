@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 20
 executor: codex
 claimed_at: 2026-10-27T10:10:05Z
@@ -159,39 +159,60 @@ Canonical task branch and worktree evidence is required at execution. No `_index
 
 ### Status
 
-Not Started.
+Blocked — the synchronized Background database submodule does not contain the completed ARCH-050 database contract required by this task.
 
 ### Files Changed
 
-None (definition only).
+No implementation files changed. Only this task report was updated.
 
 ### Work Completed
 
-None.
+Preparation succeeded and claimed attempt 1. Source inspection confirmed that `database/prisma/schema.prisma` at the launcher-pinned submodule commit `7cd7e955c8ede2ce76631ee40c655daba91bfdd6` lacks `ShopSettings.notifyOnInitialRecoveryOutreach`, `MerchantSupportMessage.checkoutRecoveryId`, and the inverse Support relation. The generated Prisma client likewise exposes no `notifyOnInitialRecoveryOutreach` field. The task cannot satisfy its typed Prisma transaction and `createMany` contract against this checkout.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+Required unit, PostgreSQL integration, ESLint and build validation were not run because the required database contract is absent from the synchronized Prisma schema/client. `rg` inspection confirmed the missing fields in `database/prisma/schema.prisma` and generated Prisma client declarations.
 
 ### Deviations
 
-None.
+Implementation stopped before source edits; no raw-SQL or type-cast workaround was introduced.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+The launcher dependency gate passed because `ARCH-050-DATABASE-001` is Complete, but the current Background task branch still pins an older database submodule commit.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+Update the Background repository's `database` submodule to the accepted ARCH-050 database schema/client commit and regenerate/verify the Prisma client, then resume this task on the same task branch. The current pinned commit is `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+The Background checkout does not contain the completed database contract even though its dependency gate passed. `moda_architect` must coordinate updating the consumed database submodule/client before this service can implement the required typed preference read and Support relation write.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-BACKGROUND-001`
+  parent branch: `task/ARCH-050-BACKGROUND-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-BACKGROUND-001`
+  implementation branch: `task/ARCH-050-BACKGROUND-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes (final sync: already-current)
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: yes
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recorded submodule commit: `database` at `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`
+
+Task claim commit: `118d11a90ae9d33d89fba4699620c953e27359c6` (pushed by launcher).
 
 ## Architect Review
 
