@@ -21,7 +21,7 @@ enables:
 - ARCH-048-BACKGROUND-003
 - ARCH-048-SYSTEM-TEST-001
 created: '2026-10-23'
-updated: '2026-10-26'
+updated: '2026-10-27'
 ---
 
 # ARCH-048-WOOCOMMERCE-002 — Publish complete Woo checkout updates including cleared baskets
@@ -94,6 +94,8 @@ Make every meaningful checkout basket-clear/refill transition observable through
 
 - [x] Focused PHPUnit/plugin Classic/Blocks/cart mutation and Action Scheduler retry tests.
 - [x] API event-parser fixture validation for empty vs absent items, plugin declared lint/build scripts and `git diff --check`.
+- [x] Exercise the Classic and Store API clear/refill assertions through the full local WordPress HTTP integration runner; record all five ARCH-048 PASS markers and cleanup.
+- [ ] Independently confirm that the WordPress environment used for the recorded test run was disposable before finalizing the acceptance of this live validation.
 
 ## Stop Condition
 
@@ -110,7 +112,7 @@ After only this task's work, criteria and required validation, complete the Comp
 
 ### Status
 
-Changes Requested — Developer Self-Review of Attempt 1. Dependencies ARCH-035-WOOCOMMERCE-007 and ARCH-035-API-008 are confirmed complete. Canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-WOOCOMMERCE-002` was synchronized from `origin/main` at `2624d6445e6d642568d521d18f3e277ea629950e`; canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-WOOCOMMERCE-002` was synchronized from `origin/main` at `fe0c9de7446082e276b589fc58756ea1ac9fb03a`, with recursive submodules verified. Attempt 1 implementation is published at `e021a17292c8e1f193cddaf443ebeaadb8e10174` on `origin/task/ARCH-048-WOOCOMMERCE-002`. The task is returned to `ready`; the next developer-create invocation claims Attempt 2.
+In Progress — Developer Attempt 2, claimed at `2026-10-27T10:35:37Z`; the developer reports parent claim commit `b0752ac3` pushed on `task/ARCH-048-WOOCOMMERCE-002`. Both declared dependencies are Complete. Launcher-resolved parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-WOOCOMMERCE-002`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-WOOCOMMERCE-002`. The implementation HEAD `e075813fa94871b62bbbae07c2106957d34b43ff` was reported clean and equal to `origin/task/ARCH-048-WOOCOMMERCE-002` at the claim; no implementation files changed during the claim step. Parent startup synchronization and recursive submodule checks are preserved in the **Developer Attempt 2 Claim and Preparation** subsection below. The Attempt 1 Changes Requested record remains in its historical self-review section. The live integration scenario results are PASS, but final Attempt 2 review is awaiting independent confirmation that the exercised wp-env was disposable.
 
 ### Files Changed
 
@@ -118,10 +120,19 @@ Changes Requested — Developer Self-Review of Attempt 1. Dependencies ARCH-035-
 - `includes/Checkout/CheckoutCapture.php`
 - `includes/Checkout/CheckoutSnapshot.php`
 - `tests/CheckoutCaptureTest.php`
+- `tests/integration/checkout-hook-audit.md`
+- `tests/integration/action-scheduler-sql.mjs`
+- `tests/integration/action-scheduler-sql.test.mjs`
+- `tests/integration/run-wordpress.mjs`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
+- `tests/integration/scenarios/checkout-clear-refill-wordpress.mjs`
+- `tests/integration/scenarios/checkout-clear-refill-wordpress.test.mjs`
 
 ### Work Completed
 
 Published checkout capture changes to represent an observed keyed checkout becoming empty as `items: []`, preserve its checkout key on refill, ignore repeated no-op empty observations, register Classic and Store API hooks, and format `occurredAt` with millisecond UTC precision. A follow-up cleanup commit removed an unrelated `typescript` artifact from the implementation task branch.
+
+Attempt 2 adds real HTTP-driven Classic/Store API clear/refill coverage for guest and customer checkouts, a supported Woo hook signature/ordering audit, and stable all-status Action Scheduler publication-history assertions that do not mistake retries for new events. Pending-only queries remain used for explicit retry tests. The latest modular implementation is reported committed and pushed at `e075813f`, with no new implementation changes during the developer claim.
 
 ### Validation Results
 
@@ -135,10 +146,17 @@ Start-of-attempt route, branch, worktree and recursive submodule synchronization
 - **UNVERIFIED** — `npm run test:integration:wordpress` was started, but the captured terminal output did not provide a reliable final result; do not treat it as passing.
 - **NOT RUN** — `npm run test:integration:wordpress -- --checkout-only` requires explicit confirmation that the existing wp-env site is disposable. No such confirmation was available, so the potentially destructive checkout integration mode was not enabled.
 
+Attempt 2 evidence supplements, and does not replace, the Attempt 1 baseline:
+
+- **PASS** — `npm run test:js:node` focused Node/integration-helper assertions reported 38/38 passed; checkout-focused subset 19/19 passed; JavaScript syntax and patch/diff checks passed.
+- **PASS (observed test scenarios)** — `set -o pipefail; npm run test:integration:wordpress 2>&1 | tee arch048-woocommerce-002-attempt2-final-validation.log` exercised the real local WordPress HTTP server, including never-active empty suppression and guest/customer Classic/Store API clear-once, repeat-no-op and refill-with-same-key scenarios. All five `ARCH-048 ... PASS` markers appear in the uploaded `arch048-woocommerce-002-attempt2-final-validation(1).log` together with ARCH-035 regressions, WOO-003/007/008/014 checks, and successful fixture shutdown (`✔ Stopped WordPress.`). No assertion or uncaught exception is reported.
+- **QUALIFICATION** — The terminal transcript does not include an explicitly printed numeric process exit status; do not assert that `echo $?` was captured. The test command completed and returned to the shell prompt without a reported failure.
+- **OUTSTANDING SAFETY CONFIRMATION** — Source and logs verify a Docker-backed local `wp-env` at `http://localhost:8888`, with the project-specific WordPress fixture and cleanup. They do not establish that the site's existing data could safely be discarded. No destructive rerun is authorised or required solely to verify this.
+
 ### Deviations
 
-- The implementation's PHPUnit tests assert hook registration and invoke the capture methods directly; they do not prove that actual Woo Classic and Store API requests trigger the clear/refill hooks.
-- No real WordPress clear/refill integration evidence was captured during this review cycle.
+- During Attempt 1, PHPUnit coverage alone did not establish actual WooCommerce HTTP hook invocation. Attempt 2 addresses that evidence gap using real Classic and Store API requests; see the Attempt 2 validation markers above.
+- The full wp-env run is evidenced by the developer's terminal output, not a reproduction in this review container. Environmental disposability confirmation remains outstanding.
 
 ### Assumptions
 
@@ -147,6 +165,8 @@ The latest uploaded workspace ZIP is a source snapshot, not necessarily the deve
 ### Unresolved Issues
 
 The API-008 parser accepts explicit empty `items` and preserves absent items as unknown; its focused contract suite passed. No new cross-repository contract gap was identified.
+
+Before developer self-review can pass, the developer must confirm that the `wp-env` used for the live WordPress run was disposable and that no valuable existing data or shared installation was at risk. Record the confirmation in this task; do not rerun destructive tests solely to prove disposability.
 
 ### Architectural Concerns
 
@@ -213,12 +233,12 @@ Attempt remains 1. No Attempt 2 claim is created by this review. The next `/moda
 ## Attempt 2 Validation Evidence — Developer Reconciliation Handoff (2026-10-27)
 
 This section is a **supplement** to the historical Attempt 1 Changes Requested
-record above; it does not overwrite that review. The newest uploaded task
-snapshot still has `status: ready`, `attempt: 1`, and no active executor. This
-portable evidence patch **does not claim Attempt 2** or set a review/completion
-state. The developer must reconcile the actual canonical task branch using
-`/moda_developer_create ARCH-048-WOOCOMMERCE-002` (if not already claimed)
-followed by `/moda_developer_update ARCH-048-WOOCOMMERCE-002`.
+record above; it does not overwrite that review. The original portable evidence patch was prepared before Attempt 2 was claimed
+and did not itself change execution state. The developer has since claimed
+Attempt 2 at `2026-10-27T10:35:37Z` and published claim commit `b0752ac3`.
+The current state is `in_progress`, `attempt: 2`, `executor: developer`;
+the developer self-review transition remains pending the environment-safety gate.
+Reconcile using `/moda_developer_update ARCH-048-WOOCOMMERCE-002` after confirmation.
 
 ### Corrective Work Delivered
 
@@ -279,20 +299,22 @@ followed by `/moda_developer_update ARCH-048-WOOCOMMERCE-002`.
 
 ### Review/Publication Checks Still Owned by Developer
 
-- Confirm the local `wp-env` was disposable and that the execution used the
-  launcher-resolved, dedicated implementation worktree.
-- Confirm the latest modular test corrections are committed and published to
-  `origin/task/ARCH-048-WOOCOMMERCE-002`, and record their real commit SHA;
-  no later commit/remote ref is inferred from the uploaded test log.
-- Inspect the canonical parent task frontmatter. If still `ready`, use
-  `/moda_developer_create ARCH-048-WOOCOMMERCE-002` to claim Attempt 2 with its
-  real timestamp, worktree/synchronisation evidence and parent claim commit.
-  Do not fabricate the claim or overwrite a different live attempt state.
-- Use `/moda_developer_update ARCH-048-WOOCOMMERCE-002` to reconcile the actual
-  committed implementation and validation, add the final Attempt 2 Completion
-  Report, perform developer self-review, and transition to `review` if it
-  passes. With `completion_mode: developer`, do not set `complete` without the
-  separate explicit completion decision.
+- **OUTSTANDING** — Confirm the local `wp-env` was disposable at the time of the
+  recorded full WordPress run. The observed `localhost` URL, Docker runtime and
+  fixture cleanup are not independently sufficient to prove disposability.
+- **Developer-reported complete at claim** — The latest modular test corrections
+  were committed and published as implementation HEAD
+  `e075813fa94871b62bbbae07c2106957d34b43ff`, equal to remote task branch.
+  The implementation worktree was clean at that point; independent remote
+  verification remains part of the canonical developer reconciliation.
+- **CLAIMED** — `/moda_developer_create ARCH-048-WOOCOMMERCE-002` completed
+  with Attempt 2 and parent claim commit `b0752ac3` (developer report).
+  Do **not** claim another attempt.
+- **PENDING** — After confirming disposability, invoke
+  `/moda_developer_update ARCH-048-WOOCOMMERCE-002` to perform developer
+  self-review, reconcile the Git evidence and transition to `review` when all
+  requirements are satisfied. With `completion_mode: developer`, do not set
+  `complete` without the separate explicit developer completion decision.
 - Leave `## Architect Review`, domain `_index.md`, parent architecture and
   unrelated tasks unchanged.
 
