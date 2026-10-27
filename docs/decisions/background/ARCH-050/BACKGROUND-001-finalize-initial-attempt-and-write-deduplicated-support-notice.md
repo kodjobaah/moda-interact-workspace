@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -289,3 +289,40 @@ The database fix is available at commit `f16d5fc955b1fa1215177cc89fb6fd326bfa65c
 ### Reopen Transition
 
 `blocked` to `ready`; `executor` and `claimed_at` cleared; `attempt` remains 1. This override does not claim the task.
+
+## Architect Review — Attempt 2 — Changes Requested — 27 October 2026
+
+### Review Status
+
+Changes Requested.
+
+### Review Notes
+
+The implementation is otherwise aligned with the task contract: the finalizer locks and validates persisted attempt/recovery/conversation/outbound-message lineage; the first transition, preference sample and optional deduplicated Support insert share one PostgreSQL transaction; replay does not resample preference; and the report records the focused PostgreSQL, unit, build, lint and diff-check evidence.
+
+Required corrections before acceptance:
+
+1. **Reconcile task completion markers.** All six Work Items, eight Acceptance Criteria and four Validation entries are still unchecked, although the Attempt 2 Completion Report says they are complete and records passing validation. In the next attempt, check only items supported by the implementation and evidence. Explain any item that cannot be substantiated; do not infer completion from the report alone.
+2. **Log unexpected transaction errors safely.** The failed event currently includes `{ error }` only for `FinalizationError`. Include the original unexpected persistence/transaction error as `{ error }` so the Shared logger's bounded Error serializer can process it. Preserve the `PERSISTENCE_FAILURE` category and exact rethrow behavior. Add an assertion that the logger receives the error field for this category and that a throwing logger does not replace the original business exception.
+
+The Background ARCH-050 domain index currently points to a different architecture/task set. This is architect-owned coordination state and will be reconciled during acceptance; it does not authorize implementation changes to the index in this task.
+
+### Reviewed Files
+
+- `src/services/checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts`
+- `src/services/checkout-recovery/recovery-initial-outreach-support-notice.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts`
+- `tests/integration/recovery-initial-outreach-support-notice.integration.test.ts`
+- Attempt 2 Completion Report and canonical worktree/publication evidence.
+
+### Validation Reviewed
+
+The recorded 8/8 focused unit tests, 8/8 disposable PostgreSQL integration tests, build, targeted ESLint and diff check are consistent with the reviewed implementation. No validation was rerun as part of this architect review.
+
+### Architecture Conformance
+
+No architecture or interface change is requested. Implement only the safe error serialization correction and task-record reconciliation; keep the transaction and first-transition design intact.
+
+### Transition
+
+`status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Attempt 3 requires the canonical task launcher claim. Preserve the current implementation branch and worktrees; no merge to `main` is authorized.
