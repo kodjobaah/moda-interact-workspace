@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -127,10 +127,10 @@ Evidence from the 2026-10-27 terminal recordings and Attempt 2 focused runs:
 
 ## Developer Self-Review - Corrected Submission
 ## Historical Developer Submission — Attempt 1
+## Historical Developer Submission — Attempt 1
 
 ### Submission
 
-On 2026-10-27 the developer published corrected WooCommerce commit `01b3be5` after receiving Attempt 1 Changes Requested. The latest upload shows a dedicated implementation worktree and successful live `wp-env` integration; the parent task record is being updated to `review` solely for architect examination. Initial connection and explicit-only sync remain intact. The unused undeployed legacy cleanup was removed; the reviewed logging exception is now a documented approved PHP boundary. This submission does **not** complete the task or promote `ARCH-049-WOOCOMMERCE-002`.
 On 2026-10-27 the developer published corrected WooCommerce commit `01b3be5` after the Attempt 1 Changes Requested decision. This historical submission included a dedicated implementation worktree and successful live `wp-env` integration. Initial connection and explicit-only sync remain intact. The unused undeployed legacy cleanup was removed, and the logging boundary was approved. This submission did **not** complete the task or promote `ARCH-049-WOOCOMMERCE-002`.
 
 ### Evidence and reconciliation note
@@ -170,34 +170,54 @@ scope deviations were introduced during Attempt 2.
 
 Transitioned to `review`; `executor: null`, `claimed_at: null`, `attempt: 2`.
 `completion_mode: developer` remains in force, so explicit developer completion
-is pending. No downstream task was started, and no branch was merged to `main`.
+was pending at self-review. No downstream task was started, and no branch was
+merged to `main`.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — the explicit completion request supplied the architect decision
+“Architect Review Accepted” on 2026-10-27. The current Attempt 2 developer
+self-review and recorded validation were accepted. This task acceptance does
+not certify hosted API processing or replace the terminal SYSTEM-TEST-001 gate.
 
 ### Review Notes
 
-**Scope clarification (2026-10-27):** The ARCH-049 WooCommerce ShopBrand feature has not been deployed, so no merchant site can hold a production legacy ShopBrand reconciliation schedule. Legacy cleanup/migration work and its tests are withdrawn. Remove the unused cleanup entirely; retain a test proving no Action Scheduler store lookups during repeated already-bootstrapped requests, and verify no recurring branding jobs are created. The prior developer self-review requirement to retain legacy cleanup coverage is superseded.
-
-**PHP logging decision (2026-10-27):** Approve `wc_get_logger()` as the existing native PHP sink for this ShopBrand feature, with a redacted `error_log` fallback and no extra generic adapter. The Node-only Shared logger remains mandatory for Node services. Attempt 2 review evidence records bounded diagnostics, failure isolation and the passing focused PHPUnit suite.
-
-These are scope and logging decisions, **not** architect acceptance. Attempt 2 developer self-review passed; architect review remains pending. Explicit developer completion is also pending under `completion_mode: developer`.
+The accepted implementation follows the clarified scope: this undeployed feature
+does not add legacy recurring-action cleanup, and the PHP-native WooCommerce
+logger is used with bounded/redacted diagnostics and failure isolation.
 
 ### Reviewed Files
 
-None.
+The task-owned implementation is published at
+`01b3be50ba8409f97d5dc9074f30a7b66d0020d8` in the canonical
+`moda-interact-woocommerce` task worktree.
 
 ### Validation Reviewed
 
-None.
+Attempt 2 focused PHPUnit: 17 tests / 139 assertions passed. Focused Node
+fixtures: 6/6 passed. The Docker-backed WordPress/Action Scheduler integration
+passed before Attempt 2 and was not rerun because Attempt 2 made no source
+changes.
 
 ### Architecture Conformance
 
-Not reviewed.
+Accepted within WooCommerce-local scope. Hosted API persistence and integrated
+R2/system behavior remain separately owned gates.
 
 ### Follow-up
 
-None.
+Proceed with the independent ARCH-049 dependency-frontier update. Keep
+ARCH-049-SYSTEM-TEST-001 pending until all declared implementation dependencies
+are complete and its normal manual gate is satisfied.
+
+## Developer Completion Decision — Attempt 2
+
+The developer explicitly invoked `/moda_developer_update
+ARCH-049-WOOCOMMERCE-001 complete` on 2026-10-27 after the passing Attempt 2
+self-review and architect acceptance recorded above. All Work Items and
+Acceptance Criteria are checked. The implementation task branch is clean and
+published at `01b3be50ba8409f97d5dc9074f30a7b66d0020d8`; the parent task record
+is being committed and pushed on `task/ARCH-049-WOOCOMMERCE-001`. Attempt number
+remains 2. No task branch was merged into `main`.
