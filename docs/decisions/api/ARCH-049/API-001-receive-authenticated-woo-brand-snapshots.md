@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -125,7 +125,7 @@ Ensure the plugin uses the existing installation credential scheme; no source da
 
 ### Status
 
-Developer Self-Review Passed — Attempt 1. Four incremental delivery patches were applied within this **one** developer workflow attempt; the canonical task `attempt` remains 1. The implementation and upstream merge are committed and pushed. Developer-controlled explicit completion remains pending.
+Complete — Developer Completion Decision recorded for Attempt 1. Four incremental delivery patches were applied within this **one** developer workflow attempt; the canonical task `attempt` remains 1. The implementation and upstream merge are committed and pushed. Developer self-review passed, and the developer explicitly completed the task on 2026-10-27.
 
 ### Files Changed
 
@@ -191,7 +191,7 @@ Git/worktree and publication evidence:
 
 ### Unresolved Issues
 
-- None. Post-merge validation, database gitlink, canonical worktrees and publication were independently verified during developer self-review.
+- The downstream `ARCH-049-SYSTEM-TEST-001` remains pending because other declared dependencies are incomplete: `ARCH-049-BACKGROUND-002` (ready), `ARCH-049-BACKGROUND-003` (pending), `ARCH-049-BACKGROUND-004` (pending), `ARCH-049-WOOCOMMERCE-001` (ready), and `ARCH-049-ADMIN-002` (ready). `ARCH-049-WOOCOMMERCE-002` is not present in the canonical parent task worktree's system-test dependency list, so no status was inferred for it.
 
 ### Architectural Concerns
 
@@ -240,4 +240,9 @@ None.
 - Verified API implementation commit `7a55571` is published at `origin/task/ARCH-049-API-001`; verified parent task commit `2035c42` was published before this review update.
 - Post-merge validation from the canonical API implementation worktree: `npm run test:arch049-shop-brand:unit` passed 9/9; `npm run test:arch049-shop-brand:postgres` passed 3/3 against a disposable PostgreSQL container after applying 65 migrations; `npm run typecheck`, `npm run lint`, and `npm run build` all passed; `git diff --check` passed.
 - The implementation worktree contains only the preserved untracked `typescript` log artifact beyond the committed task diff; it was not staged or modified.
-- Review decision: passed. Because `completion_mode: developer`, the task remains `status: review`; explicit developer completion is pending. No dependent task was started and no branch was merged to `main`.
+- Review decision: passed. The developer then explicitly completed the task; `status: complete`, `executor: null`, `claimed_at: null`, and `attempt: 1`. The system-test dependency frontier was checked and remains pending due to the other incomplete dependencies listed above. No dependent task was started and no branch was merged to `main`.
+
+## Developer Completion Decision
+
+- On 2026-10-27, the developer explicitly invoked `/moda_developer_update ARCH-049-API-001 complete` after the durable passing self-review, complete Work Items and Acceptance Criteria, successful post-merge validation, and publication of both task branches.
+- Completion accepted for Attempt 1; attempt count is unchanged. No merge to `main` was performed.
