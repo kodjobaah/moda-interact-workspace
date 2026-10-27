@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-27T12:55:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-ADMIN-001", "ARCH-047-ADMIN-003", "ARCH-047-ADMIN-005"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
@@ -77,10 +77,10 @@ Component/controller tests for all three roles, READY versus stale generation, m
 
 ## Work Items
 
-- [ ] Add components/hook/server reader without a monolithic editor.
-- [ ] Update Admin merchant-support raw SQL schema references/tests.
-- [ ] Add preview and tenant/readiness tests with seeded ShopBrand fixtures.
-- [ ] Document Admin/Database/ARCH-047 handoff and constraints.
+- [x] Add components/hook/server reader without a monolithic editor.
+- [x] Update Admin merchant-support raw SQL schema references/tests.
+- [x] Add preview and tenant/readiness tests with seeded ShopBrand fixtures.
+- [x] Document Admin/Database/ARCH-047 handoff and constraints.
 
 ## Interfaces / Contracts
 
@@ -99,20 +99,20 @@ Consumes `commerce.ShopBrand`, accepted `shopBrand.publicMedia`, and the existin
 
 ## Acceptance Criteria
 
-- [ ] READY processed brand images, not originals, are selectable and correctly previewed.
-- [ ] Pending/failed/stale/absent assets cannot be selected for IMAGE headers.
-- [ ] Shop-level tenant isolation and accessible modular React boundaries are maintained.
-- [ ] Admin merchant-support SQL continues to work after the ShopBrand schema move.
-- [ ] The existing AST/compilation module supports the frozen `headerMediaRole` projection and IMAGE-header preview with matching content fingerprints, without a competing compiler or credential-bearing browser code.
-- [ ] Meta IMAGE submission remains disabled without a valid server-produced sample handle; no unverified sample is silently substituted.
+- [x] READY processed brand images, not originals, are selectable and correctly previewed.
+- [x] Pending/failed/stale/absent assets cannot be selected for IMAGE headers.
+- [x] Shop-level tenant isolation and accessible modular React boundaries are maintained.
+- [x] Admin merchant-support SQL continues to work after the ShopBrand schema move.
+- [x] The existing AST/compilation module supports the frozen `headerMediaRole` projection and IMAGE-header preview with matching content fingerprints, without a competing compiler or credential-bearing browser code.
+- [x] Meta IMAGE submission remains disabled without a valid server-produced sample handle; no unverified sample is silently substituted.
 
 ## Validation
 
-- [ ] Focused React component/controller tests, accessibility and responsive checks.
-- [ ] Authenticated Admin server-read/tenant and READY matching tests.
-- [ ] Merchant-support raw SQL security/regression tests.
-- [ ] Cross-module Admin compiler tests proving IMAGE role persists into the frozen binding and produces the canonical approved-header projection.
-- [ ] Relevant Admin unit tests, lint/typecheck and `git diff --check`.
+- [x] Focused React component/controller tests, accessibility and responsive checks.
+- [x] Authenticated Admin server-read/tenant and READY matching tests.
+- [x] Merchant-support raw SQL security/regression tests.
+- [x] Cross-module Admin compiler tests proving IMAGE role persists into the frozen binding and produces the canonical approved-header projection.
+- [x] Relevant Admin unit tests, lint/typecheck and `git diff --check`.
 
 ## Stop Condition
 
@@ -128,35 +128,110 @@ Separate existing ShopBrand **text** placeholders from actual image-header asset
 
 ### Status
 
-In Progress - Developer Attempt 1; canonical task worktrees synchronized and claim published.
+**Ready for Review — developer execution Attempt 1 (2026-10-27).** Implementation committed and pushed to the Admin task branch. The implementation's separately labelled Attempt 2 patch corrected a TypeScript test narrowing issue **within this same developer claim**; no new task claim or increment to `attempt` occurred. This submission requests review only; it is **not** architect acceptance or explicit developer completion.
 
 ### Files Changed
 
-None.
+In `moda-interact-admin` (**35 task-owned implementation files**, all verified to match the corrected Attempt 2 patch):
+
+- `package.json`
+- `docs/testing/arch049-admin-002-media-authoring-handoff.md`
+- `scripts/test-arch049-admin-media-postgres.mjs`
+- `src/app/actions/shop-brand-media-preview.ts`
+- `src/components/admin/whatsapp-templates/authoring/template-authoring-workspace.tsx`
+- `src/components/admin/whatsapp-templates/authoring/template-content-editor.tsx`
+- `src/components/admin/whatsapp-templates/authoring/template-read-only-preview.tsx`
+- `src/components/admin/whatsapp-templates/authoring/template-review-summary.tsx`
+- `src/components/admin/whatsapp-templates/media/shop-brand-media-header-section.tsx`
+- `src/components/admin/whatsapp-templates/media/shop-brand-media-preview.tsx`
+- `src/components/admin/whatsapp-templates/media/shop-brand-media-readiness-message.tsx`
+- `src/components/admin/whatsapp-templates/media/shop-brand-media-role-picker.tsx`
+- `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts`
+- `src/lib/admin/merchant-support.ts`
+- `src/lib/admin/whatsapp-templates/authoring/compiler.ts`
+- `src/lib/admin/whatsapp-templates/authoring/preview.ts`
+- `src/lib/admin/whatsapp-templates/authoring/service.ts`
+- `src/lib/admin/whatsapp-templates/authoring/super-admin.ts`
+- `src/lib/admin/whatsapp-templates/authoring/types.ts`
+- `src/lib/admin/whatsapp-templates/authoring/validation.ts`
+- `src/lib/admin/whatsapp-templates/media/reader.ts`
+- `src/lib/admin/whatsapp-templates/media/readiness.ts`
+- `src/lib/admin/whatsapp-templates/meta/contracts.ts`
+- `src/lib/admin/whatsapp-templates/meta/snapshot.ts`
+- `src/lib/admin/whatsapp-templates/publishing/types.ts`
+- `src/lib/admin/whatsapp-templates/publishing/validation.ts`
+- `tests/fixtures/arch049-admin-media-header-projection.json`
+- `tests/integration/arch049-admin-media.postgres.test.ts`
+- `tests/security/admin-merchant-support.test.mjs`
+- `tests/security/arch049-admin-media-sql.test.mjs`
+- `tests/unit/arch049-admin-media-compiler.test.ts`
+- `tests/unit/arch049-admin-media-components.test.tsx`
+- `tests/unit/arch049-admin-media-projection-vectors.test.ts`
+- `tests/unit/arch049-admin-media-reader.test.ts`
+- `tests/unit/arch049-admin-media-readiness.test.ts`
+
+The untracked `typescript` shell recording shown in the developer's Git status is **not** an implementation deliverable and is not part of the implementation commit. The parent task-worktree review update changes **only this task definition**, not the implementation submodule gitlink or shared architecture indexes.
 
 ### Work Completed
 
-None.
+- Added modular `ShopBrandMediaRolePicker`, `ShopBrandMediaPreview`, `ShopBrandMediaReadinessMessage`, `ShopBrandMediaHeaderSection`, and `useShopBrandMediaRole` for the existing ARCH-047 authoring UI; introduced a reference-shop preview without saving the preview shop or merchant source URL in a template.
+- Added authenticated, `SUPER_ADMIN`-restricted Admin media reads for an **exact `shopId`**, from the migrated `commerce.ShopBrand.whatsAppMedia`, using the validated `shopBrand.publicMedia` HTTPS origin. Browser projection contains safe readiness statuses and verified JPEG/PNG derivative metadata only, not raw JSON/source URLs/R2 credentials.
+- Refused READY selection for missing, pending, processing, failed, stale-generation, mismatched fingerprint, tampered shop/role/digest object keys, malformed dimensions/content metadata, or unsafe origins. Only verified immutable processed derivatives are previewed.
+- Extended the **existing** ARCH-047 Meta authoring AST/compiler/preview/translation and immutable registration snapshot to support a semantic `shopBrandMediaRole` (`LOGO`, `SQUARE_LOGO`, `COVER_IMAGE`), an IMAGE `HEADER`, and schema-versioned frozen `headerMediaRole` bindings/content hashes; retained text-header semantics and create-new-template immutability.
+- Confirmed the Meta sample IMAGE upload-handle requirement remains **fail-closed** with `IMAGE_SAMPLE_HANDLE_REQUIRED`. No provider handle, raw merchant URL, R2 upload, client-side Meta credentials, or new compiler was invented.
+- Updated the three merchant-support SQL ShopBrand joins from `shopify."ShopBrand"` to `commerce."ShopBrand"`; added focused SQL regression/security coverage.
+- Added server-reader, readiness, React component/accessible markup, compiler, immutable projection-vector, and disposable PostgreSQL tests, plus a handoff document addressing the Database/Admin rollout, Background-004 binding contract, and outstanding provider sample-handle acquisition boundary.
 
 ### Validation Results
 
-Not run.
+Evidence: developer terminal recordings `typescript(20261027-131801)` (after initial database-submodule repair) and `typescript(20261027-133829)` (after correcting the compiler-vector test), plus the uploaded combined task-worktree archive `moda-interact-workspace-ARCH-049-ADMIN-002.zip`.
+
+| Check / command | Result / evidence |
+| --- | --- |
+| `npm run prisma:generate` / `npm run prisma:validate` | **PASS** after the Database submodule was initialised; Prisma v6.19.3 client generated and schema valid. Earlier missing-submodule failures are superseded by this passing run. |
+| `npm run test:arch049-admin-media:unit` | **PASS**, 18 tests (readiness/tenant/role/component/compiler/frozen projection) plus 1 merchant-support SQL security test, **19/19**. Repeated successfully after the TypeScript correction. |
+| `npm run test:arch049-admin-media:postgres` | **PASS**, disposable PostgreSQL migration/schema integration, two shop-scoped media rows, cross-shop key rejection, and `commerce."ShopBrand"` query. Runner reports `PASS ARCH-049 ADMIN-002 disposable PostgreSQL`. |
+| `npm run test:arch047-admin-authoring:unit` | **PASS**, 28/28 existing authoring regressions. |
+| `npm run test:arch047-admin-meta:unit` | **PASS**, 12 Meta unit tests plus 1 UI test, **13/13**. |
+| `npx tsc --noEmit` | **PASS** in the later `133829` log; previous `TS2339` in the projection-vector test was corrected by narrowing the compiler family. |
+| `npm run build` | **PASS** (Next.js 16.3.3); webpack compilation, TypeScript and page optimisation finish successfully. Non-fatal BullMQ critical-dependency and optional `@valkey/valkey-glide` resolution warnings remain. |
+| `npm run lint` | **PASS with 0 errors, 1 warning** in the Database submodule's `eslint.config.mjs` (anonymous default export); not changed by this task. |
+| `git diff --check` | No whitespace errors reported in the terminal validation sequence. |
+| Review snapshot vs corrected patch | **PASS** in this review-submission preparation: 35/35 task implementation files match the corrected Attempt 2 patch byte-for-byte. |
+
+The React tests validate native labelled radio controls, disabled non-READY states, alt text and responsive Tailwind breakpoint markup. **Real-browser keyboard/screen-reader interaction and mobile viewport layout were not recorded as manually tested**; the handoff recommends this for final integration review, and static rendering is not misrepresented as a browser smoke test.
 
 ### Deviations
 
-None.
+No unapproved in-scope behaviour changes identified. The failed early Prisma/typecheck commands preceded the developer's Database-submodule initialisation and test correction; the subsequent successful commands are recorded above. The repository's existing BullMQ and Database ESLint warnings were not fixed or concealed. No new R2/Meta upload producer was implemented, as prohibited by this task.
 
 ### Assumptions
 
-None beyond the explicit architecture/task contract.
+- The supplied terminal logs are execution evidence from the canonical Admin implementation worktree; this ZIP contains overlaid source files but not independently verifiable Git remote state or the complete prepared launcher packet.
+- The PostgreSQL test uses its separate disposable test database; no live migration, deployment or Meta submission is claimed.
+- A semantic IMAGE-header role is not tied to the reference-shop preview image. Background must revalidate the actual destination shop's derivative when it implements its send-time adapter.
 
 ### Unresolved Issues
 
-None; live environment availability is a validation prerequisite and must be reported if missing.
+- **Meta provider IMAGE sample handle:** valid IMAGE header creation/submission to Meta remains unavailable until a separately authorised trusted server-produced handle exists. This task deliberately fails closed and records the gap for architect ownership; do not present IMAGE templates as already registered or sendable.
+- **Rollout coordination:** deploy `ARCH-049-DATABASE-001` schema migration and this Admin consumer only in a safe coordinated compatibility window. Do not deploy Admin against a missing `commerce."ShopBrand"` or move the table while required old-schema consumers remain live.
+- **System integration:** browser responsive/accessibility smoke checks and Background-004 consumption of the frozen projection-vector fixture remain follow-on validation, not falsely claimed completed here.
+- **Parent Git publication:** this review-task update still needs its own parent `task/ARCH-049-ADMIN-002` commit/push; its commit SHA cannot exist until the developer applies and commits this patch.
 
 ### Architectural Concerns
 
-None reported.
+The immutable Admin `headerMediaRole` projection must agree exactly with Background-004 at send time, including content-hash/binding checks and absence of merchant original URLs. Refer to `docs/testing/arch049-admin-002-media-authoring-handoff.md` and `tests/fixtures/arch049-admin-media-header-projection.json`. The missing trusted Meta sample-handle producer is an explicit architect-level capability gap, not an excuse to bypass registration requirements in Admin.
+
+### Git / Worktree Evidence
+
+- `execution_mode: developer`; `completion_mode: developer`; logical owner `moda_admin`; claimed at `2026-10-27T12:55:06Z`, attempt **1**. Task dependencies were marked complete in the supplied parent definition at claim time.
+- Canonical dedicated parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-ADMIN-002`.
+- Canonical dedicated Admin implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-ADMIN-002`.
+- Task branch in both repositories: `task/ARCH-049-ADMIN-002`. Parent source claims canonical synchronisation from parent `origin/main` and Admin task branch creation from Admin `origin/main`; the updated terminal log shows the Admin commands executed in the named dedicated implementation worktree.
+- Admin implementation commit: **`75fc8ee`** (abbreviated SHA exactly as reported by `git commit`); subject `feat(arch-049-admin-002)`; **35 files changed**.
+- Admin branch publication: `git push -u origin task/ARCH-049-ADMIN-002` **succeeded**, creating `origin/task/ARCH-049-ADMIN-002` as shown in the terminal log.
+- The Admin working tree subsequently had only untracked `typescript` (terminal recording); it was not staged in the commit.
+- Parent task/report commit and publication: **pending developer application and push of this review submission patch**; do not invent a parent commit SHA or claim either branch has merged to `main`.
 
 ## Architect Review
 
