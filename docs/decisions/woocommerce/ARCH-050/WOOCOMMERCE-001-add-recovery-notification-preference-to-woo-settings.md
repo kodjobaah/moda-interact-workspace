@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -119,7 +119,7 @@ The hosted API v2 and Woo plugin v2 are a coordinated rollout in development. Do
 
 ### Status
 
-Ready for Architect Review.
+Architect review requested changes at Attempt 1; task is ready for correction and re-review.
 
 ### Files Changed
 
@@ -153,31 +153,42 @@ Return newly discovered cross-repository/schema/security/contract issues to `mod
 
 Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-WOOCOMMERCE-001`, branch `task/ARCH-050-WOOCOMMERCE-001`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-WOOCOMMERCE-001`, branch `task/ARCH-050-WOOCOMMERCE-001`, commit `f292140` (`feat(woocommerce): add recovery outreach notice preference`), pushed to `origin/task/ARCH-050-WOOCOMMERCE-001`.
 
-## Architect Review
+## Architect Review — Attempt 1 — Changes Requested — 27 October 2026
 
 ### Review Status
 
-Pending.
+Changes Requested.
 
 ### Review Notes
 
-Awaiting implementation.
+The v2 PHP/JS contract, explicit Boolean form value, preference-only dirty/persistence path, admin-override separation, and translated checkbox are consistent with the task. The implementation branch is clean and published. Acceptance is blocked by the following corrections:
+
+1. In `includes/Rest/RecoveryPolicyController.php`, isolate failures from `wc_get_logger()` / `logger->error()` inside the unexpected-exception catch. As written, if the logging sink throws, the handler exits before returning the existing `REMOTE_UNAVAILABLE` 503 response. Preserve that response mapping when the logger fails, and add a test with a throwing Woo logger that proves the controller still returns the sanitized 503.
+2. Run the required existing `npm run test:js:unit`, `npm run test:php`, `npm run lint:js`, and `npm run build` in an environment with the repository dependencies installed. Update the validation report with actual outcomes; fix any failures before resubmitting. The current report explicitly marks all four unverified because `node_modules` and `vendor` are absent. Static syntax checks and i18n/PHP lint do not cover these required behavioral and bundle checks.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/includes/Api/RecoveryPolicyResponseValidator.php`
+- `moda-interact-woocommerce/includes/Rest/RecoveryPolicyController.php`
+- `moda-interact-woocommerce/src/recovery-policy-client.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-validation.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-fields.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-panel.js`
+- PHP/JS contract and route tests, locale catalogs, and Attempt 1 Completion Report.
 
 ### Validation Reviewed
 
-None.
+- `npm run i18n:verify:20` passed (557 source messages; 19/19 packs), `npm run lint:php` passed, targeted PHP/JS syntax checks passed, and `git diff --check` passed, per the task report.
+- `npm run test:js:unit`, `npm run test:php`, `npm run lint:js`, and `npm run build` were not run because dependencies are absent from the implementation worktree. These checks remain required before acceptance.
+- Implementation branch `task/ARCH-050-WOOCOMMERCE-001` is clean and published at `f2921409f5dad286be2fde6f5a30e99e287e78f7`. No task branch was merged to `main`.
 
 ### Architecture Conformance
 
-Not yet reviewed.
+The field contract and UI/data-flow changes follow the intended API/Woo boundary. The uncaught logger-sink failure violates the explicit requirement to preserve existing HTTP error mapping and must be corrected before acceptance.
 
 ### Follow-up
 
-None.
+Keep `attempt: 1`; clear executor and claimed_at, make the logger failure path safe, complete the outstanding validation, update the report, and resubmit for architect review. Do not start dependent system testing from this review.
 
 ## Architect Dependency Frontier Reconciliation — 27 October 2026
 
