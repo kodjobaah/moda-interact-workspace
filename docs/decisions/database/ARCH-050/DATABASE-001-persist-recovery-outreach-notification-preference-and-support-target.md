@@ -135,9 +135,9 @@ None. This is the initial eligible architecture implementation task.
 
 ## Validation
 
-- [ ] From `moda-interact-database`: `npm run validate`, `npm run prisma:generate` (only as declared in `package.json`).
-- [ ] Run the new disposable PostgreSQL migration/schema test for both fresh and upgraded layouts; capture DB evidence for `DEFAULT false` and `ON DELETE SET NULL`.
-- [ ] Check generated SQL for qualified schemas and non-destructive operations; `git diff --check`.
+- [x] From `moda-interact-database`: `npm run validate`, `npm run prisma:generate` (only as declared in `package.json`).
+- [x] Run the new disposable PostgreSQL migration/schema test for both fresh and upgraded layouts; capture DB evidence for `DEFAULT false` and `ON DELETE SET NULL`.
+- [x] Check generated SQL for qualified schemas and non-destructive operations; `git diff --check`.
 
 ## Stop Condition
 
@@ -147,7 +147,7 @@ After Work Items, Acceptance Criteria and required Validation are complete, upda
 
 All SQL/Prisma changes are **implementation instructions**, not already applied changes. Test the actual generated migration against the canonical Prisma engine rather than replacing `@relation` with an ad-hoc SQL-only FK.
 
-The architect supplied a portable task definition only (**defined but not materialised**). Follow launcher-resolved mirrored task branches, physically isolated parent/implementation worktrees and start-of-attempt evidence. Do not update `docs/decisions/**/_index.md` until the architecture session is explicitly closed.
+This task definition was materialised and claimed for Attempt 1. Follow launcher-resolved mirrored task branches, physically isolated parent/implementation worktrees and start-of-attempt evidence. Do not update `docs/decisions/**/_index.md` until the architecture session is explicitly closed.
 
 ## Completion Report
 
@@ -213,6 +213,7 @@ Recursive implementation submodules:
 
 Implementation branch commit: `2f702f52372d648abc5f080f02f722046d0e9271`.
 Implementation branch push: passed to `origin/task/ARCH-050-DATABASE-001` (`kodjobaah/moda-interact-database`).
+Parent task report commit submitted for review: `9a7568fff18ea406e5375ff16f397dbef9879fd9`.
 Parent task branch report: committed on `task/ARCH-050-DATABASE-001` and pushed to `origin/task/ARCH-050-DATABASE-001` (`kodjobaah/moda-interact-workspace`).
 
 ## Architect Review
