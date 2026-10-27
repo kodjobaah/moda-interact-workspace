@@ -11,8 +11,8 @@ execution_mode: developer
 completion_mode: developer
 status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-27T12:46:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-049-DATABASE-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
@@ -125,13 +125,13 @@ Ensure the plugin uses the existing installation credential scheme; no source da
 
 ### Status
 
-Ready for Review — developer Attempt 1 (claim `2026-10-27T12:46:54Z`). Four incremental delivery patches were applied within this **one** developer workflow attempt; the canonical task `attempt` remains 1. Implementation was committed and pushed. The post-validation upstream merge and remaining publication/verification caveat are recorded below for the reviewer.
+Developer Self-Review Passed — Attempt 1. Four incremental delivery patches were applied within this **one** developer workflow attempt; the canonical task `attempt` remains 1. The implementation and upstream merge are committed and pushed. Developer-controlled explicit completion remains pending.
 
 ### Files Changed
 
 Task-owned implementation changes in `moda-interact-api` (14 entries including database gitlink):
 
-- `database` (nested database submodule gitlink; advanced to the accepted ARCH-049 ShopBrand schema during implementation; verify the final gitlink after the upstream merge).
+- `database` (nested database submodule gitlink; points to accepted ARCH-049-DATABASE-001 commit `728734b`).
 - `package.json` (focused unit and disposable-PostgreSQL integration test scripts).
 - `scripts/test-arch049-shop-brand-postgres.mjs`.
 - `src/composition/routes.ts`.
@@ -159,7 +159,7 @@ An **additional** merge from API `origin/main` occurred after the successful val
 
 ### Validation Results
 
-Validated **before** the subsequent upstream merge; evidence: developer terminal capture `typescript(20261027-143455)`:
+The original validation passed before the subsequent upstream merge (developer terminal capture `typescript(20261027-143455)`). The following post-merge checks were rerun from the canonical API implementation worktree during developer self-review:
 
 | Command/check | Result |
 | --- | --- |
@@ -175,12 +175,12 @@ Git/worktree and publication evidence:
 - Parent task worktree: `moda-interact-workspace-task-ARCH-049-API-001`; implementation worktree: `moda-interact-workspace.worktrees/ARCH-049-API-001`, both reported as canonical dedicated paths in the launcher-origin task claim and latest snapshot archive creation.
 - Both task branches: `task/ARCH-049-API-001`. Task claim records start-of-attempt parent/API synchronisation, clean worktrees and verified dependency `ARCH-049-DATABASE-001: complete`.
 - Implementation commit: **`83c801d`** (`feat(arch-049-api-001)`), successfully pushed to `origin/task/ARCH-049-API-001` in the supplied log.
-- Later local merge commit: **`7a55571`** (`Merge remote-tracking branch 'origin/main' into task/ARCH-049-API-001`), created after tests; the log does **not** show a subsequent test run or push of this merge commit. The final database gitlink also needs verification after its manual submodule-conflict resolution.
+- Post-merge commit: **`7a55571`**, independently verified as the current implementation worktree HEAD and `origin/task/ARCH-049-API-001` tip. Database gitlink **`728734b`** matches `origin/task/ARCH-049-DATABASE-001` and contains the accepted ARCH-049 schema.
 - At the end of the log, Git reported no staged or unstaged tracked changes, but an untracked `typescript` log file remained. This is non-task output and should not be included in the commit.
 
 ### Deviations
 
-- The API task branch was updated from `origin/main` **after** the tests. Git reported a database-submodule merge conflict that the developer resolved by staging the gitlink and committing a merge. The post-merge result has not been independently regression-tested or confirmed remotely by the supplied evidence.
+- The API task branch was updated from `origin/main` after the initial tests. Git reported a database-submodule merge conflict, resolved by committing the accepted database gitlink. The merged result was subsequently regression-tested and its task branch publication verified during developer self-review.
 - No intentional changes to the task's agreed API behaviour or repository ownership. Four patch delivery numbers are not four workflow attempts.
 
 ### Assumptions
@@ -191,12 +191,11 @@ Git/worktree and publication evidence:
 
 ### Unresolved Issues
 
-- **Pre-acceptance verification:** From the current merged API task tip (`7a55571`), verify `git submodule status --recursive`, rerun the focused PostgreSQL/unit tests and repository typecheck/lint/build (or provide equivalent evidence demonstrating no post-merge regression), then push `task/ARCH-049-API-001` and record its final published commit. The supplied log proves `83c801d` was pushed, **not** that `7a55571` was pushed.
-- A complete launcher-resolved execution packet is not attached to the validation log; the existing task claim records its start-of-attempt synchronisation and isolation. Architect/developer reviewer should reconcile against the actual Git worktree and branch state before acceptance.
+- None. Post-merge validation, database gitlink, canonical worktrees and publication were independently verified during developer self-review.
 
 ### Architectural Concerns
 
-No new cross-repository contract, queue, provider or schema architecture change is proposed by this task. Verify that the database gitlink retained the accepted ARCH-049 migration after the manual merge resolution. No dependent task was started by this implementation.
+No new cross-repository contract, queue, provider or schema architecture change is proposed by this task. The database gitlink was verified against accepted ARCH-049-DATABASE-001. No dependent task was started by this implementation.
 
 ## Architect Review
 
@@ -234,3 +233,11 @@ None.
 - On 2026-10-27, `/moda_developer_create ARCH-049-API-001` explicitly took over the ready agent-owned task for developer execution. `assigned_agent: moda_api` is unchanged; `execution_mode` and `completion_mode` are now `developer`.
 - Developer Attempt 1 was claimed at `2026-10-27T12:46:54Z` after verifying `ARCH-049-DATABASE-001` was complete and synchronizing both canonical task worktrees.
 - Parent task branch `task/ARCH-049-API-001` merged current parent `origin/main`; implementation branch `task/ARCH-049-API-001` was created from current API `origin/main`. Both task worktrees were clean before the claim. The shared API source checkout's existing `start-dev.sh` modification and untracked `typescript` file were left untouched.
+
+## Developer Self-Review - Passed
+
+- Reviewed Attempt 1 against task scope, requirements, acceptance criteria, implementation diff, canonical worktree mappings, database submodule gitlink and remote task-branch publication.
+- Verified API implementation commit `7a55571` is published at `origin/task/ARCH-049-API-001`; verified parent task commit `2035c42` was published before this review update.
+- Post-merge validation from the canonical API implementation worktree: `npm run test:arch049-shop-brand:unit` passed 9/9; `npm run test:arch049-shop-brand:postgres` passed 3/3 against a disposable PostgreSQL container after applying 65 migrations; `npm run typecheck`, `npm run lint`, and `npm run build` all passed; `git diff --check` passed.
+- The implementation worktree contains only the preserved untracked `typescript` log artifact beyond the committed task diff; it was not staged or modified.
+- Review decision: passed. Because `completion_mode: developer`, the task remains `status: review`; explicit developer completion is pending. No dependent task was started and no branch was merged to `main`.
