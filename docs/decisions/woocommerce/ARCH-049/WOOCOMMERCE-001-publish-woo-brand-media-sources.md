@@ -15,7 +15,7 @@ executor: developer
 claimed_at: '2026-10-27T12:06:02Z'
 attempt: 1
 depends_on: []
-enables: ["ARCH-049-SYSTEM-TEST-001"]
+enables: ["ARCH-049-WOOCOMMERCE-002", "ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
 updated: 2026-10-27
 ---

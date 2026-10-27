@@ -148,6 +148,12 @@ Development/architecture expansion is pre-production for this feature, but exist
 
 There is **no active GATEWAY-001** and no separate `ShopBrandMediaAsset` table. `ARCH-049-SHOPIFY-001` exists only for the confirmed missing `read_brand` authorisation, **not** for brand-data synchronisation.
 
+## WooCommerce merchant-initiated Store branding sync (ARCH-049-WOOCOMMERCE-002)
+
+Once the one-time plugin connection/upgrade capture is in place, **no WooCommerce daily brand reconciliation or automatic WordPress branding-change publication** is performed. A merchant can update their WordPress Site Name, Site Logo or Site Icon and then explicitly choose **Sync branding** within Moda Interact → Recovery Settings. The new WooCommerce-owned task adds a capability/nonce-protected WordPress REST GET status + POST enqueue command and a connected merchant UI; both reuse the existing `ShopBrand\Publisher::requestSync()` and bounded Action Scheduler delivery. No new Moda hosted API, cross-service payload, schema or public unauthenticated WordPress endpoint is required.
+
+The panel distinguishes *queued*, *retrying*, *failed* and *accepted by hosted Moda API* rather than calling a queued job “synchronised”. A last-accepted timestamp is persisted per installation only after a validated `updated|unchanged` API acknowledgement, never from the one-time bootstrap marker. That timestamp does **not** assert that Background R2 media has reached READY or Meta approved an image template. A failed new request retains any prior successful time, and reconnecting invalidates stale installation status. Clicks coalesce safely without losing changes requested during an in-flight capture. The terminal ARCH-049 system test additionally covers this explicit merchant path. Shopify synchronisation and Background source/media recheck schedules are unaffected.
+
 ## Tasks and dependencies
 
 Task YAML is authoritative. `ready` is eligibility of a portable definition, **not** a claim that a task branch or implementation has been materialised. Cross-architecture dependencies below are shown explicitly when they govern source integration; completed ARCH-047 modules are **already satisfied** in the snapshot.
@@ -161,7 +167,8 @@ Task YAML is authoritative. `ready` is eligibility of a portable definition, **n
 | ARCH-049-BACKGROUND-002 | moda_background | Pending | ARCH-049-DATABASE-001, ARCH-049-BACKGROUND-001 |
 | ARCH-049-BACKGROUND-003 | moda_background | Pending | ARCH-049-DATABASE-001, ARCH-049-BACKGROUND-002, ARCH-049-SHOPIFY-001 |
 | ARCH-049-API-001 | moda_api | Pending | ARCH-049-DATABASE-001 |
-| ARCH-049-WOOCOMMERCE-001 | moda_woocommerce | Ready (API contract fixtures) | — |
+| ARCH-049-WOOCOMMERCE-001 | moda_woocommerce | In progress (Attempt 1, developer in supplied snapshot) | — |
+| ARCH-049-WOOCOMMERCE-002 | moda_woocommerce | Pending (new, not materialised) | ARCH-049-WOOCOMMERCE-001 |
 | ARCH-049-ADMIN-002 | moda_admin | Pending | ARCH-049-DATABASE-001, ARCH-049-ADMIN-001, ARCH-047-ADMIN-003, ARCH-047-ADMIN-005 (all prior Admin prerequisites Complete) |
 | ARCH-049-BACKGROUND-004 | moda_background | Pending | ARCH-049-DATABASE-001, ARCH-049-ADMIN-001, ARCH-047-BACKGROUND-001, ARCH-047-BACKGROUND-006 (prior prerequisites Complete) |
 | ARCH-049-SYSTEM-TEST-001 | moda_system_test | Pending | All ARCH-049 implementations above plus accepted ARCH-047 Admin/compiler, BG001/BG003/BG006; **not** ARCH-047-BACKGROUND-007 |
