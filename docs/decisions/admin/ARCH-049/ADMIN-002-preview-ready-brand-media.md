@@ -14,7 +14,7 @@ priority: 30
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-ADMIN-001", "ARCH-047-ADMIN-003"]
+depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-ADMIN-001", "ARCH-047-ADMIN-003", "ARCH-047-ADMIN-005"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
 updated: 2026-10-25
@@ -55,9 +55,17 @@ ARCH-047 Admin-003 already provides the template editor and English AST. ADMIN-0
 
 Read `ShopBrand.whatsAppMedia.roles[role]`; only present as selectable IMAGE header when `work.status=READY`, `ready.sourceGeneration=source.generation`, `ready.sourceFingerprint=source.fingerprint`, output is JPEG/PNG below 5 MiB and the R2 object key is trusted. Construct a public URL from configured origin and immutable key; do not render/send `logoUrl`/`squareLogoUrl`/`coverImageUrl` as image headers. Distinguish image-header role binding from existing text tokens such as `shopBrand.brandName` or literal logo URL. Never expose R2 credentials in UI or JSON response.
 
-### R3. Template contract handoff
+### R3. Complete the existing Admin IMAGE-header contract
 
-The Admin authoring AST should persist only a semantic image role reference for an image-header template (e.g. `{"header":{"type":"IMAGE","shopBrandMediaRole":"LOGO"}}`), not a shop-specific image URL. Provide exactly that typed binding to the existing ADMIN-003/005 authoring and compilation path; if their prepared-runtime format lacks this field, report a bounded ARCH-047 contract gap to architect instead of implementing a competing compiler. Meta submission sample image is a separate approved authoring input handled in ARCH-047, not each merchant's runtime logo.
+Inspection of the 26 October snapshot shows that the accepted ARCH-047 Admin compiler currently emits **TEXT** headers only; a READY-media picker alone cannot create a sendable IMAGE template. Extend the **existing** ARCH-047 Admin authoring/compiler modules in the Admin repository (do not create a second compiler) so the editor offers one IMAGE-header role (`LOGO`, `SQUARE_LOGO`, `COVER_IMAGE`), displays the verified image, and stores a semantic role binding without embedding the shop-specific media URL. Persist the frozen runtime binding in `WhatsAppTemplateMetaRegistration.parameterBindingsSnapshot` using this proposed version-one extension:
+
+```json
+{"schemaVersion":1,"header":[],"headerMediaRole":"LOGO","body":[],"buttons":[]}
+```
+
+TEXT-header projections omit `headerMediaRole`; IMAGE headers must contain `HEADER` with `format: "IMAGE"` in the frozen `componentsSnapshot`. The source AST should contain only the corresponding semantic `shopBrandMediaRole`; full production examples/bindings must be fixed before template submission. The Background-004 adapter consumes exactly this field; Admin and Background must test identical frozen-projection digests and reject mismatches. Once content is saved, preserve ARCH-047 create-new-template immutability.
+
+A sample Meta image-header **upload handle** (the `HEADER.example.header_handle` required by the already-implemented ARCH-047 BG003 adapter) is separate from a merchant's send-time READY logo. Never send a shop's source URL as a sample handle. If the approved-authoring path cannot obtain/provide a valid handle, fail closed with `IMAGE_SAMPLE_HANDLE_REQUIRED` and record the provider sample-acquisition gap for architect resolution; do not claim successful IMAGE template creation or invent a client-side Meta token/upload mechanism. No new R2/Meta upload implementation is authorised by this task.
 
 ### R4. Existing query compatibility
 
@@ -83,6 +91,7 @@ Consumes `commerce.ShopBrand`, accepted `shopBrand.publicMedia`, and the existin
 - ARCH-049-DATABASE-001
 - ARCH-049-ADMIN-001
 - ARCH-047-ADMIN-003
+- ARCH-047-ADMIN-005
 
 ## Enables
 
@@ -94,13 +103,15 @@ Consumes `commerce.ShopBrand`, accepted `shopBrand.publicMedia`, and the existin
 - [ ] Pending/failed/stale/absent assets cannot be selected for IMAGE headers.
 - [ ] Shop-level tenant isolation and accessible modular React boundaries are maintained.
 - [ ] Admin merchant-support SQL continues to work after the ShopBrand schema move.
-- [ ] No new AST compiler, media resizing or secret-bearing frontend code.
+- [ ] The existing AST/compilation module supports the frozen `headerMediaRole` projection and IMAGE-header preview with matching content fingerprints, without a competing compiler or credential-bearing browser code.
+- [ ] Meta IMAGE submission remains disabled without a valid server-produced sample handle; no unverified sample is silently substituted.
 
 ## Validation
 
 - [ ] Focused React component/controller tests, accessibility and responsive checks.
 - [ ] Authenticated Admin server-read/tenant and READY matching tests.
 - [ ] Merchant-support raw SQL security/regression tests.
+- [ ] Cross-module Admin compiler tests proving IMAGE role persists into the frozen binding and produces the canonical approved-header projection.
 - [ ] Relevant Admin unit tests, lint/typecheck and `git diff --check`.
 
 ## Stop Condition
