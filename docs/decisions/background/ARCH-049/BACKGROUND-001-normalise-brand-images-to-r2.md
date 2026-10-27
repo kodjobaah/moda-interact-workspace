@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: '2026-10-27T10:17:51Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-049-ADMIN-001"]
 enables: ["ARCH-049-BACKGROUND-002"]
@@ -86,10 +86,10 @@ Before returning verified metadata, prove the current custom HTTPS domain can se
 
 ## Work Items
 
-- [ ] Implement processor and configuration consumer modules.
-- [ ] Add unit tests for transform output/headers/digest and safe fetch.
-- [ ] Add R2 adapter tests, missing-credentials tests and redaction tests.
-- [ ] Record bounded output and external-readiness validation results.
+- [x] Implement processor and configuration consumer modules.
+- [x] Add unit tests for transform output/headers/digest and safe fetch.
+- [x] Add R2 adapter tests, missing-credentials tests and redaction tests.
+- [x] Record bounded output and external-readiness validation results.
 
 ## Interfaces / Contracts
 
@@ -105,18 +105,18 @@ Consumes the caller-supplied source URL, shop/role, fingerprint and generation (
 
 ## Acceptance Criteria
 
-- [ ] Processor never writes ShopBrand state or performs per-send processing.
-- [ ] Malicious redirects, private IPs, oversized payload/pixels and malformed image bytes are rejected.
-- [ ] JPEG/PNG output has verified actual dimensions/hash and is under 5 MiB.
-- [ ] R2 object keys are immutable, idempotently reusable and isolated from private Merchant Knowledge storage.
-- [ ] Missing secure R2 credentials or unavailable custom-domain delivery fails closed.
+- [x] Processor never writes ShopBrand state or performs per-send processing.
+- [x] Malicious redirects, private IPs, oversized payload/pixels and malformed image bytes are rejected.
+- [x] JPEG/PNG output has verified actual dimensions/hash and is under 5 MiB.
+- [x] R2 object keys are immutable, idempotently reusable and isolated from private Merchant Knowledge storage.
+- [x] Missing secure R2 credentials or unavailable custom-domain delivery fails closed.
 
 ## Validation
 
-- [ ] Focused unit tests for aspect-ratio/padding/cropping and PNG transparency.
-- [ ] Security tests including DNS rebinding, local/metadata/private hops, large payload and decompression.
-- [ ] R2 Put/Head/public-GET adapter tests and default platform config read.
-- [ ] ESLint/typecheck/focused test scripts actually present in Background package; `git diff --check`.
+- [x] Focused unit tests for aspect-ratio/padding/cropping and PNG transparency.
+- [x] Security tests including DNS rebinding, local/metadata/private hops, large payload and decompression.
+- [x] R2 Put/Head/public-GET adapter tests and default platform config read.
+- [x] ESLint/typecheck/focused test scripts actually present in Background package; `git diff --check` (see evidence below).
 
 ## Stop Condition
 
@@ -132,35 +132,80 @@ No additional assumptions are authorised.
 
 ### Status
 
-In Progress — developer Attempt 1 claimed 2026-10-27 after materializing the portable definition in the canonical task worktrees.
+Ready for Review — developer execution, canonical workflow **Attempt 1** (`attempt: 1`). The implementation was corrected through the supplied Attempt 1/Attempt 2 patch iterations without starting a new architecture-task attempt. The implementation commit `75c93f5` (`feat(arch-049-background-001)`) was pushed to `origin/task/ARCH-049-BACKGROUND-001` in `moda-interact-background`, as shown in the developer's terminal log of 27 October 2026. The parent task/report branch must still be committed and pushed after this update is applied.
 
 ### Files Changed
 
-None.
+**Implementation repository (`moda-interact-background`): 20 files in commit `75c93f5`.**
+
+- `package.json`
+- `package-lock.json`
+- `docs/arch049-shopbrand-media-processor.md`
+- `src/services/platform-configuration/consumers.ts`
+- `src/services/platform-configuration/contracts.ts`
+- `src/services/platform-configuration/service.ts`
+- `src/services/shop-brand-media/contracts.ts`
+- `src/services/shop-brand-media/image-transformer.ts`
+- `src/services/shop-brand-media/index.ts`
+- `src/services/shop-brand-media/metadata-verifier.ts`
+- `src/services/shop-brand-media/processor.ts`
+- `src/services/shop-brand-media/public-probe.ts`
+- `src/services/shop-brand-media/r2-config.ts`
+- `src/services/shop-brand-media/r2-writer.ts`
+- `src/services/shop-brand-media/safe-fetch.ts`
+- `tests/unit/services/platform-configuration/service.test.ts`
+- `tests/unit/services/shop-brand-media/image-transformer.test.ts`
+- `tests/unit/services/shop-brand-media/processor.test.ts`
+- `tests/unit/services/shop-brand-media/r2-writer.test.ts`
+- `tests/unit/services/shop-brand-media/safe-fetch.test.ts`
+
+**Parent workspace:** this task file only. The parent `moda-interact-background` submodule gitlink and shared indexes/architecture documents must not be staged by the task executor.
 
 ### Work Completed
 
-None.
+- Implemented injectable `ShopBrandMediaProcessor` and typed, bounded error classifications. Inputs and outputs conform to the task's one-source/one-role contract; it neither imports the ShopBrand lifecycle nor reads/writes ShopBrand state.
+- Implemented HTTPS-only fetching with public-destination DNS validation and pinned socket verification on each redirect, a single ten-second total deadline, three-redirect limit, and 10 MiB input cap. Disallowed response decompression and sensitive errors/URLs in logs.
+- Implemented Sharp-based source decoding (maximum 40 MP), metadata stripping, 1125×600 cover-crop or logo fit/pad, transparent PNG/opaque JPEG output and independent re-decode/dimension/content hash verification. Outputs must be smaller than 5 MiB.
+- Implemented dedicated Cloudflare R2 worker credential validation, immutable content-addressed keys, conditional S3-compatible writes, HEAD verification for identical reuse/concurrent write races and separate public HTTPS GET content-type/length/hash verification before emitting READY-eligible metadata.
+- Added the `shopBrand.publicMedia` configuration reader and default-on-read (revision zero, no DB write) while preserving the separate private `merchant.knowledge.r2` configuration.
+- Reused `@modainteract/moda-interact-shared/logging` for bounded semantic success/error events. Unexpected source/R2 exceptions are converted to safe, explicit failure codes and recorded without exposing provider exception messages or credentials.
+- Added focused unit/security regression tests and operational preflight documentation. Assistant-authored Attempt 1/Attempt 2 patch files provided implementation assistance; the developer applied, corrected, validated, committed and pushed the final implementation.
 
 ### Validation Results
 
-Not run.
+Developer terminal transcript: `typescript(20261027-115118)`, supplied alongside `moda-interact-workspace-ARCH-049-BACKGROUND-001.zip` (27 October 2026). The archive includes the resulting implementation and canonical parent task file; archive reconstruction is *not* proof of Git metadata beyond the supplied terminal log.
+
+| Command / evidence | Result |
+| --- | --- |
+| `git submodule update --init --recursive -- database` and `ls database/prisma/schema.prisma` | **PASS**; nested database schema materialised, recorded gitlink `7cd7e955c8ede2ce76631ee40c655daba91bfdd6`. |
+| `npm ci` | **PASS** in the developer's Background task worktree; earlier Attempt 1 lockfile error corrected. |
+| `npm run prisma:generate` | **PASS**; Prisma Client v6.19.3 generated. |
+| `npm test -- tests/unit/services/shop-brand-media tests/unit/services/platform-configuration/service.test.ts` | **PASS**; **5 test files, 53 tests passed, 0 failures** (13.92 s reported). Covers transform, SSRF/DNS, R2 race/failure, public delivery mismatch and config default-read cases. |
+| `npm run lint` | **PASS**; ESLint exited without errors. |
+| `npm run build` | **PASS**; Prisma generation and TypeScript `tsc` completed without reported errors. |
+| `git diff --check` | **PASS in independent isolated reconstruction** of the uploaded 20-file implementation delta against the earlier snapshot, including the final developer lockfile. A separate `git show --check 75c93f5` in the actual implementation worktree is recommended to confirm the committed diff. |
+| `git commit` and `git push --set-upstream origin task/ARCH-049-BACKGROUND-001` | **PASS**; implementation commit `75c93f5` pushed and upstream set, per terminal log. |
+| Live Cloudflare R2 write and public custom-domain GET | **NOT RUN**; no live bucket/domain/worker-secret evidence supplied. R4 explicitly permits injected-adapter validation with external preflight outstanding. The implementation must fail closed until public bytes are provably served. |
 
 ### Deviations
 
-None.
+None from the defined processor-only repository scope. The final solution includes the correction of Attempt 1's Sharp transitive-lockfile entry, lint-rejected regexes, and eager Prisma initialisation during tests. These corrections remained within **workflow Attempt 1**.
 
 ### Assumptions
 
-None beyond the explicit architecture/task contract.
+The caller in later BG002 will supply authenticated provider-derived ShopBrand source metadata. This processor deliberately does not authenticate or discover the merchant's source itself. The external public R2 custom domain is **not assumed** to be operational; the implementation performs a real GET verification before reporting success when the production path is exercised.
 
 ### Unresolved Issues
 
-None; live environment availability is a validation prerequisite and must be reported if missing.
+- **External live readiness:** verify the existing Cloudflare custom domain is Active with minimum TLS 1.2 or newer; configure dedicated `SHOPBRAND_R2_*` worker secrets and prove a real upload plus public GET/content-type/hash before enabling production processing. This remains the explicit developer-owned R4 preflight and is **not claimed as tested**.
+- At commit time the implementation branch had diverged from `origin/main` (one task commit versus seven newer mainline commits), as shown in the terminal log. The developer retains ownership of later synchronisation/integration; do not merge to `main` or stage a parent submodule pointer during this task handoff.
+- The terminal-capture file named `typescript` remained untracked in the implementation worktree and was not included in the implementation commit. Do not stage it accidentally.
 
 ### Architectural Concerns
 
-None reported.
+No new repository-boundary or data-model changes identified. `ARCH-049-BACKGROUND-002` retains the ShopBrand persistence/lease, source-acquisition and asynchronous job orchestration. No Background worker, database migration, cross-repository message contract, Gateway/Cloudflare infrastructure, or ARCH-047 template-send changes were introduced here.
+
+**Task isolation evidence:** the existing Developer Execution Claim below documents launcher-resolved dedicated parent and Background implementation worktrees, both prepared from their own `origin/main` at the start of Attempt 1 after `fetch origin --prune`; the developer's terminal log independently shows validation and commit/push from the `task/ARCH-049-BACKGROUND-001` implementation worktree. The ZIP helper also identified and overlaid that implementation worktree. The original launcher preparation packet was not independently supplied with this submission.
 
 ## Developer Execution Ownership Amendment
 
