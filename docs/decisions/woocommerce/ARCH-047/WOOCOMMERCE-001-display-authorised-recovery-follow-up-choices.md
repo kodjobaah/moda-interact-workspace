@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: codex
 claimed_at: 2026-10-27T18:09:11Z
@@ -58,10 +58,10 @@ Enable merchant-controlled, eligible **post-window sequence-two** selection of a
 
 ## Work Items
 
-- [ ] Add authenticated WordPress REST proxy and bounded response contract, with PHP tests.
-- [ ] Extend the existing dedicated JS client/hook/controller and separate React picker component with language, loading, empty and error states.
-- [ ] Wire template submission through existing immutable idempotent command client and response polling; update Woo tests.
-- [ ] Replace dead `canTemplate` logic, validate React/PHP/build and record isolated worktree evidence.
+- [x] Add authenticated WordPress REST proxy and bounded response contract, with PHP tests.
+- [x] Extend the existing dedicated JS client/hook/controller and separate React picker component with language, loading, empty and error states.
+- [x] Wire template submission through existing immutable idempotent command client and response polling; update Woo tests.
+- [x] Replace dead `canTemplate` logic, validate React/PHP/build and record isolated worktree evidence.
 
 ## Interfaces / Contracts
 
@@ -77,10 +77,10 @@ Hosted API-001 GET v1 response: `{schemaVersion:1, templates:[{name,language}]}`
 
 ## Acceptance Criteria
 
-- [ ] Woo merchant can select an authorised eligible follow-up template outside the service window when due; inside window only free-text reply is available.
-- [ ] An unknown or stale template, missing eligibility, duplicate request, expired window, consent or STOP change is rejected by current server-side guards; no unauthorized provider parameter injection.
-- [ ] Cross-shop query, installation authentication and CSRF/nonce failure cannot return eligible choices or submit commands.
-- [ ] `canTemplate: false` hardcode and dead UI/tests are gone; independently modular React/presentation, controller and transport files remain small and testable.
+- [x] Woo merchant can select an authorised eligible follow-up template outside the service window when due; inside window only free-text reply is available.
+- [x] An unknown or stale template, missing eligibility, duplicate request, expired window, consent or STOP change is rejected by current server-side guards; no unauthorized provider parameter injection.
+- [x] Cross-shop query, installation authentication and CSRF/nonce failure cannot return eligible choices or submit commands.
+- [x] `canTemplate: false` hardcode and dead UI/tests are gone; independently modular React/presentation, controller and transport files remain small and testable.
 
 ## Validation
 
@@ -97,29 +97,77 @@ Use canonical Woo task parent/implementation worktrees and preserve existing nat
 ## Completion Report
 
 ### Status
-Ready — materialised in the canonical parent task worktree on `task/ARCH-047-WOOCOMMERCE-001` from fetched `origin/main`. Its sole dependency, `ARCH-047-API-001`, resolves `complete`. No executor or claim is set; implementation worktree has not been created.
+Ready for Review. The authenticated WooCommerce catalogue proxy, eligible template picker and idempotent submission are implemented and pushed on task/ARCH-047-WOOCOMMERCE-001.
 
 ### Files Changed
-None.
+- includes/Rest/RecoveryConversationCommandController.php
+- includes/Api/ModaApiClient.php
+- includes/Api/ConversationCommandContracts.php
+- src/recoveries/detail/human/conversation-command-client.js
+- src/recoveries/detail/human/conversation-command-contract.js
+- src/recoveries/detail/human/human-conversation-controller.js
+- src/recoveries/detail/human/use-human-conversation.js
+- src/recoveries/detail/human/human-reply-composer.js
+- src/recoveries/detail/human/follow-up-template-picker.js
+- tests/RecoveryConversationCommandControllerTest.php
+- tests/js/recovery-human-conversation.test.js
+- languages/moda-interact.pot and all 19 existing WordPress .po catalogues
 
 ### Work Completed
-None.
+- Added nonce- and manage_woocommerce-protected GET /moda-interact/v1/merchant/recoveries/{recoveryId}/conversation/follow-up-templates. The controller derives conversationId from the authenticated recovery detail, uses installation authentication, rejects query parameters and returns a strict schemaVersion 1 catalogue capped at 30 entries with private, no-store headers.
+- Added the hosted catalogue client and exact schema validation. The UI requests choices only for a HUMAN-controlled recovery with a known closed service window, active human messaging and unused sequence two. The picker has loading, empty and error/retry states and displays only returned name/language choices.
+- Wired template sends through the existing command and polling path. A selected choice must still exist in the current catalogue; command parameters are always empty, the server remains authoritative for stale or unknown eligibility, and the existing immutable idempotency key prevents duplicate pending sends and is reused on uncertain retry.
+- Removed the hardcoded canTemplate false branch while retaining free-text/window handling and command polling.
+- Added translated UI labels to the source POT and every existing locale catalogue.
+- Architect Review was Pending with no requested corrections; no Architect Review content was changed.
 
 ### Validation Results
-Not run.
+- WooCommerce bootstrap passed; PHP 8.5.11, Composer 2.10.3 and Docker daemon available.
+- Focused PHP: php vendor/bin/phpunit tests/RecoveryConversationCommandControllerTest.php — 5 tests, 39 assertions passed.
+- Focused JavaScript: npx vitest run tests/js/recovery-human-conversation.test.js tests/js/recovery-human-ui-parity.test.js — 10 tests passed.
+- Changed-file JavaScript lint passed.
+- PHP syntax checks for the changed API contract, API client, REST controller and PHP test passed.
+- npm run lint:php passed.
+- npm run build passed, including strict i18n verification for 565 source strings, 19/19 locale packs and 38 generated assets. Webpack emitted bundle-size warnings for the 304 KiB index.js asset.
+- git diff --check passed.
+- Repository-wide npm run lint:js reported lint errors in unrelated existing files, including integration test files. The changed JavaScript files pass targeted lint.
 
 ### Deviations
-None.
+- No scope deviations. Repository-wide JavaScript lint remains blocked by unrelated existing lint findings; focused changed-file lint and build pass.
 
 ### Assumptions
-Authenticated hosted API-001 route is available by the time this task executes.
+- The completed API-001 dependency serves the task-defined authenticated follow-up catalogue contract. WooCommerce consumes and revalidates that hosted response without duplicating eligibility logic.
 
 ### Unresolved Issues
-Provider-specific verified offers are a separate dependency for promising positive discount benefits.
+- None for this task.
 
 ### Architectural Concerns
-None additional.
+- None.
 
+### Physical Worktree Isolation
+- Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+- Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-WOOCOMMERCE-001
+- Parent branch: task/ARCH-047-WOOCOMMERCE-001
+- Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-WOOCOMMERCE-001
+- Implementation branch: task/ARCH-047-WOOCOMMERCE-001
+- Shared workspace checkout switched or mutated for task work: no
+- Shared implementation checkout switched or mutated for task work: no
+- Another task worktree reused: no
+
+### Start-of-Attempt Synchronization
+- Parent remote task branch fast-forwarded: not-needed
+- Parent origin/main incorporated: yes
+- Implementation remote task branch fast-forwarded: not-needed
+- Implementation origin/main incorporated: already-current
+
+### Recursive Implementation Submodules
+- git submodule sync --recursive: passed
+- git submodule update --init --recursive: passed
+- Recorded submodule commits: none
+
+### Commits
+- Implementation: 550d468 — pushed to origin/task/ARCH-047-WOOCOMMERCE-001
+- Parent claim: 2258afab6ef62e3feb31b7caad27a286f6954a37 — launcher committed and pushed
 ## Architect Review
 
 ### Review Status
