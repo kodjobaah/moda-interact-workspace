@@ -10,6 +10,6 @@ Coordinator: `moda_architect`.
 
 | Task | Description | Status | Dependencies |
 |------|-------------|--------|--------------|
-| [BACKGROUND-001](BACKGROUND-001-classify-and-remediate-test-suite-failures.md) | Establish a reproducible baseline, classify failures, and remediate confirmed Background-owned issues | Ready | ARCH-007-BACKGROUND-012 (Complete) |
+| [BACKGROUND-001](BACKGROUND-001-classify-and-remediate-test-suite-failures.md) | Establish a reproducible baseline, classify failures, and remediate confirmed Background-owned issues | Complete | ARCH-007-BACKGROUND-012 (Complete) |
 
-Individual task YAML is authoritative. Attempt 1 and its Changes Requested review are preserved as provenance; the next claim is Attempt 2 under `ARCH-051-BACKGROUND-001`.
+Individual task YAML is authoritative. Attempt 1 and its Changes Requested review remain as provenance. Attempt 2 was accepted after full merged-state validation.

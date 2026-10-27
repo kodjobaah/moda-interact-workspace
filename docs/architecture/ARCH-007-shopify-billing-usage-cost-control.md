@@ -826,48 +826,51 @@ Recommended implementation order is encoded by task dependencies. Repository age
 | ARCH-007-DATABASE-002 | moda_database | Complete | DATABASE-001 |
 | ARCH-007-DATABASE-003 | moda_database | Complete | DATABASE-002 |
 | ARCH-007-DATABASE-004 | moda_database | Complete | DATABASE-003 |
-| ARCH-007-DATABASE-005 | moda_database | **Ready — Changes Requested; next claim Attempt 2** | DATABASE-004 |
-| ARCH-007-DATABASE-006 | moda_database | Pending | DATABASE-005 |
+| ARCH-007-DATABASE-005 | moda_database | Complete | DATABASE-004 |
+| ARCH-007-DATABASE-006 | moda_database | Complete | DATABASE-005 |
 | ARCH-007-SHARED-001 | moda_shared | Complete | DATABASE-003 |
 | ARCH-007-SHARED-002 | moda_shared | Complete | SHARED-001 |
 | ARCH-007-SHARED-003 | moda_shared | Complete | SHARED-002 |
 | ARCH-007-SHARED-004 | moda_shared | Complete | SHARED-003 |
-| ARCH-007-SHARED-005 | moda_shared | Pending | DATABASE-005 |
-| ARCH-007-SHARED-006 | moda_shared | Pending | SHARED-005 |
+| ARCH-007-SHARED-005 | moda_shared | Complete | DATABASE-005 |
+| ARCH-007-SHARED-006 | moda_shared | Complete | SHARED-005 |
 | ARCH-007-SHOPIFY-001 | moda_app | Complete | SHARED-002, DATABASE-003 |
-| ARCH-007-SHOPIFY-002 | moda_app | **Ready — Changes Requested, next claim Attempt 2** | SHOPIFY-001 |
-| ARCH-007-SHOPIFY-003 | moda_app | **Ready** | SHOPIFY-001 |
-| ARCH-007-SHOPIFY-004 | moda_app | Pending | SHOPIFY-002, DATABASE-005, SHARED-006, ADMIN-005 |
-| ARCH-007-MESSAGING-001 | moda_messaging | **Complete (Attempt 3)** | SHARED-002, SHARED-004 |
+| ARCH-007-SHOPIFY-002 | moda_app | Complete | SHOPIFY-001 |
+| ARCH-007-SHOPIFY-003 | moda_app | Complete | SHOPIFY-001 |
+| ARCH-007-SHOPIFY-004 | moda_app | Complete | SHOPIFY-002, DATABASE-005, SHARED-006, ADMIN-005 |
+| ARCH-007-MESSAGING-001 | moda_messaging | Complete | SHARED-002, SHARED-004 |
 | ARCH-007-BACKGROUND-001 | moda_background | Complete | SHARED-002, DATABASE-003 |
 | ARCH-007-BACKGROUND-002 | moda_background | Complete | BACKGROUND-001 |
 | ARCH-007-BACKGROUND-003 | moda_background | Complete | BACKGROUND-002, SHOPIFY-001 |
 | ARCH-007-BACKGROUND-004 | moda_background | Complete | BACKGROUND-003, DATABASE-004 |
-| ARCH-007-BACKGROUND-005 | moda_background | **Ready** | BACKGROUND-004, MESSAGING-001, SHARED-004 |
+| ARCH-007-BACKGROUND-005 | moda_background | Complete | BACKGROUND-004, MESSAGING-001, SHARED-004 |
 | ARCH-007-BACKGROUND-006 | moda_background | Complete | SHARED-002, DATABASE-002 |
 | ARCH-007-BACKGROUND-007 | moda_background | Complete | BACKGROUND-003, BACKGROUND-006 |
-| ARCH-007-BACKGROUND-008 | moda_background | Pending | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001 |
-| ARCH-007-BACKGROUND-009 | moda_background | Pending | DATABASE-005, SHARED-006, BACKGROUND-007 |
+| ARCH-007-BACKGROUND-008 | moda_background | Complete | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001 |
+| ARCH-007-BACKGROUND-009 | moda_background | Complete | DATABASE-005, SHARED-006, BACKGROUND-007 |
 | ARCH-007-BACKGROUND-010 | moda_background | Complete | DATABASE-006, BACKGROUND-004 |
 | ARCH-007-BACKGROUND-011 | moda_background | Complete | BACKGROUND-010 |
-| ARCH-007-BACKGROUND-012 | moda_background | Ready | BACKGROUND-010, BACKGROUND-011 |
-| ARCH-007-ADMIN-001 | moda_admin | **Ready** | SHARED-002, DATABASE-003 |
-| ARCH-007-ADMIN-002 | moda_admin | Pending | ADMIN-001 |
-| ARCH-007-ADMIN-003 | moda_admin | Pending | ADMIN-002, BACKGROUND-007, SHOPIFY-001 |
+| ARCH-007-BACKGROUND-012 | moda_background | Complete | BACKGROUND-010, BACKGROUND-011 |
+| ARCH-007-ADMIN-001 | moda_admin | Complete | SHARED-002, DATABASE-003 |
+| ARCH-007-ADMIN-002 | moda_admin | Complete | ADMIN-001 |
+| ARCH-007-ADMIN-003 | moda_admin | Ready | ADMIN-002, BACKGROUND-007, SHOPIFY-001 |
 | ARCH-007-ADMIN-004 | moda_admin | Pending | ADMIN-003, BACKGROUND-008 |
-| ARCH-007-ADMIN-005 | moda_admin | Pending | ADMIN-001, DATABASE-005, SHARED-006 |
-| ARCH-007-GATEWAY-001 | moda_gateway | Pending | BACKGROUND-008 |
-| ARCH-007-SYSTEM-TEST-001 | moda_system_test | Pending / manual-gated | SHOPIFY-002, BACKGROUND-003, ADMIN-002 |
+| ARCH-007-ADMIN-005 | moda_admin | Complete | ADMIN-001, DATABASE-005, SHARED-006 |
+| ARCH-007-GATEWAY-001 | moda_gateway | Complete | BACKGROUND-008 |
+| ARCH-007-SYSTEM-TEST-001 | moda_system_test | Ready / manual-gated | SHOPIFY-002, BACKGROUND-003, ADMIN-002 |
 | ARCH-007-SYSTEM-TEST-002 | moda_system_test | Pending / manual-gated | SHOPIFY-002, BACKGROUND-008, ADMIN-004, GATEWAY-001 |
 | ARCH-007-SYSTEM-TEST-003 | moda_system_test | Pending / manual-gated | SHOPIFY-003, MESSAGING-001, BACKGROUND-005, BACKGROUND-008, ADMIN-004, GATEWAY-001 |
 | ARCH-007-SYSTEM-TEST-004 | moda_system_test | Pending / manual-gated | SHOPIFY-004, BACKGROUND-009, BACKGROUND-008, ADMIN-005 |
-| ARCH-007-SYSTEM-TEST-005 | moda_system_test | Pending / manual-gated | BACKGROUND-010, BACKGROUND-004, BACKGROUND-011, BACKGROUND-012 |
+| ARCH-007-SYSTEM-TEST-005 | moda_system_test | Ready / manual-gated | BACKGROUND-010, BACKGROUND-004, BACKGROUND-011, BACKGROUND-012 |
 
 Individual task YAML is authoritative for execution state. System tests are terminal/manual-gated and must never block implementation/publication/infrastructure work.
 
 The current architect-accepted and published Shared release is `@modainteract/moda-interact-shared@0.8.0`. It contains the accepted `RECOVERY_CREDIT_PACK_PURCHASE` metric from SHARED-005/006.
 
 ## Current execution frontier
+
+2026-10-27 reconciliation: `ARCH-007-BACKGROUND-012` is Complete and `ARCH-007-SYSTEM-TEST-005` is Ready / manual-gated. It has not been claimed or started; explicit developer invocation remains required.
+
 
 Snapshot synchronized 2026-09-08 after SHOPIFY-003 Attempt 1 architect review:
 
@@ -917,7 +920,7 @@ SYSTEM TESTS
 Current architect-accepted/published Shared release is `@modainteract/moda-interact-shared@0.8.0`.
 The SHOPIFY-003 correction deliberately restores its previously accepted consumer baseline to 0.7.4 rather than opportunistically consuming the pack-contract release.
 
-ARCH-051-BACKGROUND-001 (originally materialised under the conflicting ARCH-050 identity) independently reproduced the existing ARCH-007-BACKGROUND-010 scheduling integration timeout on 2026-10-26. ARCH-007-BACKGROUND-012 completed the bounded Background diagnosis/correction; SYSTEM-TEST-005 remains terminal/manual-gated until its own prerequisites and developer checkpoint are satisfied.
+ARCH-051-BACKGROUND-001 (originally materialised under the conflicting ARCH-050 identity) independently reproduced the existing ARCH-007-BACKGROUND-010 scheduling integration timeout on 2026-10-26. ARCH-007-BACKGROUND-012 is architect-accepted Complete. SYSTEM-TEST-005 is Ready / manual-gated because all implementation prerequisites are Complete; wait for the developer checkpoint and explicit invocation.
 
 ## Open Questions
 

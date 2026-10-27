@@ -21,8 +21,8 @@ Coordinator: `moda_architect`
 | BACKGROUND-009 | Activate billed recovery packs and consume purchased credits before overage | Complete | DATABASE-005, SHARED-006, BACKGROUND-007 |
 | BACKGROUND-010 | Coalesce fragmented inbound WhatsApp messages into one CommerceAgent turn | Complete | DATABASE-006, BACKGROUND-004 |
 | BACKGROUND-011 | Add inbound WhatsApp abuse admission before routing and CommerceAgent work | Complete | BACKGROUND-010 |
-| BACKGROUND-012 | Repair settled conversation-turn scheduling under concurrent inbound fragments | Ready | BACKGROUND-010, BACKGROUND-011 |
-> **State synchronization — 2026-09-08:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
+| BACKGROUND-012 | Repair settled conversation-turn scheduling under concurrent inbound fragments | Complete | BACKGROUND-010, BACKGROUND-011 |
+> **State synchronization — 2026-10-27:** The task table above is regenerated from the individual task YAML frontmatter. Those task files remain authoritative. Historical narrative below may describe earlier frontiers.
 The individual task YAML metadata is authoritative.
 
 Current frontier:
@@ -33,4 +33,4 @@ Current frontier:
 - BACKGROUND-008 Attempt 3 received Changes Requested; substantive runtime behavior is accepted and the same task is Ready for a final telemetry/test-hardening Attempt 4.
 - BACKGROUND-010 Attempt 4 is architect-accepted Complete.
 - BACKGROUND-011 Attempt 3 is architect-accepted Complete. Raw sender/global abuse admission and settled-turn sender/conversation/shop/global admission are operational safety, not merchant billing. SYSTEM-TEST-005 remains pending/manual-gated.
-- BACKGROUND-012 is Ready to diagnose and correct the independently reproduced latest-settled-version scheduling timeout; SYSTEM-TEST-005 remains pending/manual-gated and now depends on BACKGROUND-012.
+- BACKGROUND-012 Attempt 2 is architect-accepted Complete. SYSTEM-TEST-005 is Ready / manual-gated now that all four implementation dependencies are Complete; await explicit developer invocation after manual validation.

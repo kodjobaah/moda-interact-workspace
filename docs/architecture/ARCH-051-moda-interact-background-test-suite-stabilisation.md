@@ -1,7 +1,7 @@
 ---
 id: ARCH-051
 title: moda-interact-background test-suite stabilisation
-status: in_progress
+status: implemented
 coordinator: moda_architect
 created: 2026-10-26
 updated: 2026-10-27
@@ -11,7 +11,7 @@ updated: 2026-10-27
 
 ## Status
 
-In Progress. The sole Background task is Ready for Attempt 2 after its ARCH-007 scheduling-failure dependency completed.
+Implemented. The sole Background task is Complete after Attempt 2 passed the full unit and integration suites on the merged revision.
 
 ## Problem
 
@@ -118,7 +118,7 @@ customer payloads in test diagnostics.
 
 | Task | Owner | Status | Depends On |
 |------|-------|--------|------------|
-| ARCH-051-BACKGROUND-001 | moda_background | Ready | ARCH-007-BACKGROUND-012 (Complete) |
+| ARCH-051-BACKGROUND-001 | moda_background | Complete | ARCH-007-BACKGROUND-012 (Complete) |
 
 Integrated `moda_system_test` validation is not applicable: this initiative
 validates an existing repository test suite and does not add a cross-service
@@ -133,6 +133,7 @@ separate task and dependency update.
 ## Change History
 
 - 2026-10-27 — Promoted the test-suite stabilisation initiative from the conflicting ARCH-050 identity to ARCH-051; recorded the completed ARCH-007 scheduling repair as a satisfied task dependency. Attempt 1 evidence remains in the task record.
+- 2026-10-27 — Accepted ARCH-051-BACKGROUND-001 after Attempt 2 passed full unit (293 files / 3,024 tests) and integration (5 files / 13 tests) validation on merged revision `caa415fe5743e16693da79da8ab5e81f3d09259f`.
 
 - 2026-10-26: Created from the full Background test-run evidence; no test or
   implementation changes were made during task authoring.

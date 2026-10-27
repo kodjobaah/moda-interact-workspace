@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -376,7 +376,7 @@ test expectation defects were corrected in the four changed test files.
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Review Status
 
 Changes Requested — report/evidence only
 
@@ -473,3 +473,52 @@ acceptance. At the time of this review, the task remained `blocked` until report
 ### Follow-up
 
 On Attempt 2, complete the report/evidence corrections above, rerun the full unit and integration suites after `ARCH-007-BACKGROUND-012`, and resubmit for Architect Review. The dependency is Complete and the task is Ready; no claim has been made.
+
+
+### Review Status
+
+Accepted — Attempt 2
+
+### Review Notes
+
+Attempt 2 satisfies the task acceptance criteria. The previously requested
+failure inventory, ARCH-025 comparison, launcher/worktree synchronization
+records, and acceptance status reconciliation are present. The formerly failing
+conversation-turn scheduling integration is covered by the completed
+`ARCH-007-BACKGROUND-012` dependency, and both full suites pass on the merged
+implementation revision. The changes are confined to four Background test files;
+there are no production-code, package-manifest, lockfile, Shared-contract, or
+baseline changes. The test expectations now follow the declared Shared 2.5.1
+release and the current automated-template preparation/serialization contracts.
+The deferred database index remains untouched.
+
+### Reviewed Files
+
+- Implementation commit `c5e019621274545d17b773380aa8364303e2d377` and merged revision `caa415fe5743e16693da79da8ab5e81f3d09259f`.
+- `tests/unit/runtime/observability-startup.test.ts`
+- `tests/unit/services/checkout-refresh.test.ts`
+- `tests/unit/services/conversation-moderation/automated-template-input.test.ts`
+- `tests/unit/services/matured-candidate.materialization.test.ts`
+- This task's Attempt 2 report, validation, and launcher/worktree evidence.
+- `ARCH-051` architecture and domain index; `ARCH-007-BACKGROUND-012` dependency record.
+
+### Validation Reviewed
+
+- Attempt 2 report records `npm ci` on Node `v24.19.0` / npm `11.17.0`.
+- Full `npm run test:unit`: 293 files / 3,024 tests passed on merged commit `caa415fe5743e16693da79da8ab5e81f3d09259f`.
+- Full `npm run test:integration`: 5 files / 13 tests passed on the same merged commit.
+- Attempt 2 `git diff --check` passed; implementation worktree was clean at the merged revision.
+- Launcher evidence records the dedicated parent and implementation worktrees, mirrored task branches, start synchronization, and recursive submodule initialization. No implementation rerun was needed for this architect review.
+
+### Architecture Conformance
+
+Accepted. The implementation remains within Background ownership and task scope,
+uses the declared published Shared dependency without a local workaround, does
+not weaken unrelated behavioral assertions, and makes no production behavior or
+cross-service contract changes. The ARCH-007 scheduling repair is an explicit,
+completed dependency. No unresolved blocker or new follow-up task remains.
+
+### Follow-up
+
+None. ARCH-051 has one implementation task and no integrated system-test task is
+applicable. No dependent implementation work was started.

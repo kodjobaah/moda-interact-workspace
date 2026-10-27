@@ -14,7 +14,7 @@
 | ARCH-004 | complete 6, ready 1 | [Cart activity recovery rescheduling](ARCH-004-cart-activity-recovery-rescheduling.md) |
 | ARCH-005 | complete 17, pending 2, ready 1, superseded 2 | [Global internationalisation and WhatsApp markets](ARCH-005-global-internationalisation-whatsapp-markets.md) |
 | ARCH-006 | complete 21, pending 3, review 3, superseded 2 | [Merchant communications and support inbox](ARCH-006-merchant-communications-support-inbox.md) |
-| ARCH-007 | complete 21, pending 13, ready 5 | [Shopify billing, usage and WhatsApp cost control](ARCH-007-shopify-billing-usage-cost-control.md) |
+| ARCH-007 | complete 33, pending 4, ready 3 | [Shopify billing, usage and WhatsApp cost control](ARCH-007-shopify-billing-usage-cost-control.md) |
 | ARCH-008 | complete 7, ready 1, superseded 1 | [Shopify App Pricing conformance](ARCH-008-shopify-app-pricing-conformance.md) |
 | ARCH-009 | complete 5, pending 2, ready 2 | [Merchant billing lifecycle, cancellations and refunds](ARCH-009-merchant-billing-lifecycle-cancellations-refunds.md) |
 | ARCH-010 | complete 40, pending 34, ready 4, superseded 8 | [Merchant lifecycle state transitions and behavioural access](ARCH-010-merchant-lifecycle-state-transitions.md) · [First-production baseline](ARCH-010-first-production-baseline.md) |
@@ -22,7 +22,7 @@
 | ARCH-012 | pending 7, ready 3 | [Moda-managed WhatsApp communications](ARCH-012-moda-managed-whatsapp-communications.md) |
 | ARCH-013 | complete 2 | [Merchant application routing, navigation and lifecycle coherence](ARCH-013-merchant-application-routing-navigation.md) |
 | ARCH-050 | complete 1, pending 6, ready 5 | [Merchant recovery initial outreach Support notifications](ARCH-050-merchant-recovery-initial-outreach-support-notifications.md) |
-| ARCH-051 | ready 1 | [Background test-suite stabilisation](ARCH-051-moda-interact-background-test-suite-stabilisation.md) |
+| ARCH-051 | complete 1 | [Background test-suite stabilisation](ARCH-051-moda-interact-background-test-suite-stabilisation.md) |
 
 ## Current execution highlights
 
