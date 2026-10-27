@@ -57,7 +57,7 @@ Use `ModaApiClient` existing installation credentials and exact `woo.shop-brand.
 
 ### R3. Triggers and retries
 
-Installation/activation alone may precede obtaining Moda installation credentials. After the **first successful authenticated connection**, enqueue one initial ShopBrand capture. A plugin upgrade on an already-connected site performs one initial capture if its installation-scoped bootstrap marker is absent. Mark initial capture **enqueued**, not provider-delivered; do not use this marker to claim success. No automatic site-title/logo/icon/theme/attachment change hooks and no daily reconciliation are permitted. On upgrade, cancel any legacy recurring brand-reconciliation actions created by an older implementation. Keep one explicit internal, authenticated-installation-scoped `requestSync()` entry point available for a future capability/nonce-protected merchant UI; no UI or WordPress REST route is implemented here. Use Action Scheduler to coalesce captures, retry transient 408/429/5xx/network failures (20s, 60s, 5m, 15m; five attempts total) and stop on definitive 4xx. If initial enqueue fails because the scheduler is unavailable, retain eligibility to retry enqueue at next runtime startup; exhausted publication retries are logged and do not activate a periodic reconciliation. Publishing must not block storefront checkout or reveal credentials in logs. An explicitly requested future capture of a removed logo/icon publishes null for that role.
+Installation/activation alone may precede obtaining Moda installation credentials. After the **first successful authenticated connection**, enqueue one initial ShopBrand capture. A plugin upgrade on an already-connected site performs one initial capture if its installation-scoped bootstrap marker is absent. Mark initial capture **enqueued**, not provider-delivered; do not use this marker to claim success. No automatic site-title/logo/icon/theme/attachment change hooks and no daily reconciliation are permitted. This ShopBrand feature has **never been deployed**: do not introduce legacy recurring-action cleanup or migration markers, and never query the scheduler store for obsolete jobs at bootstrap. Keep one explicit internal, authenticated-installation-scoped `requestSync()` entry point available for a future capability/nonce-protected merchant UI; no UI or WordPress REST route is implemented here. Use Action Scheduler to coalesce captures, retry transient 408/429/5xx/network failures (20s, 60s, 5m, 15m; five attempts total) and stop on definitive 4xx. If initial enqueue fails because the scheduler is unavailable, retain eligibility to retry enqueue at next runtime startup; exhausted publication retries are logged and do not activate a periodic reconciliation. Publishing must not block storefront checkout or reveal credentials in logs. An explicitly requested future capture of a removed logo/icon publishes null for that role.
 
 ### R4. Security
 
@@ -68,7 +68,7 @@ Only locally read WordPress settings/attachment metadata. Never install a public
 - [x] Create PHP source reader and normalised payload builder.
 - [x] Add authenticated Moda API client publication and bounded retry hooks.
 - [x] Test source changes/removals and missing logo/icon through an explicit new snapshot.
-- [x] Ensure installation/connection bootstrap is idempotent; remove brand-change hooks and daily reconciliation, clean up legacy recurring actions, and expose reusable internal `requestSync()`.
+- [ ] Ensure installation/connection bootstrap is idempotent; register no brand-change hooks or daily reconciliation, avoid legacy cleanup/store queries on already-bootstrapped requests, and expose reusable internal `requestSync()`.
 - [x] Document rollout/reconnect and version support, including that post-install branding changes are not automatically synchronised.
 
 ## Interfaces / Contracts
@@ -95,7 +95,7 @@ None. The `woo.shop-brand.v1` API route, request and response contract are alrea
 ## Validation
 
 - [x] PHP unit tests with stubbed WP Site Identity APIs and attachment data.
-- [x] Client API/auth body/response tests, bounded Action Scheduler retries, absence of automatic/daily triggers, cleanup of existing recurring jobs and explicit sync reuse.
+- [ ] Client API/auth body/response tests, bounded Action Scheduler retries, absence of automatic/daily triggers, no scheduler-store lookups on already-bootstrapped requests, and explicit sync reuse.
 - [x] Woo plugin build/lint/JS or PHP tests required by affected code and `git diff --check`.
 
 ## Stop Condition
@@ -104,7 +104,7 @@ After the defined Work Items, Acceptance Criteria and Validation are complete, r
 
 ## Implementation Notes
 
-All task work must use the canonical launcher-provided **dedicated parent and implementation worktrees**, synced task/<TASK_ID> branches and start-of-attempt evidence. Inspect the actual pinned package scripts, source and existing conventions before editing. Do not merge branches, push main, edit another repository, start an enabled task or change any `docs/decisions/**/_index.md`. Use structured logging via `@modainteract/moda-interact-shared/logging`; secrets and full untrusted URLs must not enter diagnostics. Document changed files, relevant test commands, results, security/tenant checks, commits and worktree evidence in the Completion Report.
+All task work must use the canonical launcher-provided **dedicated parent and implementation worktrees**, synced task/<TASK_ID> branches and start-of-attempt evidence. Inspect the actual pinned package scripts, source and existing conventions before editing. Do not merge branches, push main, edit another repository, start an enabled task or change any `docs/decisions/**/_index.md`. Use `@modainteract/moda-interact-shared/logging` in Node runtimes. **Approved PHP exception for this WooCommerce ShopBrand publisher:** use WooCommerce's existing `wc_get_logger()` with bounded reason codes and optional numeric HTTP status/attempt; use a similarly redacted `error_log` fallback if needed. Never log credentials, full untrusted URLs, exception messages or payloads; diagnostic failures must not change publication behaviour. Do not create a separate generic PHP logger. Document changed files, relevant test commands, results, security/tenant checks, commits and worktree evidence in the Completion Report.
 
 No additional assumptions are authorised.
 
@@ -182,15 +182,15 @@ Evidence from the developer-supplied terminal recording dated **2026-10-27**, su
 
 ### Architectural Concerns
 
-- The PHP-native logging choice has not been approved against the task's shared-logging instruction. Request an explicit architect decision documenting the PHP-compatible boundary or prescribing an approved adapter; do not claim this deviation is accepted by the developer self-review.
+- The PHP-native ShopBrand logging boundary was unapproved at Attempt 1 self-review; the architect's subsequent 2026-10-27 decision explicitly approves the bounded WooCommerce logger (see parent architecture and Architect Review below). The developer must still validate redaction and failure isolation in the updated evidence.
 - The implementation contains no new public WordPress endpoint, direct Moda database/R2 connection, or automatic brand-change polling. Idempotency and authoritative tenant selection on the hosted API are reserved for API-001 and system validation.
 
 ## Developer Self-Review - Changes Requested
 
 ### Required Corrections
 
-- Make legacy recurring-action cleanup a one-time migration/bootstrap operation rather than running `as_has_scheduled_action()` on every request after `action_scheduler_init`. Keep the initial connected-installation bootstrap and legacy cleanup correct, but ensure already-bootstrapped requests avoid repeated Action Scheduler/store lookups. Add a regression test that counts legacy-action lookups across repeated initialization and proves the steady-state path performs none; retain coverage that pre-existing legacy schedules are removed.
-- Resolve the PHP logging deviation with `moda_architect`: record explicit approval of the WooCommerce logger as the PHP runtime boundary, or implement the architect-prescribed PHP-compatible shared logging adapter. Keep credential/source-URL redaction and ensure logging failures do not affect publication behavior.
+- **Superseded by architect on 2026-10-27:** the requirement to perform a one-time legacy cleanup and retain legacy-action removal tests. This feature has never been deployed; instead **remove** the obsolete cleanup method, constants, test scaffolding and synthetic recurring-action fixture. Prove that already-bootstrapped requests do not look up Action Scheduler jobs and that no recurring branding jobs are scheduled. Keep the first-connection/upgrade bootstrap and bounded retries.
+- **Architect decision recorded 2026-10-27:** WooCommerce's native PHP logger is approved for this ShopBrand publisher, because the shared Node logging export cannot run inside WordPress PHP. Preserve redacted semantic codes and exception isolation; review the updated test evidence before marking accepted.
 
 ### Review Evidence
 
@@ -210,7 +210,11 @@ Pending.
 
 ### Review Notes
 
-None.
+**Scope clarification (2026-10-27):** The ARCH-049 WooCommerce ShopBrand feature has not been deployed, so no merchant site can hold a production legacy ShopBrand reconciliation schedule. Legacy cleanup/migration work and its tests are withdrawn. Remove the unused cleanup entirely; retain a test proving no Action Scheduler store lookups during repeated already-bootstrapped requests, and verify no recurring branding jobs are created. The prior developer self-review requirement to retain legacy cleanup coverage is superseded.
+
+**PHP logging decision (2026-10-27):** Approve `wc_get_logger()` as the existing native PHP sink for this ShopBrand feature, with a redacted `error_log` fallback and no extra generic adapter. The Node-only Shared logger remains mandatory for Node services. The developer still needs to demonstrate bounded diagnostics, absence of sensitive values, and failure isolation.
+
+This is a task-scope decision, **not** acceptance of the implementation. Status remains `ready` until developer validation and updated Completion Report are submitted.
 
 ### Reviewed Files
 
