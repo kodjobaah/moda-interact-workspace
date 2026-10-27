@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 26
 executor: null
 claimed_at: null
@@ -112,7 +112,7 @@ After only this task's work, criteria and required validation, complete the Comp
 
 ### Status
 
-**Ready for Review — Developer Attempt 2.** The original unpaid-COD defect and the Action Scheduler checkout retry test blocker have passing real WordPress/HPOS evidence. The developer reports final commit `6818b8a` was pushed to the implementation task branch. **Not architect-accepted; explicit developer completion remains pending.**
+**Changes Requested — Developer Attempt 2.** The unpaid-COD defect and Action Scheduler checkout retry test blocker have passing real WordPress/HPOS evidence, and implementation commit `6818b8a` is published. However, the canonical parent history contains no Attempt 2 developer claim, and the report explicitly says the Attempt 2 launcher preparation and synchronization packet cannot be verified. The implementation is not rejected for a demonstrated code defect; the attempt workflow evidence must be repaired through a new canonical claim before another review. Attempt 2 remains unchanged; do not infer a claim or increment its attempt here.
 
 ### Files Changed
 
@@ -225,3 +225,10 @@ None.
 - **Functional evidence:** 27 October WordPress/HPOS guest and customer COD false-paid regression plus confirmed-payment/status-only/cancellation/replay/503 checks passed; checkout Action Scheduler retry check passed in the same WOOCOMMERCE-003 runner.
 - **Validation caveats:** PHP suite 190/190 and build/lint were evidenced earlier in Attempt 2; snapshot Node tests 65/65 passed; full JS rerun and Attempt 2 launcher claim packet were not supplied. Retain the separate ARCH-040 failure in review context.
 - **Review authority:** the `## Architect Review` section remains unchanged. `completion_mode: developer` requires a durable passing review followed by the developer's explicit `/moda_developer_update ARCH-048-WOOCOMMERCE-003 complete` decision. Downstream tasks must not be marked newly Ready from this submission alone.
+
+## Developer Self-Review - Changes Requested (Attempt 2, 2026-10-27)
+
+- Outcome: **changes requested** because Attempt 2 was submitted without a verifiable canonical `/moda_developer_create` claim and start-of-attempt synchronization/preparation packet. The task report itself identifies this as unverified, and reachable parent task history contains no Attempt 2 claim record. Do not treat the review-submission commit or implementation commits as a substitute for the claim.
+- Implementation assessment: implementation branch `task/ARCH-048-WOOCOMMERCE-003` is clean and published at `6818b8a`, equal to `origin/task/ARCH-048-WOOCOMMERCE-003`; `git diff --check origin/main...HEAD` passes. The reported WordPress/HPOS integration evidence covers the Attempt 1 COD defect and checkout retry correction. No task-scoped functional defect is established by this review.
+- Required correction: use `/moda_developer_create ARCH-048-WOOCOMMERCE-003` to claim the next canonical attempt. Record the launcher-resolved parent and implementation paths, dependency check, synchronized branch heads, clean-state evidence, recursive submodule state if applicable, and claim commit on the parent task branch. Then rerun the task-scoped validation required by the task, including PHP tests if the environment supports them; retain the unrelated ARCH-040 JavaScript failure as a separately identified existing failure rather than claiming the full suite passes.
+- Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Attempt 2 is preserved; the next valid developer claim increments exactly once to Attempt 3. No task branch was merged to `main`.
