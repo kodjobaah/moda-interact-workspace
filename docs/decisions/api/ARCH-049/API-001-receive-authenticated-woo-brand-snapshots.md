@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-049-DATABASE-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
-updated: 2026-10-25
+updated: 2026-10-27
 ---
 
 # Accept authenticated WooCommerce ShopBrand snapshots
@@ -180,3 +180,8 @@ Not reviewed.
 ### Follow-up
 
 None.
+
+## Dependency Frontier Reconciliation
+
+- Promoted from `pending` to `ready` on 2026-10-27 after its only declared dependency, `ARCH-049-DATABASE-001`, was explicitly completed.
+- Attempt remains 0; `executor` and `claimed_at` remain null. This is eligibility only; no implementation attempt or implementation worktree was created.
