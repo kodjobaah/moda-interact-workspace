@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-27T10:21:58Z
+attempt: 1
 depends_on: []
 enables: ["ARCH-049-BACKGROUND-003"]
 created: 2026-10-25
@@ -112,7 +112,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-Not Started — defined but not materialised.
+In Progress — Attempt 1 claimed by developer at 2026-10-27T10:21:58Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
