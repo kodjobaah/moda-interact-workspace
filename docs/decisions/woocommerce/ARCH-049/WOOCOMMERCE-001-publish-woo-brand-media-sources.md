@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -112,7 +112,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-**Ready for Review — corrected developer submission (recorded attempt 1).** WooCommerce implementation commit `01b3be5` (following initial `5b12eba`) has been pushed to `origin/task/ARCH-049-WOOCOMMERCE-001`. The requested removal of undeployed legacy scheduling cleanup is implemented, PHP logger approval is documented, and the latest Docker-backed WordPress integration passes. This is a submission for architectural review, **not** Accepted or Complete. The uploaded parent task file records `attempt: 1`, `status: ready`, and no active claim. Because no later launcher claim is visible in the supplied evidence, the historical attempt number is preserved rather than inventing a claim; the reviewer should verify/reconcile any missing rework-claim and start-of-attempt synchronisation evidence before acceptance.
+**Developer Self-Review - Changes Requested — corrected submission, Attempt 1.** The corrections are present in implementation commit `01b3be5` and its latest focused PHPUnit suite passed 17 tests / 139 assertions during review. However, the correction was submitted without a new launcher claim after the Changes Requested transition: parent history moves from `60dac3ec` (Changes Requested) through correction/report commits to `b21fd880` (review submission), with no Attempt 2 claim or start-of-attempt synchronization record. Per the developer workflow, the next `/moda_developer_create ARCH-049-WOOCOMMERCE-001` must claim Attempt 2 and record synchronization evidence before the corrected submission can be accepted. Current state is `ready`, with `executor: null`, `claimed_at: null`, and `attempt: 1` unchanged. The code fixes are not rejected; this is a lifecycle-evidence correction, not completion or architect acceptance.
 
 ### Developer Takeover and Worktree Evidence
 
@@ -168,10 +168,12 @@ Evidence from the supplied 2026-10-27 terminal recordings and independent checks
 
 - **PASS (latest source, live integration)** — `WP_ENV_PORT=8899 npm run test:integration:shop-brand` emitted `ARCH-049 Woo ShopBrand native WordPress + Action Scheduler + authenticated HTTPS integration PASS`. `wp-env` started on port 8899, ran real WordPress/WooCommerce hooks, Action Scheduler and the local authenticated HTTPS fixture, then stopped cleanly. The previous initial-capture assertion and port conflict did not recur. **One passing invocation is visible in the latest recording; a second consecutive passing run is not evidenced.**
 - **PASS (earlier developer PHPUnit execution)** — `composer test -- --filter ShopBrandPublicationTest` reported **17 tests / 139 assertions** in the 14:30 terminal recording. This predates the final published `01b3be5` changes, which add/replace logging and bootstrap-regression test cases; **a fresh PHPUnit run against the published head is not present** in the latest log and should be supplied for review.
+- **PASS (independently rerun during review on published HEAD `01b3be5`)** — `composer test -- --filter ShopBrandPublicationTest`: PHPUnit 11.5.56, PHP 8.5.11, **17 tests / 139 assertions**, no failures. This closes the final-head PHPUnit evidence gap.
 - **PASS (latest snapshot, independent PHP syntax validation)** — all **88/88** PHP targets declared in `composer.json` passed `php -l`, including the updated publisher and PHPUnit test file. The earlier developer `composer lint` output also passed its declared targets.
 - **PASS (latest snapshot, independent focused Node tests)** — `node --test tests/integration/scenarios/shop-brand-runner.test.mjs tests/integration/wordpress-api-fixture.test.mjs`: **6/6 passed**, including first-connection ordering, retry-safe fixture behaviour and the `woo.shop-brand.v1` authenticated fixture contract.
 - **PASS (latest snapshot)** — JavaScript syntax checks passed for the four modified integration files. The source inspection confirms no legacy reconciliation method/constant, no recurring registration and no brand-change hook. Unit test code specifically counts store lookups across repeated bootstrapped requests, verifies `requestSync()` coalescing and guards the logging-failure retry path.
 - **PASS (Git publication evidence)** — the terminal transcript shows commit `01b3be5` (7 files) and a successful push advancing `task/ARCH-049-WOOCOMMERCE-001` from `5b12eba` to `01b3be5`. Remote-state evidence comes from the developer's transcript; this ZIP is not an independent remote checkout.
+- **PASS (Git publication evidence, independently verified)** — implementation HEAD `01b3be50ba8409f97d5dc9074f30a7b66d0020d8` matches `origin/task/ARCH-049-WOOCOMMERCE-001`; implementation worktree is clean. Parent HEAD `b21fd880d822e1783ce0be5d902f0bd3783712af` matches its origin task ref.
 - **Out of scope for WooCommerce-local acceptance** — real hosted `ARCH-049-API-001` processing, PostgreSQL/R2 and `ARCH-049-SYSTEM-TEST-001` remain later separately owned integration gates.
 
 **Review follow-up:** before final acceptance, request a fresh `composer test -- --filter ShopBrandPublicationTest` log on `01b3be5` and confirm whether the launcher recorded a new correction-cycle claim and start-of-attempt synchronisation. No evidence is invented for either item.
@@ -189,7 +191,8 @@ Evidence from the supplied 2026-10-27 terminal recordings and independent checks
 ### Unresolved Issues
 
 - `ARCH-049-API-001` remains an independent prerequisite for real hosted publication and the later `ARCH-049-SYSTEM-TEST-001`. The WooCommerce implementation may be reviewed before those tasks are Complete.
-- The latest WordPress/Action Scheduler integration passes. A fresh PHPUnit run on published head `01b3be5` and an explicit verification of rework-claim/synchronisation evidence are **review evidence follow-ups**; do not treat the earlier PHP test log as proof that the final changed tests ran.
+- The latest WordPress/Action Scheduler integration passes, and the fresh PHPUnit run on `01b3be5` also passes. The correction-cycle claim/synchronization evidence remains unresolved. The next developer preparation must claim Attempt 2 and record the synchronized canonical worktrees before resubmitting.
+- The canonical parent task worktree currently contains an untracked `typescript` item. It was not changed or staged during review and must be preserved unless its owner explicitly directs otherwise. The implementation worktree is clean.
 
 ### Architectural Concerns
 
@@ -222,6 +225,32 @@ On 2026-10-27 the developer published corrected WooCommerce commit `01b3be5` aft
 ### Evidence and reconciliation note
 
 The current task frontmatter remains at `attempt: 1` because the supplied parent snapshot did not record a subsequent `/moda_developer_create` claim. The existing Attempt 1 worktree evidence remains on record; latest commit/push and test execution occurred in the same dedicated implementation worktree. The reviewer should explicitly reconcile the missing correction-cycle preparation record and request updated PHPUnit evidence before acceptance rather than manufacture a claimed attempt or infer that all fresh tests were run.
+
+## Architect Review
+
+## Developer Self-Review - Changes Requested — Corrected Submission
+
+### Review Findings
+
+- The corrected implementation is published at `01b3be50ba8409f97d5dc9074f30a7b66d0020d8`; the latest `composer test -- --filter ShopBrandPublicationTest` passed 17 tests / 139 assertions. The commit passes `git show --check`.
+- The parent task history shows `60dac3ec3f68a4c54566e1cd7d6f9f4d4c36e351` as the Changes Requested decision, followed by implementation/report corrections and review submission `b21fd880d822e1783ce0be5d902f0bd3783712af`; there is no subsequent durable developer claim or start-of-attempt synchronization record.
+- The parent task worktree has an untracked `typescript` item. It was left untouched. The implementation task worktree is clean.
+
+### Required Correction
+
+Return the task to `ready` and invoke `/moda_developer_create
+ARCH-049-WOOCOMMERCE-001` to claim Attempt 2. Reuse the same canonical task
+branches/worktrees, record the actual synchronization evidence, and preserve
+the already-published implementation commits unless a concrete code correction
+is needed. Re-run or explicitly validate the focused final-head PHPUnit suite in
+the claimed attempt, then resubmit through `/moda_developer_update`.
+
+### Decision
+
+Review is **Changes Requested** for lifecycle evidence only. No new attempt is
+created here. `status: ready`, `executor: null`, `claimed_at: null`,
+`attempt: 1` unchanged. No implementation or unrelated untracked file was
+modified by this review.
 
 ## Architect Review
 
