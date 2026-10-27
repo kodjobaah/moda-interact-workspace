@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -143,9 +143,9 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ### Status
 
-**Attempt 3 returned to ready for changes requested (2026-10-27).** No implementation changes were made in this attempt. The canonical developer-update review confirmed the published implementation remains unchanged and the required external-owner verification/scope decision is still unresolved: `ARCH-047-WOOCOMMERCE-001` remains pending. Obtain owner-side admission/fixture evidence or an explicit architect amendment to BG007's acceptance boundary before resuming; do not modify Woo-owned code.
+**Complete — Attempt 3, following architect acceptance and explicit developer completion (2026-10-27).** The architect amendment keeps WooCommerce picker/proxy verification with `ARCH-047-WOOCOMMERCE-001` and `ARCH-047-SYSTEM-TEST-001`; BG007's own final-admission checks and completed Shopify/API owner evidence remain in scope. The implementation branch is clean and published, and the reviewed Attempt 2 validation remains applicable because Attempt 3 made no implementation changes.
 
-**Lifecycle:** Attempt 1, Attempt 2 and Attempt 3 Changes Requested records remain historical and intact. Attempt 3 is returned to `ready` with `attempt: 3`; the next canonical developer claim increments exactly once. BG001, BG004 and BG006 remain complete. Developer completion authority is unchanged (`completion_mode: developer`).
+**Lifecycle:** Attempt 1, Attempt 2 and Attempt 3 Changes Requested records remain historical and intact. Attempt 3 was accepted without changing the attempt number. BG001, BG004 and BG006 remain complete. The explicit Developer Completion Decision is recorded below; no task branch was merged to `main`.
 
 ### Files Changed
 
@@ -350,3 +350,12 @@ The prior Changes Requested record is preserved as history. This amendment resol
 - No `depends_on` entry was added. Historical self-review statements describing Woo evidence as a BG007 blocker are superseded by this dated amendment and remain intact for audit.
 
 The Attempt 3 implementation is accepted against this clarified boundary. Since `completion_mode: developer`, the task is set to `review`, with `executor` and `claimed_at` clear and Attempt 3 preserved. Explicit developer completion remains outstanding.
+
+## Developer Completion Decision — 27 October 2026
+
+- Decision: the developer explicitly invokes `/moda_developer_update ARCH-047-BACKGROUND-007 complete` and accepts Attempt 3 following the passing Architect Review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 3`; the accepted attempt is unchanged.
+- Implementation publication: `moda-interact-background` branch `task/ARCH-047-BACKGROUND-007` is clean and pushed at `a67c8f8e6c3527a416d0100253b4cd78dc408545`.
+- Parent publication: this completion record is committed and pushed on parent branch `task/ARCH-047-BACKGROUND-007`.
+- Dependency frontier: BG007 has no enabled tasks. `ARCH-047-WOOCOMMERCE-001` remains independently pending, and `ARCH-047-SYSTEM-TEST-001` remains the terminal integration gate; no frontier promotion is applicable.
+- Integration: no task branch was merged to `main`.
