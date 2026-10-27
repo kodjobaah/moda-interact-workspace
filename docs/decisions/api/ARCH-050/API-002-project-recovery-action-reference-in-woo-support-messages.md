@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -175,24 +175,24 @@ Parent workspace claim commit: `6265a655f812b5035f90550fa0be22490c3ce824`, pushe
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Awaiting implementation.
+Accepted at Attempt 1. The API changes only the Support history response to strict schemaVersion 2 with a required nullable `checkoutRecoveryId`; compose/read receipts remain v1. The SQL uses a same-shop LEFT JOIN and exposes the ID only for an available SYSTEM notice with the recognised code and version. Missing, deleted, cross-shop, malformed, wrong-version and unrelated references resolve to null. Existing auth, paging, translation, unread/read, and order behavior is preserved. Unexpected persistence/DTO errors reach the shared logger and sanitized 500 path; a throwing logger is isolated. The implementation and recorded validation conform to the task and ARCH-050.
 
 ### Reviewed Files
 
-None.
+`src/merchant/support/contract.ts`; `src/merchant/support/read.service.ts`; `src/merchant/support/routes.ts`; `openapi/merchant-support-v1.yaml`; `tests/unit/merchant/support/contract.test.ts`; `tests/unit/merchant/support/openapi.test.ts`; `tests/unit/merchant/support/routes.test.ts`; `tests/integration/merchant/support/service.postgres.test.ts`.
 
 ### Validation Reviewed
 
-None.
+Reviewed the Completion Report: `npm run test:arch035-woo-support:unit` (14 tests), `npm run test:arch035-woo-support:postgres` (1 disposable-PostgreSQL integration test), `npm run typecheck`, `npm run lint`, and `git diff --check` all reported passed. Not rerun during architect review.
 
 ### Architecture Conformance
 
-Not yet reviewed.
+Conforms to ARCH-050, task scope, the hosted Support v2 contract, same-shop tenant boundary, shared logging boundary, and repository ownership. No implementation changes crossed into WooCommerce or notification writing.
 
 ### Follow-up
 
-None.
+`ARCH-050-WOOCOMMERCE-002` is eligible and promoted to Ready. `ARCH-050-SYSTEM-TEST-002` remains Pending until its remaining prerequisites are Complete, including WOOCOMMERCE-002 and ARCH-048-WOOCOMMERCE-002/003. System-test gating remains terminal and is not a dependency of implementation work.
