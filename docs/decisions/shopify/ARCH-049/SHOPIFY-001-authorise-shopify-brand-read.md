@@ -7,8 +7,8 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 10
 executor: null
@@ -17,14 +17,18 @@ attempt: 0
 depends_on: []
 enables: ["ARCH-049-BACKGROUND-003"]
 created: 2026-10-25
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Authorise Shopify read_brand scope without implementing synchronisation
 
 ## Architecture
 
-`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. **Portable task definition, not materialised in a developer Git worktree.**
+`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`.
+
+## Execution Ownership Amendment
+
+On 2026-10-27, `/moda_developer_create ARCH-049-SHOPIFY-001` was invoked as an explicit developer takeover. Execution and completion authority are now `developer`; logical ownership remains `assigned_agent: moda_app` and `repository: moda-interact`.
 
 ## Objective
 
