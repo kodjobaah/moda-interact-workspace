@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -159,7 +159,7 @@ Canonical task branch and worktree evidence is required at execution. No `_index
 
 ### Status
 
-Ready for `moda_architect` review after Attempt 3 corrections and required validation. Attempt 1 remains recorded as blocked before source changes while the Background checkout lacked the accepted ARCH-050 database schema.
+Complete — Attempt 3 was accepted by `moda_architect` on 2026-10-27 after the requested task-record reconciliation and unexpected-error logging correction. Attempt 1 remains recorded as blocked before source changes while the Background checkout lacked the accepted ARCH-050 database schema.
 
 ### Attempt 3 Architect Review Corrections
 
@@ -304,6 +304,43 @@ The database fix is available at commit `f16d5fc955b1fa1215177cc89fb6fd326bfa65c
 ### Reopen Transition
 
 `blocked` to `ready`; `executor` and `claimed_at` cleared; `attempt` remains 1. This override does not claim the task.
+
+## Architect Review — Attempt 3 — Accepted — 27 October 2026
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+Attempt 3 resolves both corrections from the Attempt 2 review. The six Work Items, eight Acceptance Criteria and four Validation entries are checked and supported by the implementation and recorded evidence. Unexpected persistence/transaction failures now pass the original `{ error }` to the Shared logger's bounded Error serializer, retain `PERSISTENCE_FAILURE`, and rethrow the same error. The focused unit test asserts the error field and exact exception identity with a throwing logger; the real PostgreSQL integration suite covers rollback and retry after persistence failure.
+
+### Reviewed Files
+
+- `moda-interact-background/src/services/checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-initial-outreach-support-notice.service.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts`
+- `moda-interact-background/tests/integration/recovery-initial-outreach-support-notice.integration.test.ts`
+- This task's Attempt 3 Completion Report and canonical branch/worktree evidence.
+
+### Validation Reviewed
+
+- Focused unit suite: 8 tests passed, including `PERSISTENCE_FAILURE`, serialized error presence and exact rethrow with a throwing sink.
+- Disposable PostgreSQL integration suite: 8 tests passed through `npm run test:integration -- tests/integration/recovery-initial-outreach-support-notice.integration.test.ts`.
+- `npm run build`, targeted ESLint and `git diff --check` passed.
+- Implementation branch `task/ARCH-050-BACKGROUND-001` is clean and published at `7a8906278dfd053ac896dfa99d8d6d988410c889`; the database submodule is pinned to `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+
+### Architecture Conformance
+
+Conforms to the ARCH-050 transaction, lineage, idempotency, opt-in sampling, Support deduplication and structured logging requirements. The implementation remains Background-local and does not change Shopify, WooCommerce, billing, human-send or sequence-two behavior.
+
+### Dependency Frontier and Coordination
+
+This task uses `completion_mode: automatic`; architect acceptance transitions Attempt 3 to Complete. `ARCH-050-BACKGROUND-002` is eligible because its sole dependency is now Complete. `ARCH-050-BACKGROUND-003` is eligible because both `ARCH-050-BACKGROUND-001` and `ARCH-048-BACKGROUND-005` are Complete. Promote each unclaimed task on its canonical parent task branch without claiming it. The ARCH-050 architecture intentionally defers domain `_index.md` updates until the architecture session closes; preserve that decision and reconcile the stale Background index at that point.
+
+### Lifecycle
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 3`. The implementation and parent task branches remain unmerged to `main`.
 
 ## Architect Review — Attempt 2 — Changes Requested — 27 October 2026
 
