@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 10
-executor: developer
-claimed_at: '2026-10-27T10:08:36Z'
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: ["ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-BACKGROUND-004", "ARCH-049-API-001", "ARCH-049-ADMIN-002"]
@@ -95,11 +95,11 @@ Add `scripts/validate-arch049-shopbrand-schema.mjs` and `scripts/validate-arch04
 
 ## Work Items
 
-- [ ] Update Prisma and migration.
-- [ ] Add both exact validators and package scripts.
-- [ ] Run a fresh database migration.
-- [ ] Run upgrade migration with representative existing Shop and ShopBrand rows and record before/after data.
-- [ ] Prove invalid FK and duplicate ShopBrand.shopId reject while JSON business-invalid values remain database-storable.
+- [x] Update Prisma and migration.
+- [x] Add both exact validators and package scripts.
+- [x] Run a fresh database migration.
+- [x] Run upgrade migration with representative existing Shop and ShopBrand rows and record before/after data.
+- [x] Prove invalid FK and duplicate ShopBrand.shopId reject while JSON business-invalid values remain database-storable.
 
 ## Interfaces / Contracts
 
@@ -119,17 +119,17 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Migration preserves every existing ShopBrand row and all original fields with `whatsAppMedia={}` for legacy rows.
-- [ ] Prisma relations remain valid and exactly one ShopBrand row per shop remains enforced.
-- [ ] No new media table, business-rule SQL CHECK/trigger or extra source columns.
-- [ ] Fresh and upgrade PostgreSQL tests pass with exact validators.
+- [x] Migration preserves every existing ShopBrand row and all original fields with `whatsAppMedia={}` for legacy rows.
+- [x] Prisma relations remain valid and exactly one ShopBrand row per shop remains enforced.
+- [x] No new media table, business-rule SQL CHECK/trigger or extra source columns.
+- [x] Fresh and upgrade PostgreSQL tests pass with exact validators.
 
 ## Validation
 
-- [ ] Prisma format and validate with repository-declared commands.
-- [ ] Exact schema/SQL validators and mutation tests reject missing/wrong types, FK or schema location.
-- [ ] Disposable PostgreSQL fresh/upgrade and direct invalid FK/duplicate tests.
-- [ ] `git diff --check`.
+- [x] Prisma format and validate with repository-declared commands.
+- [x] Exact schema/SQL validators and mutation tests reject missing/wrong types, FK or schema location.
+- [x] Disposable PostgreSQL fresh/upgrade and direct invalid FK/duplicate tests.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -145,23 +145,42 @@ Coordinated rollout must update `moda-interact-admin/src/lib/admin/merchant-supp
 
 ### Status
 
-In Progress — developer Attempt 1 claimed 2026-10-27 after materializing the portable definition in the canonical task worktrees.
+Attempt 1 implementation and required validation passed developer self-review on 2026-10-27. The task is in `review` for the developer's explicit completion decision; no merge to `main` or dependent-task execution is performed here.
 
 ### Files Changed
 
-None.
+- `package.json` — added the ARCH-049 schema, migration, mutation and disposable PostgreSQL test commands.
+- `prisma/schema.prisma` — moved `ShopBrand` to `commerce` and added only the required non-null JSONB `whatsAppMedia` field; existing fields and Shop relations are preserved.
+- `prisma/migrations/20261025170000_arch049_shopbrand_commerce_media/migration.sql` — atomically moved the existing table and added the JSONB column without rebuilding the table.
+- `scripts/validate-arch049-shopbrand-schema.mjs` — exact Prisma model/relation validation.
+- `scripts/validate-arch049-shopbrand-migration.mjs` — exact DDL and historical constraint validation.
+- `scripts/test-arch049-shopbrand-validator-mutations.mjs` — mutation cases for invalid schema/migration variations.
+- `scripts/test-arch049-shopbrand-postgres.mjs` — disposable PostgreSQL fresh/upgrade, preservation and constraint behavior tests.
 
 ### Work Completed
 
-None.
+- Preserved the existing `ShopBrand` table identity and moved its Prisma mapping from `shopify` to `commerce`; retained all original fields, the unique `shopId`, `Shop.brand`, and cascading `Shop` relation.
+- Added `whatsAppMedia Json @default("{}") @db.JsonB` as the sole new model field. No asset table, extra relation, media enum, trigger or business-rule constraint was added.
+- Added the fixed migration using `ALTER TABLE ... SET SCHEMA` and `ADD COLUMN`; PostgreSQL tests verified the table, primary key, foreign key and unique-index OIDs survived the move.
+- Added repository scripts for exact validators, validator mutation coverage, and isolated PostgreSQL fresh/upgrade runs.
 
 ### Validation Results
 
-Not run.
+- **PASS** — `npm run test:arch049-shopbrand-schema`: exact `commerce.ShopBrand` shape and existing `Shop.brand` relation.
+- **PASS** — `npm run test:arch049-shopbrand-migration`: exactly two DDL statements, with the expected JSONB default.
+- **PASS** — `npm run test:arch049-shopbrand-validator-mutations`: all schema and migration mutations rejected, including wrong type/default/schema, missing FK/uniqueness, rebuilt table, extra field/model, CHECK and trigger.
+- **PASS** — `npm run validate`: Prisma schema valid.
+- **PASS** — `npx prisma format --check --schema prisma/schema.prisma`: all files formatted.
+- **PASS** — `npm run lint`: ESLint with zero warnings.
+- **PASS** — `npm run test:arch049-shopbrand:postgres:fresh`: all 65 migrations applied in a randomized Docker PostgreSQL container; table/default/FK/unique behavior verified.
+- **PASS** — `npm run test:arch049-shopbrand:postgres:upgrade`: all 65 migrations applied with representative pre-existing Shop and ShopBrand rows; every original row value and table/PK/FK/unique-index identity preserved, and legacy rows received `{}`. Invalid FK, duplicate shopId, null/invalid JSON, update/delete cascade and application-owned JSON rules were verified.
+- **PASS** — `git diff --check origin/main...HEAD` and `git diff --check` on the implementation task branch.
+- The PostgreSQL harness used unique containers with `--network none` and removed them on completion. No persistent database or application environment was used.
+- Validation ran both before and after the origin/main synchronization merge; the final pass is against implementation HEAD `728734b7f1c05a9175ada032e113babeb8066cda`.
 
 ### Deviations
 
-None.
+- The implementation worktree had an untracked terminal transcript during the first review inspection. It was left untouched. On re-entry it was absent, and the implementation worktree was clean before validation and synchronization; no task implementation was inferred from or made to that artifact.
 
 ### Assumptions
 
@@ -169,7 +188,7 @@ None beyond the explicit architecture/task contract.
 
 ### Unresolved Issues
 
-None; live environment availability is a validation prerequisite and must be reported if missing.
+- None for this task's acceptance criteria. The separate Admin raw SQL reference update remains owned by ARCH-049-ADMIN-002 and is a coordinated deployment prerequisite, not part of this Database implementation.
 
 ### Architectural Concerns
 
@@ -216,3 +235,11 @@ Not reviewed.
 ### Follow-up
 
 None.
+
+## Developer Self-Review Passed — Attempt 1
+
+- Review result: **PASS**. The committed implementation satisfies the task scope, all Work Items and Acceptance Criteria, and the declared Prisma, validator, lint and PostgreSQL validation requirements.
+- Implementation task branch is published at `728734b7f1c05a9175ada032e113babeb8066cda` (`origin/task/ARCH-049-DATABASE-001`); it includes the implementation commit `f3e73daf647904c622cc0405e33520b32b18c0ed` and a merge of Database `origin/main` `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+- Parent task branch was synchronized from parent `origin/main` `293ef582e731c4c578815985e9a12f0d93b64bcf` to `15a7a27cc57228dad8e9c58fa48ef9a1c0934de8` before this report update.
+- Both canonical task worktrees are clean. The implementation and parent branches are not merged to `main`.
+- Completion mode is `developer`; task is transitioned to `review`, and the explicit developer completion decision remains pending.
