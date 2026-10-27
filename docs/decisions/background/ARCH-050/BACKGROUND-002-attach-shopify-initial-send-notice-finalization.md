@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-050-SYSTEM-TEST-001
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-27
 ---
 
 # Wire Shopify automated initial-outreach confirmation to the common Support notice
@@ -168,3 +168,7 @@ Not yet reviewed.
 ### Follow-up
 
 None.
+
+## Architect Dependency Frontier Reconciliation — 27 October 2026
+
+`ARCH-050-BACKGROUND-001` was accepted and completed at Attempt 3. This task's sole declared dependency is now complete, so its status advances from `pending` to `ready`. The task remains unclaimed at Attempt 0 (`executor: null`, `claimed_at: null`); no implementation worktree or attempt was started.
