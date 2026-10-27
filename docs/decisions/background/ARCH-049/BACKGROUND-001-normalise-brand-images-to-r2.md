@@ -132,7 +132,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-Ready for Review — developer execution, canonical workflow **Attempt 1** (`attempt: 1`). The implementation was corrected through the supplied Attempt 1/Attempt 2 patch iterations without starting a new architecture-task attempt. The implementation commit `75c93f5` (`feat(arch-049-background-001)`) was pushed to `origin/task/ARCH-049-BACKGROUND-001` in `moda-interact-background`, as shown in the developer's terminal log of 27 October 2026. The parent task/report branch must still be committed and pushed after this update is applied.
+Developer self-review **passed** for canonical workflow Attempt 1 (`attempt: 1`); architect review and explicit developer completion remain pending. The implementation was corrected through the supplied Attempt 1/Attempt 2 patch iterations without starting a new architecture-task attempt. Implementation commit `75c93f5` is published to `origin/task/ARCH-049-BACKGROUND-001`; the parent self-review record is published in commit `2751e537` on the same-named parent task branch.
 
 ### Files Changed
 
