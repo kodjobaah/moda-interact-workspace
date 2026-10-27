@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 20
-executor: codex
-claimed_at: 2026-10-27T10:10:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-050-DATABASE-001
@@ -239,3 +239,21 @@ Not yet reviewed.
 ### Follow-up
 
 None.
+
+## Developer Override
+
+### Decision
+
+Reopened on 2026-10-27 by explicit developer request after resolving the database dependency blocker.
+
+### Previous Attempt
+
+Attempt 1 remains preserved as the blocked attempt; it stopped before implementation source changes because the Background database submodule lacked the ARCH-050 schema. This reopen does not increment the attempt.
+
+### Reason
+
+The database fix is available at commit `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`. The Background task worktree now points its `database` submodule at that commit, with gitlink update committed and pushed as `57d3227`. Prisma Client was regenerated successfully from the updated schema. The dependency blocker is resolved, so the task can resume through the normal launcher.
+
+### Reopen Transition
+
+`blocked` to `ready`; `executor` and `claimed_at` cleared; `attempt` remains 1. This override does not claim the task.
