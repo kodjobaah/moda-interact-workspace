@@ -9,10 +9,10 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-10-28T20:59:37Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-043-DATABASE-001
@@ -211,7 +211,7 @@ None within this standalone implementation definition. Live deployment requires 
 
 - [x] Both GET verification and POST HMAC use the explicit trusted deployment environment and `messaging.meta` DB sealed row, never the two old Meta env vars, with **one** fresh row read per eligible request and no cross-request credential cache.
 - [x] Purpose, environment, version, seven sealed fields, base64 encoding/length, ciphertext/AAD/auth-tag and decrypted `{appSecret,verifyToken}` exact schema are validated, using **only existing Shared crypto**.
-- [ ] Missing, disabled, malformed, wrong-purpose, wrong-environment, old revision, wrong key, tampered nonce/tag/ciphertext, absent keyring, database unavailable and query timeout fail closed with bounded failures. Unit coverage passes for the implemented cases; real PostgreSQL/query-timeout behavior remains unverified because no disposable database is available in this environment.
+- [x] Missing, disabled, malformed, wrong-purpose, wrong-environment, old revision, wrong key, tampered nonce/tag/ciphertext, absent keyring, database unavailable and query timeout fail closed with bounded failures. The guarded real PostgreSQL integration passed; the timeout-specific test verifies PostgreSQL SQLSTATE `57014` becomes `DB_UNAVAILABLE` and the signed webhook returns 503 without dispatch.
 - [x] Each read fetches a fresh row; credential and wrapping-key rotation behavior is covered by tests, with current values used on the next operation without a process restart.
 - [x] GET/POST response, signature ordering, configuration 503, dispatch, payload and queue-failure behavior are covered by the passing route/authentication tests.
 - [x] Existing `message_template_status_update`, inbound `messages`, delivery statuses, queue payloads and dispatch ordering remain unchanged; existing route/queue regression tests pass with injected readers.
@@ -224,10 +224,11 @@ None within this standalone implementation definition. Live deployment requires 
 - [x] `npm ci` with checked-in lockfile and `npm run typecheck` passed.
 - [x] Focused command passed using actual source suite `tests/whatsapp-webhook-preflight.test.mjs` in place of the task's nonexistent `tests/whatsapp-webhook-preflight-telemetry.test.mjs`.
 - [x] `npm test` passed (98 passed, 0 failed, 3 skipped); `npm run build` passed. Build printed existing Vite browser-externalization warnings for Node modules imported by ioredis; build completed successfully.
-- [ ] Disposable PostgreSQL integration was not run: `TEST_DATABASE_URL` and `MODA_DISPOSABLE_INTEGRATION=1` are unavailable, and no local Docker or psql executable exists. The guarded test skipped; it did not touch any database row.
+- [x] Disposable PostgreSQL integration passed against a fresh loopback-only PostgreSQL cluster and dedicated `moda_messaging_disposable_arch043_messaging001` database. The accepted ARCH-043 PlatformConfiguration migration was applied; the test's empty-table guard passed and it read, revised, revoked and cleaned up its own disabled fixture row. No live test database or `test/messaging.meta` row was used.
+- [x] Deterministic SQL timeout regression passed: PostgreSQL statement-timeout SQLSTATE `57014` is mapped to the generic `DB_UNAVAILABLE` failure, and an eligible signed POST returns 503 with zero dispatcher calls.
 - [x] Fixed Admin-compatible encrypted fixtures and deterministic malformed-envelope, AAD, wrong-environment/version, ciphertext/tag, wrong-keyring, disabled/plaintext, redaction, sink-failure and rotation tests passed.
 - [x] Optional Redis-backed queue/trace cases were skipped because `TEST_REDIS_URL` is unset. `git diff --check` passed.
-- [x] Launcher evidence captured: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-MESSAGING-001`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-MESSAGING-001`; both branches `task/ARCH-043-MESSAGING-001`. At attempt start parent HEAD was `c71a202758558a8c17c1334787b97f15d1e0ddc6`, implementation HEAD was `89a11e0980f64afa9f4271c908c308f66491cc7f`; each task-branch fast-forward was not needed and each `origin/main` was already current. Recursive submodule preparation completed with no submodule entries.
+- [x] Attempt 2 launcher evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-MESSAGING-001` at pre-claim HEAD `292359677b286d1f552d9f89850abdb159849b12`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-MESSAGING-001` at HEAD `69413cb862a575836d28def7c7d713e2f2b51918`. Both branches were `task/ARCH-043-MESSAGING-001`, task-branch fast-forward was not needed, `origin/main` was already current, recursive submodule sync/update passed with no entries. The launcher claim commit was `30be558aa219c19e12955ded0c7c6e5727c9fb19`.
 
 ## Stop Condition
 
@@ -247,7 +248,7 @@ After scoped implementation, Acceptance Criteria, required Validation and Comple
 
 ### Status
 
-Ready for Architect Review — Attempt 1 implementation is committed and pushed on the Messaging task branch. The task branch is intentionally not merged to `main`.
+Ready for Architect Review — Attempt 2 corrections are committed and pushed on the existing Messaging task branch. The task branch is intentionally not merged to `main`.
 
 ### Files Changed
 
@@ -259,15 +260,15 @@ Added a Messaging-only, read-only `pg` repository for the fixed `messaging.meta`
 
 GET verification and POST HMAC now use one fresh database-backed snapshot per eligible request; malformed modes and absent/malformed signatures still stop before database access. Configuration failures fail closed with bounded 503 responses and POST semantic telemetry. Old Meta environment variables are no longer read. Structured outcomes use the Shared logger with bounded fields and sink-failure isolation.
 
-Updated documentation and regression tests. Implementation commit: `69413cb` (`Add database-backed Meta webhook credentials`), pushed to `origin/task/ARCH-043-MESSAGING-001`.
+Updated documentation and regression tests. Attempt 1 implementation commit: `69413cb` (`Add database-backed Meta webhook credentials`). Attempt 2 added the deterministic timeout regression test and ran the guarded PostgreSQL integration. Latest implementation commit: `24dd41f4ccc8660ab38192c66a281c3d5c0a5976`; both implementation commits are pushed to `origin/task/ARCH-043-MESSAGING-001`.
 
 ### Validation Results
 
-`npm ci`, `npm run typecheck`, the focused Meta configuration/auth/route/preflight/telemetry suites, `npm test`, `npm run build`, and `git diff --check` passed. Full test result: 98 passed, 0 failed, 3 skipped. The PostgreSQL integration and optional Redis integration cases were skipped because their explicitly opt-in service variables were unavailable. Build completed with Vite warnings that existing ioredis dependencies import Node modules externalized for browser compatibility; no build failure occurred.
+Attempt 1 validation remains recorded: `npm ci`, `npm run typecheck`, focused suites, `npm test` (98 passed, 0 failed, 3 skipped), `npm run build`, and `git diff --check` passed. For Attempt 2, the dedicated PostgreSQL integration passed (1 passed, 0 skipped), the focused route suite passed (7 passed, 0 skipped), and the full suite ran with PostgreSQL enabled (100 passed, 0 failed, 2 skipped). The remaining two skips are optional Redis-backed tests because `TEST_REDIS_URL` is unset. `git diff --check` passed. Build warnings from Attempt 1 concerned existing ioredis Node-module browser externalization; the build completed successfully.
 
 ### Deviations
 
-The task names `tests/whatsapp-webhook-preflight-telemetry.test.mjs`, which is absent from the repository. Source inspection identified `tests/whatsapp-webhook-preflight.test.mjs` as the actual preflight suite; it was updated and included in focused and full validation. The PostgreSQL integration was implemented but not executed because no disposable PostgreSQL service was available; it remains unchecked and must not be treated as passed.
+The task names `tests/whatsapp-webhook-preflight-telemetry.test.mjs`, which is absent from the repository. Source inspection identified `tests/whatsapp-webhook-preflight.test.mjs` as the actual preflight suite; it was updated and included in focused and full validation. Attempt 2 resolved the prior PostgreSQL and timeout evidence gaps using the dedicated disposable database and deterministic SQLSTATE test described above. No production implementation change was needed.
 
 ### Assumptions
 
@@ -275,7 +276,7 @@ The accepted Admin writer contract and Shared crypto API are authoritative. No c
 
 ### Unresolved Issues
 
-Before hosted cutover, provision and verify Render `DATABASE_URL`, `MODA_CONFIG_UNSEAL_KEY`, `MODA_CONFIG_UNSEAL_ACTIVE_KEY_ID`, and `DEPLOYMENT_ENVIRONMENT_NAME=test` with least-privilege database access; then verify configuration against a disposable/migrated PostgreSQL database before deployment. Remove legacy `META_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN` only as a coordinated external rollout step. Arrange the guarded disposable PostgreSQL integration run before acceptance; do not use or mutate the live `test/messaging.meta` row.
+Before hosted cutover, provision and verify Render `DATABASE_URL`, `MODA_CONFIG_UNSEAL_KEY`, `MODA_CONFIG_UNSEAL_ACTIVE_KEY_ID`, and `DEPLOYMENT_ENVIRONMENT_NAME=test` with least-privilege database access. Remove legacy `META_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN` only as a coordinated external rollout step. The local disposable PostgreSQL integration does not establish hosted configuration or live Meta credential correctness.
 
 ### Architectural Concerns
 
@@ -283,10 +284,10 @@ A PostgreSQL lookup before verifying a syntactically valid signed POST adds data
 
 ### Publication and Review
 
-- Implementation branch: `task/ARCH-043-MESSAGING-001`, commit `69413cb`, pushed to `origin`.
-- Parent task/report branch: `task/ARCH-043-MESSAGING-001`; this review report is being committed and pushed separately.
+- Implementation branch: `task/ARCH-043-MESSAGING-001`, latest Attempt 2 commit `24dd41f4ccc8660ab38192c66a281c3d5c0a5976`, pushed to `origin`.
+- Parent task/report branch: `task/ARCH-043-MESSAGING-001`; the Attempt 2 review report is being committed and pushed separately.
 - Parent submodule pointer was not changed. No merge to `main` was performed.
-- Architect follow-up: arrange the disposable PostgreSQL integration and external Render provisioning verification before acceptance/cutover.
+- Architect follow-up: external Render provisioning and hosted configuration verification remain rollout prerequisites; no dependency task was advanced.
 
 ## Architect Review
 
