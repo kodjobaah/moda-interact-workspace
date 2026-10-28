@@ -9,11 +9,11 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: codex
+claimed_at: 2026-10-28T20:59:37Z
+attempt: 2
 depends_on:
   - ARCH-043-DATABASE-001
   - ARCH-043-ADMIN-002
