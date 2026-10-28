@@ -9,7 +9,7 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -31,7 +31,7 @@ updated: 2026-10-28
 - Database authority: existing `public."PlatformConfiguration"` model and unique `(environment,key)` constraint; accepted `ARCH-043-DATABASE-001`.
 - Reference pattern only: `moda-interact-background/src/services/platform-configuration/{repository,service,production}.ts`. Do **not** import, modify, move or copy Background modules.
 - Execution is **only** in `moda-interact-messaging`; use the existing published Shared package for cryptography and logging. No new Shared, Admin, Background, API, Gateway, Database or System Test implementation task is authorised by this definition.
-- **Portable definition, not materialised:** the archive is not the developer's canonical Git workspace. Before implementation, use the task launcher to materialise this definition on the isolated parent task branch/worktree and prepare the isolated Messaging implementation worktree. Re-check dependency status and start-of-attempt synchronization. Do not claim branch creation, execution, review or completion from this definition.
+- **Materialisation history:** this definition was initially supplied portably and was later materialised and executed through the canonical launcher-resolved parent and Messaging implementation worktrees. Attempt 1 worktree and synchronization evidence is recorded in the Completion Report.
 
 ## Objective
 
@@ -292,24 +292,47 @@ A PostgreSQL lookup before verifying a syntactically valid signed POST adds data
 
 ### Review Status
 
-Pending.
+Changes Requested — validation and record reconciliation only
 
 ### Review Notes
 
-Await implementation and independent review.
+The implementation diff at `69413cb862a575836d28def7c7d713e2f2b51918` is within the narrowly authorised Messaging repository scope. The fixed-purpose `pg` query, row/envelope/plaintext checks, use of the existing Shared Node crypto and logger APIs, fresh read per eligible GET/POST, bounded configuration failure handling, and unchanged queue/event contracts are consistent with the ARCH-043 Messaging addendum. The recorded start-of-attempt evidence identifies dedicated parent and implementation worktrees, synchronized task branches and `origin/main`, and successful recursive submodule preparation. Both declared dependencies, `ARCH-043-DATABASE-001` and `ARCH-043-ADMIN-002`, are Complete.
+
+Acceptance is withheld because the task's PostgreSQL integration validation and one part of its explicit failure criterion remain unverified. The Completion Report says the guarded PostgreSQL test was skipped because no disposable database was available, the corresponding acceptance criterion is unchecked, and the report itself says this run is required before acceptance. The repository test does exercise the parameterised repository with injected stubs, but it is not evidence against a real schema-migrated PostgreSQL database. The criterion also explicitly includes query-timeout failure handling; the report does not show a timeout-specific test or live timeout result.
+
+The task's Architecture section still describes this task as a portable, unmaterialised definition, contradicting the prepared worktree and Completion Report. That statement has been corrected to record materialisation history for the next attempt.
+
+No code defect is established by the current evidence. Do not change implementation code unless the requested validation exposes a failure.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-messaging` implementation branch `task/ARCH-043-MESSAGING-001` at `69413cb862a575836d28def7c7d713e2f2b51918` (18-file task diff from `origin/main`).
+- `app/lib/platform-configuration/meta-contract.server.ts`
+- `app/lib/platform-configuration/meta-repository.server.ts`
+- `app/lib/platform-configuration/meta-reader.server.ts`
+- `app/lib/platform-configuration/meta-production.server.ts`
+- `app/lib/whatsapp/webhook-auth.server.ts`
+- `app/routes/whatsapp.tsx`
+- `app/lib/observability/whatsapp-ingress-telemetry.ts`
+- `tests/platform-configuration-meta-reader.test.mjs`
+- `tests/platform-configuration-meta-postgres.test.mjs`
+- Relevant route/authentication/telemetry tests and README.
+- `ARCH-043` Messaging cutover addendum and both completed dependency records.
 
 ### Validation Reviewed
 
-None.
+Reviewed the Completion Report for `npm ci`, `npm run typecheck`, focused suites, `npm test` (98 passed, 0 failed, 3 skipped), `npm run build`, and `git diff --check`. The report explains that the guarded PostgreSQL integration and optional Redis tests were skipped. No tests were rerun. The implementation branch is clean at the reported pushed commit. Passing unit/stub tests do not satisfy the explicitly unchecked real PostgreSQL integration criterion.
 
 ### Architecture Conformance
 
-Pending.
+Implementation scope and repository ownership conform. Completion cannot be accepted until database-boundary behavior is validated against a dedicated disposable PostgreSQL database and query-timeout behavior is demonstrated. No external Render provisioning or production cutover is required to accept this bounded code task; those remain rollout prerequisites.
 
 ### Follow-up
 
-None currently assigned.
+Return this same task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1` so the next claim increments it exactly once. The next attempt must:
+
+1. Provision a **dedicated disposable, loopback PostgreSQL database** with the required `PlatformConfiguration` schema/migrations and set only the documented opt-in test variables. Run `tests/platform-configuration-meta-postgres.test.mjs` through the repository's declared test command and record a passing result. The fixture's empty-database guard must pass; do not use or mutate the live `test/messaging.meta` row.
+2. Add or run a deterministic test for a PostgreSQL query timeout showing it is normalized to `DB_UNAVAILABLE` and the webhook request fails closed with HTTP 503 and no dispatch. Record the command and result. Keep the failure bounded and redact driver details.
+3. Update the Completion Report with both results and clear the corresponding unchecked Acceptance Criteria/Validation items. No implementation changes are required if those checks pass.
+
+Keep all other task scope and the external deployment provisioning boundary unchanged. No downstream task is enabled by this standalone definition.
