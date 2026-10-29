@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-SHARED-006
 architecture_id: ARCH-052
-title: Define the minimal outreach MCP execution-context contract
+title: Define the purpose-only outreach MCP context discriminator
 task_kind: implementation
 domain: shared
 repository: moda-interact-shared
@@ -21,7 +21,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-SHARED-006: Define the minimal outreach MCP execution-context contract
+# ARCH-052-SHARED-006: Define the purpose-only outreach MCP context discriminator
 
 ## Architecture
 
@@ -31,38 +31,39 @@ Portable task definition: **defined but not materialised**; no local developer G
 
 ## Objective
 
-Define the **exact, minimal structural context** used when Background invokes MCP tools on behalf of a recovery attempt before any customer conversation exists. Reuse MCP's existing generic request/result infrastructure and do not add a new commerce feature or business validator to Shared.
+Define the exact **purpose-only** structural discriminator carried in the existing MCP `toolContext` when a trusted Background initial-outreach agent invokes commerce tools. Do not introduce recovery identity, attempt identity, merchant policy, checkout data, a new MCP result envelope or service-side business rules into the Shared context schema.
 
 ## Context
 
-`moda-interact-mcp/src/mcp/authentication.ts` already decodes a trusted, private-ingress context containing `shopId` and an optional opaque `toolContext`. MCP's execution ports pass that context to registered adapters. Existing `CommerceAssertionSchema` (`resolve`/`execute`) is for conversational CommerceAgent turns; `CommerceToolResultSchema` is generic and already used by MCP. Neither should be replaced.
+`moda-interact-mcp/src/mcp/authentication.ts` already receives a private-ingress request context with top-level `shopId` and optional `toolContext`. The existing `CommerceToolResultSchema` is the generic success/error envelope for all MCP tools; conversational `CommerceAssertionSchema` remains a separate contract. Background loads checkout, merchant settings and instructions as part of its own recovery lifecycle and passes them directly to its agent; MCP only supplies reusable commerce capabilities.
 
 ## Scope
 
-- Introduce only the new `CommerceOutreachToolContextSchema` module shown below and export it through the existing `/commerce` entrypoint.
-- Background supplies the recovery/attempt identifiers as part of the **trusted MCP request context**, never as model-authored `tools/call` arguments.
-- MCP performs shop/recovery/attempt and current merchant discount-scope checks in its own runtime, not by Zod field refinements.
-- Preserve the existing conversational `CommerceToolInputs` and `CommerceToolOutputs` signatures and generic `CommerceToolResultSchema`. No additional response envelope.
+- Create only the exact `CommerceOutreachToolContextSchema` module below and export it from the existing Shared `/commerce` entrypoint.
+- The new `toolContext` holds **only** `purpose: "INITIAL_RECOVERY_OUTREACH"`. Existing top-level MCP transport remains responsible for `shopId`/environment. The AI cannot author or modify trusted transport context.
+- MCP owns shop-scoped tool access, the current merchant discount mode/selected-discount rules and published-tool entitlements; Background owns recovery eligibility, attempt lifecycle and final-send admission. No MCP recovery/attempt database lookup is required by this context.
+- Preserve the current generic `CommerceToolResultSchema` and existing conversational tool contracts without alteration.
 
 ## Out of Scope
 
-- No `commerce_get_outreach_context` MCP tool. Background already supplies checkout and merchant context directly to its agent.
-- No attempt policy snapshot, signed HMAC protocol, provider-client change, business grant machinery, new database state, conversation lease/inbound-message fabrication or tool publication.
-- No new MCP tool input/output schemas in this task; system-defined discount tool advertisement/execution belongs to `ARCH-052-MCP-002` and product tools to `ARCH-052-SHARED-008`/`MCP-003`.
+- No `checkoutRecoveryId`, `outreachAttemptId`, checkout fingerprint, product IDs, merchant selected IDs, token, nonce, HMAC or policy snapshot inside this `toolContext`.
+- No `commerce_get_outreach_context` MCP tool; no tool registration, discount eligibility logic, provider requests, persistence, conversation lease, grant framework, or customer-message publication in Shared.
+- This task does **not** modify the separate `RecoveryDiscountProofRequestSchema` from SHARED-005. Its proof-specific identity fields and how targeted proof obtains trusted data are a distinct contract issue, not a reason to add identifiers to the generic MCP purpose context.
 
 ## Requirements
 
-- Zod checks only the fixed discriminator and field types; no business-rule `.refine`, `.superRefine`, `.transform` or `.check`.
-- The top-level MCP `shopId` comes from the existing authenticated private-ingress context; it is not duplicated inside the new `toolContext` schema.
-- MCP must independently establish that the supplied recovery/attempt belongs to the top-level shop, and enforce current merchant settings, with failure mapped into existing generic MCP errors. This verification is not implemented in Shared.
-- Follow dedicated mirrored task-worktree preparation and completion-report rules; use the existing Shared logger for any runtime logging and never log raw private request headers or customer data.
+- Zod performs **structural parsing only**: the fixed literal discriminator and unknown-key rejection. No business-rule `.refine`, `.superRefine`, `.transform` or `.check`.
+- Keep the shop identity in the established private MCP context, outside `toolContext`; do not duplicate it or let model-authored tool arguments substitute for it.
+- Only MCP's runtime determines what tools the trusted shop/purpose may discover or call. Successful Zod parsing does not grant a capability.
+- Do not add MCP lookups of `CheckoutRecovery` or `RecoveryOutreachAttempt` to validate this purpose. Recovery/attempt admission remains in Background.
+- Follow the existing dedicated mirrored task-worktree and Completion Report policies. Do not log private request headers or customer data.
 
 ## Work Items
 
-- [ ] Create the exact source module below.
-- [ ] Export it from `moda-interact-shared/src/commerce/index.ts`.
-- [ ] Add the exact structural fixtures and negative tests to `src/commerce/contracts.test.ts`.
-- [ ] Verify existing conversation, tool input/output and generic result tests remain unchanged.
+- [ ] Create `moda-interact-shared/src/commerce/outreach-context.ts` with the exact source below.
+- [ ] Export it from `moda-interact-shared/src/commerce/index.ts` without changing other commerce exports.
+- [ ] Add the exact positive and negative structural fixtures to `src/commerce/contracts.test.ts`.
+- [ ] Verify the existing generic MCP result envelope, conversation assertions and commerce tool schemas are unchanged.
 
 ## Interfaces / Contracts
 
@@ -70,12 +71,9 @@ Define the **exact, minimal structural context** used when Background invokes MC
 
 ```typescript
 import { z } from "zod";
-import { IdSchema } from "./primitives";
 
 export const CommerceOutreachToolContextSchema = z.strictObject({
   purpose: z.literal("INITIAL_RECOVERY_OUTREACH"),
-  checkoutRecoveryId: IdSchema,
-  outreachAttemptId: IdSchema,
 });
 
 export type CommerceOutreachToolContext =
@@ -88,34 +86,32 @@ export type CommerceOutreachToolContext =
 export * from "./outreach-context";
 ```
 
-No new package subpath is necessary: the existing `@modainteract/moda-interact-shared/commerce` export already points to `src/commerce/index.ts` through the build.
+The existing `@modainteract/moda-interact-shared/commerce` entrypoint remains canonical. No new package subpath or extra result envelope is required.
 
-**Trusted MCP context example (outer shape is already owned by MCP):**
+**Trusted MCP request-context example (outer shape remains owned by MCP):**
 
 ```json
 {
   "shopId": "shop_123",
   "toolContext": {
-    "purpose": "INITIAL_RECOVERY_OUTREACH",
-    "checkoutRecoveryId": "recovery_456",
-    "outreachAttemptId": "attempt_789"
+    "purpose": "INITIAL_RECOVERY_OUTREACH"
   }
 }
 ```
 
-Only `toolContext` is parsed by the new Shared schema; `shopId` is parsed by existing MCP authentication and `environment` is supplied by the MCP runtime.
+The new Shared schema parses only the value of `toolContext`. The existing MCP private-ingress path is responsible for the outer `shopId`/environment; the `toolContext` does not prove recovery eligibility.
 
-**Existing definitions that MUST remain unmodified:**
+**Existing definitions that MUST remain unchanged:**
 
 ```typescript
-// src/commerce/schemas.ts — existing signatures, not new code
+// src/commerce/schemas.ts — existing contracts, not new code
 CommerceToolInputs.commerce_get_discount_options; // {}
 CommerceToolInputs.commerce_evaluate_discount; // {offerId, proposal}
-CommerceToolResultSchema; // commerce.v1 OK / ERROR
-CommerceAssertionSchema; // existing conversation resolve / execute assertions
+CommerceToolResultSchema; // generic commerce.v1 OK / ERROR
+CommerceAssertionSchema; // conversation resolve / execute
 ```
 
-**Concrete structural fixtures:**
+**Add exactly these structural cases to `src/commerce/contracts.test.ts`:**
 
 ```typescript
 import { strict as assert } from "node:assert";
@@ -123,25 +119,31 @@ import { CommerceOutreachToolContextSchema } from "./outreach-context";
 
 assert.equal(CommerceOutreachToolContextSchema.safeParse({
   purpose: "INITIAL_RECOVERY_OUTREACH",
-  checkoutRecoveryId: "recovery_456",
-  outreachAttemptId: "attempt_789",
 }).success, true);
 
 assert.equal(CommerceOutreachToolContextSchema.safeParse({
   purpose: "INITIAL_RECOVERY_OUTREACH",
-  checkoutRecoveryId: "recovery_456",
-  outreachAttemptId: "attempt_789",
-  shopId: "model_forged_shop", // unknown extra key
+  checkoutRecoveryId: "recovery_456", // no recovery identity in MCP purpose context
+}).success, false);
+
+assert.equal(CommerceOutreachToolContextSchema.safeParse({
+  purpose: "INITIAL_RECOVERY_OUTREACH",
+  outreachAttemptId: "attempt_789", // no attempt identity in MCP purpose context
+}).success, false);
+
+assert.equal(CommerceOutreachToolContextSchema.safeParse({
+  purpose: "INITIAL_RECOVERY_OUTREACH",
+  shopId: "model_forged_shop", // top-level context, not toolContext
 }).success, false);
 
 assert.equal(CommerceOutreachToolContextSchema.safeParse({
   purpose: "CONVERSATION",
-  checkoutRecoveryId: "recovery_456",
-  outreachAttemptId: "attempt_789",
 }).success, false);
+
+assert.equal(CommerceOutreachToolContextSchema.safeParse({}).success, false);
 ```
 
-**Domain checks outside Zod:** MCP validates the existing top-level shop identity; matches recovery and attempt to that shop in PostgreSQL; rejects model-controlled identities; restricts tool discovery/calls to the permitted context and current merchant settings. Successful structural parsing **never by itself grants a capability**.
+**Business/authorisation checks outside Zod:** MCP checks current shop identity, current merchant permissions and tool publication/entitlement at its existing runtime boundary; Background handles attempt lifecycle, checkout recoverability, consent and final send. The proof-specific request in SHARED-005 is separate from the MCP tool-purpose discriminator.
 
 ## Dependencies
 
@@ -153,25 +155,24 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] The specified schema/type are published through the existing `/commerce` entrypoint.
-- [ ] Valid context passes and unknown fields, missing attempt ID or wrong purpose fail structural parsing.
-- [ ] Existing conversation assertion, discount tool inputs/outputs and generic MCP result envelope are unchanged.
-- [ ] No outreach-context lookup tool or independent HMAC/business-validation framework is added to Shared.
-- [ ] Business authorisation and current merchant-policy checks remain assigned to MCP.
+- [ ] The exact one-field schema and inferred type compile and export from the existing `/commerce` package entrypoint.
+- [ ] The valid purpose-only object passes. Missing/wrong purpose, extra shop/recovery/attempt keys fail structural parsing.
+- [ ] No new MCP envelope, attempt/recovery identity lookup, policy snapshot, HMAC, AI business rules or provider client is added to Shared.
+- [ ] Existing conversation assertions, tool inputs/outputs and generic result envelope remain unmodified.
 
 ## Validation
 
-- [ ] `npm run typecheck`, `npm test`, `npm run build` as declared by Shared.
-- [ ] Unit/negative tests in `src/commerce/contracts.test.ts`, including unchanged old cases.
-- [ ] `git diff --check`, export-shape check for published `/commerce`.
+- [ ] Run the declared `typecheck`, `test` and `build` scripts in Shared (or record any unavailable command as unverified).
+- [ ] Run `src/commerce/contracts.test.ts` cases including the added fixtures and unchanged existing cases.
+- [ ] Run `git diff --check` and verify the `/commerce` export in generated package output.
 
 ## Stop Condition
 
-On passing Work Items, Acceptance Criteria and Validation, update the Completion Report, set the task to `review`, return worktree/commit evidence to `moda_architect` and **STOP**. Do not self-accept or begin dependent tasks.
+After Work Items, Acceptance Criteria and required Validation pass, complete the task report, set task to `review`, return evidence to `moda_architect` and **STOP**. Do not self-accept or start dependent tasks.
 
 ## Implementation Notes
 
-Implement the exact source and exported type above. Do not invent alternate assertion purposes or model-provided shop identity. In case of a newly discovered mismatch with the existing MCP header transport, return it to architect for a bounded implementation-task correction rather than broadening Shared.
+Implement the specified source and export only. Any mismatch with the existing private ingress header format must be reported to the architect, not resolved by putting checkout or attempt identities into this purpose-only contract.
 
 ## Completion Report
 
@@ -205,7 +206,7 @@ None established by implementation.
 
 ### Architectural Concerns
 
-Escalate any unexpected provider API/auth/Shared/schema/contract gap to `moda_architect` without inventing a second implementation.
+Escalate any unexpected cross-repository contract/security gap to `moda_architect`.
 
 ## Architect Review
 
@@ -219,7 +220,7 @@ Task definition only. No implementation accepted.
 
 ### Reviewed Files
 
-Relevant October 29, 2026 code snapshot and task definition; no implementation source changes for this task reviewed.
+Relevant October 29, 2026 code snapshot and task definition; no implementation source changes reviewed.
 
 ### Validation Reviewed
 
