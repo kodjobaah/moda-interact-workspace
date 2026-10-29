@@ -1033,3 +1033,10 @@ Proposed, iterative architecture. WOO-001/WOO-002/WOO-003, DATABASE-001/DATABASE
 Agreed and fully decomposed on 2026-10-07. Ready frontier: DATABASE-001 and SHARED-001. The architecture uses explicit provider-message status transitions, exact recovery lineage for compensation, Shop-scoped recipient suppression with an Admin-configurable seven-day default, synchronous/asynchronous policy parity, zero-billing missing-recipient handling, split purchased-credit compensation, and merchant notification only after durable correction. System validation is terminal after all implementation dependencies.
 
 [Architecture](ARCH-028-whatsapp-delivery-failure-convergence.md)
+
+
+## ARCH-052 — Checkout-personalised WhatsApp initial outreach (2026-10-29)
+
+Proposed, portable architecture with **23 defined but not materialised** repository-owned tasks. Initial Ready frontier: Database-001/002, Shared-001/002, Commerce-001/002 and WooCommerce-001/002. Remaining tasks are dependency-gated. Reuses existing translated `shop.categoryName`, ARCH-047 six approved template purposes and final send safeguards; fills real eligibility, multi-selection, AI, basket summary, Woo cart return and optional verified product media.
+
+[Architecture](ARCH-052-checkout-personalised-initial-whatsapp-outreach.md)
