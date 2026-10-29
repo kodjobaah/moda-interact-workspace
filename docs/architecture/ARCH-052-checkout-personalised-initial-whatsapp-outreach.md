@@ -11,7 +11,7 @@ updated: '2026-10-29'
 
 ## Status
 
-Proposed — **Attempt 7 architecture reconciliation** from 29 October 2026 08:07 source snapshot. Pre-production breaking work; definitions are portable and **not materialised**. No historical backfill, legacy compatibility, provider-product persistence or new Prisma schema. Merchant selections continue to use `ShopifyDiscount.isAvailable`. No new attempt policy/sent-offer snapshot is added: confirmed `ConversationMessage.content` and `RecoveryOutreachAttempt.outboundMessageId` already record the actual sent template.
+Proposed — **Attempt 8 Shared contract definition review** from 29 October 2026 08:07 source snapshot. Pre-production breaking work; definitions are portable and **not materialised**. No historical backfill, legacy compatibility, provider-product persistence or new Prisma schema. Merchant selections continue to use `ShopifyDiscount.isAvailable`. No new attempt policy/sent-offer snapshot is added: confirmed `ConversationMessage.content` and `RecoveryOutreachAttempt.outboundMessageId` already record the actual sent template.
 
 ## Problem
 
@@ -47,6 +47,19 @@ No new database tables/columns/migrations, replicated product catalogue or produ
 - **Do not freeze merchant settings** inside `RecoveryOutreachAttempt.offerSnapshot`. MCP reads current shop policy at `tools/list` and `tools/call`, including effective Admin override and FIXED merchant-selected IDs; a changed setting makes old offers unauthorised. Before send, Background checks current settings and refuses/reselects an offer no longer permitted. Do not add new policy hashes, permission JSON or migrations.
 - The approved template plus its populated parameters (including its existing checkout URL button) and `recoveryPromise` are already persisted in the outbound `ConversationMessage.content`; the first sent message is linked through `RecoveryOutreachAttempt.outboundMessageId`. Extend the existing message promise only if needed to identify a separately promoted product. The actual message record, with provider-confirmed send state, is authoritative for what the customer was told and what a follow-up may reference. Background reads the already-populated `CheckoutRecovery.checkoutUrl` for both platforms and binds its exact stored value to the existing approved checkout CTA. ARCH-052 does **not** add a checkout URL validation step (including URL format, scheme, host, prefix, expiry or reachability checks) and does not introduce URL-specific fallback handling. Checkout URL availability/correctness is an upstream precondition. Do not create another URL, copy it into policy/offer snapshots, add a new table or log the raw URL. **No second `offerSnapshot.sentOffer` field** or duplicate audit table is created.
 - The initiative is pre-production: no backfill, old proposal compatibility or historical policy snapshot migration. Existing idempotency, consent/STOP/moderation and billing admission still apply.
+
+## Shared contract boundaries — Attempt 8
+
+`ARCH-052-SHARED-002`, `SHARED-005`, `SHARED-006` and `SHARED-008` now contain exact **proposed** TypeScript/Zod source snippets, package exports and structural fixtures. The contract proposals are for developer/architect review before implementation; their currently Ready task statuses are planning eligibility, not acceptance of a runtime implementation.
+
+- **Zod = transport structure only.** New schemas describe field names, required/nullable types, literals, discriminated results, established lexical formats and unknown-key rejection. No new business-policy `.refine`, `.superRefine`, `.transform` or `.check` is authorised.
+- **SHARED-002:** Admin/Background share checkout/promotion semantic bindings and immutable projection structure. Approval, target/variable compatibility, image roles, Meta parameter ordering, marketing suitability and button semantics are service-layer concerns; ARCH-052 adds **no** checkout URL validation.
+- **SHARED-005:** MCP/provider adapters exchange optional on-demand discount evidence, without requiring an exhaustive scan. Provider eligibility, matching shop/attempt/product, evidence freshness, redeemable-code consistency and monetary calculations remain in their owning services.
+- **SHARED-006:** A minimal `INITIAL_RECOVERY_OUTREACH` discriminator is carried in existing trusted MCP `toolContext`; top-level shop identity remains part of the current private ingress, not AI tool arguments. No new envelope or context-retrieval tool is introduced.
+- **SHARED-008:** Extend the existing `CommerceProductSchema` with optional observed categories, image and sale-price data; add exact-product input/output to existing commerce tool dictionaries. Provider connection/URL trust and promotion claims remain MCP/Background concerns.
+- **SHARED-003:** Publish accepted cross-service schemas only after SHARED-002/005/006/008 are individually reviewed Complete; do not rerun implementation validation during release.
+
+No frozen merchant policy, custom HMAC, conversation runner extension, product persistence or Background-owned AI decision schema is added to Shared.
 
 ## Offer discovery, MCP budget and availability semantics
 
@@ -172,6 +185,8 @@ All tasks are portable definitions; **Ready** means dependency-eligible but not 
 None delegated to implementation agents. Unknown provider-specific customer restrictions must return `unavailable` rather than a guessed promotion. Live operator approvals and Meta template/marketing-consent prerequisites remain required; no provider discount is guaranteed to exist.
 
 ## Change History
+
+- 2026-10-29 **Attempt 8 (proposed Shared contracts):** Write actual Zod/TypeScript wire contracts in the four retained Shared implementation tasks. Keep Zod structural; move offer eligibility, authorisation, product suitability, expiry and template/send policy to their owning services. SHARED-003 remains release-only and the previously superseded Shared tasks stay superseded.
 
 - 2026-10-29 **Attempt 7**: Treat `CheckoutRecovery.checkoutUrl` as an upstream precondition for both platforms; supersede WOOCOMMERCE-002 and API-004; remove Woo restore-link issuance from BACKGROUND-008, Gateway and system tests; bind the stored checkout URL unchanged to the existing approved CTA with no added checkout URL validation or URL-specific fallback. No new endpoint, token or URL storage.
 

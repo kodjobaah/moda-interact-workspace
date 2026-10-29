@@ -43,61 +43,100 @@ updated: '2026-10-29'
 
 ## Architecture
 
-Architecture ID: `ARCH-052`.
+Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`.
 
-Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
-
-Coordinator: `moda_architect`. This is a **portable canonical definition — defined but not materialised**. No developer Git branch/worktree, commit or push is asserted.
+Portable canonical definition: **defined but not materialised**. No real Git worktree, commit, release or publication is asserted.
 
 ## Objective
 
-Publish the four architect-accepted Shared contract changes (template bindings, on-demand provider evidence, minimal outreach MCP identity, product search). This is a **publication-only gate**, with no new policy snapshot, bespoke HMAC authentication, or AI decision schema.
+Publish one architect-accepted version of the **four exact structural contract changes** defined in SHARED-002, SHARED-005, SHARED-006 and SHARED-008, without adding new implementation behaviour or rerunning implementation tests.
 
 ## Context
 
-Shared contracts must be accepted before publication, and consumers use the published package rather than unpublished sibling sources.
-
-Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
+Shared owns reusable inter-service data shapes. Admin and Background consume template bindings, MCP and provider adapters consume targeted discount evidence, Background and MCP share the initial-outreach context, and MCP/Commerce consume the extended existing commerce-product schema. Their source implementation must have passed its own tests and architect review **before** this release task starts.
 
 ## Scope
 
-- Once SHARED-002, SHARED-005, SHARED-006 and SHARED-008 are architect-accepted Complete, select and publish their approved Shared package version using the repository release procedure. Make only release-specific metadata/lockfile changes permitted by existing tooling.
-- Verify the exact published registry version exposes `/commerce`, `/recovery-offer-proof`, `/recovery-template-bindings` and retains existing unaffected exports; record version and registry evidence. No /node/recovery-private-read-auth export.
-- Do not rerun tests, lint, builds or typechecking inside a publication-only task. Return code problems to the implementing task owner.
+- After the four prerequisite tasks have `status: complete` and `Architect Review: Accepted`, publish their accepted Shared package contents using the existing repository's authorised release process.
+- Verify the exact released package exposes the unchanged `/commerce` entrypoint with `CommerceOutreachToolContextSchema`, `CommerceProductSaleEvidenceSchema`, existing product/discount tools plus the new `commerce_get_product` members; and new `/recovery-offer-proof` and `/recovery-template-bindings` entrypoints with the names listed below.
+- Record the exact version, registry destination, publication command, registry evidence and changed release metadata. Keep implementation source unchanged.
 
 ## Out of Scope
 
-- No feature source edits, test reruns, typecheck, lint, builds or consumer changes in this publication-only task.
-
-No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
+- No new application schemas, runtimes, source edits, lint, typecheck, unit/integration tests, new agent code, tool publication, provider calls, database migration or consumer rollout in this publication task.
+- Do not publish SHARED-001, SHARED-004 or SHARED-007; all remain superseded.
 
 ## Requirements
 
-- Publish only accepted implementation content. A publication blocker requiring code modification returns to architect.
-- Do not install or publish from a previous task worktree; use the launcher-prepared release worktree and real release credentials.
-- Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
-- Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
-- Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
-- Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
+- The implementation tasks own schema tests, typechecks and builds. Do not perform those again as publication validation. `prepack` run by the package manager as part of an authorised publish is release mechanics, not a mandate to rerun tests.
+- Retain the existing generic `CommerceToolResultSchema` and unchanged conversational tool semantics.
+- New Zod code remains structural only, with all business authorisation/discount/product/CTA decisions in owning services. No bespoke HMAC or frozen-policy/sent-offer snapshot export.
+- Run from the launcher-prepared dedicated mirrored publication task worktree. Never publish from another task worktree or commit implementation code as part of the release.
 
 ## Work Items
 
-- [ ] Confirm SHARED-002/005/006/008 are all Complete with accepted Architect Reviews.
-- [ ] Publish the approved version with release-metadata-only edits.
-- [ ] Verify exact registry version and exports; record release evidence and absence of source changes.
+- [ ] Check `status: complete` and Accepted reviews for SHARED-002/005/006/008.
+- [ ] Select approved package version and execute only the authorised release/publish procedure.
+- [ ] Confirm that the exact expected version is visible at the registry and package exports resolve.
+- [ ] Record release metadata-only diff and Completion Report evidence.
 
 ## Interfaces / Contracts
 
-Shared package `/commerce` (existing generic result, outreach context and product schemas), `/recovery-offer-proof` (targeted provider evidence), `/recovery-template-bindings` (approved template bindings). No frozen selection, agent choice or private HMAC exports.
+**Published package entrypoints and symbols:**
+
+```typescript
+// @modainteract/moda-interact-shared/recovery-template-bindings
+RecoveryTemplateSemanticKeySchema;
+RecoveryPromotionTargetSchema;
+RecoveryTemplateHeaderMediaRoleSchema;
+RecoveryTemplateTextBindingSchema;
+RecoveryTemplateUrlButtonBindingSchema;
+RecoveryTemplateFrozenBindingsSchema;
+
+// @modainteract/moda-interact-shared/recovery-offer-proof
+RecoveryDiscountTargetSchema;
+RecoveryDiscountProofRequestSchema;
+RecoveryEligibleDiscountProofSchema;
+RecoveryNonEligibleDiscountProofSchema;
+RecoveryDiscountProofResultSchema;
+
+// @modainteract/moda-interact-shared/commerce
+CommerceOutreachToolContextSchema;
+CommerceProductSaleEvidenceSchema;
+CommerceProductSchema;
+CommerceToolInputs.commerce_search_products;
+CommerceToolOutputs.commerce_search_products;
+CommerceToolInputs.commerce_get_product;
+CommerceToolOutputs.commerce_get_product;
+CommerceToolResultSchema;
+commerceToolResultSchema;
+```
+
+The dotted members above are runtime object members, not independent ESM named exports. The corresponding inferred TypeScript types must be included in package declaration output. Do not introduce an `OutreachToolResult` or `OutreachPromotionChoiceSchema` Shared export.
+
+**The two new public export entries must be exactly:**
+
+```json
+{
+  "./recovery-template-bindings": {
+    "types": "./dist/recovery-template-bindings.d.ts",
+    "import": "./dist/recovery-template-bindings.js"
+  },
+  "./recovery-offer-proof": {
+    "types": "./dist/recovery-offer-proof.d.ts",
+    "import": "./dist/recovery-offer-proof.js"
+  }
+}
+```
+
+This JSON fragment is an addition to the existing `package.json` `exports` object, not a replacement for the whole object. `/commerce` already exists and must remain unchanged as a package path.
 
 ## Dependencies
 
-- `ARCH-052-SHARED-002` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-SHARED-005` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-SHARED-006` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-SHARED-008` — must be Complete and architect-accepted before this task starts.
-
-Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
+- `ARCH-052-SHARED-002` — Complete and architect-accepted.
+- `ARCH-052-SHARED-005` — Complete and architect-accepted.
+- `ARCH-052-SHARED-006` — Complete and architect-accepted.
+- `ARCH-052-SHARED-008` — Complete and architect-accepted.
 
 ## Enables
 
@@ -119,26 +158,24 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Acceptance Criteria
 
-- [ ] Exactly four prerequisite implementation tasks are Complete and architect-accepted before publication.
-- [ ] The approved version is available and the required exports resolve.
-- [ ] Publication did not modify application behaviour or rerun accepted implementation validation.
+- [ ] The package version contains precisely the four accepted Shared changes and retains all existing unrelated exports.
+- [ ] All listed package paths and runtime symbols/types are present in the published version.
+- [ ] Only authorised release metadata/lockfile updates occurred; no source code modifications or consumer integration.
+- [ ] Registry visibility and actual version are recorded; publication failure or an implementation bug is returned to `moda_architect`.
 
 ## Validation
 
-- [ ] Inspect accepted implementation review evidence, run the authorised release command, confirm registry visibility and diff only release metadata. No source tests/typecheck/build/lint in a publication task.
+- [ ] Review accepted prerequisite report/commit evidence.
+- [ ] Confirm the exact published package version is available from the intended registry and contains the specified export map.
+- [ ] `git diff --check` and release-only file change inspection. Do **not** rerun unit tests, typecheck, lint or build as separate publication checks.
 
 ## Stop Condition
 
-After all Work Items, Acceptance Criteria and required Validation pass, complete the report, set task `status: review`, hand the implementation branch and parent task report to `moda_architect` and **STOP**. Do not begin a dependent task, merge, push main, or edit architecture indexes as a repository agent.
+After publication evidence and Completion Report are recorded, set task to `review`, return to `moda_architect` and **STOP**. Do not implement the consumer tasks, merge branches or push `main`.
 
 ## Implementation Notes
 
-**Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
-
-- `moda-interact-shared/package.json`
-- `moda-interact-shared/package-lock.json (only when release tooling changes it)`
-
-Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
+Approved release metadata location: `moda-interact-shared/package.json`, and lockfile only when the repository's release mechanics legitimately change it. All schema and build-entrypoint edits belong to SHARED-002/005/006/008, not this publication task. The publisher must not choose a different runtime contract.
 
 ## Completion Report
 
