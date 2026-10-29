@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-10-29T19:26:53Z
@@ -67,9 +67,9 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Remove all Background-originated Shopify selection writes except false on first creation.
-- [ ] Verify no-contract/reinstall path and provider metadata invalidation remain intact.
-- [ ] Add real PostgreSQL lifecycle/concurrency regression tests.
+- [x] Remove all Background-originated Shopify selection writes except false on first creation.
+- [x] Verify no-contract/reinstall path and provider metadata invalidation remain intact.
+- [x] Add PostgreSQL lifecycle/concurrency regression tests for sync, selection, provider eligibility, and reinstall.
 
 ## Interfaces / Contracts
 
@@ -88,8 +88,8 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Acceptance Criteria
 
-- [ ] All newly synced discounts remain unchecked; selected ones survive re-sync and reinstall without becoming provider-eligible if unavailable.
-- [ ] No Woo merchant checkbox state is changed by this task.
+- [x] All newly synced discounts remain unchecked; selected ones survive re-sync and reinstall without becoming provider-eligible if unavailable.
+- [x] No Woo merchant checkbox state is changed by this task.
 
 ## Validation
 
@@ -116,31 +116,44 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Not Started — portable definition, no task claim.
+Ready for Review — Attempt 1 implementation complete; PostgreSQL integration execution remains environment-blocked.
 
 ### Files Changed
 
-None yet.
+- `moda-interact-background/src/services/shopify-discount-catalogue.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/reinstall-reconciliation.service.ts`
+- `moda-interact-background/tests/unit/services/billing-subscription-reconciliation/reinstall-reconciliation.service.test.ts`
+- `moda-interact-background/tests/integration/arch052-shopify-discount-selection.integration.test.ts`
+- `moda-interact-background/package.json`
 
 ### Work Completed
 
-None yet.
+- Shopify sync now creates new provider rows with `isAvailable: false` and omits the flag from existing-row updates. Disappearance and unavailable-catalogue handling still set `unavailableAt` and retain their existing catalogue status transitions without changing merchant selection.
+- No-contract reinstall still invalidates the catalogue and stamps `unavailableAt`; it no longer clears merchant selection. The focused unit assertion verifies that only the unavailable timestamp update remains.
+- Audited Background `shopifyDiscount` writes: Shopify sync is the only Background path writing `isAvailable`, and it writes false only in the upsert create branch. Woo sync still creates unchecked rows and omits the flag from updates. Existing merchant selection mutations remain in the authenticated merchant settings API; the current API selection writer is principal-scoped and Woo-only. No Background writer changes an existing merchant choice.
+- Added disposable PostgreSQL integration coverage for new-row defaults, selection surviving a full sync, a new discount remaining unchecked, disappearance, missing `read_discounts` scope and `UNAVAILABLE` catalogue state, provider-status eligibility, no-contract reinstall, and a stale concurrent sync response.
 
 ### Validation Results
 
-Not run.
+- Passed: focused unit files for Shopify catalogue and reinstall reconciliation (10 tests).
+- Passed: `npm run build` (Prisma client generation and TypeScript build).
+- Passed: ESLint on all five changed Background files.
+- Passed: `git diff --check`.
+- Not run successfully: `npm run test:arch052-shopify-discount-selection:postgres`; the harness stopped before tests because `docker` is not installed or available in PATH (`spawn docker ENOENT`), and no local PostgreSQL/container runtime is available.
+- Repository-wide `npm test` completed with 280 test files passing and 22 failing (3,044 tests passing and 64 failing). Failures are outside the changed files and include missing Redis/database services and existing logger/fixture expectation failures.
+- Repository-wide `npm run lint` reports one existing error in `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); the changed files pass lint.
 
 ### Deviations
 
-None reported.
+The required real PostgreSQL test suite was added but could not be executed in this environment because Docker and local PostgreSQL are unavailable. The repository-wide test and lint failures are recorded above and were not changed because they are unrelated to this task.
 
 ### Assumptions
 
-Execution will verify its current workspace, source state, dependency versions and test harness.
+Provider liveness and catalogue availability remain represented by provider metadata and `unavailableAt`; preserving `isAvailable` therefore does not make a missing or provider-ineligible discount eligible.
 
 ### Unresolved Issues
 
-None established by implementation.
+The PostgreSQL integration scenarios need execution in an environment with Docker and the disposable `pgvector/pgvector:pg17` harness available.
 
 ### Architectural Concerns
 
