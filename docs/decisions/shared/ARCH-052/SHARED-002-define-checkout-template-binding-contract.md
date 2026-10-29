@@ -43,14 +43,15 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Add a browser-safe `@modainteract/moda-interact-shared/recovery-template-bindings` published subpath with the `checkout.itemsSummary` text variable and `CHECKOUT_PRODUCT` IMAGE header role, plus accepted existing recovery-body variables and ARCH-049 image-header roles.
-- Define typed body-versus-header eligibility, purpose/offer-kind constraints, length/sanitisation limits, locale-neutral description output and exact versioned `parameterBindingsSnapshot.headerMediaRole` semantics.
-- Keep Admin English AST compilation and its immutable digest algorithm Admin-owned. Shared defines keys/roles/validation and cross-repository fingerprint fixtures, not a second AST compiler.
-- Add fixtures for all six INITIAL/FOLLOW_UP × offer-kind purposes; missing category, no item title, no available media, and valid/invalid product header roles.
+- Modify `moda-interact-shared/src/recovery-template-bindings.ts` (existing file, otherwise create it as the published `/recovery-template-bindings` source) with exact new semantic `checkout.itemsSummary`; limit resolved text to 160 Unicode code points, disallow control characters, braces placeholders and multiline content; source is lineItems, never model output.
+- Define a read-only `CHECKOUT_PRODUCT` IMAGE-header role separate from existing `LOGO`, `SQUARE_LOGO`, `COVER_IMAGE`; exact runtime result shape `{kind:"VERIFIED_PROVIDER_IMAGE", shopId:string, checkoutRecoveryId:string, productId:string, variantId:string|null, httpsUrl:string, verifiedAt:string, expiresAt:string}`. The URL is validated within service policy, never trusted from JSON merely because it parses.
+- Define `RecoveryProductImageResultSchema` strict version-1 result `{version:1, outcome:"found", image:{productId,variantId,httpsUrl}} | {version:1,outcome:"not_found"|"unavailable"}`; checkout line-item identity must match returned product/variant and shop scoping must be verified by the reader. These are **data** contracts, not an authentication protocol.
+- Ensure Admin compiler and Background preparer consume the same published semantic keys and image-header role, including immutable Meta template digests. No format change to the existing approved ShopBrand header roles.
+- Add tests for rejected unknown keys, unsafe multiline text, missing variant image, two-shops result mismatch and approved-header fallback variant selection.
 
 ## Out of Scope
 
-- No changes to category source/translation, media R2 processing, template compilation, Meta API or Background send implementation.
+- No new R2 storage, database media rows, generic image fetcher, HTTP auth scheme or runtime provider connection.
 
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
@@ -71,8 +72,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- Export `RecoveryTemplateSemanticVariableSchema`, `RecoveryTemplateHeaderMediaRoleSchema` and representative frozen-binding vectors from a new Shared subpath.
-- Text key: `checkout.itemsSummary` (body only); IMAGE role: `CHECKOUT_PRODUCT`; existing `shop.categoryName` remains store category, not product category.
+- Published `/recovery-template-bindings` exports `CHECKOUT_PRODUCT` media-header discriminator and `RecoveryProductImageResultSchema`; `checkout.itemsSummary` semantic text binding.
 
 ## Dependencies
 
@@ -104,9 +104,8 @@ After all Work Items, Acceptance Criteria and required Validation pass, complete
 
 **Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
 
-- `moda-interact-shared/src/recovery-template-bindings.ts (new)`
-- `moda-interact-shared/src/recovery-template-bindings.test.ts (new)`
-- `moda-interact-shared/package.json`
+- `moda-interact-shared/src/recovery-template-bindings.ts`
+- `moda-interact-shared/src/recovery-template-bindings.test.ts`
 
 Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
 

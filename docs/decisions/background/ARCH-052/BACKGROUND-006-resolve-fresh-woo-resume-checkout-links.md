@@ -15,7 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-WOOCOMMERCE-002
+- ARCH-052-API-004
+- ARCH-052-GATEWAY-001
 enables:
 - ARCH-052-BACKGROUND-008
 created: '2026-10-29'
@@ -44,10 +45,10 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Add an injectable Woo link resolver that queries the plugin’s authenticated link-issuance endpoint using the existing approved installation grant and safe HTTPS transport (no new hosted API/event wire).
-- Validate shop/installation identity, checkout key, response expiry, canonical Woo host and exact expected URL prefix/redirect policy; never derive allowed hosts from an untrusted returned URL.
-- Populate `TrustedCheckout` with the freshly checked URL, actual observation time and expiry during INITIAL preparation; do not persist raw bearer links or include them in logs.
-- Preserve Shopify checkoutUrl behaviour but reconcile its current observedAt freshness check with truly current checkout state; missing/expired Woo restoration capability uses only an approved no-button fallback or fails closed, never points to a generic checkout that loses products.
+- Implement `src/services/woocommerce-recovery/woo-recovery-checkout-url.service.ts`, caller of **only** API-004 private `POST /internal/v1/recovery/restore-link` with Shared-004 HMAC, from fixed Gateway-001 `MODA_RECOVERY_PRIVATE_READ_API_HOSTPORT`; never call the WordPress host directly or handle Woo REST credentials.
+- Sign exact `{shopId,checkoutRecoveryId,checkoutFingerprint}` read from persisted CheckoutRecovery, validate API response expiry <=30min, canonical merchant HTTPS bound site and exact `/moda-recovery/restore/<opaque-token>` path; no userinfo/fragment, private host or untrusted redirect. Do not persist/log bearer URL.
+- Set current `TrustedCheckout` from verified URL, observedAt now and explicit expiry during INITIAL template preparation, not from stale checkoutUrl. Invalid/missing route or expiry => approved no-button template or typed no-send, never generic empty Woo checkout.
+- Preserve Shopify verified checkoutUrl logic and existing consent/billing send admission. Add integration tests for stale key, malicious URL, wrong installation, expired token, missing private key, returning Woo item cart and no provider side effect on issuance.
 
 ## Out of Scope
 
@@ -66,17 +67,18 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Add Woo trusted-link client and production DI.
-- [ ] Wire into automated recovery preparation with expiration/host fence.
-- [ ] Test no-link, stale, wrong-host, provider errors and correct button URL.
+- [ ] Implement signed API-only Woo link client.
+- [ ] Validate exact installation host, expiry and trusted checkout.
+- [ ] Test Meta CTA includes only current safe URL, no persistence/logging.
 
 ## Interfaces / Contracts
 
-- Consumes WC authenticated restore-link service WOOCOMMERCE002; outputs existing ARCH-047 `TrustedCheckout`; exact Meta dynamic button suffix remains Admin-compiled.
+- API-004 signed private `/internal/v1/recovery/restore-link`, Shared-004 request authentication, `TrustedCheckout` output.
 
 ## Dependencies
 
-- `ARCH-052-WOOCOMMERCE-002` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-API-004` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-GATEWAY-001` — new ARCH-052 prerequisite (not yet materialised).
 
 All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
 
@@ -86,8 +88,8 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Acceptance Criteria
 
-- [ ] A valid Woo recovery sends a working tenant-scoped Resume checkout button.
-- [ ] Provider failures do not leak link tokens, misroute customers, or bypass consent/credit gate.
+- [ ] Woo CTA restores the targeted checkout only on customer click; no generic cart URL.
+- [ ] Missing provider read never exposes credentials or leads to false CTA.
 
 ## Validation
 

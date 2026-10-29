@@ -17,12 +17,13 @@ attempt: 0
 depends_on:
 - ARCH-052-BACKGROUND-008
 - ARCH-052-API-001
+- ARCH-052-API-002
+- ARCH-052-GATEWAY-001
 - ARCH-052-WOOCOMMERCE-001
 - ARCH-052-WOOCOMMERCE-002
 - ARCH-052-ADMIN-001
 - ARCH-052-ADMIN-002
-- ARCH-052-DATABASE-001
-- ARCH-052-DATABASE-002
+- ARCH-052-SHARED-003
 enables: []
 created: '2026-10-29'
 updated: '2026-10-29'
@@ -50,11 +51,10 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Run real Woo fixture (Classic and Blocks) with two installations, customer-specific checkout/consent state, selected versus unselected coupons and approved Meta templates.
-- Exercise NONE, FIXED selected eligible/ineligible candidates, AI all-current-catalogue shortlist, provider usage/exclusion/expiry changes and no-offer fallback.
-- Tap the actual WhatsApp CTA in test browser and verify installation-scoped cart restore, expiry, replay, removed/changed products, no automatic coupon application and no open redirect.
-- Exercise stale grants/private DNS, incorrect shop, provider failure, product IMAGE media absence, category/translation fallback, STOP, moderation, final send fence and credit/Support notice idempotency.
-- Prove Shopify availability flags and existing ARCH-036 Woo selection behaviour have not regressed.
+- Run two Woo installations, WordPress Classic/Blocks, two independent merchant-selected sets saved via existing `isAvailable` rows, and AI over unselected catalogue coupons.
+- Verify native coupon constraints (customer/product/variation/minimum/usage/expiry), invalid/unknown rules fail closed, selected flags survive catalogue sync, and Admin override remains isolated.
+- Verify real restored checkout from customer-tapped signed link and expiry/replay/wrong-installation rejection; no coupon is applied to browser cart by eligibility testing.
+- Exercise private Woo product image read with HMAC nonce/clock, revoked grant and malicious image origin; expected approved text fallback; end-to-end consent/STOP/moderation, duplicate initial send/credit, category translation and merchant Support notice.
 
 ## Out of Scope
 
@@ -85,12 +85,13 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 - `ARCH-052-BACKGROUND-008` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-API-001` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-API-002` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-GATEWAY-001` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-WOOCOMMERCE-001` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-WOOCOMMERCE-002` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-ADMIN-001` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-ADMIN-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-DATABASE-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-DATABASE-002` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
 
 All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
 

@@ -60,8 +60,8 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
-- A saved Meta IMAGE header must never be silently converted to TEXT at send; fallback means a separately approved template identity.
-- Admin compiler and Background use identical Shared role keys/digest fixtures.
+- A product image can be used only after Background returned a typed `VERIFIED_PROVIDER_IMAGE` in the current 5-minute preparation window, and the exact Meta IMAGE template was approved.
+- If the image is absent/expired or source changed use a different approved TEXT template identity; never alter an approved template component at send.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
@@ -75,7 +75,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- Shared `CHECKOUT_PRODUCT` role and ARCH-049 `headerMediaRole` version-one frozen contract; existing ARCH-047 Admin publish/translation pipeline.
+- Shared-002 `CHECKOUT_PRODUCT` role and Background runtime VERIFIED_PROVIDER_IMAGE result, not READY R2 status.
 
 ## Dependencies
 

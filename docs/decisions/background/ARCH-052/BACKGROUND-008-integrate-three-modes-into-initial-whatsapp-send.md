@@ -41,7 +41,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Compose the existing INITIAL send with authoritative checkout description, verified offer presentation, trusted CTA and optional READY product media.
+Compose the existing INITIAL send with authoritative checkout description, verified offer presentation, trusted CTA and optional verified runtime product media.
 
 ## Context
 
@@ -51,11 +51,13 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Use the frozen policy selection snapshot and provider/AI verification outcomes to choose INITIAL_NO_OFFER, INITIAL_CODE_OFFER or INITIAL_AUTOMATIC_OFFER and the correct approved shop/WABA/language template.
-- Bind customer first name, brand name, `checkout.itemsSummary`, existing translated `shop.categoryName`, trusted checkout CTA and only verified offer description/code, with no unapproved dynamic text.
-- Integrate READY recovery product media with Admin-selected IMAGE role; when absent use a separately approved no-image fallback, preserving immutable registration and final status/age fencing.
-- Recheck checkout freshness/evidence expiry immediately before prepare/final send; keep provider verification and R2/network work outside SQL transactions, and never change credit/STOP/consent/reachability/moderation/usage/attempt limits.
-- Persist correct sequence-one promise evidence for any later follow-up; retries cannot change offered code or double-send/double-charge.
+- For INITIAL sequence one, use only immutable `RecoveryOutreachAttempt.offerSnapshot` selected permission set and current eligible provider proof. Choose approved `INITIAL_NO_OFFER`, `INITIAL_CODE_OFFER` or `INITIAL_AUTOMATIC_OFFER` based on actual sendable result; NONE never queries discounts or model, FIXED only selected and AI among verified shortlist.
+- Use deterministic persisted `checkout.itemsSummary`, verified shop brand name or owned fallback, existing translated `shop.categoryName` and category-absent approved fallback; never guess category or offer text.
+- Bind current trusted Shopify checkout URL or Woo signed restore URL through approved immutable Meta URL-button prefix. A missing Woo return link may use only a separately approved no-button purpose/locale or typed no-send, not generic empty cart.
+- Use optional Background-007 `VERIFIED_PROVIDER_IMAGE` only with registered approved IMAGE-header variant; otherwise separately approved TEXT variant. Do not change Meta template header type after approval.
+- After provider-confirmed Meta send, use one serialised DB state transition/CAS to persist Shared-001 `offerSnapshot.sentOffer` corresponding **exactly** to verified offer rendered in the delivered template, or `{kind:"NO_OFFER"}`. Never mark sentOffer on timeout, rejected or unknown provider result. Preserve conversation/outbound idempotency. Follow-up only uses this durable sentOffer, no inferred merchant selection.
+- Preserve existing final consent, STOP, moderation, provider template approval, exact idempotent sequence-one admission, billing/credit, human handover and ARCH-050 merchant Support notice. All provider, AI, image and return-link calls finish before final SQL credit/admission transaction. Exceptions logged via Shared logger, no customer PII/tokens.
+- Integration tests for 3 modes x both providers plus absent image, unavailable category, missing URL, Meta confirmed/unconfirmed, selected but ineligible discounts, provider/AI timeout, STOP, consent withdrawal and duplicate BullMQ delivery/credit.
 
 ## Out of Scope
 
@@ -65,8 +67,8 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
-- Discount-unavailable must select NO_OFFER only if that is a valid separately approved choice under the existing final admission, never fabricate a coupon.
-- If no approved matching variant or valid checkout button exists, return a typed non-send; no generic public cart URL substitution.
+- No compatibility with old development-only offerSnapshot formats; reset test records before rollout.
+- When FIXED or AI has no verifiable offer, use NO_OFFER only if its own approved variant exists, otherwise typed no-send.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
@@ -74,13 +76,13 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Wire production template inputs and selection fallback.
-- [ ] Preserve initial promise snapshot, retries and final-send gate semantics.
-- [ ] Run failure/race and PostgreSQL/Meta simulator integration suites for both platforms.
+- [ ] Wire runtime template binding and three verified offer purposes with effective attempt policy.
+- [ ] Record only actual confirmed sent offer in existing JSON via one CAS and enforce same promise on follow-up.
+- [ ] Run two-provider end-to-end initial-send and duplicate/idempotency integration harness.
 
 ## Interfaces / Contracts
 
-- Existing `AutomatedRecoveryTemplateService`, `RecoveryOfferDecision`, frozen ARCH-047/049 Meta `PreparedRecoveryTemplate`, existing `OutboundMessageDeliveryService` and final SQL permit.
+- Existing `RecoveryOutreachAttempt.offerSnapshot`, `PreparedRecoveryTemplate`, `RecoveryOfferDecision`, Meta approved templates; no new database/media persistence.
 
 ## Dependencies
 
@@ -101,9 +103,8 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Acceptance Criteria
 
-- [ ] All three modes produce expected template purpose, no-eligible AI/FIXED fallback and correct return link.
-- [ ] No duplicate initial send/credit, existing merchant Support notification and human handover remain correct.
-- [ ] No raw product image URL or stale/bogus discount can reach provider payload.
+- [ ] Actual Meta message contains no unverified offer, has honest basket/category text and valid customer checkout return, with optional verified image.
+- [ ] `offerSnapshot.sentOffer` reflects only provider-confirmed outbound; retries and follow-ups never over-promise, double-send or double-bill.
 
 ## Validation
 

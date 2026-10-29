@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-BACKGROUND-002
-- ARCH-052-COMMERCE-001
-- ARCH-052-WOOCOMMERCE-001
+- ARCH-052-COMMERCE-003
+- ARCH-052-API-003
 enables:
 - ARCH-052-BACKGROUND-004
 - ARCH-052-BACKGROUND-008
@@ -47,21 +47,22 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Add a dedicated Shopify proof adapter to the approved Commerce read boundary; add a separate Woo proof client using existing encrypted authorised read-grant, safe canonical-origin transport and plugin native coupon eligibility route.
-- Pin current shop/recovery/checkout fingerprint, provider discount identity, currency, observed time and expiry; map only proven positive results to `CheckoutRuleEvidence`. Ineligible versus unavailable versus transport failure must be explicit.
-- Inject production readers into `RecoveryOfferResolver` in the existing composition module, not just test constructors. Reverify constraints on action path with bounded deadlines/concurrency and avoid provider network calls inside PostgreSQL permit transactions.
-- Use shared logging, explicit retryable errors and no raw access token, customer PII, provider URL or discount credentials in logs.
+- In `src/services/recovery-offers/recovery-offer-providers.ts`, inject Shopify adapter that calls **only** Commerce-003 authenticated private `POST /internal/v1/recovery/discount-proof`, and Woo adapter that calls **only** API-003 identically named private path on distinct internal host. Use Shared-004 signature body and Shared-005 response schema; no direct provider credentials or direct plugin endpoints in Background.
+- Build strict request from persisted checkout/discount row IDs and freshly computed `checkoutOfferFingerprint`, not client data. Use fixed origins `MODA_RECOVERY_PRIVATE_READ_COMMERCE_HOSTPORT` and `MODA_RECOVERY_PRIVATE_READ_API_HOSTPORT` supplied by Gateway-001; HTTPS not required inside Render service-private URL, but TLS/public customer URLs must never be accepted as origin overrides.
+- For eligible evidence verify `shopId`, `checkoutRecoveryId`, `checkoutFingerprint`, `providerDiscountId`, currency, safe positive integer savings, `evaluatedAt <= now < expiresAt`, proof age <=5min, correct provider identity and `verifiedCode` for CODE offer. Mismatch => unavailable/no offer; never accept a proof for another checkout.
+- No RPC for NONE; FIXED/AI comply Background-002 shortlist max 24, concurrency <=4, 2s call timeout and 15s total. Network exceptions are retryable with shared structured error log and cause, not a false eligibility result; ineligible skips, unavailable sends no unverified offer.
+- Add integration tests with real signed HTTP fixtures for both services, wrong shop/nonce, stale fingerprint, missing HMAC environment, provider unavailable, Meta no-send for invalid proof and duplicate BullMQ initial job.
 
 ## Out of Scope
 
-- No provider coupon rule engine in Background, no new general logger, no checkout changes, no AI recommender.
+- No new database table, product/offer mutation, Meta send, prompt/schema inventing or independent provider eligibility calculation.
 
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
 ## Requirements
 
-- Do not treat Commerce `QUALIFIES_FOR_KNOWN_RULES` as full proof unless COMMERCE001 explicitly certifies required restrictions.
-- Provider unavailable is NEVER reported as an eligible zero-savings or approximate offer.
+- Fail closed on unverified evidence, including provider identity mismatch and unknown customer context.
+- Use shared logger from @modainteract/moda-interact-shared/logging, preserving errors and reasons.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
@@ -69,19 +70,19 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Implement two injectable provider adapters and production wiring.
-- [ ] Add concurrent/revoked grant, provider failure, expired evidence and cross-shop fixtures.
-- [ ] Run PostgreSQL-to-provider integration tests using local simulators.
+- [ ] Implement Shopify/ Woo signed proof clients and exact immutable checkout identity checks.
+- [ ] Connect both adapters, timeouts and retry classification to existing resolver.
+- [ ] Add real HTTP/Redis mock proof and database cross-tenant tests.
 
 ## Interfaces / Contracts
 
-- `ReadOnlyProviderEligibility.evaluate` and `CheckoutRuleEvidence` from `recovery-offer.types.ts`; Woo uses authenticated grant logic in `src/services/woo-coupon-grant.service.ts` and transport modules.
+- Exact two internal private origins, same fixed discount-proof route, HMAC Shared-004 and proof schema Shared-005.
 
 ## Dependencies
 
 - `ARCH-052-BACKGROUND-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-COMMERCE-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-WOOCOMMERCE-001` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-COMMERCE-003` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-API-003` — new ARCH-052 prerequisite (not yet materialised).
 
 All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
 
@@ -92,14 +93,13 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Acceptance Criteria
 
-- [ ] Default production evaluator no longer silently returns `unavailable` for every valid provider.
-- [ ] Unverifiable offers always fall back to NO_OFFER; no provider call within SQL transaction.
-- [ ] Woo credential revocation/SSRF, Shopify wrong-shop and currency mismatches cannot produce sendable offers.
+- [ ] Only authorised current checkout proof becomes a sendable offer; neither adapter relies on catalogue descriptions as proof.
+- [ ] No public provider credentials or silent fault handling.
 
 ## Validation
 
-- [ ] Background unit/provider integration with simulated Commerce/Woo transports and database-bound fixture.
-- [ ] Background build/lint and `git diff --check`.
+- [ ] Background provider adapter and resolver tests, strict unit and PostgreSQL integration where durable state is read.
+- [ ] Background package typecheck/lint and git diff --check.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 

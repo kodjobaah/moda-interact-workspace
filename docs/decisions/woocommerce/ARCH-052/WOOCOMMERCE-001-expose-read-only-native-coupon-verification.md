@@ -9,15 +9,16 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: []
+depends_on:
+- ARCH-052-SHARED-003
 enables:
-- ARCH-052-BACKGROUND-003
 - ARCH-052-SYSTEM-TEST-002
+- ARCH-052-API-003
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
@@ -44,10 +45,11 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Add a narrowly scoped server-to-server REST endpoint in the plugin (under its authenticated installed route) for `checkoutKey`, bounded candidate coupon IDs and an expected checkout fingerprint.
-- Use a fresh authoritative Woo cart/checkout or safe isolated `WC_Discounts`-equivalent provider evaluation; reject when checkout snapshot/session has expired or necessary rules cannot be faithfully evaluated.
-- Return an exact coupon ID/code, current relevant restrictions, eligible/ineligible/unavailable, positive savings/currency, validation times and checkout fingerprint; never reveal other customers or perform a Woo checkout mutation.
-- Enforce existing installation identity/grant auth, canonical site binding, minimal response fields, bounded rate/deadline and no cross-installation lookup.
+- Register custom WooCommerce REST route `GET /wp-json/wc/v3/moda/recovery/coupon-proof` in `includes/Rest/RecoveryCouponProofController.php` and plugin existing bootstrap. Headers exactly `X-Moda-Checkout-Key` (<=128 chars), `X-Moda-Coupon-Id` (positive decimal integer), `X-Moda-Checkout-Fingerprint` (bounded hex digest), combined <=2048 bytes, with empty GET body and no query string; require authenticated Woo REST API consumer key with `read` permission for this **GET** endpoint, not browser nonce nor unauthenticated site origin. Reject requests by other merchants/sites or unverified install grants.
+- Resolve original abandoned checkout using installed plugin checkoutKey capture and customer/session identity; verify supplied fingerprint against the fresh stored checkout captured values and currently required provider facts. Never trust caller-provided basket contents or prices. Native `WC_Coupon`/`WC_Discounts` validation must be run in isolated nonpersisting test context: quantity, product/variation, required/excluded products/categories, minimum/maximum cart spend, expiry, per-customer/usage and stacking/currency restrictions. If custom extension hooks or missing customer session make safe exact validation impossible, return `unavailable`, not approximate savings.
+- Generate the strict Shared-005 result (same JSON validated by Node consumers) with current coupon id, exact currency, positive savings in minor units, UTC evaluated/expires <=5 min, coupon code when deliverable and checkout fingerprint. Verified `ineligible` only for proved negative outcome; unknown => `unavailable`. No generic coupon listing exposed.
+- No persistent coupon application, no Woo cart/session mutation, no new checkout order, no merchant cart edits. Valid return is independent of the WhatsApp send; Meta send remains Background-owned.
+- Add PHP unit/integration tests with actual Woo REST read-only key auth, checkout-session fixtures, customer restrictions and usage limits, unknown rule hooks, two-installation isolation, missing session and `WC_Discounts` no-mutation proof.
 
 ## Out of Scope
 
@@ -57,8 +59,9 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
-- Unknown discount semantics, customer restrictions, stacking, free shipping, tax rounding or usage state fail closed as unavailable.
-- PHP errors are reported via existing plugin operational logging without raw customer data, coupon credentials or swallowed unexpected exceptions.
+- Eligibility evaluates the checkout as originally captured, customer identity and coupon restrictions as they exist at evaluation time; no application of coupon to live cart.
+- A missing historical customer/session or incompatible Woo extension rule is `unavailable`, not qualifying.
+- Woo REST read-only key uses a **GET** request with identity data in strictly validated HTTPS headers, not URI query params; `Cache-Control: no-store` on both request and response. Native provider route must never require write-scoped Woo API keys or mutate cart/coupon/order state on read.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
@@ -66,30 +69,29 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Implement authenticated read-only evaluator/controller.
-- [ ] Cover native Woo eligible, ineligible, unknown and expired state fixtures in WordPress integration tests.
-- [ ] Document exact credential and response scope for Background consumer.
+- [ ] Implement exact authenticated route and native isolated coupon proof.
+- [ ] Add Woo checkout/session lookup, safe unsupported-rule classification.
+- [ ] Run WooCommerce read-only key, two-installation and no-cart-write integration tests.
 
 ## Interfaces / Contracts
 
-- Suggested `GET/POST /wp-json/moda-interact/v1/recovery/coupon-eligibility` behind existing approved server-to-server permission/grant, versioned documented request/response. Background BG003 is the only intended service consumer.
+- Fixed read-only Woo endpoint `GET /wp-json/wc/v3/moda/recovery/coupon-proof`, strict three strictly validated request headers and Shared-005 response JSON fixtures; hosted API-003 is sole caller.
 
 ## Dependencies
 
-None.
+- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
 
 All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
 
 ## Enables
 
-- `ARCH-052-BACKGROUND-003`
 - `ARCH-052-SYSTEM-TEST-002`
+- `ARCH-052-API-003`
 
 ## Acceptance Criteria
 
-- [ ] Correct coupon/customer/checkout restrictions can produce safe proof, unsupported state cannot.
-- [ ] No Woo cart/session/order state is modified by provider verification.
-- [ ] Unauthorized, wrong-shop and revoked credentials cannot reveal coupon/customer information.
+- [ ] Read-only WooCommerce REST key can invoke verified coupon proof without write permission; never leaks coupon status to another merchant.
+- [ ] No runtime Woo cart change or false promise on unsupported usage/custom rules.
 
 ## Validation
 
@@ -106,11 +108,13 @@ After all Work Items, Acceptance Criteria and required Validation pass, complete
 
 **Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
 
-- `moda-interact-woocommerce/includes/Rest/ (new eligibility controller)`
-- `moda-interact-woocommerce/includes/Api/ (auth/client contracts)`
+- `moda-interact-woocommerce/includes/Rest/RecoveryCouponProofController.php (new)`
+- `moda-interact-woocommerce/includes/Checkout/CheckoutSnapshot.php`
 - `moda-interact-woocommerce/tests/`
 
 Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
+
+- Native coupon `WC_Discounts` validation must be read-only and avoid mutating the live customer session. If validation requires mutation, use an isolated synthetic cart in memory with no save hooks, then discard; never cause Woo-side persistent cart changes.
 
 ## Completion Report
 

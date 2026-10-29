@@ -1,33 +1,27 @@
 ---
-id: ARCH-052-BACKGROUND-007
+id: ARCH-052-SHARED-001
 architecture_id: ARCH-052
-title: Normalize and cache optional checkout-product IMAGE header
+title: Define one shared merchant-selection and immutable-attempt snapshot contract
 task_kind: implementation
-domain: background
-repository: moda-interact-background
-assigned_agent: moda_background
+domain: shared
+repository: moda-interact-shared
+assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
-priority: 45
+status: ready
+priority: 10
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-- ARCH-052-DATABASE-002
-- ARCH-052-SHARED-003
-- ARCH-052-COMMERCE-002
-- ARCH-049-BACKGROUND-001
-- ARCH-049-BACKGROUND-002
-- ARCH-049-BACKGROUND-004
+depends_on: []
 enables:
-- ARCH-052-BACKGROUND-008
+- ARCH-052-SHARED-003
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-BACKGROUND-007: Normalize and cache optional checkout-product IMAGE header
+# ARCH-052-SHARED-001: Define one shared merchant-selection and immutable-attempt snapshot contract
 
 ## Architecture
 
@@ -39,32 +33,32 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Select and safely convert at most one actual checkout-product image into a durable READY R2 derivative consumed by the frozen Meta IMAGE header.
+Define the exact 0..50 merchant discount selection semantics and a version-one frozen outreach policy snapshot, without any Prisma changes.
 
 ## Context
 
-ARCH-049 has safe image fetch/transform/R2 primitives for ShopBrand; that state is brand-specific. A checkout product image must use the exact checkout product/variant ID and its own durable lifecycle.
+Both providers store discount rows in shopify.ShopifyDiscount. Woo already writes isAvailable as the merchant checkbox. Shopify writes isAvailable as provider health; ARCH-052-BACKGROUND-009 corrects that. Existing Shared EffectiveRecoveryPolicySchema still requires one fixedShopifyDiscountId when mode=FIXED, so the first sorted selected ID remains a non-authoritative single-ID projection.
 
 Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
 
 ## Scope
 
-- Add focused recovery-product-media processor/repository using DB002; select first present purchasable line with an exact product/variant image, bounded to a few provider reads, and store one source-generation association.
-- For Shopify, consume COMMERCE002 image-source port. For Woo, reuse existing authenticated Woo read grant and WC REST exact product/variation image source (do not invent plugin-side duplication).
-- Reuse inspected ARCH-049 secure fetch/redirect/DNS/peer safety, image transform, MIME/dimension/size validation and Cloudflare R2 writer mechanisms, extracting only genuinely shared mechanics instead of copying a brand-only service.
-- Resolve READY HTTPS derivative with exact shop/recovery/source/version and approved R2 host; no external network fetch, resize or upload in final send transaction or immediately inside the provider call.
-- On missing, unsafe, expired, stale or unavailable image, return typed absent; allow a separately approved text/ShopBrand-header template fallback. Never block essential no-discount text outreach solely for an optional product photo.
+- Modify `moda-interact-shared/src/recovery-policy.ts` and tests; export strict `RecoverySelectedDiscountIdsSchema` for an array of 0..50 unique IDs trimmed and sorted ASCII ascending; IDs `[A-Za-z0-9_-]{1,128}`; reject duplicate IDs, control chars, >50 and unknown object keys.
+- Export `RecoveryOfferSelectionSnapshotSchema` and `parseRecoveryOfferSelectionSnapshot`. Exact existing-column JSON: `{ contract:"moda.recovery.offer-selection.v1", source:"MERCHANT"|"ADMIN_OVERRIDE", recoveryOfferMode:"NONE"|"FIXED"|"AI_BEST_APPLICABLE", authorisedDiscountIds:string[], sentOffer:null|{kind:"NO_OFFER"}|{kind:"CODE_OFFER"|"AUTOMATIC_OFFER",providerDiscountId:string,code:string|null} }`. All keys required; initial attempt always has `sentOffer:null` until confirmed provider send. Reject unknown fields. FIXED merchant 1..50; NONE/AI `[]`; ADMIN_OVERRIDE+FIXED exactly one ID.
+- Permission fields in `offerSnapshot` MUST be immutable after initial INSERT. Only a single compare-and-set from `sentOffer:null` to a verified sent result is permitted after provider send confirmation. `NO_OFFER` is the exact sent no-offer template; CODE/AUTOMATIC values come only from provider-verified resolved offer used in the actual Meta request. Never treat selected discount as already promised.
+- Keep existing `EffectiveRecoveryPolicySchema` unchanged for callers requiring `fixedShopifyDiscountId` in FIXED mode: project first ascending authorised ID as non-authoritative anchor. `ShopifyDiscount.isAvailable` is now merchant checkbox ONLY for both providers.
+- Export parser and typed contract through published `/recovery-policy`; tests for canonical sort, duplicate IDs, all mode/source combinations, correct sentOffer variants, immutable permission diff detection and unknown/old JSON rejection.
 
 ## Out of Scope
 
-- No editing existing ARCH-049 brand role semantics, merchant AST compiler, real-time per-send arbitrary image fetch or unbounded media retention.
+- No new database tables, columns, Prisma migrations, backfill or legacy snapshot parser. No merchant settings, provider API, template or send implementation.
 
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
 ## Requirements
 
-- Per-recovery media generation fencing, idempotent retry/cleanup and bounded worker concurrency/cost.
-- Retain customer consent/STOP gates even when media was prepared early; no image may cause an unauthorised send.
+- No new DB table, column, Prisma migration, historical snapshot parser, backfill or old behaviour adapter.
+- Offer-selection authorisation and the actually sent offer have distinct required fields inside the existing snapshot JSON.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
@@ -72,40 +66,32 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Implement exact-item source readers and media lifecycle processor.
-- [ ] Reuse safe R2 mechanisms and export READY image resolver for template preparer.
-- [ ] Test media races, origin attacks, absent image and approved-header fallback.
+- [ ] Implement four named Shared exports and strict invariants.
+- [ ] Add valid/invalid cross-platform vectors, Admin-override and canonical sort tests.
 
 ## Interfaces / Contracts
 
-- DB002 `CheckoutRecoveryProductMedia`; Shared IMAGE header role `CHECKOUT_PRODUCT`; existing ARCH-049 verified R2 media primitives, new Background resolver adapter.
+- Published `RecoverySelectedDiscountIdsSchema`, `RecoveryOfferSelectionSnapshotSchema`, parser and type. JSON contract above is authoritative for Background/Shared tests.
 
 ## Dependencies
 
-- `ARCH-052-DATABASE-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-COMMERCE-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-049-BACKGROUND-001` — Complete in 29 October snapshot.
-- `ARCH-049-BACKGROUND-002` — Complete in 29 October snapshot.
-- `ARCH-049-BACKGROUND-004` — not Complete in 29 October snapshot.
+None.
 
 All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
 
 ## Enables
 
-- `ARCH-052-BACKGROUND-008`
+- `ARCH-052-SHARED-003`
 
 ## Acceptance Criteria
 
-- [ ] No cross-tenant or stale product image; no Meta IMAGE header uses a raw Shopify/Woo source URL.
-- [ ] Missing picture falls back to approved text/header path rather than preventing NO_OFFER outreach.
-- [ ] No network I/O inside final DB permit transaction.
+- [ ] Both platforms agree on existing-row checkbox semantics and strict frozen snapshot; no single-ID fallback grants permission.
+- [ ] Actual sent-offer value cannot be inferred merely from the choice list.
 
 ## Validation
 
-- [ ] Focused Background media processing tests with R2/provider simulators.
-- [ ] PostgreSQL race/retention tests, final-template IMAGE parameter and text regression tests.
-- [ ] Background build/lint and `git diff --check`.
+- [ ] Run Shared declared unit tests including new recovery selection fixtures.
+- [ ] Shared package build/typecheck and `git diff --check`.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
@@ -117,10 +103,8 @@ After all Work Items, Acceptance Criteria and required Validation pass, complete
 
 **Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
 
-- `moda-interact-background/src/services/shop-brand-media/ (reuse primitives only)`
-- `moda-interact-background/src/services/recovery-product-media/ (new)`
-- `moda-interact-background/src/services/recovery-template-preparation/`
-- `moda-interact-background/tests/integration/`
+- `moda-interact-shared/src/recovery-policy.ts`
+- `moda-interact-shared/src/recovery-policy.test.ts`
 
 Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
 

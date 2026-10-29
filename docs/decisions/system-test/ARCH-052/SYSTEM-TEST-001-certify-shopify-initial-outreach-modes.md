@@ -17,12 +17,12 @@ attempt: 0
 depends_on:
 - ARCH-052-BACKGROUND-008
 - ARCH-052-SHOPIFY-001
+- ARCH-052-BACKGROUND-009
 - ARCH-052-COMMERCE-001
 - ARCH-052-COMMERCE-002
 - ARCH-052-ADMIN-001
 - ARCH-052-ADMIN-002
-- ARCH-052-DATABASE-001
-- ARCH-052-DATABASE-002
+- ARCH-052-SHARED-003
 enables: []
 created: '2026-10-29'
 updated: '2026-10-29'
@@ -50,11 +50,10 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Use two Shopify tenants and deterministic checkout-product/discount fixture snapshots, approved six-purpose templates and a simulated Meta sender.
-- Exercise NONE with zero discount-provider/LLM calls (independent optional product-media reads are permitted); FIXED selection and no eligible option; AI scans unselected active candidates and chooses only a verified one; test code versus automatic offer template.
-- Validate product title, quantity summary, approved store category translation, merchant branding, optional product photo, no-photo fallback and true checkout Resume link.
-- Exercise expired/revoked/unknown discounts, stale checkout/image, wrong-shop, consent/STOP, opt-out, final template status and ordering/retry/credit idempotency.
-- Assert ARCH-050 initial Support notice/deep-link and existing human takeover remain unchanged.
+- Create isolated two-Shopify-shop PostgreSQL/Redis + Meta-simulator fixture, with previously-synced discount rows marked unchecked (`isAvailable:false`) and merchant-selected rows explicitly checked. Use NO/FIXED/AI, selected three-of-twenty and AI unselected product-applicable discounts.
+- Verify new sync inserts unchecked, subsequent sync/outage/reinstall preserves selected flags, historical pre-ARCH-052 records are never reused, and ShopSettings first-ID anchor is not the complete selection authority.
+- Test provider verified CODE/AUTOMATIC offers, no eligible discount, unknown rule -> NO_OFFER, irrelevant product discount, exact basket text, store category translations and absent category, image verification/fallback and verified checkout link.
+- Exercise final WhatsApp send STOP/consent/moderation, duplicate BullMQ, credit reservation, follow-up confirmed promise and ARCH-050 Support notice deep-link. Record that simulator approval != Meta live approval.
 
 ## Out of Scope
 
@@ -85,12 +84,12 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 - `ARCH-052-BACKGROUND-008` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-SHOPIFY-001` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-BACKGROUND-009` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-COMMERCE-001` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-COMMERCE-002` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-ADMIN-001` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-ADMIN-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-DATABASE-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-DATABASE-002` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
 
 All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
 

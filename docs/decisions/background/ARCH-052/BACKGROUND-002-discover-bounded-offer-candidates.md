@@ -38,16 +38,19 @@ Build an exhaustive-within-declared-limits and tenant-scoped candidate shortlist
 
 ## Context
 
-`src/services/recovery-offers/recovery-offer-repository.ts` currently filters `isAvailable:true` for both platforms and `recovery-offer-resolver.service.ts` returns CANDIDATE_LIMIT above eight. Woo isAvailable means merchant checkbox; Shopify isAvailable means provider availability.
+`recovery-offer-repository.ts` filters isAvailable=true regardless of mode; `candidateKind` treats selection as provider eligibility; MAX_CANDIDATES=8 suppresses larger catalogues. That is wrong after isAvailable is standardised as merchant selection.
 
 Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
 
 ## Scope
 
-- Refactor the existing recovery-offer candidate repository to distinguish platform/provider active status from merchant-selected authorisation and use sorted bounded keyset pagination.
-- For FIXED, consider exactly the frozen selected set; for AI, scan all current provider-identifiable catalogue rows within the configured safe limit, regardless of Woo checkbox flags.
-- Apply safe static prefilters against checkout items, currency, provider metadata, lifecycle and supported coupon/discount families; do not claim product category alone proves eligibility.
-- Prioritise a bounded independently evaluated shortlist. If complete scanning is impossible, report a typed truncated/oversize outcome rather than silently considering the first eight as the entire catalogue.
+- In `src/services/recovery-offers/recovery-offer-repository.ts` implement keyset page reader by `(id ASC)` for `shopId`, fixed page size 100, at most 5000 catalogue rows. Require catalogue status CURRENT, latest generation and absence of row.unavailableAt before an offer is a candidate. Page includes `isAvailable` only for merchant selection, never as provider status.
+- FIXED reads only the frozen `authorisedDiscountIds` from attempt snapshot (1..50); validate exact same shop and provider identity, and do not add unchecked rows. AI reads ALL current catalogue rows regardless of `isAvailable`, across pages; NONE does zero repository/provider/model reads.
+- Replace `candidateKind` `!row.isAvailable` exclusion with provider-specific required liveness checks (`providerStatus`, `unavailableAt`, dates, fixedSelectable and provider snapshot). Stop treating merchant selection as provider fact. Unsupported families are excluded from eligible shortlist; do not invent codes or calculate savings.
+- Static prefilter: exclude expired/inactive, wrong platform, non-deliverable code, incompatible currency and provably inapplicable product/variant sets. Product category is optional relevant metadata, never sole eligibility evidence. Maintain stable order by ID; deduplicate with set.
+- Use maximum 5000 scanned rows, maximum 50 FIXED selected IDs, maximum 24 live provider verifications per INITIAL attempt and concurrency at most 4. If >5000 rows or incomplete pagination, return `CATALOGUE_INCOMPLETE` NO_OFFER (add reason type); if >24 plausibly eligible AI candidates, mark shortlist partial and still consider only the deterministically first 24, never claim globally optimal savings.
+- Remove MAX_CANDIDATES=8 rejection; bounded timeout/partial-result counters use shared logger (count/reason only). Never perform provider calls on raw webhooks; this remains delayed actionable recovery work.
+- Add SQL/unit fixtures: 3 selected among 20, 12 selected (no eight cap), 150 unselected AI candidates, 5,001 rows fail closed, stale gen, provider-status invalid, two shops and no duplicate pages.
 
 ## Out of Scope
 
@@ -57,8 +60,8 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
-- No full-table scans on common webhook ingress. Only actionable INITIAL recovery paths perform discovery.
-- Preserve a 50-ID merchant selection max and separate the catalogue scan ceiling from live verification concurrency/cost ceilings.
+- AI is allowed to recommend only among independently verified evaluated candidates; scan-wide completeness != verification of every record.
+- No provider calls during transaction, no full-scan in Shopify webhook hot path.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
@@ -66,13 +69,14 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Split Shopify/Woo availability filtering and add cursor-based discovery.
-- [ ] Implement bounded deterministic shortlist/limit handling.
-- [ ] Test many-coupon, wrong-shop, partial-pages and changed-policy states.
+- [ ] Implement shop-scoped paginated candidate discovery and provider-status filters.
+- [ ] Remove legacy eight-candidate gating and define 5000/50/24/4 budgets.
+- [ ] Add large catalogue and mode-isolation tests.
 
 ## Interfaces / Contracts
 
-- Maintain `RecoveryOfferRepository` and `candidateKind` boundaries in `src/services/recovery-offers/`; adopt a cursor/page result and explicit completeness flag.
+- `RecoveryOfferRepository.readDiscountPage(shopId,afterId,take=100)` plus explicit completeness; `candidateKind(platform,row,now)` excludes provider-ineligible independently of selection.
+- `NoOfferReason` extends with `CATALOGUE_INCOMPLETE`; producer and consumer names match.
 
 ## Dependencies
 
@@ -86,14 +90,13 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Acceptance Criteria
 
-- [ ] AI Woo scans unselected active coupons; FIXED never sees unchecked merchant options.
-- [ ] More than eight catalogue records does not automatically suppress the entire AI mode.
-- [ ] Incomplete or stale catalogue never becomes a false positive eligible offer.
+- [ ] FIXED evaluates only saved-authorised set; AI can evaluate unchecked rows; NONE makes no discount-catalogue, discount-proof or AI calls (the separate optional product-image reader is unaffected).
+- [ ] No positive discount for stale, unsupported or unknown-rule candidates.
 
 ## Validation
 
-- [ ] Focused repository/selection tests and SQL query/index evaluation for large catalogues.
-- [ ] Background build/lint and `git diff --check`.
+- [ ] Background repository/resolver tests, SQL query plan/index inspection, no schema migration.
+- [ ] Background declared typecheck/lint and `git diff --check`.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 

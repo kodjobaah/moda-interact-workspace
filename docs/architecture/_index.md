@@ -1037,6 +1037,6 @@ Agreed and fully decomposed on 2026-10-07. Ready frontier: DATABASE-001 and SHAR
 
 ## ARCH-052 — Checkout-personalised WhatsApp initial outreach (2026-10-29)
 
-Proposed, portable architecture with **23 defined but not materialised** repository-owned tasks. Initial Ready frontier: Database-001/002, Shared-001/002, Commerce-001/002 and WooCommerce-001/002. Remaining tasks are dependency-gated. Reuses existing translated `shop.categoryName`, ARCH-047 six approved template purposes and final send safeguards; fills real eligibility, multi-selection, AI, basket summary, Woo cart return and optional verified product media.
+Proposed, pre-production and **29 portable, defined-but-not-materialised tasks**; no new database tables, columns, migrations, image persistence, or legacy backfill. Both Shopify and Woo use `ShopifyDiscount.isAvailable` as merchant selection; runtime image read with safe fallback.
 
 [Architecture](ARCH-052-checkout-personalised-initial-whatsapp-outreach.md)

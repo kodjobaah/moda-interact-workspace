@@ -16,8 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables:
-- ARCH-052-BACKGROUND-007
 - ARCH-052-SYSTEM-TEST-001
+- ARCH-052-COMMERCE-003
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
@@ -44,10 +44,10 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Extend the existing Shopify Commerce product/variant facts GraphQL documents and strict parsers only where needed to read one appropriate variant/product image with source identity, MIME/size metadata if provider exposes it, and current product availability.
-- Use the exact variant/product IDs taken from authenticated CheckoutRecovery; do not free-text search for a visually similar item or another merchant’s product.
-- Return a bounded source descriptor to the approved private consumer; do not insert arbitrary public image URLs into template headers or create a new image normalization framework.
-- Preserve existing search/discount results, GraphQL scopes, request budget and checkout ID authorization.
+- Extend `moda-interact-commerce/src/commerce/products/index.ts` Shopify product-facts operation, or its existing backend Shopify GraphQL reader, to project `variant.image.url` first, fallback `product.featuredImage.url` for the **exact** checkout product/variant identity, without search-by-name or unrelated product recommendation.
+- Use Shopify Admin GraphQL read-only session for authenticated shopDomain; request only product node identity, variant identity and image URL; respect existing product request budget and abort/deadline.
+- Return strict Shared `RecoveryProductImageResultSchema` `{version:1,outcome:"found",image:{productId,variantId,httpsUrl}}` or `not_found`/`unavailable`, never Shopify token or raw GraphQL JSON; reject deleted product/variant or mismatched IDs.
+- Add product/variant fixture tests with first-line image absent, wrong shop, deleted product, safe CDN https and unauthorised session. Do not use merchant-provided media URL as authority.
 
 ## Out of Scope
 
@@ -72,7 +72,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- Extend existing Commerce `productFacts.readVariants` with an optional source-image projection on an approved private read port; BG007 performs normalization.
+- Published Shared-002 `RecoveryProductImageResultSchema`; direct trusted Shopify catalog read in Commerce backend.
 
 ## Dependencies
 
@@ -82,13 +82,13 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Enables
 
-- `ARCH-052-BACKGROUND-007`
 - `ARCH-052-SYSTEM-TEST-001`
+- `ARCH-052-COMMERCE-003`
 
 ## Acceptance Criteria
 
-- [ ] No untrusted seller-entered URL can become an approved Meta media link without BG007 normalization.
-- [ ] Existing Commerce product search/discount evaluation tests remain green.
+- [ ] Variant image takes precedence and product featured image is fallback with identity match; no product media persistence.
+- [ ] No cross-tenant image or Shopify token leaks.
 
 ## Validation
 

@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-API-001
 architecture_id: ARCH-052
-title: Move Woo offer Save/GET to canonical selected-discount storage
+title: Align existing Woo multi-select API with canonical Shared validator
 task_kind: implementation
 domain: api
 repository: moda-interact-api
@@ -15,7 +15,6 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-DATABASE-001
 - ARCH-052-SHARED-003
 enables:
 - ARCH-052-BACKGROUND-001
@@ -24,7 +23,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-API-001: Move Woo offer Save/GET to canonical selected-discount storage
+# ARCH-052-API-001: Align existing Woo multi-select API with canonical Shared validator
 
 ## Architecture
 
@@ -36,31 +35,32 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Make the existing authenticated Woo offer-settings API read/write the canonical merchant selected set while preserving its checkbox UI contract.
+Retain WooCommerce multi-selection in existing ShopifyDiscount.isAvailable records; use the same published selected-ID contract as Shopify without any storage migration.
 
 ## Context
 
-`moda-interact-api/src/merchant/discount-offers/service.ts` currently uses Woo ShopifyDiscount.isAvailable flags as merchant checkbox state and a single compatibility anchor. Woo merchant UI already supports up to 50 selected IDs.
+Woo `merchant/discount-offers/service.ts` already writes `isAvailable` transactionally, with 50 selected IDs and a deterministic FIXED anchor; there is no reason to move these rows to a join table.
 
 Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
 
 ## Scope
 
-- Update existing hosted `merchant/discount-offers/service.ts` and `contract.ts` to return/persist merchant selectedDiscountIds from `ShopRecoverySelectedDiscount`, not the provider-sync flag.
-- Keep the existing authenticated installation/shop scope, GET/PUT API envelope, revision handling, Woo UI contract, shop lock, transaction boundary and 409 conflict semantics.
-- Atomically replace the selected set and update `ShopSettings` mode and legacy FIXED anchor; verify distinct, bounded, same-shop provider IDs even if coupon statuses have changed.
-- Preserve active Admin override presentation and dormant selection, and add integration tests that Woo sync and merchant Save do not race into lost choices.
+- In `src/merchant/discount-offers/contract.ts`, replace its duplicated ID/array validation with published `RecoverySelectedDiscountIdsSchema`, retaining existing error mappings (`invalid_request`, `selection_limit_exceeded`, `selection_required`) and the exact Woo `GET/PUT /v1/merchant/discount-offers` payload `{recoveryOfferMode,selectedDiscountIds}`.
+- In `src/merchant/discount-offers/service.ts` keep the authenticated principal, Shop lock, same-shop `wooRows` filters, zero/50 limit, single transaction updateMany(false)+updateMany(true), and mode/anchor update. Do **not** add/modify any Prisma model, relationship, schema migration or compatibility API.
+- Ensure `isAvailable` means saved merchant checkbox regardless of provider status, expiry, current generation. Verify Woo coupon reconciliation creates unchecked rows, does not overwrite existing selections and preserves flags through ERROR/UNAVAILABLE.
+- Keep active Admin override independent of merchant choices; set FIXED anchor to first ascending selected ID, null outside FIXED; preserve selected flags in NONE and AI.
+- Add real PostgreSQL integration tests for two shops, stale grant rejection, simultaneous saves, Woo sync race and invalid/duplicate/oversized selected lists.
 
 ## Out of Scope
 
-- No new coupon discovery, provider eligibility call, WordPress settings UI or other merchant API endpoint.
+- No new selection table or data backfill, new endpoint, plugin UI change or Woo native coupon evaluator.
 
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
 ## Requirements
 
-- Cross-shop IDs rejected transactionally. Never use merchant `selected` to assert provider CURRENT/ACTIVE/checkout eligibility.
-- Preserve API contract version unless a deliberate versioned change is necessary; no unreviewed Woo UI break.
+- This is a small alignment task, not a wholesale rewrite of already-correct Woo selection behaviour.
+- Selection is never positive checkout coupon eligibility.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
@@ -68,17 +68,15 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Switch read/write adapters to canonical set and preserve API response.
-- [ ] Test two Woo shops, concurrent Save/sync, merchant/override source.
-- [ ] Run real PostgreSQL transaction tests and consumer compatibility fixtures.
+- [ ] Adopt published Shared validator while preserving response/wire semantics.
+- [ ] Prove selection flags and checkout provider status remain independent in DB tests.
 
 ## Interfaces / Contracts
 
-- `GET/PUT` existing merchant discount offers contract; canonical Shared selection validator; DB001 join table.
+- Existing Woo `GET/PUT /v1/merchant/discount-offers` schemaVersion 1, authenticated principal and Shared recovery-policy validator.
 
 ## Dependencies
 
-- `ARCH-052-DATABASE-001` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
 
 All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
@@ -90,13 +88,13 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Acceptance Criteria
 
-- [ ] Woo checkboxes remain functional; selected IDs persist without abusing isAvailable.
-- [ ] Shopify rows and other merchants remain unmodified; 409 conflict produces no partial save.
+- [ ] Woo selected IDs remain in existing discount rows and behave exactly as canonical selection contract; no new schema.
+- [ ] Admin override and provider unreadability do not mutate flags.
 
 ## Validation
 
-- [ ] API unit and PostgreSQL integration/concurrency tests.
-- [ ] API build/typecheck/lint as declared and `git diff --check`.
+- [ ] API contract/unit and real PostgreSQL transaction tests.
+- [ ] API declared typecheck/lint/test and `git diff --check`.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
@@ -108,8 +106,8 @@ After all Work Items, Acceptance Criteria and required Validation pass, complete
 
 **Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
 
-- `moda-interact-api/src/merchant/discount-offers/service.ts`
 - `moda-interact-api/src/merchant/discount-offers/contract.ts`
+- `moda-interact-api/src/merchant/discount-offers/service.ts`
 - `moda-interact-api/tests/`
 
 Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.

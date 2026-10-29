@@ -17,14 +17,24 @@ attempt: 0
 depends_on:
 - ARCH-052-SHARED-001
 - ARCH-052-SHARED-002
+- ARCH-052-SHARED-004
+- ARCH-052-SHARED-005
 enables:
 - ARCH-052-SHOPIFY-001
 - ARCH-052-API-001
 - ARCH-052-BACKGROUND-001
+- ARCH-052-WOOCOMMERCE-001
 - ARCH-052-BACKGROUND-005
 - ARCH-052-ADMIN-001
 - ARCH-052-BACKGROUND-007
 - ARCH-052-ADMIN-002
+- ARCH-052-SYSTEM-TEST-001
+- ARCH-052-SYSTEM-TEST-002
+- ARCH-052-API-002
+- ARCH-052-GATEWAY-001
+- ARCH-052-COMMERCE-003
+- ARCH-052-API-003
+- ARCH-052-API-004
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
@@ -51,9 +61,8 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Verify architect acceptance and Complete status for SHARED-001 and SHARED-002.
-- Apply approved package version/release metadata and execute the repository-declared package publication command.
-- Record published exact version, registry visibility, package export availability, integrity and the dependency version required by each consumer.
+- Publish exactly the four architect-accepted Shared capabilities as one version: `/recovery-policy`, `/recovery-template-bindings`, `/node/recovery-private-read-auth`, and `/recovery-offer-proof`.
+- Only release/version/package metadata permitted, and registry visibility checks. Do NOT rerun already-accepted tests, builds, lint or typecheck.
 
 ## Out of Scope
 
@@ -72,18 +81,19 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Confirm accepted prerequisites and version.
-- [ ] Publish exactly once using approved workflow.
-- [ ] Verify registry version and both subpath exports; report evidence.
+- [ ] Check Shared-001/002/004/005 accepted Complete.
+- [ ] Publish the accepted package version and verify all four subpath exports.
 
 ## Interfaces / Contracts
 
-- Published `@modainteract/moda-interact-shared/recovery-policy` and `/recovery-template-bindings` at one verified release version.
+- One verified published `@modainteract/moda-interact-shared` version exposing four ARCH-052 subpaths.
 
 ## Dependencies
 
 - `ARCH-052-SHARED-001` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-SHARED-002` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-SHARED-004` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-SHARED-005` — new ARCH-052 prerequisite (not yet materialised).
 
 All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
 
@@ -92,20 +102,26 @@ All dependencies must be `status: complete` in the authoritative individual task
 - `ARCH-052-SHOPIFY-001`
 - `ARCH-052-API-001`
 - `ARCH-052-BACKGROUND-001`
+- `ARCH-052-WOOCOMMERCE-001`
 - `ARCH-052-BACKGROUND-005`
 - `ARCH-052-ADMIN-001`
 - `ARCH-052-BACKGROUND-007`
 - `ARCH-052-ADMIN-002`
+- `ARCH-052-SYSTEM-TEST-001`
+- `ARCH-052-SYSTEM-TEST-002`
+- `ARCH-052-API-002`
+- `ARCH-052-GATEWAY-001`
+- `ARCH-052-COMMERCE-003`
+- `ARCH-052-API-003`
+- `ARCH-052-API-004`
 
 ## Acceptance Criteria
 
-- [ ] Exact approved version exists at intended registry and exports resolve.
-- [ ] No code, unit test or unrelated dependency refactor occurred during publication.
+- [ ] Exactly four required subpaths resolve from the published package, without unreconciled source edits.
 
 ## Validation
 
-- [ ] Prerequisite complete/accepted gate, approved version, publication command result.
-- [ ] Registry exact-version/export verification, diff limited to allowed release metadata.
+- [ ] Release-only checks (prerequisites, version, registry visibility, diff).
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 

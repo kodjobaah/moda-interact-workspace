@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-SHOPIFY-001
 architecture_id: ARCH-052
-title: Save and display Shopify merchant-selected discount sets
+title: Make Shopify merchant discount selection match WooCommerce checkboxes
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-DATABASE-001
+- ARCH-052-BACKGROUND-009
 - ARCH-052-SHARED-003
 enables:
 - ARCH-052-BACKGROUND-001
@@ -24,7 +24,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-SHOPIFY-001: Save and display Shopify merchant-selected discount sets
+# ARCH-052-SHOPIFY-001: Make Shopify merchant discount selection match WooCommerce checkboxes
 
 ## Architecture
 
@@ -36,24 +36,26 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Replace Shopify’s one-discount FIXED radio flow with merchant-authorised multi-selection without changing catalogue/provider availability semantics.
+Replace the Shopify one-radio FIXED discount UI with 0..50 merchant-selected discounts persisted as `ShopifyDiscount.isAvailable` under one locked transaction.
 
 ## Context
 
-`moda-interact/app/routes/app/recovery-settings/RecoverySettingsView.tsx` has one `fixedShopifyDiscountId` radio choice; Shopify discount `isAvailable` means provider availability.
+Shopify `RecoverySettingsView.tsx` has one `fixedShopifyDiscountId` radio control; `recovery-policy.server.ts` previously used that anchor as full authority. Woo has an established atomic multi-select save using the same discount table. BG009 first stops Shopify sync changing the selection flag.
 
 Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
 
 ## Scope
 
-- Update `app/routes/app/recovery-settings/RecoverySettingsView.tsx` to show up to 50 selected discounts with accessible checkbox controls, search/pagination where available, and provider status separate from selection.
-- Change `app/routes/app/settings-save/route.ts` and `app/services/recovery-policy/recovery-policy.server.ts` to load/store the canonical `ShopRecoverySelectedDiscount` set within one shop-scoped transaction, with optimistic revision/conflict handling.
-- Maintain one deterministic legacy `ShopSettings.fixedShopifyDiscountId` anchor for existing readers until Background switches; do not interpret it as the whole selection.
-- Preserve NONE/AI dormant selections, Admin effective-override display, existing 20-language internationalisation and merchant visibility rules.
+- In `app/routes/app/recovery-settings/RecoverySettingsView.tsx` replace single radio with accessible checkbox list; show selected state from `ShopifyDiscount.isAvailable` for the same shop, independent of provider status. Keep NONE/FIXED/AI mode chooser, notify checkbox and existing language/translation. Permit at most 50 choices, show selected count and prevent silent trimming.
+- Change `app/routes/app/settings-save/route.ts` to accept exactly one JSON string field `selectedDiscountIds` when intent=`recovery`, parsed as array using published `RecoverySelectedDiscountIdsSchema`; remove acceptance of `fixedShopifyDiscountId` as merchant-submitted authority. Reject unknown fields/duplicate form entries, malformed JSON and payload >8192 bytes (400); >50 selections (422); FIXED with empty set (422).
+- In `app/services/recovery-policy/recovery-policy.server.ts`, use one `client.$transaction` and existing `lockSettingsShop(tx, shopId)`; check `settings.updatedAt` against submitted revision **before writes**; if mismatch return 409, not partial save. Validate every selected ID references an existing discount row for that exact Shopify `shopId`, regardless of provider catalogue CURRENT/ERROR status or current checkout eligibility. Allow retaining previously selected but currently unavailable discounts as dormant selections; Background excludes them from sendable offers until independently re-verified.
+- Inside the same transaction: `shopifyDiscount.updateMany({where:{shopId,isAvailable:true},data:{isAvailable:false}})` then `shopifyDiscount.updateMany({where:{shopId,id:{in:sortedIds}},data:{isAvailable:true}})` and assert affected count equals requested IDs; update ShopSettings `recoveryOfferMode`, existing timing/notification prefs, and `fixedShopifyDiscountId` to `sortedIds[0]` iff FIXED, otherwise null. Never write availability/providerStatus/unavailableAt.
+- Return selected IDs and effective source in settings loader, maintain Admin override as independent effective policy (never merge merchant options), and use provider status/time/generation rather than isAvailable to display catalogue availability.
+- Write tests proving two shops cannot change one another, re-saves are idempotent, concurrent stale revision 409, NEW sync items remain unchecked, NONE/AI preserve dormant flags, and unavailable formerly selected discount can be deselected.
 
 ## Out of Scope
 
-- No mutation of Shopify `isAvailable`, provider catalogue sync, discount creation, Meta templates or Background send rules.
+- No DB model/table/column changes, no provider coupon mutations, no template/Background send code, no legacy single-radio compatibility.
 
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
@@ -68,17 +70,18 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Implement checkbox UI and merchant read projection.
-- [ ] Implement atomic shop-scoped save and deterministic anchor.
-- [ ] Add UI, tenant isolation, stale-revision and provider-state regression tests.
+- [ ] Implement checkbox form and strictly validated selected-ID request.
+- [ ] Implement atomic selected-flag replacement under Shop lock and revision compare.
+- [ ] Add real database races and UI tests, preserving override independent view.
 
 ## Interfaces / Contracts
 
-- Use the published Shared recovery-policy selected-ID contract and DB001 join table; existing Shopify recovery settings route remains the merchant ingress.
+- Form `intent=recovery`, `selectedDiscountIds` JSON array, `recoveryOfferMode`, existing other settings and revision; exactly one selection authority `ShopifyDiscount.isAvailable`.
+- Existing `fixedShopifyDiscountId` remains deterministic first-sorted anchor solely to satisfy existing effective-policy schema; never treat as full selected set.
 
 ## Dependencies
 
-- `ARCH-052-DATABASE-001` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-BACKGROUND-009` — new ARCH-052 prerequisite (not yet materialised).
 - `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
 
 All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
@@ -90,14 +93,14 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Acceptance Criteria
 
-- [ ] Shopify merchant can select multiple valid discounts, and NONE/AI do not erase saved choices.
-- [ ] Shopify provider availability flags are unchanged; Admin override remains independently authoritative when active.
-- [ ] Other-shop and stale-revision submissions cannot modify a selection.
+- [ ] Shopify and Woo both persist multiple selection flags using same existing model; new Shopify discounts never automatically become selected.
+- [ ] Modes NONE/AI leave selected flags intact; switching back to FIXED reuses the saved set without using unavailable discounts as offers.
+- [ ] No cross-tenant/partial updates or unverified provider eligibility claims.
 
 ## Validation
 
-- [ ] Relevant Shopify route/service unit and real database integration tests.
-- [ ] Repository-declared typecheck/test/lint and `git diff --check`.
+- [ ] Shopify settings route/service unit tests and real PostgreSQL transaction tests, including sync race.
+- [ ] Shopify declared typecheck/build/lint and `git diff --check`.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
