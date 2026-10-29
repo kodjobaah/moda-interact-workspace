@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-WOOCOMMERCE-001
 architecture_id: ARCH-052
-title: Expose read-only native Woo coupon eligibility proof
+title: Verify checkout and alternative-product coupon eligibility read-only in Woo plugin
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -17,13 +17,14 @@ attempt: 0
 depends_on:
 - ARCH-052-SHARED-003
 enables:
+- ARCH-052-MCP-002
+- ARCH-052-MCP-004
 - ARCH-052-SYSTEM-TEST-002
-- ARCH-052-API-003
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-WOOCOMMERCE-001: Expose read-only native Woo coupon eligibility proof
+# ARCH-052-WOOCOMMERCE-001: Verify checkout and alternative-product coupon eligibility read-only in Woo plugin
 
 ## Architecture
 
@@ -35,7 +36,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Provide an authenticated provider-side coupon evaluation against the saved customer checkout, without mutating any cart or applying a coupon.
+Provide read-only native Woo coupon proof for the abandoned checkout OR a specified current product/variation; the **direct MCP Woo REST reader is the caller**, not the hosted API.
 
 ## Context
 
@@ -45,11 +46,10 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Register custom WooCommerce REST route `GET /wp-json/wc/v3/moda/recovery/coupon-proof` in `includes/Rest/RecoveryCouponProofController.php` and plugin existing bootstrap. Headers exactly `X-Moda-Checkout-Key` (<=128 chars), `X-Moda-Coupon-Id` (positive decimal integer), `X-Moda-Checkout-Fingerprint` (bounded hex digest), combined <=2048 bytes, with empty GET body and no query string; require authenticated Woo REST API consumer key with `read` permission for this **GET** endpoint, not browser nonce nor unauthenticated site origin. Reject requests by other merchants/sites or unverified install grants.
-- Resolve original abandoned checkout using installed plugin checkoutKey capture and customer/session identity; verify supplied fingerprint against the fresh stored checkout captured values and currently required provider facts. Never trust caller-provided basket contents or prices. Native `WC_Coupon`/`WC_Discounts` validation must be run in isolated nonpersisting test context: quantity, product/variation, required/excluded products/categories, minimum/maximum cart spend, expiry, per-customer/usage and stacking/currency restrictions. If custom extension hooks or missing customer session make safe exact validation impossible, return `unavailable`, not approximate savings.
-- Generate the strict Shared-005 result (same JSON validated by Node consumers) with current coupon id, exact currency, positive savings in minor units, UTC evaluated/expires <=5 min, coupon code when deliverable and checkout fingerprint. Verified `ineligible` only for proved negative outcome; unknown => `unavailable`. No generic coupon listing exposed.
-- No persistent coupon application, no Woo cart/session mutation, no new checkout order, no merchant cart edits. Valid return is independent of the WhatsApp send; Meta send remains Background-owned.
-- Add PHP unit/integration tests with actual Woo REST read-only key auth, checkout-session fixtures, customer restrictions and usage limits, unknown rule hooks, two-installation isolation, missing session and `WC_Discounts` no-mutation proof.
+- Keep `GET /wp-json/wc/v3/moda/recovery/coupon-proof` with authenticated Woo REST consumer key (read-only scope), original `X-Moda-Checkout-Key`, `X-Moda-Coupon-Id`, `X-Moda-Checkout-Fingerprint` headers; add explicit bounded `X-Moda-Promotion-Target: CHECKOUT|ALTERNATIVE_PRODUCT` and optional `X-Moda-Product-Id` / `X-Moda-Variation-Id` numeric IDs (required only for alternative). Reject all other query/body arguments and untrusted shop/site.
+- For CHECKOUT, verify the plugin-captured checkout and `WC_Coupon`/`WC_Discounts` restrictions without persisting cart state. For ALTERNATIVE_PRODUCT, obtain the product/variation through Woo runtime and verify availability and that the selected coupon is redeemable for an isolated one-unit hypothetical purchase *by this customer*; use native product/category exclusions, min/order spend, expiry, per-customer/usage/stacking and custom plugin rules. Missing customer facts/hook certainty -> `unavailable`, not guessed eligible.
+- Return strict Shared-005 target proof for both cases, bound to original recovery fingerprint, currency, proof expiry and present provider state. Coupon codes only from verified source, not caller. No Woo checkout/cart/coupon mutation, no new store tables.
+- Add WordPress integration tests two merchants/read-only REST keys/Classic+Blocks, replay/wrong checkout, unsupported extension, alternate product excludes, exhausted usage, product deleted, empty customer data, positive eligible and database unchanged.
 
 ## Out of Scope
 
@@ -75,23 +75,25 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- Fixed read-only Woo endpoint `GET /wp-json/wc/v3/moda/recovery/coupon-proof`, strict three strictly validated request headers and Shared-005 response JSON fixtures; hosted API-003 is sole caller.
+Native Woo authenticated **read-only** REST GET `/wp-json/wc/v3/moda/recovery/coupon-proof`, with bounded validated checkout/customer/discount identity in headers, `X-Moda-Promotion-Target` and optional exact product/variation identity for `ALTERNATIVE_PRODUCT`. Shared-005 provider proof discriminant. Caller is MCP-003's secure Woo transport, invoked by MCP-002/MCP-004; no hosted Moda API route or HTTP broker.
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
+- `ARCH-052-MCP-002`
+- `ARCH-052-MCP-004`
 - `ARCH-052-SYSTEM-TEST-002`
-- `ARCH-052-API-003`
 
 ## Acceptance Criteria
 
-- [ ] Read-only WooCommerce REST key can invoke verified coupon proof without write permission; never leaks coupon status to another merchant.
-- [ ] No runtime Woo cart change or false promise on unsupported usage/custom rules.
+- [ ] Woo native proof supports both target kinds with actual provider restrictions, no cart writes.
+- [ ] Authenticated MCP direct reader works without any Moda API network hop.
+- [ ] Unknown provider rules cause unavailable, never false eligibility.
 
 ## Validation
 

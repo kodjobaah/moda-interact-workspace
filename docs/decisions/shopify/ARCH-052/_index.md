@@ -1,13 +1,11 @@
-# ARCH-052 — Shopify task index
+# ARCH-052 Shopify Tasks
 
-Architecture: [`ARCH-052`](../../../architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md).
+Architecture: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`
+Owner: `moda_app`
+Coordinator: `moda_architect`
 
-Assigned agent: `moda_app`. Repository: `moda-interact`. Coordinator: `moda_architect`.
+These are portable task definitions, **defined but not materialised**; the individual task YAML frontmatter is authoritative. Superseded tasks must never be executed.
 
-Task definitions are **portable / not materialised** in the developer Git environment. Individual task YAML is authoritative for status.
-
-| Task | Objective | Status | Depends on |
+| Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
-| [SHOPIFY-001](SHOPIFY-001-select-multiple-authorised-recovery-discounts.md) | Make Shopify merchant discount selection match WooCommerce checkboxes | Pending | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-003` |
-
-Do not manually promote a dependent task until every dependency is marked `complete` in its individual task file and has an accepted review; external ARCH-049 dependencies use the same rule.
+| [ARCH-052-SHOPIFY-001](SHOPIFY-001-select-multiple-authorised-recovery-discounts.md) | Make Shopify merchant discount selection match WooCommerce checkboxes | Pending | `ARCH-052-BACKGROUND-009` |

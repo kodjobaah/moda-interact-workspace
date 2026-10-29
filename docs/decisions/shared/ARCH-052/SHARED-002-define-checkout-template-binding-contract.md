@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-SHARED-002
 architecture_id: ARCH-052
-title: Define cross-service checkout summary and product-header binding contract
+title: Define checkout and alternative-promotion WhatsApp bindings
 task_kind: implementation
 domain: shared
 repository: moda-interact-shared
@@ -21,7 +21,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-SHARED-002: Define cross-service checkout summary and product-header binding contract
+# ARCH-052-SHARED-002: Define checkout and alternative-promotion WhatsApp bindings
 
 ## Architecture
 
@@ -43,11 +43,11 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Modify `moda-interact-shared/src/recovery-template-bindings.ts` (existing file, otherwise create it as the published `/recovery-template-bindings` source) with exact new semantic `checkout.itemsSummary`; limit resolved text to 160 Unicode code points, disallow control characters, braces placeholders and multiline content; source is lineItems, never model output.
-- Define a read-only `CHECKOUT_PRODUCT` IMAGE-header role separate from existing `LOGO`, `SQUARE_LOGO`, `COVER_IMAGE`; exact runtime result shape `{kind:"VERIFIED_PROVIDER_IMAGE", shopId:string, checkoutRecoveryId:string, productId:string, variantId:string|null, httpsUrl:string, verifiedAt:string, expiresAt:string}`. The URL is validated within service policy, never trusted from JSON merely because it parses.
-- Define `RecoveryProductImageResultSchema` strict version-1 result `{version:1, outcome:"found", image:{productId,variantId,httpsUrl}} | {version:1,outcome:"not_found"|"unavailable"}`; checkout line-item identity must match returned product/variant and shop scoping must be verified by the reader. These are **data** contracts, not an authentication protocol.
-- Ensure Admin compiler and Background preparer consume the same published semantic keys and image-header role, including immutable Meta template digests. No format change to the existing approved ShopBrand header roles.
-- Add tests for rejected unknown keys, unsafe multiline text, missing variant image, two-shops result mismatch and approved-header fallback variant selection.
+- **Introduce** `checkout.itemsSummary` as a new bounded semantic binding computed by Background from existing persisted lineItems; retain already-implemented `shop.categoryName` translation binding and add `CHECKOUT_PRODUCT` optional verified image role. The image is resolved via MCP `commerce_get_product`, not a Commerce/API private image route and never stored in a new table.
+- Add `promotion.scope: "CHECKOUT"|"ALTERNATIVE_PRODUCT"`, `promotion.productName` (<=120), `promotion.productUrl` (HTTPS storefront host proof, <=2048), `promotion.offerDescription` (<=160), `promotion.code` (code only if proof-backed) bindings to existing `/recovery-template-bindings` so alternative product text cannot assert it discounts existing checkout. No model-supplied freeform message text.
+- Declare a strict `promotionTarget` value on immutable JSON authoring/compiled template metadata, `CHECKOUT` or `ALTERNATIVE_PRODUCT`, without changing Prisma enum or adding a template table/column. Background selects only separately approved locale/provider template variant matching this value, or falls back to approved NO_OFFER; absence of promotion link means no alt promotion send.
+- Extend the existing approved dynamic URL button binding (today only `checkout.url`) with a second explicit semantic source `promotion.productUrl`. `CHECKOUT` CTA resolves only `checkout.url`; `ALTERNATIVE_PRODUCT` promotional CTA resolves only `promotion.productUrl` against the compiled approved button prefix and verified shop storefront host. Do not silently swap a promotional URL into the resume-checkout button. An absent approved matching button/variant yields an approved text-only/no-offer fallback or no-send, not a malformed button.
+- Add schema tests for product-host mismatch, unsafe link, newline/placeholder abuse, absent image, wrong binding per promotion target, approved URL-button prefix compatibility and immutable compilation hash compatibility.
 
 ## Out of Scope
 
@@ -72,13 +72,13 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- Published `/recovery-template-bindings` exports `CHECKOUT_PRODUCT` media-header discriminator and `RecoveryProductImageResultSchema`; `checkout.itemsSummary` semantic text binding.
+Published `@modainteract/moda-interact-shared/recovery-template-bindings` for both Admin and Background; existing purpose slots remain `INITIAL_NO_OFFER`, `INITIAL_CODE_OFFER`, `INITIAL_AUTOMATIC_OFFER` (no database enum change). `promotionTarget` distinguishes the separately approved alternative variant under existing CODE/AUTOMATIC purposes.
 
 ## Dependencies
 
 None.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 

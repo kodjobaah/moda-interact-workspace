@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-ADMIN-002
 architecture_id: ARCH-052
-title: Author optional checkout-product IMAGE headers and approved text fallbacks
+title: Author approved optional checkout and alternative-product IMAGE headers
 task_kind: implementation
 domain: admin
 repository: moda-interact-admin
@@ -25,7 +25,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-ADMIN-002: Author optional checkout-product IMAGE headers and approved text fallbacks
+# ARCH-052-ADMIN-002: Author approved optional checkout and alternative-product IMAGE headers
 
 ## Architecture
 
@@ -37,7 +37,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Enable immutable Admin-authored recovery templates with a frozen CHECKOUT_PRODUCT image header and paired approved text-only fallback.
+Allow one optional Meta-approved IMAGE header representing the checkout item or verified alternative promotional product, without new product-image tables or new ShopBrand roles.
 
 ## Context
 
@@ -47,10 +47,9 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Extend Admin headerMediaRole registry/AST compiler to accept Shared `CHECKOUT_PRODUCT` only for META_RECOVERY IMAGE headers and only when product media is an approved runtime input.
-- Preserve existing `LOGO`/`SQUARE_LOGO`/`COVER_IMAGE` roles, immutable frozen projection digest and Meta approval per locale; do not rewrite a registered template.
-- Show an illustrative checkout-product photo in preview with explicit sample/no-PHI notice; validate a separate approved TEXT/no-IMAGE fallback assignment for the same initial purpose and language.
-- Ensure Admin publication cannot configure a product-image-only live template without a compatible fallback, unless the merchant knowingly accepts a typed no-send state.
+- Use Shared-002 `CHECKOUT_PRODUCT` media role and Shared-008 exact MCP product images; author separate immutable IMAGE and text-only fallback variants for `promotionTarget:CHECKOUT` and `promotionTarget:ALTERNATIVE_PRODUCT` where approved, under existing INITIAL purposes.
+- Bind an alternate image only to the same verified product/variant ID chosen by Background-010; no arbitrary AI-selected URL. Preserve ARCH-049 media origin validation and frozen Meta header digests; reject header type/role changes after approval.
+- Tests for missing/unsafe image, product mismatch, variant fallback, revoked source, translation and correct text-only variant choice.
 
 ## Out of Scope
 
@@ -75,14 +74,14 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- Shared-002 `CHECKOUT_PRODUCT` role and Background runtime VERIFIED_PROVIDER_IMAGE result, not READY R2 status.
+Existing ARCH-049 media conventions, Shared-002 image role and promotionTarget metadata. Background-007 owns actual MCP product reads.
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-049-ADMIN-002` — Complete in 29 October snapshot.
+- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
+- `ARCH-049-ADMIN-002` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 

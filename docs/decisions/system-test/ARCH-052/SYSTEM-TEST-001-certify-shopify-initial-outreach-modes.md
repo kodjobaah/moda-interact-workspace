@@ -19,10 +19,18 @@ depends_on:
 - ARCH-052-SHOPIFY-001
 - ARCH-052-BACKGROUND-009
 - ARCH-052-COMMERCE-001
-- ARCH-052-COMMERCE-002
+- ARCH-052-COMMERCE-008
 - ARCH-052-ADMIN-001
 - ARCH-052-ADMIN-002
 - ARCH-052-SHARED-003
+- ARCH-052-MCP-001
+- ARCH-052-MCP-002
+- ARCH-052-MCP-003
+- ARCH-052-MCP-004
+- ARCH-052-COMMERCE-006
+- ARCH-052-COMMERCE-007
+- ARCH-052-BACKGROUND-010
+- ARCH-052-GATEWAY-001
 enables: []
 created: '2026-10-29'
 updated: '2026-10-29'
@@ -40,7 +48,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Independently certify the customer-visible Shopify initial WhatsApp send with no discount, merchant-selected valid discount and AI-selected verified discount.
+Independently certify Shopify initial recovery outreach, built-in MCP discount tools, code-published product tools, the standalone InitialOutreachOfferAgent and truthful alternative-product promotions.
 
 ## Context
 
@@ -50,10 +58,11 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Create isolated two-Shopify-shop PostgreSQL/Redis + Meta-simulator fixture, with previously-synced discount rows marked unchecked (`isAvailable:false`) and merchant-selected rows explicitly checked. Use NO/FIXED/AI, selected three-of-twenty and AI unselected product-applicable discounts.
-- Verify new sync inserts unchecked, subsequent sync/outage/reinstall preserves selected flags, historical pre-ARCH-052 records are never reused, and ShopSettings first-ID anchor is not the complete selection authority.
-- Test provider verified CODE/AUTOMATIC offers, no eligible discount, unknown rule -> NO_OFFER, irrelevant product discount, exact basket text, store category translations and absent category, image verification/fallback and verified checkout link.
-- Exercise final WhatsApp send STOP/consent/moderation, duplicate BullMQ, credit reservation, follow-up confirmed promise and ARCH-050 Support notice deep-link. Record that simulator approval != Meta live approval.
+- Run end-to-end Shopify fixtures for NONE/FIXED/AI and two-stage promotion decisions: checkout coupon qualifies; checkout coupon fails but related alternative product qualifies; only an unrelated product has genuine current offer; none verified; partial catalogue and provider timeouts. Assert exact approved Meta wording distinguishes alternative product from abandoned basket and does not invent an offer.
+- Verify `tools/list` exposes system discount tools only to authorised outreach attempt, while product search tools require active code-published Commerce descriptor, feature entitlement and exact revision; conversation tools remain isolated. Test invalid shop/attempt, revoked tool/grant, selected FIXED IDs only, AI includes unchecked discounts, page two, model invalid/timeout fallback and stale provider proof.
+- For Woo, test **MCP -> live WooCommerce REST** direct product and native coupon-proof traffic with zero requests to hosted Moda API; encrypted grant key rotation, DNS/SSRF rejection, variation image/category/permalink and coupon read-only key, plus customer-click signed restore via separate API flow. For Shopify, test **MCP -> Shopify GraphQL** product search and Commerce private discount proof, including alternative product target.
+- Verify checkout category translation, image optional fallback, per-template purpose+promotionTarget approval, cross-sell consent/category, final STOP/moderation, billing/Meta-confirmed persisted outbound template `recoveryPromise` and linked `outboundMessageId`, duplicate delivery and merchant Support notifications; preserve no-coupon scenario.
+- Exercise provider test sandboxes/simulators and clearly record which externally approved Meta/Store integration checks remain manual; system tests are terminal after all prerequisite implementation tasks are Complete.
 
 ## Out of Scope
 
@@ -78,20 +87,28 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- ARCH-052 accepted runtime, ARCH-047/049 approved templates, existing ARCH-050 Support notice and system test harness.
+Built-in MCP `commerce_get_discount_options`/`commerce_evaluate_discount`, published `commerce_search_products`/`commerce_get_product`, direct Woo REST or Shopify GraphQL, Shared-005/008 proof/target, existing Meta initial send and no-extra-database contract.
 
 ## Dependencies
 
-- `ARCH-052-BACKGROUND-008` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-SHOPIFY-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-BACKGROUND-009` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-COMMERCE-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-COMMERCE-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-ADMIN-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-ADMIN-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-BACKGROUND-008` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-SHOPIFY-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-BACKGROUND-009` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-COMMERCE-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-COMMERCE-008` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-ADMIN-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-ADMIN-002` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-002` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-003` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-004` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-COMMERCE-006` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-COMMERCE-007` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-BACKGROUND-010` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-GATEWAY-001` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
@@ -99,8 +116,9 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Exact correct template/data for all three modes and safe no-offer outcomes.
-- [ ] No unauthorized outbound, mismatched tenant image, false discount promise, duplicate credit or broken Support notice.
+- [ ] Every Shopify offer advertised has contemporaneous checkout or alternative-product provider proof.
+- [ ] Direct MCP product search needs no hosted Moda API call.
+- [ ] Initial outreach keeps original safety, credit and idempotent send behavior across 3 modes.
 
 ## Validation
 

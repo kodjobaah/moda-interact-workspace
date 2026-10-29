@@ -1,15 +1,18 @@
-# ARCH-052 — Commerce task index
+# ARCH-052 Commerce Tasks
 
-Architecture: [`ARCH-052`](../../../architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md).
+Architecture: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`
+Owner: `moda_commerce`
+Coordinator: `moda_architect`
 
-Assigned agent: `moda_commerce`. Repository: `moda-interact-commerce`. Coordinator: `moda_architect`.
+These are portable task definitions, **defined but not materialised**; the individual task YAML frontmatter is authoritative. Superseded tasks must never be executed.
 
-Task definitions are **portable / not materialised** in the developer Git environment. Individual task YAML is authoritative for status.
-
-| Task | Objective | Status | Depends on |
+| Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-001](COMMERCE-001-verify-shopify-discount-against-current-checkout.md) | Prove Shopify discount eligibility for a recovery checkout | Ready | — |
-| [COMMERCE-002](COMMERCE-002-read-authoritative-shopify-checkout-product-image.md) | Read first checkout-product image from Shopify product facts | Ready | — |
-| [COMMERCE-003](COMMERCE-003-serve-authenticated-private-shopify-recovery-reads.md) | Expose authenticated private Shopify discount-proof and product-image reads | Pending | `ARCH-052-COMMERCE-001`, `ARCH-052-COMMERCE-002`, `ARCH-052-SHARED-003` |
-
-Do not manually promote a dependent task until every dependency is marked `complete` in its individual task file and has an accepted review; external ARCH-049 dependencies use the same rule.
+| [ARCH-052-COMMERCE-001](COMMERCE-001-verify-shopify-discount-against-current-checkout.md) | Prove Shopify discount eligibility for a recovery checkout | Ready | — |
+| [ARCH-052-COMMERCE-002](COMMERCE-002-read-authoritative-shopify-checkout-product-image.md) | Read first checkout-product image from Shopify product facts | Superseded | — |
+| [ARCH-052-COMMERCE-003](COMMERCE-003-serve-authenticated-private-shopify-recovery-reads.md) | Serve authenticated private Shopify checkout and alternative-product discount proof | Pending | `ARCH-052-COMMERCE-001`, `ARCH-052-COMMERCE-008`, `ARCH-052-SHARED-003` |
+| [ARCH-052-COMMERCE-004](COMMERCE-004-author-published-discount-mcp-tools.md) | Author version-2 discount MCP tool definitions in Commerce Studio | Superseded | — |
+| [ARCH-052-COMMERCE-005](COMMERCE-005-publish-approved-mcp-discount-capabilities.md) | Publish approved version-2 discount MCP capabilities in TEST | Superseded | — |
+| [ARCH-052-COMMERCE-006](COMMERCE-006-bootstrap-product-search-and-get-product-tools.md) | Bootstrap version-controlled product search and exact-product MCP tool definitions | Pending | `ARCH-052-SHARED-003` |
+| [ARCH-052-COMMERCE-007](COMMERCE-007-publish-code-defined-product-tool-release.md) | Publish reviewed code-defined product tools to the TEST Commerce release | Pending | `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-003` |
+| [ARCH-052-COMMERCE-008](COMMERCE-008-verify-shopify-alternative-product-promotion.md) | Verify Shopify discounts for a specific recommended product without checkout mutation | Pending | `ARCH-052-COMMERCE-001`, `ARCH-052-SHARED-003` |

@@ -9,15 +9,13 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-- ARCH-052-SYSTEM-TEST-001
-- ARCH-052-COMMERCE-003
+enables: []
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
@@ -34,7 +32,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Expose a bounded, shop-scoped image-source record for a product actually present in the abandoned Shopify checkout.
+**Superseded without implementation.** MCP-003 performs exact Shopify product/variant media lookup directly through existing MCP Shopify connection.
 
 ## Context
 
@@ -44,10 +42,7 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Extend `moda-interact-commerce/src/commerce/products/index.ts` Shopify product-facts operation, or its existing backend Shopify GraphQL reader, to project `variant.image.url` first, fallback `product.featuredImage.url` for the **exact** checkout product/variant identity, without search-by-name or unrelated product recommendation.
-- Use Shopify Admin GraphQL read-only session for authenticated shopDomain; request only product node identity, variant identity and image URL; respect existing product request budget and abort/deadline.
-- Return strict Shared `RecoveryProductImageResultSchema` `{version:1,outcome:"found",image:{productId,variantId,httpsUrl}}` or `not_found`/`unavailable`, never Shopify token or raw GraphQL JSON; reject deleted product/variant or mismatched IDs.
-- Add product/variant fixture tests with first-line image absent, wrong shop, deleted product, safe CDN https and unauthorised session. Do not use merchant-provided media URL as authority.
+No implementation. Do not claim, materialise, modify repository code or attempt publication under this task.
 
 ## Out of Scope
 
@@ -57,45 +52,31 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
-- No image found is a normal `unavailable` result, not a fabricated/placeholder image.
-- Only Shopify-controlled image source for the exact checkout product/variant, with safe URL handling and no automatic redirects.
-- Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
-- Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
-- Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
-- Provider mutation is prohibited except the customer-initiated Woo cart restoration explicitly owned by WOOCOMMERCE-002.
+The replacement tasks and parent architecture are authoritative. Historical wording in this superseded task is retained solely for audit; it must not govern an implementation.
 
 ## Work Items
 
-- [ ] Add pinned Shopify product media GraphQL selection and parser.
-- [ ] Connect media source to trusted checkout product IDs.
-- [ ] Add provider-schema, wrong-shop and no-image fixtures.
+- [x] Marked superseded in the architecture plan. No code executed.
 
 ## Interfaces / Contracts
 
-- Published Shared-002 `RecoveryProductImageResultSchema`; direct trusted Shopify catalog read in Commerce backend.
+None — see replacement tasks.
 
 ## Dependencies
 
-None.
-
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+None — task is superseded.
 
 ## Enables
 
-- `ARCH-052-SYSTEM-TEST-001`
-- `ARCH-052-COMMERCE-003`
+None — task is superseded.
 
 ## Acceptance Criteria
 
-- [ ] Variant image takes precedence and product featured image is fallback with identity match; no product media persistence.
-- [ ] No cross-tenant image or Shopify token leaks.
+- [x] Superseded without implementation. The replacement tasks are explicitly identified.
 
 ## Validation
 
-- [ ] Commerce GraphQL schema validation and product reader unit tests.
-- [ ] Build/typecheck/lint and `git diff --check`.
-
-Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+Not applicable; no implementation permitted.
 
 ## Stop Condition
 
@@ -103,13 +84,7 @@ After all Work Items, Acceptance Criteria and required Validation pass, complete
 
 ## Implementation Notes
 
-**Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
-
-- `moda-interact-commerce/src/commerce/products/index.ts`
-- `moda-interact-commerce/src/commerce/products/ (media reader helper)`
-- `moda-interact-commerce/tests/`
-
-Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
+No implementation. Replacement: MCP-003 performs exact Shopify product/variant media lookup directly through existing MCP Shopify connection.
 
 ## Completion Report
 

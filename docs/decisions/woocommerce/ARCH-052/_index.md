@@ -1,14 +1,12 @@
-# ARCH-052 — Woocommerce task index
+# ARCH-052 Woocommerce Tasks
 
-Architecture: [`ARCH-052`](../../../architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md).
+Architecture: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`
+Owner: `moda_woocommerce`
+Coordinator: `moda_architect`
 
-Assigned agent: `moda_woocommerce`. Repository: `moda-interact-woocommerce`. Coordinator: `moda_architect`.
+These are portable task definitions, **defined but not materialised**; the individual task YAML frontmatter is authoritative. Superseded tasks must never be executed.
 
-Task definitions are **portable / not materialised** in the developer Git environment. Individual task YAML is authoritative for status.
-
-| Task | Objective | Status | Depends on |
+| Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
-| [WOOCOMMERCE-001](WOOCOMMERCE-001-expose-read-only-native-coupon-verification.md) | Expose read-only native Woo coupon eligibility proof | Pending | `ARCH-052-SHARED-003` |
-| [WOOCOMMERCE-002](WOOCOMMERCE-002-create-secure-customer-initiated-checkout-resume.md) | Provide secure customer-initiated Woo checkout restoration link | Ready | — |
-
-Do not manually promote a dependent task until every dependency is marked `complete` in its individual task file and has an accepted review; external ARCH-049 dependencies use the same rule.
+| [ARCH-052-WOOCOMMERCE-001](WOOCOMMERCE-001-expose-read-only-native-coupon-verification.md) | Verify checkout and alternative-product coupon eligibility read-only in Woo plugin | Pending | `ARCH-052-SHARED-003` |
+| [ARCH-052-WOOCOMMERCE-002](WOOCOMMERCE-002-create-secure-customer-initiated-checkout-resume.md) | Provide secure customer-initiated Woo checkout restoration link | Ready | — |

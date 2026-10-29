@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-SHARED-003
 - ARCH-052-WOOCOMMERCE-002
 enables:
-- ARCH-052-BACKGROUND-006
+- ARCH-052-BACKGROUND-008
 - ARCH-052-GATEWAY-001
+- ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
@@ -36,21 +36,21 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Expose the Woo plugin signed checkout-restoration link to Background through one authenticated tenant-checked API operation.
+Expose the Woo plugin signed checkout-restoration link to Background through one private-network, strictly tenant-checked API operation.
 
 ## Context
 
-Existing Woo read credentials and active installation grant are API-only. Background-006 must not invent a direct outbound WordPress connection, and a customer return-to-checkout URL is not an image or coupon proof.
+Existing Woo read credentials and active installation grant are API-only. Background-008 must not invent a direct outbound WordPress connection, and a customer return-to-checkout URL is not an image or coupon proof.
 
 Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
 
 ## Scope
 
-- Add fixed private `POST /internal/v1/recovery/restore-link` to the existing API HTTP composition, secured by the published Shared-004 Node HMAC signer/verifier (exact third allowlisted path), <=2048-byte strict body `{shopId,checkoutRecoveryId,checkoutFingerprint}`, Redis 120-second nonce replay protection.
+- Add fixed private `POST /internal/v1/recovery/restore-link` to the existing API HTTP composition, reachable only through the private service route and **not** public Gateway ingress, with <=2048-byte strictly validated body `{shopId,checkoutRecoveryId,checkoutFingerprint}`; do not introduce Shared-004 signatures, nonce storage or Redis replay machinery.
 - Within authenticated API process re-read Shop.platform=WOOCOMMERCE, current CheckoutRecovery.id/shopId, checkoutKey/fingerprint, ACTIVE installation and unrevoked Woo REST read grant; reject mismatched client fingerprint before any provider call.
 - Add only allowlisted Woo REST read operation `GET /wp-json/wc/v3/moda/recovery/restore-link` with server-derived checkoutKey and checkoutFingerprint in `X-Moda-Checkout-Key` and `X-Moda-Checkout-Fingerprint` request headers (no query-string or GET body) through existing pinned HTTPS Woo connection/credentials. Never permit caller-chosen provider URL, coupon cart mutation or generic proxy.
 - Validate plugin response strict `{url:string,expiresAt:string}`: absolute canonical Woo HTTPS origin matching installation, path `/moda-recovery/restore/<opaque-token>`, no userinfo/fragment, expiry >now and <=30min, no embedded raw checkoutKey. Return the same bounded typed response to Background, with no URL persisted or logged.
-- Add API read grant/HMAC/Redis/tenant/expired-link tests, plugin 401/403, unsafe redirect URL, expired/revoked installation, failed REST auth and no Woo cart write.
+- Add private-route/public-inaccessibility, API read grant, tenant/expired-link tests, plugin 401/403, unsafe redirect URL, expired/revoked installation, failed REST auth and no Woo cart write.
 
 ## Out of Scope
 
@@ -75,19 +75,19 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- Private signed `POST /internal/v1/recovery/restore-link`; `{shopId,checkoutRecoveryId,checkoutFingerprint}` -> `{url,expiresAt}`.
+- Private-only `POST /internal/v1/recovery/restore-link`; `{shopId,checkoutRecoveryId,checkoutFingerprint}` -> `{url,expiresAt}`.
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-WOOCOMMERCE-002` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-WOOCOMMERCE-002` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
-- `ARCH-052-BACKGROUND-006`
+- `ARCH-052-BACKGROUND-008`
 - `ARCH-052-GATEWAY-001`
+- `ARCH-052-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
@@ -96,7 +96,7 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Validation
 
-- [ ] API HMAC/Redis/DB + Woo read port integration tests.
+- [ ] API private routing/tenant/DB + Woo read port integration tests.
 - [ ] API declared build/typecheck/lint and git diff --check.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.

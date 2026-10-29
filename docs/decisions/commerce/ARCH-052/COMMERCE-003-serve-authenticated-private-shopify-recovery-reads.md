@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-COMMERCE-003
 architecture_id: ARCH-052
-title: Expose authenticated private Shopify discount-proof and product-image reads
+title: Serve authenticated private Shopify checkout and alternative-product discount proof
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -16,17 +16,16 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-COMMERCE-001
-- ARCH-052-COMMERCE-002
+- ARCH-052-COMMERCE-008
 - ARCH-052-SHARED-003
 enables:
-- ARCH-052-BACKGROUND-003
-- ARCH-052-BACKGROUND-007
 - ARCH-052-GATEWAY-001
+- ARCH-052-MCP-002
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-COMMERCE-003: Expose authenticated private Shopify discount-proof and product-image reads
+# ARCH-052-COMMERCE-003: Serve authenticated private Shopify checkout and alternative-product discount proof
 
 ## Architecture
 
@@ -38,25 +37,21 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Expose existing Commerce-owned current Shopify discount proof and product/variant-image readers to Background through two HMAC-protected private service routes.
+Expose one private-network-only, strictly tenant-scoped Shopify discount-proof POST route for BOTH original checkout and verified alternative-product target, with no private product-image route.
 
 ## Context
 
-Commerce-001/002 own Shopify provider reads, but there is currently no Background-callable service endpoint for those results. A private Next.js route layer is necessary; never ask Background to import unpublished Commerce source or access Commerce private Shopify credentials.
-
-Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
+Commerce-001 and Commerce-008 own Shopify provider-specific discount proof. MCP-003 obtains product images directly using its Shopify GraphQL connection. Background never calls Commerce image endpoint.
 
 ## Scope
 
-- Add two Next.js Node-runtime route handlers at `app/internal/v1/recovery/discount-proof/route.ts` and `app/internal/v1/recovery/product-image/route.ts` (HTTP paths `/internal/v1/recovery/discount-proof`, `/internal/v1/recovery/product-image`). Both POST-only JSON <=2048 bytes, no cache, Node-only and invoke the published Shared-004 HMAC verifier + existing Redis connection for 120s replay locks. Block unauthenticated, stale, replayed or wrong-path requests before DB/provider reads.
-- Discount route parses exactly Shared-005 `RecoveryDiscountProofRequestSchema`, loads Shop by shopId and CheckoutRecovery by `{id,shopId}`, verifies SHOPIFY and present checkoutFingerprint matches the freshly recomputed stored checkout facts; loads candidate `{id,shopId}` from database, and invokes the exact Commerce-001 supported read-only evaluator. Return only Shared-005 proof result; unsupported/stale/denied must never be `eligible`.
-- Image route parses `{shopId,checkoutRecoveryId,productId,variantId}` (strict, product/variant Shopify GID strings, no arbitrary URL); reloads selected checkout lineItems for identity and Shop.platform=SHOPIFY; invokes Commerce-002 product media reader; returns only Shared-002 image result. Exact provider IDs must match a persisted checkout line.
-- Use Commerce-owned credential/session resolution and existing bounded provider transport; do not read credentials from merchant browser. No mutation of Shopify checkout, discounts, cart, coupons or products. Retry/timeout <=2sec per read.
-- Add Node/Next route integration tests for valid HMAC, replay, wrong shop, revoked Shopify access, stale checkout, wrong candidate/line, safe not-found, no-coupon promise and no provider write. Log bounded non-sensitive status via shared logger; preserve errors.
+- Implement only `app/internal/v1/recovery/discount-proof/route.ts` as POST-only, Node runtime, <=2048B JSON, `Cache-Control:no-store`, deny public Gateway ingress; require a trusted private caller and authoritative same-shop recovery/attempt/discount checks; no Shared-004 signatures or Redis replay nonce. No `/internal/v1/recovery/product-image` route.
+- Validate Shared-005 request target CHECKOUT vs ALTERNATIVE_PRODUCT, reload exact `{shopId,checkoutRecoveryId,outreachAttemptId}` state and verified `ShopifyDiscount` candidate, match shop, current fingerprint, product/variant if alternate, and invoke COMMERCE-001 or COMMERCE-008 read-only evaluator. Return strict Shared-005 proof with no raw provider response or secret.
+- Integration tests for attempted public access, wrong-shop proof, unsupported product rules, expired provider data, both targets, closed/disabled tenant and zero cart mutation.
 
 ## Out of Scope
 
-- No public gateway rewrite, Node HMAC duplication, provider eligibility rule engine rewrite, extra image table or secret in Git.
+- No public gateway rewrite, Node HMAC implementation, provider eligibility rule engine rewrite, extra image table or secret in Git.
 
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
@@ -70,32 +65,33 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Add two route handlers with shared auth guard.
-- [ ] Connect exact existing Commerce readers and fresh shop-scoped persisted checkout validation.
-- [ ] Add authenticated route/Redis/provider integration tests.
+- [ ] Add precisely one `POST /internal/v1/recovery/discount-proof` route under `app/internal/v1/recovery/discount-proof/route.ts` with private-network-only access, strict request-size limits and fresh tenant/recovery authorisation.
+- [ ] Dispatch Shared-005 `CHECKOUT` proof to COMMERCE-001 and `ALTERNATIVE_PRODUCT` proof to COMMERCE-008, after current exact shop/recovery/attempt/product validation.
+- [ ] Add private route/public-access-denial/Shopify provider integration tests for both targets, including expiry, wrong tenant and no provider mutation.
+- [ ] Run Commerce's declared checks, `git diff --check`; verify no product-image route was created.
 
 ## Interfaces / Contracts
 
-- `POST /internal/v1/recovery/discount-proof` -> Shared-005 result and `POST /internal/v1/recovery/product-image` -> Shared-002 result, both Shared-004 signed, Next Node runtime.
+`POST /internal/v1/recovery/discount-proof` Shared-005 proof through private-only transport and strict same-shop authorisation. No product-image route and no WooCommerce API proxy.
 
 ## Dependencies
 
-- `ARCH-052-COMMERCE-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-COMMERCE-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-COMMERCE-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-COMMERCE-008` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
-- `ARCH-052-BACKGROUND-003`
-- `ARCH-052-BACKGROUND-007`
 - `ARCH-052-GATEWAY-001`
+- `ARCH-052-MCP-002`
 
 ## Acceptance Criteria
 
-- [ ] Background receives correct current eligibility/photo candidate without Commerce secret or public bypass.
-- [ ] Tampered/replayed/cross-tenant reads denied before provider access.
+- [ ] MCP obtains current Shopify coupon eligibility for both checkout and alternate-product targets through the single private Commerce proof route.
+- [ ] Invalid/replayed/cross-tenant requests fail before provider access, and no provider mutation occurs.
+- [ ] Product image and search are obtained directly by MCP GraphQL; this task creates **no private product-image route**.
 
 ## Validation
 
@@ -110,15 +106,12 @@ After all Work Items, Acceptance Criteria and required Validation pass, complete
 
 ## Implementation Notes
 
-**Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
+Owning repository paths:
+- `moda-interact-commerce/app/internal/v1/recovery/discount-proof/route.ts` (new)
+- `moda-interact-commerce/src/commerce/discounts/` (existing evaluators from COMMERCE-001/008)
+- `moda-interact-commerce/tests/` (new route/provider integration tests)
 
-- `moda-interact-commerce/app/internal/v1/recovery/discount-proof/route.ts (new)`
-- `moda-interact-commerce/app/internal/v1/recovery/product-image/route.ts (new)`
-- `moda-interact-commerce/src/commerce/discounts/`
-- `moda-interact-commerce/src/commerce/products/index.ts`
-- `moda-interact-commerce/tests/`
-
-Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
+Do not add `app/internal/v1/recovery/product-image/route.ts`. The MCP service owns product read/search directly. Scope is Commerce repository plus this task report only.
 
 ## Completion Report
 

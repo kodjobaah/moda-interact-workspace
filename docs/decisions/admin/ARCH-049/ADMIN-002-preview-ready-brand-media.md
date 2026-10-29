@@ -17,7 +17,7 @@ attempt: 1
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-ADMIN-001", "ARCH-047-ADMIN-003", "ARCH-047-ADMIN-005"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
-updated: 2026-10-27
+updated: 2026-10-28
 ---
 
 # Use READY ShopBrand R2 media in ARCH-047 template authoring
@@ -53,7 +53,7 @@ ARCH-047 Admin-003 already provides the template editor and English AST. ADMIN-0
 
 ### R2. READY only
 
-Read `ShopBrand.whatsAppMedia.roles[role]`; only present as selectable IMAGE header when `work.status=READY`, `ready.sourceGeneration=source.generation`, `ready.sourceFingerprint=source.fingerprint`, output is JPEG/PNG below 5 MiB and the R2 object key is trusted. Construct a public URL from configured origin and immutable key; do not render/send `logoUrl`/`squareLogoUrl`/`coverImageUrl` as image headers. Distinguish image-header role binding from existing text tokens such as `shopBrand.brandName` or literal logo URL. Never expose R2 credentials in UI or JSON response.
+Read `ShopBrand.whatsAppMedia.roles[role]`; only present as selectable IMAGE header when `work.status=READY`, `ready.sourceGeneration=source.generation`, `ready.sourceFingerprint=source.fingerprint`, output is JPEG/PNG below 5 MiB and the R2 object key is trusted. The key must use the current raw `Shop.domain` normalized to one readable path-safe segment, not `shopId`; absolute URLs contribute only their parsed hostname, while safe bare host-like values (including a single label) are preserved verbatim. Background and Admin use the same ASCII segment rules, rejecting separators, controls, credentials, paths, queries, fragments and exact `.`/`..` traversal segments. Existing shop-id and old base64url keys remain stale until Background successfully reprocesses them under the normalized key; an existing readable raw-domain key is canonical. Construct a public URL from configured origin and immutable key; do not render/send `logoUrl`/`squareLogoUrl`/`coverImageUrl` as image headers. Distinguish image-header role binding from existing text tokens such as `shopBrand.brandName` or literal logo URL. Never expose R2 credentials in UI or JSON response.
 
 ### R3. Complete the existing Admin IMAGE-header contract
 

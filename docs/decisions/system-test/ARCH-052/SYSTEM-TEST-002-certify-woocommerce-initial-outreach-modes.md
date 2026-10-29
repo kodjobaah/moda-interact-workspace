@@ -16,14 +16,20 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-BACKGROUND-008
-- ARCH-052-API-001
-- ARCH-052-API-002
+- ARCH-052-API-004
 - ARCH-052-GATEWAY-001
 - ARCH-052-WOOCOMMERCE-001
 - ARCH-052-WOOCOMMERCE-002
 - ARCH-052-ADMIN-001
 - ARCH-052-ADMIN-002
 - ARCH-052-SHARED-003
+- ARCH-052-MCP-001
+- ARCH-052-MCP-002
+- ARCH-052-MCP-003
+- ARCH-052-MCP-004
+- ARCH-052-COMMERCE-006
+- ARCH-052-COMMERCE-007
+- ARCH-052-BACKGROUND-010
 enables: []
 created: '2026-10-29'
 updated: '2026-10-29'
@@ -41,7 +47,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Independently certify WooCommerce initial outreach across selection modes and customer-tapped checkout restore.
+Independently certify WooCommerce initial recovery outreach, built-in MCP discount tools, code-published product tools, the standalone InitialOutreachOfferAgent and truthful alternative-product promotions.
 
 ## Context
 
@@ -51,10 +57,11 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Run two Woo installations, WordPress Classic/Blocks, two independent merchant-selected sets saved via existing `isAvailable` rows, and AI over unselected catalogue coupons.
-- Verify native coupon constraints (customer/product/variation/minimum/usage/expiry), invalid/unknown rules fail closed, selected flags survive catalogue sync, and Admin override remains isolated.
-- Verify real restored checkout from customer-tapped signed link and expiry/replay/wrong-installation rejection; no coupon is applied to browser cart by eligibility testing.
-- Exercise private Woo product image read with HMAC nonce/clock, revoked grant and malicious image origin; expected approved text fallback; end-to-end consent/STOP/moderation, duplicate initial send/credit, category translation and merchant Support notice.
+- Run end-to-end WooCommerce fixtures for NONE/FIXED/AI and two-stage promotion decisions: checkout coupon qualifies; checkout coupon fails but related alternative product qualifies; only an unrelated product has genuine current offer; none verified; partial catalogue and provider timeouts. Assert exact approved Meta wording distinguishes alternative product from abandoned basket and does not invent an offer.
+- Verify `tools/list` exposes system discount tools only to authorised outreach attempt, while product search tools require active code-published Commerce descriptor, feature entitlement and exact revision; conversation tools remain isolated. Test invalid shop/attempt, revoked tool/grant, selected FIXED IDs only, AI includes unchecked discounts, page two, model invalid/timeout fallback and stale provider proof.
+- For Woo, test **MCP -> live WooCommerce REST** direct product and native coupon-proof traffic with zero requests to hosted Moda API; encrypted grant key rotation, DNS/SSRF rejection, variation image/category/permalink and coupon read-only key, plus customer-click signed restore via separate API flow. For Shopify, test **MCP -> Shopify GraphQL** product search and Commerce private discount proof, including alternative product target.
+- Verify checkout category translation, image optional fallback, per-template purpose+promotionTarget approval, cross-sell consent/category, final STOP/moderation, billing/Meta-confirmed persisted outbound template `recoveryPromise` and linked `outboundMessageId`, duplicate delivery and merchant Support notifications; preserve no-coupon scenario.
+- Exercise provider test sandboxes/simulators and clearly record which externally approved Meta/Store integration checks remain manual; system tests are terminal after all prerequisite implementation tasks are Complete.
 
 ## Out of Scope
 
@@ -79,21 +86,27 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- ARCH-052 accepted Woo native endpoints, Background resolver, immutable Meta bindings and existing Woo system-test integration.
+Built-in MCP `commerce_get_discount_options`/`commerce_evaluate_discount`, published `commerce_search_products`/`commerce_get_product`, direct Woo REST or Shopify GraphQL, Shared-005/008 proof/target, existing Meta initial send and no-extra-database contract.
 
 ## Dependencies
 
-- `ARCH-052-BACKGROUND-008` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-API-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-API-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-GATEWAY-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-WOOCOMMERCE-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-WOOCOMMERCE-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-ADMIN-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-ADMIN-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-BACKGROUND-008` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-API-004` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-GATEWAY-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-WOOCOMMERCE-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-WOOCOMMERCE-002` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-ADMIN-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-ADMIN-002` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-002` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-003` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-004` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-COMMERCE-006` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-COMMERCE-007` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-BACKGROUND-010` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
@@ -101,8 +114,9 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] A valid Woo return link really restores customer checkout; invalid links cannot cross shops.
-- [ ] All three modes have correct safe messages and no false discounts or duplicate credits.
+- [ ] Every WooCommerce offer advertised has contemporaneous checkout or alternative-product provider proof.
+- [ ] Direct MCP product search needs no hosted Moda API call.
+- [ ] Initial outreach keeps original safety, credit and idempotent send behavior across 3 modes.
 
 ## Validation
 

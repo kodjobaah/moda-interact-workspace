@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-GATEWAY-001
 architecture_id: ARCH-052
-title: Route private product-image reads and declare independent HMAC secrets
+title: Configure private Shopify proof and direct MCP WooCommerce REST access
 task_kind: implementation
 domain: gateway
 repository: moda-interact-gateway
@@ -16,19 +16,19 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-COMMERCE-003
-- ARCH-052-API-002
-- ARCH-052-API-003
 - ARCH-052-API-004
+- ARCH-052-MCP-003
 - ARCH-052-SHARED-003
 enables:
-- ARCH-052-BACKGROUND-006
-- ARCH-052-BACKGROUND-007
+- ARCH-052-BACKGROUND-008
+- ARCH-052-MCP-002
+- ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-GATEWAY-001: Route private product-image reads and declare independent HMAC secrets
+# ARCH-052-GATEWAY-001: Configure private Shopify proof and direct MCP WooCommerce REST access
 
 ## Architecture
 
@@ -40,7 +40,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Declare two existing private service origins and their shared signed read credentials for the recovery worker across both deployed Render environments.
+Provision only existing required private read/restore transport and independent MCP Woo REST credential configuration, with no product-search MCP-to-API proxy.
 
 ## Context
 
@@ -50,10 +50,10 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Modify actual `moda-interact-gateway/render.test.yaml` and `moda-interact-gateway/render.production.yaml` (snapshot has **no** root render.yaml). In each create an independent env var group `moda-recovery-private-read-<environment>` declaring `MODA_RECOVERY_PRIVATE_READ_HMAC_KEYS` `sync:false`; attach only to the existing private Commerce/API services and the `moda-recovery-worker`. Separate key material per environment; never commit values.
-- On the environment recovery worker add `MODA_RECOVERY_PRIVATE_READ_ACTIVE_KID` `sync:false`, `MODA_RECOVERY_PRIVATE_READ_COMMERCE_HOSTPORT` and `MODA_RECOVERY_PRIVATE_READ_API_HOSTPORT` derived by `fromService` hostport of the existing private services, with trusted internal URL scheme builder. Existing Gateway `MODA_COMMERCE_UPSTREAM`/`MODA_API_UPSTREAM` patterns identify exact service names, not a customer URL.
-- Block public gateway Nginx/HAProxy routing of `/internal/v1/recovery/discount-proof`, `/internal/v1/recovery/product-image`, `/internal/v1/recovery/restore-link` to both service targets; test browser/public denial. Private worker calls must still be verified via Shared-004 HMAC and 120sec Redis nonce on each owning service.
-- Document out-of-band secure provisioning and rotation of a randomly generated 32-byte base64url HMAC key per environment, active caller KID switch before removing old key and fail-closed text/no-offer fallback. Do not alter other public routes or expose secret values in Git.
+- Modify exactly `moda-interact-gateway/render.test.yaml` and `render.production.yaml` (snapshot files). Keep the Commerce proof and API Woo restoration paths reachable only over internal private service links; do not introduce Shared-004 signature/nonce keys or Redis replay configuration. Do not expose any `/internal/v1/recovery/*` route through public Gateway.
+- For existing private `moda-interact-mcp-<env>` Render service, declare `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` as `sync:false`, provision securely per environment, and set explicit Woo connection mode (public HTTPS in deployed environments). MCP reads encrypted Woo grants via existing database connectivity and performs outbound **direct Woo REST** over bounded authenticated HTTPS; no `MODA_RECOVERY_PRIVATE_READ_API_HOSTPORT` for MCP, no product-image route.
+- Keep `MODA_RECOVERY_PRIVATE_READ_COMMERCE_HOSTPORT` for MCP to Commerce discount proof route, and `MODA_RECOVERY_PRIVATE_READ_API_HOSTPORT` only where Background needs customer checkout restore. Do not provision Woo consumer keys directly in render.yaml; read the encrypted stored grants and Shared keyring.
+- Document key rotation before removing old IDs, fail-closed startup for missing/malformed MCP keyring, same-environment grant isolation and network egress requirements for public Woo hosts. Test environment and public route denial, denied credentials, SSRF protections, and successful direct MCP Woo read with no call to Moda API.
 
 ## Out of Scope
 
@@ -63,43 +63,44 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
-- No secret key committed in the Blueprint.
-- Failure to provision route/key makes image optional unavailable; no bypass and no blocking no-discount text outreach.
-- Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
-- Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
-- Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
-- Provider mutation is prohibited except the customer-initiated Woo cart restoration explicitly owned by WOOCOMMERCE-002.
+- Commerce Shopify proof and API Woo checkout restoration use existing internal private connectivity with strict application tenant/recovery checks; product search/GET and Woo coupon proof use direct provider connections in MCP. Do not expose `/internal/v1/recovery/*` via any public Gateway route.
+- Missing, malformed or unprovisioned MCP credential keyring must **fail closed for Woo read**, without exposing a credential or weakening tenant isolation. Optional product images may fall back to approved text templates; no provider proof => no unverified discount.
+- Read `docs/agent-vcs-ownership-policy.md` and `docs/agent-worktree-isolation-policy.md`. Require launcher-resolved task worktree and start-of-attempt synchronisation evidence.
+- Use Shared logger for any new Node runtime logs and record unexpected exceptions using bounded reasons without raw provider URLs or secrets.
+- No unauthorised cart, coupon, order or Shopify provider mutation. API-004/WooCommerce-002 independently own customer-initiated cart restoration.
 
 ## Work Items
 
-- [ ] Declare exact Render Blueprint variables and private origin.
-- [ ] Verify public denial and authenticated internal route with test topology.
-- [ ] Document key rotation and operational disable/fallback.
+- [ ] Update exactly `moda-interact-gateway/render.test.yaml` and `render.production.yaml` to retain private Commerce Shopify discount-proof and private API Woo **customer checkout restoration** routes; no product/image read route to hosted API.
+- [ ] Provision secure environment-specific `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` placeholders only for the MCP deployable, and the existing private service host/port names for Commerce proof and the separate Background-to-API restore flow; add no new HMAC key variables. No plaintext secrets committed.
+- [ ] Verify MCP direct read-only outbound Woo HTTPS egress with grant/credential revalidation, and test public route denial; assert zero MCP-to-Moda-API product/coupon-proof calls.
+- [ ] Validate exact Blueprint files, secret scan, release isolation, fail-closed credential/route state and `git diff --check`.
 
 ## Interfaces / Contracts
 
-- Existing `render.test.yaml` and `render.production.yaml` private Commerce/API services and recovery worker, Shared-004 HMAC + private origins.
+Existing Render environment files and private-only Commerce proof/Woo return-link routes; MCP direct Woo REST uses Shared credential keyring encryption/identity and MCP-003 secure transport.
 
 ## Dependencies
 
-- `ARCH-052-COMMERCE-003` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-API-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-API-003` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-API-004` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-COMMERCE-003` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-API-004` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-003` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
-- `ARCH-052-BACKGROUND-006`
-- `ARCH-052-BACKGROUND-007`
+- `ARCH-052-BACKGROUND-008`
+- `ARCH-052-MCP-002`
+- `ARCH-052-SYSTEM-TEST-001`
 - `ARCH-052-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] Both Render environment Blueprints validate and select exact private service addresses; no new public `/internal/v1` ingress.
-- [ ] HMAC secrets independently provisioned for test/production with no secrets in Git; absent credentials fail closed.
+- [ ] Blueprint config has no MCP-to-API product/proof proxy route; MCP direct Woo REST has secure per-environment keyring.
+- [ ] Commerce Shopify proof and separate Woo checkout restore remain private-only and deny any public route; private request handlers enforce tenant/attempt bounds.
+- [ ] No secrets committed and no public private-read ingress.
 
 ## Validation
 

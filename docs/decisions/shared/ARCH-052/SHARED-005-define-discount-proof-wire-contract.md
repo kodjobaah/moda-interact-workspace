@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-SHARED-005
 architecture_id: ARCH-052
-title: Define strict version-one verified discount proof request and response
+title: Define a typed provider discount-evidence payload for on-demand MCP calls
 task_kind: implementation
 domain: shared
 repository: moda-interact-shared
@@ -21,7 +21,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-SHARED-005: Define strict version-one verified discount proof request and response
+# ARCH-052-SHARED-005: Define a typed provider discount-evidence payload for on-demand MCP calls
 
 ## Architecture
 
@@ -33,21 +33,19 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Define one portable request/result schema for Background, Commerce and API provider-verified checkout discount decisions.
+Create the narrow, versioned, cross-service data schema for an **on-demand** discount-evaluation result. This task does not define a bulk eligibility scan, create a second MCP result envelope or impose a provider call for every catalogue candidate.
 
 ## Context
 
-Existing Background `ProviderEligibilityResult` is repository-local; the Commerce evaluator and Woo provider boundary need a single public-package read-only wire contract, not independently invented JSON shapes.
-
-Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
+The 29 October snapshot does not contain `moda-interact-shared/src/recovery-offer-proof.ts` or the proposed `RecoveryDiscountProofRequestSchema`/`RecoveryDiscountProofResultSchema`. This task **creates** those exports; do not describe them as existing. MCP provides read-only provider information through the existing generic `CommerceToolResultSchema` envelope. Background's agent decides which tools to call.
 
 ## Scope
 
-- Create `moda-interact-shared/src/recovery-offer-proof.ts` and published package subpath `/recovery-offer-proof`; export `RecoveryDiscountProofRequestSchema`, `RecoveryDiscountProofResultSchema` and inferred types; validate JSON strictly (no unknown fields).
-- Request exactly `{version:1,shopId:string,checkoutRecoveryId:string,checkoutFingerprint:string,discountId:string}` with nonempty bounded IDs <=128 chars; server loads checkout, customer and candidate only from its own trusted database after authorisation. Do not accept caller-supplied prices, lineItems, coupon codes, customer identifiers, eligibility conclusions or provider URLs.
-- Result discriminant `{version:1,outcome:"eligible",evidence:{shopId,checkoutRecoveryId,providerDiscountId,checkoutFingerprint,evaluatedAt,expiresAt,currency,savingsMinor,verifiedCode,verifiedDescription,verifiedConstraints}}` OR `{version:1,outcome:"ineligible"|"unavailable",reason:one of ["NOT_ELIGIBLE","UNSUPPORTED_RULE","PROVIDER_UNAVAILABLE","STALE_CHECKOUT","REVOKED_GRANT","UNKNOWN_CUSTOMER"]}`. Times ISO UTC, expiry <=5min after evaluatedAt, valid positive safe-integer savingsMinor, ISO 4217 currency, verified code null only for automatic offer; bound description <=160 chars and each of <=10 constraints <=80 chars.
-- Define response refusal on mismatched shop/checkout/fingerprint/discount even if HMAC authentication is valid. Proof is ephemeral decision data, never a merchant-save flag or permission to mutate a provider basket.
-- Provide shared fixture vectors for Shopify and Woo PHP parity, a branded data-bound model type, strict parsing and rejection of timestamp/currency/count overflow, false/unknown eligibility, extra fields, mismatched tenant or invalid code.
+- Create `src/recovery-offer-proof.ts` with `RecoveryDiscountProofRequestSchema` and `RecoveryDiscountProofResultSchema`, and export them from the existing browser-safe package entrypoint `/recovery-offer-proof`. This is one **feature-specific `data` schema**: MCP keeps using `CommerceToolResultSchema` for all tools.
+- Request carries trusted shop/recovery/attempt identifiers, provider discount ID, checkout fingerprint and a discriminated `target: {kind:"CHECKOUT"} | {kind:"ALTERNATIVE_PRODUCT",productId:string,variantId:string|null}`; never accept model-supplied product URLs or prices as proof.
+- Result discriminates `eligible`, `ineligible`, `unsupported`, `unavailable`, `stale`. Positive `eligible` carries exact shop/recovery/attempt, discount and target identifiers, verified code/automatic method, current evidence timestamp, bounded expiration, currency, and positive savings/benefit if the provider can establish it. Alternative promotions must be expressly marked `ALTERNATIVE_PRODUCT` and cannot be rendered as checkout discounts.
+- Do not claim that a catalogue row, model output or matching category proves customer eligibility. MCP may perform **targeted** provider verification when requested, without scanning the full catalogue first. Unavailable/unsupported provider rules are never silently treated as eligible.
+- Add deterministic positive and negative cross-consumer fixtures: wrong shop/target/fingerprint, malformed expiry, unknown customer rules, truncated/provider failure, ineligible and unavailable; verify no provider mutation.
 
 ## Out of Scope
 
@@ -65,19 +63,19 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Implement strict request and discriminated response schema.
-- [ ] Add cross-producer consumer vector fixtures and negative parsing tests.
-- [ ] Publish via dependent SHARED-003, not inside this task.
+- [ ] Create the new request and outcome schemas and publish the entrypoint metadata in the implementation task.
+- [ ] Add cross-service fixtures and negative parsing tests.
+- [ ] Run Shared declared tests/typecheck/build; SHARED-003 handles publication separately.
 
 ## Interfaces / Contracts
 
-- `@modainteract/moda-interact-shared/recovery-offer-proof` exports `RecoveryDiscountProofRequestSchema`, `RecoveryDiscountProofResultSchema` and types.
+`@modainteract/moda-interact-shared/recovery-offer-proof`: newly created `RecoveryDiscountProofRequestSchema`, `RecoveryDiscountProofResultSchema`, and inferred types for Commerce producer, MCP validator, and Background consumer. They are **payload schemas inside** the existing `CommerceToolResultSchema` response; no second tool-result envelope.
 
 ## Dependencies
 
 None.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
@@ -85,7 +83,9 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Acceptance Criteria
 
-- [ ] One exact contract covers Shopify and Woo without provider-specific payload guesses; invalid/unknown rules cannot produce `eligible`.
+- [ ] On-demand evaluation returns typed evidence with explicit checkout versus alternative-product target.
+- [ ] No new general-purpose MCP envelope, bulk scan runner, Prisma change or private authentication scheme.
+- [ ] Unknown/unsupported provider restrictions cannot be interpreted as proof of eligibility.
 
 ## Validation
 

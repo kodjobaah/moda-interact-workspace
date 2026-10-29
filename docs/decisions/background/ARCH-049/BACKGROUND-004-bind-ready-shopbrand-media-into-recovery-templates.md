@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-049-SYSTEM-TEST-001
 created: 2026-10-26
-updated: 2026-10-26
+updated: 2026-10-28
 ---
 
 # Bind verified ShopBrand R2 media into prepared recovery templates
@@ -66,7 +66,7 @@ Consume the Admin-owned prepared, persisted `WhatsAppTemplateMetaRegistration.pa
 
 ### R2. Tenant-scoped READY media resolution
 
-Read only `ShopBrand` for the authenticated shop, `whatsAppMedia.roles[headerMediaRole]` and the accepted public origin. Return an `R2_DERIVATIVE` URL only when the role is READY, has a current non-null source, the ready generation and fingerprint match its current source, `objectKey` conforms to the immutable shop/role/hash key convention, verified output is `image/jpeg` or `image/png` with positive bounded dimensions and size below 5 MiB, and the final HTTPS URL is beneath the configured media origin. No untrusted `logoUrl`/`squareLogoUrl`/`coverImageUrl`, cross-shop reference, R2 credentials or arbitrary external host may be returned. Source URLs in text bindings must remain distinct from IMAGE-header media parameters; where a text binding intentionally requests a processed image URL, map it to the corresponding validated READY role only.
+Read only `ShopBrand` for the authenticated shop, `whatsAppMedia.roles[headerMediaRole]` and the accepted public origin. Return an `R2_DERIVATIVE` URL only when the role is READY, has a current non-null source, the ready generation and fingerprint match its current source, and `objectKey` is exactly `shop-brands/<normalized-current-raw-Shop.domain>/<role-lowercase>/sha256-<contentSha256>.<jpg|png>`. An absolute URL contributes only its parsed hostname; safe bare values, including one-label values, remain readable. Background and Admin use the same path-safe ASCII segment validation, and raw `Shop.domain` remains the claim identity for completion-time rename detection. Verified output must be `image/jpeg` or `image/png` with positive bounded dimensions and size below 5 MiB, and the final HTTPS URL must be beneath the configured media origin. Shop-id and old base64url READY records are stale; an existing readable raw-domain key is canonical. No untrusted `logoUrl`/`squareLogoUrl`/`coverImageUrl`, cross-shop reference, R2 credentials or arbitrary external host may be returned. Source URLs in text bindings must remain distinct from IMAGE-header media parameters; where a text binding intentionally requests a processed image URL, map it to the corresponding validated READY role only.
 
 ### R3. Runtime integration
 

@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-ADMIN-001
 architecture_id: ARCH-052
-title: Author and publish the six existing recovery purposes with basket copy
+title: Author approved checkout/alternative promo variants under existing recovery purposes
 task_kind: implementation
 domain: admin
 repository: moda-interact-admin
@@ -24,7 +24,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-ADMIN-001: Author and publish the six existing recovery purposes with basket copy
+# ARCH-052-ADMIN-001: Author approved checkout/alternative promo variants under existing recovery purposes
 
 ## Architecture
 
@@ -36,7 +36,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Extend Admin-owned immutable WhatsApp template authoring to support the approved basket-summary variable and copy for no offer, code and automatic offer.
+Author Meta-approved initial WhatsApp variants for original checkout discounts AND separate alternative-product promotions without adding a new purpose enum or database table.
 
 ## Context
 
@@ -46,10 +46,10 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Extend `src/lib/admin/whatsapp-templates/authoring/registry.ts`, `types.ts` and validation/compiler bindings to consume the Shared new checkout summary key.
-- Provide Admin-authored starter copy for three INITIAL purposes while preserving six total slots and per-language independent approval. Include optional `shop.categoryName` in category-aware variants, with separately approved category-free variants.
-- Require CODE_OFFER to have verified offer.code/description and AUTOMATIC_OFFER to have verified description but no invented coupon code; NO_OFFER must never include offer bindings.
-- Keep exact immutable `parameterBindingsSnapshot`, registration digest and provider-approval lifecycle; no automatic publication from merely saving an AST.
+- Extend `src/lib/admin/whatsapp-templates/authoring/registry.ts`, `types.ts`, `validation.ts`, compiler and template publishing snapshot JSON to support approved immutable `promotionTarget:"CHECKOUT"|"ALTERNATIVE_PRODUCT"` for CODE_OFFER and AUTOMATIC_OFFER; NO_OFFER remains category-safe and offer-free. Keep existing three INITIAL + three FOLLOW_UP purpose identities and all ARCH-047 immutable approval/digest/locale rules.
+- For CHECKOUT provide basket-aware copy with verified discount that truly applies to checkout. For ALTERNATIVE_PRODUCT require `promotion.productName`, `promotion.offerDescription` and `promotion.productUrl`; author copy explicitly identifying a *different product* and never suggesting original abandoned basket receives that code. Use approved product CTA or safe separately approved link; checkout resume CTA remains trusted and not replaced silently.
+- Provide own preview examples and exact proof-dependent bindings for CODE (must have provider-backed code) and AUTOMATIC (no coupon code); multiple approved immutable template entries may share a purpose/locale only when `promotionTarget`, header kind and active revision identify an unambiguous selected entry. Reject ambiguous same-purpose promotion target selection.
+- Meta promotional template category/consent requirements apply to cross-sell; publishing/review remains operator-controlled, not automatic on save. Tests for immutable header, translation placeholders, missing product, approval mismatch, wrong locale and fallback.
 
 ## Out of Scope
 
@@ -74,13 +74,13 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-- Shared semantic key registry and existing ARCH-047 Admin AST, frozen positional binding and Meta registration contract.
+Existing immutable ARCH-047 WhatsApp template authoring/publishing pipeline + Shared-002 `promotionTarget` and `promotion.*` bindings. No Prisma purpose enum change.
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
@@ -90,8 +90,9 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Acceptance Criteria
 
-- [ ] All INITIAL NO/CODE/AUTOMATIC templates can be authored and previewed without changing ARCH-047 immutability.
-- [ ] Invalid body/header bindings and missing locale/category are handled safely.
+- [ ] Checkout and alternative promotions have distinct approved presentations using existing purpose names.
+- [ ] Alternative promo cannot render with a checkout-discount-only template or unsafe product URL.
+- [ ] Locale/Meta approval immutability and translation protections unchanged.
 
 ## Validation
 

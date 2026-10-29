@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-BACKGROUND-007
 architecture_id: ARCH-052
-title: Resolve one verified checkout product image at runtime, with no media persistence
+title: Resolve optional checkout or promoted-product image via MCP at runtime
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -16,9 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-SHARED-003
-- ARCH-052-COMMERCE-003
-- ARCH-052-API-002
-- ARCH-052-GATEWAY-001
+- ARCH-052-MCP-003
+- ARCH-052-COMMERCE-007
 - ARCH-049-BACKGROUND-001
 - ARCH-049-BACKGROUND-004
 enables:
@@ -27,7 +26,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-BACKGROUND-007: Resolve one verified checkout product image at runtime, with no media persistence
+# ARCH-052-BACKGROUND-007: Resolve optional checkout or promoted-product image via MCP at runtime
 
 ## Architecture
 
@@ -39,20 +38,17 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Choose one checkout line-item image via Shopify or Woo provider read APIs, verify it safely at template preparation, and return optional IMAGE header input without any database row or R2 object.
+Provide an optional validated IMAGE header for the chosen checkout product or recommended alternative product, using MCP `commerce_get_product` and no API/Commerce image proxy or new media persistence.
 
 ## Context
 
-Shopify Commerce product facts can be extended to return variant/product image; Woo hosted API can extend API-process-only read port behind private authentication. The user explicitly wants runtime resolution, not CheckoutRecoveryProductMedia or persisted media metadata.
-
-Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
+Both Shopify and WooCommerce product information is resolved **at runtime by MCP-003**, using authenticated direct provider connections. There is no hosted API or Commerce private product-image endpoint, no product catalogue replication and no image database persistence. Background consumes the exact published `commerce_get_product` result.
 
 ## Scope
 
-- Create `src/services/recovery-product-media/recovery-product-image-resolver.ts` and tests. Input is trusted persisted `{shopId,checkoutRecoveryId,platform,checkoutGeneration,lineItems}`, not caller submitted URLs; reject empty/malformed/more than 50 entries or wrong-shop checkout.
-- For at most first 3 valid lines in persisted order, first request exact variant/variation image then parent product featured-image fallback. Shopify queries Commerce-003 private `POST /internal/v1/recovery/product-image`, Woo queries API-002 same private route on its own host. Send `{shopId,checkoutRecoveryId,productId,variantId}` with Shared-004 HMAC, validate Shared-002 result and provider ID equality. At most three 2-second lookups, <=6sec total.
-- Validate candidate image public HTTPS URL with no credentials, private IP, localhost, fragments, mixed-scheme redirects or unsafe host. Reuse ARCH-049 pinned DNS/SSRF safe-fetch; no redirect, <=5MB JPEG/PNG with MIME and magic-byte match, at least 200x200 and <=40MP dimensions. Signed ephemeral provider URLs require proved >=10min expiry; otherwise skip.
-- Add tests for variant precedence, product fallback, first-three cap, wrong shop/line, public DNS rebinding, redirect, large/invalid images, provider rejection and approved text variant fallback.
+- Use existing `src/services/recovery-template-preparation/` and MCP `commerce_get_product` (published and entitled) to fetch the exact product/variant in current shop for a checkout item or selected alternative product. Variant image wins; product image fallback only if same shop/id. Never use fuzzy search as proof of identity.
+- Validate returned HTTPS image source/media type, allowed host and accessible header within bounded download/preparation time; if source is unsafe/unavailable, use separately approved text/no-image variant. Reuse existing ARCH-049 media processing only when necessary and already approved; do not invent new R2 tables or persistent image catalogue.
+- The image source and selected promotion product must match immutable attempt scope; no signed URL/secret or raw image source in logs. Validate retries and fallback when the image disappears.
 
 ## Out of Scope
 
@@ -71,24 +67,24 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Implement one deterministic item-to-image resolver and exact provider adapters.
-- [ ] Reuse existing safe fetch validation without copying generic SSRF/fetch implementations.
-- [ ] Add provider simulation/media validation/fallback tests.
+- [ ] Implement `recovery-product-image-resolver.ts` using the existing Background MCP transport and the published `commerce_get_product` tool; prefer checkout exact variant or recommended alternative exact product/variant.
+- [ ] Validate public HTTPS, safe resolved address and final peer, no unsafe redirects, supported image MIME + magic bytes, <=5 MB and verified target product origin/identity; use existing security/media primitives.
+- [ ] On image missing/unsafe/expired/offline return a typed no-media outcome and select an independently approved text-only Meta template; no side-effect on eligibility or checkout send.
+- [ ] Test Shopify and WooCommerce variant vs product image, mismatched tenant, invalid/expired media, retry and no MCP-to-API path.
 
 ## Interfaces / Contracts
 
-- Shared-002 `CHECKOUT_PRODUCT` verified provider image role and strict payload; Commerce-002 Shopify read and API-002 Woo private read with Shared-004 auth.
+Shared-002 `CHECKOUT_PRODUCT` IMAGE role and `RecoveryProductImageResultSchema`, Shared-008 `commerce_get_product` output; existing ARCH-049 media processing. No COMMERCE-002/API-002/private product-image endpoints.
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-COMMERCE-003` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-API-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-GATEWAY-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-049-BACKGROUND-001` — Complete in 29 October snapshot.
-- `ARCH-049-BACKGROUND-004` — not Complete in 29 October snapshot.
+- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-MCP-003` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-COMMERCE-007` — must be Complete and architect-accepted before this task starts.
+- `ARCH-049-BACKGROUND-001` — must be Complete and architect-accepted before this task starts.
+- `ARCH-049-BACKGROUND-004` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
@@ -96,8 +92,9 @@ All dependencies must be `status: complete` in the authoritative individual task
 
 ## Acceptance Criteria
 
-- [ ] No new media database table, column, object store write or implicit legacy image cache.
-- [ ] Only verified current product image can populate IMAGE header; missing/unsafe images use approved text fallback.
+- [ ] Checkout image and alternative promo product image resolve via exact MCP lookup.
+- [ ] Failed or unsafe media yields approved text-only template or no-send, not broken IMAGE header.
+- [ ] No new Prisma image table or MCP-to-API product call.
 
 ## Validation
 

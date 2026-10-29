@@ -1035,7 +1035,7 @@ Agreed and fully decomposed on 2026-10-07. Ready frontier: DATABASE-001 and SHAR
 [Architecture](ARCH-028-whatsapp-delivery-failure-convergence.md)
 
 
-## ARCH-052 — Checkout-personalised WhatsApp initial outreach (2026-10-29)
+## ARCH-052 — Checkout-personalised outreach, direct MCP provider reads and AI alternative promos
 
 Proposed, pre-production and **29 portable, defined-but-not-materialised tasks**; no new database tables, columns, migrations, image persistence, or legacy backfill. Both Shopify and Woo use `ShopifyDiscount.isAvailable` as merchant selection; runtime image read with safe fallback.
 

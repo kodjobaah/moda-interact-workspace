@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-SHARED-003
 architecture_id: ARCH-052
-title: Publish accepted initial-outreach Shared contracts
+title: Publish the accepted initial-outreach contracts (including product search)
 task_kind: publication
 domain: shared
 repository: moda-interact-shared
@@ -15,31 +15,31 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-SHARED-001
 - ARCH-052-SHARED-002
-- ARCH-052-SHARED-004
 - ARCH-052-SHARED-005
+- ARCH-052-SHARED-006
+- ARCH-052-SHARED-008
 enables:
-- ARCH-052-SHOPIFY-001
-- ARCH-052-API-001
-- ARCH-052-BACKGROUND-001
-- ARCH-052-WOOCOMMERCE-001
-- ARCH-052-BACKGROUND-005
 - ARCH-052-ADMIN-001
-- ARCH-052-BACKGROUND-007
 - ARCH-052-ADMIN-002
+- ARCH-052-BACKGROUND-005
+- ARCH-052-BACKGROUND-007
+- ARCH-052-BACKGROUND-010
+- ARCH-052-COMMERCE-003
+- ARCH-052-COMMERCE-006
+- ARCH-052-COMMERCE-008
+- ARCH-052-GATEWAY-001
+- ARCH-052-MCP-001
+- ARCH-052-MCP-002
+- ARCH-052-MCP-003
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
-- ARCH-052-API-002
-- ARCH-052-GATEWAY-001
-- ARCH-052-COMMERCE-003
-- ARCH-052-API-003
-- ARCH-052-API-004
+- ARCH-052-WOOCOMMERCE-001
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-SHARED-003: Publish accepted initial-outreach Shared contracts
+# ARCH-052-SHARED-003: Publish the accepted initial-outreach contracts (including product search)
 
 ## Architecture
 
@@ -51,7 +51,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Publish and verify the exact accepted @modainteract/moda-interact-shared version consumed by the initial-outreach integration tasks.
+Publish the four architect-accepted Shared contract changes (template bindings, on-demand provider evidence, minimal outreach MCP identity, product search). This is a **publication-only gate**, with no new policy snapshot, bespoke HMAC authentication, or AI decision schema.
 
 ## Context
 
@@ -61,8 +61,9 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Publish exactly the four architect-accepted Shared capabilities as one version: `/recovery-policy`, `/recovery-template-bindings`, `/node/recovery-private-read-auth`, and `/recovery-offer-proof`.
-- Only release/version/package metadata permitted, and registry visibility checks. Do NOT rerun already-accepted tests, builds, lint or typecheck.
+- Once SHARED-002, SHARED-005, SHARED-006 and SHARED-008 are architect-accepted Complete, select and publish their approved Shared package version using the repository release procedure. Make only release-specific metadata/lockfile changes permitted by existing tooling.
+- Verify the exact published registry version exposes `/commerce`, `/recovery-offer-proof`, `/recovery-template-bindings` and retains existing unaffected exports; record version and registry evidence. No /node/recovery-private-read-auth export.
+- Do not rerun tests, lint, builds or typechecking inside a publication-only task. Return code problems to the implementing task owner.
 
 ## Out of Scope
 
@@ -81,49 +82,50 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Check Shared-001/002/004/005 accepted Complete.
-- [ ] Publish the accepted package version and verify all four subpath exports.
+- [ ] Confirm SHARED-002/005/006/008 are all Complete with accepted Architect Reviews.
+- [ ] Publish the approved version with release-metadata-only edits.
+- [ ] Verify exact registry version and exports; record release evidence and absence of source changes.
 
 ## Interfaces / Contracts
 
-- One verified published `@modainteract/moda-interact-shared` version exposing four ARCH-052 subpaths.
+Shared package `/commerce` (existing generic result, outreach context and product schemas), `/recovery-offer-proof` (targeted provider evidence), `/recovery-template-bindings` (approved template bindings). No frozen selection, agent choice or private HMAC exports.
 
 ## Dependencies
 
-- `ARCH-052-SHARED-001` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-SHARED-002` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-SHARED-004` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-SHARED-005` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-SHARED-002` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-SHARED-005` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-SHARED-006` — must be Complete and architect-accepted before this task starts.
+- `ARCH-052-SHARED-008` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
-- `ARCH-052-SHOPIFY-001`
-- `ARCH-052-API-001`
-- `ARCH-052-BACKGROUND-001`
-- `ARCH-052-WOOCOMMERCE-001`
-- `ARCH-052-BACKGROUND-005`
 - `ARCH-052-ADMIN-001`
-- `ARCH-052-BACKGROUND-007`
 - `ARCH-052-ADMIN-002`
+- `ARCH-052-BACKGROUND-005`
+- `ARCH-052-BACKGROUND-007`
+- `ARCH-052-BACKGROUND-010`
+- `ARCH-052-COMMERCE-003`
+- `ARCH-052-COMMERCE-006`
+- `ARCH-052-COMMERCE-008`
+- `ARCH-052-GATEWAY-001`
+- `ARCH-052-MCP-001`
+- `ARCH-052-MCP-002`
+- `ARCH-052-MCP-003`
 - `ARCH-052-SYSTEM-TEST-001`
 - `ARCH-052-SYSTEM-TEST-002`
-- `ARCH-052-API-002`
-- `ARCH-052-GATEWAY-001`
-- `ARCH-052-COMMERCE-003`
-- `ARCH-052-API-003`
-- `ARCH-052-API-004`
+- `ARCH-052-WOOCOMMERCE-001`
 
 ## Acceptance Criteria
 
-- [ ] Exactly four required subpaths resolve from the published package, without unreconciled source edits.
+- [ ] Exactly four prerequisite implementation tasks are Complete and architect-accepted before publication.
+- [ ] The approved version is available and the required exports resolve.
+- [ ] Publication did not modify application behaviour or rerun accepted implementation validation.
 
 ## Validation
 
-- [ ] Release-only checks (prerequisites, version, registry visibility, diff).
-
-Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+- [ ] Inspect accepted implementation review evidence, run the authorised release command, confirm registry visibility and diff only release metadata. No source tests/typecheck/build/lint in a publication task.
 
 ## Stop Condition
 

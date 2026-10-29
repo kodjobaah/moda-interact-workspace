@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-BACKGROUND-005
 architecture_id: ARCH-052
-title: Build deterministic checkout-item summary and merchant display bindings
+title: Bind deterministic basket summary and merchant category for initial outreach
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -22,7 +22,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-BACKGROUND-005: Build deterministic checkout-item summary and merchant display bindings
+# ARCH-052-BACKGROUND-005: Bind deterministic basket summary and merchant category for initial outreach
 
 ## Architecture
 
@@ -58,12 +58,8 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
-- Never insert unescaped `{{` markers, newlines/control characters, raw customer data or malicious title fragments into approved Meta parameters.
-- Avoid unbounded checkout JSON loads and additional provider reads on webhook ingress.
-- Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
-- Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
-- Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
-- Provider mutation is prohibited except the customer-initiated Woo cart restoration explicitly owned by WOOCOMMERCE-002.
+- Basket description and shop category come from persisted trusted state, not AI-generated marketing prose. Category uses existing `shop.categoryName`; actual product category facts for AI come from MCP `commerce_search_products` and `commerce_get_product` when available.
+- Follow task launcher and dedicated worktrees, Shared logger, no PII/credentials in logs and no provider cart mutations.
 
 ## Work Items
 
@@ -77,9 +73,9 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — new ARCH-052 prerequisite (not yet materialised).
+- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 

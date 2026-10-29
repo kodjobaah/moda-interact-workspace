@@ -9,16 +9,13 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 45
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-- ARCH-052-API-004
-- ARCH-052-GATEWAY-001
-enables:
-- ARCH-052-BACKGROUND-008
+depends_on: []
+enables: []
 created: '2026-10-29'
 updated: '2026-10-29'
 ---
@@ -35,7 +32,7 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Supply a currently valid, trusted Woo checkout URL to the existing Meta dynamic checkout button without storing long-lived bearer URLs on CheckoutRecovery.
+**SUPERSEDED — DO NOT IMPLEMENT.** WooCommerce resume URL resolution is a narrow part of preparing and sending an initial template, not an independent Background capability. Replacement: BACKGROUND-008 consumes API-004 and owns the trusted checkout-CTA adapter.
 
 ## Context
 
@@ -45,10 +42,7 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Implement `src/services/woocommerce-recovery/woo-recovery-checkout-url.service.ts`, caller of **only** API-004 private `POST /internal/v1/recovery/restore-link` with Shared-004 HMAC, from fixed Gateway-001 `MODA_RECOVERY_PRIVATE_READ_API_HOSTPORT`; never call the WordPress host directly or handle Woo REST credentials.
-- Sign exact `{shopId,checkoutRecoveryId,checkoutFingerprint}` read from persisted CheckoutRecovery, validate API response expiry <=30min, canonical merchant HTTPS bound site and exact `/moda-recovery/restore/<opaque-token>` path; no userinfo/fragment, private host or untrusted redirect. Do not persist/log bearer URL.
-- Set current `TrustedCheckout` from verified URL, observedAt now and explicit expiry during INITIAL template preparation, not from stale checkoutUrl. Invalid/missing route or expiry => approved no-button template or typed no-send, never generic empty Woo checkout.
-- Preserve Shopify verified checkoutUrl logic and existing consent/billing send admission. Add integration tests for stale key, malicious URL, wrong installation, expired token, missing private key, returning Woo item cart and no provider side effect on issuance.
+None. This task is withdrawn; no files may be edited under this task.
 
 ## Out of Scope
 
@@ -58,59 +52,39 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
-- Never perform plugin network I/O inside SQL final permit or billing transaction.
-- Revoked grants, private-origin/SSRF, wrong-shop, expired tokens or unavailable Woo site return a typed unavailable result.
-- Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
-- Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
-- Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
-- Provider mutation is prohibited except the customer-initiated Woo cart restoration explicitly owned by WOOCOMMERCE-002.
+No execution, claim, code changes, package publication or test work. Historical task retained for traceability.
 
 ## Work Items
 
-- [ ] Implement signed API-only Woo link client.
-- [ ] Validate exact installation host, expiry and trusted checkout.
-- [ ] Test Meta CTA includes only current safe URL, no persistence/logging.
+None — superseded.
 
 ## Interfaces / Contracts
 
-- API-004 signed private `/internal/v1/recovery/restore-link`, Shared-004 request authentication, `TrustedCheckout` output.
+No new interface. BACKGROUND-008 consumes API-004 and owns the trusted checkout-CTA adapter.
 
 ## Dependencies
 
-- `ARCH-052-API-004` — new ARCH-052 prerequisite (not yet materialised).
-- `ARCH-052-GATEWAY-001` — new ARCH-052 prerequisite (not yet materialised).
-
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+None — superseded.
 
 ## Enables
 
-- `ARCH-052-BACKGROUND-008`
+None — superseded.
 
 ## Acceptance Criteria
 
-- [ ] Woo CTA restores the targeted checkout only on customer click; no generic cart URL.
-- [ ] Missing provider read never exposes credentials or leads to false CTA.
+None — superseded.
 
 ## Validation
 
-- [ ] Background Woo transport fixtures, request/response validation and recovery template preparation integration.
-- [ ] Build/lint and `git diff --check`.
-
-Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+None — superseded; do not run task-specific tests.
 
 ## Stop Condition
 
-After all Work Items, Acceptance Criteria and required Validation pass, complete the report, set task `status: review`, hand the implementation branch and parent task report to `moda_architect` and **STOP**. Do not begin a dependent task, merge, push main, or edit architecture indexes as a repository agent.
+Do not claim or execute this task. The developer must use the active replacement tasks.
 
 ## Implementation Notes
 
-**Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
-
-- `moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts`
-- `moda-interact-background/src/services/woocommerce-recovery/ (trusted checkout-link adapter)`
-- `moda-interact-background/src/services/woo-coupon-grant.service.ts`
-
-Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
+Task intentionally withdrawn during ARCH-052 Attempt 6 review. WooCommerce resume URL resolution is a narrow part of preparing and sending an initial template, not an independent Background capability.
 
 ## Completion Report
 

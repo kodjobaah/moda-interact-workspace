@@ -17,7 +17,6 @@ attempt: 0
 depends_on: []
 enables:
 - ARCH-052-SHOPIFY-001
-- ARCH-052-BACKGROUND-001
 - ARCH-052-SYSTEM-TEST-001
 created: '2026-10-29'
 updated: '2026-10-29'
@@ -80,12 +79,11 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 None.
 
-All dependencies must be `status: complete` in the authoritative individual task YAML immediately before launcher preparation; architect acceptance or Ready alone is insufficient. No non-system-test task depends on a system-test task.
+Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
 
 ## Enables
 
 - `ARCH-052-SHOPIFY-001`
-- `ARCH-052-BACKGROUND-001`
 - `ARCH-052-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
