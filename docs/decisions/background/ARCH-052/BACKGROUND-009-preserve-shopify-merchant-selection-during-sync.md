@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-10-29T20:22:59Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -174,6 +174,50 @@ Report discovered cross-repository/credential/provider-proof issues to `moda_arc
 
 
 ## Architect Review
+
+### Attempt 2 Architect Review
+
+#### Review Status
+
+Changes Requested — repository-wide validation disposition
+
+#### Review Notes
+
+The previously requested corrections are satisfied. The Completion Report records the guarded PostgreSQL lifecycle suite passing (2 tests) after the initial Docker PATH issue was resolved; it records the dedicated parent and implementation worktree paths, branches, start heads, task-branch and `origin/main` synchronization results, recursive submodule preparation, and no shared checkout or task worktree reuse. The task's Architecture section now correctly says this definition was materialised and executed.
+
+The implementation diff remains within scope and the lifecycle behavior conforms to the merchant-selection invariant. The focused catalogue/reinstall unit tests, disposable PostgreSQL integration, build, changed-file ESLint and diff checks are reported passing. No code defect has been identified and no source change is requested at this point.
+
+Acceptance is still withheld because the second required Validation item remains unchecked. The Completion Report records repository-wide `npm test` with 64 failing tests across 22 files and `npm run lint` with one error in an untouched file. These are described generally as unrelated environment/fixture issues, but it does not list the failing test identities or establish that they match a pre-task baseline. The current development baseline has no entry matching this reported 64-test/22-file failure set. We therefore cannot yet confirm that task changes caused no regression across the required Background test validation.
+
+#### Reviewed Files
+
+- Attempt 2 Completion Report and launcher evidence.
+- Background implementation branch `task/ARCH-052-BACKGROUND-009` at `086d35c7c3b91d7dd79c855045107fe72f93d185`; its five-file diff from `origin/main` and clean worktree.
+- `src/services/shopify-discount-catalogue.service.ts`.
+- `src/services/billing-subscription-reconciliation/reinstall-reconciliation.service.ts`.
+- `tests/unit/services/billing-subscription-reconciliation/reinstall-reconciliation.service.test.ts`.
+- `tests/integration/arch052-shopify-discount-selection.integration.test.ts`.
+- The task Validation checklist, ARCH-052 execution table and dependent task records.
+
+#### Validation Reviewed
+
+Reviewed Attempt 2's passing `npm run test:arch052-shopify-discount-selection:postgres` (2 tests), changed integration-file ESLint, and `git diff --check`; Attempt 1's 10 focused unit tests, `npm run build`, changed-file lint and diff check; and the reported full-suite/lint failures. The PostgreSQL integration and launcher evidence close the prior review findings. No tests were rerun for this review.
+
+#### Architecture Conformance
+
+The implementation conforms to ARCH-052 and repository ownership. This task remains incomplete until the unchecked required Validation item is reconciled with evidence that the repository-wide failures are pre-existing/environmental and do not include task-caused regressions. No dependent task is promoted while the task is not Complete.
+
+#### Follow-up
+
+Return this same task to `ready`, clear `executor` and `claimed_at`, preserve `attempt: 2`, and let the next canonical launcher claim advance the attempt once. Before review resubmission:
+
+1. Reconcile the unchecked Validation item. Record the failing test/suite identities from the full `npm test` output and establish, by matching documented baseline evidence or comparison with the task's starting `origin/main` under equivalent dependency/service conditions, that these failures are not introduced or worsened by this task. Confirm the full lint error remains in the untouched `translation-reconciliation.service.ts` and that all changed files pass targeted lint. Do not fix unrelated repository failures inside this task.
+2. If any failure is new or task-related, correct it within this task's scope or return the exact issue to moda_architect if it crosses ownership. Then update the Validation checklist and Completion Report accurately; do not mark a failed or unrun command as passing.
+
+The PostgreSQL integration and worktree/materialisation corrections are accepted as evidence and need not be repeated unless relevant code or environment changes.
+
+### Attempt 1 Architect Review — Changes Requested
+
 
 ### Review Status
 

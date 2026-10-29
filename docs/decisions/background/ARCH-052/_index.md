@@ -19,4 +19,4 @@ The individual task YAML is authoritative. BACKGROUND-009 has been materialised 
 | [ARCH-052-BACKGROUND-009](BACKGROUND-009-preserve-shopify-merchant-selection-during-sync.md) | Make Shopify catalogue and lifecycle writers preserve merchant selection | Ready (validation/evidence correction requested) | — |
 | [ARCH-052-BACKGROUND-010](BACKGROUND-010-implement-langgraph-initial-outreach-offer-agent.md) | Implement the LangGraph InitialOutreachOfferAgent with existing MCP tools | Pending | `ARCH-052-MCP-002`, `ARCH-052-MCP-004`, `ARCH-052-COMMERCE-007`, `ARCH-052-SHARED-003` |
 
-BACKGROUND-009 is Ready after Changes Requested. Acceptance awaits the guarded PostgreSQL lifecycle test and complete launcher worktree/synchronization evidence recorded in its Architect Review.
+BACKGROUND-009 remains Ready after Attempt 2. PostgreSQL lifecycle validation, launcher isolation/synchronization evidence, and materialisation wording are reconciled; acceptance awaits disposition of the still-unchecked repository-wide test/lint Validation item as detailed in the latest Architect Review.
