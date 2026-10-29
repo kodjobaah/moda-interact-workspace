@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-10-29T19:26:53Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -30,7 +30,7 @@ Architecture ID: `ARCH-052`.
 
 Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 
-Coordinator: `moda_architect`. This is a **portable canonical definition — defined but not materialised**. No developer Git branch/worktree, commit or push is asserted.
+Coordinator: `moda_architect`. This task was materialised and executed through its canonical launcher-resolved parent and Background task worktrees. The Completion Report must record the prepared packet evidence for both histories.
 
 ## Objective
 
@@ -164,24 +164,41 @@ Report discovered cross-repository/credential/provider-proof issues to `moda_arc
 
 ### Review Status
 
-Pending.
+Changes Requested — required validation and workflow evidence
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+The implementation diff at Background commit `086d35c7c3b91d7dd79c855045107fe72f93d185` is narrowly scoped and matches the requested behavior: new Shopify discount rows default to unchecked, updates preserve existing merchant selection, disappearance/unavailable catalogue paths retain their availability timestamps without changing selection, and the no-contract reinstall path no longer clears selection. The implementation audit and targeted unit assertions are consistent with those changes. No source defect is established from the reviewed diff.
+
+Acceptance is withheld because the task's explicit PostgreSQL lifecycle integration validation did not run. The guarded command stopped before tests with `spawn docker ENOENT`, and the required validation item remains unchecked. The integration scenarios cover creation defaults, selection through resync, missing scope/disappearance/unavailable state, provider eligibility, reinstall, and stale concurrent sync; unit tests cannot substitute for this database integration contract.
+
+The Completion Report also omits mandatory prepared-launcher evidence for physical task isolation and start synchronization. In addition, the task Architecture section still calls this definition portable and unmaterialised, contradicting the actual claimed task branch, canonical parent task worktree, implementation task worktree, and the Completion Report. The task definition has been reconciled to the materialised state; the implementing report still needs the packet evidence.
+
+The repository-wide `npm test` and `npm run lint` results are reported as failing in unrelated areas while focused tests and changed-file lint pass. No unrelated failures are assigned to this task for correction. No source changes are requested unless the required PostgreSQL validation exposes a task-scope failure.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+- Background implementation task branch at `086d35c7c3b91d7dd79c855045107fe72f93d185` and its 5-file diff from `origin/main`.
+- `src/services/shopify-discount-catalogue.service.ts`.
+- `src/services/billing-subscription-reconciliation/reinstall-reconciliation.service.ts`.
+- `tests/unit/services/billing-subscription-reconciliation/reinstall-reconciliation.service.test.ts`.
+- `tests/integration/arch052-shopify-discount-selection.integration.test.ts`.
+- Task Completion Report, ARCH-052 execution table, and `ARCH-052-SHOPIFY-001`/system-test dependency references.
 
 ### Validation Reviewed
 
-None for implementation.
+Reviewed recorded focused unit results (10 tests), `npm run build`, changed-file ESLint, and `git diff --check`. The task-specific PostgreSQL command did not execute tests because Docker was unavailable. Repository-wide `npm test` reports 280 files passing and 22 failing (3,044 passed / 64 failed); repository-wide lint reports one issue in untouched `translation-reconciliation.service.ts`. No tests were rerun. The implementation worktree is clean at the pushed task commit.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+The code changes conform to ARCH-052's separation of merchant selection from provider liveness and preserve repository ownership. Completion remains gated on the specified PostgreSQL lifecycle tests and complete prepared-launcher evidence. No dependent task is promoted while this task is not Complete.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+Return this same task to `ready`, clear `executor` and `claimed_at`, preserve `attempt: 1`, and have the next launcher claim increment it once. Before review resubmission:
+
+1. Run `npm run test:arch052-shopify-discount-selection:postgres` with the repository's disposable PostgreSQL harness available. Record a passing result covering all listed lifecycle/race cases. Do not claim the skipped attempt as passed; do not change code unless a scenario fails.
+2. Complete the Completion Report's prepared execution evidence from the launcher packet: canonical workspace root; parent and implementation worktree paths and branches; confirmation whether shared checkouts were switched/mutated or another task worktree reused; for each repository, task-branch fast-forward and `origin/main` synchronization results; recursive submodule preparation result. Do not infer synchronization results from current branch cleanliness. If the packet shows shared/default-checkout execution, restore/use the canonical worktrees, rerun required validation there, and correct the evidence per isolation policy.
+3. Keep the report consistent with the materialised task lifecycle and explain the repository-wide failures as environment/baseline observations without claiming they passed.
+
+No implementation changes are required if the integration test passes. `ARCH-052-SHOPIFY-001` and `ARCH-052-SYSTEM-TEST-001` remain Pending until this task is accepted Complete and their other dependencies are satisfied.
