@@ -9,4 +9,4 @@ These are portable task definitions, **defined but not materialised**; the indiv
 | Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
 | [ARCH-052-WOOCOMMERCE-001](WOOCOMMERCE-001-expose-read-only-native-coupon-verification.md) | Verify checkout and alternative-product coupon eligibility read-only in Woo plugin | Pending | `ARCH-052-SHARED-003` |
-| [ARCH-052-WOOCOMMERCE-002](WOOCOMMERCE-002-create-secure-customer-initiated-checkout-resume.md) | Provide secure customer-initiated Woo checkout restoration link | Ready | — |
+| [ARCH-052-WOOCOMMERCE-002](WOOCOMMERCE-002-create-secure-customer-initiated-checkout-resume.md) | Superseded — checkout URL supplied upstream; no generation or restoration work | Superseded | — |

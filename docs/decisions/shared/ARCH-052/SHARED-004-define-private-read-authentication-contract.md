@@ -32,11 +32,11 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-**SUPERSEDED — DO NOT IMPLEMENT.** The bespoke Shared HMAC signer/nonce/replay contract for private service calls is not required by the agreed private-network trust model. Replacement: Private-only Gateway routing with strict tenant/recovery checks at the Commerce/API operation endpoints.
+**SUPERSEDED — DO NOT IMPLEMENT.** The bespoke Shared HMAC signer/nonce/replay contract for private service calls is not required by the agreed private-network trust model. Replacement: Private-only Commerce routing with strict tenant/recovery checks.
 
 ## Context
 
-COMMERCE-003 implements one private Shopify provider eligibility route; API-004 separately implements Woo checkout-return link generation. The standalone MCP runtime performs Woo product search and Woo native coupon proof directly against the shop's Woo REST API using encrypted existing grants, so no product-image or Woo coupon-proof route is needed inside Moda API.
+COMMERCE-003 implements one private Shopify provider eligibility route. Woo checkout URL generation is not an ARCH-052 capability: API-004 and WOOCOMMERCE-002 are superseded. The standalone MCP runtime performs Woo product search and Woo native coupon proof directly against the shop's Woo REST API using encrypted existing grants, so no product-image or Woo coupon-proof route is needed inside Moda API.
 
 ## Scope
 
@@ -58,7 +58,7 @@ None — superseded.
 
 ## Interfaces / Contracts
 
-No new interface. Private-only Gateway routing with strict tenant/recovery checks at the Commerce/API operation endpoints.
+No new interface. Private-only Commerce routing with strict tenant/recovery checks.
 
 ## Dependencies
 

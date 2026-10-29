@@ -20,7 +20,6 @@ depends_on:
 - ARCH-052-BACKGROUND-007
 - ARCH-052-ADMIN-001
 - ARCH-052-ADMIN-002
-- ARCH-052-API-004
 - ARCH-052-GATEWAY-001
 enables:
 - ARCH-052-SYSTEM-TEST-001
@@ -54,10 +53,10 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 - Initial sequence one reads **current** merchant discount settings from Background and consumes the Background-010 trusted `CHECKOUT_DISCOUNT` / `ALTERNATIVE_PRODUCT_PROMOTION` / `NO_VERIFIED_OFFER` decision. NONE never calls discount MCP/AI. Stage-2 alternative promo is permitted only for merchant-authorised discount mode and provider-proofed product+discount pairing; a product merely sharing a taxonomy category is insufficient.
 - Use existing six Meta **purposes** (`INITIAL_NO_OFFER`, `INITIAL_CODE_OFFER`, `INITIAL_AUTOMATIC_OFFER` and follow-ups) without a DB enum change. For checkout discount use approved `promotionTarget:CHECKOUT` CODE/AUTOMATIC variant; for other product use independently Meta-approved `promotionTarget:ALTERNATIVE_PRODUCT` CODE/AUTOMATIC variant. Never render alternative offer using an approved checkout-only copy. Bind distinct `promotion.productName`, `promotion.productUrl`, `promotion.offerDescription` and verified code when provided; keep abandoned-cart checkout return button separately. No claim alternate discount applies to existing cart.
 - For alternate promotion, use only verified canonical storefront product URL and independently approved CTA/link text; do not change approved button URL prefix after Meta approval. Require marketing consent/category/merchant permission for cross-sell content; if required permission or approved variant absent, use approved NO_OFFER or typed no-send. No unapproved on-the-fly message body.
-- Optional BG007 image may show checkout item or promoted product only with matching approved IMAGE variant, otherwise approved text-only. Resume checkout uses existing trusted Shopify URL or a **fresh Woo signed restore URL resolved in this task**, as specified next.
-- **Integrate formerly BACKGROUND-006 here:** implement `src/services/woocommerce-recovery/woo-recovery-checkout-url.service.ts` as a narrow caller of API-004 private-only `POST /internal/v1/recovery/restore-link` via Gateway-001 `MODA_RECOVERY_PRIVATE_READ_API_HOSTPORT`. Its strict request body is `{shopId,checkoutRecoveryId,checkoutFingerprint}` loaded from a same-shop persisted recovery; no SHARED-004 HMAC, Redis nonce, direct Woo REST credentials or WordPress call. Validate bounded `{url,expiresAt}`: HTTPS canonical merchant host, exact `/moda-recovery/restore/<opaque-token>` path, no userinfo/fragment/redirect, future expiration <=30 min. Do not store the bearer URL on `CheckoutRecovery`, in `offerSnapshot`, or in any new table, and never log it. The existing `ConversationMessage.content` template-input snapshot may retain the dynamic URL button parameter needed to reconstruct what was actually sent; it is the **only permitted durable copy**, access-controlled under the existing message retention path, and the link must expire within 30 minutes. Resolve it during INITIAL preparation outside SQL permit/billing transactions. If unavailable/unsafe/expired, use an independently approved no-button variant or typed no-send—never substitute a generic `/checkout` URL. Shopify checkout-link behaviour remains unchanged.
+- Optional BG007 image may show checkout item or promoted product only with matching approved IMAGE variant, otherwise approved text-only. For **both Shopify and WooCommerce**, the Resume checkout CTA uses the existing `CheckoutRecovery.checkoutUrl` as supplied by the recovery workflow; ARCH-052 does not generate, refresh, reconstruct or validate checkout URLs.
+- **Checkout URL binding (no new validation or provider/API call):** read `CheckoutRecovery.checkoutUrl` from the recovery already loaded by Background. The field is assumed to be populated upstream for **both platforms**. Pass its exact stored value unchanged to the existing `checkout.url` semantic binding and approved Resume checkout button through the current template-preparation path. **Do not implement a new checkout URL check** of format, `https:` scheme, host/origin, userinfo, fragment, length, Meta URL prefix, expiry or reachability, and do not implement URL-specific invalid/missing fallback branches or tests in ARCH-052. Existing general template approval and delivery behaviour is unchanged; do not add a parallel validator or override the established delivery system. Never synthesize a generic `/checkout` URL, create a Woo restore-link client/service, invoke API-004 or a WordPress restoration endpoint, or construct a link from checkout IDs. No short-lived token, new expiry rule or fresh-link contract is introduced. Do not log the raw URL or copy it into a new policy/offer table or JSON snapshot; existing `ConversationMessage.content` retains its populated button parameter as in the established send path. For `ALTERNATIVE_PRODUCT_PROMOTION`, the separately provider-backed `promotion.productUrl` belongs **only** to its separately approved promotional CTA; never replace the checkout CTA with a product URL. Preserve the checkout CTA independently where both approved buttons exist.
 - The actual prepared template parameters and existing `recoveryPromise` must remain the **single durable source of customer-facing claims** in the confirmed outbound `ConversationMessage.content`, linked through `RecoveryOutreachAttempt.outboundMessageId`. Extend the existing `RecoveryOfferPromise` only to distinguish `ALTERNATIVE_PRODUCT_PROMOTION` and its exact verified discount/product/variant identifiers, title and URL reference as necessary. Do not write or read a second `offerSnapshot.sentOffer` or duplicate policy/offer history. On follow-up, read the confirmed initial outbound message and its persisted parameters/promise; do not infer a promise from merchant settings or merely prepared/unconfirmed messages. Preserve ARCH-046 consent/STOP, moderation, credit/idempotency, human handover and ARCH-050 merchant Support notification.
-- Integration tests for all three merchant modes × two platforms × checkout/alternative/no-offer, changed product/coupon, missing image/category/CTA, approved/non-approved promotion target, marketing refusal, Meta timeout, duplicate queues and credit confirmation.
+- Integration tests for all three merchant modes × two platforms × checkout/alternative/no-offer, changed product/coupon, missing image/category, correct unchanged stored checkoutUrl binding, approved/non-approved promotion target, marketing refusal, Meta timeout, duplicate queues and credit confirmation.
 
 ## Out of Scope
 
@@ -72,18 +71,18 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
-- Provider mutation is prohibited except the customer-initiated Woo cart restoration explicitly owned by WOOCOMMERCE-002.
+- Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
 
 ## Work Items
 
 - [ ] Bind the three trusted offer outcomes into the existing approved template/send flow without a new messaging pipeline.
-- [ ] Implement Woo recovery URL adapter formerly BACKGROUND-006, with precise expiry/host validation and fallback/no-send.
+- [ ] Bind the exact already-stored `CheckoutRecovery.checkoutUrl` for both platforms to the existing approved checkout CTA without added URL validation or URL-specific fallback; prove no link-generation or restore API call occurs.
 - [ ] Extend existing `RecoveryOfferPromise` and persisted `ConversationMessage.content` only as necessary for alternative products, and make follow-up consume the confirmed initial outbound message; never duplicate the same offer into offerSnapshot.
-- [ ] Run two-provider end-to-end initial-send, current-policy-change, unsafe Woo URL, duplicate/idempotency and follow-up integration suites.
+- [ ] Run two-provider end-to-end initial-send, current-policy-change, unchanged checkoutUrl binding, duplicate/idempotency and follow-up integration suites.
 
 ## Interfaces / Contracts
 
-Shared-002 template `promotionTarget`, binding and URL-button contracts; Background-local `InitialOutreachAgentResult`; existing persisted `recoveryPromise`/`ConversationMessage.content` receipt and `RecoveryOutreachAttempt.outboundMessageId`; API-004 strict private restore-link response `{url,expiresAt}`; existing Meta approval, consent, credit and send pipeline unchanged.
+Shared-002 template `promotionTarget`, `checkout.url`/`promotion.productUrl` binding and URL-button contracts; existing `CheckoutRecovery.checkoutUrl` for both platforms; Background-local `InitialOutreachAgentResult`; existing persisted `recoveryPromise`/`ConversationMessage.content` receipt and `RecoveryOutreachAttempt.outboundMessageId`; existing Meta approval, consent, credit and send pipeline unchanged. No API restore-link response or new URL schema.
 
 ## Dependencies
 
@@ -92,7 +91,6 @@ Shared-002 template `promotionTarget`, binding and URL-button contracts; Backgro
 - `ARCH-052-BACKGROUND-007` — must be Complete and architect-accepted before this task starts.
 - `ARCH-052-ADMIN-001` — must be Complete and architect-accepted before this task starts.
 - `ARCH-052-ADMIN-002` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-API-004` — must be Complete and architect-accepted before this task starts.
 - `ARCH-052-GATEWAY-001` — must be Complete and architect-accepted before this task starts.
 
 Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
@@ -106,11 +104,11 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 - [ ] Correct approved text distinguishes discount on abandoned checkout from a separate product offer.
 - [ ] All added promotions have current provider proof, required marketing permissions and valid approved template.
-- [ ] No duplicate send/billing, no unsafe Woo restore links or additional bearer-token persistence and no change to final outbound consent/moderation/admission gates.
+- [ ] No duplicate send/billing, no added checkout URL verification or provider lookup, no checkout URL generation/proxy, no duplicate URL persistence and no change to final outbound consent/moderation/admission gates.
 
 ## Validation
 
-- [ ] Background initial-send unit and PostgreSQL tests (Shopify + Woo, duplicate/retry/provider race, change of merchant settings, initial/follow-up persisted promise, malformed/expired/wrong-shop restore link).
+- [ ] Background initial-send unit and PostgreSQL tests (Shopify + Woo, duplicate/retry/provider race, merchant-setting changes, initial/follow-up persisted promise, unchanged binding of the stored checkoutUrl for both platforms). Assert no checkout URL validation branch, no restore-link API call and no checkout-link provider lookup.
 - [ ] Existing ARCH-047/048/050 admission, moderation, STOP, credit and notification suites.
 - [ ] Background build/lint and `git diff --check`.
 
@@ -127,7 +125,6 @@ After all Work Items, Acceptance Criteria and required Validation pass, complete
 - `moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts`
 - `moda-interact-background/src/services/recovery-template-preparation/`
 - `moda-interact-background/src/services/checkout-recovery/recovery-initiation.service.ts`
-- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-checkout-url.service.ts`
 - `moda-interact-background/src/services/recovery-template-integration/prepared-template-send.ts`
 - `moda-interact-background/src/services/conversation-moderation/automated-template-input.ts`
 - `moda-interact-background/tests/integration/`
