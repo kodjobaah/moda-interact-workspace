@@ -8,4 +8,4 @@ These are portable task definitions, **defined but not materialised**; the indiv
 
 | Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
-| [ARCH-052-GATEWAY-001](GATEWAY-001-configure-private-recovery-product-read-transport.md) | Configure private Shopify proof and direct MCP WooCommerce REST access | Pending | `ARCH-052-COMMERCE-003`, `ARCH-052-API-004`, `ARCH-052-MCP-003`, `ARCH-052-SHARED-003` |
+| [ARCH-052-GATEWAY-001](GATEWAY-001-configure-private-recovery-product-read-transport.md) | Configure private Shopify discount proof and direct MCP Woo REST access | Pending | `ARCH-052-COMMERCE-003`, `ARCH-052-MCP-003`, `ARCH-052-SHARED-003` |

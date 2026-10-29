@@ -60,7 +60,7 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 - Run end-to-end Shopify fixtures for NONE/FIXED/AI and two-stage promotion decisions: checkout coupon qualifies; checkout coupon fails but related alternative product qualifies; only an unrelated product has genuine current offer; none verified; partial catalogue and provider timeouts. Assert exact approved Meta wording distinguishes alternative product from abandoned basket and does not invent an offer.
 - Verify `tools/list` exposes system discount tools only to authorised outreach attempt, while product search tools require active code-published Commerce descriptor, feature entitlement and exact revision; conversation tools remain isolated. Test invalid shop/attempt, revoked tool/grant, selected FIXED IDs only, AI includes unchecked discounts, page two, model invalid/timeout fallback and stale provider proof.
-- For Woo, test **MCP -> live WooCommerce REST** direct product and native coupon-proof traffic with zero requests to hosted Moda API; encrypted grant key rotation, DNS/SSRF rejection, variation image/category/permalink and coupon read-only key, plus customer-click signed restore via separate API flow. For Shopify, test **MCP -> Shopify GraphQL** product search and Commerce private discount proof, including alternative product target.
+- For Woo, test **MCP -> live WooCommerce REST** direct product and native coupon-proof traffic with zero requests to hosted Moda API; encrypted grant key rotation, DNS/SSRF rejection, variation image/category/permalink and coupon read-only key, and no checkout-link generation call to hosted Moda API. For Shopify, test **MCP -> Shopify GraphQL** product search and Commerce private discount proof, including alternative product target.
 - Verify checkout category translation, image optional fallback, per-template purpose+promotionTarget approval, cross-sell consent/category, final STOP/moderation, billing/Meta-confirmed persisted outbound template `recoveryPromise` and linked `outboundMessageId`, duplicate delivery and merchant Support notifications; preserve no-coupon scenario.
 - Exercise provider test sandboxes/simulators and clearly record which externally approved Meta/Store integration checks remain manual; system tests are terminal after all prerequisite implementation tasks are Complete.
 
@@ -77,7 +77,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
-- Provider mutation is prohibited except the customer-initiated Woo cart restoration explicitly owned by WOOCOMMERCE-002.
+- Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
 
 ## Work Items
 

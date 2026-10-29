@@ -32,11 +32,11 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-**SUPERSEDED — DO NOT IMPLEMENT.** WooCommerce resume URL resolution is a narrow part of preparing and sending an initial template, not an independent Background capability. Replacement: BACKGROUND-008 consumes API-004 and owns the trusted checkout-CTA adapter.
+**SUPERSEDED — DO NOT IMPLEMENT.** WooCommerce resume URL resolution is not implemented in ARCH-052: `CheckoutRecovery.checkoutUrl` is assumed to exist before initial outreach. Replacement: BACKGROUND-008 consumes the already-populated `CheckoutRecovery.checkoutUrl` and binds it to the approved checkout CTA; no new adapter/API link issuance is required.
 
 ## Context
 
-`automated-recovery-template.service.ts` currently depends on CheckoutRecovery.checkoutUrl and a five-minute observedAt limit, while Woo admission records `checkoutUrl:null`.
+Under the ARCH-052 Attempt 7 scope, `CheckoutRecovery.checkoutUrl` is an upstream precondition for both platforms. The older Woo `checkoutUrl:null` observation is not a new ARCH-052 work item.
 
 Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
 
@@ -60,7 +60,7 @@ None — superseded.
 
 ## Interfaces / Contracts
 
-No new interface. BACKGROUND-008 consumes API-004 and owns the trusted checkout-CTA adapter.
+No new interface. BACKGROUND-008 consumes existing `CheckoutRecovery.checkoutUrl` for the approved checkout CTA.
 
 ## Dependencies
 
@@ -84,7 +84,7 @@ Do not claim or execute this task. The developer must use the active replacement
 
 ## Implementation Notes
 
-Task intentionally withdrawn during ARCH-052 Attempt 6 review. WooCommerce resume URL resolution is a narrow part of preparing and sending an initial template, not an independent Background capability.
+Task intentionally withdrawn during ARCH-052 Attempt 6 review. WooCommerce resume URL resolution is not implemented in ARCH-052: `CheckoutRecovery.checkoutUrl` is assumed to exist before initial outreach.
 
 ## Completion Report
 

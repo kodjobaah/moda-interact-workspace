@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-SYSTEM-TEST-002
 architecture_id: ARCH-052
-title: Certify Woo initial outreach, native coupon proof and secure cart return
+title: Certify Woo initial outreach, native coupon proof and existing checkout CTA
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -16,10 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-BACKGROUND-008
-- ARCH-052-API-004
 - ARCH-052-GATEWAY-001
 - ARCH-052-WOOCOMMERCE-001
-- ARCH-052-WOOCOMMERCE-002
 - ARCH-052-ADMIN-001
 - ARCH-052-ADMIN-002
 - ARCH-052-SHARED-003
@@ -35,7 +33,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-SYSTEM-TEST-002: Certify Woo initial outreach, native coupon proof and secure cart return
+# ARCH-052-SYSTEM-TEST-002: Certify Woo initial outreach, native coupon proof and existing checkout CTA
 
 ## Architecture
 
@@ -51,7 +49,7 @@ Independently certify WooCommerce initial recovery outreach, built-in MCP discou
 
 ## Context
 
-Woo native coupon validation and signed restoration link are distinct WordPress boundaries that must be validated in the integrated runtime.
+Woo native coupon validation is an ARCH-052 implementation boundary. An already-populated `CheckoutRecovery.checkoutUrl` is assumed to be supplied by the upstream checkout recovery workflow; link generation and customer-click cart restoration are explicitly out of scope.
 
 Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
 
@@ -59,8 +57,8 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 - Run end-to-end WooCommerce fixtures for NONE/FIXED/AI and two-stage promotion decisions: checkout coupon qualifies; checkout coupon fails but related alternative product qualifies; only an unrelated product has genuine current offer; none verified; partial catalogue and provider timeouts. Assert exact approved Meta wording distinguishes alternative product from abandoned basket and does not invent an offer.
 - Verify `tools/list` exposes system discount tools only to authorised outreach attempt, while product search tools require active code-published Commerce descriptor, feature entitlement and exact revision; conversation tools remain isolated. Test invalid shop/attempt, revoked tool/grant, selected FIXED IDs only, AI includes unchecked discounts, page two, model invalid/timeout fallback and stale provider proof.
-- For Woo, test **MCP -> live WooCommerce REST** direct product and native coupon-proof traffic with zero requests to hosted Moda API; encrypted grant key rotation, DNS/SSRF rejection, variation image/category/permalink and coupon read-only key, plus customer-click signed restore via separate API flow. For Shopify, test **MCP -> Shopify GraphQL** product search and Commerce private discount proof, including alternative product target.
-- Verify checkout category translation, image optional fallback, per-template purpose+promotionTarget approval, cross-sell consent/category, final STOP/moderation, billing/Meta-confirmed persisted outbound template `recoveryPromise` and linked `outboundMessageId`, duplicate delivery and merchant Support notifications; preserve no-coupon scenario.
+- For Woo, test **MCP -> live WooCommerce REST** direct product and native coupon-proof traffic with zero requests to hosted Moda API; encrypted grant key rotation, DNS/SSRF rejection, variation image/category/permalink and coupon read-only key, and confirm that initial outreach makes **no** hosted API call for checkout-link generation. For Shopify, test **MCP -> Shopify GraphQL** product search and Commerce private discount proof, including alternative product target.
+- Verify that the already-populated `CheckoutRecovery.checkoutUrl` is bound **unchanged** to the existing approved Resume checkout button for WooCommerce. ARCH-052 adds no checkout URL validation and no URL-specific fallback test; availability and correctness of the stored value belong to the upstream recovery workflow. A separate alternative-product `promotion.productUrl` must never replace the checkout URL. Verify checkout category translation, optional image fallback, per-template purpose+promotionTarget approval, cross-sell consent/category, final STOP/moderation, billing/Meta-confirmed persisted outbound template `recoveryPromise` and linked `outboundMessageId`, duplicate delivery and merchant Support notifications; preserve the no-coupon scenario.
 - Exercise provider test sandboxes/simulators and clearly record which externally approved Meta/Store integration checks remain manual; system tests are terminal after all prerequisite implementation tasks are Complete.
 
 ## Out of Scope
@@ -76,12 +74,12 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
-- Provider mutation is prohibited except the customer-initiated Woo cart restoration explicitly owned by WOOCOMMERCE-002.
+- Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
 
 ## Work Items
 
 - [ ] Add Woo initial-outreach integrated scenarios.
-- [ ] Exercise customer-click restore, expiry, rule failure and credit/STOP matrix.
+- [ ] Exercise unchanged stored checkoutUrl CTA binding, coupon-rule failures and credit/STOP matrix; assert no checkout URL validation, restore-token issuance, private restore-link proxy or customer-click cart-restoration test is required by ARCH-052.
 - [ ] Record reproducible certification and residual external verification.
 
 ## Interfaces / Contracts
@@ -91,10 +89,8 @@ Built-in MCP `commerce_get_discount_options`/`commerce_evaluate_discount`, publi
 ## Dependencies
 
 - `ARCH-052-BACKGROUND-008` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-API-004` — must be Complete and architect-accepted before this task starts.
 - `ARCH-052-GATEWAY-001` — must be Complete and architect-accepted before this task starts.
 - `ARCH-052-WOOCOMMERCE-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-WOOCOMMERCE-002` — must be Complete and architect-accepted before this task starts.
 - `ARCH-052-ADMIN-001` — must be Complete and architect-accepted before this task starts.
 - `ARCH-052-ADMIN-002` — must be Complete and architect-accepted before this task starts.
 - `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
@@ -116,12 +112,12 @@ None.
 
 - [ ] Every WooCommerce offer advertised has contemporaneous checkout or alternative-product provider proof.
 - [ ] Direct MCP product search needs no hosted Moda API call.
-- [ ] Initial outreach keeps original safety, credit and idempotent send behavior across 3 modes.
+- [ ] Initial outreach passes the existing recovery checkout URL unchanged into the approved template, keeps original consent, credit and idempotent send behavior across 3 modes, and adds no checkout URL validation, link generation or API proxy.
 
 ## Validation
 
 - [ ] System-test harness with WordPress/WooCommerce, Postgres/Redis and Meta simulator.
-- [ ] Woo Classic/Blocks/browser integration plus `git diff --check`.
+- [ ] Woo Classic/Blocks recovery fixtures with pre-populated checkout URL, exact CTA binding and `git diff --check`; no customer-click restoration implementation/certification in ARCH-052.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
