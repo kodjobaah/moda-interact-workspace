@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-10-29T20:22:59Z
@@ -93,7 +93,7 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Validation
 
-- [ ] Shopify catalogue and reinstall service unit/integration tests; provider unavailable and sync race cases.
+- [x] Shopify catalogue and reinstall service unit/integration tests; provider unavailable and sync race cases.
 - [ ] Background test/build/lint according to package.json, `git diff --check`.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
@@ -116,7 +116,19 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Ready for Review — Attempt 1 implementation complete; PostgreSQL integration execution remains environment-blocked.
+Ready for Review — Attempt 2 completed the requested report corrections and passed the PostgreSQL lifecycle integration suite. No implementation service changes were needed.
+
+### Prepared Execution Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Task definition status from the prepared launcher: materialized.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-009`, branch `task/ARCH-052-BACKGROUND-009`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-009`, branch `task/ARCH-052-BACKGROUND-009`.
+- Shared workspace checkout switched or mutated for task work: no. Shared implementation checkout switched or mutated for task work: no. Another task worktree reused: no.
+- Parent task branch fast-forward from origin task branch: not needed. Parent `origin/main` incorporated: already current. Parent start head: `e24fa08e9bbdfe77e559cb916d46211c0dcf8ef6`.
+- Implementation branch fast-forward from origin task branch: not needed. Implementation `origin/main` incorporated: already current. Implementation start head: `086d35c7c3b91d7dd79c855045107fe72f93d185`.
+- `git submodule sync --recursive`: passed. `git submodule update --init --recursive`: passed. `database` was initialized at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+- Attempt 2 claim was committed and pushed by the launcher as `d7979909d79aa685ac6b2a38d53a40a5b848fe3d`.
 
 ### Files Changed
 
@@ -139,13 +151,14 @@ Ready for Review — Attempt 1 implementation complete; PostgreSQL integration e
 - Passed: `npm run build` (Prisma client generation and TypeScript build).
 - Passed: ESLint on all five changed Background files.
 - Passed: `git diff --check`.
-- Not run successfully: `npm run test:arch052-shopify-discount-selection:postgres`; the harness stopped before tests because `docker` is not installed or available in PATH (`spawn docker ENOENT`), and no local PostgreSQL/container runtime is available.
-- Repository-wide `npm test` completed with 280 test files passing and 22 failing (3,044 tests passing and 64 failing). Failures are outside the changed files; observed causes include unavailable Redis/database services, Prisma client setup in unit suites, and logger/fixture expectation mismatches.
-- Repository-wide `npm run lint` reports one existing error in `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); the changed files pass lint.
+- Passed on Attempt 2: `npm run test:arch052-shopify-discount-selection:postgres` (2 tests), covering initial unchecked rows, full resync selection retention, disappearance, missing scope/UNAVAILABLE catalogue, provider eligibility, no-contract reinstall, and a stale concurrent sync response.
+- Passed on Attempt 2: ESLint on the corrected PostgreSQL integration test and `git diff --check`.
+- Attempt 1 repository-wide `npm test` completed with 280 test files passing and 22 failing (3,044 tests passing and 64 failing). Failures are outside the changed files; observed causes include unavailable Redis/database services, Prisma client setup in unit suites, and logger/fixture expectation mismatches. It was not rerun on Attempt 2 because only the integration test clock expectation and this report changed.
+- Attempt 1 repository-wide `npm run lint` reported one issue in untouched `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); changed-file lint passed. The repository-wide lint script was not rerun on Attempt 2.
 
 ### Deviations
 
-The required real PostgreSQL test suite was added but could not be executed in this environment because Docker and local PostgreSQL are unavailable. The repository-wide test and lint failures are recorded above and were not changed because they are unrelated to this task.
+The first PostgreSQL attempt exposed a test assertion that incorrectly equated `unavailableAt` with the requested sync time. The assertion now verifies the persisted timestamp is retained across later lifecycle transitions; the final disposable PostgreSQL run passed. The repository-wide test and lint failures are recorded above and were not changed because they are unrelated to this task.
 
 ### Assumptions
 
@@ -153,7 +166,7 @@ Provider liveness and catalogue availability remain represented by provider meta
 
 ### Unresolved Issues
 
-The PostgreSQL integration scenarios need execution in an environment with Docker and the disposable `pgvector/pgvector:pg17` harness available.
+None for this task. The Docker CLI at `/usr/local/bin/docker` was missing from the test shell's `PATH`; the active Colima Docker daemon was available, and the required PostgreSQL suite passed after adding the CLI directory to `PATH`.
 
 ### Architectural Concerns
 
