@@ -4,7 +4,7 @@ title: Database-managed platform configuration (simplified)
 status: agreed
 coordinator: moda_architect
 created: 2026-10-17
-updated: 2026-10-17
+updated: 2026-10-28
 ---
 
 # ARCH-043: Database-managed platform configuration (simplified)
@@ -15,7 +15,7 @@ updated: 2026-10-17
 
 ### 28 October 2026 — Messaging-only `messaging.meta` runtime consumer (controlling decision)
 
-The developer now **authorises one new Messaging repository task**: `ARCH-043-MESSAGING-001`, with canonical definition at `docs/decisions/messaging/ARCH-043/MESSAGING-001-database-backed-meta-webhook-credentials.md`. This **supersedes earlier 17 October prohibitions** on the Messaging runtime `messaging.meta` integration, but **only for this exact purpose**. All earlier comments stating “no Messaging integration/cutover” are historical and no longer controlling for `messaging.meta` once the new task is implemented. The existing Admin writer and Database table remain unchanged. The task is defined but **not materialised** in the developer's Git workspace.
+The developer now **authorises one new Messaging repository task**: `ARCH-043-MESSAGING-001`, with canonical definition at `docs/decisions/messaging/ARCH-043/MESSAGING-001-database-backed-meta-webhook-credentials.md`. This **supersedes earlier 17 October prohibitions** on the Messaging runtime `messaging.meta` integration, but **only for this exact purpose**. All earlier comments stating “no Messaging integration/cutover” are historical and no longer controlling for `messaging.meta` once the new task is implemented. The existing Admin writer and Database table remain unchanged. The task was initially defined portably, then materialised and executed in its canonical task worktrees. Its current lifecycle state is recorded in the individual task YAML; it is Ready for the validation correction described in its Architect Review.
 
 **Agreed scope:** one purpose-bound server-only PostgreSQL reader inside `moda-interact-messaging`, strict local v1 envelope/AAD parsing and `{appSecret,verifyToken}` validation, only the existing published ARCH-039 Shared cryptography/logger, `GET /webhook/whatsapp` token verification and `POST /webhook/whatsapp` HMAC authentication, no old Meta environment-secret fallback or per-request credential caching. Implementation may add `pg` to Messaging and tests; no Prisma/schema checkout. **Do not define any new Shared primitive, package version, publication task or change to Background/Admin/API/Database or Gateway code as part of this task.**
 
