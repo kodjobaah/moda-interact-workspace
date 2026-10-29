@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: codex
-claimed_at: 2026-10-29T22:12:51Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -27,7 +27,7 @@ updated: 2026-10-29
 
 Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`.
 
-Portable task definition: **defined but not materialised**. No developer branch/worktree, commit or push is asserted.
+Task definition: **materialised and executed** through the canonical launcher-resolved parent and Shared worktrees. The Completion Report records the prepared packet evidence.
 
 ## Objective
 
@@ -58,10 +58,10 @@ Current Admin source (`src/lib/admin/whatsapp-templates/authoring/types.ts`) and
 
 ## Work Items
 
-- [ ] Create `moda-interact-shared/src/recovery-template-bindings.ts` with the complete schema below.
-- [ ] Register `recovery-template-bindings` in `tsup.config.ts` and `package.json` exports as shown below.
-- [ ] Add `src/recovery-template-bindings.test.ts` covering the fixtures below and unchanged old keys.
-- [ ] Run Shared declared validation and verify that the entrypoint is browser-safe.
+- [x] Create `moda-interact-shared/src/recovery-template-bindings.ts` with the complete schema below.
+- [x] Register `recovery-template-bindings` in `tsup.config.ts` and `package.json` exports as shown below.
+- [x] Add `src/recovery-template-bindings.test.ts` covering the fixtures below and unchanged old keys.
+- [x] Run Shared declared validation and verify that the entrypoint is browser-safe.
 
 ## Interfaces / Contracts
 
@@ -210,17 +210,17 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] The exact module and package subpath exist; all current semantic variables and ShopBrand roles remain accepted.
-- [ ] Both illustrative projections parse, and unknown variable names, unknown keys, wrong `promotionTarget` values and noninteger positions fail structural parsing.
-- [ ] A structurally valid but semantically wrong pairing such as `promotionTarget: "ALTERNATIVE_PRODUCT"` with a `checkout.url` button is **not** rejected by Zod; Admin/Background business checks must reject it in their implementation tasks.
-- [ ] No `checkout.url` URL validation is added; Shared preserves only the literal binding identifier.
-- [ ] No `.refine()`, `.superRefine()`, `.transform()` or `.check()` is used for business rules.
+- [x] The exact module and package subpath exist; all current semantic variables and ShopBrand roles remain accepted.
+- [x] Both illustrative projections parse, and unknown variable names, unknown keys, wrong `promotionTarget` values and noninteger positions fail structural parsing.
+- [x] A structurally valid but semantically wrong pairing such as `promotionTarget: "ALTERNATIVE_PRODUCT"` with a `checkout.url` button is **not** rejected by Zod; Admin/Background business checks must reject it in their implementation tasks.
+- [x] No `checkout.url` URL validation is added; Shared preserves only the literal binding identifier.
+- [x] No `.refine()`, `.superRefine()`, `.transform()` or `.check()` is used for business rules.
 
 ## Validation
 
-- [ ] `npm run typecheck`, `npm test`, `npm run build` in Shared, with actual command/result evidence.
-- [ ] Positive/negative structural fixtures plus browser-safe entrypoint import check.
-- [ ] `git diff --check`; confirm no cross-repository code edits or new persistence.
+- [x] `npm run typecheck`, `npm test`, `npm run build` in Shared, with actual command/result evidence.
+- [x] Positive/negative structural fixtures plus browser-safe entrypoint import check.
+- [x] `git diff --check`; confirm no cross-repository code edits or new persistence.
 
 ## Stop Condition
 
@@ -234,35 +234,60 @@ The schema source, JSON field names and package export above are the proposed no
 
 ### Status
 
-Not Started — portable definition, no task claim.
+Ready for Review — Attempt 1 implemented the structural binding contract and passed all declared validation.
+
+### Prepared Execution Evidence
+
+- Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+- Task definition was materialized.
+- Parent task worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHARED-002, branch task/ARCH-052-SHARED-002; created for this attempt.
+- Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHARED-002, branch task/ARCH-052-SHARED-002; created for this attempt.
+- Shared workspace checkout switched or mutated for task work: no. Shared implementation checkout switched or mutated for task work: no. Another task worktree reused: no.
+- Parent task branch fast-forward from origin: not needed. Parent origin/main incorporated: already current. Parent start head: 71cf6915ff1a17911d10252e1aacd670c97f3bc5.
+- Implementation task branch fast-forward from origin: not needed. Implementation origin/main incorporated: already current. Implementation start head: b4ebb52a2b5ae931b78983c1b1b800cf7e6b579e.
+- Recursive submodule sync and update-init both passed; the Shared repository has no submodule entries.
+- Attempt 1 claim was committed and pushed by the launcher as 612260e0141f6458d3f733aa25647b8ae98a24a9.
+- Implementation repository commit: 2e86537 (task(ARCH-052-SHARED-002): add recovery template binding contract), pushed to origin/task/ARCH-052-SHARED-002.
 
 ### Files Changed
 
-None yet.
+- moda-interact-shared/src/recovery-template-bindings.ts
+- moda-interact-shared/src/recovery-template-bindings.test.ts
+- moda-interact-shared/tsup.config.ts
+- moda-interact-shared/package.json
 
 ### Work Completed
 
-None yet.
+- Added the exact task-defined strict Zod schemas and inferred TypeScript types for semantic keys, promotion target, header media roles, text bindings, URL-button bindings, and frozen binding projections.
+- Preserved all prior semantic keys and ShopBrand roles and added the specified checkout-item and alternative-promotion keys.
+- Added tests for both illustrative projections, legacy projections with optional fields omitted, unknown keys and variables, invalid targets, noninteger positions and button indexes, and a structurally valid target/button mismatch.
+- Kept Zod limited to structure. It performs no target compatibility, offer semantics, media approval, parameter ordering, checkout URL inspection, or other business-rule checks. Admin and Background remain the intended consumer repositories for their own policy enforcement.
+- Registered the dedicated package subpath in tsup and package exports. No root API, persistence, or consumer repository changes were made.
 
 ### Validation Results
 
-Not run.
+- Passed: npm run typecheck.
+- Passed: npm test — 381 tests, 380 passed, 1 skipped, 0 failed.
+- Passed: npm run build, including the new dist/recovery-template-bindings.js and declaration output.
+- Passed: imported the built public subpath @modainteract/moda-interact-shared/recovery-template-bindings and parsed an exported semantic key.
+- Passed: bundled dist/recovery-template-bindings.js with esbuild using platform=browser, confirming the built entrypoint resolves for browser use.
+- Passed: git diff --check.
 
 ### Deviations
 
-None reported.
+The initial typecheck could not find tsc because the newly created worktree had no node_modules. The exact package-lock dependencies were installed from the local npm cache with npm ci --offline; typecheck, tests, and build then passed. No dependency manifest or lockfile change resulted.
 
 ### Assumptions
 
-Execution will verify its current workspace, source state, dependency versions and test harness.
+Admin and Background will consume the published Shared subpath in their separately assigned implementation tasks. Optional promotionTarget and headerMediaRole preserve existing projection compatibility as specified.
 
 ### Unresolved Issues
 
-None established by implementation.
+None.
 
 ### Architectural Concerns
 
-Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
+None.
 
 
 ## Architect Review
