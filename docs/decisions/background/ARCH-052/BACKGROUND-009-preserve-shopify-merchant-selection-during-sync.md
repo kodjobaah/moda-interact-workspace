@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: codex
-claimed_at: 2026-10-29T21:12:10Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
@@ -94,7 +94,7 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 ## Validation
 
 - [x] Shopify catalogue and reinstall service unit/integration tests; provider unavailable and sync race cases.
-- [ ] Background test/build/lint according to package.json, `git diff --check`.
+- [x] Background test/build/lint according to package.json, git diff --check; repository-wide failures were compared with the pre-task revision and all are identical.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
@@ -116,7 +116,7 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Ready for Review — Attempt 2 completed the requested report corrections and passed the PostgreSQL lifecycle integration suite. No implementation service changes were needed.
+Ready for Review — Attempt 3 reconciled repository-wide test and lint results against the pre-task revision. No implementation service changes were needed.
 
 ### Prepared Execution Evidence
 
@@ -215,6 +215,97 @@ Return this same task to `ready`, clear `executor` and `claimed_at`, preserve `a
 2. If any failure is new or task-related, correct it within this task's scope or return the exact issue to moda_architect if it crosses ownership. Then update the Validation checklist and Completion Report accurately; do not mark a failed or unrun command as passing.
 
 The PostgreSQL integration and worktree/materialisation corrections are accepted as evidence and need not be repeated unless relevant code or environment changes.
+
+### Attempt 3 Completion Report
+
+#### Prepared Execution and Synchronization Evidence
+
+- The parent task branch contains the Attempt 3 claim commit a12157db2e581cef75a04974edfae7ac4d5264ef, pushed to origin/task/ARCH-052-BACKGROUND-009. Its parent/start commit is 59bccbdf4, which incorporated the resolved origin/main index merge. The task's remote branch was already synchronized at that start state.
+- Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-009, branch task/ARCH-052-BACKGROUND-009. Parent origin/main was incorporated at the start state.
+- Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-009, branch task/ARCH-052-BACKGROUND-009, start head a5be659 (Fix Shopify selection integration timestamp assertion). Its local task branch matched origin/task/ARCH-052-BACKGROUND-009; origin/main at f80d916 was already an ancestor.
+- The launcher returned TASK_NOT_READY because the task was already in_progress for codex; it did not emit a prepared packet on this invocation. The above history and branch state are recorded directly from the two canonical task worktrees. Recursive submodule status remains at the recorded database gitlink f16d5fc955b1fa1215177cc89fb6fd326bfa65c8; Attempt 2's prepared packet recorded recursive submodule sync/update as passed.
+- Shared workspace and implementation checkouts were not switched for task work. No other task worktree was reused.
+
+#### Validation Results
+
+- npm test on the submitted task branch: 20 test files failed, 282 passed; 64 tests failed, 3,079 passed (3,143 total).
+- Compared with the pre-task Background revision f80d916 in an isolated source snapshot, using Node v24.19.0, npm 11.17.0, the same installed node_modules, the same package-lock.json SHA-256 (e3880239dde01b5979419c9db42232d6c8568df5d1985beacd9d51683bf85ac7), the same database gitlink (f16d5fc955b1fa1215177cc89fb6fd326bfa65c8), and DATABASE_URL=postgresql://localhost/test, REDIS_URL=redis://localhost: the baseline also had 20 failing files, 282 passing files, 64 failing tests and 3,079 passing tests. A sorted comparison of all 64 failure identities produced no differences. The earlier Attempt 1 count of 22 failing files was from before Prisma Client generation; this equivalent post-build comparison supersedes it.
+- Exact failing test identities present on both pre-task and submitted revisions:
+
+~~~text
+tests/unit/commerce/model-bridge-diagnostics.test.ts > ARCH-029 model bridge diagnostics > identifies the exact production_model_invoke phase without logging the raw exception
+tests/unit/commerce/model-bridge-diagnostics.test.ts > ARCH-029 model bridge diagnostics > identifies the exact response_postprocess phase without logging the raw exception
+tests/unit/commerce/model-bridge-diagnostics.test.ts > ARCH-029 model bridge diagnostics > identifies the exact turn_state_check phase without logging the raw exception
+tests/unit/runtime/entrypoint-isolation.test.ts > production worker entrypoints > wires bounded Shared logging for scheduled billing failures
+tests/unit/services/billing-reconciliation/reconciliation-scheduler.service.test.ts > BillingReconciliationSchedulerService > keeps periodic reconciliation successful when queue publication fails
+tests/unit/services/billing-reconciliation/same-plan-period-progression.service.test.ts > SamePlanPeriodProgressionService > isolates recovery-capacity resume failure after a committed paid rollover
+tests/unit/services/billing-subscription-reconciliation/established-plan-change-reconciliation.service.test.ts > EstablishedPlanChangeReconciliationService > keeps a successful plan transition when capacity resume enqueue fails
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > does not execute an unrelated SYNC_ERROR as an established plan change
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: enabled Free pack meter null
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: enabled Paid pack meter null
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: invalid cycle
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: missing cycle
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: missing normal Paid meter config
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: negative Paid allowance
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: non-integer Paid allowance
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: null Paid allowance
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: provider omits Free pack meter
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: provider omits Paid pack meter
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: provider omits normal Paid meter
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > fails established queued plan change closed for invalid target prerequisite: unsafe Paid allowance
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > retries established plan changes from retryable SYNC_ERROR: INVALID_INCLUDED_ALLOWANCE
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > retries established plan changes from retryable SYNC_ERROR: MISSING_BILLING_CYCLE
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > retries established plan changes from retryable SYNC_ERROR: MISSING_USAGE_METER
+tests/unit/services/billing-subscription-reconciliation/facade-established-plan-transition.test.ts > BillingSubscriptionReconciliationService > retries established plan changes from retryable SYNC_ERROR: UNEXPECTED_IMMEDIATE_PLAN_CHANGE
+tests/unit/services/checkout-recovery/recovery-capacity-resume-processor.service.test.ts > RecoveryCapacityResumeProcessorService > requeues an early targeted wake-up while the original suppression block write is pending
+tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts > RecoveryOutreachFinalizationService initial Support notice wiring > logs the billing stage and rethrows the exact error
+tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts > RecoveryOutreachFinalizationService initial Support notice wiring > logs the follow-up stage and rethrows the exact error
+tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts > RecoveryOutreachFinalizationService initial Support notice wiring > logs the notice stage and rethrows the exact error
+tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts > RecoveryOutreachFinalizationService initial Support notice wiring > logs the recovery status stage and rethrows the exact error
+tests/unit/services/conversation-wrappers/service.test.ts > ARCH-047 BG005 selection and facade > logs exceptions through shared-logger interface and rethrows, never swallows
+tests/unit/services/matured-candidate.materialization.test.ts > CheckoutRecoveryService.materializeMaturedCandidate > admits the fifth Free recovery and blocks the next distinct recovery before send
+tests/unit/services/matured-candidate.materialization.test.ts > CheckoutRecoveryService.materializeMaturedCandidate > allows paid recovery beyond included units and does not repeat a duplicate send
+tests/unit/services/matured-candidate.materialization.test.ts > CheckoutRecoveryService.materializeMaturedCandidate > allows provider-check-required templates to reach the provider
+tests/unit/services/matured-candidate.materialization.test.ts > CheckoutRecoveryService.materializeMaturedCandidate > creates a recovery from current Shopify data when the lookup is found and recoverable
+tests/unit/services/matured-candidate.materialization.test.ts > CheckoutRecoveryService.materializeMaturedCandidate > materializes a token-only candidate after stale activity fills its lookup hints
+tests/unit/services/matured-candidate.materialization.test.ts > CheckoutRecoveryService.materializeMaturedCandidate > never uses the candidate's embedded webhook basket data for recovery fields
+tests/unit/services/matured-candidate.materialization.test.ts > CheckoutRecoveryService.materializeMaturedCandidate > persists a truthful descriptor for a selected non-English template
+tests/unit/services/matured-candidate.materialization.test.ts > CheckoutRecoveryService.materializeMaturedCandidate > uses current CustomerPhone when the checkout snapshot has no phone
+tests/unit/services/matured-candidate.materialization.test.ts > CheckoutRecoveryService.materializeMaturedCandidate > uses merchant defaults only when current and event context are absent
+tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts > OutboundMessageDeliveryService > converges synchronous 131026 through compensation and reachability owners
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > activates a native App Pricing purchase only for its derived context identity
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > activates a zero-cost purchase when quantity proof is exact
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > activates distinct event-handle candidates independently
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > activates one equivalent provider-confirmed unit deterministically
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > activates sequential purchases with the same event handle from successive baselines
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > does not alter an activated purchase when a later plan handle is observed
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > does not derive the stored purchase amount from a plan price
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > does not grant twice when the provider quantity is replayed
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > proves a candidate from its exact snapshot handle and supports fractional baselines
+tests/unit/services/recovery-credit-purchase.service.test.ts > RecoveryCreditPurchaseService > runs activation at Serializable isolation with the aggregate grant in the same transaction
+tests/unit/services/recovery-offers/recovery-offer-ai.test.ts > ARCH-047-BACKGROUND-004 AI-only and read-only behaviour > logs and propagates unexpected AI exceptions instead of silently swallowing them
+tests/unit/services/recovery-offers/recovery-offer-resolver.test.ts > ARCH-047-BACKGROUND-004 FIXED/NONE recovery offers > logs unexpected database/provider exceptions without sensitive error messages and rethrows
+tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts > ARCH-047 BACKGROUND-001: reusable, read-only recovery template preparation > logs every handled binding exception and rethrows unexpected provider/database errors
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts > ShopifySubscriptionLifecycleReconciliationService > does not add a second Paid grant after BACKGROUND-007 restoration
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts > ShopifySubscriptionLifecycleReconciliationService > restores an unfrozen subscription only from live same-cycle evidence
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts > ShopifySubscriptionLifecycleReconciliationService > restores changed mapped plan through BACKGROUND-010 exactly once
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts > ShopifySubscriptionLifecycleReconciliationService > restores later same-plan Free cycle without resetting lifetime Free
+tests/unit/services/shopify-subscription-lifecycle-reconciliation.service.test.ts > ShopifySubscriptionLifecycleReconciliationService > restores later same-plan Paid cycle through BACKGROUND-007 exactly once
+tests/unit/services/translation-batch-assembly.service.test.ts > TranslationBatchAssemblyService > commits the durable batch before requesting submit work
+tests/unit/services/translation-batch-assembly.service.test.ts > TranslationBatchAssemblyService > keeps the committed batch durable when submit enqueue fails
+tests/unit/services/translation-batch-assembly.service.test.ts > TranslationBatchAssemblyService > returns idempotently when no eligible translation is available
+tests/unit/services/translation-reconciliation.service.test.ts > ARCH-043 support translation credential revocation > fails before provider construction when Commerce credentials are revoked despite a valid legacy OPENAI_API_KEY
+tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts > ARCH-048-BACKGROUND-004 WooRecoveryOutreachService > keeps an unknown provider timeout visible and never blindly retries
+tests/unit/workers/shopify-discount-sync.worker.test.ts > Shopify discount sync worker logging > logs bounded worker-level errors
+~~~
+
+- npm run lint on the submitted branch and at f80d916 each reported exactly one error: src/services/translation-reconciliation.service.ts:218, rule preserve-caught-error. The file is byte-identical to the pre-task revision and is outside the task diff.
+- Targeted ESLint on all four changed TypeScript source/test files passed. git diff --check f80d916..HEAD passed.
+- npm run build passed during Attempt 1; no production source changed in Attempts 2 or 3. Attempt 2's PostgreSQL lifecycle integration also passed (2 tests), and the focused unit coverage remains 10 passing tests.
+
+#### Validation Disposition
+
+The repository-wide failures and lint diagnostic are identical on the pre-task and submitted revisions under equivalent conditions. No task-caused failure or worsening was found. The Validation checkbox is marked complete to record that required validation was executed and reconciled; the baseline failures remain visible above rather than being represented as passing.
 
 ### Attempt 1 Architect Review — Changes Requested
 
