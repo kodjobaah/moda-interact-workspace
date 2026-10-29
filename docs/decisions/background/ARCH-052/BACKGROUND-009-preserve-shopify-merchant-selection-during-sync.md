@@ -130,7 +130,7 @@ Ready for Review — Attempt 1 implementation complete; PostgreSQL integration e
 
 - Shopify sync now creates new provider rows with `isAvailable: false` and omits the flag from existing-row updates. Disappearance and unavailable-catalogue handling still set `unavailableAt` and retain their existing catalogue status transitions without changing merchant selection.
 - No-contract reinstall still invalidates the catalogue and stamps `unavailableAt`; it no longer clears merchant selection. The focused unit assertion verifies that only the unavailable timestamp update remains.
-- Audited Background `shopifyDiscount` writes: Shopify sync is the only Background path writing `isAvailable`, and it writes false only in the upsert create branch. Woo sync still creates unchecked rows and omits the flag from updates. Existing merchant selection mutations remain in the authenticated merchant settings API; the current API selection writer is principal-scoped and Woo-only. No Background writer changes an existing merchant choice.
+- Audited Background `shopifyDiscount` writes: Shopify sync is the only Background path writing `isAvailable`, and it writes false only in the upsert create branch. Woo sync still creates unchecked rows and omits the flag from updates. No Background writer changes an existing merchant choice. The current API selection writer is authenticated and Woo-scoped; Shopify selection changes remain owned by the authenticated settings/API implementation.
 - Added disposable PostgreSQL integration coverage for new-row defaults, selection surviving a full sync, a new discount remaining unchecked, disappearance, missing `read_discounts` scope and `UNAVAILABLE` catalogue state, provider-status eligibility, no-contract reinstall, and a stale concurrent sync response.
 
 ### Validation Results
@@ -140,7 +140,7 @@ Ready for Review — Attempt 1 implementation complete; PostgreSQL integration e
 - Passed: ESLint on all five changed Background files.
 - Passed: `git diff --check`.
 - Not run successfully: `npm run test:arch052-shopify-discount-selection:postgres`; the harness stopped before tests because `docker` is not installed or available in PATH (`spawn docker ENOENT`), and no local PostgreSQL/container runtime is available.
-- Repository-wide `npm test` completed with 280 test files passing and 22 failing (3,044 tests passing and 64 failing). Failures are outside the changed files and include missing Redis/database services and existing logger/fixture expectation failures.
+- Repository-wide `npm test` completed with 280 test files passing and 22 failing (3,044 tests passing and 64 failing). Failures are outside the changed files; observed causes include unavailable Redis/database services, Prisma client setup in unit suites, and logger/fixture expectation mismatches.
 - Repository-wide `npm run lint` reports one existing error in `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); the changed files pass lint.
 
 ### Deviations
