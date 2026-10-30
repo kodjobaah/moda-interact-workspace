@@ -154,7 +154,7 @@ The launcher preparation packet is authoritative for worktree, synchronization, 
 
 ### Unresolved Issues
 
-The implementation branch has not been published. Its configured origin is `https://github.com/kodjobaah/moda-interact-background.git`; the task parent origin is `https://github.com/kodjobaah/moda-interact-workspace.git`. The implementation commit remains local pending authorization. No publish attempt or workaround was made in this task. The parent report update is being committed locally; task status therefore remains `in_progress`.
+The implementation branch has not been published. Its configured origin is `https://github.com/kodjobaah/moda-interact-background.git`; the task parent origin is `https://github.com/kodjobaah/moda-interact-workspace.git`. The implementation commit remains local pending authorization. No publish attempt or workaround was made in this task. The parent report is committed locally but unpublished; task status therefore remains `in_progress`.
 
 ### Git / VCS Evidence
 
@@ -166,7 +166,7 @@ Physical worktree isolation:
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-010` / `task/ARCH-048-BACKGROUND-010`
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-010` / `task/ARCH-048-BACKGROUND-010`
 - Both worktrees were newly created for this task; no other task worktree was reused.
-- Shared workspace and implementation source checkouts were not switched or mutated for task implementation; no submodule gitlink was staged.
+- The shared workspace and implementation source checkouts were not switched. The task worktree reused the implementation checkout's ignored `node_modules` through a local symlink; Prisma client generation updated only that ignored dependency output, and no tracked source files changed. No submodule gitlink was staged.
 
 Start-of-attempt synchronization:
 
@@ -177,7 +177,7 @@ Start-of-attempt synchronization:
 
 Implementation repository: commit `753c17184347215dd309e2f9bb74dc09e4820676`; origin `https://github.com/kodjobaah/moda-interact-background.git`; task branch push pending authorization.
 
-Parent workspace: this task file is updated on `task/ARCH-048-BACKGROUND-010`; origin `https://github.com/kodjobaah/moda-interact-workspace.git`; report commit is local and not pushed. No submodule gitlink is staged.
+Parent workspace: this task file is committed locally on `task/ARCH-048-BACKGROUND-010`; origin `https://github.com/kodjobaah/moda-interact-workspace.git`; report commit is not pushed. No submodule gitlink is staged.
 
 Neither task branch has been merged to `main`.
 
