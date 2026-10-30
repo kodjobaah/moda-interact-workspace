@@ -17,7 +17,7 @@ attempt: 1
 depends_on: ["ARCH-049-ADMIN-001"]
 enables: ["ARCH-049-BACKGROUND-002"]
 created: 2026-10-25
-updated: 2026-10-27
+updated: 2026-10-28
 ---
 
 # Normalise trusted brand sources and upload verified R2 derivatives
@@ -78,7 +78,7 @@ Require HTTPS, no credentials in URL, max 3 redirects, 10-second total fetch, 10
 
 ### R3. R2 configuration and writes
 
-Read `shopBrand.publicMedia` through the Background platform configuration reader, preserving Admin's default/no-write-on-read semantics. Worker-only environment settings are **exactly** `SHOPBRAND_R2_ENDPOINT`, `SHOPBRAND_R2_ACCESS_KEY_ID`, `SHOPBRAND_R2_SECRET_ACCESS_KEY`; missing/malformed values fail protected operations closed. Use S3-compatible `PutObjectCommand`/`HeadObjectCommand` or compatible existing adapters with the configured bucket. Key pattern: `shop-brands/<shopId>/<role-lowercase>/sha256-<64lowerhex>.<jpg|png>`; set immutable cache headers. Never put original images/private customer files in this public bucket. Store no secrets in logs or public URLs; `merchant.knowledge.r2` stays private and unchanged.
+Read `shopBrand.publicMedia` through the Background platform configuration reader, preserving Admin's default/no-write-on-read semantics. Worker-only environment settings are **exactly** `SHOPBRAND_R2_ENDPOINT`, `SHOPBRAND_R2_ACCESS_KEY_ID`, `SHOPBRAND_R2_SECRET_ACCESS_KEY`; missing/malformed values fail protected operations closed. Use S3-compatible `PutObjectCommand`/`HeadObjectCommand` or compatible existing adapters with the configured bucket. Key pattern: `shop-brands/<normalized-Shop.domain>/<role-lowercase>/sha256-<64lowerhex>.<jpg|png>`. An absolute URL contributes only its parsed `hostname`; a safe bare value is preserved verbatim, including a single label. For example, `https://example.com` and `example.com` map to `example.com`, and `example` maps to `example`. Reject unsafe bare values; the final segment permits only ASCII letters, digits, dot, underscore and hyphen, excludes `.` and `..`, and is at most 253 characters. URL credentials, path, query and fragment never enter the key. Admin constructs the same key from the current raw domain. Shop-id and old base64url keys remain stale and become current only after Background successfully reprocesses and verifies the image; an existing readable raw-domain key is already canonical. Set immutable cache headers. Never put original images/private customer files in this public bucket. Store no secrets in logs or public URLs; `merchant.knowledge.r2` stays private and unchanged.
 
 ### R4. Public readiness prerequisite
 

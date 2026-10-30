@@ -64,7 +64,7 @@ With a short PostgreSQL row lock, check observed ordering and previous source va
 
 ### R2. Work claim and completion
 
-Claim one `(shopId,role,generation,fingerprint)` with expiring lease; write work.status PROCESSING and lease fields atomically. Run BG001 outside transactions. Publish READY only on matching current generation/fingerprint and claim. Store object key/contentType/output dimensions/bytes/digest/verifiedAt. Stale results do not update current READY, but immutable R2 objects need not be immediately deleted. On permanent failure set FAILED without retryAt; on transient failure increment attempts and schedule 1m, 5m, 30m, 2h, 24h with a max five attempts per generation. Reclaim expired leases.
+Claim one `(shopId,role,generation,fingerprint)` with expiring lease; write work.status PROCESSING and lease fields atomically. Capture the raw current `Shop.domain` in the claim; lock/read the Shop row with the ShopBrand row when claiming and when completing/failing so a result for a previous domain cannot be committed after a rename. Run BG001 outside transactions. Publish READY only on matching current generation/fingerprint, raw domain and claim. Store object key/contentType/output dimensions/bytes/digest/verifiedAt. Stale results do not update current READY, but immutable R2 objects need not be immediately deleted. On permanent failure set FAILED without retryAt; on transient failure increment attempts and schedule 1m, 5m, 30m, 2h, 24h with a max five attempts per generation. Reclaim expired leases.
 
 ### R3. Durable due scanner
 
