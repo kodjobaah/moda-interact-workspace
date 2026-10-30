@@ -216,8 +216,8 @@ Individual task YAML is authoritative. Current snapshot includes accepted Comple
 | [ARCH-052-SHARED-008](../decisions/shared/ARCH-052/SHARED-008-define-product-search-and-alternative-promotion-contracts.md) | `moda_shared` | Complete | — |
 | [ARCH-052-SHARED-009](../decisions/shared/ARCH-052/SHARED-009-define-discount-discovery-and-product-identity-contracts.md) | `moda_shared` | Complete | — |
 | [ARCH-052-SHARED-010](../decisions/shared/ARCH-052/SHARED-010-publish-discount-discovery-contract-update.md) | `moda_shared` | Complete | `ARCH-052-SHARED-009` |
-| [ARCH-052-SHARED-011](../decisions/shared/ARCH-052/SHARED-011-define-discount-combinations-and-outreach-offer-sets.md) | `moda_shared` | Ready (after SHARED-010) | `ARCH-052-SHARED-010` |
-| [ARCH-053-SHARED-003](../decisions/shared/ARCH-053/SHARED-003-extend-v1-confirmed-woo-offer-group-contract.md) | `moda_shared` | Pending | `ARCH-052-SHARED-011` |
+| [ARCH-052-SHARED-011](../decisions/shared/ARCH-052/SHARED-011-define-discount-combinations-and-outreach-offer-sets.md) | `moda_shared` | Complete | `ARCH-052-SHARED-010` |
+| [ARCH-053-SHARED-003](../decisions/shared/ARCH-053/SHARED-003-extend-v1-confirmed-woo-offer-group-contract.md) | `moda_shared` | Ready | `ARCH-052-SHARED-011` |
 | [ARCH-052-SHARED-012](../decisions/shared/ARCH-052/SHARED-012-publish-multi-discount-and-woo-v1-contract-update.md) | `moda_shared` | Pending | `ARCH-052-SHARED-011`, `ARCH-053-SHARED-003` |
 | [ARCH-052-BACKGROUND-013](../decisions/background/ARCH-052/BACKGROUND-013-capture-complete-shopify-combination-identities.md) | `moda_background` | Pending | `ARCH-052-BACKGROUND-011` |
 | [ARCH-052-ADMIN-003](../decisions/admin/ARCH-052/ADMIN-003-author-multi-discount-checkout-template-bindings.md) | `moda_admin` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-ADMIN-002` |
