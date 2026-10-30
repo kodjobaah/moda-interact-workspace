@@ -156,26 +156,36 @@ None discovered.
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review
 
-Pending.
+#### Review Status
 
-### Review Notes
+Changes Requested.
 
-Planning only; no source implementation accepted.
+#### Review Notes
 
-### Reviewed Files
+The implementation otherwise follows the task scope: it formats persisted, tenant-scoped Shopify and WooCommerce line items, binds the existing Shared `checkout.itemsSummary` key, uses configured shop display name with a safe domain fallback, preserves the existing translated category binding, and fails closed for missing or malformed basket facts.
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+One customer-visible issue remains in `src/services/recovery-template-preparation/recovery-template-items-summary.ts`: the remainder suffix is hard-coded as `more` while the number formatting and list conjunction use the selected locale. The French fixture currently expects `et 1 more`, demonstrating mixed-language output. Localize the remainder label or use a language-neutral marker, and add an assertion that verifies the localized or neutral result.
 
-### Validation Reviewed
+#### Reviewed Files
 
-None for implementation.
+- Attempt 1 Completion Report, task YAML, Work Items, Acceptance Criteria and Validation.
+- Background implementation branch `task/ARCH-052-BACKGROUND-005` at `c463c15d6e3dd0ff0b2eaad4d4bf9e1fc3741c72`, clean and pushed.
+- `src/services/recovery-template-preparation/recovery-template-items-summary.ts`.
+- `src/services/recovery-template-preparation/recovery-template-brand.ts`.
+- `src/services/recovery-template-preparation/recovery-template-preparer.service.ts` and `recovery-template.types.ts`.
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts`.
+- Related unit and PostgreSQL integration tests.
 
-### Architecture Conformance
+#### Validation Reviewed
 
-To be determined after implementation review.
+Reviewed the recorded focused unit tests (30), disposable PostgreSQL integration (1), build, changed-file lint and `git diff --check`. No tests were rerun for this review.
 
-### Follow-up
+#### Architecture Conformance
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+The implementation respects the task's saved-facts, tenant-isolation, approved-template and fail-closed boundaries. Acceptance is withheld only for the locale inconsistency in the “and N more” suffix.
+
+#### Follow-up
+
+Correct the remainder suffix and locale coverage, then resubmit this task for review. Keep `ARCH-052-BACKGROUND-008` blocked on this prerequisite until the review is accepted.
