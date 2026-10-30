@@ -21,6 +21,7 @@ created: '2026-10-29'
 updated: 2026-10-29
 ---
 
+
 # ARCH-052-SHARED-006: Define the minimal outreach MCP execution-context contract
 
 ## Architecture
