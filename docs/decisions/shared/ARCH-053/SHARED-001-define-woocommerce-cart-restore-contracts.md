@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: codex
 claimed_at: 2026-10-30T12:57:23Z
@@ -77,12 +77,12 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Work Items
 
-- [ ] Create `src/woocommerce/contracts.ts` with the exact version constants, literal unions, line schema, supported/unsupported snapshot schemas, outreach-offer union, extension schema and single v1 resolver schemas/types below.
-- [ ] Export precisely those schemas/types from `src/woocommerce/index.ts` and publish the browser-safe `./woocommerce` subpath through `tsup.config.ts` and `package.json`.
-- [ ] Create the exact JSON fixture structure described below in `src/woocommerce/__fixtures__/woo-restore-v1.json`; expose it under `./woocommerce/fixtures` without embedding customer data or bearer secrets from a real installation.
-- [ ] Add passing structural parsing tests for the supported/unsupported snapshots, v1 checkout restoration extension, resolver v1 request/response, all four outreach-offer variants, and deterministic JSON round trip.
-- [ ] Add rejecting tests for missing/extra fields, forbidden `lines`/`reason` cross-variant fields, invalid IDs and quantities, overlong/too-many attributes/coupons, missing coupon list, bad token, invalid outreach-offer variants and any v2 resolver schemaVersion.
-- [ ] Validate package `build`, `typecheck`, focused Shared unit tests, built ESM `./woocommerce` export from the package and JSON fixture package inclusion; report exact commands in Completion Report.
+- [x] Create `src/woocommerce/contracts.ts` with the exact version constants, literal unions, line schema, supported/unsupported snapshot schemas, outreach-offer union, extension schema and single v1 resolver schemas/types below.
+- [x] Export precisely those schemas/types from `src/woocommerce/index.ts` and publish the browser-safe `./woocommerce` subpath through `tsup.config.ts` and `package.json`.
+- [x] Create the exact JSON fixture structure described below in `src/woocommerce/__fixtures__/woo-restore-v1.json`; expose it under `./woocommerce/fixtures` without embedding customer data or bearer secrets from a real installation.
+- [x] Add passing structural parsing tests for supported/unsupported snapshots, checkout extension, resolver request/response, all outreach-offer variants and deterministic JSON round trips.
+- [x] Add rejecting tests for required missing/extra fields, mutually exclusive variants, ID/quantity bounds, attribute/coupon bounds, token/version errors, invalid offers and forbidden v2 resolver.
+- [x] Validate package build, typecheck, full and focused tests, built ESM export and packed fixture inclusion. No package publication was performed.
 
 ## Interfaces / Contracts
 
@@ -368,23 +368,25 @@ None — independently executable after materialisation / launcher gate.
 
 ## Acceptance Criteria
 
-- [ ] The exact declarations and inferred TS types above compile in `src/woocommerce/contracts.ts`; importing `@modainteract/moda-interact-shared/woocommerce` after build provides all named exports without pulling in `node:crypto`, Prisma, BullMQ, WordPress or a service-local logger.
-- [ ] Supported snapshot: `schemaVersion`, `kind`, full `appliedCouponCodes` and 1..50 complete `lines` are mandatory. A plain simple line and a variation line with `attributes` parse; no display price, PII or extra fields are accepted in restore lines.
-- [ ] Unsupported snapshot: exact enumerated `reason` and bounded coupon array are mandatory; `lines` is forbidden. Supported snapshot with `reason` and unsupported snapshot with `lines` both fail.
-- [ ] Empty `appliedCouponCodes` on **supported** proves Woo reported none; a missing coupon list never silently defaults to `[]`. `kind:'unsupported'` with `reason:'COUPONS_UNAVAILABLE'` never becomes restorable even when its bounded array is empty.
-- [ ] Resolver request accepts only schemaVersion, opaque recoveryId and 43-character base64url token; positive response accepts only eligible status, same required IDs, `snapshot.kind:'supported'` and a **required** strictly typed `outreachOffer`. Denial/invalid token/expired-generation logic remains API-owned, not fabricated in Shared.
-- [ ] Checkout extension with no `restoration` parses without creating a snapshot, and a v1 extension containing the supported/unsupported snapshot parses unchanged.
-- [ ] Golden fixture has all five exact keys and round trips with the appropriate canonical Shared schemas, including `outreachOfferExamples` for NONE, CHECKOUT_CODE, CHECKOUT_AUTOMATIC and ALTERNATIVE_PRODUCT.
-- [ ] Boundary rejection tests cover missing coupon list, >10 coupons, empty/over-50 lines, invalid product/variation IDs, zero/fractional/overlarge quantity, >10 attribute entries, control/overlong characters, wrong enum/version/token, missing outreachOffer, extra/PII fields, automatic offer with code, alternative-product with code, incomplete CHECKOUT_CODE, invalid provider ID, and v2 resolver requests.
-- [ ] No Zod coupon eligibility/stacking/expiry policy, WordPress runtime imports, duplicated API identity/contact schemas, v2 resolver, package publishing, new discount discovery or changes to ARCH-052.
+- [x] Exact declarations and inferred types compile and are exported from the browser-safe WooCommerce package subpath without Node-only imports.
+- [x] Supported snapshots require schema version, kind, complete coupon list and 1–50 strict lines; display fields and unknown keys are rejected.
+- [x] Unsupported snapshots require an enumerated reason and bounded coupon list and forbid lines; supported/unsupported variants remain mutually exclusive.
+- [x] Empty supported coupon lists parse as an explicit known-empty list; unsupported coupon-unavailable snapshots remain unsupported.
+- [x] Resolver request and eligible response accept only the exact v1 fields, supported snapshot and mandatory strict outreach offer.
+- [x] The checkout extension supports absent/optional restoration without creating a default snapshot.
+- [x] The five-key fixture round-trips through the applicable schemas, including all outreach-offer examples.
+- [x] Boundary rejection coverage includes IDs, quantities, attributes, coupons, controls/lengths, version/token, required/extra fields, offer variant combinations and PII-shaped extras.
+- [x] No business eligibility rules, Node-only imports, resolver v2, package version change, publication, ARCH-052 changes or consumer implementation were added.
 
 ## Validation
 
-- [ ] In `moda-interact-shared`, run exact declared scripts `npm run typecheck`, `npm test`, `npm run build` (per inspected `package.json`); use the task's canonical Node bootstrap policy when required.
-- [ ] Run `src/woocommerce/contracts.test.ts` with the repository's installed test runner, covering all passing/failing examples above; report exact command/result.
-- [ ] After build, ESM import smoke check of the compiled `./dist/woocommerce/index.js` exports and `.d.ts` existence. Verify a packed artifact contains `src/woocommerce/__fixtures__/woo-restore-v1.json` and package `./woocommerce/fixtures` export (do NOT publish).
-- [ ] Verify no unrelated bundle/entrypoint has gained Node-only modules or unwanted re-exports; `git diff --check` and only the allowed Shared files + task Completion Report are modified.
-- [ ] If the dependency tree cannot support exact structural validation, do not invent a competing rule or omit a required check: report the limitation to the architect and stop.
+- [x] `npm run typecheck` — passed.
+- [x] `./node_modules/.bin/tsx --test src/woocommerce/contracts.test.ts` — 8 passed, 0 failed.
+- [x] `npm test` — 394 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is not configured.
+- [x] `npm run build` — passed; ESM and declaration outputs include `dist/woocommerce/index.js` and `.d.ts`.
+- [x] Built package self-import smoke test — all expected public runtime exports present; fixture schemas parse; bundle has no Node-only imports.
+- [x] `npm pack --dry-run --json --ignore-scripts` with a task-local temporary npm cache — passed; package contains the fixture and exact `./woocommerce` exports.
+- [x] `git diff --check` — passed. No package publication or system/integration test was run because this task owns Shared wire contracts only.
 
 ## Stop Condition
 
@@ -404,35 +406,78 @@ The source package `package.json` currently has `version: 2.5.1` and no `./wooco
 
 ### Status
 
-Not Started
+Ready for Review.
 
 ### Files Changed
 
-None — portable task definition only.
+- `src/woocommerce/contracts.ts`
+- `src/woocommerce/index.ts`
+- `src/woocommerce/contracts.test.ts`
+- `src/woocommerce/__fixtures__/woo-restore-v1.json`
+- `tsup.config.ts`
+- `package.json`
 
 ### Work Completed
 
-Not Started.
+Implemented the exact strict v1 restoration snapshot, checkout extension, resolver request/eligible response, and confirmed-outreach-offer schemas with inferred TypeScript types. Exported them through the browser-safe WooCommerce subpath and added the canonical five-key synthetic fixture. Added structural positive, negative, bounds, strictness, and round-trip coverage.
+
+The offer schema describes already-confirmed offer data only; it does not validate business eligibility or infer offers from original coupons. No checkout event, identity, contact, phone proof, consumer code, database object, ARCH-052 contract, package version change, or publication was added.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+- Node 24.19.0 via `scripts/bootstrap-node.sh`; package scripts from the Shared repository's `package.json`.
+- `npm run typecheck`: passed.
+- `./node_modules/.bin/tsx --test src/woocommerce/contracts.test.ts`: 8 passed.
+- `npm test`: 394 passed, 0 failed, 1 skipped (`TEST_REDIS_URL` is not configured).
+- `npm run build`: passed, including ESM and declaration output for the new subpath.
+- Built ESM self-import smoke test: passed; checked the complete runtime export list, parsed the fixture with the published schemas, verified `dist/woocommerce/index.d.ts`, and found no Node-only imports in the Woo entrypoint.
+- `npm pack --dry-run --json --ignore-scripts`: passed using `/tmp/arch053-shared001-npm-cache`; verified the fixture is included and both package export mappings match the required paths.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None.
+The task worktree had no local `node_modules`; validation used an ignored symlink to the existing Shared dependency cache, without changing dependency manifests or lockfiles. The default npm cache contained root-owned files, so the package dry-run used a temporary cache under `/tmp`. The full test suite's single skipped Redis test is conditional on `TEST_REDIS_URL`; no Redis integration environment was configured.
+
+The launcher marked an architect-review rework flag because an Architect Review section exists; that section was read in full and says Pending / Not Reviewed, with no Changes Requested items.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+The existing package version was already `2.6.0`; it was preserved. Package versioning and publication belong to SHARED-002 after architect acceptance.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+None.
 
 ### Architectural Concerns
 
-Return any cross-service schema/provider/transaction concern to `moda_architect` before improvising.
+None. The task's Architecture paragraph still carries portable/non-materialised snapshot wording; launcher preparation is the authoritative evidence that this task was materialised, claimed and prepared. That architecture paragraph was outside this task's editing authority.
+
+### Git / VCS
+
+Task branch: `task/ARCH-053-SHARED-001`.
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-SHARED-001`, branch `task/ARCH-053-SHARED-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-SHARED-001`, branch `task/ARCH-053-SHARED-001`.
+- Shared checkouts switched/mutated: no. Another task worktree reused: no.
+
+Start-of-attempt synchronization and submodules (from launcher packet):
+- Parent remote task branch fast-forwarded: not needed; parent `origin/main` already incorporated.
+- Implementation remote task branch fast-forwarded: not needed; implementation `origin/main` already incorporated.
+- Recursive `git submodule sync`: passed. Recursive `git submodule update --init`: passed. Submodule entries: none.
+
+Implementation repository:
+- Commit: `3bffadc4ad20ca2910ff4c7e2257e6fa732140de`.
+- Remote branch: `origin/task/ARCH-053-SHARED-001`; push pending.
+
+Parent workspace:
+- Task file: `docs/decisions/shared/ARCH-053/SHARED-001-define-woocommerce-cart-restore-contracts.md`.
+- Claim commit: `da1df065e3c33357336d55ca197ed18826975add` (launcher-pushed).
+- Review report commit: to be recorded after commit; remote branch push pending.
+- Submodule gitlink staged: no.
+
+Merged to implementation `main`: no. Merged to workspace `main`: no.
 
 ## Architect Review
 
