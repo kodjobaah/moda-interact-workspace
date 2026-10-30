@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
 executor: codex
 claimed_at: 2026-10-30T11:53:20Z
@@ -33,7 +33,7 @@ Architecture ID: `ARCH-048`.
 
 Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`.
 
-Coordinator: `moda_architect`. **Defined but not materialised**. Start only when BG007–BG010 are each architect-accepted Complete and launcher preparation resolves dedicated parent/implementation worktrees.
+Coordinator: `moda_architect`.
 
 ## Objective
 
@@ -72,13 +72,13 @@ No new public API, WordPress plugin changes, Woo checkout-state read, new worker
 
 ## Work Items
 
-- [ ] Finalize BG007 staged local TypeScript contracts to **required** generation, admission provenance and settlement members; remove implicit generation=1 job-ID default and fix typed fixtures.
-- [ ] Update `onCheckout` for `resumed` settlement and proven `repair-existing-initial` only.
-- [ ] Update maturity dispatch for `created` and `already-exists.repairInitial` exact-generation cases.
-- [ ] Wire BG007's generation job identity/index ownership to maturity worker and `clearMatured`.
-- [ ] Preserve Woo order routing and Shopify source isolation in all worker entrypoints.
-- [ ] Implement multi-service crash/retry, provider fence, generation 2 initial, queue-index and order racing tests.
-- [ ] Document observed rollout/queue state and Completion Report; stop for architect review.
+- [x] Finalize BG007 staged local TypeScript contracts to **required** generation, admission provenance and settlement members; remove implicit generation=1 job-ID default and fix typed fixtures.
+- [x] Update `onCheckout` for `resumed` settlement and proven `repair-existing-initial` only.
+- [x] Update maturity dispatch for `created` and `already-exists.repairInitial` exact-generation cases.
+- [x] Wire BG007's generation job identity/index ownership to maturity worker and `clearMatured`.
+- [x] Preserve Woo order routing and Shopify source isolation in all worker entrypoints.
+- [x] Implement multi-service crash/retry, provider fence, generation 2 initial, queue-index and order racing tests.
+- [x] Document observed rollout/queue state and Completion Report; stop for architect review.
 
 ## Interfaces / Contracts
 
@@ -100,20 +100,20 @@ No new public API, WordPress plugin changes, Woo checkout-state read, new worker
 
 ## Acceptance Criteria
 
-- [ ] Resumption event cannot enqueue old recovery, and cleanup failure retries without creating a third generation.
-- [ ] Generation 2 matures with latest items and enqueues only its own initial (test-only enabled); generation 1's sent billing/history is untouched.
-- [ ] Admission-origin crash replay repairs only same-generation pending initial; arbitrary `already-exists` or late old maturity never sends.
-- [ ] Old job cleanup never drops new generation index; generation-bearing candidate is **required in the final TypeScript contract**, type-checked/validated at the worker, and all new creators/fixtures supply generation explicitly.
-- [ ] Shopify, unknown-source and Woo candidate routing remain strictly isolated.
-- [ ] STOP, missing/revoked consent, known order, ambiguity, disabled production outbound and Woo no-follow-up policy remain in effect.
-- [ ] All technical exceptions preserve retry evidence and are logged; no custom logging framework or unowned files modified.
+- [x] Resumption event cannot enqueue old recovery, and cleanup failure retries without creating a third generation.
+- [x] Generation 2 matures with latest items and enqueues only its own initial (test-only enabled); generation 1's sent billing/history is untouched.
+- [x] Admission-origin crash replay repairs only same-generation pending initial; arbitrary `already-exists` or late old maturity never sends.
+- [x] Old job cleanup never drops new generation index; generation-bearing candidate is **required in the final TypeScript contract**, type-checked/validated at the worker, and all new creators/fixtures supply generation explicitly.
+- [x] Shopify, unknown-source and Woo candidate routing remain strictly isolated.
+- [x] STOP, missing/revoked consent, known order, ambiguity, disabled production outbound and Woo no-follow-up policy remain in effect.
+- [x] All technical exceptions preserve retry evidence and are logged; no custom logging framework or unowned files modified.
 
 ## Validation
 
-- [ ] `npx vitest run` selected Woo orchestrator/worker/entrypoint unit suites.
-- [ ] `node scripts/test-integration.mjs tests/integration/woo-recovery-composed-services.integration.test.ts tests/integration/woo-recovery-worker-wiring.integration.test.ts tests/integration/woo-recovery-worker-faults.integration.test.ts tests/integration/woo-recovery-shopify-legacy.integration.test.ts` (run separately if required by runner).
-- [ ] Full applicable Woo checkout/order/admission/outreach regression tests after dependencies merge; no system-test execution at this task.
-- [ ] `npm run build`, focused `npm run lint` as available, `git diff --check`; record exact environment/command evidence.
+- [x] Selected Woo orchestrator/worker unit suites: 49 passed. Broader Woo recovery unit set: 317 passed, one pre-existing BG009 logging assertion failed because it expects a raw database error message while the service intentionally emits `PERSISTENCE_FAILURE`.
+- [x] `node scripts/test-integration.mjs tests/integration/woo-recovery-composed-services.integration.test.ts tests/integration/woo-recovery-worker-wiring.integration.test.ts tests/integration/woo-recovery-worker-faults.integration.test.ts tests/integration/woo-recovery-shopify-legacy.integration.test.ts`: 4 files, 9 tests passed.
+- [x] Applicable Woo checkout/order/admission/outreach regression tests: 6 files, 31 tests passed. No system-test execution.
+- [x] `npm run build` passed; focused ESLint and `git diff --check` results recorded below.
 
 ## Stop Condition
 
@@ -127,31 +127,74 @@ The launcher must prepare matching mirrored `task/ARCH-048-BACKGROUND-011` branc
 
 ### Status
 
-Not Started — portable, not materialised.
+Ready for Review.
 
 ### Files Changed
 
-None.
+Implementation is limited to the permitted Background contract bridge, Woo recovery orchestration/composition, pending candidate worker, and related Woo unit/integration/typecheck fixtures. No BG007–BG010 business-service behavior, database schema, other repository, architecture document, index, or system-test source was changed.
 
 ### Work Completed
 
-None.
+- Required generation and admission provenance at compile time; required resumed-outreach settlement; made the candidate job ID require explicit generation.
+- Resumption awaits settlement and never enqueues the old generation. Admission-origin repair is the only checkout replay that may enqueue initial outreach, and it is gated by the exact event outcome. Matured candidates enqueue only the exact created recovery or a proven same-generation repair.
+- Matured candidate cleanup verifies Woo source, shop, checkout, generation, event, activity time, and job identity while holding the checkout lock, then uses compare-and-remove so an older completion cannot erase a successor index.
+- The worker validates Woo v2 identity and generation, keeps unmarked Shopify materialisation isolated, and rejects unknown source markers.
+- Added composed real-service coverage that resumes generation 1, stages/matures generation 2 with the latest basket, sends its own initial under test-only enablement, and verifies generation 1 history/billing remains intact. Added cleanup race/retry and worker-routing coverage.
+- Rollout strategy for test/staging: before upgrading candidate consumers, stop/drain the Woo candidate queue and let known test/staging Woo jobs complete or explicitly recreate only disposable `source: "woocommerce"` candidate jobs from current committed activity. Record affected Woo job IDs/counts. Preserve all unmarked Shopify queue entries, all other queue entries, and every PostgreSQL recovery, attempt, message, status-history and reservation row. Resume consumers only after the new worker is installed and verify generation-bearing Woo jobs are being consumed. Do not delete/recreate production queue data; if any live old-format Woo candidate is present, block rollout and request an architect-authored compatibility plan.
 
 ### Validation Results
 
-Not run.
+- `./node_modules/.bin/tsc --noEmit -p tests/typecheck/tsconfig.arch048-bg006.json` — passed.
+- Focused Woo unit suites — 49 passed. Broader Woo recovery unit selection — 317 passed, 1 failed on existing BG009 redaction expectation (`connection unavailable` expected versus `PERSISTENCE_FAILURE` emitted); no assertion points to changed BG011 behavior.
+- Four required composed integration suites (composed services, worker wiring, worker faults, Shopify legacy) — 4 files / 9 tests passed using Colima.
+- Woo checkout activity, recovery admission, admission races, initial outreach, consent reader, and order capture regression set — 6 files / 31 tests passed using Colima.
+- `npm run build` — passed.
+- Focused ESLint over changed production and test files — passed.
+- `git diff --check` — passed.
+- Runtime: Node 24.19.0, npm 11.17.0, Colima-backed disposable PostgreSQL/Redis integration harness. No system test, live sender activation, deployment, or production queue operation was performed.
 
 ### Deviations
 
-None.
+One unrelated existing BG009 unit assertion fails in the broader unit selection because it expects the unredacted raw database error string. No change was made to BG009-owned implementation or tests. The first regression integration attempt was denied access to Colima's Docker socket by the sandbox; the same suites were rerun with approved access and passed.
 
 ### Assumptions
 
-Only source snapshot dated 2026-10-29; branch merge and live deployment state must be verified by the launcher/developer.
+Launcher confirmed BG007–BG010 dependencies complete and available at the prepared implementation base; test/staging queue instructions above assume a controlled maintenance window with known disposable Woo candidate events.
 
 ### Unresolved Issues
 
-None at definition time.
+The broader selected unit suite retains the unrelated BG009 redaction assertion mismatch described above. Architect review should decide whether that pre-existing test needs reconciliation.
+
+### Git / VCS
+
+Task branch: `task/ARCH-048-BACKGROUND-011`.
+
+Physical worktree isolation:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-011`, branch `task/ARCH-048-BACKGROUND-011`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-011`, branch `task/ARCH-048-BACKGROUND-011`.
+- Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+
+Start-of-attempt synchronization evidence:
+
+- Parent task branch claim was already at the remote claim commit `e4cf6bc5050bb78c8c670beddeb68adfd3059711`; no remote task fast-forward was needed. At implementation start, its history did not yet include the then-current `origin/main` tip, which advanced with unrelated ARCH-052 task commits. The latest `origin/main` will be merged into the parent task branch at review submission and recorded in this report.
+- Implementation task branch started at `86d9736727a8527bcdf0b271593575f39e7e6950`, equal to its `origin/main` base; no remote task fast-forward was needed and `origin/main` was already included.
+
+Implementation repository:
+
+- Commit: `fd780e32e9a3f3f22940f58f9e10678d85bfd1af`.
+- Remote branch: `origin/task/ARCH-048-BACKGROUND-011`.
+- Push: blocked by automatic approval review. The reviewer stated that publishing the private implementation branch exports repository contents to the configured remote and the user had not explicitly authorized that destination or disclosure. No workaround or retry was attempted.
+
+Parent workspace:
+
+- Task file: `docs/decisions/background/ARCH-048/BACKGROUND-011-compose-multi-generation-woo-recovery-workers.md`.
+- Commit: to be recorded after the parent report commit.
+- Remote branch: `origin/task/ARCH-048-BACKGROUND-011`; the prepared claim commit is published. The review-report push is subject to the same explicit destination approval boundary.
+- Submodule gitlink staged: no.
+
+Merged to implementation `main`: no. Merged to workspace `main`: no.
 
 ### Architectural Concerns
 
@@ -161,7 +204,7 @@ Event-only Woo capture cannot discover a never-delivered checkout/order change; 
 
 ### Review Status
 
-Pending.
+Pending architect review.
 
 ### Review Notes
 
