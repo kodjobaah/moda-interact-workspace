@@ -474,7 +474,7 @@ Implementation repository:
 Parent workspace:
 - Task file: `docs/decisions/shared/ARCH-053/SHARED-001-define-woocommerce-cart-restore-contracts.md`.
 - Claim commit: `da1df065e3c33357336d55ca197ed18826975add` (launcher-pushed).
-- Review report commit: `fb7435d7dda2e214d941fa0c32f7c7b724fef572`; latest local parent branch commit: `eb27ae1160bbe50845d92c0f20f2d123f62ab88d`. Remote branch remains at the launcher-published claim until explicit authorization permits publication.
+- Review report commit: `fb7435d7dda2e214d941fa0c32f7c7b724fef572`; subsequent local commits record branch evidence and the approval block. The remote branch remains at the launcher-published claim pending explicit authorization.
 - Submodule gitlink staged: no.
 
 Merged to implementation `main`: no. Merged to workspace `main`: no.
