@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-MCP-001
 architecture_id: ARCH-052
-title: Authorize outreach-scoped built-in discount tools and published product tools
+title: Authorize purpose-scoped MCP commerce tools for initial outreach
 task_kind: implementation
 domain: mcp
 repository: moda-interact-mcp
@@ -25,7 +25,7 @@ created: '2026-10-29'
 updated: '2026-10-29'
 ---
 
-# ARCH-052-MCP-001: Authorize outreach-scoped built-in discount tools and published product tools
+# ARCH-052-MCP-001: Authorize purpose-scoped MCP commerce tools for initial outreach
 
 ## Architecture
 
@@ -33,54 +33,74 @@ Architecture ID: `ARCH-052`.
 
 Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 
-Coordinator: `moda_architect`. Portable canonical definition: **defined but not materialised**; no developer worktree, branch, commit or push has occurred.
+Coordinator: `moda_architect`. Portable canonical definition: **defined but not materialised**; no developer worktree, branch, commit or push is asserted.
 
 ## Objective
 
-Add a trusted `INITIAL_RECOVERY_OUTREACH` attempt identity to the existing private MCP request context; **system-defined** discount tools are authorised by validated recovery/attempt policy, while published product tools still obey the Commerce release/capability registry.
+Authorise the `INITIAL_RECOVERY_OUTREACH` **purpose** within MCP's existing private, shop-scoped tool-discovery and execution boundary. The purpose is **not** a recovery/attempt identity: Background is responsible for admission of the actual recovery attempt. Continue existing release/feature authorisation for published product tools and add narrowly scoped system-owned discount tools.
 
 ## Context
 
-`moda-interact-mcp/src/mcp/authentication.ts` already parses `X-Moda-Commerce-Context` and passes an opaque `toolContext`; `src/runtime/execution-registry.ts` reloads published shop capability/release before each tools/call. Neither currently authorises an initial recovery attempt against the shop's **current** discount settings for built-in discount operations.
-
-Source evidence: `moda-interact-workspace(20261029-080732).zip`. This task changes documentation in the parent only until materialised by the developer.
+`moda-interact-mcp/src/mcp/authentication.ts` already receives an authenticated private-ingress top-level `shopId` and optional opaque `toolContext` via `X-Moda-Commerce-Context`. The Shared-006 schema now contains only `purpose`. MCP already has Prisma access for current shop, merchant discount settings, catalogue and selected flags. The Background recovery workflow owns the checkout, attempt, consent/STOP and final-send lifecycle; it passes checkout context to the agent without making MCP an outreach lifecycle manager.
 
 ## Scope
 
-- Extend `src/mcp/authentication.ts`, `src/mcp/service.ts`, `src/mcp/registration.ts`, `src/mcp/snapshot.ts` with strict validated `CommerceOutreachToolContextSchema` purpose; never accept `shopId`, policies or product credentials from model tool arguments. Re-read shop, CheckoutRecovery and RecoveryOutreachAttempt by shopId+IDs and current merchant mode, selected `ShopifyDiscount.isAvailable` rows and effective override on every tools/list and tools/call; require attempt initial-send eligible, merchant active, no STOP/withdrawal and recovery fingerprint fresh.
-- Add a guarded *system capability* projection for built-in `commerce_get_discount_options` and `commerce_evaluate_discount` to existing MCP advertised snapshot and executor dispatch only for this purpose. These tools do not need Commerce Studio drafts, release pointers or capability membership; they must still be unavailable for unscoped/conversation/bad-auth contexts. Published product tools `commerce_search_products` and `commerce_get_product` remain subject to their immutable release/feature entitlement and pin.
-- Validate tools/call against the exact tools/list snapshot and recheck policy just before execution; prevent replay, cross-tenant selected-set expansion, admin override mixing and spoofed conversation assertions. Preserve existing Commerce conversation tools/list, grant handling and `runCommerceTurn` behavior unchanged.
-- Security tests: NONE -> zero discount tools, FIXED selected IDs only, AI all provider-current candidates (not unchecked flag), expired attempt and revoked merchant/shop, wrong environment, malicious toolContext, unauthenticated header, disabled published tool and concurrent policy edit rejects a now-unauthorised offer and makes the next tool call use fresh settings.
+- Parse the **existing** private MCP context, requiring `CommerceOutreachToolContextSchema` only for outreach-purpose tool access. The exact `toolContext` is `{ purpose: "INITIAL_RECOVERY_OUTREACH" }`. The authenticated outer context supplies `shopId` and environment; never accept those from model-authored tool arguments.
+- At `tools/list` and `tools/call`, use shop-scoped Prisma reads to enforce **current merchant discount policy** and selected discount permissions: mode NONE advertises no built-in discount tools; FIXED limits discount results/evaluation to selected `ShopifyDiscount.isAvailable=true` IDs (or an effective, current, exact-ID admin override); AI considers provider-current catalogue irrespective of merchant selection flags. Recheck merchant policy on calls so a changed selection is not usable through an old tool-list snapshot.
+- Preserve tool-list/call parity, existing shop/tenant isolation, published product release/feature membership, descriptor pinning, existing private-ingress authentication and typed failures. Built-in `commerce_get_discount_options` / `commerce_evaluate_discount` are not Commerce Studio published tools; only the trusted outreach purpose exposes them.
+- **Do not query `CheckoutRecovery` or `RecoveryOutreachAttempt` as an MCP authorisation precondition.** Do not require a recovery ID, attempt ID, checkout fingerprint or conversation lease in the generic `toolContext`. Background owns recovery/attempt checks and final-send admission.
+- Reject an invalid/untrusted context or tool request without leaking data; preserve current conversational CommerceAgent tool behaviour and isolate purpose-only built-in tools from conversational callers.
 
 ## Out of Scope
 
-- No new database tables/columns, policy snapshot or duplicate recovery-offer engine, unrelated UI, provider writes, or changes outside this repository and its own task report.
+- No new database state, frozen policy, HMAC framework, recovery/attempt replay-store, synthetic conversation, provider writes or new MCP success/error envelope.
+- Do not implement MCP-002 discount catalogue/proof algorithms, MCP-003 provider product search, or Commerce Studio product descriptor authoring in this task.
+- SHARED-005 provider-proof messages are distinct from the generic MCP `toolContext`; this task does not change that proof schema or authorise model-generated recovery/attempt identity fields.
 
 ## Requirements
 
-- Re-read canonical task, parent architecture, dependency task files, `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md` and launcher preparation evidence before claiming. Use launcher-resolved **dedicated mirrored parent and implementation worktrees**, not a shared checkout.
-- Use the existing `@modainteract/moda-interact-shared/logging` API for new Node logs; unexpected exceptions are logged with bounded reason codes and propagated to the owning retry boundary. No silent exception swallowing, competing generic logger or secret-bearing diagnostic body.
-- Never log customer PII, coupon codes, complete checkout URLs, product-image origins, provider responses, credentials or raw MCP context headers.
-- Provider operations are read-only. No applying/creating coupons or mutating carts/orders except the separate customer-initiated Woo restore flow.
-- Pre-production breaking cutover: **no legacy/outdated attempt parsing, old tool-version adapter, backfill or new Prisma schema**. Missing required configuration fails closed. One released Shared version and actual published Commerce capability revision must be in use; no direct sibling imports.
-
+- Use the existing `@modainteract/moda-interact-shared/commerce` published `CommerceOutreachToolContextSchema`, not a local duplicate. The context is a structural discriminator, not a business grant.
+- MCP independently enforces trusted outer-shop identity, current shop settings and permitted tool capability. Valid purpose text alone must not bypass existing private-ingress or tenant checks.
+- No `CheckoutRecovery`/`RecoveryOutreachAttempt` lookup or attempt expiry/checkout-fingerprint check in MCP's generic tool-list/call authorisation. Those remain Background's responsibility.
+- Preserve existing authentication of private ingress and published-tool entitlement, and fail closed on missing/malformed context, revoked merchant settings or unavailable configuration.
+- Follow dedicated mirrored task-worktree, launcher packet and Completion Report requirements (`docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`). Use `@modainteract/moda-interact-shared/logging` for new Node logs, emit bounded identifiers/reason codes, and propagate unexpected exceptions; never log raw context headers, credentials, customer data, coupon codes or full checkout URLs.
+- Read-only commerce operations; no cart/order mutation and no new legacy compatibility machinery in this pre-production initiative.
 
 ## Work Items
 
-- [ ] Extend `X-Moda-Commerce-Context` parsing to require trusted `INITIAL_RECOVERY_OUTREACH` purpose and bound `{shopId,checkoutRecoveryId,outreachAttemptId,environment}`; the model cannot set identity.
-- [ ] Re-read recovery attempt/merchant/current discount mode and selected rows through existing MCP Prisma on every tools/list and tools/call; enforce attempt expiry, tenant, checkout fingerprint, admin override and current FIXED discount set.
-- [ ] Register built-in discount tools only for valid outreach context; continue the existing published release/feature/definition pin checks for `commerce_search_products` and `commerce_get_product`. No public unauthenticated global exposure.
-- [ ] Test revocation, wrong tenant, NONE, FIXED, AI, invalid environment, entitlement removal and conversation-tool isolation; no invented conversation or lease.
+- [ ] Use the trusted MCP private context with top-level `shopId`/environment and exact `toolContext: {purpose: "INITIAL_RECOVERY_OUTREACH"}`; reject missing/wrong purpose and extra identity keys.
+- [ ] Project built-in discount tool descriptors into the existing MCP tool list only for an authorised active shop and permitted current discount mode, without Commerce Studio publication.
+- [ ] Check current mode and merchant-selected discount scope using the existing ShopSettings/ShopifyDiscount tables for each relevant tool call; prevent FIXED from reading/using unselected discounts and AI from being incorrectly filtered by the selection flag.
+- [ ] Preserve published product-tool release/feature/definition pin checks; prevent conversations and other purposes from inheriting initial-outreach-only built-in discount tools.
+- [ ] Add tests for NONE/FIXED/AI, changed discount selection, revoked shop, wrong shop/environment, forged shopId or attemptId in `toolContext`, invalid purpose, unauthenticated header, published tool disabled and conversation isolation.
+- [ ] Prove MCP's purpose authorisation makes **no** recovery/attempt-table lookup. Keep existing trusted shop/policy reads.
 
 ## Interfaces / Contracts
 
-Shared-006 `CommerceOutreachToolContextSchema`; built-in discount capability names `commerce_get_discount_options` and `commerce_evaluate_discount`; published product names `commerce_search_products` and `commerce_get_product`; existing `X-Moda-Commerce-Context` private transport, no fabricated conversation.
+**Shared-006 purpose-only toolContext (exact):**
+
+```typescript
+{
+  purpose: "INITIAL_RECOVERY_OUTREACH"
+}
+```
+
+**Existing private request context (outer shape owned by MCP; example):**
+
+```json
+{
+  "shopId": "shop_123",
+  "toolContext": {
+    "purpose": "INITIAL_RECOVERY_OUTREACH"
+  }
+}
+```
+
+Built-in tool names: `commerce_get_discount_options`, `commerce_evaluate_discount`. Published product names: `commerce_search_products`, `commerce_get_product`. Reuse MCP's current generic `CommerceToolResultSchema` and existing `tools/list` / `tools/call` transport. No outreach-specific result envelope, context lookup tool or model-supplied shop identity.
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
-
-Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
+- `ARCH-052-SHARED-003` — published Shared-006 purpose-only schema must be Complete and architect-accepted before this task starts.
 
 ## Enables
 
@@ -91,33 +111,35 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Acceptance Criteria
 
-- [ ] Only trusted initial attempts see built-in discount tools and never any session-only tool; current conversation users do not inherit initial outreach tools.
-- [ ] Published product tools are still release-pinned/entitlement checked, while discount tools do not require authoring/release.
-- [ ] Revocation/wrong-tenant fail closed before provider I/O.
+- [ ] Purpose-only context, existing outer shop identity and current merchant scope govern discount tool access; no recovery/attempt identifiers are required by `tools/list` or `tools/call`.
+- [ ] NONE cannot discover/use built-in discount tools; FIXED cannot use an unselected discount; AI is not constrained by merchant checkboxes but remains shop-scoped.
+- [ ] Revoked shop/merchant permission or forged tool context fails closed before provider I/O.
+- [ ] Product tools remain release-pinned and feature-authorised; conversational tools and existing generic MCP result schema are unchanged.
+- [ ] No recovery/attempt lifecycle queries or new grant/nonce tables are introduced.
 
 ## Validation
 
-- [ ] MCP auth/Prisma/registry integration tests with both shop platforms and a real or test PostgreSQL harness.
-- [ ] MCP declared typecheck/test/lint and `git diff --check`.
-
-Use the task repository's actual `package.json` validation scripts; do not invent unconfigured commands or claim unrun tests passed. Include `git diff --check`.
+- [ ] MCP auth, registry and shop-policy integration tests with PostgreSQL fixtures; spy/assert zero `CheckoutRecovery` or `RecoveryOutreachAttempt` reads in MCP purpose authorisation.
+- [ ] Test both shop platforms, revoked merchant/discount permissions, dynamic FIXED selection changes, context spoofing, tool list/call parity and conversation isolation.
+- [ ] Run only scripts declared by MCP's `package.json` plus `git diff --check`; document failures and missing scripts in the Completion Report.
 
 ## Stop Condition
 
-After all Work Items, Acceptance Criteria and required Validation are complete, fill the Completion Report, change the task status to `review`, return the parent task report and implementation branch to `moda_architect` and **STOP**. Do not start dependent tasks, merge, push `main`, or alter architecture/domain indexes.
+After Work Items, Acceptance Criteria and required Validation, complete the task report, set `status: review`, return branch/worktree evidence to `moda_architect` and **STOP**. Do not implement dependent tasks, merge, push main or modify parent architecture/indexes.
 
 ## Implementation Notes
 
-**Owning repository paths (workspace-relative; verify actual current paths at execution):**
+Owning repository paths (workspace-relative; verify before edit):
 
 - `moda-interact-mcp/src/mcp/authentication.ts`
-- `moda-interact-mcp/src/runtime/service-ports.ts`
+- `moda-interact-mcp/src/mcp/service.ts`
+- `moda-interact-mcp/src/mcp/registration.ts`
+- `moda-interact-mcp/src/mcp/snapshot.ts`
 - `moda-interact-mcp/src/runtime/prisma.ts`
 - `moda-interact-mcp/src/runtime/execution-registry.ts`
-- `moda-interact-mcp/src/execution/policy/` (new scoped discount read port)
 - `moda-interact-mcp/tests/`
 
-The owning logical agent may modify its assigned task report only outside its source repository. Architecture and indexes belong to `moda_architect`.
+Keep public API and conversation identity handling unchanged. The proof-specific request governed by SHARED-005 remains separate; this task only changes purpose-scoped tool availability/authorisation.
 
 ## Completion Report
 
@@ -151,7 +173,7 @@ None established by implementation.
 
 ### Architectural Concerns
 
-Escalate any unexpected provider API/auth/Shared/schema/contract gap to `moda_architect` without inventing a second implementation.
+Escalate unexpected auth/contract/provider concerns to `moda_architect`; do not invent a second result envelope or conversation access path.
 
 ## Architect Review
 
@@ -165,7 +187,7 @@ Task definition only. No implementation accepted.
 
 ### Reviewed Files
 
-Relevant October 29, 2026 code snapshot and task definition; no implementation source changes for this task reviewed.
+Relevant October 29, 2026 snapshot and task definition; no implementation source changes reviewed.
 
 ### Validation Reviewed
 
@@ -177,4 +199,4 @@ Pending implementation review.
 
 ### Follow-up
 
-Materialise through the canonical launcher only after all dependency task YAMLs are Complete.
+Materialise through the canonical launcher only after its task dependencies are Complete.

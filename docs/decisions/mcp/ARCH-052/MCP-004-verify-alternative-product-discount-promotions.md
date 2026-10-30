@@ -44,7 +44,7 @@ After checkout discount matching fails, the InitialOutreachOfferAgent should sea
 
 ## Scope
 
-- Extend the MCP-002 built-in `commerce_evaluate_discount` handler to accept Shared-006 `target.kind="ALTERNATIVE_PRODUCT"` with exact product/variant identity from an MCP-003 `commerce_get_product` result; perform target-product shop ownership and availability check before provider proof.
+- Extend the MCP-002 built-in `commerce_evaluate_discount` handler to accept Shared-005 `RecoveryDiscountTargetSchema` with `kind="ALTERNATIVE_PRODUCT"` with exact product/variant identity from an MCP-003 `commerce_get_product` result; perform target-product shop ownership and availability check before provider proof.
 - Shopify calls COMMERCE-003 current authenticated proof route (COMMERCE-008 target verification); Woo calls the existing direct Woo REST credential transport from MCP-003 to the WooCommerce-001 native GET coupon-proof endpoint using dedicated product-id header(s). **No MCP->API proxy**, no plugin cart mutation.
 - Verify code/coupon or automatic promotion using the original customer’s current restrictions; if insufficient evidence, return `unavailable`/`unsupported` and do not advertise. For native sale-price promotions, only surface when provider confirms regularPrice > current price and current product availability, with no fabricated coupon code; merchant FIXED may not promote an unrelated general sale that was never selected unless separately permitted by its selected discount.
 - The system returns Shared-008 `VerifiedAlternativeProductPromotionSchema` carrying a trusted product permalink and separate promo target; never claim it reduces the abandoned checkout. Set proof expiry <= provider contract limit and recheck at preparation if stale.
@@ -70,7 +70,7 @@ No additional database table/column/migration, migration backfill, alternate pro
 
 ## Interfaces / Contracts
 
-Built-in MCP `commerce_evaluate_discount` target `ALTERNATIVE_PRODUCT` (SHARED-006); Shared-005 alternative-product provider evidence (inside existing generic MCP result envelope); WooCommerce-001 native proof and COMMERCE-008 Shopify proof; no new published tool or Commerce Studio authoring.
+Built-in MCP `commerce_evaluate_discount` target `ALTERNATIVE_PRODUCT` (SHARED-005); Shared-005 alternative-product provider evidence (inside existing generic MCP result envelope); WooCommerce-001 native proof and COMMERCE-008 Shopify proof; no new published tool or Commerce Studio authoring.
 
 ## Dependencies
 
