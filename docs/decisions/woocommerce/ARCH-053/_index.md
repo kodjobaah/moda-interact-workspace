@@ -8,7 +8,7 @@ Assigned agent: `moda_woocommerce`. Coordinator: `moda_architect`.
 
 | Task | Purpose | Status | Depends On |
 |---|---|---|---|
-| [ARCH-053-WOOCOMMERCE-001](WOOCOMMERCE-001-capture-original-cart-coupons-and-options.md) | Capture original Woo cart coupons and restorable line data | Pending | ARCH-053-API-001, ARCH-053-BACKGROUND-001 |
+| [ARCH-053-WOOCOMMERCE-001](WOOCOMMERCE-001-capture-original-cart-coupons-and-options.md) | Capture original Woo cart coupons and restorable line data | Ready | ARCH-053-API-001, ARCH-053-BACKGROUND-001 |
 | [ARCH-053-WOOCOMMERCE-002](WOOCOMMERCE-002-restore-cart-from-customer-confirmed-link.md) | Restore products after customer-confirmed Woo checkout link | Pending | ARCH-053-WOOCOMMERCE-001, ARCH-053-API-002 |
 | [ARCH-053-WOOCOMMERCE-003](WOOCOMMERCE-003-capture-manual-return-to-unchanged-woo-checkout.md) | Detect human return to an unchanged existing Woo checkout | Pending | ARCH-053-WOOCOMMERCE-001 |
 | [ARCH-053-WOOCOMMERCE-004](WOOCOMMERCE-004-capture-coupon-only-checkout-activity.md) | Publish coupon additions and removals as Woo checkout activity | Pending | ARCH-053-WOOCOMMERCE-001 |

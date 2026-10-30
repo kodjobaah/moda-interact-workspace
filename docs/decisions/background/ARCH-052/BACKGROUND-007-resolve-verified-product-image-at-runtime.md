@@ -53,7 +53,7 @@ Both Shopify and WooCommerce product information is resolved **at runtime by MCP
 
 - Use existing `src/services/recovery-template-preparation/` and MCP `commerce_get_product` (published and entitled) to fetch the exact product/variant in current shop for a checkout item or selected alternative product. Variant image wins; product image fallback only if same shop/id. Never use fuzzy search as proof of identity.
 - Validate returned HTTPS image source/media type, allowed host and accessible header within bounded download/preparation time; if source is unsafe/unavailable, use separately approved text/no-image variant. Reuse existing ARCH-049 media processing only when necessary and already approved; do not invent new R2 tables or persistent image catalogue.
-- The image source and selected promotion product must match immutable attempt scope; no signed URL/secret or raw image source in logs. Validate retries and fallback when the image disappears.
+- The image source and selected promotion product must match immutable attempt scope; no signed URL/secret or raw image source in logs. Resolve against current MCP product data during **each** send-preparation attempt and resolve again on retry; reject changed/revoked media or identity rather than reusing a previous attempt's URL. This is an attempt-scoped operation, **not a five-minute proof or TTL contract**.
 
 ## Out of Scope
 
@@ -75,11 +75,11 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - [ ] Implement `recovery-product-image-resolver.ts` using the existing Background MCP transport and the published `commerce_get_product` tool; prefer checkout exact variant or recommended alternative exact product/variant.
 - [ ] Validate public HTTPS, safe resolved address and final peer, no unsafe redirects, supported image MIME + magic bytes, <=5 MB and verified target product origin/identity; use existing security/media primitives.
 - [ ] On image missing/unsafe/expired/offline return a typed no-media outcome and select an independently approved text-only Meta template; no side-effect on eligibility or checkout send.
-- [ ] Test Shopify and WooCommerce variant vs product image, mismatched tenant, invalid/expired media, retry and no MCP-to-API path.
+- [ ] Test Shopify and WooCommerce variant vs product image, mismatched tenant, invalid/expired provider URL, source change/revocation, re-resolution on retry, safe TEXT/no-send and no MCP-to-API path. No TTL/proof service tests.
 
 ## Interfaces / Contracts
 
-Published SHARED-008/010 `CommerceToolOutputs.commerce_get_product` contains `CommerceProductSchema.imageUrl`, nullable `variantId` and source IDs; SHARED-002 `CHECKOUT_PRODUCT` image role and Meta-approved header binding. **There is no published `RecoveryProductImageResultSchema`**: define a Background-local discriminated outcome in `src/services/recovery-product-media/recovery-product-image-resolver.ts` (`{kind:"READY",imageUrl:string,productId:string,variantId:string|null}` or `{kind:"UNAVAILABLE",reason:string}`) and use it only inside Background; do not invent a new Shared export. This task integrates optional IMAGE send selection with the accepted text-only BACKGROUND-008 path, never reimplements the existing WhatsApp transport.
+Published SHARED-008/010 `CommerceToolOutputs.commerce_get_product` contains `CommerceProductSchema.imageUrl`, nullable `variantId` and source IDs; SHARED-002 `CHECKOUT_PRODUCT` image role and Meta-approved header binding. **There is no published `RecoveryProductImageResultSchema`**: define a Background-local discriminated outcome in `src/services/recovery-product-media/recovery-product-image-resolver.ts` (`{kind:"READY",imageUrl:string,productId:string,variantId:string|null}` or `{kind:"UNAVAILABLE",reason:string}`) and use it only inside Background; do not invent a new Shared export. `READY` is an ephemeral result from the **current** preparation attempt; it is not a timestamped `VERIFIED_PROVIDER_IMAGE` proof, stored attestation or fixed-five-minute validity window. Resolve afresh when retrying. This task integrates optional IMAGE send selection with the accepted text-only BACKGROUND-008 path, never reimplements the existing WhatsApp transport.
 
 ## Dependencies
 
@@ -96,7 +96,7 @@ Published SHARED-008/010 `CommerceToolOutputs.commerce_get_product` contains `Co
 ## Acceptance Criteria
 
 - [ ] Checkout image and alternative promo product image resolve via exact MCP lookup.
-- [ ] Failed or unsafe media yields approved text-only template or no-send, not broken IMAGE header.
+- [ ] Failed, stale-at-retry, revoked or unsafe media yields approved text-only template or no-send, not a broken IMAGE header or reuse of a previous attempt's media result.
 - [ ] No new Prisma image table or MCP-to-API product call.
 
 ## Validation
