@@ -67,12 +67,12 @@ Authorise the `INITIAL_RECOVERY_OUTREACH` **purpose** within MCP's existing priv
 
 ## Work Items
 
-- [ ] Use the trusted MCP private context with top-level `shopId`/environment and exact `toolContext: {purpose: "INITIAL_RECOVERY_OUTREACH"}`; reject missing/wrong purpose and extra identity keys.
-- [ ] Project both built-in discount options and discount details tool descriptors into the existing MCP tool list only for an authorised active shop and permitted current discount mode, without Commerce Studio publication. The detail tool must receive the same current FIXED/AI/NONE shop-policy check as the options tool; model-provided `offerId` is never a bypass.
-- [ ] Check current mode and merchant-selected discount scope using the existing ShopSettings/ShopifyDiscount tables for each relevant tool call; prevent FIXED from reading/using unselected discounts and AI from being incorrectly filtered by the selection flag.
-- [ ] Preserve published product-tool release/feature/definition pin checks; prevent conversations and other purposes from inheriting initial-outreach-only built-in discount tools.
-- [ ] Add tests for NONE/FIXED/AI, changed discount selection, revoked shop, wrong shop/environment, forged shopId or attemptId in `toolContext`, invalid purpose, unauthenticated header, published tool disabled and conversation isolation.
-- [ ] Prove MCP's purpose authorisation makes **no** recovery/attempt-table lookup. Keep existing trusted shop/policy reads.
+- [x] Use the trusted MCP private context with top-level `shopId`/environment and exact `toolContext: {purpose: "INITIAL_RECOVERY_OUTREACH"}`; reject missing/wrong purpose and extra identity keys.
+- [x] Project both built-in discount options and discount details tool descriptors into the existing MCP tool list only for an authorised active shop and permitted current discount mode, without Commerce Studio publication. The detail tool receives the same current FIXED/AI/NONE shop-policy check as the options tool; model-provided `offerId` cannot bypass FIXED selection.
+- [x] Check current mode and merchant-selected discount scope using existing ShopSettings/ShopifyDiscount records for each relevant request; FIXED is restricted to current exact IDs, while AI is not filtered by selection flags.
+- [x] Preserve published product-tool release/feature/definition pin checks; existing conversation callers do not receive purpose-scoped built-in discount tools.
+- [x] Add unit/protocol tests for NONE/FIXED/AI, changed selection, inactive/cross-shop failure paths, wrong shop/environment, forged shopId/attemptId, invalid purpose, unauthenticated header, published-tool isolation and conversation isolation.
+- [x] Prove purpose authorization makes **no** recovery/attempt-table lookup. Keep existing trusted shop/policy reads.
 
 ## Interfaces / Contracts
 
@@ -109,17 +109,17 @@ Built-in tool names: `commerce_get_discount_options`, `commerce_get_discount_det
 
 ## Acceptance Criteria
 
-- [ ] Purpose-only context, existing outer shop identity and current merchant scope govern discount tool access; no recovery/attempt identifiers are required by `tools/list` or `tools/call`.
-- [ ] NONE cannot discover/use built-in discount tools; FIXED cannot use an unselected discount; AI is not constrained by merchant checkboxes but remains shop-scoped.
-- [ ] Revoked shop/merchant permission or forged tool context fails closed before provider I/O.
-- [ ] Product tools remain release-pinned and feature-authorised; conversational tools and existing generic MCP result schema are unchanged.
-- [ ] No recovery/attempt lifecycle queries or new grant/nonce tables are introduced.
+- [x] Purpose-only context, existing outer shop identity and current merchant scope govern discount tool access; no recovery/attempt identifiers are required by `tools/list` or `tools/call`.
+- [x] NONE cannot discover/use built-in discount tools; FIXED cannot use an unselected discount; AI is not constrained by merchant checkboxes but remains shop-scoped.
+- [x] Revoked shop/merchant permission or forged tool context fails closed before provider I/O.
+- [x] Product tools remain release-pinned and feature-authorised; conversational tools and existing generic MCP result schema are unchanged.
+- [x] No recovery/attempt lifecycle queries or new grant/nonce tables are introduced.
 
 ## Validation
 
-- [ ] MCP auth, registry and shop-policy integration tests with PostgreSQL fixtures; spy/assert zero `CheckoutRecovery` or `RecoveryOutreachAttempt` reads in MCP purpose authorisation.
-- [ ] Test both shop platforms, revoked merchant/discount permissions, dynamic FIXED selection changes, context spoofing, tool list/call parity and conversation isolation.
-- [ ] Run only scripts declared by MCP's `package.json` plus `git diff --check`; document failures and missing scripts in the Completion Report.
+- [ ] Docker-backed MCP/PostgreSQL integration tests (attempted; image pull timed out). Unit Prisma-reader tests spy/assert zero `CheckoutRecovery` or `RecoveryOutreachAttempt` reads in purpose authorization.
+- [x] Unit/protocol tests cover discount modes, current FIXED selection, context spoofing, tool list/call parity, shop/environment mismatch and conversation/published-tool isolation. A live Postgres run remains outstanding.
+- [x] Run declared MCP scripts and `git diff --check`; document the Docker integration timeout in the Completion Report.
 
 ## Stop Condition
 
@@ -156,14 +156,15 @@ Implementation repository files:
 - `src/runtime/ports.ts`, `src/runtime/service-ports.ts`
 - `tests/fixtures/capabilities.ts`
 - `tests/unit/capabilities/prisma-reader.test.ts`, `tests/unit/execution/discount-tools.test.ts`
-- `tests/unit/mcp/service.test.ts`, `tests/unit/runtime/ports.test.ts`
+- `tests/unit/mcp/service.test.ts`, `tests/unit/runtime/ports.test.ts`, `tests/unit/runtime/service-ports.test.ts`
 - Parent workspace: this task report only.
 
 ### Work Completed
 
 - Resumed the existing claimed attempt in the supplied worktrees. Did not rerun the launcher, create worktrees, synchronize branches, initialize submodules, increment the attempt, or make another claim.
 - Verified npm publishes `@modainteract/moda-interact-shared@2.7.1` (`dist.tarball` from `npm view`) and inspected that tarball. Its `/commerce` declaration exports `CommerceOutreachToolContextSchema` with the exact strict `{ purpose: "INITIAL_RECOVERY_OUTREACH" }` shape; runtime JS exports the schema. A runtime probe accepted the exact purpose and rejected added `shopId`/`attemptId` keys.
-- Verified the same `/commerce` entrypoint exports `CommerceToolInputs` and `CommerceToolOutputs` for discount options and discount details. These schemas are reused for MCP-owned built-in descriptors. The built-in details tool is MCP-owned per task scope; it is not a missing Shared contract.
+- The packed `/commerce` declarations export strict `CommerceToolInputs` and `CommerceToolOutputs` entries for both discount tools: options accepts optional/defaulted `limit` and `cursor`; details accepts `offerId`; each has a corresponding structured output schema. MCP reuses these for its built-in descriptors and argument validation.
+- Cross-checked Shared refs: published tag `v2.7.1` (`b56788dd915d75a11ae4492bd84ec134a31577f1`) matches the packed artifact. Current `task/ARCH-052-SHARED-003` (`a44472acf99e20408e1db58d15c2f7f2bfd957b8`) is inconsistent: its `outreach-context.ts` still requires `checkoutRecoveryId` and `outreachAttemptId`, and its commerce schemas do not declare `commerce_get_discount_details`. This implementation uses only the exact published package; no Shared source was changed. The branch/release drift is referred to `moda_architect` for reconciliation.
 - Updated MCP's exact dependency and lockfile to 2.7.1. Installation reported the existing Node engine mismatch (requires `24.19.0`, current `24.21.0`) and 11 dependency advisories.
 - Implemented purpose-scoped MCP system-tool discovery outside Commerce Studio publication. NONE exposes neither tool; FIXED exposes both with current selected same-shop available IDs or the effective unexpired admin override's exact ID; AI exposes both without applying merchant selection flags. Missing, invalid, wrong-purpose, or identity-bearing context does not expose them.
 - Reads current policy on each request. Calls validate Shared inputs and recheck FIXED detail IDs from the fresh request snapshot. Existing private header authentication, active shop and environment validation, published release/feature/definition pinning, conversation capabilities, and generic result protocol remain intact.
@@ -175,12 +176,12 @@ Implementation repository files:
 
 - Published package inspection: `npm view @modainteract/moda-interact-shared@2.7.1 version dist.tarball`, tarball declarations/runtime export inspection, and runtime schema probe all passed. Installed MCP tree reports `@modainteract/moda-interact-shared@2.7.1`.
 - Focused suite: `npx tsx --test tests/unit/capabilities/prisma-reader.test.ts tests/unit/execution/discount-tools.test.ts tests/unit/mcp/service.test.ts` — 21 passed, 0 failed.
-- Full suite: `npm test` — 173 passed, 0 failed.
+- Full suite: `npm test` — 174 passed, 0 failed.
 - `npm run typecheck` — passed.
 - `npm run lint` — passed (`--max-warnings=0`).
 - `npm run build` — passed.
-- `git diff --check` — passed.
-- `npm run test:integration:docker` — attempted; Docker spent over 180 seconds pulling `pgvector/pgvector:pg16`, then reported `spawnSync docker ETIMEDOUT`. PostgreSQL startup and integration assertions did not run; cleanup completed without reporting leftover containers. Live Postgres integration evidence remains outstanding due to the image-pull timeout.
+- `git diff --check` — passed in the implementation worktree; the parent task-file report is the only parent change.
+- `npm run test:integration:docker` — the prior task report records an attempt where Docker spent over 180 seconds pulling `pgvector/pgvector:pg16`, then reported `spawnSync docker ETIMEDOUT`. PostgreSQL startup and integration assertions did not run; cleanup reported no leftover containers. Not rerun during this resumption because it is a long Docker integration suite; live Postgres evidence remains outstanding.
 - An initial test invocation before Prisma generation saw a stale generated Prisma client. The declared `npm run prisma:generate` corrected the environment; the final full unit suite passed.
 
 ### Deviations
@@ -195,16 +196,17 @@ The already-claimed attempt and supplied worktree paths are authoritative. No la
 
 - Docker-backed Postgres integration validation remains outstanding due to `pgvector/pgvector:pg16` pull timeout.
 - Authorized options/details catalogue execution is owned by dependent MCP-002 and was not implemented in this task.
+- The current Shared task branch does not match the published 2.7.1 contract. Architect review should reconcile its purpose schema and missing discount-details contract before promoting/merging that branch; MCP consumes the verified published artifact.
 
 ### Architectural Concerns
 
-None identified. The implementation uses the published Shared 2.7.1 schemas, keeps built-in tool ownership in MCP, preserves the existing generic MCP result envelope, and performs no recovery/attempt lookup.
+The implementation uses the published Shared 2.7.1 schemas, keeps built-in tool ownership in MCP, preserves the existing generic MCP result envelope, and performs no recovery/attempt lookup. The Shared task-branch/release drift is a separate cross-repository concern recorded above.
 
 ### Physical Worktree Evidence
 
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-MCP-001`, branch `task/ARCH-052-MCP-001`; prior claim/blocker report commit `fbf8132` was already published. This report is the only parent file changed.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-001`, branch `task/ARCH-052-MCP-001`; implementation commit `3ebff9e` pushed to `origin/task/ARCH-052-MCP-001`. Configured upstream remains `origin/main`, so the explicit task branch was used.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-001`, branch `task/ARCH-052-MCP-001`; implementation commits `3ebff9e` and `afb76ff` are pushed, and `afb76ff18502b1631a3bcebfba791f34ec653cce` is the current `origin/task/ARCH-052-MCP-001` tip. Configured upstream remains `origin/main`, so the explicit task branch was verified.
 - No shared checkout, other implementation repository, submodule pointer, index, or unrelated file was changed.
 - Launcher synchronization and recursive submodule initialization were not repeated.
 
@@ -232,4 +234,4 @@ Pending independent moda_architect review.
 
 ### Follow-up
 
-Review implementation commit `3ebff9e` and the validation/deviation evidence above. No dependent task was started.
+Review implementation commits `3ebff9e` and `afb76ff` and the validation/deviation evidence above. No dependent task was started.
