@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-10-30T16:18:52Z
@@ -119,7 +119,8 @@ Plugin caller via `ModaApiClient` server-side installation auth; Shared `WooRest
 
 - [x] API unit route/auth/schema tests, malicious token and second shop fixtures
 - [x] Isolated Postgres integration with multiple generations and unsupported/expired coupon **codes preserved only as data**
-- [x] `npm run typecheck`, `npm run lint`; `git diff --check`
+- [x] `npm run typecheck`; `git diff --check`
+- [ ] `npm run lint` passes (Attempt 2 command ran; see Completion Report for the unrelated current-main failure)
 
 ## Stop Condition
 
@@ -133,7 +134,32 @@ Keep API route order consistent with `composeApiRoutes` and avoid introducing a 
 
 ### Status
 
-Changes Requested — Attempt 1. Implementation commit `756130ebf579b43c0e8d32557698ff26ecff0bf8` is reported pushed to `origin/task/ARCH-053-API-002`; database-module integration and resolver revalidation remain required before acceptance.
+Ready for Review — Attempt 2. Attempt 1's implementation commit `756130ebf579b43c0e8d32557698ff26ecff0bf8` and its report are retained below as historical evidence. Attempt 2 integrates the accepted DATABASE-001 schema tree in the API database submodule and reruns the resolver validations.
+
+### Attempt 2 Rework
+
+#### Architect Review Corrections
+
+- **Database module integration — implemented.** API commit `7fc1e1035e6b0678c5a9364cdccde16bee76f59f` updates only the API repository's `database` submodule pointer to `af77c594ecbfc78c26d01c0021a090830884bbff`. The accepted DATABASE-001 commit is `33d2f6b6107ea57bd9dfe38e2e3d6e24df9556be`. The accepted commit and pinned submodule commit have the identical tree `f65f86e06b63410f8223ecc9b0f3baa5272d7273`; their package, Prisma schema, migrations and DATABASE-001 PostgreSQL test artifacts have no diff. `database/prisma/schema.prisma` contains `CheckoutRecovery.wooRestoreSnapshot Json?`. No Database-owned source was edited, and no parent-workspace submodule gitlink was staged.
+- **Prisma client regeneration — implemented.** `npm run typecheck` ran `prisma generate --schema database/prisma/schema.prisma` against the integrated schema and then completed TypeScript checking successfully.
+- **Resolver and required validation — blocked only on repository-wide lint.** The isolated PostgreSQL integration and all seven focused resolver authorization/service tests pass. `npm run typecheck`, focused ESLint over API-002 implementation/tests, and `git diff --check` pass. Required `npm run lint` was rerun but reports one unrelated `no-empty` error at `src/merchant/support/routes.ts:75`, introduced by current `origin/main` commit `13bbbd062c63844cacd5a943953e00731475c58e`; `git blame` confirms the line belongs to that mainline commit and the file is outside this task's change. No unrelated source edit was made.
+- **Shared v1 contract — implemented.** The lockfile and installed dependency resolve to Shared `2.8.0`. Runtime imports from `@modainteract/moda-interact-shared/woocommerce` confirmed `WooRestoreResolveRequestV1Schema` and `WooRestoreResolveResponseV1Schema` are exported. The response remains strict v1 with `outreachOffer: {kind:"NONE",reason:"NO_CONFIRMED_OFFER"}` until API-003.
+
+#### Attempt 2 Validation Results
+
+- `npm run test:arch053-recovery-restore:postgres` — passed; isolated PostgreSQL verified the real resolver SQL, latest-generation and tenant gates, coupon data preserved only inside the snapshot, and an eligible response using a supported persisted snapshot.
+- `npx tsx --test tests/unit/woocommerce/recovery-restore/service.test.ts tests/unit/woocommerce/recovery-restore/routes.test.ts` — 7 passed, 0 failed.
+- `npm run typecheck` — passed; regenerated Prisma Client v6.19.3 from `database/prisma/schema.prisma` before TypeScript checking.
+- `npx eslint src/woocommerce/recovery-restore src/composition/woocommerce.ts src/composition/routes.ts src/index.ts tests/unit/woocommerce/recovery-restore tests/integration/woocommerce/recovery-restore tests/unit/composition --max-warnings=0` — passed.
+- `npm run lint` — failed on the unrelated current-main `no-empty` finding at `src/merchant/support/routes.ts:75`; task-owned files pass the focused ESLint command above.
+- `git diff --check` — passed.
+- Shared runtime export probe — both required resolver v1 schemas imported successfully from installed Shared `2.8.0`.
+
+#### Attempt 2 Scope and Remaining Caveats
+
+No resolver behavior or Database-owned files were changed in this rework; the required change is consumption of the accepted database schema through the API repository's `database` submodule. The resolver remains read-only, strict Shared single-v1, and returns `NONE/NO_CONFIRMED_OFFER` until API-003. The order-terminal limitation remains observed-only: Woo orders whose events were never delivered to Moda cannot be detected from the API's available persisted evidence. No production-readiness or integrated-feature claim is made. The repository-wide lint failure is recorded for architect disposition; it was not fixed outside API-002 scope.
+
+### Attempt 1 Report (Retained)
 
 ### Files Changed
 
