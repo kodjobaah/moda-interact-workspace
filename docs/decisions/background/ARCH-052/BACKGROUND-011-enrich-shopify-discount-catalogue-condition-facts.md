@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-10-30T17:49:22Z
@@ -97,7 +97,7 @@ Source files: `moda-interact-background/src/providers/shopify-discount.provider.
 
 ### Status
 
-Ready for architect review. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts in `ShopifyDiscount.providerSnapshot`.
+Ready for architect review after Attempt 2. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts and the Shopify Basic discount-combination policy in `ShopifyDiscount.providerSnapshot`.
 
 ### Files Changed
 
@@ -140,6 +140,31 @@ Preparation packet claim: Attempt 1, `codex`, pushed parent claim commit `fc950d
 ### Deviations, Assumptions and Unresolved Issues
 
 No scope deviations or unresolved architecture questions. Native Shopify Basic discounts expose included item targets but no separate excluded-product selection; excluded target arrays therefore remain empty for those supported types. Unsupported types and unrepresented market restrictions remain partial. The Architect Review and parent architecture/index were not modified. ARCH-052-MCP-002 was not started.
+
+### Attempt 2 — Architect Review Correction
+
+The requested correction is implemented in commit `b2824e2` on the same task branch and pushed to `origin/task/ARCH-052-BACKGROUND-011`. Both `DiscountAutomaticBasic` and `DiscountCodeBasic` now query `combinesWith.orderDiscounts`, `productDiscounts`, `shippingDiscounts`, and `productDiscountsWithTagsOnSameCartLine`. The normalized `combinesWith` object is retained in the existing provider snapshot; its tag list is capped at 24 entries and each tag at 128 characters. Truncation or malformed policy data is explicitly reported as `COMBINATION_TAGS_TRUNCATED` or `COMBINATION_POLICY_UNAVAILABLE`.
+
+The Shared-010 condition-facts contract has no fields for discount-class combinations or same-cart-line tags. Therefore Basic discount facts now include `COMBINATION_POLICY_NOT_REPRESENTED_IN_SHARED_FACTS` and remain `PARTIAL`, even when their other observed fields are complete. The regression asserts both GraphQL fragments select the policy, the normalized policy survives in the provider snapshot, and the Shared schema accepts the resulting partial facts. Shopify's versioned API reference documents these fields on `DiscountCombinesWith` and both Basic discount types: [DiscountCombinesWith](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/DiscountCombinesWith), [DiscountAutomaticBasic](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/DiscountAutomaticBasic), and [DiscountCodeBasic](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/DiscountCodeBasic).
+
+#### Architect Review item disposition
+
+- **Combination policy omitted while facts could be COMPLETE — implemented.** Added the selection for both Basic types, retained the bounded normalized policy in `providerSnapshot.combinesWith`, and forced `conditionFacts.completeness` to `PARTIAL` with an explicit Shared-contract unrepresented reason. Focused assertion: `tests/unit/providers/shopify-discount.provider.test.ts` checks both selections, the policy values, partial completeness, and Shared schema parsing.
+
+#### Attempt 2 validation
+
+- `npm exec vitest run tests/unit/providers/shopify-discount.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts` — 2 files, 11 tests passed.
+- `npm exec eslint -- src/providers/shopify-discount.provider.ts tests/unit/providers/shopify-discount.provider.test.ts` — passed.
+- `npm run build` — passed (Prisma Client generation and TypeScript compilation).
+- `git diff --check` — passed in both the implementation and parent task worktrees.
+
+#### Attempt 2 launcher and branch evidence
+
+- The prepared launcher claimed Attempt 2 as `codex`; authoritative task metadata records `claimed_at: 2026-10-30T17:49:22Z`. Parent claim commit: `c87784cd9dd62b744c76a73c78925029f7928dba`, pushed to `origin/task/ARCH-052-BACKGROUND-011`.
+- The dedicated implementation worktree remained on `task/ARCH-052-BACKGROUND-011`, starting from `00941fdef05611569b73f2e106e442c6781ae6d1`; at inspection, local `HEAD` and `origin/task/ARCH-052-BACKGROUND-011` matched. The report-only parent worktree remained on the same task branch.
+- The launcher invocation returned no preparation packet text after the task entered `in_progress`, so detailed fast-forward/`origin/main` merge summaries and recursive-submodule output for Attempt 2 are unavailable in this report. The launcher's authoritative claim metadata and commit are retained above; Attempt 1 synchronization evidence remains recorded in the preceding section.
+
+ARCH-052-MCP-002 was not started.
 
 ## Architect Review
 
