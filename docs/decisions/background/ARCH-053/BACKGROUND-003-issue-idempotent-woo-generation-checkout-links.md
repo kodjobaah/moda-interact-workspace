@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: codex
-claimed_at: 2026-10-30T16:57:06Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-053-BACKGROUND-002
@@ -184,3 +184,32 @@ The inspected runtime behaviour conforms to the corrected ARCH-053 safety policy
 3. In that same test file, add a transaction-fence case with preflight installation ACTIVE, but a mocked locked consent row with `installationStatus: REVOKED` or non-null `revokedAt`; expect exactly `denied/CONSENT_CHANGED` and **zero** recovery creates, URL updates and admission-history writes. Keep the test narrowly scoped; use existing `permittedFence`/`setFence` helpers.
 4. Run the focused admission/link issuer/template unit tests, the existing disposable PostgreSQL/Redis admission integration suite, repository build, changed-file lint and `git diff --check`. Record actual commands/results; if environmental validation is impossible, report it rather than claim a pass.
 5. Update the agent-owned checkboxes/Completion Report, set task `status: review`, return the same task for architect acceptance and STOP. Do not modify Architect Review, parent architecture, `_index.md`, ARCH-052 or unrelated code.
+
+### Attempt 2 Architect Review
+
+#### Review Status
+
+Accepted — Complete.
+
+#### Review Notes
+
+The Attempt 1 correction contract is satisfied. The existing preflight revocation case now asserts the exact `INSTALLATION_INACTIVE` denial and zero admission writes. The new transaction-fence case starts with an active preflight installation, supplies a revoked authoritative fence, and asserts exact `CONSENT_CHANGED` denial with zero recovery creates, URL updates, or admission-history writes. Both cases verify that no token parameter is logged. No production source change was necessary.
+
+#### Reviewed Files
+
+- Attempt 2 Completion Report, task YAML, Work Items, Acceptance Criteria and Validation.
+- Background implementation branch `task/ARCH-053-BACKGROUND-003` at `81a40eea806a90955d1eef814533a7d2295d460e`, clean and pushed.
+- `tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts`, including both revocation timing cases.
+- Previously reviewed URL issuer, admission implementation, template binding and PostgreSQL integration paths.
+
+#### Validation Reviewed
+
+Reviewed the Attempt 2 recorded focused unit run (3 files, 53 tests), disposable PostgreSQL/Redis admission integration (3 tests), build, changed-file ESLint and `git diff --check`. No tests were rerun for this acceptance review.
+
+#### Architecture Conformance
+
+Conforms to the corrected installation-revocation policy and the task's immutable, generation-specific URL and consent-fencing requirements.
+
+#### Follow-up
+
+The automatic-completion task is complete. The enabled system-test tasks may proceed when their other dependencies are satisfied.
