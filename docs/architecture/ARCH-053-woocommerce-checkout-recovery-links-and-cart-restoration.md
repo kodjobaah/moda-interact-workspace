@@ -169,6 +169,8 @@ Only system-test tasks may depend on another system test. `SYSTEM-TEST-003` runs
 
 ## Change History
 
+- 2026-10-30: ARCH-053-DATABASE-001 accepted at Attempt 1; nullable generation-specific JSONB persistence and isolated fresh/upgrade checks are published. No dependent task is promoted while SHARED-002 remains Pending.
+
 - 2026-10-30: Pre-production checkout activity correction: retire proposed `woo.activity.v3`, consolidate existing HTTP-only v2 phone proof into `woo.activity.v1`, preserve the v1 queue envelope and single restoration resolver v1; no compatibility adapters.
 
 - 2026-10-29: Initial standalone ARCH-053 checkout URL architecture; ARCH-052 dynamic discount discovery remains separate.
