@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-053-SHARED-002
 enables:
@@ -26,7 +26,7 @@ updated: 2026-10-30
 
 ## Architecture
 
-Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Portable canonical task: defined but not materialised**; no Git branch, worktree, commit, push, review or producer deployment claimed.
+Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Materialised and accepted Complete at Attempt 1. Parent and API implementation task branches are published; no API-only deployment is authorized.
 
 ## Objective
 
@@ -72,11 +72,11 @@ No new event version, parallel parser, compatibility adapter, alternate queue, a
 
 ## Work Items
 
-- [ ] Replace the v2-specific HTTP parser/version branch with one strict v1 checkout input parser retaining all existing verified-phone checks; leave order v1 parser unchanged.
-- [ ] Import the published `WooCartRestoreSnapshotV1Schema`/type and support `checkout.restoration` in `WooCheckoutSnapshot` and v1 queue projection without service-local copied Zod schemas.
-- [ ] Update request/producer only as required so the validated restoration is included in job content digest and retained replay semantics.
-- [ ] Rewrite existing v2 phone tests as v1 acceptance/rejection tests and cover v2/v3 rejection, original coupon fidelity, supported/unsupported snapshots, missing snapshot, no-phone checkout, and unchanged order events.
-- [ ] Record that API and Woo plugin changes require a coordinated pre-production cutover, not an independent API deployment.
+- [x] Replace the v2-specific HTTP parser/version branch with one strict v1 checkout input parser retaining all existing verified-phone checks; leave order v1 parser unchanged.
+- [x] Import the published `WooCartRestoreSnapshotV1Schema`/type and support `checkout.restoration` in `WooCheckoutSnapshot` and v1 queue projection without service-local copied Zod schemas.
+- [x] Update request/producer only as required so the validated restoration is included in job content digest and retained replay semantics.
+- [x] Rewrite existing v2 phone tests as v1 acceptance/rejection tests and cover v2/v3 rejection, original coupon fidelity, supported/unsupported snapshots, missing snapshot, no-phone checkout, and unchanged order events.
+- [x] Record that API and Woo plugin changes require a coordinated pre-production cutover, not an independent API deployment.
 
 ## Interfaces / Contracts
 
@@ -142,22 +142,22 @@ For HTTP checkout with no phone, omit `phone`, `canonicalPhone` and `verifiedCou
 
 ## Acceptance Criteria
 
-- [ ] The valid HTTP example parses on `woo.activity.v1` and produces a v1 queue job containing identical restorable lines and original coupon codes; HTTP-only phone proof is removed and phone is E.164.
-- [ ] v1 checkout with no phone (and no proof fields) still enqueues valid product/restoration data; v1 with phone but missing/mismatched proof fails closed; proof fields without a phone fail.
-- [ ] `woo.activity.v2`, `woo.activity.v3`, malformed input, unknown fields, bad coupon/line shape or over-65,536-byte body cannot enqueue; no dual-version compatibility code remains.
-- [ ] Absent restoration stays absent; `kind:'unsupported'` stays unsupported; neither is treated as empty coupon list or restorable supported basket.
-- [ ] Duplicate eventId with same normalized validated event is idempotent; different coupon/line/attributes for same eventId causes replay conflict, not overwrite.
-- [ ] Existing `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED` v1 parsing and queues remain unchanged, as do tenant authentication, publisher durability/retries and consent separation.
-- [ ] The developer's integration handoff explicitly says API-001 cannot be deployed independently ahead of a compatible WooCommerce-001 producer.
-- [ ] No unrelated repository/source changes or ARCH-052 contract changes.
+- [x] The valid HTTP example parses on `woo.activity.v1` and produces a v1 queue job containing identical restorable lines and original coupon codes; HTTP-only phone proof is removed and phone is E.164.
+- [x] v1 checkout with no phone (and no proof fields) still enqueues valid product/restoration data; v1 with phone but missing/mismatched proof fails closed; proof fields without a phone fail.
+- [x] `woo.activity.v2`, `woo.activity.v3`, malformed input, unknown fields, bad coupon/line shape or over-65,536-byte body cannot enqueue; no dual-version compatibility code remains.
+- [x] Absent restoration stays absent; `kind:'unsupported'` stays unsupported; neither is treated as empty coupon list or restorable supported basket.
+- [x] Duplicate eventId with same normalized validated event is idempotent; different coupon/line/attributes for same eventId causes replay conflict, not overwrite.
+- [x] Existing `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED` v1 parsing and queues remain unchanged, as do tenant authentication, publisher durability/retries and consent separation.
+- [x] The developer's integration handoff explicitly says API-001 cannot be deployed independently ahead of a compatible WooCommerce-001 producer.
+- [x] No unrelated repository/source changes or ARCH-052 contract changes.
 
 ## Validation
 
-- [ ] `npm run test:arch035-woo-activity:unit` (existing contract/phone/replay suite revised to v1)
+- [x] `npm run test:arch035-woo-activity:unit` (existing contract/phone/replay suite revised to v1)
 - [ ] `npm run test:arch035-woo-activity:redis` with the declared isolated Redis environment when available; otherwise record the blocked validation and do not mark it passed
-- [ ] `npm run typecheck` and `npm run lint`
-- [ ] Focused tests proving v1 only, exact validated Shared restore snapshots, normalized phone, no-phone, and order regression
-- [ ] `git diff --check`; record each exact command/result in Completion Report
+- [x] `npm run typecheck` and `npm run lint`
+- [x] Focused tests proving v1 only, exact validated Shared restore snapshots, normalized phone, no-phone, and order regression
+- [x] `git diff --check`; record each exact command/result in Completion Report
 
 ## Stop Condition
 
@@ -173,58 +173,73 @@ Task dependency files record *source* readiness, not permission to deploy interm
 
 ### Status
 
-Not Started
+Accepted Complete at Attempt 1 by the architect. The Redis integration validation remains explicitly blocked because Docker is unavailable; it was not reported as passed.
 
 ### Files Changed
 
-None — portable task definition only.
+- `moda-interact-api/package.json` and `package-lock.json` — pin the accepted published Shared package at 2.8.0.
+- `moda-interact-api/src/woocommerce/activity/contract.ts` — one strict v1 parser, verified phone normalization/proof stripping, and Shared-validated optional restoration.
+- `moda-interact-api/src/woocommerce/activity/routes.ts` — bounded Shared-logger error summary for queue failures without logging provider/Redis messages.
+- `moda-interact-api/openapi/woocommerce-activity-v1.yaml` — document v1 proof fields and restoration shapes.
+- `moda-interact-api/tests/unit/woocommerce/activity/{contract,openapi,producer,routes}.test.ts` — v1, restore, replay, phone-free route and bounded-error coverage.
 
 ### Work Completed
 
-Not Started.
+- Removed the HTTP v2 phone parser/version branch. Checkout and order envelopes remain `woo.activity.v1`; v2/v3 are rejected. Phone input requires matching digits-only `canonicalPhone`, validates an optional uppercase two-letter country, normalizes through Shared `normalizeRecipientPhone`, and strips both HTTP-only proof fields from the queued event.
+- Pinned `@modainteract/moda-interact-shared` to published 2.8.0 and imported its `WooCartRestoreSnapshotV1Schema` and type. Optional restoration is rejected on invalid Shared shape and projected unchanged, including supported/unsupported kind, line attributes, coupon ordering and spelling. The existing producer digest and retained replay path includes the normalized event without changing queue names or durability settings.
+- Updated unit coverage for v1 and v2/v3 rejection, required phone proof, no-phone requests, supported/unsupported/absent restoration, malformed Shared snapshots, order regression, queue projection, and restoration replay conflict. OpenAPI now reflects the contract.
+- Recorded the required coordinated pre-production handoff: API-001 must not deploy independently before the compatible WooCommerce-001 producer.
+- Launcher preparation/claim evidence: Attempt 1 claimed at `2026-10-30T14:48:24Z`; canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-API-001` on `task/ARCH-053-API-001`, synchronized starting HEAD `6ae519e7147c05fc286de519055a4f8ffc47e2b2`; API implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-001` on `task/ARCH-053-API-001`, synchronized starting HEAD `5efb9f40ff4917ae5efec947b82ab19bd6559e31`. At launch both remote task branches needed no fast-forward and `origin/main` was already current. Recursive submodules were initialized at their recorded commits; the Shared dependency gate passed.
+- Implementation commit: `30df9848cc2e1d9026afc94f3a120c9318162ffe` on the API task branch.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+- PASS — `npm run test:arch035-woo-activity:unit`: 24 tests passed, 0 failed. Coverage includes the authenticated route, v1-only version checks, phone-proof projection, phone-free restoration enqueue, Shared supported/unsupported schema cases, order regressions, and retained replay conflict on changed restoration.
+- BLOCKED — `npm run test:arch035-woo-activity:redis` was not run because Docker is unavailable to this environment. `docker info --format '{{.ServerVersion}}'` failed with permission denied connecting to `unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock`; therefore the declared disposable Redis/BullMQ integration remains unverified.
+- PASS — `npm run typecheck` (including Prisma client generation).
+- PASS — `npm run lint` (`eslint . --max-warnings=0`).
+- PASS — `git diff --check`.
 
 ### Deviations
 
-None.
+The Redis integration could not run because the configured Docker daemon socket is inaccessible. It is explicitly left unchecked above and is not reported as passed.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+`ARCH-053-SHARED-002` is accepted Complete and its published package is 2.8.0. The architecture's pre-production cutover requirement applies: API-001 and WooCommerce-001 must be integrated together; no live production v2 consumer was identified by this task.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+The disposable Redis/BullMQ integration remains unverified until Docker is available. Unit-level publisher replay and durability behavior passed.
 
 ### Architectural Concerns
 
-Return any cross-service schema/provider/transaction concern to `moda_architect` before improvising.
+The downstream WooCommerce producer must be released in the same coordinated pre-production cutover. Do not deploy the strict v1 API independently ahead of WooCommerce-001.
 
-## Architect Review
+## Architect Review — Attempt 1 (Accepted)
 
 ### Review Status
 
-Pending
+Accepted. The API contract, validation and v1 queue projection meet this task's acceptance criteria. Mark Complete at Attempt 1. This does not authorize API-only deployment; the updated WooCommerce producer must be integrated in the coordinated pre-production cutover.
 
 ### Review Notes
 
-Not Reviewed — task not executed.
+The implementation removes the HTTP version split while retaining strict v1 checkout and order handling. Phone proof is required and normalized when a phone is present, stripped before queueing, and does not create consent. The published Shared restoration schema validates the optional snapshot; the normalized event, original coupon evidence and restoration data flow into the existing digest and retained replay conflict logic. Tenant identity remains server-derived, the request body remains bounded, and queue failures preserve the retryable 503 boundary with bounded logging. No unrelated source ownership or ARCH-052 work was changed.
+
+The OpenAPI schema documents the restoration shape and phone proof. It is less strict than the published Shared runtime schema for control characters in coupon and variation-attribute text; the Shared validator remains authoritative and rejects those values. This documentation limitation does not change runtime acceptance behavior.
 
 ### Reviewed Files
 
-None.
+Reviewed the implementation diff in `src/woocommerce/activity/contract.ts`, `src/woocommerce/activity/routes.ts`, `openapi/woocommerce-activity-v1.yaml`, and the contract, producer, route and OpenAPI tests, plus the Completion Report.
 
 ### Validation Reviewed
 
-None.
+The report records 24 passing unit tests, typecheck, lint and `git diff --check`. The declared disposable Redis/BullMQ integration could not run because Docker access to the configured Colima socket was denied. That validation remains unchecked and is not represented as passing; this limitation was permitted by the task's explicit “when available” condition. Tests were not rerun during architect review.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+The strict v1 API is not to be deployed independently ahead of WOOCOMMERCE-001. Both API-001 and BACKGROUND-001 are now accepted Complete, so WOOCOMMERCE-001 is dependency-ready. No production activation or deployment is included in this acceptance.
 
 ### Follow-up
 
-None.
+Keep the Redis/BullMQ integration validation visible as outstanding until Docker is available. Promote WOOCOMMERCE-001 to Ready; API-002 is also Ready from its completed SHARED-002 and DATABASE-001 prerequisites. No system-test task is promoted.

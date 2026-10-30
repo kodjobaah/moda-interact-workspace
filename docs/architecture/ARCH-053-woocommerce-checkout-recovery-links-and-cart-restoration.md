@@ -11,7 +11,7 @@ updated: 2026-10-30
 
 ## Status
 
-**In Progress.** ARCH-053-DATABASE-001, SHARED-001, SHARED-002 and BACKGROUND-001 are Complete. BACKGROUND-002 is Ready; API-001 and API-002 are Ready. Remaining implementation tasks stay gated by their explicit dependencies. No consumer deployment or production activation is implied. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here.
+**In Progress.** ARCH-053-DATABASE-001, SHARED-001, SHARED-002 and BACKGROUND-001 are Complete. BACKGROUND-002, API-002 and WOOCOMMERCE-001 are Ready; API-001 is Complete. Remaining implementation tasks stay gated by their explicit dependencies. No consumer deployment or production activation is implied. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here.
 
 ## Problem and inspected baseline
 
@@ -132,19 +132,19 @@ Node uses `@modainteract/moda-interact-shared/logging` for generic structured ev
 
 ## Decisions / Tasks
 
-The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001, SHARED-001, SHARED-002 and BACKGROUND-001 Complete**; **BACKGROUND-002, API-001 and API-002 are Ready**. Other tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
+The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001, SHARED-001, SHARED-002, BACKGROUND-001 and API-001 Complete**; **BACKGROUND-002, API-002 and WOOCOMMERCE-001 are Ready**. Other tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
 | `ARCH-053-DATABASE-001` | `moda_database` | Complete | — |
 | `ARCH-053-SHARED-001` | `moda_shared` | Complete | — |
 | `ARCH-053-SHARED-002` | `moda_shared` | Complete | SHARED-001 |
-| `ARCH-053-API-001` | `moda_api` | Ready | SHARED-002 |
+| `ARCH-053-API-001` | `moda_api` | Complete | SHARED-002 |
 | `ARCH-053-BACKGROUND-001` | `moda_background` | Complete | SHARED-002 |
 | `ARCH-053-BACKGROUND-002` | `moda_background` | Ready | BACKGROUND-001, DATABASE-001 |
-| `ARCH-053-WOOCOMMERCE-001` | `moda_woocommerce` | Pending | API-001, BACKGROUND-001 |
+| `ARCH-053-WOOCOMMERCE-001` | `moda_woocommerce` | Ready | API-001, BACKGROUND-001 |
 | `ARCH-053-WOOCOMMERCE-004` | `moda_woocommerce` | Pending | WOOCOMMERCE-001 |
-| `ARCH-053-API-002` | `moda_api` | Pending | SHARED-002, DATABASE-001 |
+| `ARCH-053-API-002` | `moda_api` | Ready | SHARED-002, DATABASE-001 |
 | `ARCH-053-BACKGROUND-003` | `moda_background` | Pending | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
 | `ARCH-053-BACKGROUND-004` | `moda_background` | Pending | ARCH-052-BACKGROUND-008 |
 | `ARCH-053-API-003` | `moda_api` | Pending | API-002, SHARED-002, BACKGROUND-004 |
@@ -170,7 +170,7 @@ Only system-test tasks may depend on another system test. `SYSTEM-TEST-003` runs
 ## Change History
 
 - 2026-10-30: ARCH-053-DATABASE-001 accepted at Attempt 1; nullable generation-specific JSONB persistence and isolated fresh/upgrade checks are published. No dependent task was promoted while SHARED-002 remained Pending.
-- 2026-10-30: SHARED-002 and BACKGROUND-001 accepted Complete at Attempt 1. BACKGROUND-002 is Ready; API-001 and API-002 remain Ready, while WOOCOMMERCE-001 remains Pending until API-001 is Complete. No producer deployment is implied.
+- 2026-10-30: SHARED-002, BACKGROUND-001 and API-001 accepted Complete at Attempt 1. BACKGROUND-002, API-002 and WOOCOMMERCE-001 are Ready. API-001 and WOOCOMMERCE-001 still require the coordinated pre-production cutover before deployment. No producer deployment is implied.
 
 - 2026-10-30: Pre-production checkout activity correction: retire proposed `woo.activity.v3`, consolidate existing HTTP-only v2 phone proof into `woo.activity.v1`, preserve the v1 queue envelope and single restoration resolver v1; no compatibility adapters.
 
