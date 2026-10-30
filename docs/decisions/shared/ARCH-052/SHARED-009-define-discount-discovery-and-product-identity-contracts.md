@@ -9,16 +9,16 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 15
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-10-30T11:40:05Z
+attempt: 1
 depends_on: []
 enables:
 - ARCH-052-SHARED-010
 created: '2026-10-30'
-updated: '2026-10-30'
+updated: 2026-10-30
 ---
 
 # ARCH-052-SHARED-009: Define discount discovery, condition facts and product identity contracts
