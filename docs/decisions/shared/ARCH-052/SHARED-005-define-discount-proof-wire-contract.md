@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-10-29T22:52:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -314,24 +314,30 @@ Report discovered cross-repository/credential/provider-proof issues to `moda_arc
 
 ### Review Status
 
-Pending.
+Accepted
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+The task is correctly submitted in `review` at Attempt 1. The implementation branch `task/ARCH-052-SHARED-005` is clean at `aa4aaef` and contains only the four scoped source, fixture and export files. The schemas match the normative task contract: they reuse the existing `IdSchema`, `HashSchema`, `DateSchema`, `CurrencySchema` and `MoneySchema`; preserve the required identity and target fields; model eligible and non-eligible result branches; and keep target/identity matching, code/method consistency, evidence freshness, savings correctness and marketing authorization outside Zod. The generic `commerce.v1` envelope remains unchanged. No database, provider runtime, MCP execution or unrelated shared contract implementation was added.
+
+The Completion Report provides the required dedicated parent and implementation worktree, branch synchronization, recursive submodule and claim evidence. The required focused proof tests, typecheck, build, generated package subpath inspection, browser-safety inspection and `git diff --check` passed. The full Shared test suite was attempted with the equivalent Node test runner because npm and the package launcher could not run in the sandbox; its five failures are identified local HTTP-listener tests blocked by sandbox `listen EPERM`, while the three task-specific tests passed. This task's Validation explicitly calls for the attempt and documentation of unavailable npm/sandbox limitations; the environment failures are recorded as unresolved limitations rather than passing results.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+- Attempt 1 Completion Report, launcher evidence, task Acceptance Criteria and Validation.
+- Shared implementation branch `task/ARCH-052-SHARED-005` at `aa4aaef`, clean with a four-file diff from `origin/main`.
+- `src/recovery-offer-proof.ts` and `src/recovery-offer-proof.test.ts`.
+- `tsup.config.ts` and `package.json`.
+- Existing `src/commerce/primitives.ts`, `src/commerce/schemas.ts`, and the ARCH-052 dependency plan.
 
 ### Validation Reviewed
 
-None for implementation.
+Reviewed the recorded typecheck, focused tests (3 passed), build, public subpath/generated artifact inspection, browser-safety result, and `git diff --check`. Reviewed the full-suite attempt and its five identified sandbox listener failures. No tests were rerun for this review.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+The implementation provides the single Shared-owned structural contract required for on-demand discount evidence and leaves tenant authorization, provider eligibility and business consistency to their owning runtimes. It conforms to the task, repository boundaries, and ARCH-052.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+Set this automatic-completion task to `complete`. Keep `ARCH-052-SHARED-003` `pending`; its other Shared implementation prerequisites have not reached `complete`. The five sandbox-blocked existing listener tests remain a validation-environment limitation and are not represented as passing.
