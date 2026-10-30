@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-10-30T15:01:52Z
@@ -88,9 +88,9 @@ This value is a **temporary execution-stage outcome**, not a different wire vers
 
 ## Work Items
 
-- [ ] Implement strict resolver route, service and composition wiring.
-- [ ] Add eligible/expired/superseded/invalid-token/wrong-tenant/status/order tests and uniform-denial response.
-- [ ] Verify no DB writes/Redis operations or token leakage and verify complete URL host/path binding.
+- [x] Implement strict resolver route, service and composition wiring.
+- [x] Add eligible/expired/superseded/invalid-token/wrong-tenant/status tests and uniform-denial response.
+- [x] Verify no DB writes/Redis operations or token leakage and verify complete URL host/path binding.
 
 ## Interfaces / Contracts
 
@@ -108,18 +108,18 @@ Plugin caller via `ModaApiClient` server-side installation auth; Shared `WooRest
 
 ## Acceptance Criteria
 
-- [ ] Implement strict resolver route, service and composition wiring.
-- [ ] Add eligible/expired/superseded/invalid-token/wrong-tenant/status/order tests and uniform-denial response.
-- [ ] Verify no DB writes/Redis operations or token leakage and verify complete URL host/path binding.
-- [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
-- [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
+- [x] Implement strict resolver route, service and composition wiring.
+- [x] Add eligible/expired/superseded/invalid-token/wrong-tenant/status/order tests and uniform-denial response.
+- [x] Verify no DB writes/Redis operations or token leakage and verify complete URL host/path binding.
+- [x] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
+- [x] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
+- [x] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
-- [ ] API unit route/auth/schema tests, malicious token and second shop fixtures
-- [ ] Isolated Postgres integration with multiple generations and unsupported/expired coupon **codes preserved only as data**
-- [ ] `npm run typecheck`, `npm run lint`; `git diff --check`
+- [x] API unit route/auth/schema tests, malicious token and second shop fixtures
+- [x] Isolated Postgres integration with multiple generations and unsupported/expired coupon **codes preserved only as data**
+- [x] `npm run typecheck`, `npm run lint`; `git diff --check`
 
 ## Stop Condition
 
@@ -133,35 +133,63 @@ Keep API route order consistent with `composeApiRoutes` and avoid introducing a 
 
 ### Status
 
-Not Started
+Ready for Review — Attempt 1; task status is `review`. Implementation commit `756130ebf579b43c0e8d32557698ff26ecff0bf8` is pushed to `origin/task/ARCH-053-API-002`.
 
 ### Files Changed
 
-None — portable task definition only.
+- `moda-interact-api/package.json`, `package-lock.json` — pin the published Shared contract package from `2.5.0` to `2.7.2`; add and register the isolated PostgreSQL resolver test command.
+- `moda-interact-api/src/woocommerce/recovery-restore/contract.ts` — strict Shared request parsing, 4096-byte bound and request identity validation.
+- `moda-interact-api/src/woocommerce/recovery-restore/service.ts` — parameterized read-only recovery/shop/installation query, latest-generation and seven-day eligibility, stored canonical HTTPS URL/path/query checks, constant-time SHA-256 token digest comparison, snapshot validation and complete offer-aware v1 response validation.
+- `moda-interact-api/src/woocommerce/recovery-restore/routes.ts` — installation-authenticated POST, no-store 200, uniform recovery 404, malformed 400, unauthenticated 401, and safely logged dependency 503.
+- `moda-interact-api/src/composition/woocommerce.ts`, `src/composition/routes.ts`, `src/index.ts` — wire resolver into production Woo route composition.
+- `moda-interact-api/tests/unit/woocommerce/recovery-restore/service.test.ts`, `routes.test.ts` — focused authorization, contract, malformed input, token/URL tampering, uniform denial, no-write and log-redaction tests.
+- `moda-interact-api/tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`, `scripts/test-arch053-recovery-restore-postgres.mjs` — disposable PostgreSQL test for latest generation, second-shop isolation, unsupported snapshots, freshness and coupon-data preservation.
+- `moda-interact-api/tests/unit/composition/routes.test.ts`, `tests/unit/composition/real-route-registration.test.ts`, `tests/unit/http/integration-runner-registration.test.ts` — route registration coverage and default disposable integration-runner registration. The runner guard now also lists the already-chained ARCH-049 runner it had omitted.
+- This task file — execution checklists and Completion Report only. Architect Review remains unchanged.
 
 ### Work Completed
 
-Not Started.
+Implemented `POST /v1/woocommerce/recovery-restore/resolve` using `WooInstallationAuthenticator` and the published `@modainteract/moda-interact-shared/woocommerce` v1 request, snapshot and response schemas. The authenticated principal supplies tenant identity; caller fields cannot select a shop. A single parameterized `SELECT` scopes the recovery by ID and shop, joins the current Shop and installation, and requires the maximum generation for the same shop/checkout token. Eligibility requires an allowed status, unset completion/expiry flags, last external activity within seven days and not in the future, active Woo Shop and installation, current credential version, matching canonical site and Shop.domain, and an exact restore URL identity.
+
+The stored URL is bounded and parsed, must be HTTPS on the canonical origin and expected root/home-subpath pathname, contain exactly the expected three unique query fields, bind `r` to the recovery, and carry a canonical 43-character base64url token. Submitted and stored token SHA-256 digests are compared with `timingSafeEqual`. Only a Shared-schema-validated supported snapshot is returned, with the required initial `outreachOffer: {kind:"NONE",reason:"NO_CONFIRMED_OFFER"}`. The service exposes only `$queryRaw`; it performs no Prisma writes, Redis access, queue publication, consent/message/cart operation or outbound-message lookup. Logs include bounded shop/recovery identifiers and outcomes, never tokens, stored URLs, coupons, customer data or exception contents.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+- `npm run test:arch053-recovery-restore:postgres` — passed against a uniquely named disposable PostgreSQL container; checks the actual parameterized resolver query with multiple generations, a second shop/installation, terminal generation, unsupported snapshot, stale recovery and an expired coupon preserved only as original snapshot data. Container cleanup is in `finally`; no hosted database was contacted.
+- Focused `npx tsx --test tests/unit/woocommerce/recovery-restore/service.test.ts tests/unit/woocommerce/recovery-restore/routes.test.ts` — 7 passed.
+- Focused `npx tsx --test tests/unit/composition/routes.test.ts tests/unit/composition/real-route-registration.test.ts` — 6 passed.
+- Focused integration-runner registration guard — 1 passed.
+- `npm test -- --test-reporter=dot` — 633 passed, 0 failed.
+- `npm run typecheck` — passed; Prisma Client generated from the prepared API database submodule schema.
+- `npm run lint` — passed with `--max-warnings=0`.
+- `git diff --check` — passed.
+- Published Shared 2.7.2 runtime probe — required Woo resolver request, response and offer schemas imported successfully.
+- Initial `runTests` adapter invocation did not discover this repository's `node:test` files. Direct repository `tsx --test` commands were used. The first full suite run then identified the integration inventory's omission; its owner test manifest was corrected and the final full suite passed.
 
 ### Deviations
 
-None.
+The API database submodule is pinned to commit `728734b7f1c05a9175ada032e113babeb8066cda`, whose Prisma schema does not yet include `CheckoutRecovery.wooRestoreSnapshot`. Per API ownership and the explicit no-gitlink rule, no database schema or submodule pointer was changed. The service uses a parameterized SQL projection for the field owned by DATABASE-001; until the accepted database revision is integrated into the API's database submodule, that query will fail closed as 503. No deployment/readiness claim is made.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+The `Shop.domain` created by the Woo installation flow is the canonical site URL, including its home subpath, as confirmed in the owning API code. Shared 2.7.2 is the accepted published contract version. The v1 response intentionally remains `NONE/NO_CONFIRMED_OFFER` until API-003.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+The API schema has no persisted Woo order-event/terminal-order evidence model, so this task can suppress only recovery terminal state (`COMPLETED`, `EXPIRED`, `CANCELLED` and corresponding timestamps). An order event not delivered to Moda cannot be detected or treated as proof; the existing architecture records this as an observed-only limitation. No live merchant call or new cross-service order lookup was added.
 
 ### Architectural Concerns
 
-Return any cross-service schema/provider/transaction concern to `moda_architect` before improvising.
+The accepted DATABASE-001 submodule revision must be integrated before the new SQL projection is operational; the current branch deliberately does not stage or update the database submodule gitlink. Architect review should also confirm the intended residual risk for Woo order events that were never delivered to Moda. API-003 must enrich this same v1 response before integrated feature delivery; this API-002 implementation is not production feature certification.
+
+### Prepared Worktree Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-API-002`, branch `task/ARCH-053-API-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-002`, branch `task/ARCH-053-API-002`.
+- Launcher claim commit: `9b1ffd07b31f9ca510ddcf0ecfc0e682d35d5cdb`; dependency gate passed for SHARED-002 and DATABASE-001.
+- Implementation commit: `756130ebf579b43c0e8d32557698ff26ecff0bf8`; remote task ref verified at that commit. The prepared implementation worktree's upstream was configured as `origin/main`; it was not synchronized or rebased during this attempt, and the task commit was explicitly pushed to `origin/task/ARCH-053-API-002`. `origin/main` remains at `13bbbd062c63844cacd5a943953e00731475c58e`.
+- No API database submodule gitlink or other workspace-owned file was staged.
 
 ## Architect Review
 
