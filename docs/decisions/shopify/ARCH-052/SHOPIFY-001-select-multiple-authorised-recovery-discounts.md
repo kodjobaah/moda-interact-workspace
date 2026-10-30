@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-30T16:43:11Z
+attempt: 1
 depends_on:
 - ARCH-052-BACKGROUND-009
 enables:
 - ARCH-052-SYSTEM-TEST-001
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: 2026-10-30
 ---
 
 # ARCH-052-SHOPIFY-001: Make Shopify merchant discount selection match WooCommerce checkboxes
