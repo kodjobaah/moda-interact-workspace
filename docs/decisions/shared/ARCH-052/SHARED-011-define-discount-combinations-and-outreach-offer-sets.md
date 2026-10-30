@@ -207,7 +207,7 @@ None identified during implementation.
 - Implementation commit: `cba9decf56e6cf22c8973e814c713330412db8c1`.
 - Implementation branch push: blocked by automatic approval review; no push was made.
 - Parent task claim commit: `87513ff6fae710c5c36cc1a1db7ef1b2c4d6af64` (already pushed).
-- Parent completion-record commit: pending locally; external push not attempted after the implementation push was rejected.
+- Parent completion record is committed on the task branch; external push was not attempted after the implementation push was rejected.
 - Main was not modified or pushed.
 
 ## Architect Review
