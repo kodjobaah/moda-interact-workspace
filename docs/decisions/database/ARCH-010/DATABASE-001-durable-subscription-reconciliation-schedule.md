@@ -106,7 +106,6 @@ STOP and return to `moda_architect` if the current integrated schema differs mat
 ## Completion Report
 
 ### Status
-<<<<<<< HEAD
 Ready for Review.
 
 ### Files Changed
@@ -252,22 +251,3 @@ The implementation findings from Attempt 1 remain valid: the nullable `Subscript
 Because `completion_mode: automatic`, the task is complete. `executor` and `claimed_at` are cleared while `attempt: 2` is preserved.
 
 Dependency/frontier reconciliation must be performed against the current canonical parent workspace. This task-scoped review archive intentionally does not contain the other ARCH-010 task files, domain `_index.md`, or architecture execution-plan files, so this acceptance overlay does not overwrite those shared coordination documents from an older snapshot.
-
-=======
-Not started.
-
-### Files Changed
-Populate during implementation.
-
-### Work Completed
-Populate during implementation.
-
-### Validation Results
-Populate during implementation.
-
-### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
-
-### Architect Review
-Pending.
->>>>>>> 36fcd0c (chore(workspace): tasks for ARCH-010)

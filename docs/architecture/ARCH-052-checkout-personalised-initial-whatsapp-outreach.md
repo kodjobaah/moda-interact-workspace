@@ -4,14 +4,14 @@ title: Checkout-personalised initial outreach with direct MCP product reads and 
 status: proposed
 coordinator: moda_architect
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
 # ARCH-052: Checkout-personalised WhatsApp initial outreach
 
 ## Status
 
-Proposed — **Attempt 8 Shared contract definition review** from 29 October 2026 08:07 source snapshot. Pre-production breaking work; definitions are portable and **not materialised**. No historical backfill, legacy compatibility, provider-product persistence or new Prisma schema. Merchant selections continue to use `ShopifyDiscount.isAvailable`. No new attempt policy/sent-offer snapshot is added: confirmed `ConversationMessage.content` and `RecoveryOutreachAttempt.outboundMessageId` already record the actual sent template.
+Proposed — **Attempt 9 Shared contract definition review** from 29 October 2026 08:07 source snapshot. Pre-production breaking work; definitions are portable and **not materialised**. No historical backfill, legacy compatibility, provider-product persistence or new Prisma schema. Merchant selections continue to use `ShopifyDiscount.isAvailable`. No new attempt policy/sent-offer snapshot is added: confirmed `ConversationMessage.content` and `RecoveryOutreachAttempt.outboundMessageId` already record the actual sent template.
 
 ## Problem
 
@@ -50,7 +50,7 @@ No new database tables/columns/migrations, replicated product catalogue or produ
 
 ## Shared contract boundaries — Attempt 9
 
-`ARCH-052-SHARED-002`, `SHARED-005`, `SHARED-006` and `SHARED-008` contain exact **proposed** TypeScript/Zod source snippets, package exports and structural fixtures. The contract proposals are for developer/architect review before implementation; their currently Ready task statuses are planning eligibility, not acceptance of a runtime implementation.
+`ARCH-052-SHARED-002`, `SHARED-005`, `SHARED-006` and `SHARED-008` contain exact **proposed** TypeScript/Zod source snippets, package exports and structural fixtures. The contract proposals are for developer/architect review before implementation; Ready task statuses are execution eligibility, not acceptance of a runtime implementation. SHARED-006's Attempt 1 implementation was accepted against an earlier contract, but its source requires recovery and attempt IDs contrary to this current purpose-only contract; it is reopened for correction.
 
 - **Zod = transport structure only.** New schemas describe field names, required/nullable types, literals, discriminated results, established lexical formats and unknown-key rejection. No new business-policy `.refine`, `.superRefine`, `.transform` or `.check` is authorised.
 - **SHARED-002:** Admin/Background share checkout/promotion semantic bindings and immutable projection structure. Approval, target/variable compatibility, image roles, Meta parameter ordering, marketing suitability and button semantics are service-layer concerns; ARCH-052 adds **no** checkout URL validation.
@@ -133,7 +133,7 @@ Development-only `RecoveryOutreachAttempt` records with old single-discount `off
 
 ## Decisions / Tasks
 
-All tasks are portable definitions; **Ready** means dependency-eligible but not claimed. Superseded tasks are not executable. No database schema task is required.
+Each task YAML is authoritative; **Ready** means dependency-eligible but not claimed, and materialisation is tracked per task. Superseded tasks are not executable. No database schema task is required.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|

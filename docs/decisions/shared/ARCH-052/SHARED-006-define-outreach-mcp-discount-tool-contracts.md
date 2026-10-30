@@ -13,12 +13,12 @@ status: ready
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
 - ARCH-052-SHARED-003
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
 # ARCH-052-SHARED-006: Define the purpose-only outreach MCP context discriminator
@@ -27,7 +27,7 @@ updated: '2026-10-29'
 
 Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`.
 
-Portable task definition: **defined but not materialised**; no local developer Git claim, branch or push is asserted.
+Task materialised and claimed through the prepared launcher on 2026-10-29. The launcher created the dedicated mirrored task worktrees, synchronized both task branches, initialized the implementation submodules, and pushed the Attempt 1 claim before implementation began.
 
 ## Objective
 
@@ -178,27 +178,44 @@ Implement the specified source and export only. Any mismatch with the existing p
 
 ### Status
 
-Not Started — portable definition, no task claim.
+Ready for Review. Attempt 1 was claimed and pushed by the prepared launcher. Implementation commit `29ed192` and parent report commit `437608cc` are pushed on their mirrored task branches.
 
 ### Files Changed
 
-None yet.
+`src/commerce/outreach-context.ts`, `src/commerce/index.ts`, and `src/commerce/contracts.test.ts` in `moda-interact-shared`.
 
 ### Work Completed
 
-None yet.
+- Added the specified strict context schema and inferred type with only the purpose literal and recovery/attempt IDs. No business authorisation was added to Shared.
+- Exported the schema/type from the existing `/commerce` entrypoint.
+- Added positive, unknown-field, invalid-purpose and missing-attempt fixtures in the existing commerce contracts test file.
+- Existing conversation assertion, discount input/output schemas and generic tool result schema were not modified.
+
+### Prepared Launcher and Start-of-Attempt Synchronization Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHARED-006`, branch `task/ARCH-052-SHARED-006`, prepared start HEAD `b1a4e84be53d3a2db06984daef0ff46064a80622`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHARED-006`, repository `moda-interact-shared`, branch `task/ARCH-052-SHARED-006`, prepared start HEAD `7e0e167e04540ef57787dac3d42e7fbf645cf28f`.
+- Both worktrees were created fresh; each task branch needed no remote fast-forward and already included `origin/main`. The prepared implementation submodule synchronization/update passed; no recursive submodule entries were present and status was `ready`.
+- Attempt 1 claim commit `422916eb247e4525981ac99df2240884ab34791e` was committed and pushed by the launcher. Final parent sync incorporated `origin/main` at `961ec7b2aa172ce86e7c0cf014f561b8ff7ff3b1` before implementation. No shared/default checkout was switched or used for implementation.
+- Implementation commit `29ed192` and parent report commit `437608cc` were pushed on their respective `task/ARCH-052-SHARED-006` branches.
 
 ### Validation Results
 
-Not run.
+- `npm ci --prefer-offline` installed the locked dependencies. npm reported three audit notices (1 low, 2 high) and five pending package install scripts; no install-script failure affected the successful validations below.
+- `npm run typecheck` passed.
+- `npm test` passed: 382 tests, 381 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is not configured (BullMQ trace-context integration).
+- `npm run build` passed and generated the Commerce declarations/bundle with the new export.
+- A clean package import from `@modainteract/moda-interact-shared/commerce` confirmed `CommerceOutreachToolContextSchema` is exported and accepts the valid structural fixture.
+- `git diff --check` passed. The complete suite retained all existing conversation, discount input/output and generic-result coverage.
 
 ### Deviations
 
-None reported.
+The first sandboxed install/test/build attempts were denied while creating `node_modules`, the `tsx` IPC socket and a temporary tsup config. Retried with the required repository/temp-file access; all three requested scripts passed. npm’s optional install scripts remained pending, but the package build and test suite both succeeded.
 
 ### Assumptions
 
-Implementation must confirm package versions and the current task worktree baseline.
+The recovery and attempt identifiers in `toolContext` are trusted MCP request-context values supplied by Background, not model-authored tool arguments; MCP owns identity matching and authorization.
 
 ### Unresolved Issues
 
@@ -212,24 +229,30 @@ Escalate any unexpected cross-repository contract/security gap to `moda_architec
 
 ### Review Status
 
-Pending.
+Changes Requested
 
 ### Review Notes
 
-Task definition only. No implementation accepted.
+Attempt 1 was previously accepted, but review against the current Attempt 9 contract found a material mismatch in the accepted implementation. At implementation commit `29ed192`, `src/commerce/outreach-context.ts` requires `checkoutRecoveryId` and `outreachAttemptId` using `IdSchema`; `src/commerce/contracts.test.ts` treats both as required. The task's normative schema and current architecture require exactly `{ purpose: "INITIAL_RECOVERY_OUTREACH" }` and explicitly reject both identifiers. The prior acceptance is superseded. The `/commerce` export and unchanged generic result envelope are not the issue.
+
+Correction contract: remove both identity fields from the schema/type; add the purpose-only positive fixture and negative fixtures for extra `checkoutRecoveryId`, `outreachAttemptId`, `shopId`, missing purpose and wrong purpose; rerun the task's required Shared validation and report the corrected implementation evidence. Do not add a recovery/attempt lookup or change ownership boundaries.
 
 ### Reviewed Files
 
-Relevant October 29, 2026 code snapshot and task definition; no implementation source changes reviewed.
+- Attempt 1 Completion Report, task scope, Acceptance Criteria and Validation.
+- Shared implementation branch `task/ARCH-052-SHARED-006` at `29ed192`, clean with a three-file diff from `origin/main`.
+- `src/commerce/outreach-context.ts`.
+- `src/commerce/index.ts` and `src/commerce/contracts.test.ts`.
+- Existing `src/commerce/schemas.ts` and ARCH-052 dependency records.
 
 ### Validation Reviewed
 
-None for implementation.
+The Attempt 1 report records successful typecheck, tests, build, package export and diff checks. Those results do not establish conformance: the source and tests at `29ed192` require identity fields prohibited by the current contract. The correction must rerun the checks listed in Validation.
 
 ### Architecture Conformance
 
-Pending implementation review.
+The implementation does not conform to the purpose-only SHARED-006 contract or current ARCH-052 boundary because it places recovery and attempt identities in `toolContext`. MCP authorization and current merchant-policy ownership remain unchanged.
 
 ### Follow-up
 
-Materialise through the canonical launcher only after all dependency task YAMLs are Complete.
+Task returned to `ready`; `executor` and `claimed_at` are clear, and attempt 1 is preserved for the next claim. Reclaim the same task and implement the correction contract above. `ARCH-052-SHARED-003` remains `pending`; no publication or consumer task is promoted.

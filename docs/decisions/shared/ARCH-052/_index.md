@@ -4,9 +4,9 @@ Architecture: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp
 Owner: `moda_shared`
 Coordinator: `moda_architect`
 
-These are portable task definitions, **defined but not materialised**; the individual task YAML frontmatter is authoritative. Superseded tasks must never be executed.
+Task materialisation is recorded per task; individual task YAML frontmatter is authoritative. Superseded tasks must never be executed.
 
-**Attempt 9 contract review:** SHARED-002/005/006/008 now include complete proposed TypeScript/Zod source shapes and structural fixtures. Zod owns wire shape/type parsing only; Admin, Background, MCP and provider adapters own authorisation, eligibility, business consistency, product safety and final send decisions. SHARED-003 remains a publication-only gate. No consumer should introduce a parallel contract or infer unstated fields.
+**Attempt 9 contract review:** SHARED-002/005/006/008 contain the current TypeScript/Zod contract shapes and structural fixtures. SHARED-006's Attempt 1 implementation was accepted against an earlier definition but requires recovery and attempt IDs, so it is reopened for correction to the current purpose-only contract. Zod owns wire shape/type parsing only; Admin, Background, MCP and provider adapters own authorisation, eligibility, business consistency, product safety and final send decisions. SHARED-003 remains a publication-only gate and stays Pending until all implementation prerequisites are Complete. No consumer should introduce a parallel contract or infer unstated fields.
 
 | Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
