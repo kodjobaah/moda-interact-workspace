@@ -1043,6 +1043,6 @@ Proposed, pre-production and **29 portable, defined-but-not-materialised tasks**
 
 ## ARCH-048 — WooCommerce recurring abandonment generations (2026-10-29)
 
-The 2026-10-29 checkout-lifecycle amendment replaces the earlier one-recovery-per-checkout rule. The six existing Background foundation tasks are Complete **in the supplied snapshot**; new Background tasks `007`–`011` are portable definitions (not materialised) and require staged architect acceptance. `BACKGROUND-007` is the first Ready task in the snapshot; `008`–`011` remain Pending. The revised terminal `SYSTEM-TEST-001` is Pending, including returning-consent dependency `ARCH-046-WOOCOMMERCE-003` (Ready in the snapshot). No live WooCommerce outbound activation is authorised.
+The 2026-10-29 checkout-lifecycle amendment replaces the earlier one-recovery-per-checkout rule. BG001–BG009 are Complete; BG010 is Ready and BG011 is Pending on BG010. The revised terminal `SYSTEM-TEST-001` remains Pending, including returning-consent dependency `ARCH-046-WOOCOMMERCE-003`. No live WooCommerce outbound activation is authorised.
 
 [Architecture](ARCH-048-woocommerce-checkout-recovery-pipeline.md) · [Background task index](../decisions/background/ARCH-048/_index.md) · [System-test task index](../decisions/system-test/ARCH-048/_index.md)
