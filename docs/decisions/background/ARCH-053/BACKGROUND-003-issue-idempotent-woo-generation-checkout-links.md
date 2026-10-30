@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 50
-executor: codex
-claimed_at: 2026-10-30T16:04:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-053-BACKGROUND-002
@@ -42,7 +42,7 @@ The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount
 
 - Modify `src/services/woocommerce-recovery/woo-recovery-admission.service.ts` only for transactional URL creation and `woo-recovery-admission-evidence.ts` or a narrowly owned `woo-recovery-link-issuer.ts` helper; update Woo Background admission/outreach/template regression tests. Consume generation-aware admission already accepted under ARCH-048-BACKGROUND-011; do not reimplement the new generation lifecycle.
 - For a **supported, fully persisted** `wooRestoreSnapshot`, resolve active `WooCommerceInstallation.canonicalSiteUrl` from the authoritative shop. Validate HTTPS/public site and hostname equality with `Shop.domain` (support home subpath). Generate 32 cryptographically random bytes to base64url 43-character token and construct `<canonicalSiteUrl>/?moda_interact_resume=1&r=<new-recovery-id>&t=<token>`; insert row with `CheckoutRecovery.checkoutUrl` atomically as part of the existing recovery admission transaction (create row, then update URL within same tx, if generated recovery ID required).
-- For missing/unsupported snapshot, invalid canonical site, revoked installation or host mismatch, store `checkoutUrl:null` and record bounded omission reason; never fall back to bare `wc_get_checkout_url()` or product-ID `/checkout-link/`. If template requires URL, obey established no-link fallback or no-send rather than sending misleading CTA.
+- For a shop and installation that pass the existing admission/consent gates, missing/unsupported snapshot, invalid canonical site or host mismatch permits the otherwise eligible recovery to be admitted with `checkoutUrl:null` and a bounded omission reason. Never fall back to bare `wc_get_checkout_url()` or product-ID `/checkout-link/`; use the established no-link fallback or no-send when a template requires a URL. **A revoked/inactive installation is not a link-omission case: deny recovery admission completely, create no new `CheckoutRecovery` row, URL or status history, and never weaken the existing eligibility/consent gates.**
 - Do not regenerate token/URL for duplicate delivery, already-created generation or resend/retry: return existing immutable link; one unique URL per recovery ID/generation. Confirm existing `checkout.url` templating and `trustedHttpsUrl` host gate still accepts the verified URL, and that Meta preparation/redaction does not emit token in logs. Do not activate Woo production sends.
 
 ## Out of Scope
@@ -54,7 +54,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 ## Requirements
 
 - Issuance does not depend on ARCH-052 discount discovery, private Woo provider call, WP transient or extra HMAC key. No network/Redis inside admission transaction; entropy failure is retryable and must not admit a partial row with a phantom URL.
-- A new generation receives a different URL and fresh snapshot; the old link remains stored historically but API resolver refuses it immediately once old generation is terminal/superseded. New arrivals can send their independently eligible initial outreach under ARCH-048.
+- A new generation receives a different URL and fresh snapshot; the old link remains stored historically but API resolver refuses it immediately once old generation is terminal/superseded. New arrivals can send their independently eligible initial outreach under ARCH-048. **Installation status is authoritative:** revoked/inactive at preflight yields `INSTALLATION_INACTIVE`; revocation after preflight but before the insertion transaction commits is rejected by `confirmCurrentWooConsent()` as `CONSENT_CHANGED`. Neither path may insert a new recovery, issue a link, or create admission history. If an installation is revoked *after* a previously valid admission, preserve historical data, but subsequent link resolution/outreach must fail closed at their owning boundaries.
 - Ensure 7-day checkout freshness for URL resolution is consistent with existing Background template freshness. Historical confirmed billing/sends are never altered by link creation.
 
 ### Mandatory workflow/security invariants
@@ -85,6 +85,7 @@ Recovery DB: `CheckoutRecovery.checkoutUrl String?` (existing) and new `wooResto
 
 ## Acceptance Criteria
 
+- [ ] Confirm by focused regression tests that a previously revoked installation is denied before admission and a revocation detected by the transaction consent fence is also denied; neither case creates a recovery, URL update or admission history. No runtime code changes are requested if the existing safety gate passes.
 - [x] Generate bounded deterministic URL **format** with random per-generation token and canonical site URL.
 - [x] Write exactly one URL in generation admission transaction, safe retry and uniqueness conflict handling.
 - [x] Test supported/unrestorable, subpath, host mismatch, generation 1→2, duplicate admission, token uniqueness, template bind and zero token logging.
@@ -94,6 +95,7 @@ Recovery DB: `CheckoutRecovery.checkoutUrl String?` (existing) and new `wooResto
 
 ## Validation
 
+- [ ] Add/run focused revoked-installation regression tests (preflight `INSTALLATION_INACTIVE` and transaction-fence `CONSENT_CHANGED`); verify zero inserts, URL updates and history writes, and no logged bearer token.
 - [x] Background admission transaction and URL issuer unit tests, mature job retry and two generation integration
 - [x] Template binding/host validation and secret-redaction regression tests
 - [x] Package build/typecheck, changed-file lint and `git diff --check`
@@ -104,7 +106,9 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ## Implementation Notes
 
-Dependency `ARCH-048-BACKGROUND-011` is **defined and Pending in this snapshot**, not Complete: do not mark this Ready until it is architect-accepted and the launcher confirms readiness. Confirm actual field/method names at that accepted commit; stop for architect if conflict.
+**Architect decision (2026-10-30, after Attempt 1):** The earlier scope phrase grouping revoked installations with invalid URL configuration was contradictory. **Do not implement a separate persistence path for revoked installations.** The existing active-installation and transactional consent fences take precedence over URL omission. The implementation described in the Attempt 1 Completion Report is architecturally correct on this point. Reclaim this *same* task as Attempt 2, keep implementation commit `6b6b254` as the code baseline, add only the narrowly scoped regression coverage in the latest Architect Review, rerun task-required validation, update the Completion Report and return `status: review`. Do not redesign the URL, create a new task, modify another repository, activate Woo outbound sending or start enabled system-test tasks.
+
+Dependencies `ARCH-053-BACKGROUND-002` and `ARCH-048-BACKGROUND-011` are Complete in this submitted worktree snapshot, subject to rechecking in the launcher on reclaim. Older historical snapshot descriptions in this task are superseded by the recorded accepted dependency state.
 
 ## Completion Report
 
@@ -166,24 +170,36 @@ The revoked-installation requirement conflicts with the current admission invari
 
 ### Review Status
 
-Pending
+Changes Requested — architectural blocker resolved; focused validation-only correction, then resubmit the same task for acceptance.
 
 ### Review Notes
 
-Not Reviewed — task not executed.
+Attempt 1 reviewed on 2026-10-30. The task's original instruction to admit a revoked installation with `checkoutUrl:null` was incorrect and conflicts with the pre-existing admission/consent invariants. **Architect decision: deny admission entirely for an inactive or revoked Woo installation; do not create a recovery, URL or admission history.** Missing/unsupported restoration data and unsafe canonical-site configuration are URL-omission cases only for an otherwise eligible active installation. No code change or separate revoked-installation persistence mechanism is authorised.
+
+The submitted implementation already performs an early `INSTALLATION_INACTIVE` denial and rechecks `installationStatus === ACTIVE` and `revokedAt === null` in `confirmCurrentWooConsent()` within the PostgreSQL transaction, returning `CONSENT_CHANGED` on a failed fence. Reviewed URL creation inside the transaction, opaque 32-byte token generation, canonical-host checks, immutable reuse after retry, generation isolation, and safe omission reasons. No material architectural redesign was identified. The sole request is specific regression evidence for both revocation timings; it may require a focused test addition, not production code churn.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-admission.service.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-admission-evidence.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-link-issuer.ts`
+- `moda-interact-background/tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts`
+- `moda-interact-background/tests/unit/services/woocommerce-recovery/woo-recovery-link-issuer.test.ts`
+- `moda-interact-background/tests/integration/woo-recovery-admission.integration.test.ts`
+- Attempt 1 Completion Report and the ARCH-053 parent architecture.
 
 ### Validation Reviewed
 
-None.
+The supplied Completion Report records 52 focused unit and eight disposable PostgreSQL/Redis integration tests passed, plus ESLint, build and `git diff --check`. The checked-in tests in the uploaded snapshot cover preflight revocation, transaction-fenced STOP, URL/idempotency and generations. These reported commands were **not independently rerun** during this architect review. An explicit revocation-during-transaction regression scenario is still required before final acceptance.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+The inspected runtime behaviour conforms to the corrected ARCH-053 safety policy, the ARCH-048 generation lifecycle and existing tenant/consent guards. Link omission does not override installation admission eligibility. No new persistence path, endpoint, Shared contract or schema migration is required for this decision.
 
-### Follow-up
+### Follow-up — authoritative Attempt 2 correction contract
 
-None.
+1. Keep the already-pushed Attempt 1 implementation as the baseline; **do not change production source solely to manufacture another commit**.
+2. In `tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts`, ensure a revoked/inactive installation rejected at the initial lookup produces exactly `denied/INSTALLATION_INACTIVE`; assert **zero** recovery creates, URL updates and admission-history writes. Strengthen an existing test rather than duplicate it.
+3. In that same test file, add a transaction-fence case with preflight installation ACTIVE, but a mocked locked consent row with `installationStatus: REVOKED` or non-null `revokedAt`; expect exactly `denied/CONSENT_CHANGED` and **zero** recovery creates, URL updates and admission-history writes. Keep the test narrowly scoped; use existing `permittedFence`/`setFence` helpers.
+4. Run the focused admission/link issuer/template unit tests, the existing disposable PostgreSQL/Redis admission integration suite, repository build, changed-file lint and `git diff --check`. Record actual commands/results; if environmental validation is impossible, report it rather than claim a pass.
+5. Update the agent-owned checkboxes/Completion Report, set task `status: review`, return the same task for architect acceptance and STOP. Do not modify Architect Review, parent architecture, `_index.md`, ARCH-052 or unrelated code.
