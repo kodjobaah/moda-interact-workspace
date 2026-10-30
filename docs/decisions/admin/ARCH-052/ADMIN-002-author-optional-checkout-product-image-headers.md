@@ -232,7 +232,7 @@ The existing Meta registration transaction is the durable `READY_TO_SUBMIT` inte
 
 - Parent claim commit: `55f555bfbbe5fe3a06d6b486bd2fedf9568fa709`.
 - Implementation starting commit: `8432eac90ffd50d078d82155655f2193f2040df3`.
-- Implementation commit: `76809d55a80cd1febbd7f3b26e77f709de7e46ce`.
+- Implementation commit: `76809d5005c62fec8fdf1c1707310df69991badc`.
 - Parent review-report commit: this task-file commit.
 
 ### Current Task Status
