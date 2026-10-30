@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: copilot
 claimed_at: 2026-10-30T10:13:27Z
@@ -74,7 +74,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - [x] Add basket summary to registry, AST and compiler validation.
 - [x] Create target-specific examples and binding eligibility rules while retaining all six existing purpose identities.
 - [x] Test translation/fingerprint and Admin publication compatibility.
-- [ ] Support two independently indexed dynamic URL buttons when Meta approves both CTAs, and preserve both bindings through translation and publication.
+- [x] Support two independently indexed dynamic URL buttons when Meta approves both CTAs, and preserve both bindings through translation and publication.
 
 ## Interfaces / Contracts
 
@@ -95,7 +95,7 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 ## Acceptance Criteria
 
 - [x] Different promotion targets under the same existing purpose/language are carried in immutable registration metadata for deterministic downstream selection.
-- [ ] Where a Meta-approved alternative template has two URL CTA components, both semantic bindings and component indexes are immutable, correctly compiled, translated and preserved in registration snapshots.
+- [x] Where a Meta-approved alternative template has two URL CTA components, both semantic bindings and component indexes are immutable, correctly compiled, translated and preserved in registration snapshots.
 - [x] Checkout and alternative promotions have distinct approved presentations using existing purpose names.
 - [ ] Alternative promo cannot render with a checkout-discount-only template or unsafe product URL; runtime product-URL safety must be established by the owning resolver contract.
 - [x] Locale/Meta approval immutability and translation protections unchanged.
@@ -103,7 +103,7 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 ## Validation
 
 - [x] Focused Admin authoring, compilation, publication, translation and Meta snapshot checks passed for the supported cases.
-- [ ] Add focused coverage for two URL CTA component indexes and both frozen semantic bindings; current authoring tests explicitly restrict Meta dynamic buttons to one checkout URL.
+- [x] Add focused coverage for two URL CTA component indexes and both frozen semantic bindings; current authoring tests explicitly restrict Meta dynamic buttons to one checkout URL.
 - [x] Admin typecheck, production build and `git diff --check`.
 - [ ] Repository-wide lint and broad unit/security suites remain non-clean; see Completion Report for reported unrelated failures.
 
@@ -128,7 +128,7 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Changes Requested — Attempt 1 reviewed; implementation commit `a871a47` remains pushed on the mirrored task branches. The task is reopened as `ready` for Attempt 2.
+Attempt 1 history: Changes Requested; implementation commit `a871a47` remains pushed. Attempt 2 completion and review submission are recorded below.
 
 ### Files Changed
 
@@ -195,6 +195,63 @@ Repository-wide lint and broad unit/security checks have pre-existing failures; 
 Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
 
 No additional cross-repository changes were required; the released Shared contract was consumed as specified.
+
+### Attempt 2 Completion Report
+
+#### Status
+
+Ready for Review. Attempt 2 addresses every correction in the latest Architect Review. Implementation commit `14faa94a7096aef3ef9222c687cb663dd5834459` is committed and pushed on `task/ARCH-052-ADMIN-001`.
+
+#### Architect Review Correction Mapping
+
+- Extended the Admin AST/compiler and validation to represent two distinct dynamic URL bindings only for `ALTERNATIVE_PRODUCT`: component index 0 binds `checkout.url` and index 1 binds `promotion.productUrl`. Duplicate semantic bindings, `promotion.productUrl` on other targets, and two-button templates without this exact approved pair are rejected.
+- Added alternative-template editor controls for a second CTA and the product URL binding; non-alternative templates remain limited to one button. Meta submission remains operator-controlled and no approval behavior or cross-repository contract was changed.
+- Confirmed immutable translation behavior and publication snapshot preservation with focused tests. Translation retains both labels and indexes; Meta registration snapshots retain the same frozen binding pair; publication parsing retains each index/variable mapping.
+- Preserved deterministic promotion-target and header-kind selection and all prior invariants. No database or shared-contract changes were needed; Shared 2.6.0 already defines both supported URL binding variables.
+
+#### Files Changed
+
+- `src/components/admin/whatsapp-templates/authoring/template-buttons-editor.tsx`
+- `src/components/admin/whatsapp-templates/authoring/template-content-editor.tsx`
+- `src/lib/admin/whatsapp-templates/authoring/compiler.ts`
+- `src/lib/admin/whatsapp-templates/authoring/types.ts`
+- `src/lib/admin/whatsapp-templates/authoring/validation.ts`
+- `src/lib/admin/whatsapp-templates/translations/source-snapshot.ts`
+- `tests/unit/arch047-template-authoring-ast.test.ts`
+- `tests/unit/arch047-template-authoring-components.test.tsx`
+- `tests/unit/arch047-template-compilation.test.ts`
+- `tests/unit/arch047-template-meta-snapshots.test.ts`
+- `tests/unit/arch047-template-publication-pure.test.ts`
+- `tests/unit/arch047-template-translations.test.ts`
+
+#### Validation
+
+- `npm run test:arch047-admin-authoring:unit`: passed, 33/33.
+- `npm run test:arch047-admin-compilation:unit`: passed, 14/14.
+- `npm run test:arch047-admin-translations:unit`: passed, 16/16.
+- `npm run test:arch047-admin-meta:unit`: passed, 15/15 across snapshot/service and component checks; includes dual CTA registration snapshots for all 20 locale payloads.
+- `npm run test:arch047-admin-publication:unit`: passed, 22/22.
+- `npx tsc --noEmit`: passed.
+- Targeted ESLint on all changed production source files: passed.
+- `npm run build`: passed. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` resolution warnings remain.
+- `git diff --check`: passed.
+- No PostgreSQL integration harness was run.
+
+#### Existing Suite Limitations
+
+The repository-wide lint/unit/security limitations recorded under Attempt 1 were not rerun because this attempt changes only the authoring, translation, and publication projection slice. The previously reported broad unit/security harness failures are not claimed as resolved; all focused suites for this correction pass. The content-editor JSX apostrophe lint issue touched during this attempt was escaped, and the changed production-source lint command passes. No new unrelated failures were observed.
+
+#### Launcher and Branch Evidence
+
+- Prepared Attempt 2 was launcher-claimed by `copilot`; claim commit `0884b7228c6ab427c1809ff981509343b363eca3` was already pushed. Launcher startup/discovery/sync/claim steps were not repeated.
+- Dependency gate `ARCH-052-SHARED-003` was complete. Recursive implementation submodule state was ready at recorded database commit `f16d5fc955b1fa1215177cc89fb6fd326bfa65c`.
+- Parent task branch: `task/ARCH-052-ADMIN-001`; prepared parent head was `c966bb9a629626ea89d7829b3954844ab16cdabe`.
+- Implementation branch: `task/ARCH-052-ADMIN-001`; prepared implementation head was `a871a4700f24fc6aa8a4939fe9fbb438b1912cef`.
+- Implementation commit: `14faa94a7096aef3ef9222c687cb663dd5834459`; pushed. Implementation worktree was clean after publication.
+
+#### Deviations and Unresolved Issues
+
+No deviations or unresolved cross-repository requirements. Meta approval remains a provider/operator gate; this change adds no claim that Meta has approved any particular two-button template.
 
 
 ## Architect Review
