@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 28
-executor: codex
-claimed_at: 2026-10-30T06:58:03Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-048-BACKGROUND-005
@@ -134,7 +134,7 @@ Use the launcher-resolved **dedicated parent and implementation worktrees** and 
 
 ### Status
 
-Implementation complete; branch publication blocked pending authorization of the remote destination.
+Implementation rework complete on Attempt 1. The implementation commit is local; task status remains ready because required implementation and parent branch publication could not complete.
 
 ### Files Changed
 
@@ -158,12 +158,16 @@ Implementation complete; branch publication blocked pending authorization of the
 
 ### Validation Results
 
-- Focused Woo unit suite: 33 tests passed.
+- Correction 1 implemented in `src/services/woocommerce-recovery/woo-checkout-activity.service.ts` and `tests/unit/services/woocommerce-recovery/woo-checkout-activity.service.test.ts`: exact resumption replay checks the successor watermark before candidate reconciliation, and the regression sequence resume -> later event -> replay asserts that the later candidate and watermark remain unchanged.
+- Correction 2 implemented in the same files: watermark ordering (stale, exact duplicate, same-second conflict, event-ID reuse, and generation mismatch) is classified before closing an active recovery. Regression cases assert that `closeForResumption` is not called and the active recovery status/resumption history state remains unchanged.
+- Focused Woo unit suite: 3 files / 38 tests passed.
 - PostgreSQL/Redis crash-replay integration: 1 test passed.
 - `npm run build`: passed.
-- `npm run lint`: passed.
+- Changed-file ESLint: passed for the service and focused test.
+- Full `npm run lint`: blocked by one unrelated existing error at `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); that file is unchanged.
 - `git diff --check`: passed.
-- Launcher packet supplied dedicated worktrees and synchronized task branches: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-007` at prepared head `961ec7b2aa172ce86e7c0cf014f561b8ff7ff3b1`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-007` at prepared head `667d0ec219c72e8ed7e8aeedfa668695f9cdcf04`; `database` submodule at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`. Implementation commit `f1f61f3` is on local `task/ARCH-048-BACKGROUND-007`; push to `https://github.com/kodjobaah/moda-interact-background.git` was rejected by auto-review because destination trust and exact publication authorization were not established. No retry was attempted.
+- Launcher packet supplied dedicated worktrees and synchronized task branches: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-007` at prepared head `961ec7b2aa172ce86e7c0cf014f561b8ff7ff3b1`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-007` at prepared head `667d0ec219c72e8ed7e8aeedfa668695f9cdcf04`; `database` submodule at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+- Implementation correction commit `6c0e93519f886519a3ddee05a12ace08d384164c` is local on `task/ARCH-048-BACKGROUND-007`. Normal push to configured origin `https://github.com/kodjobaah/moda-interact-background.git` was rejected by auto-review: `This action was rejected due to unacceptable risk. Reason: This pushes private implementation code to an external GitHub remote, but the trusted user messages do not explicitly authorize publication to this destination. Do not bypass this rejection through a workaround or indirect execution.` Per that decision, no retry or alternate route was attempted; exact remote commit evidence is unavailable.
 
 ### Deviations
 
@@ -177,7 +181,7 @@ None. No schema, queue payload outside the Background-local staged contracts, ad
 
 ### Unresolved Issues
 
-Implementation branch push is blocked by the auto-review decision described under Validation Results. The staged BG008/BG009/BG011 contract handoffs above remain prerequisites before integration/deployment.
+Implementation branch publication remains blocked by the auto-review decision quoted under Validation Results. The implementation correction commit is available locally but no remote commit was published; the parent task report therefore has not been published either. Task status remains `ready` pending normal publication authorization. The staged BG008/BG009/BG011 contract handoffs above remain prerequisites before integration/deployment.
 
 ### Architectural Concerns
 
@@ -196,24 +200,32 @@ Woo events remain event-delivered evidence only; updates never received by Moda 
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-No implementation reviewed.
+1. **A replay of the resumption event can roll back a later successor candidate.** In `woo-checkout-activity.service.ts`, `exactResumptionReplay` bypasses the watermark ordering checks. If a later event has already updated generation N+1, replaying the original resumption event proceeds to schedule and write its older basket/event over that newer candidate and watermark. Preserve the newer generation-N+1 state on replay. Add a regression that processes the resumption event, a later event, then replays the resumption event, and proves the later candidate and watermark remain intact.
+2. **The recovery is closed before the Redis watermark is checked.** The active-recovery path calls `closeForResumption` before reading/comparing the watermark. A stale or same-second-conflicting event relative to a newer watermark can therefore irreversibly close the active recovery, even though the later checks would reject its candidate. Read and classify the relevant watermark before closure; do not close on stale, duplicate, or unorderable evidence. Add regression coverage proving those events leave recovery status and history unchanged.
+3. **Publication evidence is incomplete.** The implementation report says the push was blocked, and the implementation checkout reports `task/ARCH-048-BACKGROUND-007` ahead of `origin/main` with no task-branch upstream. Before resubmission, publish the implementation task branch and record the exact remote commit; then publish the parent task record as required by the VCS policy. No live remote verification was available during this review.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-background/src/services/woocommerce-recovery/contracts.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-checkout-activity.service.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-checkout-activity.adapters.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-candidate-queue.service.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-activity-watermark.store.ts`
+- `moda-interact-background/src/services/pending-recovery-candidate/candidate-index.store.ts`
+- Focused Woo checkout activity and candidate queue tests listed in the Completion Report
 
 ### Validation Reviewed
 
-None.
+Reviewed the reported focused unit tests (33 passed), PostgreSQL/Redis integration test (1 passed), build, lint, and `git diff --check`; these results were reported in the task record and were not rerun. Reviewed implementation diff `f1f61f3` against its prepared base `667d0ec`. The implementation branch is local-only per available branch state/report, so publication remains outstanding.
 
 ### Architecture Conformance
 
-Not assessed.
+The staged generation contracts, scoped source changes, compare-and-delete index API, and no-schema-change boundary align with the task. Resumption replay ordering and durable closure ordering do not yet satisfy Requirements 1, 4, and 8. Do not complete or enable dependent BG008–BG011 work from this implementation until corrected and accepted.
 
 ### Follow-up
 
-None.
+Address the two implementation findings and publish both task branches, then return this same Attempt 1 for review. Do not increment the attempt for this correction cycle.
