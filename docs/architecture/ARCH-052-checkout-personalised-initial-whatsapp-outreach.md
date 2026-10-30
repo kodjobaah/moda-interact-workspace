@@ -50,7 +50,7 @@ No new database tables/columns/migrations, replicated product catalogue or produ
 
 ## Shared contract boundaries — Attempt 8
 
-`ARCH-052-SHARED-002`, `SHARED-005`, `SHARED-006` and `SHARED-008` now contain exact **proposed** TypeScript/Zod source snippets, package exports and structural fixtures. The contract proposals are for developer/architect review before implementation; their currently Ready task statuses are planning eligibility, not acceptance of a runtime implementation.
+SHARED-002, SHARED-005, SHARED-006 and SHARED-008 now have implemented, architect-accepted Shared contracts. SHARED-003 is Ready as the publication-only gate; its consumer tasks remain gated until publication completes.
 
 - **Zod = transport structure only.** New schemas describe field names, required/nullable types, literals, discriminated results, established lexical formats and unknown-key rejection. No new business-policy `.refine`, `.superRefine`, `.transform` or `.check` is authorised.
 - **SHARED-002:** Admin/Background share checkout/promotion semantic bindings and immutable projection structure. Approval, target/variable compatibility, image roles, Meta parameter ordering, marketing suitability and button semantics are service-layer concerns; ARCH-052 adds **no** checkout URL validation.
@@ -133,7 +133,7 @@ Development-only `RecoveryOutreachAttempt` records with old single-discount `off
 
 ## Decisions / Tasks
 
-All tasks are portable definitions; **Ready** means dependency-eligible but not claimed. Superseded tasks are not executable. No database schema task is required.
+Each task YAML is authoritative; **Ready** means dependency-eligible but not claimed, and materialisation is tracked per task. Superseded tasks are not executable. No database schema task is required.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
@@ -167,13 +167,13 @@ All tasks are portable definitions; **Ready** means dependency-eligible but not 
 | [ARCH-052-MCP-003](../decisions/mcp/ARCH-052/MCP-003-direct-provider-product-search-and-exact-read.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-003`, `ARCH-052-COMMERCE-006` |
 | [ARCH-052-MCP-004](../decisions/mcp/ARCH-052/MCP-004-verify-alternative-product-discount-promotions.md) | `moda_mcp` | Pending | `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-008`, `ARCH-052-WOOCOMMERCE-001` |
 | [ARCH-052-SHARED-001](../decisions/shared/ARCH-052/SHARED-001-define-canonical-selected-discount-contract.md) | `moda_shared` | Superseded | — |
-| [ARCH-052-SHARED-002](../decisions/shared/ARCH-052/SHARED-002-define-checkout-template-binding-contract.md) | `moda_shared` | Ready | — |
-| [ARCH-052-SHARED-003](../decisions/shared/ARCH-052/SHARED-003-publish-initial-outreach-shared-contracts.md) | `moda_shared` | Pending | `ARCH-052-SHARED-002`, `ARCH-052-SHARED-005`, `ARCH-052-SHARED-006`, `ARCH-052-SHARED-008` |
+| [ARCH-052-SHARED-002](../decisions/shared/ARCH-052/SHARED-002-define-checkout-template-binding-contract.md) | `moda_shared` | Complete | — |
+| [ARCH-052-SHARED-003](../decisions/shared/ARCH-052/SHARED-003-publish-initial-outreach-shared-contracts.md) | `moda_shared` | Ready | `ARCH-052-SHARED-002`, `ARCH-052-SHARED-005`, `ARCH-052-SHARED-006`, `ARCH-052-SHARED-008` |
 | [ARCH-052-SHARED-004](../decisions/shared/ARCH-052/SHARED-004-define-private-read-authentication-contract.md) | `moda_shared` | Superseded | — |
-| [ARCH-052-SHARED-005](../decisions/shared/ARCH-052/SHARED-005-define-discount-proof-wire-contract.md) | `moda_shared` | Ready | — |
-| [ARCH-052-SHARED-006](../decisions/shared/ARCH-052/SHARED-006-define-outreach-mcp-discount-tool-contracts.md) | `moda_shared` | Ready | — |
+| [ARCH-052-SHARED-005](../decisions/shared/ARCH-052/SHARED-005-define-discount-proof-wire-contract.md) | `moda_shared` | Complete | — |
+| [ARCH-052-SHARED-006](../decisions/shared/ARCH-052/SHARED-006-define-outreach-mcp-discount-tool-contracts.md) | `moda_shared` | Complete | — |
 | [ARCH-052-SHARED-007](../decisions/shared/ARCH-052/SHARED-007-reuse-commerce-runner-for-outreach-offer-choice.md) | `moda_shared` | Superseded | — |
-| [ARCH-052-SHARED-008](../decisions/shared/ARCH-052/SHARED-008-define-product-search-and-alternative-promotion-contracts.md) | `moda_shared` | Ready | — |
+| [ARCH-052-SHARED-008](../decisions/shared/ARCH-052/SHARED-008-define-product-search-and-alternative-promotion-contracts.md) | `moda_shared` | Complete | — |
 | [ARCH-052-SHOPIFY-001](../decisions/shopify/ARCH-052/SHOPIFY-001-select-multiple-authorised-recovery-discounts.md) | `moda_app` | Pending | `ARCH-052-BACKGROUND-009` |
 | [ARCH-052-SYSTEM-TEST-001](../decisions/system-test/ARCH-052/SYSTEM-TEST-001-certify-shopify-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-BACKGROUND-008`, `ARCH-052-SHOPIFY-001`, `ARCH-052-BACKGROUND-009`, `ARCH-052-COMMERCE-001`, `ARCH-052-COMMERCE-008`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-MCP-004`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-GATEWAY-001` |
 | [ARCH-052-SYSTEM-TEST-002](../decisions/system-test/ARCH-052/SYSTEM-TEST-002-certify-woocommerce-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-BACKGROUND-008`, `ARCH-052-GATEWAY-001`, `ARCH-052-WOOCOMMERCE-001`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-MCP-004`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010` |
