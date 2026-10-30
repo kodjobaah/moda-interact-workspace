@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: copilot
 claimed_at: 2026-10-30T11:53:54Z
@@ -143,75 +143,93 @@ Keep public API and conversation identity handling unchanged. This task only cha
 
 ### Status
 
-Blocked — task claimed as Attempt 1; implementation has not started because the required Shared contracts do not match the task definition.
+Implemented and validated; submitted for moda_architect review. Attempt 1 remains active.
 
 ### Files Changed
 
-No implementation files changed. This task file is updated only to record the blocker.
+Implementation repository files:
+
+- `package.json`, `package-lock.json`
+- `src/capabilities/prisma-reader.ts`, `src/capabilities/records.ts`
+- `src/execution/discount-tools.ts`, `src/execution/policy/shopify-core.ts`
+- `src/mcp/ports.ts`, `src/mcp/registration.ts`, `src/mcp/service.ts`, `src/mcp/snapshot.ts`
+- `src/runtime/ports.ts`, `src/runtime/service-ports.ts`
+- `tests/fixtures/capabilities.ts`
+- `tests/unit/capabilities/prisma-reader.test.ts`, `tests/unit/execution/discount-tools.test.ts`
+- `tests/unit/mcp/service.test.ts`, `tests/unit/runtime/ports.test.ts`
+- Parent workspace: this task report only.
 
 ### Work Completed
 
-- Confirmed the canonical parent and implementation worktrees are on `task/ARCH-052-MCP-001` and clean; did not repeat launcher synchronization or submodule preparation.
-- Installed the implementation worktree's locked npm dependencies for contract inspection. The pinned `@modainteract/moda-interact-shared@2.4.1` package does not export `CommerceOutreachToolContextSchema`.
-- Inspected published Shared `2.6.0` and `origin/task/ARCH-052-SHARED-003`: both still define `CommerceOutreachToolContextSchema` with required `checkoutRecoveryId` and `outreachAttemptId`; neither exposes `commerce_get_discount_details`.
-- Stopped before implementation to avoid duplicating or locally redefining a missing cross-repository contract.
+- Resumed the existing claimed attempt in the supplied worktrees. Did not rerun the launcher, create worktrees, synchronize branches, initialize submodules, increment the attempt, or make another claim.
+- Verified npm publishes `@modainteract/moda-interact-shared@2.7.1` (`dist.tarball` from `npm view`) and inspected that tarball. Its `/commerce` declaration exports `CommerceOutreachToolContextSchema` with the exact strict `{ purpose: "INITIAL_RECOVERY_OUTREACH" }` shape; runtime JS exports the schema. A runtime probe accepted the exact purpose and rejected added `shopId`/`attemptId` keys.
+- Verified the same `/commerce` entrypoint exports `CommerceToolInputs` and `CommerceToolOutputs` for discount options and discount details. These schemas are reused for MCP-owned built-in descriptors. The built-in details tool is MCP-owned per task scope; it is not a missing Shared contract.
+- Updated MCP's exact dependency and lockfile to 2.7.1. Installation reported the existing Node engine mismatch (requires `24.19.0`, current `24.21.0`) and 11 dependency advisories.
+- Implemented purpose-scoped MCP system-tool discovery outside Commerce Studio publication. NONE exposes neither tool; FIXED exposes both with current selected same-shop available IDs or the effective unexpired admin override's exact ID; AI exposes both without applying merchant selection flags. Missing, invalid, wrong-purpose, or identity-bearing context does not expose them.
+- Reads current policy on each request. Calls validate Shared inputs and recheck FIXED detail IDs from the fresh request snapshot. Existing private header authentication, active shop and environment validation, published release/feature/definition pinning, conversation capabilities, and generic result protocol remain intact.
+- Added tests for modes, changed FIXED selection, exact admin override expiry, context forgery/invalid purpose, unauthenticated header, wrong shop/environment, tool-list/call parity, and zero recovery/attempt table reads. Existing regression tests continue covering disabled published tools and conversation capability isolation.
+- Shared 2.7.1 makes `CommerceProductSchema.variantId` nullable; existing product search now skips results without a trusted variant ID.
+- No shared source, database schema, recovery/attempt state, grant/replay mechanism, provider writes, conversation identity, index, submodule pointer, or other implementation repository was changed.
 
 ### Validation Results
 
-- `npm ci`: completed; emitted the existing Node engine mismatch warning (required `24.19.0`, current `24.21.0`) and reported 11 dependency advisories.
-- Focused runtime export check against the pinned package: failed because `CommerceOutreachToolContextSchema` is not exported by version `2.4.1`.
-- Contract inspection of published Shared `2.6.0` and the completed Shared task branch confirmed the identity-bearing context and missing discount-details descriptor.
-- MCP tests, typecheck, lint, and build were not run because no implementation edit was made and the required cross-repository contracts are unresolved. `git diff --check` on this parent task-file update passed; there is no implementation diff to check.
+- Published package inspection: `npm view @modainteract/moda-interact-shared@2.7.1 version dist.tarball`, tarball declarations/runtime export inspection, and runtime schema probe all passed. Installed MCP tree reports `@modainteract/moda-interact-shared@2.7.1`.
+- Focused suite: `npx tsx --test tests/unit/capabilities/prisma-reader.test.ts tests/unit/execution/discount-tools.test.ts tests/unit/mcp/service.test.ts` — 21 passed, 0 failed.
+- Full suite: `npm test` — 173 passed, 0 failed.
+- `npm run typecheck` — passed.
+- `npm run lint` — passed (`--max-warnings=0`).
+- `npm run build` — passed.
+- `git diff --check` — passed.
+- `npm run test:integration:docker` — attempted; Docker spent over 180 seconds pulling `pgvector/pgvector:pg16`, then reported `spawnSync docker ETIMEDOUT`. PostgreSQL startup and integration assertions did not run; cleanup completed without reporting leftover containers. Live Postgres integration evidence remains outstanding due to the image-pull timeout.
+- An initial test invocation before Prisma generation saw a stale generated Prisma client. The declared `npm run prisma:generate` corrected the environment; the final full unit suite passed.
 
 ### Deviations
 
-Implementation and both task-branch publication steps are deferred pending explicit architect sequencing for the Shared contract mismatch. Task remains `in_progress`; it is not being returned to review.
+This task implements authorization and discovery only. Authorized built-in calls currently return the existing typed retryable `UNAVAILABLE` result until dependent MCP-002 implements discount catalogue reads. The Docker-backed Postgres integration suite could not start because its image pull timed out.
 
 ### Assumptions
 
-The launcher packet is authoritative for completed synchronization and recursive database submodule preparation; neither was repeated.
+The already-claimed attempt and supplied worktree paths are authoritative. No launcher, synchronization, or submodule action was repeated.
 
 ### Unresolved Issues
 
-- Shared must publish/export the purpose-only `CommerceOutreachToolContextSchema` required by this task, and the discount-details tool contract must be established in the owning shared boundary before MCP implements it.
+- Docker-backed Postgres integration validation remains outstanding due to `pgvector/pgvector:pg16` pull timeout.
+- Authorized options/details catalogue execution is owned by dependent MCP-002 and was not implemented in this task.
 
 ### Architectural Concerns
 
-The completed Shared task and published package artifacts do not contain the contracts this task specifies. Request `moda_architect` to sequence the Shared correction and update the MCP dependency before resuming; do not create local schema copies or identity compatibility behavior.
+None identified. The implementation uses the published Shared 2.7.1 schemas, keeps built-in tool ownership in MCP, preserves the existing generic MCP result envelope, and performs no recovery/attempt lookup.
 
 ### Physical Worktree Evidence
 
-- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-MCP-001`, branch `task/ARCH-052-MCP-001`, clean and up to date with `origin/task/ARCH-052-MCP-001`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-001`, branch `task/ARCH-052-MCP-001`, clean; its configured upstream is `origin/main`.
-- Shared workspace checkout switched/mutated for task work: no.
-- Shared implementation checkout switched/mutated for task work: no.
-- Another task worktree reused: no.
-- Launcher synchronization: not repeated per instruction; prepared packet confirms `prepared_execution=true` and parent claim commit `4559545ecf891496fd7bd1763f781fc8afca4d40`.
-- Recursive database submodule: launcher packet confirms initialized at `139765042baad3901682cfe9c54a3d6bba73e75c`; no submodule command was rerun.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-MCP-001`, branch `task/ARCH-052-MCP-001`; prior claim/blocker report commit `fbf8132` was already published. This report is the only parent file changed.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-001`, branch `task/ARCH-052-MCP-001`; implementation commit `3ebff9e` pushed to `origin/task/ARCH-052-MCP-001`. Configured upstream remains `origin/main`, so the explicit task branch was used.
+- No shared checkout, other implementation repository, submodule pointer, index, or unrelated file was changed.
+- Launcher synchronization and recursive submodule initialization were not repeated.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Pending moda_architect review.
 
 ### Review Notes
 
-Task definition only. No implementation accepted.
+Implementation and validation evidence submitted for independent review. This agent has not made an architect acceptance decision.
 
 ### Reviewed Files
 
-Relevant October 29, 2026 snapshot and task definition; no implementation source changes reviewed.
+Pending.
 
 ### Validation Reviewed
 
-None for implementation.
+Pending.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Pending independent moda_architect review.
 
 ### Follow-up
 
-Materialise through the canonical launcher only after its task dependencies are Complete.
+Review implementation commit `3ebff9e` and the validation/deviation evidence above. No dependent task was started.
