@@ -50,7 +50,7 @@ No new database tables/columns/migrations, replicated product catalogue or produ
 
 ## Shared contract boundaries — Attempt 9
 
-SHARED-005 now has an implemented, architect-accepted browser-safe TypeScript/Zod discount-proof contract. The other Shared contract tasks retain their individual proposal, implementation and review states as recorded in their task files.
+`ARCH-052-SHARED-002` has an implemented, architect-accepted browser-safe TypeScript/Zod contract. SHARED-005, SHARED-006 and SHARED-008 retain proposed source snippets, package exports and structural fixtures; their Ready statuses represent implementation eligibility, not runtime acceptance.
 
 - **Zod = transport structure only.** New schemas describe field names, required/nullable types, literals, discriminated results, established lexical formats and unknown-key rejection. No new business-policy `.refine`, `.superRefine`, `.transform` or `.check` is authorised.
 - **SHARED-002:** Admin/Background share checkout/promotion semantic bindings and immutable projection structure. Approval, target/variable compatibility, image roles, Meta parameter ordering, marketing suitability and button semantics are service-layer concerns; ARCH-052 adds **no** checkout URL validation.
