@@ -70,6 +70,19 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
+**Attempt 4 architect blocker resolution — product CTA provenance and safety (normative, BG-owned):** `promotion.productUrl` is an **alternative-product promotional value**, not the existing `checkout.url` value. It must come verbatim from a `CommerceProduct.url` returned by a **successful, schema-validated** `commerce_get_product` MCP tool result for the **authenticated current shop**, carried via BACKGROUND-010's trusted result/evidence object. It must not be accepted from the model's output, its prose, merchant instructions, template samples, a checkout item, a request body, an arbitrary link, or a product-search string that has not been confirmed by exact-product lookup. The agent may select an offer/product ID; it does **not** generate the destination URL.
+
+The Background resolver must enforce these explicit steps before populating any alternative-product body or CTA binding:
+
+1. Require a validated `ALTERNATIVE_PRODUCT_PROMOTION` decision with a matching source-bound exact-product record assembled by BACKGROUND-010 from an authenticated MCP `commerce_get_product` result. Shop identity comes from the trusted Background caller and MCP outer request context, never model-supplied `shopId`. Reject a result lacking provenance, from another shop, without a successful MCP response or without a non-null product.
+2. Compare the returned `CommerceProduct.productId` and nullable `variantId` exactly with the chosen product/variant identity. Preserve the original `CommerceProduct.url`; do not generate or substitute a merchant, model, catalogue-title or checkout URL. Missing or ambiguous identity is unusable.
+3. Validate **only the promotional product URL**: require a nonempty absolute HTTPS URL, no username/password, non-default or explicit port, fragment, control/whitespace characters, IP-literal/localhost destination or excessive length (max 2048). Require the URL's canonical hostname to have been authorised for this authenticated shop by MCP-003's provider/connection-origin check, not by an allowlist inferred from the URL itself. Inability to establish trusted storefront-host ownership is a rejection, not a permission to broaden the allowlist. The approved Meta URL-button prefix and binding index remain immutable; encode the sourced URL only into the Meta-approved `promotion.productUrl` slot. Do not fetch, follow redirects or issue a checkout-link API call to validate a promotional URL.
+4. If provenance, shop/ID match, URL or matching approved variant fails, return a typed `PROMOTION_PRODUCT_URL_UNAVAILABLE`/no-offer outcome at the existing preparation boundary. Use an independently approved NO_OFFER text template **only if the current policy and all existing send gates permit that fallback**; otherwise no-send. Never send the alternative promotion with an unsafe/missing product link, insert it into the wrong button, or silently replace `checkout.url`.
+5. These product-only checks **must not be applied to `CheckoutRecovery.checkoutUrl`**. ARCH-052 reads that upstream-populated field unchanged as agreed; ARCH-053 owns its issuance/restoration. Preserve existing consent/STOP, moderation, Meta approval, credits, idempotency and durable `ConversationMessage.content` semantics.
+
+The product URL evidence/validation helpers are Background-local (no new Shared contract, Prisma table, or Admin source change). Structured logging must include only bounded reason codes and source/tool identity, **never raw URLs or credentials**. Unexpected MCP/URL handling exceptions are logged through the Shared logger and propagated to the existing retry/failure boundary; expected invalid URLs return the typed unavailable result.
+
+
 - No new offerSnapshot policy or sent-offer contract, no backfill or legacy adapters. The existing message receipt remains authoritative; preserve the existing one-send/idempotency rules.
 - Before final send, re-read current merchant mode and selected IDs for FIXED; if the chosen offer is no longer authorised or the checkout is no longer recoverable, replace with approved NO_OFFER or skip send, never advertise revoked offer. When FIXED or AI has no verifiable offer, use NO_OFFER only if its own approved variant exists, otherwise typed no-send. If a verification budget was exhausted or the catalogue was incomplete, do not claim that no merchant discount exists. If the model fails and an MCP source-supported offer exists, use BACKGROUND-010's deterministic verified fallback.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
@@ -80,6 +93,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 ## Work Items
 
 - [ ] Extend existing WhatsApp template send/automated-message persistence for 0/1/2 approved dynamic URL buttons, preserving exact approved index-to-variable mapping and existing consent/moderation/idempotency/credit guards.
+- [ ] Bind `promotion.productUrl` only from BACKGROUND-010's authenticated current-shop `commerce_get_product` evidence; reject missing, mismatched, model-authored or unsafe product URLs with typed no-offer/no-send, and do not alter checkout URL handling.
 - [ ] Select target/header/locale-specific approved TEXT registration before ambiguity resolution; use only the stored `CheckoutRecovery.checkoutUrl` for checkout CTA, no extra validation or link generation. Preserve unrelated URL handling.
 - [ ] Extend the persisted `recoveryPromise` with the alternative product/offer identity in existing `ConversationMessage.content`; follow-up reads provider-confirmed sent message, not current catalogue state.
 
@@ -90,6 +104,21 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - [ ] Run two-provider end-to-end initial-send, current-policy-change, unchanged checkoutUrl binding, duplicate/idempotency and follow-up integration suites.
 
 ## Interfaces / Contracts
+
+**Product promotion evidence (Background-local type; do not put in Shared or MCP result envelope):**
+
+```typescript
+import type { CommerceProduct } from "@modainteract/moda-interact-shared/commerce";
+
+export type SourceBoundOutreachProduct = Readonly<{
+  sourceTool: "commerce_get_product";
+  authenticatedShopId: string; // assigned by trusted MCP client context, not AI
+  product: CommerceProduct;    // parsed successful MCP exact-product result
+}>;
+```
+
+BACKGROUND-010 constructs this only after the MCP response validates; the model chooses identifiers, never `authenticatedShopId`, `sourceTool`, `product.url` or the product payload. The selected agent result carries the source-bound record to BACKGROUND-008 without model reconstruction. The trusted MCP/shop scope and product ID/variant ID must match before `product.url` may become `promotion.productUrl`. MCP-003 owns the independently authenticated storefront-host check on the provider projection. Background additionally rejects unusable URL syntax and preserves the approved Meta component binding index. These are application business/safety checks, not new Zod refinements. `checkout.url` remains upstream supplied, unmodified and outside this promotional URL check.
+
 
 Shared-002 template `promotionTarget`, `checkout.url`/`promotion.productUrl` binding and URL-button contracts; existing `CheckoutRecovery.checkoutUrl` for both platforms; Background-local `InitialOutreachAgentResult`; existing persisted `recoveryPromise`/`ConversationMessage.content` receipt and `RecoveryOutreachAttempt.outboundMessageId`; existing Meta approval, consent, credit and send pipeline unchanged. No API restore-link response or new URL schema.
 
@@ -113,12 +142,14 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 
 
 - [ ] Correct approved text distinguishes discount on abandoned checkout from a separate product offer.
+- [ ] No alternative promotion is prepared or sent unless its product CTA is sourced from a successful current-shop MCP exact-product result, matches the selected product/variant and passes product URL/approved storefront-host safety; a failure takes an approved NO_OFFER or no-send path and does not alter the checkout CTA.
 - [ ] All added promotions have current MCP catalogue evidence, required marketing permissions and valid approved template.
 - [ ] No duplicate send/billing, no added checkout URL verification or provider lookup, no checkout URL generation/proxy, no duplicate URL persistence and no change to final outbound consent/moderation/admission gates.
 
 ## Validation
 
 - [ ] Background simulated Meta send tests for purpose/locale/target/header collision, one-button checkout, two-button alternative, unapproved second CTA, persisted receipt and follow-up, text-only when image work absent, and no ARCH-053 issuance calls.
+- [ ] Inject successful/failed MCP exact-product results and test same-shop correct product, Shopify custom storefront host accepted when independently authenticated, Woo origin accepted, cross-shop/wrong-variant provenance rejected, missing/null product URL, model-supplied URL ignored, wrong approved CTA index, and unsafe `http:`, `javascript:`, `data:`, credential-bearing, port-bearing, hostname-prefix lookalike, loopback/IP-literal, whitespace/control or overlength URLs. Assert typed NO_OFFER/no-send, zero unsafe outbound Meta parameters, zero alternative-product promise recorded for rejected sends, bounded logging without raw URLs, and unchanged `checkout.url` behavior.
 
 
 - [ ] Background initial-send unit and PostgreSQL tests (Shopify + Woo, duplicate/retry/provider race, merchant-setting changes, initial/follow-up persisted promise, unchanged binding of the stored checkoutUrl for both platforms). Assert no checkout URL validation branch, no restore-link API call and no checkout-link provider lookup.

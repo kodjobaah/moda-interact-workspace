@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: complete
 priority: 35
-executor: copilot
-claimed_at: 2026-10-30T11:03:17Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-052-SHARED-003
@@ -97,7 +97,7 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 - [x] Different promotion targets under the same existing purpose/language are carried in immutable registration metadata for deterministic downstream selection.
 - [x] Where a Meta-approved alternative template has two URL CTA components, both semantic bindings and component indexes are immutable, correctly compiled, translated and preserved in registration snapshots.
 - [x] Checkout and alternative promotions have distinct approved presentations using existing purpose names.
-- [ ] Alternative promo cannot render with a checkout-discount-only template or unsafe product URL; runtime product-URL safety must be established by the owning resolver contract.
+- [x] Admin authoring, compilation, translation and immutable registration snapshots distinguish CHECKOUT from ALTERNATIVE_PRODUCT and freeze `promotion.productUrl` only as an approved semantic binding; Admin never supplies a live product URL. **BG008 owns runtime source, shop scope and URL safety, with supporting BG010/MCP-003 contracts.**
 - [x] Locale/Meta approval immutability and translation protections unchanged.
 
 ## Validation
@@ -331,3 +331,31 @@ Attempt 2 reports 33 authoring tests, 14 compilation tests, 16 translation tests
 ### Architecture Conformance
 
 The dual CTA implementation conforms to the Admin ownership boundary and retains approval immutability. Runtime product URL provenance/safety is a downstream send-time responsibility and is not yet specified strongly enough in the owning Background-008 task contract to accept this cross-service criterion.
+
+## Architect Review — Attempt 3 (Accepted: Admin boundary)
+
+### Review Status
+
+Accepted. `status: complete` under `completion_mode: automatic`. The historical Attempt 3 blocked report is retained; it is superseded by this architect-owned boundary reconciliation, not a new Admin source attempt.
+
+### Review Notes
+
+Attempt 2 accepted the dual-CTA implementation and its focused authoring, compilation, translation, Meta snapshot, publication, typecheck and production-build evidence. The attached Admin source also shows that its AST/validation supports two approved dynamic URL variables with distinct indexes and immutable publication bindings. No additional Admin source change or Admin runtime test is required. Admin has no access to the send-time MCP product result and therefore cannot establish a live product URL's origin, tenant ownership or suitability.
+
+The prior unchecked acceptance item combined Admin authoring with Background runtime safety and created a dependency cycle: BACKGROUND-008 depends on ADMIN-001, while ADMIN-001's acceptance awaited BACKGROUND-008. The item is now scoped to the Admin-owned frozen binding contract. **BACKGROUND-008 has an independent, mandatory runtime URL-provenance and fail-closed acceptance gate; BACKGROUND-010 supplies the source-bound product result and MCP-003 owns shop-scoped provider projection.** Accepting Admin does not assert that this runtime gate or Meta approval of a live two-button template has passed.
+
+### Reviewed Files
+
+`src/lib/admin/whatsapp-templates/authoring/{types,validation,compiler,registry}.ts`, `src/lib/admin/whatsapp-templates/meta/{contracts,snapshot}.ts`, the matching Admin tests and the Attempt 2 review/report evidence. Runtime consumer contracts were reviewed in BACKGROUND-008/BACKGROUND-010 and MCP-003 task definitions; those implementations remain pending.
+
+### Validation Reviewed
+
+The Attempt 2 report records passing focused suites (33 authoring, 14 compilation, 16 translations, 15 Meta and 22 publication), typecheck, touched-source lint, production build and diff check. These validations were **reviewed, not rerun** in this architectural correction. The previous repository-wide baseline failures remain recorded.
+
+### Architecture Conformance
+
+Accepted for Admin's immutable template authoring and publication scope. Product URL provenance, host safety and approved template send admission remain downstream requirements. No change to the developer's implementation branch or release is claimed.
+
+### Follow-up
+
+BACKGROUND-008 must prove source-bound `promotion.productUrl` and unsafe-URL fail-closed behaviour before *its own* acceptance. Its blocked runtime requirement must not be used to reopen or gate this completed Admin task. System-test terminal tasks independently certify both providers.

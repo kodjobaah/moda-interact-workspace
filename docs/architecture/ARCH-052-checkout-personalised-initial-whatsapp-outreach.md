@@ -112,6 +112,9 @@ ARCH-047's existing Meta purpose identifiers remain unchanged. `ADMIN-001` freez
 
 ## Failure handling, ordering and security
 
+**ADMIN-001 acceptance / product URL trust boundary (architect reconciliation, 30 October 2026):** Admin has completed the frozen, approved dual-CTA authoring/translation/publication binding; it does not consume live MCP results. Background-010 must attach a source-bound successful `commerce_get_product` result for the authenticated shop and exact chosen product/variant. MCP-003 must ensure product URLs originate from the current shop's independently authenticated storefront domain, returning `url:null` when ownership cannot be established. Background-008 then admits `promotion.productUrl` only from that result, rejects unsafe promotional URLs, and uses the approved NO_OFFER/no-send path on failure. This must be tested before **Background-008** is accepted. No new validation applies to the existing upstream `checkout.url`. The Admin boundary is independently acceptable; its completion must not be gated on downstream Background implementation, which itself depends on Admin.
+
+
 Unknown applicability, provider-unavailable, incomplete catalogue, timeout and revoked are distinct typed outcomes. The agent may reason about conditions but must not advertise a discount as guaranteed applicable where facts are partial/unknown. Customer-facing promotion claims must be supported by available MCP catalogue/product data; unsupported applicability guarantees must not be made. MCP rechecks authenticated shop and current merchant selection on each tool call, keeps published product tools release/feature pinned and built-in discount tools limited to trusted outreach identity. Product URLs, images and customer-specific merchant claims cannot be supplied by the model. Existing merchant instructions may rank candidates but never override eligibility, tenant identity or safety. Retry classified failures with shared bounded logger and no secret/PII logs; prevent cross-shop data, replay or SSRF. Existing WhatsApp final send retains Meta template approval, marketing permission for cross-sell, explicit STOP/consent, moderation, admission, billing/credit and one-send CAS. Confirmed outbound template parameters and `recoveryPromise`, not a second attempt JSON field, are the durable sent-offer evidence. An incomplete scan never becomes a false assertion that no eligible discount exists; model errors only fall back to **source-supported** offers; no separate proof service exists. Any customer-click Woo cart restoration behind an upstream `checkoutUrl` is separate from and not implemented or certified by ARCH-052.
 
 ## Observability and scalability
@@ -157,7 +160,7 @@ Individual task YAML is authoritative. Current snapshot includes five accepted C
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
-| [ARCH-052-ADMIN-001](../decisions/admin/ARCH-052/ADMIN-001-author-six-initial-outreach-template-variants.md) | `moda_admin` | Ready | `ARCH-052-SHARED-003` |
+| [ARCH-052-ADMIN-001](../decisions/admin/ARCH-052/ADMIN-001-author-six-initial-outreach-template-variants.md) | `moda_admin` | Complete | `ARCH-052-SHARED-003` |
 | [ARCH-052-ADMIN-002](../decisions/admin/ARCH-052/ADMIN-002-author-optional-checkout-product-image-headers.md) | `moda_admin` | Ready | `ARCH-052-SHARED-003`, `ARCH-049-ADMIN-002` |
 | [ARCH-052-API-001](../decisions/api/ARCH-052/API-001-align-existing-woo-selection-with-shared-contract.md) | `moda_api` | Superseded | — |
 | [ARCH-052-API-002](../decisions/api/ARCH-052/API-002-expose-private-woo-checkout-product-image-read.md) | `moda_api` | Superseded | — |

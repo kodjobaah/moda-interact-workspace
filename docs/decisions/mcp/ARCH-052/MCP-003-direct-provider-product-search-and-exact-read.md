@@ -49,6 +49,7 @@ Integrate **generic published** `commerce_search_products` and `commerce_get_pro
 - WooCommerce: use **only the already accepted MCP-005** `ApprovedWooProductReader` and the existing `products.list`/`products.retrieve` connection ports. Map provider IDs to strings, simple products to `variantId:null`, variations to their real IDs, product/category IDs and storefront/image/price fields. No API proxy or new credential/keyring code in this task.
 - Preserve existing page cursors, request budgets, shop/feature permissions, actual provider product URLs, bounded results, and shared logger. A missing provider category/collection ID remains absent; a non-variant Woo product is not an error.
 - Keep result metadata compatible with product-search drafts published by COMMERCE-007; tool registration and publication are distinct tasks.
+- For the returned `CommerceProduct.url`, use only the direct authenticated provider response for the **same current shop**. Validate canonical storefront-host ownership at the provider adapter/projection boundary against an independently authenticated shop origin: WooCommerce's verified installation site origin or Shopify's authenticated storefront/primary-domain metadata (including legitimate custom storefront domains). Do **not** derive an allowed-host list from the candidate URL, discount description, AI output or untrusted query. If host ownership cannot be established, return `url:null` as permitted by the existing product schema; do not provide a customer-facing URL to BACKGROUND-010. No new Shared schema or hosted API route is required for this internal validation.
 
 ## Out of Scope
 
@@ -66,6 +67,7 @@ No additional database table/column/migration, migration backfill, alternate pro
 - [ ] Wire published `commerce_search_products` and `commerce_get_product` handlers to existing shop connections and accepted MCP-005 Woo reader.
 - [ ] Extend Shopify and Woo product output mapping for `variantId:null`, provider category/collection IDs, optional image and sale evidence using the exact Shared contract.
 - [ ] Test entitlement, shop scope, partial/missing product fields, Woo simple/variation products, Shopify variant collections and direct provider access.
+- [ ] Test that product URLs are direct current-shop provider results with independently authenticated storefront-host ownership; valid Shopify custom domains and verified Woo origins remain usable, while spoofed/external hosts, cross-shop records and unknown-origin URLs return `url:null` without granting an arbitrary host.
 - [ ] Validate generic result schema, tool descriptor names, cancellation, structured errors and declared MCP scripts.
 
 ## Interfaces / Contracts
@@ -92,6 +94,7 @@ Consumer of `@modainteract/moda-interact-shared/commerce` published by SHARED-01
 - [ ] Woo simple products return `variantId:null`; genuine variants retain their source ID.
 - [ ] Provider categories/collections are source IDs, not inferred category-label aliases; missing fields remain unknown/absent.
 - [ ] Shop/entitlement/credential access remains enforced and errors logged safely.
+- [ ] The tool never yields a customer-facing product URL whose storefront-host ownership cannot be established for its authenticated shop; absence is represented as `url:null` under the existing contract, not a fabricated product or a permissive new host allowlist.
 
 ## Validation
 
