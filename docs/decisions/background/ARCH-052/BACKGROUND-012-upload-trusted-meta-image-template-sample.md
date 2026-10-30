@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -142,7 +142,7 @@ None.
 
 ### Assumptions
 
-`ARCH-052-ADMIN-002` will emit a frozen IMAGE registration with no example handle after its accepted correction; ARCH-047-BACKGROUND-003 remains the owner of actual Graph CREATE.
+`ARCH-052-ADMIN-002` is Complete and emits a frozen IMAGE registration with no example handle; ARCH-047-BACKGROUND-003 remains the owner of actual Graph CREATE.
 
 ### Unresolved Issues
 
@@ -160,7 +160,7 @@ Pending.
 
 ### Review Notes
 
-Planning only. This task is Pending until ADMIN-002 is architect-accepted Complete. No Background implementation or live Meta upload has been performed.
+Planning only. ADMIN-002 and ARCH-047-BACKGROUND-003 are Complete, so this task is Ready. No Background implementation or live Meta upload has been performed.
 
 ### Reviewed Files
 

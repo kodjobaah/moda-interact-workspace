@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
-executor: copilot
-claimed_at: 2026-10-30T13:00:29Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-SHARED-003
@@ -34,7 +34,7 @@ Architecture ID: `ARCH-052`.
 
 Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 
-Coordinator: `moda_architect`. This is a **portable canonical definition — defined but not materialised**. No developer Git branch/worktree, commit or push is asserted.
+Coordinator: `moda_architect`. This task is materialised in mirrored parent and implementation worktrees on `task/ARCH-052-ADMIN-002`; its report and implementation commits are pushed.
 
 ## Objective
 
@@ -237,7 +237,7 @@ The existing Meta registration transaction is the durable `READY_TO_SUBMIT` inte
 
 ### Current Task Status
 
-Ready for architect review; task status is `review`.
+Task status is `complete` under `completion_mode: automatic`. Attempt 2 is accepted; its attempt number remains unchanged.
 
 ### Review Finding Follow-up
 
@@ -247,6 +247,14 @@ Updated the Admin IMAGE guidance to state that Admin queues a handle-free regist
 - `npm run test:arch049-admin-media:unit`: passed, 27 unit tests and 1 SQL test.
 - `npx eslint src/components/admin/whatsapp-templates/authoring/template-review-summary.tsx src/components/admin/whatsapp-templates/media/shop-brand-media-header-section.tsx`: passed.
 - `git diff --check`: passed; implementation-worktree search found no remaining obsolete sample-handle or timed-proof guidance in the Admin WhatsApp template components.
+
+### Developer Self-Review Accepted
+
+30 October 2026. Reviewed the pushed implementation through `efb18cb` against the Attempt 2 acceptance criteria. No findings remain. Admin persists handle-free IMAGE registration intent and does not call Meta; role, target, locale, digest, replay and TEXT fallback checks remain covered by the reported focused validation. The previously reported stale IMAGE-header guidance is corrected. The Architect Review section below is preserved as historical review evidence; its Attempt 2 corrections are implemented.
+
+### Developer Completion Decision
+
+Accepted under `completion_mode: automatic`; set `status: complete`, cleared `executor` and `claimed_at`, and retained `attempt: 2`. Dependency frontier reconciliation makes BACKGROUND-012 Ready. BACKGROUND-007 remains Pending because BACKGROUND-008 and other prerequisites are incomplete; BACKGROUND-008 and both terminal system tests remain gated by their other prerequisites. No implementation branch was merged to `main`.
 
 
 ## Architect Review

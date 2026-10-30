@@ -161,7 +161,7 @@ Individual task YAML is authoritative. Current snapshot includes five accepted C
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
 | [ARCH-052-ADMIN-001](../decisions/admin/ARCH-052/ADMIN-001-author-six-initial-outreach-template-variants.md) | `moda_admin` | Complete | `ARCH-052-SHARED-003` |
-| [ARCH-052-ADMIN-002](../decisions/admin/ARCH-052/ADMIN-002-author-optional-checkout-product-image-headers.md) | `moda_admin` | Ready (Attempt 2 rework) | `ARCH-052-SHARED-003`, `ARCH-049-ADMIN-002` |
+| [ARCH-052-ADMIN-002](../decisions/admin/ARCH-052/ADMIN-002-author-optional-checkout-product-image-headers.md) | `moda_admin` | Complete | `ARCH-052-SHARED-003`, `ARCH-049-ADMIN-002` |
 | [ARCH-052-API-001](../decisions/api/ARCH-052/API-001-align-existing-woo-selection-with-shared-contract.md) | `moda_api` | Superseded | — |
 | [ARCH-052-API-002](../decisions/api/ARCH-052/API-002-expose-private-woo-checkout-product-image-read.md) | `moda_api` | Superseded | — |
 | [ARCH-052-API-003](../decisions/api/ARCH-052/API-003-proxy-woo-native-coupon-proof-through-private-api.md) | `moda_api` | Superseded | — |
@@ -177,7 +177,7 @@ Individual task YAML is authoritative. Current snapshot includes five accepted C
 | [ARCH-052-BACKGROUND-009](../decisions/background/ARCH-052/BACKGROUND-009-preserve-shopify-merchant-selection-during-sync.md) | `moda_background` | Review | — |
 | [ARCH-052-BACKGROUND-010](../decisions/background/ARCH-052/BACKGROUND-010-implement-langgraph-initial-outreach-offer-agent.md) | `moda_background` | Pending | `ARCH-052-MCP-002`, `ARCH-052-COMMERCE-007`, `ARCH-052-SHARED-010` |
 | [ARCH-052-BACKGROUND-011](../decisions/background/ARCH-052/BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | `moda_background` | Pending | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
-| [ARCH-052-BACKGROUND-012](../decisions/background/ARCH-052/BACKGROUND-012-upload-trusted-meta-image-template-sample.md) | `moda_background` | Pending | `ARCH-052-ADMIN-002`, `ARCH-047-BACKGROUND-003` |
+| [ARCH-052-BACKGROUND-012](../decisions/background/ARCH-052/BACKGROUND-012-upload-trusted-meta-image-template-sample.md) | `moda_background` | Ready | `ARCH-052-ADMIN-002`, `ARCH-047-BACKGROUND-003` |
 | [ARCH-052-COMMERCE-001](../decisions/commerce/ARCH-052/COMMERCE-001-verify-shopify-discount-against-current-checkout.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-COMMERCE-002](../decisions/commerce/ARCH-052/COMMERCE-002-read-authoritative-shopify-checkout-product-image.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-COMMERCE-003](../decisions/commerce/ARCH-052/COMMERCE-003-serve-authenticated-private-shopify-recovery-reads.md) | `moda_commerce` | Superseded | — |
