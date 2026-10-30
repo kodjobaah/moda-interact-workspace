@@ -189,24 +189,29 @@ No new concerns. The architecture's existing event-only completeness limitation 
 
 ### Review Status
 
-Pending.
+Changes requested — implementation review on 2026-10-30 found a Shopify routing compatibility regression. Task remains `in_progress`; the implementation is locally committed and unpublished.
 
 ### Review Notes
 
-No implementation reviewed.
+- **P1 — Preserve existing Shopify unreferenced-routing semantics.** In `src/services/recovery-routing.service.ts:132-138`, the status and latest-generation predicates are applied to candidates across all platforms. This changes Shopify behavior as well as Woo behavior: a phone that previously remained ambiguous because it had historical outbound recovery conversations can now resolve to one remaining current candidate. That can associate an unreferenced reply with the wrong Shopify checkout. The task limits generation-aware selection to Woo and explicitly requires existing Shopify current-recovery routing semantics to remain unchanged.
+- Scope the new status/generation selection to Woo recoveries and retain the pre-change candidate rules for Shopify. Add regression coverage that proves both Woo latest-generation routing and Shopify ambiguity/current-routing behavior.
 
 ### Reviewed Files
 
-None.
+- `src/services/recovery-routing.service.ts` — candidate selection and route recheck.
+- `src/services/whatsapp-inbound-processing.service.ts` — historical persistence, activity recording and turn enqueue paths.
+- `tests/unit/services/recovery-routing.service.test.ts` — routing query and route classification coverage.
+- `tests/integration/woo-recovery-inbound-routing.integration.test.ts` — PostgreSQL Woo generation routing scenarios.
+- `docs/decisions/background/ARCH-048/BACKGROUND-010-route-inbound-messages-across-woo-recovery-generations.md` — scope, requirements and reported validation.
 
 ### Validation Reviewed
 
-None.
+The completion report records 61 focused unit tests passing, 2 PostgreSQL routing integration tests passing, build, focused lint and `git diff --check` passing. These results were reviewed as submitted and were not independently rerun. Existing tests assert the generation/status SQL predicates but do not cover a Shopify regression case.
 
 ### Architecture Conformance
 
-Not assessed.
+Partial. Historical routing, persistence and concurrency safeguards appear aligned with the stated requirements. Shopify compatibility is not satisfied until candidate selection is platform-scoped and regression-tested.
 
 ### Follow-up
 
-None.
+Correct platform-specific candidate selection, add and run focused Shopify regression coverage alongside the Woo routing tests, then update this review section with the resulting evidence. Do not mark the task accepted until that finding is resolved.
