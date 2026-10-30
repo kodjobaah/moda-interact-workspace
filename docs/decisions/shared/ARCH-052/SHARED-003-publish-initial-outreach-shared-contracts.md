@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: codex
-claimed_at: 2026-10-30T08:10:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-002
@@ -45,7 +45,7 @@ updated: 2026-10-30
 
 Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`.
 
-Portable canonical definition: **defined but not materialised**. No real Git worktree, commit, release or publication is asserted.
+Materialised through the canonical task launcher. The release metadata commit and package publication are recorded in the Completion Report.
 
 ## Objective
 
@@ -181,7 +181,7 @@ Approved release metadata location: `moda-interact-shared/package.json`, and loc
 
 ### Status
 
-Ready for Review — Attempt 1 published the four architect-accepted Shared contract changes as `@modainteract/moda-interact-shared@2.6.0`.
+Complete — Attempt 1 published the four architect-accepted Shared contract changes as `@modainteract/moda-interact-shared@2.6.0`; architect review accepted the release evidence and metadata-only change.
 
 ### Prepared Execution Evidence
 
@@ -234,31 +234,33 @@ None. The package is visible at the intended registry and its published artifact
 
 ### Architectural Concerns
 
-None identified.
+None identified. The report records publication and registry artifact inspection; this review environment could not independently reach GitHub or npm because external DNS resolution was unavailable.
 
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1. Package `@modainteract/moda-interact-shared@2.6.0` was published and the reported tarball/export inspection satisfies the publication criteria. Only version metadata and lockfile version fields changed. Task Complete; no source implementation, consumer rollout, or merge to `main` is implied.
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+The implementation diff contains only `package.json` and `package-lock.json` version changes from 2.5.1 to 2.6.0; dependency versions and source files are unchanged. The Completion Report records the publish command, public registry destination, tarball URL and integrity, exact exports/runtime/declaration checks, and `prepack` result. The four prerequisite tasks are marked Complete in the authoritative task records. The task's stale portable/unmaterialised narrative has been corrected. A direct external re-query was unavailable in this review environment, so registry evidence is accepted from the recorded publication output and tarball inspection.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+- `moda-interact-shared/package.json`
+- `moda-interact-shared/package-lock.json`
+- Published `@modainteract/moda-interact-shared@2.6.0` tarball evidence recorded in the Completion Report
 
 ### Validation Reviewed
 
-None for implementation.
+Reviewed the reported `git diff --check`, release-only file inspection, registry metadata lookup, tarball export/runtime/declaration inspection, and package `prepack` result. Publication-task instructions prohibit rerunning implementation tests, typecheck, lint, or a separate build. Direct network verification was unavailable from this review environment.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+The release metadata-only change preserves existing exports and exposes the four accepted Shared contract changes in the reported published artifact. The publication remains isolated from consumer rollout and source implementation, as required.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+Dependency frontier reconciled: ADMIN-001, ADMIN-002, BACKGROUND-005, COMMERCE-006, MCP-001, and WOOCOMMERCE-001 are Ready. Other enabled tasks remain gated by their incomplete dependencies. No merge to `main` was performed.

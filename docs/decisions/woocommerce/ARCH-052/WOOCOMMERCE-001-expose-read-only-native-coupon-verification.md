@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
 - ARCH-052-MCP-004
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: 2026-10-30
 ---
 
 # ARCH-052-WOOCOMMERCE-001: Verify checkout and alternative-product coupon eligibility read-only in Woo plugin

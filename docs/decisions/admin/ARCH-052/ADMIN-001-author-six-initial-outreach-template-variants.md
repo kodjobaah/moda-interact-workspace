@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: 2026-10-30
 ---
 
 # ARCH-052-ADMIN-001: Author approved checkout/alternative promo variants under existing recovery purposes
