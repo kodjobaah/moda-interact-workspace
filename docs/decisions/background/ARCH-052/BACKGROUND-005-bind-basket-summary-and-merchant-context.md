@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: codex
 claimed_at: 2026-10-30T16:43:45Z
@@ -32,7 +32,7 @@ Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial
 
 Coordinator: `moda_architect`.
 
-This task was claimed and materialised for Attempt 1. At claim, the parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-005` was synchronized at `951cef829ace9b9705bcda15ca68bdfd67129d70`, and the implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-005` was synchronized at `6c284114afd7686ed4628def56fa248c3a79fce7`. The launcher confirmed `origin/main` was current at startup, recursively synchronized submodules, and verified `database` at `af77c594ecbfc78c26d01c0021a090830884bbff`. The task-claim commit is `ef530cd804ee538583693b53d2a7ca5b680f1d7f`. Before completion, the implementation branch incorporated the two commits subsequently added to `origin/main` (`4430635`, `0570565`) without conflicts. Implementation commit `c463c15d6e3dd0ff0b2eaad4d4bf9e1fc3741c72` is pushed to `origin/task/ARCH-052-BACKGROUND-005`; this parent task report will be committed and pushed separately.
+This task was claimed and materialised for Attempt 1. At claim, the parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-005` was synchronized at `951cef829ace9b9705bcda15ca68bdfd67129d70`, and the implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-005` was synchronized at `6c284114afd7686ed4628def56fa248c3a79fce7`. The launcher confirmed `origin/main` was current at startup, recursively synchronized submodules, and verified `database` at `af77c594ecbfc78c26d01c0021a090830884bbff`. The task-claim commit is `ef530cd804ee538583693b53d2a7ca5b680f1d7f`. Before Attempt 1 completion, the implementation branch incorporated the two commits subsequently added to `origin/main` (`4430635`, `0570565`) without conflicts; implementation commit `c463c15d6e3dd0ff0b2eaad4d4bf9e1fc3741c72` was pushed. For Attempt 2, the launcher reused the same dedicated parent and implementation worktrees and task branches, incorporated current `origin/main` in the parent and confirmed the implementation branch was current, and verified recursive submodule initialization with `database` at `af77c594ecbfc78c26d01c0021a090830884bbff`. It claimed Attempt 2 at `2026-10-30T16:43:45Z` in parent claim commit `548397b3a0ce0fcac0b5e452e7e5fee7952860d8`. Attempt 2 correction commit `c271b19` is pushed to `origin/task/ARCH-052-BACKGROUND-005`.
 
 ## Objective
 
@@ -114,7 +114,13 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Implementation complete; submitted for architect review at Attempt 1.
+Implementation complete; resubmitted for architect review at Attempt 2.
+
+### Attempt 1 Review Correction
+
+- **Implemented:** Replaced the hard-coded English `more` suffix with a language-neutral `+N` marker, which composes with each locale's `Intl.ListFormat` conjunction (for example, French renders `et +1`).
+- **Files:** `src/services/recovery-template-preparation/recovery-template-items-summary.ts` and `tests/unit/services/recovery-template-preparation/recovery-template-items-summary.test.ts`.
+- **Focused evidence:** The French fixture now asserts the exact neutral suffix; the bounded English fixture asserts `and +5`.
 
 ### Files Changed
 
@@ -135,7 +141,8 @@ Implementation complete; submitted for architect review at Attempt 1.
  - Disposable PostgreSQL integration: **1 file passed, 1 test passed** using `node scripts/test-integration.mjs tests/integration/arch047-recovery-template-preparation.integration.test.ts`. It exercised persisted basket binding and rejection of cross-tenant checkout facts.
  - `npm run build`: passed, including Prisma Client generation and TypeScript compilation.
  - `git diff --check`: passed.
- - `npm run lint`: reports one error at untouched `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); no findings were reported in changed files. The task implementation does not modify that baseline file.
+- `npm run lint`: reports one error at untouched `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); no findings were reported in changed files. The task implementation does not modify that baseline file.
+- Attempt 2 focused rerun: **3 files passed, 30 tests passed**; `eslint` passed for the changed formatter and regression test; `git diff --check` passed.
 
 ### Deviations
 
