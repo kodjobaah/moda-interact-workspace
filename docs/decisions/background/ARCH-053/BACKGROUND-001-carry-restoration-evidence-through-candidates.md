@@ -161,7 +161,7 @@ None. Candidate payload remains in the existing queue; no cross-service producer
 - Recursive submodule sync and update-init passed. The initialized `database` submodule is at `af77c594ecbfc78c26d01c0021a090830884bbff`.
 - Claim commit: `bc590be93af223a556ba8e6701c65ffdcf458b77` (launcher committed and pushed it).
 - Implementation commit: `41699ba` (`feat(ARCH-053-BACKGROUND-001): retain Woo restore evidence`); pushed to `origin/task/ARCH-053-BACKGROUND-001`.
-- Parent report is being committed and pushed to its matching task branch. No implementation submodule gitlink is staged.
+- Parent task/report branch: completion report committed and pushed to `origin/task/ARCH-053-BACKGROUND-001`. No implementation submodule gitlink is staged.
 - Neither task branch was merged into `main`; no `main` branch was changed.
 
 ## Architect Review
