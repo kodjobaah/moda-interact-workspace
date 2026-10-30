@@ -436,7 +436,7 @@ The offer schema describes already-confirmed offer data only; it does not valida
 
 ### Deviations
 
-The task worktree had no local `node_modules`; validation used an ignored symlink to the existing Shared dependency cache, without changing dependency manifests or lockfiles. The default npm cache contained root-owned files, so the package dry-run used a temporary cache under `/tmp`. The full test suite's single skipped Redis test is conditional on `TEST_REDIS_URL`; no Redis integration environment was configured.
+The task worktree had no local `node_modules`; validation used an ignored symlink to the existing Shared dependency cache, without changing dependency manifests or lockfiles. The default npm cache contained root-owned files, so the package dry-run used a temporary cache under `/tmp`. The full test suite's single skipped Redis test is conditional on `TEST_REDIS_URL`; no Redis integration environment was configured. Automatic approval review rejected publishing the private ARCH-053 implementation branch, stating the prior authorization applied to ARCH-048 and did not cover this new branch/destination. No retry or alternate publication path was attempted; parent report publication is pending the same explicit authorization.
 
 The launcher marked an architect-review rework flag because an Architect Review section exists; that section was read in full and says Pending / Not Reviewed, with no Changes Requested items.
 
@@ -469,12 +469,12 @@ Start-of-attempt synchronization and submodules (from launcher packet):
 
 Implementation repository:
 - Commit: `3bffadc4ad20ca2910ff4c7e2257e6fa732140de`.
-- Remote branch: `origin/task/ARCH-053-SHARED-001`; push pending.
+- Remote branch: `origin/task/ARCH-053-SHARED-001`; push rejected by automatic approval review. The exact review reason is recorded under Deviations.
 
 Parent workspace:
 - Task file: `docs/decisions/shared/ARCH-053/SHARED-001-define-woocommerce-cart-restore-contracts.md`.
 - Claim commit: `da1df065e3c33357336d55ca197ed18826975add` (launcher-pushed).
-- Review report commit: `fb7435d7dda2e214d941fa0c32f7c7b724fef572`; remote branch push pending.
+- Review report commit: `fb7435d7dda2e214d941fa0c32f7c7b724fef572`; latest local parent branch commit: `eb27ae1160bbe50845d92c0f20f2d123f62ab88d`. Remote branch remains at the launcher-published claim until explicit authorization permits publication.
 - Submodule gitlink staged: no.
 
 Merged to implementation `main`: no. Merged to workspace `main`: no.
