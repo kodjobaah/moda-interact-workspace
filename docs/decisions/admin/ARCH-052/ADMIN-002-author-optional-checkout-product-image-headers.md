@@ -48,19 +48,19 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 ## Scope
 
 - Use Shared-002 `CHECKOUT_PRODUCT` media role and Shared-008 exact MCP product images; author separate immutable IMAGE and text-only fallback variants for `promotionTarget:CHECKOUT` and `promotionTarget:ALTERNATIVE_PRODUCT` where approved, under existing INITIAL purposes.
-- Bind an alternate image only to the same verified product/variant ID chosen by Background-010; no arbitrary AI-selected URL. Preserve ARCH-049 media origin validation and frozen Meta header digests; reject header type/role changes after approval.
+- Author the semantic `CHECKOUT_PRODUCT` binding for the exact checkout product or Background-010-selected alternative product/variant; Background-007 alone enforces shop/product/variant binding at send preparation. Never accept an arbitrary AI-selected image URL. Preserve ARCH-049 media origin validation and frozen Meta header digests; reject header type/role changes after approval.
 - Tests for missing/unsafe image, product mismatch, variant fallback, revoked source, translation and correct text-only variant choice.
 
 ## Out of Scope
 
-- No actual Shopify/Woo photo download, R2 processing, Meta sample-media sourcing workaround or live send.
+- No actual Shopify/Woo photo download, R2 processing, Meta sample-media sourcing workaround or live send. No Admin-owned runtime image proof, `VERIFIED_PROVIDER_IMAGE` object, proof TTL, or persisted verification evidence.
 
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
 ## Requirements
 
-- A product image can be used only after Background returned a typed `VERIFIED_PROVIDER_IMAGE` in the current 5-minute preparation window, and the exact Meta IMAGE template was approved.
-- If the image is absent/expired or source changed use a different approved TEXT template identity; never alter an approved template component at send.
+- Admin defines and freezes the semantic IMAGE role and separately approved TEXT fallback identity. **There is no five-minute media-proof contract or `VERIFIED_PROVIDER_IMAGE` dependency.** Admin neither fetches live product media nor validates its send-time freshness.
+- Background-007 must resolve the exact current-shop product/variant via authenticated MCP during each send-preparation attempt. Only its **Background-local** validated `READY` result can accompany an independently approved IMAGE template. If the media is missing, unsafe, unavailable, mismatched, or its source has changed/revoked, use the separately approved TEXT template for the same purpose and promotion target or return typed no-send. Retries re-resolve; never mutate approved template components.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
@@ -74,7 +74,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-Existing ARCH-049 media conventions, Shared-002 image role and promotionTarget metadata. Background-007 owns actual MCP product reads.
+Existing ARCH-049 media conventions, Shared-002 image role and promotionTarget metadata. Background-007 owns authenticated MCP reads and a **Background-local** `READY` / `UNAVAILABLE` resolver result. No Shared `VERIFIED_PROVIDER_IMAGE` schema, persisted proof or timed proof expiry is required; the Admin authoring/publishing boundary does not consume a runtime image result.
 
 ## Dependencies
 
@@ -92,7 +92,7 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 ## Acceptance Criteria
 
 - [ ] IMAGE header with product role compiles/reviews/publishes only through Admin.
-- [ ] A missing READY product media selects an approved fallback or typed no-send; it never swaps media into an unrelated role.
+- [ ] Admin freezes distinct IMAGE and TEXT template identities with the same purpose/promotion target, and makes the approved TEXT fallback selectable without replacing an approved IMAGE component. Background-007 alone enforces runtime `READY` media, safe TEXT fallback or typed no-send.
 
 ## Validation
 
@@ -183,24 +183,28 @@ Return to `moda_architect` for cross-repository sequencing of the Background pro
 
 ### Review Status
 
-Pending.
+Blocked.
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+30 October 2026 architectural scope correction, requested by the developer: **remove the proposed five-minute `VERIFIED_PROVIDER_IMAGE` proof contract completely**. The implementing agent's preceding Completion Report is retained verbatim as historical evidence of Attempt 1, but its assertions that a five-minute/current-window proof is required are **superseded** by this task definition. Do not request Admin or Background to implement, persist, cache or export that proof. This scope correction is not an acceptance of source implementation.
+
+Runtime product identity/media/source checks and per-attempt retry resolution are owned solely by BACKGROUND-007. In particular, BACKGROUND-007 is downstream of ADMIN-002, so treating its resolver as a prerequisite for Admin authoring would introduce a circular acceptance dependency. The separate trusted Meta IMAGE sample-handle producer is still missing; `IMAGE_SAMPLE_HANDLE_REQUIRED` must remain fail-closed. Admin remains blocked for IMAGE registration/publication validation, **not** for runtime image-proof work.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/meta/snapshot.ts` (the existing sample-handle registration guard).
+- `docs/decisions/background/ARCH-052/BACKGROUND-007-resolve-verified-product-image-at-runtime.md` (existing Background-local `READY` / `UNAVAILABLE` design).
+- The Attempt 1 Completion Report above (not rewritten).
 
 ### Validation Reviewed
 
-None for implementation.
+Documentation-only architectural correction. The focused implementation validations listed in the Completion Report are agent-reported evidence, not independently rerun by this patch. No live Meta submission or image send was performed.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+Admin owns immutable authoring and provider registration; Background owns authenticated send-time media resolution and fallback. No new Shared image-proof schema, fixed image-proof lifetime or database record. IMAGE publication remains gated on trusted Meta sample media and provider approval; approved TEXT remains independently usable.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+Define/implement the trusted server-side Meta IMAGE sample-handle acquisition at the existing Admin provider-registration boundary as a separately reviewed owning task. Reconcile ADMIN-002 once that capability is available; retain the existing committed authoring work. BACKGROUND-007 must later prove current-attempt image identity/safety and fallback independently; it must not block Admin-002 review for lack of a timed proof.

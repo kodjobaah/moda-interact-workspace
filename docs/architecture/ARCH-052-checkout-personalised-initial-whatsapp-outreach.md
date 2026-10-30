@@ -95,7 +95,7 @@ The normative source-level Zod definitions, example JSON payloads, nullability, 
 
 ## Approved presentation and optional media
 
-ARCH-047's existing Meta purpose identifiers remain unchanged. `ADMIN-001` freezes approved initial TEXT variants by purpose/locale/promotion target and header type. `BACKGROUND-008` selects that exact variant before the existing single-locale ambiguity logic. Where Meta has approved both dynamic CTA buttons, the existing transport is extended to retain the checkout URL and alternative-product URL at the exact approved indexes; no additional button is invented. Approved TEXT sends must not be blocked by `ADMIN-002` or `BACKGROUND-007`. Optional IMAGE support follows as a distinct enhancement and requires approved Meta IMAGE variants; `BACKGROUND-007` uses a **Background-local** media result, not an unimplemented Shared image result schema.
+ARCH-047's existing Meta purpose identifiers remain unchanged. `ADMIN-001` freezes approved initial TEXT variants by purpose/locale/promotion target and header type. `BACKGROUND-008` selects that exact variant before the existing single-locale ambiguity logic. Where Meta has approved both dynamic CTA buttons, the existing transport is extended to retain the checkout URL and alternative-product URL at the exact approved indexes; no additional button is invented. Approved TEXT sends must not be blocked by `ADMIN-002` or `BACKGROUND-007`. Optional IMAGE support follows as a distinct enhancement and requires approved Meta IMAGE variants; `BACKGROUND-007` uses a **Background-local**, per-send-preparation `READY` / `UNAVAILABLE` media result, not an unimplemented Shared image result schema. **No five-minute `VERIFIED_PROVIDER_IMAGE` proof, timed certificate, persisted media-proof record or cross-service proof contract is required.** Each retry resolves again against the authenticated current-shop product/variant; missing, changed, revoked or unsafe media safely selects the separately approved TEXT variant or no-send. Admin template authoring/registration is independent of this runtime check. Provider IMAGE registration still requires a trusted server-produced Meta sample handle; do not bypass `IMAGE_SAMPLE_HANDLE_REQUIRED`.
 
 ## Repository responsibilities
 
@@ -161,7 +161,7 @@ Individual task YAML is authoritative. Current snapshot includes five accepted C
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
 | [ARCH-052-ADMIN-001](../decisions/admin/ARCH-052/ADMIN-001-author-six-initial-outreach-template-variants.md) | `moda_admin` | Complete | `ARCH-052-SHARED-003` |
-| [ARCH-052-ADMIN-002](../decisions/admin/ARCH-052/ADMIN-002-author-optional-checkout-product-image-headers.md) | `moda_admin` | Ready | `ARCH-052-SHARED-003`, `ARCH-049-ADMIN-002` |
+| [ARCH-052-ADMIN-002](../decisions/admin/ARCH-052/ADMIN-002-author-optional-checkout-product-image-headers.md) | `moda_admin` | Blocked (Meta IMAGE sample handle) | `ARCH-052-SHARED-003`, `ARCH-049-ADMIN-002` |
 | [ARCH-052-API-001](../decisions/api/ARCH-052/API-001-align-existing-woo-selection-with-shared-contract.md) | `moda_api` | Superseded | — |
 | [ARCH-052-API-002](../decisions/api/ARCH-052/API-002-expose-private-woo-checkout-product-image-read.md) | `moda_api` | Superseded | — |
 | [ARCH-052-API-003](../decisions/api/ARCH-052/API-003-proxy-woo-native-coupon-proof-through-private-api.md) | `moda_api` | Superseded | — |
@@ -213,6 +213,7 @@ None delegated to implementation agents. Unknown provider-specific customer rest
 
 ## Change History
 
+- 2026-10-30 **Image-proof contract correction (ADMIN-002 Attempt 1 handoff)**: Remove the unimplemented five-minute `VERIFIED_PROVIDER_IMAGE` requirement. Keep Background-007's per-attempt local `READY`/`UNAVAILABLE` image resolver and independent approved TEXT fallback. Admin-002 is blocked on trusted Meta IMAGE sample-handle acquisition, not downstream runtime proof; preserve its historical agent report.
 - 2026-10-30 **Attempt 14 (09:15 snapshot)**: ARCH-053 is sole owner of Woo recovery URLs and restoration, with no reverse task dependency. Added one consolidated explicit Shared implementation contract SHARED-009 and separate SHARED-010 publication, BG011 source-backed Shopify discount sync, MCP005 secure Woo adapter, paginated discount options/details, product taxonomy ID/nullable variant alignment, approved two-CTA TEXT send and optional-image decoupling. Preserved all completed/review task records and omitted `_index.md` updates.
 
 - 2026-10-30 **Attempt 13 (rebase on 08:28 snapshot):** Preserve the architect-accepted, Complete SHARED-005 history unchanged. Exclude its proof contract from new ARCH-052 consumers and SHARED-003 release scope. Correct SHARED-003 to Ready because SHARED-002/006/008 are accepted Complete; reconcile the simplified Commerce/MCP execution plan without adding `_index.md` changes.
