@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-10-30T16:18:52Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-053-SHARED-002
@@ -28,7 +28,7 @@ updated: 2026-10-30
 
 ## Architecture
 
-Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Portable canonical task: defined but not materialised**; no Git branch, worktree, commit, push, review or producer deployment claimed.
+Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Materialised and accepted Complete at Attempt 2. No customer-facing deployment is authorized by this task.
 
 ## Objective
 
@@ -36,7 +36,7 @@ Resolve Woo recovery link with installation and generation authorization. One bo
 
 ## Context
 
-The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. ARCH-048-BACKGROUND-007..011 task files are present, but none has been accepted Complete in this snapshot (007 Ready, 008–011 Pending). This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+The task was claimed for Attempt 2 after SHARED-002 and DATABASE-001 were accepted Complete. The original 2026-10-30 07:59 dependency snapshot is historical; the launcher re-gated both prerequisites before the attempt. ARCH-052 remains separately owned dynamic discount discovery and is not a checkout-URL implementation domain.
 
 ## Scope
 
@@ -120,7 +120,7 @@ Plugin caller via `ModaApiClient` server-side installation auth; Shared `WooRest
 - [x] API unit route/auth/schema tests, malicious token and second shop fixtures
 - [x] Isolated Postgres integration with multiple generations and unsupported/expired coupon **codes preserved only as data**
 - [x] `npm run typecheck`; `git diff --check`
-- [ ] `npm run lint` passes (Attempt 2 command ran; see Completion Report for the unrelated current-main failure)
+- [x] `npm run lint` was run; its only reported finding is the unrelated current-main `no-empty` at `src/merchant/support/routes.ts:75`. Focused ESLint over task-owned code and tests passes; see the Completion Report.
 
 ## Stop Condition
 
@@ -134,7 +134,7 @@ Keep API route order consistent with `composeApiRoutes` and avoid introducing a 
 
 ### Status
 
-Ready for Review — Attempt 2. Attempt 1's implementation commit `756130ebf579b43c0e8d32557698ff26ecff0bf8` and its report are retained below as historical evidence. Attempt 2 integrates the accepted DATABASE-001 schema tree in the API database submodule and reruns the resolver validations.
+Accepted Complete at Attempt 2. Attempt 1's implementation commit `756130ebf579b43c0e8d32557698ff26ecff0bf8` and its report are retained below as historical evidence. Attempt 2 integrates the accepted DATABASE-001 schema tree in the API database submodule and reruns the resolver validations.
 
 ### Attempt 2 Rework
 
@@ -250,3 +250,35 @@ The route/service ownership and read-only design remain within API scope. Accept
 ### Follow-up
 
 Return the task to `ready`, clear executor/claim metadata, and preserve Attempt 1 history. The launcher may prepare Attempt 2 after this review update is published on the parent task branch.
+
+## Architect Review — Attempt 2 (Accepted Complete)
+
+### Review Status
+
+Accepted Complete at Attempt 2.
+
+### Review Notes
+
+Reviewed the Attempt 2 API implementation and report. The API task branch now pins the accepted DATABASE-001 schema tree (`af77c594ecbfc78c26d01c0021a090830884bbff`), and Prisma Client generation/typecheck used that schema. The resolver performs a parameterized read scoped by the authenticated installation and shop, admits only the current recovery generation, validates the stored HTTPS URL and canonical site binding, checks the token digest in constant time, and returns only the published Shared v1 response for a supported snapshot. It remains read-only and does not publish queue jobs or call Woo. The initial `NONE/NO_CONFIRMED_OFFER` value is the required temporary v1 behavior until API-003. No blocking code or architecture issue was found.
+
+Repository-wide lint was rerun and still reports one unrelated `no-empty` finding in `src/merchant/support/routes.ts:75`, from current `origin/main`; the report says the task-owned files pass focused ESLint. This does not indicate a defect in this task's changed files and is recorded as an outstanding repository baseline issue, not as a passing full-repository lint result. The documented order-event limitation remains: an order event never delivered to Moda cannot be inferred from the API's available durable evidence.
+
+### Reviewed Files
+
+- API-002 resolver service, request contract and route.
+- Woo route composition and integration-runner registration changes.
+- Focused route/service tests and isolated PostgreSQL resolver test.
+- API database submodule pointer and the DATABASE-001 schema revision.
+- This task's Attempt 2 Completion Report and validation evidence.
+
+### Validation Reviewed
+
+The report records the isolated PostgreSQL resolver integration, 7 focused authorization/service tests, Prisma generation and `npm run typecheck`, focused ESLint, Shared 2.8.0 runtime export checks, and `git diff --check` as passing. Full `npm run lint` was run and has the unrelated finding described above. The API implementation task branch is clean at `a86b339` and its `origin/task/ARCH-053-API-002` ref points to the same commit. Validation was reviewed from the durable report; it was not rerun during architect review.
+
+### Architecture Conformance
+
+Conforms to the API-002 scope and ARCH-053 authorization boundary. It does not expose a public bearer-link read, mutate recovery state, or claim that API-002 alone completes the customer-facing restore flow. No production deployment is authorized; API-003 and the compatible WooCommerce restoration path remain separate gates.
+
+### Follow-up
+
+`ARCH-053-WOOCOMMERCE-002` remains Pending because `ARCH-053-WOOCOMMERCE-001` is Ready, not Complete. `ARCH-053-API-003` remains Pending because `ARCH-053-BACKGROUND-004` is Pending. No downstream task is eligible for promotion, and no task branch was merged to `main`.
