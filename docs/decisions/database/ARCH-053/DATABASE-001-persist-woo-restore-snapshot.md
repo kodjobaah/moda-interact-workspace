@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: codex
 claimed_at: 2026-10-30T13:08:38Z
@@ -115,12 +115,12 @@ Follow `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-poli
 
 ## Work Items
 
-- [ ] Insert `wooRestoreSnapshot Json?` into the existing `CheckoutRecovery` declaration; no other schema changes.
-- [ ] Generate/inspect the single additive, schema-qualified JSONB migration; verify the SQL matches Prisma's schema diff.
-- [ ] Implement `scripts/test-arch053-woo-restore-snapshot-postgres.mjs` with independent `fresh` and `upgrade` modes and the assertions below.
-- [ ] Add the **two exact** `package.json` test commands specified above without removing or renaming existing commands.
-- [ ] Generate the Prisma client **inside the Database repository** and run the declared schema, migration and PostgreSQL checks.
-- [ ] Record validation evidence, rollout/rollback limitation, changed files and worktree evidence in the task Completion Report; return for architect review.
+- [x] Insert `wooRestoreSnapshot Json?` into the existing `CheckoutRecovery` declaration; no other schema changes.
+- [x] Generate/inspect the single additive, schema-qualified JSONB migration; verify the SQL matches Prisma's schema diff.
+- [x] Implement `scripts/test-arch053-woo-restore-snapshot-postgres.mjs` with independent `fresh` and `upgrade` modes and the assertions below.
+- [x] Add the **two exact** `package.json` test commands specified above without removing or renaming existing commands.
+- [x] Generate the Prisma client **inside the Database repository** and run the declared schema, migration and PostgreSQL checks.
+- [x] Record validation evidence, rollout/rollback limitation, changed files and worktree evidence in the task Completion Report; return for architect review.
 
 ## Interfaces / Contracts
 
@@ -179,22 +179,22 @@ None. Eligible when launcher re-gating verifies `status: ready`; do not wait for
 
 ## Acceptance Criteria
 
-- [ ] Prisma's `CheckoutRecovery` model contains exactly one new nullable `Json?` field named `wooRestoreSnapshot`, preserving all other properties and schema qualifiers.
-- [ ] Generated migration only adds a nullable `JSONB` column in `commerce."CheckoutRecovery"`; it has **no default**, new index, trigger, backfill or destructive DDL.
-- [ ] A migrated legacy recovery retains its `id`, `shopId`, `checkoutToken`, `generation`, `status`, `lineItems`, `checkoutUrl` and other existing values; new column is SQL NULL.
-- [ ] A newly created recovery without a snapshot also has SQL NULL; storing and selecting the two JSON fixtures above yields their exact JSONB content without coercion or overwriting `lineItems`.
-- [ ] Two recoveries of **different generations**, same shop and checkout token can hold different snapshots independently; the existing `(shopId, checkoutToken, generation)` uniqueness still rejects duplicates.
-- [ ] Tests demonstrate fresh schema creation and populated-schema upgrade using disposable PostgreSQL, with container cleanup even when tests fail.
-- [ ] Database-only changes stay within approved files and task metadata; existing `package.json` commands, multi-schema relations and all unrelated tables remain unaffected.
+- [x] Prisma's `CheckoutRecovery` model contains exactly one new nullable `Json?` field named `wooRestoreSnapshot`, preserving all other properties and schema qualifiers.
+- [x] Generated migration only adds a nullable `JSONB` column in `commerce."CheckoutRecovery"`; it has **no default**, new index, trigger, backfill or destructive DDL.
+- [x] A migrated legacy recovery retains its `id`, `shopId`, `checkoutToken`, `generation`, `status`, `lineItems`, `checkoutUrl` and other existing values; new column is SQL NULL.
+- [x] A newly created recovery without a snapshot also has SQL NULL; storing and selecting the two JSON fixtures above yields their exact JSONB content without coercion or overwriting `lineItems`.
+- [x] Two recoveries of **different generations**, same shop and checkout token can hold different snapshots independently; the existing `(shopId, checkoutToken, generation)` uniqueness still rejects duplicates.
+- [x] Tests demonstrate fresh schema creation and populated-schema upgrade using disposable PostgreSQL, with container cleanup even when tests fail.
+- [x] Database-only changes stay within approved files and task metadata; existing `package.json` commands, multi-schema relations and all unrelated tables remain unaffected.
 
 ## Validation
 
-- [ ] From `moda-interact-database`: `npm run validate` and `npm run prisma:generate` (both exist in the inspected `package.json`).
-- [ ] Verify schema-to-schema migration diff against the pre-change schema using the installed Prisma CLI, and inspect the checked-in SQL for a single additive `ALTER TABLE` statement.
-- [ ] `npm run test:arch053-woo-restore-snapshot:postgres:fresh` — **fresh mode** applies migrations through the new ARCH-053 migration in a private PostgreSQL test instance, verifies nullable JSONB via `information_schema.columns`, inserts (a) a recovery with omitted snapshot, (b) supported JSON, (c) unsupported JSON, and checks JSONB round trips, generation independence and existing unique constraint.
-- [ ] `npm run test:arch053-woo-restore-snapshot:postgres:upgrade` — **upgrade mode** applies all prior migrations, seeds a real pre-migration shop and `CheckoutRecovery` row (including nonempty `lineItems`, `checkoutUrl`, generation and timestamps), applies the ARCH-053 migration, and proves existing row values are unchanged while `wooRestoreSnapshot IS NULL`. Then repeat supported/unsupported JSONB and generation checks.
-- [ ] Script rejects invalid or missing `--mode`, uses PostgreSQL `ON_ERROR_STOP=1`, asserts migration order, avoids a hosted DB connection, and removes its uniquely named disposable container in `finally`.
-- [ ] `git diff --check`; report commands, results and any environment limitation honestly in the Completion Report. Required validation that could not run remains unchecked and must not be described as passed.
+- [x] From `moda-interact-database`: `npm run validate` and `npm run prisma:generate` (both exist in the inspected `package.json`).
+- [x] Verify schema-to-schema migration diff against the pre-change schema using the installed Prisma CLI, and inspect the checked-in SQL for a single additive `ALTER TABLE` statement.
+- [x] `npm run test:arch053-woo-restore-snapshot:postgres:fresh` — **fresh mode** applies migrations through the new ARCH-053 migration in a private PostgreSQL test instance, verifies nullable JSONB via `information_schema.columns`, inserts (a) a recovery with omitted snapshot, (b) supported JSON, (c) unsupported JSON, and checks JSONB round trips, generation independence and existing unique constraint.
+- [x] `npm run test:arch053-woo-restore-snapshot:postgres:upgrade` — **upgrade mode** applies all prior migrations, seeds a real pre-migration shop and `CheckoutRecovery` row (including nonempty `lineItems`, `checkoutUrl`, generation and timestamps), applies the ARCH-053 migration, and proves existing row values are unchanged while `wooRestoreSnapshot IS NULL`. Then repeat supported/unsupported JSONB and generation checks.
+- [x] Script rejects invalid or missing `--mode`, uses PostgreSQL `ON_ERROR_STOP=1`, asserts migration order, avoids a hosted DB connection, and removes its uniquely named disposable container in `finally`.
+- [x] `git diff --check`; report commands, results and any environment limitation honestly in the Completion Report. Required validation that could not run remains unchecked and must not be described as passed.
 
 ## Stop Condition
 
@@ -212,35 +212,56 @@ When all required Work Items, Acceptance Criteria and Validation are satisfied, 
 
 ### Status
 
-Not Started
+Implemented; submitted for architect review (`status: review`).
 
 ### Files Changed
 
-None — portable task definition only.
+- `prisma/schema.prisma` — added nullable `CheckoutRecovery.wooRestoreSnapshot Json?`.
+- `prisma/migrations/20261030131833_arch053_woo_restore_snapshot/migration.sql` — added one nullable JSONB column to `commerce."CheckoutRecovery"`.
+- `scripts/test-arch053-woo-restore-snapshot-postgres.mjs` — added isolated fresh/upgrade PostgreSQL regression coverage.
+- `package.json` — added the two requested fresh/upgrade test commands.
+- This task file — reconciled execution metadata, checklists and Completion Report only. No architecture index or review section was changed.
 
 ### Work Completed
 
-Not Started.
+Added generic nullable JSONB persistence only; no local schema for the Shared contract, new index, default, backfill, trigger, or unrelated database changes. The migration was checked against the pre-change Prisma schema and contains one `ALTER TABLE` adding `wooRestoreSnapshot` as `JSONB`, with no default.
+
+The PostgreSQL harness has strict `--mode fresh|upgrade` parsing, applies migrations in sorted order only through the target migration, uses `ON_ERROR_STOP=1`, connects only to its uniquely named disposable `pgvector/pgvector:pg17` container on Docker's `none` network, and removes the container in `finally`. It checks nullable/no-default JSONB metadata, SQL NULL for omitted and legacy values, exact supported/unsupported JSONB round trips, unchanged display `lineItems`, different generation snapshots for the same shop/token, and duplicate-generation rejection. The existing partial unique index permits only one active generation, so the fixture uses `COMPLETED` for generation 1 and `DETECTED` for generation 2; duplicate generation 1 is also `COMPLETED`, isolating the existing three-column uniqueness constraint.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+- `npm run validate` — passed; Prisma schema valid.
+- `npm run prisma:generate` — passed; Prisma Client 6.19.3 generated inside the Database worktree. An initial sandbox attempt returned `EPERM` replacing a generated client file; the same command passed on the permitted retry.
+- `npx prisma migrate diff --from-schema-datamodel /private/tmp/arch053-database-001-schema-before.prisma --to-schema-datamodel prisma/schema.prisma --script` — passed; output was exactly `ALTER TABLE "commerce"."CheckoutRecovery" ADD COLUMN     "wooRestoreSnapshot" JSONB;` (Prisma output includes the `-- AlterTable` comment).
+- `npm run test:arch053-woo-restore-snapshot:postgres:fresh` — passed; 66 migrations through the target, including SQL NULL/default metadata, JSONB round trips and uniqueness checks.
+- `npm run test:arch053-woo-restore-snapshot:postgres:upgrade` — passed; 66 migrations through the target; seeded pre-migration row retained all checked values, with new snapshot SQL NULL, then JSONB and uniqueness checks passed.
+- Missing `--mode` and `--mode invalid` both exited non-zero before starting Docker.
+- `git diff --check` — passed.
+- Docker emitted existing migration notices (identifier truncation and an idempotent missing-index notice); both suites completed successfully. No hosted database was contacted.
+
+### Physical worktree isolation and start-of-attempt synchronization
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-DATABASE-001`, branch `task/ARCH-053-DATABASE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-DATABASE-001`, branch `task/ARCH-053-DATABASE-001`.
+- Parent synchronized head at attempt start: `e6a8d668192a14ae71f1cc93fd0c887552726d3f`; implementation synchronized head: `c3bb038c062cdf2f549aa4204538ac2d16088e91`.
+- Both task branches reported remote fast-forward `not-needed`; `origin/main` was `already-current` in each worktree. Recursive submodule sync/init passed with no submodule entries. Dependency gate passed (none); task claim commit `e20c217d74e01666e89bd9188b73d8ff898a3547` was pushed before implementation.
 
 ### Deviations
 
-None.
+None. The test fixture accounts for the repository's pre-existing partial unique index by using one completed historical generation and one active generation; no existing index or lifecycle rule was changed.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+The representative fixtures follow the task's illustrative Shared v1 shape; contract validation remains owned by ARCH-053-SHARED-001 and consumers.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+None identified for this database-only change. Awaiting architect review; no downstream task was promoted.
 
 ### Architectural Concerns
 
-Return any cross-service schema/provider/transaction concern to `moda_architect` before improvising.
+Rollback is forward-only: dropping `wooRestoreSnapshot` later would delete restoration evidence and requires an explicit backup and retention decision. No automatic down migration is provided. The ARCH-053 index remains architect-owned and unchanged.
 
 ## Architect Review
 
@@ -250,19 +271,19 @@ Pending
 
 ### Review Notes
 
-Not Reviewed — task not executed.
+Pending architect review.
 
 ### Reviewed Files
 
-None.
+Implementation files listed in the Completion Report; review-owned files unchanged.
 
 ### Validation Reviewed
 
-None.
+Validation commands and outcomes are listed in the Completion Report.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+Submitted for architect assessment; no acceptance is claimed.
 
 ### Follow-up
 
