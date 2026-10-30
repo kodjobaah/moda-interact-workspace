@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 34
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-048-BACKGROUND-011
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-048-BACKGROUND-008 — Admit the next Woo recovery generation from a mature candidate
