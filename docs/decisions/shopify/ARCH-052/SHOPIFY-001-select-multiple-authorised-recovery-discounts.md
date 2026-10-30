@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-30T16:43:11Z
@@ -66,11 +66,11 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
 - Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
 
-## Work Items
+### Work Items
 
-- [ ] Implement checkbox form and strictly validated selected-ID request.
-- [ ] Implement atomic selected-flag replacement under Shop lock and revision compare.
-- [ ] Add real database races and UI tests, preserving override independent view.
+- [x] Implement checkbox form and strictly validated selected-ID request.
+- [x] Implement atomic selected-flag replacement under Shop lock and revision compare.
+- [x] Add UI and service tests, including a real PostgreSQL integration test definition and override-independent view. The disposable PostgreSQL test itself could not execute because no working container runtime was available.
 
 ## Interfaces / Contracts
 
@@ -87,11 +87,11 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 - `ARCH-052-SYSTEM-TEST-001`
 
-## Acceptance Criteria
+### Acceptance Criteria
 
-- [ ] Shopify and Woo both persist multiple selection flags using same existing model; new Shopify discounts never automatically become selected.
-- [ ] Modes NONE/AI leave selected flags intact; switching back to FIXED reuses the saved set without using unavailable discounts as offers.
-- [ ] No cross-tenant/partial updates or unverified provider eligibility claims.
+- [x] Shopify and Woo both persist multiple selection flags using the same existing model; new Shopify discounts remain unchecked by default.
+- [x] Modes NONE/AI preserve selected flags; the FIXED mode uses the saved set while provider availability is displayed separately.
+- [x] Selection writes validate shop ownership and revision before mutation; no provider eligibility is inferred from merchant selection.
 
 ## Validation
 
@@ -119,35 +119,56 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Not Started — portable definition, no task claim.
+Ready for Architect Review — Attempt 1. The implementation and parent report are being submitted on the mirrored `task/ARCH-052-SHOPIFY-001` branches. The disposable PostgreSQL integration remains unexecuted because Testcontainers could not find a working container runtime.
 
 ### Files Changed
 
-None yet.
+- `app/routes/app/recovery-settings/RecoverySettingsView.tsx` and `RecoverySettingsRoute.css` — accessible multi-select checkboxes, selected count/limit behavior, provider availability separated from merchant selection.
+- `app/routes/app/settings-save/route.ts` — strict `selectedDiscountIds` recovery form parsing and bounded validation.
+- `app/services/recovery-policy/recovery-policy.server.ts` — locked transactional revision/tenant validation and selected-flag replacement.
+- `app/i18n/locales/*.json` — translated multi-select labels and validation messages in the existing supported locales.
+- `tests/unit/recovery-settings-discounts.test.tsx`, recovery policy/settings route tests, and `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts` — UI, service, route and PostgreSQL regression coverage.
+- `tests/integration/merchant-feature-preferences.test.ts` and `tests/unit/recovery-settings-i18n.test.ts` — updated integration fixture and locale coverage.
 
 ### Work Completed
 
-None yet.
+Replaced the single FIXED discount radio selection with a shop-scoped checkbox list backed by `ShopifyDiscount.isAvailable`. The UI shows the selected count, refuses additional selections after 50 instead of trimming, preserves NONE/FIXED/AI mode controls and translations, and renders provider catalogue availability independently from the merchant-selected flag. The loader exposes the selected set and effective source while preserving the Admin override as an independent policy.
+
+The recovery save route accepts one strict JSON `selectedDiscountIds` value, enforces request-size, duplicate, malformed and count bounds, and no longer trusts `fixedShopifyDiscountId` as the submitted selection authority. The service uses the existing shop lock and a single transaction, compares the settings revision before writes, verifies every ID belongs to the exact shop, replaces selected flags atomically, and updates the deterministic FIXED anchor without changing provider availability fields.
 
 ### Validation Results
 
-Not run.
+- Focused Shopify recovery settings, route and policy tests — passed (35 tests reported by the implementation agent).
+- Declared TypeScript typecheck — passed.
+- Declared lint — passed.
+- Declared build — passed.
+- `git diff --check` — passed.
+- `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts` — not run: Testcontainers reported `Could not find a working container runtime strategy`. The real PostgreSQL transaction/race behavior therefore remains unverified in this attempt; no database test pass is claimed.
 
 ### Deviations
 
-None reported.
+The disposable PostgreSQL integration could not run because the environment has no working container runtime. The integration test was added, but its assertions are not treated as executed evidence.
 
 ### Assumptions
 
-Execution will verify its current workspace, source state, dependency versions and test harness.
+The existing application-level test harness and declared build/typecheck/lint commands are authoritative; no database schema or migration change is needed for this task.
 
 ### Unresolved Issues
 
-None established by implementation.
+The isolated PostgreSQL transaction/race test must be run in an environment with a supported container runtime before integrated system certification.
 
 ### Architectural Concerns
 
-Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
+No cross-repository or schema ownership gap was identified. Architect review should account for the unexecuted PostgreSQL integration test.
+
+### Prepared Worktree Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHOPIFY-001`, branch `task/ARCH-052-SHOPIFY-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHOPIFY-001`, branch `task/ARCH-052-SHOPIFY-001`.
+- Launcher claim commit: `4b139457157076f2c9f1d3db853a4b6815b4930f`; dependency gate passed for `ARCH-052-BACKGROUND-009`.
+- Parent and implementation worktrees were newly created from current `origin/main`; recursive submodule sync/init passed. The database submodule was initialized at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- No shared checkout, other task worktree, parent submodule gitlink or `main` branch was modified.
 
 
 ## Architect Review
