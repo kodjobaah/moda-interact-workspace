@@ -178,7 +178,7 @@ Physical worktree isolation:
 
 Start-of-attempt synchronization evidence:
 
-- Parent task branch claim was already at the remote claim commit `e4cf6bc5050bb78c8c670beddeb68adfd3059711`; no remote task fast-forward was needed. At implementation start, its history did not yet include the then-current `origin/main` tip, which advanced with unrelated ARCH-052 task commits. The latest `origin/main` will be merged into the parent task branch at review submission and recorded in this report.
+- Parent task branch claim was already at the remote claim commit `e4cf6bc5050bb78c8c670beddeb68adfd3059711`; no remote task fast-forward was needed. At implementation start, its history did not yet include the then-current `origin/main` tip, which had advanced with unrelated ARCH-052 task commits. Latest `origin/main` (`a7c32fdc2de0c3dbc0dff447afb69be4d61012a5`) was merged into the parent task branch at review submission in merge commit `e7b7e16d9dd4cfa9e31710b5ee4d874e1a1ee09d`.
 - Implementation task branch started at `86d9736727a8527bcdf0b271593575f39e7e6950`, equal to its `origin/main` base; no remote task fast-forward was needed and `origin/main` was already included.
 
 Implementation repository:
@@ -190,8 +190,8 @@ Implementation repository:
 Parent workspace:
 
 - Task file: `docs/decisions/background/ARCH-048/BACKGROUND-011-compose-multi-generation-woo-recovery-workers.md`.
-- Commit: to be recorded after the parent report commit.
-- Remote branch: `origin/task/ARCH-048-BACKGROUND-011`; the prepared claim commit is published. The review-report push is subject to the same explicit destination approval boundary.
+- Report commit: `d11fd042dbd88507937224e890e517b34cdc5e97`; latest parent branch commit after the mainline merge: `e7b7e16d9dd4cfa9e31710b5ee4d874e1a1ee09d`.
+- Remote branch: `origin/task/ARCH-048-BACKGROUND-011`; the prepared claim commit is published. The review-report update has not been pushed because the automatic approval review rejected publication of the implementation task branch and requires explicit user authorization for the configured destination.
 - Submodule gitlink staged: no.
 
 Merged to implementation `main`: no. Merged to workspace `main`: no.
