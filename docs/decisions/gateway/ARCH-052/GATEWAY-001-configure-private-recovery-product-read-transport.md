@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-GATEWAY-001
 architecture_id: ARCH-052
-title: Configure private Shopify proof and direct MCP WooCommerce REST access
+title: Configure private MCP direct-provider connectivity
 task_kind: implementation
 domain: gateway
 repository: moda-interact-gateway
@@ -16,10 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-MCP-003
-- ARCH-052-SHARED-003
 enables:
-- ARCH-052-BACKGROUND-008
-- ARCH-052-MCP-002
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
@@ -69,17 +66,14 @@ Only update environment infrastructure when the inspected MCP runtime requires i
 
 ## Interfaces / Contracts
 
-Existing Render environment files and private-only Commerce proof route; MCP direct Woo REST uses Shared credential keyring encryption/identity and MCP-003 secure transport. Existing checkout URL is stored in `CheckoutRecovery` and requires no Gateway route.
+Real gateway-owned files: `moda-interact-gateway/render.test.yaml`, `moda-interact-gateway/render.production.yaml` and existing private ingress configuration. Existing MCP private ingress, direct Shopify GraphQL and Woo REST egress, secret-name wiring for Shared credential primitives. No Commerce proof route, no hosted API product proxy, no ARCH-053 checkout URL route, and no new Shared contract.
 
 ## Dependencies
 
-- ARCH-052-MCP-003
-- ARCH-052-SHARED-003
+- `ARCH-052-MCP-003` — inspect the accepted runtime's actual connection and environment requirements before altering the Render configuration. Gateway does not block MCP feature implementation.
 
 ## Enables
 
-- ARCH-052-BACKGROUND-008
-- ARCH-052-MCP-002
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 

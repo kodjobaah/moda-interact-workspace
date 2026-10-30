@@ -59,6 +59,9 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
+**Attempt 14 immutable presentation contract:** for new initial CODE/AUTOMATIC variants, choose the exact approved registration by `(shopId, senderWabaId, purpose, canonicalLanguageTag, promotionTarget, headerKind)` and an enabled approved published revision. The currently implemented `selectRecoveryAssignment()` rejects multiple candidates for the same purpose/locale before checking `promotionTarget`; the Admin publisher must store the approved discriminator and make it available to Background-008 for deterministic filtering **before** ambiguity detection. Do not select arbitrarily by first record or publish the same identity twice. Alternative-product templates may have **two independently Meta-approved dynamic URL CTA slots**, one bound to `checkout.url` (Resume checkout) and one to `promotion.productUrl` (View offer), using existing Shared-002 `buttons[]` and approved component indexes. Only create such a variant if Meta accepts it; no unapproved button or arbitrary model-written text. No ARCH-052 checkout URL validity checks.
+
+
 - Meta template preview must be illustrative, but live variables must have proven Background resolver sources; no unbound placeholders.
 - Translation tokens remain protected; require approval/publishing per shop/WABA/language.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
@@ -90,11 +93,18 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Acceptance Criteria
 
+- [ ] Different promotion targets under the same existing purpose/language remain separately selectable by immutable registration metadata; selecting one does not create `AMBIGUOUS_ASSIGNMENT` for the other.
+- [ ] Where the Meta-approved alternative template has two URL CTA components, both semantic bindings and their indexes are immutable, correctly compiled, translated and preserved in registration snapshots.
+
+
 - [ ] Checkout and alternative promotions have distinct approved presentations using existing purpose names.
 - [ ] Alternative promo cannot render with a checkout-discount-only template or unsafe product URL.
 - [ ] Locale/Meta approval immutability and translation protections unchanged.
 
 ## Validation
+
+- [ ] Admin tests: same purpose and language with two target variants, wrong header role, duplicate approved same-target variant, two CTA component indexes and Meta rejection of unsupported button configuration.
+
 
 - [ ] Admin authoring/compiler/publishing/translation unit tests and approved template snapshots.
 - [ ] Admin typecheck/lint/tests and `git diff --check`.
