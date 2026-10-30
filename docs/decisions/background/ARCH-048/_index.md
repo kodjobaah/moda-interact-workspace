@@ -4,7 +4,7 @@ Architecture: [`ARCH-048-woocommerce-checkout-recovery-pipeline.md`](../../../ar
 
 Assigned agent: `moda_background`. Coordinator: `moda_architect`.
 
-ARCH-048 BG001–BG006 were marked Complete in the uploaded snapshot. BG007–BG011 are bounded tasks for recurring Woo abandonment generations; BG007 is now accepted Complete and published on its implementation and workspace task branches.
+ARCH-048 BG001–BG006 are Complete. The current published frontier is BG007 and BG008 Complete, BG009 and BG010 Ready, and BG011 Pending. BG007 and BG008 have accepted reviews and published implementation and workspace task branches. No integrated deployment, live Woo sending or terminal system-test result is implied.
 
 The individual task YAML is authoritative. Definitions are based on the 2026-10-29 code snapshot; each task's materialization, implementation and publication state is recorded in its task file.
 
@@ -17,16 +17,16 @@ The individual task YAML is authoritative. Definitions are based on the 2026-10-
 | [`BACKGROUND-005`](BACKGROUND-005-compose-woo-recovery-services-and-wire-workers.md) | Wire accepted Woo services and workers | **Complete** | `BACKGROUND-001`, `BACKGROUND-002`, `BACKGROUND-003`, `BACKGROUND-004`, `ARCH-046-BACKGROUND-002`, `ARCH-046-BACKGROUND-004` |
 | [`BACKGROUND-006`](BACKGROUND-006-define-local-woo-recovery-service-contracts.md) | Define local Woo recovery runtime contracts | **Complete** | `ARCH-035-BACKGROUND-001`, `ARCH-035-BACKGROUND-002` |
 | [`BACKGROUND-007`](BACKGROUND-007-close-resumed-woo-recoveries-and-stage-next-candidate.md) | Close resumed recovery; stage generation-aware candidate safely | **Complete** | `BACKGROUND-005` |
-| [`BACKGROUND-008`](BACKGROUND-008-admit-subsequent-woo-recovery-generations.md) | Admit next-generation recoveries and repair same-generation retries | **Ready** | `BACKGROUND-007` |
+| [`BACKGROUND-008`](BACKGROUND-008-admit-subsequent-woo-recovery-generations.md) | Admit next-generation recoveries and repair same-generation retries | **Complete** | `BACKGROUND-007` |
 | [`BACKGROUND-009`](BACKGROUND-009-settle-resumed-outreach-and-fence-old-generations.md) | Settle unsent old outreach; preserve committed/uncertain sends | **Ready** | `BACKGROUND-007` |
 | [`BACKGROUND-010`](BACKGROUND-010-route-inbound-messages-across-woo-recovery-generations.md) | Route current and historical WhatsApp conversations safely | **Ready** | `BACKGROUND-007` |
 | [`BACKGROUND-011`](BACKGROUND-011-compose-multi-generation-woo-recovery-workers.md) | Wire generation-aware worker, queue, retry and index handling | **Pending** | `BACKGROUND-007`, `BACKGROUND-008`, `BACKGROUND-009`, `BACKGROUND-010` |
 
 ## Execution frontier
 
-1. BG007 is Complete after architect review of its published implementation branch and completion record.
-2. BG008, BG009 and BG010 are Ready and can be independently executed.
-3. BG011 remains Pending until BG007–BG010 are Complete; do not skip the composed-worker correction.
+1. BG007 and BG008 are Complete after architect review of their published implementation branches and completion records.
+2. BG009 and BG010 are Ready and can be independently executed.
+3. BG011 remains Pending until BG009 and BG010 are Complete; BG007 and BG008 are already Complete. Do not skip the composed-worker correction.
 4. ARCH-048-SYSTEM-TEST-001 is terminal and must wait for all implementation, publication (if any) and existing consent dependencies.
 
 ## Implementation and review constraints

@@ -4,14 +4,14 @@ title: WooCommerce event-driven recovery with distinct abandonment generations
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-23
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-048 — WooCommerce checkout recovery and abandonment generations
 
 ## Status
 
-**In Progress — 2026-10-29 generation amendment agreed; BG007–BG011 are portable task definitions, not yet materialised or implemented.** BG001–BG006 and ARCH-048 Woo producer tasks 002/003 are marked Complete in the uploaded 2026-10-29 snapshot; verify they are integrated into the developer's canonical branch before task execution. `ARCH-046-WOOCOMMERCE-003` is still Ready and terminal `ARCH-048-SYSTEM-TEST-001` remains Pending. No live Woo outbound approval, worker deployment, Git branch, push or system-test result is implied by this document. Prior 2026-10-23/25 single-generation design is retained only as change history, **not** an authority for new implementation.
+**In Progress — 2026-10-29 generation amendment agreed; current published frontier: BG007 and BG008 Complete, BG009 and BG010 Ready, BG011 Pending.** BG001–BG006 and ARCH-048 Woo producer tasks 002/003 are Complete. `ARCH-046-WOOCOMMERCE-003` remains Ready and terminal `ARCH-048-SYSTEM-TEST-001` remains Pending. No integrated deployment, live Woo sending approval or system-test result is implied by this document. Prior 2026-10-23/25 single-generation design is retained only as change history, **not** an authority for new implementation.
 
 ## Problem
 
@@ -174,10 +174,10 @@ Use only published `@modainteract/moda-interact-shared/logging`: bounded `shopId
 | `ARCH-048-BACKGROUND-006` | Background | Complete | Existing ARCH-035 prerequisites |
 | `ARCH-048-BACKGROUND-001/002/003/004` | Background | Complete | BG006 and original prerequisites |
 | `ARCH-048-BACKGROUND-005` | Background | Complete | BG001–004, ARCH-046 BG002/BG004 |
-| `ARCH-048-BACKGROUND-007` | Background | **Ready (portable)** | BG005 |
-| `ARCH-048-BACKGROUND-008` | Background | Pending | BG007 |
-| `ARCH-048-BACKGROUND-009` | Background | Pending | BG007 |
-| `ARCH-048-BACKGROUND-010` | Background | Pending | BG007 |
+| `ARCH-048-BACKGROUND-007` | Background | **Complete** | BG005 |
+| `ARCH-048-BACKGROUND-008` | Background | **Complete** | BG007 |
+| `ARCH-048-BACKGROUND-009` | Background | **Ready** | BG007 |
+| `ARCH-048-BACKGROUND-010` | Background | **Ready** | BG007 |
 | `ARCH-048-BACKGROUND-011` | Background | Pending | BG007, BG008, BG009, BG010 |
 | `ARCH-046-WOOCOMMERCE-003` | Woo | Ready | Separate returning-consent task, not reopened here |
 | `ARCH-048-SYSTEM-TEST-001` | System Test | Pending | All original prerequisites plus BG007–BG011 and ARCH-046-WOO003 |
