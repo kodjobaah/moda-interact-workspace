@@ -132,14 +132,19 @@ Implementation and validation are complete locally. Task remains `in_progress` w
 
 `RecoveryRoute` now distinguishes active from historical conversations. Unreferenced replies consider only provider-confirmed outbound conversations whose recovery is `MESSAGE_SENT` or `ENGAGED`, select the newest generation within each `(shopId, checkoutToken)` lineage, and remain ambiguous when more than one eligible shop/checkout owner matches. The latest generation and status are rechecked before turn scheduling.
 
+Follow-up for the 2026-10-30 P1 review finding: generation/status candidate filtering and the latest-generation recheck now apply only to WooCommerce shops. Shopify unreferenced routing retains the prior all-status, all-generation candidate set, including ambiguity from an older terminal generation. Added unit coverage for Shopify route classification and a PostgreSQL regression proving an older cancelled Shopify recovery still produces `MULTIPLE_RECOVERIES`; the existing Woo integration fixtures now explicitly declare `WOOCOMMERCE` so they exercise the intended platform branch.
+
 Explicit replies continue to the exact outbound conversation after it closes. Previously stored inbound message IDs stay pinned to their persisted conversation. Historical text and unsupported content are inserted idempotently without changing pending-turn state; historical audio is reserved on its original conversation without transcription, fallback sends or turn scheduling. Closed/superseded routes do not stamp checkout activity or enqueue AI work. STOP, abuse admission, shop eligibility and the existing active Shopify path remain in place. Routing decisions use Shared structured logging with a bounded digest of the provider message ID.
 
-Implementation commit: `753c17184347215dd309e2f9bb74dc09e4820676` (`feat(background): route replies across Woo recovery generations`), local branch `task/ARCH-048-BACKGROUND-010`.
+Implementation commits: `753c17184347215dd309e2f9bb74dc09e4820676` (`feat(background): route replies across Woo recovery generations`) and `4be9ab3` (`fix(background): scope generation routing to Woo`), local branch `task/ARCH-048-BACKGROUND-010`.
 
 ### Validation Results
 
 - Focused routing, inbound-processing and WhatsApp worker unit tests: 61 passed across 3 files.
-- PostgreSQL multi-generation routing integration tests via `node scripts/test-integration.mjs tests/integration/woo-recovery-inbound-routing.integration.test.ts`: 2 passed. The test uses Colima's disposable PostgreSQL and verifies latest-generation routing, historical context routing, cross-shop ambiguity and suppression when the latest generation has not sent.
+- After the review correction, `npx vitest run tests/unit/services/recovery-routing.service.test.ts`: 23 passed, including a Shopify route-classification regression.
+- PostgreSQL multi-generation routing integration tests via `node scripts/test-integration.mjs tests/integration/woo-recovery-inbound-routing.integration.test.ts`: 3 passed. The tests use Colima's disposable PostgreSQL and verify Woo latest-generation routing, historical context routing, cross-shop ambiguity, suppression when the latest generation has not sent, and Shopify ambiguity across an older cancelled generation.
+- Focused ESLint on `src/services/recovery-routing.service.ts`, `tests/unit/services/recovery-routing.service.test.ts` and `tests/integration/woo-recovery-inbound-routing.integration.test.ts`: passed.
+- After the review correction, `npm run build`: Prisma generation and TypeScript build passed.
 - `npm run build`: Prisma generation and TypeScript build passed.
 - Focused ESLint on all 6 changed files: passed.
 - `git diff --check`: passed.
@@ -175,7 +180,7 @@ Start-of-attempt synchronization:
 - Recursive submodule sync and update: passed; `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
 - Launcher claim: Attempt 1 by `codex`, parent claim commit `baa21314da7f71e2437f953d53fcd9e36aad2768`, pushed successfully.
 
-Implementation repository: commit `753c17184347215dd309e2f9bb74dc09e4820676`; origin `https://github.com/kodjobaah/moda-interact-background.git`; task branch push pending authorization.
+Implementation repository: commits `753c17184347215dd309e2f9bb74dc09e4820676` and `4be9ab3`; origin `https://github.com/kodjobaah/moda-interact-background.git`; task branch push pending authorization.
 
 Parent workspace: this task file is committed locally on `task/ARCH-048-BACKGROUND-010`; origin `https://github.com/kodjobaah/moda-interact-workspace.git`; report commit is not pushed. No submodule gitlink is staged.
 
