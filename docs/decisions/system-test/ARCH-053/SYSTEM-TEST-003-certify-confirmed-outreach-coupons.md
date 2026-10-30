@@ -15,6 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-053-SYSTEM-TEST-001
+- ARCH-053-SYSTEM-TEST-002
 - ARCH-053-API-003
 - ARCH-053-WOOCOMMERCE-008
 - ARCH-053-BACKGROUND-003
@@ -52,7 +54,7 @@ No production Meta sends, coupon issuance, CommerceAgent model selection, reimpl
 
 ## Requirements
 
-- Test API-003 actual authenticated **v1 vs v2** version selection; both versions use the same recovery/token auth/eligibility; v1 stays unchanged and strict. Invalid/expired/superseded/tenant-mismatched link never returns basket or offer.
+- Test API-003 actual authenticated **single v1** resolver request/response, with the mandatory `outreachOffer` union; no v2 resolver is accepted. Invalid/expired/superseded/tenant-mismatched link never returns basket or offer.
 - Test a real sequence-one `RecoveryOutreachAttempt.sentAt + outboundMessageId` joined to a provider-confirmed `ConversationMessage` carrying approved `recoveryPromise` and explicit `promotionTarget`; no message, unconfirmed, failed, untagged, corrupt, wrong-recovery and wrong-tenant receipts never produce a checkout code. Test DB outage separately (503, not 200 NONE).
 - Test original coupon and outreach code combinations in both WC Classic and Blocks; the expected truth is **actual Woo validation and recalculated cart**, not a test-side mock savings percentage.
 - Test coupon expiry after abandonment and again between first restore and explicit switch; `SAVE10` expired / `EXTRA15` valid should apply only `EXTRA15`, and vice versa. Usage exhaustion, minimum subtotal, item restriction, unknown code and individual-use must be represented.
@@ -74,13 +76,13 @@ No production Meta sends, coupon issuance, CommerceAgent model selection, reimpl
 ## Work Items
 
 - [ ] Build two merchant fixtures, generation-1+generation-2 recovery fixtures, confirmed outbound receipt fixtures and current Woo original/recommended coupons.
-- [ ] Exercise v1/v2 API response compatibility, signed-link authorization, confirmed receipt and coupon application on Classic and Blocks with current live Woo rules.
+- [ ] Exercise single offer-aware v1 API response, signed-link authorization, confirmed receipt and coupon application on Classic and Blocks with current live Woo rules.
 - [ ] Exercise all invalid/expired/conflicting/revoked/automatic/alternative/no-offer and unverified-receipt paths plus customer choice.
 - [ ] Exercise cross-device, scanner GET, replay, wrong-tenant, generation, STOP/order and telemetry redaction; record a scenario-to-evidence matrix.
 
 ## Interfaces / Contracts
 
-- Consumes published `WooRestoreResolveOfferRequestV2Schema`, `WooRestoreResolveOfferResponseV2Schema`, `WooRestoreOutreachOfferV1Schema` from SHARED-003 and `WooCartRestoreSnapshotV1Schema` from SHARED-001.
+- Consumes published `WooRestoreResolveRequestV1Schema`, `WooRestoreResolveResponseV1Schema`, `WooRestoreOutreachOfferV1Schema` from SHARED-001 and `WooCartRestoreSnapshotV1Schema` from SHARED-001.
 - Produces **no** runtime contract; test fixtures must match real API/Background/WordPress wire and current Woo store APIs.
 
 **Mandatory evidence matrix (every row in Classic and Blocks unless API-only):**
@@ -104,6 +106,8 @@ Run additional negative tests for post-only offer fields, failed bearer, mismatc
 
 ## Dependencies
 
+- `ARCH-053-SYSTEM-TEST-001` — core recovery-link system certification accepted.
+- `ARCH-053-SYSTEM-TEST-002` — original coupon system certification accepted.
 - `ARCH-053-API-003` — accepted confirmed message offer resolver.
 - `ARCH-053-WOOCOMMERCE-008` — accepted notice/choice implementation.
 - `ARCH-053-BACKGROUND-003` — accepted generation-bound checkout URL issuance.
@@ -123,7 +127,7 @@ None — terminal system certification.
 - [ ] Expired/rejected outreach codes show a notice and recalculated total; original valid codes never silently disappear.
 - [ ] A real Classic and a real Blocks checkout demonstrate a working explicit stacking choice, with replay protection.
 - [ ] No alternative-product discount, unverified receipt, automatic offer or stale generation causes an unsupported checkout code to apply.
-- [ ] Same authenticated API route stays v1 compatible; v2 cannot leak across tenant or token denial.
+- [ ] One authenticated v1 API contract; invalid version/token/tenant never leaks original basket or offer.
 - [ ] GET preview and old link cannot mutate; valid cross-device confirmation queues one real resumption event.
 - [ ] No duplicate WhatsApp send/billing, changed recovery history, poisoned logs or unauthorised code issuance.
 - [ ] Completion Report contains command/environment/scenario/evidence matrix; no app source edits by system-test agent.

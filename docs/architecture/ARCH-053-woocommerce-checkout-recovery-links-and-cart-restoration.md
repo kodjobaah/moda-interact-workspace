@@ -11,11 +11,11 @@ updated: 2026-10-30
 
 ## Status
 
-**Proposed; task definitions are portable, defined but not materialised.** This is a NEW initiative. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here. In particular, previously superseded ARCH-052-WOOCOMMERCE-002 / ARCH-052-API-004 designs are not reused. Neither this snapshot nor this patch proves the developer created or pushed task worktrees/branches.
+**Proposed; task definitions are portable, defined but not materialised.** This is a NEW initiative. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here. In particular, previously superseded ARCH-052-WOOCOMMERCE-002 / ARCH-052-API-004 designs are not reused. Neither this snapshot nor this patch proves the developer created or pushed task worktrees/branches. Per the developer's patch preference, all `_index.md` updates are deliberately excluded; individual task YAML and this document are the reconciled sources for this handoff.
 
 ## Problem and inspected baseline
 
-The 2026-10-29 uploaded snapshot contains:
+The attached 2026-10-30 07:59 workspace snapshot contains:
 
 - `moda-interact-woocommerce/includes/Checkout/CheckoutSnapshot.php`: `items`, `currency`, `total`, optional contact; no applied coupons, variation-attribute restoration data or restoration-readiness signal. CheckoutCapture uses a cart fingerprint and suppresses identical revisits.
 - `moda-interact-api/src/woocommerce/activity/contract.ts`: strict `woo.activity.v1` / v2 phone-normalized ingest, no restoration fields. `src/woocommerce/activity/producer.ts` writes strict `woo-checkout-capture-v1` jobs.
@@ -25,7 +25,7 @@ The 2026-10-29 uploaded snapshot contains:
 - Background template preparation / conversation wrappers already consume `recovery.checkoutUrl` if it is trusted HTTPS on the merchant's host, but they need link-specific regression coverage.
 - `WooCommerceInstallation.canonicalSiteUrl` is derived from WordPress `home_url('/')`, not from Woo's checkout slug, and may contain a subdirectory. `wc_get_checkout_url()` is the **redirect destination after restoration**, never a complete recovery URL.
 
-Baseline ARCH-048 Background is still one-generation-only. New ARCH-048-BACKGROUND-007..011 were separately defined as a portable proposal, **not present or accepted in this snapshot**. Their exact materialisation/acceptance state must be checked before ARCH-053's generation-bound issuance/system certification. ARCH-046-WOOCOMMERCE-003 returning consent remains a separate prerequisite for final integrated certification; links cannot grant consent.
+Baseline ARCH-048 Background implementation remains one-generation-only. The **task files** ARCH-048-BACKGROUND-007..011 are present in the 2026-10-30 snapshot: BG007 is Ready and BG008..011 are Pending; none is accepted Complete. Their implementation and architect acceptance must precede ARCH-053 generation-bound issuance/certification. ARCH-046-WOOCOMMERCE-003 returning consent remains a separate prerequisite for final integrated certification; links cannot grant consent.
 
 ## Goals
 
@@ -53,7 +53,7 @@ Baseline ARCH-048 Background is still one-generation-only. New ARCH-048-BACKGROU
 
 **R4 — Stable idempotent generation URL.** Background creates a cryptographically random 32-byte base64url bearer token once at successful recovery admission, and stores a **full merchant HTTPS URL** in the existing `checkoutUrl` column within the admission transaction. Format: `<canonicalSiteUrl>/?moda_interact_resume=1&r=<recoveryId>&t=<43-char-base64url-token>`, with safe URL joining supporting a merchant home subpath. Source host/path MUST come only from verified `WooCommerceInstallation.canonicalSiteUrl`; require the resolved hostname to agree with `Shop.domain` and fail closed when not compatible. Never place PII, coupons, items or a live Woo session identifier in the URL. On retries/unique conflicts, reuse stored URL; never rotate/mint a different one for the same recovery. `checkoutUrl` is a bearer capability (already permitted in the existing schema): restrict DB access, never log it, and set `Cache-Control: no-store`, `Referrer-Policy: no-referrer` on landing. The URL expires for resolution on terminal/superseded recovery or beyond existing **seven-day checkout-freshness window from last external activity** (and if installation/shop becomes inactive); no 30-minute transient/hard expiry. Link is never proof of consent or payment.
 
-**R5 — Authenticated resolution.** New installation-authenticated API `POST /v1/woocommerce/recovery-restore/resolve` body `{schemaVersion:'woo.restore.resolve.v1', recoveryId, token}` (no query auth). API derives `shopId` from `WooInstallationAuthenticator`, selects `CheckoutRecovery` by `id` plus `shopId`, validates random token against the **stored URL** using bounded parsing and constant-time hash comparison, requires the latest generation for that `(shopId, checkoutToken)` and status `DETECTED|MESSAGE_SENT|ENGAGED`, no terminal/completed flags, valid current shop/installation and valid freshness, and `wooRestoreSnapshot.kind === 'supported'`. On success return `{schemaVersion, status:'eligible', recoveryId, checkoutKey, snapshot}`; NEVER send contact/recipient/outreach/credit information. For denial return uniform `404 {error:'restore_unavailable'}`; malformed request `400`; unavailable dependency `503`, no sensitive info in logs. A read does **not** change recovery status or mark activity. If live order evidence exists, it must suppress checkout restoration; missing/unreceived external order activity cannot be called definitive proof of safety.
+**R5 — Authenticated resolution.** New installation-authenticated API `POST /v1/woocommerce/recovery-restore/resolve` body `{schemaVersion:'woo.restore.resolve.v1', recoveryId, token}` (no query auth). API derives `shopId` from `WooInstallationAuthenticator`, selects `CheckoutRecovery` by `id` plus `shopId`, validates random token against the **stored URL** using bounded parsing and constant-time hash comparison, requires the latest generation for that `(shopId, checkoutToken)` and status `DETECTED|MESSAGE_SENT|ENGAGED`, no terminal/completed flags, valid current shop/installation and valid freshness, and `wooRestoreSnapshot.kind === 'supported'`. On success return the **sole, complete v1 response** `{schemaVersion:'woo.restore.resolve.v1', status:'eligible', recoveryId, checkoutKey, snapshot, outreachOffer}`; NEVER send contact/recipient/outreach/credit information. For denial return uniform `404 {error:'restore_unavailable'}`; malformed request `400`; unavailable dependency `503`, no sensitive info in logs. A read does **not** change recovery status or mark activity. If live order evidence exists, it must suppress checkout restoration; missing/unreceived external order activity cannot be called definitive proof of safety.
 
 **R6 — Customer-confirmed Woo restoration.** Customer GETs the link on the merchant origin; WordPress renders a minimal no-store, no-referrer, no-third-party-resource confirmation landing. GET and any preview are **business-state read-only**: they may establish only the minimal WC session/CSRF nonce cookie needed for a subsequent secure POST, but never modify the cart, checkout key, recovery state, consent or activity queue. The confirmation POST carries valid recovery ID/token, a nonce tied to the current Woo session, and an explicit consent action to **replace** that browser's current basket. PHP resolves with the authenticated Moda API server-to-server; verifies installed shop and strict Shared JSON contract representation; validates products/variations/attributes and current purchasability before mutation; rejects unsupported extension metadata/noncore product types *without partial restoration*. On confirmed success it uses supported `WC()->cart` methods to rebuild the whole basket; suppress intermediate checkout-capture hooks, reapply each original coupon via `apply_coupon()`, calculate current totals, and surface individual rejected-coupon notices. For expired or invalid coupons, preserve products and show checkout with recalculated total—never reissue/force discounts. Persist WC session cookie, set original `CheckoutKey::SESSION_FIELD=checkoutKey`, clear last snapshot fingerprint, queue exactly one fresh checkout activity, then `wp_safe_redirect(wc_get_checkout_url())` for Classic/Blocks. Do not copy former shopper contact, marketing consent or billing data to the clicking browser. Preflight and failure rollback protect existing cart, with explicit diagnostic when rollback cannot be guaranteed.
 
@@ -64,22 +64,13 @@ Baseline ARCH-048 Background is still one-generation-only. New ARCH-048-BACKGROU
 **R8 — Native vs custom Woo.** Woo's `/checkout-link/` can reconstruct native products and one coupon, but exposes basket parameters and cannot express Moda generation identity/revocation safely. Therefore ARCH-053 uses a small confirmation/restoration endpoint backed by native Woo **cart APIs**; `wc_get_checkout_url()` remains only its final redirect. Avoid independently copying WooCommerce pricing/coupon validation into Moda.
 
 
-**R9 — Confirmed outreach offer restoration (new; independent of ARCH-052 discovery).** The historical `WooCartRestoreSnapshotV1.appliedCouponCodes` contains **only original customer-applied codes**, and must remain immutable. The existing provider-confirmed initial `RecoveryOutreachAttempt(sequence=1, sentAt, outboundMessageId)` joined to its `ConversationMessage.content` (`moda.whatsapp.automated-template-parameters.v1`) is the single durable source of **what was offered**. A narrow ARCH-053-BACKGROUND-004 task requires an explicit `promotionTarget: CHECKOUT | ALTERNATIVE_PRODUCT` in the existing `recoveryPromise` for new sends, but must be superseded if ARCH-052-BACKGROUND-008 already proves it. Do not copy the promise into `offerSnapshot.sentOffer`, invent a new offer table, or read currently selected discounts as proof of a historical message. Missing/unconfirmed/corrupt/untagged evidence cannot auto-apply a coupon.
+**R9 — Confirmed outreach offer restoration (new; independent of ARCH-052 discovery).** The historical `WooCartRestoreSnapshotV1.appliedCouponCodes` contains **only original customer-applied codes**, and must remain immutable. The existing provider-confirmed initial `RecoveryOutreachAttempt(sequence=1, sentAt, outboundMessageId)` joined to its `ConversationMessage.content` (`moda.whatsapp.automated-template-parameters.v1`) is the single durable source of **what was offered**. A narrow ARCH-053-BACKGROUND-004 task requires an explicit `promotionTarget: CHECKOUT | ALTERNATIVE_PRODUCT` in the existing `recoveryPromise` for new sends, and becomes evidence-only (reviewed Complete without code churn) if ARCH-052-BACKGROUND-008 already proves it. Do not copy the promise into `offerSnapshot.sentOffer`, invent a new offer table, or read currently selected discounts as proof of a historical message. Missing/unconfirmed/corrupt/untagged evidence cannot auto-apply a coupon.
 
-**R10 — Versioned opt-in resolver rather than breaking v1.** ARCH-053-SHARED-003 defines `woo.restore.resolve.v2` request/response alongside the exact v1 schemas. The authenticated API-002 route continues to accept v1 unchanged. Only a **v2 request on the same server-to-server route** returns the full base recovery+snapshot plus `outreachOffer` union: `{kind:'NONE',reason:'NO_CONFIRMED_OFFER'|'UNVERIFIABLE'}`, `{kind:'CHECKOUT_CODE',code,providerDiscountId}`, `{kind:'CHECKOUT_AUTOMATIC',providerDiscountId}`, or `{kind:'ALTERNATIVE_PRODUCT'}`. `NONE` does not imply there were no original coupons. The API verifies the existing terminal, generation, shop, token and status gates **before** reading outbound evidence; never return offers on a denied link. Database outage is 503, not NONE. No message-specific future offer switching is assumed: this version uses the confirmed **initial** message; follow-up remains committed to its initial promise under ARCH-052.
-
-**R11 — Woo remains the final coupon authority.** After a human confirms restore POST, the plugin restores products, attempts the **original** codes first, then attempts a confirmed `CHECKOUT_CODE` with `WC()->cart->apply_coupon()` and current Woo validity/stacking rules. Expired/invalid recommendations do not block the product checkout or force original prices. If applying the recommendation would remove a valid original code, automatically **restore the original applied set**, show a no-discount-guarantee notice and offer an explicit nonce-protected shopper choice to try the offered code instead. The choice uses a bounded, single-use Woo-session record tied to the restored cart hash and expires after ten minutes or state change; no bearer link or raw code in browser POST. Both Classic Checkout and Checkout Blocks must display the correct recalculated total/notices. `CHECKOUT_AUTOMATIC` never triggers artificial coupon/price rules, and `ALTERNATIVE_PRODUCT` never applies its code or changes the original basket. GET/HEAD previews still do not mutate cart, mark activity or create choice state.
-
-**Cross-architecture dependency:** ARCH-052 owns offer discovery/send choice and the existing confirmed message receipt; ARCH-053 owns **resolving and attempting redemption** of that sent offer. ARCH-048 owns active recovery closure and subsequent-generation admission. New ARCH-053 sent-receipt / API v2 / Woo tasks must be accepted before integrated CERTIFICATION; never make an ARCH-052 implementation task depend on an ARCH-053 system test or edit ARCH-052 task files to implement restore. `ARCH-053-SHARED-002` is a **single publication gate** now depending on BOTH SHARED-001 and SHARED-003; do not run code validation again during publication.
-
-
-**R9 — Confirmed outreach offer restoration (new; independent of ARCH-052 discovery).** The historical `WooCartRestoreSnapshotV1.appliedCouponCodes` contains **only original customer-applied codes**, and must remain immutable. The existing provider-confirmed initial `RecoveryOutreachAttempt(sequence=1, sentAt, outboundMessageId)` joined to its `ConversationMessage.content` (`moda.whatsapp.automated-template-parameters.v1`) is the single durable source of **what was offered**. A narrow ARCH-053-BACKGROUND-004 task requires an explicit `promotionTarget: CHECKOUT | ALTERNATIVE_PRODUCT` in the existing `recoveryPromise` for new sends, but must be superseded if ARCH-052-BACKGROUND-008 already proves it. Do not copy the promise into `offerSnapshot.sentOffer`, invent a new offer table, or read currently selected discounts as proof of a historical message. Missing/unconfirmed/corrupt/untagged evidence cannot auto-apply a coupon.
-
-**R10 — Versioned opt-in resolver rather than breaking v1.** ARCH-053-SHARED-003 defines `woo.restore.resolve.v2` request/response alongside the exact v1 schemas. The authenticated API-002 route continues to accept v1 unchanged. Only a **v2 request on the same server-to-server route** returns the full base recovery+snapshot plus `outreachOffer` union: `{kind:'NONE',reason:'NO_CONFIRMED_OFFER'|'UNVERIFIABLE'}`, `{kind:'CHECKOUT_CODE',code,providerDiscountId}`, `{kind:'CHECKOUT_AUTOMATIC',providerDiscountId}`, or `{kind:'ALTERNATIVE_PRODUCT'}`. `NONE` does not imply there were no original coupons. The API verifies the existing terminal, generation, shop, token and status gates **before** reading outbound evidence; never return offers on a denied link. Database outage is 503, not NONE. No message-specific future offer switching is assumed: this version uses the confirmed **initial** message; follow-up remains committed to its initial promise under ARCH-052.
+**R10 — Single first-release, offer-aware resolver v1.** The restoration resolver has **never been implemented**; therefore the first and only wire protocol is `woo.restore.resolve.v1`, with one mandatory `outreachOffer` discriminated union on **every eligible response** (including `NONE`). SHARED-001 defines/export/tests the complete v1 contract; SHARED-002 publishes it once, after acceptance. API-002 authenticates and authorizes the link and initially returns `NONE/NO_CONFIRMED_OFFER`; API-003 enriches the **same v1 response** using the confirmed initial outbound message and returns `CHECKOUT_CODE`, `CHECKOUT_AUTOMATIC`, `ALTERNATIVE_PRODUCT` or `NONE/UNVERIFIABLE` as appropriate. No v2 resolver, adapters, dual request parsing, extra Shared implementation task or legacy-v1 compatibility gate. A denied recovery returns only uniform 404, never a coupon; a database outage returns 503. Original codes remain in `snapshot.appliedCouponCodes`. The recommended code must never be accepted from the link, caller-provided JSON or merchant settings. The original offer promised in confirmed sequence-one WhatsApp outreach remains the only selected discount for this link; new selections in follow-up require a separate future architecture.
 
 **R11 — Woo remains the final coupon authority.** After a human confirms restore POST, the plugin restores products, attempts the **original** codes first, then attempts a confirmed `CHECKOUT_CODE` with `WC()->cart->apply_coupon()` and current Woo validity/stacking rules. Expired/invalid recommendations do not block the product checkout or force original prices. If applying the recommendation would remove a valid original code, automatically **restore the original applied set**, show a no-discount-guarantee notice and offer an explicit nonce-protected shopper choice to try the offered code instead. The choice uses a bounded, single-use Woo-session record tied to the restored cart hash and expires after ten minutes or state change; no bearer link or raw code in browser POST. Both Classic Checkout and Checkout Blocks must display the correct recalculated total/notices. `CHECKOUT_AUTOMATIC` never triggers artificial coupon/price rules, and `ALTERNATIVE_PRODUCT` never applies its code or changes the original basket. GET/HEAD previews still do not mutate cart, mark activity or create choice state.
 
-**Cross-architecture dependency:** ARCH-052 owns offer discovery/send choice and the existing confirmed message receipt; ARCH-053 owns **resolving and attempting redemption** of that sent offer. ARCH-048 owns active recovery closure and subsequent-generation admission. New ARCH-053 sent-receipt / API v2 / Woo tasks must be accepted before integrated CERTIFICATION; never make an ARCH-052 implementation task depend on an ARCH-053 system test or edit ARCH-052 task files to implement restore. `ARCH-053-SHARED-002` is a **single publication gate** now depending on BOTH SHARED-001 and SHARED-003; do not run code validation again during publication.
+**Cross-architecture dependency:** ARCH-052 owns offer discovery/send choice and the existing confirmed message receipt; ARCH-053 owns **resolving and attempting redemption** of that sent offer. ARCH-048 owns active recovery closure and subsequent-generation admission. New ARCH-053 sent-receipt / API v1 enrichment / Woo tasks must be accepted before integrated CERTIFICATION; never make an ARCH-052 implementation task depend on an ARCH-053 system test or edit ARCH-052 task files to implement restore. `ARCH-053-SHARED-002` is a **single publication gate**, dependent on SHARED-001 only; do not run code validation again during publication.
 
 ## Request and event flow
 
@@ -105,8 +96,8 @@ sequenceDiagram
     W->>A: Authenticated restore resolve (recoveryId, token)
     A->>D: Check shop, generation, status, age, snapshot and exact token
     D-->>A: Current eligible restore snapshot
-    A-->>W: Products/variations/attributes + original coupon codes
-    W->>W: Preflight, rebuild cart, native coupon validation, recalculate
+    A-->>W: v1: original basket/coupons + verified sent outreach offer
+    W->>W: Confirm, preflight, rebuild cart, validate original + offered coupon, recalculate
     W->>A: Fresh CHECKOUT_UPDATED (via Action Scheduler)
     W-->>C: Redirect wc_get_checkout_url()
     A->>Q: Checkout capture job
@@ -115,10 +106,10 @@ sequenceDiagram
 
 ## Ownership and public infrastructure
 
-- `moda_shared`: canonical snapshot/schema and REST v1/v2 offer-aware contract, separately published reusable version.
+- `moda_shared`: canonical snapshot/schema and single REST v1 offer-aware contract, separately published reusable version.
 - `moda_database`: additive nullable Prisma JSON + migration, no schema updates by other agents.
 - `moda_woocommerce`: capture coupons/variation support, confirmation endpoint, native original + confirmed outreach coupon attempts, customer-facing conflict choice/notices and manual engagement detection.
-- `moda_api`: authenticated checkout v3 acceptance and restoration v1/v2 resolution; read the confirmed initial outbound message, no Redis or Woo session writes on resolve.
+- `moda_api`: authenticated checkout v3 acceptance and single restoration v1 resolution; read the confirmed initial outbound message, no Redis or Woo session writes on resolve.
 - `moda_background`: carry snapshot to candidates/recovery, generate idempotent URL, preserve explicit offer target in existing confirmed message receipt if not already implemented; never call a merchant-controlled site to mint a link.
 - `moda_system_test`: final integration across actual Woo, Meta sender mocks, BullMQ, Postgres, API, coupon rules and order/consent lifecycle.
 - `moda_gateway`: no new task **based on inspected topology**; existing `/v1/woocommerce/*` passes through the current public API service. Before integration, verify endpoint routing in deployed environment; if not supported, return to architect for bounded Gateway task, not an ad hoc implementation.
@@ -137,56 +128,47 @@ Node uses `@modainteract/moda-interact-shared/logging` for generic structured ev
 
 ## Rollout and compatibility
 
-**Pre-production proposal**, conditional on developer confirming there is no production state requiring compatibility. Preserve/deliberately drain existing Redis test events before activating producer v3. Implementation order: Shared contract implementation → Shared publish → Database migration + Background consumer → API v3 acceptance → Woo v3 producer → authenticated resolution + plugin restore → ARCH-048 generation integration → terminal system test. The existing v1/v2 HTTP paths remain during transition; only v3 can produce a restore snapshot. Do not deploy partially composed tasks or turn on Woo live outbound sending. Revert by disabling issuance/restore entrypoint without rewriting historical recovery records; rollback database column only after safe data-retention review.
+**Pre-production design**, conditional on developer confirming there is no production state requiring compatibility. The restoration resolver v1 is new; no resolver-v2 compatibility is necessary. Preserve/deliberately drain existing Redis test events before activating producer v3. Implementation order: Shared contract implementation → Shared publish → Database migration + Background consumer → API v3 acceptance → Woo v3 producer → authenticated resolution + plugin restore → ARCH-048 generation integration → terminal system test. The existing v1/v2 HTTP paths remain during transition; only v3 can produce a restore snapshot. Do not deploy partially composed tasks or turn on Woo live outbound sending. Revert by disabling issuance/restore entrypoint without rewriting historical recovery records; rollback database column only after safe data-retention review.
 
 ## Decisions / Tasks
 
-See the machine-readable YAML of each `docs/decisions/*/ARCH-053/*.md` task and domain indexes. **Only DATABASE-001 and SHARED-001 are independently Ready** in the supplied snapshot; all other tasks remain Pending on prerequisites, notably ARCH-048-BACKGROUND-011 (portable only).
+The task YAML files are authoritative for status and dependency eligibility. The snapshot shows **two Ready tasks** (`SHARED-001` and `DATABASE-001`); all other ARCH-053 tasks are Pending. This patch defines/reconciles tasks only; it does not materialise worktrees or accept implementations. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
-| ARCH-053-DATABASE-001 | moda_database | Ready | — |
-| ARCH-053-SHARED-001 | moda_shared | Ready | — |
-| ARCH-053-SHARED-003 | moda_shared | Pending | SHARED-001 |
-| ARCH-053-SHARED-002 | moda_shared | Pending | SHARED-001, SHARED-003 |
-| ARCH-053-API-001 | moda_api | Pending | SHARED-002 |
-| ARCH-053-BACKGROUND-001 | moda_background | Pending | SHARED-002 |
-| ARCH-053-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001, DATABASE-001 |
-| ARCH-053-WOOCOMMERCE-001 | moda_woocommerce | Pending | API-001, BACKGROUND-001 |
-| ARCH-053-WOOCOMMERCE-004 | moda_woocommerce | Pending | WOOCOMMERCE-001 |
-| ARCH-053-API-002 | moda_api | Pending | SHARED-002, DATABASE-001 |
-| ARCH-053-API-003 | moda_api | Pending | API-002, SHARED-002, BACKGROUND-004 |
-| ARCH-053-API-003 | moda_api | Pending | API-002, SHARED-002, BACKGROUND-004 |
-| ARCH-053-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
-| ARCH-053-BACKGROUND-004 | moda_background | Pending | ARCH-052-BACKGROUND-008 |
-| ARCH-053-BACKGROUND-004 | moda_background | Pending | ARCH-052-BACKGROUND-008 |
-| ARCH-053-WOOCOMMERCE-002 | moda_woocommerce | Pending | WOOCOMMERCE-001, API-002 |
-| ARCH-053-WOOCOMMERCE-005 | moda_woocommerce | Pending | WOOCOMMERCE-002, WOOCOMMERCE-004 |
-| ARCH-053-WOOCOMMERCE-006 | moda_woocommerce | Pending | WOOCOMMERCE-005 |
-| ARCH-053-WOOCOMMERCE-007 | moda_woocommerce | Pending | API-003, WOOCOMMERCE-005, WOOCOMMERCE-006 |
-| ARCH-053-WOOCOMMERCE-008 | moda_woocommerce | Pending | WOOCOMMERCE-007, WOOCOMMERCE-006 |
-| ARCH-053-WOOCOMMERCE-007 | moda_woocommerce | Pending | API-003, WOOCOMMERCE-005, WOOCOMMERCE-006 |
-| ARCH-053-WOOCOMMERCE-008 | moda_woocommerce | Pending | WOOCOMMERCE-007, WOOCOMMERCE-006 |
-| ARCH-053-WOOCOMMERCE-003 | moda_woocommerce | Pending | WOOCOMMERCE-001 |
-| ARCH-053-SYSTEM-TEST-001 | moda_system_test | Pending | BACKGROUND-003, WOOCOMMERCE-002, WOOCOMMERCE-003, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
-| ARCH-053-SYSTEM-TEST-002 | moda_system_test | Pending | WOOCOMMERCE-004, WOOCOMMERCE-006, BACKGROUND-003, WOOCOMMERCE-003, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
-| ARCH-053-SYSTEM-TEST-003 | moda_system_test | Pending | API-003, WOOCOMMERCE-008, BACKGROUND-003, BACKGROUND-004, WOOCOMMERCE-003, ARCH-052-BACKGROUND-008, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
-| ARCH-053-SYSTEM-TEST-003 | moda_system_test | Pending | API-003, WOOCOMMERCE-008, BACKGROUND-003, BACKGROUND-004, WOOCOMMERCE-003, ARCH-052-BACKGROUND-008, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
+| `ARCH-053-DATABASE-001` | `moda_database` | Ready | — |
+| `ARCH-053-SHARED-001` | `moda_shared` | Ready | — |
+| `ARCH-053-SHARED-002` | `moda_shared` | Pending | SHARED-001 |
+| `ARCH-053-API-001` | `moda_api` | Pending | SHARED-002 |
+| `ARCH-053-BACKGROUND-001` | `moda_background` | Pending | SHARED-002 |
+| `ARCH-053-BACKGROUND-002` | `moda_background` | Pending | BACKGROUND-001, DATABASE-001 |
+| `ARCH-053-WOOCOMMERCE-001` | `moda_woocommerce` | Pending | API-001, BACKGROUND-001 |
+| `ARCH-053-WOOCOMMERCE-004` | `moda_woocommerce` | Pending | WOOCOMMERCE-001 |
+| `ARCH-053-API-002` | `moda_api` | Pending | SHARED-002, DATABASE-001 |
+| `ARCH-053-BACKGROUND-003` | `moda_background` | Pending | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
+| `ARCH-053-BACKGROUND-004` | `moda_background` | Pending | ARCH-052-BACKGROUND-008 |
+| `ARCH-053-API-003` | `moda_api` | Pending | API-002, SHARED-002, BACKGROUND-004 |
+| `ARCH-053-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | WOOCOMMERCE-001, API-002 |
+| `ARCH-053-WOOCOMMERCE-005` | `moda_woocommerce` | Pending | WOOCOMMERCE-002, WOOCOMMERCE-004 |
+| `ARCH-053-WOOCOMMERCE-006` | `moda_woocommerce` | Pending | WOOCOMMERCE-005 |
+| `ARCH-053-WOOCOMMERCE-007` | `moda_woocommerce` | Pending | API-003, WOOCOMMERCE-005, WOOCOMMERCE-006 |
+| `ARCH-053-WOOCOMMERCE-008` | `moda_woocommerce` | Pending | WOOCOMMERCE-007, WOOCOMMERCE-006 |
+| `ARCH-053-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | WOOCOMMERCE-001 |
+| `ARCH-053-SYSTEM-TEST-001` | `moda_system_test` | Pending | BACKGROUND-003, WOOCOMMERCE-002, WOOCOMMERCE-003, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
+| `ARCH-053-SYSTEM-TEST-002` | `moda_system_test` | Pending | WOOCOMMERCE-004, WOOCOMMERCE-006, BACKGROUND-003, WOOCOMMERCE-003, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
+| `ARCH-053-SYSTEM-TEST-003` | `moda_system_test` | Pending | SYSTEM-TEST-001, SYSTEM-TEST-002, API-003, WOOCOMMERCE-008, BACKGROUND-003, BACKGROUND-004, WOOCOMMERCE-003, ARCH-052-BACKGROUND-008, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
 
-All abbreviated ARCH-053 refs in this table expand to fully qualified ids. SYSTEM-TEST-001, SYSTEM-TEST-002 and SYSTEM-TEST-003 are terminal; no implementation task depends upon either.
+Only system-test tasks may depend on another system test. `SYSTEM-TEST-003` runs after accepted core-link and original-coupon system certification; **no implementation task depends on system validation**.
 
 ## Open Questions / explicit constraints
 
-- Cross-ARCH-048 worktree materialisation and acceptance must be checked before issuance and integrated certification. The 2026-10-29 snapshot does not contain BG007..011.
+- Cross-ARCH-048 worktree materialisation and acceptance must be checked before issuance and integrated certification. The 2026-10-30 snapshot contains BG007..011 task files, but none is accepted Complete.
 - Real WooCommerce extension-specific item options are NOT round-trippable with the existing snapshot. If they cannot be proved safe in plugin-owned unit/integration tests, mark basket unsupported, omit link and use template no-link/no-send fallback. Do not promise arbitrary extension restore.
 - Background order evidence is observed-only; if an order never reached Moda there is no cross-provider guarantee. Confirmation checks the strongest available documented state but does not invent a live Woo merchant lookup.
 - The existing ARCH-052 task inventory may still contain historical dependencies on its superseded Woo restore tasks; **reconciliation remains within ARCH-052 ownership and must not be used to implement restore under ARCH-052**.
 
 ## Change History
 
-- 2026-10-29: Initial independent ARCH-053 architecture and portable task definitions; ARCH-052 unchanged.
-- 2026-10-29: Added separately reviewable coupon-only activity, native coupon reapplication, rejected-coupon customer notices and terminal coupon certification (WOOCOMMERCE-004/005/006 and SYSTEM-TEST-002).
-
-- 2026-10-30: Added explicit sent-offer receipt target and opt-in resolver v2, native Woo recommended-coupon revalidation, safe original-vs-offer conflict choice, Blocks/Classic notices, terminal offer certification. ARCH-052 dynamic discount discovery remains unmodified.
-
-- 2026-10-30: Added explicit sent-offer receipt target and opt-in resolver v2, native Woo recommended-coupon revalidation, safe original-vs-offer conflict choice, Blocks/Classic notices, terminal offer certification. ARCH-052 dynamic discount discovery remains unmodified.
+- 2026-10-29: Initial standalone ARCH-053 checkout URL architecture; ARCH-052 dynamic discount discovery remains separate.
+- 2026-10-29: Added dedicated capture and restoration of original customer-applied coupons.
+- 2026-10-30: Reconciled against the 07:59 workspace: ARCH-048 follow-up tasks are defined but not yet accepted, and resolver v1 is not implemented. Integrated confirmed ARCH-052 outreach offers into the single v1 contract; eliminated premature resolver v2/SHARED-003, corrected dependencies and included separate sent-receipt, API enrichment, native coupon, customer-choice and system-test tasks. No ARCH-052 implementation or `_index.md` changes.

@@ -21,7 +21,7 @@ enables:
 - ARCH-053-SYSTEM-TEST-001
 - ARCH-053-WOOCOMMERCE-005
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-053-WOOCOMMERCE-002 — Restore products after customer-confirmed Woo checkout link
@@ -36,7 +36,7 @@ Restore products after customer-confirmed Woo checkout link. One bounded outcome
 
 ## Context
 
-The uploaded workspace snapshot is dated 2026-10-29. ARCH-052 owns dynamic discount discovery and must not be used for these checkout-URL changes. An ARCH-048 next-generation dependency exists only as a separate *portable* proposal until accepted/materialised. This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. ARCH-048-BACKGROUND-007..011 task files are present, but none has been accepted Complete in this snapshot (007 Ready, 008–011 Pending). This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
 
 ## Scope
 
@@ -71,6 +71,8 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 - [ ] Add server-side install-auth API resolve client with strict response validation and errors.
 - [ ] Implement all-or-nothing core product restoration for snapshots with no applied coupons, current totals recalculation, session rebind + exactly one activity enqueue + wc_get_checkout_url redirect; reject coupon-bearing restore until WOOCOMMERCE-005.
 - [ ] Exercise stale link, cross-device, existing-cart replace confirmation and rollback on failure.
+
+The API resolver response is the single `woo.restore.resolve.v1` contract from SHARED-001 and **already contains** mandatory `outreachOffer` (including `NONE`). Parse the exact complete v1 response; do not use a pre-offer v1 response or invent v2. This task restores the original basket only; interpreting or attempting confirmed recommended codes belongs to WOOCOMMERCE-007 and conflict UI to WOOCOMMERCE-008. Preserve the typed result for that later owning task but **do not silently deploy an end-to-end checkout flow that discards a confirmed recommended coupon**. No separate resolver endpoint or second checkout session may be created.
 
 ## Interfaces / Contracts
 
@@ -134,7 +136,7 @@ None.
 
 ### Assumptions
 
-Design based on uploaded 2026-10-29 source snapshot; re-check source and prior task acceptance before implementation.
+Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
 
 ### Unresolved Issues
 

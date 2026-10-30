@@ -20,7 +20,6 @@ depends_on:
 enables:
 - ARCH-053-WOOCOMMERCE-002
 - ARCH-053-API-003
-- ARCH-053-API-003
 created: 2026-10-29
 updated: 2026-10-30
 ---
@@ -37,7 +36,7 @@ Resolve Woo recovery link with installation and generation authorization. One bo
 
 ## Context
 
-The uploaded workspace snapshot is dated 2026-10-29. ARCH-052 owns dynamic discount discovery and must not be used for these checkout-URL changes. An ARCH-048 next-generation dependency exists only as a separate *portable* proposal until accepted/materialised. This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. ARCH-048-BACKGROUND-007..011 task files are present, but none has been accepted Complete in this snapshot (007 Ready, 008–011 Pending). This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
 
 ## Scope
 
@@ -65,6 +64,28 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 - Never swallow unexpected errors: Node uses `@modainteract/moda-interact-shared/logging`; PHP uses the existing safe plugin diagnostics (not a competing generic Node logger). Report bounded event codes, ids and outcomes, propagate retryable failures to their owning boundary, omit tokens, full URLs, coupon codes and customer personal data from logs.
 - The plugin cannot access PostgreSQL/Redis. The API cannot mutate merchant WordPress cart sessions. Background cannot directly call an unverified merchant endpoint to mint URLs. Do not enable Woo production WhatsApp sending, relax final consent/STOP/order gates, or add cross-generation outreach caps/cooldowns.
 
+**Single-version handoff:** SHARED-001 makes `outreachOffer` mandatory in the first `woo.restore.resolve.v1` response. This task must return the complete strict v1 response, initially `{kind:"NONE",reason:"NO_CONFIRMED_OFFER"}` (without loading outbound messages). API-003, a later independently reviewable API task, substitutes a verified confirmed-offer projection on that **same** v1 response. Do not introduce v2 routing, conditional version branches or a dual-version adapter. No part of this staged implementation may be deployed as complete feature delivery until API-003 and WooCommerce-007/008 are accepted.
+
+**Mandatory initial v1 response example before API-003 enriches confirmed sent-message evidence:**
+
+```json
+{
+  "schemaVersion": "woo.restore.resolve.v1",
+  "status": "eligible",
+  "recoveryId": "recovery_456",
+  "checkoutKey": "woo-example-checkout",
+  "snapshot": {
+    "schemaVersion": "woo.cart-restore.v1",
+    "kind": "supported",
+    "appliedCouponCodes": ["SAVE10"],
+    "lines": [{"productId": "101", "quantity": 2}]
+  },
+  "outreachOffer": {"kind": "NONE", "reason": "NO_CONFIRMED_OFFER"}
+}
+```
+
+This value is a **temporary execution-stage outcome**, not a different wire version or permission to deploy a customer-facing flow that ignores sent recommendations. API-003 must replace the NONE branch with trusted confirmed-message evidence before ARCH-053 is considered integrated. Both tasks must use the same `WooRestoreResolveResponseV1Schema` from the published Shared package.
+
 ## Work Items
 
 - [ ] Implement strict resolver route, service and composition wiring.
@@ -83,8 +104,7 @@ Plugin caller via `ModaApiClient` server-side installation auth; Shared `WooRest
 ## Enables
 
 - `ARCH-053-WOOCOMMERCE-002`
-- `ARCH-053-API-003` — additive opt-in v2 response on the same authenticated route; **v1 remains unchanged**.
-- `ARCH-053-API-003` — additive opt-in v2 response on the same authenticated route; **v1 remains unchanged**.
+- `ARCH-053-API-003` — enrich the existing single v1 response from the confirmed initial sent-message receipt; no second version or route.
 
 ## Acceptance Criteria
 
@@ -133,7 +153,7 @@ None.
 
 ### Assumptions
 
-Design based on uploaded 2026-10-29 source snapshot; re-check source and prior task acceptance before implementation.
+Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
 
 ### Unresolved Issues
 

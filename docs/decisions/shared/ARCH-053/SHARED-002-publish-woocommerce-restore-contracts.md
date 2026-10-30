@@ -16,14 +16,10 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-053-SHARED-001
-- ARCH-053-SHARED-003
-- ARCH-053-SHARED-003
 enables:
 - ARCH-053-API-001
 - ARCH-053-API-002
 - ARCH-053-BACKGROUND-001
-- ARCH-053-API-003
-- ARCH-053-API-003
 created: 2026-10-29
 updated: 2026-10-30
 ---
@@ -40,11 +36,10 @@ Publish accepted Woo restoration contracts. One bounded outcome in `moda-interac
 
 ## Context
 
-The uploaded workspace snapshot is dated 2026-10-29. ARCH-052 owns dynamic discount discovery and must not be used for these checkout-URL changes. An ARCH-048 next-generation dependency exists only as a separate *portable* proposal until accepted/materialised. This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. ARCH-048-BACKGROUND-007..011 task files are present, but none has been accepted Complete in this snapshot (007 Ready, 008–011 Pending). This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
 
 ## Scope
 
-- Version and publish ONLY the accepted Shared package implementing **both** `ARCH-053-SHARED-001` and `ARCH-053-SHARED-003` to the already approved registry; record exact version, tag and registry evidence.
 - Limit changed files to authorised release metadata and lockfile updates mechanically required by publication.
 
 ## Out of Scope
@@ -55,7 +50,6 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Requirements
 
-- Verify **SHARED-001 and SHARED-003** are each architect-accepted Complete and published artifact contains the exact `@modainteract/moda-interact-shared/woocommerce` **v1 and v2** exports, plus both published JSON fixture subpaths; leave downstream consumption to separately assigned owners.
 - Publication-only work: do not rerun tests, lint, build or alter runtime implementation already validated in SHARED-001. If publishing reveals a code defect, stop and return it to architect.
 
 ### Mandatory workflow/security invariants
@@ -68,35 +62,32 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 ## Work Items
 
 - [ ] Apply approved package version and publish using existing release workflow.
-- [ ] Verify the exact published version exposes **both v1 and v2** types/schemas and fixture paths; record registry evidence.
+- [ ] Verify the exact published version exposes **the single offer-aware v1** types/schemas and fixture paths; record registry evidence.
 
 ## Interfaces / Contracts
 
-Entrypoint `@modainteract/moda-interact-shared/woocommerce` with **all** schemas/types accepted in SHARED-001 and SHARED-003: `WooCartRestoreSnapshotV1Schema`, `WooRestoreResolveRequestV1Schema`, `WooRestoreResolveResponseV1Schema`, `WooRestoreOutreachOfferV1Schema`, `WooRestoreResolveOfferRequestV2Schema`, `WooRestoreResolveOfferResponseV2Schema`, and their inferred types. Publish both fixture subpaths `./woocommerce/fixtures` and `./woocommerce/outreach-offer-fixtures`. API and Background pin the published version; no sibling-source import.
+The one browser-safe published `@modainteract/moda-interact-shared/woocommerce` subpath exposes the complete offer-aware `WooRestoreResolveRequestV1Schema`, `WooRestoreResolveResponseV1Schema`, `WooRestoreOutreachOfferV1Schema`, snapshot/extension schemas and the single `woo-restore-v1.json` fixture package export defined in SHARED-001. Publication may change only release metadata; the exported source and fixtures were already validated at implementation acceptance.
 
 ## Dependencies
 
-- `ARCH-053-SHARED-001` — accepted base schemas.
-- `ARCH-053-SHARED-003` — accepted v2 offer-aware resolver schemas.
+- `ARCH-053-SHARED-001` — accepted complete v1 snapshot and offer-aware resolver contracts.
 
 ## Enables
 
 - `ARCH-053-BACKGROUND-001`
 - `ARCH-053-API-001`
 - `ARCH-053-API-002`
-- `ARCH-053-API-003`
-- `ARCH-053-API-003`
+
 
 ## Acceptance Criteria
 
 - [ ] Apply approved package version and publish using existing release workflow.
-- [ ] Verify the exact published version exposes **both v1 and v2** types/schemas and fixture paths; record registry evidence.
+- [ ] Verify the exact published version exposes **the single offer-aware v1** types/schemas and fixture paths; record registry evidence.
 - [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
 - [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
-- [ ] Both SHARED-001 and SHARED-003 accepted status and intended version recorded
 - [ ] Registry visibility and unchanged release-specific code check; `git diff --check`
 
 ## Stop Condition
@@ -105,7 +96,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ## Implementation Notes
 
-This is a `task_kind: publication` gate for **both** accepted Shared implementations. It must not rerun their tests, lint, typecheck or build. Consumers may only pin/import a registry-visible package version containing both v1 and v2 and both JSON fixtures. If a missing export needs code changes, STOP and return to architect; do not fix source in this publication task. Architect reviews publication evidence only. No consumer is permitted to use unpublished sibling code.
+This is a `task_kind: publication` gate for **one** accepted Shared implementation (SHARED-001). It must not rerun its tests, lint, typecheck or build. Consumers may only pin/import a registry-visible package version containing the single offer-aware v1 and the one canonical JSON fixture. If a missing export needs code changes, STOP and return to architect; do not fix source in this publication task. Architect reviews publication evidence only. No consumer is permitted to use unpublished sibling code.
 
 ## Completion Report
 
@@ -131,7 +122,7 @@ None.
 
 ### Assumptions
 
-Design based on uploaded 2026-10-29 source snapshot; re-check source and prior task acceptance before implementation.
+Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
 
 ### Unresolved Issues
 

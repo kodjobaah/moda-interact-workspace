@@ -32,21 +32,21 @@ updated: 2026-10-30
 
 ## Objective
 
-On a customer-confirmed restore POST, request the opt-in v2 offer-aware resolver response and **attempt the checkout coupon actually promised in the initial WhatsApp outreach**, after original coupons, without overriding WooCommerce validation or silently removing a previously applied original coupon.
+On a customer-confirmed restore POST, consume the first and only offer-aware resolver v1 response and **attempt the checkout coupon actually promised in the initial WhatsApp outreach**, after original coupons, without overriding WooCommerce validation or silently removing a previously applied original coupon.
 
 ## Context
 
-WOOCOMMERCE-002 restores products using the existing v1 server-to-server resolver; WOOCOMMERCE-005 reattempts original `snapshot.appliedCouponCodes`, and WOOCOMMERCE-006 presents original coupon rejection notices. API-003 adds v2 response with `outreachOffer`. This task **extends those**, not creates a second cart restore or discount engine. API v1 remains valid for old Woo plugin builds until rollout.
+WOOCOMMERCE-002 restores products using the new single v1 server-to-server resolver; WOOCOMMERCE-005 reattempts original `snapshot.appliedCouponCodes`, and WOOCOMMERCE-006 presents original coupon rejection notices. SHARED-001 defines `outreachOffer` as mandatory in v1; API-003 supplies its verified confirmed-message value. This task **extends those**, not creates a second cart restore or discount engine. No older restoration resolver or pre-offer v1 consumer exists; do not create compatibility code.
 
 ## Scope
 
 In `moda-interact-woocommerce`, update only:
 
-- `includes/Api/ModaApiClient.php`: extend the existing server-side `resolveWooRecoveryLink` operation to submit `schemaVersion:'woo.restore.resolve.v2'`; do not call both v1 and v2 on the same POST. API bearer stays server-side.
-- **Create** `includes/Api/WooRestoreOfferContracts.php`: strictly validate response v2 discriminator and fields against the SHARED-003 fixture; retain existing base snapshot verification from WooCommerce-002; no permissive success on missing `outreachOffer`.
+- `includes/Api/ModaApiClient.php`: extend the existing server-side `resolveWooRecoveryLink` operation to submit `schemaVersion:'woo.restore.resolve.v1'`; make exactly one server-side v1 resolve call per confirmed POST. API bearer stays server-side.
+- **Create** `includes/Api/WooRestoreOfferContracts.php`: strictly validate response v1 discriminator and fields against the SHARED-001 fixture; retain existing base snapshot verification from WooCommerce-002; no permissive success on missing `outreachOffer`.
 - **Create** `includes/Checkout/CheckoutOutreachCouponRestorer.php`: implement the exact PHP interface and result below, calling only Woo native coupon/cart APIs.
 - `includes/Checkout/CheckoutCartRestorer.php`: invoke recommended coupon application exactly once after products and the original-coupon operation, *before final capture*; preserve rollback and capture suppression from WOOCOMMERCE-002.
-- `includes/Checkout/CheckoutResumeController.php`: pass the v2 result through the same confirmed-POST flow and hand off the typed offer outcome to the existing WOOCOMMERCE-006 presenter (WOOCOMMERCE-008 completes UI).
+- `includes/Checkout/CheckoutResumeController.php`: pass the v1 result through the same confirmed-POST flow and hand off the typed offer outcome to the existing WOOCOMMERCE-006 presenter (WOOCOMMERCE-008 completes UI).
 - Focused `tests/CheckoutOutreachCouponRestorerTest.php`, `tests/WooRestoreOfferContractsTest.php` and existing relevant controller/cart tests. Register new PHP source/tests in `composer.json` lint only if required by its existing explicit allowlist.
 
 ## Out of Scope
@@ -55,7 +55,7 @@ No discount discovery, coupon creation, modified expiry or usage constraints, or
 
 ## Requirements
 
-- Keep the existing no-mutation GET and explicit nonce-protected confirmation POST. V2 resolver is called **after confirmation only**, using the original signed recovery link; no browser-side installation credentials, no external visitor contact/discount parameters.
+- Keep the existing no-mutation GET and explicit nonce-protected confirmation POST. V1 resolver is called **after confirmation only**, using the original signed recovery link; no browser-side installation credentials, no external visitor contact/discount parameters.
 - Restore product lines first. Reapply original coupons in their persisted order using WOOCOMMERCE-005. Only then process `outreachOffer`.
 - `CHECKOUT_CODE`: attempt the exact code **once** through `WC()->cart->apply_coupon($code)` if not already applied (use Woo's canonical code comparisons). Inspect the resulting actual `WC()->cart->get_applied_coupons()` and recalculated totals. Never treat API `providerDiscountId` or the WhatsApp text as proof of current eligibility; the code may expire, be disabled, be limited or become inapplicable.
 - `CHECKOUT_AUTOMATIC`: **never** call `apply_coupon`, fabricate a coupon, force a fee/price, add a WC filter, or assert savings. Recalculate native Woo totals and return a neutral `AUTOMATIC_NOT_FORCED` result; if the installed provider gives no reliable discount evidence, do not claim it applied.
@@ -76,7 +76,7 @@ No discount discovery, coupon creation, modified expiry or usage constraints, or
 
 ## Work Items
 
-- [ ] Add server-side v2 request/strict response parity with SHARED-003 (v1 remains supported by the API, not required by this upgraded plugin path).
+- [ ] Parse the single strict v1 response with required `outreachOffer` exactly as SHARED-001 defines; no alternate version request.
 - [ ] Implement isolated outreach coupon restorer; preserve verified original coupons under stacking conflict and native totals.
 - [ ] Integrate it after WOOCOMMERCE-005 without another restore pipeline, capture event, cart replacement or URL issuer.
 - [ ] Add tests for all five offer kinds, valid/invalid code, original+recommended conflict, duplicate code, failed rollback and provider/API outage.
@@ -87,7 +87,7 @@ No discount discovery, coupon creation, modified expiry or usage constraints, or
 
 ```json
 {
-  "schemaVersion": "woo.restore.resolve.v2",
+  "schemaVersion": "woo.restore.resolve.v1",
   "status": "eligible",
   "recoveryId": "recovery_456",
   "checkoutKey": "woo-example-checkout",
@@ -109,7 +109,7 @@ No discount discovery, coupon creation, modified expiry or usage constraints, or
 
 ```php
 /**
- * @param array<string,mixed> $validatedOffer  Strict v2 outreachOffer union
+ * @param array<string,mixed> $validatedOffer  Strict v1 outreachOffer union
  * @param list<string> $appliedOriginalCoupons Actual Woo-applied original codes
  * @param WC_Cart $cart                        Current restored visitor cart
  * @return array{
@@ -146,7 +146,7 @@ The reason is **bounded native Woo evidence** only: known `EXPIRED` when reliabl
 
 ## Dependencies
 
-- `ARCH-053-API-003` — accepted v2 offer-aware read with provenance.
+- `ARCH-053-API-003` — accepted v1 offer-aware read with provenance.
 - `ARCH-053-WOOCOMMERCE-005` — accepted original coupon reapplication.
 - `ARCH-053-WOOCOMMERCE-006` — accepted original-coupon notices, so no notices silently disappear.
 
@@ -167,7 +167,7 @@ The reason is **bounded native Woo evidence** only: known `EXPIRED` when reliabl
 
 - [ ] `composer test` / focused PHPUnit source+controller tests (actual declared `composer.json` scripts)
 - [ ] `composer lint`, `php -l` for all newly created PHP files, and existing WordPress Classic+Blocks integration runner if available
-- [ ] Integration tests for Woo current expiry, stacking, rollback and v2 HTTP error; `git diff --check`
+- [ ] Integration tests for Woo current expiry, stacking, rollback and v1 HTTP error; `git diff --check`
 
 ## Stop Condition
 

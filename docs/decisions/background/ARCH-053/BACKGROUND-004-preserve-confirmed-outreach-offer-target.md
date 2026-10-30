@@ -45,7 +45,7 @@ In `moda-interact-background`, **only if this is not already correctly satisfied
 - `src/services/conversation-moderation/automated-template-input.ts`: maintain the existing serialised `recoveryPromise` receipt and no new `sentOffer` table/field; add only necessary type/contract validation for target-vs-template purpose. Do not introduce a competing message format.
 - Focused tests alongside these modules, e.g. `src/services/recovery-template-integration/automated-recovery-template.test.ts` or their existing test location, covering exact persisted content and follow-up parity.
 
-If the accepted ARCH-052 implementation already **proves** the exact receipt shape with tests, record that evidence and return this task for **architect supersession**, not duplicate code.
+If accepted ARCH-052-BACKGROUND-008 already proves the exact target-bearing confirmed receipt, this task becomes **evidence-only**: rerun the narrowly scoped receipt/follow-up assertions, record the accepted implementation commit and results in its Completion Report, and return for architect acceptance **as Complete without source churn**. Do not mark it Superseded while API-003 depends on it; completing this evidence gate is how the downstream dependency is satisfied.
 
 ## Out of Scope
 
@@ -71,7 +71,7 @@ No new model invocation, MCP tool, offer selection, Woo provider-proof checks, t
 
 ## Work Items
 
-- [ ] Inspect the accepted ARCH-052-BACKGROUND-008 result and document whether the explicit target is already durably present.
+- [ ] Inspect accepted ARCH-052-BACKGROUND-008, record the exact confirmed-receipt field shape, accepted commit and test evidence. If target is already durable, validate it directly and submit an evidence-only Completion Report; no unnecessary code changes.
 - [ ] If missing, add required target to the existing trusted promise and its provider-confirmed receipt, with no second copy/storage.
 - [ ] Ensure `previousPromise` retains target for strict follow-up correspondence and no cross-promotion misbinding.
 - [ ] Add focused provider-confirmed receipt, no-send, replay and failure tests without altering the Meta send pipeline.

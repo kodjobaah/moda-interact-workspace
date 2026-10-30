@@ -19,7 +19,6 @@ depends_on:
 enables:
 - ARCH-053-SYSTEM-TEST-002
 - ARCH-053-WOOCOMMERCE-007
-- ARCH-053-WOOCOMMERCE-007
 created: 2026-10-29
 updated: 2026-10-30
 ---
