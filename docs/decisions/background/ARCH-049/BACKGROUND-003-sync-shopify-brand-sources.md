@@ -9,15 +9,15 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-30T18:03:38Z
+attempt: 2
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-002", "ARCH-049-SHOPIFY-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
-updated: 2026-10-27
+updated: 2026-10-30
 ---
 
 # Synchronise Shopify Brand API sources into commerce.ShopBrand
@@ -120,7 +120,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-Changes requested after developer review of Attempt 1. The source-sync implementation is present and published, but the merged Background repository changes do not currently typecheck and the focused unit suite has one failure. Attempt remains 1; no new claim has been made.
+In Progress — Attempt 2 claimed by developer at 2026-10-30T18:03:38Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
