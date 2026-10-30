@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-30T11:53:54Z
+attempt: 1
 depends_on:
 - ARCH-052-SHARED-003
 enables:
@@ -21,7 +21,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-30
 ---
 
 # ARCH-052-MCP-001: Authorize purpose-scoped MCP commerce tools for initial outreach
