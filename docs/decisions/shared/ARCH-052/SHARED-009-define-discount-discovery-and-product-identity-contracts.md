@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 15
-executor: codex
-claimed_at: 2026-10-30T11:40:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -280,24 +280,31 @@ None identified. The options output keeps `cursor` optional for existing convers
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1 (2026-10-30).
 
 ### Review Notes
 
-Pending implementation review.
+The implementation conforms to the task’s structural Commerce contract. The strict discount condition/details schemas, bounded discovery options and continuation cursor, generic result shapes, and nullable product variant/provider taxonomy IDs match the specified contract. Existing generic result wrapping, conversation preview compatibility, and product identity contracts remain intact. No provider logic, business-rule refinements, package publication, or out-of-scope consumer changes were introduced.
+
+The initial review identified a missing test for wrapping discount options in the generic Commerce result envelope. The follow-up commit adds that assertion; the completion report records the focused contract test passing afterward. No remaining findings.
+
+The implementation is published on the Shared task branch at `a36dc4afea652f1cbd6449cd50f9b75dd5c4da63` (`test(shared): cover discount options result envelope`), following implementation commit `1a20509a531747ddbf29f7100ee9421ba8420e12` (`feat(shared): add discount discovery contracts`). The branch contains only the two task-scoped Shared files and is clean.
 
 ### Reviewed Files
 
-No architecture concern identified. The task remains pending architect acceptance.
+- `src/commerce/schemas.ts`
+- `src/commerce/contracts.test.ts`
+- Existing `src/commerce/index.ts` re-export and package `@commerce` entrypoint configuration.
+- SHARED-009 Completion Report, task scope, acceptance criteria, and validation evidence.
 
 ### Validation Reviewed
 
-None.
+The Completion Report records `npm test` (386 passed, 1 skipped, 0 failed), `npm run typecheck`, `npm run build`, `npm run validate:commerce-entrypoints`, and `git diff --check` passing. After the review correction it records the focused contract test passing (15/15) and a clean diff check. These checks were reviewed as submitted and were not rerun during acceptance.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. Shared owns structural contract validation only; discount applicability, authorization, provider facts, completeness projection, and product interpretation remain with the assigned provider and consumer services. The task’s separate release boundary is preserved: package version remains 2.6.0 and no publication occurred.
 
 ### Follow-up
 
-Added the missing generic Commerce result envelope assertion for discount options after architect review identified the coverage gap. Task remains in review pending architect acceptance.
+Set ARCH-052-SHARED-010 to `ready` for the separate publication-only gate. Do not enable its consumers until that release is published and accepted.
