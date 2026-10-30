@@ -9,18 +9,18 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-10-30T17:20:05Z
+attempt: 1
 depends_on:
 - ARCH-052-BACKGROUND-009
 - ARCH-052-SHARED-010
 enables:
 - ARCH-052-MCP-002
 created: '2026-10-30'
-updated: '2026-10-30'
+updated: 2026-10-30
 ---
 
 # ARCH-052-BACKGROUND-011: Enrich existing Shopify discount catalogue with targeting facts
