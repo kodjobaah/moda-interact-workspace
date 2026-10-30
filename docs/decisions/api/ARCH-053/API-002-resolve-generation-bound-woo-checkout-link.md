@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-10-30T15:01:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-053-SHARED-002
@@ -133,7 +133,7 @@ Keep API route order consistent with `composeApiRoutes` and avoid introducing a 
 
 ### Status
 
-Ready for Review — Attempt 1; task status is `review`. Implementation commit `756130ebf579b43c0e8d32557698ff26ecff0bf8` is pushed to `origin/task/ARCH-053-API-002`.
+Changes Requested — Attempt 1. Implementation commit `756130ebf579b43c0e8d32557698ff26ecff0bf8` is reported pushed to `origin/task/ARCH-053-API-002`; database-module integration and resolver revalidation remain required before acceptance.
 
 ### Files Changed
 
@@ -195,24 +195,32 @@ The accepted DATABASE-001 submodule revision must be integrated before the new S
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-Not Reviewed — task not executed.
+The implementation report confirms that the API database submodule was pinned to `728734b7f1c05a9175ada032e113babeb8066cda`, whose Prisma schema lacks `CheckoutRecovery.wooRestoreSnapshot`. The resolver therefore cannot execute its eligibility query against the task's prepared database module and fails closed with 503. The later local-only gitlink observation is not published integration evidence and does not satisfy this review gate.
+
+Required for Attempt 2:
+- Integrate the architect-accepted ARCH-053-DATABASE-001 revision into the API repository's `database` submodule on the API task branch; do not modify Database-owned schema or migration files and do not update the parent workspace gitlink.
+- Regenerate the API Prisma client from that integrated schema and verify the SQL/Prisma projection selects `wooRestoreSnapshot` from the actual schema.
+- Rerun the isolated PostgreSQL resolver test and demonstrate an eligible response using a supported persisted snapshot, alongside the focused authorization tests, typecheck, lint, and `git diff --check`.
+- Update the Completion Report with the exact database submodule commit and fresh validation results. Keep the documented limitation concerning Woo order events never delivered to Moda unless new authoritative evidence resolves it.
+
+The existing API-002 implementation and reported tests are otherwise retained for rework; this correction is limited to consuming the accepted Database module and proving the resolver's positive path against it. No production-readiness or integrated-feature acceptance is implied.
 
 ### Reviewed Files
 
-None.
+Reviewed the API-002 implementation report, its recorded validation, and the prepared task/submodule evidence.
 
 ### Validation Reviewed
 
-None.
+The reported unit, integration, typecheck, lint and diff checks do not establish that the resolver works with the accepted database schema: the report explicitly records the missing `wooRestoreSnapshot` field in the prepared API database submodule. Attempt 2 must rerun the resolver integration against the integrated module.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+The route/service ownership and read-only design remain within API scope. Acceptance is blocked because the API task branch did not consume the accepted ARCH-053-DATABASE-001 schema revision; no database-module integration or executable eligible resolution is currently established.
 
 ### Follow-up
 
-None.
+Return the task to `ready`, clear executor/claim metadata, and preserve Attempt 1 history. The launcher may prepare Attempt 2 after this review update is published on the parent task branch.
