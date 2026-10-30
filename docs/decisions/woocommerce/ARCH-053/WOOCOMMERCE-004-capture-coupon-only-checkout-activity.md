@@ -20,7 +20,7 @@ enables:
 - ARCH-053-SYSTEM-TEST-002
 - ARCH-053-WOOCOMMERCE-005
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-053-WOOCOMMERCE-004 — Publish coupon additions and removals as Woo checkout activity

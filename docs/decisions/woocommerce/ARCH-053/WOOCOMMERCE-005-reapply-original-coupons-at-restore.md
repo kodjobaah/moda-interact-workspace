@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-053-WOOCOMMERCE-006
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-053-WOOCOMMERCE-005 — Reapply original basket coupons through native WooCommerce validation

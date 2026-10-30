@@ -63,7 +63,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 - An **unsupported** snapshot has a required `reason`, a structurally bounded `appliedCouponCodes` array and **no `lines` key**. Its coupon list is not evidence that restoration is possible or that coupon enumeration succeeded: `reason: 'COUPONS_UNAVAILABLE'` makes even `[]` non-authoritative. No link is issued for an unsupported snapshot. An *absent `checkout.restoration` field* means legacy/unknown, never "coupon free".
 - Every supported line has a Woo positive decimal product ID **encoded as a string**, optional positive decimal variation ID string, quantity integer 1..100000 and optional Woo variation-attribute map (`Record<string,string>`, at most ten entries, bounded keys/values). No display fields (`title`, `sku`, `unitPrice`, `total`) or customer fields belong inside the restoration line.
 - Coupon strings are preserved in their original Woo-applied order/content; Shared never upper/lower-cases, sorts, deduplicates, verifies, replaces or issues coupons. Runtime coupon validity, usage/expiry/stacking and current totals remain WooCommerce-owned.
-- The resolver request has exactly `schemaVersion`, `recoveryId`, `token`; the positive resolver response has exactly `schemaVersion`, `status:'eligible'`, `recoveryId`, `checkoutKey`, `snapshot:<supported snapshot>`. The resolver **never** returns an unsupported snapshot, customer identity or shop credentials. Denials are API-owned HTTP statuses/body, not a second successful response union.
+- The resolver request has exactly `schemaVersion`, `recoveryId`, `token`; the positive resolver response has exactly `schemaVersion`, `status:'eligible'`, `recoveryId`, `checkoutKey`, `snapshot:<supported snapshot>`, `outreachOffer:<verified offer>`. The resolver **never** returns an unsupported snapshot, customer identity or shop credentials. Denials are API-owned HTTP statuses/body, not a second successful response union.
 - Shared is **wire-shape validation only**. It may enforce lengths, types, key count, allowed characters, strictness and version literals, but MUST NOT use schema refinements for provider product ownership, Woo stock/variant eligibility, current coupon validity, merchant host checking, replay/freshness, consent/STOP, recovery generation state or token authentication. The lone attribute count check is a structural cardinality limit (not a business-rule check).
 - The v3 checkout extension must be optional on the containing checkout. Do not define an entire replacement HTTP event or locally reimplement existing `WooCheckoutContact` or phone canonicalisation. API-001 owns projection from `woo.activity.v3` to the unchanged `woo.activity.v1` BullMQ envelope; Background-001 owns additive job validation.
 - Reject unsafe input shape and unexpected keys, do not silently trim/normalise incomplete baskets; do not include any PII, raw recovery URL or WordPress session token in the snapshot. Round-trip JSON fixtures must remain stable across Node/Woo PHP consumers.
@@ -77,11 +77,11 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Work Items
 
-- [ ] Create `src/woocommerce/contracts.ts` with the **exact** version constants, literal unions, line schema, supported/unsupported snapshot schemas, extension schema and resolver schemas/types below.
+- [ ] Create `src/woocommerce/contracts.ts` with the exact version constants, literal unions, line schema, supported/unsupported snapshot schemas, outreach-offer union, extension schema and single v1 resolver schemas/types below.
 - [ ] Export precisely those schemas/types from `src/woocommerce/index.ts` and publish the browser-safe `./woocommerce` subpath through `tsup.config.ts` and `package.json`.
 - [ ] Create the exact JSON fixture structure described below in `src/woocommerce/__fixtures__/woo-restore-v1.json`; expose it under `./woocommerce/fixtures` without embedding customer data or bearer secrets from a real installation.
-- [ ] Add passing structural parsing tests for the supported/unsupported snapshots, v3 checkout extension, resolve request/eligible response, and deterministic JSON round trip.
-- [ ] Add rejecting tests for missing/extra fields, forbidden `lines`/`reason` cross-variant fields, invalid IDs and quantities, overlong/too-many attributes/coupons, missing coupon list, bad token and unexpected response status.
+- [ ] Add passing structural parsing tests for the supported/unsupported snapshots, v3 checkout extension, resolver v1 request/response, all four outreach-offer variants, and deterministic JSON round trip.
+- [ ] Add rejecting tests for missing/extra fields, forbidden `lines`/`reason` cross-variant fields, invalid IDs and quantities, overlong/too-many attributes/coupons, missing coupon list, bad token, invalid outreach-offer variants and any v2 resolver schemaVersion.
 - [ ] Validate package `build`, `typecheck`, focused Shared unit tests, built ESM `./woocommerce` export from the package and JSON fixture package inclusion; report exact commands in Completion Report.
 
 ## Interfaces / Contracts
@@ -179,22 +179,47 @@ export const WooRestoreResolveRequestV1Schema = z.strictObject({
 export type WooRestoreResolveRequestV1 =
   z.infer<typeof WooRestoreResolveRequestV1Schema>;
 
+// The original customer's applied coupons remain in snapshot.appliedCouponCodes.
+// This is ONLY the verified offer previously sent in initial outreach; its
+// eligibility and provenance are enforced by API-003, not by Zod.
+export const WooRestoreOutreachOfferV1Schema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("NONE"),
+    reason: z.enum(["NO_CONFIRMED_OFFER", "UNVERIFIABLE"]),
+  }),
+  z.strictObject({
+    kind: z.literal("CHECKOUT_CODE"),
+    code: WooNoControlTextSchema(128),
+    providerDiscountId: WooNoControlTextSchema(191),
+  }),
+  z.strictObject({
+    kind: z.literal("CHECKOUT_AUTOMATIC"),
+    providerDiscountId: WooNoControlTextSchema(191),
+  }),
+  z.strictObject({kind: z.literal("ALTERNATIVE_PRODUCT")}),
+]);
+export type WooRestoreOutreachOfferV1 =
+  z.infer<typeof WooRestoreOutreachOfferV1Schema>;
+
 export const WooRestoreResolveResponseV1Schema = z.strictObject({
   schemaVersion: z.literal(WOO_RESTORE_RESOLVE_VERSION),
   status: z.literal("eligible"),
   recoveryId: WooOpaqueRecoveryIdSchema,
   checkoutKey: WooOpaqueRecoveryIdSchema,
   snapshot: WooCartRestoreSupportedSnapshotV1Schema,
+  outreachOffer: WooRestoreOutreachOfferV1Schema,
 });
 export type WooRestoreResolveResponseV1 =
   z.infer<typeof WooRestoreResolveResponseV1Schema>;
 ```
 
+**No resolver v2:** `woo.restore.resolve.v1` is the first and only restoration resolver protocol. `outreachOffer` is **mandatory** on every eligible response: use `{kind:"NONE", reason:"NO_CONFIRMED_OFFER"}` when no confirmed initial offer exists. It must NOT be inferred from `snapshot.appliedCouponCodes`. The schema must reject `woo.restore.resolve.v2` and unknown/extra keys. No fallback/dual-version adapter is authorized.
+
 **Structural versus semantic checks:** 20-digit positive decimal strings are a bounded **wire representation**, not approval that a Woo product/variation exists, fits a platform integer or belongs to the current shop. The 43-character token matcher enforces only length/alphabet: API-002 owns canonical 32-byte base64url decoding, constant-time token comparison and authorization. A JSON parser can already collapse duplicate object keys, so Shared's parsed-value schema **cannot prove there were no duplicate raw JSON attribute names**. WooCommerce-001 must prevent duplicate/ambiguous variation keys at source; no Shared task may falsely claim that Zod detects raw JSON duplicate properties. Coupon eligibility, price, stock, restoration safety, duplicate business line identity and coupon uniqueness are checked in their owning Woo/API/Background services, not here.
 
 ### 2. Exact published exports
 
-Create `src/woocommerce/index.ts` exporting the two version constants and all `Woo*V1Schema`/`Woo*V1` and `WooCheckoutRestoreExtensionV3Schema`/`WooCheckoutRestoreExtensionV3` declarations above. Do not re-export Node cryptography or service-specific APIs.
+Create `src/woocommerce/index.ts` exporting the two version constants, `WooRestoreOutreachOfferV1Schema`/`WooRestoreOutreachOfferV1`, all other `Woo*V1Schema`/`Woo*V1`, and `WooCheckoutRestoreExtensionV3Schema`/`WooCheckoutRestoreExtensionV3` declarations above. Do not re-export Node cryptography or service-specific APIs.
 
 Add only these `package.json` exports (maintaining existing exports unchanged):
 
@@ -212,7 +237,7 @@ Add only these `package.json` exports (maintaining existing exports unchanged):
 
 ### 3. Exact JSON fixture (`woo-restore-v1.json`)
 
-The canonical fixture is **one JSON object** with exactly these four named properties; values must be present (do not substitute partial examples):
+The canonical fixture is **one JSON object** with exactly these five named properties; values must be present (do not substitute partial examples):
 
 ```json
 {
@@ -259,7 +284,23 @@ The canonical fixture is **one JSON object** with exactly these four named prope
           "productId": "202", "variationId": "207", "quantity": 1,
            "attributes": {"attribute_pa_color": "navy", "attribute_pa_size": "m"}}
       ]
+    },
+    "outreachOffer": {
+      "kind": "CHECKOUT_CODE", "code": "EXTRA15",
+      "providerDiscountId": "woo-discount-915"
     }
+  },
+  "outreachOfferExamples": {
+    "none": {"kind": "NONE", "reason": "NO_CONFIRMED_OFFER"},
+    "unverifiable": {"kind": "NONE", "reason": "UNVERIFIABLE"},
+    "checkoutCode": {
+      "kind": "CHECKOUT_CODE", "code": "EXTRA15",
+      "providerDiscountId": "woo-discount-915"
+    },
+    "checkoutAutomatic": {
+      "kind": "CHECKOUT_AUTOMATIC", "providerDiscountId": "woo-discount-916"
+    },
+    "alternativeProduct": {"kind": "ALTERNATIVE_PRODUCT"}
   }
 }
 ```
@@ -304,16 +345,18 @@ API-001 accepts HTTP v3, validates `checkout.restoration` with the published `Wo
 
 | Responsibility | Owning task |
 |---|---|
-| Schemas, types, structural bounds, package entrypoints and canonical fixture | `ARCH-053-SHARED-001` |
+| Schemas, exact v1 outreach-offer union, structural bounds, package entrypoints and canonical fixture | `ARCH-053-SHARED-001` |
 | Version bump and package publication | `ARCH-053-SHARED-002` |
 | PHP restorable lines, applied coupons, unsupported reason selection | `ARCH-053-WOOCOMMERCE-001`, coupon-only changes `WOOCOMMERCE-004` |
 | HTTP v3 envelope validation, phone normalization, authenticated ingress, v1 queue projection | `ARCH-053-API-001` |
 | Strict v1 queue validation and candidate retention | `ARCH-053-BACKGROUND-001` |
 | Durable snapshot and recovery admission | `ARCH-053-DATABASE-001`, `ARCH-053-BACKGROUND-002` |
 | Recovery generation URL/token issuance and freshness/order/consent gating | `ARCH-053-BACKGROUND-003`, `ARCH-053-API-002` |
+| Confirmed initial outreach receipt target and v1 offer projection | `ARCH-053-BACKGROUND-004`, `ARCH-053-API-003` |
+| Applying confirmed recommended checkout code and conflict notices | `ARCH-053-WOOCOMMERCE-007`, `ARCH-053-WOOCOMMERCE-008` |
 | Current product/variation/cart and coupon eligibility at restore time | `ARCH-053-WOOCOMMERCE-002`, `WOOCOMMERCE-005`, `WOOCOMMERCE-006` |
 
-Do **not** implement any of the consumer responsibilities inside Shared. These contracts contain no dynamic discount discovery or new recovery discount offer.
+Do **not** implement any of the consumer responsibilities inside Shared. These contracts carry a confirmed prior offer **as data**; they perform no dynamic discount discovery or issuance.
 
 ## Dependencies
 
@@ -329,11 +372,11 @@ None — independently executable after materialisation / launcher gate.
 - [ ] Supported snapshot: `schemaVersion`, `kind`, full `appliedCouponCodes` and 1..50 complete `lines` are mandatory. A plain simple line and a variation line with `attributes` parse; no display price, PII or extra fields are accepted in restore lines.
 - [ ] Unsupported snapshot: exact enumerated `reason` and bounded coupon array are mandatory; `lines` is forbidden. Supported snapshot with `reason` and unsupported snapshot with `lines` both fail.
 - [ ] Empty `appliedCouponCodes` on **supported** proves Woo reported none; a missing coupon list never silently defaults to `[]`. `kind:'unsupported'` with `reason:'COUPONS_UNAVAILABLE'` never becomes restorable even when its bounded array is empty.
-- [ ] Resolver request accepts only schemaVersion, opaque recoveryId and 43-character base64url token; positive response accepts only eligible status, same required IDs and `snapshot.kind:'supported'`. Denial/invalid token/expired-generation logic remains API-owned, not fabricated in Shared.
+- [ ] Resolver request accepts only schemaVersion, opaque recoveryId and 43-character base64url token; positive response accepts only eligible status, same required IDs, `snapshot.kind:'supported'` and a **required** strictly typed `outreachOffer`. Denial/invalid token/expired-generation logic remains API-owned, not fabricated in Shared.
 - [ ] Legacy checkout extension with no `restoration` parses without creating a snapshot, and a v3 extension containing the supported/unsupported snapshot parses unchanged.
-- [ ] Golden fixture has all four exact keys and round trips with the appropriate canonical Shared schemas, with byte-stable JSON serialization of its values in the declared order.
-- [ ] Boundary rejection tests cover missing coupon list, >10 coupon codes, empty/over-50 lines, invalid product/variation IDs, zero/fractional/overlarge quantity, >10 attribute entries, overlong or control-character keys/values/coupons, wrong enum/version, wrong token length/characters, and extra/PII fields.
-- [ ] No Zod business policies, WordPress/Woo runtime imports, duplicated API identity/contact schemas, new discount-contract fields, package publishing or changes to ARCH-052.
+- [ ] Golden fixture has all five exact keys and round trips with the appropriate canonical Shared schemas, including `outreachOfferExamples` for NONE, CHECKOUT_CODE, CHECKOUT_AUTOMATIC and ALTERNATIVE_PRODUCT.
+- [ ] Boundary rejection tests cover missing coupon list, >10 coupons, empty/over-50 lines, invalid product/variation IDs, zero/fractional/overlarge quantity, >10 attribute entries, control/overlong characters, wrong enum/version/token, missing outreachOffer, extra/PII fields, automatic offer with code, alternative-product with code, incomplete CHECKOUT_CODE, invalid provider ID, and v2 resolver requests.
+- [ ] No Zod coupon eligibility/stacking/expiry policy, WordPress runtime imports, duplicated API identity/contact schemas, v2 resolver, package publishing, new discount discovery or changes to ARCH-052.
 
 ## Validation
 
@@ -353,7 +396,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 The only structural `.superRefine` permitted in the provided declarations is the `Record` **attribute entry count** bound; do not interpret that as permission to implement WooCommerce business rules in Shared. Zod string `.max()` limits are character counts, not necessarily byte counts: existing API's 65,536-byte HTTP payload cap remains API-001's responsibility.
 
-Do not add `shipping`, `tax`, `checkoutUrl`, `shopId`, `generation`, `couponDiscount`, `regularPrice`, `customer`, `sessionId`, `cartItemKey`, discount-proof fields or token to a restore line/snapshot. The WooCommerce original applied-coupon list is not ARCH-052's prospective dynamic discount discovery result.
+Do not add `shipping`, `tax`, `checkoutUrl`, `shopId`, `generation`, `couponDiscount`, `regularPrice`, `customer`, `sessionId`, `cartItemKey`, discount-proof fields or token to a restore line/snapshot. The separate `outreachOffer` has no customer identity, vendor coupon validity decision, or external offer-discovery controls. The WooCommerce original applied-coupon list is not ARCH-052's prospective dynamic discount discovery result. `outreachOffer` is distinct, populated later from confirmed message evidence by API-003; Shared does NOT authorize or discover offers. The offer union is mandatory even before a WhatsApp message has been sent (`NONE`).
 
 The source package `package.json` currently has `version: 2.5.1` and no `./woocommerce` entry; SHARED-001 adds entrypoints **without versioning or publishing**. The fixtures use synthetic test data only, not actual customer or provider values.
 
@@ -381,7 +424,7 @@ None.
 
 ### Assumptions
 
-Design based on uploaded 2026-10-30 source snapshot; re-check source and prior task acceptance before implementation.
+Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
 
 ### Unresolved Issues
 

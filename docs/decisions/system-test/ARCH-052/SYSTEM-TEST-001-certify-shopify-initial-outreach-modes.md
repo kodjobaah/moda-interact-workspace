@@ -18,22 +18,19 @@ depends_on:
 - ARCH-052-BACKGROUND-008
 - ARCH-052-SHOPIFY-001
 - ARCH-052-BACKGROUND-009
-- ARCH-052-COMMERCE-001
-- ARCH-052-COMMERCE-008
 - ARCH-052-ADMIN-001
 - ARCH-052-ADMIN-002
 - ARCH-052-SHARED-003
 - ARCH-052-MCP-001
 - ARCH-052-MCP-002
 - ARCH-052-MCP-003
-- ARCH-052-MCP-004
 - ARCH-052-COMMERCE-006
 - ARCH-052-COMMERCE-007
 - ARCH-052-BACKGROUND-010
 - ARCH-052-GATEWAY-001
 enables: []
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
 # ARCH-052-SYSTEM-TEST-001: Certify Shopify initial outreach personalization and all offer modes
@@ -59,8 +56,8 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 ## Scope
 
 - Run end-to-end Shopify fixtures for NONE/FIXED/AI and two-stage promotion decisions: checkout coupon qualifies; checkout coupon fails but related alternative product qualifies; only an unrelated product has genuine current offer; none verified; partial catalogue and provider timeouts. Assert exact approved Meta wording distinguishes alternative product from abandoned basket and does not invent an offer.
-- Verify `tools/list` exposes system discount tools only to authorised outreach attempt, while product search tools require active code-published Commerce descriptor, feature entitlement and exact revision; conversation tools remain isolated. Test invalid shop/attempt, revoked tool/grant, selected FIXED IDs only, AI includes unchecked discounts, page two, model invalid/timeout fallback and stale provider proof.
-- For Woo, test **MCP -> live WooCommerce REST** direct product and native coupon-proof traffic with zero requests to hosted Moda API; encrypted grant key rotation, DNS/SSRF rejection, variation image/category/permalink and coupon read-only key, and no checkout-link generation call to hosted Moda API. For Shopify, test **MCP -> Shopify GraphQL** product search and Commerce private discount proof, including alternative product target.
+- Verify `tools/list` exposes system discount tools only to an authenticated shop and authorised outreach purpose, while product search tools require active code-published Commerce descriptor, feature entitlement and exact revision; conversation tools remain isolated. Test invalid shop/purpose, revoked tool/grant, selected FIXED IDs only, AI includes unchecked discounts, truthful 50-offer `truncated` handling, model invalid/timeout fallback and stale MCP catalogue evidence.
+- For Woo, test **MCP -> WooCommerce REST** direct product search/detail, encrypted grant rotation, DNS/SSRF protection, variant image/category/permalink, and no hosted Moda API proxy or checkout-link generation call. For Shopify, test **MCP -> Shopify GraphQL** product search and detail. Discount discovery is sourced from current shop-scoped PostgreSQL catalogue records with no separate proof endpoint.
 - Verify checkout category translation, image optional fallback, per-template purpose+promotionTarget approval, cross-sell consent/category, final STOP/moderation, billing/Meta-confirmed persisted outbound template `recoveryPromise` and linked `outboundMessageId`, duplicate delivery and merchant Support notifications; preserve no-coupon scenario.
 - Exercise provider test sandboxes/simulators and clearly record which externally approved Meta/Store integration checks remain manual; system tests are terminal after all prerequisite implementation tasks are Complete.
 
@@ -87,28 +84,23 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-Built-in MCP `commerce_get_discount_options`/`commerce_evaluate_discount`, published `commerce_search_products`/`commerce_get_product`, direct Woo REST or Shopify GraphQL, Shared-005/008 proof/target, existing Meta initial send and no-extra-database contract.
+Built-in MCP `commerce_get_discount_options`, published `commerce_search_products`/`commerce_get_product`, the existing generic `CommerceToolResultSchema`, SHARED-006 outreach purpose and SHARED-008 product contract, and the existing Meta initial-send/no-extra-database contract. SHARED-005 is a completed historical task, not an active proof consumer or publication prerequisite.
 
 ## Dependencies
 
-- `ARCH-052-BACKGROUND-008` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-SHOPIFY-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-BACKGROUND-009` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-COMMERCE-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-COMMERCE-008` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-ADMIN-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-ADMIN-002` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-MCP-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-MCP-002` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-MCP-003` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-MCP-004` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-COMMERCE-006` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-COMMERCE-007` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-BACKGROUND-010` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-GATEWAY-001` — must be Complete and architect-accepted before this task starts.
-
-Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
+- ARCH-052-BACKGROUND-008
+- ARCH-052-SHOPIFY-001
+- ARCH-052-BACKGROUND-009
+- ARCH-052-ADMIN-001
+- ARCH-052-ADMIN-002
+- ARCH-052-SHARED-003
+- ARCH-052-MCP-001
+- ARCH-052-MCP-002
+- ARCH-052-MCP-003
+- ARCH-052-COMMERCE-006
+- ARCH-052-COMMERCE-007
+- ARCH-052-BACKGROUND-010
+- ARCH-052-GATEWAY-001
 
 ## Enables
 
@@ -116,7 +108,7 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Every Shopify offer advertised has contemporaneous checkout or alternative-product provider proof.
+- [ ] Every Shopify offer advertised has contemporaneous checkout or alternative-product MCP catalogue evidence.
 - [ ] Direct MCP product search needs no hosted Moda API call.
 - [ ] Initial outreach keeps original safety, credit and idempotent send behavior across 3 modes.
 
@@ -171,7 +163,7 @@ None established by implementation.
 
 ### Architectural Concerns
 
-Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
+Report discovered cross-repository/credential/MCP-catalogue issues to `moda_architect`.
 
 
 ## Architect Review

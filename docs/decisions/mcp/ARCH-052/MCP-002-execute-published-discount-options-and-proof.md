@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-MCP-002
 architecture_id: ARCH-052
-title: Execute built-in discount discovery and checkout proof in MCP
+title: Expose current shop discount catalogue to initial-outreach agent through MCP
 task_kind: implementation
 domain: mcp
 repository: moda-interact-mcp
@@ -16,119 +16,100 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-MCP-001
-- ARCH-052-MCP-003
-- ARCH-052-COMMERCE-003
-- ARCH-052-WOOCOMMERCE-001
-- ARCH-052-GATEWAY-001
 - ARCH-052-SHARED-003
 enables:
 - ARCH-052-BACKGROUND-010
-- ARCH-052-MCP-004
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
-# ARCH-052-MCP-002: Execute built-in discount discovery and checkout proof in MCP
+# ARCH-052-MCP-002: Expose current shop discount catalogue to initial-outreach agent through MCP
 
 ## Architecture
 
-Architecture ID: `ARCH-052`.
-
-Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
-
-Coordinator: `moda_architect`. Portable canonical definition: **defined but not materialised**; no developer worktree, branch, commit or push has occurred.
+Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Portable definition: not materialised.**
 
 ## Objective
 
-Implement **system-owned**, read-only MCP discount options and checkout-specific provider verification; do not author or publish Commerce Studio discount-tool revisions.
+Expose authorised discount options from the existing tenant-scoped PostgreSQL `ShopifyDiscount` catalogue through the generic `commerce_get_discount_options` MCP tool. **Do not build or call a separate provider-proof service, WooCommerce coupon-proof endpoint, or automatic eligibility-scanning workflow.** The dedicated Background agent determines basket/product relevance from returned stored discount conditions.
 
 ## Context
 
-Discount catalogue, current merchant selection and settings are in existing PostgreSQL; Shopify provider checkout proof belongs to Commerce, Woo native proof to WooCommerce plugin. MCP-003 directly owns Woo grant/REST read transport.
+`ShopifyDiscount`, `providerSnapshot`, `providerStatus`, `unavailableAt`, dates and current merchant policy already exist. MCP has its own Prisma access; Background supplies checkout, merchant instructions and recovery context directly to the agent. The agent never queries PostgreSQL. ARCH-052 does **not** introduce Commerce private proof routes, WooCommerce native coupon-proof endpoints, or a pre-agent eligibility scan.
 
 ## Scope
 
-- Add `src/execution/policy/discount-tool-executor.ts` registered as built-in only for authorised `INITIAL_RECOVERY_OUTREACH` context in `src/runtime/service-ports.ts`. For `commerce_get_discount_options`, query existing shop-scoped `ShopifyDiscount` + catalogue tables with Prisma, FIXED selected IDs from **current** same-shop `ShopifyDiscount.isAvailable=true` rows (or an active exact-ID Admin override), never an attempt snapshot, AI provider-current discounts independent of `isAvailable`, numeric/page bounds <=50 and signed/opaque per-shop/per-mode cursor (stable ordered `id`, no blind 8/24 candidate truncation). Return `catalogueIncomplete` when proof of exhaustion unavailable; do not claim no discounts when truncated. NONE must not call.
-- For `commerce_evaluate_discount` checkout target, re-read the authenticated shop and current merchant mode/selection and selected candidate, and reserve the existing MCP execution budget. Do **not** derive a recovery or attempt identifier from SHARED-006 `toolContext` or perform recovery/attempt lookups for generic MCP permission. A targeted provider-proof request uses the **separate** SHARED-005 request contract, not the purpose discriminator. The implementing agent must not treat model-authored recovery/attempt identifiers as trusted proof identity; if existing code cannot supply the proof-specific identity safely, return the dependency gap to `moda_architect` instead of recreating attempt-bound MCP context. Shopify uses private-network-only Commerce-003 `POST /internal/v1/recovery/discount-proof` and Shared-005; Woo uses MCP-003’s **direct Woo REST** GET to WooCommerce-001’s native coupon-proof endpoint with authenticated read-only grant. No API-003 or generic API provider.
-- Treat only strict `eligible` current provider proof with positive benefit as eligible. Distinguish ineligible vs unavailable vs incomplete vs expired/unsupported; return bounded reason codes, no codes unless confirmed and no customer PII/credentials in logs. Return timestamps/evidence to the caller; Background-008 only requests a fresh targeted lookup if proof expired or the checkout materially changed. No bulk pre-scan.
-- Integration tests verify FIXED 50 selected, AI page 2+ without selected-checkbox filter, invalid merchant override, wrong shop, expired proof, Woo read-only grant, Woo credential rotation, disabled tool, provider timeout, no false absence and no MCP->API calls.
+- Retain the existing generic `CommerceToolResultSchema` and existing discount-options tool schema; do not create a feature-specific result envelope.
+- Query existing shop-scoped discount catalogue and current merchant selection/provider-status fields via MCP Prisma.
+- FIXED: return only currently merchant-selected records (`isAvailable=true`); AI_BEST_APPLICABLE: consider current catalogue independently of checkbox selection. NONE: do not expose a promotional offer set.
+- Include condition information actually present in `providerSnapshot`; do not synthesise unsupported conditions or claims.
+- Preserve existing 50-item/truncated contract, returning truncation faithfully. Do not invent pagination input or claim that 50 records exhaust the catalogue.
+- Reuse existing shop authorization and tool permission gates; no recovery-attempt lookups and no direct hosted API/Commerce proof calls.
+- Add focused structural and shop-isolation tests.
 
 ## Out of Scope
 
-- No new database tables/columns, duplicate recovery-offer engine, unrelated UI, provider writes, or changes outside this repository and its own task report.
+- Provider-specific proof endpoints and eligibility engines.
+- Separate alternative-product evaluation orchestration.
+- New Prisma tables/migrations, discount snapshot persistence, Commerce Studio discount-tool authoring.
+- Changing the published generic MCP envelope or inventing cursor fields.
 
 ## Requirements
 
-- Re-read canonical task, parent architecture, dependency task files, `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md` and launcher preparation evidence before claiming. Use launcher-resolved **dedicated mirrored parent and implementation worktrees**, not a shared checkout.
-- Use the existing `@modainteract/moda-interact-shared/logging` API for new Node logs; unexpected exceptions are logged with bounded reason codes and propagated to the owning retry boundary. No silent exception swallowing, competing generic logger or secret-bearing diagnostic body.
-- Never log customer PII, coupon codes, complete checkout URLs, product-image origins, provider responses, credentials or raw MCP context headers.
-- Provider operations are read-only. No applying/creating coupons or mutating carts/orders except the separate customer-initiated Woo restore flow.
-- Pre-production breaking cutover: **no legacy/outdated context parsing, old tool-version adapter, backfill or new Prisma schema**. Missing required configuration fails closed. One released Shared version and actual published Commerce capability revision must be in use; no direct sibling imports.
-
+1. The tool reads shop-scoped current PostgreSQL discount records and does not call provider APIs or a private Commerce proof endpoint.
+2. Merchant selection is `ShopifyDiscount.isAvailable`; provider status and availability are separate fields.
+3. Return only source-backed condition data. The model chooses an offer, but cannot infer missing restrictions as true.
+4. MCP enforces authenticated shop isolation and permissions; Background owns recovery lifecycle.
+5. Preserve existing structural result schemas and truthful `truncated` reporting.
+6. Log errors using the published Shared logger; do not silently swallow exceptions or include secrets or customer payloads.
 
 ## Work Items
 
-- [ ] Return the existing generic `CommerceToolResultSchema` for both tools, with only the feature `data` validated by Shared proof/catalogue schemas; preserve existing conversation inputs and tool results.
-- [ ] Register built-in `commerce_get_discount_options` and `commerce_evaluate_discount` under the shop- and purpose-scoped MCP registry only; do not create Commerce Studio drafts or publication.
-- [ ] Query shop-scoped existing catalogue and **current merchant policy** with strict page limits; FIXED current selected set, AI full provider-current catalogue, NONE skipped, typed partial/incomplete budget outcomes. No generic recovery/attempt table read.
-- [ ] Verify checkout applicability using COMMERCE-003 private signed Shopify proof or MCP-003 direct authenticated Woo plugin native REST coupon proof; never use the hosted Moda API for Woo proof.
-- [ ] Recheck current shop mode/selection on each tool call. When invoking a targeted SHARED-005 provider proof, validate its separately supplied proof-specific identity at that provider boundary; never infer it from generic purpose-only `toolContext`. Enforce typed provider unavailable vs ineligible vs eligible.
-- [ ] Test wrong shop, revoked Woo grant, expired evidence, first/second pages, concurrent policy changes, no coupon invention, no hosted API HTTP request, and `git diff --check`.
+- [ ] Implement shop-scoped discount catalogue retrieval with the existing Prisma model.
+- [ ] Apply NONE/FIXED/AI selection semantics using current DB state.
+- [ ] Return provider-snapshot facts without synthesising restrictions.
+- [ ] Reuse existing `CommerceToolResultSchema` and tool access checks.
+- [ ] Test FIXED vs AI, deleted/inactive discounts, shop isolation, no proof-service calls, truncation and failure logging.
 
 ## Interfaces / Contracts
 
-Built-in (not release-published) MCP `commerce_get_discount_options` + `commerce_evaluate_discount`, the purpose-scoped MCP-advertised input schemas and existing `CommerceToolResultSchema` envelope; Shared-005 validates feature-specific proof `data`; Shared-005 checkout proof. Woo connection from MCP-003, Shopify private route COMMERCE-003.
+Use existing `CommerceToolInputs.commerce_get_discount_options`, `CommerceToolOutputs.commerce_get_discount_options`, `CommerceOfferSchema` and `CommerceToolResultSchema` from the published Shared package. No new on-demand `RecoveryDiscountProof*` contract. Provider restriction detail may be returned only within already agreed contract fields; **do not invent additional wire fields**. If the existing contract cannot express material conditions, stop and return the concrete missing field to `moda_architect` for a separate contract decision.
 
 ## Dependencies
 
-- `ARCH-052-MCP-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-MCP-003` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-COMMERCE-003` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-WOOCOMMERCE-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-GATEWAY-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
-
-Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
+- `ARCH-052-MCP-001` — authorise the outreach purpose.
+- `ARCH-052-SHARED-003` — publish the required generic Commerce/context contract extensions.
 
 ## Enables
 
 - `ARCH-052-BACKGROUND-010`
-- `ARCH-052-MCP-004`
 - `ARCH-052-SYSTEM-TEST-001`
 - `ARCH-052-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] Tool execution reads only existing catalogue/policy tables and provider proof, never a new discount table/engine.
-- [ ] Both platforms have real checkout-specific provider proof; unavailable is not eligible.
-- [ ] MCP makes no HTTP request to the hosted Moda API for Woo verification or product lookup.
-- [ ] No manual Commerce Studio release step for system discount tools.
+- [ ] Discount results are sourced from the authenticated shop’s PostgreSQL catalogue.
+- [ ] FIXED uses current selected set; AI does not filter by merchant checkbox.
+- [ ] No hosted private proof route, Woo proof endpoint or separate eligibility scan is called.
+- [ ] Incomplete results are marked truncated; missing eligibility conditions are not fabricated.
+- [ ] Tenant isolation, existing MCP authorisation and structured error logging remain enforced.
 
 ## Validation
 
-- [ ] MCP registry, pagination, private proof and runtime provider integration tests.
-- [ ] MCP declared unit/typecheck/lint and `git diff --check`.
-
-Use the task repository's actual `package.json` validation scripts; do not invent unconfigured commands or claim unrun tests passed. Include `git diff --check`.
+- [ ] Run existing relevant MCP unit/integration tests for the discount tools.
+- [ ] Exercise current selection modes, shop isolation and truncated-catalogue cases.
+- [ ] Verify absence of calls to removed provider-proof dependencies.
+- [ ] Run repository-declared typecheck/lint as applicable; record exact commands and outcomes in Completion Report.
 
 ## Stop Condition
 
-After all Work Items, Acceptance Criteria and required Validation are complete, fill the Completion Report, change the task status to `review`, return the parent task report and implementation branch to `moda_architect` and **STOP**. Do not start dependent tasks, merge, push `main`, or alter architecture/domain indexes.
+After Work Items, Acceptance Criteria and Validation pass, complete the report, set `status: review`, return to `moda_architect`, and **STOP**. Do not start enabled tasks or merge/push main.
 
 ## Implementation Notes
 
-**Owning repository paths (workspace-relative; verify actual current paths at execution):**
-
-- `moda-interact-mcp/src/runtime/service-ports.ts`
-- `moda-interact-mcp/src/runtime/prisma.ts`
-- `moda-interact-mcp/src/execution/policy/discount-options.ts` (new)
-- `moda-interact-mcp/src/execution/policy/discount-evaluate.ts` (new)
-- `moda-interact-mcp/src/execution/policy/execute.ts`
-- `moda-interact-mcp/tests/`
-
-The owning logical agent may modify its assigned task report only outside its source repository. Architecture and indexes belong to `moda_architect`.
+Use the existing MCP database connection, discount models and feature/tool registry. The agent—not MCP—owns ranking and deciding which offer matches the checkout. MCP must return only facts established by its source data. Do not implement a new discount evaluator, provider-proof endpoint or a separate product recommendation engine.
 
 ## Completion Report
 
