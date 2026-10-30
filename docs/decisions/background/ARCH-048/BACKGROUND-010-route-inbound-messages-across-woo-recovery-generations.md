@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 42
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-048-BACKGROUND-007
 enables:
@@ -30,7 +30,7 @@ Architecture ID: `ARCH-048`.
 
 Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`.
 
-Coordinator: `moda_architect`. **Defined but not materialised**. Requires BG007 Complete and launcher-resolved dedicated worktrees.
+Coordinator: `moda_architect`. Originally defined from the 2026-10-29 source snapshot, then materialised on the parent task branch before execution. On 2026-10-30 the launcher verified BG007 Complete, prepared dedicated parent and implementation worktrees, and claimed Attempt 1.
 
 ## Objective
 
@@ -68,11 +68,11 @@ No new messaging webhook, merchant settings or WhatsApp template, no automatic s
 
 ## Work Items
 
-- [ ] Add and consume `RecoveryRoute.mode` with verified current/historical classification.
-- [ ] Implement Woo lineage-aware unreferenced selection without relaxing cross-shop ambiguity.
-- [ ] Preserve exact outbound-context routing to old conversations and dedup of repeated provider messages.
-- [ ] Prevent activity stamps and AI/automation work for historical routes across content types.
-- [ ] Test active, historical, mixed-shop, concurrency, STOP and Shopify regression scenarios.
+- [x] Add and consume `RecoveryRoute.mode` with verified current/historical classification.
+- [x] Implement Woo lineage-aware unreferenced selection without relaxing cross-shop ambiguity.
+- [x] Preserve exact outbound-context routing to old conversations and dedup of repeated provider messages.
+- [x] Prevent activity stamps and AI/automation work for historical routes across content types.
+- [x] Test active, historical, mixed-shop, concurrency, STOP and Shopify regression scenarios.
 
 ## Interfaces / Contracts
 
@@ -91,19 +91,19 @@ No new messaging webhook, merchant settings or WhatsApp template, no automatic s
 
 ## Acceptance Criteria
 
-- [ ] Generation 1 closed and generation 2 with confirmed outbound: unreferenced response routes to **generation 2** when it is the sole eligible owner, not `MULTIPLE_RECOVERIES`.
-- [ ] Explicit reply to generation 1's earlier provider message remains stored on generation 1's historical conversation and causes **no recovery automation** for generation 1.
-- [ ] Two different eligible shops/checkouts sharing the phone remain ambiguous; no silent most-recent cross-shop selection.
-- [ ] Forged/unsent provider context, unregistered sender or mismatched phone cannot link to any generation.
-- [ ] STOP still takes priority; current conversation AI/human ownership, inbound moderation and dedup are preserved.
-- [ ] Closure/reentry race does not revive old recovery, misroute, duplicate inbound or enqueue an obsolete AI turn.
-- [ ] Existing Shopify routing unit tests remain passing.
+- [x] Generation 1 closed and generation 2 with confirmed outbound: unreferenced response routes to **generation 2** when it is the sole eligible owner, not `MULTIPLE_RECOVERIES`.
+- [x] Explicit reply to generation 1's earlier provider message remains stored on generation 1's historical conversation and causes **no recovery automation** for generation 1.
+- [x] Two different eligible shops/checkouts sharing the phone remain ambiguous; no silent most-recent cross-shop selection.
+- [x] Forged/unsent provider context, unregistered sender or mismatched phone cannot link to any generation.
+- [x] STOP still takes priority; current conversation AI/human ownership, inbound moderation and dedup are preserved.
+- [x] Closure/reentry race does not revive old recovery, misroute, duplicate inbound or enqueue an obsolete AI turn.
+- [x] Existing Shopify routing unit tests remain passing.
 
 ## Validation
 
-- [ ] `npx vitest run tests/unit/services/recovery-routing.service.test.ts` and focused new inbound-processing/worker tests.
-- [ ] PostgreSQL-backed multi-generation routing test using the existing `node scripts/test-integration.mjs` runner if needed; include both same-checkout and cross-shop candidate SQL behaviour.
-- [ ] `npm run build`, focused lint as available, `git diff --check`; record exact command/results and any known baseline.
+- [x] `npx vitest run tests/unit/services/recovery-routing.service.test.ts` and focused new inbound-processing/worker tests.
+- [x] PostgreSQL-backed multi-generation routing test using the existing `node scripts/test-integration.mjs` runner if needed; include both same-checkout and cross-shop candidate SQL behaviour.
+- [x] `npm run build`, focused lint as available, `git diff --check`; record exact command/results and any known baseline.
 
 ## Stop Condition
 
@@ -117,58 +117,156 @@ Use exact launcher-prepared dedicated parent/implementation worktrees, with phys
 
 ### Status
 
-Not Started — portable, not materialised.
+Attempt 1 implementation and reported validation are accepted. The Shopify routing finding was corrected in implementation commit `4be9ab3365390e93bdec2fab31dd3e87a5203cf4`. The architect accepted the remaining bounded-logging concern as a temporary exception for non-live testing; it must be resolved before live activation. Task status is Complete at Attempt 1.
 
 ### Files Changed
 
-None.
+- `src/services/recovery-routing.service.ts`
+- `src/services/whatsapp-inbound-processing.service.ts`
+- `tests/unit/services/recovery-routing.service.test.ts`
+- `tests/unit/services/whatsapp-inbound-processing.service.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
+- `tests/integration/woo-recovery-inbound-routing.integration.test.ts`
 
 ### Work Completed
 
-None.
+`RecoveryRoute` now distinguishes active from historical conversations. Unreferenced replies consider only provider-confirmed outbound conversations whose recovery is `MESSAGE_SENT` or `ENGAGED`, select the newest generation within each `(shopId, checkoutToken)` lineage, and remain ambiguous when more than one eligible shop/checkout owner matches. The latest generation and status are rechecked before turn scheduling.
+
+Follow-up for the 2026-10-30 P1 review finding: generation/status candidate filtering and the latest-generation recheck now apply only to WooCommerce shops. Shopify unreferenced routing retains the prior all-status, all-generation candidate set, including ambiguity from an older terminal generation. Added unit coverage for Shopify route classification and a PostgreSQL regression proving an older cancelled Shopify recovery still produces `MULTIPLE_RECOVERIES`; the existing Woo integration fixtures now explicitly declare `WOOCOMMERCE` so they exercise the intended platform branch.
+
+Explicit replies continue to the exact outbound conversation after it closes. Previously stored inbound message IDs stay pinned to their persisted conversation. Historical text and unsupported content are inserted idempotently without changing pending-turn state; historical audio is reserved on its original conversation without transcription, fallback sends or turn scheduling. Closed/superseded routes do not stamp checkout activity or enqueue AI work. STOP, abuse admission, shop eligibility and the existing active Shopify path remain in place. Routing decisions use Shared structured logging with a bounded digest of the provider message ID.
+
+Implementation commits: `753c17184347215dd309e2f9bb74dc09e4820676` (`feat(background): route replies across Woo recovery generations`) and `4be9ab3` (`fix(background): scope generation routing to Woo`), local branch `task/ARCH-048-BACKGROUND-010`.
 
 ### Validation Results
 
-Not run.
+- After the review correction, focused routing, inbound-processing and WhatsApp worker unit tests: 62 passed across 3 files.
+- The focused routing suite contains 23 tests, including the Shopify route-classification regression.
+- PostgreSQL multi-generation routing integration tests via `node scripts/test-integration.mjs tests/integration/woo-recovery-inbound-routing.integration.test.ts`: 3 passed. The tests use Colima's disposable PostgreSQL and verify Woo latest-generation routing, historical context routing, cross-shop ambiguity, suppression when the latest generation has not sent, and Shopify ambiguity across an older cancelled generation.
+- Focused ESLint on `src/services/recovery-routing.service.ts`, `tests/unit/services/recovery-routing.service.test.ts` and `tests/integration/woo-recovery-inbound-routing.integration.test.ts`: passed.
+- After the review correction, `npm run build`: Prisma generation and TypeScript build passed.
+- `npm run build`: Prisma generation and TypeScript build passed.
+- Focused ESLint on all 6 changed files: passed.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None.
+No implementation or contract changes outside the task scope. Historical inbound persistence intentionally does not update the conversation turn version, preventing an already queued turn from consuming a closed-generation reply.
 
 ### Assumptions
 
-2026-10-29 uploaded snapshot. No live Git or provider deployment is claimed.
+The launcher preparation packet is authoritative for worktree, synchronization, dependency-gate, submodule and claim evidence. PostgreSQL recovery rows and their generation/status are the durable authority for current inbound ownership.
 
 ### Unresolved Issues
 
-None at definition time.
+Temporary testing-stage exception accepted by the architect: two failure paths still log raw exception objects. Before live activation, replace these with bounded, non-sensitive metadata and add a regression test proving phone/message sentinels are absent from logs. This accepted follow-up does not block BG010 completion for the current non-live testing stage.
+
+### Git / VCS Evidence
+
+Task branch: `task/ARCH-048-BACKGROUND-010`.
+
+Physical worktree isolation:
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-010` / `task/ARCH-048-BACKGROUND-010`
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-010` / `task/ARCH-048-BACKGROUND-010`
+- Both worktrees were newly created for this task; no other task worktree was reused.
+- The shared workspace and implementation source checkouts were not switched. The task worktree reused the implementation checkout's ignored `node_modules` through a local symlink; Prisma client generation updated only that ignored dependency output, and no tracked source files changed. No submodule gitlink was staged.
+
+Start-of-attempt synchronization:
+
+- Parent task branch fast-forward: not needed; `origin/main` incorporated: already current.
+- Implementation task branch fast-forward: not needed; `origin/main` incorporated: already current.
+- Recursive submodule sync and update: passed; `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+- Launcher claim: Attempt 1 by `codex`, parent claim commit `baa21314da7f71e2437f953d53fcd9e36aad2768`, pushed successfully.
+
+Implementation repository: task branch `task/ARCH-048-BACKGROUND-010`, HEAD `4be9ab3365390e93bdec2fab31dd3e87a5203cf4`, published to `origin/task/ARCH-048-BACKGROUND-010`.
+
+Parent workspace: task report is published on `task/ARCH-048-BACKGROUND-010` at `6da58fe8e41248d2e99f8809edb9174a7a873953` before this review update. No submodule gitlink is staged.
+
+Neither task branch has been merged to `main`.
 
 ### Architectural Concerns
 
-Explicit historical replies must remain auditable without creating new old-generation automation.
+No new concerns. The architecture's existing event-only completeness limitation remains unchanged.
 
-## Architect Review
+## Architect Review — Earlier Shopify Finding (Resolved)
 
 ### Review Status
 
-Pending.
+Changes Requested — the first implementation review found a Shopify routing compatibility regression. This finding is resolved by the later platform-scoped correction in `4be9ab3365390e93bdec2fab31dd3e87a5203cf4` and its added tests.
 
 ### Review Notes
 
-No implementation reviewed.
+- **P1 — Preserve existing Shopify unreferenced-routing semantics.** In `src/services/recovery-routing.service.ts:132-138`, the status and latest-generation predicates are applied to candidates across all platforms. This changes Shopify behavior as well as Woo behavior: a phone that previously remained ambiguous because it had historical outbound recovery conversations can now resolve to one remaining current candidate. That can associate an unreferenced reply with the wrong Shopify checkout. The task limits generation-aware selection to Woo and explicitly requires existing Shopify current-recovery routing semantics to remain unchanged.
+- Scope the new status/generation selection to Woo recoveries and retain the pre-change candidate rules for Shopify. Add regression coverage that proves both Woo latest-generation routing and Shopify ambiguity/current-routing behavior.
 
 ### Reviewed Files
 
-None.
+- `src/services/recovery-routing.service.ts` — candidate selection and route recheck.
+- `src/services/whatsapp-inbound-processing.service.ts` — historical persistence, activity recording and turn enqueue paths.
+- `tests/unit/services/recovery-routing.service.test.ts` — routing query and route classification coverage.
+- `tests/integration/woo-recovery-inbound-routing.integration.test.ts` — PostgreSQL Woo generation routing scenarios.
+- `docs/decisions/background/ARCH-048/BACKGROUND-010-route-inbound-messages-across-woo-recovery-generations.md` — scope, requirements and reported validation.
 
 ### Validation Reviewed
 
-None.
+At the time of that review, the report recorded 61 focused unit tests and 2 PostgreSQL routing integration tests. The later Attempt 1 correction report records 62 focused unit tests and 3 PostgreSQL integration tests, including Shopify regression coverage; these results were reviewed as submitted and were not independently rerun.
 
 ### Architecture Conformance
 
-Not assessed.
+Partial. Historical routing, persistence and concurrency safeguards appear aligned with the stated requirements. Shopify compatibility is not satisfied until candidate selection is platform-scoped and regression-tested.
 
 ### Follow-up
 
-None.
+Correct platform-specific candidate selection, add and run focused Shopify regression coverage alongside the Woo routing tests, then update this review section with the resulting evidence. Do not mark the task accepted until that finding is resolved.
+
+
+## Architect Review — Attempt 1 (Changes Requested; logging finding superseded)
+
+### Decision
+
+Changes Requested. The earlier Shopify routing compatibility finding is resolved: the current SQL applies status/latest-generation filtering only to WooCommerce, and the report records a Shopify regression test for older cancelled generations. One bounded-logging issue remains.
+
+### Finding
+
+- **P2 — Do not log raw exception objects.** `RecoveryRoutingService.resolveInboundMessage()` and `processRoutedInboundMessage()` pass caught exceptions directly as `error` fields to the Shared logger. Database/provider exceptions may include query values, recipient numbers, message text or provider data. This conflicts with the task's bounded, non-sensitive logging requirement. Log a fixed error code and bounded error class (or similarly safe metadata) while rethrowing the original exception unchanged. Add a regression test with sensitive sentinel values proving neither log contains the raw number/message or exception text.
+
+### Reviewed Files
+
+- `src/services/recovery-routing.service.ts` — Woo-only generation filtering, Shopify legacy candidate behavior, and routing error logging.
+- `src/services/whatsapp-inbound-processing.service.ts` — historical persistence/turn suppression and processing error logging.
+- `tests/unit/services/recovery-routing.service.test.ts`
+- `tests/unit/services/whatsapp-inbound-processing.service.test.ts`
+- `tests/integration/woo-recovery-inbound-routing.integration.test.ts`
+- Completion Report and worktree/publication evidence in this task record.
+
+### Validation Reviewed
+
+Attempt 1 correction evidence records 62 focused unit tests across 3 files and 3 PostgreSQL integration tests passing, including Woo generation selection and Shopify historical ambiguity. Focused ESLint, build and `git diff --check` passed. No tests were rerun during this architect review.
+
+### Architecture Conformance
+
+The Woo generation selection is platform-scoped and the reported Shopify regression is covered. Historical explicit/stored-context handling and automation suppression align with the task contract. Acceptance remains withheld until the two failure logs are bounded and a privacy regression test passes.
+
+### Required Follow-up
+
+Sanitize the routing and processing failure log fields, preserve exception propagation, and add the sensitive-sentinel regression coverage. Keep Attempt 1 unchanged; no source or test correction for this finding is included in this review update.
+
+
+## Architect Review — Attempt 1 (Accepted)
+
+### Decision
+
+Accepted. The Shopify compatibility finding was resolved in the implementation. The architect accepts the remaining raw exception-object logging as a temporary exception for the current non-live testing stage, so the task can be completed and downstream integration work can proceed. Before any live activation, replace raw exception logging with bounded, non-sensitive metadata and add a sentinel regression test.
+
+### Acceptance Basis
+
+- The Completion Report records 62 focused unit tests and 3 PostgreSQL routing integration tests passing, including Woo generation selection and Shopify historical ambiguity regression coverage.
+- The Completion Report records focused lint, build and diff checks passing. These results were reviewed as reported and were not independently rerun during acceptance.
+- Implementation branch `task/ARCH-048-BACKGROUND-010` is published at `4be9ab3365390e93bdec2fab31dd3e87a5203cf4`.
+- The bounded-logging finding is explicitly limited to non-live testing. Its pre-live remediation is a release gate, not a blocker for this task's current completion.
+
+### Reviewed Files
+
+The review covered the implementation files, focused unit/integration tests and Completion Report listed above. No source changes were made as part of this acceptance.
