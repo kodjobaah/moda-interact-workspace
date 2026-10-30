@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 38
 executor: codex
 claimed_at: 2026-10-30T09:57:56Z
@@ -208,3 +208,41 @@ The task remains within its assigned Background scope. The requested fixes prese
 ### Follow-up
 
 Apply both corrections on the same mirrored task branches. This review update does not claim or increment Attempt 2; the launcher will claim it when the task is started again.
+
+## Attempt 2 Completion Report
+
+### Status
+
+Ready for Review — both requested corrections are implemented and focused validation is complete where the environment permits. This agent returns the task to `moda_architect`; no acceptance decision is recorded here.
+
+### Architect Review Corrections
+
+1. **Sanitized settlement failure logging — implemented.** `woo-recovery-outreach.service.ts` now records only bounded `errorClass` and the fixed `WOO_RECOVERY_OUTREACH_FAILED` code with settlement context. It does not pass the raw exception, message, or stack to the Shared logger, and it rethrows the original exception unchanged. A focused service test verifies sensitive details are absent and exception identity is preserved.
+2. **Cancellation transition and reservation safety — implemented.** `woo-resumed-outreach-settlement.adapter.ts` rejects attempts with follow-up state, validates already-cancelled replay rows for the same locked recovery/attempt with no send or follow-up evidence, and reports `cancelled` only when the conditional update changes exactly one row. A zero-row transition throws before the service can release credit. Adapter tests cover follow-up rejection, valid and invalid cancelled replays, successful transition and zero-row conflict. A disposable PostgreSQL regression was added for retaining the RESERVED credit when follow-up state blocks cancellation.
+
+### Files Changed
+
+- `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`
+- `src/services/woocommerce-recovery/woo-resumed-outreach-settlement.adapter.ts`
+- `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-resumed-outreach-settlement.adapter.test.ts`
+- `tests/integration/arch048-woo-initial-outreach.integration.test.ts`
+
+### Attempt 2 Validation
+
+- `npx vitest run tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts tests/unit/services/woocommerce-recovery/woo-resumed-outreach-settlement.adapter.test.ts` — 2 files, 52 tests passed.
+- `npx eslint` on the five changed files — passed.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation.
+- `git diff --check` — passed.
+- Required PostgreSQL/Redis integration command was attempted but could not start disposable PostgreSQL because `docker` is unavailable in this environment (`spawn docker ENOENT`). The new PostgreSQL regression therefore remains unverified in Attempt 2.
+
+### Attempt 2 Worktree and Synchronization Evidence
+
+- Prepared launcher claimed Attempt 2 and pushed parent claim `3f7692074f694b7ed51a205938337423e4fdba6e` at `2026-10-30T09:57:56Z`; dependency gate passed (`ARCH-048-BACKGROUND-007` Complete).
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-009`, branch `task/ARCH-048-BACKGROUND-009`, synchronized head `9c5ff58344a07971811d642c0ec1d198f75311d5`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-009`, branch `task/ARCH-048-BACKGROUND-009`, synchronized head `f94e64ae8f7f9671cd15391582fd9740d7a5ad48`.
+- Dedicated physical worktrees were used; neither shared/default checkout nor another task worktree was reused. Parent remote task fast-forward was not needed and `origin/main` was already current. Implementation remote task fast-forward was not needed and `origin/main` was incorporated. Recursive submodule sync and initialization passed; `database` was ready at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+
+### Unresolved Issues
+
+The new disposable PostgreSQL regression has not run because Docker is unavailable (`spawn docker ENOENT`). No implementation or test failure was observed in the validation that did run.
