@@ -9,23 +9,23 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 15
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
 - ARCH-052-SHARED-010
 created: '2026-10-30'
-updated: '2026-10-30'
+updated: 2026-10-30
 ---
 
 # ARCH-052-SHARED-009: Define discount discovery, condition facts and product identity contracts
 
 ## Architecture
 
-ARCH-052: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Owned by `moda_shared`. **Portable task; defined but not materialised.** Existing SHARED-002/006/008 and published 2.6.0 are accepted and must not be reopened or rewritten.
+ARCH-052: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Owned by `moda_shared`. This task was materialised and claimed by the prepared launcher for Attempt 1. Existing SHARED-002/006/008 and published 2.6.0 are accepted and were not reopened or rewritten.
 
 ## Objective
 
@@ -58,11 +58,11 @@ No database migration, provider HTTP/GraphQL, coupon validation engine, bulk eli
 
 ## Work Items
 
-- [ ] Add the exact discount-details and page schemas below and extend only the named dictionary members.
-- [ ] Update existing `CommerceProductSchema.variantId` and add provider category/collection IDs.
-- [ ] Add structural valid/invalid JSON fixtures, compile-time inferred type tests, existing conversation-tool compatibility tests and bounded generic envelope tests.
-- [ ] Run declared Shared tests, typecheck and build; verify the pre-existing package entrypoint exports the new schema/type names.
-- [ ] Complete task report with exact changed files, validation, isolated-worktree evidence and no package publication; return to architect for acceptance.
+- [x] Add the exact discount-details and page schemas below and extend only the named dictionary members.
+- [x] Update existing `CommerceProductSchema.variantId` and add provider category/collection IDs.
+- [x] Add structural valid/invalid JSON fixtures, compile-time inferred type tests, existing conversation-tool compatibility tests and bounded generic envelope tests.
+- [x] Run declared Shared tests, typecheck and build; verify the pre-existing package entrypoint exports the new schema/type names.
+- [x] Complete task report with exact changed files, validation, isolated-worktree evidence and no package publication; return to architect for acceptance.
 
 ## Interfaces / Contracts
 
@@ -204,16 +204,16 @@ None. Existing SHARED-002/006/008 have already been accepted and are the baselin
 
 ## Acceptance Criteria
 
-- [ ] Complete code above exists in the existing Commerce schema module and exported package entrypoint.
-- [ ] Both new discount-tool shapes parse with the generic Commerce result envelope; existing product-search and get-product outputs still parse for genuine Shopify variants.
-- [ ] Woo simple product `variantId:null` parses without invented variant IDs; product category/collection IDs remain opaque provider strings.
-- [ ] Structural tests cover exact fixtures, defaults, unknown keys and bad primitive types; no new business-rule refinements.
-- [ ] No Shopify/Woo provider calls or discount ranking logic appears in Shared.
+- [x] Complete code above exists in the existing Commerce schema module and exported package entrypoint.
+- [x] Both new discount-tool shapes parse with the generic Commerce result envelope; existing product-search and get-product outputs still parse for genuine Shopify variants.
+- [x] Woo simple product `variantId:null` parses without invented variant IDs; product category/collection IDs remain opaque provider strings.
+- [x] Structural tests cover exact fixtures, defaults, unknown keys and bad primitive types; no new business-rule refinements.
+- [x] No Shopify/Woo provider calls or discount ranking logic appears in Shared.
 
 ## Validation
 
-- [ ] Inspect `package.json` and run the exact existing Shared test/typecheck/build scripts and `git diff --check`.
-- [ ] Record actual package exports and test results. Unperformed checks remain unchecked in Completion Report.
+- [x] Inspect `package.json` and run the exact existing Shared test/typecheck/build scripts and `git diff --check`.
+- [x] Record actual package exports and test results. Unperformed checks remain unchecked in Completion Report.
 
 ## Stop Condition
 
@@ -227,58 +227,84 @@ Use the existing Shared `@modainteract/moda-interact-shared/commerce` published 
 
 ### Status
 
-Not Started — portable definition.
+Implementation complete; awaiting architect review.
 
 ### Files Changed
 
-None.
+- `moda-interact-shared/src/commerce/schemas.ts`
+- `moda-interact-shared/src/commerce/contracts.test.ts`
+- This task report only: `docs/decisions/shared/ARCH-052/SHARED-009-define-discount-discovery-and-product-identity-contracts.md`
 
 ### Work Completed
 
-None.
+- Added strict discount condition facts/details schemas and inferred types, paged discount options input/output, and discount-details tool input/output using the existing Commerce dictionaries and generic result envelope.
+- Made product `variantId` nullable and added optional bounded provider category and collection ID arrays while keeping category labels unchanged.
+- Added exact structural fixtures, compile-time `satisfies` checks for both inferred types, invalid primitive/unknown-key coverage, conversation compatibility coverage, and generic-envelope bounds for both discount options and discount details. No business-rule refinements or provider/ranking logic were added.
+- Did not change package version, publish the package, or start SHARED-010.
 
 ### Validation Results
 
-Not run.
+- `npm test`: PASS — 387 tests, 386 passed, 1 skipped, 0 failed. The skipped test is part of the existing suite; no new skip was added.
+- `npm run typecheck`: PASS.
+- `npm run build`: PASS, including ESM and declaration builds.
+- `npm run validate:commerce-entrypoints`: PASS — existing `@modainteract/moda-interact-shared/commerce` entrypoint imported cleanly. Generated `dist/commerce/index.d.ts` exports `CommerceDiscountConditionFactsSchema`, `CommerceDiscountConditionFacts`, `CommerceDiscountDetailsSchema`, and `CommerceDiscountDetails`.
+- `git diff --check`: PASS.
+- Review correction follow-up: `./node_modules/.bin/tsx --test src/commerce/contracts.test.ts`: PASS — 15 tests, 15 passed, 0 failed; includes generic Commerce result envelope parsing for the discount-options output. `git diff --check`: PASS.
+- Package scripts and package metadata were inspected. The package remains version 2.6.0; no publication was performed.
 
 ### Deviations
 
-None.
+Dependency tools were initially absent in the isolated worktree. Lockfile-pinned dependencies were installed with `npm ci`; the declared checks then completed successfully. Running `npm test` under the restricted sandbox initially failed because `tsx` could not create its local IPC socket; the same declared validation sequence passed with the required OS permission.
 
 ### Assumptions
 
-Use the current task worktree baseline at execution.
+The prepared launcher’s synchronized branches are the baseline for this Attempt 1.
 
 ### Unresolved Issues
 
-None yet.
+None known. The one skipped test is identified in the test runner output and is not specific to this task.
+
+### Isolated-Worktree and Start-of-Attempt Synchronization Evidence
+
+- Prepared launcher: `scripts/start-agent-task.py ARCH-052-SHARED-009 --prepare --executor codex --json`; dependency gate passed, claim was pushed, and recursive submodule verification reported ready.
+- Canonical root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHARED-009`, branch `task/ARCH-052-SHARED-009`; synchronized start head `3350fe0be699d6f89240254ead445c1bdffa6abd`, then launcher claim commit `2250a3021f73a10e39591b11fca0f83383404ec2`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHARED-009`, branch `task/ARCH-052-SHARED-009`; synchronized start head `be13b8675750b8cb0315adcc748f77c7e4831440`.
+- The launcher verified these as separate task worktrees. The implementation diff is limited to the two scoped Shared files; the parent worktree contains only this task report update.
 
 ### Architectural Concerns
 
-Report any existing consumer expectations broken by nullable variant ID or required output cursor to architect rather than creating adapters.
+None identified. The options output keeps `cursor` optional for existing conversation-preview compatibility, as specified.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1 (2026-10-30).
 
 ### Review Notes
 
-Pending implementation review.
+The implementation conforms to the task’s structural Commerce contract. The strict discount condition/details schemas, bounded discovery options and continuation cursor, generic result shapes, and nullable product variant/provider taxonomy IDs match the specified contract. Existing generic result wrapping, conversation preview compatibility, and product identity contracts remain intact. No provider logic, business-rule refinements, package publication, or out-of-scope consumer changes were introduced.
+
+The initial review identified a missing test for wrapping discount options in the generic Commerce result envelope. The follow-up commit adds that assertion; the completion report records the focused contract test passing afterward. No remaining findings.
+
+The implementation is published on the Shared task branch at `a36dc4afea652f1cbd6449cd50f9b75dd5c4da63` (`test(shared): cover discount options result envelope`), following implementation commit `1a20509a531747ddbf29f7100ee9421ba8420e12` (`feat(shared): add discount discovery contracts`). The branch contains only the two task-scoped Shared files and is clean.
 
 ### Reviewed Files
 
-None.
+- `src/commerce/schemas.ts`
+- `src/commerce/contracts.test.ts`
+- Existing `src/commerce/index.ts` re-export and package `@commerce` entrypoint configuration.
+- SHARED-009 Completion Report, task scope, acceptance criteria, and validation evidence.
 
 ### Validation Reviewed
 
-None.
+The Completion Report records `npm test` (386 passed, 1 skipped, 0 failed), `npm run typecheck`, `npm run build`, `npm run validate:commerce-entrypoints`, and `git diff --check` passing. After the review correction it records the focused contract test passing (15/15) and a clean diff check. These checks were reviewed as submitted and were not rerun during acceptance.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. Shared owns structural contract validation only; discount applicability, authorization, provider facts, completeness projection, and product interpretation remain with the assigned provider and consumer services. The task’s separate release boundary is preserved: package version remains 2.6.0 and no publication occurred.
 
 ### Follow-up
 
-None.
+Set ARCH-052-SHARED-010 to `ready` for the separate publication-only gate. Do not enable its consumers until that release is published and accepted.
