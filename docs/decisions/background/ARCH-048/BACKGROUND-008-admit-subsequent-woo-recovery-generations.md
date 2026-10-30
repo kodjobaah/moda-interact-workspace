@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 34
-executor: codex
-claimed_at: 2026-10-30T08:05:50Z
 attempt: 1
 depends_on:
   - ARCH-048-BACKGROUND-007
@@ -127,7 +125,7 @@ Use `/moda-task` preparation; record **launcher-resolved dedicated parent and im
 
 ### Status
 
-Implementation complete locally; publication blocked by automatic review. Task remains `in_progress` pending authorization to publish both task branches.
+Implementation and required validation are complete. The implementation task branch and parent task/report branch are published; this task is returned to `moda_architect` for review.
 
 ### Files Changed
 
@@ -141,7 +139,7 @@ Implementation complete locally; publication blocked by automatic review. Task r
 
 Admission now requires a positive safe generation and exact candidate/current-index/accepted-watermark agreement. It classifies the latest durable generation and its resumption/order history, admits only generation 1 initially or generation N+1 after a proven resumption or eligible non-order expiry, and treats stale generations as superseded. Matching-row recovery requires exact `DETECTED` admission provenance to set `repairInitial: true`; exact sent/engaged rows return `repairInitial: false`. Insertion locks and rechecks the prior row in the PostgreSQL transaction, writes the candidate generation's complete basket and admission-origin metadata atomically, and returns only a proven exact P2002 collision. Corrupt resumption/order provenance throws for retry. No queue or provider operation was added to the transaction.
 
-Implementation commits: `2007c05a409342890b19e97ca824df61aee9094c` (`feat(background): admit mature Woo recovery generations`) and `e4b11a74d017276c8a8e321f9d5734f957647fee` (`test(background): cover expired checkout admission lease race`), local branch `task/ARCH-048-BACKGROUND-008`.
+Implementation commits: `2007c05a409342890b19e97ca824df61aee9094c` (`feat(background): admit mature Woo recovery generations`) and `e4b11a74d017276c8a8e321f9d5734f957647fee` (`test(background): cover expired checkout admission lease race`), published on `origin/task/ARCH-048-BACKGROUND-008`.
 
 ### Validation Results
 
@@ -154,7 +152,7 @@ Implementation commits: `2007c05a409342890b19e97ca824df61aee9094c` (`feat(backgr
 
 ### Deviations
 
-No source or contract changes outside task scope. The task has not been returned to review because automatic review rejected publication to the configured implementation origin.
+No source or contract changes outside task scope. Publication proceeded after the user explicitly authorized publishing to the configured origins.
 
 ### Assumptions
 
@@ -162,7 +160,38 @@ The prepared launcher packet is authoritative for worktree paths, task branches,
 
 ### Unresolved Issues
 
-The configured implementation and parent origins remain `https://github.com/kodjobaah/moda-interact-background.git` and `https://github.com/kodjobaah/moda-interact-workspace.git`. The implementation push was rejected by automatic review as recorded above; no retry/workaround was attempted. The expired checkout lease case is covered by `fences simultaneous admission after an expired checkout lease with the PostgreSQL generation key`: the test uses a fake Redis adapter that permits both lease acquisitions and a transaction barrier that releases both workers concurrently, then verifies the PostgreSQL generation key leaves exactly one recovery and one history record. The case is deterministic and uses no wall-clock delay.
+The expired checkout lease case is covered by `fences simultaneous admission after an expired checkout lease with the PostgreSQL generation key`: the test uses a fake Redis adapter that permits both lease acquisitions and a transaction barrier that releases both workers concurrently, then verifies the PostgreSQL generation key leaves exactly one recovery and one history record. The case is deterministic and uses no wall-clock delay.
+
+### Git / VCS
+
+Task branch: `task/ARCH-048-BACKGROUND-008`.
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-008`
+- parent branch: `task/ARCH-048-BACKGROUND-008`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-008`
+- implementation branch: `task/ARCH-048-BACKGROUND-008`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization evidence from the prepared launcher: parent remote task branch fast-forwarded: not needed; parent `origin/main` incorporated before submission: yes (merged into the dedicated task branch); implementation remote task branch fast-forwarded: not needed (no remote task branch existed); implementation `origin/main` incorporated: already current.
+
+Implementation repository:
+- repository: `moda-interact-background`
+- commit: `e4b11a74d017276c8a8e321f9d5734f957647fee`
+- remote branch: `origin/task/ARCH-048-BACKGROUND-008`
+- pushed: yes
+
+Parent workspace:
+- task file: `docs/decisions/background/ARCH-048/BACKGROUND-008-admit-subsequent-woo-recovery-generations.md`
+- remote branch: `origin/task/ARCH-048-BACKGROUND-008`
+- pushed: yes
+- submodule gitlink staged: no
+
+Merged to implementation main: no.
+Merged to workspace main: no.
 
 ### Architectural Concerns
 
