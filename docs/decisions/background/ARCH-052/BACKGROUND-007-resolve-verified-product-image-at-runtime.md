@@ -15,15 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-SHARED-003
+- ARCH-052-BACKGROUND-008
+- ARCH-052-ADMIN-002
 - ARCH-052-MCP-003
 - ARCH-052-COMMERCE-007
 - ARCH-049-BACKGROUND-001
 - ARCH-049-BACKGROUND-004
 enables:
-- ARCH-052-BACKGROUND-008
+- ARCH-052-SYSTEM-TEST-001
+- ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
 # ARCH-052-BACKGROUND-007: Resolve optional checkout or promoted-product image via MCP at runtime
@@ -45,6 +47,9 @@ Provide an optional validated IMAGE header for the chosen checkout product or re
 Both Shopify and WooCommerce product information is resolved **at runtime by MCP-003**, using authenticated direct provider connections. There is no hosted API or Commerce private product-image endpoint, no product catalogue replication and no image database persistence. Background consumes the exact published `commerce_get_product` result.
 
 ## Scope
+
+**Optional enhancement only:** after BACKGROUND-008 is accepted, attach safe IMAGE header parameters when the independently approved IMAGE variant and ready product media both exist; otherwise retain the already-working approved TEXT path. Existing ARCH-049 media work never blocks a text-only message. No new image database row, R2 catalogue, generic media resolver, provider URL proxy or Shared image result schema.
+
 
 - Use existing `src/services/recovery-template-preparation/` and MCP `commerce_get_product` (published and entitled) to fetch the exact product/variant in current shop for a checkout item or selected alternative product. Variant image wins; product image fallback only if same shop/id. Never use fuzzy search as proof of identity.
 - Validate returned HTTPS image source/media type, allowed host and accessible header within bounded download/preparation time; if source is unsafe/unavailable, use separately approved text/no-image variant. Reuse existing ARCH-049 media processing only when necessary and already approved; do not invent new R2 tables or persistent image catalogue.
@@ -74,17 +79,15 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Interfaces / Contracts
 
-Shared-002 `CHECKOUT_PRODUCT` IMAGE role and `RecoveryProductImageResultSchema`, Shared-008 `commerce_get_product` output; existing ARCH-049 media processing. No COMMERCE-002/API-002/private product-image endpoints.
+Published SHARED-008/010 `CommerceToolOutputs.commerce_get_product` contains `CommerceProductSchema.imageUrl`, nullable `variantId` and source IDs; SHARED-002 `CHECKOUT_PRODUCT` image role and Meta-approved header binding. **There is no published `RecoveryProductImageResultSchema`**: define a Background-local discriminated outcome in `src/services/recovery-product-media/recovery-product-image-resolver.ts` (`{kind:"READY",imageUrl:string,productId:string,variantId:string|null}` or `{kind:"UNAVAILABLE",reason:string}`) and use it only inside Background; do not invent a new Shared export. This task integrates optional IMAGE send selection with the accepted text-only BACKGROUND-008 path, never reimplements the existing WhatsApp transport.
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-MCP-003` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-COMMERCE-007` — must be Complete and architect-accepted before this task starts.
-- `ARCH-049-BACKGROUND-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-049-BACKGROUND-004` — must be Complete and architect-accepted before this task starts.
-
-Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
+- `ARCH-052-BACKGROUND-008` — accepted text-only send integration; optional enhancement must not block it.
+- `ARCH-052-ADMIN-002` — approved IMAGE/header variants.
+- `ARCH-052-MCP-003` — exact product lookup.
+- `ARCH-052-COMMERCE-007` — published product tools.
+- `ARCH-049-BACKGROUND-001` and `ARCH-049-BACKGROUND-004` — existing media mechanism only where actually reused.
 
 ## Enables
 

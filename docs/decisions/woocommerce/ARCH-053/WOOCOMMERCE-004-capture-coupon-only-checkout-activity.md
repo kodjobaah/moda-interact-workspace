@@ -42,7 +42,7 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 - Own changes to `moda-interact-woocommerce/includes/Checkout/CheckoutCapture.php` plus narrowly required `CheckoutSnapshot.php` and `tests/CheckoutCaptureTest.php`; add targeted `tests/integration/scenarios/checkout-coupons-wordpress.mjs` (or local equivalent), without changing API/Background code.
 - Register `woocommerce_applied_coupon` and `woocommerce_removed_coupon` hooks with the correct Woo signature; use `captureExisting()` only when `CheckoutKey::SESSION_FIELD` contains an already observed valid checkout. Re-use the existing after-totals/Store API capture path for Checkout Blocks; do not create a new checkout key in the shopping-cart-only lifecycle.
 - On each coupon change, call `WC()->cart->get_applied_coupons()` for the canonical *applied* list; preserve 0..10 valid codes in `checkout.restoration.appliedCouponCodes` exactly as validated for Shared. The resulting full snapshot fingerprint must include the list, including transitions from `[]` to `[code]` and back.
-- Publish the existing `woo.activity.v3` CHECKOUT_UPDATED envelope via `CheckoutActivityPublisher::enqueue()`/Action Scheduler; preserve original `(shopId,checkoutKey)` and event IDs. Do not introduce a new event type, Redis queue or direct API call from a Woo frontend hook.
+- Publish the existing `woo.activity.v1` CHECKOUT_UPDATED envelope via `CheckoutActivityPublisher::enqueue()`/Action Scheduler; preserve original `(shopId,checkoutKey)` and event IDs. Do not introduce a new event type, Redis queue or direct API call from a Woo frontend hook.
 
 ## Out of Scope
 
@@ -63,12 +63,14 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 ## Work Items
 
 - [ ] Add correct after-application and after-removal capture hook registration for an observed checkout.
-- [ ] Make the coupon list part of the dedup fingerprint and publish a new v3 checkout snapshot for coupon-only change.
+- [ ] Make the coupon list part of the dedup fingerprint and publish a new canonical v1 checkout snapshot for coupon-only change.
 - [ ] Create PHP and WordPress Classic/Blocks tests for apply/remove, unchanged total, duplicates, >10 codes, and malformed codes.
 
 ## Interfaces / Contracts
 
-Consumes `WooCartRestoreSnapshotV1` / `checkout.restoration.appliedCouponCodes` from `ARCH-053-SHARED-001`; outbound producer is the existing `POST /v1/woocommerce/activity` v3 path. Reuse `CheckoutSnapshot::fromCart()`, `CheckoutCapture::captureExisting()` and `CheckoutActivityPublisher`; no new coupon protocol.
+Coupon-only updates use **the same canonical `woo.activity.v1` `CHECKOUT_UPDATED`** activity payload as WOOCOMMERCE-001, including full `checkout.restoration.appliedCouponCodes`; do not invent a coupon-specific event version or eventType. Recompute the checkout fingerprint when original coupon codes change even if line items and displayed total have not.
+
+Consumes `WooCartRestoreSnapshotV1` / `checkout.restoration.appliedCouponCodes` from `ARCH-053-SHARED-001`; outbound producer is the existing `POST /v1/woocommerce/activity` v1 path. Reuse `CheckoutSnapshot::fromCart()`, `CheckoutCapture::captureExisting()` and `CheckoutActivityPublisher`; no new coupon protocol.
 
 ## Dependencies
 

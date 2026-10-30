@@ -1,7 +1,7 @@
 ---
 id: ARCH-053-API-001
 architecture_id: ARCH-053
-title: Accept Woo checkout v3 with coupon/restoration data
+title: Extend canonical Woo activity v1 with restoration and verified phone
 task_kind: implementation
 domain: api
 repository: moda-interact-api
@@ -22,7 +22,7 @@ created: 2026-10-29
 updated: 2026-10-30
 ---
 
-# ARCH-053-API-001 — Accept Woo checkout v3 with coupon/restoration data
+# ARCH-053-API-001 — Extend canonical Woo activity v1 with restoration and verified phone
 
 ## Architecture
 
@@ -30,7 +30,7 @@ Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-c
 
 ## Objective
 
-Accept Woo checkout v3 with coupon/restoration data. One bounded outcome in `moda-interact-api` owned by `moda_api`.
+Extend the **existing** authenticated WooCommerce `CHECKOUT_UPDATED` activity contract to carry the full restore snapshot and canonical phone proof under one `woo.activity.v1` HTTP version, while publishing the existing `woo.activity.v1` BullMQ job. Do not create `woo.activity.v3` or preserve an unnecessary HTTP v2/v3 compatibility layer.
 
 ## Context
 
@@ -38,37 +38,99 @@ The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount
 
 ## Scope
 
-- Extend `src/woocommerce/activity/contract.ts`, `request.ts`, `producer.ts` / `redis-producer.ts` and associated tests to strictly accept a new **HTTP-only** `woo.activity.v3` CHECKOUT_UPDATED request with the same existing event identity and v2 normalized phone validation, plus optional `checkout.restoration` defined by the published Shared schema.
-- Canonicalise v3 into existing `woo.activity.v1` queue-job envelope and add `checkout.restoration` iff verified; do not send v3 to Background as an unrecognised envelope. Keep `WOO_CHECKOUT_QUEUE`, existing deterministic jobId/contentDigest/correlation behaviour and 65,536-byte cap. Keep v1/v2 existing inputs accepted during transition, with missing restoration meaning unavailable.
-- Extend `src/woocommerce/activity/routes.ts` error outcomes only as required; do not create a new public activity route.
+Repository: **`moda-interact-api` only**. Inspect the actual files before editing; the following paths are the explicit source ownership boundary:
+
+- `src/woocommerce/activity/contract.ts`: extend `WooCheckoutSnapshot` with `restoration?: WooCartRestoreSnapshotV1` imported from the **published** `@modainteract/moda-interact-shared/woocommerce` entrypoint; validate it at runtime using `WooCartRestoreSnapshotV1Schema`. Remove `WOO_ACTIVITY_PHONE_VERSION` and the HTTP v2-only `parseWooCheckoutPhoneEvent()` branch. Preserve `WOO_ACTIVITY_VERSION = 'woo.activity.v1'` for both checkout and order events, and keep the v1 queue job shape with the additive optional `checkout.restoration`.
+- `src/woocommerce/activity/request.ts`: continue strict JSON/body/header validation using `parseWooActivityEvent`; reject unknown versions (including v2 and v3) and retain the 65,536-byte body cap. No new endpoint or content type.
+- `src/woocommerce/activity/producer.ts` and `redis-producer.ts`: change only if needed to preserve validated restoration in the existing deterministic job, digest and replay path. Keep queue names, IDs, retry/backoff, retention and durable acceptance point exactly as currently implemented.
+- `tests/unit/woocommerce/activity/*.test.ts` and, only if necessary, `scripts/test-arch035-woo-activity-redis.mjs`: update the existing phone-version tests to target v1, add restore/queue/replay tests, and assert strict v2/v3 rejection. Do not leave tests asserting v2 HTTP acceptance in the new canonical contract.
+- Existing route/authentication files only if the current implementation actually requires a bounded change; report any broader ownership/design problem to `moda_architect`.
+
+No changes to API-002 link resolution, API-003 outbound-offer evidence, WordPress source, Background source, Prisma schema or another task definition.
 
 ## Out of Scope
 
-No Background code, plugin coupon capture, checkout link route, database write, discounts or Woo order events changes.
-
-No execution of Enabled tasks, unrelated cross-repository implementation, extra database objects or new generic logger.
+No new event version, parallel parser, compatibility adapter, alternate queue, activity endpoint, eventType, REST resolver, coupon validity calculation, live Woo provider call, consent creation, checkout URL generation or database admission. No existing order event contract changes. Do not touch ARCH-052 discount discovery or ARCH-048 recovery-generation ownership.
 
 ## Requirements
 
-- Input from WC plugin remains authenticated with `WooInstallationAuthenticator`, not a shopId supplied in body. Reject malformed coupon/attribute snapshots, unexpected fields, unknown schema versions, overlarge payload, forged tenant id, tampered digest and unchanged-event replay conflicts.
-- If the shared validator/publication is not available, stop: never copy a service-local Zod restore schema. The canonical phone normalizer and marketing-consent separation remain unchanged. Do not call Woo provider from ingress or perform recovery admission synchronously.
+1. **One v1 request contract.** Authentication through existing `WooInstallationAuthenticator` occurs before parsing. HTTP `POST /v1/woocommerce/activity` `CHECKOUT_UPDATED` has `schemaVersion: 'woo.activity.v1'`, unchanged top-level eventId, checkoutKey and ISO `occurredAt`, and `checkout: {currency, total, items?, contact?, restoration?}`. The `restoration` field is optional for missing/unknown cart evidence but, when present, must match the published Shared discriminated supported/unsupported schema. Never infer `appliedCouponCodes: []` from absence. Reject unrecognised keys and any v2/v3 version.
+2. **Preserve v2 phone proof without its version.** For HTTP checkout `contact` with `phone`, `canonicalPhone` (digits-only E.164 without `+`) is mandatory; `verifiedCountryCode` remains optional but, if supplied, must match the existing two-letter validation. Verify `normalizeRecipientPhone(phone, {verifiedCountryCode?})` succeeds and `.e164.slice(1) === canonicalPhone`. Neither proof field may exist when `phone` is absent. Reject mismatches, unverified international/national context or malformed proof; never silently accept a raw unverified phone. An HTTP checkout without phone is allowed. Phone evidence never grants marketing consent.
+3. **Existing v1 queue projection.** Use `parseWooCheckoutEvent`/`parseWooActivityEvent` to create the normalized `WooCheckoutEvent`/`WooCheckoutJob`. The queue contains verified `contact.phone` as E.164 with leading `+`, and MUST NOT include `canonicalPhone` or `verifiedCountryCode`; copy the validated `checkout.restoration` structurally unchanged, including full originally applied coupon codes. Queue `schemaVersion` is still `'woo.activity.v1'` and the queue remains `woo-checkout-capture-v1`, job `checkout-updated`. Do not change `woo-order-capture-v1` or order event semantics.
+4. **Existing identity and replay.** Preserve authenticated tenant scope (never accept caller-supplied `shopId`), eventId, occurredAt, deterministic BullMQ job ID and content digest derived from the entire validated normalized event. Identical replay is idempotent; same eventId with different restoration data triggers the existing replay conflict. Failure of the queue's durable acceptance must return the existing retryable failure status; do not acknowledge before acceptance.
+5. **Invalid input and safety.** Enforce body cap 65,536 bytes before JSON parse; Shared validator enforces line/coupon shape, types, cardinalities and unknown-field rejection, never Woo business eligibility. Keep existing 4xx/503 mapping and bounded shared structured logs without raw cart, codes, tokens or PII. Never do WordPress network calls inside API ingest.
+6. **Pre-production cutover.** No consumer is known to need HTTP v2 compatibility in production; do not manufacture adapters. API-001 and WooCommerce-001 **must be integrated as one pre-production release**: existing test installations emitting HTTP v2 must not be pointed to the strict v1-only API until their plugin is updated. Do not deploy an intermediate API-only change. A retained test queue is explicitly drained or safely retained after a conscious developer decision, never silently deleted.
+
 
 ### Mandatory workflow/security invariants
 
-- Inspect `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/developer-task-workflow.md`, `docs/task-definition-materialization.md` and the launcher preparation evidence. Use the **dedicated, synchronized parent and implementation task worktrees**; do not operate from a shared checkout or claim a branch was pushed without evidence. Implement only the owning repository and assigned task metadata. No unrelated refactors, migrations, agent handoffs or remote pushes to `main`.
-- Read the ARCH-053 parent architecture and all dependency tasks before claiming Ready. Any missing contract or incorrect owner is a blocking architect question; do not invent a local parallel schema or silently change another agent's task. System-test tasks must remain terminal.
-- Never swallow unexpected errors: Node uses `@modainteract/moda-interact-shared/logging`; PHP uses the existing safe plugin diagnostics (not a competing generic Node logger). Report bounded event codes, ids and outcomes, propagate retryable failures to their owning boundary, omit tokens, full URLs, coupon codes and customer personal data from logs.
-- The plugin cannot access PostgreSQL/Redis. The API cannot mutate merchant WordPress cart sessions. Background cannot directly call an unverified merchant endpoint to mint URLs. Do not enable Woo production WhatsApp sending, relax final consent/STOP/order gates, or add cross-generation outreach caps/cooldowns.
+- Before claiming the task, inspect the parent ARCH-053 architecture, `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/developer-task-workflow.md`, `docs/task-definition-materialization.md`, accepted dependencies and launcher-prepared dedicated parent/implementation worktree evidence. Use only the assigned task worktree/branch, update only this task's execution fields and Completion Report, and do not claim any commit/push without Git evidence.
+- Never invent a local substitute for the published Shared restore schema or change cross-repository contracts independently. Return missing contracts, incompatible task dependencies and provider-boundary issues to `moda_architect` before implementing a workaround. Do not change task status to Complete yourself.
+- Application runtime errors must not be swallowed. Reuse `@modainteract/moda-interact-shared/logging` for structured Node logs, with bounded event codes and non-sensitive identities. Never log phone values, customer contact details, coupon codes, full cart payloads, restoration URL tokens, authorization headers or secrets; logging/telemetry failure must not change business correctness.
+- Preserve installation authentication, tenant isolation, consent/STOP, order and final-send fences. The plugin cannot directly access hosted PostgreSQL/Redis, the API cannot modify Woo sessions, and this task must not activate Woo production WhatsApp sends or introduce cross-generation outreach limits.
+- When the defined acceptance and validation evidence is complete, set task to review with full Completion Report and STOP. No follow-on tasks, main merges or changes outside the authorized repository and task metadata.
 
 ## Work Items
 
-- [ ] Accept and project `woo.activity.v3` while preserving v1/v2 and existing queue contract.
-- [ ] Include complete original coupon codes and supported/unsupported restoration evidence in queue serialization/digest.
-- [ ] Test version/identity/phone/tenant/limit/replay errors and JSON canonicalization.
+- [ ] Replace the v2-specific HTTP parser/version branch with one strict v1 checkout input parser retaining all existing verified-phone checks; leave order v1 parser unchanged.
+- [ ] Import the published `WooCartRestoreSnapshotV1Schema`/type and support `checkout.restoration` in `WooCheckoutSnapshot` and v1 queue projection without service-local copied Zod schemas.
+- [ ] Update request/producer only as required so the validated restoration is included in job content digest and retained replay semantics.
+- [ ] Rewrite existing v2 phone tests as v1 acceptance/rejection tests and cover v2/v3 rejection, original coupon fidelity, supported/unsupported snapshots, missing snapshot, no-phone checkout, and unchanged order events.
+- [ ] Record that API and Woo plugin changes require a coordinated pre-production cutover, not an independent API deployment.
 
 ## Interfaces / Contracts
 
-Producer HTTP: `POST /v1/woocommerce/activity` with `schemaVersion: 'woo.activity.v3'`, existing `eventType:'CHECKOUT_UPDATED'`, eventId, checkoutKey, occurredAt and `checkout.restoration` per Shared. Consumer queue: `woo.activity.v1` with optional extension. No new shared phone-normalization library.
+**Contract owner:** API for the complete activity envelope and verified phone projection; Shared for `WooCartRestoreSnapshotV1Schema` and `WooCartRestoreSnapshotV1` as published by `ARCH-053-SHARED-002`. Producer: WooCommerce-001; queue consumer: Background-001. No new Shared phone schema.
+
+**HTTP checkout event (complete illustrative valid v1 payload):**
+
+```json
+{
+  "schemaVersion": "woo.activity.v1",
+  "eventId": "woo-0123456789abcdef0123456789abcdef",
+  "eventType": "CHECKOUT_UPDATED",
+  "checkoutKey": "woo-original-checkout-001",
+  "occurredAt": "2026-10-30T07:00:00.000Z",
+  "checkout": {
+    "currency": "GBP",
+    "total": "90.00",
+    "items": [{"productId": "101", "title": "T-shirt", "quantity": 2}],
+    "contact": {
+      "phone": "+447700900123",
+      "canonicalPhone": "447700900123",
+      "verifiedCountryCode": "GB"
+    },
+    "restoration": {
+      "schemaVersion": "woo.cart-restore.v1",
+      "kind": "supported",
+      "appliedCouponCodes": ["SAVE10"],
+      "lines": [{"productId": "101", "quantity": 2}]
+    }
+  }
+}
+```
+
+**Normalized BullMQ checkout job** has the same `eventId`, `checkoutKey`, `occurredAt`, currency, total, items and restoration plus an **authenticated** `shopId` and existing `contentDigest`, but `contact` is exactly `{ "phone": "+447700900123" }` (no `canonicalPhone` or `verifiedCountryCode`). The job's `schemaVersion` remains `woo.activity.v1`. The projection must preserve any other allowed, validated contact fields such as email and name.
+
+**Normative signatures (existing names, extended, no new v3):**
+
+```typescript
+import type { WooCartRestoreSnapshotV1 } from "@modainteract/moda-interact-shared/woocommerce";
+
+interface WooCheckoutSnapshot {
+  currency: string;
+  total: string;
+  items?: WooCheckoutItem[];
+  contact?: WooCheckoutContact;
+  restoration?: WooCartRestoreSnapshotV1;
+}
+
+// HTTP-only proof fields may occur in input, but never in WooCheckoutJob.
+// HTTP version constant: WOO_ACTIVITY_VERSION = "woo.activity.v1";
+// Queue: WOO_CHECKOUT_QUEUE = "woo-checkout-capture-v1".
+```
+
+For HTTP checkout with no phone, omit `phone`, `canonicalPhone` and `verifiedCountryCode` together; do not reject the restorable basket merely because a phone could not be verified by Woo. For orders retain the existing `'woo.activity.v1'` order envelope and separate order queue. Invalid restoration is 400, never silently dropped or converted into `kind:'unsupported'` by the API.
 
 ## Dependencies
 
@@ -80,18 +142,22 @@ Producer HTTP: `POST /v1/woocommerce/activity` with `schemaVersion: 'woo.activit
 
 ## Acceptance Criteria
 
-- [ ] Accept and project `woo.activity.v3` while preserving v1/v2 and existing queue contract.
-- [ ] Include complete original coupon codes and supported/unsupported restoration evidence in queue serialization/digest.
-- [ ] Test version/identity/phone/tenant/limit/replay errors and JSON canonicalization.
-- [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
-- [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
+- [ ] The valid HTTP example parses on `woo.activity.v1` and produces a v1 queue job containing identical restorable lines and original coupon codes; HTTP-only phone proof is removed and phone is E.164.
+- [ ] v1 checkout with no phone (and no proof fields) still enqueues valid product/restoration data; v1 with phone but missing/mismatched proof fails closed; proof fields without a phone fail.
+- [ ] `woo.activity.v2`, `woo.activity.v3`, malformed input, unknown fields, bad coupon/line shape or over-65,536-byte body cannot enqueue; no dual-version compatibility code remains.
+- [ ] Absent restoration stays absent; `kind:'unsupported'` stays unsupported; neither is treated as empty coupon list or restorable supported basket.
+- [ ] Duplicate eventId with same normalized validated event is idempotent; different coupon/line/attributes for same eventId causes replay conflict, not overwrite.
+- [ ] Existing `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED` v1 parsing and queues remain unchanged, as do tenant authentication, publisher durability/retries and consent separation.
+- [ ] The developer's integration handoff explicitly says API-001 cannot be deployed independently ahead of a compatible WooCommerce-001 producer.
+- [ ] No unrelated repository/source changes or ARCH-052 contract changes.
 
 ## Validation
 
-- [ ] `npm run test:arch035-woo-activity:unit` plus new v3 focused tests
-- [ ] `npm run test:arch035-woo-activity:redis` if isolated Redis available
-- [ ] `npm run typecheck`, `npm run lint`; `git diff --check`
+- [ ] `npm run test:arch035-woo-activity:unit` (existing contract/phone/replay suite revised to v1)
+- [ ] `npm run test:arch035-woo-activity:redis` with the declared isolated Redis environment when available; otherwise record the blocked validation and do not mark it passed
+- [ ] `npm run typecheck` and `npm run lint`
+- [ ] Focused tests proving v1 only, exact validated Shared restore snapshots, normalized phone, no-phone, and order regression
+- [ ] `git diff --check`; record each exact command/result in Completion Report
 
 ## Stop Condition
 
@@ -99,7 +165,9 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ## Implementation Notes
 
-Producer runtime deployment is gated on Background-001 accepting the additive queue extension; definition dependencies cover source availability while architect rollout order covers safe producer activation.
+The existing source already has `WOO_ACTIVITY_VERSION = 'woo.activity.v1'`, a v2 phone-specific `WOO_ACTIVITY_PHONE_VERSION`, and a v1 BullMQ publisher. Remove the **HTTP version split**, not the existing safety validation: move the working v2 phone-proof rules into the sole v1 checkout parser, then enrich that same normalized v1 queue event with Shared-validated restoration. Tests must use the published Shared contract, not a repository-local clone. No schema/migration task, queue migration or consumer-version task is justified for this change.
+
+Task dependency files record *source* readiness, not permission to deploy intermediate incompatible pieces to live test installations. Deployment/activation of strict v1 API and updated v1 Woo plugin is one coordinated, non-production change. If actual production or retained externally consumed v2 events are discovered, **stop for architect reclassification** rather than invent compatibility adapters.
 
 ## Completion Report
 
