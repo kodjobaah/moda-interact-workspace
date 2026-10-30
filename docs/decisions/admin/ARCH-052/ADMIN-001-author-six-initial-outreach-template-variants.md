@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 35
 executor: copilot
 claimed_at: 2026-10-30T11:03:17Z
@@ -252,6 +252,20 @@ The repository-wide lint/unit/security limitations recorded under Attempt 1 were
 #### Deviations and Unresolved Issues
 
 No deviations or unresolved cross-repository requirements. Meta approval remains a provider/operator gate; this change adds no claim that Meta has approved any particular two-button template.
+
+### Attempt 3 Completion Report
+
+#### Status
+
+Blocked pending an architect-owned update to `ARCH-052-BACKGROUND-008`. Architect Review Attempt 2 confirms the dual-CTA correction is complete and requests no further Admin source changes. Acceptance remains pending runtime proof of product URL provenance and safety.
+
+#### Required Background Contract and Tests
+
+`ARCH-052-BACKGROUND-008` must require `promotion.productUrl` to come from the authenticated current-shop MCP product result, and require an unsafe URL to be rejected or routed to the approved no-offer/no-send path. Add focused Background runtime tests covering the authenticated current-shop source and unsafe-URL fail-closed behavior. After that gate is satisfied, `moda_architect` must either record BG008 as satisfying the runtime half of this Admin criterion or amend the Admin criterion to the Admin authoring boundary while preserving the BG008 gate.
+
+#### Admin Changes and Branch State
+
+No Admin source correction was requested or made. This attempt changes only this task report and lifecycle status. No runtime tests were rerun because there were no source changes. The implementation branch remains `task/ARCH-052-ADMIN-001` at `14faa94a7096aef3ef9222c687cb663dd5834459`; the parent task branch contains this blocked report update. Return the cross-repository contract and acceptance disposition to `moda_architect`.
 
 
 ## Architect Review — Attempt 1 (Changes Requested)
