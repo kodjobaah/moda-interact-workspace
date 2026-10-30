@@ -30,7 +30,7 @@ Architecture ID: `ARCH-048`.
 
 Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md` (recovery-generation amendment).
 
-Coordinator: `moda_architect`. **Defined but not materialised** from a 2026-10-29 source snapshot. Start only from launcher-prepared worktrees with this task marked Ready and BG007 accepted Complete.
+Coordinator: `moda_architect`. Originally defined from a 2026-10-29 source snapshot and materialised on the parent task branch before execution. The launcher prepared dedicated parent and implementation worktrees, verified BG007 Complete, and claimed Attempt 1 on 2026-10-30.
 
 ## Objective
 
@@ -104,7 +104,7 @@ No checkout-resumption closure (BG007), sending (BG009), WhatsApp inbound routin
 ## Validation
 
 - [x] `npx vitest run tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-consent-notice.adapter.test.ts` — 63 tests passed.
-- [x] `node scripts/test-integration.mjs tests/integration/woo-recovery-admission.integration.test.ts tests/integration/woo-recovery-admission-races.integration.test.ts` — 7 PostgreSQL/Redis tests passed.
+- [x] `node scripts/test-integration.mjs tests/integration/woo-recovery-admission.integration.test.ts tests/integration/woo-recovery-admission-races.integration.test.ts` — 8 PostgreSQL/Redis tests passed, including deterministic expired-lease fencing.
 - [x] `npm run build` — Prisma client generation and TypeScript build passed.
 - [x] Focused `npx eslint` on the five changed implementation/test files — passed.
 - [x] `git diff --check` — passed.
