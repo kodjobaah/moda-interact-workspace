@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
-executor: copilot
-claimed_at: 2026-10-30T11:53:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-003
@@ -32,7 +32,7 @@ Architecture ID: `ARCH-052`.
 
 Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 
-Coordinator: `moda_architect`. Portable canonical definition: **defined but not materialised**; no developer worktree, branch, commit or push is asserted.
+Coordinator: `moda_architect`. The task was materialised and executed at Attempt 1 in dedicated parent and MCP implementation worktrees; both task branches are published. It remains unaccepted pending the required Docker/PostgreSQL integration evidence.
 
 ## Objective
 
@@ -143,7 +143,7 @@ Keep public API and conversation identity handling unchanged. This task only cha
 
 ### Status
 
-Implemented and validated; submitted for moda_architect review. Attempt 1 remains active.
+Attempt 1 implementation and unit/build validation are complete; architect review requested additional Docker/PostgreSQL integration evidence. Task returns to `ready` at Attempt 1.
 
 ### Files Changed
 
@@ -210,28 +210,32 @@ The implementation uses the published Shared 2.7.1 schemas, keeps built-in tool 
 - No shared checkout, other implementation repository, submodule pointer, index, or unrelated file was changed.
 - Launcher synchronization and recursive submodule initialization were not repeated.
 
-## Architect Review
+## Architect Review — Attempt 1 (Changes Requested)
 
 ### Review Status
 
-Pending moda_architect review.
+Changes Requested. Return the task to `ready`; preserve Attempt 1 and clear the executor claim. No new attempt is started by this review.
 
 ### Review Notes
 
-Implementation and validation evidence submitted for independent review. This agent has not made an architect acceptance decision.
+The implementation diff appears consistent with the task's purpose-scoped discovery and authorization boundaries: it consumes the published Shared package, re-reads shop policy for requests, keeps FIXED selections shop-scoped, preserves published-tool and conversation isolation, and adds no recovery/attempt lookup. The code review found no implementation defect.
+
+The required Docker-backed MCP/PostgreSQL integration validation remains unchecked. The report records an image-pull timeout before PostgreSQL startup, so no live database-backed authorization/integration assertion ran. Unit Prisma-reader spies are useful but do not replace the task's declared integration evidence.
+
+The report also identifies a mismatch between the published Shared 2.7.1 artifact and the current SHARED-003 task branch. The MCP implementation used and inspected the published artifact as required; reconcile that contract/release drift with the architect before downstream integration. This is recorded as an architecture coordination item, separate from the missing database test evidence.
 
 ### Reviewed Files
 
-Pending.
+Reviewed the implementation diff in `src/capabilities/prisma-reader.ts`, `src/capabilities/records.ts`, `src/execution/discount-tools.ts`, `src/execution/policy/shopify-core.ts`, MCP registration/service/snapshot and runtime ports, plus the associated tests and task Completion Report.
 
 ### Validation Reviewed
 
-Pending.
+The report records 21 focused tests, 174 full-suite tests, typecheck, lint, build and package-contract probes passing. The required Docker-backed integration run timed out while pulling `pgvector/pgvector:pg16`; it did not reach PostgreSQL startup. No tests were rerun during this architect review.
 
 ### Architecture Conformance
 
-Pending independent moda_architect review.
+The implementation stays within MCP's authorization and discovery ownership. The unresolved Shared package/task-branch drift requires reconciliation before dependent integration work relies on a source branch or release.
 
-### Follow-up
+### Required Follow-up
 
-Review implementation commits `3ebff9e` and `afb76ff` and the validation/deviation evidence above. No dependent task was started.
+Run the declared Docker-backed MCP/PostgreSQL integration validation when the image/runtime is available, record the result and cleanup evidence in this task report, and return the same Attempt 1 for review. Reconcile the Shared contract/release mismatch with the architect; do not change Shared source within this task. Do not begin MCP-002 or either system test from this Changes Requested state.
