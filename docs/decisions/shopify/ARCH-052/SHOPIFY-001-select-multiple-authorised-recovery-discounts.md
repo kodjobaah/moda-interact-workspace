@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-30T18:54:59Z
@@ -95,8 +95,8 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Validation
 
-- [ ] Shopify settings route/service unit tests and real PostgreSQL transaction tests, including sync race.
-- [ ] Shopify declared typecheck/build/lint and `git diff --check`.
+- [x] Shopify settings route/service unit tests and real PostgreSQL transaction tests, including sync race.
+- [x] Shopify declared typecheck/build/lint and `git diff --check`.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
@@ -119,10 +119,11 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Ready for Architect Review — Attempt 1. The implementation and parent report are being submitted on the mirrored `task/ARCH-052-SHOPIFY-001` branches. The disposable PostgreSQL integration remains unexecuted because Testcontainers could not find a working container runtime.
+Ready for Architect Review — Attempt 2. Both Changes Requested items from Attempt 1 have been addressed: the complete request body is bounded before form parsing, and the PostgreSQL transaction/race integration test passed against a disposable database.
 
 ### Files Changed
 
+- Attempt 2 changed `app/routes/app/settings-save/route.ts` and `tests/unit/settings-save-recovery-route.test.ts` to enforce and verify the total request-body byte limit.
 - `app/routes/app/recovery-settings/RecoverySettingsView.tsx` and `RecoverySettingsRoute.css` — accessible multi-select checkboxes, selected count/limit behavior, provider availability separated from merchant selection.
 - `app/routes/app/settings-save/route.ts` — strict `selectedDiscountIds` recovery form parsing and bounded validation.
 - `app/services/recovery-policy/recovery-policy.server.ts` — locked transactional revision/tenant validation and selected-flag replacement.
@@ -136,18 +137,20 @@ Replaced the single FIXED discount radio selection with a shop-scoped checkbox l
 
 The recovery save route accepts one strict JSON `selectedDiscountIds` value, enforces request-size, duplicate, malformed and count bounds, and no longer trusts `fixedShopifyDiscountId` as the submitted selection authority. The service uses the existing shop lock and a single transaction, compares the settings revision before writes, verifies every ID belongs to the exact shop, replaces selected flags atomically, and updates the deterministic FIXED anchor without changing provider availability fields.
 
+For Attempt 2, the route now counts bytes from the request body stream and rejects a body larger than 8,192 bytes before calling `request.formData()`. The limit applies when `Content-Length` is absent or inaccurate. Regression coverage confirms an otherwise valid recovery form receives HTTP 400 when the complete encoded body exceeds the limit.
+
 ### Validation Results
 
-- Focused Shopify recovery settings, route and policy tests — passed (35 tests reported by the implementation agent).
+- Focused route and recovery-policy unit tests — passed (33 tests across four files); strengthened settings-save route test rerun — passed (18 tests).
+- `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts` — passed (3 tests): shop isolation; atomic replacement/idempotence including dormant and new discounts; stale concurrent revision rejected without partial writes. Testcontainers used the available Colima Docker endpoint with Ryuk disabled; the test stopped its database container after completion.
 - Declared TypeScript typecheck — passed.
 - Declared lint — passed.
 - Declared build — passed.
 - `git diff --check` — passed.
-- `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts` — not run: Testcontainers reported `Could not find a working container runtime strategy`. The real PostgreSQL transaction/race behavior therefore remains unverified in this attempt; no database test pass is claimed.
 
 ### Deviations
 
-The disposable PostgreSQL integration could not run because the environment has no working container runtime. The integration test was added, but its assertions are not treated as executed evidence.
+No scope deviations. The PostgreSQL test initially lacked a detected container runtime; it was subsequently run successfully using the available Colima Docker endpoint.
 
 ### Assumptions
 
@@ -155,20 +158,22 @@ The existing application-level test harness and declared build/typecheck/lint co
 
 ### Unresolved Issues
 
-The isolated PostgreSQL transaction/race test must be run in an environment with a supported container runtime before integrated system certification.
+None for this task. Downstream system validation remains governed by its own task and dependency gates.
 
 ### Architectural Concerns
 
-No cross-repository or schema ownership gap was identified. Architect review should account for the unexecuted PostgreSQL integration test.
+No cross-repository or schema ownership gap was identified. Both Attempt 1 review corrections are addressed; architect review should verify the body-stream limit and the recorded PostgreSQL evidence.
 
 ### Prepared Worktree Evidence
 
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHOPIFY-001`, branch `task/ARCH-052-SHOPIFY-001`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHOPIFY-001`, branch `task/ARCH-052-SHOPIFY-001`.
-- Launcher claim commit: `4b139457157076f2c9f1d3db853a4b6815b4930f`; dependency gate passed for `ARCH-052-BACKGROUND-009`.
-- Parent and implementation worktrees were newly created from current `origin/main`; recursive submodule sync/init passed. The database submodule was initialized at `af77c594ecbfc78c26d01c0021a090830884bbff`.
-- No shared checkout, other task worktree, parent submodule gitlink or `main` branch was modified.
+- Attempt 2 launcher claim commit: `8a9c71c782fd389e83dd0722ccfc1bccf176dda6`; dependency gate passed for `ARCH-052-BACKGROUND-009`.
+- Attempt 2 reused the dedicated parent and implementation worktrees. Parent remote fast-forward: not needed; `origin/main` incorporated: yes. Implementation remote fast-forward: not needed; `origin/main` incorporated: already current.
+- Recursive implementation submodule sync and update/init passed. The database submodule was initialized at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Implementation task branch final commit: `b1c5ce3b892ed85385a82e7b7a89a66a04f28c2f`. Parent report is being submitted separately on the mirrored task branch.
+- No shared checkout, another task worktree, parent submodule gitlink or `main` branch was modified.
 
 
 ## Architect Review
