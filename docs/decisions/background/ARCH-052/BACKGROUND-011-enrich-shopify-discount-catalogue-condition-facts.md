@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-10-30T17:20:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-BACKGROUND-009
@@ -145,24 +145,29 @@ No scope deviations or unresolved architecture questions. Native Shopify Basic d
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-Pending review.
+The Shopify Basic discount query omits the source-available `combinesWith` policy for both automatic and code discounts. Shopify exposes order, product, and shipping combination rules (plus same-cart-line product-discount tags) on these types. `normalizeConditionFacts()` can nevertheless mark a Basic discount `COMPLETE`, leaving a known restriction absent from the snapshot and making completeness overstate the observed facts.
+
+For the next attempt, query and retain the combination policy in the existing provider snapshot and make it available to the eventual condition projection. If the agreed condition-facts contract cannot represent a policy, explicitly mark that policy unrepresented and keep completeness `PARTIAL`; do not report `COMPLETE` while the known policy is omitted. Keep the fix within this task's existing catalogue path and do not start MCP-002.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-background/src/providers/shopify-discount.provider.ts`
+- `moda-interact-background/tests/unit/providers/shopify-discount.provider.test.ts`
+- `moda-interact-background/tests/unit/services/shopify-discount-catalogue.service.test.ts`
+- This task's Completion Report and VCS evidence.
 
 ### Validation Reviewed
 
-None.
+Reviewed the submitted evidence: 11 focused unit tests, 2 PostgreSQL selection integration tests, build/typecheck, changed-file lint, and `git diff --check` are reported as passing. These checks were not rerun during this architect review.
 
 ### Architecture Conformance
 
-Pending.
+Changes Requested. Source-backed targeting, bounded pagination, retry behavior, merchant selection preservation, scope boundaries, and the reported task worktree evidence otherwise conform. The unqueried combination policy prevents acceptance because the implementation can label an incomplete restriction set `COMPLETE`.
 
 ### Follow-up
 
-None.
+Return the same task to `ready` for Attempt 2. Preserve Attempt 1 history and do not promote ARCH-052-MCP-002 until this task is accepted and its other dependencies are complete.
