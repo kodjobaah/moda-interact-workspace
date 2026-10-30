@@ -50,7 +50,7 @@ No new database tables/columns/migrations, replicated product catalogue or produ
 
 ## Shared contract boundaries — Attempt 8
 
-SHARED-002, SHARED-005, SHARED-006 and SHARED-008 now have implemented, architect-accepted Shared contracts. SHARED-003 is Ready as the publication-only gate; its consumer tasks remain gated until publication completes.
+SHARED-006 now has an implemented, architect-accepted minimal outreach-context contract. Other Shared contract tasks retain their individual proposal, implementation and review states as recorded in their task files.
 
 - **Zod = transport structure only.** New schemas describe field names, required/nullable types, literals, discriminated results, established lexical formats and unknown-key rejection. No new business-policy `.refine`, `.superRefine`, `.transform` or `.check` is authorised.
 - **SHARED-002:** Admin/Background share checkout/promotion semantic bindings and immutable projection structure. Approval, target/variable compatibility, image roles, Meta parameter ordering, marketing suitability and button semantics are service-layer concerns; ARCH-052 adds **no** checkout URL validation.
