@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -171,26 +171,31 @@ Merged to implementation main: no
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review
 
-Pending architect review.
+#### Review Status
 
-### Review Notes
+Accepted — Complete.
 
-Implementation and focused validation are complete. Architect review is pending; task attempt remains 1.
+#### Review Notes
 
-### Reviewed Files
+No findings. The direct WooCommerce REST reader uses the existing tenant-scoped installation and active read grant, Shared credential decryption/AAD primitives, bounded GET-only requests, canonical HTTPS validation, pinned public DNS results, TLS and redirect controls, bounded response handling, and a post-read grant/credential recheck. The adapter is composed through the existing provider port. No hosted Moda API call, schema change, or unrelated implementation was introduced.
 
-None.
+#### Reviewed Files
 
-### Validation Reviewed
+- Attempt 1 Completion Report, task YAML, Work Items, Acceptance Criteria and Validation.
+- MCP implementation branch `task/ARCH-052-MCP-005` at `72ca88dd35967607e6749a5aed9b42cc49339d0b`, clean and pushed.
+- `src/connections/woocommerce/direct-product-reader.ts`, grant reader, provider, and runtime composition.
+- Direct reader and provider unit tests.
 
-None.
+#### Validation Reviewed
 
-### Architecture Conformance
+Reviewed the reported build, lint, TypeScript check, 22 focused tests, and `git diff --check`. Docker integration suites were not run, as permitted by the task's validation instructions. No tests were rerun for this review.
 
-Pending.
+#### Architecture Conformance
 
-### Follow-up
+Conforms to the MCP-owned, direct, read-only adapter contract and the task's tenant, credential, network, logging, and scope boundaries.
 
-None.
+#### Follow-up
+
+The automatic-completion task is complete. `ARCH-052-MCP-003` may proceed when its other dependencies are satisfied.
