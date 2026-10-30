@@ -185,13 +185,13 @@ Implementation repository:
 
 - Commit: `fd780e32e9a3f3f22940f58f9e10678d85bfd1af`.
 - Remote branch: `origin/task/ARCH-048-BACKGROUND-011`.
-- Push: blocked by automatic approval review. The reviewer stated that publishing the private implementation branch exports repository contents to the configured remote and the user had not explicitly authorized that destination or disclosure. No workaround or retry was attempted.
+- Push: successful after explicit user authorization; push output confirmed the new remote task branch and configured upstream.
 
 Parent workspace:
 
 - Task file: `docs/decisions/background/ARCH-048/BACKGROUND-011-compose-multi-generation-woo-recovery-workers.md`.
 - Report commit: `d11fd042dbd88507937224e890e517b34cdc5e97`; latest parent branch commit after the mainline merge: `e7b7e16d9dd4cfa9e31710b5ee4d874e1a1ee09d`.
-- Remote branch: `origin/task/ARCH-048-BACKGROUND-011`; the prepared claim commit is published. The review-report update has not been pushed because the automatic approval review rejected publication of the implementation task branch and requires explicit user authorization for the configured destination.
+- Remote branch: `origin/task/ARCH-048-BACKGROUND-011`; review-report branch push succeeded after explicit user authorization. Push output confirmed the remote fast-forward from the prepared claim commit to the report branch head.
 - Submodule gitlink staged: no.
 
 Merged to implementation `main`: no. Merged to workspace `main`: no.
