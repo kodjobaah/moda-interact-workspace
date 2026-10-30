@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-10-27T15:57:14Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-002", "ARCH-049-SHOPIFY-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
@@ -120,23 +120,40 @@ No additional assumptions are authorised.
 
 ### Status
 
-In Progress - Developer Attempt 1; canonical task worktrees synchronized and claim published.
+Changes requested after developer review of Attempt 1. The source-sync implementation is present and published, but the merged Background repository changes do not currently typecheck and the focused unit suite has one failure. Attempt remains 1; no new claim has been made.
 
 ### Files Changed
 
-None.
+Implementation repository `moda-interact-background`, task branch `task/ARCH-049-BACKGROUND-003` at `df103ab` (matching `origin/task/ARCH-049-BACKGROUND-003`):
+
+- `database` submodule gitlink, updated to `f16d5fc` while synchronizing Background `origin/main`.
+- `docs/arch049-shopify-brand-sources.md` and `package.json`.
+- `src/entrypoints/recovery.ts`.
+- `src/services/shop-brand-media-orchestration/contracts.ts`, `repository.ts`, and `state.ts`.
+- New `src/services/shop-brand-media-shopify/contracts.ts`, `mapping.ts`, `reader.ts`, `runner.ts`, and `service.ts`.
+- New `tests/integration/shopify-brand-sources.integration.test.ts` and unit tests under `tests/unit/services/shop-brand-media-shopify/`.
+
+This review changed only the canonical parent task record. No implementation source, submodule pointer, architecture index, or `main` branch was modified.
 
 ### Work Completed
 
-None.
+- Added authenticated Shopify Admin GraphQL Brand source reading, provider-image identity mapping, explicit square-logo fallback, typed provider failures, and bounded response/request handling.
+- Added bounded initial/daily source scheduling over active Shopify shops, per-shop leases, persisted retry/cadence metadata, and Recovery-worker startup/shutdown wiring.
+- Integrated source observations and original ShopBrand fields through the BG002 repository's row-locked JSONB update path; added reader/scheduler unit tests and PostgreSQL integration scenarios for removals, failed reads, stale claims, role ordering, and tenant/platform isolation.
+- The implementation does not fetch or resize media and does not add a new Shopify permission, queue, table, or column.
 
 ### Validation Results
 
-Not run.
+- **PASS** — `npm run test:arch049-shopify-brand:postgres`: 5/5 PostgreSQL integration tests.
+- **FAIL** — `npm run test:arch049-shopify-brand:unit`: 52/53 tests passed. `scheduler.test.ts` fails in “preserves durable Shopify sync metadata across BG002 observations and media claims”; its `claimRole` call throws `BrandStateError: INVALID_OBSERVATION` because it does not supply the domain required by the current domain-aware state API.
+- **FAIL** — `npx tsc --noEmit`: 13 diagnostics. Twelve are in the changed BG002 orchestration repository/service: the `editLocked` callback type omits the `currentDomain` value consumed by `claim`, `complete`, and `fail`, and `ScannedBrandRow` omits `domain` consumed by the scanner service. One additional diagnostic is an unresolved `@modainteract/moda-interact-shared/woocommerce` export in unchanged `src/events/woo-checkout-capture.ts`; this is not attributed to the BG003 diff and needs baseline/dependency confirmation.
+- **PASS** — `git diff --check origin/main...HEAD` and `git show --check` reported no whitespace errors.
+- `npm run lint` and `npm run build` were not run during this review. A live Shopify merchant grant and production provider read were not tested.
 
 ### Deviations
 
-None.
+- The implementation task branch includes the `origin/main` synchronization and database gitlink update described above. No other cross-repository source was edited.
+- The current source code and tests show the intended provider/scheduling behaviors, but the shared BG002 domain-aware API integration is incomplete at the branch tip and blocks a passing self-review.
 
 ### Assumptions
 
@@ -144,11 +161,14 @@ None beyond the explicit architecture/task contract.
 
 ### Unresolved Issues
 
-None; live environment availability is a validation prerequisite and must be reported if missing.
+- Reconcile the domain-aware BG002 callback and row contracts across `ShopBrandMediaRepository.editLocked`, `claim`, `complete`, `fail`, `ScannedBrandRow`, and the scanner query/result. Preserve the intended locked Shop-domain validation and stale-claim behavior.
+- Correct the metadata-preservation unit fixture to invoke `claimRole` with its current valid domain-aware signature, then rerun the focused unit suite.
+- Establish whether the unresolved Shared `woocommerce` export diagnostic is present on the unchanged Background baseline or caused by the task worktree dependency/submodule state. Do not silently count the failing typecheck as passed.
+- Rerun task unit tests, PostgreSQL integration tests, typecheck/build, lint, and `git diff --check` after corrections; report any live Shopify validation limitation explicitly.
 
 ### Architectural Concerns
 
-None reported.
+No additional architecture change is identified. The blocking issue is an incomplete integration with BG002's domain-pinned repository API, not a reason to create a parallel ShopBrand state machine.
 
 ## Architect Review
 
@@ -181,3 +201,12 @@ None.
 - On 2026-10-27, `/moda_developer_create ARCH-049-BACKGROUND-003` explicitly took over the ready agent-owned task for developer execution. `assigned_agent: moda_background` is unchanged; `execution_mode` and `completion_mode` are now `developer`.
 - Developer Attempt 1 was claimed at `2026-10-27T15:57:14Z` after verifying `ARCH-049-DATABASE-001`, `ARCH-049-BACKGROUND-002`, and `ARCH-049-SHOPIFY-001` were complete and preparing both canonical task worktrees.
 - Parent task branch `task/ARCH-049-BACKGROUND-003` was created from current parent `origin/main`; implementation branch `task/ARCH-049-BACKGROUND-003` was created from current Background `origin/main`. Both task worktrees were clean before the claim. The shared Background `main` checkout's nine local-only commits were not used or modified.
+
+## Developer Self-Review - Changes Requested (Attempt 1)
+
+- Review outcome: **Changes Requested**. Attempt 1 remains the reviewed attempt; this transition does not claim Attempt 2.
+- The task-specific PostgreSQL integration suite passed 5/5, and the task diff passes `git diff --check`.
+- The focused unit suite failed 1/53 in the BG002 media-claim metadata-preservation test. The test invokes the current `claimRole` API without its required shop domain.
+- `npx tsc --noEmit` reported 12 changed orchestration type errors caused by the incomplete domain-aware `editLocked`/`ScannedBrandRow` contract, plus one unresolved Shared `woocommerce` export in unchanged `src/events/woo-checkout-capture.ts`.
+- Required before the next review: complete and typecheck the BG002 domain-aware repository/scanner integration; update the affected unit fixture to the valid `claimRole` contract; establish the baseline status of the unchanged Shared export diagnostic; rerun focused tests, PostgreSQL integration, typecheck/build, lint, and whitespace checks.
+- Lifecycle transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. The next `/moda_developer_create` claim increments the attempt exactly once. No downstream task was started and no task branch was merged to `main`.
