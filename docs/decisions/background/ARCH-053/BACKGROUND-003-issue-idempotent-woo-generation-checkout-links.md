@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: codex
 claimed_at: 2026-10-30T16:57:06Z
@@ -69,6 +69,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 - [x] Generate bounded deterministic URL **format** with random per-generation token and canonical site URL.
 - [x] Write exactly one URL in generation admission transaction, safe retry and uniqueness conflict handling.
 - [x] Test supported/unrestorable, subpath, host mismatch, generation 1→2, duplicate admission, token uniqueness, template bind and zero token logging.
+- [x] Verify preflight and transaction-fenced installation revocation deny admission without recovery, URL or history writes.
 
 ## Interfaces / Contracts
 
@@ -85,7 +86,7 @@ Recovery DB: `CheckoutRecovery.checkoutUrl String?` (existing) and new `wooResto
 
 ## Acceptance Criteria
 
-- [ ] Confirm by focused regression tests that a previously revoked installation is denied before admission and a revocation detected by the transaction consent fence is also denied; neither case creates a recovery, URL update or admission history. No runtime code changes are requested if the existing safety gate passes.
+- [x] Confirm by focused regression tests that a previously revoked installation is denied before admission and a revocation detected by the transaction consent fence is also denied; neither case creates a recovery, URL update or admission history. No runtime code changes are requested if the existing safety gate passes.
 - [x] Generate bounded deterministic URL **format** with random per-generation token and canonical site URL.
 - [x] Write exactly one URL in generation admission transaction, safe retry and uniqueness conflict handling.
 - [x] Test supported/unrestorable, subpath, host mismatch, generation 1→2, duplicate admission, token uniqueness, template bind and zero token logging.
@@ -95,7 +96,7 @@ Recovery DB: `CheckoutRecovery.checkoutUrl String?` (existing) and new `wooResto
 
 ## Validation
 
-- [ ] Add/run focused revoked-installation regression tests (preflight `INSTALLATION_INACTIVE` and transaction-fence `CONSENT_CHANGED`); verify zero inserts, URL updates and history writes, and no logged bearer token.
+- [x] Add/run focused revoked-installation regression tests (preflight `INSTALLATION_INACTIVE` and transaction-fence `CONSENT_CHANGED`); verify zero inserts, URL updates and history writes, and no logged bearer token.
 - [x] Background admission transaction and URL issuer unit tests, mature job retry and two generation integration
 - [x] Template binding/host validation and secret-redaction regression tests
 - [x] Package build/typecheck, changed-file lint and `git diff --check`
@@ -114,57 +115,37 @@ Dependencies `ARCH-053-BACKGROUND-002` and `ARCH-048-BACKGROUND-011` are Complet
 
 ### Status
 
-Blocked — architect decision required on revoked-installation omission semantics
+Attempt 2 is complete and returned for architect review. The correction was test-only; production implementation remains at the reviewed baseline.
 
 ### Files Changed
 
-Implementation branch `task/ARCH-053-BACKGROUND-003`, commit `6b6b254`:
+Attempt 1 implementation remains at `6b6b254f62c3c9666d0db056e03d6658d3bf3b1b`. Attempt 2 adds regression coverage in:
 
-- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-admission.service.ts`
-- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-admission-evidence.ts`
-- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-link-issuer.ts`
 - `moda-interact-background/tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts`
-- `moda-interact-background/tests/unit/services/woocommerce-recovery/woo-recovery-link-issuer.test.ts`
-- `moda-interact-background/tests/unit/services/conversation-wrappers/woo-checkout-link.test.ts`
-- `moda-interact-background/tests/integration/woo-recovery-admission.integration.test.ts`
-- This task's checklists and Completion Report only.
 
-### Work Completed
+Attempt 2 commit `81a40eea806a90955d1eef814533a7d2295d460e` is pushed to `origin/task/ARCH-053-BACKGROUND-003`.
 
-Supported snapshots now receive a URL of the form `https://<verified-merchant-host>/<home-subpath>/?moda_interact_resume=1&r=<recovery-id>&t=<43-character-token>`. The token is generated from 32 cryptographically random bytes only after the admission transaction has ruled out an existing generation. The recovery row is created and its URL is written in the same transaction; an update or history failure rolls the transaction back. Duplicate and stale deliveries return the existing recovery without rotating its URL.
+### Corrections Completed
 
-Absent/unsupported restore snapshots and invalid or mismatched merchant site settings create a recovery with `checkoutUrl: null` and a bounded omission reason in admission history. Existing consent, STOP, order, candidate watermark and installation eligibility gates remain in place. The existing conversation wrapper binds the URL only when it remains HTTPS on the merchant host and within its seven-day checkout freshness window.
-
-The disposable PostgreSQL/Redis integration test verifies a persisted generation-1 URL survives replay unchanged and a resumed generation 2 receives a distinct URL and its own restoration snapshot. No external HTTP or Redis operation was added inside the transaction.
-
-Implementation commit `6b6b254` was pushed to `origin/task/ARCH-053-BACKGROUND-003`.
-
-Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-BACKGROUND-003` on `task/ARCH-053-BACKGROUND-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-BACKGROUND-003` on the same task branch. Neither shared checkout nor another task worktree was switched or mutated. Parent remote task branch fast-forwarded `not-needed`, parent `origin/main` incorporated `already-current`; implementation remote task branch fast-forwarded `not-needed`, implementation `origin/main` incorporated `already-current`. Recursive submodule sync/update passed; `database` remained at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Strengthened the existing preflight revoked-installation case to assert exactly `{ kind: "denied", reason: "INSTALLATION_INACTIVE" }`, with zero recovery creates, URL updates, and admission history writes.
+- Added a locked transaction-fence revocation case with preflight installation active and the authoritative fence revoked. It asserts exactly `{ kind: "denied", reason: "CONSENT_CHANGED" }`, with zero recovery creates, URL updates, and admission history writes.
+- Both regression cases assert that logger calls contain no `t=` bearer-token parameter. No production source was changed.
 
 ### Validation Results
 
-- Focused unit suites: 3 files, 52 tests passed (issuer safety, admission/idempotency and template binding).
-- Disposable Postgres/Redis integration suites: 2 files, 8 tests passed, including URL persistence, retry stability and generation 1→2 separation.
-- Changed-file ESLint: passed.
-- `npm run build` (Prisma Client generation 6.19.3 and TypeScript compilation): passed.
-- `git diff --check`: passed.
-- Admission logs contain neither URL host nor bearer token. Candidate/watermark and order evidence reads remain outside the transaction.
+- Focused unit command: `npm exec vitest run tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-link-issuer.test.ts tests/unit/services/conversation-wrappers/woo-checkout-link.test.ts` — 3 files, 53 tests passed.
+- Disposable PostgreSQL/Redis admission command: `node scripts/test-integration.mjs tests/integration/woo-recovery-admission.integration.test.ts` — 1 file, 3 tests passed.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation.
+- Changed-file ESLint: `npm exec eslint -- tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts` — passed.
+- `git diff --check` — passed.
 
-### Deviations
+### Launcher and Synchronization Evidence
 
-The launcher marked this execution `rework.required: true` with `previous_attempt: 0`, while the complete task's Architect Review remains Pending with no correction request. No rework checklist was present; the implementation follows the task's scope and acceptance criteria. The Architect Review section was not changed.
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-BACKGROUND-003`, branch `task/ARCH-053-BACKGROUND-003`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-BACKGROUND-003`, same branch. At Attempt 2 start, both worktrees were synchronized with `origin/main`; each task branch required no remote fast-forward. Recursive submodules were ready, with `database` at `af77c594ecbfc78c26d01c0021a090830884bbff`. The change was committed and pushed on the task branch; `main` was not changed.
 
-### Assumptions
+### Deviations and Unresolved Issues
 
-The launcher dependency gate established BACKGROUND-002 and ARCH-048-BACKGROUND-011 as Complete. Their contracts permit storing the URL in the existing `checkoutUrl` field and reusing the admitted generation's immutable restore snapshot.
-
-### Unresolved Issues
-
-The task asks to admit a recovery with `checkoutUrl: null` and an omission reason when the installation is revoked. Current admission rejects inactive/revoked installations before the admission transaction, and the consent fence also rejects a revocation that occurs before commit. Creating a row in that state would require weakening the existing installation/consent gates. The task is blocked pending moda_architect direction on whether the existing safety gate takes precedence or this task should define a separate safe persistence path.
-
-### Architectural Concerns
-
-The revoked-installation requirement conflicts with the current admission invariant that only active installations with current consent can be admitted. No gate was relaxed.
+None. The architect-resolved revocation semantics are covered as specified. The Architect Review section and architecture/index documents were not modified. Enabled system-test tasks were not started.
 
 ## Architect Review
 
