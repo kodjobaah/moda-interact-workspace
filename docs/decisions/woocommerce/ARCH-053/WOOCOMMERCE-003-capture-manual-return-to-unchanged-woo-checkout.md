@@ -20,7 +20,7 @@ enables:
 - ARCH-053-SYSTEM-TEST-001
 - ARCH-053-SYSTEM-TEST-002
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-053-WOOCOMMERCE-003 — Detect human return to an unchanged existing Woo checkout
@@ -35,7 +35,7 @@ Detect human return to an unchanged existing Woo checkout. One bounded outcome i
 
 ## Context
 
-The uploaded workspace snapshot is dated 2026-10-29. ARCH-052 owns dynamic discount discovery and must not be used for these checkout-URL changes. An ARCH-048 next-generation dependency exists only as a separate *portable* proposal until accepted/materialised. This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. ARCH-048-BACKGROUND-007..011 task files are present, but none has been accepted Complete in this snapshot (007 Ready, 008–011 Pending). This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
 
 ## Scope
 
@@ -127,7 +127,7 @@ None.
 
 ### Assumptions
 
-Design based on uploaded 2026-10-29 source snapshot; re-check source and prior task acceptance before implementation.
+Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
 
 ### Unresolved Issues
 

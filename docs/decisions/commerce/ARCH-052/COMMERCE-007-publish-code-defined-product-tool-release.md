@@ -1,7 +1,7 @@
 ---
 id: ARCH-052-COMMERCE-007
 architecture_id: ARCH-052
-title: Publish reviewed code-defined product tools to the TEST Commerce release
+title: Execute reviewed Commerce system-product-tool sync in TEST
 task_kind: publication
 domain: commerce
 repository: moda-interact-commerce
@@ -23,59 +23,99 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
-# ARCH-052-COMMERCE-007: Publish reviewed code-defined product tools to the TEST Commerce release
+# ARCH-052-COMMERCE-007: Execute reviewed Commerce system-product-tool sync in TEST
 
 ## Architecture
 
-Architecture ID: `ARCH-052`. Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Defined but not materialised**; no Git branch or worktree created.
+Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`.
+
+**Defined but not materialised.** This is a developer-executed, developer-completed **publication** task. It does not implement or change the synchronisation script.
 
 ## Objective
 
-Activate the already accepted canonical product-search and exact-item capability revisions in the existing TEST release; this is publication, not implementation.
+Apply the architect-accepted `COMMERCE-006` **environment synchronisation script** to the existing TEST Commerce release, after the accepted MCP provider handlers exist; record auditable publication and repeat-run evidence. No manual Commerce Studio authoring.
 
 ## Context
 
-The existing Commerce publication lifecycle validates executable registration. Waiting for accepted MCP-003 prevents publishing tool descriptors whose provider handler does not exist. The developer performs this release gate explicitly.
+- `COMMERCE-006` implements the reusable source-controlled product descriptors and `npm run commerce:sync-tools` command with a read-only plan and explicit apply mode.
+- `MCP-003` implements direct Shopify GraphQL and WooCommerce REST product search/lookup. Its acceptance is a prerequisite for activating descriptors that advertise those operations.
+- The existing Commerce immutable release and capability feature-gating behaviour must remain authoritative. `product_search` is the existing Feature; both `commerce_search_products` and `commerce_get_product` are code-defined tool/capability identities.
 
 ## Scope
 
-- Confirm COMMERCE-006 and MCP-003 task YAMLs are `complete` and architect-accepted. Invoke the exact approved code-defined bootstrap command from COMMERCE-006 as a privileged, auditable TEST operation. It creates or verifies the canonical drafts, publishes tool revisions with the existing lifecycle, appends them without removing other capabilities, activates the new immutable TEST release by CAS and records release/feature/tool revision IDs.
-- Verify the published product descriptors appear in MCP `tools/list` under a trusted and authorised shop-scoped outreach-purpose context and that `tools/call` reaches both accepted provider handlers for Shopify and Woo test fixtures. Verify active release pointer, pinned descriptor hashes and repeated invocation no-op. No manual Studio edits or source implementation changes.
-- Never publish directly to production under this task; production rollout remains an independently authorised operational action after tests.
+- Confirm `ARCH-052-COMMERCE-006` and `ARCH-052-MCP-003` are each `status: complete` with `Architect Review: Accepted` in their actual task definitions, and the accepted script version is installed in the dedicated developer worktree.
+- Verify the configured TEST database target and its environment identity **before** running the script; use the operationally authorised `COMMERCE_SYSTEM_TOOL_ACTOR_EMAIL` resolving to an active `SUPER_ADMIN`. Obtain these values through approved private environment configuration; never copy secrets into the task or logs.
+- Execute the approved read-only plan, inspect changes to the two product tools and preservation of unrelated active release members, then execute the reviewed `--apply` command **only against TEST**.
+- Verify the TEST `CommerceReleasePointer` points to a release containing **exactly one active pin for each** product capability and the appropriate published definition version and hash. Confirm unrelated capabilities, existing response contract and Feature snapshots are unchanged.
+- Execute the script's `--dry-run` again followed by an identical `--apply` invocation. Both should report `UNCHANGED`; no new tool draft, tool revision, capability, release, audit record or pointer mutation may be created.
+- Record the exact command, definition versions/hashes, active release ID, product tool revision and capability IDs, old release ID, operator identity, environment and output status. A source change or unsupported release conflict returns to `moda_architect`; do not fix it inside this task.
 
 ## Out of Scope
 
-No additional database table/column/migration, migration backfill, alternate provider proxy, customer-facing product database/cache, secret-bearing logs, unrelated architecture or other repository implementation.
+- No source code, NPM dependency, schema, config or tool definition edits; no production/staging/development rollout; no new feature creation, merchant entitlement change, manual Commerce Studio authoring or alteration of unrelated release entries.
+- No re-running the already accepted implementation's unit/integration tests, typecheck, lint, build or provider product-read tests. `MCP tools/call` provider execution is end-to-end/system-test scope, not this publication task's validation requirement.
+- No creation of scheduled deployment automation or silent Commerce startup publication.
 
 ## Requirements
 
-- This is **task_kind: publication**, `execution_mode: developer`, `completion_mode: developer`; exact COMMERCE-006 and MCP-003 YAML prerequisites must be architect-accepted `complete`. Do not claim if either is unfinished.
-- Perform only the existing authorised TEST Commerce release/bootstrap operation for previously accepted code-defined product tool identities. Do not edit product/discount source, add new behavior, rerun source tests/lint/typecheck/build or perform a production release.
-- Existing immutable release feature/entitlement and MCP published-tool pin semantics remain enforced; idempotent reruns must not create duplicate release or tool revision.
-- Record exact release version, tool definition hashes, activated TEST release ID, permissions/audit evidence and repeat invocation outcome. Any required source fix returns to the owning implementation task/architect.
-- Read agent/task worktree isolation policy and record dedicated launcher-prepared development worktree and reconciliation, use bounded shared logger without logging secret tokens.
+- Preserve `task_kind: publication`, `execution_mode: developer`, `completion_mode: developer`. Never claim the task until both prerequisites are architect-accepted `complete`.
+- Use only the accepted code-defined source of truth and the existing audited Commerce lifecycle to publish/activate. `--dry-run` must not modify any persistent record; `--apply` must preserve unrelated Commerce release membership and use existing CAS.
+- Require exact target `TEST` (not a general `--environment` value chosen by the operator) for this task. Refuse to execute if `DEPLOYMENT_ENVIRONMENT_NAME` or the configured database target is inconsistent with TEST.
+- Never print database credentials, product URLs, customer data, Shopify/WooCommerce tokens or raw provider data. Persist operational evidence in the Completion Report with bounded metadata.
+- The developer, not the repository agent, decides final completion after an accepted review. This task only publishes the previously accepted implementation.
 
 ## Work Items
 
-- [ ] Confirm COMMERCE-006 and MCP-003 are Complete with accepted Architect Reviews and the intended TEST release target.
-- [ ] Invoke COMMERCE-006's already reviewed code-defined bootstrap and approved Commerce publication command; record the exact immutable release/definition IDs.
-- [ ] Verify TEST release activates both `commerce_search_products` and `commerce_get_product`, and MCP lists/calls their existing accepted handlers for each supported platform.
-- [ ] Repeat publication to prove no-op/idempotence and verify no unauthorized release members were changed.
-- [ ] Inspect only publication metadata and release records; do not rerun unit/integration tests, lint, typecheck or build. Record developer completion decision separately.
+- [ ] Read and verify the accepted COMMERCE-006 and MCP-003 task definitions, implementation commits and required physical-isolation evidence.
+- [ ] Verify the TEST target, authorised actor and checked-out version of the accepted `commerce:sync-tools` command.
+- [ ] Run the dry-run command; inspect intended product-tool changes and unrelated-member preservation.
+- [ ] Run the apply command once; capture audited release/pointer/revision/capability evidence.
+- [ ] Rerun dry-run and apply to prove no-op/idempotence without additional durable mutations.
+- [ ] Record publication evidence and leave task for the required developer completion decision. Do not enter another implementation task.
 
 ## Interfaces / Contracts
 
-Existing Commerce `publishToolRevision`, `createSuccessorRelease`, `activateRelease` and `ensureMerchantKnowledgeBootstrap` pattern, new canonical `ensureInitialOutreachProductBootstrap` exported by COMMERCE-006. Product definition versions independent from policy operation version.
+Use the **exact command** built and accepted by COMMERCE-006; these are the required TEST invocations:
+
+```bash
+npm run commerce:sync-tools -- --environment=test --dry-run
+npm run commerce:sync-tools -- --environment=test --apply
+npm run commerce:sync-tools -- --environment=test --dry-run
+npm run commerce:sync-tools -- --environment=test --apply
+```
+
+Expected published identities:
+
+```typescript
+const expected = [
+  {
+    name: "commerce_search_products",
+    capabilityKey: "commerce_search_products",
+    featureKey: "product_search",
+    definitionVersion: "1.0.0",
+    operation: "products.search",
+    operationVersion: "1.0.0",
+  },
+  {
+    name: "commerce_get_product",
+    capabilityKey: "commerce_get_product",
+    featureKey: "product_search",
+    definitionVersion: "1.0.0",
+    operation: "products.get",
+    operationVersion: "1.0.0",
+  },
+] as const;
+```
+
+The actual published revision identifiers and content hashes come from the script receipt and TEST release records. Do not invent them. Use the existing `CommerceReleasePointer` and `CommerceRelease` read models for publication confirmation. Neither raw MCP `tools/call` execution nor provider API requests are part of this publication gate.
 
 ## Dependencies
 
-- `ARCH-052-COMMERCE-006` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-MCP-003` — must be Complete and architect-accepted before this task starts.
-
-Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
+- `ARCH-052-COMMERCE-006` — accepted complete synchronisation script and canonical definitions.
+- `ARCH-052-MCP-003` — accepted complete Shopify/WooCommerce product tool handlers, so advertised tools have a supported implementation.
 
 ## Enables
 
@@ -86,32 +126,34 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Acceptance Criteria
 
-- [ ] Exact reviewed version and release identifiers are recorded.
-- [ ] Both tools callable through MCP under an authorised attempt; no manual authoring or duplicate release on rerun.
-- [ ] No code change other than permitted publication/release metadata.
+- [ ] TEST only, with an explicitly authorised actor and verified target environment.
+- [ ] Plan and actual publication contain only the two accepted product-tool identities and preserve unrelated Commerce release state.
+- [ ] The exact accepted product definition versions/hashes and TEST active-release pointer are recorded.
+- [ ] The second identical apply returns `UNCHANGED` without any new durable writes.
+- [ ] No implementation source or environment outside TEST was changed.
 
 ## Validation
 
-- [ ] Exact accepted implementation prerequisites and authorised TEST release identity.
-- [ ] Publication invocation success, active release pointer and both version-pinned product descriptors at the intended target; repeat is idempotent.
-- [ ] Verify absence of implementation-source changes and run only `git diff --check` for release metadata. **Do not rerun accepted implementation tests, lint, typecheck or build.**
-
-## Stop Condition
-
-Once Work Items, acceptance criteria and validation are met, set task status to `review`, complete its report, return to `moda_architect` and **STOP**. Do not mark it Complete, publish another task, merge branches or push `main`.
+- [ ] Prerequisites are `complete` and `Architect Review: Accepted` before publication begins.
+- [ ] Dry-run/apply receipts and TEST release read-model state confirm the required published tool pins and preservation of other members.
+- [ ] Repeated invocation proves no new audit, draft, revision, capability, release or pointer writes.
+- [ ] Confirm no implementation-source changes. `git diff --check` applies only if release-specific metadata was legitimately changed. **Do not rerun implementation tests, lint, typecheck or builds.**
 
 ## Implementation Notes
 
-Expected workspace-relative owned source paths (confirm paths exist in checked-out worktree before editing):
+This task **invokes only** the previously accepted `moda-interact-commerce/scripts/sync-system-commerce-tools.mjs` through `npm run commerce:sync-tools`; the source-control locations listed in COMMERCE-006 are not to be edited here. No additional publication script or manual Studio process may be introduced.
 
-- `moda-interact-commerce/src/commerce/bootstrap/initial-outreach-products.ts` (invoke, not edit)
-- `moda-interact-commerce/src/commerce/integration/backend.ts` (existing lifecycle plumbing; no source changes)
+Keep `COMMERCE-007` as a separate release gate from `COMMERCE-006` implementation. Production deployment requires a separate explicit operational decision after ARCH-052 system validation and is not authorised by this task.
+
+## Stop Condition
+
+After recording the authorised TEST publication outcome and developer Completion Report, return control for architectural review and explicit developer completion. **STOP.** Do not implement new code, merge or push `main`, or start dependent/system-test tasks.
 
 ## Completion Report
 
 ### Status
 
-Not Started — portable definition; no task claim.
+Not Started — portable publication definition, no execution claim.
 
 ### Files Changed
 
@@ -131,7 +173,7 @@ None reported.
 
 ### Assumptions
 
-Confirm execution baseline in dedicated task worktree.
+A verified TEST target and eligible release actor will be available when the developer invokes this task.
 
 ### Unresolved Issues
 
@@ -139,7 +181,7 @@ None established.
 
 ### Architectural Concerns
 
-Return material contract/security/proof gaps to `moda_architect` without inventing a workaround.
+Return missing release or publication capability to `moda_architect` without adding implementation behaviour to this release-only task.
 
 ## Architect Review
 
@@ -149,20 +191,20 @@ Pending.
 
 ### Review Notes
 
-Definition only; no implementation accepted.
+Definition only; no TEST publication executed.
 
 ### Reviewed Files
 
-Task definition and uploaded 29 October 2026 snapshot only.
+Task definition and attached 29 October 2026 workspace snapshot.
 
 ### Validation Reviewed
 
-No implementation tests yet.
+No publication commands executed.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Pending authorised publication and review.
 
 ### Follow-up
 
-Materialise through canonical task launcher only after dependencies are Complete.
+After accepted review, developer completion explicitly marks the release gate `complete` and unlocks its dependants.

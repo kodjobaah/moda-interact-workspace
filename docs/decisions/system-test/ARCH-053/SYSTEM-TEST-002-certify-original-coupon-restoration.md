@@ -23,7 +23,7 @@ depends_on:
 - ARCH-046-WOOCOMMERCE-003
 enables: []
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-053-SYSTEM-TEST-002 — Certify original applied-coupon capture persistence and restoration

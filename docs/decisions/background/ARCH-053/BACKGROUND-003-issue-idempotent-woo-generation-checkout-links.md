@@ -21,7 +21,7 @@ enables:
 - ARCH-053-SYSTEM-TEST-001
 - ARCH-053-SYSTEM-TEST-002
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-053-BACKGROUND-003 — Issue immutable, safe generation-specific Woo resume URLs
@@ -36,7 +36,7 @@ Issue immutable, safe generation-specific Woo resume URLs. One bounded outcome i
 
 ## Context
 
-The uploaded workspace snapshot is dated 2026-10-29. ARCH-052 owns dynamic discount discovery and must not be used for these checkout-URL changes. An ARCH-048 next-generation dependency exists only as a separate *portable* proposal until accepted/materialised. This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. ARCH-048-BACKGROUND-007..011 task files are present, but none has been accepted Complete in this snapshot (007 Ready, 008–011 Pending). This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
 
 ## Scope
 
@@ -104,7 +104,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ## Implementation Notes
 
-Dependency `ARCH-048-BACKGROUND-011` is a **portable task defined outside this snapshot**: do not mark this Ready until it is materialised and architect-accepted. Confirm actual field/method names at that accepted commit; stop for architect if conflict.
+Dependency `ARCH-048-BACKGROUND-011` is **defined and Pending in this snapshot**, not Complete: do not mark this Ready until it is architect-accepted and the launcher confirms readiness. Confirm actual field/method names at that accepted commit; stop for architect if conflict.
 
 ## Completion Report
 
@@ -130,7 +130,7 @@ None.
 
 ### Assumptions
 
-Design based on uploaded 2026-10-29 source snapshot; re-check source and prior task acceptance before implementation.
+Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
 
 ### Unresolved Issues
 

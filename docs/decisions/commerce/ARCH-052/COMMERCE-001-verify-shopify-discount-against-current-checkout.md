@@ -9,18 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-- ARCH-052-COMMERCE-003
-- ARCH-052-COMMERCE-008
-- ARCH-052-SYSTEM-TEST-001
+enables: []
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
 # ARCH-052-COMMERCE-001: Prove Shopify discount eligibility for a recovery checkout
@@ -35,7 +32,9 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Provide independent, read-only current Shopify discount eligibility evidence for the supported, provable discount subset.
+**SUPERSEDED — DO NOT IMPLEMENT.** Checkout discount relevance is assessed by the dedicated Background InitialOutreachOfferAgent from factual MCP catalogue results; no separate Shopify proof engine.
+
+The pre-existing description and completion-report placeholders elsewhere in this file remain historical only. No repository code or validation is authorised by this task.
 
 ## Context
 
@@ -45,10 +44,7 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Extend existing Shopify rule reader/evaluator and trusted basket/product-facts adapters; do not create a second discount engine.
-- Verify customer eligibility, subscription/market/currency restrictions, product/variant/collection applicability, minimum requirements, code identity/usage where provider supports reliable read proof, combination and price/rounding semantics for each explicitly supported rule family.
-- Return narrow proof with current checkout fingerprint, rule fingerprint, evaluated/expires times, currency, positive minor-unit savings, verified code/description and exact unsupported/unknown reasons.
-- Return an exact successful/unsupported per-checkout proof to the independent authenticated Commerce-003 private route; the implementing agent must NOT choose a new transport or public API. Commerce-003 is the explicitly assigned endpoint owner.
+None. This task is withdrawn; do not start the original implementation, create new provider verification services or publish obsolete proof contracts.
 
 ## Out of Scope
 
@@ -68,9 +64,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Close provable Shopify calculation/eligibility gaps with evidence.
-- [ ] Expose read-only proof on existing approved private boundary.
-- [ ] Add real provider fixture plus negative/unknown deterministic tests.
+None — superseded; retain this historical definition only for audit.
 
 ## Interfaces / Contracts
 
@@ -78,31 +72,23 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Dependencies
 
-None.
-
-Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
+None — superseded.
 
 ## Enables
 
-- `ARCH-052-COMMERCE-003`
-- `ARCH-052-COMMERCE-008`
-- `ARCH-052-SYSTEM-TEST-001`
+None — superseded.
 
 ## Acceptance Criteria
 
-- [ ] Only positively verified supported offer types return savings proof.
-- [ ] Unsupported restrictions or rounding never default to eligible; Shopify product search remains read-only.
+None — superseded; no code is to be accepted under this task.
 
 ## Validation
 
-- [ ] Commerce discount evaluator/reader fixtures, provider snapshot compatibility and bounded access tests.
-- [ ] Commerce build/typecheck/lint as declared and `git diff --check`.
-
-Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+Not applicable; the superseded implementation must not run.
 
 ## Stop Condition
 
-After all Work Items, Acceptance Criteria and required Validation pass, complete the report, set task `status: review`, hand the implementation branch and parent task report to `moda_architect` and **STOP**. Do not begin a dependent task, merge, push main, or edit architecture indexes as a repository agent.
+This task is superseded. Do not claim, implement, run tests, publish, merge or unblock dependants from it.
 
 ## Implementation Notes
 
@@ -160,6 +146,8 @@ Report discovered cross-repository/credential/provider-proof issues to `moda_arc
 Pending.
 
 ### Review Notes
+
+**Architectural supersession (2026-10-30):** Checkout discount relevance is assessed by the dedicated Background InitialOutreachOfferAgent from factual MCP catalogue results; no separate Shopify proof engine.
 
 Planning only; no source implementation accepted.
 
