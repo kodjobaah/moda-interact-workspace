@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-10-30T12:46:33Z
+attempt: 1
 depends_on:
 - ARCH-052-SHARED-009
 enables:
@@ -22,7 +22,7 @@ enables:
 - ARCH-052-COMMERCE-006
 - ARCH-052-BACKGROUND-011
 created: '2026-10-30'
-updated: '2026-10-30'
+updated: 2026-10-30
 ---
 
 # ARCH-052-SHARED-010: Publish the accepted discount-discovery and product identity contract update
