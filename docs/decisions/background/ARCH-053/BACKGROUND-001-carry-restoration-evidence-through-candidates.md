@@ -70,7 +70,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Interfaces / Contracts
 
-Queue remains `woo-checkout-capture-v1` / `checkout-updated` with canonical `woo.activity.v1` event wrapper + additive optional `checkout.restoration`; TypeScript schema from published Shared package. No new Redis queue key or event type. Consumers of `WooPendingCandidate` must be able to obtain `candidate.basket.checkout.restoration`.
+Queue remains `woo-checkout-capture-v1` / `checkout-updated` with **canonical `woo.activity.v1`** event wrapper + optional Shared-validated `checkout.restoration` (same value from API v1 after verified phone projection); no new version, Redis queue key or event type. Consumers of `WooPendingCandidate` obtain `candidate.basket.checkout.restoration`; missing remains unknown/unrestorable and unsupported remains unsupported. HTTP-only `canonicalPhone` and `verifiedCountryCode` must never reach the queue.
 
 ## Dependencies
 
@@ -102,7 +102,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ## Implementation Notes
 
-The queue consumer task must be accepted/deployed before an API v3 producer forwards new fields. Use the shared logger, not another generic logger, for bounded validation failures.
+The queue consumer task must be architect-accepted before the coordinated pre-production rollout of the updated API v1 validator and WooCommerce v1 producer; there is no HTTP v3 contract or second queue version. Use the shared logger, not another generic logger, for bounded validation failures.
 
 ## Completion Report
 

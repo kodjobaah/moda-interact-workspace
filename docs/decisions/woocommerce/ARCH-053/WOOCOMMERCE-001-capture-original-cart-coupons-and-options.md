@@ -44,7 +44,7 @@ The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount
 - Modify `includes/Checkout/CheckoutSnapshot.php`, `CheckoutCapture.php`, `CheckoutActivityPublisher.php` plus focused `tests/CheckoutCaptureTest.php` and `tests/integration/scenarios/checkout-*.mjs` (create targeted tests as needed).
 - Capture verified `WC()->cart->get_applied_coupons()` exactly (0..10, each 1..128 safe characters), and for every supported line preserve integer parent product_id, variation_id, quantity and safe native `variation` attributes. Use `schemaVersion:'woo.cart-restore.v1'` and `kind:'supported'` only for complete 1..50-line core simple/variable carts; explicitly mark unsupported for composite/bundle/subscription/custom item data, invalid or missing product/variation, oversized lines/coupons/attributes, etc.; do not partially restore.
 - Capture complete original applied codes as part of restoration projection, but do NOT implement separate coupon add/remove hook publishing here; that behaviour belongs exclusively to `ARCH-053-WOOCOMMERCE-004`. The canonical snapshot fingerprint must include restoration evidence; test snapshot serialization but leave coupon-only event admission/hook acceptance to WOOCOMMERCE-004.
-- Emit `woo.activity.v3` (reusing existing phone canonicalization from v2) only after API and Background consumers are ready. Retain the current Action Scheduler acceptance/retry and eventId/occurredAt for proper replay.
+- Emit **only `woo.activity.v1`** checkout activity with optional `checkout.restoration`. Consolidate existing `CheckoutActivityPublisher::enqueue()` HTTP v2 phone-proof branch into the canonical v1 checkout: when contact has a verifiable phone, include the same `canonicalPhone` and optional `verifiedCountryCode` proof used by the existing v2 producer; never emit a v2/v3 event. When a phone cannot be reliably normalized, omit the unverified phone and both proof fields while preserving the valid basket and any other allowed contact fields. Retain Action Scheduler job identity, acceptance, bounded retries, occurredAt and eventId. **Do not deploy this producer until API-001 and Background-001 have been accepted and the pre-production pair is coordinated.**
 
 ## Out of Scope
 
@@ -56,7 +56,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 - No PII or custom cart-item metadata inside restoration; do not copy arbitrary extension item metadata or silently invent variation selections. Existing display item snapshot and supported zero/oversized behaviour remain intact.
 - Coupons applied by shoppers are **not** CommerceAgent/ARCH-052 promotional offers; do not create, extend or reprice Woo coupons. Capture empty array if none applied; omit `restoration` entirely only when no trustworthy cart evidence.
-- All capture failures must be logged safely where possible, nonblocking to Woo shoppers, but never silently fabricate a supported restoration. Cart-removal and refill still cancel/restart candidates through existing activity flow.
+- All capture failures must be logged safely where possible, nonblocking to Woo shoppers, but never silently fabricate a supported restoration. Cart-removal and refill still cancel/restart candidates through existing activity flow. If valid phone proof cannot be produced, retain the product/coupon checkout event without a phone, not an unverified-phone HTTP v1 request.
 
 ### Mandatory workflow/security invariants
 
@@ -69,11 +69,11 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 - [ ] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
 - [ ] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
-- [ ] Publish v3 complete event using existing queued publisher and preserve existing phone/consent semantics.
+- [ ] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
 
 ## Interfaces / Contracts
 
-PHP JSON `checkout.restoration` per ARCH-053-SHARED-001; event schemaVersion `woo.activity.v3` ingested by API-001; Background queue remains v1 with additive field. Do not import Node package into PHP; test against canonical golden JSON fixture.
+PHP `checkout.restoration` must conform to the published ARCH-053-SHARED-001 v1 JSON fixture. HTTP checkout `schemaVersion` is exactly `woo.activity.v1`; API-001 verifies `contact.phone` with `canonicalPhone`/optional `verifiedCountryCode` and produces the existing normalized v1 queue job with restoration. No `woo.activity.v2` or `woo.activity.v3` producer branch. Do not import Node packages into PHP; validate parity with canonical fixtures and ensure new snapshot/coupon data remains under the 65,536-byte activity body limit.
 
 ## Dependencies
 
@@ -90,7 +90,7 @@ PHP JSON `checkout.restoration` per ARCH-053-SHARED-001; event schemaVersion `wo
 
 - [ ] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
 - [ ] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
-- [ ] Publish v3 complete event using existing queued publisher and preserve existing phone/consent semantics.
+- [ ] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
 - [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
 - [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
 - [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
@@ -107,7 +107,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ## Implementation Notes
 
-The plugin already has `CheckoutKey::SESSION_FIELD` and Action Scheduler. Reuse them rather than new cookies and queues. Snapshot must contain the original coupon list, while publishing events for coupon-only additions/removals is owned by WOOCOMMERCE-004. Do not duplicate its hooks in this task.
+The plugin already has `CheckoutKey::SESSION_FIELD`, Action Scheduler and the v2 canonical-phone helper. Reuse them rather than new cookies or queues; the v2 phone check is retained *inside v1*, not as a second HTTP version. Include a test that one valid v1 event contains both the normalised phone proof and supported `checkout.restoration`, and a second valid v1 event contains restoration but omits a non-normalisable phone. Snapshot must contain the original coupon list, while publishing events for coupon-only additions/removals is owned by WOOCOMMERCE-004. Do not duplicate its hooks in this task.
 
 ## Completion Report
 

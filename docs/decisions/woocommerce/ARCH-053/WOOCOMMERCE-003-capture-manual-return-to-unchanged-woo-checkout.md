@@ -52,7 +52,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Requirements
 
-- Reuse `woo.activity.v3` and existing `CHECKOUT_UPDATED` semantics: **do not** introduce another `CHECKOUT_RESUMED` event type or implement recovery closure in PHP. The accepted ARCH-048 Background generation logic owns closing an active recovery and beginning a fresh delayed candidate.
+- Reuse canonical `woo.activity.v1` and existing `CHECKOUT_UPDATED` semantics: **do not** introduce another `CHECKOUT_RESUMED` event type or implement recovery closure in PHP. The accepted ARCH-048 Background generation logic owns closing an active recovery and beginning a fresh delayed candidate.
 - Preserve no-change deduplication for machine-triggered cart calculation. Never infer human intent from passive `DOMContentLoaded`/bot GET alone. Record bounded success/failure without customer PII.
 
 ### Mandatory workflow/security invariants
@@ -70,7 +70,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Interfaces / Contracts
 
-Plugin-only POST from same origin with Woo session + nonce; emits existing authenticated `woo.activity.v3` CHECKOUT_UPDATED through publisher. `CheckoutKey::SESSION_FIELD` unchanged. No shared/API event type addition.
+Plugin-only POST from same origin with Woo session + nonce; emits existing authenticated `woo.activity.v1` CHECKOUT_UPDATED through the consolidated publisher. `CheckoutKey::SESSION_FIELD` unchanged. No shared/API event type addition.
 
 ## Dependencies
 

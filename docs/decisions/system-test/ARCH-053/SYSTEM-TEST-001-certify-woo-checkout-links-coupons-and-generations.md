@@ -42,7 +42,8 @@ The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount
 ## Scope
 
 - Add an ARCH-053-specific test runner/fixtures in `moda-interact-system-test` following its existing package scripts and orchestration patterns; run real supported Woo/WordPress Classic + Blocks, hosted API, Redis/BullMQ, Postgres migrations and guarded outbound mocks. Do not modify other repositories' code or task files.
-- Verify capture of 1..50 core lines including variations/attributes and **no-applied-coupon** snapshot cases, v3 HTTP schema → v1 queue projection, candidate update, admission's immutable `wooRestoreSnapshot` and URL, template CTA safety, authenticated resolution and cross-device customer confirmation. Full applied-coupon lifecycle is assigned to `ARCH-053-SYSTEM-TEST-002`.
+- Verify capture of 1..50 core lines including variations/attributes and **no-applied-coupon** snapshot cases, canonical v1 HTTP schema → existing v1 queue projection, candidate update, admission's immutable `wooRestoreSnapshot` and URL, template CTA safety, authenticated resolution and cross-device customer confirmation. Full applied-coupon lifecycle is assigned to `ARCH-053-SYSTEM-TEST-002`.
+- Verify HTTP `woo.activity.v1` with or without phone, preserve canonical phone proof validation and reject `woo.activity.v2`/`woo.activity.v3` after coordinated cutover; none of these may create a second queue envelope.
 - Test 2 shops (correct installation auth and hostname), same original checkout with generation 1→resumption→generation 2, independent eligible initial outreach without cross-generation cap, duplicate event and retry suppression, historical URL revocation, order placement/paid suppression, consent withdrawal/STOP, status terminality and delivery retry failures.
 - Assert the core restore flow uses *current* Woo pricing/tax/shipping, no historical totals; do not certify coupon-bearing restores under this task. The complete original-coupon matrix and notice presentation are terminal SYSTEM-TEST-002 responsibilities.
 - Security matrix: WhatsApp preview GET and HEAD no cart mutation, forged POST/nonce, wrong token/wrong tenant, superseded generation, older link with newer shopping basket, existing cart confirmation, unsupported extension item/no silent partial restore, malicious URL host/subpath, no PII/coupon/token in logs/referrer, WordPress offline and API outage.
@@ -76,7 +77,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Interfaces / Contracts
 
-Consumes accepted ARCH-053 Shared v1 restore, HTTP v3 activity, v1 queue optional restoration, API resolve v1, generation-specific URL and ARCH-048 next-generation lifecycle. No additional implementation contract.
+Consumes accepted ARCH-053 Shared v1 restore, HTTP v1 activity, v1 queue optional restoration, API resolve v1, generation-specific URL and ARCH-048 next-generation lifecycle. No additional implementation contract.
 
 ## Dependencies
 
