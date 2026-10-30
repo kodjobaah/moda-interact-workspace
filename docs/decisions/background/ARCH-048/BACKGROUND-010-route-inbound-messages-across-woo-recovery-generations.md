@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 42
-executor: codex
-claimed_at: 2026-10-30T09:46:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-048-BACKGROUND-007
@@ -117,7 +117,7 @@ Use exact launcher-prepared dedicated parent/implementation worktrees, with phys
 
 ### Status
 
-Implementation and validation are complete locally. Task remains `in_progress` while implementation-branch publication awaits authorization for the configured remote. The Architect Review section remains pending and unmodified.
+Attempt 1 implementation and validation are complete and both mirrored task branches are published. The Shopify routing finding recorded below was corrected in implementation commit `4be9ab3365390e93bdec2fab31dd3e87a5203cf4`; this review requests one remaining bounded-logging correction. The task returns to `ready` at Attempt 1.
 
 ### Files Changed
 
@@ -159,7 +159,7 @@ The launcher preparation packet is authoritative for worktree, synchronization, 
 
 ### Unresolved Issues
 
-The implementation branch has not been published. Its configured origin is `https://github.com/kodjobaah/moda-interact-background.git`; the task parent origin is `https://github.com/kodjobaah/moda-interact-workspace.git`. The implementation commit remains local pending authorization. No publish attempt or workaround was made in this task. The parent report is committed locally but unpublished; task status therefore remains `in_progress`.
+The current implementation review requests replacing raw exception objects in the two new failure logs with bounded, non-sensitive error metadata and adding a regression test proving phone/message sentinels are absent from logs. The implementation and parent task branches are published; no code correction for this finding is included yet.
 
 ### Git / VCS Evidence
 
@@ -180,9 +180,9 @@ Start-of-attempt synchronization:
 - Recursive submodule sync and update: passed; `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
 - Launcher claim: Attempt 1 by `codex`, parent claim commit `baa21314da7f71e2437f953d53fcd9e36aad2768`, pushed successfully.
 
-Implementation repository: commits `753c17184347215dd309e2f9bb74dc09e4820676` and `4be9ab3`; origin `https://github.com/kodjobaah/moda-interact-background.git`; task branch push pending authorization.
+Implementation repository: task branch `task/ARCH-048-BACKGROUND-010`, HEAD `4be9ab3365390e93bdec2fab31dd3e87a5203cf4`, published to `origin/task/ARCH-048-BACKGROUND-010`.
 
-Parent workspace: this task file is committed locally on `task/ARCH-048-BACKGROUND-010`; origin `https://github.com/kodjobaah/moda-interact-workspace.git`; report commit is not pushed. No submodule gitlink is staged.
+Parent workspace: task report is published on `task/ARCH-048-BACKGROUND-010` at `6da58fe8e41248d2e99f8809edb9174a7a873953` before this review update. No submodule gitlink is staged.
 
 Neither task branch has been merged to `main`.
 
@@ -190,11 +190,11 @@ Neither task branch has been merged to `main`.
 
 No new concerns. The architecture's existing event-only completeness limitation remains unchanged.
 
-## Architect Review
+## Architect Review — Earlier Shopify Finding
 
 ### Review Status
 
-Changes requested — implementation review on 2026-10-30 found a Shopify routing compatibility regression. Task remains `in_progress`; the implementation is locally committed and unpublished.
+Changes Requested — the first implementation review found a Shopify routing compatibility regression. This finding is resolved by the later platform-scoped correction in `4be9ab3365390e93bdec2fab31dd3e87a5203cf4` and its added tests.
 
 ### Review Notes
 
@@ -211,7 +211,7 @@ Changes requested — implementation review on 2026-10-30 found a Shopify routin
 
 ### Validation Reviewed
 
-The completion report records 61 focused unit tests passing, 2 PostgreSQL routing integration tests passing, build, focused lint and `git diff --check` passing. These results were reviewed as submitted and were not independently rerun. Existing tests assert the generation/status SQL predicates but do not cover a Shopify regression case.
+At the time of that review, the report recorded 61 focused unit tests and 2 PostgreSQL routing integration tests. The later Attempt 1 correction report records 62 focused unit tests and 3 PostgreSQL integration tests, including Shopify regression coverage; these results were reviewed as submitted and were not independently rerun.
 
 ### Architecture Conformance
 
@@ -220,3 +220,35 @@ Partial. Historical routing, persistence and concurrency safeguards appear align
 ### Follow-up
 
 Correct platform-specific candidate selection, add and run focused Shopify regression coverage alongside the Woo routing tests, then update this review section with the resulting evidence. Do not mark the task accepted until that finding is resolved.
+
+
+## Architect Review — Attempt 1 (Changes Requested)
+
+### Decision
+
+Changes Requested. The earlier Shopify routing compatibility finding is resolved: the current SQL applies status/latest-generation filtering only to WooCommerce, and the report records a Shopify regression test for older cancelled generations. One bounded-logging issue remains.
+
+### Finding
+
+- **P2 — Do not log raw exception objects.** `RecoveryRoutingService.resolveInboundMessage()` and `processRoutedInboundMessage()` pass caught exceptions directly as `error` fields to the Shared logger. Database/provider exceptions may include query values, recipient numbers, message text or provider data. This conflicts with the task's bounded, non-sensitive logging requirement. Log a fixed error code and bounded error class (or similarly safe metadata) while rethrowing the original exception unchanged. Add a regression test with sensitive sentinel values proving neither log contains the raw number/message or exception text.
+
+### Reviewed Files
+
+- `src/services/recovery-routing.service.ts` — Woo-only generation filtering, Shopify legacy candidate behavior, and routing error logging.
+- `src/services/whatsapp-inbound-processing.service.ts` — historical persistence/turn suppression and processing error logging.
+- `tests/unit/services/recovery-routing.service.test.ts`
+- `tests/unit/services/whatsapp-inbound-processing.service.test.ts`
+- `tests/integration/woo-recovery-inbound-routing.integration.test.ts`
+- Completion Report and worktree/publication evidence in this task record.
+
+### Validation Reviewed
+
+Attempt 1 correction evidence records 62 focused unit tests across 3 files and 3 PostgreSQL integration tests passing, including Woo generation selection and Shopify historical ambiguity. Focused ESLint, build and `git diff --check` passed. No tests were rerun during this architect review.
+
+### Architecture Conformance
+
+The Woo generation selection is platform-scoped and the reported Shopify regression is covered. Historical explicit/stored-context handling and automation suppression align with the task contract. Acceptance remains withheld until the two failure logs are bounded and a privacy regression test passes.
+
+### Required Follow-up
+
+Sanitize the routing and processing failure log fields, preserve exception propagation, and add the sensitive-sentinel regression coverage. Keep Attempt 1 unchanged; no source or test correction for this finding is included in this review update.
