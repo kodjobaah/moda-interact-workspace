@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-SHARED-002
-- ARCH-052-SHARED-005
 - ARCH-052-SHARED-006
 - ARCH-052-SHARED-008
 enables:
@@ -25,16 +24,13 @@ enables:
 - ARCH-052-BACKGROUND-005
 - ARCH-052-BACKGROUND-007
 - ARCH-052-BACKGROUND-010
-- ARCH-052-COMMERCE-003
 - ARCH-052-COMMERCE-006
-- ARCH-052-COMMERCE-008
 - ARCH-052-GATEWAY-001
 - ARCH-052-MCP-001
 - ARCH-052-MCP-002
 - ARCH-052-MCP-003
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
-- ARCH-052-WOOCOMMERCE-001
 created: '2026-10-29'
 updated: '2026-10-30'
 ---
@@ -49,22 +45,23 @@ Portable canonical definition: **defined but not materialised**. No real Git wor
 
 ## Objective
 
-Publish one architect-accepted version of the **four exact structural contract changes** defined in SHARED-002, SHARED-005, SHARED-006 and SHARED-008, without adding new implementation behaviour or rerunning implementation tests.
+Publish one architect-accepted version of the **three required structural contract changes** defined in SHARED-002, SHARED-006 and SHARED-008, without adding new implementation behaviour or rerunning implementation tests.
 
 ## Context
 
-Shared owns reusable inter-service data shapes. Admin and Background consume template bindings, MCP and provider adapters consume targeted discount evidence, Background and MCP share the initial-outreach context, and MCP/Commerce consume the extended existing commerce-product schema. Their source implementation must have passed its own tests and architect review **before** this release task starts.
+Shared owns reusable inter-service data shapes. Admin and Background consume template bindings, Background and MCP share the purpose-only initial-outreach context, and MCP/Commerce consume the extended commerce-product schema. SHARED-005 was separately **completed and architect-accepted** in an earlier implementation attempt. Its accepted task and review record remain intact, but the later ARCH-052 architecture no longer requires the proof-contract functionality. Do not add its proof entrypoint to this release. The SHARED-002/006/008 implementation tasks have already passed their own tests and architect review.
 
 ## Scope
 
-- After the four prerequisite tasks have `status: complete` and `Architect Review: Accepted`, publish their accepted Shared package contents using the existing repository's authorised release process.
-- Verify the exact released package exposes the unchanged `/commerce` entrypoint with `CommerceOutreachToolContextSchema`, `CommerceProductSaleEvidenceSchema`, existing product/discount tools plus the new `commerce_get_product` members; and new `/recovery-offer-proof` and `/recovery-template-bindings` entrypoints with the names listed below.
+- After the three prerequisite tasks have `status: complete` and `Architect Review: Accepted`, publish their accepted Shared package contents using the existing repository's authorised release process.
+- Verify the exact released package exposes the unchanged `/commerce` entrypoint with `CommerceOutreachToolContextSchema`, `CommerceProductSaleEvidenceSchema`, existing product/discount tools plus the new `commerce_get_product` members; and the new `/recovery-template-bindings` entrypoint with the names listed below.
 - Record the exact version, registry destination, publication command, registry evidence and changed release metadata. Keep implementation source unchanged.
 
 ## Out of Scope
 
 - No new application schemas, runtimes, source edits, lint, typecheck, unit/integration tests, new agent code, tool publication, provider calls, database migration or consumer rollout in this publication task.
-- Do not publish SHARED-001, SHARED-004 or SHARED-007; all remain superseded.
+- Do not include the SHARED-005 proof-contract entrypoint as part of this ARCH-052 release. Its accepted historical task remains Complete and is **not a publication prerequisite**. SHARED-001, SHARED-004 and SHARED-007 are superseded.
+- If the current Shared package source already includes a proof export that cannot be excluded without source changes, stop and return that integration issue to `moda_architect`. A publication task must not modify accepted implementation source.
 
 ## Requirements
 
@@ -75,7 +72,7 @@ Shared owns reusable inter-service data shapes. Admin and Background consume tem
 
 ## Work Items
 
-- [ ] Check `status: complete` and Accepted reviews for SHARED-002/005/006/008.
+- [ ] Check `status: complete` and Accepted reviews for SHARED-002/006/008.
 - [ ] Select approved package version and execute only the authorised release/publish procedure.
 - [ ] Confirm that the exact expected version is visible at the registry and package exports resolve.
 - [ ] Record release metadata-only diff and Completion Report evidence.
@@ -93,13 +90,6 @@ RecoveryTemplateTextBindingSchema;
 RecoveryTemplateUrlButtonBindingSchema;
 RecoveryTemplateFrozenBindingsSchema;
 
-// @modainteract/moda-interact-shared/recovery-offer-proof
-RecoveryDiscountTargetSchema;
-RecoveryDiscountProofRequestSchema;
-RecoveryEligibleDiscountProofSchema;
-RecoveryNonEligibleDiscountProofSchema;
-RecoveryDiscountProofResultSchema;
-
 // @modainteract/moda-interact-shared/commerce
 CommerceOutreachToolContextSchema;
 CommerceProductSaleEvidenceSchema;
@@ -114,17 +104,13 @@ commerceToolResultSchema;
 
 The dotted members above are runtime object members, not independent ESM named exports. The corresponding inferred TypeScript types must be included in package declaration output. Do not introduce an `OutreachToolResult` or `OutreachPromotionChoiceSchema` Shared export.
 
-**The two new public export entries must be exactly:**
+**The retained new public export entry must be exactly:**
 
 ```json
 {
   "./recovery-template-bindings": {
     "types": "./dist/recovery-template-bindings.d.ts",
     "import": "./dist/recovery-template-bindings.js"
-  },
-  "./recovery-offer-proof": {
-    "types": "./dist/recovery-offer-proof.d.ts",
-    "import": "./dist/recovery-offer-proof.js"
   }
 }
 ```
@@ -134,7 +120,6 @@ This JSON fragment is an addition to the existing `package.json` `exports` objec
 ## Dependencies
 
 - `ARCH-052-SHARED-002` — Complete and architect-accepted.
-- `ARCH-052-SHARED-005` — Complete and architect-accepted.
 - `ARCH-052-SHARED-006` — Complete and architect-accepted.
 - `ARCH-052-SHARED-008` — Complete and architect-accepted.
 
@@ -145,20 +130,17 @@ This JSON fragment is an addition to the existing `package.json` `exports` objec
 - `ARCH-052-BACKGROUND-005`
 - `ARCH-052-BACKGROUND-007`
 - `ARCH-052-BACKGROUND-010`
-- `ARCH-052-COMMERCE-003`
 - `ARCH-052-COMMERCE-006`
-- `ARCH-052-COMMERCE-008`
 - `ARCH-052-GATEWAY-001`
 - `ARCH-052-MCP-001`
 - `ARCH-052-MCP-002`
 - `ARCH-052-MCP-003`
 - `ARCH-052-SYSTEM-TEST-001`
 - `ARCH-052-SYSTEM-TEST-002`
-- `ARCH-052-WOOCOMMERCE-001`
 
 ## Acceptance Criteria
 
-- [ ] The package version contains precisely the four accepted Shared changes and retains all existing unrelated exports.
+- [ ] The package version contains the three required accepted Shared changes (SHARED-002/006/008) and retains unrelated existing exports.
 - [ ] All listed package paths and runtime symbols/types are present in the published version.
 - [ ] Only authorised release metadata/lockfile updates occurred; no source code modifications or consumer integration.
 - [ ] Registry visibility and actual version are recorded; publication failure or an implementation bug is returned to `moda_architect`.
@@ -175,7 +157,7 @@ After publication evidence and Completion Report are recorded, set task to `revi
 
 ## Implementation Notes
 
-Approved release metadata location: `moda-interact-shared/package.json`, and lockfile only when the repository's release mechanics legitimately change it. All schema and build-entrypoint edits belong to SHARED-002/005/006/008, not this publication task. The publisher must not choose a different runtime contract.
+Approved release metadata location: `moda-interact-shared/package.json`, and lockfile only when the repository's release mechanics legitimately change it. All schema and build-entrypoint edits belong to SHARED-002/006/008, not this publication task. The publisher must not choose a different runtime contract.
 
 ## Completion Report
 
@@ -220,7 +202,9 @@ Pending.
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+**2026-10-30 corrected status:** SHARED-002, SHARED-006 and SHARED-008 have Accepted architect reviews and `status: complete`, so SHARED-003 is **Ready**. SHARED-005 has also been accepted and completed but its proof contract is excluded from this release by the revised architecture; its historical completion record is preserved. Publication has **not** been executed.
+
+No publication or release has been executed or reviewed under this task. Its three required implementation prerequisites are already accepted.
 
 ### Reviewed Files
 

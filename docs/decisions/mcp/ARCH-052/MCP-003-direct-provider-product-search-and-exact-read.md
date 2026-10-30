@@ -22,11 +22,10 @@ enables:
 - ARCH-052-COMMERCE-007
 - ARCH-052-GATEWAY-001
 - ARCH-052-MCP-002
-- ARCH-052-MCP-004
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
 # ARCH-052-MCP-003: Execute Shopify and WooCommerce product search directly inside MCP
@@ -49,7 +48,7 @@ Implement platform-neutral product search and exact product/variant reads in MCP
 - Implement MCP-owned Woo **GET-only** hardened REST transport in `src/connections/woocommerce/secure-read-transport.ts`, using the existing API Woo verifier as *behavioural reference* only (no API import): canonical site validation, HTTPS except explicit local-test mode, no redirect, DNS resolution and pinned public routable IP, peer-address check, TLS hostname verification, bounded timeouts, header/body size, content type and pagination. Reject private/loopback/metadata/IPv6 unsafe origins in production, DNS rebinding and credentials in URL; support local OAuth only with explicit local test policy. Reuse Shared security primitives, not duplicated generic cryptography.
 - Implement exact Woo REST `products.list` and `products.retrieve` projection in `src/connections/woocommerce/product-read-operation.ts` using `/wp-json/wc/v3/products` and product variations when `variantId` is supplied. Request `_fields` for ids/name/prices/regular_price/sale_price/stock_status/permalink/images/categories/variations; resolve variation image before product image; return only Shared-008 allowed fields. Never return raw HTML/secret meta. Bound result size (max 20), page/search/keyword and verify permalink/image HTTPS storefront host and product ownership; missing => nullable result, never synthetic fallback. Search may find related products by query/taxonomy with bounded pages; no persistent product cache.
 - Add `src/execution/policy/product-search-executor.ts` implementing **published** `products.search@1.0.0` and `products.get@1.0.0` definitions from COMMERCE-006 through `createPublishedExecutionRegistry` in `src/runtime/service-ports.ts`; dispatch by trusted `StoreConnection.platform`. For Shopify reuse existing `createShopifyCoreAdapters.searchProducts` and implement exact ID/variant GraphQL read; for Woo use new direct reader. Map to the identical Shared-008 product schemas. Do not make an API-process HTTP call, duplicate SDK publisher, or turn this into a product database.
-- Extend the existing in-process Woo read port to perform native coupon-proof GET via the same hardened credential/transport for MCP-002/MCP-004 (separate handler ownership), with fixed path/header allowlist; never expose a generic HTTP proxy. No new service.
+- Implement direct WooCommerce REST product list/retrieve through the approved MCP connection, with no coupon-proof endpoint, generic HTTP proxy or hosted Moda API hop.
 - Tests: encrypted grant/key rotation/tampered AAD, revoked/wrong-shop grant before and during I/O, DNS rebinding, redirect/loopback/TLS mismatch, HTTP 401/429/404, oversized body, variant fallback, deleted product, taxonomies, sale-price evidence, Shopify/Woo result parity, no MCP-to-API traffic, `tools/list` published descriptor gating and no credential leaks.
 
 ## Out of Scope
@@ -76,20 +75,17 @@ MCP published product tools `commerce_search_products` and `commerce_get_product
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-COMMERCE-006` — must be Complete and architect-accepted before this task starts.
-
-Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
+- ARCH-052-SHARED-003
+- ARCH-052-COMMERCE-006
 
 ## Enables
 
-- `ARCH-052-BACKGROUND-007`
-- `ARCH-052-COMMERCE-007`
-- `ARCH-052-GATEWAY-001`
-- `ARCH-052-MCP-002`
-- `ARCH-052-MCP-004`
-- `ARCH-052-SYSTEM-TEST-001`
-- `ARCH-052-SYSTEM-TEST-002`
+- ARCH-052-BACKGROUND-007
+- ARCH-052-COMMERCE-007
+- ARCH-052-GATEWAY-001
+- ARCH-052-MCP-002
+- ARCH-052-SYSTEM-TEST-001
+- ARCH-052-SYSTEM-TEST-002
 
 ## Acceptance Criteria
 

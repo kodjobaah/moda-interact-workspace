@@ -9,20 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 35
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-- ARCH-052-COMMERCE-001
-- ARCH-052-COMMERCE-008
-- ARCH-052-SHARED-003
-enables:
-- ARCH-052-GATEWAY-001
-- ARCH-052-MCP-002
+depends_on: []
+enables: []
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
 # ARCH-052-COMMERCE-003: Serve authenticated private Shopify checkout and alternative-product discount proof
@@ -37,7 +32,9 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Expose one private-network-only, strictly tenant-scoped Shopify discount-proof POST route for BOTH original checkout and verified alternative-product target, with no private product-image route.
+**SUPERSEDED — DO NOT IMPLEMENT.** No private Commerce discount-proof route; MCP reads the existing shop discount catalogue directly.
+
+The pre-existing description and completion-report placeholders elsewhere in this file remain historical only. No repository code or validation is authorised by this task.
 
 ## Context
 
@@ -45,9 +42,7 @@ Commerce-001 and Commerce-008 own Shopify provider-specific discount proof. MCP-
 
 ## Scope
 
-- Implement only `app/internal/v1/recovery/discount-proof/route.ts` as POST-only, Node runtime, <=2048B JSON, `Cache-Control:no-store`, deny public Gateway ingress; require a trusted private caller and authoritative same-shop recovery/attempt/discount checks; no Shared-004 signatures or Redis replay nonce. No `/internal/v1/recovery/product-image` route.
-- Validate Shared-005 request target CHECKOUT vs ALTERNATIVE_PRODUCT, reload exact `{shopId,checkoutRecoveryId,outreachAttemptId}` state and verified `ShopifyDiscount` candidate, match shop, current fingerprint, product/variant if alternate, and invoke COMMERCE-001 or COMMERCE-008 read-only evaluator. Return strict Shared-005 proof with no raw provider response or secret.
-- Integration tests for attempted public access, wrong-shop proof, unsupported product rules, expired provider data, both targets, closed/disabled tenant and zero cart mutation.
+None. This task is withdrawn; do not start the original implementation, create new provider verification services or publish obsolete proof contracts.
 
 ## Out of Scope
 
@@ -65,10 +60,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Add precisely one `POST /internal/v1/recovery/discount-proof` route under `app/internal/v1/recovery/discount-proof/route.ts` with private-network-only access, strict request-size limits and fresh tenant/recovery authorisation.
-- [ ] Dispatch Shared-005 `CHECKOUT` proof to COMMERCE-001 and `ALTERNATIVE_PRODUCT` proof to COMMERCE-008, after current exact shop/recovery/attempt/product validation.
-- [ ] Add private route/public-access-denial/Shopify provider integration tests for both targets, including expiry, wrong tenant and no provider mutation.
-- [ ] Run Commerce's declared checks, `git diff --check`; verify no product-image route was created.
+None — superseded; retain this historical definition only for audit.
 
 ## Interfaces / Contracts
 
@@ -76,33 +68,23 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Dependencies
 
-- `ARCH-052-COMMERCE-001` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-COMMERCE-008` — must be Complete and architect-accepted before this task starts.
-- `ARCH-052-SHARED-003` — must be Complete and architect-accepted before this task starts.
-
-Dependencies are authoritative in YAML; system tests are terminal validation and must never block implementation.
+None — superseded.
 
 ## Enables
 
-- `ARCH-052-GATEWAY-001`
-- `ARCH-052-MCP-002`
+None — superseded.
 
 ## Acceptance Criteria
 
-- [ ] MCP obtains current Shopify coupon eligibility for both checkout and alternate-product targets through the single private Commerce proof route.
-- [ ] Invalid/replayed/cross-tenant requests fail before provider access, and no provider mutation occurs.
-- [ ] Product image and search are obtained directly by MCP GraphQL; this task creates **no private product-image route**.
+None — superseded; no code is to be accepted under this task.
 
 ## Validation
 
-- [ ] Commerce Next route unit and Redis/Postgres integration tests; build/typecheck/lint.
-- [ ] `git diff --check`.
-
-Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+Not applicable; the superseded implementation must not run.
 
 ## Stop Condition
 
-After all Work Items, Acceptance Criteria and required Validation pass, complete the report, set task `status: review`, hand the implementation branch and parent task report to `moda_architect` and **STOP**. Do not begin a dependent task, merge, push main, or edit architecture indexes as a repository agent.
+This task is superseded. Do not claim, implement, run tests, publish, merge or unblock dependants from it.
 
 ## Implementation Notes
 
@@ -155,6 +137,8 @@ Report discovered cross-repository/credential/provider-proof issues to `moda_arc
 Pending.
 
 ### Review Notes
+
+**Architectural supersession (2026-10-30):** No private Commerce discount-proof route; MCP reads the existing shop discount catalogue directly.
 
 Planning only; no source implementation accepted.
 

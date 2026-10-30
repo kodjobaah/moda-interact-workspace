@@ -50,7 +50,7 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-- Initial sequence one reads **current** merchant discount settings from Background and consumes the Background-010 trusted `CHECKOUT_DISCOUNT` / `ALTERNATIVE_PRODUCT_PROMOTION` / `NO_VERIFIED_OFFER` decision. NONE never calls discount MCP/AI. Stage-2 alternative promo is permitted only for merchant-authorised discount mode and provider-proofed product+discount pairing; a product merely sharing a taxonomy category is insufficient.
+- Initial sequence one reads **current** merchant discount settings from Background and consumes the Background-010 trusted `CHECKOUT_DISCOUNT` / `ALTERNATIVE_PRODUCT_PROMOTION` / `NO_VERIFIED_OFFER` decision. NONE never calls discount MCP/AI. Stage-2 alternative promo is permitted only for merchant-authorised discount mode and MCP-catalogueed product+discount pairing; a product merely sharing a taxonomy category is insufficient.
 - Use existing six Meta **purposes** (`INITIAL_NO_OFFER`, `INITIAL_CODE_OFFER`, `INITIAL_AUTOMATIC_OFFER` and follow-ups) without a DB enum change. For checkout discount use approved `promotionTarget:CHECKOUT` CODE/AUTOMATIC variant; for other product use independently Meta-approved `promotionTarget:ALTERNATIVE_PRODUCT` CODE/AUTOMATIC variant. Never render alternative offer using an approved checkout-only copy. Bind distinct `promotion.productName`, `promotion.productUrl`, `promotion.offerDescription` and verified code when provided; keep abandoned-cart checkout return button separately. No claim alternate discount applies to existing cart.
 - For alternate promotion, use only verified canonical storefront product URL and independently approved CTA/link text; do not change approved button URL prefix after Meta approval. Require marketing consent/category/merchant permission for cross-sell content; if required permission or approved variant absent, use approved NO_OFFER or typed no-send. No unapproved on-the-fly message body.
 - Optional BG007 image may show checkout item or promoted product only with matching approved IMAGE variant, otherwise approved text-only. For **both Shopify and WooCommerce**, the Resume checkout CTA uses the existing `CheckoutRecovery.checkoutUrl` as supplied by the recovery workflow; ARCH-052 does not generate, refresh, reconstruct or validate checkout URLs.
@@ -103,7 +103,7 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 ## Acceptance Criteria
 
 - [ ] Correct approved text distinguishes discount on abandoned checkout from a separate product offer.
-- [ ] All added promotions have current provider proof, required marketing permissions and valid approved template.
+- [ ] All added promotions have current MCP catalogue evidence, required marketing permissions and valid approved template.
 - [ ] No duplicate send/billing, no added checkout URL verification or provider lookup, no checkout URL generation/proxy, no duplicate URL persistence and no change to final outbound consent/moderation/admission gates.
 
 ## Validation
@@ -163,7 +163,7 @@ None established by implementation.
 
 ### Architectural Concerns
 
-Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
+Report discovered cross-repository/credential/MCP-catalogue issues to `moda_architect`.
 
 
 ## Architect Review
