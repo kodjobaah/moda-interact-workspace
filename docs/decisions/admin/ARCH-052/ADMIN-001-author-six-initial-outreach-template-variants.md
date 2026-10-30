@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: copilot
 claimed_at: 2026-10-30T08:46:21Z
@@ -68,9 +68,9 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Add basket summary to registry, AST and compiler validation.
-- [ ] Create safe six-purpose/three INITIAL starter examples and variant eligibility rules.
-- [ ] Test translation/fingerprint and Admin publication compatibility.
+- [x] Add basket summary to registry, AST and compiler validation.
+- [x] Create target-specific examples and binding eligibility rules while retaining all six existing purpose identities.
+- [x] Test translation/fingerprint and Admin publication compatibility.
 
 ## Interfaces / Contracts
 
@@ -90,14 +90,15 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Acceptance Criteria
 
-- [ ] Checkout and alternative promotions have distinct approved presentations using existing purpose names.
-- [ ] Alternative promo cannot render with a checkout-discount-only template or unsafe product URL.
-- [ ] Locale/Meta approval immutability and translation protections unchanged.
+- [x] Checkout and alternative promotions have distinct approved presentations using existing purpose names.
+- [x] Alternative promo cannot render with a checkout-discount-only template or unsafe product URL.
+- [x] Locale/Meta approval immutability and translation protections unchanged.
 
 ## Validation
 
-- [ ] Admin authoring/compiler/publishing/translation unit tests and approved template snapshots.
-- [ ] Admin typecheck/lint/tests and `git diff --check`.
+- [x] Admin authoring/compiler/publishing/translation and Meta snapshot unit/component checks.
+- [x] Admin typecheck, production build and `git diff --check`.
+- [ ] Repository-wide lint and the broad unit/security suites are not clean; see Completion Report for unrelated existing failures.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
@@ -120,35 +121,73 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Not Started — portable definition, no task claim.
+Ready for Review — implementation committed and pushed on the mirrored task branches.
 
 ### Files Changed
 
-None yet.
+Implementation repository commit `a871a47` (`feat(admin): add checkout and alternative promotion variants`) changes:
+
+- `package.json`, `package-lock.json`
+- `src/app/(protected)/system-controls/whatsapp-templates/[definitionId]/publish/page.tsx`
+- `src/components/admin/whatsapp-templates/authoring/template-family-purpose-selector.tsx`
+- `src/components/admin/whatsapp-templates/authoring/template-review-summary.tsx`
+- `src/components/admin/whatsapp-templates/authoring/template-saved-detail.tsx`
+- `src/lib/admin/whatsapp-templates/authoring/compiler.ts`
+- `src/lib/admin/whatsapp-templates/authoring/registry.ts`
+- `src/lib/admin/whatsapp-templates/authoring/types.ts`
+- `src/lib/admin/whatsapp-templates/authoring/validation.ts`
+- `src/lib/admin/whatsapp-templates/meta/contracts.ts`
+- `src/lib/admin/whatsapp-templates/meta/snapshot.ts`
+- `src/lib/admin/whatsapp-templates/publishing/impact.ts`
+- `src/lib/admin/whatsapp-templates/publishing/source.ts`
+- `src/lib/admin/whatsapp-templates/publishing/types.ts`
+- `src/lib/admin/whatsapp-templates/publishing/validation.ts`
+- `tests/unit/arch047-template-authoring-ast.test.ts`
+- `tests/unit/arch047-template-meta-snapshots.test.ts`
+- `tests/unit/arch047-template-publication-pure.test.ts`
 
 ### Work Completed
 
-None yet.
+Added the Shared 2.6.0 promotion target and frozen binding contract to Admin authoring, validation, compilation, translation consistency and Meta snapshots. CHECKOUT and ALTERNATIVE_PRODUCT retain the six existing purpose identities while using distinct proof-dependent variable eligibility and previews. Alternative-product variants require product name, description and URL, product-specific copy, and a trusted checkout-resume button; AUTOMATIC offers cannot bind coupon codes. Publication fingerprints and selection now include promotion target and header kind and reject duplicate exact matches. The authoring review, saved immutable detail and publication page identify the selected target; publication also displays header format and immutable source revision before impact confirmation.
 
 ### Validation Results
 
-Not run.
+Passed:
+
+- `npm run test:arch047-admin-authoring:unit`: 31 passed.
+- `npm run test:arch047-admin-compilation:unit`: 13 passed.
+- `npm run test:arch047-admin-publication:unit`: 21 passed.
+- `npm run test:arch047-admin-translations:unit`: 15 passed.
+- `npm run test:arch047-admin-meta:unit`: Meta snapshot/service checks passed, including target drift rejection; Meta component check passed.
+- `npx tsc --noEmit`: passed.
+- `npx eslint` on the three changed UI files: passed.
+- `npm run build`: passed; Next.js reported existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` resolution warnings.
+- `git diff --check`: passed.
+
+Repository-wide validation limitations:
+
+- `npm run lint` fails on existing violations in `template-content-editor.tsx`, `media/shop-brand-media-header-section.tsx` and `media/use-shop-brand-media-role.ts`; these files are not changed by this task.
+- `npm run test:unit` reports 537 passing and 25 failing tests. Failures include direct-runner module/alias resolution for ARCH-047 tests, older ARCH-043/ARCH-049 suites, and existing commerce-policy test harness dependency mismatches. The focused ARCH-047 scripts above pass.
+- `npm test` security suite has existing static-contract failures in Store Category translation, tenant KPI assertions and shared logging expectation; none are in files changed by this task.
+- Prisma generation completed as part of Meta tests and production build. No PostgreSQL integration harness was run.
 
 ### Deviations
 
-None reported.
+Admin was pinned to Shared 2.5.1 while the architect-accepted `ARCH-052-SHARED-003` contract is released in Shared 2.6.0; the dependency and lockfile were updated to consume that contract. Repository-wide lint/unit/security checks remain non-clean for unrelated existing issues listed above; focused task checks, typecheck and production build pass.
 
 ### Assumptions
 
-Execution will verify its current workspace, source state, dependency versions and test harness.
+The prepared launcher packet authoritatively claimed this task and supplied the canonical mirrored task worktrees; the portable-definition text above was not treated as the current lifecycle state. Existing purpose identities and ARCH-047 immutable approval/digest rules remain authoritative.
 
 ### Unresolved Issues
 
-None established by implementation.
+Repository-wide lint and broad unit/security checks have pre-existing failures; the focused task suites and production build passed. No source-level blocker remains within this task's Admin ownership.
 
 ### Architectural Concerns
 
 Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
+
+No additional cross-repository changes were required; the released Shared contract was consumed as specified.
 
 
 ## Architect Review
