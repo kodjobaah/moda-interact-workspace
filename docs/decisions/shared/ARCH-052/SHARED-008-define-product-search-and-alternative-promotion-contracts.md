@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-10-30T06:40:55Z
@@ -27,7 +27,7 @@ updated: 2026-10-30
 
 Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`.
 
-Portable task definition: **defined but not materialised**; developer branches/worktrees/commits are not asserted.
+Task materialised and claimed through the prepared launcher on 2026-10-30. The launcher created dedicated mirrored task worktrees, synchronized both task branches, initialized the implementation submodules, and pushed the Attempt 1 claim before implementation began.
 
 ## Objective
 
@@ -60,10 +60,10 @@ The snapshot already has `CommerceProductSchema`, `CommerceToolInputs.commerce_s
 
 ## Work Items
 
-- [ ] Modify exactly the indicated locations in `moda-interact-shared/src/commerce/schemas.ts`.
-- [ ] Add deterministic product search/exact-product schema fixtures to `src/commerce/contracts.test.ts`.
-- [ ] Verify `src/commerce/index.ts` already exports `schemas.ts` and make no new entrypoint if so.
-- [ ] Run declared Shared validation and preserve existing conversation-tool tests.
+- [x] Modify exactly the indicated locations in `moda-interact-shared/src/commerce/schemas.ts`.
+- [x] Add deterministic product search/exact-product schema fixtures to `src/commerce/contracts.test.ts`.
+- [x] Verify `src/commerce/index.ts` already exports `schemas.ts` and make no new entrypoint if so.
+- [x] Run declared Shared validation and preserve existing conversation-tool tests.
 
 ## Interfaces / Contracts
 
@@ -174,17 +174,17 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Current `CommerceProductSchema`/search tool contracts remain recognisable and unchanged except for three specified optional fields.
-- [ ] `commerce_get_product` input and output match the exact structures above; no new product data store, independent response envelope or AI-choice schema appears.
-- [ ] Existing products without the new optional fields still parse.
-- [ ] A structurally valid product with misleading `saleEvidence` does not become automatically approved by Zod; the relevant MCP/Background business layers remain accountable.
-- [ ] Missing required existing product fields, unexpected keys and incorrect exact-product input types fail schema parsing.
+- [x] Current `CommerceProductSchema`/search tool contracts remain recognisable and unchanged except for three specified optional fields.
+- [x] `commerce_get_product` input and output match the exact structures above; no new product data store, independent response envelope or AI-choice schema appears.
+- [x] Existing products without the new optional fields still parse.
+- [x] A structurally valid product with misleading `saleEvidence` does not become automatically approved by Zod; the relevant MCP/Background business layers remain accountable.
+- [x] Missing required existing product fields, unexpected keys and incorrect exact-product input types fail schema parsing.
 
 ## Validation
 
-- [ ] `npm run typecheck`, `npm test`, `npm run build` in Shared.
-- [ ] Unit fixtures: old product record; new optional fields; `product: null`; exact product ID; malformed ID; unknown keys; wrong types.
-- [ ] Existing `CommerceToolInputs` and output fixture tests continue passing; `git diff --check`.
+- [x] `npm run typecheck`, `npm test`, `npm run build` in Shared.
+- [x] Unit fixtures: old product record; new optional fields; `product: null`; exact product ID; malformed ID; unknown keys; wrong types.
+- [x] Existing `CommerceToolInputs` and output fixture tests continue passing; `git diff --check`.
 
 ## Stop Condition
 
@@ -198,27 +198,45 @@ After Work Items, Acceptance Criteria and Validation pass, update Completion Rep
 
 ### Status
 
-Not Started — portable definition; no task claim.
+Ready for Review. Attempt 1 was claimed and pushed by the prepared launcher. Implementation commit `ed242ab` is pushed on the implementation task branch.
 
 ### Files Changed
 
-None yet.
+`src/commerce/schemas.ts` and `src/commerce/contracts.test.ts` in `moda-interact-shared`.
 
 ### Work Completed
 
-None yet.
+- Added the exact structural `CommerceProductSaleEvidenceSchema` and type, plus the three requested optional fields to the existing `CommerceProductSchema`; all original fields and URL validation remain unchanged.
+- Added exact-product input/output schemas to the existing tool dictionaries without changing search input/output shapes or adding another product model/envelope.
+- Added fixtures for legacy and extended product records, structurally misleading price evidence, `product: null`, malformed IDs/types and unknown keys.
+- `src/commerce/index.ts` already exports `schemas.ts`; no new package entrypoint was needed. Product provider and promotion business checks remain outside Shared.
+
+### Prepared Launcher and Start-of-Attempt Synchronization Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHARED-008`, branch `task/ARCH-052-SHARED-008`, prepared start HEAD `961ec7b2aa172ce86e7c0cf014f561b8ff7ff3b1`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHARED-008`, repository `moda-interact-shared`, branch `task/ARCH-052-SHARED-008`, prepared start HEAD `683a7e55b1d173445c585342529ee3a04f28a22d`.
+- Both worktrees were created fresh; each task branch required no remote fast-forward and already included `origin/main`. Recursive implementation submodule synchronization and update passed; no recursive submodule entries were present and status was `ready`.
+- Attempt 1 claim commit `21fdc5acce5c056efcc9c7adb6809250c6989eea` was committed and pushed by the launcher. No shared/default checkout or another task worktree was used for implementation.
+- Implementation commit `ed242ab` is pushed on `task/ARCH-052-SHARED-008`. Parent report commit will be recorded after it is published.
 
 ### Validation Results
 
-Not run.
+- `npm ci --prefer-offline` installed the locked dependencies. npm reported three audit notices (1 low, 2 high) and five pending package install scripts; these did not prevent the successful build or tests.
+- `npm run typecheck` passed.
+- Focused commerce contract tests passed: 13 tests, 0 failures.
+- `npm test` passed: 385 tests, 384 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is not configured (BullMQ trace-context integration).
+- `npm run build` passed and generated the Commerce JS and declarations.
+- A clean import from `@modainteract/moda-interact-shared/commerce` verified the product and sale-evidence schemas and exact-product tool contracts are available through the existing public entrypoint.
+- `git diff --check` passed.
 
 ### Deviations
 
-None reported.
+The initial sandboxed dependency install and validation attempts were denied while creating `node_modules`, the `tsx` IPC socket and a temporary tsup config. Retried with the required repository/temp-file access; dependency installation and all required validation completed successfully.
 
 ### Assumptions
 
-Confirm execution baseline in dedicated task worktree.
+MCP will supply provider-owned identity, URL safety and current-price semantics; Background will decide whether observed price evidence supports customer-facing wording.
 
 ### Unresolved Issues
 
