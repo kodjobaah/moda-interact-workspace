@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 52
-executor: codex
-claimed_at: 2026-10-30T11:53:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-048-BACKGROUND-007
@@ -127,7 +127,7 @@ The launcher must prepare matching mirrored `task/ARCH-048-BACKGROUND-011` branc
 
 ### Status
 
-Ready for Review.
+Attempt 1 implementation and reported validation are accepted. The implementation branch is published at `fd780e32e9a3f3f22940f58f9e10678d85bfd1af`; the parent task/report branch is published at `8cd799d3bdfc5201fe7cf6f9a7bd0f2c5e88eda0`. Task status is Complete at Attempt 1.
 
 ### Files Changed
 
@@ -163,7 +163,9 @@ Launcher confirmed BG007–BG010 dependencies complete and available at the prep
 
 ### Unresolved Issues
 
-The broader selected unit suite retains the unrelated BG009 redaction assertion mismatch described above. Architect review should decide whether that pre-existing test needs reconciliation.
+The broader selected unit suite retains one unrelated BG009 redaction assertion mismatch (`connection unavailable` expected versus `PERSISTENCE_FAILURE` emitted). This does not fail the BG011-focused suites or block this acceptance.
+
+The worker failure path logs exception message/object details. The architect accepts this temporarily for non-live testing, consistent with the testing-stage exception recorded for BG010. Before live activation, bound/sanitize these fields and add sentinel coverage proving sensitive values do not reach logs.
 
 ### Git / VCS
 
@@ -200,28 +202,30 @@ Merged to implementation `main`: no. Merged to workspace `main`: no.
 
 Event-only Woo capture cannot discover a never-delivered checkout/order change; this must remain a deployment gate.
 
-## Architect Review
+## Architect Review — Attempt 1 (Accepted)
 
 ### Review Status
 
-Pending architect review.
+Accepted. The implementation branch `task/ARCH-048-BACKGROUND-011` is published at `fd780e32e9a3f3f22940f58f9e10678d85bfd1af`, and the parent task/report branch is published at `8cd799d3bdfc5201fe7cf6f9a7bd0f2c5e88eda0`. Task status is Complete; attempt remains 1.
 
 ### Review Notes
 
-No implementation reviewed.
+The orchestration dispatches only proven same-generation retries, awaits resumed-outreach settlement, and preserves retry evidence. Candidate cleanup validates generation/event/activity/job identity under the checkout lock and uses compare-and-remove. Worker routing keeps Woo, legacy Shopify and unknown source markers isolated. The implementation stays within the task's permitted scope.
+
+Raw exception detail in the Woo failure log is accepted only for the current non-live testing stage. Before live activation, replace it with bounded non-sensitive error metadata and add sentinel coverage. No live sending, deployment, production queue operation or terminal system test is authorized by this acceptance.
 
 ### Reviewed Files
 
-None.
+Reviewed the task-owned source diff in `contracts.ts`, `woo-activity-watermark.store.ts`, `woo-candidate-queue.service.ts`, `woo-recovery-composition.ts`, `woo-recovery-orchestrator.service.ts`, `pending-recovery-candidate.worker.ts`, and the associated focused unit, integration and typecheck fixtures. Reviewed the Completion Report and branch/worktree evidence.
 
 ### Validation Reviewed
 
-None.
+The report records successful typecheck, focused lint, build and `git diff --check`; 49 focused unit tests; 40 integration tests across the required composed, worker, fault, Shopify legacy and regression suites. These results were reviewed as reported and were not independently rerun. The broader selected Woo unit run has one documented unrelated BG009 redaction assertion mismatch; this is not a BG011 blocker.
 
 ### Architecture Conformance
 
-Not assessed.
+Conforms to the BG011 orchestration-only contract and preserves the accepted BG007–BG010 business services. Test/staging rollout instructions protect Shopify queue entries and durable PostgreSQL rows. No production rollout or activation is implied.
 
 ### Follow-up
 
-None.
+Before live activation, sanitize raw exception logging and add sensitive-sentinel coverage. The terminal ARCH-048 system test remains pending its remaining dependencies, including ARCH-046-WOOCOMMERCE-003.
