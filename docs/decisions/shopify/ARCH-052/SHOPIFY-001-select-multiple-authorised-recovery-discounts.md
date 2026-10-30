@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-30T16:43:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-BACKGROUND-009
@@ -175,24 +175,30 @@ No cross-repository or schema ownership gap was identified. Architect review sho
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+1. **Enforce the 8,192-byte limit on the complete request body.** The route calls `request.formData()` before applying a size check, then measures only the UTF-8 size of the `selectedDiscountIds` value. This does not meet the task requirement to reject payloads over 8,192 bytes: oversized values in other form fields or overall form encoding can pass that check, and the body is already parsed. Add a total-body byte limit that is enforced before unbounded form parsing, including when `Content-Length` is absent or inaccurate. Preserve the existing 400 response for an oversized request and add regression coverage for the full-body limit.
+
+2. **Execute the PostgreSQL transaction/race integration test.** The required test was added but not run because Testcontainers could not find a working container runtime. The task specifically requires real PostgreSQL verification of tenant isolation, atomic replacement, idempotence, dormant selections, and stale concurrent revisions. Run the test in an environment with a supported PostgreSQL/container runtime and record the actual result; do not treat the added-but-skipped test as validation evidence.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+- `moda-interact/app/routes/app/settings-save/route.ts`
+- `moda-interact/app/services/recovery-policy/recovery-policy.server.ts`
+- `moda-interact/app/routes/app/recovery-settings/RecoverySettingsView.tsx`
+- `moda-interact/tests/integration/shopify-recovery-discounts.postgres.integration.test.ts`
+- This task's Completion Report and VCS evidence.
 
 ### Validation Reviewed
 
-None for implementation.
+Reviewed the submitted report: 35 focused tests, typecheck, lint, build and `git diff --check` are reported as passing. The PostgreSQL integration test is explicitly reported as not run. These implementation validations were not rerun during architect review; `git diff --check` passed for this review-record edit.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+Changes Requested. The multi-selection transaction, tenant-scoped ID verification, merchant selection semantics, and reported task-worktree isolation otherwise conform. The full request-size contract is not enforced, and the required database concurrency behavior remains unverified.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+Return the same task to `ready` for Attempt 2. Preserve Attempt 1 history. Once both corrections and required validation are complete, resubmit for architect review. Do not promote ARCH-052-SYSTEM-TEST-001 until this task is accepted and its dependencies are complete.
