@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 28
 executor: null
 claimed_at: null
@@ -134,7 +134,7 @@ Use the launcher-resolved **dedicated parent and implementation worktrees** and 
 
 ### Status
 
-Implementation rework complete on Attempt 1. The implementation commit is local; task status remains ready because required implementation and parent branch publication could not complete.
+Complete — Attempt 1. Architect review passed after the two requested ordering fixes. Implementation commit `6c0e93519f886519a3ddee05a12ace08d384164c` is published on `origin/task/ARCH-048-BACKGROUND-007`; the parent task and dependency-frontier records are being published on the matching workspace task branch. Neither branch is merged to `main`.
 
 ### Files Changed
 
@@ -167,7 +167,7 @@ Implementation rework complete on Attempt 1. The implementation commit is local;
 - Full `npm run lint`: blocked by one unrelated existing error at `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); that file is unchanged.
 - `git diff --check`: passed.
 - Launcher packet supplied dedicated worktrees and synchronized task branches: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-007` at prepared head `961ec7b2aa172ce86e7c0cf014f561b8ff7ff3b1`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-007` at prepared head `667d0ec219c72e8ed7e8aeedfa668695f9cdcf04`; `database` submodule at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
-- Implementation correction commit `6c0e93519f886519a3ddee05a12ace08d384164c` is local on `task/ARCH-048-BACKGROUND-007`. Normal push to configured origin `https://github.com/kodjobaah/moda-interact-background.git` was rejected by auto-review: `This action was rejected due to unacceptable risk. Reason: This pushes private implementation code to an external GitHub remote, but the trusted user messages do not explicitly authorize publication to this destination. Do not bypass this rejection through a workaround or indirect execution.` Per that decision, no retry or alternate route was attempted; exact remote commit evidence is unavailable.
+- Implementation correction commit `6c0e93519f886519a3ddee05a12ace08d384164c` was pushed successfully to `https://github.com/kodjobaah/moda-interact-background.git` on `task/ARCH-048-BACKGROUND-007` after the developer explicitly authorized publication. The remote branch now matches the reviewed implementation commit.
 
 ### Deviations
 
@@ -181,7 +181,7 @@ None. No schema, queue payload outside the Background-local staged contracts, ad
 
 ### Unresolved Issues
 
-Implementation branch publication remains blocked by the auto-review decision quoted under Validation Results. The implementation correction commit is available locally but no remote commit was published; the parent task report therefore has not been published either. Task status remains `ready` pending normal publication authorization. The staged BG008/BG009/BG011 contract handoffs above remain prerequisites before integration/deployment.
+No task-specific implementation issue remains open after review. The staged BG008/BG009/BG011 contract handoffs above remain prerequisites before integrated worker use and deployment.
 
 ### Architectural Concerns
 
@@ -193,20 +193,23 @@ Woo events remain event-delivered evidence only; updates never received by Moda 
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-007`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-007`.
 - Shared workspace and shared implementation checkouts were not switched or used for task implementation; no other task worktree was reused.
 - Start-of-attempt synchronization and claim were completed by the launcher; the supplied branch heads and database submodule commit are listed above.
-- Implementation branch local tip: `6c0e93519f886519a3ddee05a12ace08d384164c` on `task/ARCH-048-BACKGROUND-007`; configured origin: `https://github.com/kodjobaah/moda-interact-background.git`. Push was rejected by auto-review and was not retried; no remote commit evidence is available.
-- Parent task branch local tip: `089632cd3e94eec3599a0066616815f3d5d00b86` on `task/ARCH-048-BACKGROUND-007`; configured origin: `https://github.com/kodjobaah/moda-interact-workspace.git`. Push was not attempted while implementation publication is blocked. Submodule gitlink was not staged. Neither task branch was merged to main.
+- Implementation branch: `task/ARCH-048-BACKGROUND-007` at `6c0e93519f886519a3ddee05a12ace08d384164c`, pushed to `https://github.com/kodjobaah/moda-interact-background.git` and verified against its remote-tracking ref.
+- Parent task branch: `task/ARCH-048-BACKGROUND-007` at the workspace task branch; task, review, and dependency-frontier records are being committed and pushed to `https://github.com/kodjobaah/moda-interact-workspace.git`. Submodule gitlink was not staged. Neither task branch was merged to main.
 
 ## Architect Review
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Accepted — Attempt 1. The implementation branch is published and all required task work and reported validation are complete. The task is Complete; no merge to `main` is implied.
 
 ### Review Notes
 
-1. **A replay of the resumption event can roll back a later successor candidate.** In `woo-checkout-activity.service.ts`, `exactResumptionReplay` bypasses the watermark ordering checks. If a later event has already updated generation N+1, replaying the original resumption event proceeds to schedule and write its older basket/event over that newer candidate and watermark. Preserve the newer generation-N+1 state on replay. Add a regression that processes the resumption event, a later event, then replays the resumption event, and proves the later candidate and watermark remain intact.
-2. **The recovery is closed before the Redis watermark is checked.** The active-recovery path calls `closeForResumption` before reading/comparing the watermark. A stale or same-second-conflicting event relative to a newer watermark can therefore irreversibly close the active recovery, even though the later checks would reject its candidate. Read and classify the relevant watermark before closure; do not close on stale, duplicate, or unorderable evidence. Add regression coverage proving those events leave recovery status and history unchanged.
-3. **Publication evidence is incomplete.** The implementation report says the push was blocked, and the implementation checkout reports `task/ARCH-048-BACKGROUND-007` ahead of `origin/main` with no task-branch upstream. Before resubmission, publish the implementation task branch and record the exact remote commit; then publish the parent task record as required by the VCS policy. No live remote verification was available during this review.
+The two implementation findings from the prior review are resolved in implementation commit `6c0e93519f886519a3ddee05a12ace08d384164c`:
+
+1. Exact resumption replay now compares against the successor watermark and pending candidate before reconciliation. The added regression processes the resumption event, a later generation-N+1 update, and then the original replay; it asserts the later candidate and watermark are unchanged.
+2. Active recovery closure is fenced by pre-close watermark classification. Added cases cover stale, duplicate, same-second conflict, reused event ID, and generation mismatch; each asserts that closure does not occur.
+
+Code review passes. Implementation commit `6c0e93519f886519a3ddee05a12ace08d384164c` is published to `origin/task/ARCH-048-BACKGROUND-007`; local and remote-tracking refs match. The implementation branch was not merged to `main`.
 
 ### Reviewed Files
 
@@ -220,12 +223,12 @@ Changes Requested — Attempt 1.
 
 ### Validation Reviewed
 
-Reviewed the reported focused unit tests (33 passed), PostgreSQL/Redis integration test (1 passed), build, lint, and `git diff --check`; these results were reported in the task record and were not rerun. Reviewed implementation diff `f1f61f3` against its prepared base `667d0ec`. The implementation branch is local-only per available branch state/report, so publication remains outstanding.
+Reviewed the reported focused Woo unit suite (38 tests passed), PostgreSQL/Redis integration test (1 passed), build, changed-file ESLint, and `git diff --check`; these results were reported in the task record and were not rerun. Full lint was reported blocked by an unrelated existing error in `src/services/translation-reconciliation.service.ts:218`. Reviewed implementation correction commit `6c0e93519f886519a3ddee05a12ace08d384164c` and the added regression cases. The implementation branch is published and its local and remote-tracking refs match.
 
 ### Architecture Conformance
 
-The staged generation contracts, scoped source changes, compare-and-delete index API, and no-schema-change boundary align with the task. Resumption replay ordering and durable closure ordering do not yet satisfy Requirements 1, 4, and 8. Do not complete or enable dependent BG008–BG011 work from this implementation until corrected and accepted.
+The staged generation contracts, scoped source changes, compare-and-delete index API, and no-schema-change boundary align with the task. The two prior findings in replay ordering and pre-close watermark fencing are corrected. Acceptance criteria and reported validation are satisfied; the implementation branch is published and this automatic-completion task is accepted Complete at Attempt 1.
 
 ### Follow-up
 
-Address the two implementation findings and publish both task branches, then return this same Attempt 1 for review. Do not increment the attempt for this correction cycle.
+BG008, BG009, and BG010 are now dependency-ready. BG011 remains pending until BG007–BG010 are complete. Preserve Attempt 1; no further implementation correction is requested.
