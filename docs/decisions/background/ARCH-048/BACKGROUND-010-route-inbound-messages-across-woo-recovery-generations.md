@@ -30,7 +30,7 @@ Architecture ID: `ARCH-048`.
 
 Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`.
 
-Coordinator: `moda_architect`. **Defined but not materialised**. Requires BG007 Complete and launcher-resolved dedicated worktrees.
+Coordinator: `moda_architect`. Originally defined from the 2026-10-29 source snapshot, then materialised on the parent task branch before execution. On 2026-10-30 the launcher verified BG007 Complete, prepared dedicated parent and implementation worktrees, and claimed Attempt 1.
 
 ## Objective
 
@@ -68,11 +68,11 @@ No new messaging webhook, merchant settings or WhatsApp template, no automatic s
 
 ## Work Items
 
-- [ ] Add and consume `RecoveryRoute.mode` with verified current/historical classification.
-- [ ] Implement Woo lineage-aware unreferenced selection without relaxing cross-shop ambiguity.
-- [ ] Preserve exact outbound-context routing to old conversations and dedup of repeated provider messages.
-- [ ] Prevent activity stamps and AI/automation work for historical routes across content types.
-- [ ] Test active, historical, mixed-shop, concurrency, STOP and Shopify regression scenarios.
+- [x] Add and consume `RecoveryRoute.mode` with verified current/historical classification.
+- [x] Implement Woo lineage-aware unreferenced selection without relaxing cross-shop ambiguity.
+- [x] Preserve exact outbound-context routing to old conversations and dedup of repeated provider messages.
+- [x] Prevent activity stamps and AI/automation work for historical routes across content types.
+- [x] Test active, historical, mixed-shop, concurrency, STOP and Shopify regression scenarios.
 
 ## Interfaces / Contracts
 
@@ -91,19 +91,19 @@ No new messaging webhook, merchant settings or WhatsApp template, no automatic s
 
 ## Acceptance Criteria
 
-- [ ] Generation 1 closed and generation 2 with confirmed outbound: unreferenced response routes to **generation 2** when it is the sole eligible owner, not `MULTIPLE_RECOVERIES`.
-- [ ] Explicit reply to generation 1's earlier provider message remains stored on generation 1's historical conversation and causes **no recovery automation** for generation 1.
-- [ ] Two different eligible shops/checkouts sharing the phone remain ambiguous; no silent most-recent cross-shop selection.
-- [ ] Forged/unsent provider context, unregistered sender or mismatched phone cannot link to any generation.
-- [ ] STOP still takes priority; current conversation AI/human ownership, inbound moderation and dedup are preserved.
-- [ ] Closure/reentry race does not revive old recovery, misroute, duplicate inbound or enqueue an obsolete AI turn.
-- [ ] Existing Shopify routing unit tests remain passing.
+- [x] Generation 1 closed and generation 2 with confirmed outbound: unreferenced response routes to **generation 2** when it is the sole eligible owner, not `MULTIPLE_RECOVERIES`.
+- [x] Explicit reply to generation 1's earlier provider message remains stored on generation 1's historical conversation and causes **no recovery automation** for generation 1.
+- [x] Two different eligible shops/checkouts sharing the phone remain ambiguous; no silent most-recent cross-shop selection.
+- [x] Forged/unsent provider context, unregistered sender or mismatched phone cannot link to any generation.
+- [x] STOP still takes priority; current conversation AI/human ownership, inbound moderation and dedup are preserved.
+- [x] Closure/reentry race does not revive old recovery, misroute, duplicate inbound or enqueue an obsolete AI turn.
+- [x] Existing Shopify routing unit tests remain passing.
 
 ## Validation
 
-- [ ] `npx vitest run tests/unit/services/recovery-routing.service.test.ts` and focused new inbound-processing/worker tests.
-- [ ] PostgreSQL-backed multi-generation routing test using the existing `node scripts/test-integration.mjs` runner if needed; include both same-checkout and cross-shop candidate SQL behaviour.
-- [ ] `npm run build`, focused lint as available, `git diff --check`; record exact command/results and any known baseline.
+- [x] `npx vitest run tests/unit/services/recovery-routing.service.test.ts` and focused new inbound-processing/worker tests.
+- [x] PostgreSQL-backed multi-generation routing test using the existing `node scripts/test-integration.mjs` runner if needed; include both same-checkout and cross-shop candidate SQL behaviour.
+- [x] `npm run build`, focused lint as available, `git diff --check`; record exact command/results and any known baseline.
 
 ## Stop Condition
 
@@ -117,35 +117,73 @@ Use exact launcher-prepared dedicated parent/implementation worktrees, with phys
 
 ### Status
 
-Not Started — portable, not materialised.
+Implementation and validation are complete locally. Task remains `in_progress` while implementation-branch publication awaits authorization for the configured remote. The Architect Review section remains pending and unmodified.
 
 ### Files Changed
 
-None.
+- `src/services/recovery-routing.service.ts`
+- `src/services/whatsapp-inbound-processing.service.ts`
+- `tests/unit/services/recovery-routing.service.test.ts`
+- `tests/unit/services/whatsapp-inbound-processing.service.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
+- `tests/integration/woo-recovery-inbound-routing.integration.test.ts`
 
 ### Work Completed
 
-None.
+`RecoveryRoute` now distinguishes active from historical conversations. Unreferenced replies consider only provider-confirmed outbound conversations whose recovery is `MESSAGE_SENT` or `ENGAGED`, select the newest generation within each `(shopId, checkoutToken)` lineage, and remain ambiguous when more than one eligible shop/checkout owner matches. The latest generation and status are rechecked before turn scheduling.
+
+Explicit replies continue to the exact outbound conversation after it closes. Previously stored inbound message IDs stay pinned to their persisted conversation. Historical text and unsupported content are inserted idempotently without changing pending-turn state; historical audio is reserved on its original conversation without transcription, fallback sends or turn scheduling. Closed/superseded routes do not stamp checkout activity or enqueue AI work. STOP, abuse admission, shop eligibility and the existing active Shopify path remain in place. Routing decisions use Shared structured logging with a bounded digest of the provider message ID.
+
+Implementation commit: `753c17184347215dd309e2f9bb74dc09e4820676` (`feat(background): route replies across Woo recovery generations`), local branch `task/ARCH-048-BACKGROUND-010`.
 
 ### Validation Results
 
-Not run.
+- Focused routing, inbound-processing and WhatsApp worker unit tests: 61 passed across 3 files.
+- PostgreSQL multi-generation routing integration tests via `node scripts/test-integration.mjs tests/integration/woo-recovery-inbound-routing.integration.test.ts`: 2 passed. The test uses Colima's disposable PostgreSQL and verifies latest-generation routing, historical context routing, cross-shop ambiguity and suppression when the latest generation has not sent.
+- `npm run build`: Prisma generation and TypeScript build passed.
+- Focused ESLint on all 6 changed files: passed.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None.
+No implementation or contract changes outside the task scope. Historical inbound persistence intentionally does not update the conversation turn version, preventing an already queued turn from consuming a closed-generation reply.
 
 ### Assumptions
 
-2026-10-29 uploaded snapshot. No live Git or provider deployment is claimed.
+The launcher preparation packet is authoritative for worktree, synchronization, dependency-gate, submodule and claim evidence. PostgreSQL recovery rows and their generation/status are the durable authority for current inbound ownership.
 
 ### Unresolved Issues
 
-None at definition time.
+The implementation branch has not been published. Its configured origin is `https://github.com/kodjobaah/moda-interact-background.git`; the task parent origin is `https://github.com/kodjobaah/moda-interact-workspace.git`. The implementation commit remains local pending authorization. No publish attempt or workaround was made in this task. The parent report update is being committed locally; task status therefore remains `in_progress`.
+
+### Git / VCS Evidence
+
+Task branch: `task/ARCH-048-BACKGROUND-010`.
+
+Physical worktree isolation:
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-010` / `task/ARCH-048-BACKGROUND-010`
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-010` / `task/ARCH-048-BACKGROUND-010`
+- Both worktrees were newly created for this task; no other task worktree was reused.
+- Shared workspace and implementation source checkouts were not switched or mutated for task implementation; no submodule gitlink was staged.
+
+Start-of-attempt synchronization:
+
+- Parent task branch fast-forward: not needed; `origin/main` incorporated: already current.
+- Implementation task branch fast-forward: not needed; `origin/main` incorporated: already current.
+- Recursive submodule sync and update: passed; `database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
+- Launcher claim: Attempt 1 by `codex`, parent claim commit `baa21314da7f71e2437f953d53fcd9e36aad2768`, pushed successfully.
+
+Implementation repository: commit `753c17184347215dd309e2f9bb74dc09e4820676`; origin `https://github.com/kodjobaah/moda-interact-background.git`; task branch push pending authorization.
+
+Parent workspace: this task file is updated on `task/ARCH-048-BACKGROUND-010`; origin `https://github.com/kodjobaah/moda-interact-workspace.git`; report commit is local and not pushed. No submodule gitlink is staged.
+
+Neither task branch has been merged to `main`.
 
 ### Architectural Concerns
 
-Explicit historical replies must remain auditable without creating new old-generation automation.
+No new concerns. The architecture's existing event-only completeness limitation remains unchanged.
 
 ## Architect Review
 
