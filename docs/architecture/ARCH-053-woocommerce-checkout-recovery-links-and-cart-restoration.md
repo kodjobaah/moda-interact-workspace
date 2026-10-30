@@ -11,7 +11,7 @@ updated: 2026-10-30
 
 ## Status
 
-**In Progress.** ARCH-053-DATABASE-001, SHARED-001, SHARED-002 and BACKGROUND-001 are Complete. BACKGROUND-002, API-002 and WOOCOMMERCE-001 are Ready; API-001 is Complete. Remaining implementation tasks stay gated by their explicit dependencies. No consumer deployment or production activation is implied. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here.
+**In Progress.** ARCH-053-DATABASE-001, SHARED-001, SHARED-002, BACKGROUND-001, BACKGROUND-002 and API-001 are Complete. API-002 and WOOCOMMERCE-001 are Ready; BACKGROUND-003 is Ready for a narrowly scoped Attempt 2 validation correction after an architect decision resolving its installation-revocation blocker. Remaining implementation tasks stay gated by their explicit dependencies. No consumer deployment or production activation is implied. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here.
 
 ## Problem and inspected baseline
 
@@ -51,7 +51,7 @@ Baseline ARCH-048 Background implementation remains one-generation-only. The **t
 
 **R3 — Durable snapshot storage.** A new nullable `CheckoutRecovery.wooRestoreSnapshot Json?` is written with the recovery's display `lineItems` in the SAME admission transaction from the mature, watermark-verified candidate. `lineItems` remains the display schema and must not be repurposed for coupons. Historical snapshots/generation values are immutable after creation; only the owning architect-approved ARCH-048 transitions may close them. Unsupported/unknown snapshots do not produce a restore link. No temporary WordPress transient becomes the authoritative snapshot.
 
-**R4 — Stable idempotent generation URL.** Background creates a cryptographically random 32-byte base64url bearer token once at successful recovery admission, and stores a **full merchant HTTPS URL** in the existing `checkoutUrl` column within the admission transaction. Format: `<canonicalSiteUrl>/?moda_interact_resume=1&r=<recoveryId>&t=<43-char-base64url-token>`, with safe URL joining supporting a merchant home subpath. Source host/path MUST come only from verified `WooCommerceInstallation.canonicalSiteUrl`; require the resolved hostname to agree with `Shop.domain` and fail closed when not compatible. Never place PII, coupons, items or a live Woo session identifier in the URL. On retries/unique conflicts, reuse stored URL; never rotate/mint a different one for the same recovery. `checkoutUrl` is a bearer capability (already permitted in the existing schema): restrict DB access, never log it, and set `Cache-Control: no-store`, `Referrer-Policy: no-referrer` on landing. The URL expires for resolution on terminal/superseded recovery or beyond existing **seven-day checkout-freshness window from last external activity** (and if installation/shop becomes inactive); no 30-minute transient/hard expiry. Link is never proof of consent or payment.
+**R4 — Stable idempotent generation URL.** Background creates a cryptographically random 32-byte base64url bearer token once at successful recovery admission, and stores a **full merchant HTTPS URL** in the existing `checkoutUrl` column within the admission transaction. Format: `<canonicalSiteUrl>/?moda_interact_resume=1&r=<recoveryId>&t=<43-char-base64url-token>`, with safe URL joining supporting a merchant home subpath. Source host/path MUST come only from verified `WooCommerceInstallation.canonicalSiteUrl`; require the resolved hostname to agree with `Shop.domain` and fail closed when not compatible. Never place PII, coupons, items or a live Woo session identifier in the URL. On retries/unique conflicts, reuse stored URL; never rotate/mint a different one for the same recovery. `checkoutUrl` is a bearer capability (already permitted in the existing schema): restrict DB access, never log it, and set `Cache-Control: no-store`, `Referrer-Policy: no-referrer` on landing. The URL expires for resolution on terminal/superseded recovery or beyond existing **seven-day checkout-freshness window from last external activity** (and if installation/shop becomes inactive); no 30-minute transient/hard expiry. **An inactive/revoked installation is an admission denial, not an otherwise-admitted recovery with a null URL:** deny before admission and recheck installation/consent under the insertion transaction. Only otherwise eligible active installations with missing/unsupported restore evidence or invalid/mismatched site configuration may persist `checkoutUrl:null` with a bounded omission reason. When installation is revoked after a successful earlier admission, preserve historical records and fail closed on subsequent link resolution/outreach. Link is never proof of consent or payment.
 
 **R5 — Authenticated resolution.** New installation-authenticated API `POST /v1/woocommerce/recovery-restore/resolve` body `{schemaVersion:'woo.restore.resolve.v1', recoveryId, token}` (no query auth). API derives `shopId` from `WooInstallationAuthenticator`, selects `CheckoutRecovery` by `id` plus `shopId`, validates random token against the **stored URL** using bounded parsing and constant-time hash comparison, requires the latest generation for that `(shopId, checkoutToken)` and status `DETECTED|MESSAGE_SENT|ENGAGED`, no terminal/completed flags, valid current shop/installation and valid freshness, and `wooRestoreSnapshot.kind === 'supported'`. On success return the **sole, complete v1 response** `{schemaVersion:'woo.restore.resolve.v1', status:'eligible', recoveryId, checkoutKey, snapshot, outreachOffer}`; NEVER send contact/recipient/outreach/credit information. For denial return uniform `404 {error:'restore_unavailable'}`; malformed request `400`; unavailable dependency `503`, no sensitive info in logs. A read does **not** change recovery status or mark activity. If live order evidence exists, it must suppress checkout restoration; missing/unreceived external order activity cannot be called definitive proof of safety.
 
@@ -132,7 +132,7 @@ Node uses `@modainteract/moda-interact-shared/logging` for generic structured ev
 
 ## Decisions / Tasks
 
-The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001, SHARED-001, SHARED-002, BACKGROUND-001 and API-001 Complete**; **BACKGROUND-002, API-002 and WOOCOMMERCE-001 are Ready**. Other tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
+The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001, SHARED-001, SHARED-002, BACKGROUND-001, BACKGROUND-002 and API-001 Complete**; **BACKGROUND-003 (focused validation-only rework), API-002 and WOOCOMMERCE-001 are Ready**. Other tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
@@ -141,11 +141,11 @@ The task YAML files are authoritative for status and dependency eligibility. The
 | `ARCH-053-SHARED-002` | `moda_shared` | Complete | SHARED-001 |
 | `ARCH-053-API-001` | `moda_api` | Complete | SHARED-002 |
 | `ARCH-053-BACKGROUND-001` | `moda_background` | Complete | SHARED-002 |
-| `ARCH-053-BACKGROUND-002` | `moda_background` | Ready | BACKGROUND-001, DATABASE-001 |
+| `ARCH-053-BACKGROUND-002` | `moda_background` | Complete | BACKGROUND-001, DATABASE-001 |
 | `ARCH-053-WOOCOMMERCE-001` | `moda_woocommerce` | Ready | API-001, BACKGROUND-001 |
 | `ARCH-053-WOOCOMMERCE-004` | `moda_woocommerce` | Pending | WOOCOMMERCE-001 |
 | `ARCH-053-API-002` | `moda_api` | Ready | SHARED-002, DATABASE-001 |
-| `ARCH-053-BACKGROUND-003` | `moda_background` | Pending | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
+| `ARCH-053-BACKGROUND-003` | `moda_background` | Ready (Attempt 2 validation) | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
 | `ARCH-053-BACKGROUND-004` | `moda_background` | Pending | ARCH-052-BACKGROUND-008 |
 | `ARCH-053-API-003` | `moda_api` | Pending | API-002, SHARED-002, BACKGROUND-004 |
 | `ARCH-053-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | WOOCOMMERCE-001, API-002 |
@@ -169,6 +169,7 @@ Only system-test tasks may depend on another system test. `SYSTEM-TEST-003` runs
 
 ## Change History
 
+- 2026-10-30: ARCH-053-BACKGROUND-003 unblocked by architect ruling: inactive/revoked installation is denied before recovery admission and again under the transaction fence, not admitted with `checkoutUrl:null`. Same task returned Ready for focused revocation regression coverage; code baseline retained and no new repository task or migration required. BACKGROUND-002 and ARCH-048-BACKGROUND-011 prerequisites are Complete in the submitted snapshot.
 - 2026-10-30: ARCH-053-DATABASE-001 accepted at Attempt 1; nullable generation-specific JSONB persistence and isolated fresh/upgrade checks are published. No dependent task was promoted while SHARED-002 remained Pending.
 - 2026-10-30: SHARED-002, BACKGROUND-001 and API-001 accepted Complete at Attempt 1. BACKGROUND-002, API-002 and WOOCOMMERCE-001 are Ready. API-001 and WOOCOMMERCE-001 still require the coordinated pre-production cutover before deployment. No producer deployment is implied.
 
