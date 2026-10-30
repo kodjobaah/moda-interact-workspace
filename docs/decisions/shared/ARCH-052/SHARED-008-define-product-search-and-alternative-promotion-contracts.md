@@ -198,7 +198,7 @@ After Work Items, Acceptance Criteria and Validation pass, update Completion Rep
 
 ### Status
 
-Ready for Review. Attempt 1 was claimed and pushed by the prepared launcher. Implementation commit `ed242ab` is pushed on the implementation task branch.
+Ready for Review. Attempt 1 was claimed and pushed by the prepared launcher. Implementation commit `ed242ab` and parent report commit `c16ce4c5` are pushed on their mirrored task branches.
 
 ### Files Changed
 
@@ -218,7 +218,7 @@ Ready for Review. Attempt 1 was claimed and pushed by the prepared launcher. Imp
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHARED-008`, repository `moda-interact-shared`, branch `task/ARCH-052-SHARED-008`, prepared start HEAD `683a7e55b1d173445c585342529ee3a04f28a22d`.
 - Both worktrees were created fresh; each task branch required no remote fast-forward and already included `origin/main`. Recursive implementation submodule synchronization and update passed; no recursive submodule entries were present and status was `ready`.
 - Attempt 1 claim commit `21fdc5acce5c056efcc9c7adb6809250c6989eea` was committed and pushed by the launcher. No shared/default checkout or another task worktree was used for implementation.
-- Implementation commit `ed242ab` is pushed on `task/ARCH-052-SHARED-008`. Parent report commit will be recorded after it is published.
+- Implementation commit `ed242ab` and parent report commit `c16ce4c5` were pushed on their respective `task/ARCH-052-SHARED-008` branches.
 
 ### Validation Results
 
