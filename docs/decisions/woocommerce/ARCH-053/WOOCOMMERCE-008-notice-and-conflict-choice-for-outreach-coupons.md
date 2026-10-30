@@ -53,6 +53,11 @@ No outreach code discovery, Meta message selection, discount creation, overridin
 
 ## Requirements
 
+### Multi-code group customer choice — normative 30 October 2026
+
+Present neutral, source-grounded group results: all offered codes applied natively; one or more rejected/expired; group incompatible with original coupons; or unverifiable. A PARTIAL group must not appear as fully applied. Preserve original applied codes by default. The existing 10-minute, nonce-protected, cart-hash/session-bound choice remains, but session choice state now stores a bounded 1..3 **server-side code array** from the verified receipt (no codes in browser POST/URL). Shopper may explicitly choose `Try the offered set instead`; reapply the entire group natively and atomically from the customer's perspective, restoring the valid original set on any failed/partial attempt. Both Classic and Blocks must show actual recalculated totals and one escaped translated outcome. Do not invent additional checkout confirmation, price guarantees or new persistent storage.
+
+
 - For `APPLIED` or `ALREADY_APPLIED`, show current checkout and Woo's **actually applied** coupon without false savings claim; no error notice.
 - For `REJECTED`, show one customer-readable offer notice. Display “expired” only when Woo supplies reliable expiry evidence; otherwise “The offered discount could not be applied. Your checkout total has been recalculated.” No automatic replacement or historical total.
 - For `UNVERIFIABLE`, show a generic “We could not verify the promotional offer in your message; current checkout discounts apply” without exposing any private IDs. For `NONE/NO_CONFIRMED_OFFER`, no false coupon notice. `AUTOMATIC_NOT_FORCED` must not claim the automatic discount is active; Woo native totals remain authoritative. `NOT_APPLICABLE` must not claim an alternative-product offer applies to this basket.

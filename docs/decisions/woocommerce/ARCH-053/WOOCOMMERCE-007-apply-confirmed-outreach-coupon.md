@@ -15,6 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-052-SHARED-012
 - ARCH-053-API-003
 - ARCH-053-WOOCOMMERCE-005
 - ARCH-053-WOOCOMMERCE-006
@@ -54,6 +55,11 @@ In `moda-interact-woocommerce`, update only:
 No discount discovery, coupon creation, modified expiry or usage constraints, original-cart URL encoding, new WordPress endpoint/bearer, API schema/business policy change, Meta template send, alternative-product insertion or customer-visible conflict-choice UI (WOOCOMMERCE-008 owns that).
 
 ## Requirements
+
+### Confirmed multi-code group application — normative 30 October 2026
+
+Consume the published `CHECKOUT_OFFERS` v1 branch (2..3 source-verified entries), as well as existing single-code/automatic variants. After explicit customer-confirmed restore, validate existing **original** applied coupons first using native Woo APIs; attempt each recommended CODE item in immutable sent order using `WC()->cart->apply_coupon()`, never trust API's offer as proof of current Woo applicability. Automatic entries are informational and must never be forced into cart coupon state. If any recommended code fails/invalidates an original or any other recommended code, restore the original successfully applied coupon set, recalculate totals and return a typed **GROUP_CONFLICT / GROUP_REJECTED** outcome rather than persisting a partial advertised group. Do not silently remove originals or claim partial savings. Re-run live Woo validation after customer chooses any explicit alternative group in WOOCOMMERCE-008. Log bounded outcomes without coupon values.
+
 
 - Keep the existing no-mutation GET and explicit nonce-protected confirmation POST. V1 resolver is called **after confirmation only**, using the original signed recovery link; no browser-side installation credentials, no external visitor contact/discount parameters.
 - Restore product lines first. Reapply original coupons in their persisted order using WOOCOMMERCE-005. Only then process `outreachOffer`.

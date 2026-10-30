@@ -53,6 +53,11 @@ No new model invocation, MCP tool, offer selection, Woo provider-proof checks, t
 
 ## Requirements
 
+### Multi-discount receipt addition — 30 October 2026
+
+When ARCH-052-BACKGROUND-008 sends a checkout group, the confirmed initial `ConversationMessage.content.recoveryPromise` must retain the exact ordered `InitialOutreachCheckoutOfferSet` from Shared-011, including each provider identity/code, along with `promotionTarget:CHECKOUT`. Do not infer the group from follow-up copy, current merchant settings or an unconfirmed prepared message. Do not write a duplicate offer snapshot, change checkout URLs or modify ARCH-052 task/source files. This task can still be accepted as evidence-only if BG008 demonstrates the complete group receipt contract; otherwise require a precise correction from the owning ARCH-052 task before completing this ARCH-053 checkpoint.
+
+
 - Preserve current `ConversationMessage.content` receipt format, the exact prepared Meta parameter array and all existing final-send, moderation, consent/STOP, credit, retry and provider-acceptance gates.
 - A verified **checkout coupon** requires `kind: 'CODE_OFFER'`, `promotionTarget: 'CHECKOUT'`, nonblank verified `providerDiscountId` and `code`. A verified checkout automatic discount requires `kind: 'AUTOMATIC_OFFER'`, same target and provider ID, **without a coupon code**.
 - For a verified alternative-product promotion, persist `promotionTarget: 'ALTERNATIVE_PRODUCT'`. Preserve the ARCH-052-approved product identity evidence, but do **not** translate its code into a discount on the original checkout.

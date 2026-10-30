@@ -15,6 +15,9 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-052-BACKGROUND-013
+- ARCH-052-ADMIN-003
+- ARCH-052-SHARED-012
 - ARCH-052-BACKGROUND-008
 - ARCH-052-SHOPIFY-001
 - ARCH-052-BACKGROUND-009
@@ -77,6 +80,11 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
 ## Requirements
+
+### Multi-discount certification — normative 30 October 2026
+
+Certify Shopify current merchant multi-selection against a source-backed 1..3 checkout offer group, each code/offer identity, pairwise supported combinations, incompatible/unknown partner fallback, approved plural Meta template revision, a single initial send/credit and the persisted confirmed outbound offer set. No forced application or savings guarantee at send time. Verify attempts, duplicates, messages, STOP/consent, moderator/billing and tenant isolation. Shopify same-line Plus/reciprocal tags must fail closed when unknown; Woo `individualUse` and post-restore apply behavior are separately certified in ARCH-053-SYSTEM-TEST-003.
+
 
 - Record real test evidence and provider/API limitations; a mocked fixture alone is not a claim of live WhatsApp approval.
 - Use architecture-approved test isolation, no customer data or real unauthorized WhatsApp sends.
