@@ -59,6 +59,8 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Requirements
 
+**Attempt 14 immutable presentation contract:** for new initial CODE/AUTOMATIC variants, choose the exact approved registration by `(shopId, senderWabaId, purpose, canonicalLanguageTag, promotionTarget, headerKind)` and an enabled approved published revision. The currently implemented `selectRecoveryAssignment()` rejects multiple candidates for the same purpose/locale before checking `promotionTarget`; the Admin publisher must store the approved discriminator and make it available to Background-008 for deterministic filtering **before** ambiguity detection. Do not select arbitrarily by first record or publish the same identity twice. Alternative-product templates may have **two independently Meta-approved dynamic URL CTA slots**, one bound to `checkout.url` (Resume checkout) and one to `promotion.productUrl` (View offer), using existing Shared-002 `buttons[]` and approved component indexes. Only create such a variant if Meta accepts it; no unapproved button or arbitrary model-written text. No ARCH-052 checkout URL validity checks.
+
 - Meta template preview must be illustrative, but live variables must have proven Background resolver sources; no unbound placeholders.
 - Translation tokens remain protected; require approval/publishing per shop/WABA/language.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
@@ -90,8 +92,10 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Acceptance Criteria
 
+- [x] Different promotion targets under the same existing purpose/language are carried in immutable registration metadata for deterministic downstream selection.
+- [ ] Where a Meta-approved alternative template has two URL CTA components, both semantic bindings and component indexes are immutable, correctly compiled, translated and preserved in registration snapshots.
 - [x] Checkout and alternative promotions have distinct approved presentations using existing purpose names.
-- [x] Alternative promo cannot render with a checkout-discount-only template or unsafe product URL.
+- [ ] Alternative promo cannot render with a checkout-discount-only template or unsafe product URL; runtime product-URL safety must be established by the owning resolver contract.
 - [x] Locale/Meta approval immutability and translation protections unchanged.
 
 ## Validation
@@ -181,7 +185,7 @@ The prepared launcher packet authoritatively claimed this task and supplied the 
 
 ### Unresolved Issues
 
-Repository-wide lint and broad unit/security checks have pre-existing failures; the focused task suites and production build passed. No source-level blocker remains within this task's Admin ownership.
+Repository-wide lint and broad unit/security checks have pre-existing failures; the focused task suites and production build passed. Review found the two-CTA authoring gap recorded below. Product URL runtime safety remains dependent on the owning resolver contract.
 
 ### Architectural Concerns
 
@@ -194,24 +198,27 @@ No additional cross-repository changes were required; the released Shared contra
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1. The implementation is not accepted against the current task acceptance criteria.
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+Reviewed implementation commit `a871a47` in the dedicated Admin worktree. The authoring contract does not support the conditional two-button alternative-product template required by the task: `UrlButton.variable` permits only `checkout.url`, AST validation permits at most one URL button, and validation rejects any other dynamic URL variable. Therefore an approved alternative template with both Resume checkout and View offer buttons cannot be authored and compiled into frozen bindings.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+- `src/lib/admin/whatsapp-templates/authoring/types.ts` — `UrlButton` supports only `checkout.url`.
+- `src/lib/admin/whatsapp-templates/authoring/validation.ts` — limits authoring to one URL button and only permits the checkout URL binding.
+- `src/lib/admin/whatsapp-templates/authoring/compiler.ts` — compiles only the current authorable button bindings.
+- Related publication parsing and snapshot code was inspected for compatibility.
 
 ### Validation Reviewed
 
-None for implementation.
+Reviewed the implementation diff and the task completion report. The report records passing focused Admin authoring, compilation, publication, translation, Meta, typecheck, UI lint, production build, and diff checks, alongside unrelated repository-wide validation failures. No additional tests were run during this review.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+Promotion-target metadata and header-kind selection are carried through authoring and publication. However, the required two-CTA case is not representable end-to-end, so acceptance criterion 2 remains unmet.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+Extend the Admin AST, validation, compiler, immutable snapshots, and translation/publication checks to support both independently indexed URL bindings (`checkout.url` and `promotion.productUrl`) when the approved Meta template contains both buttons. Add focused tests proving both indexes and semantic bindings survive compilation, translation, and registration snapshotting. Resubmit for review after the focused checks pass.
