@@ -18,16 +18,15 @@ The individual task YAML is authoritative. Definitions are based on the 2026-10-
 | [`BACKGROUND-006`](BACKGROUND-006-define-local-woo-recovery-service-contracts.md) | Define local Woo recovery runtime contracts | **Complete** | `ARCH-035-BACKGROUND-001`, `ARCH-035-BACKGROUND-002` |
 | [`BACKGROUND-007`](BACKGROUND-007-close-resumed-woo-recoveries-and-stage-next-candidate.md) | Close resumed recovery; stage generation-aware candidate safely | **Complete** | `BACKGROUND-005` |
 | [`BACKGROUND-008`](BACKGROUND-008-admit-subsequent-woo-recovery-generations.md) | Admit next-generation recoveries and repair same-generation retries | **Complete** | `BACKGROUND-007` |
-| [`BACKGROUND-009`](BACKGROUND-009-settle-resumed-outreach-and-fence-old-generations.md) | Settle unsent old outreach; preserve committed/uncertain sends | **Ready** | `BACKGROUND-007` |
+| [`BACKGROUND-009`](BACKGROUND-009-settle-resumed-outreach-and-fence-old-generations.md) | Settle unsent old outreach; preserve committed/uncertain sends | **Cpmplete** | `BACKGROUND-007` |
 | [`BACKGROUND-010`](BACKGROUND-010-route-inbound-messages-across-woo-recovery-generations.md) | Route current and historical WhatsApp conversations safely | **Complete** | `BACKGROUND-007` |
-| [`BACKGROUND-011`](BACKGROUND-011-compose-multi-generation-woo-recovery-workers.md) | Wire generation-aware worker, queue, retry and index handling | **Pending** | `BACKGROUND-007`, `BACKGROUND-008`, `BACKGROUND-009`, `BACKGROUND-010` |
+| [`BACKGROUND-011`](BACKGROUND-011-compose-multi-generation-woo-recovery-workers.md) | Wire generation-aware worker, queue, retry and index handling | **Ready** | `BACKGROUND-007`, `BACKGROUND-008`, `BACKGROUND-009`, `BACKGROUND-010` |
 
 ## Execution frontier
 
-1. BG007, BG008 and BG010 are Complete after architect review and publication of their implementation branches and completion records. BG010 retains a documented pre-live logging remediation gate.
-2. BG009 remains Ready and can be executed independently.
-3. BG011 remains Pending until BG009 is Complete; BG007, BG008 and BG010 are already Complete. Do not skip the composed-worker correction.
-4. ARCH-048-SYSTEM-TEST-001 is terminal and must wait for all implementation, publication (if any) and existing consent dependencies.
+1. BG007, BG008, BG009 and BG010 are Complete after architect review and publication of their implementation branches and completion records. BG010 retains a documented pre-live logging remediation gate.
+2. BG011 Ready; BG007, BG008 and BG010 are already Complete. Do not skip the composed-worker correction.
+3. ARCH-048-SYSTEM-TEST-001 is terminal and must wait for all implementation, publication (if any) and existing consent dependencies.
 
 ## Implementation and review constraints
 

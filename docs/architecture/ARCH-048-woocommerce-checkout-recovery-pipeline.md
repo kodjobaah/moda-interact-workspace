@@ -176,7 +176,7 @@ Use only published `@modainteract/moda-interact-shared/logging`: bounded `shopId
 | `ARCH-048-BACKGROUND-005` | Background | Complete | BG001–004, ARCH-046 BG002/BG004 |
 | `ARCH-048-BACKGROUND-007` | Background | **Complete** | BG005 |
 | `ARCH-048-BACKGROUND-008` | Background | **Complete** | BG007 |
-| `ARCH-048-BACKGROUND-009` | Background | **Ready** | BG007 |
+| `ARCH-048-BACKGROUND-009` | Background | **CComplete** | BG007 |
 | `ARCH-048-BACKGROUND-010` | Background | **Complete** | BG007 |
 | `ARCH-048-BACKGROUND-011` | Background | Pending | BG007, BG008, BG009, BG010 |
 | `ARCH-046-WOOCOMMERCE-003` | Woo | Ready | Separate returning-consent task, not reopened here |
@@ -212,3 +212,5 @@ The system-test task is **terminal**. No implementation task depends on a system
 - **2026-10-29 — Agreed amendment:** real checkout resumption closes an abandonment generation and reschedules the next; new generation independently eligible for initial outreach, **no cross-generation cap/cooldown**; add fully bounded BG007–BG011 definitions and extend SYSTEM-TEST-001. Supersedes single-generation idempotency prohibition from 2026-10-23 design.
 - 2026-10-25 — ARCH-048 business-service wiring and ARCH-046 shared notifier/final permit prerequisites reconciled; Woo follow-ups remain disabled.
 - 2026-10-23 — Event-only architecture without provider session read; four Background services plus BG006 local contract and BG005 thin composition chosen. Previous proposal permitted at most one recovery generation, now superseded.
+
+- **2026-10-30 — BG009 accepted at Attempt 3:** the required PostgreSQL/Redis integration command passed (3 files, 23 tests), including the `followUpDueAt` regression proving that blocked cancellation leaves the attempt pending, keeps its reservation reserved and makes no provider request. BG009 is Complete; BG010 remains Ready and BG011 remains Pending on BG010.
