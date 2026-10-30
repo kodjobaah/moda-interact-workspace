@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: copilot
 claimed_at: 2026-10-30T13:00:29Z
@@ -74,8 +74,8 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 - [x] Implement new header role UI/validation and preview.
 - [x] Reuse and regression-test the existing paired variant fallback publication/eligibility contract.
-- [ ] Correct `meta/snapshot.ts` frozen IMAGE registration planning: accepted semantic IMAGE role without an example handle produces an unchanged immutable digest and `READY_TO_SUBMIT` intent. Any client-supplied sample URL/handle fails closed.
-- [ ] Add deterministic Admin tests for the IMAGE registration plan across locales, identical-plan replay and frozen hash/role drift; confirm existing TEXT behaviour and no provider call from Admin. The Background provider upload and real Meta approval are tested separately by BACKGROUND-012 and terminal system tests.
+- [x] Correct `meta/snapshot.ts` frozen IMAGE registration planning: accepted semantic IMAGE role without an example handle produces an unchanged immutable digest and `READY_TO_SUBMIT` intent. Any client-supplied sample URL/handle fails closed.
+- [x] Add deterministic Admin tests for the IMAGE registration plan across locales, identical-plan replay and frozen hash/role drift; confirm existing TEXT behaviour and no provider call from Admin. The Background provider upload and real Meta approval are tested separately by BACKGROUND-012 and terminal system tests.
 
 ## Interfaces / Contracts
 
@@ -97,15 +97,15 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Acceptance Criteria
 
-- [ ] IMAGE header with product role compiles, reviews and queues the correct immutable registration intent only through Admin; no Graph template creation or IMAGE approval is falsely asserted by the Admin task.
-- [ ] Admin freezes distinct IMAGE and TEXT template identities for each purpose/promotion target; stored IMAGE examples omit sample handles and external URLs, while content hashes/role validations, replay and translations remain sound.
-- [ ] All existing Admin TEXT approval/publication/fallback behaviour remains intact. BACKGROUND-007 alone enforces runtime `READY` image, safe TEXT fallback or typed no-send. BACKGROUND-012 is independently gated on accepted Admin frozen IMAGE intents.
+- [x] IMAGE header with product role compiles, reviews and queues the correct immutable registration intent only through Admin; no Graph template creation or IMAGE approval is falsely asserted by the Admin task.
+- [x] Admin freezes distinct IMAGE and TEXT template identities for each purpose/promotion target; stored IMAGE examples omit sample handles and external URLs, while content hashes/role validations, replay and translations remain sound.
+- [x] All existing Admin TEXT approval/publication/fallback behaviour remains intact. BACKGROUND-007 alone enforces runtime `READY` image, safe TEXT fallback or typed no-send. BACKGROUND-012 is independently gated on accepted Admin frozen IMAGE intents.
 
 ## Validation
 
-- [ ] Admin authoring/preview, IMAGE-without-sample frozen fingerprint, replay/translation and publication-planning regression suites (Meta provider network mocked).
-- [ ] Admin typecheck, relevant focused unit tests, changed-file lint, build (if required by existing scripts) and `git diff --check`; distinguish known baseline failures from regressions.
-- [ ] Assert no Admin-side fetch/Meta upload and no raw sample handle/URL in frozen snapshots or logs.
+- [x] Admin authoring/preview, IMAGE-without-sample frozen fingerprint, replay/translation and publication-planning regression suites (Meta provider network mocked).
+- [x] Admin typecheck, relevant focused unit tests, changed-file lint, build and `git diff --check`; distinguish known baseline failures from regressions.
+- [x] Assert no Admin-side fetch/Meta upload and no raw sample handle/URL in frozen snapshots or logs.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
@@ -128,9 +128,9 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ## Completion Report
 
-### Status
+### Attempt 1 (Historical)
 
-Blocked — Admin authoring and fallback-selection changes are implemented and focused validation passes. End-to-end Meta IMAGE submission/publication and runtime proof enforcement require upstream capabilities not present in the owned repositories.
+**Historical status: Blocked at Attempt 1; superseded by the clarified Attempt 2 ownership contract below.** The report and validation record below describe the original attempt and are retained as history. Its conclusions that Admin registration must remain blocked on a provider sample handle and that Admin acceptance depended on Background runtime proof are no longer applicable: Admin owns the immutable, handle-free registration intent; Background-012 owns provider sample upload and Background-007 owns runtime image match/fallback.
 
 ### Files Changed
 
@@ -170,23 +170,74 @@ Launcher packet: prepared execution for attempt 1; claim commit `0bd17e5461d5301
 - `npm run test:unit`: 555/572 passed; 17 failed. Failures include unrelated commerce-policy mock harness dependency mismatches, CJS/ESM interop and top-level-await loader errors; the focused authoring/publication/translation/media/Meta scripts above pass.
 - `npm run lint`: blocked by an existing `react-hooks/set-state-in-effect` error in unchanged `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts:26`; focused lint on changed source had no errors.
 
-### Deviations
+### Attempt 1 Deviations (Historical)
 
-The requested `VERIFIED_PROVIDER_IMAGE` five-minute proof/resolver and exact selected product/variant/source-revocation checks are not implemented in Admin or Background. Admin authoring cannot safely provide runtime enforcement without Background's typed contract. Additionally, Meta submission still fails closed with `IMAGE_SAMPLE_HANDLE_REQUIRED`; no trusted sample-handle producer exists in Admin, and the task explicitly prohibits a sample-media sourcing workaround. Consequently the task cannot meet its end-to-end IMAGE approval/publication and runtime fallback/no-send acceptance criteria within Admin ownership. No live messaging or product-media fetch was performed.
+The requested `VERIFIED_PROVIDER_IMAGE` five-minute proof/resolver and exact selected product/variant/source-revocation checks were not implemented in Admin or Background. Those are not Admin requirements under the clarified contract: Background-007 owns runtime enforcement. Attempt 1 also failed to create the Admin-owned handle-free registration intent and incorrectly treated the provider sample producer as an Admin prerequisite. No live messaging or product-media fetch was performed.
 
 ### Assumptions
 
 Shared 2.6.0's exported `RecoveryTemplateHeaderMediaRole` is authoritative for CHECKOUT_PRODUCT. The existing publication identity selector supports distinct IMAGE/TEXT variants keyed by promotion target and header format. The prepared launcher supplied canonical worktrees and dependency evidence, which were used without repeating startup discovery or claim operations.
 
-### Unresolved Issues
+### Attempt 1 Unresolved Issues (Historical; corrected by Attempt 2)
 
-1. Background must provide the typed, current-window `VERIFIED_PROVIDER_IMAGE` contract/resolver, including exact product/variant binding, source-change/revocation handling, and safe TEXT fallback or typed no-send. Coordinate this dependency before enabling downstream runtime use.
-2. The owning Meta integration path must provide a trusted IMAGE sample upload-handle producer so Admin can submit the immutable IMAGE template without inventing a media workaround.
-3. Full `npm run test:unit` remains at 555/572 due to loader/mock-harness failures; repository lint remains blocked by the unrelated existing media-hook diagnostic. Focused task validation is green.
+1. Background-007 owns runtime product/variant matching, source-change handling, and TEXT fallback/no-send; this is a downstream task, not a blocker to Admin review.
+2. Background-012 owns the trusted IMAGE sample upload-handle producer; the provider POST remains fail-closed until that task is complete. It is not a prerequisite to Admin review.
+3. The Attempt 1 broad `npm run test:unit` and full lint findings remain historical observations only. Attempt 2 ran the focused required suites, changed-source lint, typecheck, production build and diff checks successfully.
 
-### Architectural Concerns
+### Attempt 1 Architectural Concerns (Historical)
 
-Return to `moda_architect` for cross-repository sequencing of the Background proof resolver and trusted Meta sample-handle producer. The Admin-owned authoring and fallback-selection portion is implemented, but acceptance remains blocked pending those dependencies and full approval-flow validation.
+The prior request to block Admin review on Background proof and sample-upload work is superseded by the Attempt 2 Architect Review contract. Background ownership remains recorded above; no Admin-local architectural blocker remains.
+
+### Attempt 2 Completion Report
+
+#### Status
+
+Ready for Review. Admin now freezes and confirms handle-free IMAGE registration intents. No provider upload, Graph POST, live approval, product-media source resolution or runtime proof was implemented. The Background provider POST remains fail-closed until BACKGROUND-012 supplies its trusted sample handle; BACKGROUND-007 retains runtime image matching and fallback ownership.
+
+#### Files Changed
+
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/meta/snapshot.ts`
+- `moda-interact-admin/tests/unit/arch049-admin-media-compiler.test.ts`
+- `moda-interact-admin/tests/unit/arch047-template-meta-snapshots.test.ts`
+- `moda-interact-admin/tests/unit/arch047-template-meta-service.test.ts`
+
+#### Architect Review Corrections
+
+1. Implemented: handle-free semantic IMAGE snapshots now remain immutable `READY_TO_SUBMIT` intents; caller-injected IMAGE sample handles and URLs are rejected. Verified by IMAGE snapshot and confirmation tests.
+2. Implemented: committed authoring, preview, translations, explicit promotion targets and TEXT behavior remain intact. Verified by focused authoring, compilation, translation, publication, Meta and media suites.
+3. Implemented: no upload, provider POST, live approval, Shopify/Woo source resolution or timed proof was added. Meta confirmation tests verify durable Admin intent creation and replay without provider events/calls.
+
+#### Validation Results
+
+- `npm run test:arch049-admin-media:unit`: passed, 27 unit tests and 1 SQL test.
+- `npm run test:arch047-admin-meta:unit`: passed, 16 snapshot/service tests and 1 UI test.
+- `npm run test:arch047-admin-authoring:unit`: passed, 33 tests.
+- `npm run test:arch047-admin-compilation:unit`: passed, 14 tests.
+- `npm run test:arch047-admin-publication:unit`: passed, 22 tests.
+- `npm run test:arch047-admin-translations:unit`: passed, 16 tests.
+- `npx tsc --noEmit`: passed.
+- `npx eslint src/lib/admin/whatsapp-templates/meta/snapshot.ts`: passed. Test files are ignored by the repository ESLint configuration.
+- `npm run build`: passed. Existing non-fatal BullMQ dynamic-dependency and optional `@valkey/valkey-glide` resolution warnings remain.
+- `git diff --check`: passed.
+
+#### Deviations and Unresolved Issues
+
+No Admin-owned deviation or blocker remains. Provider-side sample attachment/Meta creation is explicitly owned by BACKGROUND-012, and send-time image resolution/fallback is explicitly owned by BACKGROUND-007. No live Meta approval, provider call or send-time behavior is claimed by this report.
+
+#### Assumptions
+
+The existing Meta registration transaction is the durable `READY_TO_SUBMIT` intent boundary. Its frozen projection contains compiler-authored IMAGE components and semantic role bindings only; provider-only handle enrichment remains outside Admin. The prepared launcher established attempt 2 and the dependency gate, so no startup discovery, synchronization or claim was repeated.
+
+#### Git Evidence
+
+- Parent claim commit: `55f555bfbbe5fe3a06d6b486bd2fedf9568fa709`.
+- Implementation starting commit: `8432eac90ffd50d078d82155655f2193f2040df3`.
+- Implementation commit: `76809d55a80cd1febbd7f3b26e77f709de7e46ce`.
+- Parent review-report commit: this task-file commit.
+
+### Current Task Status
+
+Ready for architect review; task status is `review`.
 
 
 ## Architect Review
