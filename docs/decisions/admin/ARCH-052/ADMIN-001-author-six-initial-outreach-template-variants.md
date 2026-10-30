@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
-executor: copilot
-claimed_at: 2026-10-30T08:46:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-003
@@ -61,6 +61,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 **Attempt 14 immutable presentation contract:** for new initial CODE/AUTOMATIC variants, choose the exact approved registration by `(shopId, senderWabaId, purpose, canonicalLanguageTag, promotionTarget, headerKind)` and an enabled approved published revision. The currently implemented `selectRecoveryAssignment()` rejects multiple candidates for the same purpose/locale before checking `promotionTarget`; the Admin publisher must store the approved discriminator and make it available to Background-008 for deterministic filtering **before** ambiguity detection. Do not select arbitrarily by first record or publish the same identity twice. Alternative-product templates may have **two independently Meta-approved dynamic URL CTA slots**, one bound to `checkout.url` (Resume checkout) and one to `promotion.productUrl` (View offer), using existing Shared-002 `buttons[]` and approved component indexes. Only create such a variant if Meta accepts it; no unapproved button or arbitrary model-written text. No ARCH-052 checkout URL validity checks.
 
+
 - Meta template preview must be illustrative, but live variables must have proven Background resolver sources; no unbound placeholders.
 - Translation tokens remain protected; require approval/publishing per shop/WABA/language.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
@@ -73,6 +74,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - [x] Add basket summary to registry, AST and compiler validation.
 - [x] Create target-specific examples and binding eligibility rules while retaining all six existing purpose identities.
 - [x] Test translation/fingerprint and Admin publication compatibility.
+- [ ] Support two independently indexed dynamic URL buttons when Meta approves both CTAs, and preserve both bindings through translation and publication.
 
 ## Interfaces / Contracts
 
@@ -100,9 +102,10 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Validation
 
-- [x] Admin authoring/compiler/publishing/translation and Meta snapshot unit/component checks.
+- [x] Focused Admin authoring, compilation, publication, translation and Meta snapshot checks passed for the supported cases.
+- [ ] Add focused coverage for two URL CTA component indexes and both frozen semantic bindings; current authoring tests explicitly restrict Meta dynamic buttons to one checkout URL.
 - [x] Admin typecheck, production build and `git diff --check`.
-- [ ] Repository-wide lint and the broad unit/security suites are not clean; see Completion Report for unrelated existing failures.
+- [ ] Repository-wide lint and broad unit/security suites remain non-clean; see Completion Report for reported unrelated failures.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
@@ -125,7 +128,7 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Ready for Review — implementation committed and pushed on the mirrored task branches.
+Changes Requested — Attempt 1 reviewed; implementation commit `a871a47` remains pushed on the mirrored task branches. The task is reopened as `ready` for Attempt 2.
 
 ### Files Changed
 

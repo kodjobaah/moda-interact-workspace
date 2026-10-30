@@ -46,7 +46,7 @@ Authorise the `INITIAL_RECOVERY_OUTREACH` **purpose** within MCP's existing priv
 
 - Parse the **existing** private MCP context, requiring `CommerceOutreachToolContextSchema` only for outreach-purpose tool access. The exact `toolContext` is `{ purpose: "INITIAL_RECOVERY_OUTREACH" }`. The authenticated outer context supplies `shopId` and environment; never accept those from model-authored tool arguments.
 - At `tools/list` and `tools/call`, use shop-scoped Prisma reads to enforce **current merchant discount policy** and selected discount permissions: mode NONE advertises no built-in discount tools; FIXED limits discount results to selected `ShopifyDiscount.isAvailable=true` IDs (or an effective, current, exact-ID admin override); AI considers provider-current catalogue irrespective of merchant selection flags. Recheck merchant policy on calls so a changed selection is not usable through an old tool-list snapshot.
-- Preserve tool-list/call parity, existing shop/tenant isolation, published product release/feature membership, descriptor pinning, existing private-ingress authentication and typed failures. The built-in `commerce_get_discount_options` tool is not a Commerce Studio published tool; only the trusted outreach purpose exposes them.
+- Preserve tool-list/call parity, existing shop/tenant isolation, published product release/feature membership, descriptor pinning, existing private-ingress authentication and typed failures. The built-in `commerce_get_discount_options` and `commerce_get_discount_details` tools are not Commerce Studio published tools; only the trusted outreach purpose exposes them.
 - **Do not query `CheckoutRecovery` or `RecoveryOutreachAttempt` as an MCP authorisation precondition.** Do not require a recovery ID, attempt ID, checkout fingerprint or conversation lease in the generic `toolContext`. Background owns recovery/attempt checks and final-send admission.
 - Reject an invalid/untrusted context or tool request without leaking data; preserve current conversational CommerceAgent tool behaviour and isolate purpose-only built-in tools from conversational callers.
 
@@ -68,7 +68,7 @@ Authorise the `INITIAL_RECOVERY_OUTREACH` **purpose** within MCP's existing priv
 ## Work Items
 
 - [ ] Use the trusted MCP private context with top-level `shopId`/environment and exact `toolContext: {purpose: "INITIAL_RECOVERY_OUTREACH"}`; reject missing/wrong purpose and extra identity keys.
-- [ ] Project built-in discount tool descriptors into the existing MCP tool list only for an authorised active shop and permitted current discount mode, without Commerce Studio publication.
+- [ ] Project both built-in discount options and discount details tool descriptors into the existing MCP tool list only for an authorised active shop and permitted current discount mode, without Commerce Studio publication. The detail tool must receive the same current FIXED/AI/NONE shop-policy check as the options tool; model-provided `offerId` is never a bypass.
 - [ ] Check current mode and merchant-selected discount scope using the existing ShopSettings/ShopifyDiscount tables for each relevant tool call; prevent FIXED from reading/using unselected discounts and AI from being incorrectly filtered by the selection flag.
 - [ ] Preserve published product-tool release/feature/definition pin checks; prevent conversations and other purposes from inheriting initial-outreach-only built-in discount tools.
 - [ ] Add tests for NONE/FIXED/AI, changed discount selection, revoked shop, wrong shop/environment, forged shopId or attemptId in `toolContext`, invalid purpose, unauthenticated header, published tool disabled and conversation isolation.
@@ -95,7 +95,7 @@ Authorise the `INITIAL_RECOVERY_OUTREACH` **purpose** within MCP's existing priv
 }
 ```
 
-Built-in tool name: `commerce_get_discount_options`. Published product names: `commerce_search_products`, `commerce_get_product`. Reuse MCP's current generic `CommerceToolResultSchema` and existing `tools/list` / `tools/call` transport. No outreach-specific result envelope, context lookup tool or model-supplied shop identity.
+Built-in tool names: `commerce_get_discount_options`, `commerce_get_discount_details`. Published product names: `commerce_search_products`, `commerce_get_product`. Reuse MCP's current generic `CommerceToolResultSchema` and existing `tools/list` / `tools/call` transport. No outreach-specific result envelope, context lookup tool or model-supplied shop identity.
 
 ## Dependencies
 

@@ -46,7 +46,7 @@ Implement only these **Shared repository** paths; the API, Background and WooCom
 - `moda-interact-shared/tsup.config.ts` — add ONLY entry `"woocommerce/index": "src/woocommerce/index.ts"`, preserving existing entries and browser-safe runtime dependencies.
 - `moda-interact-shared/package.json` — add the `"./woocommerce"` `types`/`import` export and `"./woocommerce/fixtures"` JSON asset export, and include the fixture path under `files`; do not change package version (publication is SHARED-002).
 
-The Shared **snapshot contract** is the standalone `checkout.restoration` value. A Woo v3 HTTP checkout has `checkout: {currency, total, items?, contact?, restoration?}` but the existing checkout identity, contact and v1/v2 phone handling remain API-owned. Do not redefine those existing fields in Shared.
+The Shared **snapshot contract** is the standalone `checkout.restoration` value. A canonical Woo v1 HTTP checkout has `checkout: {currency, total, items?, contact?, restoration?}` but the existing checkout identity and normalized phone-proof rules remain API-owned. Do not redefine those existing fields in Shared.
 
 No new source paths or tests outside the list without architect approval. The only parent-workspace file an executing agent may update is this task's authorised metadata/Completion Report.
 
@@ -65,7 +65,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 - Coupon strings are preserved in their original Woo-applied order/content; Shared never upper/lower-cases, sorts, deduplicates, verifies, replaces or issues coupons. Runtime coupon validity, usage/expiry/stacking and current totals remain WooCommerce-owned.
 - The resolver request has exactly `schemaVersion`, `recoveryId`, `token`; the positive resolver response has exactly `schemaVersion`, `status:'eligible'`, `recoveryId`, `checkoutKey`, `snapshot:<supported snapshot>`, `outreachOffer:<verified offer>`. The resolver **never** returns an unsupported snapshot, customer identity or shop credentials. Denials are API-owned HTTP statuses/body, not a second successful response union.
 - Shared is **wire-shape validation only**. It may enforce lengths, types, key count, allowed characters, strictness and version literals, but MUST NOT use schema refinements for provider product ownership, Woo stock/variant eligibility, current coupon validity, merchant host checking, replay/freshness, consent/STOP, recovery generation state or token authentication. The lone attribute count check is a structural cardinality limit (not a business-rule check).
-- The v3 checkout extension must be optional on the containing checkout. Do not define an entire replacement HTTP event or locally reimplement existing `WooCheckoutContact` or phone canonicalisation. API-001 owns projection from `woo.activity.v3` to the unchanged `woo.activity.v1` BullMQ envelope; Background-001 owns additive job validation.
+- The v1 checkout restoration extension is optional on the containing checkout. Do not define a competing complete HTTP event schema or locally reimplement `WooCheckoutContact` or phone canonicalisation. API-001 owns the **single** `woo.activity.v1` HTTP input with normalized phone proof and its projection into the existing `woo.activity.v1` BullMQ job; Background-001 validates the additive queue field. No HTTP v2/v3 versions or compatibility wrappers.
 - Reject unsafe input shape and unexpected keys, do not silently trim/normalise incomplete baskets; do not include any PII, raw recovery URL or WordPress session token in the snapshot. Round-trip JSON fixtures must remain stable across Node/Woo PHP consumers.
 
 ### Mandatory workflow/security invariants
@@ -80,7 +80,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 - [ ] Create `src/woocommerce/contracts.ts` with the exact version constants, literal unions, line schema, supported/unsupported snapshot schemas, outreach-offer union, extension schema and single v1 resolver schemas/types below.
 - [ ] Export precisely those schemas/types from `src/woocommerce/index.ts` and publish the browser-safe `./woocommerce` subpath through `tsup.config.ts` and `package.json`.
 - [ ] Create the exact JSON fixture structure described below in `src/woocommerce/__fixtures__/woo-restore-v1.json`; expose it under `./woocommerce/fixtures` without embedding customer data or bearer secrets from a real installation.
-- [ ] Add passing structural parsing tests for the supported/unsupported snapshots, v3 checkout extension, resolver v1 request/response, all four outreach-offer variants, and deterministic JSON round trip.
+- [ ] Add passing structural parsing tests for the supported/unsupported snapshots, v1 checkout restoration extension, resolver v1 request/response, all four outreach-offer variants, and deterministic JSON round trip.
 - [ ] Add rejecting tests for missing/extra fields, forbidden `lines`/`reason` cross-variant fields, invalid IDs and quantities, overlong/too-many attributes/coupons, missing coupon list, bad token, invalid outreach-offer variants and any v2 resolver schemaVersion.
 - [ ] Validate package `build`, `typecheck`, focused Shared unit tests, built ESM `./woocommerce` export from the package and JSON fixture package inclusion; report exact commands in Completion Report.
 
@@ -163,13 +163,13 @@ export const WooCartRestoreSnapshotV1Schema = z.discriminatedUnion("kind", [
 export type WooCartRestoreSnapshotV1 =
   z.infer<typeof WooCartRestoreSnapshotV1Schema>;
 
-// This is an EXTENSION for API-001's existing checkout object, not a
+// This is an EXTENSION for API-001's canonical v1 checkout object, not a
 // competing checkout-event/identity/phone/contact schema.
-export const WooCheckoutRestoreExtensionV3Schema = z.strictObject({
+export const WooCheckoutRestoreExtensionV1Schema = z.strictObject({
   restoration: WooCartRestoreSnapshotV1Schema.optional(),
 });
-export type WooCheckoutRestoreExtensionV3 =
-  z.infer<typeof WooCheckoutRestoreExtensionV3Schema>;
+export type WooCheckoutRestoreExtensionV1 =
+  z.infer<typeof WooCheckoutRestoreExtensionV1Schema>;
 
 export const WooRestoreResolveRequestV1Schema = z.strictObject({
   schemaVersion: z.literal(WOO_RESTORE_RESOLVE_VERSION),
@@ -219,7 +219,7 @@ export type WooRestoreResolveResponseV1 =
 
 ### 2. Exact published exports
 
-Create `src/woocommerce/index.ts` exporting the two version constants, `WooRestoreOutreachOfferV1Schema`/`WooRestoreOutreachOfferV1`, all other `Woo*V1Schema`/`Woo*V1`, and `WooCheckoutRestoreExtensionV3Schema`/`WooCheckoutRestoreExtensionV3` declarations above. Do not re-export Node cryptography or service-specific APIs.
+Create `src/woocommerce/index.ts` exporting the two version constants, `WooRestoreOutreachOfferV1Schema`/`WooRestoreOutreachOfferV1`, all other `Woo*V1Schema`/`Woo*V1`, and `WooCheckoutRestoreExtensionV1Schema`/`WooCheckoutRestoreExtensionV1` declarations above. Do not re-export Node cryptography or service-specific APIs.
 
 Add only these `package.json` exports (maintaining existing exports unchanged):
 
@@ -307,13 +307,13 @@ The canonical fixture is **one JSON object** with exactly these five named prope
 
 The token in the test fixture is a **synthetic shape example**, never a usable credential. The fixture is not an authorization test vector. The actual API's token comparison must be tested separately in API-002.
 
-### 4. Location within the existing HTTP v3 checkout event
+### 4. Location within the canonical HTTP v1 checkout event
 
-This is an **example of API-001's envelope**, not a second Shared schema. It shows exactly where the restoration data goes. The usual `currency`, `total`, `items` and optional `contact` stay in the existing API-owned checkout shape.
+This is an **example of API-001's canonical v1 HTTP envelope**, not a second Shared schema. It shows exactly where the restoration data goes. The usual `currency`, `total`, `items` and optional `contact` stay in the existing API-owned checkout shape.
 
 ```json
 {
-  "schemaVersion": "woo.activity.v3",
+  "schemaVersion": "woo.activity.v1",
   "eventId": "woo-0123456789abcdef0123456789abcdef",
   "eventType": "CHECKOUT_UPDATED",
   "checkoutKey": "woo-example-checkout",
@@ -339,7 +339,7 @@ This is an **example of API-001's envelope**, not a second Shared schema. It sho
 }
 ```
 
-API-001 accepts HTTP v3, validates `checkout.restoration` with the published `WooCartRestoreSnapshotV1Schema`, and emits the current v1 checkout queue envelope with the **same optional restoration**. Background-001 adopts the same published schema. Neither consumer may copy/paste a competing restore validator into a local repository. Existing v1/v2 callers with no restoration remain valid, but absent restoration is unknown/unrestorable.
+API-001 accepts HTTP v1, validates `checkout.restoration` with the published `WooCartRestoreSnapshotV1Schema`, and emits the current v1 checkout queue envelope with the **same optional restoration**. Background-001 adopts the same published schema. Neither consumer may copy/paste a competing restore validator into a local repository. The agreed pre-production target accepts one canonical HTTP v1 event contract; an absent restoration field remains unknown/unrestorable rather than a fabricated empty coupon list.
 
 ### 5. Owner-specific responsibilities
 
@@ -348,7 +348,7 @@ API-001 accepts HTTP v3, validates `checkout.restoration` with the published `Wo
 | Schemas, exact v1 outreach-offer union, structural bounds, package entrypoints and canonical fixture | `ARCH-053-SHARED-001` |
 | Version bump and package publication | `ARCH-053-SHARED-002` |
 | PHP restorable lines, applied coupons, unsupported reason selection | `ARCH-053-WOOCOMMERCE-001`, coupon-only changes `WOOCOMMERCE-004` |
-| HTTP v3 envelope validation, phone normalization, authenticated ingress, v1 queue projection | `ARCH-053-API-001` |
+| HTTP v1 envelope validation, phone normalization, authenticated ingress, v1 queue projection | `ARCH-053-API-001` |
 | Strict v1 queue validation and candidate retention | `ARCH-053-BACKGROUND-001` |
 | Durable snapshot and recovery admission | `ARCH-053-DATABASE-001`, `ARCH-053-BACKGROUND-002` |
 | Recovery generation URL/token issuance and freshness/order/consent gating | `ARCH-053-BACKGROUND-003`, `ARCH-053-API-002` |
@@ -373,7 +373,7 @@ None — independently executable after materialisation / launcher gate.
 - [ ] Unsupported snapshot: exact enumerated `reason` and bounded coupon array are mandatory; `lines` is forbidden. Supported snapshot with `reason` and unsupported snapshot with `lines` both fail.
 - [ ] Empty `appliedCouponCodes` on **supported** proves Woo reported none; a missing coupon list never silently defaults to `[]`. `kind:'unsupported'` with `reason:'COUPONS_UNAVAILABLE'` never becomes restorable even when its bounded array is empty.
 - [ ] Resolver request accepts only schemaVersion, opaque recoveryId and 43-character base64url token; positive response accepts only eligible status, same required IDs, `snapshot.kind:'supported'` and a **required** strictly typed `outreachOffer`. Denial/invalid token/expired-generation logic remains API-owned, not fabricated in Shared.
-- [ ] Legacy checkout extension with no `restoration` parses without creating a snapshot, and a v3 extension containing the supported/unsupported snapshot parses unchanged.
+- [ ] Checkout extension with no `restoration` parses without creating a snapshot, and a v1 extension containing the supported/unsupported snapshot parses unchanged.
 - [ ] Golden fixture has all five exact keys and round trips with the appropriate canonical Shared schemas, including `outreachOfferExamples` for NONE, CHECKOUT_CODE, CHECKOUT_AUTOMATIC and ALTERNATIVE_PRODUCT.
 - [ ] Boundary rejection tests cover missing coupon list, >10 coupons, empty/over-50 lines, invalid product/variation IDs, zero/fractional/overlarge quantity, >10 attribute entries, control/overlong characters, wrong enum/version/token, missing outreachOffer, extra/PII fields, automatic offer with code, alternative-product with code, incomplete CHECKOUT_CODE, invalid provider ID, and v2 resolver requests.
 - [ ] No Zod coupon eligibility/stacking/expiry policy, WordPress runtime imports, duplicated API identity/contact schemas, v2 resolver, package publishing, new discount discovery or changes to ARCH-052.

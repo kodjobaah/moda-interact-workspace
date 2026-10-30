@@ -43,8 +43,9 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 ## Scope
 
 - Add coupon-specific e2e fixtures and scenarios in `moda-interact-system-test` using its existing runner and WordPress/Woo Classic and Checkout Blocks; coordinate real API/BullMQ/Background/PostgreSQL paths with provider mocks. Do not modify application repositories.
-- Exercise original coupon addition and removal on an observed checkout (including no change to products or totals), event v3→queue payload, updating delayed candidate, immutable coupon evidence at recovery admission, and resolution for the correct generation.
+- Exercise original coupon addition and removal on an observed checkout (including no change to products or totals), canonical HTTP v1→v1 queue payload, updating delayed candidate, immutable coupon evidence at recovery admission, and resolution for the correct generation.
 - From WhatsApp-like URL open on another browser, ensure GET does not mutate cart/recovery; confirm POST restores the original products and *attempts* exactly the original codes under current shop policy, recalculates price, and visibly notifies any rejections.
+- Verify coupon-only updates use the **same** `woo.activity.v1` checkout event and that v2/v3 HTTP checkout activity is rejected after pre-production cutover; do not treat missing restoration as an empty coupon list.
 - Coupon matrix: zero coupons (`[]`), one valid, expired, deleted, usage exhausted, minimum spend no longer met, product exclusion, stacking conflict, mixed valid/invalid, coupon removed before abandonment, and coupon-only update after a previously stored recovery (new generation).
 - Prove invalid coupon does not force previous total, block otherwise-valid products or trigger automatic ARCH-052 incentive replacement; test 2 tenants, stale generation URL and no token/coupon logging.
 
@@ -72,7 +73,7 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 
 ## Interfaces / Contracts
 
-Consumes ARCH-053 Shared v1 restore snapshot, API v3 ingest, Background candidates/admission, API resolve v1 and WordPress coupon+notice tasks; ARCH-048 owns closure/new-generation rules. No new system contract.
+Consumes ARCH-053 Shared v1 restore snapshot, API v1 ingest with Shared-validated restoration, Background candidates/admission, API resolve v1 and WordPress coupon+notice tasks; ARCH-048 owns closure/new-generation rules. No new system contract.
 
 ## Dependencies
 

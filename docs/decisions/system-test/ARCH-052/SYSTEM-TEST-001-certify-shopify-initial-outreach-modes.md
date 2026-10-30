@@ -28,6 +28,9 @@ depends_on:
 - ARCH-052-COMMERCE-007
 - ARCH-052-BACKGROUND-010
 - ARCH-052-GATEWAY-001
+- ARCH-052-SHARED-010
+- ARCH-052-BACKGROUND-007
+- ARCH-052-BACKGROUND-011
 enables: []
 created: '2026-10-29'
 updated: '2026-10-30'
@@ -54,6 +57,11 @@ Terminal cross-service validation after architect acceptance and developer manua
 Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
 
 ## Scope
+
+**Attempt 14 integrated certification:** exercise actual paged discount-options + on-demand details (including page 75 of 120, cursor tamper, provider `PARTIAL/UNKNOWN` and selected-vs-unselected offers), provider category/collection IDs and Woo simple products with null variant ID, LangGraph decisions, merchant `product_search` opt-in, approved target/locale/header variant selection, one- and two-CTA template transport, stored outbound message receipt and text-only send independent of IMAGE. Separately certify approved optional IMAGE enhancement after BG007/ADMIN002.
+
+**ARCH-053 is external ownership:** no Woo link issuance/restore implementation, validation or dependency belongs in this system test. Use an already-populated Shopify `CheckoutRecovery.checkoutUrl` fixture as input and assert the existing approved checkout CTA binds that value without any ARCH-052 link-generation call. ARCH-053 has its own terminal tests for restoring the URL.
+
 
 - Run end-to-end Shopify fixtures for NONE/FIXED/AI and two-stage promotion decisions: checkout coupon qualifies; checkout coupon fails but related alternative product qualifies; only an unrelated product has genuine current offer; none verified; partial catalogue and provider timeouts. Assert exact approved Meta wording distinguishes alternative product from abandoned basket and does not invent an offer.
 - Verify `tools/list` exposes system discount tools only to an authenticated shop and authorised outreach purpose, while product search tools require active code-published Commerce descriptor, feature entitlement and exact revision; conversation tools remain isolated. Test invalid shop/purpose, revoked tool/grant, selected FIXED IDs only, AI includes unchecked discounts, truthful 50-offer `truncated` handling, model invalid/timeout fallback and stale MCP catalogue evidence.
@@ -107,6 +115,11 @@ Built-in MCP `commerce_get_discount_options`, published `commerce_search_product
 None.
 
 ## Acceptance Criteria
+
+- [ ] No invented coupon/product/category link or checkout discount when conditions are unknown/incomplete; a related product promotion is worded separately.
+- [ ] Both CTA bindings are carried only when Meta-approved and ordered by actual provider indices; absent approved media does not block text-only flow.
+- [ ] No ARCH-052 checkout URL issuance, extra validation or ARCH-053 reverse dependency.
+
 
 - [ ] Every Shopify offer advertised has contemporaneous checkout or alternative-product MCP catalogue evidence.
 - [ ] Direct MCP product search needs no hosted Moda API call.

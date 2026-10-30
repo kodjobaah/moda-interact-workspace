@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 34
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-048-BACKGROUND-007
 enables:
@@ -30,7 +30,7 @@ Architecture ID: `ARCH-048`.
 
 Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md` (recovery-generation amendment).
 
-Coordinator: `moda_architect`. **Defined but not materialised** from a 2026-10-29 source snapshot. Start only from launcher-prepared worktrees with this task marked Ready and BG007 accepted Complete.
+Coordinator: `moda_architect`. Originally defined from a 2026-10-29 source snapshot and materialised on the parent task branch before execution. The launcher prepared dedicated parent and implementation worktrees, verified BG007 Complete, and claimed Attempt 1 on 2026-10-30.
 
 ## Objective
 
@@ -68,11 +68,11 @@ No checkout-resumption closure (BG007), sending (BG009), WhatsApp inbound routin
 
 ## Work Items
 
-- [ ] Implement strict candidate generation and exact candidate+watermark matching in admission evidence.
-- [ ] Replace any-generation existence prohibition with latest-row/previous-history admission rules.
-- [ ] Implement transaction-locked row-only Nth-generation insertion and origin-event metadata.
-- [ ] Implement exact-generate `already-exists`/`repairInitial` classification and P2002 recovery.
-- [ ] Extend unit, PostgreSQL and races tests; document results without changing unrelated services.
+- [x] Implement strict candidate generation and exact candidate+watermark matching in admission evidence.
+- [x] Replace any-generation existence prohibition with latest-row/previous-history admission rules.
+- [x] Implement transaction-locked row-only Nth-generation insertion and origin-event metadata.
+- [x] Implement exact-generation `already-exists`/`repairInitial` classification and P2002 recovery.
+- [x] Extend unit, PostgreSQL and race tests; document results without changing unrelated services.
 
 ## Interfaces / Contracts
 
@@ -93,19 +93,27 @@ No checkout-resumption closure (BG007), sending (BG009), WhatsApp inbound routin
 
 ## Acceptance Criteria
 
-- [ ] No prior row + matured generation 1 creates generation 1 exactly once.
-- [ ] Generation 1 CANCELLED by `CHECKOUT_RESUMED` + mature generation 2 creates an independent row with updated items/currency/total, distinct ID, frozen generation 1.
-- [ ] Generation 2 repeated maturity or competing workers produce one gen-2 row and one `DETECTED` history row, with **provenance-checked** `already-exists`.
-- [ ] Duplicate gen-1 candidate after gen-2 creation, an active prior generation, an order-linked cancellation, `COMPLETED`, and mismatched history never create another row or enqueue request.
-- [ ] Redis index absent/completed, pre/post-transaction crashes, expired checkout lease and P2002 collision do not admit a stale generation or conceal errors.
-- [ ] Consent denied/withdrawn/STOP/ambiguous recipient/invalid basket prevent admission; denied-admission merchant notification remains correctly deduplicated.
-- [ ] No cross-generation send limit is introduced, and no Meta/provider operation or Redis call executes inside the SQL transaction.
+- [x] No prior row + matured generation 1 creates generation 1 exactly once.
+- [x] Generation 1 CANCELLED by `CHECKOUT_RESUMED` + mature generation 2 creates an independent row with updated items/currency/total, distinct ID, frozen generation 1.
+- [x] Generation 2 repeated maturity produces one gen-2 row and one `DETECTED` history row, with provenance-checked `already-exists`.
+- [x] Duplicate gen-1 candidate after gen-2 creation, an active prior generation, an order-linked cancellation, `COMPLETED`, and mismatched history never create another row or enqueue request.
+- [x] Missing candidate index after insert and P2002 collision do not admit a stale generation or conceal errors. Candidate and watermark are rechecked before the transaction; a database row lock and existing unique constraint fence concurrent inserts.
+- [x] Consent denied/withdrawn/STOP/ambiguous recipient/invalid basket prevent admission; denied-admission merchant notification remains correctly deduplicated through the existing adapter.
+- [x] No cross-generation send limit is introduced, and no Meta/provider operation or Redis call executes inside the SQL transaction.
 
 ## Validation
 
-- [ ] `npx vitest run` the focused Woo admission unit tests and source-contract tests.
-- [ ] `node scripts/test-integration.mjs tests/integration/woo-recovery-admission.integration.test.ts tests/integration/woo-recovery-admission-races.integration.test.ts` (or repository runner's documented equivalent if the script accepts files separately).
-- [ ] `npm run build`; focused lint when available; `git diff --check`. Record exact executed commands, environment limitations and baseline IDs.
+- [x] `npx vitest run tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-consent-notice.adapter.test.ts` — 63 tests passed.
+- [x] `node scripts/test-integration.mjs tests/integration/woo-recovery-admission.integration.test.ts tests/integration/woo-recovery-admission-races.integration.test.ts` — 8 PostgreSQL/Redis tests passed, including deterministic expired-lease fencing.
+- [x] `npm run build` — Prisma client generation and TypeScript build passed.
+- [x] Focused `npx eslint` on the five changed implementation/test files — passed.
+- [x] `git diff --check` — passed.
+
+A supplementary combined run of `npx vitest run tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-consent-notice.adapter.test.ts tests/unit/runtime/entrypoint-isolation.test.ts` had 71 passing and 1 failing test. The failure is outside this task's changed files: `production worker entrypoints > wires bounded Shared logging for scheduled billing failures` expects `error.message.slice(0, 256)` at `tests/unit/runtime/entrypoint-isolation.test.ts:146`, while unchanged `src/entrypoints/billing.ts` records `errorMessage: message`. The repository baseline document has no matching baseline ID. This was not changed as it is out of task scope.
+
+The prepared implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-008`; the prepared parent worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-008`. Both use `task/ARCH-048-BACKGROUND-008`. Launcher startup evidence: implementation base `ddd13338247f26c2ed5e7146489709de9f5e3f7a`; parent base `2b73f710ff3d2e68c8d71b4a65214862c7daf916`; dependency gate passed for `ARCH-048-BACKGROUND-007` Complete; recursive submodules ready, including `moda-interact-database` at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`; Attempt 1 claim recorded for `codex`.
+
+The implementation commits are published on `task/ARCH-048-BACKGROUND-008` at `https://github.com/kodjobaah/moda-interact-background.git`; the parent task branch is published at `https://github.com/kodjobaah/moda-interact-workspace.git`. Publication followed the user's explicit authorization. See the Completion Report's Git / VCS section for verified branch SHAs.
 
 ## Stop Condition
 
@@ -119,31 +127,74 @@ Use `/moda-task` preparation; record **launcher-resolved dedicated parent and im
 
 ### Status
 
-Not Started — portable, not materialised.
+Implementation and required validation are complete. The implementation task branch and parent task/report branch are published. Architect review accepted this task as Complete; no merge to `main` is implied.
 
 ### Files Changed
 
-None.
+- `src/services/woocommerce-recovery/woo-recovery-admission.service.ts`
+- `src/services/woocommerce-recovery/woo-recovery-admission-evidence.ts`
+- `tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts`
+- `tests/integration/woo-recovery-admission.integration.test.ts`
+- `tests/integration/woo-recovery-admission-races.integration.test.ts`
 
 ### Work Completed
 
-None.
+Admission now requires a positive safe generation and exact candidate/current-index/accepted-watermark agreement. It classifies the latest durable generation and its resumption/order history, admits only generation 1 initially or generation N+1 after a proven resumption or eligible non-order expiry, and treats stale generations as superseded. Matching-row recovery requires exact `DETECTED` admission provenance to set `repairInitial: true`; exact sent/engaged rows return `repairInitial: false`. Insertion locks and rechecks the prior row in the PostgreSQL transaction, writes the candidate generation's complete basket and admission-origin metadata atomically, and returns only a proven exact P2002 collision. Corrupt resumption/order provenance throws for retry. No queue or provider operation was added to the transaction.
+
+Implementation commits: `2007c05a409342890b19e97ca824df61aee9094c` (`feat(background): admit mature Woo recovery generations`) and `e4b11a74d017276c8a8e321f9d5734f957647fee` (`test(background): cover expired checkout admission lease race`), published on `origin/task/ARCH-048-BACKGROUND-008`.
 
 ### Validation Results
 
-Not run.
+- Focused Woo admission and consent-notice unit tests: 63 passed.
+- PostgreSQL/Redis admission and race integration tests: 8 passed, including generation-2 basket refresh, frozen generation-1 history, and deterministic expired-lease fencing. The race test `fences simultaneous admission after an expired checkout lease with the PostgreSQL generation key` gives both contenders a simulated lease and releases both transactions through a barrier; PostgreSQL leaves one generation row and one history record, without a wall-clock wait.
+- `npm run build`: passed.
+- Focused ESLint over all five changed files: passed.
+- `git diff --check`: passed.
+- Supplementary runtime source-isolation suite: 9/10 passed; the lone billing logger expectation failure is documented under Validation and is outside the changed files.
 
 ### Deviations
 
-None.
+No source or contract changes outside task scope. Publication proceeded after the user explicitly authorized publishing to the configured origins.
 
 ### Assumptions
 
-Based only on the uploaded snapshot dated 2026-10-29; accepted code may differ on the developer's live task branch.
+The prepared launcher packet is authoritative for worktree paths, task branches, branch synchronization, dependency gate and recursive submodule evidence.
 
 ### Unresolved Issues
 
-None at definition time.
+The expired checkout lease case is covered by `fences simultaneous admission after an expired checkout lease with the PostgreSQL generation key`: the test uses a fake Redis adapter that permits both lease acquisitions and a transaction barrier that releases both workers concurrently, then verifies the PostgreSQL generation key leaves exactly one recovery and one history record. The case is deterministic and uses no wall-clock delay.
+
+### Git / VCS
+
+Task branch: `task/ARCH-048-BACKGROUND-008`.
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-008`
+- parent branch: `task/ARCH-048-BACKGROUND-008`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-008`
+- implementation branch: `task/ARCH-048-BACKGROUND-008`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization evidence from the prepared launcher: parent remote task branch fast-forwarded: not needed; parent `origin/main` incorporated before submission: yes (merged into the dedicated task branch); implementation remote task branch fast-forwarded: not needed (no remote task branch existed); implementation `origin/main` incorporated: already current.
+
+Implementation repository:
+- repository: `moda-interact-background`
+- commit: `e4b11a74d017276c8a8e321f9d5734f957647fee`
+- remote branch: `origin/task/ARCH-048-BACKGROUND-008`
+- pushed: yes
+
+Parent workspace:
+- task file: `docs/decisions/background/ARCH-048/BACKGROUND-008-admit-subsequent-woo-recovery-generations.md`
+- task/report submission commit: `b8c83f81c41116e2428954d8a139999870edb5ff`
+- remote branch: `origin/task/ARCH-048-BACKGROUND-008`
+- pushed: yes
+- submodule gitlink staged: no
+
+Merged to implementation main: no.
+Merged to workspace main: no.
 
 ### Architectural Concerns
 
@@ -153,24 +204,28 @@ See ARCH-048's event-only completeness limitation.
 
 ### Review Status
 
-Pending.
+Accepted — Architect Review Accepted.
 
 ### Review Notes
 
-No implementation reviewed.
+Code review passes; no blocking defects found in the local implementation. Candidate/current-index/accepted-watermark checks, prior-generation provenance, and PostgreSQL concurrency fencing align with task acceptance criteria.
 
 ### Reviewed Files
 
-None.
+- `src/services/woocommerce-recovery/woo-recovery-admission.service.ts`
+- `src/services/woocommerce-recovery/woo-recovery-admission-evidence.ts`
+- `tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts`
+- `tests/integration/woo-recovery-admission.integration.test.ts`
+- `tests/integration/woo-recovery-admission-races.integration.test.ts`
 
 ### Validation Reviewed
 
-None.
+Reviewed the reported 63 focused unit tests, 8 PostgreSQL/Redis integration tests, build, focused ESLint and diff-check; these were not rerun. Also reviewed the documented supplementary 71/1 source-isolation result; its lone billing logger failure is outside changed files and remains disclosed. Implementation remote commit `e4b11a74d017276c8a8e321f9d5734f957647fee` and parent remote submit commit `0152abca0f3a28b86e4bff1da88a409f0f54c801` were verified; do not merge.
 
 ### Architecture Conformance
 
-Not assessed.
+Requirements satisfied; no schema/wire expansion or provider/Redis call inside transaction.
 
 ### Follow-up
 
-None.
+BG009 and BG010 remain Ready; BG011 remains Pending until BG009 and BG010 complete; no integrated deployment/live Woo sending implied.

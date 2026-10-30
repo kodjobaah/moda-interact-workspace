@@ -16,7 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-MCP-001
-- ARCH-052-SHARED-003
+- ARCH-052-SHARED-010
+- ARCH-052-BACKGROUND-011
 enables:
 - ARCH-052-BACKGROUND-010
 - ARCH-052-SYSTEM-TEST-001
@@ -33,21 +34,20 @@ Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-person
 
 ## Objective
 
-Expose authorised discount options from the existing tenant-scoped PostgreSQL `ShopifyDiscount` catalogue through the generic `commerce_get_discount_options` MCP tool. **Do not build or call a separate provider-proof service, WooCommerce coupon-proof endpoint, or automatic eligibility-scanning workflow.** The dedicated Background agent determines basket/product relevance from returned stored discount conditions.
+Implement two **generic, built-in, read-only** discount MCP tools: the existing `commerce_get_discount_options` with paged discovery, and the new `commerce_get_discount_details` for stored provider conditions. The agent, not MCP, decides basket/product relevance. No Commerce/Woo proof endpoint, bulk eligibility scan or provider call during outreach.
 
 ## Context
 
-`ShopifyDiscount`, `providerSnapshot`, `providerStatus`, `unavailableAt`, dates and current merchant policy already exist. MCP has its own Prisma access; Background supplies checkout, merchant instructions and recovery context directly to the agent. The agent never queries PostgreSQL. ARCH-052 does **not** introduce Commerce private proof routes, WooCommerce native coupon-proof endpoints, or a pre-agent eligibility scan.
+`ShopifyDiscount` and its shop-scoped `providerSnapshot`, `providerStatus`, `unavailableAt`, dates and merchant-owned `isAvailable` already exist in PostgreSQL. Published SHARED-010 adds the exact options page and details schema. BACKGROUND-011 enriches Shopify's sync projection; Woo coupon sync already captures most restrictions. MCP uses its existing Prisma and generic MCP result envelope. No outreach recovery/attempt DB lookup is allowed.
 
 ## Scope
 
-- Retain the existing generic `CommerceToolResultSchema` and existing discount-options tool schema; do not create a feature-specific result envelope.
-- Query existing shop-scoped discount catalogue and current merchant selection/provider-status fields via MCP Prisma.
-- FIXED: return only currently merchant-selected records (`isAvailable=true`); AI_BEST_APPLICABLE: consider current catalogue independently of checkbox selection. NONE: do not expose a promotional offer set.
-- Include condition information actually present in `providerSnapshot`; do not synthesise unsupported conditions or claims.
-- Preserve existing 50-item/truncated contract, returning truncation faithfully. Do not invent pagination input or claim that 50 records exhaust the catalogue.
-- Reuse existing shop authorization and tool permission gates; no recovery-attempt lookups and no direct hosted API/Commerce proof calls.
-- Add focused structural and shop-isolation tests.
+- Extend MCP's current shop-scoped discount reader and built-in dispatcher for **`commerce_get_discount_options`** and **`commerce_get_discount_details`**. Do not register either through Commerce Studio or create a new generic result envelope.
+- Options: use published Shared input `{limit,cursor}` (default 20, max 50), deterministic `shopId + discountId` keyset pagination and an opaque shop/policy/mode-scoped cursor (reject altered, wrong-shop, wrong-mode, expired/malformed cursors). Return `{mode,offers,cursor,truncated}` with correct next-page semantics; `NONE` returns empty with null cursor, FIXED reads current `isAvailable=true`, AI ignores the checkbox but respects current provider status, dates and unavailability. Never truncate silently.
+- Details: `commerce_get_discount_details({offerId})` first rechecks the authenticated shop and current merchant mode/selection; map the **existing** `ShopifyDiscount.providerSnapshot` into SHARED-009's `CommerceDiscountConditionFactsSchema`, joined with the existing offer projection. Do not use Shopify/Woo HTTP for this. If a record does not exist for this shop, return `{details:null}`; insufficient/unsupported provider data yields `PARTIAL`/`UNKNOWN`, `UNKNOWN` targeting and `unrepresentedConditions` — never empty `COMPLETE` facts by guessing.
+- Woo source mapping: `discountType`, `amount`, `productIds`, `excludedProductIds`, `productCategories`, `excludedProductCategories`, `minimumAmount`, `maximumAmount`, `usageLimit`, `usageCount`, `usageLimitPerUser`, `individualUse`, `excludeSaleItems`, `dateExpiresGmt`, `expiryUnverified`. Convert Woo numeric IDs to strings; unobserved customer/store extension restrictions remain unknown.
+- Shopify source mapping: only the actual typed fields persisted by BACKGROUND-011. Preserve partial targeting and provider API/custom-rule limitations. No provider proof, no in-MCP discount applicability engine, no unapproved promotional claims.
+- Use the generic `CommerceToolResultSchema`, existing private shop identity, tool access rules and Shared structured logging. Return bounded errors; no secret/customer payload leakage.
 
 ## Out of Scope
 
@@ -58,29 +58,39 @@ Expose authorised discount options from the existing tenant-scoped PostgreSQL `S
 
 ## Requirements
 
-1. The tool reads shop-scoped current PostgreSQL discount records and does not call provider APIs or a private Commerce proof endpoint.
-2. Merchant selection is `ShopifyDiscount.isAvailable`; provider status and availability are separate fields.
-3. Return only source-backed condition data. The model chooses an offer, but cannot infer missing restrictions as true.
-4. MCP enforces authenticated shop isolation and permissions; Background owns recovery lifecycle.
-5. Preserve existing structural result schemas and truthful `truncated` reporting.
-6. Log errors using the published Shared logger; do not silently swallow exceptions or include secrets or customer payloads.
+1. Shop-scoped PostgreSQL is the only discount information source at outreach time; `providerStatus` is separate from merchant-owned `isAvailable`.
+2. Both tools consume the exact **published** SHARED-010 `CommerceToolInputs` / `CommerceToolOutputs` members; do not define duplicated validators or infer a new schema in MCP.
+3. The keyset cursor may include a signed shop/policy/mode fingerprint and last discount ID, but must not be accepted across shops or modes. Cursor token contents are opaque to the agent and not treated as authorisation.
+4. Tool output `truncated=true` only if another page exists; non-null output `cursor` accompanies continuation, otherwise null. These are **MCP business rules**, not Zod refinements.
+5. A discount name or `providerStatus=ACTIVE` never proves applicability. Unknown condition fields remain explicit and are never treated as unrestricted.
+6. Reuse Shared logging; log unexpected exceptions without swallowing, fail closed on tenant or tool-access mismatch.
 
 ## Work Items
 
-- [ ] Implement shop-scoped discount catalogue retrieval with the existing Prisma model.
-- [ ] Apply NONE/FIXED/AI selection semantics using current DB state.
-- [ ] Return provider-snapshot facts without synthesising restrictions.
-- [ ] Reuse existing `CommerceToolResultSchema` and tool access checks.
-- [ ] Test FIXED vs AI, deleted/inactive discounts, shop isolation, no proof-service calls, truncation and failure logging.
+- [ ] Add bounded shop/mode-scoped keyset paging to the current discount lookup and exact Shared response, including cursor tamper/cross-tenant rejection.
+- [ ] Add built-in `commerce_get_discount_details` handler using existing `providerSnapshot` (Woo and enriched Shopify); map incomplete rules to explicit PARTIAL/UNKNOWN.
+- [ ] Respect current FIXED/AI/NONE policy on **every call**, including detail requests and calls after merchant policy changes.
+- [ ] Use the existing generic MCP envelope and published feature schema, with safe structured error logging.
+- [ ] Add PostgreSQL-backed tests for two shops, 120 discounts/page 75, selected vs unselected, revoked selections, missing details, Woo restrictions, Shopify partial rules and absent condition fields.
 
 ## Interfaces / Contracts
 
-Use existing `CommerceToolInputs.commerce_get_discount_options`, `CommerceToolOutputs.commerce_get_discount_options`, `CommerceOfferSchema` and `CommerceToolResultSchema` from the published Shared package. No new on-demand `RecoveryDiscountProof*` contract. Provider restriction detail may be returned only within already agreed contract fields; **do not invent additional wire fields**. If the existing contract cannot express material conditions, stop and return the concrete missing field to `moda_architect` for a separate contract decision.
+**Normative published interface: SHARED-009 -> SHARED-010** (`@modainteract/moda-interact-shared/commerce`):
+
+```typescript
+CommerceToolInputs.commerce_get_discount_options;  // {limit: 1..50 default 20, cursor: string|null default null}
+CommerceToolOutputs.commerce_get_discount_options; // {mode, offers, cursor?: string|null, truncated: boolean}; MCP ALWAYS emits cursor
+CommerceToolInputs.commerce_get_discount_details; // {offerId: string}
+CommerceToolOutputs.commerce_get_discount_details; // {details: {offer: CommerceOffer, facts: CommerceDiscountConditionFacts}|null}
+```
+
+Existing `CommerceToolResultSchema` wraps `data`. See SHARED-009's complete Zod source and fixtures; no type or field inventing is permitted. Concrete implementation entrypoints: extend `moda-interact-mcp/src/execution/` built-in discount tool registry/dispatcher and its Prisma data reader, reusing existing private MCP context (`shopId`, `toolContext.purpose`). `CommerceDiscountConditionFacts` values are **data**, not an eligibility verdict. No new request fields for checkoutRecoveryId, outreachAttemptId or full cart.
 
 ## Dependencies
 
-- `ARCH-052-MCP-001` — authorise the outreach purpose.
-- `ARCH-052-SHARED-003` — publish the required generic Commerce/context contract extensions.
+- `ARCH-052-MCP-001` — accepted outreach purpose and shop-scoped authorisation.
+- `ARCH-052-SHARED-010` — published complete discount input/output contracts.
+- `ARCH-052-BACKGROUND-011` — accepted source-backed Shopify catalogue enrichment, so the MCP mapping cannot invent missing Shopify rules.
 
 ## Enables
 
@@ -90,18 +100,16 @@ Use existing `CommerceToolInputs.commerce_get_discount_options`, `CommerceToolOu
 
 ## Acceptance Criteria
 
-- [ ] Discount results are sourced from the authenticated shop’s PostgreSQL catalogue.
-- [ ] FIXED uses current selected set; AI does not filter by merchant checkbox.
-- [ ] No hosted private proof route, Woo proof endpoint or separate eligibility scan is called.
-- [ ] Incomplete results are marked truncated; missing eligibility conditions are not fabricated.
-- [ ] Tenant isolation, existing MCP authorisation and structured error logging remain enforced.
+- [ ] All pages and a valid continuation cursor work for 120 discounts without accidental omission under a static dataset; change across live catalogue sync is reported as possible partial read, not a claim of exhaustive verification.
+- [ ] Only current permitted shop discounts are visible for FIXED and AI; detail reads cannot access unselected FIXED offers or other shops.
+- [ ] Condition outputs distinguish COMPLETE, PARTIAL and UNKNOWN on source evidence, including unsupported/large targets.
+- [ ] MCP does not call external providers or private proof APIs during discount options/details retrieval.
+- [ ] Generic MCP result, structured logging, tenancy and publisher/tool permissions remain intact.
 
 ## Validation
 
-- [ ] Run existing relevant MCP unit/integration tests for the discount tools.
-- [ ] Exercise current selection modes, shop isolation and truncated-catalogue cases.
-- [ ] Verify absence of calls to removed provider-proof dependencies.
-- [ ] Run repository-declared typecheck/lint as applicable; record exact commands and outcomes in Completion Report.
+- [ ] Run MCP unit and PostgreSQL integration tests for pages, cursor tamper, tenant isolation, current policy, Woo and Shopify providerSnapshot mapping, and generic `CommerceToolResultSchema` conformance.
+- [ ] Run declared MCP typecheck/build and `git diff --check`; record actual command outcomes.
 
 ## Stop Condition
 

@@ -9,13 +9,13 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 30
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-SHARED-003
+- ARCH-052-SHARED-010
 enables:
 - ARCH-052-COMMERCE-007
 - ARCH-052-MCP-003
@@ -62,6 +62,9 @@ Implement the **one product-tool synchronisation capability** in `moda-interact-
 - Do not modify the existing `merchant_knowledge_lookup` tool or replace the existing Shopify conversation `shopify.searchProducts` operation. No legacy adapters: this is pre-production work.
 
 ## Requirements
+
+**Attempt 14 contract gate (normative):** Update the Commerce `@modainteract/moda-interact-shared` package/lockfile to the version published by SHARED-010 (expected 2.7.0). The canonical product drafts must use its `CommerceToolInputs`/`CommerceToolOutputs`, including nullable `variantId` and optional provider taxonomy ID data. Audit the existing Commerce `src/commerce/products/index.ts` and its tests for consumers that assume every product `variantId` is non-null; narrow safely at points requiring a real Shopify variant ID, and never fabricate a Woo variant ID. This is necessary for this repository to compile against SHARED-010. The existing `discounts.getOptions` preview producer may continue to omit the optional `cursor` field; do not add a second discount pagination engine in Commerce. Keep code-driven `product_search` feature entitlement; do not create an `initial_outreach` entitlement or bypass merchant opt-in. Existing Studio release lifecycle and script flags remain as already specified; this is not a discount-tool publication task.
+
 
 **Canonical ownership and feature:**
 
@@ -268,7 +271,7 @@ npm run commerce:sync-tools -- --environment=test --apply
 
 ## Dependencies
 
-- `ARCH-052-SHARED-003` — Shared-008 product input/output schemas must be accepted and **published** before importing them into Commerce.
+- `ARCH-052-SHARED-010` — publish the required product and discount discovery contract update before this repository consumes it.
 
 ## Enables
 
