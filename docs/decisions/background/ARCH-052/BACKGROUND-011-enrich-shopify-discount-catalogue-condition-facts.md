@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-10-30T17:20:05Z
@@ -56,10 +56,10 @@ Woo coupon sync, MCP tool implementation, product API search, Commerce private p
 
 ## Work Items
 
-- [ ] Extend the Shopify discount GraphQL fragments and provider normalisation for observed conditions, with explicit supported/partial/unknown outcomes.
-- [ ] Persist condition facts in the existing `providerSnapshot`, not another table or service.
-- [ ] Test Basic automatic/code product targets, collection targets, percentage/fixed amounts, purchase minimum, BxGy/app incomplete, nested target truncation, sync retries and preserved merchant selection.
-- [ ] Run targeted Background test/typecheck/build scripts, record worktree and validation evidence.
+- [x] Extend the Shopify discount GraphQL fragments and provider normalisation for observed conditions, with explicit supported/partial/unknown outcomes.
+- [x] Persist condition facts in the existing `providerSnapshot`, not another table or service.
+- [x] Test Basic automatic/code product targets, collection targets, percentage/fixed amounts, purchase minimum, BxGy/app incomplete, nested target truncation, sync retries and preserved merchant selection.
+- [x] Run targeted Background test/typecheck/build scripts, record worktree and validation evidence.
 
 ## Interfaces / Contracts
 
@@ -76,14 +76,14 @@ Producer: `ShopifyDiscountProvider.listDiscounts` -> `ShopifyDiscountRecord.prov
 
 ## Acceptance Criteria
 
-- [ ] Targeting/value facts are truly source-backed for supported Shopify types and remain bounded.
-- [ ] Provider pagination/truncation cannot be confused with unrestricted discounts.
-- [ ] Original catalogue sync and merchant `isAvailable` invariants pass regression tests.
+- [x] Targeting/value facts are truly source-backed for supported Shopify types and remain bounded.
+- [x] Provider pagination/truncation cannot be confused with unrestricted discounts.
+- [x] Original catalogue sync and merchant `isAvailable` invariants pass regression tests.
 
 ## Validation
 
-- [ ] Background Shopify provider and catalogue sync tests with real-world shaped GraphQL fixtures.
-- [ ] Declared Background typecheck/build and `git diff --check`; record command outcomes.
+- [x] Background Shopify provider and catalogue sync tests with real-world shaped GraphQL fixtures.
+- [x] Declared Background typecheck/build and `git diff --check`; record command outcomes.
 
 ## Stop Condition
 
@@ -97,35 +97,49 @@ Source files: `moda-interact-background/src/providers/shopify-discount.provider.
 
 ### Status
 
-Not Started.
+Ready for architect review. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts in `ShopifyDiscount.providerSnapshot`.
 
 ### Files Changed
 
-None.
+Implementation commit `00941fdef05611569b73f2e106e442c6781ae6d1` is pushed to `origin/task/ARCH-052-BACKGROUND-011`:
+
+- `moda-interact-background/src/providers/shopify-discount.provider.ts`
+- `moda-interact-background/tests/unit/providers/shopify-discount.provider.test.ts`
+- `moda-interact-background/tests/unit/services/shopify-discount-catalogue.service.test.ts`
+
+The catalogue service already persists `providerSnapshot` through its existing upsert; no service or schema change was needed. The implementation branch contains no dependency-file or submodule-gitlink changes.
 
 ### Work Completed
 
-None.
+The existing 2026-07 Shopify GraphQL query now selects typed native Basic discount values, customerGets targets, minimum requirements, customer context and available usage facts. It handles automatic and code Basic discounts while retaining the existing app, BxGy and free-shipping catalogue selection. Provider snapshots include the Shared-010 condition-facts fields, and a regression asserts the shape parses through `CommerceDiscountConditionFactsSchema`.
+
+Target enumeration is capped at 20 products, variants or collections per nested connection, with 10 discount nodes per request and an overall 1,000-page bound. Truncated targets and unsupported/app/BxGy types are marked `PARTIAL` with bounded `unrepresentedConditions`; they are never treated as unrestricted. The outer cursor must advance or the provider throws, allowing the existing sync failure/retry path to handle it. No titles or summaries are used to infer conditions, and no customer identifiers are fetched for customer scope.
+
+The catalogue retry regression verifies a failed provider read does not persist a partial snapshot and a subsequent retry stores the enriched facts. The existing PostgreSQL selection integration verifies merchant `isAvailable` remains selected after a later sync. Provider status, sync timestamps, row unavailability, and merchant selection handling remain owned by the existing catalogue service.
 
 ### Validation Results
 
-Not run.
+- Focused command `npm exec vitest run tests/unit/providers/shopify-discount.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts` — 2 files, 11 tests passed.
+- Existing PostgreSQL selection integration `npm run test:arch052-shopify-discount-selection:postgres` — 1 file, 2 tests passed.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation.
+- Changed-file ESLint on the provider and both test files — passed.
+- `git diff --check` — passed.
 
-### Deviations
+The implementation worktree initially had no `node_modules`; `npm ci` installed the lockfile dependencies. npm reported 23 dependency advisories (10 moderate and 13 high); no package manifest or lockfile was changed.
 
-None.
+### Launcher and Synchronization Evidence
 
-### Assumptions
+Preparation packet claim: Attempt 1, `codex`, pushed parent claim commit `fc950dff27247e160dcabf12dc73b15e803cc054`; dependency gate passed with `ARCH-052-BACKGROUND-009` and `ARCH-052-SHARED-010` both Complete.
 
-Uses accepted BACKGROUND-009.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`; created for this task. Start sync: remote task branch fast-forward `not-needed`; `origin/main` incorporated `already-current`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`; created for this task. Start sync: remote task branch fast-forward `not-needed`; `origin/main` incorporated `already-current`.
+- Recursive submodule sync and update passed. `database` is initialized at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- The shared workspace and source checkout were not switched or mutated for task implementation; no other task worktree was reused. `main` was not changed.
 
-### Unresolved Issues
+### Deviations, Assumptions and Unresolved Issues
 
-None yet.
-
-### Architectural Concerns
-
-Escalate provider fields that cannot be retrieved or bounded; do not silently infer conditions.
+No scope deviations or unresolved architecture questions. Native Shopify Basic discounts expose included item targets but no separate excluded-product selection; excluded target arrays therefore remain empty for those supported types. Unsupported types and unrepresented market restrictions remain partial. The Architect Review and parent architecture/index were not modified. ARCH-052-MCP-002 was not started.
 
 ## Architect Review
 
