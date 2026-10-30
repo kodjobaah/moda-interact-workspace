@@ -239,7 +239,7 @@ Implementation complete; awaiting architect review.
 
 - Added strict discount condition facts/details schemas and inferred types, paged discount options input/output, and discount-details tool input/output using the existing Commerce dictionaries and generic result envelope.
 - Made product `variantId` nullable and added optional bounded provider category and collection ID arrays while keeping category labels unchanged.
-- Added exact structural fixtures, compile-time `satisfies` checks for both inferred types, invalid primitive/unknown-key coverage, conversation compatibility coverage, and generic-envelope bounds. No business-rule refinements or provider/ranking logic were added.
+- Added exact structural fixtures, compile-time `satisfies` checks for both inferred types, invalid primitive/unknown-key coverage, conversation compatibility coverage, and generic-envelope bounds for both discount options and discount details. No business-rule refinements or provider/ranking logic were added.
 - Did not change package version, publish the package, or start SHARED-010.
 
 ### Validation Results
@@ -249,6 +249,7 @@ Implementation complete; awaiting architect review.
 - `npm run build`: PASS, including ESM and declaration builds.
 - `npm run validate:commerce-entrypoints`: PASS — existing `@modainteract/moda-interact-shared/commerce` entrypoint imported cleanly. Generated `dist/commerce/index.d.ts` exports `CommerceDiscountConditionFactsSchema`, `CommerceDiscountConditionFacts`, `CommerceDiscountDetailsSchema`, and `CommerceDiscountDetails`.
 - `git diff --check`: PASS.
+- Review correction follow-up: `./node_modules/.bin/tsx --test src/commerce/contracts.test.ts`: PASS — 15 tests, 15 passed, 0 failed; includes generic Commerce result envelope parsing for the discount-options output. `git diff --check`: PASS.
 - Package scripts and package metadata were inspected. The package remains version 2.6.0; no publication was performed.
 
 ### Deviations
@@ -273,7 +274,7 @@ None known. The one skipped test is identified in the test runner output and is 
 
 ### Architectural Concerns
 
-Report any existing consumer expectations broken by nullable variant ID or required output cursor to architect rather than creating adapters.
+None identified. The options output keeps `cursor` optional for existing conversation-preview compatibility, as specified.
 
 ## Architect Review
 
@@ -299,4 +300,4 @@ Pending.
 
 ### Follow-up
 
-None.
+Added the missing generic Commerce result envelope assertion for discount options after architect review identified the coverage gap. Task remains in review pending architect acceptance.
