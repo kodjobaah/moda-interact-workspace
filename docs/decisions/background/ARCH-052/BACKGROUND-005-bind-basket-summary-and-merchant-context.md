@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
-executor: codex
-claimed_at: 2026-10-30T16:43:45Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-SHARED-003
@@ -196,3 +196,32 @@ The implementation respects the task's saved-facts, tenant-isolation, approved-t
 #### Follow-up
 
 The same task is returned to `status: ready`; retain `attempt: 1` and clear `executor` and `claimed_at`. The canonical launcher may claim Attempt 2. Correct the remainder suffix and locale coverage, then resubmit for review. Keep `ARCH-052-BACKGROUND-008` blocked until this prerequisite is accepted.
+
+### Attempt 2 Architect Review
+
+#### Review Status
+
+Accepted — Complete.
+
+#### Review Notes
+
+The Attempt 1 finding is resolved. The formatter now uses a language-neutral `+N` remainder marker, and the French and English fixtures assert the resulting output. No hard-coded English remainder word remains. The saved-facts, tenant-scope, category fail-closed, and approved-template boundaries remain intact.
+
+#### Reviewed Files
+
+- Attempt 2 Completion Report, task YAML, Work Items, Acceptance Criteria and Validation.
+- Background implementation branch `task/ARCH-052-BACKGROUND-005` at `c271b19040dc875911bdf150ae2e3367235dde47`, clean and pushed.
+- Formatter and updated locale fixtures.
+- Previously reviewed binding, brand, integration, and PostgreSQL test changes.
+
+#### Validation Reviewed
+
+Reviewed the Attempt 2 focused rerun (3 files, 30 tests), changed-file ESLint, `git diff --check`, and the previously recorded disposable PostgreSQL integration and build. No tests were rerun for this acceptance review.
+
+#### Architecture Conformance
+
+Conforms to the approved task scope and acceptance criteria. The neutral remainder marker resolves the sole outstanding review finding.
+
+#### Follow-up
+
+The automatic-completion task is complete. `ARCH-052-BACKGROUND-008` may proceed when its other dependencies are satisfied.
