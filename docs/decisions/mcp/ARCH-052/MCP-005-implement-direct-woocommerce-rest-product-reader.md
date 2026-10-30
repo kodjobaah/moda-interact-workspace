@@ -91,7 +91,7 @@ This is a bounded provider-connection task. MCP-003 retains end-to-end generic t
 
 ### Status
 
-Implementation complete; submitted for architect review. Attempt 1 remains unchanged. The implementation and task report are committed locally; pushes are pending explicit authorization for this task's GitHub destination after automatic review rejected source-code egress.
+Implementation complete; submitted for architect review. Attempt 1 remains unchanged. The implementation and task report are committed and published on their task branches.
 
 ### Files Changed
 
@@ -128,7 +128,7 @@ Production must provide `COMMERCE_CONNECTION_KEYS_JSON` containing the keyring t
 
 ### Unresolved Issues
 
-Implementation branch publication and parent task-record publication are awaiting explicit authorization after automatic approval review rejected GitHub source-code egress for ARCH-052-MCP-005. No other implementation issue is known.
+No implementation issue is known. The direct reader requires the deployment-provided `COMMERCE_CONNECTION_KEYS_JSON` keyring to decrypt stored grant credentials.
 
 ### Architectural Concerns
 
@@ -158,13 +158,13 @@ Implementation repository:
   repository: `moda-interact-mcp`
   commit: `72ca88dd35967607e6749a5aed9b42cc49339d0b`
   remote branch: `origin/task/ARCH-052-MCP-005`
-  pushed: no — automatic approval review rejected this task's GitHub source-code egress.
+  pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/mcp/ARCH-052/MCP-005-implement-direct-woocommerce-rest-product-reader.md`
-  commit: this task-report commit (see final task-branch HEAD)
+  commit: this final task-report commit (see final task-branch HEAD)
   remote branch: `origin/task/ARCH-052-MCP-005`
-  pushed: no — publication requires the same explicit authorization.
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
