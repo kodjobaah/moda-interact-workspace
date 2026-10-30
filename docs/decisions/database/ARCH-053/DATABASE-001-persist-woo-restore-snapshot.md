@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: codex
-claimed_at: 2026-10-30T13:08:38Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -26,7 +26,7 @@ updated: 2026-10-30
 
 ## Architecture
 
-Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Portable canonical task: defined but not materialised**; no Git branch, worktree, commit, push, review or producer deployment claimed.
+Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Task was materialised and executed in dedicated mirrored task worktrees. Attempt 1 is now architect-accepted; no producer deployment is implied.
 
 ## Objective
 
@@ -212,7 +212,7 @@ When all required Work Items, Acceptance Criteria and Validation are satisfied, 
 
 ### Status
 
-Implemented; submitted for architect review (`status: review`).
+Implemented and architect-accepted at Attempt 1 (`status: complete`). Implementation commit `33d2f6b6107ea57bd9dfe38e2e3d6e24df9556be` and parent task/report commit `af0f1853c6f4995e845baf1fcd5db4fe2335f972` are published.
 
 ### Files Changed
 
@@ -257,34 +257,34 @@ The representative fixtures follow the task's illustrative Shared v1 shape; cont
 
 ### Unresolved Issues
 
-None identified for this database-only change. Awaiting architect review; no downstream task was promoted.
+No implementation issue found. The database task is accepted. No downstream task was promoted because `ARCH-053-SHARED-002` remains Pending; its consumers are still dependency-gated.
 
 ### Architectural Concerns
 
 Rollback is forward-only: dropping `wooRestoreSnapshot` later would delete restoration evidence and requires an explicit backup and retention decision. No automatic down migration is provided. The ARCH-053 index remains architect-owned and unchanged.
 
-## Architect Review
+## Architect Review — Attempt 1 (Accepted)
 
 ### Review Status
 
-Pending
+Accepted. The implementation branch `task/ARCH-053-DATABASE-001` is published at `33d2f6b6107ea57bd9dfe38e2e3d6e24df9556be`; the parent task/report branch is published at `af0f1853c6f4995e845baf1fcd5db4fe2335f972`. Task status is Complete; attempt remains 1.
 
 ### Review Notes
 
-Pending architect review.
+The schema adds only nullable `Json?` storage on `CheckoutRecovery`; the migration adds a nullable JSONB column without default or backfill. The harness isolates fresh and upgrade modes on disposable PostgreSQL, preserves existing recovery data, checks SQL NULL and supported/unsupported JSONB round trips, tests per-generation independence and the existing uniqueness constraint, and cleans up its container in `finally`. No unrelated schema, table, index, or business validation was introduced.
 
 ### Reviewed Files
 
-Implementation files listed in the Completion Report; review-owned files unchanged.
+Reviewed `prisma/schema.prisma`, migration `20261030131833_arch053_woo_restore_snapshot`, the fresh/upgrade PostgreSQL harness, the package script additions, and the Completion Report/worktree evidence.
 
 ### Validation Reviewed
 
-Validation commands and outcomes are listed in the Completion Report.
+The report records Prisma validation and client generation, schema-to-schema diff inspection, fresh and upgrade PostgreSQL runs through 66 migrations, invalid-mode rejection, and `git diff --check` passing. These results were reviewed as reported and were not independently rerun.
 
 ### Architecture Conformance
 
-Submitted for architect assessment; no acceptance is claimed.
+Conforms to the database-only persistence contract. No downstream task is promoted: `ARCH-053-SHARED-002` remains Pending, so the dependent API and Background work is still gated. No consumer rollout or production activation is implied.
 
 ### Follow-up
 
-None.
+None for this database task. Restore-evidence writers and readers remain owned by their separate API and Background tasks; the JSONB field is not itself an authorization decision.
