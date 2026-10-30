@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: codex
-claimed_at: 2026-10-30T12:57:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -25,7 +25,7 @@ updated: 2026-10-30
 
 ## Architecture
 
-Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Portable canonical task: defined but not materialised**; no Git branch, worktree, commit, push, review or producer deployment claimed.
+Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Materialised and executed in dedicated mirrored task worktrees. Attempt 1 is architect-accepted; the package remains unpublished pending SHARED-002.
 
 ## Objective
 
@@ -406,7 +406,7 @@ The source package `package.json` currently has `version: 2.5.1` and no `./wooco
 
 ### Status
 
-Ready for Review.
+Attempt 1 implementation and reported validation are accepted. Implementation branch `task/ARCH-053-SHARED-001` is published at `825b7b6233eb12c59f4a341bd92de13b140f3e15`; parent task/report branch is published at `73d78024b08b1101217a0dcd13f134dd8538b270`. Task status is Complete at Attempt 1.
 
 ### Files Changed
 
@@ -450,7 +450,7 @@ None.
 
 ### Architectural Concerns
 
-None. The task's Architecture paragraph still carries portable/non-materialised snapshot wording; launcher preparation is the authoritative evidence that this task was materialised, claimed and prepared. That architecture paragraph was outside this task's editing authority.
+The package has not been versioned or published; that is the separate SHARED-002 task. No unresolved implementation issues were found.
 
 ### Git / VCS
 
@@ -480,28 +480,28 @@ Parent workspace:
 
 Merged from implementation `main` into the implementation task branch: yes, local `main` at `b56788d` (`2.7.1`). The task branch was not merged into `main`. Workspace `main` was not changed.
 
-## Architect Review
+## Architect Review — Attempt 1 (Accepted)
 
 ### Review Status
 
-Pending
+Accepted. Implementation branch `task/ARCH-053-SHARED-001` is published at `825b7b6233eb12c59f4a341bd92de13b140f3e15`; parent task/report branch is published at `73d78024b08b1101217a0dcd13f134dd8538b270`. Task status is Complete; attempt remains 1.
 
 ### Review Notes
 
-Not Reviewed — task not executed.
+The schemas match the prescribed strict v1 wire shapes: supported and unsupported snapshots are disjoint; the eligible resolver response requires a supported snapshot and explicit outreach offer; fields and bounds remain structural and do not encode Woo business rules. The canonical fixture has the required five top-level examples and synthetic token. Exports, package subpath, fixture asset inclusion and tsup entry are in scope. No schema or behavior defect was found. Package versioning/publication remains SHARED-002.
 
 ### Reviewed Files
 
-None.
+Reviewed `src/woocommerce/contracts.ts`, `src/woocommerce/index.ts`, `src/woocommerce/contracts.test.ts`, `src/woocommerce/__fixtures__/woo-restore-v1.json`, `tsup.config.ts`, `package.json`, and the Completion Report/worktree evidence.
 
 ### Validation Reviewed
 
-None.
+The report records typecheck, 8 focused tests, 394 full-suite passes with one Redis-dependent skip, build, ESM self-import/declaration checks, package dry-run/fixture inclusion, and `git diff --check` passing. These results were reviewed as reported and were not independently rerun.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+Conforms to the Shared-only contract ownership. No consumer, database, dynamic-discount, or package publication work was added.
 
 ### Follow-up
 
-None.
+`ARCH-053-SHARED-002` is Ready for its separate package-version/publication task. API and Background consumers remain Pending until SHARED-002 completes.
