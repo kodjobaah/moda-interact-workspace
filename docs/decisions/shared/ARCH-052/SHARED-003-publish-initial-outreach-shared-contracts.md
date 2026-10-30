@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -36,7 +36,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-002
 - ARCH-052-WOOCOMMERCE-001
 created: '2026-10-29'
-updated: '2026-10-29'
+updated: '2026-10-30'
 ---
 
 # ARCH-052-SHARED-003: Publish the accepted initial-outreach contracts (including product search)
