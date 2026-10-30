@@ -140,8 +140,8 @@ Implementation commits: `753c17184347215dd309e2f9bb74dc09e4820676` (`feat(backgr
 
 ### Validation Results
 
-- Focused routing, inbound-processing and WhatsApp worker unit tests: 61 passed across 3 files.
-- After the review correction, `npx vitest run tests/unit/services/recovery-routing.service.test.ts`: 23 passed, including a Shopify route-classification regression.
+- After the review correction, focused routing, inbound-processing and WhatsApp worker unit tests: 62 passed across 3 files.
+- The focused routing suite contains 23 tests, including the Shopify route-classification regression.
 - PostgreSQL multi-generation routing integration tests via `node scripts/test-integration.mjs tests/integration/woo-recovery-inbound-routing.integration.test.ts`: 3 passed. The tests use Colima's disposable PostgreSQL and verify Woo latest-generation routing, historical context routing, cross-shop ambiguity, suppression when the latest generation has not sent, and Shopify ambiguity across an older cancelled generation.
 - Focused ESLint on `src/services/recovery-routing.service.ts`, `tests/unit/services/recovery-routing.service.test.ts` and `tests/integration/woo-recovery-inbound-routing.integration.test.ts`: passed.
 - After the review correction, `npm run build`: Prisma generation and TypeScript build passed.
