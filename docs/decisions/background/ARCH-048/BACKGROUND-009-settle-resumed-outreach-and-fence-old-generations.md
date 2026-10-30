@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 38
-executor: codex
-claimed_at: 2026-10-30T09:57:56Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-048-BACKGROUND-007
@@ -175,7 +175,7 @@ A provider permit committed before checkout closure is irreversible. This implem
 - Parent workspace task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-009`, branch `task/ARCH-048-BACKGROUND-009`; launcher-synchronized starting revision `423ffdf9ffb201dadd025c137ddeaac3f507070b`; Attempt 1 claim pushed as `d6826e0ceaa9d64b4d452ff4cc3d584d8d0ffe7f`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-009`, branch `task/ARCH-048-BACKGROUND-009`; launcher-synchronized starting revision `ddd13338247f26c2ed5e7146489709de9f5e3f7a`; recursive database submodule was ready at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
 - Dedicated physical parent and implementation worktrees were used. The prepared launcher synchronized both task branches from their respective `origin/main` before claim and reported dependency gate passed, recursive submodules ready, and the parent claim pushed. Implementation completion is committed and pushed on the mirrored task branch as `48845d3` (`feat(ARCH-048-BACKGROUND-009): settle resumed Woo outreach`); the parent report remains on the same task branch as claim `d6826e0` and is committed/pushed with this review update.
-- The requested Changes Requested task-file update is committed locally on `task/ARCH-048-BACKGROUND-009` but not pushed. The attempt to publish it to `https://github.com/kodjobaah/moda-interact-workspace.git` was rejected by automatic review: “This would publish the private BG009 task report to its configured GitHub remote, but the trusted user messages authorize review—not publication of this task or destination.” No retry or workaround was attempted; explicit user authorization to publish this BG009 parent task branch is required.
+- The first Changes Requested parent task-file update was pushed on `task/ARCH-048-BACKGROUND-009` as `9c5ff58344a07971811d642c0ec1d198f75311d5`; the remote ref was verified against that commit.
 
 ## Architect Review
 
@@ -185,29 +185,33 @@ Changes Requested.
 
 ### Review Notes
 
-1. `settleResumed` routes failures to `failed()`, which logs the raw `error`. Change this path to log only bounded error class/code and stage fields; do not log the Error object, message, or stack. Rethrow the original error. Add a focused test proving sensitive/raw error data is absent from the log and the same error is rethrown.
-2. `cancelIfPrePermit` can return `cancelled` and release the reservation when `updateMany` changes zero rows, including when `followUpDueAt` is non-null. Fail closed on follow-up state. Return `cancelled` only after confirming an eligible transition or rereading and validating an already-`CANCELLED` replay for the same attempt/recovery with no follow-up state. Do not release the reservation after an unconfirmed transition. Add focused tests for zero-row transition with `followUpDueAt` (no cancellation result or release), a validated already-cancelled replay, and successful eligible transition.
+Both previously requested source corrections pass code review: `settleResumed` uses bounded logging without serializing the Error and preserves the original rethrow; cancellation validates follow-up state and replay and requires `updateMany` count 1 before returning `cancelled`. No source-code correction is requested.
+
+Acceptance is withheld because Attempt 2 did not run the required PostgreSQL/Redis integration command. The Attempt 2 report records `spawn docker ENOENT`; therefore the new PostgreSQL regression for `followUpDueAt` retaining the reservation when cancellation is not confirmed remains unverified.
 
 ### Reviewed Files
 
 - `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`
-- `src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts`
-- `src/services/woocommerce-recovery/woo-initial-send-fence.service.ts`
-- `src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts`
-- `src/services/woocommerce-recovery/woo-initial-dispatch.queue.ts`
-- task-scoped Woo recovery unit and integration tests
+- `src/services/woocommerce-recovery/woo-resumed-outreach-settlement.adapter.ts`
+- `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-resumed-outreach-settlement.adapter.test.ts`
+- `tests/integration/arch048-woo-initial-outreach.integration.test.ts`
 
 ### Validation Reviewed
 
-Review identified the two corrections above. Changes Requested rework requires implementation and focused tests; no validation is credited for the corrections until they are implemented and reported.
+The Attempt 2 report records 52 focused unit tests passed, focused ESLint passed, build passed, and `git diff --check` passed. The required PostgreSQL/Redis integration command was not run because the disposable database launcher failed with `spawn docker ENOENT`; no passing integration result is claimed for Attempt 2.
 
 ### Architecture Conformance
 
-The task remains within its assigned Background scope. The requested fixes preserve bounded diagnostics, exception retry semantics, and reservation safety.
+The two source corrections conform to the task requirements. Acceptance remains gated on actual PostgreSQL/Redis integration validation of the new follow-up-state reservation regression.
 
 ### Follow-up
 
-Apply both corrections on the same mirrored task branches. This review update does not claim or increment Attempt 2; the launcher will claim it when the task is started again.
+In an environment with disposable PostgreSQL and Redis, run and report the results of:
+
+`node scripts/test-integration.mjs tests/integration/arch048-woo-initial-outreach.integration.test.ts tests/integration/woo-initial-send-fence-races.integration.test.ts tests/integration/woo-initial-send-redis-fault.integration.test.ts`
+
+Report the passing result for the new `followUpDueAt` / no-credit-release PostgreSQL regression explicitly. If the command or regression fails, correct the failure and rerun. This review update does not increment Attempt 2.
 
 ## Attempt 2 Completion Report
 
