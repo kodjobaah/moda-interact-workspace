@@ -181,7 +181,7 @@ Implementation repository files:
 - `npm run lint` — passed (`--max-warnings=0`).
 - `npm run build` — passed.
 - `git diff --check` — passed in the implementation worktree; the parent task-file report is the only parent change.
-- Attempt 1 `npm run test:integration:docker` — Docker spent over 180 seconds pulling `pgvector/pgvector:pg16`, then reported `spawnSync docker ETIMEDOUT`. PostgreSQL initialization had not completed and no integration assertions ran; cleanup reported no leftover containers. Attempt 2 results are recorded below.
+- Attempt 1 `npm run test:integration:docker` — Docker spent over 180 seconds pulling `pgvector/pgvector:pg16`, then reported `spawnSync docker ETIMEDOUT`. The captured output reported the container healthy, but the timed-out startup command prevented migrations and integration assertions from running; cleanup reported no leftover containers. Attempt 2 results are recorded below.
 - An initial test invocation before Prisma generation saw a stale generated Prisma client. The declared `npm run prisma:generate` corrected the environment; the final full unit suite passed.
 
 ### Attempt 2 Docker/PostgreSQL Follow-up
