@@ -43,7 +43,7 @@ The existing Commerce publication lifecycle validates executable registration. W
 ## Scope
 
 - Confirm COMMERCE-006 and MCP-003 task YAMLs are `complete` and architect-accepted. Invoke the exact approved code-defined bootstrap command from COMMERCE-006 as a privileged, auditable TEST operation. It creates or verifies the canonical drafts, publishes tool revisions with the existing lifecycle, appends them without removing other capabilities, activates the new immutable TEST release by CAS and records release/feature/tool revision IDs.
-- Verify the published product descriptors appear in MCP `tools/list` under an authorised recovery attempt and that `tools/call` reaches both accepted provider handlers for Shopify and Woo test fixtures. Verify active release pointer, pinned descriptor hashes and repeated invocation no-op. No manual Studio edits or source implementation changes.
+- Verify the published product descriptors appear in MCP `tools/list` under a trusted and authorised shop-scoped outreach-purpose context and that `tools/call` reaches both accepted provider handlers for Shopify and Woo test fixtures. Verify active release pointer, pinned descriptor hashes and repeated invocation no-op. No manual Studio edits or source implementation changes.
 - Never publish directly to production under this task; production rollout remains an independently authorised operational action after tests.
 
 ## Out of Scope
