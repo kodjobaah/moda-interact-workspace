@@ -141,12 +141,12 @@ Implementation complete locally; publication blocked by automatic review. Task r
 
 Admission now requires a positive safe generation and exact candidate/current-index/accepted-watermark agreement. It classifies the latest durable generation and its resumption/order history, admits only generation 1 initially or generation N+1 after a proven resumption or eligible non-order expiry, and treats stale generations as superseded. Matching-row recovery requires exact `DETECTED` admission provenance to set `repairInitial: true`; exact sent/engaged rows return `repairInitial: false`. Insertion locks and rechecks the prior row in the PostgreSQL transaction, writes the candidate generation's complete basket and admission-origin metadata atomically, and returns only a proven exact P2002 collision. Corrupt resumption/order provenance throws for retry. No queue or provider operation was added to the transaction.
 
-Implementation commit: `2007c05a409342890b19e97ca824df61aee9094c` (`feat(background): admit mature Woo recovery generations`), local branch `task/ARCH-048-BACKGROUND-008`.
+Implementation commits: `2007c05a409342890b19e97ca824df61aee9094c` (`feat(background): admit mature Woo recovery generations`) and `e4b11a74d017276c8a8e321f9d5734f957647fee` (`test(background): cover expired checkout admission lease race`), local branch `task/ARCH-048-BACKGROUND-008`.
 
 ### Validation Results
 
 - Focused Woo admission and consent-notice unit tests: 63 passed.
-- PostgreSQL/Redis admission and race integration tests: 7 passed, including generation-2 basket refresh and frozen generation-1 history.
+- PostgreSQL/Redis admission and race integration tests: 8 passed, including generation-2 basket refresh, frozen generation-1 history, and deterministic expired-lease fencing. The race test `fences simultaneous admission after an expired checkout lease with the PostgreSQL generation key` gives both contenders a simulated lease and releases both transactions through a barrier; PostgreSQL leaves one generation row and one history record, without a wall-clock wait.
 - `npm run build`: passed.
 - Focused ESLint over all five changed files: passed.
 - `git diff --check`: passed.
@@ -162,7 +162,7 @@ The prepared launcher packet is authoritative for worktree paths, task branches,
 
 ### Unresolved Issues
 
-The configured remote destination requires explicit authorization for publication under the automatic review policy. No retry/workaround was attempted. A timed expired-lease test was not added; concurrency safety is covered by the transaction row lock, unique constraint, P2002 recovery and PostgreSQL/Redis race suite.
+The configured implementation and parent origins remain `https://github.com/kodjobaah/moda-interact-background.git` and `https://github.com/kodjobaah/moda-interact-workspace.git`. The implementation push was rejected by automatic review as recorded above; no retry/workaround was attempted. The expired checkout lease case is covered by `fences simultaneous admission after an expired checkout lease with the PostgreSQL generation key`: the test uses a fake Redis adapter that permits both lease acquisitions and a transaction barrier that releases both workers concurrently, then verifies the PostgreSQL generation key leaves exactly one recovery and one history record. The case is deterministic and uses no wall-clock delay.
 
 ### Architectural Concerns
 
