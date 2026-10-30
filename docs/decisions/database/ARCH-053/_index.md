@@ -4,7 +4,7 @@ Architecture: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-an
 
 Assigned agent: `moda_database`. Coordinator: `moda_architect`.
 
-ARCH-053-DATABASE-001 is materialised, architect-accepted and published. Individual task YAML remains authoritative; no downstream task is eligible yet because shared contract publication is Pending.
+DATABASE-001 is architect-accepted Complete with published implementation and parent task branches. Individual task YAML remains authoritative.
 
 | Task | Purpose | Status | Depends On |
 |---|---|---|---|

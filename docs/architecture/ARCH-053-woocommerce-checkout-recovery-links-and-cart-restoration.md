@@ -11,7 +11,7 @@ updated: 2026-10-30
 
 ## Status
 
-**In Progress.** ARCH-053-DATABASE-001 is complete at Attempt 1, with both task branches published. ARCH-053-SHARED-001 remains Ready and SHARED-002 remains Pending; all other implementation tasks remain dependency-gated. No downstream task is promoted by the database acceptance. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here. No task acceptance implies consumer deployment or production activation.
+**In Progress.** ARCH-053-DATABASE-001 and ARCH-053-SHARED-001 are accepted Complete at Attempt 1. ARCH-053-SHARED-002 is Ready for package publication; other implementation tasks remain Pending behind that publication gate. No consumer deployment or production activation is implied. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here.
 
 ## Problem and inspected baseline
 
@@ -132,13 +132,13 @@ Node uses `@modainteract/moda-interact-shared/logging` for generic structured ev
 
 ## Decisions / Tasks
 
-Task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001 Complete** and **SHARED-001 Ready**; all other ARCH-053 tasks remain Pending. DATABASE-001 acceptance does not promote downstream tasks because SHARED-002 remains Pending. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
+The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001 and SHARED-001 Complete** and **SHARED-002 Ready**; all other ARCH-053 tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
 | `ARCH-053-DATABASE-001` | `moda_database` | Complete | — |
-| `ARCH-053-SHARED-001` | `moda_shared` | Ready | — |
-| `ARCH-053-SHARED-002` | `moda_shared` | Pending | SHARED-001 |
+| `ARCH-053-SHARED-001` | `moda_shared` | Complete | — |
+| `ARCH-053-SHARED-002` | `moda_shared` | Ready | SHARED-001 |
 | `ARCH-053-API-001` | `moda_api` | Pending | SHARED-002 |
 | `ARCH-053-BACKGROUND-001` | `moda_background` | Pending | SHARED-002 |
 | `ARCH-053-BACKGROUND-002` | `moda_background` | Pending | BACKGROUND-001, DATABASE-001 |
