@@ -239,6 +239,15 @@ The existing Meta registration transaction is the durable `READY_TO_SUBMIT` inte
 
 Ready for architect review; task status is `review`.
 
+### Review Finding Follow-up
+
+Updated the Admin IMAGE guidance to state that Admin queues a handle-free registration intent and Background supplies the provider sample handle during Meta submission. The product-image selector now attributes exact product/variant resolution at send time to Background, without implying a timed proof requirement. Updated the component assertion to guard the Background-owned guidance.
+
+- Implementation commit `efb18cb` (`fix(admin): clarify image header submission guidance`) is pushed on `task/ARCH-052-ADMIN-002`.
+- `npm run test:arch049-admin-media:unit`: passed, 27 unit tests and 1 SQL test.
+- `npx eslint src/components/admin/whatsapp-templates/authoring/template-review-summary.tsx src/components/admin/whatsapp-templates/media/shop-brand-media-header-section.tsx`: passed.
+- `git diff --check`: passed; implementation-worktree search found no remaining obsolete sample-handle or timed-proof guidance in the Admin WhatsApp template components.
+
 
 ## Architect Review
 ### Review Status
