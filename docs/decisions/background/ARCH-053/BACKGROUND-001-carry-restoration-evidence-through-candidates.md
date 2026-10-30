@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-10-30T14:46:42Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-053-SHARED-002
@@ -64,9 +64,9 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Work Items
 
-- [ ] Use published Shared validator for nested restore field; preserve existing event envelope digest and job IDs.
-- [ ] Carry restoration through candidate create/update/cancel/replay and deterministic stale checks.
-- [ ] Add tests for no field, unsupported, coupons-only change, quantity change, delayed replay and invalid nested schema.
+- [x] Use published Shared validator for nested restore field; preserve existing event envelope digest and job IDs.
+- [x] Carry restoration through candidate create/update/cancel/replay and deterministic stale checks.
+- [x] Add tests for no field, unsupported, coupons-only change, quantity change, delayed replay and invalid nested schema.
 
 ## Interfaces / Contracts
 
@@ -83,18 +83,18 @@ Queue remains `woo-checkout-capture-v1` / `checkout-updated` with **canonical `w
 
 ## Acceptance Criteria
 
-- [ ] Use published Shared validator for nested restore field; preserve existing event envelope digest and job IDs.
-- [ ] Carry restoration through candidate create/update/cancel/replay and deterministic stale checks.
-- [ ] Add tests for no field, unsupported, coupons-only change, quantity change, delayed replay and invalid nested schema.
-- [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
-- [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
+- [x] Use published Shared validator for nested restore field; preserve existing event envelope digest and job IDs.
+- [x] Carry restoration through candidate create/update/cancel/replay and deterministic stale checks.
+- [x] Add tests for no field, unsupported, coupons-only change, quantity change, delayed replay and invalid nested schema.
+- [x] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
+- [x] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
+- [x] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
-- [ ] Background focused Woo capture parser and candidate unit tests
-- [ ] Background declared typecheck/lint and queue replay tests
-- [ ] `git diff --check`
+- [x] Background focused Woo capture parser and candidate unit tests
+- [x] Background declared typecheck/lint and queue replay tests (changed-file lint passed; full lint has one unrelated existing failure documented below)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -108,35 +108,61 @@ The queue consumer task must be architect-accepted before the coordinated pre-pr
 
 ### Status
 
-Not Started
+Ready for Review.
 
 ### Files Changed
 
-None — portable task definition only.
+- `package.json`
+- `package-lock.json`
+- `src/events/woo-checkout-capture.ts`
+- `tests/unit/events/woo-checkout-capture.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-checkout-activity.service.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-candidate-queue.service.test.ts`
 
 ### Work Completed
 
-Not Started.
+Pinned the Background consumer to published Shared `2.7.2` and validated the optional queue-boundary `checkout.restoration` with `WooCartRestoreSnapshotV1Schema`. The existing event wrapper, job name/ID and canonical JSON digest inputs remain unchanged.
+
+Carried the validated snapshot as part of the complete checkout payload in the existing Woo candidate job. Newer supported/unsupported snapshots replace the prior value along with basket items and activity time; absent restoration remains absent. Added coverage for absent and invalid nested values, supported/unsupported evidence, coupon-only changes, quantity changes, queue replacement, and a delayed resumption replay that cannot overwrite a later successor snapshot. No new queue, database write, recovery record, URL issuance, or ARCH-052 behavior was introduced.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+- `npm ci --ignore-scripts --no-audit --no-fund`: passed using the updated lockfile; generated Prisma Client with `npm run prisma:generate`.
+- `npm run build`: passed, including TypeScript compilation.
+- Focused Woo parser, activity/candidate, queue adapter and capture worker tests: 4 files passed, 41 tests passed.
+- `./node_modules/.bin/eslint src/events/woo-checkout-capture.ts tests/unit/events/woo-checkout-capture.test.ts tests/unit/services/woocommerce-recovery/woo-checkout-activity.service.test.ts tests/unit/services/woocommerce-recovery/woo-candidate-queue.service.test.ts`: passed.
+- `npm run lint`: one existing unrelated error at `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`). That file is unchanged from `origin/main`; changed-file lint passed.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None.
+Background was still pinned to Shared `2.5.1`, which does not expose the published WooCommerce restoration schema. Updated the exact dependency and lock entry to published `2.7.2` as required to consume SHARED-002. Full-repository lint remains blocked by the unrelated existing finding recorded above; it is outside this task's files and ownership.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+Shared-002's completion report records `2.7.2` as registry-published with the required `@modainteract/moda-interact-shared/woocommerce` export. `npm ci` resolved that exact package and validation used its published schema.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+None.
 
 ### Architectural Concerns
 
-Return any cross-service schema/provider/transaction concern to `moda_architect` before improvising.
+None. Candidate payload remains in the existing queue; no cross-service producer/API implementation was changed.
+
+### Git / VCS
+
+- Task branch: `task/ARCH-053-BACKGROUND-001`.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-BACKGROUND-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-BACKGROUND-001`.
+- Parent and implementation worktrees were created for this task; neither shared checkout was switched or used for implementation.
+- Launcher synchronization: parent remote task branch fast-forwarded `not-needed`; parent `origin/main` was already current. Implementation remote task branch fast-forwarded `not-needed`; implementation `origin/main` was already current.
+- Recursive submodule sync and update-init passed. The initialized `database` submodule is at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Claim commit: `bc590be93af223a556ba8e6701c65ffdcf458b77` (launcher committed and pushed it).
+- Implementation commit: `41699ba` (`feat(ARCH-053-BACKGROUND-001): retain Woo restore evidence`); pushed to `origin/task/ARCH-053-BACKGROUND-001`.
+- Parent report is being committed and pushed to its matching task branch. No implementation submodule gitlink is staged.
+- Neither task branch was merged into `main`; no `main` branch was changed.
 
 ## Architect Review
 
