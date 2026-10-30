@@ -156,7 +156,7 @@ Development-only `RecoveryOutreachAttempt` records with old single-discount `off
 
 ## Decisions / Tasks
 
-Individual task YAML is authoritative. Current snapshot includes five accepted Complete Shared tasks and one Background task in Review; task authoring here does not modify their review records. New SHARED-009 and MCP-005 are Ready; new SHARED-010 and BG011 are Pending. Superseded tasks are not executable. No database schema task is required.
+Individual task YAML is authoritative. Current snapshot includes accepted Complete Shared tasks, with BACKGROUND-009 in Review. SHARED-009 and SHARED-010 are Complete; COMMERCE-006 and MCP-005 are Ready. BACKGROUND-011, MCP-002, and MCP-003 remain Pending on their other prerequisites. Superseded tasks are not executable. No database schema task is required.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
@@ -182,7 +182,7 @@ Individual task YAML is authoritative. Current snapshot includes five accepted C
 | [ARCH-052-COMMERCE-003](../decisions/commerce/ARCH-052/COMMERCE-003-serve-authenticated-private-shopify-recovery-reads.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-COMMERCE-004](../decisions/commerce/ARCH-052/COMMERCE-004-author-published-discount-mcp-tools.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-COMMERCE-005](../decisions/commerce/ARCH-052/COMMERCE-005-publish-approved-mcp-discount-capabilities.md) | `moda_commerce` | Superseded | — |
-| [ARCH-052-COMMERCE-006](../decisions/commerce/ARCH-052/COMMERCE-006-bootstrap-product-search-and-get-product-tools.md) | `moda_commerce` | Pending | `ARCH-052-SHARED-010` |
+| [ARCH-052-COMMERCE-006](../decisions/commerce/ARCH-052/COMMERCE-006-bootstrap-product-search-and-get-product-tools.md) | `moda_commerce` | Ready | `ARCH-052-SHARED-010` |
 | [ARCH-052-COMMERCE-007](../decisions/commerce/ARCH-052/COMMERCE-007-publish-code-defined-product-tool-release.md) | `moda_commerce` | Pending | `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-003` |
 | [ARCH-052-COMMERCE-008](../decisions/commerce/ARCH-052/COMMERCE-008-verify-shopify-alternative-product-promotion.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-GATEWAY-001](../decisions/gateway/ARCH-052/GATEWAY-001-configure-private-recovery-product-read-transport.md) | `moda_gateway` | Pending | `ARCH-052-MCP-003` |
@@ -199,8 +199,8 @@ Individual task YAML is authoritative. Current snapshot includes five accepted C
 | [ARCH-052-SHARED-006](../decisions/shared/ARCH-052/SHARED-006-define-outreach-mcp-discount-tool-contracts.md) | `moda_shared` | Complete | — |
 | [ARCH-052-SHARED-007](../decisions/shared/ARCH-052/SHARED-007-reuse-commerce-runner-for-outreach-offer-choice.md) | `moda_shared` | Superseded | — |
 | [ARCH-052-SHARED-008](../decisions/shared/ARCH-052/SHARED-008-define-product-search-and-alternative-promotion-contracts.md) | `moda_shared` | Complete | — |
-| [ARCH-052-SHARED-009](../decisions/shared/ARCH-052/SHARED-009-define-discount-discovery-and-product-identity-contracts.md) | `moda_shared` | Ready | — |
-| [ARCH-052-SHARED-010](../decisions/shared/ARCH-052/SHARED-010-publish-discount-discovery-contract-update.md) | `moda_shared` | Pending | `ARCH-052-SHARED-009` |
+| [ARCH-052-SHARED-009](../decisions/shared/ARCH-052/SHARED-009-define-discount-discovery-and-product-identity-contracts.md) | `moda_shared` | Complete | — |
+| [ARCH-052-SHARED-010](../decisions/shared/ARCH-052/SHARED-010-publish-discount-discovery-contract-update.md) | `moda_shared` | Complete | `ARCH-052-SHARED-009` |
 | [ARCH-052-SHOPIFY-001](../decisions/shopify/ARCH-052/SHOPIFY-001-select-multiple-authorised-recovery-discounts.md) | `moda_app` | Pending | `ARCH-052-BACKGROUND-009` |
 | [ARCH-052-SYSTEM-TEST-001](../decisions/system-test/ARCH-052/SYSTEM-TEST-001-certify-shopify-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-BACKGROUND-008`, `ARCH-052-SHOPIFY-001`, `ARCH-052-BACKGROUND-009`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-GATEWAY-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-011` |
 | [ARCH-052-SYSTEM-TEST-002](../decisions/system-test/ARCH-052/SYSTEM-TEST-002-certify-woocommerce-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-BACKGROUND-008`, `ARCH-052-GATEWAY-001`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007` |

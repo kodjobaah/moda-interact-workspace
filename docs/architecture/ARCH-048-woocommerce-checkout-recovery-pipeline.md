@@ -11,7 +11,7 @@ updated: 2026-10-30
 
 ## Status
 
-**In Progress — 2026-10-29 generation amendment agreed; current published frontier: BG007, BG008 and BG010 Complete; BG009 Ready; BG011 Pending.** BG001–BG006 and ARCH-048 Woo producer tasks 002/003 are Complete. `ARCH-046-WOOCOMMERCE-003` remains Ready and terminal `ARCH-048-SYSTEM-TEST-001` remains Pending. No integrated deployment, live Woo sending approval or system-test result is implied by this document. Prior 2026-10-23/25 single-generation design is retained only as change history, **not** an authority for new implementation.
+**In Progress — 2026-10-29 generation amendment agreed; current published frontier: BG007–BG011 Complete.** BG001–BG006 and ARCH-048 Woo producer tasks 002/003 are Complete. `ARCH-046-WOOCOMMERCE-003` remains Ready and terminal `ARCH-048-SYSTEM-TEST-001` remains Pending. No integrated deployment, live Woo sending approval or system-test result is implied by this document. Prior 2026-10-23/25 single-generation design is retained only as change history, **not** an authority for new implementation.
 
 ## Problem
 
@@ -176,9 +176,9 @@ Use only published `@modainteract/moda-interact-shared/logging`: bounded `shopId
 | `ARCH-048-BACKGROUND-005` | Background | Complete | BG001–004, ARCH-046 BG002/BG004 |
 | `ARCH-048-BACKGROUND-007` | Background | **Complete** | BG005 |
 | `ARCH-048-BACKGROUND-008` | Background | **Complete** | BG007 |
-| `ARCH-048-BACKGROUND-009` | Background | **CComplete** | BG007 |
+| `ARCH-048-BACKGROUND-009` | Background | **Complete** | BG007 |
 | `ARCH-048-BACKGROUND-010` | Background | **Complete** | BG007 |
-| `ARCH-048-BACKGROUND-011` | Background | Pending | BG007, BG008, BG009, BG010 |
+| `ARCH-048-BACKGROUND-011` | Background | **Complete** | BG007, BG008, BG009, BG010 |
 | `ARCH-046-WOOCOMMERCE-003` | Woo | Ready | Separate returning-consent task, not reopened here |
 | `ARCH-048-SYSTEM-TEST-001` | System Test | Pending | All original prerequisites plus BG007–BG011 and ARCH-046-WOO003 |
 
@@ -206,6 +206,8 @@ The system-test task is **terminal**. No implementation task depends on a system
 5. **Provider uncertainty:** any initial admitted before closing the old recovery can still be delivered. Customer-outcome reconciliation, not pretending a provider permit can be withdrawn, is required.
 
 ## Change History
+
+- **2026-10-30 — BG011 accepted:** Attempt 1 complete; published implementation and parent task branches reviewed. Reported validation includes 40 integration tests, focused unit tests, typecheck, lint and build. Raw exception detail is accepted for non-live testing only; bounded logging and sentinel coverage are required before activation. Terminal system testing remains pending remaining dependencies.
 
 - **2026-10-30 — BG010 accepted:** Attempt 1 complete; reported evidence includes 62 focused unit tests and 3 PostgreSQL routing integration tests. Raw exception-object logging is accepted only for non-live testing; bounded logging and sentinel coverage are required before live activation. BG011 remains Pending until BG009 is Complete.
 

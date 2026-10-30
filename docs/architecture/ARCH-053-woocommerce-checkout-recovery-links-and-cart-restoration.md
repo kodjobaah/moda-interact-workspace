@@ -1,7 +1,7 @@
 ---
 id: ARCH-053
 title: WooCommerce generation-bound checkout recovery links and cart restoration
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-29
 updated: 2026-10-30
@@ -11,7 +11,7 @@ updated: 2026-10-30
 
 ## Status
 
-**Proposed; task definitions are portable, defined but not materialised.** This is a NEW initiative. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here. In particular, previously superseded ARCH-052-WOOCOMMERCE-002 / ARCH-052-API-004 designs are not reused. Neither this snapshot nor this patch proves the developer created or pushed task worktrees/branches. Per the developer's patch preference, all `_index.md` updates are deliberately excluded; individual task YAML and this document are the reconciled sources for this handoff.
+**In Progress.** ARCH-053-DATABASE-001 and ARCH-053-SHARED-001 are accepted Complete at Attempt 1. ARCH-053-SHARED-002 is Ready for package publication; other implementation tasks remain Pending behind that publication gate. No consumer deployment or production activation is implied. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here.
 
 ## Problem and inspected baseline
 
@@ -132,13 +132,13 @@ Node uses `@modainteract/moda-interact-shared/logging` for generic structured ev
 
 ## Decisions / Tasks
 
-The task YAML files are authoritative for status and dependency eligibility. The snapshot shows **two Ready tasks** (`SHARED-001` and `DATABASE-001`); all other ARCH-053 tasks are Pending. This patch defines/reconciles tasks only; it does not materialise worktrees or accept implementations. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
+The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001 and SHARED-001 Complete** and **SHARED-002 Ready**; all other ARCH-053 tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
-| `ARCH-053-DATABASE-001` | `moda_database` | Ready | — |
-| `ARCH-053-SHARED-001` | `moda_shared` | Ready | — |
-| `ARCH-053-SHARED-002` | `moda_shared` | Pending | SHARED-001 |
+| `ARCH-053-DATABASE-001` | `moda_database` | Complete | — |
+| `ARCH-053-SHARED-001` | `moda_shared` | Complete | — |
+| `ARCH-053-SHARED-002` | `moda_shared` | Ready | SHARED-001 |
 | `ARCH-053-API-001` | `moda_api` | Pending | SHARED-002 |
 | `ARCH-053-BACKGROUND-001` | `moda_background` | Pending | SHARED-002 |
 | `ARCH-053-BACKGROUND-002` | `moda_background` | Pending | BACKGROUND-001, DATABASE-001 |
@@ -168,6 +168,8 @@ Only system-test tasks may depend on another system test. `SYSTEM-TEST-003` runs
 - The existing ARCH-052 task inventory may still contain historical dependencies on its superseded Woo restore tasks; **reconciliation remains within ARCH-052 ownership and must not be used to implement restore under ARCH-052**.
 
 ## Change History
+
+- 2026-10-30: ARCH-053-DATABASE-001 accepted at Attempt 1; nullable generation-specific JSONB persistence and isolated fresh/upgrade checks are published. No dependent task is promoted while SHARED-002 remains Pending.
 
 - 2026-10-30: Pre-production checkout activity correction: retire proposed `woo.activity.v3`, consolidate existing HTTP-only v2 phone proof into `woo.activity.v1`, preserve the v1 queue envelope and single restoration resolver v1; no compatibility adapters.
 
