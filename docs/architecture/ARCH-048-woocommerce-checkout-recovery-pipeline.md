@@ -11,7 +11,7 @@ updated: 2026-10-30
 
 ## Status
 
-**In Progress — 2026-10-29 generation amendment agreed; current published frontier: BG007 and BG008 Complete, BG009 and BG010 Ready, BG011 Pending.** BG001–BG006 and ARCH-048 Woo producer tasks 002/003 are Complete. `ARCH-046-WOOCOMMERCE-003` remains Ready and terminal `ARCH-048-SYSTEM-TEST-001` remains Pending. No integrated deployment, live Woo sending approval or system-test result is implied by this document. Prior 2026-10-23/25 single-generation design is retained only as change history, **not** an authority for new implementation.
+**In Progress — 2026-10-29 generation amendment agreed; current published frontier: BG007, BG008 and BG010 Complete; BG009 Ready; BG011 Pending.** BG001–BG006 and ARCH-048 Woo producer tasks 002/003 are Complete. `ARCH-046-WOOCOMMERCE-003` remains Ready and terminal `ARCH-048-SYSTEM-TEST-001` remains Pending. No integrated deployment, live Woo sending approval or system-test result is implied by this document. Prior 2026-10-23/25 single-generation design is retained only as change history, **not** an authority for new implementation.
 
 ## Problem
 
@@ -177,7 +177,7 @@ Use only published `@modainteract/moda-interact-shared/logging`: bounded `shopId
 | `ARCH-048-BACKGROUND-007` | Background | **Complete** | BG005 |
 | `ARCH-048-BACKGROUND-008` | Background | **Complete** | BG007 |
 | `ARCH-048-BACKGROUND-009` | Background | **Ready** | BG007 |
-| `ARCH-048-BACKGROUND-010` | Background | **Ready** | BG007 |
+| `ARCH-048-BACKGROUND-010` | Background | **Complete** | BG007 |
 | `ARCH-048-BACKGROUND-011` | Background | Pending | BG007, BG008, BG009, BG010 |
 | `ARCH-046-WOOCOMMERCE-003` | Woo | Ready | Separate returning-consent task, not reopened here |
 | `ARCH-048-SYSTEM-TEST-001` | System Test | Pending | All original prerequisites plus BG007–BG011 and ARCH-046-WOO003 |
@@ -206,6 +206,8 @@ The system-test task is **terminal**. No implementation task depends on a system
 5. **Provider uncertainty:** any initial admitted before closing the old recovery can still be delivered. Customer-outcome reconciliation, not pretending a provider permit can be withdrawn, is required.
 
 ## Change History
+
+- **2026-10-30 — BG010 accepted:** Attempt 1 complete; reported evidence includes 62 focused unit tests and 3 PostgreSQL routing integration tests. Raw exception-object logging is accepted only for non-live testing; bounded logging and sentinel coverage are required before live activation. BG011 remains Pending until BG009 is Complete.
 
 - **2026-10-29 — Agreed amendment:** real checkout resumption closes an abandonment generation and reschedules the next; new generation independently eligible for initial outreach, **no cross-generation cap/cooldown**; add fully bounded BG007–BG011 definitions and extend SYSTEM-TEST-001. Supersedes single-generation idempotency prohibition from 2026-10-23 design.
 - 2026-10-25 — ARCH-048 business-service wiring and ARCH-046 shared notifier/final permit prerequisites reconciled; Woo follow-ups remain disabled.

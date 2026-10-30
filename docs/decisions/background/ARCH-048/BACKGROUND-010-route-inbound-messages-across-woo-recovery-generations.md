@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 42
 executor: null
 claimed_at: null
@@ -117,7 +117,7 @@ Use exact launcher-prepared dedicated parent/implementation worktrees, with phys
 
 ### Status
 
-Attempt 1 implementation and validation are complete and both mirrored task branches are published. The Shopify routing finding recorded below was corrected in implementation commit `4be9ab3365390e93bdec2fab31dd3e87a5203cf4`; this review requests one remaining bounded-logging correction. The task returns to `ready` at Attempt 1.
+Attempt 1 implementation and reported validation are accepted. The Shopify routing finding was corrected in implementation commit `4be9ab3365390e93bdec2fab31dd3e87a5203cf4`. The architect accepted the remaining bounded-logging concern as a temporary exception for non-live testing; it must be resolved before live activation. Task status is Complete at Attempt 1.
 
 ### Files Changed
 
@@ -159,7 +159,7 @@ The launcher preparation packet is authoritative for worktree, synchronization, 
 
 ### Unresolved Issues
 
-The current implementation review requests replacing raw exception objects in the two new failure logs with bounded, non-sensitive error metadata and adding a regression test proving phone/message sentinels are absent from logs. The implementation and parent task branches are published; no code correction for this finding is included yet.
+Temporary testing-stage exception accepted by the architect: two failure paths still log raw exception objects. Before live activation, replace these with bounded, non-sensitive metadata and add a regression test proving phone/message sentinels are absent from logs. This accepted follow-up does not block BG010 completion for the current non-live testing stage.
 
 ### Git / VCS Evidence
 
@@ -190,7 +190,7 @@ Neither task branch has been merged to `main`.
 
 No new concerns. The architecture's existing event-only completeness limitation remains unchanged.
 
-## Architect Review — Earlier Shopify Finding
+## Architect Review — Earlier Shopify Finding (Resolved)
 
 ### Review Status
 
@@ -222,7 +222,7 @@ Partial. Historical routing, persistence and concurrency safeguards appear align
 Correct platform-specific candidate selection, add and run focused Shopify regression coverage alongside the Woo routing tests, then update this review section with the resulting evidence. Do not mark the task accepted until that finding is resolved.
 
 
-## Architect Review — Attempt 1 (Changes Requested)
+## Architect Review — Attempt 1 (Changes Requested; logging finding superseded)
 
 ### Decision
 
@@ -252,3 +252,21 @@ The Woo generation selection is platform-scoped and the reported Shopify regress
 ### Required Follow-up
 
 Sanitize the routing and processing failure log fields, preserve exception propagation, and add the sensitive-sentinel regression coverage. Keep Attempt 1 unchanged; no source or test correction for this finding is included in this review update.
+
+
+## Architect Review — Attempt 1 (Accepted)
+
+### Decision
+
+Accepted. The Shopify compatibility finding was resolved in the implementation. The architect accepts the remaining raw exception-object logging as a temporary exception for the current non-live testing stage, so the task can be completed and downstream integration work can proceed. Before any live activation, replace raw exception logging with bounded, non-sensitive metadata and add a sentinel regression test.
+
+### Acceptance Basis
+
+- The Completion Report records 62 focused unit tests and 3 PostgreSQL routing integration tests passing, including Woo generation selection and Shopify historical ambiguity regression coverage.
+- The Completion Report records focused lint, build and diff checks passing. These results were reviewed as reported and were not independently rerun during acceptance.
+- Implementation branch `task/ARCH-048-BACKGROUND-010` is published at `4be9ab3365390e93bdec2fab31dd3e87a5203cf4`.
+- The bounded-logging finding is explicitly limited to non-live testing. Its pre-live remediation is a release gate, not a blocker for this task's current completion.
+
+### Reviewed Files
+
+The review covered the implementation files, focused unit/integration tests and Completion Report listed above. No source changes were made as part of this acceptance.
