@@ -190,7 +190,7 @@ Woo events remain event-delivered evidence only; updates never received by Moda 
 - Shared workspace and shared implementation checkouts were not switched or used for task implementation; no other task worktree was reused.
 - Start-of-attempt synchronization and claim were completed by the launcher; the supplied branch heads and database submodule commit are listed above.
 - Implementation commit: `f1f61f3` on local `task/ARCH-048-BACKGROUND-007`; origin push: blocked by auto-review, not pushed.
-- Parent task report: pending commit/push. Submodule gitlink was not staged. Neither task branch was merged to main.
+- Parent task report commit: `3a0f4a7687f8321d00abaffb750c995255e78d2a` on local `task/ARCH-048-BACKGROUND-007`; push not attempted while implementation publication is blocked. Submodule gitlink was not staged. Neither task branch was merged to main.
 
 ## Architect Review
 
