@@ -186,6 +186,7 @@ Implementation repository:
 
 Parent workspace:
 - task file: `docs/decisions/background/ARCH-048/BACKGROUND-008-admit-subsequent-woo-recovery-generations.md`
+- task/report submission commit: `b8c83f81c41116e2428954d8a139999870edb5ff`
 - remote branch: `origin/task/ARCH-048-BACKGROUND-008`
 - pushed: yes
 - submodule gitlink staged: no
