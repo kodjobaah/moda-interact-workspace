@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 15
-executor: codex
-claimed_at: 2026-10-30T18:59:09Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-010
@@ -27,7 +27,7 @@ updated: 2026-10-30
 
 ## Architecture
 
-Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Architect coordination task; **portable definition, not materialised**. No branch or runtime implementation has been created by this artifact.
+Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Implementation is materialised on the dedicated task branch and submitted for Architect review.
 
 ## Objective
 
@@ -57,10 +57,10 @@ SHARED-009/010 (published 2.7.0) correctly represents eligibility and targeting 
 
 ## Work Items
 
-- [ ] Implement the new combination facts shape and source fixtures.
-- [ ] Implement the immutable checkout-offer-set wire and stable exports.
-- [ ] Add the new semantic key and validate all relevant structured contract tests.
-- [ ] Run Shared declared tests/typecheck/build and `git diff --check`.
+- [x] Implement the new combination facts shape and source fixtures.
+- [x] Implement the immutable checkout-offer-set wire and stable exports.
+- [x] Add the new semantic key and validate all relevant structured contract tests.
+- [x] Run Shared declared tests/typecheck/build and `git diff --check`.
 
 ## Interfaces / Contracts
 
@@ -126,15 +126,16 @@ Shared validates the structure only: Background verifies method/code consistency
 
 ## Acceptance Criteria
 
-- [ ] Contract fixtures cover Shopify Plus tri-state, pairwise mutual class booleans and own/allowed tag distinction, providerDiscountId nullable vs authoritative, Woo individualUse nullable, negative/partial combination facts and array bound 1..3.
-- [ ] One canonical checkout offer set is imported by Background and API; 2.7.0 contract history remains unchanged.
-- [ ] No business rules are hidden in Zod; source-specific rules remain explicit in consumers.
+- [x] Contract fixtures cover Shopify Plus tri-state, pairwise mutual class booleans and own/allowed tag distinction, providerDiscountId nullable vs authoritative, Woo individualUse nullable, negative/partial combination facts and array bound 1..3.
+- [x] One canonical checkout offer-set schema is exported through the existing Commerce entrypoint for Background and API; 2.7.0 contract history remains unchanged.
+- [x] No business rules are hidden in Zod; source-specific rules remain explicit in consumers.
 
 ## Validation
 
-- [ ] Shared focused contract test and TypeScript inference tests.
-- [ ] Shared declared typecheck, build and export smoke test.
-- [ ] `git diff --check`
+- [x] Shared focused contract tests and TypeScript inference tests passed (23 tests).
+- [x] Shared declared typecheck, build and export smoke test passed.
+- [x] Shared declared test suite passed: 401 passed, 1 skipped (TEST_REDIS_URL is not configured).
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -148,19 +149,36 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Not started — defined but not materialised.
+Implementation complete; submitted for Architect review. Attempt 1.
 
 ### Files Changed
 
-None.
+- `src/commerce/schemas.ts`
+- `src/commerce/outreach-checkout-offer-set.ts`
+- `src/commerce/outreach-checkout-offer-set.test.ts`
+- `src/commerce/index.ts`
+- `src/commerce/contracts.test.ts`
+- `src/commerce/tool-contracts.test.ts`
+- `src/recovery-template-bindings.ts`
+- `src/recovery-template-bindings.test.ts`
 
 ### Work Completed
 
-None.
+- Added the strict combination facts schema, including nullable source observations and the required combination facts member on discount conditions.
+- Added nullable, bounded provider discount identity to discount details.
+- Added the strict, versioned checkout offer-set receipt with an ordered 1–3 offer bound and stable type/schema exports from the existing Commerce entrypoint.
+- Added `offer.codes` as a single bounded text semantic, with tests ensuring it is not a button URL or an array contract.
+- Added focused and entrypoint tests covering source nulls, empty observations, Shopify tri-state and pairwise facts, Woo individual-use, own versus allowed tags, strictness, bounds, exact order-preserving round trips and inferred types.
+- Left consumer repositories and historical 2.7.0 contract history unchanged.
 
 ### Validation Results
 
-Not run.
+- Focused contract tests: 23 passed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed.
+- `npm run validate:commerce-entrypoints`: passed, including clean-process Commerce and runner imports.
+- `npm test`: 401 passed, 1 skipped; the skipped Redis telemetry test requires `TEST_REDIS_URL`.
+- `git diff --check`: passed.
 
 ### Deviations
 
@@ -168,15 +186,29 @@ None.
 
 ### Assumptions
 
-No production compatibility is required; all required source provenance remains available for implementing agents to verify.
+Provider-specific interpretation and offer applicability remain consumer responsibilities. The Shared package exposes one canonical structural receipt contract for consumers.
 
 ### Unresolved Issues
 
-None at definition time.
+None identified.
 
 ### Architectural Concerns
 
-Any source contract/deployment gap must be escalated rather than patched locally.
+None identified during implementation.
+
+### Synchronization and Version Control
+
+- Canonical workspace checkout: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; unchanged.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHARED-011`, branch `task/ARCH-052-SHARED-011`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHARED-011`, branch `task/ARCH-052-SHARED-011`.
+- Shared package checkout began at `origin/main` commit `17cf8d426c46f60d97314ec2d6bc20b957029cd2`; no main merge was performed.
+- Recursive submodules: ready; no entries required updates.
+- Other task worktrees reused: none.
+- Implementation commit: `cba9decf56e6cf22c8973e814c713330412db8c1`.
+- Implementation branch push: blocked by automatic approval review; no push was made.
+- Parent task claim commit: `87513ff6fae710c5c36cc1a1db7ef1b2c4d6af64` (already pushed).
+- Parent completion-record commit: pending locally; external push not attempted after the implementation push was rejected.
+- Main was not modified or pushed.
 
 ## Architect Review
 
