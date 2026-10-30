@@ -111,6 +111,8 @@ None.
 
 ## Acceptance Criteria
 
+- [ ] Alternative-product CTA URL derives from a successful same-shop MCP exact-product response matching the selected product/variant; hostile or model-authored product URLs fail closed to an approved NO_OFFER/no-send, never appear in outbound Meta parameters or the confirmed alternative-product promise. Existing `checkout.url` remains unchanged and receives no new ARCH-052 URL validation.
+
 - [ ] No invented coupon/product/category link or checkout discount when conditions are unknown/incomplete; a related product promotion is worded separately.
 - [ ] Both CTA bindings are carried only when Meta-approved and ordered by actual provider indices; absent approved media does not block text-only flow.
 - [ ] No ARCH-052 checkout URL issuance, extra validation or ARCH-053 reverse dependency.
@@ -121,6 +123,8 @@ None.
 - [ ] Initial outreach passes the existing recovery checkout URL unchanged into the approved template, keeps original consent, credit and idempotent send behavior across 3 modes, and adds no checkout URL validation, link generation or API proxy.
 
 ## Validation
+
+- [ ] Negative integration cases: cross-tenant product result, wrong product/variant, missing/null URL, untrusted storefront origin, malformed/non-HTTPS URL, userinfo/port, hostname lookalike, private/loopback host and AI-proposed external link; verify no unsafe product CTA and no unapproved fallback. Positive case: independently trusted current-shop product URL and approved two-button index mapping.
 
 - [ ] System-test harness with WordPress/WooCommerce, Postgres/Redis and Meta simulator.
 - [ ] Woo Classic/Blocks recovery fixtures with pre-populated checkout URL, exact CTA binding and `git diff --check`; no customer-click restoration implementation/certification in ARCH-052.
