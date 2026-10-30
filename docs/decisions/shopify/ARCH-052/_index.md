@@ -10,4 +10,4 @@ These are portable task definitions, **defined but not materialised**; the indiv
 |---|---|---|---|
 | [ARCH-052-SHOPIFY-001](SHOPIFY-001-select-multiple-authorised-recovery-discounts.md) | Make Shopify merchant discount selection match WooCommerce checkboxes | Ready | `ARCH-052-BACKGROUND-009` |
 
-SHOPIFY-001 is Ready for Attempt 2 after architect review found the full request body limit is not enforced and the required PostgreSQL transaction/race test was not executed; see the task report for the correction and validation requirements.
+SHOPIFY-001 is Ready for Attempt 3 after architect review found that the required PostgreSQL catalogue-sync race is not exercised; see the task report for the exact validation gap.

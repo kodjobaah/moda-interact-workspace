@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-30T18:54:59Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-BACKGROUND-009
@@ -180,13 +180,17 @@ No cross-repository or schema ownership gap was identified. Both Attempt 1 revie
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Changes Requested — Attempt 2.
+
+### Review History
+
+- **Attempt 1 — Changes Requested:** the complete 8,192-byte request-body limit was not enforced, and the PostgreSQL transaction/race test had not run. Attempt 2 addresses the full-body limit before form parsing (including missing or inaccurate `Content-Length`) and reports a successful three-test PostgreSQL run.
 
 ### Review Notes
 
-1. **Enforce the 8,192-byte limit on the complete request body.** The route calls `request.formData()` before applying a size check, then measures only the UTF-8 size of the `selectedDiscountIds` value. This does not meet the task requirement to reject payloads over 8,192 bytes: oversized values in other form fields or overall form encoding can pass that check, and the body is already parsed. Add a total-body byte limit that is enforced before unbounded form parsing, including when `Content-Length` is absent or inaccurate. Preserve the existing 400 response for an oversized request and add regression coverage for the full-body limit.
+The required catalogue-sync race case remains unverified. In `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts`, `discountNew` is inserted as unchecked in `createShop()` before the save, then the save test asserts it remains unchecked. This does not execute a catalogue synchronization or exercise synchronization interleaved with the merchant selection transaction. The task's Validation explicitly requires real PostgreSQL transaction tests “including sync race,” and its Work Items require proving new sync items remain unchecked.
 
-2. **Execute the PostgreSQL transaction/race integration test.** The required test was added but not run because Testcontainers could not find a working container runtime. The task specifically requires real PostgreSQL verification of tenant isolation, atomic replacement, idempotence, dormant selections, and stale concurrent revisions. Run the test in an environment with a supported PostgreSQL/container runtime and record the actual result; do not treat the added-but-skipped test as validation evidence.
+For Attempt 3, add a PostgreSQL integration case that exercises the catalogue upsert behavior against the selection save in a deterministic concurrent/interleaved scenario. Assert that an already selected discount remains selected and a newly synchronized discount is unchecked after both operations complete. Keep source changes within this task's assigned repository; if the actual sync operation cannot be exercised from this repository, document the boundary and provide equivalent integration evidence that validates the production upsert semantics. Run the new test and record the actual result.
 
 ### Reviewed Files
 
@@ -194,16 +198,17 @@ Changes Requested — Attempt 1.
 - `moda-interact/app/services/recovery-policy/recovery-policy.server.ts`
 - `moda-interact/app/routes/app/recovery-settings/RecoverySettingsView.tsx`
 - `moda-interact/tests/integration/shopify-recovery-discounts.postgres.integration.test.ts`
-- This task's Completion Report and VCS evidence.
+- `moda-interact/tests/unit/settings-save-recovery-route.test.ts`
+- This task's Attempt 2 Completion Report and VCS evidence.
 
 ### Validation Reviewed
 
-Reviewed the submitted report: 35 focused tests, typecheck, lint, build and `git diff --check` are reported as passing. The PostgreSQL integration test is explicitly reported as not run. These implementation validations were not rerun during architect review; `git diff --check` passed for this review-record edit.
+Attempt 2 reports 33 focused unit tests across four files, a separate 18-test route rerun, three PostgreSQL integration tests, typecheck, lint, build, and `git diff --check` passing. Source inspection confirms the full request stream is capped at 8,192 bytes before `formData()` parsing, and the route tests cover absent and inaccurate `Content-Length`. The PostgreSQL suite covers tenant isolation, atomic replacement/idempotence, dormant selections, and stale concurrent revisions, but does not run catalogue sync. These implementation validations were not rerun during architect review; `git diff --check` passed for this review-record edit.
 
 ### Architecture Conformance
 
-Changes Requested. The multi-selection transaction, tenant-scoped ID verification, merchant selection semantics, and reported task-worktree isolation otherwise conform. The full request-size contract is not enforced, and the required database concurrency behavior remains unverified.
+Changes Requested. Attempt 2 resolves both Attempt 1 findings, and the selection UI, tenant-scoped transactional save, request-size limit, and reported worktree evidence otherwise conform. The required sync-race validation is still absent.
 
 ### Follow-up
 
-Return the same task to `ready` for Attempt 2. Preserve Attempt 1 history. Once both corrections and required validation are complete, resubmit for architect review. Do not promote ARCH-052-SYSTEM-TEST-001 until this task is accepted and its dependencies are complete.
+Return the same task to `ready` for Attempt 3. Preserve the Attempt 1 and Attempt 2 history. Do not promote ARCH-052-SYSTEM-TEST-001 until this task is accepted and its other dependencies are complete.
