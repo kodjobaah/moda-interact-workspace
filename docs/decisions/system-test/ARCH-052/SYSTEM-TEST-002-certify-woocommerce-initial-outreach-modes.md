@@ -28,6 +28,7 @@ depends_on:
 - ARCH-052-BACKGROUND-010
 - ARCH-052-SHARED-010
 - ARCH-052-BACKGROUND-007
+- ARCH-052-BACKGROUND-012
 enables: []
 created: '2026-10-29'
 updated: '2026-10-30'
@@ -55,7 +56,7 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 ## Scope
 
-**Attempt 14 integrated certification:** exercise actual paged discount-options + on-demand details (including page 75 of 120, cursor tamper, provider `PARTIAL/UNKNOWN` and selected-vs-unselected offers), provider category/collection IDs and Woo simple products with null variant ID, LangGraph decisions, merchant `product_search` opt-in, approved target/locale/header variant selection, one- and two-CTA template transport, stored outbound message receipt and text-only send independent of IMAGE. Separately certify approved optional IMAGE enhancement after BG007/ADMIN002.
+**Attempt 14 integrated certification:** exercise actual paged discount-options + on-demand details (including page 75 of 120, cursor tamper, provider `PARTIAL/UNKNOWN` and selected-vs-unselected offers), provider category/collection IDs and Woo simple products with null variant ID, LangGraph decisions, merchant `product_search` opt-in, approved target/locale/header variant selection, one- and two-CTA template transport, stored outbound message receipt and text-only send independent of IMAGE. Separately certify approved optional IMAGE enhancement after BG007, ADMIN002 and BG012. Validate the sample-free Admin frozen IMAGE registration, trusted `https://www.modainteract.com/assets/whatsup-sample.jpeg` Meta upload and provider-only handle insertion (with a stubbed Meta Graph upload in automated tests), immutable-hash preservation, failure before Graph create and actual Meta IMAGE approval evidence where a live sandbox is available. The sample is not the checkout/product image.
 
 **ARCH-053 is external ownership:** no Woo link issuance/restore implementation, validation or dependency belongs in this system test. Use an already-populated `CheckoutRecovery.checkoutUrl` fixture (including a Woo fixture) as input and assert the existing approved checkout CTA binds that value without any ARCH-052 link-generation call. ARCH-053 has its own terminal tests for restoring the URL.
 

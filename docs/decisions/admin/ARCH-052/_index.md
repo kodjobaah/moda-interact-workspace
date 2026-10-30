@@ -9,4 +9,4 @@ These are portable task definitions, **defined but not materialised**; the indiv
 | Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
 | [ARCH-052-ADMIN-001](ADMIN-001-author-six-initial-outreach-template-variants.md) | Author approved checkout/alternative promo variants under existing recovery purposes | Ready | `ARCH-052-SHARED-003` |
-| [ARCH-052-ADMIN-002](ADMIN-002-author-optional-checkout-product-image-headers.md) | Author approved optional checkout and alternative-product IMAGE headers; trusted Meta sample handle still missing | Blocked | `ARCH-052-SHARED-003`, `ARCH-049-ADMIN-002` |
+| [ARCH-052-ADMIN-002](ADMIN-002-author-optional-checkout-product-image-headers.md) | Attempt 2: freeze optional IMAGE intent **without** a sample; provider-only upload in BACKGROUND-012 | Ready (Changes Requested) | `ARCH-052-SHARED-003`, `ARCH-049-ADMIN-002` |

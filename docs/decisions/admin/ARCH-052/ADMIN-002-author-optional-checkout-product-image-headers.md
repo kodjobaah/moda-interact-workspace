@@ -9,16 +9,17 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 35
-executor: copilot
-claimed_at: 2026-10-30T11:23:51Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-003
 - ARCH-049-ADMIN-002
 enables:
 - ARCH-052-BACKGROUND-008
+- ARCH-052-BACKGROUND-012
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
@@ -37,11 +38,11 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Allow one optional Meta-approved IMAGE header representing the checkout item or verified alternative promotional product, without new product-image tables or new ShopBrand roles.
+Freeze optional checkout/alternative-product IMAGE template identities and submit their immutable registration intents without a sample handle; the Background Meta provider adapter supplies a trusted sample only at provider creation. No product-image table or new ShopBrand role.
 
 ## Context
 
-ARCH-049 ADMIN002 already adds frozen ShopBrand media roles to Meta template authoring. A checkout product IMAGE role is distinct and optional; Meta approval applies to the exact header family.
+ARCH-049 ADMIN002 already adds frozen ShopBrand media roles to Meta template authoring. A checkout product IMAGE role is distinct and optional; Meta approval applies to the exact header family. Source inspection confirms `meta/snapshot.ts` currently rejects frozen IMAGE registration before it is queued, while `moda-interact-background/src/services/meta-template-management/` alone calls Meta Graph. ADMIN-002 therefore owns authoring and durable registration intent, not provider sample upload. Background-012 owns the separate provider-only sample enrichment.
 
 Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapshot; implementation must re-read current task/code before claiming.
 
@@ -49,17 +50,20 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 
 - Use Shared-002 `CHECKOUT_PRODUCT` media role and Shared-008 exact MCP product images; author separate immutable IMAGE and text-only fallback variants for `promotionTarget:CHECKOUT` and `promotionTarget:ALTERNATIVE_PRODUCT` where approved, under existing INITIAL purposes.
 - Author the semantic `CHECKOUT_PRODUCT` binding for the exact checkout product or Background-010-selected alternative product/variant; Background-007 alone enforces shop/product/variant binding at send preparation. Never accept an arbitrary AI-selected image URL. Preserve ARCH-049 media origin validation and frozen Meta header digests; reject header type/role changes after approval.
-- Tests for missing/unsafe image, product mismatch, variant fallback, revoked source, translation and correct text-only variant choice.
+- Preserve and test the immutable IMAGE/TEXT variants, role/promotion-target invariants, translation integrity and exact approved TEXT fallback selection. Send-time image availability/product mismatch/revocation belongs solely to BACKGROUND-007.
+- Correct Admin frozen registration planning and `READY_TO_SUBMIT` confirmation to allow an IMAGE header **without any sample handle** in the immutable AST, fingerprint or database snapshot. It must never accept a client-supplied URL or handle. Provider-only Meta handle enrichment is assigned to BACKGROUND-012.
 
 ## Out of Scope
 
-- No actual Shopify/Woo photo download, R2 processing, Meta sample-media sourcing workaround or live send. No Admin-owned runtime image proof, `VERIFIED_PROVIDER_IMAGE` object, proof TTL, or persisted verification evidence.
+- No actual Shopify/Woo photo download, R2 processing, Meta sample-media upload, Graph API creation or live send. No Admin-owned runtime image proof, `VERIFIED_PROVIDER_IMAGE` object, proof TTL or persisted verification evidence. Actual provider approval is not an Admin task completion gate; it is an integrated/deployment gate after BACKGROUND-012.
 
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
 ## Requirements
 
 - Admin defines and freezes the semantic IMAGE role and separately approved TEXT fallback identity. **There is no five-minute media-proof contract or `VERIFIED_PROVIDER_IMAGE` dependency.** Admin neither fetches live product media nor validates its send-time freshness.
+- Freeze `components`, role binding, promotion target, locale and digest **without** `example.header_handle`. Change `frozenLocaleSnapshot()` and associated planning tests so an IMAGE locale can be confirmed as `READY_TO_SUBMIT` without a sample: no `IMAGE_SAMPLE_HANDLE_REQUIRED` at the Admin intent boundary. Reject malformed, injected or untrusted IMAGE examples. The provider-create boundary in Background must still fail closed without a valid Meta-issued sample handle. Preserve TEXT registration and approval behaviour unchanged.
+- The canonical sample URL is `https://www.modainteract.com/assets/whatsup-sample.jpeg`, but it is **not** saved in the authoring AST, trusted input from a merchant, or written to a registration snapshot. Background-012 owns that fixed-URL fetch, validation, Meta upload and outbound-only handle insertion. ADMIN-002 is independently reviewable before BACKGROUND-012 is Complete.
 - Background-007 must resolve the exact current-shop product/variant via authenticated MCP during each send-preparation attempt. Only its **Background-local** validated `READY` result can accompany an independently approved IMAGE template. If the media is missing, unsafe, unavailable, mismatched, or its source has changed/revoked, use the separately approved TEXT template for the same purpose and promotion target or return typed no-send. Retries re-resolve; never mutate approved template components.
 - Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
 - Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
@@ -70,11 +74,12 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 - [x] Implement new header role UI/validation and preview.
 - [x] Reuse and regression-test the existing paired variant fallback publication/eligibility contract.
-- [ ] Run immutable digest and Meta approval flow regression tests; Meta submission remains blocked without a trusted sample handle producer.
+- [ ] Correct `meta/snapshot.ts` frozen IMAGE registration planning: accepted semantic IMAGE role without an example handle produces an unchanged immutable digest and `READY_TO_SUBMIT` intent. Any client-supplied sample URL/handle fails closed.
+- [ ] Add deterministic Admin tests for the IMAGE registration plan across locales, identical-plan replay and frozen hash/role drift; confirm existing TEXT behaviour and no provider call from Admin. The Background provider upload and real Meta approval are tested separately by BACKGROUND-012 and terminal system tests.
 
 ## Interfaces / Contracts
 
-Existing ARCH-049 media conventions, Shared-002 image role and promotionTarget metadata. Background-007 owns authenticated MCP reads and a **Background-local** `READY` / `UNAVAILABLE` resolver result. No Shared `VERIFIED_PROVIDER_IMAGE` schema, persisted proof or timed proof expiry is required; the Admin authoring/publishing boundary does not consume a runtime image result.
+Existing ARCH-049 media conventions and published Shared-002 `CHECKOUT_PRODUCT` + `promotionTarget` bindings remain authoritative. Admin produces a frozen `MetaLocaleSnapshot` / `MetaSubmissionPlan` with `HEADER.format = IMAGE` and **no** `HEADER.example.header_handle`; its normal transaction persists a `READY_TO_SUBMIT` `WhatsAppTemplateMetaRegistration` for the current approved WABA. `submittedContentHash` and role/locale checks remain stable. Background-012 consumes the frozen registration, adds a *provider-request-only* Meta-issued sample handle and POSTs through the existing adapter. No new Shared or Prisma contract; never persist the handle or modify the approved content digest. Background-007 separately owns authenticated MCP image reads and its local `READY` / `UNAVAILABLE` send-time result. No timed proof.
 
 ## Dependencies
 
@@ -88,16 +93,19 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 - `ARCH-052-BACKGROUND-008`
 - `ARCH-052-SYSTEM-TEST-001`
 - `ARCH-052-SYSTEM-TEST-002`
+- `ARCH-052-BACKGROUND-012`
 
 ## Acceptance Criteria
 
-- [ ] IMAGE header with product role compiles/reviews/publishes only through Admin.
-- [ ] Admin freezes distinct IMAGE and TEXT template identities with the same purpose/promotion target, and makes the approved TEXT fallback selectable without replacing an approved IMAGE component. Background-007 alone enforces runtime `READY` media, safe TEXT fallback or typed no-send.
+- [ ] IMAGE header with product role compiles, reviews and queues the correct immutable registration intent only through Admin; no Graph template creation or IMAGE approval is falsely asserted by the Admin task.
+- [ ] Admin freezes distinct IMAGE and TEXT template identities for each purpose/promotion target; stored IMAGE examples omit sample handles and external URLs, while content hashes/role validations, replay and translations remain sound.
+- [ ] All existing Admin TEXT approval/publication/fallback behaviour remains intact. BACKGROUND-007 alone enforces runtime `READY` image, safe TEXT fallback or typed no-send. BACKGROUND-012 is independently gated on accepted Admin frozen IMAGE intents.
 
 ## Validation
 
-- [ ] Admin authoring/preview, frozen fingerprint and publication regression suites.
-- [ ] Admin typecheck/tests/lint and `git diff --check`.
+- [ ] Admin authoring/preview, IMAGE-without-sample frozen fingerprint, replay/translation and publication-planning regression suites (Meta provider network mocked).
+- [ ] Admin typecheck, relevant focused unit tests, changed-file lint, build (if required by existing scripts) and `git diff --check`; distinguish known baseline failures from regressions.
+- [ ] Assert no Admin-side fetch/Meta upload and no raw sample handle/URL in frozen snapshots or logs.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
@@ -112,6 +120,8 @@ After all Work Items, Acceptance Criteria and required Validation pass, complete
 - `moda-interact-admin/src/lib/admin/whatsapp-templates/authoring/`
 - `moda-interact-admin/src/lib/admin/whatsapp-templates/media/`
 - `moda-interact-admin/src/lib/admin/whatsapp-templates/publishing/`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/meta/snapshot.ts` (remove **intent-time** requirement; keep immutable media-role/hash validation)
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/meta/submission.ts` (confirm existing durable intent flow without provider I/O)
 - `moda-interact-admin/tests/unit/`
 
 Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
@@ -180,31 +190,39 @@ Return to `moda_architect` for cross-repository sequencing of the Background pro
 
 
 ## Architect Review
-
 ### Review Status
 
-Blocked.
+Changes Requested.
 
 ### Review Notes
 
-30 October 2026 architectural scope correction, requested by the developer: **remove the proposed five-minute `VERIFIED_PROVIDER_IMAGE` proof contract completely**. The implementing agent's preceding Completion Report is retained verbatim as historical evidence of Attempt 1, but its assertions that a five-minute/current-window proof is required are **superseded** by this task definition. Do not request Admin or Background to implement, persist, cache or export that proof. This scope correction is not an acceptance of source implementation.
+30 October 2026, **Attempt 2 architectural unblock**. The developer removed the arbitrary five-minute `VERIFIED_PROVIDER_IMAGE` contract (Attempt 1 correction). The agent's earlier Attempt 1 Completion Report above is preserved verbatim as historical evidence, not a continuing requirement. The source inspection confirms the Admin `frozenLocaleSnapshot()` currently throws `IMAGE_SAMPLE_HANDLE_REQUIRED` for every IMAGE registration, while **Background** owns the actual Meta Graph registration adapter. This is an ownership/specification problem, not a missing Admin media processor.
 
-Runtime product identity/media/source checks and per-attempt retry resolution are owned solely by BACKGROUND-007. In particular, BACKGROUND-007 is downstream of ADMIN-002, so treating its resolver as a prerequisite for Admin authoring would introduce a circular acceptance dependency. The separate trusted Meta IMAGE sample-handle producer is still missing; `IMAGE_SAMPLE_HANDLE_REQUIRED` must remain fail-closed. Admin remains blocked for IMAGE registration/publication validation, **not** for runtime image-proof work.
+**Rework contract for ADMIN-002:**
+
+1. Change Admin frozen locale and `makeMetaSubmissionPlan()` handling so an IMAGE semantic binding with no sample handle is valid as an immutable `READY_TO_SUBMIT` registration intent. Do not fabricate handles, inject a fixed URL into Admin metadata, or weaken role/fingerprint/locale validation. If a caller attempts to inject an untrusted `header_handle` or URL into the frozen projection, reject it.
+2. Retain the existing committed authoring, preview, translation, explicit promotion-target and independently approved TEXT fallback work. Add focused tests for IMAGE intent planning/confirmation, digest stability, replays and role drift; TEXT behaviour must not regress.
+3. Do **not** implement provider image upload, Graph POST, live Meta approval, Shopify/Woo source resolution, or a five-minute proof. The fixed image source and Meta upload are the bounded `ARCH-052-BACKGROUND-012` task. Runtime image match/fallback remains `ARCH-052-BACKGROUND-007`, downstream of ADMIN-002.
+4. Reclaim **this same task** on its dedicated mirrored worktrees using the canonical launcher and prior claim evidence; retain `attempt: 1` until the next claim increments it. Correct the Completion Report and return `status: review` only when the Admin-specific criteria pass. There is no need to reimplement already committed authoring code.
+
+`status: ready`, `executor: null` and `claimed_at: null` restore reclaimability. ADMIN-002 depends only on two already-Complete tasks; BACKGROUND-012 must **not** become a reverse dependency on ADMIN-002. Keep Background provider POST fail-closed until its own sample-producer task passes.
 
 ### Reviewed Files
 
-- `moda-interact-admin/src/lib/admin/whatsapp-templates/meta/snapshot.ts` (the existing sample-handle registration guard).
-- `docs/decisions/background/ARCH-052/BACKGROUND-007-resolve-verified-product-image-at-runtime.md` (existing Background-local `READY` / `UNAVAILABLE` design).
-- The Attempt 1 Completion Report above (not rewritten).
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/meta/snapshot.ts` — currently rejects frozen IMAGE registration without sample handle.
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/meta/submission.ts` — confirms durable intent inside a database transaction, no provider network.
+- `moda-interact-background/src/services/meta-template-management/meta-graph.adapter.ts` and `service.ts` — own Meta Graph creation; provider requires a handle on final IMAGE POST.
+- `moda-interact-background/src/services/meta-template-management/contracts.ts` — current provider image validation.
+- ARCH-052 Background-007 task and preserved Attempt 1 Completion Report.
 
 ### Validation Reviewed
 
-Documentation-only architectural correction. The focused implementation validations listed in the Completion Report are agent-reported evidence, not independently rerun by this patch. No live Meta submission or image send was performed.
+Architectural/documentation review only. Earlier focused Admin tests were agent-reported in Attempt 1; no new source changes, Meta upload, provider approval, or live send have been executed by this review. The next Admin attempt must run the specified source validations.
 
 ### Architecture Conformance
 
-Admin owns immutable authoring and provider registration; Background owns authenticated send-time media resolution and fallback. No new Shared image-proof schema, fixed image-proof lifetime or database record. IMAGE publication remains gated on trusted Meta sample media and provider approval; approved TEXT remains independently usable.
+Admin owns frozen authoring and intent; Background owns provider sample attachment and send-time product images. Frozen hashes and tenant/WABA/role approval remain authoritative; only a Meta-issued handle may reach the final provider POST. No new Shared/database proof or storage, no arbitrary time window, no new messaging pipeline.
 
 ### Follow-up
 
-Define/implement the trusted server-side Meta IMAGE sample-handle acquisition at the existing Admin provider-registration boundary as a separately reviewed owning task. Reconcile ADMIN-002 once that capability is available; retain the existing committed authoring work. BACKGROUND-007 must later prove current-attempt image identity/safety and fallback independently; it must not block Admin-002 review for lack of a timed proof.
+Run `/moda-task ARCH-052-ADMIN-002` for Attempt 2 through the canonical launcher, review its submitted implementation and accept it independently. Then `ARCH-052-BACKGROUND-012` becomes eligible to implement the fixed-URL Meta sample producer. Terminal Shopify/Woo system testing checks actual Meta approval and product-image send gating.
