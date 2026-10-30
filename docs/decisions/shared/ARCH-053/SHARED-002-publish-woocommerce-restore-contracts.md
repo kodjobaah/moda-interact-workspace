@@ -16,12 +16,16 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-053-SHARED-001
+- ARCH-053-SHARED-003
+- ARCH-053-SHARED-003
 enables:
 - ARCH-053-API-001
 - ARCH-053-API-002
 - ARCH-053-BACKGROUND-001
+- ARCH-053-API-003
+- ARCH-053-API-003
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-053-SHARED-002 — Publish accepted Woo restoration contracts
@@ -40,7 +44,7 @@ The uploaded workspace snapshot is dated 2026-10-29. ARCH-052 owns dynamic disco
 
 ## Scope
 
-- Version and publish ONLY the accepted Shared package implementing `ARCH-053-SHARED-001` to the already approved registry; record exact version, tag and registry evidence.
+- Version and publish ONLY the accepted Shared package implementing **both** `ARCH-053-SHARED-001` and `ARCH-053-SHARED-003` to the already approved registry; record exact version, tag and registry evidence.
 - Limit changed files to authorised release metadata and lockfile updates mechanically required by publication.
 
 ## Out of Scope
@@ -51,7 +55,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Requirements
 
-- Verify SHARED-001 is architect-accepted Complete and published artifact contains the exact `@modainteract/moda-interact-shared/woocommerce` exports; leave downstream consumption to separately assigned owners.
+- Verify **SHARED-001 and SHARED-003** are each architect-accepted Complete and published artifact contains the exact `@modainteract/moda-interact-shared/woocommerce` **v1 and v2** exports, plus both published JSON fixture subpaths; leave downstream consumption to separately assigned owners.
 - Publication-only work: do not rerun tests, lint, build or alter runtime implementation already validated in SHARED-001. If publishing reveals a code defect, stop and return it to architect.
 
 ### Mandatory workflow/security invariants
@@ -64,33 +68,35 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 ## Work Items
 
 - [ ] Apply approved package version and publish using existing release workflow.
-- [ ] Verify exact version and exported entrypoint available from target registry; record publication evidence.
+- [ ] Verify the exact published version exposes **both v1 and v2** types/schemas and fixture paths; record registry evidence.
 
 ## Interfaces / Contracts
 
-Entrypoint `@modainteract/moda-interact-shared/woocommerce` with the schemas and types accepted in SHARED-001. API and Background pin the published version; no sibling-source import.
+Entrypoint `@modainteract/moda-interact-shared/woocommerce` with **all** schemas/types accepted in SHARED-001 and SHARED-003: `WooCartRestoreSnapshotV1Schema`, `WooRestoreResolveRequestV1Schema`, `WooRestoreResolveResponseV1Schema`, `WooRestoreOutreachOfferV1Schema`, `WooRestoreResolveOfferRequestV2Schema`, `WooRestoreResolveOfferResponseV2Schema`, and their inferred types. Publish both fixture subpaths `./woocommerce/fixtures` and `./woocommerce/outreach-offer-fixtures`. API and Background pin the published version; no sibling-source import.
 
 ## Dependencies
 
-- `ARCH-053-SHARED-001` (must be architect-accepted Complete)
+- `ARCH-053-SHARED-001` — accepted base schemas.
+- `ARCH-053-SHARED-003` — accepted v2 offer-aware resolver schemas.
 
 ## Enables
 
 - `ARCH-053-BACKGROUND-001`
 - `ARCH-053-API-001`
 - `ARCH-053-API-002`
+- `ARCH-053-API-003`
+- `ARCH-053-API-003`
 
 ## Acceptance Criteria
 
 - [ ] Apply approved package version and publish using existing release workflow.
-- [ ] Verify exact version and exported entrypoint available from target registry; record publication evidence.
+- [ ] Verify the exact published version exposes **both v1 and v2** types/schemas and fixture paths; record registry evidence.
 - [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
 - [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
-- [ ] Accepted SHARED-001 status and intended version recorded
+- [ ] Both SHARED-001 and SHARED-003 accepted status and intended version recorded
 - [ ] Registry visibility and unchanged release-specific code check; `git diff --check`
 
 ## Stop Condition
@@ -99,7 +105,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ## Implementation Notes
 
-This is a `task_kind: publication` gate. Architect reviews publication evidence only. No consumer is permitted to use unpublished sibling code.
+This is a `task_kind: publication` gate for **both** accepted Shared implementations. It must not rerun their tests, lint, typecheck or build. Consumers may only pin/import a registry-visible package version containing both v1 and v2 and both JSON fixtures. If a missing export needs code changes, STOP and return to architect; do not fix source in this publication task. Architect reviews publication evidence only. No consumer is permitted to use unpublished sibling code.
 
 ## Completion Report
 

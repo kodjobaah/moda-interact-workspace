@@ -19,8 +19,10 @@ depends_on:
 - ARCH-053-DATABASE-001
 enables:
 - ARCH-053-WOOCOMMERCE-002
+- ARCH-053-API-003
+- ARCH-053-API-003
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-053-API-002 — Resolve Woo recovery link with installation and generation authorization
@@ -81,6 +83,8 @@ Plugin caller via `ModaApiClient` server-side installation auth; Shared `WooRest
 ## Enables
 
 - `ARCH-053-WOOCOMMERCE-002`
+- `ARCH-053-API-003` — additive opt-in v2 response on the same authenticated route; **v1 remains unchanged**.
+- `ARCH-053-API-003` — additive opt-in v2 response on the same authenticated route; **v1 remains unchanged**.
 
 ## Acceptance Criteria
 

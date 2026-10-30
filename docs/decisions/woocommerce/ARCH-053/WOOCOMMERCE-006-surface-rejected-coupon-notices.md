@@ -18,8 +18,10 @@ depends_on:
 - ARCH-053-WOOCOMMERCE-005
 enables:
 - ARCH-053-SYSTEM-TEST-002
+- ARCH-053-WOOCOMMERCE-007
+- ARCH-053-WOOCOMMERCE-007
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-053-WOOCOMMERCE-006 — Display rejected original coupons and updated checkout totals
@@ -77,6 +79,8 @@ Internal input from WOOCOMMERCE-005 `appliedCodes/rejectedCodes` plus current na
 ## Enables
 
 - `ARCH-053-SYSTEM-TEST-002`
+- `ARCH-053-WOOCOMMERCE-007` — later separately applies confirmed recommended code after original-coupon notices.
+- `ARCH-053-WOOCOMMERCE-007` — later separately applies confirmed recommended code after original-coupon notices.
 
 ## Acceptance Criteria
 
