@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 50
 executor: codex
 claimed_at: 2026-10-30T16:04:20Z
@@ -66,9 +66,9 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Work Items
 
-- [ ] Generate bounded deterministic URL **format** with random per-generation token and canonical site URL.
-- [ ] Write exactly one URL in generation admission transaction, safe retry and uniqueness conflict handling.
-- [ ] Test supported/unrestorable, subpath, host mismatch, generation 1→2, duplicate admission, token uniqueness, template bind and zero token logging.
+- [x] Generate bounded deterministic URL **format** with random per-generation token and canonical site URL.
+- [x] Write exactly one URL in generation admission transaction, safe retry and uniqueness conflict handling.
+- [x] Test supported/unrestorable, subpath, host mismatch, generation 1→2, duplicate admission, token uniqueness, template bind and zero token logging.
 
 ## Interfaces / Contracts
 
@@ -85,18 +85,18 @@ Recovery DB: `CheckoutRecovery.checkoutUrl String?` (existing) and new `wooResto
 
 ## Acceptance Criteria
 
-- [ ] Generate bounded deterministic URL **format** with random per-generation token and canonical site URL.
-- [ ] Write exactly one URL in generation admission transaction, safe retry and uniqueness conflict handling.
-- [ ] Test supported/unrestorable, subpath, host mismatch, generation 1→2, duplicate admission, token uniqueness, template bind and zero token logging.
-- [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
-- [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
+- [x] Generate bounded deterministic URL **format** with random per-generation token and canonical site URL.
+- [x] Write exactly one URL in generation admission transaction, safe retry and uniqueness conflict handling.
+- [x] Test supported/unrestorable, subpath, host mismatch, generation 1→2, duplicate admission, token uniqueness, template bind and zero token logging.
+- [x] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
+- [x] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
+- [x] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
-- [ ] Background admission transaction and URL issuer unit tests, mature job retry and two generation integration
-- [ ] Template binding/host validation and secret-redaction regression tests
-- [ ] Package declared typecheck/lint and `git diff --check`
+- [x] Background admission transaction and URL issuer unit tests, mature job retry and two generation integration
+- [x] Template binding/host validation and secret-redaction regression tests
+- [x] Package build/typecheck, changed-file lint and `git diff --check`
 
 ## Stop Condition
 
@@ -110,35 +110,57 @@ Dependency `ARCH-048-BACKGROUND-011` is **defined and Pending in this snapshot**
 
 ### Status
 
-Not Started
+Blocked — architect decision required on revoked-installation omission semantics
 
 ### Files Changed
 
-None — portable task definition only.
+Implementation branch `task/ARCH-053-BACKGROUND-003`, commit `6b6b254`:
+
+- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-admission.service.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-admission-evidence.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-link-issuer.ts`
+- `moda-interact-background/tests/unit/services/woocommerce-recovery/woo-recovery-admission.service.test.ts`
+- `moda-interact-background/tests/unit/services/woocommerce-recovery/woo-recovery-link-issuer.test.ts`
+- `moda-interact-background/tests/unit/services/conversation-wrappers/woo-checkout-link.test.ts`
+- `moda-interact-background/tests/integration/woo-recovery-admission.integration.test.ts`
+- This task's checklists and Completion Report only.
 
 ### Work Completed
 
-Not Started.
+Supported snapshots now receive a URL of the form `https://<verified-merchant-host>/<home-subpath>/?moda_interact_resume=1&r=<recovery-id>&t=<43-character-token>`. The token is generated from 32 cryptographically random bytes only after the admission transaction has ruled out an existing generation. The recovery row is created and its URL is written in the same transaction; an update or history failure rolls the transaction back. Duplicate and stale deliveries return the existing recovery without rotating its URL.
+
+Absent/unsupported restore snapshots and invalid or mismatched merchant site settings create a recovery with `checkoutUrl: null` and a bounded omission reason in admission history. Existing consent, STOP, order, candidate watermark and installation eligibility gates remain in place. The existing conversation wrapper binds the URL only when it remains HTTPS on the merchant host and within its seven-day checkout freshness window.
+
+The disposable PostgreSQL/Redis integration test verifies a persisted generation-1 URL survives replay unchanged and a resumed generation 2 receives a distinct URL and its own restoration snapshot. No external HTTP or Redis operation was added inside the transaction.
+
+Implementation commit `6b6b254` was pushed to `origin/task/ARCH-053-BACKGROUND-003`.
+
+Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-BACKGROUND-003` on `task/ARCH-053-BACKGROUND-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-BACKGROUND-003` on the same task branch. Neither shared checkout nor another task worktree was switched or mutated. Parent remote task branch fast-forwarded `not-needed`, parent `origin/main` incorporated `already-current`; implementation remote task branch fast-forwarded `not-needed`, implementation `origin/main` incorporated `already-current`. Recursive submodule sync/update passed; `database` remained at `af77c594ecbfc78c26d01c0021a090830884bbff`.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+- Focused unit suites: 3 files, 52 tests passed (issuer safety, admission/idempotency and template binding).
+- Disposable Postgres/Redis integration suites: 2 files, 8 tests passed, including URL persistence, retry stability and generation 1→2 separation.
+- Changed-file ESLint: passed.
+- `npm run build` (Prisma Client generation 6.19.3 and TypeScript compilation): passed.
+- `git diff --check`: passed.
+- Admission logs contain neither URL host nor bearer token. Candidate/watermark and order evidence reads remain outside the transaction.
 
 ### Deviations
 
-None.
+The launcher marked this execution `rework.required: true` with `previous_attempt: 0`, while the complete task's Architect Review remains Pending with no correction request. No rework checklist was present; the implementation follows the task's scope and acceptance criteria. The Architect Review section was not changed.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+The launcher dependency gate established BACKGROUND-002 and ARCH-048-BACKGROUND-011 as Complete. Their contracts permit storing the URL in the existing `checkoutUrl` field and reusing the admitted generation's immutable restore snapshot.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+The task asks to admit a recovery with `checkoutUrl: null` and an omission reason when the installation is revoked. Current admission rejects inactive/revoked installations before the admission transaction, and the consent fence also rejects a revocation that occurs before commit. Creating a row in that state would require weakening the existing installation/consent gates. The task is blocked pending moda_architect direction on whether the existing safety gate takes precedence or this task should define a separate safe persistence path.
 
 ### Architectural Concerns
 
-Return any cross-service schema/provider/transaction concern to `moda_architect` before improvising.
+The revoked-installation requirement conflicts with the current admission invariant that only active installations with current consent can be admitted. No gate was relaxed.
 
 ## Architect Review
 
