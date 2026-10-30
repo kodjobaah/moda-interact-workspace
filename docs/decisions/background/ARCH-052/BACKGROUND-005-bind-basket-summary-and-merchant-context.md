@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
-executor: codex
-claimed_at: 2026-10-30T15:59:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-003
@@ -188,4 +188,4 @@ The implementation respects the task's saved-facts, tenant-isolation, approved-t
 
 #### Follow-up
 
-Correct the remainder suffix and locale coverage, then resubmit this task for review. Keep `ARCH-052-BACKGROUND-008` blocked on this prerequisite until the review is accepted.
+The same task is returned to `status: ready`; retain `attempt: 1` and clear `executor` and `claimed_at`. The canonical launcher may claim Attempt 2. Correct the remainder suffix and locale coverage, then resubmit for review. Keep `ARCH-052-BACKGROUND-008` blocked until this prerequisite is accepted.
