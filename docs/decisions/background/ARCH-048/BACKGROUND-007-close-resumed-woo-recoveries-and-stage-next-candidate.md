@@ -193,8 +193,8 @@ Woo events remain event-delivered evidence only; updates never received by Moda 
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-007`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-007`.
 - Shared workspace and shared implementation checkouts were not switched or used for task implementation; no other task worktree was reused.
 - Start-of-attempt synchronization and claim were completed by the launcher; the supplied branch heads and database submodule commit are listed above.
-- Implementation commit: `f1f61f3` on local `task/ARCH-048-BACKGROUND-007`; origin push: blocked by auto-review, not pushed.
-- Parent task report commit: `3a0f4a7687f8321d00abaffb750c995255e78d2a` on local `task/ARCH-048-BACKGROUND-007`; push not attempted while implementation publication is blocked. Submodule gitlink was not staged. Neither task branch was merged to main.
+- Implementation branch local tip: `6c0e93519f886519a3ddee05a12ace08d384164c` on `task/ARCH-048-BACKGROUND-007`; configured origin: `https://github.com/kodjobaah/moda-interact-background.git`. Push was rejected by auto-review and was not retried; no remote commit evidence is available.
+- Parent task branch local tip: `089632cd3e94eec3599a0066616815f3d5d00b86` on `task/ARCH-048-BACKGROUND-007`; configured origin: `https://github.com/kodjobaah/moda-interact-workspace.git`. Push was not attempted while implementation publication is blocked. Submodule gitlink was not staged. Neither task branch was merged to main.
 
 ## Architect Review
 
