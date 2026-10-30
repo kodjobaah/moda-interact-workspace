@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-30T19:47:52Z
@@ -70,7 +70,7 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 - [x] Implement checkbox form and strictly validated selected-ID request.
 - [x] Implement atomic selected-flag replacement under Shop lock and revision compare.
-- [x] Add UI and service tests, including a real PostgreSQL integration test definition and override-independent view. The disposable PostgreSQL test itself could not execute because no working container runtime was available.
+- [x] Add UI and service tests, including a real PostgreSQL integration test definition and override-independent view. Attempt 1 could not execute the disposable PostgreSQL test because no working container runtime was available; Attempts 2 and 3 ran it successfully with Colima.
 
 ## Interfaces / Contracts
 
@@ -174,6 +174,47 @@ No cross-repository or schema ownership gap was identified. Both Attempt 1 revie
 - Recursive implementation submodule sync and update/init passed. The database submodule was initialized at `af77c594ecbfc78c26d01c0021a090830884bbff`.
 - Implementation task branch final commit: `b1c5ce3b892ed85385a82e7b7a89a66a04f28c2f`. Parent report is being submitted separately on the mirrored task branch.
 - No shared checkout, another task worktree, parent submodule gitlink or `main` branch was modified.
+
+### Attempt 3 Completion Report
+
+#### Status
+
+Ready for Architect Review — Attempt 3. The Attempt 2 Changes Requested item is addressed with deterministic PostgreSQL evidence that interleaves merchant selection writes and catalogue upserts.
+
+#### Files Changed
+
+- `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts` — removed the pre-seeded new-discount assumption, added deterministic transaction interleaving with production-equivalent catalogue upsert payloads, and kept the stale-revision race independent of prior test state.
+
+#### Work Completed
+
+The assigned `moda-interact` repository contains the recovery selection save transaction but not the Shopify discount-row catalogue sync implementation. The actual row upsert is owned by `moda-interact-background/src/services/shopify-discount-catalogue.service.ts`; invoking that service here would cross the assigned repository boundary and require its separate worker runtime/database package. No cross-repository files, provider calls, or database/schema changes were made.
+
+The PostgreSQL test therefore exercises the real `saveMerchantRecoveryPolicy` service and, deterministically after its second selection `updateMany` (while the same PostgreSQL transaction remains open), runs the production sync upsert's create/update data semantics against that transaction. The new discount does not exist before the test. The upsert creates it with `isAvailable: false`; for an existing selected discount it updates catalogue fields while omitting `isAvailable`. Assertions after transaction completion prove the selected row remains selected and the newly synchronized row is unchecked. This is an interleaved transaction arrangement, not a timing-based sleep.
+
+A negative-control run temporarily added `isAvailable: false` to the upsert update payload. The new PostgreSQL case failed at the selected-row assertion (`expected true, received false`); the mutation was removed, and the same focused case passed. This demonstrates that the test detects the overwrite regression rather than merely observing preinserted state.
+
+#### Validation Results
+
+- PostgreSQL integration file using Testcontainers, Colima socket `$HOME/.colima/default/docker.sock`, and `TESTCONTAINERS_RYUK_DISABLED=true` — passed, 4/4 tests. The final full-file rerun passed after the negative-control mutation was removed.
+- Negative control with catalogue update overwriting `isAvailable` — failed as expected on the selected-row assertion; production-equivalent update semantics restored and focused case passed, 1/1.
+- Focused recovery-policy and discount-lifecycle unit tests — passed, 18/18.
+- `npm run typecheck` — passed.
+- Focused ESLint on the changed integration test — passed.
+- `git diff --check` — passed.
+- Full build and repository-wide lint were not rerun in Attempt 3 because this attempt changed only the PostgreSQL test; Attempt 2 recorded both as passing. No Attempt 3 result is claimed for those commands.
+
+#### Deviations and Unresolved Issues
+
+The production catalogue sync function cannot be directly invoked from the assigned repository because it is owned by `moda-interact-background`. The test uses equivalent PostgreSQL Prisma upsert semantics with the production create/update field behavior, and the negative control proves the requested regression sensitivity. This ownership boundary and test design are provided for Architect Review. No other deviations or unresolved implementation issues.
+
+#### Attempt 3 VCS Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHOPIFY-001`, branch `task/ARCH-052-SHOPIFY-001`; claim commit `7213f4f53400a8838779ab43c39e86610810a73c`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHOPIFY-001`, branch `task/ARCH-052-SHOPIFY-001`.
+- Implementation commit: `270e5dda914d9e4ec42c55812bf1c4485f138cee` (`test(shopify): cover catalogue sync interleaved with selection`), pushed to `origin/task/ARCH-052-SHOPIFY-001`.
+- Recursive database submodule remained at `af77c594ecbfc78c26d01c0021a090830884bbff`; no parent submodule gitlink was staged.
+- Only the task-owned implementation test and this task report were changed. No other task branch or `main` was changed.
 
 
 ## Architect Review
