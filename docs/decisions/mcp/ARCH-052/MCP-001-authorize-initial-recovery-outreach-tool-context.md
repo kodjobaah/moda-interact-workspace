@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: copilot
 claimed_at: 2026-10-30T15:02:28Z
@@ -117,9 +117,9 @@ Built-in tool names: `commerce_get_discount_options`, `commerce_get_discount_det
 
 ## Validation
 
-- [ ] Docker-backed MCP/PostgreSQL integration tests (attempted; image pull timed out). Unit Prisma-reader tests spy/assert zero `CheckoutRecovery` or `RecoveryOutreachAttempt` reads in purpose authorization.
-- [x] Unit/protocol tests cover discount modes, current FIXED selection, context spoofing, tool list/call parity, shop/environment mismatch and conversation/published-tool isolation. A live Postgres run remains outstanding.
-- [x] Run declared MCP scripts and `git diff --check`; document the Docker integration timeout in the Completion Report.
+- [ ] Docker-backed MCP/PostgreSQL integration tests (Attempt 2 executed; MCP shop-scoped capability integration group passed, but the complete suite had two unrelated database-schema failures). Unit Prisma-reader tests spy/assert zero `CheckoutRecovery` or `RecoveryOutreachAttempt` reads in purpose authorization.
+- [x] Unit/protocol tests cover discount modes, current FIXED selection, context spoofing, tool list/call parity, shop/environment mismatch and conversation/published-tool isolation. The MCP shop-scoped capability integration group passed against disposable PostgreSQL; the full suite has two unrelated schema failures documented below.
+- [x] Run declared MCP scripts and `git diff --check`; document the Docker integration result in the Completion Report.
 
 ## Stop Condition
 
@@ -143,7 +143,7 @@ Keep public API and conversation identity handling unchanged. This task only cha
 
 ### Status
 
-Attempt 1 implementation and unit/build validation are complete; architect review requested additional Docker/PostgreSQL integration evidence. Task returns to `ready` at Attempt 1.
+Attempt 1 implementation and unit/build validation are complete. Attempt 2 ran the Docker/PostgreSQL integration suite; the MCP shop-scoped capability group passed, while two unrelated integration tests failed on database-schema mismatches. Returned to `review` with the full result and cleanup evidence recorded below.
 
 ### Files Changed
 
@@ -181,12 +181,21 @@ Implementation repository files:
 - `npm run lint` — passed (`--max-warnings=0`).
 - `npm run build` — passed.
 - `git diff --check` — passed in the implementation worktree; the parent task-file report is the only parent change.
-- `npm run test:integration:docker` — the prior task report records an attempt where Docker spent over 180 seconds pulling `pgvector/pgvector:pg16`, then reported `spawnSync docker ETIMEDOUT`. PostgreSQL startup and integration assertions did not run; cleanup reported no leftover containers. Not rerun during this resumption because it is a long Docker integration suite; live Postgres evidence remains outstanding.
+- Attempt 1 `npm run test:integration:docker` — Docker spent over 180 seconds pulling `pgvector/pgvector:pg16`, then reported `spawnSync docker ETIMEDOUT`. PostgreSQL initialization had not completed and no integration assertions ran; cleanup reported no leftover containers. Attempt 2 results are recorded below.
 - An initial test invocation before Prisma generation saw a stale generated Prisma client. The declared `npm run prisma:generate` corrected the environment; the final full unit suite passed.
+
+### Attempt 2 Docker/PostgreSQL Follow-up
+
+- Ran `npm run test:integration:docker` from `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-001` on 2026-10-30.
+- First invocation pulled `pgvector/pgvector:pg16` in 228.9 seconds, exceeding the harness's 180-second Compose startup timeout. PostgreSQL had reported healthy before the timeout; the harness removed the container, disposable volume, and network.
+- Retried after the image was cached. PostgreSQL started healthy, `typecheck:integration` passed, and all 49 database migrations applied successfully. The MCP shop-scoped capability integration group passed all 10 tests, including tenant isolation, published-tool discovery and revocation behavior.
+- Overall integration result: 14 tests, 11 passed, 2 failed, 1 skipped (the opt-in live Shopify test). The embedding-runtime test failed because `public.PlatformConfiguration` does not exist in the migrated disposable database. The operational-notifications test failed because `support.OperationalIncident.lastErrorMessage` does not exist, causing `MCP_OPERATIONAL_INCIDENT_REPORT_FAILED`. Both failures are in integration/database schema contracts outside the MCP-001 authorization changes; no unrelated files were modified.
+- The integration runner captured PostgreSQL diagnostics and successfully removed its container, volume, and network after the test failures. No disposable resources remain.
+- No implementation repository files changed during Attempt 2. The implementation worktree remains clean at `afb76ff18502b1631a3bcebfba791f34ec653cce`; only this parent task report changed.
 
 ### Deviations
 
-This task implements authorization and discovery only. Authorized built-in calls currently return the existing typed retryable `UNAVAILABLE` result until dependent MCP-002 implements discount catalogue reads. The Docker-backed Postgres integration suite could not start because its image pull timed out.
+This task implements authorization and discovery only. Authorized built-in calls currently return the existing typed retryable `UNAVAILABLE` result until dependent MCP-002 implements discount catalogue reads. Attempt 1's Docker-backed Postgres suite could not start because its image pull timed out; Attempt 2 reached PostgreSQL and exposed the separate integration/database schema failures recorded below.
 
 ### Assumptions
 
@@ -194,7 +203,7 @@ The already-claimed attempt and supplied worktree paths are authoritative. No la
 
 ### Unresolved Issues
 
-- Docker-backed Postgres integration validation remains outstanding due to `pgvector/pgvector:pg16` pull timeout.
+- The Docker-backed suite ran against live PostgreSQL, but is not fully green because of the two database-schema mismatches recorded under Attempt 2 Docker/PostgreSQL Follow-up.
 - Authorized options/details catalogue execution is owned by dependent MCP-002 and was not implemented in this task.
 - The current Shared task branch does not match the published 2.7.1 contract. Architect review should reconcile its purpose schema and missing discount-details contract before promoting/merging that branch; MCP consumes the verified published artifact.
 
