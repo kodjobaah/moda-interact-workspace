@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 38
-executor: codex
-claimed_at: 2026-10-30T08:23:12Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-048-BACKGROUND-007
@@ -175,29 +175,36 @@ A provider permit committed before checkout closure is irreversible. This implem
 - Parent workspace task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-009`, branch `task/ARCH-048-BACKGROUND-009`; launcher-synchronized starting revision `423ffdf9ffb201dadd025c137ddeaac3f507070b`; Attempt 1 claim pushed as `d6826e0ceaa9d64b4d452ff4cc3d584d8d0ffe7f`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-009`, branch `task/ARCH-048-BACKGROUND-009`; launcher-synchronized starting revision `ddd13338247f26c2ed5e7146489709de9f5e3f7a`; recursive database submodule was ready at `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`.
 - Dedicated physical parent and implementation worktrees were used. The prepared launcher synchronized both task branches from their respective `origin/main` before claim and reported dependency gate passed, recursive submodules ready, and the parent claim pushed. Implementation completion is committed and pushed on the mirrored task branch as `48845d3` (`feat(ARCH-048-BACKGROUND-009): settle resumed Woo outreach`); the parent report remains on the same task branch as claim `d6826e0` and is committed/pushed with this review update.
+- The requested Changes Requested task-file update is committed locally on `task/ARCH-048-BACKGROUND-009` but not pushed. The attempt to publish it to `https://github.com/kodjobaah/moda-interact-workspace.git` was rejected by automatic review: “This would publish the private BG009 task report to its configured GitHub remote, but the trusted user messages authorize review—not publication of this task or destination.” No retry or workaround was attempted; explicit user authorization to publish this BG009 parent task branch is required.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Changes Requested.
 
 ### Review Notes
 
-No implementation reviewed.
+1. `settleResumed` routes failures to `failed()`, which logs the raw `error`. Change this path to log only bounded error class/code and stage fields; do not log the Error object, message, or stack. Rethrow the original error. Add a focused test proving sensitive/raw error data is absent from the log and the same error is rethrown.
+2. `cancelIfPrePermit` can return `cancelled` and release the reservation when `updateMany` changes zero rows, including when `followUpDueAt` is non-null. Fail closed on follow-up state. Return `cancelled` only after confirming an eligible transition or rereading and validating an already-`CANCELLED` replay for the same attempt/recovery with no follow-up state. Do not release the reservation after an unconfirmed transition. Add focused tests for zero-row transition with `followUpDueAt` (no cancellation result or release), a validated already-cancelled replay, and successful eligible transition.
 
 ### Reviewed Files
 
-None.
+- `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`
+- `src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts`
+- `src/services/woocommerce-recovery/woo-initial-send-fence.service.ts`
+- `src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts`
+- `src/services/woocommerce-recovery/woo-initial-dispatch.queue.ts`
+- task-scoped Woo recovery unit and integration tests
 
 ### Validation Reviewed
 
-None.
+Review identified the two corrections above. Changes Requested rework requires implementation and focused tests; no validation is credited for the corrections until they are implemented and reported.
 
 ### Architecture Conformance
 
-Not assessed.
+The task remains within its assigned Background scope. The requested fixes preserve bounded diagnostics, exception retry semantics, and reservation safety.
 
 ### Follow-up
 
-None.
+Apply both corrections on the same mirrored task branches. This review update does not claim or increment Attempt 2; the launcher will claim it when the task is started again.
