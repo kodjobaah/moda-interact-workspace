@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
-executor: copilot
-claimed_at: 2026-10-30T10:13:27Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-SHARED-003
@@ -254,7 +254,7 @@ The repository-wide lint/unit/security limitations recorded under Attempt 1 were
 No deviations or unresolved cross-repository requirements. Meta approval remains a provider/operator gate; this change adds no claim that Meta has approved any particular two-button template.
 
 
-## Architect Review
+## Architect Review — Attempt 1 (Changes Requested)
 
 ### Review Status
 
@@ -282,3 +282,38 @@ Promotion-target metadata and header-kind selection are carried through authorin
 ### Follow-up
 
 Extend the Admin AST, validation, compiler, immutable snapshots, and translation/publication checks to support both independently indexed URL bindings (`checkout.url` and `promotion.productUrl`) when the approved Meta template contains both buttons. Add focused tests proving both indexes and semantic bindings survive compilation, translation, and registration snapshotting. Resubmit for review after the focused checks pass.
+
+
+## Architect Review — Attempt 2 (Changes Requested)
+
+### Review Status
+
+Changes Requested. The Attempt 1 dual-CTA correction is implemented and the submitted focused validation passes. No further Admin source correction is requested.
+
+### Review Notes
+
+The Admin AST/compiler, authoring UI, translation snapshot and Meta publication snapshot now preserve two distinct approved URL bindings at their exact indexes: `checkout.url` and `promotion.productUrl`. Validation limits the two-button arrangement to `ALTERNATIVE_PRODUCT`, rejects duplicate/missing semantic bindings, and preserves the trusted checkout CTA. The Attempt 2 report records passing focused authoring, compilation, translation, Meta and publication suites, typecheck, changed-source lint, production build and diff check. The implementation commit `14faa94a7096aef3ef9222c687cb663dd5834459` and parent task report are published on their task branches.
+
+Acceptance remains withheld because this task still has an unchecked criterion: an alternative promotion must not render with an unsafe product URL, with runtime safety owned by the resolver contract. Admin publishes a dynamic `promotion.productUrl` binding and approved component metadata, but it cannot prove the runtime value's source, shop ownership or URL safety. The pending `ARCH-052-BACKGROUND-008` task currently requires an MCP-returned canonical storefront product URL but does not define the concrete validation/fail-closed contract or its tests.
+
+### Required Follow-up
+
+Before accepting ADMIN-001, establish the ownership split durably: update the owning Background resolver task contract to require that `promotion.productUrl` comes from the authenticated, current-shop MCP product result and is rejected or handled by the approved no-offer/no-send path when its URL is unsafe; add focused runtime coverage there. Then either record that BG008 gate as the satisfaction of the runtime half of this criterion or amend this Admin criterion to its own authoring boundary and preserve the BG008 gate. No additional Admin implementation change is requested.
+
+### Reviewed Files
+
+- `src/lib/admin/whatsapp-templates/authoring/types.ts`
+- `src/lib/admin/whatsapp-templates/authoring/validation.ts`
+- `src/lib/admin/whatsapp-templates/authoring/compiler.ts`
+- `src/components/admin/whatsapp-templates/authoring/template-buttons-editor.tsx`
+- `src/lib/admin/whatsapp-templates/translations/source-snapshot.ts`
+- Meta registration and publication snapshot/validation code
+- Focused authoring, compilation, translation, Meta snapshot and publication tests
+
+### Validation Reviewed
+
+Attempt 2 reports 33 authoring tests, 14 compilation tests, 16 translation tests, 15 Meta checks, and 22 publication tests passing; `npx tsc --noEmit`, changed-production-source ESLint, `npm run build`, and `git diff --check` also passed. The broader repository lint/unit/security failures remain recorded as existing unrelated suite limitations. No tests were rerun during this review.
+
+### Architecture Conformance
+
+The dual CTA implementation conforms to the Admin ownership boundary and retains approval immutability. Runtime product URL provenance/safety is a downstream send-time responsibility and is not yet specified strongly enough in the owning Background-008 task contract to accept this cross-service criterion.
