@@ -69,12 +69,12 @@ Apply the architect-accepted `COMMERCE-006` **environment synchronisation script
 
 ## Work Items
 
-- [ ] Read and verify the accepted COMMERCE-006 and MCP-003 task definitions, implementation commits and required physical-isolation evidence.
-- [ ] Verify the TEST target, authorised actor and checked-out version of the accepted `commerce:sync-tools` command.
-- [ ] Run the dry-run command; inspect intended product-tool changes and unrelated-member preservation.
-- [ ] Run the apply command once; capture audited release/pointer/revision/capability evidence.
-- [ ] Rerun dry-run and apply to prove no-op/idempotence without additional durable mutations.
-- [ ] Record publication evidence and leave task for the required developer completion decision. Do not enter another implementation task.
+- [x] Read and verify the accepted COMMERCE-006 and MCP-003 task definitions, implementation commits and required physical-isolation evidence.
+- [x] Verify the TEST target, authorised actor and checked-out version of the accepted `commerce:sync-tools` command.
+- [x] Run the dry-run command; inspect intended product-tool changes and unrelated-member preservation.
+- [x] Run the apply command once; capture audited release/pointer/revision/capability evidence.
+- [x] Rerun dry-run and apply to prove no-op/idempotence without additional durable mutations.
+- [x] Record publication evidence and leave task for the required developer completion decision. Do not enter another implementation task.
 
 ## Interfaces / Contracts
 

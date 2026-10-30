@@ -15,6 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-052-SHARED-012
+- ARCH-052-ADMIN-003
 - ARCH-052-BACKGROUND-010
 - ARCH-052-BACKGROUND-005
 - ARCH-052-ADMIN-001
@@ -69,6 +71,15 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
 ## Requirements
+
+### Multi-discount send and immutable receipt — normative 30 October 2026
+
+- Accept BACKGROUND-010's validated checkout offer set of 1..3. Before send, recheck CURRENT merchant policy, all selected identities, source-backed codes, provider status and complete evidence for **every** included offer. On any failed member, reselect/trim only to a separately verified compatible subset; no stale or fabricated co-discount claim.
+- Bind multi-CODE checkout choices only to an independently **Meta-approved** checkout-target template revision exposing `offer.codes` and accurate plural wording from ADMIN-003. Preserve `offer.code` for the original approved single-code path. Automatic-only combinations use separately approved **plural** automatic copy from ADMIN-003 and must not claim a code. Mixed automatic+code offers require accurate approved copy for each claimed benefit, else safe singleton fallback. Never splice extra code text into a frozen unapproved variant.
+- Construct the source-grounded `InitialOutreachCheckoutOfferSet` (published Shared), preserving exact ordered code/provider IDs; attach it to the existing `recoveryPromise` in the **single** prepared/confirmed `ConversationMessage.content` linked by `outboundMessageId`. One initial WhatsApp message/credit only; no new attempt snapshot/table or second promotional message. Preserve customer-facing parameters exactly as submitted to Meta.
+- In Shopify, outreach describes potential discounts and codes; it must NOT claim codes are preapplied to checkout. In Woo, ARCH-053 independently reads the confirmed immutable receipt and applies codes through Woo's native cart API only after customer confirmation. ARCH-052 neither issues nor validates restore links, mutates carts nor introduces Woo HTTP coupon calls.
+- New unit and integration cases: Shopify PRODUCT+SHIPPING, ORDER+PRODUCT, same-line Plus/two-way tags, incompatible partner/unknown policy, Woo `individualUse`, triple combinations with one invalid member, Meta missing approval, retry/policy revocation, historic receipt/follow-up, and fallback single/no-send without duplicate message/billing.
+
 
 **Attempt 4 architect blocker resolution — product CTA provenance and safety (normative, BG-owned):** `promotion.productUrl` is an **alternative-product promotional value**, not the existing `checkout.url` value. It must come verbatim from a `CommerceProduct.url` returned by a **successful, schema-validated** `commerce_get_product` MCP tool result for the **authenticated current shop**, carried via BACKGROUND-010's trusted result/evidence object. It must not be accepted from the model's output, its prose, merchant instructions, template samples, a checkout item, a request body, an arbitrary link, or a product-search string that has not been confirmed by exact-product lookup. The agent may select an offer/product ID; it does **not** generate the destination URL.
 

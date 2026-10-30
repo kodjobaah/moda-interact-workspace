@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-052-SHARED-010
 enables:
@@ -22,7 +22,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-30
 ---
 
 # ARCH-052-COMMERCE-006: Implement version-controlled Commerce system-product-tool environment sync script
@@ -31,7 +31,7 @@ updated: '2026-10-30'
 
 Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`.
 
-**Defined but not materialised.** This task defines implementation code, not an instruction to change any real Commerce environment. No developer Git branch, worktree, commit or push is asserted.
+Materialised and executed through the canonical task launcher in dedicated parent and implementation worktrees. This implementation adds an explicitly invoked sync command; no persistent Commerce environment was changed.
 
 ## Objective
 
@@ -99,13 +99,13 @@ Implement the **one product-tool synchronisation capability** in `moda-interact-
 
 ## Work Items
 
-- [ ] Define the two exact canonical tool descriptors and verify they parse with the existing `CommerceToolDraftDefinitionSchema`.
-- [ ] Add `products.search` and `products.get` to the existing `POLICY_OPERATIONS` literal union in `src/commerce/tool-definition/contracts.ts`, and register both in `POLICY_OPERATION_CONTRACTS` with published Shared-008 schemas. Do not replace the existing enum or any existing entries.
-- [ ] Implement a read-only `planSystemCommerceToolSync` and existing-lifecycle-backed `applySystemCommerceToolSync`, with no provider HTTP or private API requests.
-- [ ] Implement the `.mjs` CLI and its standalone composition, with explicit flags, environment checks, active `SUPER_ADMIN` resolution and safe output.
-- [ ] Add the `commerce:sync-tools` package command; do not wire the sync into `dev`, `build`, `start`, Render startup or cron.
-- [ ] Add focused in-memory tests and a disposable PostgreSQL integration run showing first apply, same-input no-op, changed-version plan, conflict, CAS race, dry-run isolation, unrelated-member preservation and rejection of production/mismatched environment.
-- [ ] Record exact changed files, test commands, validation and remaining issues. Set task to `review` and stop.
+- [x] Define the two exact canonical tool descriptors and verify they parse with the existing `CommerceToolDraftDefinitionSchema`.
+- [x] Add `products.search` and `products.get` to the existing `POLICY_OPERATIONS` literal union in `src/commerce/tool-definition/contracts.ts`, and register both in `POLICY_OPERATION_CONTRACTS` with published Shared-008 schemas. Do not replace the existing enum or any existing entries.
+- [x] Implement a read-only `planSystemCommerceToolSync` and existing-lifecycle-backed `applySystemCommerceToolSync`, with no provider HTTP or private API requests.
+- [x] Implement the `.mjs` CLI and its standalone composition, with explicit flags, environment checks, active `SUPER_ADMIN` resolution and safe output.
+- [x] Add the `commerce:sync-tools` package command; do not wire the sync into `dev`, `build`, `start`, Render startup or cron.
+- [x] Add focused in-memory tests and a disposable PostgreSQL integration run showing first apply, same-input no-op, changed-version plan, conflict, CAS race, dry-run isolation, unrelated-member preservation and rejection of production/mismatched environment.
+- [x] Record exact changed files, test commands, validation and remaining issues. Set task to `review` and stop.
 
 ## Interfaces / Contracts
 
@@ -282,19 +282,19 @@ npm run commerce:sync-tools -- --environment=test --apply
 
 ## Acceptance Criteria
 
-- [ ] Tool names, `product_search` Feature key, input/output contracts, versions and policy operation keys match exactly; no new Feature or database schema.
-- [ ] The CLI `--dry-run` is read-only, reports a deterministic plan and refuses invalid arguments, unapproved actor or mismatched environment.
-- [ ] The script's apply path uses existing audited Commerce publication lifecycle commands and preserves unrelated release members, response contract and Feature behaviour.
-- [ ] First installation is repeatable; a second identical apply makes zero changes. Canonical-content conflicts and stale CAS fail without overwriting state.
-- [ ] `--apply` is gated; no implicit startup or scheduled environment mutation is introduced.
-- [ ] Source-code tests and a disposable PostgreSQL rehearsal demonstrate the agreed behaviour; no persistent environment has been modified by this task.
+- [x] Tool names, `product_search` Feature key, input/output contracts, versions and policy operation keys match exactly; no new Feature or database schema.
+- [x] The CLI `--dry-run` is read-only, reports a deterministic plan and refuses invalid arguments, unapproved actor or mismatched environment.
+- [x] The script's apply path uses existing audited Commerce publication lifecycle commands and preserves unrelated release members, response contract and Feature behaviour.
+- [x] First installation is repeatable; a second identical apply makes zero changes. Canonical-content conflicts and stale CAS fail without overwriting state.
+- [x] `--apply` is gated; no implicit startup or scheduled environment mutation is introduced.
+- [x] Source-code tests and a disposable PostgreSQL rehearsal demonstrate the agreed behaviour; no persistent environment has been modified by this task.
 
 ## Validation
 
-- [ ] Unit tests for registry/definitions/CLI parser/planner/reconciliation (including wrong environment, SUPER_ADMIN denial and no-op) via the repository's existing Vitest setup.
-- [ ] Disposable PostgreSQL tests for audited tool creation, capability binding, release-member preservation, pointer activation, rerun no-op and conflict handling.
-- [ ] Run the Commerce repository's **existing declared** `typecheck`, `lint` and applicable build validation scripts, plus `git diff --check`. Record actual commands and results; do not invent nonexistent npm scripts.
-- [ ] Confirm `git diff --check` and no deployment state was mutated.
+- [x] Unit tests for registry/definitions/CLI parser/planner/reconciliation (including wrong environment, SUPER_ADMIN denial and no-op) via the repository's existing Vitest setup.
+- [x] Disposable PostgreSQL tests for audited tool creation, capability binding, release-member preservation, pointer activation, rerun no-op and conflict handling.
+- [x] Run the Commerce repository's **existing declared** `typecheck`, `lint` and applicable build validation scripts, plus `git diff --check`. Record actual commands and results; do not invent nonexistent npm scripts.
+- [x] Confirm `git diff --check` and no deployment state was mutated.
 
 ## Implementation Notes
 
@@ -323,58 +323,98 @@ After completing Work Items, Acceptance Criteria and required Validation, update
 
 ### Status
 
-Not Started — portable definition, no execution claim.
+Accepted Complete at Attempt 1. No persistent Commerce environment was changed, and COMMERCE-007 was not started.
 
 ### Files Changed
 
-None yet.
+- `package.json`, `package-lock.json`
+- `src/commerce/bootstrap/index.ts`
+- `src/commerce/bootstrap/system-product-tools.ts` (new)
+- `src/commerce/bootstrap/system-commerce-tool-sync.ts` (new)
+- `src/commerce/bootstrap/system-commerce-tool-sync.cli.ts` (new)
+- `src/commerce/execution/policy-operation-authoring.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/products/index.ts`, `src/commerce/products/recommendations.ts`, `src/commerce/discounts/evaluator/evaluator.ts` (Shared 2.7.0 nullable variant compatibility)
+- `scripts/sync-system-commerce-tools.mjs` (new)
+- `scripts/run-system-commerce-tool-sync-postgres.mjs` (new disposable test harness)
+- `tests/system-commerce-tool-sync.test.ts` (new)
+- `tests/system-commerce-tool-sync-postgres.test.ts` (new)
+- `tests/policy-operation-registry.test.ts`
 
 ### Work Completed
 
-None yet.
+- Added the exact source-owned `commerce_search_products` and `commerce_get_product` descriptors, both on the existing `product_search` Feature, with Shared 2.7.0 schemas and registered `products.search@1.0.0` / `products.get@1.0.0` authoring contracts.
+- Implemented deterministic read-only planning and audited lifecycle application. The sync checks Feature policy, tool/capability ownership, canonical revision hashes, environment pointer and immutable release contents; it fails closed on identity/content/Feature conflicts or stale CAS and makes no provider requests.
+- Added the standalone esbuild-backed CLI, exact `commerce:sync-tools` npm command, strict mode/environment parsing, production confirmation, deployment-environment matching, active `SUPER_ADMIN` resolution, shared structured logging and bounded output. It is not wired into startup, build or scheduled work.
+- Added focused in-memory and disposable-PostgreSQL coverage. The PostgreSQL rehearsal verified dry-run isolation, audited tool/revision/capability creation, release activation, preservation of an unrelated release member/response contract/Feature snapshot, repeat-run no-op and Feature-conflict rejection.
+- Updated existing product consumers for Shared 2.7.0's nullable `variantId`; recommendation operations narrow to non-null IDs where a real Shopify variant is required, without fabricating Woo variant IDs. Updated the existing registry contract test for the two new operation registrations.
+- No schema/migration, Feature, entitlement, persistent Commerce environment or deployment state was changed. No COMMERCE-007 action was performed.
 
 ### Validation Results
 
-Not run.
+- `npm exec -- vitest run tests/system-commerce-tool-sync.test.ts tests/policy-operation-registry.test.ts` — 2 files passed, 11 tests passed.
+- `node scripts/run-system-commerce-tool-sync-postgres.mjs` — accepted migrations passed; disposable PostgreSQL test passed; cleanup passed with zero owned PostgreSQL containers remaining.
+- `npm run commerce:sync-tools -- --environment=test --dry-run` with `DATABASE_URL` and `COMMERCE_SYSTEM_TOOL_ACTOR_EMAIL` removed and `DEPLOYMENT_ENVIRONMENT_NAME=test` — wrapper bundled/launched, emitted bounded `DATABASE_UNAVAILABLE`, and exited non-zero before database access.
+- `npm run typecheck` — passed.
+- `npm run lint` — 0 errors, 15 warnings in existing files outside the task's changed files.
+- `npm run build` — passed; emitted the existing Nunjucks dynamic-dependency bundling warning.
+- `git diff --check` — passed.
+- `npm test` — not fully green: 200 files discovered, 179 passed, 6 skipped, 15 failed; 1,473 tests passed, 16 skipped and 13 failed. Failures included database/Redis suites requiring dedicated harnesses, UI/readiness failures or timeouts during the full parallel run, and the registry test's stale expected count of seven. That registry expectation was corrected and its test passed in the final focused rerun; the full suite was not rerun after the focused correction.
+- No persistent environment or deployment state was mutated. The only `--apply` execution was against the invocation-owned disposable PostgreSQL database.
 
 ### Deviations
 
-None reported.
+The requested database-backed cases are grouped in one disposable PostgreSQL test. CAS race and changed-version replacement reconciliation are covered by in-memory lifecycle tests; the PostgreSQL rehearsal covers first publication, immutable unrelated-member preservation, no-op, dry-run isolation and Feature-conflict handling. The full repository `npm test` remains non-green for the reasons recorded above.
 
 ### Assumptions
 
-Task worktree and dependency versions must be verified by the real task launcher.
+The launcher packet is authoritative: dependency `ARCH-052-SHARED-010` was complete, Shared 2.7.0 was installed, and task-owned parent/implementation worktrees and the database submodule were prepared at their recorded commits.
 
 ### Unresolved Issues
 
-None established.
+Full-suite failures outside the focused checks remain unresolved: database/Redis tests require their dedicated disposable harnesses, and several UI/readiness tests failed or timed out in the broad parallel run. No persistent database credentials/environment were used for a successful operator CLI invocation; parser/authorization rules and the fail-closed missing-database path were tested.
 
 ### Architectural Concerns
 
-Return any contract/publication gap to `moda_architect` without an undocumented workaround.
+No contract/publication gap was found in the focused implementation checks. The sync uses the existing Commerce lifecycle/storage APIs and rejects unsupported immutable-release reconciliation rather than rewriting releases.
+
+### Physical Worktree Evidence
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-COMMERCE-006`, branch `task/ARCH-052-COMMERCE-006`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-COMMERCE-006`, branch `task/ARCH-052-COMMERCE-006`.
+- Database submodule was initialized by the launcher at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Attempt 1 claim was committed and pushed by the launcher as parent commit `b580bbc03c39c5f2d123b095c1f93ce18ac9a725`. Implementation commit `7c2979cbd90626275b70085b158e613957e33edf` and parent report commit `5e21cf73ec5a7d28753b05b734acf3abf040f4b3` are published on their respective `task/ARCH-052-COMMERCE-006` branches. The implementation remote ref was verified to match its commit; `origin/main` remains unchanged.
+- No merge or push to `main` was performed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted Complete at Attempt 1.
 
 ### Review Notes
 
-Definition only; implementation not accepted.
+Reviewed implementation commit `7c2979cbd90626275b70085b158e613957e33edf`, the task report and the defined scope. The two canonical product descriptors use the existing `product_search` Feature and Shared 2.7.0 contracts. The sync planner is read-only; apply uses the existing audited lifecycle and feature-capability storage, guards system ownership and Feature policy, preserves unrelated immutable release members and behavior snapshots, checks CAS, and verifies the activated release. The standalone CLI validates mode, environment and active SUPER_ADMIN selection, requires explicit apply, and has no startup or scheduled wiring. No persistent environment was changed and no blocking implementation issue was found.
+
+The focused suite, disposable PostgreSQL rehearsal, typecheck, lint, build and diff check pass as reported. The exploratory full `npm test` run was not green: 13 failures were reported, including a registry expectation later corrected and database/Redis or UI/readiness failures and timeouts; the full suite was not rerun after that correction. This remains an explicit validation caveat and is not represented as a passing full-suite result. The task-required focused and disposable database validations are complete.
 
 ### Reviewed Files
 
-Task definition and attached 29 October 2026 workspace snapshot.
+- Canonical system product tool definitions and sync engine.
+- Standalone CLI and `.mjs` wrapper.
+- Policy-operation registrations and Commerce tool-definition contract.
+- Nullable variant compatibility changes in product and discount consumers.
+- Focused unit and disposable PostgreSQL tests.
+- This task's Completion Report, implementation branch and VCS evidence.
 
 ### Validation Reviewed
 
-No implementation tests yet.
+Reviewed the report's 11 focused tests, disposable PostgreSQL rehearsal and cleanup, fail-closed CLI wrapper invocation, typecheck, lint (0 errors, 15 warnings in unchanged files), build, and `git diff --check`. The implementation branch is clean at `7c2979c` and its task remote ref matches. Validation was reviewed from the durable report; it was not rerun during architect review.
 
 ### Architecture Conformance
 
-Pending actual repository implementation review.
+Conforms to ARCH-052 and the task boundary. No persistent Commerce environment or deployment was mutated; the only `--apply` reported was against the invocation-owned disposable PostgreSQL database. COMMERCE-007 remains a separate publication task and was not started.
 
 ### Follow-up
 
-On architect acceptance, `COMMERCE-007` remains gated on accepted `MCP-003`.
+`ARCH-052-COMMERCE-007` remains Pending because `ARCH-052-MCP-003` is Pending. MCP-003 remains Pending because its separate dependency `ARCH-052-MCP-005` is Ready, not Complete. No enabled task was started or promoted by this review.

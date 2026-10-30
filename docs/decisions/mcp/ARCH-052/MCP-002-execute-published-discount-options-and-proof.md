@@ -15,6 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-052-SHARED-012
+- ARCH-052-BACKGROUND-013
 - ARCH-052-MCP-001
 - ARCH-052-SHARED-010
 - ARCH-052-BACKGROUND-011
@@ -57,6 +59,14 @@ Implement two **generic, built-in, read-only** discount MCP tools: the existing 
 - Changing the published generic MCP envelope or inventing cursor fields.
 
 ## Requirements
+
+### Multi-discount combination-fact projection — normative 30 October 2026
+
+- Consume the **newly published** `CommerceDiscountCombinationFactsSchema` from ARCH-052-SHARED-012; never project `COMPLETE` combination policy from Shared 2.7.0, which lacks it. Upgrade MCP package manifest/lockfile to the exact published version.
+- For Shopify Basic source: map provider `discountClasses`, **own** `tags`, source-observed `shopifyPlus`, source `providerDiscountId`, and the separately observed `combinesWith` booleans/allowed same-line tags from BACKGROUND-013's snapshot into `facts.combination`, preserving `null` for unknown and marking `PARTIAL` for unsupported, truncated or missing observations.
+- For Woo: return the already observed `individualUse` truthfully; unknown is `null`, and do not invent Shopify-style combination booleans or Plus entitlements for Woo.
+- Keep the two existing MCP tools, generic `CommerceToolResultSchema`, purpose/shop guards, pagination and catalog snapshot reader. MCP reports facts only, never a new multi-discount evaluation/proof RPC or a guaranteed savings amount. Test cross-shop/revoked offers and malformed policies.
+
 
 1. Shop-scoped PostgreSQL is the only discount information source at outreach time; `providerStatus` is separate from merchant-owned `isAvailable`.
 2. Both tools consume the exact **published** SHARED-010 `CommerceToolInputs` / `CommerceToolOutputs` members; do not define duplicated validators or infer a new schema in MCP.
