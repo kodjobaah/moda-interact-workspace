@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-10-30T14:48:24Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-053-SHARED-002
@@ -26,7 +26,7 @@ updated: 2026-10-30
 
 ## Architecture
 
-Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Portable canonical task: defined but not materialised**; no Git branch, worktree, commit, push, review or producer deployment claimed.
+Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Materialised and accepted Complete at Attempt 1. Parent and API implementation task branches are published; no API-only deployment is authorized.
 
 ## Objective
 
@@ -173,7 +173,7 @@ Task dependency files record *source* readiness, not permission to deploy interm
 
 ### Status
 
-Ready for Review — Attempt 1. The task is set to `review` for architect assessment.
+Accepted Complete at Attempt 1 by the architect. The Redis integration validation remains explicitly blocked because Docker is unavailable; it was not reported as passed.
 
 ### Files Changed
 
@@ -216,28 +216,30 @@ The disposable Redis/BullMQ integration remains unverified until Docker is avail
 
 The downstream WooCommerce producer must be released in the same coordinated pre-production cutover. Do not deploy the strict v1 API independently ahead of WooCommerce-001.
 
-## Architect Review
+## Architect Review — Attempt 1 (Accepted)
 
 ### Review Status
 
-Pending
+Accepted. The API contract, validation and v1 queue projection meet this task's acceptance criteria. Mark Complete at Attempt 1. This does not authorize API-only deployment; the updated WooCommerce producer must be integrated in the coordinated pre-production cutover.
 
 ### Review Notes
 
-Not Reviewed — task not executed.
+The implementation removes the HTTP version split while retaining strict v1 checkout and order handling. Phone proof is required and normalized when a phone is present, stripped before queueing, and does not create consent. The published Shared restoration schema validates the optional snapshot; the normalized event, original coupon evidence and restoration data flow into the existing digest and retained replay conflict logic. Tenant identity remains server-derived, the request body remains bounded, and queue failures preserve the retryable 503 boundary with bounded logging. No unrelated source ownership or ARCH-052 work was changed.
+
+The OpenAPI schema documents the restoration shape and phone proof. It is less strict than the published Shared runtime schema for control characters in coupon and variation-attribute text; the Shared validator remains authoritative and rejects those values. This documentation limitation does not change runtime acceptance behavior.
 
 ### Reviewed Files
 
-None.
+Reviewed the implementation diff in `src/woocommerce/activity/contract.ts`, `src/woocommerce/activity/routes.ts`, `openapi/woocommerce-activity-v1.yaml`, and the contract, producer, route and OpenAPI tests, plus the Completion Report.
 
 ### Validation Reviewed
 
-None.
+The report records 24 passing unit tests, typecheck, lint and `git diff --check`. The declared disposable Redis/BullMQ integration could not run because Docker access to the configured Colima socket was denied. That validation remains unchecked and is not represented as passing; this limitation was permitted by the task's explicit “when available” condition. Tests were not rerun during architect review.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+The strict v1 API is not to be deployed independently ahead of WOOCOMMERCE-001. Both API-001 and BACKGROUND-001 are now accepted Complete, so WOOCOMMERCE-001 is dependency-ready. No production activation or deployment is included in this acceptance.
 
 ### Follow-up
 
-None.
+Keep the Redis/BullMQ integration validation visible as outstanding until Docker is available. Promote WOOCOMMERCE-001 to Ready; API-002 is also Ready from its completed SHARED-002 and DATABASE-001 prerequisites. No system-test task is promoted.
