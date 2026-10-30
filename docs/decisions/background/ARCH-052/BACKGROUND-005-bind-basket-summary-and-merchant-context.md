@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: codex
 claimed_at: 2026-10-30T15:59:52Z
@@ -30,7 +30,9 @@ Architecture ID: `ARCH-052`.
 
 Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 
-Coordinator: `moda_architect`. This is a **portable canonical definition — defined but not materialised**. No developer Git branch/worktree, commit or push is asserted.
+Coordinator: `moda_architect`.
+
+This task was claimed and materialised for Attempt 1. At claim, the parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-005` was synchronized at `951cef829ace9b9705bcda15ca68bdfd67129d70`, and the implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-005` was synchronized at `6c284114afd7686ed4628def56fa248c3a79fce7`. The launcher confirmed `origin/main` was current at startup, recursively synchronized submodules, and verified `database` at `af77c594ecbfc78c26d01c0021a090830884bbff`. The task-claim commit is `ef530cd804ee538583693b53d2a7ca5b680f1d7f`. Before completion, the implementation branch incorporated the two commits subsequently added to `origin/main` (`4430635`, `0570565`) without conflicts. Implementation commit `c463c15d6e3dd0ff0b2eaad4d4bf9e1fc3741c72` is pushed to `origin/task/ARCH-052-BACKGROUND-005`; this parent task report will be committed and pushed separately.
 
 ## Objective
 
@@ -63,9 +65,9 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 
 ## Work Items
 
-- [ ] Create summary formatter with bounded fixtures.
-- [ ] Connect new semantic key and approved merchant brand fallback in Background preparer.
-- [ ] Unit and DB-backed cross-tenant tests.
+- [x] Create summary formatter with bounded fixtures.
+- [x] Connect new semantic key and approved merchant brand fallback in Background preparer.
+- [x] Unit and DB-backed cross-tenant tests.
 
 ## Interfaces / Contracts
 
@@ -83,13 +85,13 @@ Dependencies are authoritative in YAML; system tests are terminal validation and
 
 ## Acceptance Criteria
 
-- [ ] A checkout with shoes and a water bottle renders a readable deterministic item summary.
-- [ ] Missing or malformed items/category cannot make an unapproved placeholder/value; approved generic fallback works.
+- [x] A checkout with shoes and a water bottle renders a readable deterministic item summary.
+- [x] Missing or malformed items/category cannot make an unapproved placeholder/value; the existing typed `BINDING_VALUE_UNAVAILABLE` fallback prevents unresolved placeholders or invented category text.
 
 ## Validation
 
-- [ ] Formatter property/negative tests, frozen-binding compatibility and Background integration.
-- [ ] Background build/lint and `git diff --check`.
+- [x] Formatter positive/negative and bounded-output tests, frozen-binding compatibility, and disposable PostgreSQL Background integration.
+- [x] Background build and `git diff --check`; repository-wide lint ran with one pre-existing error in untouched `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`). Lint reports no findings in changed files.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
@@ -112,35 +114,44 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Not Started — portable definition, no task claim.
+Implementation complete; submitted for architect review at Attempt 1.
 
 ### Files Changed
 
-None yet.
+ - `src/services/recovery-template-preparation/recovery-template-items-summary.ts` — new bounded, deterministic locale-aware formatter for saved Shopify/WooCommerce line items. It rejects malformed titles, controls, Unicode format characters and Meta placeholders, formats quantities and variants, limits visible rows, and caps output at 400 characters.
+ - `src/services/recovery-template-preparation/recovery-template-brand.ts` and `recovery-template.types.ts` — bind Shared `checkout.itemsSummary` only for matching shop-scoped line items; resolve `shop.name` from the shop's configured `ShopBrand.brandName` first and retain the verified shop domain as safe fallback. Existing translated `shop.categoryName` continues to fail closed when unavailable.
+ - `src/services/recovery-template-integration/automated-recovery-template.service.ts` — read persisted `lineItems` and pass them through the scoped preparation input. Unexpected exceptions remain logged with the Shared logger's bounded Error serialization; raw exception messages are not copied into log fields.
+ - Unit and PostgreSQL integration tests cover Shopify and WooCommerce item shapes, quantities/variants, locale, invalid/missing titles, bounded truncation, tenant mismatch, configured-name preference and domain fallback, frozen binding digest compatibility, and persisted tenant-scoped preparation.
 
 ### Work Completed
 
-None yet.
+ - The Shared semantic key was already present in Background's installed `@modainteract/moda-interact-shared` version `2.7.2`; Background now accepts and resolves it without duplicating a Shared contract.
+ - Category values continue to come from the existing tenant-scoped, language-translated category reader. Missing category or translation produces the existing typed unavailable result, never invented text.
+ - No provider calls, cart mutations, database schema changes, or dependent-task implementation were added.
 
 ### Validation Results
 
-Not run.
+ - Focused unit run: **3 files passed, 30 tests passed** (`recovery-template-items-summary`, `recovery-template-preparer`, and `automated-recovery-template.service`). This includes the existing frozen-binding fingerprint compatibility coverage.
+ - Disposable PostgreSQL integration: **1 file passed, 1 test passed** using `node scripts/test-integration.mjs tests/integration/arch047-recovery-template-preparation.integration.test.ts`. It exercised persisted basket binding and rejection of cross-tenant checkout facts.
+ - `npm run build`: passed, including Prisma Client generation and TypeScript compilation.
+ - `git diff --check`: passed.
+ - `npm run lint`: reports one error at untouched `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`); no findings were reported in changed files. The task implementation does not modify that baseline file.
 
 ### Deviations
 
-None reported.
+Repository-wide lint is not fully clean because of the unrelated existing error described above. No out-of-scope lint fix was made.
 
 ### Assumptions
 
-Execution will verify its current workspace, source state, dependency versions and test harness.
+`ShopBrand.brandName` is the verified display configuration available to this service; the authenticated Shop domain remains the existing fallback when no safe brand name is configured. Persisted normalized line-item fields are the shared Shopify/WooCommerce recovery facts; provider-specific extra fields are ignored.
 
 ### Unresolved Issues
 
-None established by implementation.
+None within the assigned implementation scope. The existing repository-wide lint error remains for its owner to address.
 
 ### Architectural Concerns
 
-Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
+None discovered.
 
 
 ## Architect Review
