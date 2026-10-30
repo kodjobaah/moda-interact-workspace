@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 52
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-10-30T11:53:20Z
+attempt: 1
 depends_on:
   - ARCH-048-BACKGROUND-007
   - ARCH-048-BACKGROUND-008
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-048-SYSTEM-TEST-001
 created: 2026-10-29
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # ARCH-048-BACKGROUND-011 — Integrate Woo multi-generation recovery into the existing workers
