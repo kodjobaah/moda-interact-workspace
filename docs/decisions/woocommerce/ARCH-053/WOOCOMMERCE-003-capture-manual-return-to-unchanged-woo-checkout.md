@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: codex
-claimed_at: 2026-10-31T14:24:28Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-053-WOOCOMMERCE-001
@@ -64,9 +64,9 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Work Items
 
-- [ ] Add intentional checkout engagement producer for Classic and Blocks and authenticated session-scoped handler.
-- [ ] Implement narrowly targeted fingerprint bypass for verified human return and keep all current passive dedupe paths.
-- [ ] Test unchanged return, changed quantity, no key, productless cart, homepage, replay, bot GET and two visits.
+- [x] Add intentional checkout engagement producer for Classic and Blocks and authenticated session-scoped handler.
+- [x] Implement narrowly targeted fingerprint bypass for verified human return and keep all current passive dedupe paths.
+- [x] Test unchanged return, changed quantity, no key, productless cart, homepage, replay, bot GET and two visits.
 
 ## Interfaces / Contracts
 
@@ -82,18 +82,18 @@ Plugin-only POST from same origin with Woo session + nonce; emits existing authe
 
 ## Acceptance Criteria
 
-- [ ] Add intentional checkout engagement producer for Classic and Blocks and authenticated session-scoped handler.
-- [ ] Implement narrowly targeted fingerprint bypass for verified human return and keep all current passive dedupe paths.
-- [ ] Test unchanged return, changed quantity, no key, productless cart, homepage, replay, bot GET and two visits.
-- [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
-- [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
+- [x] Add intentional checkout engagement producer for Classic and Blocks and authenticated session-scoped handler.
+- [x] Implement narrowly targeted fingerprint bypass for verified human return and keep all current passive dedupe paths.
+- [x] Test unchanged return, changed quantity, no key, productless cart, homepage, replay, bot GET and two visits.
+- [x] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
+- [x] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
+- [x] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
-- [ ] `composer test` CheckoutCapture and customer-engagement cases
-- [ ] `npm run test:integration:wordpress` Classic/Blocks manual return tests with and without unchanged basket
-- [ ] `composer lint`, frontend JS lint if applicable; `git diff --check`
+- [x] `composer test` CheckoutCapture and customer-engagement cases
+- [x] `npm run test:integration:wordpress` Classic/Blocks manual return tests with and without unchanged basket
+- [x] `composer lint`, frontend JS lint if applicable; `git diff --check`
 
 ## Stop Condition
 
@@ -107,31 +107,42 @@ A user reopening the checkout from the original computer with valid session must
 
 ### Status
 
-Not Started — launcher preparation claimed Attempt 1, but its prepared packet output was lost before handoff. No implementation began. moda_architect returned the task to Ready with Attempt 1 preserved; the next claim will be Attempt 2.
+Attempt 2 implementation is complete and submitted for architect review. The launcher claimed Attempt 2 for Codex at `2026-10-31T14:24:28Z`, synchronized both dedicated task worktrees, passed the dependency gate, and pushed the durable parent claim. The implementation worktree started clean at `e5bc98b822f78be8ed01f3940627bc333eadd584`; the parent task worktree started at `1d5520a8646e795f0295e264b8e03275c89d3cfd`, identical to `origin/task/ARCH-053-WOOCOMMERCE-003` after synchronization. The checkout interaction now carries a one-time Woo-session-bound nonce and a WordPress REST nonce, so authenticated customer cookies are verified consistently on the custom REST request. The dedicated handler rejects passive, cross-origin, stale and replayed requests and forces exactly one current `CHECKOUT_UPDATED` snapshot for a verified visit, even when unchanged. No branch was merged into `main`.
 
 ### Files Changed
 
-None — portable task definition only.
+Implementation repository: `includes/Checkout/CheckoutCapture.php`, `assets/js/checkout-engagement.js`, `tests/CheckoutCaptureTest.php`, `tests/bootstrap.php`, `tests/integration/scenarios/checkout-wordpress.mjs`, and `tests/integration/checkout-engagement-client.test.mjs`.
+
+Parent task worktree: this task definition only.
 
 ### Work Completed
 
-Not Started.
+Added a trusted-interaction-only frontend signal for Classic and Blocks cart/checkout surfaces. The REST handler loads the cookie-bound Woo session, verifies same-origin JSON, the one-time visit nonce, current session binding, checkout key and non-empty cart, then calls the forced snapshot path without changing normal passive fingerprint deduplication. The browser sends WordPress's REST nonce so logged-in customer sessions remain authenticated during cookie-based REST requests. Added PHP and browser-client tests for unchanged and changed baskets, missing key/cart, homepage, bot GET, invalid/cross-origin/stale/replayed signal, one-time delivery, and scheduler failure behavior. The real WordPress integration covers guest and customer Classic/Blocks returns, including a second visit with unchanged basket and replay rejection.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+Validation completed:
+
+- `composer test -- --filter CheckoutCaptureTest --do-not-cache-result` — passed: 23 tests, 232 assertions. PHPUnit reports one warning from the shared test fixture: `RecoveryPolicyControllerTest.php:14` reads undefined global `$moda_interact_test_logger`; it is unrelated to this task's changes.
+- `npm run test:integration:wordpress -- --checkout-only` on the task-specific disposable wp-env at port 8891 — passed (`ARCH-035 checkout-only integration PASS`). It covered guest and authenticated customer Classic and Blocks checkout, fresh return events, replay rejection, cart clear/refill, order lifecycle and HPOS. The customer REST cases initially exposed missing WordPress cookie-auth nonce verification; adding `X-WP-Nonce` fixed the mismatch and the integration passed on rerun.
+- `composer lint` — passed; all declared PHP files reported no syntax errors.
+- `node --test tests/integration/checkout-engagement-client.test.mjs` — passed: 2 tests.
+- `npm run lint:js -- assets/js/checkout-engagement.js` — passed.
+- `npm run build` — passed; strict translation compilation generated 38 assets from 558 source messages. Webpack emitted performance notices for the 300 KiB JS bundle and 450 KiB combined entrypoint.
+- `git diff --check` — passed.
+- Broader `npm run test:js:node` run — 7 existing i18n assertions failed across 7 tests because tests expect 557 translation keys while the checked-out source contains 558. The new engagement-client tests passed in that run; the i18n failures are outside this task's files.
 
 ### Deviations
 
-None.
+Added the WordPress REST cookie-auth nonce to the same-origin request after integration evidence showed WordPress clears the current user on cookie-authenticated REST calls unless `X-WP-Nonce` is supplied. No event/API contract or normal passive deduplication behavior changed. Docker access required the authorized host test environment; an unrelated site on port 8888 was left untouched.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+Uses the accepted WOOCOMMERCE-001 `woo.activity.v1` and checkout snapshot contracts. The authenticated REST nonce supplements, and does not replace, the one-time Woo session binding.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+No unresolved implementation issues. Architect review remains pending.
 
 ### Architectural Concerns
 
