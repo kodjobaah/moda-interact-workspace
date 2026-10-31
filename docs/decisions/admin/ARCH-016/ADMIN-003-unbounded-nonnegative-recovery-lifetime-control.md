@@ -279,8 +279,8 @@ values and writes their audit snapshot as required.
 
 ### Follow-up
 
-Add behavioral coverage for the successful audited update and invalid input
-with no mutation, then rerun focused tests, build, changed-file lint and
-`git diff --check`. Record the results and resubmit Attempt 1; do not increment
-the attempt in this review. `ARCH-016-ADMIN-003` remains Ready and
-`ARCH-016-SYSTEM-TEST-001` remains Pending.
+This was the Attempt 1 review instruction. The requested behavioral coverage
+and focused validation are recorded under Attempt 2 above. The task was
+reclaimed through the canonical launcher, which incremented the attempt from 1
+to 2; it is now returned to `review` for Architect verification. No acceptance
+or merge has been made. `ARCH-016-SYSTEM-TEST-001` remains Pending.
