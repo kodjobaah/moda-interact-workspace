@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
-executor: copilot
-claimed_at: 2026-10-31T13:33:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-016-BACKGROUND-005
@@ -171,35 +171,58 @@ This is deliberately **one Background task**: all three call sites must be compo
 
 ### Status
 
-Not Started — defined but not materialised.
+Ready for Review.
 
 ### Files Changed
 
-None.
+- `src/services/recovery-lifetime/checkout-recovery-lifetime.ts`
+- `src/services/conversation-wrappers/repository.ts`
+- `src/services/recovery-template-preparation/recovery-template-brand.ts`
+- `src/services/recovery-template-preparation/recovery-template.types.ts`
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `src/services/woocommerce-recovery/woo-initial-send-fence.service.ts`
+- `tests/unit/services/recovery-lifetime/checkout-recovery-lifetime.test.ts`
+- `tests/unit/services/conversation-wrappers/woo-checkout-link.test.ts`
+- `tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts`
+- `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`
+- `tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts`
+- `tests/integration/woo-initial-send-fence.integration.test.ts`
 
 ### Work Completed
 
-Not Started.
+- Added one BigInt-based strict lifetime predicate and a field-only persisted default-policy reader; missing and invalid policies fail closed without a fallback.
+- Reused the persisted policy and evaluator in conversation wrappers and automated template preparation, binding real `lastExternalActivityAt` and preserving URL, tenant, host, expiry, and lifecycle checks.
+- Added the recovery activity timestamp to the locked Woo permit query and read the default policy `FOR SHARE` after existing ordered locks; no external I/O or settlement behavior was added to the transaction.
+- Preserved the Architect Review section and made no changes outside Background implementation files and this task report.
 
 ### Validation Results
 
-Not Run.
+- PASS: `npx vitest run tests/unit/services/conversation-wrappers/woo-checkout-link.test.ts tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts tests/unit/services/recovery-lifetime/checkout-recovery-lifetime.test.ts` — 5 files, 81 tests passed.
+- PASS: `node scripts/test-integration.mjs tests/integration/woo-initial-send-fence.integration.test.ts` — 1 file, 6 tests passed; the exact cutoff was denied while the recovery remained `DETECTED` and without an expiry sweep.
+- PASS: `npm run lint`.
+- PASS: `npm run build` (Prisma generation and TypeScript compilation).
+- PASS: `git diff --check`.
+- The disposable integration runner uses Shared `withDisposableIntegrationInfrastructure`; its `finally` block removed the PostgreSQL and Redis containers after the run.
+- Prepared worktrees: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-BACKGROUND-005` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-BACKGROUND-005`, both on `task/ARCH-053-BACKGROUND-005`.
+- Database submodule pin: `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Published implementation commit: `33909a92b6c75b7524e3888b16ada21114bf6a05`.
+- `npm ci` installed the committed lockfile because the task worktree had no dependencies; npm reported 40 audit findings (27 moderate, 13 high). No dependency manifest or lockfile was changed.
 
 ### Deviations
 
-None.
+GitKraken's default push refused because this prepared local branch tracked `origin/main`; the implementation commit was published using an explicit same-name task-branch refspec. No main branch was pushed or modified.
 
 ### Assumptions
 
-Implementation must re-check the task worktree and accepted ARCH-016 baseline before claim.
+The accepted persisted `BackgroundRuntimeConfig` row remains the sole lifetime-policy source, as specified by the task.
 
 ### Unresolved Issues
 
-None asserted; return a concrete incompatibility to `moda_architect` rather than inventing an alternate limit.
+None.
 
 ### Architectural Concerns
 
-None asserted before implementation.
+None.
 
 ## Architect Review
 
