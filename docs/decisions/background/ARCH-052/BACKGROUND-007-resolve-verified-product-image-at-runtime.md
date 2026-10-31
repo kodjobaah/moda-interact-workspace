@@ -1,0 +1,199 @@
+---
+id: ARCH-052-BACKGROUND-007
+architecture_id: ARCH-052
+title: Resolve optional checkout or promoted-product image via MCP at runtime
+task_kind: implementation
+domain: background
+repository: moda-interact-background
+assigned_agent: moda_background
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: pending
+priority: 50
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+- ARCH-052-BACKGROUND-008
+- ARCH-052-ADMIN-002
+- ARCH-052-MCP-003
+- ARCH-052-COMMERCE-007
+- ARCH-049-BACKGROUND-001
+- ARCH-049-BACKGROUND-004
+enables:
+- ARCH-052-SYSTEM-TEST-001
+- ARCH-052-SYSTEM-TEST-002
+created: '2026-10-29'
+updated: 2026-10-31
+---
+
+# ARCH-052-BACKGROUND-007: Resolve optional checkout or promoted-product image via MCP at runtime
+
+## Architecture
+
+Architecture ID: `ARCH-052`.
+
+Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
+
+Coordinator: `moda_architect`. This is a **portable canonical definition — defined but not materialised**. No developer Git branch/worktree, commit or push is asserted.
+
+## Objective
+
+Provide an optional validated IMAGE header for the chosen checkout product or recommended alternative product, using MCP `commerce_get_product` and no API/Commerce image proxy or new media persistence.
+
+## Context
+
+Both Shopify and WooCommerce product information is resolved **at runtime by MCP-003**, using authenticated direct provider connections. There is no hosted API or Commerce private product-image endpoint, no product catalogue replication and no image database persistence. Background consumes the exact published `commerce_get_product` result.
+
+## Scope
+
+**Optional enhancement only:** after BACKGROUND-008 is accepted, attach safe IMAGE header parameters when the independently approved IMAGE variant and ready product media both exist; otherwise retain the already-working approved TEXT path. Existing ARCH-049 media work never blocks a text-only message. No new image database row, R2 catalogue, generic media resolver, provider URL proxy or Shared image result schema.
+
+
+- Use existing `src/services/recovery-template-preparation/` and MCP `commerce_get_product` (published and entitled) to fetch the exact product/variant in current shop for a checkout item or selected alternative product. Variant image wins; product image fallback only if same shop/id. Never use fuzzy search as proof of identity.
+- Validate returned HTTPS image source/media type, allowed host and accessible header within bounded download/preparation time; if source is unsafe/unavailable, use separately approved text/no-image variant. Reuse existing ARCH-049 media processing only when necessary and already approved; do not invent new R2 tables or persistent image catalogue.
+- The image source and selected promotion product must match immutable attempt scope; no signed URL/secret or raw image source in logs. Resolve against current MCP product data during **each** send-preparation attempt and resolve again on retry; reject changed/revoked media or identity rather than reusing a previous attempt's URL. This is an attempt-scoped operation, **not a five-minute proof or TTL contract**.
+
+## Out of Scope
+
+- No database schema/migration, media provenance row, Cloudflare R2 object, new generic image proxy, checkout item persistence or ad hoc unapproved Meta header.
+
+No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
+
+## Requirements
+
+- Do not conflate ShopBrand hero/cover image with checkout product photo. Existing SHOP_BRAND role processing remains unchanged.
+- Image is optional; failure cannot permit an unsafe send or block otherwise eligible approved text-only initial outreach.
+- Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
+- Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
+- Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
+- Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
+
+**Source-origin MCP/media failures (31 October 2026):** On a failed exact
+`commerce_get_product` call or media fetch, record the **actual** MCP error
+returned and/or the SDK/transport exception (name/message/status) before
+choosing approved TEXT/no-send. Preserve the originating `cause` with the
+existing typed `UNAVAILABLE` media result where appropriate. Distinguish MCP's
+own error from Shopify/Woo provider errors that are visible only in the MCP
+server logs; never invent the provider cause. Use the Shared logger and
+`docs/observability/shared-logging.md`; sanitize image URLs, signed queries,
+customer content and credentials, and never pass provider-error text to the
+message/template. A valid TEXT fallback is not permission to silently lose
+failure diagnostics.
+
+
+## Work Items
+
+- [ ] Implement `recovery-product-image-resolver.ts` using the existing Background MCP transport and the published `commerce_get_product` tool; prefer checkout exact variant or recommended alternative exact product/variant.
+- [ ] Validate public HTTPS, safe resolved address and final peer, no unsafe redirects, supported image MIME + magic bytes, <=5 MB and verified target product origin/identity; use existing security/media primitives.
+- [ ] On image missing/unsafe/expired/offline return a typed no-media outcome and select an independently approved text-only Meta template; no side-effect on eligibility or checkout send.
+- [ ] Record actual source MCP/media failure messages and original causes before TEXT/no-send fallback (without fabricating a Shopify/Woo provider message); apply bounds/redaction from Shared logging policy.
+- [ ] Test Shopify and WooCommerce variant vs product image, mismatched tenant, invalid/expired provider URL, source change/revocation, re-resolution on retry, safe TEXT/no-send and no MCP-to-API path. No TTL/proof service tests.
+
+## Interfaces / Contracts
+
+Published SHARED-008/010 `CommerceToolOutputs.commerce_get_product` contains `CommerceProductSchema.imageUrl`, nullable `variantId` and source IDs; SHARED-002 `CHECKOUT_PRODUCT` image role and Meta-approved header binding. **There is no published `RecoveryProductImageResultSchema`**: define a Background-local discriminated outcome in `src/services/recovery-product-media/recovery-product-image-resolver.ts` (`{kind:"READY",imageUrl:string,productId:string,variantId:string|null}` or `{kind:"UNAVAILABLE",reason:string}`) and use it only inside Background; do not invent a new Shared export. `READY` is an ephemeral result from the **current** preparation attempt; it is not a timestamped `VERIFIED_PROVIDER_IMAGE` proof, stored attestation or fixed-five-minute validity window. Resolve afresh when retrying. This task integrates optional IMAGE send selection with the accepted text-only BACKGROUND-008 path, never reimplements the existing WhatsApp transport.
+
+## Dependencies
+
+- `ARCH-052-BACKGROUND-008` — accepted text-only send integration; optional enhancement must not block it.
+- `ARCH-052-ADMIN-002` — approved IMAGE/header variants.
+- `ARCH-052-MCP-003` — exact product lookup.
+- `ARCH-052-COMMERCE-007` — published product tools.
+- `ARCH-049-BACKGROUND-001` and `ARCH-049-BACKGROUND-004` — existing media mechanism only where actually reused.
+
+## Enables
+
+- `ARCH-052-BACKGROUND-008`
+
+## Acceptance Criteria
+
+- [ ] Checkout image and alternative promo product image resolve via exact MCP lookup.
+- [ ] Failed, stale-at-retry, revoked or unsafe media yields approved text-only template or no-send, not a broken IMAGE header or reuse of a previous attempt's media result.
+- [ ] No new Prisma image table or MCP-to-API product call.
+
+- [ ] MCP failure, failed image download and allowed TEXT fallback emit originating error diagnostics with redacted signed URLs; no provider message is fabricated for a local invalid image.
+
+## Validation
+
+- [ ] Background safe-fetch/media and product reader unit/integration tests, simulated Meta payload.
+- [ ] Background declared typecheck/lint and `git diff --check`.
+
+Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+
+## Stop Condition
+
+After all Work Items, Acceptance Criteria and required Validation pass, complete the report, set task `status: review`, hand the implementation branch and parent task report to `moda_architect` and **STOP**. Do not begin a dependent task, merge, push main, or edit architecture indexes as a repository agent.
+
+## Implementation Notes
+
+**Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
+
+- `moda-interact-background/src/services/recovery-product-media/recovery-product-image-resolver.ts (new)`
+- `moda-interact-background/src/services/recovery-template-preparation/recovery-template-brand.ts`
+- `moda-interact-background/src/services/recovery-template-preparation/recovery-template.types.ts`
+- `moda-interact-background/tests/`
+
+Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
+
+## Completion Report
+
+### Status
+
+Not Started — portable definition, no task claim.
+
+### Files Changed
+
+None yet.
+
+### Work Completed
+
+None yet.
+
+### Validation Results
+
+Not run.
+
+### Deviations
+
+None reported.
+
+### Assumptions
+
+Execution will verify its current workspace, source state, dependency versions and test harness.
+
+### Unresolved Issues
+
+None established by implementation.
+
+### Architectural Concerns
+
+Report discovered cross-repository/credential/provider-proof issues to `moda_architect`.
+
+
+## Architect Review
+
+### Review Status
+
+Pending.
+
+### Review Notes
+
+Planning only; no source implementation accepted.
+
+### Reviewed Files
+
+The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+
+### Validation Reviewed
+
+None for implementation.
+
+### Architecture Conformance
+
+To be determined after implementation review.
+
+### Follow-up
+
+Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.

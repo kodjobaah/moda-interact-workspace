@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-050-API-001
 enables:
@@ -69,11 +69,11 @@ No new WordPress REST endpoint, public WordPress callback or schema. Do not chan
 
 ## Work Items
 
-- [ ] Upgrade PHP `RecoveryPolicyResponseValidator` exact v2 request/response and confirm existing controller/client still proxy safely.
-- [ ] Upgrade browser `recovery-policy-client.js` v2 parsing/building/saved-value reconciliation.
-- [ ] Add preview/dirty/controlled checkbox UI, explicit save and conflict behaviour.
-- [ ] Extend PHP/JS tests for default OFF, ON/OFF save, stale revisions, malformed v2, nonce/capability and 20-language i18n checks.
-- [ ] Verify existing PHP/hosted failure logging and add bounded Woo logging at any newly introduced operational catch; test that rejected hosted saves/invalid responses are visible as failures rather than silently treated as success.
+- [x] Upgrade PHP `RecoveryPolicyResponseValidator` exact v2 request/response and confirm existing controller/client still proxy safely.
+- [x] Upgrade browser `recovery-policy-client.js` v2 parsing/building/saved-value reconciliation.
+- [x] Add preview/dirty/controlled checkbox UI, explicit save and conflict behaviour.
+- [x] Extend PHP/JS tests for default OFF, ON/OFF save, stale revisions, malformed v2, nonce/capability and 20-language i18n checks.
+- [x] Verify existing PHP/hosted failure logging and add bounded Woo logging at any newly introduced operational catch; add assertions for logged unexpected failures and visible failed-save state.
 
 ## Interfaces / Contracts
 
@@ -93,18 +93,19 @@ No new WordPress REST endpoint, public WordPress callback or schema. Do not chan
 
 ## Acceptance Criteria
 
-- [ ] Woo merchant can switch ON/OFF independently, save, reload and see persisted value.
-- [ ] Preference-only change counts as dirty and is persisted; stale updates fail with policy conflict.
-- [ ] Browser JS, WordPress PHP and hosted v2 validators agree on field set; extra/missing or invalid values fail closed.
-- [ ] WordPress capability/nonce/installation and no-store security stay enforced; no production outbound sends are triggered merely by enabling setting.
-- [ ] Transport/validator/persistence failure is not silently ignored or displayed as a successful save; caught PHP server errors have bounded non-sensitive operational logging.
-- [ ] 20-language source/compile checks pass.
+- [x] Woo merchant can switch ON/OFF independently, save, reload and see persisted value.
+- [x] Preference-only change counts as dirty and is persisted; stale updates fail with policy conflict.
+- [x] Browser JS, WordPress PHP and hosted v2 validators agree on field set; extra/missing or invalid values fail closed.
+- [x] WordPress capability/nonce/installation and no-store security stay enforced; no production outbound sends are triggered merely by enabling setting.
+- [x] Transport/validator/persistence failure is not silently ignored or displayed as a successful save; caught PHP server errors have bounded non-sensitive operational logging.
+- [x] 20-language source/compile checks pass.
 
 ## Validation
 
-- [ ] `npm run test:js:unit` for focused recovery-policy/behaviour/UI cases, `npm run test:php` for revised PHP validators/controller.
-- [ ] JS/PHP negative-path tests assert rejected requests and failed v2 response validation surface an error, retain merchant draft and do not produce false success; verify PHP catch/error logging if changed.
-- [ ] `npm run i18n:verify:20`, `npm run build` and targeted `npm run lint:js` / `npm run lint:php` where appropriate, `git diff --check`.
+- [x] `npm run test:js:unit` passed: 61 test files, 460 tests. `npm run test:php` passed: 198 tests, 1,509 assertions.
+- [x] Negative-path coverage passed for failed hosted response reconciliation, preserved failed-save state, bounded exception logging, and a throwing Woo logger preserving the sanitized 503.
+- [x] `npm run i18n:verify:20` passed (557 source messages, 19/19 packs); `npm run lint:php` and `git diff --check` passed.
+- [x] `npm run build` passed with webpack's existing bundle-size performance warnings. `npm run lint:js` passed repository-wide after resolving reported formatting/style errors.
 
 ## Stop Condition
 
@@ -118,31 +119,35 @@ The hosted API v2 and Woo plugin v2 are a coordinated rollout in development. Do
 
 ### Status
 
-Not Started.
+Accepted by architect at Attempt 1; task completed automatically after the requested correction and validation.
 
 ### Files Changed
 
-None (definition only).
+`includes/Api/RecoveryPolicyResponseValidator.php`; `includes/Rest/RecoveryPolicyController.php`; `src/recovery-policy-client.js`; `src/recovery-settings/recovery-behaviour-validation.js`; `src/recovery-settings/recovery-behaviour-fields.js`; `src/recovery-settings/recovery-behaviour-panel.js`; `tests/RecoveryPolicyControllerTest.php`; `tests/js/recovery-policy-integration.test.js`; `tests/js/recovery-behaviour-preview.test.js`; `tests/js/recovery-human-conversation.test.js`; `tests/i18n/locale-batch-010.test.mjs`; `tests/i18n/locale-batch-011.test.mjs`; `tests/i18n/locale-batch-012.test.mjs`; `tests/i18n/locale-batch-013.test.mjs`; `tests/i18n/release-source.test.mjs`; `tests/i18n/release-assets.test.mjs`; `tests/integration/action-scheduler-sql.test.mjs`; `tests/integration/run-wordpress.mjs`; `tests/integration/scenarios/checkout-clear-refill-wordpress.mjs`; `tests/integration/scenarios/checkout-clear-refill-wordpress.test.mjs`; `tests/integration/scenarios/checkout-wordpress.mjs`; `tests/integration/scenarios/order-wordpress.mjs`; `vitest.config.mjs`; `languages/moda-interact.pot`; all 19 supported `.po` catalogues.
 
 ### Work Completed
 
-None.
+Implemented strict v2 response/request validation with the top-level Boolean preference, persisted it through the existing privileged proxy, added an accessible localized independent checkbox and dirty-state handling, and verified the returned Boolean on save. Added malformed v2, both preference values, notification-only dirty, mismatched save response, failed-save state and bounded PHP logging coverage. No new route or browser dependency was added.
+
+**Attempt 1 review correction 1 — implemented:** Isolated `wc_get_logger()` and `logger->error()` failures in the unexpected-error path. If the Woo logger throws, a bounded PHP `error_log()` fallback records only operation and exception class/code, then the controller still returns the sanitized `REMOTE_UNAVAILABLE` 503. `RecoveryPolicyControllerTest` verifies the throwing logger path.
+
+**Attempt 1 review correction 2 — implemented:** Installed the exact `package-lock.json` and `composer.lock` dependencies in the implementation worktree; all requested JS/PHP tests, JS lint and build were executed. Added a Vitest include config for the repository's actual JS unit suite, refreshed message-count expectations after adding four gettext strings, and corrected repository lint findings so the full JS lint passes.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+`npm run test:js:unit` passed (61 test files, 460 tests). `npm run test:php` passed (198 tests, 1,509 assertions), including the logger-sink failure case. `npm run lint:js` passed repository-wide; `npm run lint:php` passed. `npm run build` passed with webpack bundle-size performance warnings. `npm run i18n:verify:20` passed (557 source messages; all 19 translation packs compiled strictly). Targeted PHP/JS syntax checks and `git diff --check` passed.
 
 ### Deviations
 
-None.
+The installed locked dependencies and build/test outputs are ignored worktree artifacts and are not committed. Four source strings increased catalogue expectations from 553 to 557. Repository JS lint required formatting and a small unused assertion-result cleanup in existing integration tests. The production build emits bundle-size recommendations but exits successfully. No product behavior deviation.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+`ARCH-050-API-001` is complete. Its v2 contract was verified in the API implementation; this WooCommerce branch consumes that exact response and request shape.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+None.
 
 ### Architectural Concerns
 
@@ -150,34 +155,85 @@ Return newly discovered cross-repository/schema/security/contract issues to `mod
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-WOOCOMMERCE-001`, branch `task/ARCH-050-WOOCOMMERCE-001`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-WOOCOMMERCE-001`, branch `task/ARCH-050-WOOCOMMERCE-001`, latest implementation commit `0cb22af` (`fix(woocommerce): preserve recovery policy 503 on logger failure`), pushed to `origin/task/ARCH-050-WOOCOMMERCE-001`. Per the Architect Review follow-up, the resubmitted task metadata retains `attempt: 1` and clears executor/claimed_at; the deterministic launcher recorded the correction claim as Attempt 2 (`64646302`).
 
-## Architect Review
+## Architect Review — Attempt 1 — Changes Requested — 27 October 2026
 
 ### Review Status
 
-Pending.
+Changes Requested.
 
 ### Review Notes
 
-Awaiting implementation.
+The v2 PHP/JS contract, explicit Boolean form value, preference-only dirty/persistence path, admin-override separation, and translated checkbox are consistent with the task. The implementation branch is clean and published. Acceptance is blocked by the following corrections:
+
+1. In `includes/Rest/RecoveryPolicyController.php`, isolate failures from `wc_get_logger()` / `logger->error()` inside the unexpected-exception catch. As written, if the logging sink throws, the handler exits before returning the existing `REMOTE_UNAVAILABLE` 503 response. Preserve that response mapping when the logger fails, and add a test with a throwing Woo logger that proves the controller still returns the sanitized 503.
+2. Run the required existing `npm run test:js:unit`, `npm run test:php`, `npm run lint:js`, and `npm run build` in an environment with the repository dependencies installed. Update the validation report with actual outcomes; fix any failures before resubmitting. The current report explicitly marks all four unverified because `node_modules` and `vendor` are absent. Static syntax checks and i18n/PHP lint do not cover these required behavioral and bundle checks.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/includes/Api/RecoveryPolicyResponseValidator.php`
+- `moda-interact-woocommerce/includes/Rest/RecoveryPolicyController.php`
+- `moda-interact-woocommerce/src/recovery-policy-client.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-validation.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-fields.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-panel.js`
+- PHP/JS contract and route tests, locale catalogs, and Attempt 1 Completion Report.
 
 ### Validation Reviewed
 
-None.
+- `npm run i18n:verify:20` passed (557 source messages; 19/19 packs), `npm run lint:php` passed, targeted PHP/JS syntax checks passed, and `git diff --check` passed, per the task report.
+- `npm run test:js:unit`, `npm run test:php`, `npm run lint:js`, and `npm run build` were not run because dependencies are absent from the implementation worktree. These checks remain required before acceptance.
+- Implementation branch `task/ARCH-050-WOOCOMMERCE-001` is clean and published at `f2921409f5dad286be2fde6f5a30e99e287e78f7`. No task branch was merged to `main`.
 
 ### Architecture Conformance
 
-Not yet reviewed.
+The field contract and UI/data-flow changes follow the intended API/Woo boundary. The uncaught logger-sink failure violates the explicit requirement to preserve existing HTTP error mapping and must be corrected before acceptance.
 
 ### Follow-up
 
-None.
+Keep `attempt: 1`; clear executor and claimed_at, make the logger failure path safe, complete the outstanding validation, update the report, and resubmit for architect review. Do not start dependent system testing from this review.
 
 ## Architect Dependency Frontier Reconciliation — 27 October 2026
 
 `ARCH-050-API-001` was accepted and completed at Attempt 1. This task's sole declared dependency is therefore satisfied, so its status advances from `pending` to `ready`. It remains unclaimed at Attempt 0 (`executor: null`, `claimed_at: null`); no implementation worktree or attempt was started.
+
+## Architect Review — Attempt 1 — Accepted after Changes Requested — 27 October 2026
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+The Attempt 1 logger correction catches failures from both `wc_get_logger()` and its `error()` sink, uses the plugin's bounded fallback diagnostic, and still returns the existing sanitized `REMOTE_UNAVAILABLE` 503. The new throwing-logger test verifies that mapping. The v2 DTO, exact Boolean validation, explicit ON/OFF form value, independent top-level preference, revision-checked save, read-after-save equality, visible failure state, and 20-language UI remain consistent with the task. No new endpoint or browser logger dependency was added.
+
+### Reviewed Files
+
+- `moda-interact-woocommerce/includes/Api/RecoveryPolicyResponseValidator.php`
+- `moda-interact-woocommerce/includes/Rest/RecoveryPolicyController.php`
+- `moda-interact-woocommerce/src/recovery-policy-client.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-validation.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-fields.js`
+- `moda-interact-woocommerce/src/recovery-settings/recovery-behaviour-panel.js`
+- PHP/JS contract and UI tests, locale catalogs, test configuration updates, and Attempt 1 Completion Report.
+
+### Validation Reviewed
+
+- `npm run test:js:unit`: 61 files / 460 tests passed.
+- `npm run test:php`: 198 tests / 1,509 assertions passed, including the throwing Woo logger case and sanitized 503 response.
+- `npm run lint:js`, `npm run lint:php`, and `npm run i18n:verify:20` passed (557 source messages; 19/19 translation packs).
+- `npm run build` passed with webpack bundle-size performance warnings. Targeted PHP/JS syntax checks and `git diff --check` passed.
+- Implementation branch `task/ARCH-050-WOOCOMMERCE-001` is clean and published at `0cb22afcc6521939fcb2e2e41a6fc9594cdce855`. Neither task branch was merged to `main`.
+
+### Architecture Conformance
+
+Conforms to ARCH-050 and the hosted API/WooCommerce boundary. The opt-in is merchant-controlled, independently persisted through the existing authenticated proxy, and does not change billing, outbound enablement, or Support inbox behavior.
+
+### Dependency Frontier
+
+This task uses `completion_mode: automatic`; architect acceptance completes Attempt 1. `ARCH-050-SYSTEM-TEST-002` remains pending because `ARCH-050-API-002` is still `ready` and `ARCH-050-WOOCOMMERCE-002` is still `pending`. System testing remains terminal/manual-gated and is not started by this acceptance.
+
+### Lifecycle
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. Neither task branch was merged to `main`.
