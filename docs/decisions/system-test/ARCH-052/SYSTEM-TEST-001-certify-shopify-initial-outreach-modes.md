@@ -35,9 +35,10 @@ depends_on:
 - ARCH-052-BACKGROUND-007
 - ARCH-052-BACKGROUND-012
 - ARCH-052-BACKGROUND-011
+- ARCH-052-SHARED-014
 enables: []
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052-SYSTEM-TEST-001: Certify Shopify initial outreach personalization and all offer modes
@@ -93,10 +94,24 @@ Certify Shopify current merchant multi-selection against a source-backed 1..3 ch
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
 - Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
 
+### Mandatory deterministic targeting + stacking matrix (Shopify)
+
+Create source-like checkout fixtures with **stable line keys**, product and variant IDs, provider category/collection IDs, observed pre-discount merchandise subtotal/currency, and same-shop discount detail responses. Test these scenarios end-to-end through MCP/Background, not only a mocked final positive boolean:
+
+1. Product targeting inclusion and exclusion override, variant mismatch, two distinct cart lines sharing product ID, exact category/collection IDs versus category label only, truncated provider targets, and missing sale-item status.
+2. Source minimum-subtotal inclusive edge and one unit below, different or missing threshold currency, `totalMinor` including tax/shipping while merchandise subtotal is too low, minimum quantity with known/unknown scope, usage exhaustion, customer restriction, and known expired/unavailable offer.
+3. Two disjoint PRODUCT discounts (mutual class permissions, no Plus required); same-line PRODUCT+PRODUCT with Plus and reciprocal **both-direction** tags; non-Plus, one-way tags, unknown tags, unknown/false class booleans, ORDER+PRODUCT and PRODUCT+SHIPPING pairs; all three pairs for a triple.
+4. Model proposes A/B/C but only A/C pair is source-supported; verify exactly A/C is rendered in an independently approved plural template and the confirmed receipt; if only A is source-supported, verify approved singular fallback. Revocation/checkout generation changes between selection and send cannot produce stale plural copy or duplicate credits.
+5. `PARTIAL` facts missing only combination fields allow eligible *singleton* when all other conditions are established, while incomplete targeting/customer/quantity excludes even singleton; catalogue pagination incomplete must not be reported as exhaustively checked.
+
+Any `UNKNOWN`/unsupported condition affecting eligibility or pair support must lead to a proven subset or approved NO_OFFER/no-send. Provider checkout remains final authority; do not assert discounts are guaranteed applied. Record named scenario outcomes in the Completion Report.
+
 ## Work Items
 
 - [ ] Assemble isolated fixture and full initial send flows.
 - [ ] Run negative/race/fallback/provider-budget matrix.
+
+- [ ] Run the five mandatory Shopify eligibility and pair/triple matrices above with checkout-line and source-currency assertions, verify live MCP facts versus the trusted checkout projection, and prove no model-supplied eligibility boolean is trusted.
 - [ ] Return certification and outstanding external Meta/provider checks.
 
 ## Interfaces / Contracts
@@ -119,6 +134,8 @@ Built-in MCP `commerce_get_discount_options`, published `commerce_search_product
 - ARCH-052-BACKGROUND-010
 - ARCH-052-GATEWAY-001
 
+
+- ARCH-052-SHARED-014
 ## Enables
 
 None.

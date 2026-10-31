@@ -17,15 +17,17 @@ attempt: 0
 depends_on:
 - ARCH-052-SHARED-012
 - ARCH-052-BACKGROUND-013
+- ARCH-052-BACKGROUND-014
 - ARCH-052-MCP-001
 - ARCH-052-SHARED-010
 - ARCH-052-BACKGROUND-011
+- ARCH-052-SHARED-014
 enables:
 - ARCH-052-BACKGROUND-010
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052-MCP-002: Expose current shop discount catalogue to initial-outreach agent through MCP
@@ -75,23 +77,41 @@ Implement two **generic, built-in, read-only** discount MCP tools: the existing 
 5. A discount name or `providerStatus=ACTIVE` never proves applicability. Unknown condition fields remain explicit and are never treated as unrestricted.
 6. Reuse Shared logging; log unexpected exceptions without swallowing, fail closed on tenant or tool-access mismatch.
 
+### Exact eligibility fact mapping (no evaluation in MCP) — normative 31 October 2026
+
+MCP-002 **does not receive a basket** and must NOT return a boolean coupon-applicability verdict. For every `commerce_get_discount_details` call, project the following independently checked, same-shop observations; **missing fields must retain `PARTIAL/UNKNOWN` plus reason codes** rather than default to unrestricted:
+
+| Required projected facts | Source and missing-data rule |
+|---|---|
+| Identity/method/code/status/dates | Existing same-shop `ShopifyDiscount` record + provider snapshot; `providerDiscountId` is the persisted Shopify node ID or Woo coupon ID (`woo:coupon:<id>`); never a model-provided ID. No eligible CODE offer with absent/ambiguous/non-deliverable code. |
+| Targeting + exclusions | Shopify Basic `customerGets.items` provider product/variant/collection IDs and connection `pageInfo`; Woo provider `productIds`, `excludedProductIds`, `productCategories`, `excludedProductCategories`; retain original provider ID domain and exact string ID. `hasNextPage`, malformed IDs, unavailable exclusion arrays or unsupported target type => explicit `TARGETING_INCOMPLETE` or `TARGET_EXCLUSIONS_UNKNOWN`, never `kind:ALL`. |
+| Money/quantities | Consume `CommerceDiscountConditionFactsSchema.subtotalRequirementCurrency` from the **new package version published by SHARED-014**, not 2.8.1. Keep exact decimal `minimumSubtotal`/`maximumSubtotal` strings. For Shopify Basic map only `minimumRequirement` `MoneyV2.currencyCode` captured by BACKGROUND-013 alongside the corresponding amount. For Woo core use the authenticated store currency **only when its source and native Woo semantics prove it is the denomination of effective `minimumAmount`/`maximumAmount`**. Never infer from `discountCurrency`, locale or title. If effective threshold exists and currency missing, conflicting or unprovable, set `subtotalRequirementCurrency:null` with `THRESHOLD_CURRENCY_UNKNOWN` and retain the effective threshold as observed; Background MUST return UNVERIFIABLE. Preserve min/max, usage and quantity restrictions; represent `limit_usage_to_x_items` as `UNREPRESENTED_MAXIMUM_ITEMS` until modelled, never silently discard limits. |
+Woo numeric source semantics are **not** synonymous with unknowns: a present `minimumAmount:"0"` / `maximumAmount:"0"` means no effective threshold; observed `usageLimit:0` / `usageLimitPerUser:0` means no quota. Preserve true source values and this interpretation in details mapping; a missing/unobserved field remains `null`/an explicit uncertainty reason. For a coupon with neither effective monetary threshold, set `subtotalRequirementCurrency:null` without `THRESHOLD_CURRENCY_UNKNOWN`, even if store currency lookup is unavailable. Never substitute `0` for absent fields.
+
+| Customer/use/sale restrictions | Source Shopify `context`, `appliesOncePerCustomer`, bounded usage counters; Woo `usageLimitPerUser`, `usageLimit`, `usageCount`, `excludeSaleItems`, `emailRestrictionsPresent`, `uninspectedMetadataPresent` (from BACKGROUND-014), `expiryUnverified` and other source-backed extension/metadata restrictions. Never read or persist the raw email/metadata arrays. Where a restriction cannot be represented/proven, emit an explicit reason (e.g. `CUSTOMER_RESTRICTION_UNVERIFIED`, `EXPIRY_UNVERIFIED`, `SALE_ITEM_STATUS_UNKNOWN`) and do not map to permissive `ALL` or `false`. |
+| Combination | Shopify `discountClasses`, `combinesWith` class booleans, own `tags`, allowed same-line tags, shop-plan `shopifyPlus`; Woo observed `individualUse`. Missing combination facts may allow a **standalone** discount if all unrelated eligibility conditions are complete, but cannot allow an unverified pair. |
+
+**Required completeness behaviour:** Compute the returned completeness from source proof **after** SHARED-011 combination projection. Remove the obsolete `COMBINATION_POLICY_NOT_REPRESENTED_IN_SHARED_FACTS` reason only when all corresponding new combination fields are genuinely mapped; keep all other legacy and newly observed uncertainty reasons. Do not equate an empty `unrepresentedConditions` array with `COMPLETE` if the source was missing required observations. Conversely, do not carry the old constant-false `PARTIAL` when the only reason was absent contract projection and the source is now fully represented. `offer.support:SUPPORTED` and `facts.completeness:COMPLETE` are still **not** an eligibility decision. Use no new MCP tool, basket read, provider network call or Zod business-rule refinement.
+
 ## Work Items
 
 - [ ] Add bounded shop/mode-scoped keyset paging to the current discount lookup and exact Shared response, including cursor tamper/cross-tenant rejection.
 - [ ] Add built-in `commerce_get_discount_details` handler using existing `providerSnapshot` (Woo and enriched Shopify); map incomplete rules to explicit PARTIAL/UNKNOWN.
+
+- [ ] Upgrade the MCP Shared pin and lockfile to the exact SHARED-014 published version, then map required-nullable `subtotalRequirementCurrency`, exact targeting/exclusion IDs, Woo `emailRestrictionsPresent`/`uninspectedMetadataPresent`, source restrictions and all source completeness reasons as specified above; do not treat missing Woo extension/customer restrictions as unrestricted. If either flag is true or null, include an explicit uncertainty reason; only verified `false` is absence of that particular restriction.
 - [ ] Respect current FIXED/AI/NONE policy on **every call**, including detail requests and calls after merchant policy changes.
 - [ ] Use the existing generic MCP envelope and published feature schema, with safe structured error logging.
 - [ ] Add PostgreSQL-backed tests for two shops, 120 discounts/page 75, selected vs unselected, revoked selections, missing details, Woo restrictions, Shopify partial rules and absent condition fields.
 
 ## Interfaces / Contracts
 
-**Normative published interface: SHARED-009 -> SHARED-010** (`@modainteract/moda-interact-shared/commerce`):
+**Normative published interface: SHARED-009 -> SHARED-010 -> SHARED-011/012 -> SHARED-013/014** (`@modainteract/moda-interact-shared/commerce`):
 
 ```typescript
 CommerceToolInputs.commerce_get_discount_options;  // {limit: 1..50 default 20, cursor: string|null default null}
 CommerceToolOutputs.commerce_get_discount_options; // {mode, offers, cursor?: string|null, truncated: boolean}; MCP ALWAYS emits cursor
 CommerceToolInputs.commerce_get_discount_details; // {offerId: string}
-CommerceToolOutputs.commerce_get_discount_details; // {details: {offer: CommerceOffer, facts: CommerceDiscountConditionFacts}|null}
+CommerceToolOutputs.commerce_get_discount_details; // {details: {offer: CommerceOffer, facts: CommerceDiscountConditionFacts, providerDiscountId: string|null}|null}
 ```
 
 Existing `CommerceToolResultSchema` wraps `data`. See SHARED-009's complete Zod source and fixtures; no type or field inventing is permitted. Concrete implementation entrypoints: extend `moda-interact-mcp/src/execution/` built-in discount tool registry/dispatcher and its Prisma data reader, reusing existing private MCP context (`shopId`, `toolContext.purpose`). `CommerceDiscountConditionFacts` values are **data**, not an eligibility verdict. No new request fields for checkoutRecoveryId, outreachAttemptId or full cart.
@@ -101,6 +121,9 @@ Existing `CommerceToolResultSchema` wraps `data`. See SHARED-009's complete Zod 
 - `ARCH-052-MCP-001` — accepted outreach purpose and shop-scoped authorisation.
 - `ARCH-052-SHARED-010` — published complete discount input/output contracts.
 - `ARCH-052-BACKGROUND-011` — accepted source-backed Shopify catalogue enrichment, so the MCP mapping cannot invent missing Shopify rules.
+- `ARCH-052-BACKGROUND-013` — source-backed Shopify own tags/classes, plan status and subtotal threshold source amount/currency.
+- `ARCH-052-BACKGROUND-014` — source-backed Woo email/metadata restriction presence without storing personal data.
+- `ARCH-052-SHARED-014` — newly published currency-qualified condition-facts schema; upgrade MCP manifest/lockfile to the exact version before projecting details.
 
 ## Enables
 
@@ -113,12 +136,16 @@ Existing `CommerceToolResultSchema` wraps `data`. See SHARED-009's complete Zod 
 - [ ] All pages and a valid continuation cursor work for 120 discounts without accidental omission under a static dataset; change across live catalogue sync is reported as possible partial read, not a claim of exhaustive verification.
 - [ ] Only current permitted shop discounts are visible for FIXED and AI; detail reads cannot access unselected FIXED offers or other shops.
 - [ ] Condition outputs distinguish COMPLETE, PARTIAL and UNKNOWN on source evidence, including unsupported/large targets.
+
+- [ ] MCP source facts conform to **SHARED-014**, not the already published 2.8.1 schema: missing required `subtotalRequirementCurrency` property is a schema failure; a threshold without provable currency is incomplete; a verified no-threshold offer has `subtotalRequirementCurrency:null` without a false missing-currency warning. Truncated targeting and unknown exclusions never yield authoritative ALL; the obsolete unrepresentable-combination reason is removed only after complete new projection.
 - [ ] MCP does not call external providers or private proof APIs during discount options/details retrieval.
 - [ ] Generic MCP result, structured logging, tenancy and publisher/tool permissions remain intact.
 
 ## Validation
 
 - [ ] Run MCP unit and PostgreSQL integration tests for pages, cursor tamper, tenant isolation, current policy, Woo and Shopify providerSnapshot mapping, and generic `CommerceToolResultSchema` conformance.
+
+- [ ] Add fixtures for product ID versus variant ID, category/collection IDs, excluded IDs, `hasNextPage`/overflow, missing money currency, Woo email/metadata presence flags true/false/null, unknown sale-item/expiry/usage restriction, exact provider identity, and Shopify fully observed Basic versus combination-only partial. Assert no tool produces a basket-level SUPPORTED decision.
 - [ ] Run declared MCP typecheck/build and `git diff --check`; record actual command outcomes.
 
 ## Stop Condition

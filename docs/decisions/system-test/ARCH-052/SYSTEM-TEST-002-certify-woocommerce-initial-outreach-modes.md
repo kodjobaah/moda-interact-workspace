@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-ADMIN-003
+- ARCH-052-BACKGROUND-014
 - ARCH-052-SHARED-012
 - ARCH-052-BACKGROUND-008
 - ARCH-052-GATEWAY-001
@@ -31,9 +32,10 @@ depends_on:
 - ARCH-052-SHARED-010
 - ARCH-052-BACKGROUND-007
 - ARCH-052-BACKGROUND-012
+- ARCH-052-SHARED-014
 enables: []
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052-SYSTEM-TEST-002: Certify Woo initial outreach, MCP commerce facts and existing checkout CTA
@@ -89,9 +91,23 @@ Certify WooCommerce current merchant multi-selection against a source-backed 1..
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
 - Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
 
+### Mandatory deterministic targeting + stacking matrix (WooCommerce)
+
+Create source-like Woo checkout/coupon fixtures with stable line keys, exact product/variation/category IDs, observed pre-discount subtotal + authenticated currency, Woo coupon restriction snapshots and current merchant FIXED/AI policy:
+
+1. Product/category include+exclude, variation versus parent-product ID, excluded sale item with observed/unknown sale status, and unavailable category IDs; unknown source fields never silently imply ALL.
+2. `minimumAmount`/`maximumAmount` with inclusive boundary and wrong/missing store currency, **Woo zero/empty no-threshold values and zero global/per-user quotas correctly unrestricted versus positive exhausted quotas**, expired vs `expiryUnverified`, global/per-user usage restrictions, Woo email/metadata presence flags true/false/null and `limit_usage_to_x_items`; unsupported restrictions yield UNVERIFIABLE rather than a coupon claim.
+3. Two distinct eligible coupons both `individualUse:false` versus one true and one null; triple with one incompatible member; incomplete Woo customer/extension constraints block a claimed compatible group, without asserting Woo native acceptance in advance.
+4. FIXED selected versus unselected IDs and AI catalogue mode; offer revoked or basket generation changed after selection; one approved Meta plural message and the actual confirmed ordered `recoveryPromise` (not guessed restored savings); fallback to approved singleton or no-send without extra credit.
+5. Confirm ARCH-052 does **not** generate/validate the stored `checkoutUrl`, mutate Woo cart or apply coupons. Native coupon redemption/conflicts on resume are covered by **ARCH-053-SYSTEM-TEST-003**, not these tests.
+
+Each scenario must assert the eligibility verdict, line keys where relevant, subset/pair verdict, Meta binding, preserved confirmed receipt and tenant identity. Report mocked vs live provider evidence separately.
+
 ## Work Items
 
 - [ ] Add Woo initial-outreach integrated scenarios.
+
+- [ ] Execute the five Woo eligibility/compatibility matrices above against validated MCP detail data and trusted cart lines, asserting explicit failure reasons and accurate approved fallback.
 - [ ] Exercise unchanged stored checkoutUrl CTA binding, coupon-rule failures and credit/STOP matrix; assert no checkout URL validation, restore-token issuance, private restore-link proxy or customer-click cart-restoration test is required by ARCH-052.
 - [ ] Record reproducible certification and residual external verification.
 
@@ -113,6 +129,8 @@ Built-in MCP `commerce_get_discount_options`, published `commerce_search_product
 - ARCH-052-COMMERCE-007
 - ARCH-052-BACKGROUND-010
 
+
+- ARCH-052-SHARED-014
 ## Enables
 
 None.

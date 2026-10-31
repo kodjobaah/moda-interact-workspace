@@ -24,7 +24,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052-BACKGROUND-008: Send approved checkout or alternative-product promotion via existing initial outreach
@@ -101,6 +101,14 @@ The product URL evidence/validation helpers are Background-local (no new Shared 
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
 - Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
 
+### Final validation/admission contract — 31 October 2026 (mandatory)
+
+- Consume only a `CHECKOUT_DISCOUNT` 1..3 **validated** `InitialOutreachCheckoutOfferSet`, with the Background-local per-member eligibility/line-match and per-pair compatibility evidence from BACKGROUND-010. **Do not** call an LLM to prove eligibility, inspect product names to match coupons, call a new MCP proof endpoint or re-evaluate arbitrary untrusted model output in the sender.
+- Immediately before initial template preparation, **re-read** the current recovery `shopId`, generation and basket fingerprint, the current FIXED/AI/NONE merchant settings, current provider offer rows/IDs/codes/status/dates and the same-shop snapshot revision used by the agent. If any identity, checkout generation or source fact changed, **re-run the same pure BACKGROUND-010 eligibility/combination helpers on trusted current facts** or reject the stale set; do not reuse an old positive verdict. No network provider call is allowed in Background's final guard; if exact current facts cannot be established, return approved NO_OFFER or typed no-send. Do not invent a five-minute TTL or mutate a checkout.
+- For a changed/invalid member, recompute the **maximal separately validated subset of the already proposed members** (no new offer from a different shop/candidate). Every remaining member must still pass every individual condition and all remaining pairs. A 3->2 or 2->1 reduction requires selecting the *actual* approved matching plural/singular Meta revision before variable binding; unapproved plural/mixed copy => independently approved singleton or NO_OFFER/no-send. Re-check source status and authorisation at actual dispatch/admission. Record a single message for the **actual** sent set, never the pre-trim original.
+- Bind `offer.codes` only from the ordered deliverable CODE members in the final verified set; automatic-only set has no code slot; mixed CODE/AUTOMATIC requires explicitly approved truthful mixed copy. Keep existing approved `offer.code` for single CODE. No aggregation of percentage savings, offer totals or claim that coupons were applied. The message receipt must preserve the exact ordered `InitialOutreachCheckoutOfferSet` in the original *confirmed* `ConversationMessage.content.recoveryPromise` and never in a second mutable claim. `RecoveryOutreachAttempt.outboundMessageId` must point to that confirmed message; retries/duplicate delivery must not create divergent receipts or extra credits.
+- If the current checkout's original coupons conflict with newly recommended coupons, do not promise they will stack; original Woo applied codes and native restore/apply behaviour are handled **only in ARCH-053**. ARCH-052 must not create a checkout URL, verify it, or call Woo/Shopify redemption APIs.
+
 ## Work Items
 
 - [ ] Extend existing WhatsApp template send/automated-message persistence for 0/1/2 approved dynamic URL buttons, preserving exact approved index-to-variable mapping and existing consent/moderation/idempotency/credit guards.
@@ -110,6 +118,9 @@ The product URL evidence/validation helpers are Background-local (no new Shared 
 
 
 - [ ] Bind the three trusted offer outcomes into the existing approved template/send flow without a new messaging pipeline.
+
+- [ ] Implement the final current-policy/recovery-generation/snapshot/source-fact recheck for all 1..3 members and every pair; on revocation/snapshot change, trim only to a proven subset and bind an independently approved matching Meta template or no-send.
+- [ ] Persist the **actual sent** ordered group in the existing provider-confirmed `recoveryPromise` linked from `outboundMessageId`, never the rejected pre-send group; make retry/idempotency use that same confirmed message.
 - [ ] Bind the exact already-stored `CheckoutRecovery.checkoutUrl` for both platforms to the existing approved checkout CTA without added URL validation or URL-specific fallback; prove no link-generation or restore API call occurs.
 - [ ] Extend existing `RecoveryOfferPromise` and persisted `ConversationMessage.content` only as necessary for alternative products, and make follow-up consume the confirmed initial outbound message; never duplicate the same offer into offerSnapshot.
 - [ ] Run two-provider end-to-end initial-send, current-policy-change, unchanged checkoutUrl binding, duplicate/idempotency and follow-up integration suites.
@@ -155,6 +166,8 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 - [ ] Correct approved text distinguishes discount on abandoned checkout from a separate product offer.
 - [ ] No alternative promotion is prepared or sent unless its product CTA is sourced from a successful current-shop MCP exact-product result, matches the selected product/variant and passes product URL/approved storefront-host safety; a failure takes an approved NO_OFFER or no-send path and does not alter the checkout CTA.
 - [ ] All added promotions have current MCP catalogue evidence, required marketing permissions and valid approved template.
+
+- [ ] A multi-offer send requires one exact source-backed eligible matching-line decision per member (when line-specific), pairwise source-backed compatibility for every pair, current merchant selection/mode, unchanged checkout generation/fingerprint and an approved correct plural/mixed Meta revision; a revocation or changed fact never leaks a stale original set into rendered message or promise.
 - [ ] No duplicate send/billing, no added checkout URL verification or provider lookup, no checkout URL generation/proxy, no duplicate URL persistence and no change to final outbound consent/moderation/admission gates.
 
 ## Validation
@@ -164,6 +177,8 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 
 
 - [ ] Background initial-send unit and PostgreSQL tests (Shopify + Woo, duplicate/retry/provider race, merchant-setting changes, initial/follow-up persisted promise, unchanged binding of the stored checkoutUrl for both platforms). Assert no checkout URL validation branch, no restore-link API call and no checkout-link provider lookup.
+
+- [ ] Add current-source revalidation tests: 3->2/2->1 approved-template re-selection, changed checkout fingerprint/generation, changed providerStatus/code/expiry, FIXED selection revoked after model choice, insufficient currency/targeting/partial rules, mixed automatic+code unapproved copy, provider-confirmed receipt containing only actual sent group, retry exactly-one-send/one-credit, and no external provider/checkout URL call.
 - [ ] Existing ARCH-047/048/050 admission, moderation, STOP, credit and notification suites.
 - [ ] Background build/lint and `git diff --check`.
 
