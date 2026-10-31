@@ -166,7 +166,7 @@ Development-only `RecoveryOutreachAttempt` records with old single-discount `off
 
 **Concurrency protection.** Do not rewrite, reopen or modify the already-claimed implementation tasks `ARCH-052-SHOPIFY-001`, `ARCH-052-MCP-005` or unrelated `ARCH-049-BACKGROUND-003`. Their current execution must finish and be reviewed independently. Do not reopen BACKGROUND-011 while Attempt 2 is in review; BACKGROUND-013 begins only after architect acceptance of BACKGROUND-011. Snapshot YAML may predate these active external execution claims. No new database table, new provider-proof engine or new Woo checkout link path is needed.
 
-**New/reconciled task frontier:** ARCH-052-SHARED-011 (new), ARCH-053-SHARED-003 (new), ARCH-052-SHARED-012 (single new publication), ARCH-052-BACKGROUND-013 (Shopify source tags), ARCH-052-ADMIN-003 (Meta-approved multi-code copy); amended existing Pending MCP-002, BACKGROUND-010/008, ARCH-053-BACKGROUND-004/API-003/WOOCOMMERCE-007/008 and terminal system tests. There are no implementation code changes in this architecture patch and no task claims or commits in the developer workspace.
+**New/reconciled task frontier:** ARCH-052-SHARED-011 (new), ARCH-053-SHARED-003 (new), ARCH-052-SHARED-012 (single new publication; now Ready after both implementation prerequisites were accepted), ARCH-052-BACKGROUND-013 (Shopify source tags), ARCH-052-ADMIN-003 (Meta-approved multi-code copy); amended existing Pending MCP-002, BACKGROUND-010/008, ARCH-053-BACKGROUND-004/API-003/WOOCOMMERCE-007/008 and terminal system tests. There are no implementation code changes in this architecture patch and no task claims or commits in the developer workspace.
 
 ## Decisions / Tasks
 
@@ -217,8 +217,8 @@ Individual task YAML is authoritative. Current snapshot includes accepted Comple
 | [ARCH-052-SHARED-009](../decisions/shared/ARCH-052/SHARED-009-define-discount-discovery-and-product-identity-contracts.md) | `moda_shared` | Complete | — |
 | [ARCH-052-SHARED-010](../decisions/shared/ARCH-052/SHARED-010-publish-discount-discovery-contract-update.md) | `moda_shared` | Complete | `ARCH-052-SHARED-009` |
 | [ARCH-052-SHARED-011](../decisions/shared/ARCH-052/SHARED-011-define-discount-combinations-and-outreach-offer-sets.md) | `moda_shared` | Complete | `ARCH-052-SHARED-010` |
-| [ARCH-053-SHARED-003](../decisions/shared/ARCH-053/SHARED-003-extend-v1-confirmed-woo-offer-group-contract.md) | `moda_shared` | Ready | `ARCH-052-SHARED-011` |
-| [ARCH-052-SHARED-012](../decisions/shared/ARCH-052/SHARED-012-publish-multi-discount-and-woo-v1-contract-update.md) | `moda_shared` | Pending | `ARCH-052-SHARED-011`, `ARCH-053-SHARED-003` |
+| [ARCH-053-SHARED-003](../decisions/shared/ARCH-053/SHARED-003-extend-v1-confirmed-woo-offer-group-contract.md) | `moda_shared` | Complete | `ARCH-052-SHARED-011` |
+| [ARCH-052-SHARED-012](../decisions/shared/ARCH-052/SHARED-012-publish-multi-discount-and-woo-v1-contract-update.md) | `moda_shared` | Ready | `ARCH-052-SHARED-011`, `ARCH-053-SHARED-003` |
 | [ARCH-052-BACKGROUND-013](../decisions/background/ARCH-052/BACKGROUND-013-capture-complete-shopify-combination-identities.md) | `moda_background` | Pending | `ARCH-052-BACKGROUND-011` |
 | [ARCH-052-ADMIN-003](../decisions/admin/ARCH-052/ADMIN-003-author-multi-discount-checkout-template-bindings.md) | `moda_admin` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-ADMIN-002` |
 | [ARCH-052-SHOPIFY-001](../decisions/shopify/ARCH-052/SHOPIFY-001-select-multiple-authorised-recovery-discounts.md) | `moda_app` | Pending | `ARCH-052-BACKGROUND-009` |

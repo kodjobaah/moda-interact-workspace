@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 22
 executor: null
 claimed_at: null
@@ -23,7 +23,7 @@ enables:
 - ARCH-052-ADMIN-003
 - ARCH-053-API-003
 created: 2026-10-30
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # ARCH-052-SHARED-012 — Publish accepted multi-discount and Woo v1 contract update
@@ -99,7 +99,7 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Not started — defined but not materialised.
+Ready — both implementation prerequisites are architect-accepted Complete. This publication task remains defined but not materialised.
 
 ### Files Changed
 
