@@ -25,9 +25,12 @@ depends_on:
 - ARCH-016-BACKGROUND-002
 - ARCH-016-BACKGROUND-003
 - ARCH-016-BACKGROUND-004
+- ARCH-016-DATABASE-002
+- ARCH-016-BACKGROUND-005
+- ARCH-016-ADMIN-003
 enables: []
 created: 2026-09-16
-updated: 2026-09-16
+updated: 2026-10-31
 ---
 
 # ARCH-016-SYSTEM-TEST-001
@@ -141,6 +144,18 @@ old Conversation still historical
 ```
 
 Also prove COMPLETED and CANCELLED do not restart.
+
+### D2. Administrator-defined recovery lifetime without business upper bound (2026-10-31)
+
+Only execute after `ARCH-016-DATABASE-002`, `ARCH-016-BACKGROUND-005`, and `ARCH-016-ADMIN-003` are Complete and architect-accepted. Use test-only Admin credentials and disposable PostgreSQL where appropriate.
+
+- Default remains `21` with no manual override; existing value and audit version are retained through the migration.
+- Administrator can write `0`, `1`, `91`, `180`, `365` and another large PostgreSQL-`INTEGER` value through the audited controls; Background adopts it without a restart and without 90-day rejection.
+- Negative and fractional input are rejected by Admin **without** changing configuration/version or emitting a success audit; another runtime field's normal upper bound is still enforced.
+- At `0`, active recovery whose `lastExternalActivityAt <= now` becomes `EXPIRED` on the next sweep, with status history and cancellation of unsent attempts; history remains intact. This may suppress outreach and must not be silently normalized to 1 or 21.
+- At 180 or 365 days, verify exact expiry boundaries (`lastExternalActivityAt <= cutoff` expires; newer activity survives), including an activity/expiry race.
+- Extremely large but representable `INTEGER` lifetime must not construct an invalid timestamp or fail a worker scan; when the computed cutoff is outside the representable timestamp range, no recovery expires on age grounds.
+- Verify normal admin reason/permission/version controls and no fixed maximum in form metadata; no change to merchant-scoped recovery delay, WhatsApp consent/STOP, credit rules or status-history semantics.
 
 ### E. Concurrency/race
 
