@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-10-31T14:15:41Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-053-WOOCOMMERCE-001
@@ -116,35 +116,63 @@ The WordPress confirmation endpoint must bind to `home_url('/')` including merch
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None — portable task definition only.
+Implementation repository files (commit `ceabf0ae24d9d9ced5f0f4beef0893828c81be73`):
+
+- `composer.json`
+- `includes/Api/ModaApiClient.php`
+- `includes/Api/WooRestoreResolveResponseValidator.php`
+- `includes/Checkout/CheckoutCapture.php`
+- `includes/Checkout/CheckoutCartRestorer.php`
+- `includes/Checkout/CheckoutResumeController.php`
+- `includes/Runtime.php`
+- `tests/CheckoutCartRestorerTest.php`
+- `tests/CheckoutResumeControllerTest.php`
+- `tests/WooRestoreResolveResponseValidatorTest.php`
+- `tests/integration/run-wordpress.mjs`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
+- `tests/integration/wordpress-api-fixture.mjs`
+
+Parent repository: this task file only. Parent branch claim/base SHA before this report update: `be33164bde6162b7cfd3e6bd92f321483908e620`.
 
 ### Work Completed
 
-Not Started.
+- Added the no-mutation recovery-link landing and explicit same-origin, Woo-session/nonce-protected confirmation POST, with token-safe diagnostics and no shopper-facing Moda failure notices.
+- Added installation-authenticated `woo.restore.resolve.v1` API resolution and strict complete-response validation.
+- Added preflighted products-only basket restoration, coupon-bearing snapshot rejection, rollback on apply failure, checkout-key/session handling, capture suppression during mutation, and one fresh checkout activity capture after success.
+- Added focused PHP coverage and real WordPress HTTP integration scenarios for Classic and Blocks checkout restore behavior.
+- Committed and pushed the WooCommerce implementation branch at `ceabf0ae24d9d9ced5f0f4beef0893828c81be73`.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+- `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"`: PASS. Environment reported workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, Node 24.19.0, PHP 8.5.11, Composer 2.10.3, Docker 29.7.2, and a reachable Docker daemon. Repository Node dependencies were restored with `npm ci` from `package-lock.json`; the lockfile remained unchanged.
+- `composer lint`: PASS; all declared PHP syntax checks passed.
+- `composer test -- --filter 'CheckoutCartRestorerTest|CheckoutResumeControllerTest|WooRestoreResolveResponseValidatorTest'`: PASS; 11 tests, 59 assertions, 1 unrelated test-harness warning.
+- `composer test -- --display-warnings`: 234 tests, 1,779 assertions, 2 failures, 1 warning. The failures are `PluginTest::test_native_navigation_checks_merchant_capability_and_only_loads_app_assets` and `PluginTest::test_assets_load_only_on_the_woocommerce_admin_screen`; both expect built `build/index.js`/`build/index.css` assets. The `build/` directory is absent from `origin/main`, and both `tests/PluginTest.php` and `includes/Admin/Setup.php` are unchanged from `origin/main`. `Setup::register_scripts()` returns before enqueuing when those assets are absent, so no unrelated admin/build change was made.
+- The single PHPUnit warning is the existing undefined `$GLOBALS['moda_interact_test_logger']` in the `wc_get_logger()` test stub at `tests/RecoveryPolicyControllerTest.php:14`, triggered across checkout/controller tests. That test file and the warning-producing stub are unchanged by this task.
+- `npm run test:integration:wordpress`: BLOCKED before scenarios ran. The disposable wp-env image build succeeded, but startup failed with `Bind for :::8888 failed: port is already allocated`; exit code 1. No integration scenarios passed or were reached. The runner's stop/destroy calls reported that wp-env was not initialized.
+- Integration cleanup: generated `tests/integration/.fixture-ca.pem` and isolated `WP_ENV_HOME` were removed; no matching task containers remained; the run-created `wp-env-arch-053-woocommerce-002-a79a4f73_user-home` volume was removed. The pre-existing MySQL container was not stopped or removed. Locally cached Docker images were retained.
+- `git diff --check`: PASS.
 
 ### Deviations
 
-None.
+- The two unrelated PluginTest failures remain because the repository baseline has no built admin assets; fixing that would expand this task into the admin build surface.
+- WordPress runtime integration remains unverified because Docker could not bind host port 8888. It was not retried on another port.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+The API response follows the complete `woo.restore.resolve.v1` contract, including `outreachOffer`; this task preserves the typed response but does not apply recommended outreach coupons.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+Run the WordPress integration in a disposable environment where the configured host port 8888 is available, then review the two baseline admin asset failures and the pre-existing PHPUnit warning separately.
 
 ### Architectural Concerns
 
-Return any cross-service schema/provider/transaction concern to `moda_architect` before improvising.
+None identified. No cross-repository contract, database, queue, or deployment changes were made.
 
 ## Architect Review
 
