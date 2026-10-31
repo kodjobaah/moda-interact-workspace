@@ -147,7 +147,7 @@ None. The build restriction conflict was resolved by the user's explicit authori
 
 ### Architectural Concerns
 
-No source or contract gap was found. The blocker is the conflict between the publication requirement and the explicit prohibition on builds.
+No source or contract gap was found. The original conflict between the publication requirement and the build restriction was resolved when the user authorized the package's existing `prepack` build.
 
 ### Synchronization and Version Control
 
@@ -159,9 +159,9 @@ No source or contract gap was found. The blocker is the conflict between the pub
 - Recursive implementation submodules: sync passed; update/init passed; ready, no entries.
 - Parent claim commit: `2afa020403a4aed48d8a8d437448272e5dae608e`, pushed by launcher.
 - Implementation release-metadata commit: `21b9434e4d14d8dcb17b8c74090d0e59d595eab7`; pushed to `task/ARCH-052-SHARED-012` after user authorization.
-- Parent report commit: `f43c68a563e05feabbe9e8c8bef1c79da38cad3a`; pushed to `task/ARCH-052-SHARED-012` after user authorization. A follow-up report commit will record the successful publication.
+- Final parent report commit: `a9be8f083dfa5f62cd9d28d9b03e2dbe09417dc6`; pushed to `origin/task/ARCH-052-SHARED-012`. This report records the successful publication and registry artifact verification.
 - Package version `2.8.1` published to npm; no main-branch update was made.
-- No npm release or main-branch update was made.
+- No main-branch update was made.
 
 ## Architect Review
 
