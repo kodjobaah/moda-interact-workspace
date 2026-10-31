@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -93,6 +93,7 @@ lifecycle solely for logging.
 - [x] Adapt frozen vs outbound provider IMAGE component validation and attach the handle **only** to a copied provider CREATE payload, preserving immutable snapshot/semantic approval and reconciliation hashing.
 - [x] Integrate with existing Meta template submit worker without weakening `recordPostIntent`, claim CAS, name collision, reconciliation, failure visibility or TEXT-only flow.
 - [x] Cover success and malformed/redirect/oversized MIME, invalid/missing App ID, wrong WABA, 429/5xx, malformed session/handle, repeated jobs and unknown CREATE state with focused tests.
+- [ ] Redact the trusted sample handle from Meta HTTP/SDK failure diagnostics when a failed IMAGE CREATE response echoes it; assert it is absent from Shared logger fields.
 
 ## Interfaces / Contracts
 
@@ -119,11 +120,13 @@ lifecycle solely for logging.
 - [x] No extra infrastructure service, DB migration, R2 persistence or five-minute proof contract.
 
 - [x] Inject distinct Meta sample-session/upload/CREATE error payloads, response absent and token-bearing errors; assert original messages/codes retained when safe, redaction flags set, credentials/handles absent and existing retry/no-CREATE behaviour unchanged.
+- [ ] Mock a failed IMAGE CREATE whose provider message and `error_data` echo the trusted handle; assert both are redacted and the redaction flag is set.
 
 ## Validation
 
 - [x] Existing ARCH-047 Background Meta template-management unit and integration suites, plus new mocked Meta upload/frozen-vs-provider validation and failure matrix.
 - [x] Relevant Background typecheck, focused tests, changed-file lint and `git diff --check`, using actual package.json scripts.
+- [ ] Run the focused Meta template-management regression, lint/build and `git diff --check` after the handle-redaction correction.
 - [x] Record environment/App ID and live Meta-approval checks separately; never mark actual provider approval as passing based on mocks. If environment cannot supply the App ID, return a bounded deployment gap to the architect.
 
 ## Stop Condition
@@ -202,24 +205,24 @@ Route the missing `META_APP_ID` Blueprint wiring to a bounded `moda_gateway` tas
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-Planning only. ADMIN-002 and ARCH-047-BACKGROUND-003 are Complete, so this task is Ready. No Background implementation or live Meta upload has been performed.
+The failed IMAGE CREATE path can leak the trusted Meta sample handle into Shared logs when Meta echoes it in `error.message` or `error_data`. `MetaGraphTemplateAdapter.call()` currently redacts the access token but not the handle carried in the CREATE payload. Redact the trusted handle from provider/transport diagnostics and add a focused regression proving it is absent from serialized logger fields. The reported Attempt 1 validation was not rerun during this review.
 
 ### Reviewed Files
 
-The existing Background Meta adapter and ADMIN-002 task/source were inspected to define the split.
+Reviewed `src/services/meta-template-management/meta-graph.adapter.ts` and its provider-error regression tests.
 
 ### Validation Reviewed
 
-No implementation tests executed.
+No validation rerun during this review. Run the focused handle-echo regression and task-declared lint/build for the correction.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+The trusted sample handle must remain absent from Shared logger diagnostics on a failed IMAGE CREATE.
 
 ### Follow-up
 
-Materialise through `/moda-task ARCH-052-BACKGROUND-012` only when `depends_on` is Complete.
+Attempt 1 remains preserved. The task is Ready for Attempt 2.
