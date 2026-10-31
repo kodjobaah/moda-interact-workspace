@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: complete
+status: ready
 priority: 32
 executor: null
 claimed_at: null
@@ -184,3 +184,12 @@ Reviewed the reported 42 focused tests, `npm run lint`, `npm run build` and `git
 ### Architecture Conformance
 
 Accepted. Source-backed combination and threshold facts are persisted within the existing snapshot, unknown inputs remain incomplete, provider failures are logged and propagated safely, and no new hot-path provider reads or schema changes were introduced. MCP-002 remains Pending because its other dependencies are incomplete. SYSTEM-TEST-001 remains Pending until its full prerequisite chain is complete.
+
+## Developer Override
+
+Reopened after accepted Attempt 1 because review of implementation commit
+`8e0fe0cf8028671823808fae827f7e750a047d99` found that HTTP failure bodies with
+string or object `errors` values lost the provider message. Preserve bounded,
+redacted diagnostics for those shapes and add focused regression coverage.
+Attempt 1 acceptance remains historical; the next task claim increments the
+attempt.
