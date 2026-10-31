@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-31T12:35:16Z
@@ -142,7 +142,7 @@ There is no newly imposed maximum. The native SQL `INTEGER` storage limit is not
 
 ### Status
 
-Attempt 1 was returned with Changes Requested. The task remains at attempt 1; the launcher owns the next attempt increment.
+Attempt 1 was returned with Changes Requested. Attempt 2 corrects the PostgreSQL lower timestamp bound and its boundary coverage; returned to `review`. No Architect acceptance decision has been made.
 
 ### Files Changed
 
@@ -157,18 +157,22 @@ Attempt 1 was returned with Changes Requested. The task remains at attempt 1; th
 - Added startup and refresh coverage for 0, 1, 21, 90, 91, 180, 365 and 2147483647, plus startup rejection of negative, fractional, NaN, infinity, string, null and object values. Invalid refresh retains the last known-good snapshot and logs the validation failure.
 - Replaced floating-point millisecond subtraction with exact BigInt cutoff arithmetic. The worker now checks PostgreSQL's minimum timestamp and JavaScript Date's maximum before constructing a Date; an unrepresentable cutoff returns 0 without querying Prisma.
 - Preserved the existing `lte` cutoff filter in both candidate selection and transactional `updateMany`, bounded pagination, status history, unsent-attempt cancellation and race recheck behavior. Added boundary tests for 0, 21, 180, 365, the exact inclusive cutoff, the maximum persisted Int and a PostgreSQL-out-of-range cutoff that JavaScript Date can represent.
+- Attempt 2 corrects the PostgreSQL minimum to `-210_866_803_200_000` Unix milliseconds. Added tests proving an exact-minimum cutoff reaches Prisma and a cutoff one millisecond below it returns 0 without a Prisma query.
 - Corrected short-page test fixtures so unused second-page mock results do not leak into later tests.
 
 ### Validation Results
 
 - `npm exec -- vitest run tests/unit/runtime/background-runtime-config.test.ts tests/unit/services/checkout-recovery-expiry.service.test.ts`: 2 files passed, 32 tests passed.
+- Attempt 2: `npm exec -- vitest run tests/unit/runtime/background-runtime-config.test.ts tests/unit/services/checkout-recovery-expiry.service.test.ts`: 2 files passed, 34 tests passed, including both PostgreSQL-boundary cases.
 - `npm run test:unit -- tests/unit/runtime/background-runtime-config.test.ts tests/unit/services/checkout-recovery-expiry.service.test.ts`: the package script expands to `vitest run tests/unit` plus the supplied paths, so the filter does not narrow the run. The full unit suite reported 315 files, 3,348 tests, 3,322 passed and 26 failed across unrelated suites; both task-owned files passed in the same run. The explicit Vitest invocation above is the supported focused validation.
 - `npm run lint`: passed.
 - `npm run build`: passed; Prisma Client generation and TypeScript compilation completed.
 - `git diff --check`: passed.
 - VS Code diagnostics: no errors in the four changed files.
 - Launcher prepared Attempt 1 at `2026-10-31T12:14:32Z`; dependencies `ARCH-016-DATABASE-002` and `ARCH-016-BACKGROUND-002` passed, recursive Database submodule was ready at `af77c594ecbfc78c26d01c0021a090830884bbff`, and the parent claim was pushed as `d90a4254d3009877aceb134a9cadf0b72171a42c`.
+- Launcher prepared Attempt 2 at `2026-10-31T12:35:16Z`; dependencies passed and the parent claim was pushed as `34e87a1a991c617d824420418ec1e600d3ca92d7`.
 - Implementation commit `aca1d2c` (`fix(BACKGROUND-005): accept unbounded recovery lifetimes`) was pushed to `origin/task/ARCH-016-BACKGROUND-005`.
+- Attempt 2 correction commit `2912ff6` (`fix(BACKGROUND-005): correct PostgreSQL timestamp minimum`) was pushed to `origin/task/ARCH-016-BACKGROUND-005`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-BACKGROUND-005`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-005`.
 - Both task worktrees use branch `task/ARCH-016-BACKGROUND-005`. No implementation merge or Architect acceptance was performed.
@@ -180,7 +184,7 @@ Attempt 1 was returned with Changes Requested. The task remains at attempt 1; th
 
 ### Assumptions
 
-The PostgreSQL timestamp lower bound is checked in Unix milliseconds; JavaScript Date's upper bound is stricter than PostgreSQL's upper timestamp limit and is used as the upper guard.
+PostgreSQL's documented minimum timestamp is checked at `-210_866_803_200_000` Unix milliseconds. JavaScript Date's upper bound is stricter than PostgreSQL's upper timestamp limit and is used as the upper guard.
 
 ### Unresolved Issues
 
