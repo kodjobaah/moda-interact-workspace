@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 50
-executor: codex
-claimed_at: 2026-10-31T14:20:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-053-WOOCOMMERCE-001
@@ -27,7 +27,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Portable canonical task: defined but not materialised**; no Git branch, worktree, commit, push, review or producer deployment claimed.
+Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. The task is materialised. Launcher claim for Attempt 1 succeeded, but the prepared packet output was lost before handoff; implementation did not begin.
 
 ## Objective
 
@@ -107,7 +107,7 @@ A user reopening the checkout from the original computer with valid session must
 
 ### Status
 
-Not Started
+Not Started — launcher preparation claimed Attempt 1, but its prepared packet output was lost before handoff. No implementation began. moda_architect returned the task to Ready with Attempt 1 preserved; the next claim will be Attempt 2.
 
 ### Files Changed
 
