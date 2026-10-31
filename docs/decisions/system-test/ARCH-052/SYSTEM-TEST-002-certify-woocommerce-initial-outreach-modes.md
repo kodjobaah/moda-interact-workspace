@@ -19,6 +19,7 @@ depends_on:
 - ARCH-052-BACKGROUND-014
 - ARCH-052-SHARED-012
 - ARCH-052-BACKGROUND-008
+- ARCH-052-BACKGROUND-015
 - ARCH-052-GATEWAY-001
 - ARCH-052-ADMIN-001
 - ARCH-052-ADMIN-002
@@ -104,6 +105,12 @@ Create source-like Woo checkout/coupon fixtures with stable line keys, exact pro
 
 Each scenario must assert the eligibility verdict, line keys where relevant, subset/pair verdict, Meta binding, preserved confirmed receipt and tenant identity. Report mocked vs live provider evidence separately.
 
+### Merchant identification and quoted Reply guidance — WooCommerce
+
+- The provider-approved initial template for every covered offer mode visibly contains the **authenticated current-shop name** and tells the customer to use WhatsApp Reply on that exact message before sending text or voice (up to two minutes). Validate the frozen approval identity, TEXT/IMAGE where available, target-specific copy, correct 20-locale token preservation and no unapproved template fallback.
+- The confirmed outbound `providerMessageId` and existing attempt/message/conversation association must be queryable by the runtime route. An incoming quote to that outbound ID resolves the intended shop and recovery; the same customer/WhatsApp sender sharing another shop must never change the destination. STOP precedence, moderation, single-credit and no duplicate message remain unchanged.
+- Cross-platform same-number ambiguity and spoof/voice edge cases are covered by `ARCH-052-SYSTEM-TEST-003`; this task still certifies its **own** platform's end-to-end outreach and quoted Reply path.
+
 ## Work Items
 
 ### Provider-origin diagnostic certification — 31 October 2026 (mandatory)
@@ -116,6 +123,8 @@ Each scenario must assert the eligibility verdict, line keys where relevant, sub
 - [ ] Execute the five Woo eligibility/compatibility matrices above against validated MCP detail data and trusted cart lines, asserting explicit failure reasons and accurate approved fallback.
 - [ ] Exercise unchanged stored checkoutUrl CTA binding, coupon-rule failures and credit/STOP matrix; assert no checkout URL validation, restore-token issuance, private restore-link proxy or customer-click cart-restoration test is required by ARCH-052.
 - [ ] Record reproducible certification and residual external verification.
+
+- [ ] Add WooCommerce initial-template fixture for NO_OFFER, CODE, AUTOMATIC and ALTERNATIVE_PRODUCT where supported, testing actual approved wording, same-shop `shop.name`, dynamic URL button indexes, provider-confirmed outbound message ownership, quoted text and voice routing.
 
 ## Interfaces / Contracts
 
@@ -160,6 +169,8 @@ None.
 
 - [ ] Run provider-error fixtures with captured Shared logging sink across source services and injected transport/model failures; compare logged message to literal injected upstream error after only deliberate redaction/truncation, then verify no sensitive content and no provider error invented for local failures.
 
+- [ ] A WooCommerce customer using WhatsApp Reply to a confirmed outbound initial message reaches its original recovery conversation for both text and audio, never another merchant's conversation; a missing/unapproved compliant template prevents the misleading invitation from being sent.
+
 ## Validation
 
 - [ ] Negative integration cases: cross-tenant product result, wrong product/variant, missing/null URL, untrusted storefront origin, malformed/non-HTTPS URL, userinfo/port, hostname lookalike, private/loopback host and AI-proposed external link; verify no unsafe product CTA and no unapproved fallback. Positive case: independently trusted current-shop product URL and approved two-button index mapping.
@@ -168,6 +179,8 @@ None.
 - [ ] Woo Classic/Blocks recovery fixtures with pre-populated checkout URL, exact CTA binding and `git diff --check`; no customer-click restoration implementation/certification in ARCH-052.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+
+- [ ] Validate contextual quotation with the existing normalized `contextMessageId` (for both `content.type=text` and `content.type=audio`), source-specific shop and recipient checks, actual Meta `providerMessageId`, two-minute audio limit and deduplicated inbound persistence. No order confirmation routing is implied.
 
 ## Stop Condition
 
