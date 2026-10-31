@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 24
 executor: null
 claimed_at: null
@@ -98,7 +98,7 @@ Use the owning Shared repo's existing publication command and launcher-resolved 
 
 ### Status
 
-Not Started — dependency pending.
+Ready — ARCH-052-SHARED-013 is Complete with an Accepted architect review. Publication may proceed under this task's release gate.
 
 ### Files Changed
 
