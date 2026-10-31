@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
 executor: copilot
 claimed_at: 2026-10-31T12:14:50Z
@@ -456,35 +456,69 @@ Use paths relative to the parent workspace when editing, and confirm the canonic
 
 ### Status
 
-Not Started — definition revised; no task claim or runtime implementation.
+Implementation submitted for architect review. The requested runtime paths are implemented and focused validation passed, but the full normative deterministic fixture matrix is not yet demonstrated by the added tests. Acceptance criteria remain unchecked for architect assessment.
 
 ### Files Changed
 
-None yet.
+- `package.json`
+- `package-lock.json`
+- `src/agents/initial-outreach-offer.agent.ts`
+- `src/agents/initial-outreach-offer.combinations.ts`
+- `src/agents/initial-outreach-offer.eligibility.ts`
+- `src/agents/initial-outreach-offer.graph.ts`
+- `src/agents/initial-outreach-offer.instructions.ts`
+- `src/agents/initial-outreach-offer.types.ts`
+- `src/commerce/mcp-client.ts`
+- `src/commerce/production-model.ts`
+- `src/services/recovery-offers/initial-outreach-agent-context.service.ts`
+- `src/services/recovery-offers/recovery-outreach-mcp-selector.service.ts`
+- `tests/integration/initial-outreach-agent-context.integration.test.ts`
+- `tests/unit/agents/initial-outreach-offer.agent.test.ts`
+- `tests/unit/agents/initial-outreach-offer.combinations.test.ts`
+- `tests/unit/agents/initial-outreach-offer.eligibility.test.ts`
+- `tests/unit/agents/initial-outreach-offer.graph.test.ts`
+- `tests/unit/commerce/mcp-client.test.ts`
+- `tests/unit/commerce/production-model.test.ts`
+- `tests/unit/services/recovery-offers/initial-outreach-agent-context.service.test.ts`
+- `tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts`
 
 ### Work Completed
 
-None yet.
+- Added direct `@langchain/langgraph` dependency pinned to `1.4.15` and implemented the Background-owned initial-outreach agent, instruction prompt, graph, context composer, MCP selector, and pure eligibility/compatibility helpers.
+- Added attempt-scoped BG016 reconciliation validation, source-bound MCP decision paths, bounded model/tool execution, and source-diagnostic extraction/redaction in the Background model/MCP boundaries.
+- Added focused unit tests and a PostgreSQL context-composition integration test. The tests cover core targeting, threshold currency/boundaries, Woo zero sentinels, selected Shopify/Woo pairing cases, provider diagnostic redaction, and tool/context lifecycle.
+- Added and committed a final graph guard enforcing the maximum product-search and exact-product-read counts.
+- Implementation commits pushed to `origin/task/ARCH-052-BACKGROUND-010`: `e620501` and `0f8c3e9`.
 
 ### Validation Results
 
-Not run — this is an architectural definition.
+- `npm exec vitest -- run tests/unit/agents/initial-outreach-offer.agent.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/agents/initial-outreach-offer.eligibility.test.ts tests/unit/agents/initial-outreach-offer.combinations.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts tests/unit/commerce/mcp-client.test.ts tests/unit/commerce/production-model.test.ts tests/unit/services/recovery-offers/initial-outreach-agent-context.service.test.ts` — passed, 8 files / 56 tests.
+- `npm run build` — passed, including Prisma client generation and TypeScript compilation.
+- `npm run lint` — passed.
+- `node scripts/test-integration.mjs tests/integration/initial-outreach-agent-context.integration.test.ts` — passed, 1 file / 1 test.
+- `node scripts/test-integration.mjs tests/integration/commerce/host.test.ts tests/integration/recovery-offer-postgres.integration.test.ts tests/integration/arch048-woo-initial-outreach.integration.test.ts` — passed, 3 files / 80 tests.
+- Relevant unit regression batch — 5 of 7 files passed (39 tests); two existing ARCH-047 recovery-offer tests failed because their logger assertions expect exception messages to be omitted, while the unchanged resolver currently logs `PII_SECRET` and `token=SECRET`. Those files and services were not changed by this task.
+- `git diff --check` — passed. Implementation worktree is clean and its remote task branch is at `0f8c3e9`.
+- The explicitly required detailed eligibility/combination fixture matrix is not complete in the new test files; the current tests cover only a subset of its named cases. This report does not claim that matrix or every acceptance criterion is complete.
 
 ### Deviations
 
-None recorded.
+- The first implementation-agent handoff returned without a report. The resulting commit and worktree state were independently inspected; the remaining product-call budget guard was completed and pushed in a follow-up task commit.
+- No changes were made to the unrelated legacy recovery-offer logger failures.
 
 ### Assumptions
 
-Prerequisite contracts and published MCP tools will be available in the version used when this task starts. The assigned agent must inspect its real task worktree/version at claim time.
+The prepared launcher packet is authoritative for claim and synchronization evidence. Validation ran from the implementation task worktree with its installed dependencies.
 
 ### Unresolved Issues
 
-None from this definition; any missing published contract/tool becomes an architect dependency gap, not an invitation to implement it inside Background.
+- Expand the two pure-helper suites to demonstrate the full required named matrix, including remaining incomplete-target/status/quantity cases and all specified same-line, reciprocal, unknown-overlap, and class-permission combinations.
+- The existing ARCH-047 recovery-offer unit regression failures expose raw sensitive exception messages in an unchanged service path. This task did not alter that path; assess ownership and whether it is a separate required fix.
+- Reconcile the current broad task definition and the uncovered acceptance/test cases during Architect Review. No cross-repository changes were made.
 
 ### Architectural Concerns
 
-Return cross-repository/tool/prompt-authority conflicts to `moda_architect` rather than silently altering ownership.
+The implementation branch is limited to Background. The new implementation has not received architect acceptance; acceptance criteria remain unchecked where complete evidence is absent.
 
 ## Architect Review
 
