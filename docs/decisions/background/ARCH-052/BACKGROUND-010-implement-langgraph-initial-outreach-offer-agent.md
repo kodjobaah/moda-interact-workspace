@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
-executor: copilot
-claimed_at: 2026-10-31T14:25:02Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-052-SHARED-012
@@ -600,3 +600,28 @@ rerun for this review. No implementation acceptance or downstream promotion
 was made. The task was returned to `ready`, with Attempt 2 retained; the next
 canonical claim increments the attempt once. `ARCH-052-BACKGROUND-008` and the
 system-test tasks remain Pending behind their other prerequisites.
+
+### Attempt 3 Architect Review — Accepted
+
+The Attempt 2 availability blocker is resolved. Alternative-product finalization
+now verifies that the options and details records agree on offer identity,
+method, code, dates and support; requires active provider status and a null
+`unavailableAt`; and rejects invalid, future-starting or expired dates against
+the injected evaluation clock. Exact-product, same-shop, targeting, restriction
+and source-identity checks remain in force. Regression coverage rejects
+expired, not-yet-started, disabled and unavailable offers, while the existing
+valid exact-product case remains supported.
+
+Reviewed the Attempt 3 diff and recorded validation. The focused unit run passed
+44 tests across five files, the Aimock model integration passed, and build,
+lint and `git diff --check` passed. The disposable PostgreSQL launcher could not
+start because its local database endpoint was unavailable (`P1001`); therefore
+the PostgreSQL context integration was not rerun in this attempt. No context
+assembly code changed in Attempt 3. The missing documented minimum-quantity
+scope remains fail-closed as `UNVERIFIABLE`; no provider semantics were
+invented and no unsupported offer is promoted.
+
+Accepted Attempt 3 and marked this automatic-completion task Complete. All six
+declared dependencies are Complete. `ARCH-052-BACKGROUND-008` is now Ready;
+the system-test tasks remain Pending because their other prerequisites are
+incomplete. No implementation merge or main-branch update was performed.
