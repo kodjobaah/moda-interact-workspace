@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-10-31T01:36:31Z
@@ -97,7 +97,7 @@ Source files: `moda-interact-background/src/providers/shopify-discount.provider.
 
 ### Status
 
-Ready for architect review after Attempt 2. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts and the Shopify Basic discount-combination policy in `ShopifyDiscount.providerSnapshot`.
+Ready for architect review after Attempt 3. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts and projects the Shopify Basic discount-combination policy through the Shared condition-facts contract in `ShopifyDiscount.providerSnapshot`.
 
 ### Files Changed
 
@@ -163,6 +163,39 @@ The Shared-010 condition-facts contract has no fields for discount-class combina
 - The prepared launcher claimed Attempt 2 as `codex`; authoritative task metadata records `claimed_at: 2026-10-30T17:49:22Z`. Parent claim commit: `c87784cd9dd62b744c76a73c78925029f7928dba`, pushed to `origin/task/ARCH-052-BACKGROUND-011`.
 - The dedicated implementation worktree remained on `task/ARCH-052-BACKGROUND-011`, starting from `00941fdef05611569b73f2e106e442c6781ae6d1`; at inspection, local `HEAD` and `origin/task/ARCH-052-BACKGROUND-011` matched. The report-only parent worktree remained on the same task branch.
 - The launcher invocation returned no preparation packet text after the task entered `in_progress`, so detailed fast-forward/`origin/main` merge summaries and recursive-submodule output for Attempt 2 are unavailable in this report. The launcher's authoritative claim metadata and commit are retained above; Attempt 1 synchronization evidence remains recorded in the preceding section.
+
+ARCH-052-MCP-002 was not started.
+
+### Attempt 3 — Shared Combination-Facts Projection
+
+Implementation commit `f92458d` is pushed to `origin/task/ARCH-052-BACKGROUND-011`.
+
+The prepared launcher claimed Attempt 3 as `codex` at `2026-10-31T01:36:31Z` and pushed parent claim commit `3ffe08d824f1f6a2a662135e63834415a3e14af5`. Its dependency gate passed for `ARCH-052-BACKGROUND-009` and `ARCH-052-SHARED-010`.
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`, starting at `1963a82ed20fce52b5af88bba1aad1b28adfae4a`; remote task-branch fast-forward was `not-needed`, and `origin/main` was already current.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`, starting at `b2824e28a7b53347e2f64c0622d462a8bc2db7cb`; remote task-branch fast-forward was `not-needed`, and `origin/main` was already current.
+- Recursive database submodule initialization and synchronization passed at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+
+The configured public npm registry was checked for `@modainteract/moda-interact-shared@2.8.2` and returned `E404` (“No match found for version 2.8.2”). The available published `2.8.1` contract provides `CommerceDiscountCombinationFactsSchema` with `discountClasses`, `shopifyPlus`, `combinesWith`, `discountTags`, and `allowedSameLineProductTags`; the provider test parses projected facts through the published `CommerceDiscountConditionFactsSchema`. The implementation therefore pins Shared `2.8.1`, the available contract version that supports the requested projection, rather than claiming to consume unavailable `2.8.2`.
+
+The existing Shopify query now selects `shop.plan.shopifyPlus`, both Basic types' `discountClasses` and `tags`, and their order/product/shipping plus same-cart-line combination policy. The provider projects those fields into the Shared combination facts, bounds tags to the contract's 64-entry/128-character limits, retains a bounded normalized policy in the existing provider snapshot, and marks facts `PARTIAL` with explicit reasons when policy fields or plan context are missing or truncated. Complete source-backed fixtures now prove the projected facts parse through Shared and may be `COMPLETE`; a missing-plan regression proves policy uncertainty remains `PARTIAL`. No catalogue service, persistence path, database schema, or other repository changed.
+
+#### Attempt 3 Architect Review disposition
+
+- **Verify Shared 2.8.2 and project combination facts when supported — implemented.** Registry verification found 2.8.2 unavailable, while the available Shared 2.8.1 published schema includes all required combination fields. Pinned 2.8.1 and projected the fields in `src/providers/shopify-discount.provider.ts`. Regression coverage in `tests/unit/providers/shopify-discount.provider.test.ts` asserts the GraphQL selection, all five projected fields, Shared schema parsing, and conservative PARTIAL behavior when plan context is absent.
+- **Preserve PARTIAL while known combination policy is unrepresented — implemented.** Combination completeness now depends on the fetched flags, classes, discount tags, same-line tags, and plan context; missing or truncated values produce named unrepresented conditions. The previous unconditional Shared-unrepresented reason is removed because the selected contract now represents these facts.
+- **Do not start MCP-002 — satisfied.** No MCP-002 work was started.
+
+#### Attempt 3 validation
+
+- `npm exec vitest run tests/unit/providers/shopify-discount.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts` — 2 files, 12 tests passed.
+- `npm exec eslint -- src/providers/shopify-discount.provider.ts tests/unit/providers/shopify-discount.provider.test.ts` — passed.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation.
+- `git diff --check` — passed.
+- `npm view @modainteract/moda-interact-shared@2.8.2 version` — returned `E404`; `2.8.2` is not available from the configured public registry. The available published contract was validated through the focused Shared-schema parsing regression.
+- The Attempt 2 PostgreSQL selection integration result remains recorded above (2 tests passed). It was not rerun in Attempt 3 because the changes are confined to the provider query/normalization, dependency pin and provider unit coverage; no database behavior or schema changed.
+- Installing Shared 2.8.1 reported 40 npm audit advisories (27 moderate, 13 high). The package install also emitted lifecycle-script allow-list notices. These are dependency-install observations; no remediation outside this bounded task was performed.
 
 ARCH-052-MCP-002 was not started.
 
