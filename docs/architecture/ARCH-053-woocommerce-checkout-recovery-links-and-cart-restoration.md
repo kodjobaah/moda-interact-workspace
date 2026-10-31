@@ -11,7 +11,7 @@ updated: 2026-10-31
 
 ## Status
 
-**In Progress.** ARCH-053-DATABASE-001, SHARED-001, SHARED-002, BACKGROUND-001, BACKGROUND-002 and API-001 are Complete. API-002 and WOOCOMMERCE-001 are Ready; BACKGROUND-003 is Ready for a narrowly scoped Attempt 2 validation correction after an architect decision resolving its installation-revocation blocker. Remaining implementation tasks stay gated by their explicit dependencies. No consumer deployment or production activation is implied. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here.
+**In Progress.** ARCH-053-DATABASE-001, SHARED-001, SHARED-002, BACKGROUND-001, BACKGROUND-002 and API-001 are Complete. API-002 and WOOCOMMERCE-001 are Ready; BACKGROUND-003 is Ready for a narrowly scoped Attempt 2 validation correction after an architect decision resolving its installation-revocation blocker. API-004 is also Ready after the accepted ARCH-016 database migration was verified in canonical database `main` and the API task branch's database gitlink was updated to that commit. Remaining implementation tasks stay gated by their explicit dependencies. No consumer deployment or production activation is implied. **ARCH-052 is separately owned dynamic discount discovery and personalised offers** and is not renamed, appropriated or edited here.
 
 ## Problem and inspected baseline
 
@@ -166,7 +166,7 @@ The task YAML files are authoritative for status and dependency eligibility. The
 | `ARCH-053-BACKGROUND-004` | `moda_background` | Pending | ARCH-052-BACKGROUND-008 |
 | `ARCH-053-BACKGROUND-005` | `moda_background` | Complete | ARCH-016-BACKGROUND-005, BACKGROUND-003, ARCH-048-BACKGROUND-011 |
 | `ARCH-053-API-003` | `moda_api` | Pending | API-002, SHARED-002, BACKGROUND-004, ARCH-052-SHARED-012 |
-| `ARCH-053-API-004` | `moda_api` | Pending | ARCH-016-DATABASE-002, API-002 |
+| `ARCH-053-API-004` | `moda_api` | Ready | ARCH-016-DATABASE-002, API-002 |
 | `ARCH-053-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | WOOCOMMERCE-001, API-002 |
 | `ARCH-053-WOOCOMMERCE-005` | `moda_woocommerce` | Pending | WOOCOMMERCE-002, WOOCOMMERCE-004 |
 | `ARCH-053-WOOCOMMERCE-006` | `moda_woocommerce` | Pending | WOOCOMMERCE-005 |
@@ -187,6 +187,7 @@ Only system-test tasks may depend on another system test. `SYSTEM-TEST-003` runs
 - The existing ARCH-052 task inventory may still contain historical dependencies on its superseded Woo restore tasks; **reconciliation remains within ARCH-052 ownership and must not be used to implement restore under ARCH-052**.
 
 ## Change History
+- 2026-10-31: Unblocked API-004 after verifying accepted ARCH-016-DATABASE-002 PostgreSQL evidence, the migration in canonical database `main` (`b87e460e86de2044477f8c96b5c1c42e722de8f0`), and the published API task branch's matching database gitlink (`8b043e5ae0432312c6114311c0f69db86b7b1e07`). Attempt 1 remains unchanged; no API implementation review or new attempt is claimed.
 
 - 2026-10-31: Added one consolidated Background lifetime-consistency task (BACKGROUND-005) and one API resolver lifetime task (API-004); extended existing terminal SYSTEM-TEST-001. All checkout URL age decisions use the ARCH-016 canonical non-negative whole-day lifetime, without independent five-minute/seven-day checks. BACKGROUND-005 is architect-accepted Complete; API-004 and the remaining system-test dependencies remain pending. The updated multi-discount v1 amendment is preserved.
 

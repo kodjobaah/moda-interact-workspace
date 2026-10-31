@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 55
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-053-WOOCOMMERCE-001
 enables:
@@ -27,7 +27,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Defined but not materialised**; the author has not created or pushed a developer task branch or implementation worktree.
+Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Materialised and claimed by the task launcher for Attempt 1.
 
 ## Objective
 
@@ -62,9 +62,9 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 
 ## Work Items
 
-- [ ] Add correct after-application and after-removal capture hook registration for an observed checkout.
-- [ ] Make the coupon list part of the dedup fingerprint and publish a new canonical v1 checkout snapshot for coupon-only change.
-- [ ] Create PHP and WordPress Classic/Blocks tests for apply/remove, unchanged total, duplicates, >10 codes, and malformed codes.
+- [x] Add correct after-application and after-removal capture hook registration for an observed checkout.
+- [x] Make the coupon list part of the dedup fingerprint and publish a new canonical v1 checkout snapshot for coupon-only change.
+- [x] Create PHP and WordPress Classic/Blocks tests for apply/remove, unchanged total, duplicates, >10 codes, and malformed codes.
 
 ## Interfaces / Contracts
 
@@ -83,19 +83,19 @@ Consumes `WooCartRestoreSnapshotV1` / `checkout.restoration.appliedCouponCodes` 
 
 ## Acceptance Criteria
 
-- [ ] Apply/removal with unchanged products/total yields one fresh accepted activity, and background candidate will receive latest entire list.
-- [ ] Adding/removing/stacking coupons in Classic + Blocks yields an exact, bounded coupon list; no truncation, no invented codes.
-- [ ] Identical recalculation remains suppressed and cart-page visits without an existing checkoutKey do not spawn abandonment events.
-- [ ] All failing-hook paths are bounded/observable while Woo checkout itself remains operable.
-- [ ] No new discounts/coupon extension, no automatic replacement of a previously applied invalid coupon, no silent omission of declined original coupon.
-- [ ] Failed/invalid/replayed operations do not create duplicate recovery generations, outbound attempts or billings.
-- [ ] Only owning repository implementation and authorised task metadata are changed; ARCH-052 remains untouched.
+- [x] Apply/removal with unchanged products/total yields one fresh accepted activity, and background candidate will receive latest entire list.
+- [x] Adding/removing/stacking coupons in Classic + Blocks yields an exact, bounded coupon list; no truncation, no invented codes.
+- [x] Identical recalculation remains suppressed and cart-page visits without an existing checkoutKey do not spawn abandonment events.
+- [x] All failing-hook paths are bounded/observable while Woo checkout itself remains operable.
+- [x] No new discounts/coupon extension, no automatic replacement of a previously applied invalid coupon, no silent omission of declined original coupon.
+- [x] Failed/invalid/replayed operations do not create duplicate recovery generations, outbound attempts or billings.
+- [x] Only owning repository implementation and authorised task metadata are changed; ARCH-052 remains untouched.
 
 ## Validation
 
-- [ ] Run `composer test` focused `CheckoutCaptureTest` coupon cases
-- [ ] Run `npm run test:integration:wordpress` checkout coupon scenarios when environment available; report exact blocked prerequisites
-- [ ] Run declared plugin lint/checks and `git diff --check`
+- [x] Run `composer test` focused `CheckoutCaptureTest` coupon cases
+- [x] Run `npm run test:integration:wordpress` checkout coupon scenarios when environment available; report exact blocked prerequisites
+- [x] Run declared plugin lint/checks and `git diff --check`
 
 ## Stop Condition
 
@@ -109,58 +109,73 @@ Preserve the original snapshot item projection from WOOCOMMERCE-001. No change t
 
 ### Status
 
-Not Started
+Architect review accepted Attempt 1 on 2026-10-31. This automatic-completion task is complete; no production deployment was performed.
 
 ### Files Changed
 
-None — task is defined but not materialised.
+`moda-interact-woocommerce/includes/Checkout/CheckoutCapture.php`; `tests/CheckoutCaptureTest.php`; `tests/integration/scenarios/checkout-wordpress.mjs`.
 
 ### Work Completed
 
-Not Started.
+Registered Woo's applied/removed coupon actions with the one-code hook signature. The callback ignores the individual code and calls `captureExisting()`, which requires an already valid checkout key; the snapshot reads Woo's full canonical applied-coupon list. Existing fingerprinting therefore publishes a new v1 event for real coupon-list changes and suppresses identical snapshots. Added focused PHP callback coverage plus genuine Classic and Blocks HTTP integration for application, stacking two coupons, removal, no-total-change, full code list, same checkout key, and duplicate unchanged snapshots. Existing PHP snapshot cases continue to cover malformed and over-limit lists with unsupported restoration rather than truncation.
 
 ### Validation Results
 
-Not Run.
+Passed:
+
+- `composer test -- --filter CheckoutCaptureTest --do-not-cache-result` — 19 tests, 186 assertions. PHPUnit reports one unrelated existing warning from `tests/RecoveryPolicyControllerTest.php:14` (`$moda_interact_test_logger` is undefined), triggered by other pre-existing `CheckoutCaptureTest` cases; confirmed with `--display-warnings`.
+- `composer lint` — all declared PHP syntax checks passed.
+- `node --check tests/integration/scenarios/checkout-wordpress.mjs` — passed.
+- `MODA_CHECKOUT_TEST_DISPOSABLE=1 npm run test:integration:wordpress -- --checkout-only` — `ARCH-035 checkout-only integration PASS`; includes real Classic and Blocks coupon add/remove with unchanged totals and duplicate suppression. Ran against the task-specific isolated wp-env after confirming its fixture ID/version; temporary API constants and test data were cleaned up.
+- `git diff --check` — passed.
+
+An initial full integration run reached the Classic coupon scenario and failed on an over-broad assertion that treated a new checkout-review contact snapshot as a duplicate. The integration assertion was narrowed to repeat the same coupon action; the subsequent checkout-only run passed. Colima's VM was initially in a stale/broken state; a graceful stop and restart recovered the existing VM. Bootstrap passed with Docker access to the Colima socket.
 
 ### Deviations
 
-None.
+No scope change. The integration assertions were added to the existing checkout scenario file rather than a separate scenario module.
 
 ### Assumptions
 
-Codebase snapshot dated 2026-10-29; inspect actual HEAD after launcher preparation before implementing.
+The current shared restoration snapshot and fingerprint already include the complete applied coupon list; only the missing Woo action hooks needed implementation. Coupon hooks must not establish checkout identity on cart-only pages.
 
 ### Unresolved Issues
 
-None asserted until work is claimed.
+None.
+
+### Worktree and Publication Evidence
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-004`, branch `task/ARCH-053-WOOCOMMERCE-004`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-004`, same task branch. Launcher claim commit: `2c96056db68b7bc4019833749ecf555e387d9aca`. Implementation began at `e5bc98b822f78be8ed01f3940627bc333eadd584`; implementation commits `654fe7a` (`feat(woocommerce): capture checkout coupon changes`) and `fb1d41b` (`test(woocommerce): verify stacked checkout coupons`) are pushed to the implementation task branch. The task record and review status are committed and pushed on the mirrored parent task branch. Changes remain limited to the owning WooCommerce repository and this task record. Neither branch is merged to `main`.
 
 ### Architectural Concerns
 
-Return schema, lifecycle and multi-repository discrepancies to `moda_architect` rather than improvising.
+None.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-31).
 
 ### Review Notes
 
-Not reviewed.
+The implementation registers WooCommerce's applied and removed coupon actions with their one-code signatures, but ignores the individual code and snapshots Woo's complete applied-coupon list. The hook calls `captureExisting()`, so cart-only activity without a previously observed checkout key cannot create a checkout identity. Existing full-snapshot fingerprinting emits a distinct canonical v1 activity when the applied-code list changes and suppresses unchanged snapshots. The reported Classic and Blocks integration covers applying and stacking coupons, removing them, unchanged totals, same checkout identity and duplicate suppression. No implementation blocker found.
 
 ### Reviewed Files
 
-None.
+- `includes/Checkout/CheckoutCapture.php`
+- `tests/CheckoutCaptureTest.php`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
+- Attempt 1 Completion Report.
 
 ### Validation Reviewed
 
-None.
+The Completion Report records 19 focused PHP tests / 186 assertions, `composer lint`, Node syntax validation, the isolated checkout-only WordPress integration including Classic and Blocks coupon scenarios, and `git diff --check` as passing. The PHP run reported an unrelated pre-existing warning from `RecoveryPolicyControllerTest.php:14`; it did not fail the run. The first full integration attempt exposed an over-broad duplicate assertion; the focused assertion was corrected and the subsequent isolated run passed. I did not rerun tests during this review.
 
 ### Architecture Conformance
 
-Not yet assessed.
+The changes use the existing activity publisher and restoration snapshot, preserve coupon-only changes even when totals stay the same, and avoid minting checkout identity from a cart-only coupon action. Scope remains within the WooCommerce repository and this task report. The task meets its acceptance criteria.
 
-### Follow-up
+### Completion Decision
 
-None.
+Set `status: complete` under `completion_mode: automatic`, preserving Attempt 1 and clearing executor/claim metadata. WOOCOMMERCE-005 remains pending because WOOCOMMERCE-002 is Ready but not complete; SYSTEM-TEST-002 remains pending because WOOCOMMERCE-006 is pending. No downstream task was promoted by this review.

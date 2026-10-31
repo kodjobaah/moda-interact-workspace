@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 55
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
 - ARCH-052-SHARED-012
 - ARCH-052-MCP-002
@@ -435,6 +435,7 @@ Before the LangGraph tool loop in FIXED/AI modes, the trusted Background caller 
 
 - [ ] `npx vitest run tests/unit/agents/initial-outreach-offer.agent.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/agents/initial-outreach-offer.eligibility.test.ts tests/unit/agents/initial-outreach-offer.combinations.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` — model/tool loop; NONE/FIXED/AI; checkout/alternative; merchant prompt; failures; injection; wrong tenant; revoked tool; incomplete pagination; no duplicate calls; budget/timeout/cancellation; MCP cleanup. Include model-generated URL injection, exact-product provenance, mismatched product/variant/shop, and failed/missing MCP exact-product response.
 - [ ] `node scripts/test-integration.mjs tests/integration/initial-outreach-agent-context.integration.test.ts` — real Postgres tenant/attempt/current selection, valid/invalid effective instructions and no agent database access (run using the configured integration harness).
+- [ ] Add and run a feature-specific integration test for the initial-outreach agent using `LLMock` from `@copilotkit/aimock`. Route the real model HTTP client to the package's loopback server, assert the agent's model/tool/model request sequence and resulting validated decision, and prove no external provider endpoint is used. The PostgreSQL context-assembly test alone does not satisfy this requirement.
 - [ ] Existing Background Commerce MCP client, Commerce host, recovery-offer, initial-outreach and ARCH-047/048 regression tests relevant to the changed client/context path. Record actual files/commands; no unrelated suite expansion.
 - [ ] `npm run lint` — declared Background lint script.
 - [ ] `npm run build` — declared Background production build/typecheck via `prisma:generate && tsc`.
@@ -456,45 +457,90 @@ Use paths relative to the parent workspace when editing, and confirm the canonic
 
 ### Status
 
-Not Started — definition revised; no task claim or runtime implementation.
+Ready for Architect Review (Attempt 3). Alternative-product finalization now verifies source identity, supported status, active provider status, availability, and start/end timestamps before returning a promotion. All requested alternative-offer regressions pass; PostgreSQL-backed integration setup was unavailable for this attempt.
 
 ### Files Changed
 
-None yet.
+- `tests/integration/initial-outreach-offer-aimock.integration.test.ts`
+- `tests/unit/agents/initial-outreach-offer.combinations.test.ts`
+- `tests/unit/agents/initial-outreach-offer.eligibility.test.ts`
+- `tests/unit/agents/initial-outreach-offer.graph.test.ts`
+- `src/agents/initial-outreach-offer.graph.ts`
 
 ### Work Completed
 
-None yet.
+- Added a feature-specific Aimock integration that runs the actual Shared `OpenRouterModelClient` through a real `ChatOpenRouter` instance whose base URL is replaced only with the Aimock loopback HTTP endpoint. The constructor rejects missing, non-HTTP, or non-loopback routes before invocation.
+- Asserted the actual bounded sequence of model request, discount-options MCP call, model request, discount-details MCP call, and final model request; verified all three captured chat-completion requests were served by Aimock and checked the final source-validated checkout offer, provider identity, eligible line, generation, and fingerprint.
+- Expanded eligibility fixtures for excluded products, provider target pagination and incomplete exclusions, invalid provider dates/status, missing deliverable code, Woo expiry uncertainty, and high order total with a below-threshold merchandise subtotal.
+- Expanded compatibility fixtures for PRODUCT+SHIPPING reciprocal permissions, explicit false and unknown class permissions, and unknown same-line overlap falling back to a singleton. Added graph-boundary assertions for model-authored coupon/provider fields and mismatched source detail identity.
+- The published Shared facts do not expose documented minimum-quantity scope semantics. Existing tests prove the required conservative `UNVERIFIABLE` outcomes for unknown scope and missing line amount; a positive quantity-boundary fixture cannot be supported without inventing contract semantics and remains an explicit limitation for architect review.
+- Attempt 2 implementation commit pushed to `origin/task/ARCH-052-BACKGROUND-010`: `1f71bc3` (following `0f8c3e9` and `e620501`). `@langchain/langgraph` remains directly pinned at `1.4.15`; the already-declared `@copilotkit/aimock@1.45.1` was reused without dependency changes.
+- Alternative-product finalization now requires the options and details records to agree on offer identity/method/code/dates/support, requires `facts.unavailableAt === null` and an active/enabled provider status, and rejects invalid, future-starting, or expired dates using the injected evaluation clock. Existing exact-product, same-shop, targeting and restriction checks remain in place.
+- Added graph regressions for expired, not-yet-started, disabled and unavailable offers; the existing valid exact-product alternative test continues to assert successful promotion.
+- Attempt 3 implementation commit pushed to `origin/task/ARCH-052-BACKGROUND-010`: `3bb4e83`.
 
 ### Validation Results
 
-Not run — this is an architectural definition.
+- `npx vitest run tests/unit/agents/initial-outreach-offer.eligibility.test.ts tests/unit/agents/initial-outreach-offer.combinations.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/agents/initial-outreach-offer.agent.test.ts` — passed, 4 files / 37 tests.
+- `node scripts/test-integration.mjs tests/integration/initial-outreach-offer-aimock.integration.test.ts` — passed, 1 file / 1 test.
+- `npm run build` — passed, including Prisma generation and TypeScript compilation; no migration was added.
+- `npm run lint` — passed.
+- `git diff --check` — passed.
+- The Attempt 2 focused validation does not rerun the previously documented unrelated ARCH-047 logger assertion failures; no code in that path changed.
+- Attempt 3: `npx vitest run tests/unit/agents/initial-outreach-offer.agent.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/agents/initial-outreach-offer.eligibility.test.ts tests/unit/agents/initial-outreach-offer.combinations.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` — passed, 5 files / 44 tests.
+- Attempt 3: `MODA_DISPOSABLE_INTEGRATION=1 npx vitest run tests/integration/initial-outreach-offer-aimock.integration.test.ts` — passed, 1 file / 1 test.
+- Attempt 3: `node scripts/test-integration.mjs tests/integration/initial-outreach-offer-aimock.integration.test.ts` — did not reach Vitest; disposable PostgreSQL migration failed with Prisma `P1001` because `127.0.0.1:32988` was unavailable. The same integration test passed with the repository's integration Vitest mode directly; no PostgreSQL context test was rerun.
+- Attempt 3: `npm run build`, `npm run lint`, and `git diff --check` — passed.
+
+### Worktree and Revision Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree and implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-010` and `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-010`; both use `task/ARCH-052-BACKGROUND-010`. The canonical workspace and other task worktrees were not switched or modified.
+- Prepared launcher claim commit: `62e46edae1c734f0281639e41fd7d95ffe2e0fab`, Attempt 2, executor Copilot. The packet reported all six dependencies complete, parent synchronization with `origin/main` at preparation revision `158e7a41ad49c7238648774a22077e8d78067227`, and implementation task worktree reused from `0f8c3e94c7e1c58288417605d85335b21c46e712`.
+- Attempt 3 launcher claim commit: `8d6db742fb7b16f812b5370af713ee96e2e04fed`, claimed from Ready at `2026-10-31T14:25:02Z`; all six dependencies passed. Launcher reported parent and implementation worktrees reused, `origin/main` incorporated, and recursive submodules ready. The implementation worktree was at `1e8262775327367310e28f5971419f9dde052dc9` before this correction; database submodule remained at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Recursive implementation submodule sync/update passed during preparation; recorded database submodule commit: `af77c594ecbfc78c26d01c0021a090830884bbff`. No submodule gitlink was staged.
+- Implementation branch is pushed through `3bb4e83`; parent task report commit `92d1544c` is pushed on the same task branch after claim commit `8d6db742`. No merge to `main` was performed.
 
 ### Deviations
 
-None recorded.
+- The positive minimum-quantity boundary case remains blocked by missing documented quantity-scope semantics in the consumed Shared contract. No behavior or type was invented to make that fixture pass.
 
 ### Assumptions
 
-Prerequisite contracts and published MCP tools will be available in the version used when this task starts. The assigned agent must inspect its real task worktree/version at claim time.
+The prepared launcher packet is authoritative for the Attempt 3 claim, worktree isolation, synchronization, dependency gates, and recursive submodule setup. All implementation and validation ran in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-010` on `task/ARCH-052-BACKGROUND-010`; the canonical workspace and other task worktrees were not modified.
 
 ### Unresolved Issues
 
-None from this definition; any missing published contract/tool becomes an architect dependency gap, not an invitation to implement it inside Background.
+- Shared facts include `minimumQuantity` but no provider-documented eligibility scope. The helper conservatively abstains; architect review should determine whether the contract can provide the scope in a separately owned change.
+- Architect review remains the acceptance authority. The implementation is not marked accepted or complete.
 
 ### Architectural Concerns
 
-Return cross-repository/tool/prompt-authority conflicts to `moda_architect` rather than silently altering ownership.
+The correction is limited to the Background-owned agent graph and its graph tests. The task branch is submitted for review only; acceptance criteria remain unchecked where complete evidence is absent.
 
 ## Architect Review
 
-### Review Status
-
-Pending.
+### Attempt 1 Architect Review — Changes Requested
 
 ### Review Notes
 
-Definition revised for LangGraph dynamic MCP tool-use, initial-outreach-specific instructions, strict Background/MCP separation and provider-truthful selection. No application implementation reviewed or accepted.
+The package `@copilotkit/aimock@1.45.1` is already a direct Background dependency, and existing unrelated feature tests use it. However, no integration test for the new initial-outreach agent imports `LLMock` or exercises the agent's model HTTP exchange through Aimock. The current `initial-outreach-agent-context.integration.test.ts` covers PostgreSQL context assembly only.
+
+Required corrections before resubmission:
+
+1. Add a feature-specific integration test using `LLMock` from
+   `@copilotkit/aimock`. Exercise the initial-outreach agent through the real
+   model HTTP client routed to Aimock's loopback endpoint; assert the bounded
+   model/tool/model exchange and validated decision, and prove no request can
+   reach an external provider. Record the test command and results.
+2. Complete the task's required deterministic eligibility and compatibility
+   fixture matrix in the two pure-helper suites. The Completion Report itself
+   lists required targeting/status/quantity, threshold, and provider-specific
+   reciprocal/same-line/unknown combination cases still missing; do not mark
+   those criteria complete without test evidence.
+
+This review does not require repairing the separately documented ARCH-047
+logger assertion failures unless the correction changes that path.
 
 ### Reviewed Files
 
@@ -502,12 +548,80 @@ Definition revised for LangGraph dynamic MCP tool-use, initial-outreach-specific
 
 ### Validation Reviewed
 
-Definition/patch syntax only; application validation not run.
+Attempt 1 validation evidence was reviewed from the Completion Report. Focused
+tests and the PostgreSQL context test passed, but the task-specific Aimock
+integration coverage is absent and the required helper fixture matrix remains
+incomplete. No tests were rerun for this architect review.
 
 ### Architecture Conformance
 
-Pending implementation and full ARCH-052 dependency reconciliation.
+The implementation is not accepted until both test corrections above are
+demonstrated. No branch merge or downstream promotion was made.
 
 ### Follow-up
 
-Materialise in the canonical developer task environment only after prerequisite task YAMLs are Complete. Do not require a new Shared conversation runner.
+Attempt 1 was returned to `ready`; the next canonical launcher claim increments
+the attempt once. Keep the implementation on the existing task branch and add
+the requested tests before resubmitting. No new Shared conversation runner is
+required.
+
+### Attempt 2 Architect Review — Changes Requested
+
+The two Attempt 1 test corrections are verified in the submitted diff:
+
+- `tests/integration/initial-outreach-offer-aimock.integration.test.ts` uses
+  `LLMock` from `@copilotkit/aimock` and the actual Shared
+  `OpenRouterModelClient`, with the model endpoint constrained to Aimock's
+  loopback server. It checks the model/tool/model/tool/model sequence and a
+  source-validated decision.
+- Eligibility, compatibility and graph fixtures were expanded as requested.
+  Unknown minimum-quantity scope is tested as `UNVERIFIABLE`, which follows the
+  task's explicit fail-closed rule; no undocumented provider behavior was
+  invented. The other task-specific limitation is recorded in the Completion
+  Report.
+
+One acceptance blocker remains. In `src/agents/initial-outreach-offer.graph.ts`,
+`productTargetMatches` checks product targeting and some static conditions, but
+does not reject `facts.unavailableAt`, non-active `providerStatus`, or expired
+`endsAt` / future `startsAt`. `finalResult` accepts an alternative promotion
+when this helper and the exact product read pass; it does not require the
+candidate's checkout eligibility verdict. As a result, an expired or revoked
+discount can be attached to an otherwise matching alternative product.
+
+Required correction: validate the offer's current source status and time
+eligibility before returning `ALTERNATIVE_PRODUCT_PROMOTION`, using an
+alternative-product-specific evaluator where basket eligibility cannot be
+reused. Add regressions for expired, not-yet-started, disabled and non-null
+`unavailableAt` offers, plus a valid offer/product case. Do not weaken the
+existing exact-product, same-shop, targeting or restrictions checks.
+
+Attempt 2's recorded tests, build, lint and diff check passed; no tests were
+rerun for this review. No implementation acceptance or downstream promotion
+was made. The task was returned to `ready`, with Attempt 2 retained; the next
+canonical claim increments the attempt once. `ARCH-052-BACKGROUND-008` and the
+system-test tasks remain Pending behind their other prerequisites.
+
+### Attempt 3 Architect Review — Accepted
+
+The Attempt 2 availability blocker is resolved. Alternative-product finalization
+now verifies that the options and details records agree on offer identity,
+method, code, dates and support; requires active provider status and a null
+`unavailableAt`; and rejects invalid, future-starting or expired dates against
+the injected evaluation clock. Exact-product, same-shop, targeting, restriction
+and source-identity checks remain in force. Regression coverage rejects
+expired, not-yet-started, disabled and unavailable offers, while the existing
+valid exact-product case remains supported.
+
+Reviewed the Attempt 3 diff and recorded validation. The focused unit run passed
+44 tests across five files, the Aimock model integration passed, and build,
+lint and `git diff --check` passed. The disposable PostgreSQL launcher could not
+start because its local database endpoint was unavailable (`P1001`); therefore
+the PostgreSQL context integration was not rerun in this attempt. No context
+assembly code changed in Attempt 3. The missing documented minimum-quantity
+scope remains fail-closed as `UNVERIFIABLE`; no provider semantics were
+invented and no unsupported offer is promoted.
+
+Accepted Attempt 3 and marked this automatic-completion task Complete. All six
+declared dependencies are Complete. `ARCH-052-BACKGROUND-008` is now Ready;
+the system-test tasks remain Pending because their other prerequisites are
+incomplete. No implementation merge or main-branch update was performed.
