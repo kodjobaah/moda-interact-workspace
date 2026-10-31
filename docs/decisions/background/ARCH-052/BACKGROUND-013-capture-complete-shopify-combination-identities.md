@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 32
-executor: codex
-claimed_at: 2026-10-31T06:07:31Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-BACKGROUND-011
@@ -87,6 +87,7 @@ competing generic logger or create new external reads.
 
 - [x] Fix the constant-false completeness computation without losing any source uncertainty reason, and test a genuinely complete Basic fixture versus unsupported/partial/truncated fixtures.
 - [x] Preserve original Shopify GraphQL/HTTP errors and SDK transport exceptions at the existing provider fetch boundary, with source provenance, separate internal reason and redaction/truncation markers.
+- [x] Attempt 2 preserves bounded, redacted diagnostics for string and object HTTP `errors` values and adds regression coverage for both shapes.
 
 ## Interfaces / Contracts
 
@@ -110,11 +111,13 @@ Shopify Admin GraphQL 2026-07: `shop { plan { shopifyPlus } }` (one bounded shop
 - [x] No checkout mutation or additional provider lookup on the hot path.
 
 - [x] Mock HTTP-200 GraphQL `errors`, HTTP 4xx/5xx provider error and SDK transport exception; assert actual Shopify message/code survives logging, secrets/codes do not leak and catalogue completeness/idempotency remains correct.
+- [x] Attempt 2 HTTP 401 string/object regression cases assert message retention, secret redaction and diagnostic truncation.
 
 ## Validation
 
 - [x] Focused Shopify provider query/normalization tests, including a positive GBP threshold amount/currency, unknown currency, source quantity threshold and unsupported minimum requirement.
 - [x] Background declared lint/build and `git diff --check`.
+- [x] Attempt 2 focused Shopify provider suite (31 tests), lint, build and `git diff --check` passed.
 
 ## Stop Condition
 
@@ -128,7 +131,8 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Accepted after Attempt 1.
+Attempt 1 was accepted. Following the developer override, Attempt 2 addresses
+non-array Shopify HTTP error shapes and is submitted for architect review.
 
 ### Files Changed
 
@@ -193,3 +197,49 @@ string or object `errors` values lost the provider message. Preserve bounded,
 redacted diagnostics for those shapes and add focused regression coverage.
 Attempt 1 acceptance remains historical; the next task claim increments the
 attempt.
+
+## Attempt 2 Completion Report
+
+### Status
+
+Implemented and submitted for architect review. Attempt 1 acceptance remains
+historical; this section reports the reopened correction.
+
+### Files Changed
+
+- `src/providers/shopify-discount.provider.ts`
+- `tests/unit/providers/shopify-discount.provider.test.ts`
+
+### Work Completed
+
+`extractGraphqlErrors()` now accepts string and object error values alongside
+arrays. It extracts known provider message and extensions-code fields and runs
+them through the existing bounded redaction/truncation before Shared logger
+serialization. The regression tests cover both HTTP 401 shapes, message
+retention, object error code, secret redaction and truncation. Implementation
+commit `4fdc5c8` is pushed to `origin/task/ARCH-052-BACKGROUND-013`.
+
+### Validation Results
+
+- `npm test -- --reporter=dot tests/unit/providers/shopify-discount.provider.test.ts` — 1 file, 31 tests passed.
+- `npm run lint` — passed.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation.
+- `git diff --check` — passed.
+
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-013`, branch `task/ARCH-052-BACKGROUND-013`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-013`, branch `task/ARCH-052-BACKGROUND-013`.
+- Shared workspace checkout switched/mutated for task work: no; shared implementation checkout switched/mutated: no; another task worktree reused: no.
+
+### Start-of-Attempt Synchronization
+
+- Parent remote task branch fast-forwarded: not needed; parent `origin/main` incorporated: yes.
+- Implementation remote task branch fast-forwarded: not needed; implementation `origin/main` incorporated: already current.
+- Recursive submodule sync and init/update passed; status ready. Database submodule commit: `af77c594ecbfc78c26d01c0021a090830884bbff`.
+
+### Deviations and Unresolved Issues
+
+No scope deviations or known blockers. No live provider requests were made.
+The task awaits architect review; this agent makes no acceptance decision.
