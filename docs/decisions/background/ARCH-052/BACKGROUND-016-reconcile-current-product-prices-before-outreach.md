@@ -274,7 +274,7 @@ Attempt 3 implementation complete; returned to `review` for Architect review. No
 
 ### Work Completed
 
-- Added a strict allowlisted provider-error payload projection with recursive depth/node/item limits, 192-character value bounds and a 4 KiB serialized payload ceiling. Sensitive/unrecognized keys are omitted; string values pass the existing email, phone, URL and credential redactor.
+- Added a strict allowlisted provider-error payload projection with bounded key traversal, recursive depth/node/item limits, pre-redaction input bounds, 192-character emitted string bounds and a 4 KiB serialized payload ceiling. Sensitive/unrecognized keys are omitted; string values pass the existing email, phone, URL and credential redactor.
 - Payload diagnostics are enabled only outside production deployment labels (`production`, `prod`, and `live` forms); safe error name/message/status/code diagnostics remain available in all environments. Successful product responses are never routed to the failure payload projection.
 - Preserved original Error identity for propagation from both reader failure paths. The logger receives only the safe projection, never the original Error object.
 - Added regression coverage for non-production payload visibility and sensitive-field/value exclusion, production-alias omission, successful-response exclusion, explicit size bounds, and unchanged originating Error propagation.
@@ -289,7 +289,7 @@ Attempt 3 implementation complete; returned to `review` for Architect review. No
 ### Publication and Worktree Evidence
 
 - Attempt 3 launcher claim was prepared at `2026-10-31T11:28:50Z`; dependency gate passed and recursive Database submodule was initialized at `af77c594ecbfc78c26d01c0021a090830884bbff`. Parent claim commit: `3d8341501728bb394c02f57f216716100f22814a`.
-- Implementation commit `69d098a` (`fix(BACKGROUND-016): log bounded redacted error payloads`) was pushed to `origin/task/ARCH-052-BACKGROUND-016`.
+- Implementation commits `69d098a` (`fix(BACKGROUND-016): log bounded redacted error payloads`) and `3397da4` (`fix(BACKGROUND-016): cap diagnostic input traversal`) were pushed to `origin/task/ARCH-052-BACKGROUND-016`.
 - Parent task/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-016`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-016`.
 - Both task worktrees use branch `task/ARCH-052-BACKGROUND-016`. No implementation merge or Architect acceptance was performed.
