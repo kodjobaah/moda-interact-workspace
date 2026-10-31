@@ -180,7 +180,7 @@ The disposable PostgreSQL test creates a minimal `BackgroundRuntimeConfig` fixtu
 
 - Implementation branch commits pushed: `e9fa59c7dd768cf8313c94fdf98fe886268d6d3f`, `b73cb222da8ca32a59309ebcd1b718df5f7dcbff`
 - Implementation remote task branch head: `b73cb222da8ca32a59309ebcd1b718df5f7dcbff`
-- Parent task/report branch: claim commit `0461d85c618689256ad6ac1e31c3e10fcb963c62` was pushed by the launcher; blocked report publication is pending.
+- Parent task/report branch: blocked report published at `eb996fe21e4dab367cab3132ae5e7751095c8e8f`; remote task ref matches the local head.
 
 ### Deviations
 
