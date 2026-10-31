@@ -322,6 +322,8 @@ Added the architect-approved Background-local current-discount source fence and 
 
 Added focused coverage for source-fence isolation/digest changes, F1/F2 churn, exact-product refresh and mismatch, F3 admission denial on both platforms, duplicate Woo selection avoidance, and the previously implemented template/transport/receipt behavior.
 
+Extended the existing Woo disposable outreach fixtures with the saved basket, published trusted prompt configuration, and approved CHECKOUT/shop-name template bindings now required by the initial sender. Added the same required basket fields to the generation-two recovery fixture; these are fixture-only changes and do not weaken the production trust checks.
+
 Fixed the Shopify discount facts producer to include the schema-required subtotal currency while preserving the published decimal-string subtotal representation. Removed untrusted exception text from model-bridge, credential-revocation, conversation-wrapper, and generic recovery-offer logs; retained the original exception propagation. Corrected the initial-outreach finalization log to avoid duplicating a raw error message and aligned brittle runtime/billing assertions with current shared logging and package-version contracts.
 
 ### Validation Results
@@ -342,11 +344,23 @@ Passed WhatsApp Cloud API emulator integration: 1 file, 1 test covering generate
 
 Full Background unit suite (`pnpm test:unit`): **passed** — 326 files and 3,470 tests passed.
 
-Still not certified: complete two-platform end-to-end/system coverage, the broader required consent/moderation/STOP/credit/notification validation as an isolated regression gate, and all acceptance items above. Keep status `in_progress`; do not hand off for Architect Review.
+Additional Background safety unit selection: **passed** — 17 files and 206 tests covering Woo admission/send fence and notice finalization, Shopify consent, moderation, outbound admission, and credit/send admission.
+
+Broader PostgreSQL integration attempt across 12 consent, STOP, moderation, credit, notification, and outreach files: **not passed** — 50 passed / 10 failed. Failures included the incomplete Woo trusted-context fixtures (currency/basket and prompt/template contract, addressed in the fixture updates above), an existing Woo permit-race log assertion that expected a sanitized synthetic error instead of the injected original error, an Aimock route construction assertion, and timeout/disposable-PostgreSQL readiness failures. This run is evidence of gaps, not a passing broad regression gate.
+
+Focused Woo PostgreSQL/Redis outreach reruns: **not yet passed**. Initial failures exposed missing fixture inputs, which were corrected. A later rerun then lost its disposable PostgreSQL server and hit Vitest's default timeout; a further rerun again encountered database availability/timeouts. The fixture fixes are in place, but the suite needs a stable disposable database and suitable test timeout to establish a clean result.
+
+Focused unit safety validation after those integration attempts: **passed** — 206/206 as above. Targeted ESLint on the three edited Woo fixture/test files and `git diff --check` completed without diagnostics.
+
+Focused repeat of the eight selected consent/STOP/moderation/notification/recipient/template-admission PostgreSQL integration files: **passed after timeout isolation** — 38 tests total. The initial combined run had 35/36 pass because one general STOP-ordering case exceeded Vitest's default five-second timeout; rerunning that file with `--testTimeout 30000` passed all 3 tests. This focused result does not include the separate failing Woo initial-outreach or provider-race files.
+
+Downstream system-test listing was attempted in `moda-interact-system-test` with the three ARCH-052 task IDs; the runner returned `Unknown scenario ARCH-052-SYSTEM-TEST-001`. No downstream system tests were executed or claimed.
+
+Still not certified: complete two-platform end-to-end/system coverage, a clean combined broad PostgreSQL regression gate, a clean Woo initial-outreach PostgreSQL rerun, and all acceptance items above. The selected safety integration files pass when the slow STOP case is rerun with an appropriate timeout. Keep status `in_progress`; do not hand off for Architect Review.
 
 ### Deviations
 
-The implemented F1/F2 fence brackets fresh MCP reads and detects changes to synchronized source rows, but it does not prove live Shopify/Woo redemption state. F3 has a provider-side race after the final admission check, as acknowledged by the accepted contract. Several listed adversarial, multi-member trimming, Postgres, and system-test cases remain unimplemented/unrun.
+The implemented F1/F2 fence brackets fresh MCP reads and detects changes to synchronized source rows, but it does not prove live Shopify/Woo redemption state. F3 has a provider-side race after the final admission check, as acknowledged by the accepted contract. Several listed adversarial, multi-member trimming, Postgres, and system-test cases remain unimplemented/unrun. The available broad integration run also surfaced the separately recorded failures above; do not treat it as regression certification.
 
 ### Assumptions
 
@@ -354,7 +368,7 @@ The accepted 31 October architect unblock is followed: no MCP revision/snapshot 
 
 ### Unresolved Issues
 
-Remaining acceptance gaps include broader 3-to-2/2-to-1 approved-template reselection and adversarial permission/source revocation coverage, full PostgreSQL/two-platform/system tests, and the required existing admission/moderation/STOP/credit/notification suites. The implementation worktree has uncommitted changes; no implementation publication commit or push has been made. No Architect Review or status transition to `review` has occurred.
+Remaining acceptance gaps include broader 3-to-2/2-to-1 approved-template reselection and adversarial permission/source revocation coverage, full PostgreSQL/two-platform/system tests, and a clean run of the required existing admission/moderation/STOP/credit/notification suites. The downstream system-test runner does not recognize the ARCH-052 task IDs as executable scenarios. Implementation commit `895bfb3` is pushed to `origin/task/ARCH-052-BACKGROUND-008`; the parent report update remains uncommitted. No Architect Review or status transition to `review` has occurred.
 
 ### Architectural Concerns
 
