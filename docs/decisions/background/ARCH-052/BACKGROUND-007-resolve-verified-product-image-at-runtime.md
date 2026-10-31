@@ -40,102 +40,439 @@ Coordinator: `moda_architect`. This is a **portable canonical definition — def
 
 ## Objective
 
-Provide an optional validated IMAGE header for the chosen checkout product or recommended alternative product, using MCP `commerce_get_product` and no API/Commerce image proxy or new media persistence.
+Produce one **verified, standard 1125 x 600 JPEG** for the exact, currently
+source-backed checkout or alternative product, store it under a **merchant-readable,
+UTC-outreach-preparation-date and attempt-specific R2 object key**, and supply
+**only** the verified public R2 URL to a separately approved Meta IMAGE-header
+variant. Preserve the already implemented TEXT fallback. This is the optional
+post-BACKGROUND-008 IMAGE enhancement, not a second outreach sender.
 
 ## Context
 
-Both Shopify and WooCommerce product information is resolved **at runtime by MCP-003**, using authenticated direct provider connections. There is no hosted API or Commerce private product-image endpoint, no product catalogue replication and no image database persistence. Background consumes the exact published `commerce_get_product` result.
+- Current `commerce_get_product` is the authenticated, tenant-scoped exact
+  Shopify/Woo product reader; Background must not create a new hosted API or
+  Commerce image proxy.
+- Accepted ARCH-049-BACKGROUND-001 already provides secure bounded image fetch,
+  Sharp decoding, byte verification, immutable S3-compatible R2 writes and a
+  public GET/hash probe. Its writer and brand path validator **only accept**
+  `shop-brands/...`; do not pass product keys to that validator or duplicate its
+  security mechanics. ARCH-049-BACKGROUND-004 only resolves existing READY brand
+  media; it does not process product images.
+- Authoritative identities are `commerce.CheckoutRecovery.shopId`,
+  `commerce.RecoveryOutreachAttempt.id`/`checkoutRecoveryId`,
+  `commerce.Shop.platform`/`domain`, and for WooCommerce
+  `woocommerce.WooCommerceInstallation.canonicalSiteUrl` (one per shop).
+- No `CheckoutRecovery` or outreach price/coupon logic, checkout URL generation,
+  new database table, new R2 bucket, new deployment service or new Shared wire
+  contract is required for this product-image enhancement.
 
 ## Scope
 
-**Optional enhancement only:** after BACKGROUND-008 is accepted, attach safe IMAGE header parameters when the independently approved IMAGE variant and ready product media both exist; otherwise retain the already-working approved TEXT path. Existing ARCH-049 media work never blocks a text-only message. No new image database row, R2 catalogue, generic media resolver, provider URL proxy or Shared image result schema.
+Implement only in `moda-interact-background/` and this task document:
 
+1. Resolve exact authenticated product/variant metadata via the published MCP
+   `commerce_get_product` tool **on every IMAGE preparation/retry**, using
+   its projected effective `imageUrl` after exact product/variant checks.
+2. Load the trusted shop/platform/URL and persisted outreach-attempt ownership
+   from PostgreSQL, never from an AI argument, untrusted product URL or customer.
+3. Reuse ARCH-049 safe fetch/verification, image decoder, R2 connection/config,
+   guarded immutable put, HEAD verification and public GET/hash probe. Implement
+   one product-specific **contain + pad** JPEG preset and strict key validator.
+4. Generate the exact key, write/verify the derivative, then bind the verified R2
+   URL only to an **approved** IMAGE header; otherwise choose a separately
+   approved TEXT variant or typed no-send, without blocking eligible TEXT sends.
+5. Retain the selected R2 link in the established prepared/confirmed outbound
+   Meta template parameters; rely on the existing
+   `RecoveryOutreachAttempt.outboundMessageId -> ConversationMessage.content`
+   receipt plus `sentAt` for successful-send evidence. No new media table.
 
-- Use existing `src/services/recovery-template-preparation/` and MCP `commerce_get_product` (published and entitled) to fetch the exact product/variant in current shop for a checkout item or selected alternative product. Variant image wins; product image fallback only if same shop/id. Never use fuzzy search as proof of identity.
-- Validate returned HTTPS image source/media type, allowed host and accessible header within bounded download/preparation time; if source is unsafe/unavailable, use separately approved text/no-image variant. Reuse existing ARCH-049 media processing only when necessary and already approved; do not invent new R2 tables or persistent image catalogue.
-- The image source and selected promotion product must match immutable attempt scope; no signed URL/secret or raw image source in logs. Resolve against current MCP product data during **each** send-preparation attempt and resolve again on retry; reject changed/revoked media or identity rather than reusing a previous attempt's URL. This is an attempt-scoped operation, **not a five-minute proof or TTL contract**.
+**This task follows the accepted text-first BACKGROUND-008 implementation.**
+It must not change Background's general Meta send admission, billing, STOP,
+moderation, human handover or follow-up orchestration.
 
 ## Out of Scope
 
-- No database schema/migration, media provenance row, Cloudflare R2 object, new generic image proxy, checkout item persistence or ad hoc unapproved Meta header.
-
-No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
+- No ShopBrand schema/media-role change, brand key migration, cross-shop image
+  cache, reusable product catalogue or provider image proxy.
+- No new Prisma model/migration, signed R2 URL/token, public R2 credential or
+  Meta template CREATE/sample-handle upload (BACKGROUND-012 owns that).
+- No checkout URL verification/generation, coupon application, price
+  reconciliation, additional proactive message or unapproved template wording.
+- No wholesale ARCH-049 module copy, competing logger or network call from a
+  model-authored URL. Do not modify `docs/decisions/**/_index.md`.
 
 ## Requirements
 
-- Do not conflate ShopBrand hero/cover image with checkout product photo. Existing SHOP_BRAND role processing remains unchanged.
-- Image is optional; failure cannot permit an unsafe send or block otherwise eligible approved text-only initial outreach.
-- Review `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and task preparation packet. Use dedicated mirrored task worktrees, correct start-of-attempt synchronization, and record both histories.
-- Use `@modainteract/moda-interact-shared/logging` for new Node runtime logs. Unexpected exceptions must be logged with bounded, non-sensitive context and propagated to the owning retry/failure boundary; avoid silent catch. Plugin PHP must reuse its existing bounded operational logger.
-- Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
-- Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
+### R1. Exact merchant identity and human-readable, injective namespace
 
-**Source-origin MCP/media failures (31 October 2026):** On a failed exact
-`commerce_get_product` call or media fetch, record the **actual** MCP error
-returned and/or the SDK/transport exception (name/message/status) before
-choosing approved TEXT/no-send. Preserve the originating `cause` with the
-existing typed `UNAVAILABLE` media result where appropriate. Distinguish MCP's
-own error from Shopify/Woo provider errors that are visible only in the MCP
-server logs; never invent the provider cause. Use the Shared logger and
-`docs/observability/shared-logging.md`; sanitize image URLs, signed queries,
-customer content and credentials, and never pass provider-error text to the
-message/template. A valid TEXT fallback is not permission to silently lose
-failure diagnostics.
+**Trusted source:** Query `Shop` by recovery `shopId` and require a matching
+`RecoveryOutreachAttempt` linked to this recovery, with the current matching
+recovery generation. For `SHOPIFY`, use the persisted `Shop.domain` (the
+registered Shopify shop domain), **not** a provider product URL or arbitrary
+custom storefront hostname. For `WOOCOMMERCE`, require the active, same-shop
+`WooCommerceInstallation.canonicalSiteUrl` and require its value to match the
+persisted `Shop.domain`; preserve its installation path. A missing/mismatched
+identity returns `UNAVAILABLE: MERCHANT_IDENTITY_UNAVAILABLE`. Never pick the
+most recent merchant, infer an alias, or replace a persisted domain with an
+LLM-provided value.
 
+Define the **pure** `normalizeOutreachMerchantSite(site: string): string | null`
+codec in `src/services/recovery-product-media/merchant-site-segment.ts` with
+these exact operations, in order:
+
+1. Reject an empty/over-512-byte UTF-8 input, controls, whitespace surrounding
+   the value, malformed percent encoding, non-HTTPS explicit schemes, userinfo,
+   non-default ports and non-public/IP/localhost hostnames. A bare hostname is
+   parsed as `https://<hostname>` for namespace purposes only. The two trusted
+   data sources above remain authoritative; parsing does not authenticate a
+   caller-supplied hostname.
+2. Use WHATWG `URL.hostname` as the **lowercase ASCII/punycode** hostname; do
+   not strip `www`, do not substitute a custom storefront domain and do not
+   include protocol, query, fragment or trailing `/` in the key. Reject
+   decoded `/` or `\` **inside a path segment** (for example `%2F`),
+   control characters and dot-only segments (`.` or `..`), including encoded
+   forms. Inspect the raw path before WHATWG URL dot-segment normalization;
+   reject `/a/../b`, `/a/%2E%2E/b`, and `/a/./b`, not just the
+   normalized URL pathname.
+3. Split the canonical path on literal `/`, remove trailing empty segments and
+   reject empty **interior** segments; decode each segment with
+   `decodeURIComponent` **exactly once**. Do not lowercase path segments:
+   Woo/WordPress paths may be case-sensitive.
+4. Encode each decoded segment as its UTF-8 bytes: keep ASCII `A-Z`, `a-z`,
+   `0-9`, `.`, `_` literally; encode **every other byte** as `~` followed by two
+   **uppercase hexadecimal** characters (e.g. `-` => `~2D`, `~` => `~7E`).
+   Join encoded segments with a **single** `-` and prefix them with
+   `<lowercase-hostname>-`. If there is no path, use the hostname alone.
+   Reject a result over 512 ASCII bytes and reject any path segment over
+   200 decoded UTF-8 bytes; no lossy truncation, slug collisions or fallback
+   to an opaque shop database ID.
+5. This encoding is deliberately injective for path segments:
+   `/a-b -> myshop.com-a~2Db`, whereas `/a/b -> myshop.com-a-b`.
+   Distinct stored merchant identities cannot borrow each other's R2 assets,
+   even if a public domain is reassigned; each object key additionally includes
+   the globally unique persisted outreach attempt ID, and all reads retain
+   authoritative `shopId` checks.
+
+**Fixed examples, required verbatim in unit tests:**
+
+| Trusted site | Namespace |
+|---|---|
+| `https://myshop.com` | `myshop.com` |
+| `myshop.com` | `myshop.com` |
+| `https://myshop.com/myshop` | `myshop.com-myshop` |
+| `https://myshop.com/myshop/` | `myshop.com-myshop` |
+| `https://myshop.com/store/london` | `myshop.com-store-london` |
+| `https://MYSHOP.COM` | `myshop.com` |
+| `https://myshop.com/a-b` | `myshop.com-a~2Db` |
+| `https://myshop.com/a/b` | `myshop.com-a-b` |
+| `https://myshop.com/A` | `myshop.com-A` |
+| `https://myshop.com/a` | `myshop.com-a` |
+
+### R2. Immutable product-image object key and date semantics
+
+Implement `buildOutreachProductObjectKey()` in
+`src/services/recovery-product-media/outreach-product-object-key.ts`. It accepts
+**trusted, validated** `platform`, `merchantSite`, `outreachAttemptId`,
+`providerProductId`, nullable `providerVariantId`, `preparedAt: Date` and
+**SHA-256 of final encoded JPEG bytes**. Its output MUST be **exactly**:
+
+```text
+outreach-products/<platform>/<merchant-site>/<YYYY>/<MM>/<DD>/<outreach-attempt-id>/p-<product-sha256>/v-<variant-sha256-or-none>/sha256-<output-sha256>.jpg
+```
+
+- `<platform>` is exactly lowercase `shopify` or `woocommerce`, derived from
+  persisted `Shop.platform`, never untrusted input.
+- `<merchant-site>` is exactly R1's normalized segment.
+- `YYYY/MM/DD` comes from **one** injected UTC `preparedAt` clock read taken
+  immediately before this IMAGE preparation; zero-pad month/day. It is the
+  **media preparation date**, not proof of a successful WhatsApp send. Retries
+  across midnight may create a second immutable object under the new date.
+- `<outreach-attempt-id>` is the persisted globally unique
+  `RecoveryOutreachAttempt.id`, validated as one safe `[A-Za-z0-9_-]{1,128}`
+  segment. A new follow-up has its own attempt ID. Never substitute recovery
+  ID, checkout token, customer phone, timestamp, or a merchant-supplied string.
+- `p-<product-sha256>` = lowercase SHA-256 hex of the UTF-8 bytes
+  `lowercasePlatform + "\0" + exactProviderProductId`.
+- `v-<variant-sha256-or-none>` = literal `v-none` if the source variant ID is
+  `null`, else `v-` plus lowercase SHA-256 hex of the UTF-8 bytes
+  `lowercasePlatform + "\0" + exactProviderVariantId`. This safely supports Shopify
+  GIDs/URL delimiters and Woo numeric IDs without raw, ambiguous path segments.
+- `sha256-<output-sha256>.jpg` uses lowercase 64-character hexadecimal SHA-256
+  of **transformed JPEG bytes**; output always JPEG, never `.png`.
+- Reject invalid input/unsafe key and any key exceeding 1024 UTF-8 bytes;
+  do not silently correct, truncate or substitute a shop-id folder. There must be **exactly ten** path components when split on `/`:
+  prefix, platform, site, year, month, day, attempt, product, variant, file.
+
+For `https://myshop.com/myshop`, an upload prepared on 31 October 2026 has
+this human-browsable structure (the angle-bracketed hashes are placeholders):
+
+```text
+outreach-products/woocommerce/myshop.com-myshop/2026/10/31/attempt_7d91b/p-<64-hex>/v-<64-hex>/sha256-<64-hex>.jpg
+```
+
+### R3. Product lookup and standard 1125 x 600 JPEG processing
+
+1. Invoke **the published exact** MCP `commerce_get_product` in the current
+   authenticated shop context. Product ID and selected variant ID must exactly
+   match the chosen checkout line or source-supported alternative product;
+   use the `CommerceProduct.imageUrl` returned by that exact result. The
+   current Woo reader chooses variation.image before product.images[0]. The
+   current Shopify reader only projects `product.featuredImage`, even when a
+   variant ID is requested; it does **not** project variant.image. Therefore
+   this task MUST NOT fabricate or claim a Shopify variant-specific image:
+   use the source-supported product featured image as fallback. A separate
+   MCP contract/reader change would be required to add Shopify variant
+   image precedence; do not silently extend that completed MCP task.
+   No fuzzy search, LLM-created URL or cross-shop source substitution.
+2. Each preparation/retry re-fetches current product facts and rechecks image
+   identity/source revocation before using an R2 object. A previous READY URL
+   is never an attestation for a later retry; no five-minute proof/TTL contract.
+3. Use the existing ARCH-049 `createSafeImageFetcher()` (HTTPS, pinned DNS and
+   socket peer, redirects rechecked, bounded bytes/deadline). Cap source at
+   **10 MiB** and input decoding at **40 million pixels**; reject malformed
+   source, decompression abuse and remote SVG references using the existing
+   safe image security rules. Use actual decoded bytes, not Content-Type alone.
+4. Add `createOutreachProductImageTransformer()` using the existing sharp media
+   primitives: apply EXIF rotation, convert to sRGB, **resize 1125 x 600** with
+   `fit: contain`, centred, white (`#ffffff`) padding/background, set
+   `withoutEnlargement: false` (upscale/downscale allowed), flatten alpha,
+   first frame only, strip metadata. Do **not** use `fit: cover` (would crop
+   the product). Always encode **JPEG** with `mozjpeg`, qualities
+   `[86,76,66,56,46]` in that order, stop on first <=1 MiB, otherwise use
+   the smallest result, and require final size **strictly less than 5 MiB**.
+   Do not claim upscaling restores lost image detail.
+5. Independently decode/verify transformed bytes: JPEG magic/format, exactly
+   1125x600, single frame, no EXIF/XMP/IPTC/ICC payload, SHA-256 and size
+   match; reject any mismatch before writing or returning READY.
+6. Reuse `shopBrand.publicMedia` public HTTPS origin/bucket and
+   `merchant.knowledge.r2` worker-only R2 credentials via the current
+   Background configuration readers. **Reuse only the underlying R2 transport
+   and guarded immutable PUT/HEAD mechanics** from ARCH-049: its public
+   `createShopBrandR2Writer` and `publicBrandImageUrl` currently reject all
+   non-`shop-brands` keys. Extract the common mechanics without changing
+   existing brand behaviour, and implement a distinct strict
+   `outreach-products` key checker before calling them. No new bucket/secret,
+   server-side URL-signed operation or new network service.
+7. PUT with `IfNoneMatch: "*"`, do not overwrite a hash/key collision, HEAD and
+   verify ContentType `image/jpeg`, size, sha256 metadata and immutable cache
+   header. Verify the resulting configured public HTTPS URL with the existing
+   safe public GET/hash probe before reporting READY. Do not build public URLs
+   from merchant origins or expose credentials. Public GET may fail until the
+   R2 custom domain is configured; return UNAVAILABLE rather than source URL.
+
+### R4. Typed result, final send and failure behaviour
+
+- Return the Background-local `READY`/`UNAVAILABLE` contract below. R2 image
+  source failures and upload failures can only produce a separately approved
+  TEXT fallback or typed no-send. The already-accepted TEXT-only path is not
+  allowed to block waiting for the media pipeline; cap total optional media
+  work by a **30,000 ms total preparation budget** (MCP exact lookup,
+  source fetch, decode, R2 upload/HEAD and public probe combined). Preserve
+  ARCH-049's independent 10,000 ms deadline for each safe-fetch. Once the
+  total budget expires, ignore late READY results, abort cancellable work,
+  emit `UNAVAILABLE: PRODUCT_IMAGE_UNAVAILABLE` with a distinct timeout
+  diagnostic, and use approved TEXT/no-send. An object uploaded just before
+  timeout may remain unsent; do not interpret it as a send receipt.
+- Immediately before template binding, revalidate shop, recovery generation,
+  outreach attempt/recipient and chosen product/variant identity. Only
+  `READY.publicImageUrl` may populate an approved Meta IMAGE header; never bind
+  source `imageUrl`, ShopBrand artwork, an unverified R2 URL or a prior
+  attempt's URL. If no approved IMAGE revision, do not do optional image work.
+- Preserve current `RecoveryOutreachAttempt.outboundMessageId` and confirmed
+  `ConversationMessage.content` with actual Meta image-header link and
+  confirmed `sentAt`; no new media row, second message or credit. Failure to
+  send does **not** convert a successfully uploaded object into a sent outreach.
+  If media was prepared on Oct 31 but delivered on Nov 1, **only** the persisted
+  confirmed message timestamp describes when the customer was contacted.
+- Use `@modainteract/moda-interact-shared/logging`. Log shopId, recoveryId,
+  attemptId, platform, readable merchant namespace, object hash/key if safe,
+  UTC preparation day, media source stage, dimensions, bytes, result and
+  duration. Preserve the actual originating MCP/image/R2 error text and cause
+  **after bounded sensitive-value redaction**, with a separate Moda reason
+  code; do not fabricate a provider error, swallow an unexpected exception
+  or log raw product source URLs, signed query, customer PII or credentials.
+  Expected unavailable media should still have diagnostic provenance.
 
 ## Work Items
 
-- [ ] Implement `recovery-product-image-resolver.ts` using the existing Background MCP transport and the published `commerce_get_product` tool; prefer checkout exact variant or recommended alternative exact product/variant.
-- [ ] Validate public HTTPS, safe resolved address and final peer, no unsafe redirects, supported image MIME + magic bytes, <=5 MB and verified target product origin/identity; use existing security/media primitives.
-- [ ] On image missing/unsafe/expired/offline return a typed no-media outcome and select an independently approved text-only Meta template; no side-effect on eligibility or checkout send.
-- [ ] Record actual source MCP/media failure messages and original causes before TEXT/no-send fallback (without fabricating a Shopify/Woo provider message); apply bounds/redaction from Shared logging policy.
-- [ ] Test Shopify and WooCommerce variant vs product image, mismatched tenant, invalid/expired provider URL, source change/revocation, re-resolution on retry, safe TEXT/no-send and no MCP-to-API path. No TTL/proof service tests.
+- [ ] Add R1 site normalizer with exact test vectors, including Woo subpaths,
+      uppercase case preservation and non-colliding slash/hyphen encodings.
+- [ ] Add R2 key builder/strict validator with injected UTC clock, source
+      identity digests, exact output hash and attempt-specific key.
+- [ ] Add R3 product JPEG transformer and isolated tests reusing ARCH-049
+      safe-fetch and metadata validation; verify no regression to brand roles.
+- [ ] Extract common guarded R2 PUT/HEAD mechanics without widening brand-key
+      acceptance; implement new outreach key validator, public URL and GET probe.
+- [ ] Implement current-shop MCP exact-product selection and R4 local
+      READY/UNAVAILABLE resolver; re-check on retries and final binding.
+- [ ] Wire optional IMAGE variant into existing Meta template/send pipeline;
+      preserve confirmed message receipt and independent TEXT fallback.
+- [ ] Add mocked provider, R2, clock, and shop repository tests for both
+      platforms; add service-level send/fallback/receipt tests.
+- [ ] Record actual source provider/media exceptions with safe redaction; run
+      required validation and report worktree/branch evidence.
 
 ## Interfaces / Contracts
 
-Published SHARED-008/010 `CommerceToolOutputs.commerce_get_product` contains `CommerceProductSchema.imageUrl`, nullable `variantId` and source IDs; SHARED-002 `CHECKOUT_PRODUCT` image role and Meta-approved header binding. **There is no published `RecoveryProductImageResultSchema`**: define a Background-local discriminated outcome in `src/services/recovery-product-media/recovery-product-image-resolver.ts` (`{kind:"READY",imageUrl:string,productId:string,variantId:string|null}` or `{kind:"UNAVAILABLE",reason:string}`) and use it only inside Background; do not invent a new Shared export. `READY` is an ephemeral result from the **current** preparation attempt; it is not a timestamped `VERIFIED_PROVIDER_IMAGE` proof, stored attestation or fixed-five-minute validity window. Resolve afresh when retrying. This task integrates optional IMAGE send selection with the accepted text-only BACKGROUND-008 path, never reimplements the existing WhatsApp transport.
+**All new interfaces are Background-local**, not cross-service Zod or Shared
+exports. In `src/services/recovery-product-media/recovery-product-image-resolver.ts`
+use the following exact union (additional private dependency-injection
+interfaces may be local to their owning files):
+
+```typescript
+export type OutreachProductMediaResult = Readonly<
+  | {
+      kind: "READY";
+      shopId: string;
+      checkoutRecoveryId: string;
+      outreachAttemptId: string;
+      productId: string;
+      variantId: string | null;
+      objectKey: string;
+      publicImageUrl: string;
+      contentSha256: string;
+      width: 1125;
+      height: 600;
+      contentType: "image/jpeg";
+      preparedAt: Date;
+    }
+  | {
+      kind: "UNAVAILABLE";
+      reason:
+        | "MERCHANT_IDENTITY_UNAVAILABLE"
+        | "ATTEMPT_MISMATCH"
+        | "PRODUCT_IDENTITY_MISMATCH"
+        | "PRODUCT_IMAGE_UNAVAILABLE"
+        | "UNSAFE_IMAGE_SOURCE"
+        | "IMAGE_TRANSFORM_FAILED"
+        | "R2_UNAVAILABLE"
+        | "PUBLIC_IMAGE_UNAVAILABLE";
+    }
+>;
+```
+
+`READY` is private to one current preparation, **not** a persisted proof.
+The `UNAVAILABLE` reason is an internal classification, never a substitute
+for originating provider errors in diagnostics.
+
+Define/export the two **pure** helpers at their stated paths:
+
+```typescript
+normalizeOutreachMerchantSite(site: string): string | null;
+buildOutreachProductObjectKey(input: Readonly<{
+  platform: "SHOPIFY" | "WOOCOMMERCE";
+  merchantSite: string;
+  preparedAt: Date;
+  outreachAttemptId: string;
+  providerProductId: string;
+  providerVariantId: string | null;
+  contentSha256: string;
+}>): string;
+```
+
+No MCP tool contract change: consume the **published**
+`CommerceToolOutputs.commerce_get_product` and existing Shopify/Woo variant
+identities. No new cloud media presign contract or ShopBrand READY JSON.
 
 ## Dependencies
 
-- `ARCH-052-BACKGROUND-008` — accepted text-only send integration; optional enhancement must not block it.
-- `ARCH-052-ADMIN-002` — approved IMAGE/header variants.
-- `ARCH-052-MCP-003` — exact product lookup.
-- `ARCH-052-COMMERCE-007` — published product tools.
-- `ARCH-049-BACKGROUND-001` and `ARCH-049-BACKGROUND-004` — existing media mechanism only where actually reused.
+- `ARCH-052-BACKGROUND-008` — approved **text-first** initial outreach;
+  optional image enhancement depends on it, not vice versa.
+- `ARCH-052-ADMIN-002` — immutable Meta-approved optional IMAGE variant.
+- `ARCH-052-MCP-003` — exact authenticated product reader.
+- `ARCH-052-COMMERCE-007` — published product tool.
+- `ARCH-049-BACKGROUND-001` — accepted safe fetch, transform and R2 primitives.
+- `ARCH-049-BACKGROUND-004` — accepted runtime READY-media binding semantics;
+  do not modify its ShopBrand-only role protocol.
 
 ## Enables
 
-- `ARCH-052-BACKGROUND-008`
+- `ARCH-052-SYSTEM-TEST-001`
+- `ARCH-052-SYSTEM-TEST-002`
+
+**BACKGROUND-007 must never list BACKGROUND-008 as enabled:** BACKGROUND-008
+is deliberately its prerequisite and its TEXT path remains independent.
 
 ## Acceptance Criteria
 
-- [ ] Checkout image and alternative promo product image resolve via exact MCP lookup.
-- [ ] Failed, stale-at-retry, revoked or unsafe media yields approved text-only template or no-send, not a broken IMAGE header or reuse of a previous attempt's media result.
-- [ ] No new Prisma image table or MCP-to-API product call.
-
-- [ ] MCP failure, failed image download and allowed TEXT fallback emit originating error diagnostics with redacted signed URLs; no provider message is fabricated for a local invalid image.
+- [ ] All ten positive merchant examples above and host/path negative cases
+      produce exact expected slugs or null; `/a-b` and `/a/b` are distinct,
+      as are `/A` and `/a`, and `www` is not silently removed.
+- [ ] Shopify key uses trusted persisted `Shop.domain`; Woo key uses same-shop
+      `WooCommerceInstallation.canonicalSiteUrl` including path. No agent,
+      source image URL or user-controlled host influences the slug.
+- [ ] For a fixed `preparedAt` and verified input, key bytes are exactly
+      reproducible; UTC midnight, leap day, retry-after-midnight, different
+      attempt IDs, null versus variant ID and cross-shop identity are tested.
+- [ ] Exact source product/variant and original source revocation are checked
+      on every preparation/retry; a previous ready object never substitutes
+      for current shop/source proof.
+- [ ] Transparent/portrait/tiny/oversized images produce correctly padded,
+      white-background, single-frame 1125x600 JPEG below 5 MiB, or a typed
+      failure. No cropping, EXIF, invalid bytes or unsafe secondary fetch.
+- [ ] New outreach R2 objects use the same bucket/public origin as brand, but
+      strict independent `outreach-products` key shape; BRAND writer still
+      accepts **only** `shop-brands` keys and passes all existing tests.
+- [ ] A matching public GET/hash is mandatory for READY. Missing credentials,
+      output mismatch, R2 collision, wrong tenant or probe failure yields
+      UNAVAILABLE and approved TEXT fallback or no-send, not original URL.
+- [ ] Only a real Meta-approved IMAGE variant may send the R2 public URL;
+      otherwise the accepted TEXT-only path is unchanged. No duplicate
+      WhatsApp send, extra conversation credit or customer-visible provider
+      diagnostics.
+- [ ] Confirmed Meta outbound receipt contains actual image header link and
+      providerMessageId/sentAt; key path date represents preparation only,
+      and failed sends cannot be mistaken for successful outreach.
+- [ ] Original MCP/R2/media failure diagnostics survive bounded security
+      redaction, with separate internal reason code and no swallowed exceptions.
+- [ ] No new Prisma schema, Shared contract, hosted API product proxy, R2
+      bucket, separate worker or archive/index change.
 
 ## Validation
 
-- [ ] Background safe-fetch/media and product reader unit/integration tests, simulated Meta payload.
-- [ ] Background declared typecheck/lint and `git diff --check`.
-
-Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+- [ ] `npx vitest run tests/unit/services/recovery-product-media` (new focused
+      suite: normalizer, exact key, transformer, R2 adapter, resolver).
+- [ ] `npx vitest run tests/unit/services/shop-brand-media` (regression across
+      the reused ARCH-049 transport/decoder/writer).
+- [ ] Existing Background prepared-template/Meta-send/receipt tests covering
+      image header and text fallback, 30,000 ms media deadline and cancellation;
+      run actual repository-declared scripts.
+- [ ] `npm run lint`, `npm run build`, `git diff --check`.
+- [ ] Integration verification with injected/fake R2 and real bytes; live R2
+      public-domain smoke only when configured. Mark unavailable live checks
+      **not run**, never silently claim a live public GET.
 
 ## Stop Condition
 
-After all Work Items, Acceptance Criteria and required Validation pass, complete the report, set task `status: review`, hand the implementation branch and parent task report to `moda_architect` and **STOP**. Do not begin a dependent task, merge, push main, or edit architecture indexes as a repository agent.
+After Work Items, Acceptance Criteria and required Validation pass, complete
+the report, set `status: review`, hand the implementation branch and parent
+task report to `moda_architect` and STOP. Do not begin system tests, merge,
+push main, or update architecture indexes.
 
 ## Implementation Notes
 
-**Expected owning repository locations (verify paths in the execution worktree; create proposed paths only if appropriate):**
+**Required owning repository file plan** (relative to
+`moda-interact-background/`; existing paths are verified in this snapshot):
 
-- `moda-interact-background/src/services/recovery-product-media/recovery-product-image-resolver.ts (new)`
-- `moda-interact-background/src/services/recovery-template-preparation/recovery-template-brand.ts`
-- `moda-interact-background/src/services/recovery-template-preparation/recovery-template.types.ts`
-- `moda-interact-background/tests/`
+| File | Work |
+|---|---|
+| `src/services/recovery-product-media/merchant-site-segment.ts` (new) | R1 pure codec |
+| `src/services/recovery-product-media/outreach-product-object-key.ts` (new) | R2 pure key builder/validator |
+| `src/services/recovery-product-media/product-image-transformer.ts` (new) | R3 deterministic JPEG preset |
+| `src/services/recovery-product-media/product-r2-writer.ts` (new) | Product-key validation + shared guarded writer transport |
+| `src/services/recovery-product-media/recovery-product-image-resolver.ts` (new) | MCP exact lookup, trusted shop/attempt read, current source & READY/UNAVAILABLE |
+| `src/services/shop-brand-media/{safe-fetch,image-transformer,r2-writer,metadata-verifier,public-probe}.ts` (existing) | Extract **only** reusable implementation mechanics as needed; preserve brand behaviour |
+| `src/services/platform-configuration/consumers.ts` (existing) | Reuse `readShopBrandPublicMediaConfiguration` + `readR2Configuration`; no new keys |
+| `src/services/recovery-template-preparation/{recovery-template-brand,recovery-template.types}.ts` (existing) | Optional approved product IMAGE binding, not ShopBrand role reuse |
+| `src/services/recovery-template-integration/{automated-recovery-template.service,prepared-template-send}.ts` (existing) | Optional IMAGE/receipt integration without second sender |
+| `tests/unit/services/recovery-product-media/*.test.ts` (new) | Exact site, date/key, JPEG, R2, MCP, retry, tenant cases |
 
-Source ownership is restricted to the assigned repository plus this task file. `moda_architect` owns architectural/dependency/index reconciliation. The implementing agent should stop for an architectural connector/schema gap rather than inventing a cross-repository workaround.
+Before editing read `docs/agent-vcs-ownership-policy.md`,
+`docs/agent-worktree-isolation-policy.md`, the actual task preparation packet
+and the existing ARCH-049 source/tests. Maintain dedicated parent and
+implementation worktrees and report their Git SHAs, sync evidence and
+submodule pins. Use the Shared logger. No extra implementation task or
+separate service is authorised by this definition.
 
 ## Completion Report
 
