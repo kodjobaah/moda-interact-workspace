@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -125,13 +125,13 @@ User input still must be a whole number `>= 0`. The database column remains a 32
 
 ## Acceptance Criteria
 
-- [ ] Admin accepts and persists `0`, `1`, `91`, `180`, `365` and a representable large integer; the audit records the intended before/after values and reason.
-- [ ] Admin rejects negative and fractional values before database mutation, and rejects malformed or unsafe numeric input without changing the current config.
-- [ ] The field renders no HTML `max` attribute and shows the correct open-ended range; all other fields still respect their original maximums.
-- [ ] The default remains 21; no automatic reset or migration of existing settings occurs.
-- [ ] Zero is explicitly explained as immediate inactivity expiry and potential prevention of outreach.
-- [ ] Existing admin permissions, optimistic versioning, reason requirement and audit trail still function.
-- [ ] No additional policy limit, new table, storefront errors or cross-repository source changes.
+- [x] Admin accepts and persists `0`, `1`, `91`, `180`, `365` and a representable large integer; the audit records the intended before/after values and reason.
+- [x] Admin rejects negative and fractional values before database mutation, and rejects malformed or unsafe numeric input without changing the current config.
+- [x] The field renders no HTML `max` attribute and shows the correct open-ended range; all other fields still respect their original maximums.
+- [x] The default remains 21; no automatic reset or migration of existing settings occurs.
+- [x] Zero is explicitly explained as immediate inactivity expiry and potential prevention of outreach.
+- [x] Existing admin permissions, optimistic versioning, reason requirement and audit trail still function.
+- [x] No additional policy limit, new table, storefront errors or cross-repository source changes.
 
 ## Validation
 
@@ -231,7 +231,7 @@ None. Production action behavior remains unchanged.
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review — Changes Requested
 
 Attempt 1 — Changes Requested
 
@@ -284,3 +284,22 @@ and focused validation are recorded under Attempt 2 above. The task was
 reclaimed through the canonical launcher, which incremented the attempt from 1
 to 2; it is now returned to `review` for Architect verification. No acceptance
 or merge has been made. `ARCH-016-SYSTEM-TEST-001` remains Pending.
+
+### Attempt 2 Architect Review — Accepted
+
+Accepted Attempt 2 as Complete. The new behavioral tests invoke
+`mutateBackgroundRuntimeControlsAction` and verify a successful persisted
+`21 -> 180` update, version increment, full before/after audit snapshots,
+administrator identity and reason. They also verify that a non-SUPER_ADMIN,
+stale version and negative lifetime cause no update or audit. Existing
+validation and UI tests cover open-ended whole-day parsing and field metadata.
+
+Attempt 2's focused security tests (8), focused validation tests (8), build and
+`git diff --check` passed. The full unit suite and repository lint were not
+rerun for Attempt 2; Attempt 1's unrelated full-suite failures and lint error
+remain recorded as historical validation limitations. No unresolved task
+criteria remain. `ARCH-016-SYSTEM-TEST-001` remains Pending behind its existing
+dependency and manual-testing gates; this acceptance does not start it.
+
+Architect decision: `status: complete`, Attempt 2. No implementation merge or
+main-branch update was made.
