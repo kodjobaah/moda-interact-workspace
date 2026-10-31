@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: copilot
 claimed_at: 2026-10-31T06:15:32Z
@@ -111,13 +111,13 @@ visible and propagate to the existing failure boundary, not a silent
 
 ## Work Items
 
-- [ ] Add bounded shop/mode-scoped keyset paging to the current discount lookup and exact Shared response, including cursor tamper/cross-tenant rejection.
-- [ ] Add built-in `commerce_get_discount_details` handler using existing `providerSnapshot` (Woo and enriched Shopify); map incomplete rules to explicit PARTIAL/UNKNOWN.
+- [x] Add bounded shop/mode-scoped keyset paging to the current discount lookup and exact Shared response, including cursor tamper/cross-tenant rejection.
+- [x] Add built-in `commerce_get_discount_details` handler using existing `providerSnapshot` (Woo and enriched Shopify); map incomplete rules to explicit PARTIAL/UNKNOWN.
 
-- [ ] Upgrade the MCP Shared pin and lockfile to the exact SHARED-014 published version, then map required-nullable `subtotalRequirementCurrency`, exact targeting/exclusion IDs, Woo `emailRestrictionsPresent`/`uninspectedMetadataPresent`, source restrictions and all source completeness reasons as specified above; do not treat missing Woo extension/customer restrictions as unrestricted. If either flag is true or null, include an explicit uncertainty reason; only verified `false` is absence of that particular restriction.
-- [ ] Respect current FIXED/AI/NONE policy on **every call**, including detail requests and calls after merchant policy changes.
-- [ ] Use the existing generic MCP envelope and published feature schema, with safe structured error logging.
-- [ ] Preserve actual Prisma/contract exception messages and causes in server-side Shared logs while keeping MCP client/tool error payloads minimal; never fabricate a provider error for a DB-only read.
+- [x] Upgrade the MCP Shared pin and lockfile to the exact SHARED-014 published version, then map required-nullable `subtotalRequirementCurrency`, exact targeting/exclusion IDs, Woo `emailRestrictionsPresent`/`uninspectedMetadataPresent`, source restrictions and all source completeness reasons as specified above; do not treat missing Woo extension/customer restrictions as unrestricted. If either flag is true or null, include an explicit uncertainty reason; only verified `false` is absence of that particular restriction.
+- [x] Respect current FIXED/AI/NONE policy on **every call**, including detail requests and calls after merchant policy changes.
+- [x] Use the existing generic MCP envelope and published feature schema, with safe structured error logging.
+- [x] Preserve actual Prisma/contract exception messages and causes in server-side Shared logs while keeping MCP client/tool error payloads minimal; never fabricate a provider error for a DB-only read.
 - [ ] Add PostgreSQL-backed tests for two shops, 120 discounts/page 75, selected vs unselected, revoked selections, missing details, Woo restrictions, Shopify partial rules and absent condition fields.
 
 ## Interfaces / Contracts
@@ -150,22 +150,23 @@ Existing `CommerceToolResultSchema` wraps `data`. See SHARED-009's complete Zod 
 
 ## Acceptance Criteria
 
-- [ ] All pages and a valid continuation cursor work for 120 discounts without accidental omission under a static dataset; change across live catalogue sync is reported as possible partial read, not a claim of exhaustive verification.
-- [ ] Only current permitted shop discounts are visible for FIXED and AI; detail reads cannot access unselected FIXED offers or other shops.
-- [ ] Condition outputs distinguish COMPLETE, PARTIAL and UNKNOWN on source evidence, including unsupported/large targets.
+- [x] All pages and a valid continuation cursor work for 120 discounts without accidental omission under a static dataset; change across live catalogue sync is reported as possible partial read, not a claim of exhaustive verification.
+- [x] Only current permitted shop discounts are visible for FIXED and AI; detail reads cannot access unselected FIXED offers or other shops.
+- [x] Condition outputs distinguish COMPLETE, PARTIAL and UNKNOWN on source evidence, including unsupported/large targets.
 
-- [ ] MCP source facts conform to **SHARED-014**, not the already published 2.8.1 schema: missing required `subtotalRequirementCurrency` property is a schema failure; a threshold without provable currency is incomplete; a verified no-threshold offer has `subtotalRequirementCurrency:null` without a false missing-currency warning. Truncated targeting and unknown exclusions never yield authoritative ALL; the obsolete unrepresentable-combination reason is removed only after complete new projection.
-- [ ] MCP does not call external providers or private proof APIs during discount options/details retrieval.
-- [ ] Generic MCP result, structured logging, tenancy and publisher/tool permissions remain intact.
+- [x] MCP source facts conform to **SHARED-014**, not the already published 2.8.1 schema: missing required `subtotalRequirementCurrency` property is a schema failure; a threshold without provable currency is incomplete; a verified no-threshold offer has `subtotalRequirementCurrency:null` without a false missing-currency warning. Truncated targeting and unknown exclusions never yield authoritative ALL; the obsolete unrepresentable-combination reason is removed only after complete new projection.
+- [x] MCP does not call external providers or private proof APIs during discount options/details retrieval.
+- [x] Generic MCP result, structured logging, tenancy and publisher/tool permissions remain intact.
 
-- [ ] Inject distinctive database, schema and `McpRequestError` failures; verify original origin and message in redacted server logs, no fake Shopify/Woo response, no exception content in model-facing MCP results and no catch-to-empty-success.
+- [x] Inject distinctive database, schema and `McpRequestError` failures; verify original origin and message in redacted server logs, no fake Shopify/Woo response, no exception content in model-facing MCP results and no catch-to-empty-success.
 
 ## Validation
 
-- [ ] Run MCP unit and PostgreSQL integration tests for pages, cursor tamper, tenant isolation, current policy, Woo and Shopify providerSnapshot mapping, and generic `CommerceToolResultSchema` conformance.
+- [x] Run MCP unit tests for pages, cursor tamper, tenant isolation, current policy, Woo and Shopify providerSnapshot mapping, and generic `CommerceToolResultSchema` conformance.
+- [ ] Run the authored and integration-typechecked real-PostgreSQL tests for two shops, selection changes, pagination and no provider calls. Docker is unavailable in this environment (`spawnSync docker ENOENT`); developer validation remains required.
 
-- [ ] Add fixtures for product ID versus variant ID, category/collection IDs, excluded IDs, `hasNextPage`/overflow, missing money currency, Woo email/metadata presence flags true/false/null, unknown sale-item/expiry/usage restriction, exact provider identity, and Shopify fully observed Basic versus combination-only partial. Assert no tool produces a basket-level SUPPORTED decision.
-- [ ] Run declared MCP typecheck/build and `git diff --check`; record actual command outcomes.
+- [x] Add fixtures for product ID versus variant ID, category/collection IDs, excluded IDs, `hasNextPage`/overflow, missing money currency, Woo email/metadata presence flags true/false/null, unknown sale-item/expiry/usage restriction, exact provider identity, and Shopify fully observed Basic versus combination-only partial. Assert no tool produces a basket-level SUPPORTED decision.
+- [x] Run declared MCP typecheck/build and `git diff --check`; record actual command outcomes.
 
 ## Stop Condition
 
@@ -179,31 +180,47 @@ Use the existing MCP database connection, discount models and feature/tool regis
 
 ### Status
 
-Not Started — portable definition, no task claim.
+Implementation complete; returned for developer validation and `moda_architect` review. This agent has not accepted the task.
 
 ### Files Changed
 
-None yet.
+`moda-interact-mcp/package.json`, `package-lock.json`, `src/execution/discount-catalogue.ts`, `src/mcp/ports.ts`, `src/mcp/registration.ts`, `src/runtime/ports.ts`, `src/runtime/prisma.ts`, `src/runtime/service-ports.ts`, `tests/unit/execution/discount-catalogue.test.ts`, and `tests/integration/prisma.integration.test.ts`.
+
+Implementation commit `7cbceee89b2ae0115bd2b948418b4169b977ea8f` is published to `origin/task/ARCH-052-MCP-002`.
 
 ### Work Completed
 
-None yet.
+Pinned Shared to the exact published `3.0.0` contract and implemented the two built-in, read-only discount tools over shop-scoped PostgreSQL snapshots. The reader rechecks persisted shop, current mode/selection and override on every call; FIXED selection changes revoke details immediately, AI ignores merchant selection but honors provider status, dates and unavailability, and NONE returns no data. Options use bounded keyset paging and an authenticated encrypted cursor bound to shop, mode, current FIXED policy and catalogue sync generation; altered/cross-shop/wrong-mode/expired cursors fail closed, and generation changes return retryable `UNAVAILABLE` rather than implying exhaustive pages. If another page exists without a valid generation, paging fails closed.
+
+Details map exact Shopify provider IDs, basic values/threshold currencies, targets, own/allowed combination tags and source completeness evidence; missing exclusions and truncated nested connections remain explicitly partial/unknown. Woo numeric target IDs remain strings, zero thresholds/quota semantics are preserved, nullable email/metadata flags remain uncertain, and unknown currency, expiry, sale-item, usage and maximum-item restrictions are explicit. Empty snapshots remain `UNKNOWN`. The generic Shared result envelope and MCP advertised-tool authorization guard are preserved; the reader makes no provider/proof call and adds no basket-level eligibility result. Unexpected failures are logged through Shared with the original error/cause object and bounded reason metadata while public errors remain generic.
 
 ### Validation Results
 
-Not run.
+`npm run test:unit` — 209 passed, 0 failed.
+
+`npm run typecheck` — passed.
+
+`npm run typecheck:integration` — passed.
+
+`npm run build` — passed.
+
+Changed-file ESLint command — passed. Full `npm run lint` — failed only on the existing unrelated unused `randomUUID` import at `src/connections/shopify/provider.ts:1`; no unrelated source was changed.
+
+`git diff --check` — passed.
+
+`npm run test:integration:docker` — attempted once; not run because Docker is unavailable (`spawnSync docker ENOENT`). The runner's diagnostic and cleanup commands also could not invoke Docker; no database container started. Developer validation required: rerun this exact command in a Docker-enabled environment and confirm the disposable PostgreSQL suite passes.
 
 ### Deviations
 
-None reported.
+The Shared options contract caps `limit` at 50, while the task's PostgreSQL fixture line says “page 75”. The implementation and tests honor the published schema maximum of 50 and traverse 120 rows in 50/50/20 pages; no 75-row request is made because it would violate the published input contract. PostgreSQL execution remains developer validation due to unavailable Docker. The full lint baseline issue is outside this task.
 
 ### Assumptions
 
-Implementation must confirm package versions and the current task worktree baseline.
+The current checkout's 50-row maximum is intentional and exact to Shared. A catalogue generation is required to safely issue a continuation cursor; if absent, only a single-page result is allowed. No other implementation assumption remains unresolved.
 
 ### Unresolved Issues
 
-None established by implementation.
+The Docker-backed PostgreSQL test has not executed in this environment and must be run by the developer before acceptance. Full lint remains blocked by the unrelated existing unused import noted above.
 
 ### Architectural Concerns
 
@@ -213,24 +230,24 @@ Escalate any unexpected provider API/auth/Shared/schema/contract gap to `moda_ar
 
 ### Review Status
 
-Pending.
+Pending. Returned for architect review; no acceptance decision has been made by this agent.
 
 ### Review Notes
 
-Task definition only. No implementation accepted.
+Implementation and evidence are submitted for review. The declared Docker integration command could not start because Docker is unavailable; see the Completion Report. No implementation is accepted by this agent.
 
 ### Reviewed Files
 
-Relevant October 29, 2026 code snapshot and task definition; no implementation source changes for this task reviewed.
+Implementation files listed in the Completion Report and the task-owned validation evidence; architect review is pending.
 
 ### Validation Reviewed
 
-None for implementation.
+209 MCP unit tests, source and integration typechecks, build, changed-file lint and `git diff --check` were reported passed. Docker PostgreSQL integration did not execute (`docker` binary unavailable). Full lint reports one unrelated existing unused import.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Pending architect review. Shared contract, tenant/policy guards, PostgreSQL-only source reads and published MCP envelope are preserved. No architect acceptance decision has been made by this agent.
 
 ### Follow-up
 
-Materialise through the canonical launcher only after all dependency task YAMLs are Complete.
+Developer: rerun `npm run test:integration:docker` from the implementation worktree in a Docker-enabled environment and attach the command result. `moda_architect`: review the implementation and evidence; this agent stops at `review` and does not start enabled tasks or merge/push main.
