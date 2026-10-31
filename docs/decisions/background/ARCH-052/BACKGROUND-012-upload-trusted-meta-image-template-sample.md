@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: codex
-claimed_at: 2026-10-31T06:18:49Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-052-ADMIN-002
@@ -93,7 +93,7 @@ lifecycle solely for logging.
 - [x] Adapt frozen vs outbound provider IMAGE component validation and attach the handle **only** to a copied provider CREATE payload, preserving immutable snapshot/semantic approval and reconciliation hashing.
 - [x] Integrate with existing Meta template submit worker without weakening `recordPostIntent`, claim CAS, name collision, reconciliation, failure visibility or TEXT-only flow.
 - [x] Cover success and malformed/redirect/oversized MIME, invalid/missing App ID, wrong WABA, 429/5xx, malformed session/handle, repeated jobs and unknown CREATE state with focused tests.
-- [ ] Redact the trusted sample handle from Meta HTTP/SDK failure diagnostics when a failed IMAGE CREATE response echoes it; assert it is absent from Shared logger fields.
+- [x] Redact the trusted sample handle from Meta HTTP/SDK failure diagnostics when a failed IMAGE CREATE response echoes it; assert it is absent from Shared logger fields.
 
 ## Interfaces / Contracts
 
@@ -119,14 +119,14 @@ lifecycle solely for logging.
 - [x] Provider transport errors, retries, duplicate delivery, wrong WABA, malformed data and unsafe image bytes are observed without duplicate uncertain CREATE or silent failures.
 - [x] No extra infrastructure service, DB migration, R2 persistence or five-minute proof contract.
 
-- [x] Inject distinct Meta sample-session/upload/CREATE error payloads, response absent and token-bearing errors; assert original messages/codes retained when safe, redaction flags set, credentials/handles absent and existing retry/no-CREATE behaviour unchanged.
-- [ ] Mock a failed IMAGE CREATE whose provider message and `error_data` echo the trusted handle; assert both are redacted and the redaction flag is set.
+- [x] Inject distinct Meta sample-session/upload/CREATE error payloads, response absent and token-bearing errors; assert original messages/codes retained when safe, redaction flags set, credentials/handles absent and existing retry/no-CREATE behaviour unchanged. Attempt 2 verifies echoed sample handles are redacted from the Shared logger fields.
+- [x] Mock a failed IMAGE CREATE whose provider message and `error_data` echo the trusted handle; assert both are redacted and the redaction flag is set.
 
 ## Validation
 
 - [x] Existing ARCH-047 Background Meta template-management unit and integration suites, plus new mocked Meta upload/frozen-vs-provider validation and failure matrix.
 - [x] Relevant Background typecheck, focused tests, changed-file lint and `git diff --check`, using actual package.json scripts.
-- [ ] Run the focused Meta template-management regression, lint/build and `git diff --check` after the handle-redaction correction.
+- [x] Run the focused Meta template-management regression, lint/build and `git diff --check` after the handle-redaction correction. The focused suite passed (26 tests), lint and build passed.
 - [x] Record environment/App ID and live Meta-approval checks separately; never mark actual provider approval as passing based on mocks. If environment cannot supply the App ID, return a bounded deployment gap to the architect.
 
 ## Stop Condition
@@ -141,7 +141,8 @@ Inspect the actual `src/services/meta-template-management/meta-graph.adapter.ts`
 
 ### Status
 
-Implementation complete; returned to `review` for architect review.
+Attempt 1 was submitted for architect review. After the handle-redaction change
+request, Attempt 2 is implemented and submitted for architect review.
 
 ### Files Changed
 
@@ -226,3 +227,53 @@ The trusted sample handle must remain absent from Shared logger diagnostics on a
 ### Follow-up
 
 Attempt 1 remains preserved. The task is Ready for Attempt 2.
+
+## Attempt 2 Completion Report
+
+### Status
+
+Implemented and returned to `review`. Attempt 1's implementation and review
+history remain preserved.
+
+### Files Changed
+
+- `src/services/meta-template-management/meta-graph.adapter.ts`
+- `tests/unit/services/meta-template-management/meta-management.test.ts`
+
+### Work Completed
+
+The provider diagnostic redactor now accepts trusted sensitive values and
+replaces the Meta-issued sample handle before the message, `error_data`, request
+ID, or string code fields enter Shared logger diagnostics. The IMAGE CREATE path
+passes only the validated trusted handle as a sensitive value. The regression
+uses a Meta-issued test handle echoed in both `error.message` and `error_data`,
+then asserts the Shared logger fields and serialized error contain no handle
+and set `redactionApplied`. Implementation commit `82448f2` is pushed to
+`origin/task/ARCH-052-BACKGROUND-012`.
+
+### Validation Results
+
+- Focused Meta management suite: 1 file, 26 tests passed.
+- `npm run lint` — passed.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation.
+- `git diff --check` — passed.
+- Dependencies were installed from the task lockfile in `/private/tmp/moda-background-012-attempt2-deps`; Shared 2.8.1 was used. No package manifest or lockfile changes were made.
+
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-012`, branch `task/ARCH-052-BACKGROUND-012`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-012`, branch `task/ARCH-052-BACKGROUND-012`.
+- Shared workspace checkout switched/mutated for task work: no; shared implementation checkout switched/mutated: no; another task worktree reused: no.
+
+### Start-of-Attempt Synchronization
+
+- Parent remote task branch fast-forwarded: not needed; parent `origin/main` incorporated: yes.
+- Implementation remote task branch fast-forwarded: not needed; implementation `origin/main` incorporated: already current.
+- Recursive submodule sync and init/update passed; status ready. Database submodule commit: `af77c594ecbfc78c26d01c0021a090830884bbff`.
+
+### Deviations and Unresolved Issues
+
+No scope deviations or new blockers. The prior Gateway `META_APP_ID` configuration
+follow-up remains unchanged. The task awaits architect review; this agent makes
+no acceptance decision.
