@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-10-31T01:40:08Z
+attempt: 1
 depends_on:
 - ARCH-052-SHARED-010
 - ARCH-052-COMMERCE-006
@@ -25,7 +25,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052-MCP-003: Execute Shopify and WooCommerce product search directly inside MCP
