@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: automatic
 status: blocked
 priority: 45
-executor: copilot
-claimed_at: 2026-10-31T13:37:38Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-016-DATABASE-002
@@ -193,6 +193,8 @@ The prepared API-002 implementation was present. The expected ARCH-016 database 
 ### Unresolved Issues
 
 `database/prisma/migrations/20260916150000_arch016_recovery_policy_discounts_outreach_generations/migration.sql` in the pinned database submodule adds `ck_arch016_checkout_recovery_lifetime CHECK ("checkoutRecoveryLifetimeDays" BETWEEN 1 AND 90)`. A search of all tracked migrations at that exact pin found no removal of this constraint. The API accepts valid PostgreSQL integer values as required, but the persisted canonical schema cannot currently store the task-required values above 90. No database-owned files were changed. `moda_architect` must reconcile the completed ARCH-016-DATABASE-002 dependency or sequence its corrected database pin before this task can satisfy the unrestricted-lifetime acceptance criterion.
+
+Architect reconciliation (2026-10-31): The canonical API implementation worktree is clean and contains pushed commits `e9fa59c` and `b73cb22`. The task remains blocked because its database submodule is pinned at `af77c594ecbfc78c26d01c0021a090830884bbff`, which does not include ARCH-016-DATABASE-002's accepted forward migration. The stale Copilot claim is cleared; status remains blocked and attempt 1 is preserved.
 
 ### Architectural Concerns
 
