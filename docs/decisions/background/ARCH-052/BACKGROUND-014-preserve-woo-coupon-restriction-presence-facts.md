@@ -26,7 +26,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Defined but not materialised**: no local task Git branch, commit, running agent or live shop access is claimed.
+Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. Materialised and executed through the canonical task launcher in dedicated mirrored task worktrees; no live shop access or persistent shop changes were made.
 
 ## Objective
 
@@ -58,10 +58,10 @@ No Shopify GraphQL changes, no new coupon proof service, no Woo hook/plugin alte
 
 ## Work Items
 
-- [ ] Add and normalize the two nullable presence flags without copying source arrays to `providerSnapshot`.
-- [ ] Preserve existing coupon identity, code deliverability, bounds, source status, selection flags and all other normalized restrictions.
-- [ ] Add focused tests for empty, nonempty, missing, malformed and oversized restriction arrays and absence of sensitive bytes in saved snapshots/logs.
-- [ ] Run owning repository's declared focused tests, changed-file lint, build and `git diff --check`, then record actual execution results.
+- [x] Add and normalize the two nullable presence flags without copying source arrays to `providerSnapshot`.
+- [x] Preserve existing coupon identity, code deliverability, bounds, source status, selection flags and all other normalized restrictions.
+- [x] Add focused tests for empty, nonempty, missing, malformed and oversized restriction arrays and absence of sensitive bytes in saved snapshots/logs.
+- [x] Run owning repository's declared focused tests, changed-file lint, build and `git diff --check`, then record actual execution results.
 
 ## Interfaces / Contracts
 
@@ -87,16 +87,16 @@ None. The existing accepted Woo coupon synchronization is reused; do not reopen 
 
 ## Acceptance Criteria
 
-- [ ] Both nullable flags distinguish verified empty arrays from true restrictions and unknown/malformed/overflow, without raw email/metadata persistence.
-- [ ] Existing coupon normalization, tenant identity and optional-field issue reporting remain unchanged; no Shopify code or unrelated worker feature changes.
-- [ ] MCP-002 can distinguish present/unobserved Woo restrictions from observed absence using these snapshot flags; no live Woo coupon check is required for initial outreach.
-- [ ] Synthetic sensitive input values do not appear in serialized snapshot, emitted logging/issue diagnostics or outbound contracts.
+- [x] Both nullable flags distinguish verified empty arrays from true restrictions and unknown/malformed/overflow, without raw email/metadata persistence.
+- [x] Existing coupon normalization, tenant identity and optional-field issue reporting remain unchanged; no Shopify code or unrelated worker feature changes.
+- [x] MCP-002 can distinguish present/unobserved Woo restrictions from observed absence using these snapshot flags; no live Woo coupon check is required for initial outreach.
+- [x] Synthetic sensitive input values do not appear in serialized snapshot, emitted logging/issue diagnostics or outbound contracts.
 
 ## Validation
 
-- [ ] Focused existing Woo coupon normalization/provider sync unit tests and explicit sensitive-input negative assertions.
-- [ ] Background declared lint and build scripts; `git diff --check`.
-- [ ] Worktree/parent synchronization and submodule evidence in the Completion Report, following `docs/agent-worktree-isolation-policy.md`.
+- [x] Focused existing Woo coupon normalization/provider sync unit tests and explicit sensitive-input negative assertions.
+- [x] Background declared lint and build scripts; `git diff --check`.
+- [x] Worktree/parent synchronization and submodule evidence in the Completion Report, following `docs/agent-worktree-isolation-policy.md`.
 
 ## Stop Condition
 
