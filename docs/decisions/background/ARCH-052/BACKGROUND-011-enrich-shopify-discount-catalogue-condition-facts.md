@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: complete
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -349,3 +349,31 @@ Accepted. The bounded provider snapshot preserves source-backed combination and 
 ### Follow-up
 
 Mark ARCH-052-BACKGROUND-011 Complete. The separate, unmaterialized ARCH-052-BACKGROUND-013 task is superseded because its tags, discount classes, and Plus entitlement requirements are delivered by this accepted implementation. Remove that redundant dependency from MCP-002 and SYSTEM-TEST-001. MCP-002 is dependency-ready; do not start it as part of this review.
+
+
+## Architect Review — Post-Acceptance Logging Finding
+
+### Review Status
+
+Changes Requested — reopen for Attempt 5.
+
+### Review Notes
+
+The catalogue service and worker do call the Shared structured logger with the thrown `Error`, and the log includes its message. However, Shared logging sanitizes `Error` objects to only `name` and `message`, so the stack and cause chain are omitted. In addition, the provider currently replaces Shopify GraphQL `errors` with a generic `Shopify discount GraphQL returned an invalid response` exception. Those paths lose the diagnostics needed to identify the underlying provider failure.
+
+For the next attempt, retain bounded, redacted details from the actual error (including stack and cause where available) as explicit structured fields, and preserve actionable Shopify GraphQL error messages/codes without logging raw response bodies, credentials, or customer data. Keep stable catalogue error state separate from diagnostic text. Add regression coverage proving the actual diagnostic fields reach the Shared logger and GraphQL failure details are retained safely.
+
+### Reviewed Files
+
+- `src/providers/shopify-discount.provider.ts`
+- `src/services/shopify-discount-catalogue.service.ts`
+- `src/workers/shopify-discount-sync.worker.ts`
+- Shared `@modainteract/moda-interact-shared/logging` Error sanitization behavior.
+
+### Architecture Conformance
+
+Changes Requested. Provider failures are not silently swallowed, but current logging does not retain enough error detail to understand their underlying cause. Preserve the bounded and redacted diagnostics described above while keeping provider response payloads and secrets out of logs.
+
+### Follow-up
+
+Return the task to `ready` for Attempt 5. Preserve Attempts 1–4 and the prior acceptance record as history. Keep `ARCH-052-MCP-002` pending until this logging gap is corrected and the task is accepted again.
