@@ -226,7 +226,8 @@ The trusted sample handle must remain absent from Shared logger diagnostics on a
 
 ### Follow-up
 
-Attempt 1 remains preserved. The task is Ready for Attempt 2.
+Attempt 1 remains preserved. Attempt 2 is implemented and submitted for
+architect review; the review status above records the Attempt 1 correction.
 
 ## Attempt 2 Completion Report
 
