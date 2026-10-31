@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-10-31T02:06:34Z
@@ -97,7 +97,7 @@ Source files: `moda-interact-background/src/providers/shopify-discount.provider.
 
 ### Status
 
-Changes requested after Attempt 3 architect review; ready for Attempt 4. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts and projects the Shopify Basic discount-combination policy through the Shared condition-facts contract in `ShopifyDiscount.providerSnapshot`.
+Ready for architect review after Attempt 4. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts, projects Shopify Basic combination policy through Shared, and retains recurring-cycle limits in `ShopifyDiscount.providerSnapshot` while reporting unrepresented subscription limits as PARTIAL.
 
 ### Files Changed
 
@@ -196,6 +196,36 @@ The existing Shopify query now selects `shop.plan.shopifyPlus`, both Basic types
 - `npm view @modainteract/moda-interact-shared@2.8.2 version` — returned `E404`; `2.8.2` is not available from the configured public registry. The available published contract was validated through the focused Shared-schema parsing regression.
 - The Attempt 2 PostgreSQL selection integration result remains recorded above (2 tests passed). It was not rerun in Attempt 3 because the changes are confined to the provider query/normalization, dependency pin and provider unit coverage; no database behavior or schema changed.
 - Installing Shared 2.8.1 reported 40 npm audit advisories (27 moderate, 13 high). The package install also emitted lifecycle-script allow-list notices. These are dependency-install observations; no remediation outside this bounded task was performed.
+
+ARCH-052-MCP-002 was not started.
+
+### Attempt 4 — Recurring Cycle Limit Correction
+
+Implementation commit `871670b` is pushed to `origin/task/ARCH-052-BACKGROUND-011`.
+
+The prepared launcher claimed Attempt 4 as `codex` at `2026-10-31T02:06:34Z` and pushed parent claim commit `4d370b5c05ab656fd2fc1c3469fda5e0f0f9b1ee`. Its dependency gate passed for `ARCH-052-BACKGROUND-009` and `ARCH-052-SHARED-010`.
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`, starting at `e6d77848d54e723b020d22d3f4b0ba0541ee6e34`; remote task-branch fast-forward was `not-needed`, and `origin/main` was incorporated (`yes`).
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`, starting at `f92458d6188515e49ec2eaa1ba8615c6852fd73a`; remote task-branch fast-forward was `not-needed`, and `origin/main` was already current.
+- Recursive database submodule sync and initialization passed at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+
+Both `DiscountAutomaticBasic` and `DiscountCodeBasic` GraphQL fragments now select `recurringCycleLimit`. The existing provider snapshot retains its normalized integer value (or `null` when unavailable). Shared 2.8.1 has no condition-facts field for this restriction, so a positive limit adds `RECURRING_CYCLE_LIMIT_NOT_REPRESENTED_IN_SHARED_FACTS` and keeps facts PARTIAL. A null, missing, or invalid value adds `RECURRING_CYCLE_LIMIT_UNAVAILABLE` and also keeps facts PARTIAL; zero means no cycle cap and does not by itself reduce completeness. Shopify documents the automatic field as non-null, the code field as nullable, and zero as indefinite: [DiscountAutomaticBasic](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/DiscountAutomaticBasic), [DiscountCodeBasic](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/DiscountCodeBasic). No Shared contract change was needed; the value remains available in the existing provider snapshot and incompleteness is explicit in the Shared facts.
+
+#### Attempt 4 Architect Review disposition
+
+- **Select and retain recurringCycleLimit for both Basic types — implemented.** Updated `src/providers/shopify-discount.provider.ts` query fragments and bounded normalization to retain the value under the existing provider snapshot.
+- **Prevent COMPLETE when a cycle limit may affect subscription eligibility — implemented.** Positive, null, missing and invalid values make facts PARTIAL with explicit bounded reasons because Shared 2.8.1 cannot represent the restriction. Zero is retained as the source-backed unlimited value.
+- **Add both-type regressions and Shared schema parsing — implemented.** `tests/unit/providers/shopify-discount.provider.test.ts` checks both Basic fragments, positive limits on both types, null code-limit behavior, explicit PARTIAL reasons and Shared schema parsing.
+- **Do not start MCP-002 — satisfied.** No MCP-002 work was started.
+
+#### Attempt 4 validation
+
+- `npm exec vitest run tests/unit/providers/shopify-discount.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts` — 2 files, 15 tests passed.
+- `npm exec eslint -- src/providers/shopify-discount.provider.ts tests/unit/providers/shopify-discount.provider.test.ts` — passed.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation.
+- `git diff --check` — passed.
+- PostgreSQL selection integration was not rerun: this correction changes only Shopify provider fields/normalization and provider unit coverage; no persistence or database behavior changed. The earlier Attempt 2 integration result remains recorded above.
 
 ARCH-052-MCP-002 was not started.
 
