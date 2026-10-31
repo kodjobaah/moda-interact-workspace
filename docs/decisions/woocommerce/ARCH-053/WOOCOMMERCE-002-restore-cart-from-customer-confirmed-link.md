@@ -71,6 +71,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 - [x] Add server-side install-auth API resolve client with strict response validation and errors.
 - [x] Implement all-or-nothing core product restoration for snapshots with no applied coupons, current totals recalculation, session rebind + exactly one activity enqueue + wc_get_checkout_url redirect; reject coupon-bearing restore until WOOCOMMERCE-005.
 - [x] Exercise stale link, cross-device, existing-cart replace confirmation and rollback on failure, asserting no Moda error/notice appears on the storefront and real failure details remain in protected PHP diagnostics.
+- [ ] If WooCommerce session persistence fails during restoration, restore the pre-restore cart and session without leaving a durable resumption activity queued; if activity enqueue fails, roll back the cart and session as well.
 
 The API resolver response is the single `woo.restore.resolve.v1` contract from SHARED-001 and **already contains** mandatory `outreachOffer` (including `NONE`). Parse the exact complete v1 response; do not use a pre-offer v1 response or invent v2. This task restores the original basket only; interpreting or attempting confirmed recommended codes belongs to WOOCOMMERCE-007 and conflict UI to WOOCOMMERCE-008. Preserve the typed result for that later owning task but **do not silently deploy an end-to-end checkout flow that discards a confirmed recommended coupon**. No separate resolver endpoint or second checkout session may be created.
 
@@ -194,22 +195,26 @@ Changes Requested
 
 ### Review Notes
 
-The implementation needs a rollback path when WooCommerce session persistence fails after the cart has been changed. In `includes/Checkout/CheckoutResumeController.php` lines 116-118, ensure the visitor's pre-restore cart/session state is restored on persistence failure; record rollback failure separately and do not report or redirect as though the restored basket succeeded. Add a focused regression test for this failure path.
+Attempt 2 addressed the earlier persistence rollback request and completed the checkout-only WordPress scenarios on port 8887. The full suite later failed in an unrelated, contaminated shop-brand scenario, after the checkout restore scenarios passed.
 
-Retry `npm run test:integration:wordpress` using host ports in this order: 8887, 8886, then 8885. Record each attempt and its result in the Completion Report.
+One issue remains: `captureResumption()` currently enqueues the fresh checkout activity before `save_data()` persists the session. If session persistence fails, the callback reports failure and the cart/session are rolled back, but the Action Scheduler activity remains queued with a snapshot of the rejected restored basket. Ensure the durable activity is not queued until session persistence succeeds, and that an enqueue failure still rolls back the cart and session. Add regression coverage asserting that session-persistence failure leaves no resumption activity queued.
+
+The requested integration retry was completed on port 8887; checkout restore scenarios passed. The full suite's unrelated contaminated shop-brand failure is recorded in Attempt 2 above.
 
 ### Reviewed Files
 
-`includes/Checkout/CheckoutResumeController.php`
+- `includes/Checkout/CheckoutResumeController.php`
+- `includes/Checkout/CheckoutCapture.php`
+- `tests/CheckoutResumeControllerTest.php`
 
 ### Validation Reviewed
 
-The Completion Report records the focused PHP tests and lint as passing. WordPress integration did not reach scenarios because port 8888 was unavailable; retry on 8887, 8886, then 8885 as noted above.
+The Attempt 2 Completion Report records 12 focused PHP tests and 67 assertions passing, lint and diff checks passing, and checkout-only WordPress integration passing on port 8887. The full WordPress suite reached and passed checkout restore scenarios, then failed in an unrelated contaminated shop-brand scenario.
 
 ### Architecture Conformance
 
-Changes Requested: handle cart/session persistence failure atomically from the shopper's perspective, and complete the requested WordPress integration retry before resubmitting for review.
+Changes Requested: order session persistence and durable activity enqueue so a failed restore cannot leave an activity for a cart that was rolled back. Preserve cart/session rollback when enqueue itself fails.
 
 ### Follow-up
 
-Implement and test rollback when session persistence fails, then rerun the WordPress integration on ports 8887, 8886, and 8885 in that order. Update this same task's Completion Report and return it for architect review.
+Change the restore commit ordering so session persistence succeeds before the resumption activity is enqueued; on enqueue failure, roll back the cart and session. Add a regression assertion that session-persistence failure leaves no queued activity, update this task's Completion Report, and return it for architect review.
