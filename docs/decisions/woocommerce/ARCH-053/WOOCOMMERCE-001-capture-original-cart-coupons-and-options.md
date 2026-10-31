@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T09:44:59Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-053-API-001
@@ -98,7 +98,7 @@ PHP `checkout.restoration` must conform to the published ARCH-053-SHARED-001 v1 
 ## Validation
 
 - [x] `composer test` focused CheckoutCapture/CheckoutSnapshot tests
-- [x] `npm run test:integration:wordpress` targeted snapshot serialization for Classic/Blocks with original coupon list and variations when environment available
+- [ ] Rerun the targeted Classic/Blocks checkout integration after the latest Attempt 2 changes; the latest run failed at checkout delivery (see Completion Report).
 - [x] `composer lint` and `git diff --check`
 
 ## Stop Condition
@@ -113,11 +113,11 @@ The plugin already has `CheckoutKey::SESSION_FIELD`, Action Scheduler and the v2
 
 ### Status
 
-Attempt 2 implementation and required focused validation are complete. Ready for `moda_architect` review. The implementation branch and this report are pushed; no producer deployment was performed.
+Attempt 2 implementation changes are pushed. Review returned the task to `ready` because the latest focused checkout integration run failed to observe the expected HTTP request. The UTF-16 parity correction and PHP validation pass; resolve or explain the integration failure and update evidence before resubmitting. No producer deployment was performed.
 
 ### Claim Release History
 
-Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, that claim was released. The launcher claimed Attempt 2 for Codex at `2026-10-31T09:44:59Z`, re-gated both dependencies, synchronized the dedicated parent and implementation task worktrees, and pushed the durable parent claim (`f92db4455fe861fda3a04b16a083cd7fcd654a55`). Implementation baseline was `b905dab216f8598269ebd32e8d70af150524d274`. Implementation commits `5f679b6` and `8f48e22` are pushed to `origin/task/ARCH-053-WOOCOMMERCE-001`. Attempt 2 is complete and ready for architect review.
+Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, that claim was released. The launcher claimed Attempt 2 for Codex at `2026-10-31T09:44:59Z`, re-gated both dependencies, synchronized the dedicated parent and implementation task worktrees, and pushed the durable parent claim (`f92db4455fe861fda3a04b16a083cd7fcd654a55`). Implementation baseline was `b905dab216f8598269ebd32e8d70af150524d274`. Implementation commits `5f679b6`, `8f48e22` and `69357b8` are pushed to `origin/task/ARCH-053-WOOCOMMERCE-001`; the implementation worktree is clean and the remote task ref matches `69357b8`. Commit `69357b8` aligns PHP string bounds with the Shared schema’s UTF-16 code-unit semantics and adds boundary tests. Attempt 2 is returned to Ready for another correction cycle; no new attempt was claimed.
 
 ### Files Changed
 
@@ -127,19 +127,20 @@ Parent task worktree: this task definition only.
 
 ### Work Completed
 
-Implemented the bounded `woo.cart-restore.v1` snapshot with the complete original coupon list and supported simple/variation lines; unsupported evidence carries a reason and no partial line data. Added Shared fixture parity and focused unsupported-cart cases. Checkout activity remains `woo.activity.v1`; verified phone proof stays in that envelope, and unverifiable phone values are omitted while other contact fields remain. Added Classic and Blocks integration coverage for a native variation with an applied coupon. No producer deployment was performed.
+Implemented the bounded `woo.cart-restore.v1` snapshot with the complete original coupon list and supported simple/variation lines; unsupported evidence carries a reason and no partial line data. Added Shared fixture parity and focused unsupported-cart cases. Checkout activity remains `woo.activity.v1`; verified phone proof stays in that envelope, and unverifiable phone values are omitted while other contact fields remain. Added Classic and Blocks integration coverage for a native variation with an applied coupon. Commit `69357b8` aligns text bounds with Shared UTF-16 code-unit lengths and adds supplementary-character boundary tests. No producer deployment was performed.
 
 ### Validation Results
 
-`git diff --check` — passed in the implementation worktree after the final edits.
+Initial Attempt 2 validation before commit `69357b8` passed: the focused PHP test had 16 tests / 145 assertions, `composer lint` passed, and the checkout-only WordPress integration passed on the disposable site at port 8891. That integration pass predates the latest integration-test assertion adjustment and is historical evidence only.
 
-`composer test -- tests/CheckoutCaptureTest.php` — passed: 16 tests, 145 assertions.
+Revalidation after `69357b8`:
 
-`composer lint` — passed: all declared PHP files reported no syntax errors.
+- `composer test -- tests/CheckoutCaptureTest.php` — passed: 17 tests, 150 assertions. PHPUnit printed a non-failing warning that it could not write `.phpunit.cache/test-results` under the restricted filesystem.
+- `composer lint` — passed: all declared PHP files reported no syntax errors.
+- `git diff --check` — passed.
+- Focused checkout-only WordPress integration on the task-specific disposable wp-env at port 8891 — **failed** at the guest checkout outage case. After Action Scheduler ran the captured event, the test expected one HTTPS request for event `woo-5fe2d1dcc3102b0151358f59f4652374`, but observed zero. The runner cleaned its fixture data. The task-specific wp-env was stopped afterward; the separate developer site on port 8888 was not changed.
 
-`npm run test:integration:wordpress -- --checkout-only` — passed against the task-created disposable wp-env using Colima, port 8891. Classic and Blocks scenarios verified the original applied coupon and selected variation in the supported restoration projection; the checkout-only runner reported PASS and cleaned its temporary fixture data.
-
-The broad `npm run test:integration:wordpress` runner was attempted. Its first startup collided with the existing developer wp-env on port 8888. Retrying on an isolated port reached the checkout scenarios but exposed a missing Store API cart-session initialization in the new integration helper. The helper was corrected; the focused checkout-only integration was then run successfully on the disposable task environment. The developer environment on port 8888 was not modified.
+The integration failure needs investigation and a successful rerun before acceptance. No production behavior or deployment was exercised.
 
 ### Deviations
 
@@ -151,7 +152,7 @@ The canonical launcher packet supplied the authoritative worktree paths and depe
 
 ### Unresolved Issues
 
-None.
+The latest focused checkout-only integration run did not observe the expected API request for the guest checkout outage action. Investigate whether this is a fixture/environment issue or a delivery regression; rerun the targeted integration successfully after correction and update this report before resubmitting.
 
 ### Architectural Concerns
 
@@ -161,24 +162,32 @@ Return any cross-service schema/provider/transaction concern to `moda_architect`
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 2.
 
 ### Review Notes
 
-Not Reviewed — task not executed.
+The latest implementation commit `69357b8` resolves the UTF-16 length-parity finding and adds tests for the boundary cases. The focused PHP test passes (17 tests, 150 assertions), `composer lint` passes, and `git diff --check` passes. However, the latest checkout-only WordPress integration run failed: the guest checkout outage action produced no observed HTTPS request for its captured event. The earlier integration pass predates the final integration assertion adjustment and does not verify the submitted snapshot.
+
+Return the task to Ready for another correction cycle. Preserve Attempt 2 and clear the executor and claim timestamp. Do not promote enabled tasks.
 
 ### Reviewed Files
 
-None.
+- `includes/Checkout/CheckoutSnapshot.php`
+- `includes/Checkout/CheckoutCapture.php`
+- `includes/Checkout/CheckoutActivityPublisher.php`
+- `tests/CheckoutCaptureTest.php`
+- `tests/fixtures/woo-restore-v1.json`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
+- Attempt 2 Completion Report.
 
 ### Validation Reviewed
 
-None.
+Latest PHP unit tests, PHP lint and `git diff --check` were run during review. The latest focused WordPress integration was also run on the isolated wp-env at port 8891 and failed at the guest checkout outage request assertion; see Completion Report. The earlier successful focused integration was on a pre-`69357b8` snapshot.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+The bounded restoration projection, original coupon capture and canonical v1 phone proof follow the task contract. Acceptance is blocked by the failed final checkout integration run.
 
 ### Follow-up
 
-None.
+Investigate and resolve or explain why the captured outage action generated no HTTPS request. Rerun the focused Classic/Blocks checkout integration, update validation evidence and resubmit Attempt 3 only after the task launcher returns it to execution. Keep the producer undeployed until the coordinated API/Background pre-production rollout.
