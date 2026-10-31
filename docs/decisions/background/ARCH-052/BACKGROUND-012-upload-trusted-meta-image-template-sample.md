@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -276,5 +276,29 @@ and set `redactionApplied`. Implementation commit `82448f2` is pushed to
 ### Deviations and Unresolved Issues
 
 No scope deviations or new blockers. The prior Gateway `META_APP_ID` configuration
-follow-up remains unchanged. The task awaits architect review; this agent makes
-no acceptance decision.
+follow-up remains unchanged. Attempt 2 has been accepted by architect review; no live Meta upload or provider approval is claimed.
+
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted — Complete.
+
+### Review Notes
+
+The Attempt 1 blocker is resolved. `MetaGraphTemplateAdapter.create()` passes the trusted uploader-issued handle into the CREATE diagnostic redaction boundary. The redactor applies it to provider message, bounded error details, request/trace ID and string code fields before those values reach `safeMetaError()` and the Shared logger. The regression injects a failed IMAGE CREATE whose message and `error_data` echo the exact test handle, then asserts that the handle is absent from the resulting Shared logger fields and serialized error and that `redactionApplied` is true.
+
+### Reviewed Files
+
+- `src/services/meta-template-management/meta-graph.adapter.ts`
+- `tests/unit/services/meta-template-management/meta-management.test.ts`
+- Attempt 2 Completion Report and validation evidence.
+
+### Validation Reviewed
+
+Reviewed the reported 26 focused tests, lint, build and `git diff --check`; these checks were not rerun during architect review.
+
+### Architecture Conformance
+
+Accepted. Trusted sample handles are confined to the provider CREATE payload and redacted from failed CREATE diagnostics. The approved frozen snapshot and digest remain unchanged. The separate Gateway `META_APP_ID` configuration follow-up remains required before live IMAGE registration; no live Meta upload or provider approval is claimed.
