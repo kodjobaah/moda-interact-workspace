@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-31T21:55:35Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-054-DATABASE-001
@@ -173,24 +173,45 @@ Publication:
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
 
-None
+The service retains the authenticated Shop/installation/recovery-conversation
+locks and revision checks. Each successful mode transition increments the
+revision, clears pending AI and processing-claim fields, and advances
+`lastProcessedVersion` from the locked inbound version in the same transaction
+as the audit event. Same-mode requests return before mutation, while stale
+revisions remain conflicts. The human-send path is unchanged.
+
+The updated Database submodule pin supplies the fields from accepted
+DATABASE-001. No control wire contract or provider-send receipt behavior changed.
+Accepted Attempt 2 and marked this automatic-completion task Complete. The
+dependent BACKGROUND-002 remains Pending because its other prerequisites,
+including BACKGROUND-001 and SHOPIFY-002, are incomplete.
 
 ### Reviewed Files
 
-None
+- `src/merchant/conversations/control/service.ts`
+- `tests/integration/merchant/conversations/control.service.postgres.test.ts`
 
 ### Validation Reviewed
 
-None
+Reviewed the Completion Report evidence: PostgreSQL control/concurrency tests,
+six unit tests, four HUMAN-send PostgreSQL tests, build, typecheck,
+changed-file ESLint, and `git diff --check` passed. Repository-wide lint still
+reports the documented `no-empty` error in untouched
+`src/merchant/support/routes.ts:75`; it does not affect changed files. Tests
+were not rerun for this review.
 
 ### Architecture Conformance
 
-Pending
+Conforms to ARCH-054's atomic pending-turn invalidation requirement and leaves
+the existing final provider-admission revision fence, HUMAN command flow,
+consent and Meta policy boundaries intact.
 
 ### Follow-up
 
-None
+No implementation correction is required. Keep `ARCH-054-BACKGROUND-002`
+Pending until all of its declared prerequisites are Complete. No main-branch
+merge was performed.
