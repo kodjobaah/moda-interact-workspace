@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
-executor: copilot
-claimed_at: 2026-10-31T05:12:35Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-052-MCP-005
@@ -184,7 +184,7 @@ behaviour beyond the bounded diagnostic correction is authorized.
 
 ### Status
 
-Implementation complete; submitted for moda_architect review.
+Implementation complete and accepted by moda_architect.
 
 ### Files Changed
 
@@ -259,27 +259,37 @@ prevents secure provenance preservation rather than silently inventing data.
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review — Accepted
 
-Pending.
-
-### Review Notes
-
-No implementation reviewed; architectural task only.
+Accepted on 2026-10-31. The bounded HTTP error extraction preserves WooCommerce
+source codes/messages and approved request IDs in server-side structured logs;
+transport and internal exceptions retain safe original diagnostics. The existing
+MCP typed failures, tenant/grant checks, network protections, and read behavior
+remain intact. The shared logger isolates sink failures, and the added tests
+cover the log boundary and public-result safety.
 
 ### Reviewed Files
 
-31 October 2026 workspace source, existing MCP-005 reader, MCP-003 task and
-Shared logging policy.
+- `src/connections/woocommerce/direct-product-reader.ts`
+- `tests/unit/connections/woocommerce/direct-product-reader.test.ts`
+- This task definition and Completion Report
+- `docs/observability/shared-logging.md`
 
 ### Validation Reviewed
 
-None for implementation.
+The reported focused reader tests (14), typecheck, build, and `git diff --check`
+passed. The full unit run reported 196 passed and one unrelated lifecycle harness
+timeout; its isolated rerun passed. The full suite was not rerun serially. This
+caveat is accepted because the failing test is unrelated and passed in isolation.
 
 ### Architecture Conformance
 
-Awaiting implementation review.
+The implementation remains within the task's MCP-only scope and adds no provider
+requests, public error fields, Shared contracts, or changes to the accepted
+MCP-005 implementation history. Source provider diagnostics remain server-side.
 
 ### Follow-up
 
-Terminal system test validates the MCP-006 Woo error preservation path.
+`ARCH-052-SYSTEM-TEST-002` remains Pending until its other prerequisites and
+manual gate are satisfied; it can validate the MCP-006 Woo error preservation
+path as part of its final system test.
