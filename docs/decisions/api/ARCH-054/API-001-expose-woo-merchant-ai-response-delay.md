@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-10-31T22:03:08Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-054-DATABASE-001
@@ -93,7 +93,7 @@ Canonical Shared v1 examples (request) `{ "schemaVersion":1, "expectedRevision":
 
 ## Validation
 
-- [ ] `npx tsx --test tests/unit/merchant/ai-response-delay/settings.test.ts`; `node scripts/test-arch054-ai-response-delay-postgres.mjs`; `npm run lint`; `npm run typecheck`; `npm run build`; `git diff --check`.
+- [x] `npx tsx --test tests/unit/merchant/ai-response-delay/settings.test.ts`; `node scripts/test-arch054-ai-response-delay-postgres.mjs`; `npm run lint` (coordinator-approved exception for one unrelated pre-existing `no-empty` at `src/merchant/support/routes.ts:75`); `npm run typecheck`; `npm run build`; `git diff --check`.
 
 
 ## Stop Condition
@@ -110,7 +110,7 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Attempt 2 implementation criteria and all validations except full-repository lint are complete. The task is blocked because required `npm run lint` still fails on the unrelated existing empty catch in `src/merchant/support/routes.ts:75`; that file is outside this task's scope and was not changed. The AI response-delay implementation's focused tests, PostgreSQL integration, typecheck, build, and diff check pass. Do not mark ready for review until the lint gate is resolved or the coordinator disposition changes the validation requirement.
+Ready for Architect review. Attempt 2 implementation criteria and all task-specific validations are complete. Full `npm run lint` still fails on the unrelated existing empty catch in `src/merchant/support/routes.ts:75`; that out-of-scope file is unchanged. The coordinator authorized a task-scoped exception to this lint gate so API-001 can proceed to review. This exception is not implementation acceptance.
 
 ### Files Changed
 
@@ -134,7 +134,7 @@ Shared package metadata and installed dependency: PASS, exact `3.1.0`; npm packa
 
 `npx tsx --test tests/unit/merchant/ai-response-delay/settings.test.ts`: PASS, 5 tests.
 `node scripts/test-arch054-ai-response-delay-postgres.mjs`: PASS. Prisma Client generation succeeded; all 68 migrations deployed, including `20261031170000_arch054_merchant_ai_response_delay`; PostgreSQL integration passed tenant isolation, defaults, same-value no-op, compare-and-set race, and revocation checks.
-`npm run lint`: FAIL, one unrelated existing error at `src/merchant/support/routes.ts:75` (`no-empty`); no task-owned source change caused the failure, and the unrelated file was not modified.
+`npm run lint`: FAIL, one unrelated existing error at `src/merchant/support/routes.ts:75` (`no-empty`); no task-owned source change caused the failure, and the unrelated file was not modified. `moda_architect` authorized a task-scoped exception for API-001 review; the support route was not changed.
 `npm run typecheck`: PASS; Prisma Client generation and TypeScript check succeeded.
 `npm run build`: PASS; Prisma Client generation and production TypeScript build succeeded.
 `git diff --check`: PASS.
@@ -149,7 +149,7 @@ Both worktrees were clean before validation. No API source changes or implementa
 
 ### Attempt 2 Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-The previous missing-Prisma-field blocker is resolved: the pinned database submodule includes `ShopSettings.aiResponseDelayMinutes Int @default(0)` and migration `20261031170000_arch054_merchant_ai_response_delay`. PostgreSQL integration, typecheck, build, and diff validation now pass. The only remaining required validation failure is the existing unrelated `no-empty` lint error at `src/merchant/support/routes.ts:75`. It was not changed because it is outside API-001 scope. Task remains blocked pending an authorized disposition of that repository lint failure.
+The previous missing-Prisma-field blocker is resolved: the pinned database submodule includes `ShopSettings.aiResponseDelayMinutes Int @default(0)` and migration `20261031170000_arch054_merchant_ai_response_delay`. PostgreSQL integration, typecheck, build, and diff validation pass. Full-repository lint still reports the existing unrelated `no-empty` error at `src/merchant/support/routes.ts:75`; the file remains unchanged. `moda_architect` authorized a task-scoped exception to the lint gate for review. This exception does not accept the implementation or change the lint result.
 
 ### Attempt 1 Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
