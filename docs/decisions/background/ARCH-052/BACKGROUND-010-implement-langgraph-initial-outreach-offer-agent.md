@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
 executor: copilot
 claimed_at: 2026-10-31T14:25:02Z
@@ -457,7 +457,7 @@ Use paths relative to the parent workspace when editing, and confirm the canonic
 
 ### Status
 
-Changes Requested (Attempt 2). The requested Aimock integration and helper-test matrix corrections are present, but alternative-product finalization can promote an expired or disabled offer because it does not enforce the offer's current provider eligibility.
+Ready for Architect Review (Attempt 3). Alternative-product finalization now verifies source identity, supported status, active provider status, availability, and start/end timestamps before returning a promotion. All requested alternative-offer regressions pass; PostgreSQL-backed integration setup was unavailable for this attempt.
 
 ### Files Changed
 
@@ -465,6 +465,7 @@ Changes Requested (Attempt 2). The requested Aimock integration and helper-test 
 - `tests/unit/agents/initial-outreach-offer.combinations.test.ts`
 - `tests/unit/agents/initial-outreach-offer.eligibility.test.ts`
 - `tests/unit/agents/initial-outreach-offer.graph.test.ts`
+- `src/agents/initial-outreach-offer.graph.ts`
 
 ### Work Completed
 
@@ -474,6 +475,9 @@ Changes Requested (Attempt 2). The requested Aimock integration and helper-test 
 - Expanded compatibility fixtures for PRODUCT+SHIPPING reciprocal permissions, explicit false and unknown class permissions, and unknown same-line overlap falling back to a singleton. Added graph-boundary assertions for model-authored coupon/provider fields and mismatched source detail identity.
 - The published Shared facts do not expose documented minimum-quantity scope semantics. Existing tests prove the required conservative `UNVERIFIABLE` outcomes for unknown scope and missing line amount; a positive quantity-boundary fixture cannot be supported without inventing contract semantics and remains an explicit limitation for architect review.
 - Attempt 2 implementation commit pushed to `origin/task/ARCH-052-BACKGROUND-010`: `1f71bc3` (following `0f8c3e9` and `e620501`). `@langchain/langgraph` remains directly pinned at `1.4.15`; the already-declared `@copilotkit/aimock@1.45.1` was reused without dependency changes.
+- Alternative-product finalization now requires the options and details records to agree on offer identity/method/code/dates/support, requires `facts.unavailableAt === null` and an active/enabled provider status, and rejects invalid, future-starting, or expired dates using the injected evaluation clock. Existing exact-product, same-shop, targeting and restriction checks remain in place.
+- Added graph regressions for expired, not-yet-started, disabled and unavailable offers; the existing valid exact-product alternative test continues to assert successful promotion.
+- Attempt 3 implementation commit pushed to `origin/task/ARCH-052-BACKGROUND-010`: `3bb4e83`.
 
 ### Validation Results
 
@@ -483,14 +487,19 @@ Changes Requested (Attempt 2). The requested Aimock integration and helper-test 
 - `npm run lint` — passed.
 - `git diff --check` — passed.
 - The Attempt 2 focused validation does not rerun the previously documented unrelated ARCH-047 logger assertion failures; no code in that path changed.
+- Attempt 3: `npx vitest run tests/unit/agents/initial-outreach-offer.agent.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/agents/initial-outreach-offer.eligibility.test.ts tests/unit/agents/initial-outreach-offer.combinations.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` — passed, 5 files / 44 tests.
+- Attempt 3: `MODA_DISPOSABLE_INTEGRATION=1 npx vitest run tests/integration/initial-outreach-offer-aimock.integration.test.ts` — passed, 1 file / 1 test.
+- Attempt 3: `node scripts/test-integration.mjs tests/integration/initial-outreach-offer-aimock.integration.test.ts` — did not reach Vitest; disposable PostgreSQL migration failed with Prisma `P1001` because `127.0.0.1:32988` was unavailable. The same integration test passed with the repository's integration Vitest mode directly; no PostgreSQL context test was rerun.
+- Attempt 3: `npm run build`, `npm run lint`, and `git diff --check` — passed.
 
 ### Worktree and Revision Evidence
 
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree and implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-010` and `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-010`; both use `task/ARCH-052-BACKGROUND-010`. The canonical workspace and other task worktrees were not switched or modified.
 - Prepared launcher claim commit: `62e46edae1c734f0281639e41fd7d95ffe2e0fab`, Attempt 2, executor Copilot. The packet reported all six dependencies complete, parent synchronization with `origin/main` at preparation revision `158e7a41ad49c7238648774a22077e8d78067227`, and implementation task worktree reused from `0f8c3e94c7e1c58288417605d85335b21c46e712`.
+- Attempt 3 launcher claim commit: `8d6db742fb7b16f812b5370af713ee96e2e04fed`, claimed from Ready at `2026-10-31T14:25:02Z`; all six dependencies passed. Launcher reported parent and implementation worktrees reused, `origin/main` incorporated, and recursive submodules ready. The implementation worktree was at `1e8262775327367310e28f5971419f9dde052dc9` before this correction; database submodule remained at `af77c594ecbfc78c26d01c0021a090830884bbff`.
 - Recursive implementation submodule sync/update passed during preparation; recorded database submodule commit: `af77c594ecbfc78c26d01c0021a090830884bbff`. No submodule gitlink was staged.
-- Implementation branch is pushed through `1f71bc3`; parent task report commit `3f6267e1` is pushed on the same task branch. Both worktrees are clean and synchronized with their remotes. No merge to `main` was performed.
+- Implementation branch is pushed through `3bb4e83`; parent task report will be committed separately on the same task branch. The parent claim is committed and pushed. No merge to `main` was performed.
 
 ### Deviations
 
@@ -498,7 +507,7 @@ Changes Requested (Attempt 2). The requested Aimock integration and helper-test 
 
 ### Assumptions
 
-The prepared launcher packet is authoritative for the Attempt 2 claim, worktree isolation, synchronization, dependency gates, and recursive submodule setup. All implementation and validation ran in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-010` on `task/ARCH-052-BACKGROUND-010`; the canonical workspace and other task worktrees were not modified.
+The prepared launcher packet is authoritative for the Attempt 3 claim, worktree isolation, synchronization, dependency gates, and recursive submodule setup. All implementation and validation ran in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-010` on `task/ARCH-052-BACKGROUND-010`; the canonical workspace and other task worktrees were not modified.
 
 ### Unresolved Issues
 
@@ -507,7 +516,7 @@ The prepared launcher packet is authoritative for the Attempt 2 claim, worktree 
 
 ### Architectural Concerns
 
-The change is limited to Background-owned tests. The task branch is submitted for review only; acceptance criteria remain unchecked where complete evidence is absent.
+The correction is limited to the Background-owned agent graph and its graph tests. The task branch is submitted for review only; acceptance criteria remain unchecked where complete evidence is absent.
 
 ## Architect Review
 
