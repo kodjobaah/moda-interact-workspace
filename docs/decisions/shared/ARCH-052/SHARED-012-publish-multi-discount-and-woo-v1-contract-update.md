@@ -151,8 +151,9 @@ No source or contract gap was found. The blocker is the conflict between the pub
 - Start synchronization: parent and implementation remote task branch fast-forwards were `not-needed`; `origin/main` was `already-current` in both worktrees.
 - Recursive implementation submodules: sync passed; update/init passed; ready, no entries.
 - Parent claim commit: `2afa020403a4aed48d8a8d437448272e5dae608e`, pushed by launcher.
-- Implementation release-metadata commit: `21b9434e4d14d8dcb17b8c74090d0e59d595eab7`; publication not performed.
-- Parent report commit: this report is being committed locally; package publication remains pending Architect direction.
+- Implementation release-metadata commit: `21b9434e4d14d8dcb17b8c74090d0e59d595eab7`; task-branch push was rejected by automatic review pending explicit authorization for this exact repository/branch.
+- Parent report commit: `386acd591df3bc67dd4ed99cf1a52497cb91f390`; task-branch push was rejected by automatic review pending explicit authorization for this exact repository/branch.
+- Package publication was not performed; it remains pending Architect direction on the no-build conflict.
 - No npm release or main-branch update was made.
 
 ## Architect Review
