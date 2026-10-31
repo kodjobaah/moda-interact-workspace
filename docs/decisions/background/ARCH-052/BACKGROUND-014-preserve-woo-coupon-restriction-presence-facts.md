@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 33
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
   - ARCH-052-MCP-002
@@ -26,7 +26,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Defined but not materialised**: no local task Git branch, commit, running agent or live shop access is claimed.
+Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. Materialised and executed through the canonical task launcher in dedicated mirrored task worktrees; no live shop access or persistent shop changes were made.
 
 ## Objective
 
@@ -58,10 +58,10 @@ No Shopify GraphQL changes, no new coupon proof service, no Woo hook/plugin alte
 
 ## Work Items
 
-- [ ] Add and normalize the two nullable presence flags without copying source arrays to `providerSnapshot`.
-- [ ] Preserve existing coupon identity, code deliverability, bounds, source status, selection flags and all other normalized restrictions.
-- [ ] Add focused tests for empty, nonempty, missing, malformed and oversized restriction arrays and absence of sensitive bytes in saved snapshots/logs.
-- [ ] Run owning repository's declared focused tests, changed-file lint, build and `git diff --check`, then record actual execution results.
+- [x] Add and normalize the two nullable presence flags without copying source arrays to `providerSnapshot`.
+- [x] Preserve existing coupon identity, code deliverability, bounds, source status, selection flags and all other normalized restrictions.
+- [x] Add focused tests for empty, nonempty, missing, malformed and oversized restriction arrays and absence of sensitive bytes in saved snapshots/logs.
+- [x] Run owning repository's declared focused tests, changed-file lint, build and `git diff --check`, then record actual execution results.
 
 ## Interfaces / Contracts
 
@@ -87,16 +87,16 @@ None. The existing accepted Woo coupon synchronization is reused; do not reopen 
 
 ## Acceptance Criteria
 
-- [ ] Both nullable flags distinguish verified empty arrays from true restrictions and unknown/malformed/overflow, without raw email/metadata persistence.
-- [ ] Existing coupon normalization, tenant identity and optional-field issue reporting remain unchanged; no Shopify code or unrelated worker feature changes.
-- [ ] MCP-002 can distinguish present/unobserved Woo restrictions from observed absence using these snapshot flags; no live Woo coupon check is required for initial outreach.
-- [ ] Synthetic sensitive input values do not appear in serialized snapshot, emitted logging/issue diagnostics or outbound contracts.
+- [x] Both nullable flags distinguish verified empty arrays from true restrictions and unknown/malformed/overflow, without raw email/metadata persistence.
+- [x] Existing coupon normalization, tenant identity and optional-field issue reporting remain unchanged; no Shopify code or unrelated worker feature changes.
+- [x] MCP-002 can distinguish present/unobserved Woo restrictions from observed absence using these snapshot flags; no live Woo coupon check is required for initial outreach.
+- [x] Synthetic sensitive input values do not appear in serialized snapshot, emitted logging/issue diagnostics or outbound contracts.
 
 ## Validation
 
-- [ ] Focused existing Woo coupon normalization/provider sync unit tests and explicit sensitive-input negative assertions.
-- [ ] Background declared lint and build scripts; `git diff --check`.
-- [ ] Worktree/parent synchronization and submodule evidence in the Completion Report, following `docs/agent-worktree-isolation-policy.md`.
+- [x] Focused existing Woo coupon normalization/provider sync unit tests and explicit sensitive-input negative assertions.
+- [x] Background declared lint and build scripts; `git diff --check`.
+- [x] Worktree/parent synchronization and submodule evidence in the Completion Report, following `docs/agent-worktree-isolation-policy.md`.
 
 ## Stop Condition
 
@@ -110,23 +110,44 @@ Use the existing pure normalization helper and tests; keep source editing paths 
 
 ### Status
 
-Not started — defined but not materialised.
+Complete — accepted by the architect on Attempt 1.
 
 ### Files Changed
 
-None.
+- `moda-interact-background/src/providers/woo-coupon-normalization.ts`
+- `moda-interact-background/tests/unit/providers/woo-coupon-normalization.test.ts`
+- `moda-interact-background/src/services/translation-reconciliation.service.ts` (developer-requested lint correction)
 
 ### Work Completed
 
-None.
+- Added `emailRestrictionsPresent` and `uninspectedMetadataPresent` to the existing safe provider snapshot. Empty source arrays map to `false`; valid nonempty email restriction arrays and nonempty metadata arrays map to `true`; missing, malformed or oversized fields map to `null`.
+- Kept source email and metadata arrays, values and keys out of snapshots and diagnostics. Ambiguous or oversized supplied fields emit only the bounded `optional_field_ignored` issue for the field name.
+- Preserved existing coupon identity, code deliverability, selection, status, bounds and other normalized restrictions. No schema, cross-service contract, API, or worker lifecycle changes.
+- Added focused tests covering empty, nonempty, missing, malformed and oversized inputs, including serialized snapshot/diagnostic assertions against synthetic sensitive values.
+- In response to the developer's follow-up, preserved the credential lookup exception as the `cause` of the generic `UNAVAILABLE_CREDENTIAL` error in `translation-reconciliation.service.ts`; outward error behavior is unchanged and the `preserve-caught-error` lint finding is resolved.
+
+#### Architect Review Correction Checklist
+
+- Read the complete task and latest `## Architect Review` before implementation.
+- Latest review status is `Pending`; it contains no `Changes Requested` outcome or correction items. Mandatory architect-review corrections: none.
+- Completed all task Work Items and Acceptance Criteria within the defined scope.
 
 ### Validation Results
 
-Not run.
+- `./node_modules/.bin/vitest run tests/unit/providers/woo-coupon-normalization.test.ts` — passed; 1 test file, 8 tests.
+- `./node_modules/.bin/eslint src/providers/woo-coupon-normalization.ts tests/unit/providers/woo-coupon-normalization.test.ts` — passed.
+- `./node_modules/.bin/eslint src/services/translation-reconciliation.service.ts src/providers/woo-coupon-normalization.ts tests/unit/providers/woo-coupon-normalization.test.ts` — passed after the developer-requested correction.
+- `./node_modules/.bin/vitest run tests/unit/services/merchant-pricing-translation-reconciliation.service.test.ts` — passed; 1 test file, 4 tests.
+- `npm run build` — passed, including Prisma client generation and TypeScript compilation.
+- `git diff --check` — passed.
+- `npm run lint` — passed repository-wide after the developer-requested correction.
+- `npm ci` was required because the prepared implementation worktree had no `node_modules`; it completed from the existing lockfile without lockfile changes. npm reported 40 dependency audit findings (27 moderate, 13 high); dependency remediation is outside this task.
+- Launcher preparation evidence: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-014`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-014`; both task branches are `task/ARCH-052-BACKGROUND-014`. Prepared parent head was `5362773f36eec15e7e095764b040da6c5ce19680`, implementation head was `105f5ead7b3f39b6e66c5cd385443877d4c2729c`, and initialized database submodule was `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Implementation commit `8ecc53b` was pushed to `origin/task/ARCH-052-BACKGROUND-014`. The initial default push was refused because the local branch's configured upstream is `origin/main`; explicit ref push to the matching task branch succeeded without changing branch configuration.
 
 ### Deviations
 
-None.
+In the developer-approved follow-up recorded below, one line in `src/services/translation-reconciliation.service.ts` was changed to preserve the credential lookup exception as the `cause` of the existing generic error. This is outside the original coupon-normalization files but does not change outward error behavior; the focused translation-reconciliation test, build, and full repository lint passed after the correction. No other task-scope deviation occurred.
 
 ### Assumptions
 
@@ -134,7 +155,7 @@ The Woo REST response carries the source field when available; missing is not eq
 
 ### Unresolved Issues
 
-None at task definition time.
+None. The initial full-repository lint finding was resolved by the developer-approved cause-preservation correction; the final repository lint passed.
 
 ### Architectural Concerns
 
@@ -142,26 +163,39 @@ Report newly observed provider restriction types or unsafe data requirements to 
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review
 
-Pending.
+#### Review Status
 
-### Review Notes
+Accepted — Complete (2026-10-31).
 
-Definition only; no implementation reviewed.
+#### Review Notes
 
-### Reviewed Files
+The normalizer records `emailRestrictionsPresent` and `uninspectedMetadataPresent` without retaining source email restrictions or metadata. Empty arrays map to `false`; a valid nonempty email string array or any nonempty metadata array maps to `true`; missing, malformed and oversized values map to `null` and produce only bounded field-name issues. Existing coupon projection and identity behavior are preserved. Tests assert sensitive synthetic values are absent from serialized snapshots and diagnostics.
 
-`moda-interact-background/src/providers/woo-coupon-normalization.ts` (30 October 18:09 snapshot), architecture and existing coupon task definitions.
+The one-line cause-preservation change in `translation-reconciliation.service.ts` is outside the original task scope but was explicitly developer-approved and is documented above. It preserves the cause while retaining the same outward generic credential error; no unrelated feature behavior was introduced.
 
-### Validation Reviewed
+Implementation commits `8ecc53b` and `b13043e1d1a5a81d6dcae662137cd76dc3f87eee` are present on `origin/task/ARCH-052-BACKGROUND-014`; the parent report branch is synchronized at `d8d2812218e39ab6e90a4a40cd09e0694fb6b5bf`. Both worktrees are clean. The implementation branch tracks `origin/main` locally, but its task branch remote matches the submitted head.
 
-None for implementation.
+#### Reviewed Files
 
-### Architecture Conformance
+- `moda-interact-background/src/providers/woo-coupon-normalization.ts`
+- `moda-interact-background/tests/unit/providers/woo-coupon-normalization.test.ts`
+- `moda-interact-background/src/services/translation-reconciliation.service.ts` and its focused regression test.
+- This task definition and Completion Report.
 
-Pending implementation review.
+#### Validation Reviewed
 
-### Follow-up
+The Completion Report records the focused normalization tests (8 passed), translation-reconciliation test (4 passed), Background build, full repository lint and `git diff --check` as passing. Dependency audit findings from `npm ci` are disclosed and no dependency files changed. These validations were reviewed from the report and were not rerun during architect review.
 
-MCP-002 may begin only after this task and all its other prerequisites are architect-accepted Complete.
+#### Architecture Conformance
+
+Accepted. The snapshot provides the exact presence/unknown distinctions needed by MCP-002 while excluding raw email and metadata values. No schema, migration, live Woo call or separate proof service was added.
+
+#### Follow-up
+
+BACKGROUND-014 is Complete. MCP-002 and SYSTEM-TEST-002 remain Pending because they have other unsatisfied dependencies; this acceptance does not make either task eligible.
+
+## Developer Approval
+
+Approved by the developer on 2026-10-31, including the requested credential-error cause-preservation correction. Architect acceptance is recorded above.
