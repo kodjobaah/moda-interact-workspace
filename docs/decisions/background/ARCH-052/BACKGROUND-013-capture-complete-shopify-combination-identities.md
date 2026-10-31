@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 32
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-052-BACKGROUND-011
 enables:
@@ -35,7 +35,7 @@ Complete Shopify Basic discount combination snapshots by persisting each discoun
 
 ## Context
 
-BACKGROUND-011 was accepted after Attempt 4 and is now Ready for Attempt 5 to add actionable, bounded error diagnostics. It already captures Basic `combinesWith` booleans, allowed and own same-line tags, discount classes and trusted Plus entitlement. This task covers the newly identified source-backed `minimumRequirement` threshold facts and their currency; do not start it until BACKGROUND-011 is accepted again.
+BACKGROUND-011 was accepted after Attempt 6. It already captures Basic `combinesWith` booleans, allowed and own same-line tags, discount classes and trusted Plus entitlement. This task adds the source-backed `minimumRequirement` threshold facts and their currency, and its prerequisite is complete.
 
 ## Scope
 
@@ -81,12 +81,12 @@ competing generic logger or create new external reads.
 
 ## Work Items
 
-- [ ] Add own tags/classes, shop-plan evidence and typed `minimumRequirement` (subtotal amount + currency or quantity) to both Basic GraphQL selections and normalize independently.
-- [ ] Ensure no regression to previously persisted `combinesWith` policy.
-- [ ] Test valid, malformed and ambiguous provider facts; record validation evidence.
+- [x] Add own tags/classes, shop-plan evidence and typed `minimumRequirement` (subtotal amount + currency or quantity) to both Basic GraphQL selections and normalize independently.
+- [x] Ensure no regression to previously persisted `combinesWith` policy.
+- [x] Test valid, malformed and ambiguous provider facts; record validation evidence.
 
-- [ ] Fix the constant-false completeness computation without losing any source uncertainty reason, and test a genuinely complete Basic fixture versus unsupported/partial/truncated fixtures.
-- [ ] Preserve original Shopify GraphQL/HTTP errors and SDK transport exceptions at the existing provider fetch boundary, with source provenance, separate internal reason and redaction/truncation markers.
+- [x] Fix the constant-false completeness computation without losing any source uncertainty reason, and test a genuinely complete Basic fixture versus unsupported/partial/truncated fixtures.
+- [x] Preserve original Shopify GraphQL/HTTP errors and SDK transport exceptions at the existing provider fetch boundary, with source provenance, separate internal reason and redaction/truncation markers.
 
 ## Interfaces / Contracts
 
@@ -103,18 +103,18 @@ Shopify Admin GraphQL 2026-07: `shop { plan { shopifyPlus } }` (one bounded shop
 
 ## Acceptance Criteria
 
-- [ ] Own vs allowed tags are not confused, and an unknown or oversized array remains non-authoritative.
+- [x] Own vs allowed tags are not confused, and an unknown or oversized array remains non-authoritative.
 
-- [ ] Complete source fixtures may report COMPLETE only when all relevant conditions and combination inputs were observed; incomplete cases retain precise, non-empty reasons instead of permanent false or fabricated true.
-- [ ] Both Basic selectors preserve existing discount data, seller selections and source-backed conditions without modifying provider availability/merchant flags. Subtotal threshold facts preserve the original `MoneyV2.amount/currencyCode` pair, and quantity thresholds cannot be mistaken for a zero subtotal.
-- [ ] No checkout mutation or additional provider lookup on the hot path.
+- [x] Complete source fixtures may report COMPLETE only when all relevant conditions and combination inputs were observed; incomplete cases retain precise, non-empty reasons instead of permanent false or fabricated true.
+- [x] Both Basic selectors preserve existing discount data, seller selections and source-backed conditions without modifying provider availability/merchant flags. Subtotal threshold facts preserve the original `MoneyV2.amount/currencyCode` pair, and quantity thresholds cannot be mistaken for a zero subtotal.
+- [x] No checkout mutation or additional provider lookup on the hot path.
 
-- [ ] Mock HTTP-200 GraphQL `errors`, HTTP 4xx/5xx provider error and SDK transport exception; assert actual Shopify message/code survives logging, secrets/codes do not leak and catalogue completeness/idempotency remains correct.
+- [x] Mock HTTP-200 GraphQL `errors`, HTTP 4xx/5xx provider error and SDK transport exception; assert actual Shopify message/code survives logging, secrets/codes do not leak and catalogue completeness/idempotency remains correct.
 
 ## Validation
 
-- [ ] Focused Shopify provider query/normalization tests, including a positive GBP threshold amount/currency, unknown currency, source quantity threshold and unsupported minimum requirement.
-- [ ] Background declared lint/build and `git diff --check`.
+- [x] Focused Shopify provider query/normalization tests, including a positive GBP threshold amount/currency, unknown currency, source quantity threshold and unsupported minimum requirement.
+- [x] Background declared lint/build and `git diff --check`.
 
 ## Stop Condition
 
@@ -128,58 +128,59 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Not started — defined but not materialised.
+Accepted after Attempt 1.
 
 ### Files Changed
 
-None.
+Changed implementation files: `moda-interact-background/src/providers/shopify-discount.provider.ts`, `moda-interact-background/tests/unit/providers/shopify-discount.provider.test.ts`, and `moda-interact-background/tests/unit/services/shopify-discount-catalogue.service.test.ts`.
 
 ### Work Completed
 
-None.
+Both Shopify Basic GraphQL selections preserve own `tags`, `discountClasses`, `combinesWith`, and typed subtotal/quantity `minimumRequirement` facts. The Plus-plan observation is requested on the first page only and reused for subsequent pages. Tags/classes are all-or-null, preserving exact valid values and observed empty arrays while malformed, missing, oversized, or truncated inputs remain null with explicit reasons. Threshold amount and currency remain paired without inference or numeric conversion. Completeness is reason-derived; unsupported/restricted/truncated conditions retain precise reasons, and `COMBINATION_POLICY_NOT_REPRESENTED_IN_SHARED_FACTS` remains until MCP-002 projects the combination policy. Provider diagnostics preserve GraphQL messages/codes, HTTP status, request ID, operation and safe versioned path, plus bounded SDK exception diagnostics; error text is redacted before the existing Shared logger. Existing sync retry and snapshot behavior remains unchanged; no checkout lookup, schema, availability flags, merchant selection, dependency manifests, Shared/MCP code, or other repository was changed. Implementation commit `8e0fe0cf8028671823808fae827f7e750a047d99` is pushed to `origin/task/ARCH-052-BACKGROUND-013`.
 
 ### Validation Results
 
-Not run.
+`npm test -- tests/unit/providers/shopify-discount.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts tests/unit/workers/shopify-discount-sync.worker.test.ts` — 3 files, 42 tests passed. `npm run lint` passed. `npm run build` passed, including Prisma Client generation and TypeScript compilation. `git diff --check` passed. `npm ci` was required because the implementation worktree lacked `node_modules`; npm reported 40 advisories (27 moderate, 13 high). No dependency remediation was performed because it is outside task scope.
 
 ### Deviations
 
-None.
+No implementation-scope deviations. Basic facts retain the required combination projection reason until MCP-002 projects the corresponding fields, preserving source provenance.
 
 ### Assumptions
 
-No production compatibility is required; all required source provenance remains available for implementing agents to verify.
+No production compatibility change was required. The existing Shared logger API is used; dependency declarations remain unchanged because this task owns provider source capture, not consumer projection.
 
 ### Unresolved Issues
 
-None at definition time.
+None blocking this task. MCP-002 must remove the preserved combination-only reason only after all corresponding facts are genuinely projected.
 
 ### Architectural Concerns
 
-Any source contract/deployment gap must be escalated rather than patched locally.
+No cross-repository or database changes were needed. Architect acceptance is recorded below.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Complete.
 
 ### Review Notes
 
-New multi-discount feature task; no implementation reviewed.
+Attempt 1 implements the required Shopify Basic source facts and preserves uncertainty rather than inferring safe combination eligibility. Both Basic discount fragments select own tags, discount classes, combination flags and allowed same-line tags, plus typed subtotal amount/currency or quantity minimum requirements. Shopify Plus is observed on the first paged request only and reused for the same shop's remaining pages. Malformed, unavailable and oversized tag/class inputs remain null with explicit reasons; observed empty arrays remain distinct from unknown values.
+
+The completeness projection retains all unresolved source reasons, including the combination-policy projection reason pending MCP-002. A valid Basic record therefore remains PARTIAL until that downstream projection exists; unsupported, incomplete, restricted and truncated records also remain non-authoritative. The existing provider snapshot retains the exact source minimumRequirement including its currency. HTTP/GraphQL and SDK failures preserve bounded source diagnostics through the Shared logger without logging raw bodies or tokens, and the existing service failure path avoids replacing trusted catalogue snapshots on errors. No acceptance blocker remains.
 
 ### Reviewed Files
 
-None.
+- `src/providers/shopify-discount.provider.ts`
+- `tests/unit/providers/shopify-discount.provider.test.ts`
+- `tests/unit/services/shopify-discount-catalogue.service.test.ts`
+- Attempt 1 Completion Report and validation evidence.
 
 ### Validation Reviewed
 
-No implementation validation yet.
+Reviewed the reported 42 focused tests, `npm run lint`, `npm run build` and `git diff --check`; these checks were not rerun during architect review.
 
 ### Architecture Conformance
 
-Pending implementation and review.
-
-### Follow-up
-
-None.
+Accepted. Source-backed combination and threshold facts are persisted within the existing snapshot, unknown inputs remain incomplete, provider failures are logged and propagated safely, and no new hot-path provider reads or schema changes were introduced. MCP-002 remains Pending because its other dependencies are incomplete. SYSTEM-TEST-001 remains Pending until its full prerequisite chain is complete.
