@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T02:09:03Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-SHARED-010
@@ -111,6 +111,64 @@ Once Work Items, acceptance criteria and validation are met, set task status to 
 Expected MCP owning code: `src/execution/policy/`, `src/connections/resolver.ts`, `src/runtime/ports.ts` composition, the existing Woo request/reader path for the exact bounded extension authorized above, and tests. Do not change credential decryption, grant resolution, authenticated origin resolution, pinned network transport or other MCP-005 security behavior. No hosted API product route, no extra Prisma tables, no Shared edits. Publisher runs only in COMMERCE-007.
 
 ## Completion Report
+
+### Status
+
+Attempt 2 implementation complete; submitted for Architect Review. Task status is `review`. Attempt 1 remains historical and was returned for the scope amendment recorded below.
+
+### Files Changed
+
+- `moda-interact-mcp/package.json`, `package-lock.json` — pin published Shared 2.8.1 product contracts.
+- `moda-interact-mcp/src/connections/ports.ts`, `resolver.ts`, and `woocommerce/provider.ts` — admit only bounded product variation list/retrieve reads.
+- `moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts` — request the approved product and variation fields, return bounded variation pages, and null unsafe permalinks against the authenticated installation origin.
+- `moda-interact-mcp/src/execution/policy/shopify-core.ts`, `shopify-core-executor.ts`, `moda-interact-mcp/src/runtime/service-ports.ts` — implement published `products.search`/`products.get` execution for both store platforms, Shopify exact reads and custom storefront validation, Woo projection/pagination, and safe structured failure logging.
+- Focused tests for the direct Woo reader, provider allowlist, product adapters, and published executor.
+
+### Work Completed
+
+- Wired published product search and exact lookup through the existing tenant-scoped store resolver; no hosted API proxy or new transport was added.
+- Implemented Shopify exact product/variant reads and mapped only provider-returned category and collection IDs. A verified GraphQL primary domain is accepted for storefront permalinks; unverified URLs remain `null` without dropping the product.
+- Added Woo product fields and actual variation reads to the existing MCP-005 path. Pagination is bounded by three product pages and twelve provider reads per invocation, the shared result limit and deadline; signed cursors retain continuation state.
+- Exact Woo variation reads verify both requested variation ID and parent ID. Simple products retain `variantId: null`; no identity, price or category IDs are inferred.
+- Preserved MCP-005 credential, grant, DNS, TLS, redirect, response-size, timeout and post-read grant checks. The adapter validates Woo permalinks against its already verified installation origin without exposing that origin.
+- Provider failures returned as policy errors are logged through the shared logger with an occurrence ID, operation, platform, shop ID, error code and retryability. Provider payloads, arguments and credentials are excluded. Thrown failures continue through the existing MCP error logger.
+
+### Validation Results
+
+- Focused reader, provider, resolver, published executor and service-port checks: **41 passed, 0 failed**. This includes the MCP-005 grant/credential/DNS/redirect/deadline/response regressions, unsafe Woo and Shopify URL handling, Shopify custom domains, Woo variation pagination, exact parent identity and safe failure logging.
+- `npm run build`: passed.
+- `tsc --noEmit -p tsconfig.json`: passed.
+- `git diff --check`: passed.
+
+### Deviations
+
+None. Implementation stayed within the Attempt 2 scope amendment; MCP-005’s task record and completion report were not changed.
+
+### Assumptions
+
+- WooCommerce does not provide standard product currency/vendor fields through the approved REST projection; these remain unknown where no trusted source value exists.
+- Product-search cursors remain tenant/query/filters bound and use the existing HMAC cursor secret configuration.
+
+### Unresolved Issues
+
+None known. Architect review remains pending; no acceptance decision has been made by this agent.
+
+### Architectural Concerns
+
+No new architecture concern identified. MCP-005 security codepaths are preserved and covered by focused regression tests.
+
+### Git / VCS
+
+- Task branch: `task/ARCH-052-MCP-003` in both repositories.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-MCP-003`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-003`.
+- Dedicated worktrees were used; shared workspace/default implementation checkouts were not switched or edited for task implementation. No other task worktree was reused.
+- Start synchronization: parent `origin/main` was already current and the existing task branch was synchronized; implementation `origin/main` was already current and no remote implementation task branch existed at preparation. Recursive submodule initialization passed; database submodule was `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- Implementation repository commit: `150beadc7506cbf4155857cb1109855516db8ea8`; pushed to `origin/task/ARCH-052-MCP-003`.
+- Parent task-file claim commit: `ab54c2b8a63e98a3f05cbb19fc7b44246fac8fa3`; the completion report is included in the current parent task branch update.
+- Parent submodule gitlink staged: no. Implementation `main` merged: no. Workspace `main` merged: no.
+
+## Attempt 1 Completion Report (Historical)
 
 ### Status
 
