@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 18
-executor: codex
-claimed_at: 2026-10-31T00:46:44Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-011
@@ -27,7 +27,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-053`. Parent: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Architect coordination task; **portable definition, not materialised**. No branch or runtime implementation has been created by this artifact.
+Architecture: `ARCH-053`. Parent: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Implementation is materialised on its dedicated task branch and submitted for Architect review.
 
 ## Objective
 
@@ -55,9 +55,9 @@ ARCH-053-SHARED-001 and its publication are already Complete. The first real gro
 
 ## Work Items
 
-- [ ] Implement exact new union branch and regenerate inferred types.
-- [ ] Test single offer, multiple codes, mixed code/automatic set, rejection of overbound/malformed v1 and no v2.
-- [ ] Run Shared implementation tests/typecheck/build; do not publish.
+- [x] Implement exact new union branch and regenerate inferred types.
+- [x] Test singleton compatibility, multiple codes, mixed code/automatic sets, malformed/empty/overbound groups and v2 rejection.
+- [x] Run Shared tests, typecheck and build. No package release was published.
 
 ## Interfaces / Contracts
 
@@ -93,14 +93,14 @@ Example eligible v1 response addition: `"outreachOffer":{"kind":"CHECKOUT_OFFERS
 
 ## Acceptance Criteria
 
-- [ ] The existing v1 resolver can return an ordered group (2..3) without a new route, version or recovery snapshot field.
-- [ ] Original customer coupons are unmodified and distinct from the recommended list.
-- [ ] Invalid group shape fails validation; no partial group is silently represented as a valid group.
+- [x] The existing v1 resolver can return an ordered group (2..3) without a new route, version or recovery snapshot field.
+- [x] Original customer coupons are unmodified and distinct from the recommended list.
+- [x] Invalid group shapes fail validation; duplicate identity/pairing decisions remain with API/Woo.
 
 ## Validation
 
-- [ ] Woo Shared contract tests and inference/export checks.
-- [ ] Shared typecheck/build, `git diff --check`.
+- [x] Woo Shared contract tests and inference/export checks passed.
+- [x] Shared typecheck and build passed; `git diff --check` passed.
 
 ## Stop Condition
 
@@ -114,19 +114,29 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Not started — defined but not materialised.
+Implementation complete; submitted for Architect review. Attempt 1.
 
 ### Files Changed
 
-None.
+- `src/woocommerce/contracts.ts`
+- `src/woocommerce/contracts.test.ts`
+- `src/woocommerce/__fixtures__/woo-restore-v1.json`
 
 ### Work Completed
 
-None.
+- Added the strict `CHECKOUT_OFFERS` branch to the existing `woo.restore.resolve.v1` outreach union. The ordered group contains 2–3 strict CODE or AUTOMATIC items with the exact bounded fields from the architecture contract.
+- Kept singleton NONE, CHECKOUT_CODE, CHECKOUT_AUTOMATIC and ALTERNATIVE_PRODUCT branches unchanged. The existing `woocommerce` barrel already exports the schema and inferred union type; tests now import through that public entrypoint.
+- Added complete v1 response golden JSON with an ordered group and the separate original `snapshot.appliedCouponCodes` list, plus a mixed CODE/AUTOMATIC example.
+- Added coverage for 2- and 3-item groups, required/strict fields, empty and overbound arrays, malformed members, exact ordered round trips, inferred union typing and v2 rejection. Duplicate identity remains structural and is delegated to API/Woo as required.
+- No endpoint, snapshot, route, package version or release changes were made.
 
 ### Validation Results
 
-Not run.
+- `npm test`: 394 passed, 1 skipped; the Redis telemetry test requires `TEST_REDIS_URL`.
+- `npm run typecheck`: passed.
+- `npm run build`: passed, including `dist/woocommerce/index.d.ts`.
+- Clean-process import of `dist/woocommerce/index.js`: passed; the public export parsed a mixed checkout-offer group.
+- `git diff --check`: passed.
 
 ### Deviations
 
@@ -134,15 +144,28 @@ None.
 
 ### Assumptions
 
-No production compatibility is required; all required source provenance remains available for implementing agents to verify.
+The Shared schema remains structural; offer identity uniqueness and compatibility are validated by API/Woo consumers.
 
 ### Unresolved Issues
 
-None at definition time.
+None identified.
 
 ### Architectural Concerns
 
-Any source contract/deployment gap must be escalated rather than patched locally.
+None identified during implementation.
+
+### Synchronization and Version Control
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; shared workspace checkout unchanged.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-SHARED-003`, branch `task/ARCH-053-SHARED-003`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-SHARED-003`, branch `task/ARCH-053-SHARED-003`; shared implementation checkout unchanged.
+- Another task worktree reused: no.
+- Start synchronization: parent and implementation remote task branch fast-forwards were `not-needed`; `origin/main` was `already-current` in both worktrees.
+- Recursive implementation submodules: sync passed; update/init passed; ready, no entries.
+- Parent claim commit: `d8bf5857ce819613549aa22de528584370542571`, pushed by launcher.
+- Implementation commit: `fec2be64b148e48b328816632fa7b3ba3ae1565c`; publication pending.
+- Parent completion-record commit: pending.
+- No package release or main-branch update was made.
 
 ## Architect Review
 
