@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 45
 executor: copilot
 claimed_at: 2026-10-31T13:37:38Z
@@ -85,10 +85,10 @@ Validate both dates before `BigInt` conversion and validate the days as an integ
 
 ## Work Items
 
-- [ ] Inspect the current resolver SQL, route error mapping and accepted ARCH-016 PostgreSQL migration.
-- [ ] Remove the seven-day constant; query and validate the canonical configuration on every resolve using an injected/testable database boundary.
-- [ ] Apply one strict, safe lifetime comparison against `lastExternalActivityAt`; retain all existing authorization and read-only checks.
-- [ ] Update focused unit and disposable-PostgreSQL tests for `0`, `1`, `21`, `91`, `180`, `365`, large PostgreSQL integer, future activity, exact cutoff and config failure.
+- [x] Inspect the current resolver SQL, route error mapping and accepted ARCH-016 PostgreSQL migration.
+- [x] Remove the seven-day constant; query and validate the canonical configuration on every resolve using an injected/testable database boundary.
+- [x] Apply one strict, safe lifetime comparison against `lastExternalActivityAt`; retain all existing authorization and read-only checks.
+- [x] Update focused unit and disposable-PostgreSQL tests for `0`, `1`, `21`, `91`, `180`, `365`, large PostgreSQL integer, future activity, exact cutoff and config failure.
 - [ ] Run declared validations and record worktree, submodule and test-container evidence.
 
 ## Interfaces / Contracts
@@ -109,21 +109,21 @@ Validate both dates before `BigInt` conversion and validate the days as an integ
 
 ## Acceptance Criteria
 
-- [ ] `MAX_RECOVERY_AGE_MS` and any other API seven-day checkout URL guard are gone; the field-only canonical persisted config read is in effect for every resolution.
-- [ ] With lifetime 21, a link whose activity is eight days old is eligible if all other existing guards pass; after exactly 21 days it is rejected. A six-minute-old checkout is not age-rejected.
-- [ ] Tests prove `0` always denies, `1` uses the precise cutoff, `91/180/365` and the PostgreSQL `INTEGER` maximum are permitted without a business cap; negative/fractional/missing configuration never grants access.
-- [ ] Same strict expiry boundary as Background's expiry worker (`lastExternalActivityAt <= now - lifetimeDays` is ineligible), including one millisecond before versus exactly at cutoff and future timestamps.
-- [ ] A switch of the persisted policy from 21 to 1 (or 0) changes the **next** resolver outcome without a service restart or requiring an expiry sweep; no mutable in-memory policy fallback.
-- [ ] Verified tenant isolation, installation revocation, token comparison, URL host/subpath, latest generation, supported snapshot and terminal order/status checks remain effective.
-- [ ] Uniform customer-denial response; config outage surfaces as internal 503; no token, URL, phone or coupon exposure in logs or returned messages.
-- [ ] No changes to API HTTP v1 and Shared v1 contracts, database migration, Admin, Woo plugin or unrelated ARCH-052 discount logic.
+- [x] `MAX_RECOVERY_AGE_MS` and any other API seven-day checkout URL guard are gone; the field-only canonical persisted config read is in effect for every resolution.
+- [x] With lifetime 21, a link whose activity is eight days old is eligible if all other existing guards pass; after exactly 21 days it is rejected. A six-minute-old checkout is not age-rejected.
+- [ ] Tests prove `0` always denies, `1` uses the precise cutoff, `91/180/365` and the PostgreSQL `INTEGER` maximum are permitted without a business cap; negative/fractional/missing configuration never grants access. Unit tests cover these policy values, but the pinned canonical database migration still constrains the column to 1–90.
+- [x] Same strict expiry boundary as Background's expiry worker (`lastExternalActivityAt <= now - lifetimeDays` is ineligible), including one millisecond before versus exactly at cutoff and future timestamps.
+- [x] A switch of the persisted policy from 21 to 1 (or 0) changes the **next** resolver outcome without a service restart or requiring an expiry sweep; no mutable in-memory policy fallback.
+- [x] Verified tenant isolation, installation revocation, token comparison, URL host/subpath, latest generation, supported snapshot and terminal order/status checks remain effective.
+- [x] Uniform customer-denial response; config outage surfaces as internal 503; no token, URL, phone or coupon exposure in logs or returned messages.
+- [x] No changes to API HTTP v1 and Shared v1 contracts, database migration, Admin, Woo plugin or unrelated ARCH-052 discount logic.
 
 ## Validation
 
-- [ ] `npx tsx --test tests/unit/woocommerce/recovery-restore/service.test.ts tests/unit/woocommerce/recovery-restore/routes.test.ts`
-- [ ] `npm run test:arch053-recovery-restore:postgres` (isolated disposable PostgreSQL, cleanup in finally).
+- [x] `npx tsx --test tests/unit/woocommerce/recovery-restore/service.test.ts tests/unit/woocommerce/recovery-restore/routes.test.ts`
+- [x] `npm run test:arch053-recovery-restore:postgres` (isolated disposable PostgreSQL, cleanup in finally).
 - [ ] `npm run typecheck` and `npm run lint`.
-- [ ] `git diff --check` and verified implementation/parent worktree isolation with approved database submodule pin.
+- [x] `git diff --check` and verified implementation/parent worktree isolation with approved database submodule pin.
 
 ## Stop Condition
 
@@ -137,31 +137,62 @@ This is one API task because it owns one API resolver. Do not import `moda-inter
 
 ### Status
 
-Not Started — defined but not materialised.
+Blocked — API implementation is complete, but the pinned database dependency contradicts the task's required unrestricted PostgreSQL `INTEGER` lifetime policy.
 
 ### Files Changed
 
-None.
+- `moda-interact-api/src/woocommerce/recovery-restore/service.ts`
+- `moda-interact-api/src/woocommerce/recovery-restore/routes.ts`
+- `moda-interact-api/tests/unit/woocommerce/recovery-restore/service.test.ts`
+- `moda-interact-api/tests/unit/woocommerce/recovery-restore/routes.test.ts`
+- `moda-interact-api/tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`
 
 ### Work Completed
 
-Not Started.
+Removed the fixed seven-day gate. Each resolve now reads `checkoutRecoveryLifetimeDays` from `public."BackgroundRuntimeConfig"` in the same parameterized query, validates the non-negative PostgreSQL integer range, and applies the exact BigInt millisecond cutoff. Missing or invalid configuration propagates to the generic 503 route; operational logging retains bounded, redacted error details. Added policy-boundary, policy-change, config-failure, and PostgreSQL query tests.
 
 ### Validation Results
 
-Not Run.
+Passed: `npx tsx --test tests/unit/woocommerce/recovery-restore/service.test.ts tests/unit/woocommerce/recovery-restore/routes.test.ts` (10 tests); `npm run test:arch053-recovery-restore:postgres` (1 disposable-PostgreSQL test; container cleanup succeeded); `npm run typecheck`; targeted ESLint on all five changed files; `git diff --check`.
+
+Failed: `npm run lint` reports the existing `no-empty` error at `src/merchant/support/routes.ts:75`, an untouched file. No unrelated change was made.
+
+The disposable PostgreSQL test creates a minimal `BackgroundRuntimeConfig` fixture without applying the pinned canonical database migration. It validates the API query and policy handling but cannot establish that the canonical database permits values above 90.
+
+### Physical worktree isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-API-004`, branch `task/ARCH-053-API-004`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-004`, branch `task/ARCH-053-API-004`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+### Start-of-attempt synchronization
+
+- Parent remote task branch fast-forwarded: not-needed; parent `origin/main` incorporated: already-current
+- Implementation remote task branch fast-forwarded: not-needed; implementation `origin/main` incorporated: already-current
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- Recorded recursive database submodule: `af77c594ecbfc78c26d01c0021a090830884bbff`
+
+### Version Control
+
+- Implementation branch commits pushed: `e9fa59c7dd768cf8313c94fdf98fe886268d6d3f`, `b73cb222da8ca32a59309ebcd1b718df5f7dcbff`
+- Implementation remote task branch head: `b73cb222da8ca32a59309ebcd1b718df5f7dcbff`
+- Parent task/report branch: claim commit `0461d85c618689256ad6ac1e31c3e10fcb963c62` was pushed by the launcher; blocked report publication is pending.
 
 ### Deviations
 
-None.
+The requested ARCH-016 database migration was not modified because it is owned by `moda-interact-database`.
 
 ### Assumptions
 
-The task's prerequisite migration and currently accepted API-002 code will be present in the prepared implementation worktree.
+The prepared API-002 implementation was present. The expected ARCH-016 database prerequisite was not: the prepared database submodule is pinned to `af77c594ecbfc78c26d01c0021a090830884bbff`, whose tracked migration adds the 1–90 check and contains no later removal.
 
 ### Unresolved Issues
 
-None asserted. Return any incompatible dependency to `moda_architect` rather than improvising an alternate expiry value.
+`database/prisma/migrations/20260916150000_arch016_recovery_policy_discounts_outreach_generations/migration.sql` in the pinned database submodule adds `ck_arch016_checkout_recovery_lifetime CHECK ("checkoutRecoveryLifetimeDays" BETWEEN 1 AND 90)`. A search of all tracked migrations at that exact pin found no removal of this constraint. The API accepts valid PostgreSQL integer values as required, but the persisted canonical schema cannot currently store the task-required values above 90. No database-owned files were changed. `moda_architect` must reconcile the completed ARCH-016-DATABASE-002 dependency or sequence its corrected database pin before this task can satisfy the unrestricted-lifetime acceptance criterion.
 
 ### Architectural Concerns
 
