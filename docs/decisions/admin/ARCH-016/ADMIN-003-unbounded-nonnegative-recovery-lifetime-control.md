@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-10-31T12:47:13Z
@@ -158,27 +158,41 @@ The only permitted business validation is *non-negative whole days*; SQL/Prisma 
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact-admin/src/lib/admin/background-runtime-control-validation.ts`
+- `moda-interact-admin/src/components/admin/background-runtime-controls.tsx`
+- `moda-interact-admin/tests/unit/background-runtime-control-validation.test.ts`
+- `moda-interact-admin/tests/security/admin-background-runtime-controls.test.mjs`
+- Implementation commit: `4ade253` (`Allow unbounded recovery lifetime setting`), pushed to `task/ARCH-016-ADMIN-003`.
 
 ### Work Completed
 
-Not Started
+- Made `RuntimeField.max` nullable and changed only `checkoutRecoveryLifetimeDays` to `min: 0`, `max: null`, `defaultValue: 21`, with the exact requested field guidance.
+- Updated shared validation to require safe integers and honor a nullable maximum. The open-ended range displays as `0 or more whole days`; all bounded fields retain their existing maxima.
+- Removed the HTML `max` only for an unbounded field, retained numeric type, step, and minimum metadata, and explained that zero immediately expires eligible recoveries and may prevent outreach.
+- Left the server action unchanged: permission checks, required reason, expected-version compare-and-set, audit event snapshots, and transaction ordering remain intact. Focused assertions verify validation occurs before mutation and audit creation follows the successful update.
+- Added accepted/rejected input coverage, unchanged-config-on-rejection coverage, field-bound/input metadata assertions, and updated the focused admin security contract test.
 
 ### Validation Results
 
-Not Run
+- `node --conditions=import --import tsx --test tests/unit/background-runtime-control-validation.test.ts`: passed, 9 tests.
+- `node --test tests/security/admin-background-runtime-controls.test.mjs`: passed, 6 tests.
+- `npm run test:unit`: 569 passed, 17 failed out of 586. Failures are outside the changed files, in agent-instruction, ARCH-047 publication/translation, commerce-policy harness, merchant-pricing, Shopify taxonomy, and store-category tests. Observed causes include `tslib` interop failures and test harnesses rejecting dependencies; the focused runtime-control tests passed in both runs.
+- `npm run lint`: failed on the unrelated `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts` `react-hooks/set-state-in-effect` error; three unrelated warnings were also reported.
+- `npx eslint src/lib/admin/background-runtime-control-validation.ts src/components/admin/background-runtime-controls.tsx tests/unit/background-runtime-control-validation.test.ts`: no changed-source lint errors; ESLint skipped the unit test file under an existing ignore pattern.
+- `npm run build`: passed, including Prisma client generation and TypeScript checks. Next.js reported existing BullMQ warnings, including unresolved optional `@valkey/valkey-glide` imports.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+- No source/action deviation. The full unit suite and repository-wide lint remain limited by unrelated failures noted above; no unrelated files were changed.
 
 ### Assumptions
 
-None
+The existing SQL `INTEGER` column continues to define the persisted representational range; no additional application policy ceiling was introduced.
 
 ### Unresolved Issues
 
