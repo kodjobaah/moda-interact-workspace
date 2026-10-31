@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 24
 executor: copilot
 claimed_at: 2026-10-31T03:59:37Z
@@ -56,10 +56,10 @@ No new runtime code, tests, lint, typecheck, unrelated builds, schema change, co
 
 ## Work Items
 
-- [ ] Check accepted SHARED-013 review and final SHA.
-- [ ] Select a new available package version strictly later than `2.8.1` and update release-only metadata.
-- [ ] Publish via the established npm release mechanism and verify the actual tarball/export declarations.
-- [ ] Record version, integrity, commands and evidence, then STOP before MCP or Background consumer work.
+- [x] Check accepted SHARED-013 review and final SHA.
+- [x] Select a new available package version strictly later than `2.8.1` and update release-only metadata.
+- [x] Publish via the established npm release mechanism and verify the actual tarball/export declarations.
+- [x] Record version, integrity, commands and evidence, then STOP before MCP or Background consumer work.
 
 ## Interfaces / Contracts
 
@@ -76,15 +76,15 @@ No new runtime code, tests, lint, typecheck, unrelated builds, schema change, co
 
 ## Acceptance Criteria
 
-- [ ] Accepted SHARED-013 code is published unchanged in a new immutable registry version.
-- [ ] Exact published package fields and old approved exports are inspected; implementation source is unchanged by this publication.
-- [ ] Only release metadata and necessary package-build artifacts are produced, with no duplicate tests/typecheck/lint runs.
+- [x] Accepted SHARED-013 code is published unchanged in a new immutable registry version.
+- [x] Exact published package fields and old approved exports are inspected; implementation source is unchanged by this publication.
+- [x] Only release metadata and necessary package-build artifacts are produced, with no duplicate tests/typecheck/lint runs.
 
 ## Validation
 
-- [ ] Pre-publication accepted task status and SHA check.
-- [ ] Exact new version and registry content verification.
-- [ ] Release metadata `git diff --check` and package artifact integrity inspection; no implementation validation rerun.
+- [x] Pre-publication accepted task status and SHA check.
+- [x] Exact new version and registry content verification.
+- [x] Release metadata `git diff --check` and package artifact integrity inspection; no implementation validation rerun.
 
 ## Stop Condition
 
@@ -98,35 +98,45 @@ Use the owning Shared repo's existing publication command and launcher-resolved 
 
 ### Status
 
-Ready — ARCH-052-SHARED-013 is Complete with an Accepted architect review. Publication may proceed under this task's release gate.
+Ready for architect review. ARCH-052-SHARED-013 was Complete with an Accepted review before publication; version `3.0.0` is published and its registry tarball has been inspected.
 
 ### Files Changed
 
-None.
+`moda-interact-shared/package.json` and `moda-interact-shared/package-lock.json` only. Both contain the release version `3.0.0`; no source, test, export-map or dependency changes were made.
 
 ### Work Completed
 
-None.
+Published `@modainteract/moda-interact-shared@3.0.0` to the public npm registry using `npm publish --json --registry=https://registry.npmjs.org`. The repository's `prepack` invoked `npm run build` to generate the required ESM and declaration artifacts; this was packaging, not an implementation-validation rerun. The version is a major bump because this release adds a required field to the public strict contract. The registry did not expose the version on the first immediate lookup; after npm's stated processing delay it became available, and no retry of publication was made.
+
+Pre-publication gate: remote task `ARCH-052-SHARED-013` was `status: complete` with `Accepted — Complete (2026-10-31)`. Accepted implementation SHA: `0b13687d4584801b2aaef3bd625d5b2d6f693648`; the publication worktree HEAD `a582ca9e66d86a1d1ff64099df24520f56adb46a` contains that commit. Package version `3.0.0` was absent from the registry before publication; existing `2.8.1` was not changed.
+
+Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHARED-014` on `task/ARCH-052-SHARED-014`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHARED-014` on `task/ARCH-052-SHARED-014`. Parent claim commit: `dcf282a2d4c023b65aea7fe4742a3974283e80c5`; prepared parent head: `5362773f36eec15e7e095764b040da6c5ce19680`; prepared implementation head: `a582ca9e66d86a1d1ff64099df24520f56adb46a`. Both task branches required no remote fast-forward and already incorporated `origin/main`. Recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed; no submodule entries were present. The shared workspace checkout and shared implementation checkout were not switched or mutated; no other task worktree was reused.
+
+Registry artifact: `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-3.0.0.tgz`. Integrity: `sha512-CvixJpQEL0nOQv+zoDUAveF0JA1G9PFrT2FN+ubYu94tEgjiLRMtHZGLyxfE5FUHroDt6ZajY/36j3EvyJyFuw==`; SHA-1: `690daf0aa4684a545cc1c39a941ab2267f93b856`. `npm view` metadata and `npm pack @modainteract/moda-interact-shared@3.0.0 --pack-destination /tmp --json` reported matching integrity, size `272590` bytes, and the same SHA-1.
+
+Inspection of the exact downloaded tarball confirmed `CommerceDiscountConditionFactsSchema` has required `subtotalRequirementCurrency: z.ZodNullable<z.ZodString>`, and its Commerce declaration exports `CommerceDiscountCombinationFacts` and its schema. The Commerce entrypoint retains `InitialOutreachCheckoutOfferSet` and its schema; the WooCommerce entrypoint retains `WooRestoreOutreachOfferV1` and its schema. Package metadata includes the `./commerce`, `./commerce/runner` and `./woocommerce` export paths. The implementation source and tests were unchanged by publication.
 
 ### Validation Results
 
-Not run.
+Passed: pre-publication accepted-status/SHA check; registry version availability check; `npm ci` from the checked-in lockfile; `npm pack --dry-run --json` (including the package-required `prepack` build); `npm publish --json --registry=https://registry.npmjs.org`; `npm view` registry metadata; `npm pack` of the exact registry version; declaration/export inspection from that tarball; and `git diff --check`.
+
+`npm ci` reported 3 dependency advisories (1 low, 2 high); dependencies were not changed because remediation is outside scope. No tests, typecheck or lint were rerun, as required by this publication task.
 
 ### Deviations
 
-None.
+The first immediate lookup after publishing returned E404 while the registry was processing the package; the version became available on a later lookup and the published tarball was verified. No publication retry was performed.
 
 ### Assumptions
 
-Pre-production wire update; no rolling-compatibility adapter required after coordinated consumer pin changes.
+Pre-production wire update; no rolling-compatibility adapter required after coordinated consumer pin changes. SHARED-013 remains the source of the accepted implementation; SHARED-014 changed release metadata only.
 
 ### Unresolved Issues
 
-None at definition.
+No unresolved publication issue. The published artifact is available at the recorded registry URL.
 
 ### Architectural Concerns
 
-Return package/contract bugs to moda_architect, not a local publishing fix.
+The immutable `3.0.0` artifact is published with the accepted SHARED-013 implementation. Consumer implementation remains outside this task.
 
 ## Architect Review
 
