@@ -13,3 +13,4 @@ Task materialisation and current status are recorded in each task YAML frontmatt
 | [ARCH-052-MCP-003](MCP-003-direct-provider-product-search-and-exact-read.md) | Execute Shopify and WooCommerce product search directly inside MCP | Complete | `ARCH-052-SHARED-010`, `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-005` |
 | [ARCH-052-MCP-004](MCP-004-verify-alternative-product-discount-promotions.md) | Verify alternate product promotions using existing MCP provider proof | Pending | `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-008`, `ARCH-052-WOOCOMMERCE-001` |
 | [ARCH-052-MCP-005](MCP-005-implement-direct-woocommerce-rest-product-reader.md) | Implement secure direct WooCommerce product REST reader | Complete | — |
+| [ARCH-052-MCP-006](MCP-006-preserve-original-woo-provider-errors.md) | Preserve original WooCommerce REST and transport errors in MCP logs | Complete | `ARCH-052-MCP-005` |
