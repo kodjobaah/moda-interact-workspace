@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 22
 executor: null
 claimed_at: null
@@ -159,32 +159,38 @@ No source or contract gap was found. The original conflict between the publicati
 - Recursive implementation submodules: sync passed; update/init passed; ready, no entries.
 - Parent claim commit: `2afa020403a4aed48d8a8d437448272e5dae608e`, pushed by launcher.
 - Implementation release-metadata commit: `21b9434e4d14d8dcb17b8c74090d0e59d595eab7`; pushed to `task/ARCH-052-SHARED-012` after user authorization.
-- Final parent report commit: `a9be8f083dfa5f62cd9d28d9b03e2dbe09417dc6`; pushed to `origin/task/ARCH-052-SHARED-012`. This report records the successful publication and registry artifact verification.
+- Successful publication report commit: `a9be8f083dfa5f62cd9d28d9b03e2dbe09417dc6`; pushed to `origin/task/ARCH-052-SHARED-012`. The follow-up report correction commit reconciles the stale blocker and release-status text.
 - Package version `2.8.1` published to npm; no main-branch update was made.
 - No main-branch update was made.
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review
 
-Pending.
+#### Review Status
 
-### Review Notes
+Accepted — Complete.
 
-New multi-discount feature task; no implementation reviewed.
+#### Review Notes
 
-### Reviewed Files
+The publication objective is complete. Both prerequisite implementation tasks are architect-accepted and complete, and their reviewed SHAs are included in the release source tree. The Shared release metadata is limited to `package.json` and `package-lock.json`; no source changes, tests or main-branch updates were made. The registry artifact verification records the exact 2.8.1 version, tarball integrity and required Commerce, WooCommerce and `offer.codes` exports. The previous report inconsistency has been corrected: the prepack authorization conflict was resolved and the package was published.
 
-None.
+#### Reviewed Files
 
-### Validation Reviewed
+- SHARED-012 task definition, publication report and synchronization evidence.
+- Release metadata commit `21b9434e4d14d8dcb17b8c74090d0e59d595eab7`, clean and pushed.
+- SHARED-011 accepted source `cba9decf56e6cf22c8973e814c713330412db8c1`.
+- ARCH-053-SHARED-003 accepted source `fec2be64b148e48b328816632fa7b3ba3ae1565c`.
+- Recorded npm 2.8.1 tarball inspection and registry integrity evidence.
 
-No implementation validation yet.
+#### Validation Reviewed
 
-### Architecture Conformance
+Reviewed the recorded prerequisite acceptances, release-source inclusion, npm publication and artifact export/integrity verification. No tests were run, as specified by this publication task. The existing prepack build ran with the user's explicit authorization.
 
-Pending implementation and review.
+#### Architecture Conformance
 
-### Follow-up
+Conforms to the unified publication gate. The release publishes both accepted contract updates together, preserves the existing 2.7.0 release, and makes no consumer or main-branch changes.
 
-None.
+#### Follow-up
+
+The automatic-completion publication task is complete. Enabled consumer tasks may proceed when their other dependencies are satisfied.
