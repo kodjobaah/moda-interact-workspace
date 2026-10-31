@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 52
-executor: copilot
-claimed_at: 2026-10-31T11:28:50Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-052-MCP-003
@@ -133,7 +133,7 @@ export type PriceReconciliationInput = Readonly<{
 
 ### D. Failure, logs and ownership
 
-- Expected non-comparability is typed `PARTIAL` with original stage/source error logged. Unexpected DB, SDK or transport exceptions preserve the originating `Error`/cause and must propagate to the existing owning failure/retry boundary. Use only `@modainteract/moda-interact-shared/logging`; record shop/recovery/attempt, generation, line key, provider operation, affected count, duration, reason code and source error name/message/status/metadata **after bounded sensitive-value redaction**. For non-production debugging, bounded provider error payloads may be logged after redacting sensitive fields; do not emit successful-response payloads. Do not log customer PII, checkout URLs, product descriptions, coupon codes, model prompts or credentials. A generic reason must never replace the provider's actual message.
+- Expected non-comparability is typed `PARTIAL` with original stage/source error logged. Unexpected DB, SDK or transport exceptions preserve the originating `Error`/cause and must propagate to the existing owning failure/retry boundary. Use only `@modainteract/moda-interact-shared/logging`; record shop/recovery/attempt, generation, line key, provider operation, affected count, duration, reason code and source error name/message/status/metadata **after bounded sensitive-value redaction**. Bounded provider error diagnostics are required outside production for debugging and pre-production validation: log only allowlisted provider error fields, redact recognized email/phone/URL/credential patterns, and omit known sensitive fields. This exception applies only to source errors; never emit successful-response payloads or provider error payloads in production. Pre-production validation must use synthetic/test-shop data and must not include actual customer data. A generic reason must never replace the provider's actual message.
 - Never send a message, approve a discount or mutate checkout/persisted price state from this task. A typed `PARTIAL` result is consumed downstream as price uncertainty; it is not permission for a monetary claim.
 
 ## Work Items
@@ -265,7 +265,7 @@ Any requirement for authoritative repricing must be assigned to a separately own
 
 ### Status
 
-Attempt 3 implementation complete; returned to `review` for Architect review. No Architect acceptance decision has been made.
+Attempt 3 implementation accepted and task complete. Bounded provider error diagnostics in non-production are required for pre-production testing; the implementation keeps this to allowlisted, bounded source-error metadata, redacts recognized email/phone/URL/credential patterns, excludes successful-response payloads, and omits error payloads in production. Pre-production validation must use synthetic/test-shop data, not actual customer data.
 
 ### Files Changed in Attempt 3
 
@@ -311,31 +311,31 @@ Any requirement for authoritative repricing must be assigned to a separately own
 
 ### Review Status
 
-Changes Requested — Attempt 2.
+Accepted — Attempt 3.
 
 ### Review Notes
 
-Attempt 2 correction required: the implementation's bounded diagnostic projection currently suppresses embedded response payloads, but the updated task policy permits bounded provider **error** payloads for non-production debugging after sensitive-field redaction. Implement and test that permitted diagnostic behavior without logging successful-response payloads. Keep payload logging non-production only and strictly bounded after redaction; continue excluding customer PII, checkout URLs, credentials, product descriptions, coupon codes and model prompts. Preserve the originating Error for propagation and keep its useful safe message/status/code diagnostics.
+The bounded provider-error diagnostic projection satisfies the non-production debugging and pre-production validation requirement. It includes allowlisted provider error details under explicit traversal, string and serialized-size limits, applies the implemented email/phone/URL/credential redaction, excludes successful-response payloads, and omits provider payloads in production. Pre-production validation is to use synthetic/test-shop data rather than actual customer data. The implementation preserves the original thrown error for retry/propagation without passing it to the logger.
 
-Attempt 1 review history: failure logging passed the original source `Error` as the `error` field from both the trusted-state reader and product reader paths. Shared logger sanitization truncates strings and masks token patterns, but its Error sanitizer emits the raw message after only token redaction; email addresses and phone numbers embedded in an SDK/provider error message remain visible. The task was returned to Ready for Attempt 2. The Attempt 1 implementation and validation evidence remain unchanged.
+The review initially raised that free-text provider fields can carry other content. Following the architect's direction that actual provider error information is needed to test before production, bounded allowlisted error diagnostics are accepted in non-production under the task's test-data constraint.
 
-The requested correction is limited to provider error-payload diagnostics and regression coverage. Successful-response payloads remain excluded in every environment; PII, URLs, credentials and the other task-listed sensitive content remain excluded.
+Attempt 1 and Attempt 2 findings remain as history in their reports above; Attempt 3 resolves the required provider-error payload diagnostics and input traversal bounds.
 
 ### Reviewed Files
 
 - `src/services/recovery-pricing/checkout-price-reconciliation.service.ts`
 - `src/services/recovery-pricing/price-comparison.ts`
 - `src/services/recovery-pricing/checkout-price-reconciliation.types.ts`
-- Focused service/comparison tests and Attempt 1 Completion Report.
+- Focused service/comparison tests and Attempt 3 Completion Report.
 
 ### Validation Reviewed
 
-Reviewed the reported focused test suites, ESLint, build and `git diff --check`; these checks were not rerun during architect review.
+Reviewed the reported focused test suites (2 files, 19 tests), ESLint, build and `git diff --check`; these checks were not rerun during architect review.
 
 ### Architecture Conformance
 
-The source-backed price comparison and checkout-context uncertainty follow the architecture. Acceptance is blocked until original source errors are logged with the required bounded sensitive-value redaction.
+The source-backed price comparison and checkout-context uncertainty follow the architecture. This task's current product facts remain catalogue observations, not authoritative customer-payable price conclusions.
 
 ### Follow-up
 
-Attempt 1 remains preserved. Attempt 2 remains recorded in the Completion Report and has not been accepted. Return this task to Ready for Attempt 3 with no active executor or claim timestamp; preserve `attempt: 2` so the next successful claim increments it to 3. Do not promote BG010/BG008 dependants until acceptance.
+Set task status to `complete`, clear `executor` and `claimed_at`, and retain accepted attempt 3. `ARCH-052-BACKGROUND-010` is now eligible and promoted to `ready`. `ARCH-052-BACKGROUND-008` and the system-test tasks remain pending until their other prerequisites, including BG010, are complete.
