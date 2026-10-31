@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -138,7 +138,7 @@ Expected MCP owning code: `src/execution/policy/`, `src/connections/resolver.ts`
 
 ### Status
 
-Attempt 2 implementation complete; submitted for Architect Review. Task status is `review`. Attempt 1 remains historical and was returned for the scope amendment recorded below.
+Attempt 2 was returned for architect changes on 2026-10-31. Core product execution is implemented and pushed, but provider-origin diagnostics do not yet meet the task contract. Attempt 1 remains historical; this reviewed Attempt 2 remains unchanged and the next launcher claim creates Attempt 3.
 
 ### Files Changed
 
@@ -244,6 +244,41 @@ Attempt 1 returned for Architect direction before implementation. The launcher p
 - No shared/default checkout or other task worktree was used for implementation; no main branch was changed.
 
 ## Architect Review
+
+### Attempt 2 Architect Review — Changes Requested
+
+#### Review Status
+
+Changes requested — 2026-10-31. Attempt 2 remains the reviewed attempt; the next launcher claim will create Attempt 3.
+
+#### Review Notes
+
+The product execution, bounded Woo variation reads, tenant/parent identity checks, and URL filtering are materially implemented. Attempt 2 is not accepted because the added Shopify provider diagnostics omit source messages required by the task, required diagnostic tests are absent, and diagnostic-only changes were added to the accepted Woo reader even though ARCH-052-MCP-006 owns that correction.
+
+#### Required Changes
+
+- At the Shopify provider boundary, retain the actual bounded `errors[].message` and `extensions.code` for GraphQL failures, plus original SDK/transport `Error.name`, `Error.message`, and available cause when no provider response exists. Apply explicit sensitive-span redaction and bounds before logging; keep source diagnostics distinct from Moda reason/status. Do not expose them in tool results or model-visible MCP errors.
+- Add focused Shopify provider tests for HTTP and GraphQL 200-with-errors paths, transport exceptions, source message/code/request-ID provenance, redaction, and absence of raw provider payloads from public tool results.
+- Remove the diagnostic-only changes to `src/connections/woocommerce/direct-product-reader.ts` from MCP-003. Leave the approved product-field/variation/permalink extensions in place as authorized; ARCH-052-MCP-006 owns Woo source-error diagnostics. Do not edit MCP-006 or MCP-005 task records.
+- Run the focused tests after the final diagnostic edits. The reported 41 tests predate the final refinement; typecheck alone does not validate its logging behavior. Update the Completion Report with the final test evidence and exact implementation/parent branch synchronization.
+
+#### Reviewed Files
+
+- Attempt 2 Completion Report and task criteria.
+- Implementation branch `task/ARCH-052-MCP-003` at `04530c8233db9e4dc42a1c82959597152f09f047`, pushed and clean.
+- `src/connections/shopify/provider.ts`, `src/execution/policy/shopify-core.ts`, Woo direct reader and focused product tests.
+
+#### Validation Reviewed
+
+The report records 41 focused checks passing before the final diagnostics refinement, build passing, and typecheck passing after refinement. No tests were run after that refinement. These results were not rerun during architect review.
+
+#### Architecture Conformance
+
+The core product execution follows the task’s Shopify/Woo ownership and data-source constraints. Attempt 2 does not meet the newly added provider-origin diagnostic criteria and must remove the Woo diagnostic portion reserved for MCP-006. The task is returned to Ready; no implementation is accepted yet.
+
+#### Follow-up
+
+Claim Attempt 3 through the canonical launcher after completing the required corrections.
 
 ### Attempt 1 Architect Review — Changes Requested
 

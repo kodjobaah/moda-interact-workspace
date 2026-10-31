@@ -238,7 +238,7 @@ Individual task YAML is authoritative within the exported snapshot. SHARED-011, 
 | [ARCH-052-GATEWAY-001](../decisions/gateway/ARCH-052/GATEWAY-001-configure-private-recovery-product-read-transport.md) | `moda_gateway` | Pending | `ARCH-052-MCP-003` |
 | [ARCH-052-MCP-001](../decisions/mcp/ARCH-052/MCP-001-authorize-initial-recovery-outreach-tool-context.md) | `moda_mcp` | Complete | `ARCH-052-SHARED-003` |
 | [ARCH-052-MCP-002](../decisions/mcp/ARCH-052/MCP-002-execute-published-discount-options-and-proof.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-013`, `ARCH-052-BACKGROUND-014`, `ARCH-052-MCP-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-011`, `ARCH-052-SHARED-014` |
-| [ARCH-052-MCP-003](../decisions/mcp/ARCH-052/MCP-003-direct-provider-product-search-and-exact-read.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-010`, `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-005` |
+| [ARCH-052-MCP-003](../decisions/mcp/ARCH-052/MCP-003-direct-provider-product-search-and-exact-read.md) | `moda_mcp` | Ready (Attempt 3 after diagnostic corrections) | `ARCH-052-SHARED-010`, `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-005` |
 | [ARCH-052-MCP-004](../decisions/mcp/ARCH-052/MCP-004-verify-alternative-product-discount-promotions.md) | `moda_mcp` | Superseded | — |
 | [ARCH-052-MCP-005](../decisions/mcp/ARCH-052/MCP-005-implement-direct-woocommerce-rest-product-reader.md) | `moda_mcp` | Complete | — |
 | [ARCH-052-MCP-006](../decisions/mcp/ARCH-052/MCP-006-preserve-original-woo-provider-errors.md) | `moda_mcp` | Ready | `ARCH-052-MCP-005` |
