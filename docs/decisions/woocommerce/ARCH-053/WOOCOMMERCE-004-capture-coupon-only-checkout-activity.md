@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
 executor: null
 claimed_at: null
@@ -109,7 +109,7 @@ Preserve the original snapshot item projection from WOOCOMMERCE-001. No change t
 
 ### Status
 
-Ready for Review
+Architect review accepted Attempt 1 on 2026-10-31. This automatic-completion task is complete; no production deployment was performed.
 
 ### Files Changed
 
@@ -155,24 +155,27 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-31).
 
 ### Review Notes
 
-Not reviewed.
+The implementation registers WooCommerce's applied and removed coupon actions with their one-code signatures, but ignores the individual code and snapshots Woo's complete applied-coupon list. The hook calls `captureExisting()`, so cart-only activity without a previously observed checkout key cannot create a checkout identity. Existing full-snapshot fingerprinting emits a distinct canonical v1 activity when the applied-code list changes and suppresses unchanged snapshots. The reported Classic and Blocks integration covers applying and stacking coupons, removing them, unchanged totals, same checkout identity and duplicate suppression. No implementation blocker found.
 
 ### Reviewed Files
 
-None.
+- `includes/Checkout/CheckoutCapture.php`
+- `tests/CheckoutCaptureTest.php`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
+- Attempt 1 Completion Report.
 
 ### Validation Reviewed
 
-None.
+The Completion Report records 19 focused PHP tests / 186 assertions, `composer lint`, Node syntax validation, the isolated checkout-only WordPress integration including Classic and Blocks coupon scenarios, and `git diff --check` as passing. The PHP run reported an unrelated pre-existing warning from `RecoveryPolicyControllerTest.php:14`; it did not fail the run. The first full integration attempt exposed an over-broad duplicate assertion; the focused assertion was corrected and the subsequent isolated run passed. I did not rerun tests during this review.
 
 ### Architecture Conformance
 
-Not yet assessed.
+The changes use the existing activity publisher and restoration snapshot, preserve coupon-only changes even when totals stay the same, and avoid minting checkout identity from a cart-only coupon action. Scope remains within the WooCommerce repository and this task report. The task meets its acceptance criteria.
 
-### Follow-up
+### Completion Decision
 
-None.
+Set `status: complete` under `completion_mode: automatic`, preserving Attempt 1 and clearing executor/claim metadata. WOOCOMMERCE-005 remains pending because WOOCOMMERCE-002 is Ready but not complete; SYSTEM-TEST-002 remains pending because WOOCOMMERCE-006 is pending. No downstream task was promoted by this review.
