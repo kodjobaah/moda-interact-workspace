@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 30
 executor: copilot
 claimed_at: 2026-10-31T21:08:15Z
@@ -108,27 +108,53 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Not Started
+Blocked
 
 ### Files Changed
 
-None
+Parent task file only: `docs/decisions/api/ARCH-054/API-002-invalidate-woo-pending-ai-on-handover.md`.
+No API source or test files changed because the required database contract is absent from the pinned submodule.
 
 ### Work Completed
 
-None
+- Read the complete task and ARCH-054 architecture contract; the task's Architect Review is Pending and contains no requested changes.
+- Verified the implementation worktree's `database` submodule is at `b87e460e86de2044477f8c96b5c1c42e722de8f0`.
+- Confirmed `database/prisma/schema.prisma` in that commit has `pendingTurnStartedAt`, `processingInboundVersion`, and `processingStartedAt`, but lacks `pendingAiNotBeforeAt`, `pendingAiControlRevision`, and `pendingAiDelayMinutes`.
+- Confirmed the pinned `database/prisma/migrations` tree does not contain `20261031170000_arch054_merchant_ai_response_delay`.
+- The required API PostgreSQL script migrates from this pinned submodule, so it cannot validate atomic invalidation of the ARCH-054 fields. Updating the schema, migration, or database gitlink is outside this API task's authority.
 
 ### Validation Results
 
-Not Run
+Not run: no implementation was made because the required DATABASE-001 schema/migration contract is missing from the task's pinned submodule. The declared focused command is `npm run test:arch040-conversation-control:postgres`; it provisions a fresh database from that submodule and therefore cannot exercise the required pending-AI fields. `git diff --check` on the task report passed.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-None
+Blocked pending `moda_architect` resolution: ARCH-054-DATABASE-001 is reported complete, but the API task's database submodule pin does not contain the three pending-AI columns or the ARCH-054 migration. Please coordinate the correct database revision/submodule update or provide an approved API contract and PostgreSQL validation fixture. Do not work around this by locally duplicating database schema ownership or relying on unvalidated raw SQL. Acceptance criteria and Work Items remain incomplete.
 
 ### Worktree and Git Evidence
 
-Not materialised; implementing agent must record launcher-prepared dedicated parent/implementation worktree paths, start-of-attempt sync, branch SHAs, submodule pins and cleanup.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-API-002`
+  parent branch: `task/ARCH-054-API-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-API-002`
+  implementation branch: `task/ARCH-054-API-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization (launcher packet):
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+  parent claim/sync head: `12450c44ed20b8c30150117e706b7bd495e0308c`
+  implementation initial head: `e59aba1939531e250b7cefc3c1c3e21b13cda3af`
+
+Recursive implementation submodules (launcher packet):
+  `git submodule sync --recursive`: passed
+  `git submodule update --init --recursive`: passed
+  recorded database submodule commit: `b87e460e86de2044477f8c96b5c1c42e722de8f0`
 
 
 ## Architect Review
