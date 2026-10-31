@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T01:36:31Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-052-BACKGROUND-009
@@ -97,7 +97,7 @@ Source files: `moda-interact-background/src/providers/shopify-discount.provider.
 
 ### Status
 
-Ready for architect review after Attempt 3. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts and projects the Shopify Basic discount-combination policy through the Shared condition-facts contract in `ShopifyDiscount.providerSnapshot`.
+Changes requested after Attempt 3 architect review; ready for Attempt 4. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts and projects the Shopify Basic discount-combination policy through the Shared condition-facts contract in `ShopifyDiscount.providerSnapshot`.
 
 ### Files Changed
 
@@ -257,3 +257,34 @@ The bounded Shopify provider snapshot and conservative PARTIAL completeness beha
 ### Follow-up
 
 Return the task to `ready` for Attempt 3. Preserve the Attempt 1 and Attempt 2 history. Keep ARCH-052-MCP-002 unpromoted until this task is accepted and its other dependencies are complete.
+
+
+## Architect Review — Attempt 3
+
+### Review Status
+
+Changes Requested — Attempt 3.
+
+### Review Notes
+
+The Attempt 3 combination-policy projection is supported by the published Shared 2.8.1 schema; the registry lookup for 2.8.2 and the reported contract tests are consistent with that conclusion. One source-backed Basic discount restriction remains omitted: Shopify exposes `recurringCycleLimit` on both `DiscountAutomaticBasic` and `DiscountCodeBasic`, but the GraphQL query does not select it. The current Shared 2.8.1 `CommerceDiscountConditionFactsSchema` has no field for this limit, and the provider can still label otherwise complete Basic facts `COMPLETE` without recording or flagging it.
+
+For Attempt 4, select and retain `recurringCycleLimit` in the existing provider snapshot. If the Shared contract cannot represent it, add a bounded `unrepresentedConditions` reason and keep the condition facts `PARTIAL` whenever the value may affect subscription eligibility. Add regression coverage for both Basic discount types and schema parsing. Do not start MCP-002.
+
+### Reviewed Files
+
+- `src/providers/shopify-discount.provider.ts`
+- `tests/unit/providers/shopify-discount.provider.test.ts`
+- Attempt 3 Completion Report and Shared 2.8.1 contract evidence.
+
+### Validation Reviewed
+
+Reviewed the Attempt 3 reported focused tests, changed-file lint, build, `git diff --check`, and Shared registry/schema verification. These checks were not rerun during this architect review.
+
+### Architecture Conformance
+
+The combination policy is now source-backed and projected through the available Shared contract. Acceptance is deferred because `recurringCycleLimit` is another source-backed restriction omitted from the projection while completeness can be reported as `COMPLETE`.
+
+### Follow-up
+
+Return the task to `ready` for Attempt 4. Preserve prior attempt history and keep ARCH-052-MCP-002 unpromoted until this task is accepted and its other dependencies are complete.

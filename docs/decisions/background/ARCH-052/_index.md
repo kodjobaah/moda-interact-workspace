@@ -23,4 +23,4 @@ The individual task YAML is authoritative. BACKGROUND-009 is Complete; the other
 
 BACKGROUND-009's repository-wide validation reconciliation is complete; its task record remains authoritative for the review evidence.
 
-BACKGROUND-011 is Ready for Attempt 3 after Attempt 2 review. The next attempt must determine whether the currently published Shared contract supports projecting Shopify Basic discount combination policy; see its task report for the correction contract.
+BACKGROUND-011 is Ready for Attempt 4 after Attempt 3 review identified the unrepresented Shopify Basic `recurringCycleLimit`; see its task report for the correction contract.
