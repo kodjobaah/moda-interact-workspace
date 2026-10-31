@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
-executor: copilot
-claimed_at: 2026-10-31T12:14:50Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-012
@@ -435,6 +435,7 @@ Before the LangGraph tool loop in FIXED/AI modes, the trusted Background caller 
 
 - [ ] `npx vitest run tests/unit/agents/initial-outreach-offer.agent.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/agents/initial-outreach-offer.eligibility.test.ts tests/unit/agents/initial-outreach-offer.combinations.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` — model/tool loop; NONE/FIXED/AI; checkout/alternative; merchant prompt; failures; injection; wrong tenant; revoked tool; incomplete pagination; no duplicate calls; budget/timeout/cancellation; MCP cleanup. Include model-generated URL injection, exact-product provenance, mismatched product/variant/shop, and failed/missing MCP exact-product response.
 - [ ] `node scripts/test-integration.mjs tests/integration/initial-outreach-agent-context.integration.test.ts` — real Postgres tenant/attempt/current selection, valid/invalid effective instructions and no agent database access (run using the configured integration harness).
+- [ ] Add and run a feature-specific integration test for the initial-outreach agent using `LLMock` from `@copilotkit/aimock`. Route the real model HTTP client to the package's loopback server, assert the agent's model/tool/model request sequence and resulting validated decision, and prove no external provider endpoint is used. The PostgreSQL context-assembly test alone does not satisfy this requirement.
 - [ ] Existing Background Commerce MCP client, Commerce host, recovery-offer, initial-outreach and ARCH-047/048 regression tests relevant to the changed client/context path. Record actual files/commands; no unrelated suite expansion.
 - [ ] `npm run lint` — declared Background lint script.
 - [ ] `npm run build` — declared Background production build/typecheck via `prisma:generate && tsc`.
@@ -456,7 +457,7 @@ Use paths relative to the parent workspace when editing, and confirm the canonic
 
 ### Status
 
-Implementation submitted for architect review. The requested runtime paths are implemented and focused validation passed, but the full normative deterministic fixture matrix is not yet demonstrated by the added tests. Acceptance criteria remain unchecked for architect assessment.
+Changes Requested (Attempt 1). The agent implementation is submitted, but acceptance is blocked by missing feature-specific Aimock integration coverage and the incomplete required deterministic eligibility/combination fixture matrix.
 
 ### Files Changed
 
@@ -524,11 +525,27 @@ The implementation branch is limited to Background. The new implementation has n
 
 ### Review Status
 
-Pending.
+Attempt 1 — Changes Requested.
 
 ### Review Notes
 
-Definition revised for LangGraph dynamic MCP tool-use, initial-outreach-specific instructions, strict Background/MCP separation and provider-truthful selection. No application implementation reviewed or accepted.
+The package `@copilotkit/aimock@1.45.1` is already a direct Background dependency, and existing unrelated feature tests use it. However, no integration test for the new initial-outreach agent imports `LLMock` or exercises the agent's model HTTP exchange through Aimock. The current `initial-outreach-agent-context.integration.test.ts` covers PostgreSQL context assembly only.
+
+Required corrections before resubmission:
+
+1. Add a feature-specific integration test using `LLMock` from
+   `@copilotkit/aimock`. Exercise the initial-outreach agent through the real
+   model HTTP client routed to Aimock's loopback endpoint; assert the bounded
+   model/tool/model exchange and validated decision, and prove no request can
+   reach an external provider. Record the test command and results.
+2. Complete the task's required deterministic eligibility and compatibility
+   fixture matrix in the two pure-helper suites. The Completion Report itself
+   lists required targeting/status/quantity, threshold, and provider-specific
+   reciprocal/same-line/unknown combination cases still missing; do not mark
+   those criteria complete without test evidence.
+
+This review does not require repairing the separately documented ARCH-047
+logger assertion failures unless the correction changes that path.
 
 ### Reviewed Files
 
@@ -536,12 +553,19 @@ Definition revised for LangGraph dynamic MCP tool-use, initial-outreach-specific
 
 ### Validation Reviewed
 
-Definition/patch syntax only; application validation not run.
+Attempt 1 validation evidence was reviewed from the Completion Report. Focused
+tests and the PostgreSQL context test passed, but the task-specific Aimock
+integration coverage is absent and the required helper fixture matrix remains
+incomplete. No tests were rerun for this architect review.
 
 ### Architecture Conformance
 
-Pending implementation and full ARCH-052 dependency reconciliation.
+The implementation is not accepted until both test corrections above are
+demonstrated. No branch merge or downstream promotion was made.
 
 ### Follow-up
 
-Materialise in the canonical developer task environment only after prerequisite task YAMLs are Complete. Do not require a new Shared conversation runner.
+Attempt 1 was returned to `ready`; the next canonical launcher claim increments
+the attempt once. Keep the implementation on the existing task branch and add
+the requested tests before resubmitting. No new Shared conversation runner is
+required.
