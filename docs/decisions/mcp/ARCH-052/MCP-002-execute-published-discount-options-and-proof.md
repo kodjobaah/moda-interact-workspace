@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 45
-executor: copilot
-claimed_at: 2026-10-31T06:15:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-012
@@ -34,7 +34,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Portable definition: not materialised.**
+Architecture ID: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. Materialised on the dedicated parent and implementation task worktrees for Attempt 1.
 
 ## Objective
 
@@ -180,7 +180,7 @@ Use the existing MCP database connection, discount models and feature/tool regis
 
 ### Status
 
-Implementation complete; returned for developer validation and `moda_architect` review. This agent has not accepted the task.
+Attempt 1 was reviewed and returned to Ready for the source-fact correction and required PostgreSQL validation below. No implementation acceptance is recorded.
 
 ### Files Changed
 
@@ -230,26 +230,56 @@ Escalate any unexpected provider API/auth/Shared/schema/contract gap to `moda_ar
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review — Changes Requested
 
-Pending.
+The implementation follows the read-only, shop-scoped MCP design and the reported
+unit suite, typecheck, integration typecheck, build, focused lint and diff check
+passed. Two acceptance blockers remain:
 
-### Review Notes
+1. `projectShopifyTargeting` returns `kind: "UNKNOWN"` for a fully paged but
+   empty `DiscountProducts` product/variant connection or empty
+   `DiscountCollections` connection, but does not add `TARGETING_INCOMPLETE`.
+   A source snapshot otherwise complete can therefore return
+   `completeness: "COMPLETE"` with unknown targeting. Add an explicit reason
+   whenever a supported targeted-items typename resolves to `UNKNOWN`, and add
+   focused tests using otherwise-complete source facts to assert `PARTIAL` plus
+   `TARGETING_INCOMPLETE` for both empty cases.
+2. The task explicitly requires the PostgreSQL-backed two-shop/pagination and
+   policy tests to execute. The report says Docker was unavailable, the
+   integration test was not run, and the Work Item remains unchecked. Run
+   `npm run test:integration:docker` in a Docker-enabled environment and record
+   the actual pass, or report any concrete failure before resubmission.
 
-Task definition only. No implementation accepted.
+Attempt 1 is returned to Ready. No implementation acceptance is recorded.
 
 ### Reviewed Files
 
-Relevant October 29, 2026 code snapshot and task definition; no implementation source changes for this task reviewed.
+- `src/execution/discount-catalogue.ts`
+- `src/execution/discount-tools.ts`
+- `src/mcp/registration.ts`
+- `src/runtime/ports.ts`, `src/runtime/prisma.ts` and `src/runtime/service-ports.ts`
+- `tests/unit/execution/discount-catalogue.test.ts`
+- `tests/integration/prisma.integration.test.ts`
+- This task definition and Completion Report
 
 ### Validation Reviewed
 
-None for implementation.
+The report records 209 unit tests passing, typecheck, integration typecheck,
+build, changed-file lint and `git diff --check` passing. The Docker-backed
+PostgreSQL suite was not run because `docker` was unavailable; this is required
+by the task and remains outstanding. Full lint has the reported unrelated
+unused import in `src/connections/shopify/provider.ts:1`. No tests were rerun
+for this review.
 
 ### Architecture Conformance
 
-Pending implementation review.
+The tools read shop-scoped persisted snapshots, recheck current mode and
+selection, use the published Shared 3.0.0 contracts, make no provider calls and
+do not expose basket-level eligibility. The empty-target completeness mismatch
+and missing PostgreSQL execution must be corrected/validated before acceptance.
 
 ### Follow-up
 
-Materialise through the canonical launcher only after all dependency task YAMLs are Complete.
+Resubmit after the targeted-source tests pass and the required disposable
+PostgreSQL suite has run successfully. Keep BACKGROUND-010 and terminal system
+tests pending until their full dependency sets are complete.
