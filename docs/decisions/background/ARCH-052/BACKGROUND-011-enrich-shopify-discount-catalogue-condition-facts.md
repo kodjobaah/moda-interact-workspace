@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-10-30T17:49:22Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-BACKGROUND-009
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-052-MCP-002
 created: '2026-10-30'
-updated: 2026-10-30
+updated: '2026-10-31'
 ---
 
 # ARCH-052-BACKGROUND-011: Enrich existing Shopify discount catalogue with targeting facts
@@ -196,3 +196,31 @@ Changes Requested. Source-backed targeting, bounded pagination, retry behavior, 
 ### Follow-up
 
 Return the same task to `ready` for Attempt 2. Preserve Attempt 1 history and do not promote ARCH-052-MCP-002 until this task is accepted and its other dependencies are complete.
+
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Changes Requested — Attempt 2.
+
+### Review Notes
+
+Attempt 2 now retrieves and retains Shopify Basic discount combination policy and conservatively marks the condition facts PARTIAL because the Shared-010 contract does not represent that policy. This addresses the completeness risk identified in Attempt 1. Before changing the projection, Attempt 3 must verify whether the currently published Shared 2.8.2 contract supports these combination fields. If supported, project the source-backed fields through the contract with regression coverage; if unsupported, retain PARTIAL and document the exact contract limitation. Do not report COMPLETE while a known policy is not represented, and do not start MCP-002.
+
+### Reviewed Files
+
+- Attempt 2 implementation summary, changed files, and validation evidence in this task report.
+- `docs/decisions/background/ARCH-052/_index.md` (reconciled with `origin/main`).
+
+### Validation Reviewed
+
+Reviewed the reported Attempt 2 focused tests, PostgreSQL selection integration, build, changed-file lint, and `git diff --check`; these were not rerun during this architect review.
+
+### Architecture Conformance
+
+The bounded Shopify provider snapshot and conservative PARTIAL completeness behavior remain within task scope. Acceptance is deferred until Attempt 3 establishes whether Shared 2.8.2 can represent the retrieved combination policy and the implementation projects it when supported.
+
+### Follow-up
+
+Return the task to `ready` for Attempt 3. Preserve the Attempt 1 and Attempt 2 history. Keep ARCH-052-MCP-002 unpromoted until this task is accepted and its other dependencies are complete.

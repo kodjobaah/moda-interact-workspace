@@ -15,6 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-052-SHARED-012
 - ARCH-053-API-002
 - ARCH-053-SHARED-002
 - ARCH-053-BACKGROUND-004
@@ -55,6 +56,11 @@ Modify only these `moda-interact-api` paths, and related focused tests within `t
 No discount discovery, AI/CommerceAgent call, Woo provider API call, coupon creation/claim, WhatsApp send, mutable merchant setting lookup, external URL fetch, cart mutation, database schema change, new Redis enqueue or alternate visitor authentication path.
 
 ## Requirements
+
+### Multi-discount v1 offer resolution — normative 30 October 2026
+
+For a confirmed `promotionTarget:CHECKOUT` initial receipt with 2..3 source-grounded entries, import the published `InitialOutreachCheckoutOfferSetSchema` and `WooRestoreOutreachOfferV1Schema`, verify whole ordered group (not just its first code), match every trusted provider discount ID and emit `outreachOffer:{kind:"CHECKOUT_OFFERS",offers:[...]}` inside the **same** `woo.restore.resolve.v1` success payload. Preserve existing singleton branches. Malformed/incomplete/duplicate/unsupported group cannot be projected as a verified subset from the API: emit `NONE/UNVERIFIABLE` while keeping the originally restored basket eligible. Database/read outage remains 503. Never extract codes from message prose, coupon URL, current merchant selection or unsigned model text. Keep API read-only and no extra v2 route.
+
 
 1. **Authenticate first:** `WooInstallationAuthenticator` supplies `shopId`. Do not accept shopId, checkoutKey, providerDiscountId, coupon code, message ID or recipient from request body. The plugin sends the same recoveryId/token pair defined in API-002. Exactly one request version `woo.restore.resolve.v1` is allowed; return its mandatory `outreachOffer` field, derived only from confirmed evidence. Reject `woo.restore.resolve.v2` and all unknown versions with 400; no compatibility adapter.
 2. **Authorize recovery exactly as API-002:** installed active merchant, latest generation, eligible status, not terminal/completed/order-suppressed, 7-day freshness, stored HTTPS host/path and 32-byte token. Neither `outreachOffer` nor message evidence may override a denial. Uniform `404 {"error":"restore_unavailable"}` for authorization denial; `Cache-Control: no-store`, never reflect supplied token.

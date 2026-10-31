@@ -15,6 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-052-SHARED-012
+- ARCH-053-SHARED-003
 - ARCH-053-SYSTEM-TEST-001
 - ARCH-053-SYSTEM-TEST-002
 - ARCH-053-API-003
@@ -53,6 +55,11 @@ Only `moda-interact-system-test`: create a bounded scenario suite under the exis
 No production Meta sends, coupon issuance, CommerceAgent model selection, reimplementation of Woo coupon rules in fixtures, independent API auth, migration or broad system-harness rewrite.
 
 ## Requirements
+
+### Multi-discount Woo checkout-restoration certification — 30 October 2026
+
+Exercise `woo.restore.resolve.v1` with confirmed initial CHECKOUT_OFFERS group (2..3 items) and original customer coupon set, plus original single, automatic, alternative and no-offer branches. Assert only confirmed initial source-grounded codes are returned, read-only API remains tenant/generation safe, customer confirm is required, current Woo native coupon stacking determines every result, and a partial/expired/unverifiable group never silently removes original coupons or claims guaranteed savings. Verify explicit 10-minute nonce/session/cart-hash group choice, rollback of a partially applied group, changed merchant setting after confirmed send, retry/idempotency, Classic and Blocks messages and true totals. No v2 resolver or checkout-link generation in ARCH-052.
+
 
 - Test API-003 actual authenticated **single v1** resolver request/response, with the mandatory `outreachOffer` union; no v2 resolver is accepted. Invalid/expired/superseded/tenant-mismatched link never returns basket or offer.
 - Test a real sequence-one `RecoveryOutreachAttempt.sentAt + outboundMessageId` joined to a provider-confirmed `ConversationMessage` carrying approved `recoveryPromise` and explicit `promotionTarget`; no message, unconfirmed, failed, untagged, corrupt, wrong-recovery and wrong-tenant receipts never produce a checkout code. Test DB outage separately (503, not 200 NONE).

@@ -15,6 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-052-SHARED-012
 - ARCH-052-MCP-002
 - ARCH-052-COMMERCE-007
 - ARCH-052-SHARED-010
@@ -73,6 +74,16 @@ Implement this **single** dedicated Background LangGraph agent and Background-ow
 - Do not implement dependent or adjacent tasks in this branch.
 
 ## Requirements
+
+### Multi-discount selection — normative 30 October 2026
+
+- For checkout only, return a **bounded 1..3 offer set** using `InitialOutreachCheckoutOfferSetSchema` from published Shared; use one primary offer and up to two other compatible offers. Keep the existing single-offer and separate alternative-product decision types as valid fallbacks. Alternative product promotion remains one product/offer; no multi-product cross-sell.
+- Require current same-shop merchant authorisation for EACH offer (NONE: zero calls; FIXED: each selected; AI: catalogue mode), independent checkout targeting support, actual discount code/provider identity from MCP evidence and pairwise compatibility across all chosen items. A model recommendation alone never proves the pair.
+- Shopify: require reciprocal `combinesWith` **by discount class** for every pair; same-cart-line PRODUCT+PRODUCT requires `shopifyPlus:true` from authenticated shop plan evidence, `productDiscounts:true` on both, and reciprocal matching of each discount's **own** tags against the other's **allowed** same-line tags. Unverifiable overlap, plan or tags => do not include that pair. Respect other provider constraints, BxGy caveats and source incompleteness.
+- Woo: reject any pair when either `individualUse` is true or unknown; retain other coupon/extension uncertainty and do not promise future checkout acceptance. Never infer that a current discount, merely titled similarly, is stackable.
+- Partial/unknown required conditions, unsupported discount type, provider-read uncertainty, budget exhaustion or expired/revoked selection => remove the unproven candidate and fall back to a single supportable offer or existing no-offer/alternative path. Do not claim all discounts globally absent because pages were truncated. Do not add a bulk pre-model eligibility scan.
+- Preserve the chosen **ordered** set and source-verified `providerDiscountId`/code in the Background-local decision. Use a deterministic bounded compatibility checker and tests after LangGraph selection, not a second model-provided eligibility boolean. The details response must explicitly supply the providerDiscountId; if absent, group/member eligibility cannot be promoted to a Woo-restorable claim. No sum of percentage discounts or invented final monetary savings.
+
 
 ### A. Explicit files, dependency reuse and runtime wiring
 

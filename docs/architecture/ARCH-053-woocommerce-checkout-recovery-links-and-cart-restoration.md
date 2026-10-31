@@ -130,15 +130,24 @@ Node uses `@modainteract/moda-interact-shared/logging` for generic structured ev
 
 **Pre-production breaking refinement**, based on the developer's confirmation that this WooCommerce checkout restoration path is not released into production. The existing v2 HTTP-only phone path is folded into v1, **not** preserved with a compatibility adapter. Implement in isolated repository task branches; do not deploy API-001's removal of HTTP v2 to any still-running v2-producing test WordPress installation. Coordinated integration order: SHARED-001 implementation → architect acceptance → SHARED-002 publication → Background-001 v1 queue consumer → API-001 v1 HTTP validator/projection → WooCommerce-001 v1 producer → database/admission/link resolution + remaining bounded tasks → ARCH-048 integration → terminal system tests. Database work may run independently. Before activating the new pre-production pair, confirm no production messages/installed sites depend on v2; intentionally drain/recreate **development/test-only** retained queue jobs or coordinate a clean test reset. Do not silently delete durable merchant/production state. Reject v2/v3 on the new canonical checkout route after cutover, with tests. The separate `woo.restore.resolve.v1` resolver remains the first and only restore resolver. Do not deploy partially composed tasks or enable production Woo WhatsApp sends. Rollback of the added JSONB field requires an explicit data-retention decision.
 
+## Multi-discount v1 restoration amendment — 30 October 2026
+
+ARCH-052 now permits one immutable initial WhatsApp checkout offer group of 1..3 source-grounded compatible discounts. This does **not** move checkout URL issuance, coupon redemption, cart restoration or browser behavior into ARCH-052. The existing `WooCartRestoreSnapshotV1.appliedCouponCodes` remains the separate, complete original shopper-applied coupon list. Only the verified **confirmed initial** `ConversationMessage.content.recoveryPromise` can provide the recommended group; never derive it from mutable merchant preferences or URL/query parameters.
+
+New ARCH-053-SHARED-003 adds `CHECKOUT_OFFERS` (2..3 ordered CODE/AUTOMATIC entries) to the **same `woo.restore.resolve.v1`** union. Existing singleton `CHECKOUT_CODE` and `CHECKOUT_AUTOMATIC` responses remain correct. No v2 resolver or compatibility adapter; pre-production breaking rollout remains permitted. The new group schema is published once together with the ARCH-052 Shared combination contract through ARCH-052-SHARED-012. ARCH-053-API-003 reads and verifies the complete confirmed set; malformed evidence returns NONE/UNVERIFIABLE with no auto-coupon application. WooCommerce-007 applies original coupons first, attempts the whole sent code group natively after confirmed POST, and rolls back partial/conflicting recommended application to preserve the original successful set. WooCommerce-008 presents native valid totals and permits explicit nonce/session/cart-bound 'Try the offered set instead' choice; unknown/expired/cross-tenant claims are never guaranteed.
+
+The only new task in ARCH-053 is SHARED-003. Existing pending ARCH-053-BACKGROUND-004, API-003, WOOCOMMERCE-007/008 and SYSTEM-TEST-003 are amended under the same task IDs. No modifications to accepted ARCH-053 tasks, Shopify discount selection task, MCP Woo reader, ARCH-049 source sync, checkout-link generation tasks, or `_index.md` files. No cross-architecture system-test dependency points backward to an implementation task.
+
 ## Decisions / Tasks
 
-The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001, SHARED-001, SHARED-002, BACKGROUND-001, BACKGROUND-002 and API-001 Complete**; **BACKGROUND-003 (focused validation-only rework), API-002 and WOOCOMMERCE-001 are Ready**. Other tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. No `SHARED-003` is needed because SHARED-001 owns the complete v1 contract.
+The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001, SHARED-001, SHARED-002, SHARED-003, BACKGROUND-001, BACKGROUND-002 and API-001 Complete**; **BACKGROUND-003 (focused validation-only rework), API-002 and WOOCOMMERCE-001 are Ready**. Other tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. The existing v1 contract does not cover grouped offers; ARCH-053-SHARED-003 extends that first-release v1 union and ARCH-052-SHARED-012 is its joint publication gate.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
 | `ARCH-053-DATABASE-001` | `moda_database` | Complete | — |
 | `ARCH-053-SHARED-001` | `moda_shared` | Complete | — |
 | `ARCH-053-SHARED-002` | `moda_shared` | Complete | SHARED-001 |
+| `ARCH-053-SHARED-003` | `moda_shared` | Complete | ARCH-052-SHARED-011 |
 | `ARCH-053-API-001` | `moda_api` | Complete | SHARED-002 |
 | `ARCH-053-BACKGROUND-001` | `moda_background` | Complete | SHARED-002 |
 | `ARCH-053-BACKGROUND-002` | `moda_background` | Complete | BACKGROUND-001, DATABASE-001 |
@@ -147,16 +156,16 @@ The task YAML files are authoritative for status and dependency eligibility. The
 | `ARCH-053-API-002` | `moda_api` | Ready | SHARED-002, DATABASE-001 |
 | `ARCH-053-BACKGROUND-003` | `moda_background` | Ready (Attempt 2 validation) | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
 | `ARCH-053-BACKGROUND-004` | `moda_background` | Pending | ARCH-052-BACKGROUND-008 |
-| `ARCH-053-API-003` | `moda_api` | Pending | API-002, SHARED-002, BACKGROUND-004 |
+| `ARCH-053-API-003` | `moda_api` | Pending | API-002, SHARED-002, BACKGROUND-004, ARCH-052-SHARED-012 |
 | `ARCH-053-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | WOOCOMMERCE-001, API-002 |
 | `ARCH-053-WOOCOMMERCE-005` | `moda_woocommerce` | Pending | WOOCOMMERCE-002, WOOCOMMERCE-004 |
 | `ARCH-053-WOOCOMMERCE-006` | `moda_woocommerce` | Pending | WOOCOMMERCE-005 |
-| `ARCH-053-WOOCOMMERCE-007` | `moda_woocommerce` | Pending | API-003, WOOCOMMERCE-005, WOOCOMMERCE-006 |
+| `ARCH-053-WOOCOMMERCE-007` | `moda_woocommerce` | Pending | API-003, WOOCOMMERCE-005, WOOCOMMERCE-006, ARCH-052-SHARED-012 |
 | `ARCH-053-WOOCOMMERCE-008` | `moda_woocommerce` | Pending | WOOCOMMERCE-007, WOOCOMMERCE-006 |
 | `ARCH-053-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | WOOCOMMERCE-001 |
 | `ARCH-053-SYSTEM-TEST-001` | `moda_system_test` | Pending | BACKGROUND-003, WOOCOMMERCE-002, WOOCOMMERCE-003, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
 | `ARCH-053-SYSTEM-TEST-002` | `moda_system_test` | Pending | WOOCOMMERCE-004, WOOCOMMERCE-006, BACKGROUND-003, WOOCOMMERCE-003, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
-| `ARCH-053-SYSTEM-TEST-003` | `moda_system_test` | Pending | SYSTEM-TEST-001, SYSTEM-TEST-002, API-003, WOOCOMMERCE-008, BACKGROUND-003, BACKGROUND-004, WOOCOMMERCE-003, ARCH-052-BACKGROUND-008, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |
+| `ARCH-053-SYSTEM-TEST-003` | `moda_system_test` | Pending | SYSTEM-TEST-001, SYSTEM-TEST-002, API-003, WOOCOMMERCE-008, BACKGROUND-003, BACKGROUND-004, WOOCOMMERCE-003, ARCH-052-BACKGROUND-008, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003, ARCH-053-SHARED-003, ARCH-052-SHARED-012 |
 
 Only system-test tasks may depend on another system test. `SYSTEM-TEST-003` runs after accepted core-link and original-coupon system certification; **no implementation task depends on system validation**.
 
