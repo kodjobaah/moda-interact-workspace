@@ -293,6 +293,10 @@ outreach-products/woocommerce/myshop.com-myshop/2026/10/31/attempt_7d91b/p-<64-h
   or log raw product source URLs, signed query, customer PII or credentials.
   Expected unavailable media should still have diagnostic provenance.
 
+### R5. Independence from current checkout pricing (BACKGROUND-016)
+
+Image quality/provenance and pricing are **separate guards**. BG007 must not use an R2 image, its source product catalogue price, successful upload, image timestamp, or merchant-domain R2 folder as evidence that the saved checkout unit price is still payable. Revalidate the selected **same product/variant identity** against the currently admitted attempt and the BG008/BG016 price-sensitive admission decision before IMAGE binding. If BG008 has invalidated the price-dependent offer or the recovery generation, a successfully uploaded R2 image **must not** force the send through; retain it only as an immutable unsent object and return typed no-send or an independently authorised TEXT/no-offer variant. Media failure alone may choose an approved TEXT fallback but cannot relax a failed price/discount gate. BG007 does not reimplement BG016, does not fetch prices beyond its current exact product read, and does not change the 30-second media budget.
+
 ## Work Items
 
 - [ ] Add R1 site normalizer with exact test vectors, including Woo subpaths,
@@ -395,6 +399,8 @@ is deliberately its prerequisite and its TEXT path remains independent.
 
 ## Acceptance Criteria
 
+- [ ] A verified R2 product image does not validate a stale checkout price, changed generation or unverified discount threshold; price invalidation prevents both IMAGE and offer-bearing TEXT sends even if the media upload succeeded, while a separately approved price-neutral TEXT fallback remains possible.
+
 - [ ] All ten positive merchant examples above and host/path negative cases
       produce exact expected slugs or null; `/a-b` and `/a/b` are distinct,
       as are `/A` and `/a`, and `www` is not silently removed.
@@ -429,6 +435,8 @@ is deliberately its prerequisite and its TEXT path remains independent.
       bucket, separate worker or archive/index change.
 
 ## Validation
+
+- [ ] Add cross-boundary test for R2 READY plus stale current price/threshold/attempt; assert no IMAGE send, no unapproved offer, no extra credit, and no incorrect `sentAt` attribution to a prepared-but-unused object.
 
 - [ ] `npx vitest run tests/unit/services/recovery-product-media` (new focused
       suite: normalizer, exact key, transformer, R2 adapter, resolver).
