@@ -308,41 +308,53 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-In Progress — Attempt 1 claimed; implementation and report are not ready for Architect Review.
+In Progress — Attempt 1 remains active; implementation and report are not ready for Architect Review.
 
 ### Files Changed
 
-Implementation work is in the dedicated Background task worktree. The task file is the only file changed in this parent report worktree.
+Implementation work is in the dedicated Background task worktree. This task file records the current implementation and validation state.
 
 ### Work Completed
 
 Implemented or extended the existing initial outreach path with attempt-scoped BG010/BG016 composition, post-agent trusted context refresh, target/header/shop-name-aware approved TEXT selection, singular/plural checkout CODE binding selection, maximal homogeneous offer-set fallback, alternative-product source provenance checks, separate checkout/product CTA binding, ordered multi-button persistence/transport, Woo attempt-ID forwarding, and singleton confirmed checkout-offer receipt parsing for follow-up.
 
-Added focused coverage for BG010 context composition, stale basket/price evidence, singular versus plural CODE template selection, mixed-method set fallback, exact-product provenance, cross-shop rejection, separate approved CTA indices, unchanged stored checkout URL binding, and Woo attempt propagation.
+Added the architect-approved Background-local current-discount source fence and final offer revalidator. F1/F2 use bounded same-shop RepeatableRead reads, catalogue `syncGeneration`, selected-row generation checks, and a canonical SHA-256 digest; a fresh authenticated MCP session rereads each proposed discount and exact alternative product outside database transactions. Fresh checkout decisions reuse BG010's eligibility and pair-selection helpers; alternative product targeting reuses its extracted pure matcher. F3 rechecks current recovery/attempt/price/policy and the source digest before Shopify and Woo provider admission. The token exists only in memory, and Woo no longer repeats template/agent selection at its second pre-provider check.
+
+Added focused coverage for source-fence isolation/digest changes, F1/F2 churn, exact-product refresh and mismatch, F3 admission denial on both platforms, duplicate Woo selection avoidance, and the previously implemented template/transport/receipt behavior.
+
+Fixed the Shopify discount facts producer to include the schema-required subtotal currency while preserving the published decimal-string subtotal representation. Removed untrusted exception text from model-bridge, credential-revocation, conversation-wrapper, and generic recovery-offer logs; retained the original exception propagation. Corrected the initial-outreach finalization log to avoid duplicating a raw error message and aligned brittle runtime/billing assertions with current shared logging and package-version contracts.
 
 ### Validation Results
 
-Passed: `./node_modules/.bin/tsc --noEmit -p tsconfig.json`.
+Passed: `pnpm exec tsc --noEmit`.
 
-Passed: `npm run lint`.
+Passed: `pnpm lint`.
 
-Passed focused Vitest run: 9 files, 161 tests, including initiation, moderation, template preparation and transport, initial offer composition, BG010 graph, WhatsApp, and Woo outreach.
+Passed focused Vitest run: 10 files, 131 tests, covering source fencing/revalidation, Shopify materialization, Woo admission, worker loading, legacy template-media behavior, and Support-notice finalization. All 12 files that failed in the preceding full-suite run also passed in a focused rerun after local fixes.
 
-Not run: full Background test suite, PostgreSQL/integration harnesses, two-platform end-to-end coverage, and final git diff review.
+Passed: `git diff --check`.
+
+Passed PostgreSQL source-fence integration through the disposable harness: 1 file, 2 tests. Both Shopify and WooCommerce persisted rows were exercised; a same-generation row update changed the digest, and a stale-generation row failed closed.
+
+Passed existing ARCH-052 discount-selection PostgreSQL integration: 1 file, 2 tests.
+
+Passed WhatsApp Cloud API emulator integration: 1 file, 1 test covering generated no-offer, checkout-code, and alternative-product payloads, including approved template identity/language and ordered URL button parameters.
+
+Full Background unit suite (`pnpm test:unit`): **passed** — 326 files and 3,470 tests passed.
+
+Still not certified: complete two-platform end-to-end/system coverage, the broader required consent/moderation/STOP/credit/notification validation as an isolated regression gate, and all acceptance items above. Keep status `in_progress`; do not hand off for Architect Review.
 
 ### Deviations
 
-The post-agent gate refreshes trusted recovery/policy/prompt and BG016 price context, and rejects changed evidence. It does not yet re-read each proposed discount and recompute all member/pair evidence immediately before template binding.
+The implemented F1/F2 fence brackets fresh MCP reads and detects changes to synchronized source rows, but it does not prove live Shopify/Woo redemption state. F3 has a provider-side race after the final admission check, as acknowledged by the accepted contract. Several listed adversarial, multi-member trimming, Postgres, and system-test cases remain unimplemented/unrun.
 
 ### Assumptions
 
-No additional source-revision assumption is accepted; the upstream MCP tool-result contract currently provides no same-shop discount snapshot/revision identity to compare.
+The accepted 31 October architect unblock is followed: no MCP revision/snapshot property or Shared/MCP contract change was introduced. The local catalogue generation and selected-row digest are used only as attempt-local consistency checks, not as a live provider eligibility certificate.
 
 ### Unresolved Issues
 
-The required final current-source revalidation needs a source snapshot/revision identifier for discount options/details. `CommerceToolResult` currently carries only contract version, status, data, and rendered text; the inspected MCP discount read path exposes no catalogue snapshot revision. Re-reading options/details locally is possible through the existing authenticated MCP selector, but without an upstream revision contract the requirement to bind those facts to the same snapshot used by BG010 cannot be proven. `moda_architect` must resolve whether the contract should expose a source revision or define an accepted equivalent before this task can claim completion.
-
-Other acceptance gaps remain, including dispatch/admission-time source revalidation, current merchant permission recheck, comprehensive Meta failure logging tests, full two-provider integration/system tests, and final mirrored implementation/report commits and pushes. The implementation branch has uncommitted changes; no implementation or report publication commit/push has been made.
+Remaining acceptance gaps include broader 3-to-2/2-to-1 approved-template reselection and adversarial permission/source revocation coverage, full PostgreSQL/two-platform/system tests, and the required existing admission/moderation/STOP/credit/notification suites. The implementation worktree has uncommitted changes; no implementation publication commit or push has been made. No Architect Review or status transition to `review` has occurred.
 
 ### Architectural Concerns
 
@@ -361,16 +373,16 @@ Planning only; no source implementation accepted.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+The task definition was authored from the 29 October 2026 snapshot. The implementation agent has not performed Architect Review.
 
 ### Validation Reviewed
 
-None for implementation.
+Focused local TypeScript, lint, diff, and Vitest evidence is recorded above; no independent Architect Review has occurred.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+To be determined by `moda_architect` after implementation handoff.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+Complete the outstanding validation and publication requirements, then hand the task to `moda_architect`; do not reset or reclaim the active Attempt 1.
