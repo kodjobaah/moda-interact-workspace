@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-10-31T12:47:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-016-DATABASE-002
@@ -158,7 +158,7 @@ The only permitted business validation is *non-negative whole days*; SQL/Prisma 
 
 ### Status
 
-Ready for Review
+Attempt 1 returned with Changes Requested. The task remains at attempt 1; the launcher owns the next attempt increment.
 
 ### Files Changed
 
@@ -206,24 +206,54 @@ None
 
 ### Review Status
 
-Pending
+Attempt 1 — Changes Requested
 
 ### Review Notes
 
-Pending implementation evidence.
+The runtime field metadata, validation, open-ended display range, missing HTML
+`max`, and zero-day guidance match the task. The safe-integer parser accepts
+the required values and rejects decimals, scientific notation, empty and
+unsafe input. One acceptance blocker remains:
+
+1. The new `validates before mutation and retains optimistic audited update
+   fields` test only reads `src/app/actions/background-runtime-controls.ts`
+   as text and checks source ordering and regex matches. It does not invoke
+   `mutateBackgroundRuntimeControlsAction`, prove that an allowed lifetime is
+   persisted, or assert that the successful audit event contains the expected
+   before/after values and required reason. The task explicitly requires a
+   successful audited update and rejection without mutation. Add a behavioral
+   action test using suitable mocks or a focused database fixture to verify a
+   successful update/audit and invalid-input rejection before mutation; retain
+   the expected-version and permission checks.
 
 ### Reviewed Files
 
-None
+- `src/lib/admin/background-runtime-control-validation.ts`
+- `src/components/admin/background-runtime-controls.tsx`
+- `src/app/actions/background-runtime-controls.ts`
+- `tests/unit/background-runtime-control-validation.test.ts`
+- `tests/security/admin-background-runtime-controls.test.mjs`
+- This task definition and Completion Report
 
 ### Validation Reviewed
 
-None
+The Completion Report records 9 focused validation tests and 6 security
+contract tests passing, build and diff check passing, and changed-source lint
+passing. The repository-wide unit suite reported 17 unrelated failures and
+repository-wide lint failed on an unchanged file. No tests were rerun for this
+review. The existing test evidence does not exercise a successful audited
+action mutation.
 
 ### Architecture Conformance
 
-Not assessed.
+The field-level validation and UI conform to the no-maximum policy. The report
+does not yet demonstrate that the complete Admin action persists the new
+values and writes their audit snapshot as required.
 
 ### Follow-up
 
-None
+Add behavioral coverage for the successful audited update and invalid input
+with no mutation, then rerun focused tests, build, changed-file lint and
+`git diff --check`. Record the results and resubmit Attempt 1; do not increment
+the attempt in this review. `ARCH-016-ADMIN-003` remains Ready and
+`ARCH-016-SYSTEM-TEST-001` remains Pending.
