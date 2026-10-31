@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T05:15:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-012
@@ -129,7 +129,7 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Implementation is complete and ready for architecture review. Attempt 1. The task was implemented in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-ADMIN-003`; no Meta provider upload or approval was performed.
+Attempt 1 implementation was returned for a narrow wording-validation correction. The task was implemented in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-ADMIN-003`; no Meta provider upload or approval was performed.
 
 ### Files Changed
 
@@ -178,26 +178,51 @@ None identified within Admin ownership. Repository-wide lint has the unrelated e
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review — Changes Requested
 
-Pending.
+The implementation covers the requested authoring, locale, immutable approval,
+and publication boundaries, and the reported focused checks/build passed. One
+required wording guarantee is not enforced: the English AUTOMATIC_OFFER check
+accepts `possible` or `available` alone as its multi-offer indicator. For
+example, “Your basket may qualify for a possible automatic offer, subject to
+checkout eligibility” passes the current regular expressions even though it
+says there is one offer. This does not satisfy the task's plural/multi-discount
+wording requirement.
 
-### Review Notes
+Required correction:
 
-New multi-discount feature task; no implementation reviewed.
+- Tighten the AUTOMATIC_OFFER checkout-copy validation so a singular sentence
+  cannot pass on `possible`/`available` alone. Require a clear plural/set
+  formulation such as “multiple automatic offers”, “several eligible
+  discounts”, or “choose from available offers”, while retaining the explicit
+  checkout-eligibility condition.
+- Add a regression test proving a singular “possible automatic offer” sentence
+  is rejected and the supported plural forms still pass.
+
+Attempt 1 is returned to Ready. No implementation acceptance is recorded.
 
 ### Reviewed Files
 
-None.
+- `src/lib/admin/whatsapp-templates/authoring/validation.ts`
+- `tests/unit/arch047-template-authoring-ast.test.ts`
+- The task definition and Completion Report
+- Admin translation, Meta snapshot and publication validation paths
 
 ### Validation Reviewed
 
-No implementation validation yet.
+The submitted report records 111 focused checks, successful production build,
+changed-file lint and `git diff --check`. Repository-wide lint has the unrelated
+reported error in `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts:26`.
+No validation was rerun during this review.
 
 ### Architecture Conformance
 
-Pending implementation and review.
+The implementation remains within Admin ownership and correctly guards
+merchant-bound contextual Reply copy, locale revisions, provider approval
+identity and historical initial-template exclusion. The automatic-offer wording
+guard needs the correction above before acceptance.
 
 ### Follow-up
 
-None.
+After the wording guard and regression case pass, resubmit the same task attempt
+for architect review. Do not start dependent tasks before acceptance.
