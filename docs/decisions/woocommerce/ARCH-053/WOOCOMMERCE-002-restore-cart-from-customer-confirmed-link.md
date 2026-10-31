@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -178,24 +178,26 @@ None identified. No cross-repository contract, database, queue, or deployment ch
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Not Reviewed — task not executed.
+The implementation needs a rollback path when WooCommerce session persistence fails after the cart has been changed. In `includes/Checkout/CheckoutResumeController.php` lines 116-118, ensure the visitor's pre-restore cart/session state is restored on persistence failure; record rollback failure separately and do not report or redirect as though the restored basket succeeded. Add a focused regression test for this failure path.
+
+Retry `npm run test:integration:wordpress` using host ports in this order: 8887, 8886, then 8885. Record each attempt and its result in the Completion Report.
 
 ### Reviewed Files
 
-None.
+`includes/Checkout/CheckoutResumeController.php`
 
 ### Validation Reviewed
 
-None.
+The Completion Report records the focused PHP tests and lint as passing. WordPress integration did not reach scenarios because port 8888 was unavailable; retry on 8887, 8886, then 8885 as noted above.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+Changes Requested: handle cart/session persistence failure atomically from the shopper's perspective, and complete the requested WordPress integration retry before resubmitting for review.
 
 ### Follow-up
 
-None.
+Implement and test rollback when session persistence fails, then rerun the WordPress integration on ports 8887, 8886, and 8885 in that order. Update this same task's Completion Report and return it for architect review.
