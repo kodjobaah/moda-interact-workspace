@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -35,7 +35,7 @@ Detect human return to an unchanged existing Woo checkout. One bounded outcome i
 
 ## Context
 
-The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. ARCH-048-BACKGROUND-007..011 task files are present, but none has been accepted Complete in this snapshot (007 Ready, 008–011 Pending). This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+The inspected dependency snapshot is dated 2026-10-30 07:59. This task was promoted to Ready on 2026-10-31 after ARCH-053-WOOCOMMERCE-001 was accepted Complete. ARCH-052 remains exclusively responsible for dynamic discount discovery, not checkout-URL implementation.
 
 ## Scope
 
