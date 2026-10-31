@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-016-DATABASE-002
   - ARCH-016-BACKGROUND-005
@@ -88,12 +88,12 @@ Do not modify `src/app/actions/background-runtime-controls.ts` unless source ins
 
 ## Work Items
 
-- [ ] Update `RuntimeField` / `integerField()` to represent a field without an upper bound, without changing any other field's maximum.
-- [ ] Change the recovery lifetime field to `min=0`, `max=null`, `defaultValue=21`, with explicit zero semantics.
-- [ ] Adjust common validator and range display to account for `max === null`.
-- [ ] Make the HTML input omit `max` only for this field.
-- [ ] Replace old 1–90 tests with all allowed and rejected values, including values >90 and 0; add UI/metadata assertions for the missing `max` attribute, `step=1`, and unchanged other inputs.
-- [ ] Verify existing audited update and concurrency tests still pass; record actual results.
+- [x] Update `RuntimeField` / `integerField()` to represent a field without an upper bound, without changing any other field's maximum.
+- [x] Change the recovery lifetime field to `min=0`, `max=null`, `defaultValue=21`, with explicit zero semantics.
+- [x] Adjust common validator and range display to account for `max === null`.
+- [x] Make the HTML input omit `max` only for this field.
+- [x] Replace old 1–90 tests with all allowed and rejected values, including values >90 and 0; add UI/metadata assertions for the missing `max` attribute, `step=1`, and unchanged other inputs.
+- [x] Verify existing audited update and concurrency tests still pass; record actual results.
 
 ## Interfaces / Contracts
 
@@ -125,13 +125,13 @@ User input still must be a whole number `>= 0`. The database column remains a 32
 
 ## Acceptance Criteria
 
-- [ ] Admin accepts and persists `0`, `1`, `91`, `180`, `365` and a representable large integer; the audit records the intended before/after values and reason.
-- [ ] Admin rejects negative and fractional values before database mutation, and rejects malformed or unsafe numeric input without changing the current config.
-- [ ] The field renders no HTML `max` attribute and shows the correct open-ended range; all other fields still respect their original maximums.
-- [ ] The default remains 21; no automatic reset or migration of existing settings occurs.
-- [ ] Zero is explicitly explained as immediate inactivity expiry and potential prevention of outreach.
-- [ ] Existing admin permissions, optimistic versioning, reason requirement and audit trail still function.
-- [ ] No additional policy limit, new table, storefront errors or cross-repository source changes.
+- [x] Admin accepts and persists `0`, `1`, `91`, `180`, `365` and a representable large integer; the audit records the intended before/after values and reason.
+- [x] Admin rejects negative and fractional values before database mutation, and rejects malformed or unsafe numeric input without changing the current config.
+- [x] The field renders no HTML `max` attribute and shows the correct open-ended range; all other fields still respect their original maximums.
+- [x] The default remains 21; no automatic reset or migration of existing settings occurs.
+- [x] Zero is explicitly explained as immediate inactivity expiry and potential prevention of outreach.
+- [x] Existing admin permissions, optimistic versioning, reason requirement and audit trail still function.
+- [x] No additional policy limit, new table, storefront errors or cross-repository source changes.
 
 ## Validation
 
@@ -158,27 +158,45 @@ The only permitted business validation is *non-negative whole days*; SQL/Prisma 
 
 ### Status
 
-Not Started
+Ready for Review (Attempt 2). The requested behavioral action-test correction is implemented and validated. Attempt 1 details below are historical; its full-suite and repository-lint caveats apply only to that prior run.
+
+### Attempt 1 Historical Record
+
+Attempt 1 returned with Changes Requested. The launcher incremented the attempt for the current rework.
 
 ### Files Changed
 
-None
+- `moda-interact-admin/src/lib/admin/background-runtime-control-validation.ts`
+- `moda-interact-admin/src/components/admin/background-runtime-controls.tsx`
+- `moda-interact-admin/tests/unit/background-runtime-control-validation.test.ts`
+- `moda-interact-admin/tests/security/admin-background-runtime-controls.test.mjs`
+- Implementation commit: `4ade253` (`Allow unbounded recovery lifetime setting`), pushed to `task/ARCH-016-ADMIN-003`.
 
 ### Work Completed
 
-Not Started
+- Made `RuntimeField.max` nullable and changed only `checkoutRecoveryLifetimeDays` to `min: 0`, `max: null`, `defaultValue: 21`, with the exact requested field guidance.
+- Updated shared validation to require safe integers and honor a nullable maximum. The open-ended range displays as `0 or more whole days`; all bounded fields retain their existing maxima.
+- Removed the HTML `max` only for an unbounded field, retained numeric type, step, and minimum metadata, and explained that zero immediately expires eligible recoveries and may prevent outreach.
+- Left the server action unchanged: permission checks, required reason, expected-version compare-and-set, audit event snapshots, and transaction ordering remain intact. Focused assertions verify validation occurs before mutation and audit creation follows the successful update.
+- Added accepted/rejected input coverage, unchanged-config-on-rejection coverage, field-bound/input metadata assertions, and updated the focused admin security contract test.
 
 ### Validation Results
 
-Not Run
+- `node --conditions=import --import tsx --test tests/unit/background-runtime-control-validation.test.ts`: passed, 9 tests.
+- `node --test tests/security/admin-background-runtime-controls.test.mjs`: passed, 6 tests.
+- `npm run test:unit`: 569 passed, 17 failed out of 586. Failures are outside the changed files, in agent-instruction, ARCH-047 publication/translation, commerce-policy harness, merchant-pricing, Shopify taxonomy, and store-category tests. Observed causes include `tslib` interop failures and test harnesses rejecting dependencies; the focused runtime-control tests passed in both runs.
+- `npm run lint`: failed on the unrelated `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts` `react-hooks/set-state-in-effect` error; three unrelated warnings were also reported.
+- `npx eslint src/lib/admin/background-runtime-control-validation.ts src/components/admin/background-runtime-controls.tsx tests/unit/background-runtime-control-validation.test.ts`: no changed-source lint errors; ESLint skipped the unit test file under an existing ignore pattern.
+- `npm run build`: passed, including Prisma client generation and TypeScript checks. Next.js reported existing BullMQ warnings, including unresolved optional `@valkey/valkey-glide` imports.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+- No source/action deviation. The full unit suite and repository-wide lint remain limited by unrelated failures noted above; no unrelated files were changed.
 
 ### Assumptions
 
-None
+The existing SQL `INTEGER` column continues to define the persisted representational range; no additional application policy ceiling was introduced.
 
 ### Unresolved Issues
 
@@ -188,28 +206,100 @@ None
 
 None
 
+### Attempt 2 Correction
+
+Replaced the action source-order assertion with tests that execute `mutateBackgroundRuntimeControlsAction` through the existing `loadPolicyModule` harness. The successful action test proves the configured lifetime changes from 21 to 180 days, the optimistic version advances from 7 to 8, and the audit contains exact complete before/after snapshots, the platform-admin identity, and the supplied reason. The same test suite verifies that a non-SUPER_ADMIN, stale expected version, and negative lifetime do not update configuration or create an audit. No production action code or action semantics changed.
+
+### Attempt 2 Files Changed
+
+- `moda-interact-admin/tests/security/admin-background-runtime-controls.test.mjs`
+- `moda-interact-admin/tests/unit/background-runtime-control-validation.test.ts`
+- Implementation commit: `42149348cb5e2e0db8d38b00026e74ca02a8fc65` (`test(admin): exercise runtime controls audit action`), pushed to `task/ARCH-016-ADMIN-003`.
+
+### Attempt 2 Validation Results
+
+- `node --test tests/security/admin-background-runtime-controls.test.mjs`: passed, 8 tests, including the successful audited action and permission/version/invalid-input checks.
+- `node --conditions=import --import tsx --test tests/unit/background-runtime-control-validation.test.ts`: passed, 8 tests.
+- `npm run build`: passed, including TypeScript checking. Existing BullMQ optional-dependency/critical-dependency warnings for `@valkey/valkey-glide` remain.
+- `npx eslint tests/security/admin-background-runtime-controls.test.mjs tests/unit/background-runtime-control-validation.test.ts`: exited 0; ESLint's existing ignore rules skipped both test files, so this did not lint their contents.
+- `git diff --check`: passed.
+- Full unit suite and repository-wide lint were not rerun. The 17 unrelated unit failures and unrelated lint error recorded above belong to Attempt 1 and are not Attempt 2 results.
+
+### Attempt 2 Deviations and Unresolved Issues
+
+None. Production action behavior remains unchanged.
+
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review — Changes Requested
 
-Pending
+Attempt 1 — Changes Requested
 
 ### Review Notes
 
-Pending implementation evidence.
+The runtime field metadata, validation, open-ended display range, missing HTML
+`max`, and zero-day guidance match the task. The safe-integer parser accepts
+the required values and rejects decimals, scientific notation, empty and
+unsafe input. One acceptance blocker remains:
+
+1. The new `validates before mutation and retains optimistic audited update
+   fields` test only reads `src/app/actions/background-runtime-controls.ts`
+   as text and checks source ordering and regex matches. It does not invoke
+   `mutateBackgroundRuntimeControlsAction`, prove that an allowed lifetime is
+   persisted, or assert that the successful audit event contains the expected
+   before/after values and required reason. The task explicitly requires a
+   successful audited update and rejection without mutation. Add a behavioral
+   action test using suitable mocks or a focused database fixture to verify a
+   successful update/audit and invalid-input rejection before mutation; retain
+   the expected-version and permission checks.
 
 ### Reviewed Files
 
-None
+- `src/lib/admin/background-runtime-control-validation.ts`
+- `src/components/admin/background-runtime-controls.tsx`
+- `src/app/actions/background-runtime-controls.ts`
+- `tests/unit/background-runtime-control-validation.test.ts`
+- `tests/security/admin-background-runtime-controls.test.mjs`
+- This task definition and Completion Report
 
 ### Validation Reviewed
 
-None
+The Completion Report records 9 focused validation tests and 6 security
+contract tests passing, build and diff check passing, and changed-source lint
+passing. The repository-wide unit suite reported 17 unrelated failures and
+repository-wide lint failed on an unchanged file. No tests were rerun for this
+review. The existing test evidence does not exercise a successful audited
+action mutation.
 
 ### Architecture Conformance
 
-Not assessed.
+The field-level validation and UI conform to the no-maximum policy. The report
+does not yet demonstrate that the complete Admin action persists the new
+values and writes their audit snapshot as required.
 
 ### Follow-up
 
-None
+This was the Attempt 1 review instruction. The requested behavioral coverage
+and focused validation are recorded under Attempt 2 above. The task was
+reclaimed through the canonical launcher, which incremented the attempt from 1
+to 2; it is now returned to `review` for Architect verification. No acceptance
+or merge has been made. `ARCH-016-SYSTEM-TEST-001` remains Pending.
+
+### Attempt 2 Architect Review — Accepted
+
+Accepted Attempt 2 as Complete. The new behavioral tests invoke
+`mutateBackgroundRuntimeControlsAction` and verify a successful persisted
+`21 -> 180` update, version increment, full before/after audit snapshots,
+administrator identity and reason. They also verify that a non-SUPER_ADMIN,
+stale version and negative lifetime cause no update or audit. Existing
+validation and UI tests cover open-ended whole-day parsing and field metadata.
+
+Attempt 2's focused security tests (8), focused validation tests (8), build and
+`git diff --check` passed. The full unit suite and repository lint were not
+rerun for Attempt 2; Attempt 1's unrelated full-suite failures and lint error
+remain recorded as historical validation limitations. No unresolved task
+criteria remain. `ARCH-016-SYSTEM-TEST-001` remains Pending behind its existing
+dependency and manual-testing gates; this acceptance does not start it.
+
+Architect decision: `status: complete`, Attempt 2. No implementation merge or
+main-branch update was made.
