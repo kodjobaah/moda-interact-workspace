@@ -36,6 +36,9 @@ depends_on:
 - ARCH-052-BACKGROUND-012
 - ARCH-052-SHARED-014
 - ARCH-052-BACKGROUND-016
+- ARCH-052-BACKGROUND-018
+- ARCH-052-ADMIN-004
+- ARCH-052-BACKGROUND-017
 enables: []
 created: '2026-10-29'
 updated: 2026-10-31
@@ -81,6 +84,14 @@ Evidence and paths refer to the 29 October 2026 08:07 uploaded workspace snapsho
 No out-of-repository modifications, new competing generic logger, uncapped provider operations, or implementation of Enables tasks.
 
 ## Requirements
+
+### Guaranteed no-offer TEXT after optional enrichment failures — WooCommerce
+
+- Exercise a **real INITIAL sequence-one delivery path**, not only a pure `NO_OFFER` builder. With consent/STOP/order state authorised and a reviewed provider-approved `INITIAL_NO_OFFER` TEXT template, simulate MODE NONE, AI provider unavailable, MCP timeout/error, `NO_VERIFIED_OFFER` with `discoveryIncomplete:true`, incomplete discount catalogue, invalid/expired discounts, BG016 incomparable price, rejected alternative-product provenance and BG007/R2 IMAGE failure. Assert one sent neutral BODY with trusted merchant, nonempty saved checkout items, Reply text/voice guidance and original checkout CTA, **zero discount/price/product-image claims**, unchanged original basket and exactly one confirmed attempt/credit.
+- Fail source generation/fingerprint F1/F2/F3 after a promotional candidate: if only optional promotion is stale, reprepare a fresh neutral TEXT and verify mandatory checkout generation/consent/STOP/merchant/recovery/recipient/source identity before dispatch. If the required recovery is terminal, consent absent/revoked, STOP applicable, shop/recipient mismatched, Meta registration unapproved or no valid summary, assert **zero sends** and durable reason. A mandatory DB outage must retry and must not bypass final admission.
+- Inject a late Meta timeout/unknown acknowledgment and a duplicate BullMQ job. Assert no second provider call under a new fallback attempt, no second credit, no false confirmed `recoveryPromise`, and reconciliation of the existing idempotency key `recovery-outreach:<attemptId>`.
+- Assert the fallback path does not invoke model/MCP product/discount calls, new checkout URL generation, new image/R2 processing or ARCH-054 customer-reply delay. Preserve the true provider/SDK error in bounded redacted shared logs with a separate internal fallback trigger.
+
 
 ### Multi-discount certification — normative 30 October 2026
 
@@ -194,13 +205,15 @@ None.
 
 ## Acceptance Criteria
 
+- [ ] Simulated optional AI/MCP/discount/price/IMAGE failures still produce exactly one approved, neutral saved-basket initial TEXT send when mandatory gates allow, while STOP/consent/order/approval/credit denial and Meta-unknown outcome never bypass existing admission.
+
 - [ ] The source-backed price report and final Meta payload are consistent: observed catalogue differences are not represented as confirmed customer checkout changes; unknown comparable current subtotal never positively satisfies an effective threshold.
 - [ ] Missing/changed product or variant, currency mismatch or price-source failure prevents invalid offer/savings; the independently approved price-neutral TEXT path remains unaffected by optional R2 media failures.
 - [ ] The exact approved IMAGE URL is the verified transformed same-attempt R2 derivative, not MCP source URL or brand image; failed or superseded sends do not persist a false confirmed-send date or extra credit.
 
 - [ ] An upstream provider/SDK error cannot be replaced in logs by a guessed explanation; internal `reasonCode` remains separate, source provenance is truthful and security/redaction tests pass.
 
-- [ ] Alternative-product CTA URL derives from a successful same-shop MCP exact-product response matching the selected product/variant; hostile or model-authored product URLs fail closed to an approved NO_OFFER/no-send, never appear in outbound Meta parameters or the confirmed alternative-product promise. Existing `checkout.url` remains unchanged and receives no new ARCH-052 URL validation.
+- [ ] Alternative-product CTA URL derives from a successful same-shop MCP exact-product response matching the selected product/variant; hostile or model-authored product URLs remove the alternative promotion and use approved neutral NO_OFFER TEXT when mandatory send eligibility remains valid (otherwise no-send), never appear in outbound Meta parameters or the confirmed alternative-product promise. Existing `checkout.url` remains unchanged and receives no new ARCH-052 URL validation.
 
 - [ ] No invented coupon/product/category link or checkout discount when conditions are unknown/incomplete; a related product promotion is worded separately.
 - [ ] Both CTA bindings are carried only when Meta-approved and ordered by actual provider indices; absent approved media does not block text-only flow.
@@ -216,6 +229,8 @@ None.
 - [ ] A WooCommerce customer using WhatsApp Reply to a confirmed outbound initial message reaches its original recovery conversation for both text and audio, never another merchant's conversation; a missing/unapproved compliant template prevents the misleading invitation from being sent.
 
 ## Validation
+
+- [ ] Execute the cross-platform BG018 fall-through matrix through actual initial-sender fixtures and PostgreSQL/Meta test doubles; inspect the confirmed message BODY/CTA/recoveryPromise, one-credit ledger and idempotency after late provider outcomes.
 
 - [ ] Run targeted Background price-comparison and send-admission integration scenarios with simulated TEST MCP/Meta/R2; verify source errors are preserved safely and source identity remains shop-scoped. Live provider behaviour must be identified as tested or unavailable, not silently simulated as live evidence.
 
