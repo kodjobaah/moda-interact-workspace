@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-10-31T09:12:48Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-053-API-001
@@ -115,9 +115,13 @@ The plugin already has `CheckoutKey::SESSION_FIELD`, Action Scheduler and the v2
 
 Not Started
 
+### Claim Release History
+
+Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, the claim was released before a new executor was prepared. The dedicated implementation worktree was clean at baseline `b905dab`; it had no source edits or implementation commit. The task is Ready with `attempt: 1`, `executor: null`, and `claimed_at: null`; the next launcher claim will be Attempt 2.
+
 ### Files Changed
 
-None — portable task definition only.
+None — no implementation files changed.
 
 ### Work Completed
 
