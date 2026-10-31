@@ -1209,8 +1209,8 @@ Execution dependencies for the new follow-up work:
 ```text
 ARCH-016-DATABASE-001 (Complete)
     -> ARCH-016-DATABASE-002 (Complete, new forward migration)
-         -> ARCH-016-BACKGROUND-005 (Ready, runtime + expiry safety)
-              -> ARCH-016-ADMIN-003 (Pending, audited UI write)
+         -> ARCH-016-BACKGROUND-005 (Complete, runtime + expiry safety)
+              -> ARCH-016-ADMIN-003 (Ready, audited UI write)
 All three -> existing terminal ARCH-016-SYSTEM-TEST-001
 ```
 

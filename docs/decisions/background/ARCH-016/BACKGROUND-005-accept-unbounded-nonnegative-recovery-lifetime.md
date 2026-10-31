@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-31T12:35:16Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-016-DATABASE-002
@@ -142,7 +142,7 @@ There is no newly imposed maximum. The native SQL `INTEGER` storage limit is not
 
 ### Status
 
-Attempt 1 was returned with Changes Requested. Attempt 2 corrects the PostgreSQL lower timestamp bound and its boundary coverage; returned to `review`. No Architect acceptance decision has been made.
+Accepted after Attempt 2. The PostgreSQL lower timestamp bound and its boundary coverage were corrected; status is Complete.
 
 ### Files Changed
 
@@ -196,7 +196,7 @@ None. No new business maximum or persistent/configuration field was introduced.
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review — Changes Requested
 
 Attempt 1 — Changes Requested
 
@@ -248,3 +248,27 @@ Correct the lower timestamp bound and add tests immediately on both sides of
 the PostgreSQL minimum. Resubmit the same task after the focused tests, lint,
 build and diff check pass. Attempt remains 1; do not increment it in this
 review. `ARCH-016-ADMIN-003` and `ARCH-016-SYSTEM-TEST-001` remain Pending.
+
+### Attempt 2 Architect Review — Accepted
+
+Accepted under `completion_mode: automatic`; set `status: complete`, cleared
+`executor` and `claimed_at`, and retained `attempt: 2`.
+
+Attempt 2 corrects `MIN_POSTGRES_TIMESTAMP_MS` to `-210_866_803_200_000` Unix
+milliseconds and adds checks immediately at the PostgreSQL minimum and one
+millisecond below it. The inclusive minimum reaches Prisma; the below-minimum
+cutoff returns zero without a query. Runtime validation, BigInt arithmetic,
+zero-day expiry semantics, and the existing race and transaction protections
+remain intact.
+
+The Completion Report records 34 focused tests passing, lint, build and
+`git diff --check` passing. The full unit suite still has 26 failures in
+unrelated suites; these do not block acceptance because the task-owned suites
+passed and the failures are outside the changed paths. No tests were rerun for
+this review.
+
+`ARCH-016-ADMIN-003` is now Ready because its explicit dependencies
+`ARCH-016-DATABASE-002`, `ARCH-016-BACKGROUND-005` and `ARCH-016-ADMIN-001` are
+Complete. `ARCH-016-SYSTEM-TEST-001` remains Pending behind the wider dependency
+set and existing manual-testing checkpoint. No dependent implementation was
+started and no implementation branch was merged to `main`.
