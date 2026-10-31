@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T03:24:48Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
 - ARCH-052-BACKGROUND-009
@@ -411,3 +411,36 @@ Changes Requested. Provider failures are not silently swallowed, but current log
 ### Follow-up
 
 Return the task to `ready` for Attempt 5. Preserve Attempts 1–4 and the prior acceptance record as history. Keep `ARCH-052-MCP-002` pending until this logging gap is corrected and the task is accepted again.
+
+
+## Architect Review — Attempt 5
+
+### Review Status
+
+Changes Requested — Attempt 5.
+
+### Review Notes
+
+The Attempt 5 provider and reconciliation errors now reach the Shared logger with bounded, redacted exception diagnostics, and Shopify GraphQL messages/codes are retained without logging raw bodies. The non-JSON response handling correctly records only HTTP status and a `non_json` marker.
+
+One worker failure path remains outside the logging boundary: `parseShopifyDiscountSyncJob(job.data)` and the `requestedAt` date validation run before the `try` block. If either throws, the job processor rejects to BullMQ without an explicit Shared error log containing the actual exception. The worker-level `error` event handler is not a substitute for per-job processor failure logging.
+
+Move payload parsing and timestamp validation inside the worker's failure logging boundary. Log a stable reason code and bounded, redacted exception name/message/stack/cause fields while preserving retry propagation. Do not include the raw job payload or untrusted fields in the log. Add regressions proving malformed job data and invalid timestamps are logged through the Shared logger and still reject for BullMQ handling.
+
+### Reviewed Files
+
+- `src/workers/shopify-discount-sync.worker.ts`
+- `tests/unit/workers/shopify-discount-sync.worker.test.ts`
+- Attempt 5 Completion Report and validation evidence.
+
+### Validation Reviewed
+
+Reviewed the reported 24 focused tests, changed-file ESLint, build/typecheck and `git diff --check`; these checks were not rerun during this architect review.
+
+### Architecture Conformance
+
+Changes Requested. Attempt 5 resolves the provider diagnostic and sensitive non-JSON response concerns, but malformed job input and invalid timestamps still lack explicit per-job Shared error logs.
+
+### Follow-up
+
+Return the task to `ready` for Attempt 6. Preserve Attempts 1–5 and the Attempt 5 implementation/report history. Keep `ARCH-052-MCP-002` pending until this task is accepted and its other dependencies are complete.
