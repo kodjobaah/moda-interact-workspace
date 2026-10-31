@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 52
-executor: copilot
-claimed_at: 2026-10-31T09:43:51Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-MCP-003
@@ -259,24 +259,29 @@ Any requirement for authoritative repricing must be assigned to a separately own
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-Planning task, no implementation reviewed.
+Failure logging passes the original source `Error` as the `error` field from both the trusted-state reader and product reader paths. Shared logger sanitization truncates strings and masks token patterns, but its Error sanitizer emits the raw message after only token redaction; email addresses and phone numbers embedded in an SDK/provider error message remain visible. This conflicts with the task's requirement to preserve bounded diagnostics only after sensitive-value redaction and to omit customer PII. Preserve the original error for propagation, but log a bounded diagnostic projection with the actual error name/message and relevant safe status/code metadata after redacting email, phone, credentials, full URLs and disallowed payload content. Add regression coverage for both source-failure paths asserting useful diagnostic context remains while those values are absent from logger fields.
+
+The task has been returned to Ready and the stale executor/claim timestamp cleared for Attempt 2. Attempt 1 implementation and validation evidence remain unchanged.
 
 ### Reviewed Files
 
-Inspected 31 October 2026 09:06 snapshot of current `CheckoutRecovery` storage, Background recovery mappings and published MCP product response.
+- `src/services/recovery-pricing/checkout-price-reconciliation.service.ts`
+- `src/services/recovery-pricing/price-comparison.ts`
+- `src/services/recovery-pricing/checkout-price-reconciliation.types.ts`
+- Focused service/comparison tests and Attempt 1 Completion Report.
 
 ### Validation Reviewed
 
-None for implementation.
+Reviewed the reported focused test suites, ESLint, build and `git diff --check`; these checks were not rerun during architect review.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+The source-backed price comparison and checkout-context uncertainty follow the architecture. Acceptance is blocked until original source errors are logged with the required bounded sensitive-value redaction.
 
 ### Follow-up
 
-The architect may promote dependants only after BG016 is accepted Complete.
+Attempt 1 remains preserved. Return to Ready for Attempt 2; do not promote BG010/BG008 dependants until acceptance.
