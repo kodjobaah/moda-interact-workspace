@@ -20,9 +20,11 @@ depends_on:
 - ARCH-052-BACKGROUND-010
 - ARCH-052-BACKGROUND-005
 - ARCH-052-ADMIN-001
+- ARCH-052-BACKGROUND-015
 enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
+- ARCH-052-SYSTEM-TEST-003
 created: '2026-10-29'
 updated: 2026-10-31
 ---
@@ -129,6 +131,14 @@ bodies or unredacted error payloads. The real Meta failure must be observable
 even where a permitted fallback/no-send/retry follows, without a second send
 or credit charge. Preserve existing moderation, consent, idempotency and CAS.
 
+### Shared WhatsApp sender / merchant-specific Reply binding — mandatory
+
+- Before attempting Meta send, select the **provider-approved immutable revision** whose actual frozen BODY includes the `shop.name` merchant identification and context-Reply instruction specified by `ARCH-052-ADMIN-003`. This applies to CHECKOUT, ALTERNATIVE_PRODUCT, NO_OFFER and all single/multi-offer outcomes (TEXT and optional IMAGE). Do not append unapproved text outside the template, manufacture a template parameter, or select an older approval with missing instructions. If no qualifying revision exists for shop/WABA/purpose/locale/target/header, use typed no-send; do **not** fall back to a non-compliant NO_OFFER revision.
+- Resolve `shop.name` from the authenticated `CheckoutRecovery.shop` and bind it to the frozen semantic position; the model, an MCP result, a separate merchant's catalog and a WhatsApp profile display name do not supply this identity. For one merchant's checkout, never bind another merchant's name even if the customer phone and sending WABA are shared.
+- After provider confirmation, retain the real `providerMessageId`, `direction=OUTBOUND`, durable sent timestamp, `Conversation.id`, `CheckoutRecovery.id/shopId/customer`, and the existing `RecoveryOutreachAttempt.outboundMessageId` link through **the same existing** `ConversationMessage`/attempt receipt. This provider-message identity is the key used by `recovery-routing.service.ts` when a customer quotes the template with text or audio. Do not create a second message mapping, conversation, or outbound receipt.
+- The send gate MUST be enabled only when `ARCH-052-BACKGROUND-015` has validated the existing quoted-message route for text and audio. A send may not claim that Reply reaches the correct merchant if there is no durable mapping to the actual Meta-confirmed outbound message. Preserve duplicate-send/credit, moderation, consent, STOP and follow-up invariants.
+- Do not implement inbound transcription, standalone order-confirmation replies, a generic merchant inbox, or an order-to-conversation mapping in BACKGROUND-008; `BACKGROUND-015` owns the recovery reply route. Failed or uncertain Meta sends are not considered a valid quoted outbound until an existing confirmation/receipt is present.
+
 ## Work Items
 
 - [ ] Extend existing WhatsApp template send/automated-message persistence for 0/1/2 approved dynamic URL buttons, preserving exact approved index-to-variable mapping and existing consent/moderation/idempotency/credit guards.
@@ -144,6 +154,10 @@ or credit charge. Preserve existing moderation, consent, idempotency and CAS.
 - [ ] Bind the exact already-stored `CheckoutRecovery.checkoutUrl` for both platforms to the existing approved checkout CTA without added URL validation or URL-specific fallback; prove no link-generation or restore API call occurs.
 - [ ] Extend existing `RecoveryOfferPromise` and persisted `ConversationMessage.content` only as necessary for alternative products, and make follow-up consume the confirmed initial outbound message; never duplicate the same offer into offerSnapshot.
 - [ ] Run two-provider end-to-end initial-send, current-policy-change, unchanged checkoutUrl binding, duplicate/idempotency and follow-up integration suites.
+
+- [ ] Bind the current-shop `shop.name` and exact approved Reply guidance without modifying approved template bodies or sharing the merchant name from a different recovery.
+- [ ] Extend/verify the existing provider-confirmed `ConversationMessage` receipt (`providerMessageId`, `sentAt`, `conversationId`, existing attempt link) so quoted text and voice events can resolve the same recovery; do not add another mapping table or another delivery attempt.
+- [ ] Enforce no-send when a compliant approved revision or confirmed quoted-message receipt capability is missing; test retry, duplicate provider callbacks and historical recovery generation.
 
 ## Interfaces / Contracts
 
@@ -172,10 +186,13 @@ Shared-002 template `promotionTarget`, `checkout.url`/`promotion.productUrl` bin
 
 Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are **not** implementation prerequisites for the text-only send; those remain dependencies of final system-test certification. Do not add an ARCH-053 task dependency; ARCH-053 consumes confirmed ARCH-052 outbound receipts, never the reverse.
 
+- `ARCH-052-BACKGROUND-015` — accepted recovery contextual-routing and guidance guarantees before the customer-facing instruction can be enabled.
+
 ## Enables
 
 - `ARCH-052-SYSTEM-TEST-001`
 - `ARCH-052-SYSTEM-TEST-002`
+- `ARCH-052-SYSTEM-TEST-003` — shared sender contextual reply certification.
 
 ## Acceptance Criteria
 
@@ -194,6 +211,9 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 
 - [ ] Final-send provider-error logging tests including a real distinct Meta error string, missing provider body and redacted customer/credential echo; verify emitted payloads and billing/idempotency remain unchanged.
 
+- [ ] Every ARCH-052 initial message from a shared Meta phone identifies the correct tenant merchant and instructs the customer to quote **this** message using WhatsApp Reply and to send text or a voice note (two-minute limit). This remains true for no offer, one-to-three compatible discounts, alternative product, and approved TEXT/IMAGE variants.
+- [ ] The real Meta-confirmed outgoing provider message ID maps back to exactly one existing conversation and recovery/attempt and is not reused across merchants, retries or WABA identities. No customer guidance is advertised when the provider registration is unapproved or the binding is absent; no additional credit is consumed.
+
 ## Validation
 
 - [ ] Background simulated Meta send tests for purpose/locale/target/header collision, one-button checkout, two-button alternative, unapproved second CTA, persisted receipt and follow-up, text-only when image work absent, and no ARCH-053 issuance calls.
@@ -207,6 +227,8 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 - [ ] Background build/lint and `git diff --check`.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+
+- [ ] Inject two shops sharing one Meta sender and one customer phone, source-backed `shop.name` values and distinct Meta message IDs; verify exact tenant-specific template parameter binding, correct durable receipt/attempt link, no cross-merchant context leakage, approved-only revisions, duplicate/retry semantics and typed no-send before approval.
 
 ## Stop Condition
 

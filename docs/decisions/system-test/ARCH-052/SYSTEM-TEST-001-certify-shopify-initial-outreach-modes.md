@@ -19,6 +19,7 @@ depends_on:
 - ARCH-052-ADMIN-003
 - ARCH-052-SHARED-012
 - ARCH-052-BACKGROUND-008
+- ARCH-052-BACKGROUND-015
 - ARCH-052-SHOPIFY-001
 - ARCH-052-BACKGROUND-009
 - ARCH-052-ADMIN-001
@@ -106,6 +107,12 @@ Create source-like checkout fixtures with **stable line keys**, product and vari
 
 Any `UNKNOWN`/unsupported condition affecting eligibility or pair support must lead to a proven subset or approved NO_OFFER/no-send. Provider checkout remains final authority; do not assert discounts are guaranteed applied. Record named scenario outcomes in the Completion Report.
 
+### Merchant identification and quoted Reply guidance — Shopify
+
+- The provider-approved initial template for every covered offer mode visibly contains the **authenticated current-shop name** and tells the customer to use WhatsApp Reply on that exact message before sending text or voice (up to two minutes). Validate the frozen approval identity, TEXT/IMAGE where available, target-specific copy, correct 20-locale token preservation and no unapproved template fallback.
+- The confirmed outbound `providerMessageId` and existing attempt/message/conversation association must be queryable by the runtime route. An incoming quote to that outbound ID resolves the intended shop and recovery; the same customer/WhatsApp sender sharing another shop must never change the destination. STOP precedence, moderation, single-credit and no duplicate message remain unchanged.
+- Cross-platform same-number ambiguity and spoof/voice edge cases are covered by `ARCH-052-SYSTEM-TEST-003`; this task still certifies its **own** platform's end-to-end outreach and quoted Reply path.
+
 ## Work Items
 
 ### Provider-origin diagnostic certification — 31 October 2026 (mandatory)
@@ -118,6 +125,8 @@ Any `UNKNOWN`/unsupported condition affecting eligibility or pair support must l
 
 - [ ] Run the five mandatory Shopify eligibility and pair/triple matrices above with checkout-line and source-currency assertions, verify live MCP facts versus the trusted checkout projection, and prove no model-supplied eligibility boolean is trusted.
 - [ ] Return certification and outstanding external Meta/provider checks.
+
+- [ ] Add Shopify initial-template fixture for NO_OFFER, CODE, AUTOMATIC and ALTERNATIVE_PRODUCT where supported, testing actual approved wording, same-shop `shop.name`, dynamic URL button indexes, provider-confirmed outbound message ownership, quoted text and voice routing.
 
 ## Interfaces / Contracts
 
@@ -162,6 +171,8 @@ None.
 
 - [ ] Run provider-error fixtures with captured Shared logging sink across source services and injected transport/model failures; compare logged message to literal injected upstream error after only deliberate redaction/truncation, then verify no sensitive content and no provider error invented for local failures.
 
+- [ ] A Shopify customer using WhatsApp Reply to a confirmed outbound initial message reaches its original recovery conversation for both text and audio, never another merchant's conversation; a missing/unapproved compliant template prevents the misleading invitation from being sent.
+
 ## Validation
 
 - [ ] Negative integration cases: cross-tenant product result, wrong product/variant, missing/null URL, untrusted storefront origin, malformed/non-HTTPS URL, userinfo/port, hostname lookalike, private/loopback host and AI-proposed external link; verify no unsafe product CTA and no unapproved fallback. Positive case: independently trusted current-shop product URL and approved two-button index mapping.
@@ -170,6 +181,8 @@ None.
 - [ ] Test evidence with logs/traces and `git diff --check`.
 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
+
+- [ ] Validate contextual quotation with the existing normalized `contextMessageId` (for both `content.type=text` and `content.type=audio`), source-specific shop and recipient checks, actual Meta `providerMessageId`, two-minute audio limit and deduplicated inbound persistence. No order confirmation routing is implied.
 
 ## Stop Condition
 

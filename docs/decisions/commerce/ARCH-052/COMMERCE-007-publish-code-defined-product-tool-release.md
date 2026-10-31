@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -23,7 +23,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: '2026-10-31'
 ---
 
 # ARCH-052-COMMERCE-007: Execute reviewed Commerce system-product-tool sync in TEST
