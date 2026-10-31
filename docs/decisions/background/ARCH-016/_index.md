@@ -6,3 +6,4 @@
 | [ARCH-016-BACKGROUND-002](BACKGROUND-002-recovery-generation-expiry-restart.md) | complete | Monotonic recovery activity, expiry sweeps and EXPIRED generation restart. |
 | [ARCH-016-BACKGROUND-003](BACKGROUND-003-recovery-outreach-followup-credit.md) | complete | Attempt 6 accepted: durable attempt-keyed outreach billing, crash-safe confirmed-send reconciliation and exactly one no-response follow-up in the same Conversation. |
 | [ARCH-016-BACKGROUND-004](BACKGROUND-004-effective-recovery-delay-pending-candidate-scheduling.md) | complete | Attempt 1 accepted: pending-candidate initial scheduling and activity rescheduling use the canonical effective recovery policy, including active Admin overrides. |
+| [ARCH-016-BACKGROUND-005](BACKGROUND-005-accept-unbounded-nonnegative-recovery-lifetime.md) | ready | Accept non-negative whole-day recovery lifetimes without a fixed upper bound; expire safely for zero and large values. |

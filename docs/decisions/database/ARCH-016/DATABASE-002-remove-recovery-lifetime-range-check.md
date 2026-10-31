@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-31T11:31:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-016-DATABASE-001
@@ -145,7 +145,7 @@ Preserve already accepted ARCH-016 history. Do not change the schema default. So
 
 ### Status
 
-Ready for Review
+Accepted — Complete after Attempt 1 Architect Review.
 
 ### Files Changed
 
@@ -191,26 +191,50 @@ None
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review — Accepted
 
-Pending
+Accepted under `completion_mode: automatic`; set `status: complete`, cleared
+`executor` and `claimed_at`, and retained `attempt: 1`.
 
 ### Review Notes
 
-Pending implementation evidence.
+The implementation matches the authorized scope: one forward-only migration
+drops only `ck_arch016_checkout_recovery_lifetime`; the Prisma field remains
+`INTEGER NOT NULL DEFAULT 21`; no historical migration or other constraint was
+changed. The disposable PostgreSQL tests cover fresh and upgrade migration
+paths, required values through `2147483647`, preservation of the existing
+singleton row/version/value, and enforcement of the independent ARCH-014
+version constraint.
 
 ### Reviewed Files
 
-None
+- `prisma/migrations/20261031110000_arch016_remove_recovery_lifetime_check/migration.sql`
+- `scripts/test-arch016-recovery-lifetime-postgres.mjs`
+- `scripts/validate-arch016-recovery-schema.mjs`
+- `package.json`
+- This task definition and Completion Report
 
 ### Validation Reviewed
 
-None
+The Completion Report records successful `npm run validate`, Prisma client
+generation, the focused schema validator, fresh and upgrade PostgreSQL tests,
+and `git diff --check`. Both PostgreSQL modes applied all 67 migrations in
+order with `pgvector/pgvector:pg17` and `--network none`; both disposable
+containers were removed in `finally`. No tests were rerun for this review.
 
 ### Architecture Conformance
 
-Not assessed.
+The change removes the database's historical 90-day business ceiling without
+replacing it with a SQL policy check. The 21-day default and native PostgreSQL
+`INTEGER` storage bounds remain. Negative-value validation is correctly left
+to Admin and Background as assigned by the architecture.
 
 ### Follow-up
 
-None
+`ARCH-016-BACKGROUND-005` is now Ready because both
+`ARCH-016-DATABASE-002` and `ARCH-016-BACKGROUND-002` are Complete.
+`ARCH-016-ADMIN-003` remains Pending on Background-005, and the terminal
+system test remains Pending on its broader dependency set.
+
+No dependent implementation was started and no implementation branch was
+merged to `main`.
