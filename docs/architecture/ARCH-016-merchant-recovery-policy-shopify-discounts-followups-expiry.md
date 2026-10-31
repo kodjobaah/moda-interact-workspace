@@ -1209,9 +1209,19 @@ Execution dependencies for the new follow-up work:
 ```text
 ARCH-016-DATABASE-001 (Complete)
     -> ARCH-016-DATABASE-002 (Complete, new forward migration)
-         -> ARCH-016-BACKGROUND-005 (Ready, runtime + expiry safety)
-              -> ARCH-016-ADMIN-003 (Pending, audited UI write)
+         -> ARCH-016-BACKGROUND-005 (Complete, runtime + expiry safety)
+              -> ARCH-016-ADMIN-003 (Complete, audited UI write)
 All three -> existing terminal ARCH-016-SYSTEM-TEST-001
 ```
 
 No new Shared, API, Shopify, WooCommerce or Gateway task is required to remove the 90-day business ceiling. ARCH-053's separate checkout-link lifetime consistency work must consume this same persisted field, not independently invent a 90-day maximum. All existing ARCH-016 task acceptance records remain historical.
+
+## Post-review update — ADMIN-003 Attempt 2 Accepted
+
+`ARCH-016-ADMIN-003` Attempt 2 is architect-accepted **Complete**. The audited
+Admin action's successful persistence and audit record, along with rejection
+without mutation for unauthorized, stale-version and negative-value cases, are
+covered by behavioral tests. The task report records the focused validation
+and the Attempt 1-only baseline failures. `ARCH-016-SYSTEM-TEST-001` remains
+Pending and is not started automatically; its dependency and developer
+manual-testing gates still apply.
