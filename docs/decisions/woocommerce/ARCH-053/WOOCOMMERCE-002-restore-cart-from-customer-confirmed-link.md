@@ -71,7 +71,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 - [x] Add server-side install-auth API resolve client with strict response validation and errors.
 - [x] Implement all-or-nothing core product restoration for snapshots with no applied coupons, current totals recalculation, session rebind + exactly one activity enqueue + wc_get_checkout_url redirect; reject coupon-bearing restore until WOOCOMMERCE-005.
 - [x] Exercise stale link, cross-device, existing-cart replace confirmation and rollback on failure, asserting no Moda error/notice appears on the storefront and real failure details remain in protected PHP diagnostics.
-- [ ] If WooCommerce session persistence fails during restoration, restore the pre-restore cart and session without leaving a durable resumption activity queued; if activity enqueue fails, roll back the cart and session as well.
+- [x] If WooCommerce session persistence fails during restoration, restore the pre-restore cart and session without leaving a durable resumption activity queued; if activity enqueue fails, roll back the cart and session as well.
 
 The API resolver response is the single `woo.restore.resolve.v1` contract from SHARED-001 and **already contains** mandatory `outreachOffer` (including `NONE`). Parse the exact complete v1 response; do not use a pre-offer v1 response or invent v2. This task restores the original basket only; interpreting or attempting confirmed recommended codes belongs to WOOCOMMERCE-007 and conflict UI to WOOCOMMERCE-008. Preserve the typed result for that later owning task but **do not silently deploy an end-to-end checkout flow that discards a confirmed recommended coupon**. No separate resolver endpoint or second checkout session may be created.
 
@@ -130,6 +130,16 @@ Ready for Review
 - Port 8887 bound and started successfully. Ports 8886 and 8885 were not attempted because the requested fallback was for a startup/bind failure, which did not occur. No concurrent wp-env was started. The 8887 disposable environment was stopped after validation; no generated repository artifacts remain.
 - The confirmation-page assertion was adjusted to allow same-origin absolute form actions while rejecting scripts and external origins. The Blocks rendering check now recognizes WooCommerce's emitted `blocks-checkout.js` asset.
 - Attempt 2 implementation is committed and pushed on `task/ARCH-053-WOOCOMMERCE-002` at `333d8b5`; the task report is committed and pushed on the same-named parent branch at `56967b56`. Both worktrees were verified clean and synchronized with origin.
+
+### Follow-up After Architect Review
+
+- Reordered the restore commit so the WooCommerce session key and completion marker are saved before `captureResumption()` can enqueue the durable activity. A session-save exception therefore returns before Action Scheduler is called; the cart restorer and session rollback retain the visitor's prior state.
+- If activity enqueue fails after persistence, the callback returns failure, the cart restorer restores the prior basket, and the controller restores and persists the prior session state.
+- Extended `CheckoutResumeControllerTest` to assert that session-persistence failure leaves the Action Scheduler fixture empty and that enqueue failure rolls back both cart and session.
+- `composer test -- --filter 'CheckoutCartRestorerTest|CheckoutResumeControllerTest|WooRestoreResolveResponseValidatorTest'`: PASS, 13 tests, 76 assertions, 1 existing test-harness warning.
+- `composer lint` and `git diff --check`: PASS.
+- The checkout-only WordPress integration is not rerun for this PHP-only ordering change; the prior checkout-only run on port 8887 passed. The full integration run's unrelated contaminated shop-brand failure remains documented above.
+- Follow-up implementation commit: `6519055` on `task/ARCH-053-WOOCOMMERCE-002`; this report records the follow-up for Architect review on the parent task branch.
 
 ### Files Changed
 
