@@ -25,7 +25,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052-BACKGROUND-007: Resolve optional checkout or promoted-product image via MCP at runtime
@@ -70,11 +70,25 @@ No out-of-repository modifications, new competing generic logger, uncapped provi
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
 - Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
 
+**Source-origin MCP/media failures (31 October 2026):** On a failed exact
+`commerce_get_product` call or media fetch, record the **actual** MCP error
+returned and/or the SDK/transport exception (name/message/status) before
+choosing approved TEXT/no-send. Preserve the originating `cause` with the
+existing typed `UNAVAILABLE` media result where appropriate. Distinguish MCP's
+own error from Shopify/Woo provider errors that are visible only in the MCP
+server logs; never invent the provider cause. Use the Shared logger and
+`docs/observability/shared-logging.md`; sanitize image URLs, signed queries,
+customer content and credentials, and never pass provider-error text to the
+message/template. A valid TEXT fallback is not permission to silently lose
+failure diagnostics.
+
+
 ## Work Items
 
 - [ ] Implement `recovery-product-image-resolver.ts` using the existing Background MCP transport and the published `commerce_get_product` tool; prefer checkout exact variant or recommended alternative exact product/variant.
 - [ ] Validate public HTTPS, safe resolved address and final peer, no unsafe redirects, supported image MIME + magic bytes, <=5 MB and verified target product origin/identity; use existing security/media primitives.
 - [ ] On image missing/unsafe/expired/offline return a typed no-media outcome and select an independently approved text-only Meta template; no side-effect on eligibility or checkout send.
+- [ ] Record actual source MCP/media failure messages and original causes before TEXT/no-send fallback (without fabricating a Shopify/Woo provider message); apply bounds/redaction from Shared logging policy.
 - [ ] Test Shopify and WooCommerce variant vs product image, mismatched tenant, invalid/expired provider URL, source change/revocation, re-resolution on retry, safe TEXT/no-send and no MCP-to-API path. No TTL/proof service tests.
 
 ## Interfaces / Contracts
@@ -98,6 +112,8 @@ Published SHARED-008/010 `CommerceToolOutputs.commerce_get_product` contains `Co
 - [ ] Checkout image and alternative promo product image resolve via exact MCP lookup.
 - [ ] Failed, stale-at-retry, revoked or unsafe media yields approved text-only template or no-send, not a broken IMAGE header or reuse of a previous attempt's media result.
 - [ ] No new Prisma image table or MCP-to-API product call.
+
+- [ ] MCP failure, failed image download and allowed TEXT fallback emit originating error diagnostics with redacted signed URLs; no provider message is fabricated for a local invalid image.
 
 ## Validation
 

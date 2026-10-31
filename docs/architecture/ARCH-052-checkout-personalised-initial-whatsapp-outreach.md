@@ -4,7 +4,7 @@ title: Checkout-personalised initial outreach with direct MCP product reads and 
 status: proposed
 coordinator: moda_architect
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052: Checkout-personalised WhatsApp initial outreach
@@ -120,6 +120,24 @@ Unknown applicability, provider-unavailable, incomplete catalogue, timeout and r
 ## Observability and scalability
 
 Reuse `@modainteract/moda-interact-shared/logging`, existing OpenTelemetry/framework/BullMQ signals and domain-specific bounded events. Correlate shop/recovery/attempt IDs, mode, search page counts, source-supported checkout/alternative counts, typed provider result, model fallback, safe media fallback, Meta send result and retries—never coupon codes, raw complete URLs, credentials or customer PII. Throughput depends on actual actionable recoveries and bounded provider reads rather than raw Shopify ingress. Measure provider request budget, timeouts and queue lag under TEST; no claimed measured throughput.
+**Provider-origin diagnostics (31 October 2026).** `BACKGROUND-010`
+logs the original OpenRouter/SDK failure from the existing
+`CommerceModelInvocationFailure.cause` and the actual bounded MCP HTTP failure
+returned to `CommerceMcpClient`, alongside (not replaced by) Moda reason codes.
+`MCP-003` handles Shopify product API/GraphQL errors; new, narrowly scoped
+`MCP-006` corrects originating Woo REST error logging in the already accepted
+MCP-005 reader without reopening that task. `BACKGROUND-012` owns Meta sample
+upload/template CREATE errors; `BACKGROUND-013` owns Shopify discount-sync
+GraphQL errors; `BACKGROUND-008` owns final Meta send errors and
+`BACKGROUND-007` logs actual MCP media-read failures. MCP-002 performs DB-only
+reads and must never claim a provider response it did not receive. All provider
+error objects/messages are preserved in original source wording after explicit
+sensitive-data redaction/bounds, with source provenance and a separate internal
+reason code per `docs/observability/shared-logging.md`. Do not send original
+provider errors to the LLM, public MCP tool results or WhatsApp. A safe
+fallback/no-send still records the failure; no catch-and-continue that silently
+loses the original error. No new shared wire contract or logger is required.
+
 
 ## Development-only cutover (no preservation)
 
@@ -166,11 +184,28 @@ Development-only `RecoveryOutreachAttempt` records with old single-discount `off
 
 **Concurrency protection.** Do not rewrite, reopen or modify the already-claimed implementation tasks `ARCH-052-SHOPIFY-001`, `ARCH-052-MCP-005` or unrelated `ARCH-049-BACKGROUND-003`. Their current execution must finish and be reviewed independently. Do not reopen BACKGROUND-011 while Attempt 2 is in review; BACKGROUND-013 begins only after architect acceptance of BACKGROUND-011. Snapshot YAML may predate these active external execution claims. No new database table, new provider-proof engine or new Woo checkout link path is needed.
 
-**New/reconciled task frontier:** ARCH-052-SHARED-011 (new), ARCH-053-SHARED-003 (new), ARCH-052-SHARED-012 (single new publication; now Ready after both implementation prerequisites were accepted), ARCH-052-BACKGROUND-013 (Shopify source tags), ARCH-052-ADMIN-003 (Meta-approved multi-code copy); amended existing Pending MCP-002, BACKGROUND-010/008, ARCH-053-BACKGROUND-004/API-003/WOOCOMMERCE-007/008 and terminal system tests. There are no implementation code changes in this architecture patch and no task claims or commits in the developer workspace.
+### Deterministic basket eligibility and compatible-group evaluation — 31 October 2026
+
+This section **supersedes earlier language implying that AI, MCP, `facts.completeness:COMPLETE`, or matching product titles can decide checkout qualification**. BACKGROUND-010 owns two **pure helpers**, not a separate eligibility microservice or tool: `evaluateCheckoutDiscount(input): CheckoutEligibilityDecision` and `selectCompatibleCheckoutOffers(input): CheckoutOfferGroupDecision`. MCP-002 projects authenticated current-shop facts; it never returns a basket-level eligibility verdict. LLM output is a bounded ordered list of candidate **offer IDs only**. Final Background sender BACKGROUND-008 rechecks current identities and admission before binding any approved WhatsApp template.
+
+1. **Trusted checkout input:** Background builds a bounded at-most-100-line checkout snapshot with unique deterministic `lineKey`, source product/variant IDs, quantities, exact decimal pre-discount merchandise subtotals, currency, provider category/collection IDs and source-observed sale status. Category/product labels are ranking text only. Unknown source IDs and money remain unknown; do not use total including tax/shipping as merchandise subtotal, float arithmetic, inferred currency, or stale generation/fingerprint.
+2. **Individual eligibility:** For each candidate validate same-shop authorised source offer ID and deliverable CODE identity, current FIXED/AI/NONE policy, provider availability/status/date, known targeting and exclusions (exclusion wins), exact product/variant/category/collection line matches, quantity, subtotal/currency, customer/usage/sale-item and expiry restrictions. Return `SUPPORTED`, `NOT_APPLICABLE` or `UNVERIFIABLE`, the exact eligible line keys and bounded reason codes. A `PARTIAL` record is permitted for a **single offer only when every missing condition is positively classified as combination-only**, never when a needed eligibility condition is missing. Unknown or truncated targets, customer restrictions or thresholds cannot become implicit `ALL` or `false`.
+3. **Pairwise stacking:** Evaluate every pair of an individually supported 1..3 offer set. For Shopify enforce reciprocal class permissions; PRODUCT+PRODUCT on overlapping line keys additionally requires authenticated Shopify Plus, both product-combination booleans and reciprocal own/allowed-tag matches. Unknown overlap or plan is not proof. Woo requires independently proven restrictions, observed `individualUse:false` for each member and no known conflicting core rules. Unknown extension interactions cannot justify a claim of guaranteed stacking. Native checkout remains authoritative for redemption.
+4. **Selection and admission:** Enumerate only the maximum seven nonempty subsets of at-most-three model-proposed IDs. Choose the largest fully validated compatible subset with stable model-order tie-break, otherwise a source-supported singleton or the existing alternative-product/NO_OFFER/no-send path. Before sending, BACKGROUND-008 rechecks recovery generation, basket fingerprint, merchant policy, every member's source identity/status and every necessary pair; on change recalculate the valid subset or abort. Bind only an independently Meta-approved singular/plural template and persist the **actual sent** ordered set in the confirmed message `recoveryPromise`. Do not introduce checkout URL generation/validation, cart mutation, new provider API calls, local MCP contract clones, proof TTL or extra proactive sends.
+
+**Currency source gap found during rebase:** Accepted SHARED-011/012 produced and published `@modainteract/moda-interact-shared@2.8.1` **without** a currency denomination for `minimumSubtotal`/`maximumSubtotal`. Do not rewrite that published artifact or overload `discountCurrency`. New bounded `ARCH-052-SHARED-013` adds required-nullable `subtotalRequirementCurrency` with structural tests; `ARCH-052-SHARED-014` publishes it as a new version. BACKGROUND-013 captures source Shopify Basic `minimumRequirement` MoneyV2 amount/currency or quantity; MCP-002 maps the new field from source or independently established Woo store-currency semantics, returns `null` plus `THRESHOLD_CURRENCY_UNKNOWN` where an effective threshold cannot be denominated. BACKGROUND-010 compares exact money values only when source threshold and trusted basket currencies match, or returns `UNVERIFIABLE`. A verified zero-valued Woo core no-limit sentinel is not an effective threshold. No Zod business rules or new database schema.
+
+**Woo source restriction-presence:** `ARCH-052-BACKGROUND-014` separately records nullable `emailRestrictionsPresent` / `uninspectedMetadataPresent` flags, never raw emails/extension metadata. MCP-002 must surface any present or unobserved restrictions; `false` requires actual observed empty arrays, not absent fields.
+
+**Mandatory negative evidence:** tests must cover variant mismatch, exclusion precedence, missing category/collection IDs, target pagination, minimum money currency mismatch and zero limit, quantity scope, customer/usage/expiry uncertainty, Woo `individualUse`, Shopify same- versus different-line PRODUCT pairs and reciprocal Plus tags, group with one incompatible pair, stale generation, merchant revocation, hallucinated IDs, approval failures and idempotent confirmed message receipt.
+
+**Current task frontier:** SHARED-011 and SHARED-012 are **Complete** (Shared 2.8.1 already published); SHARED-013 is newly Ready and SHARED-014 Pending. BACKGROUND-014 is independently Ready. BG013, MCP-002, BG010/008 and terminal system tests now explicitly consume this corrected source and published-contract chain. Do not rewrite ongoing ARCH-049-BACKGROUND-003, ARCH-052-MCP-005 or ARCH-052-SHOPIFY-001 task/branches, or reset BACKGROUND-011's external Attempt 2 review claim based on its stale exported YAML. No implementation source has been changed by this coordination patch.
+
+**Reconciled task frontier:** SHARED-011, ARCH-053-SHARED-003 and SHARED-012 were accepted and published before this patch. Add SHARED-013/014 for exact currency denomination and BACKGROUND-014 for Woo restriction-presence; amend pending BACKGROUND-013, MCP-002, BACKGROUND-010/008 and terminal tests. The archived external BACKGROUND-011 Attempt 2 review report and active task branches are preserved; this is architecture documentation only.
 
 ## Decisions / Tasks
 
-Individual task YAML is authoritative. Current snapshot includes accepted Complete Shared tasks, with BACKGROUND-009 Complete. SHARED-009 and SHARED-010 are Complete; COMMERCE-006 and MCP-005 are Ready. BACKGROUND-011, MCP-002, and MCP-003 remain Pending on their other prerequisites. Superseded tasks are not executable. No database schema task is required.
+Individual task YAML is authoritative within the exported snapshot. SHARED-011, ARCH-053-SHARED-003 and SHARED-012 are Complete; published Shared is 2.8.1. BACKGROUND-011 has separate externally reported Attempt 2 review evidence that has not been reconciled into this export, so its stale Ready YAML must not override the active review claim. Developer-reported SHOPIFY-001, MCP-005 and ARCH-049-BACKGROUND-003 work remains active. MCP-002/MCP-003 and other unsatisfied-dependency work remain Pending; system tests are terminal. No database migration task is required.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
@@ -189,7 +224,7 @@ Individual task YAML is authoritative. Current snapshot includes accepted Comple
 | [ARCH-052-BACKGROUND-007](../decisions/background/ARCH-052/BACKGROUND-007-resolve-verified-product-image-at-runtime.md) | `moda_background` | Pending | `ARCH-052-BACKGROUND-008`, `ARCH-052-ADMIN-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-007`, `ARCH-049-BACKGROUND-001`, `ARCH-049-BACKGROUND-004` |
 | [ARCH-052-BACKGROUND-008](../decisions/background/ARCH-052/BACKGROUND-008-integrate-three-modes-into-initial-whatsapp-send.md) | `moda_background` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-ADMIN-003`, `ARCH-052-BACKGROUND-010`, `ARCH-052-BACKGROUND-005`, `ARCH-052-ADMIN-001` |
 | [ARCH-052-BACKGROUND-009](../decisions/background/ARCH-052/BACKGROUND-009-preserve-shopify-merchant-selection-during-sync.md) | `moda_background` | Complete | — |
-| [ARCH-052-BACKGROUND-010](../decisions/background/ARCH-052/BACKGROUND-010-implement-langgraph-initial-outreach-offer-agent.md) | `moda_background` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-MCP-002`, `ARCH-052-COMMERCE-007`, `ARCH-052-SHARED-010` |
+| [ARCH-052-BACKGROUND-010](../decisions/background/ARCH-052/BACKGROUND-010-implement-langgraph-initial-outreach-offer-agent.md) | `moda_background` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-MCP-002`, `ARCH-052-COMMERCE-007`, `ARCH-052-SHARED-010`, `ARCH-052-SHARED-014` |
 | [ARCH-052-BACKGROUND-011](../decisions/background/ARCH-052/BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | `moda_background` | Review | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
 | [ARCH-052-BACKGROUND-012](../decisions/background/ARCH-052/BACKGROUND-012-upload-trusted-meta-image-template-sample.md) | `moda_background` | Ready | `ARCH-052-ADMIN-002`, `ARCH-047-BACKGROUND-003` |
 | [ARCH-052-COMMERCE-001](../decisions/commerce/ARCH-052/COMMERCE-001-verify-shopify-discount-against-current-checkout.md) | `moda_commerce` | Superseded | — |
@@ -202,10 +237,11 @@ Individual task YAML is authoritative. Current snapshot includes accepted Comple
 | [ARCH-052-COMMERCE-008](../decisions/commerce/ARCH-052/COMMERCE-008-verify-shopify-alternative-product-promotion.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-GATEWAY-001](../decisions/gateway/ARCH-052/GATEWAY-001-configure-private-recovery-product-read-transport.md) | `moda_gateway` | Pending | `ARCH-052-MCP-003` |
 | [ARCH-052-MCP-001](../decisions/mcp/ARCH-052/MCP-001-authorize-initial-recovery-outreach-tool-context.md) | `moda_mcp` | Complete | `ARCH-052-SHARED-003` |
-| [ARCH-052-MCP-002](../decisions/mcp/ARCH-052/MCP-002-execute-published-discount-options-and-proof.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-013`, `ARCH-052-MCP-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-011` |
-| [ARCH-052-MCP-003](../decisions/mcp/ARCH-052/MCP-003-direct-provider-product-search-and-exact-read.md) | `moda_mcp` | Ready | `ARCH-052-SHARED-010`, `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-005` |
+| [ARCH-052-MCP-002](../decisions/mcp/ARCH-052/MCP-002-execute-published-discount-options-and-proof.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-013`, `ARCH-052-BACKGROUND-014`, `ARCH-052-MCP-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-011`, `ARCH-052-SHARED-014` |
+| [ARCH-052-MCP-003](../decisions/mcp/ARCH-052/MCP-003-direct-provider-product-search-and-exact-read.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-010`, `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-005` |
 | [ARCH-052-MCP-004](../decisions/mcp/ARCH-052/MCP-004-verify-alternative-product-discount-promotions.md) | `moda_mcp` | Superseded | — |
 | [ARCH-052-MCP-005](../decisions/mcp/ARCH-052/MCP-005-implement-direct-woocommerce-rest-product-reader.md) | `moda_mcp` | Complete | — |
+| [ARCH-052-MCP-006](../decisions/mcp/ARCH-052/MCP-006-preserve-original-woo-provider-errors.md) | `moda_mcp` | Ready | `ARCH-052-MCP-005` |
 | [ARCH-052-SHARED-001](../decisions/shared/ARCH-052/SHARED-001-define-canonical-selected-discount-contract.md) | `moda_shared` | Superseded | — |
 | [ARCH-052-SHARED-002](../decisions/shared/ARCH-052/SHARED-002-define-checkout-template-binding-contract.md) | `moda_shared` | Complete | — |
 | [ARCH-052-SHARED-003](../decisions/shared/ARCH-052/SHARED-003-publish-initial-outreach-shared-contracts.md) | `moda_shared` | Complete | `ARCH-052-SHARED-002`, `ARCH-052-SHARED-006`, `ARCH-052-SHARED-008` |
@@ -218,12 +254,15 @@ Individual task YAML is authoritative. Current snapshot includes accepted Comple
 | [ARCH-052-SHARED-010](../decisions/shared/ARCH-052/SHARED-010-publish-discount-discovery-contract-update.md) | `moda_shared` | Complete | `ARCH-052-SHARED-009` |
 | [ARCH-052-SHARED-011](../decisions/shared/ARCH-052/SHARED-011-define-discount-combinations-and-outreach-offer-sets.md) | `moda_shared` | Complete | `ARCH-052-SHARED-010` |
 | [ARCH-053-SHARED-003](../decisions/shared/ARCH-053/SHARED-003-extend-v1-confirmed-woo-offer-group-contract.md) | `moda_shared` | Complete | `ARCH-052-SHARED-011` |
-| [ARCH-052-SHARED-012](../decisions/shared/ARCH-052/SHARED-012-publish-multi-discount-and-woo-v1-contract-update.md) | `moda_shared` | Ready | `ARCH-052-SHARED-011`, `ARCH-053-SHARED-003` |
+| [ARCH-052-SHARED-012](../decisions/shared/ARCH-052/SHARED-012-publish-multi-discount-and-woo-v1-contract-update.md) | `moda_shared` | Complete | `ARCH-052-SHARED-011`, `ARCH-053-SHARED-003` |
+| [ARCH-052-SHARED-013](../decisions/shared/ARCH-052/SHARED-013-project-subtotal-threshold-currency.md) | `moda_shared` | Ready | `ARCH-052-SHARED-012` |
+| [ARCH-052-SHARED-014](../decisions/shared/ARCH-052/SHARED-014-publish-threshold-currency-fact-contract.md) | `moda_shared` | Pending | `ARCH-052-SHARED-013` |
 | [ARCH-052-BACKGROUND-013](../decisions/background/ARCH-052/BACKGROUND-013-capture-complete-shopify-combination-identities.md) | `moda_background` | Pending | `ARCH-052-BACKGROUND-011` |
+| [ARCH-052-BACKGROUND-014](../decisions/background/ARCH-052/BACKGROUND-014-preserve-woo-coupon-restriction-presence-facts.md) | `moda_background` | Ready | — |
 | [ARCH-052-ADMIN-003](../decisions/admin/ARCH-052/ADMIN-003-author-multi-discount-checkout-template-bindings.md) | `moda_admin` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-ADMIN-002` |
 | [ARCH-052-SHOPIFY-001](../decisions/shopify/ARCH-052/SHOPIFY-001-select-multiple-authorised-recovery-discounts.md) | `moda_app` | Complete | `ARCH-052-BACKGROUND-009` |
-| [ARCH-052-SYSTEM-TEST-001](../decisions/system-test/ARCH-052/SYSTEM-TEST-001-certify-shopify-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-BACKGROUND-013`, `ARCH-052-ADMIN-003`, `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-008`, `ARCH-052-SHOPIFY-001`, `ARCH-052-BACKGROUND-009`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-GATEWAY-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-012`, `ARCH-052-BACKGROUND-011` |
-| [ARCH-052-SYSTEM-TEST-002](../decisions/system-test/ARCH-052/SYSTEM-TEST-002-certify-woocommerce-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-ADMIN-003`, `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-008`, `ARCH-052-GATEWAY-001`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-012` |
+| [ARCH-052-SYSTEM-TEST-001](../decisions/system-test/ARCH-052/SYSTEM-TEST-001-certify-shopify-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-BACKGROUND-013`, `ARCH-052-ADMIN-003`, `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-008`, `ARCH-052-SHOPIFY-001`, `ARCH-052-BACKGROUND-009`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-GATEWAY-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-012`, `ARCH-052-BACKGROUND-011`, `ARCH-052-SHARED-014` |
+| [ARCH-052-SYSTEM-TEST-002](../decisions/system-test/ARCH-052/SYSTEM-TEST-002-certify-woocommerce-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-ADMIN-003`, `ARCH-052-BACKGROUND-014`, `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-008`, `ARCH-052-GATEWAY-001`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-012`, `ARCH-052-SHARED-014`, `ARCH-052-MCP-006` |
 | [ARCH-052-WOOCOMMERCE-001](../decisions/woocommerce/ARCH-052/WOOCOMMERCE-001-expose-read-only-native-coupon-verification.md) | `moda_woocommerce` | Superseded | — |
 | [ARCH-052-WOOCOMMERCE-002](../decisions/woocommerce/ARCH-052/WOOCOMMERCE-002-create-secure-customer-initiated-checkout-resume.md) | `moda_woocommerce` | Superseded | — |
 
@@ -250,3 +289,5 @@ None delegated to implementation agents. Unknown provider-specific customer rest
 - 2026-10-29 **Attempt 4**: Dedicated InitialOutreachOfferAgent (no conversation runner), built-in discount MCP tools, code-defined published product tools, direct Woo/Shopify provider product searches inside MCP, optional cross-sell promotions after checkout proof fails, no hosted API broker for MCP product/coupon proof. Superseded COMMERCE-002/004/005, API-002/003, SHARED-007.
 
 - 2026-10-29 **Attempt 6**: Removed frozen merchant-policy and duplicate sent-offer snapshot; superseded SHARED-001/004, BACKGROUND-001/006 and redundant API-001; consolidated Woo restore-link adapter into BACKGROUND-008; retained current-settings MCP policy and existing generic tool envelope/confirmed outbound message receipt.
+
+- 2026-10-31: Required logging the actual provider/SDK errors with bounded sensitive-data redaction across outreach/model/MCP/Shopify/Meta boundaries; added MCP-006 for the accepted Woo reader. Internal reason codes remain separate.
