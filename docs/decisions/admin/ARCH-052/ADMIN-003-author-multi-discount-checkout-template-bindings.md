@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-10-31T06:30:35Z
@@ -83,6 +83,7 @@ For **every new initial recovery template revision** that ARCH-052 can select, i
 - [x] Implement new initial-recovery TEXT/IMAGE template BODY revisions with the shop-name semantic and exact Reply/text/voice meaning for CHECKOUT and ALTERNATIVE_PRODUCT, for all existing initial purposes and 20 supported locales.
 - [x] Add Admin freeze/translation/preview/provider-payload tests for all purpose/target/header/locale identities, preservation of the existing `shop.name` AST token and immutable approval/fingerprint changes.
 - [x] Test that old approved copy is not treated as the new compliant version and that missing/unreviewed Meta approval cannot be promoted to approved.
+- [x] Require plural/set wording for automatic checkout offers and reject singular “a possible automatic offer” copy while preserving supported plural wording.
 
 ## Interfaces / Contracts
 
@@ -112,8 +113,7 @@ Published Shared `RecoveryTemplateSemanticKeySchema` supports `offer.codes`; exi
 
 ## Validation
 
-- [x] Existing Admin authoring/translation/Meta registration suites and focused multi-code variable tests.
-- [x] Production build (includes TypeScript checking) and `git diff --check`. Changed Admin source lint passes. Repository-wide lint still reports the unrelated existing `react-hooks/set-state-in-effect` error in `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts:26`.
+- [x] Original implementation: all five focused Admin suites and multi-code variable tests (111 checks). After the Attempt 2 correction: authoring suite (39 checks), production build (includes TypeScript checking), changed Admin source lint, and `git diff --check`. The other four focused suites were not rerun for this narrow correction. Repository-wide lint still reports the unrelated existing `react-hooks/set-state-in-effect` error in `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts:26`.
 
 - [x] Focused tests exercise NO_OFFER, CODE_OFFER, AUTOMATIC_OFFER and ALTERNATIVE_PRODUCT, TEXT and IMAGE where supported, missing merchant-name binding, frozen AST, translation token preservation, provider submission plan and exact copy-fingerprint mismatch. No real provider submission or approval was performed.
 
@@ -129,7 +129,7 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Attempt 1 implementation was returned for a narrow wording-validation correction. The task was implemented in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-ADMIN-003`; no Meta provider upload or approval was performed.
+Attempt 1 implementation was returned for a narrow wording-validation correction. Attempt 2 tightens the automatic checkout offer wording rule and adds the requested singular-case regression. The task remains in the dedicated implementation worktree; no Meta provider upload or approval was performed.
 
 ### Files Changed
 
@@ -148,7 +148,7 @@ Attempt 1 implementation was returned for a narrow wording-validation correction
 
 ### Validation Results
 
-All five final focused Admin suites passed (111 checks total):
+The original implementation passed all five focused Admin suites (111 checks total):
 
 - Authoring: 39 passed.
 - Meta registration/submission: 19 passed.
@@ -156,9 +156,9 @@ All five final focused Admin suites passed (111 checks total):
 - Compilation: 15 passed.
 - Translation: 16 passed.
 
-`npm run build` passed, including TypeScript checking and production route generation. Build output included existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings.
+After the Attempt 2 correction, `npm run test:arch047-admin-authoring:unit` passed all 39 checks, including valid plural wording and rejection of “a possible automatic offer”. `npm run build` passed, including TypeScript checking and production route generation. Build output included existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings. The other four focused suites were not rerun for this narrow correction.
 
-Changed Admin source lint passed. Repository-wide `npm run lint` remains blocked by the existing `react-hooks/set-state-in-effect` error at `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts:26`, outside this task. `git diff --check` passed.
+Changed Admin source lint and `git diff --check` passed. The test file is ignored by the repository ESLint configuration. Repository-wide `npm run lint` remains blocked by the existing `react-hooks/set-state-in-effect` error at `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts:26`, outside this task.
 
 ### Deviations
 
@@ -224,5 +224,5 @@ guard needs the correction above before acceptance.
 
 ### Follow-up
 
-After the wording guard and regression case pass, resubmit the same task attempt
-for architect review. Do not start dependent tasks before acceptance.
+Attempt 2 is resubmitted for architect review after the wording guard and
+regression case passed. Do not start dependent tasks before acceptance.
