@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 55
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-10-31T22:10:13Z
+attempt: 1
 depends_on:
 - ARCH-053-WOOCOMMERCE-002
 - ARCH-053-WOOCOMMERCE-004
