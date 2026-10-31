@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: codex
 claimed_at: 2026-10-31T22:36:03Z
@@ -32,7 +32,7 @@ Architecture: `ARCH-054`
 
 Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md`
 
-Coordinator: `moda_architect`. Task **defined but not materialised**; no local Git/worktree/branch activity is claimed.
+Coordinator: `moda_architect`. This task is materialised and executing in its prepared parent and implementation worktrees.
 
 
 ## Objective
@@ -92,7 +92,7 @@ Existing ARCH-040 control DTO and `controlRevision` are unchanged; DATABASE-001 
 ## Validation
 
 - [x] Existing Shopify human-command/control service tests: `npm test -- tests/unit/arch040-shopify-command.test.ts` — 36 tests passed.
-- [ ] Prisma transaction integration test: added and attempted with `MODA_DISPOSABLE_INTEGRATION=1`; Testcontainers could not start because this machine has no working container runtime (`Could not find a working container runtime strategy`).
+- [x] Prisma transaction integration test: `MODA_DISPOSABLE_INTEGRATION=1` with the configured Colima Docker socket; 3 tests passed, covering concurrent takeover serialization, rollback on event persistence failure, and stale-revision preservation of a fresh turn.
 - [x] Changed-file lint: ESLint passed for the service and both test files.
 - [x] Typecheck: `npm run typecheck` passed.
 - [x] Build: `npm run build` passed. It emitted the existing Zod annotation and large-chunk warnings; there were no build errors.
@@ -130,17 +130,16 @@ Ready for Review
 
 ### Validation Results
 
-- Focused Shopify command/control suite: 36 passed.
-- Changed-file ESLint: passed.
-- `npm run typecheck`: passed.
-- `npm run build`: passed (existing Zod annotation and large chunk warnings only).
-- `git diff --check`: passed.
-- PostgreSQL integration: test added and attempted, but unverified because Testcontainers reported no working container runtime. The three integration cases were therefore not executed.
+- Attempt 1 focused Shopify command/control suite: 36 passed.
+- Attempt 1 changed-file ESLint, `npm run typecheck`, `npm run build`, and `git diff --check`: passed. The build emitted existing Zod annotation and large-chunk warnings only.
+- Attempt 2 PostgreSQL integration command: `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_DISPOSABLE_INTEGRATION=1 npx vitest run --no-cache --reporter=dot tests/integration/shopify-recovery-control-invalidation.postgres.integration.test.ts` — 1 test file passed; all 3 tests passed (concurrent takeover and atomic invalidation, rollback when event persistence fails, stale revision preserving a fresh turn). Duration 190.64s.
+- Attempt 2 changed-file ESLint for `tests/integration/shopify-recovery-control-invalidation.postgres.integration.test.ts`: passed.
+- Attempt 2 `git diff --check`: passed.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-- PostgreSQL transaction behavior still needs execution in an environment with a working Docker/container runtime.
-- The first `npm ci` attempt could not complete because the disk ran out of space (`ENOSPC`). The task worktree had no installed dependencies, so validation temporarily reused the exact-lockfile dependency tree from the preceding ARCH-054 Shopify worktree; its temporary `node_modules` symlink has been removed. No dependency manifest or lockfile changed.
+- No unresolved task issues. The PostgreSQL suite required explicit Testcontainers settings for the already-running Colima runtime; no container configuration was changed. The disposable PostgreSQL container was stopped by the test cleanup.
+- The first `npm ci` attempt could not complete because the disk ran out of space (`ENOSPC`). Validation temporarily reused the exact-lockfile dependency tree from the preceding ARCH-054 Shopify worktree; the temporary `node_modules` symlink has been removed. No dependency manifest or lockfile changed.
 - The build completed with Rollup warnings for dependency annotations and a chunk larger than 500 kB; these are not build failures.
 
 ### Worktree and Git Evidence
@@ -169,9 +168,26 @@ Recursive implementation submodules:
   git submodule update --init --recursive: passed
   database submodule commit: 7c377282aa5819b3008b7d7f3018f44f4161523e
 
+Attempt 2 start-of-attempt synchronization:
+  parent branch start SHA: c35501b33697806e2e3189284b11de51be21518c
+  implementation branch start SHA: 0101f1bfb33e67e42c5d72a55c31022e3696901b
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+  durable claim commit: d87df8317122ef573c2d4affd749e8eaa25c7fa9 (pushed)
+  database submodule commit: 7c377282aa5819b3008b7d7f3018f44f4161523e
+
 Implementation publication:
-  implementation commit: 0101f1bfb33e67e42c5d72a55c31022e3696901b (pushed to origin/task/ARCH-054-SHOPIFY-002)
+  Attempt 1 implementation commit: 0101f1bfb33e67e42c5d72a55c31022e3696901b (pushed to origin/task/ARCH-054-SHOPIFY-002)
+  Attempt 2 integration-test correction: baac1e3 (pushed to origin/task/ARCH-054-SHOPIFY-002)
   parent task report: committed and pushed on task/ARCH-054-SHOPIFY-002
+
+### Attempt 2 Completion Report
+
+Status: Ready for Review
+
+Attempt 2 addressed the review's outstanding validation requirement and made only test-fixture corrections exposed by running the real disposable PostgreSQL database. No production implementation changes were required. The integration suite now passes all three required transaction cases. Changed-file lint also passes, and the report records the worktree synchronization evidence for both worktrees.
 
 
 ## Architect Review
