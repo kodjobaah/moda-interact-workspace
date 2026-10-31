@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 32
-executor: copilot
-claimed_at: 2026-10-31T04:53:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-BACKGROUND-011
@@ -35,7 +35,7 @@ Complete Shopify Basic discount combination snapshots by persisting each discoun
 
 ## Context
 
-BACKGROUND-011 was accepted after Attempt 4 and is now Ready for Attempt 5 to add actionable, bounded error diagnostics. It already captures Basic `combinesWith` booleans, allowed and own same-line tags, discount classes and trusted Plus entitlement. This task covers the newly identified source-backed `minimumRequirement` threshold facts and their currency; do not start it until BACKGROUND-011 is accepted again.
+BACKGROUND-011 was accepted after Attempt 6. It already captures Basic `combinesWith` booleans, allowed and own same-line tags, discount classes and trusted Plus entitlement. This task adds the source-backed `minimumRequirement` threshold facts and their currency, and its prerequisite is complete.
 
 ## Scope
 
@@ -128,7 +128,7 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Ready for Review.
+Accepted after Attempt 1.
 
 ### Files Changed
 
@@ -156,30 +156,31 @@ None blocking this task. MCP-002 must remove the preserved combination-only reas
 
 ### Architectural Concerns
 
-No cross-repository or database changes were needed. Architect Review remains unchanged.
+No cross-repository or database changes were needed. Architect acceptance is recorded below.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Complete.
 
 ### Review Notes
 
-New multi-discount feature task; no implementation reviewed.
+Attempt 1 implements the required Shopify Basic source facts and preserves uncertainty rather than inferring safe combination eligibility. Both Basic discount fragments select own tags, discount classes, combination flags and allowed same-line tags, plus typed subtotal amount/currency or quantity minimum requirements. Shopify Plus is observed on the first paged request only and reused for the same shop's remaining pages. Malformed, unavailable and oversized tag/class inputs remain null with explicit reasons; observed empty arrays remain distinct from unknown values.
+
+The completeness projection retains all unresolved source reasons, including the combination-policy projection reason pending MCP-002. A valid Basic record therefore remains PARTIAL until that downstream projection exists; unsupported, incomplete, restricted and truncated records also remain non-authoritative. The existing provider snapshot retains the exact source minimumRequirement including its currency. HTTP/GraphQL and SDK failures preserve bounded source diagnostics through the Shared logger without logging raw bodies or tokens, and the existing service failure path avoids replacing trusted catalogue snapshots on errors. No acceptance blocker remains.
 
 ### Reviewed Files
 
-None.
+- `src/providers/shopify-discount.provider.ts`
+- `tests/unit/providers/shopify-discount.provider.test.ts`
+- `tests/unit/services/shopify-discount-catalogue.service.test.ts`
+- Attempt 1 Completion Report and validation evidence.
 
 ### Validation Reviewed
 
-No implementation validation yet.
+Reviewed the reported 42 focused tests, `npm run lint`, `npm run build` and `git diff --check`; these checks were not rerun during architect review.
 
 ### Architecture Conformance
 
-Pending implementation and review.
-
-### Follow-up
-
-None.
+Accepted. Source-backed combination and threshold facts are persisted within the existing snapshot, unknown inputs remain incomplete, provider failures are logged and propagated safely, and no new hot-path provider reads or schema changes were introduced. MCP-002 remains Pending because its other dependencies are incomplete. SYSTEM-TEST-001 remains Pending until its full prerequisite chain is complete.
