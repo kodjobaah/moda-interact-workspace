@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
 executor: copilot
 claimed_at: 2026-10-31T11:28:50Z
@@ -142,7 +142,7 @@ export type PriceReconciliationInput = Readonly<{
 - [x] Implement the canonical source-bound `fingerprintRecoveryPricingBasket()` and use it before and after source reads; the helper is available for BG010/BG008, whose imports remain in their task scope. Verify same-shop recovery/attempt/generation without a network-held transaction.
 - [x] Implement 100-line parsing, exact identity/variant reads, within-invocation deduplication, four concurrent reads, a 20-second budget and cancellation.
 - [x] Implement pure exact-decimal comparison and catalogue-only vs verified-checkout-context separation, with a null subtotal when checkout context is unverified.
-- [x] Add fakes/tests for Shopify and Woo line shapes, missing facts, source errors, fresh retry reads and cross-shop isolation; pass originating SDK errors to Shared structured logging.
+- [x] Add fakes/tests for Shopify and Woo line shapes, missing facts, source errors, fresh retry reads and cross-shop isolation; preserve originating SDK errors for propagation and send only safe projected diagnostics to Shared structured logging.
 - [x] Run declared focused tests, lint, build and whitespace validation; record launcher/worktree evidence in the Completion Report.
 
 ## Interfaces / Contracts
@@ -187,12 +187,12 @@ Example when a saved GBP 80.00 item has a same-ID, currently observed GBP 90.00 
 - [x] 80.00 checkout / 90.00 catalogue GBP yields `DIFFERENT` plus `UNVERIFIABLE`, not a confirmed customer price increase; same 80.00/80.00 yields `EQUAL` plus `UNVERIFIABLE` without verified equivalence. Currency mismatch never becomes an equal-price decision.
 - [x] Four concurrent / 100 unique reads / 20-second limits, injected timer and abort are covered by isolated fakes; retries make fresh observations. No database adapter or transaction is introduced around network calls.
 - [x] Shopify missing variant and Woo nullable simple-product variant are handled differently; wrong product/variant/shop, null price, stale generation, invalid observation, negative money, ambiguous currency and unknown ISO exponent fail closed; GBP/USD, JPY and KWD exact-decimal tests pass.
-- [x] The report never computes a trusted current subtotal from old totals or unverified catalogue prices; SDK errors are passed as `error` to the Shared logger and tool-result failures retain their source code.
+- [x] The report never computes a trusted current subtotal from old totals or unverified catalogue prices; source errors retain identity for propagation while logs use bounded redacted diagnostics, and tool-result failures retain their source code.
 - [x] No checkout writes, additional Meta sends/credits, external Shopify/Woo API calls from Background, Shared/MCP schema changes or image R2 side effects were introduced.
 
 ## Validation
 
-- [x] `npx vitest run tests/unit/services/recovery-pricing/price-comparison.test.ts tests/unit/services/recovery-pricing/checkout-price-reconciliation.service.test.ts` — 2 files passed, 17 tests passed.
+- [x] `npm exec vitest run tests/unit/services/recovery-pricing/checkout-price-reconciliation.service.test.ts tests/unit/services/recovery-pricing/price-comparison.test.ts` — 2 files passed, 19 tests passed on Attempt 3.
 - [x] `npx eslint src/services/recovery-pricing` — passed; `npm run build` — passed (Prisma client generation and TypeScript compilation).
 - [x] `git diff --check` — passed for task changes; adjacent checkout projection/snapshot regression tests passed (2 files, 17 tests). No directly relevant MCP exact-product unit test exists in this repository.
 - [ ] Authenticated current-shop MCP integration fixture and cross-task BG010/BG008 fingerprint integration were unavailable in this attempt; no live provider behavior was simulated. Unit fakes cover the bounded reads, source outcomes and canonical fingerprint locally.
@@ -207,7 +207,7 @@ After the Work Items, Acceptance Criteria and Validation are complete, record re
 - This task adds **no new provider proof contract**. If the final architecture requires an authoritative live checkout price quote, the current `CommerceProduct` wire does not support it; record the exact gap and stop rather than claiming a source-equivalent quote.
 - Keep all new implementation source inside `moda-interact-background/`, with only this task file as the coordination exception; do not modify accepted Shared/MCP/source projects.
 
-## Completion Report
+## Attempt 2 Completion Report
 
 ### Status
 
@@ -256,6 +256,52 @@ The consuming tasks will use the typed report without converting unknown into a 
 ### Unresolved Issues
 
 The current MCP product contract cannot establish equivalent checkout/customer-market pricing context; catalogue comparisons are informational, not authoritative payable-price changes. An authenticated current-shop integration fixture and BG010/BG008 adoption remain unverified in this task attempt.
+
+### Architectural Concerns
+
+Any requirement for authoritative repricing must be assigned to a separately owned checkout-price source, not invented by this service.
+
+## Completion Report
+
+### Status
+
+Attempt 3 implementation complete; returned to `review` for Architect review. No Architect acceptance decision has been made.
+
+### Files Changed in Attempt 3
+
+- `moda-interact-background/src/services/recovery-pricing/checkout-price-reconciliation.service.ts`
+- `moda-interact-background/tests/unit/services/recovery-pricing/checkout-price-reconciliation.service.test.ts`
+
+### Work Completed
+
+- Added a strict allowlisted provider-error payload projection with recursive depth/node/item limits, 192-character value bounds and a 4 KiB serialized payload ceiling. Sensitive/unrecognized keys are omitted; string values pass the existing email, phone, URL and credential redactor.
+- Payload diagnostics are enabled only outside production deployment labels (`production`, `prod`, and `live` forms); safe error name/message/status/code diagnostics remain available in all environments. Successful product responses are never routed to the failure payload projection.
+- Preserved original Error identity for propagation from both reader failure paths. The logger receives only the safe projection, never the original Error object.
+- Added regression coverage for non-production payload visibility and sensitive-field/value exclusion, production-alias omission, successful-response exclusion, explicit size bounds, and unchanged originating Error propagation.
+
+### Validation Results
+
+- `npm exec vitest run tests/unit/services/recovery-pricing/checkout-price-reconciliation.service.test.ts tests/unit/services/recovery-pricing/price-comparison.test.ts`: 2 files passed, 19 tests passed.
+- `npm exec eslint src/services/recovery-pricing`: passed.
+- `npm run build`: passed; Prisma client generated and TypeScript compilation completed.
+- `git diff --check`: passed.
+
+### Publication and Worktree Evidence
+
+- Attempt 3 launcher claim was prepared at `2026-10-31T11:28:50Z`; dependency gate passed and recursive Database submodule was initialized at `af77c594ecbfc78c26d01c0021a090830884bbff`. Parent claim commit: `3d8341501728bb394c02f57f216716100f22814a`.
+- Implementation commit `69d098a` (`fix(BACKGROUND-016): log bounded redacted error payloads`) was pushed to `origin/task/ARCH-052-BACKGROUND-016`.
+- Parent task/report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-016`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-016`.
+- Both task worktrees use branch `task/ARCH-052-BACKGROUND-016`. No implementation merge or Architect acceptance was performed.
+
+### Deviations and Unresolved Issues
+
+- Authenticated current-shop MCP integration was not run because no live TEST credential fixture was available. No live provider behavior was simulated; existing unit fakes cover the scoped behavior.
+- The current MCP product contract still cannot establish equivalent checkout/customer-market pricing context. Catalogue comparisons remain informational, not authoritative payable-price changes. BG010/BG008 adoption remains outside this task.
+
+### Assumptions
+
+Provider error payloads arrive on thrown source errors through one of the explicit provider error metadata fields inspected by the diagnostic projection. The projection deliberately does not serialize arbitrary response objects or successful-response bodies.
 
 ### Architectural Concerns
 
