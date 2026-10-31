@@ -116,6 +116,7 @@ Ready for Review
 
 - `moda-interact-background/src/providers/woo-coupon-normalization.ts`
 - `moda-interact-background/tests/unit/providers/woo-coupon-normalization.test.ts`
+- `moda-interact-background/src/services/translation-reconciliation.service.ts` (developer-requested lint correction)
 
 ### Work Completed
 
@@ -123,6 +124,7 @@ Ready for Review
 - Kept source email and metadata arrays, values and keys out of snapshots and diagnostics. Ambiguous or oversized supplied fields emit only the bounded `optional_field_ignored` issue for the field name.
 - Preserved existing coupon identity, code deliverability, selection, status, bounds and other normalized restrictions. No schema, cross-service contract, API, or worker lifecycle changes.
 - Added focused tests covering empty, nonempty, missing, malformed and oversized inputs, including serialized snapshot/diagnostic assertions against synthetic sensitive values.
+- In response to the developer's follow-up, preserved the credential lookup exception as the `cause` of the generic `UNAVAILABLE_CREDENTIAL` error in `translation-reconciliation.service.ts`; outward error behavior is unchanged and the `preserve-caught-error` lint finding is resolved.
 
 #### Architect Review Correction Checklist
 
@@ -134,9 +136,11 @@ Ready for Review
 
 - `./node_modules/.bin/vitest run tests/unit/providers/woo-coupon-normalization.test.ts` — passed; 1 test file, 8 tests.
 - `./node_modules/.bin/eslint src/providers/woo-coupon-normalization.ts tests/unit/providers/woo-coupon-normalization.test.ts` — passed.
+- `./node_modules/.bin/eslint src/services/translation-reconciliation.service.ts src/providers/woo-coupon-normalization.ts tests/unit/providers/woo-coupon-normalization.test.ts` — passed after the developer-requested correction.
+- `./node_modules/.bin/vitest run tests/unit/services/merchant-pricing-translation-reconciliation.service.test.ts` — passed; 1 test file, 4 tests.
 - `npm run build` — passed, including Prisma client generation and TypeScript compilation.
 - `git diff --check` — passed.
-- `npm run lint` — repository-wide run is blocked by the unrelated existing `preserve-caught-error` error in `src/services/translation-reconciliation.service.ts:218`; neither changed file is implicated.
+- `npm run lint` — passed repository-wide after the developer-requested correction.
 - `npm ci` was required because the prepared implementation worktree had no `node_modules`; it completed from the existing lockfile without lockfile changes. npm reported 40 dependency audit findings (27 moderate, 13 high); dependency remediation is outside this task.
 - Launcher preparation evidence: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-014`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-014`; both task branches are `task/ARCH-052-BACKGROUND-014`. Prepared parent head was `5362773f36eec15e7e095764b040da6c5ce19680`, implementation head was `105f5ead7b3f39b6e66c5cd385443877d4c2729c`, and initialized database submodule was `af77c594ecbfc78c26d01c0021a090830884bbff`.
 - Implementation commit `8ecc53b` was pushed to `origin/task/ARCH-052-BACKGROUND-014`. The initial default push was refused because the local branch's configured upstream is `origin/main`; explicit ref push to the matching task branch succeeded without changing branch configuration.
@@ -182,3 +186,7 @@ Pending implementation review.
 ### Follow-up
 
 MCP-002 may begin only after this task and all its other prerequisites are architect-accepted Complete.
+
+## Developer Approval
+
+Approved by the developer on 2026-10-31, including the requested credential-error cause-preservation correction. This records developer approval only; Architect Review remains Pending, so the task status remains `review` until the authorized architect acceptance step.
