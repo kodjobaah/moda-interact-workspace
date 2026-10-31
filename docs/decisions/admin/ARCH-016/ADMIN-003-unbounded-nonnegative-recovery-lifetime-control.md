@@ -214,7 +214,7 @@ Replaced the action source-order assertion with tests that execute `mutateBackgr
 
 - `moda-interact-admin/tests/security/admin-background-runtime-controls.test.mjs`
 - `moda-interact-admin/tests/unit/background-runtime-control-validation.test.ts`
-- Implementation commit: `4214934` (`test(admin): exercise runtime controls audit action`), pushed to `task/ARCH-016-ADMIN-003`.
+- Implementation commit: `42149348cb5e2e0db8d38b00026e74ca02a8fc65` (`test(admin): exercise runtime controls audit action`), pushed to `task/ARCH-016-ADMIN-003`.
 
 ### Attempt 2 Validation Results
 
