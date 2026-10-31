@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T01:40:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-010
@@ -32,7 +32,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture ID: `ARCH-052`. Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Defined but not materialised**; no Git branch or worktree created.
+Architecture ID: `ARCH-052`. Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. Materialised and prepared on the canonical task branches for Attempt 1.
 
 ## Objective
 
@@ -113,35 +113,49 @@ Expected MCP owning code: `src/execution/policy/`, `src/connections/resolver.ts`
 
 ### Status
 
-Not Started — portable definition; no task claim.
+Returned for Architect direction. Attempt 1 was claimed, but implementation is blocked by a contract gap in the accepted Woo reader. No source changes were made; the task is in `review` with executor and claim cleared.
 
 ### Files Changed
 
-None yet.
+No implementation files changed. The prepared implementation worktree remains clean at its starting commit.
 
 ### Work Completed
 
-None yet.
+Prepared Attempt 1 through the canonical launcher. The dependency gate passed for ARCH-052-SHARED-010, ARCH-052-COMMERCE-006 and ARCH-052-MCP-005. Inspected the MCP-005 read port, direct Woo REST reader and connection resolver against this task's required product projection.
 
 ### Validation Results
 
-Not run.
+Implementation validation was not run because the current approved Woo contract cannot provide required product/variation evidence, and this task explicitly forbids implementing the MCP-005-owned direct reader. This is a contract audit, not a passing implementation validation.
 
 ### Deviations
 
-None reported.
+No implementation deviation. Returned the task before source changes rather than expanding the MCP-005-owned reader or fabricating product identity/fields.
 
 ### Assumptions
 
-Confirm execution baseline in dedicated task worktree.
+The released Shared contract required by this task is available as `@modainteract/moda-interact-shared@2.8.1`; the MCP manifest is currently pinned to `2.7.1` and must be updated when implementation resumes.
 
 ### Unresolved Issues
 
-None established.
+The accepted MCP-005 port cannot support the WooCommerce acceptance criteria:
+
+- `WooCommerceProductReadRequest` only supports list/search and product retrieve by product ID; there is no variation read operation or variant identifier in the request.
+- The MCP-005 direct REST reader explicitly requests `_fields=id,name,sku,price,stock_status,stock_quantity,categories` for both operations. It therefore cannot return product type/variation IDs, permalink, images, regular/sale price or the other evidence needed for the required Woo product projection.
+- The product connection exposes only platform, shop ID and `readProducts`; the resolver does not expose the independently verified installation origin needed to validate Woo permalinks.
+
+This task explicitly prohibits implementing `src/connections/woocommerce/direct-product-reader.ts` and requires consumption of the already accepted MCP-005 reader. `moda_architect` must amend/sequence the owning MCP-005 contract and provide the verified-origin interface before this task can safely satisfy its Woo acceptance criteria. No candidate URL or product field may be inferred to work around the gap.
 
 ### Architectural Concerns
 
-Return material contract/security/proof gaps to `moda_architect` without inventing a workaround.
+Attempt 1 returned for Architect direction before implementation. The launcher prepared the dedicated worktrees and pushed the parent claim. The accepted MCP-005 interface does not expose the Woo variant/product fields required here and the current resolver does not expose its independently verified origin. No source changes or tests were made. Work Items and Acceptance Criteria remain incomplete; no acceptance decision is requested from this agent.
+
+### Synchronization and Version Control
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-MCP-003`, branch `task/ARCH-052-MCP-003`; parent `origin/main` was incorporated. The launcher claim commit is `04d27dcc6ffc88fbeae9455df1bbec75a96b51cd`, pushed to the task branch.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-003`, branch `task/ARCH-052-MCP-003`; implementation `origin/main` was already current. Recursive submodule sync and initialization passed; database submodule is `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- The implementation worktree is clean at `f1d2a10a29c6930cfc316dfc6119d795100bd1a3`; no implementation commit or implementation-branch push was made because no source changes were safe within this task's boundary.
+- No shared/default checkout or other task worktree was used for implementation; no main branch was changed.
 
 ## Architect Review
 
