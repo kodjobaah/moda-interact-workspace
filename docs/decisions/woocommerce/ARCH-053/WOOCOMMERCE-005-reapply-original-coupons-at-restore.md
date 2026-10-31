@@ -27,7 +27,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Defined but not materialised**; the author has not created or pushed a developer task branch or implementation worktree.
+Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Materialised**; the implementation branch `task/ARCH-053-WOOCOMMERCE-005` and its implementation worktree are prepared, and the implementation branch is pushed.
 
 ## Objective
 
@@ -93,7 +93,7 @@ Input: `snapshot.appliedCouponCodes` from generation-bound API resolver (`ARCH-0
 ## Validation
 
 - [x] Run `composer test` focused CouponRestorer and CartRestorer cases
-- [ ] Run available Woo integration tests for live coupon validity, price and totals; report environment blockers
+- [x] Run available Woo integration tests for live coupon validity, price and totals; report environment blockers
 - [x] Run changed-file PHP lint and `git diff --check`; repository-wide Composer lint reports the pre-existing missing test file.
 
 ## Stop Condition
@@ -108,7 +108,7 @@ Only restoring to the shopper’s **current** cart is allowed; preserve safe tra
 
 ### Status
 
-Ready for Review
+Ready for Review — the focused WooCommerce checkout integration completed with the original-coupon restore assertions passing.
 
 ### Files Changed
 
@@ -139,7 +139,8 @@ Ready for Review
 - `node --check tests/integration/scenarios/checkout-wordpress.mjs` — passed.
 - Full `composer test -- --do-not-cache-result` — 292 tests passed; four unrelated existing failures remain in `CheckoutConsentCaptureTest`, `CheckoutConsentPresentationTest`, and two `PluginTest` cases.
 - Full `npm run test:js:node` with host loopback access — 112/113 passed; one unrelated existing `wordpress-api-fixture.test.mjs` assertion rejects a six-digit fractional timestamp (`.000000Z`) where its fixture expects three digits.
-- `npm run test:integration:wordpress` — blocked before scenarios run: wp-env images built but the task-specific temporary MySQL container exited during startup. The failed run left no task-specific containers. The existing developer test sites were not changed.
+- `MODA_CHECKOUT_TEST_DISPOSABLE=1 npm run test:integration:wordpress -- --checkout-only` — passed on the disposable Colima wp-env. Output included `ARCH-053 confirmed Woo restore integration PASS` and `ARCH-035 checkout-only integration PASS`. The live test restored a cart with `arch053save10` and `arch053-deleted-code`: Woo applied only the valid original coupon, recalculated the variation total to `1799`, recorded only the applied coupon in fresh resumption evidence, and rendered checkout without exposing the rejected code.
+- Full `npm run test:integration:wordpress` — attempted, but not completed: the first run hit host `ENOSPC`; after reclaiming 5.4 GiB from the regenerable npm cache and restarting Colima, the broad run advanced through connection checks but stalled while draining the unrelated ShopBrand Action Scheduler scenario. The task-specific `--checkout-only` suite then completed and passed. The disposable task wp-env was stopped after validation, and the two pre-existing local WooCommerce wp-env stacks plus Portainer were restored to `Up`.
 
 ### Deviations
 
@@ -151,7 +152,6 @@ Codebase snapshot dated 2026-10-29; inspect actual HEAD after launcher preparati
 
 ### Unresolved Issues
 
-- Live Woo coupon acceptance, rejection and total recalculation remain unverified in wp-env because its task-specific MySQL container failed to start under the current Colima environment. Focused unit tests and code checks pass.
 - Repository-wide PHP and Node suites retain the unrelated failures listed above.
 
 ### Architectural Concerns
