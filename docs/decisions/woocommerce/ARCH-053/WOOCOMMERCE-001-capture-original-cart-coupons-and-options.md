@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T12:48:06Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-053-API-001
@@ -29,7 +29,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Task materialised in dedicated parent and implementation worktrees. Attempt 2 is claimed by Codex; no producer deployment is claimed.
+Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Task materialised in dedicated parent and implementation worktrees. Attempt 3 is submitted for review; no producer deployment is claimed.
 
 ## Objective
 
@@ -98,7 +98,7 @@ PHP `checkout.restoration` must conform to the published ARCH-053-SHARED-001 v1 
 ## Validation
 
 - [x] `composer test` focused CheckoutCapture/CheckoutSnapshot tests
-- [ ] Rerun the targeted Classic/Blocks checkout integration after the latest Attempt 2 changes; the latest run failed at checkout delivery (see Completion Report).
+- [x] Rerun the targeted Classic/Blocks checkout integration after the latest implementation changes; the checkout-only suite passed on Attempt 3 (see Completion Report).
 - [x] `composer lint` and `git diff --check`
 
 ## Stop Condition
@@ -113,11 +113,11 @@ The plugin already has `CheckoutKey::SESSION_FIELD`, Action Scheduler and the v2
 
 ### Status
 
-Attempt 2 implementation changes are pushed. Review returned the task to `ready` because the latest focused checkout integration run failed to observe the expected HTTP request. The UTF-16 parity correction and PHP validation pass; resolve or explain the integration failure and update evidence before resubmitting. No producer deployment was performed.
+Attempt 2 implementation changes remain pushed at `69357b8`. On Attempt 3, the focused checkout-only integration passed on the same implementation snapshot, including guest and customer Classic and Blocks checkout flows and outage delivery/retry. No implementation code changed during Attempt 3. Submitted for architect review; no producer deployment was performed. The full integration suite was not rerun, per the user's instruction.
 
 ### Claim Release History
 
-Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, that claim was released. The launcher claimed Attempt 2 for Codex at `2026-10-31T09:44:59Z`, re-gated both dependencies, synchronized the dedicated parent and implementation task worktrees, and pushed the durable parent claim (`f92db4455fe861fda3a04b16a083cd7fcd654a55`). Implementation baseline was `b905dab216f8598269ebd32e8d70af150524d274`. Implementation commits `5f679b6`, `8f48e22` and `69357b8` are pushed to `origin/task/ARCH-053-WOOCOMMERCE-001`; the implementation worktree is clean and the remote task ref matches `69357b8`. Commit `69357b8` aligns PHP string bounds with the Shared schema’s UTF-16 code-unit semantics and adds boundary tests. Attempt 2 is returned to Ready for another correction cycle; no new attempt was claimed.
+Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, that claim was released. The launcher claimed Attempt 2 for Codex at `2026-10-31T09:44:59Z`, re-gated both dependencies, synchronized the dedicated parent and implementation task worktrees, and pushed the durable parent claim (`f92db4455fe861fda3a04b16a083cd7fcd654a55`). Implementation baseline was `b905dab216f8598269ebd32e8d70af150524d274`. Implementation commits `5f679b6`, `8f48e22` and `69357b8` are pushed to `origin/task/ARCH-053-WOOCOMMERCE-001`; the implementation worktree is clean and the remote task ref matches `69357b8`. Commit `69357b8` aligns PHP string bounds with the Shared schema’s UTF-16 code-unit semantics and adds boundary tests. Attempt 2 was returned to Ready following the guest outage request assertion failure. The launcher claimed Attempt 3 for Codex at `2026-10-31T12:48:06Z`; the same implementation snapshot passed the focused checkout-only integration on the task-specific disposable wp-env. Attempt 3 is submitted for review.
 
 ### Files Changed
 
@@ -140,7 +140,9 @@ Revalidation after `69357b8`:
 - `git diff --check` — passed.
 - Focused checkout-only WordPress integration on the task-specific disposable wp-env at port 8891 — **failed** at the guest checkout outage case. After Action Scheduler ran the captured event, the test expected one HTTPS request for event `woo-5fe2d1dcc3102b0151358f59f4652374`, but observed zero. The runner cleaned its fixture data. The task-specific wp-env was stopped afterward; the separate developer site on port 8888 was not changed.
 
-The integration failure needs investigation and a successful rerun before acceptance. No production behavior or deployment was exercised.
+- Attempt 3 reran `npm run test:integration:wordpress -- --checkout-only` with the disposable environment on port 8892 — **passed** (`ARCH-035 checkout-only integration PASS`). It covered guest and customer Classic and Blocks flows, outage delivery/retry, cart clearing/refill, orders/HPOS, coupons and variation. The guest outage request was observed, so the Attempt 2 failure did not reproduce on this run. No implementation code changed from `69357b8`; the full integration suite was not rerun, as requested. The disposable environment was stopped afterward; the developer site on port 8888 was not changed.
+
+No production behavior or deployment was exercised.
 
 ### Deviations
 
@@ -148,11 +150,11 @@ The restricted shell could not reach the running Colima socket; host-level valid
 
 ### Assumptions
 
-The canonical launcher packet supplied the authoritative worktree paths and dependency gate for Attempt 2.
+The canonical launcher packet supplied the authoritative worktree paths and dependency gate for Attempt 3.
 
 ### Unresolved Issues
 
-The latest focused checkout-only integration run did not observe the expected API request for the guest checkout outage action. Investigate whether this is a fixture/environment issue or a delivery regression; rerun the targeted integration successfully after correction and update this report before resubmitting.
+None identified. Attempt 2's guest outage request failure was not reproduced by the successful Attempt 3 checkout-only integration run; no implementation change was needed.
 
 ### Architectural Concerns
 
