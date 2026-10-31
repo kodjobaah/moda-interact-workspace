@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -168,24 +168,32 @@ Shared workspace and source checkouts were not switched or mutated; no other tas
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+The authenticated tenant checks, Shared v1 schemas, transaction-time installation recheck, shop lock, monotonic revision, safe first-row defaults, and limited update fields conform to the task. One optimistic-concurrency requirement is not met: `MerchantAiResponseDelayService.update` returns successfully for an unchanged value before comparing `expectedRevision`. The task requires revision equality; a stale same-value request must not bypass that precondition.
 
 ### Reviewed Files
 
-None
+- `src/merchant/ai-response-delay/contract.ts`
+- `src/merchant/ai-response-delay/request.ts`
+- `src/merchant/ai-response-delay/service.ts`
+- `src/merchant/ai-response-delay/routes.ts`
+- `src/composition/merchant.ts`
+- `tests/unit/merchant/ai-response-delay/settings.test.ts`
+- `tests/integration/merchant/ai-response-delay/service.postgres.test.ts`
+- `scripts/test-arch054-ai-response-delay-postgres.mjs`
+- `package.json`, `package-lock.json`, and the pinned database submodule
 
 ### Validation Reviewed
 
-None
+Reviewed the reported 5 passing focused unit tests, PostgreSQL integration, targeted ESLint, typecheck, build, and diff check. Full-repository lint still reports the unrelated pre-existing `no-empty` at `src/merchant/support/routes.ts:75`; the task-scoped exception is recorded. No validation was rerun during this review.
 
 ### Architecture Conformance
 
-Pending
+Changes requested for the stale-revision behavior. The rest of the reviewed API boundary and persistence behavior conforms to the task and published Shared contract.
 
 ### Follow-up
 
-None
+Keep this task at Attempt 2 and return it to Ready. Check `expectedRevision` before the same-value no-op path. Add a regression proving a same-value request with the current revision succeeds without writing, while a same-value request with a stale revision returns `409 ai_response_delay_conflict` and does not write. `ARCH-054-WOOCOMMERCE-001` remains Pending until API-001 is accepted and Complete.
