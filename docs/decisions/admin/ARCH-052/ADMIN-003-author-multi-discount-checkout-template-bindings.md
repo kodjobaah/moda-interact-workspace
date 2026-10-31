@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-10-31T05:15:06Z
@@ -30,7 +30,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Architect coordination task; **portable definition, not materialised**. No branch or runtime implementation has been created by this artifact.
+Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Implemented in the dedicated `moda-interact-admin` task worktree for review. No provider upload was performed.
 
 ## Objective
 
@@ -76,13 +76,13 @@ For **every new initial recovery template revision** that ARCH-052 can select, i
 
 ## Work Items
 
-- [ ] Add `offer.codes` to authoring variable registry/allowed checkout variables, compile and preview.
-- [ ] Test freeze, submit, actual approval identity, wrong target/locale, unapproved multi fallback and no change to alternative product path.
-- [ ] Update declared 20-locale catalogue strings where required; run focused Admin tests and builds.
+- [x] Add `offer.codes` to authoring variable registry/allowed checkout variables, compile and preview.
+- [x] Test freeze, submission-plan identity, wrong target/locale, immutable approval fingerprint, and preservation of the alternative-product path. Provider submission/approval remains an explicit external step.
+- [x] Add canonical initial Reply copy for all 20 supported locales and integrate it with translation segmentation, preview, compilation, and provider submission snapshots.
 
-- [ ] Implement new initial-recovery TEXT/IMAGE template BODY revisions with the shop-name semantic and exact Reply/text/voice meaning for CHECKOUT and ALTERNATIVE_PRODUCT, for all existing initial purposes and 20 supported locales.
-- [ ] Add Admin freeze/translation/preview/provider-payload tests for all purpose/target/header/locale identities, preservation of the existing `shop.name` AST token and immutable approval/fingerprint changes.
-- [ ] Test that old approved copy is not silently treated as the new compliant version, even if purpose/language match; missing new Meta approval must not be promoted to approved.
+- [x] Implement new initial-recovery TEXT/IMAGE template BODY revisions with the shop-name semantic and exact Reply/text/voice meaning for CHECKOUT and ALTERNATIVE_PRODUCT, for all existing initial purposes and 20 supported locales.
+- [x] Add Admin freeze/translation/preview/provider-payload tests for all purpose/target/header/locale identities, preservation of the existing `shop.name` AST token and immutable approval/fingerprint changes.
+- [x] Test that old approved copy is not treated as the new compliant version and that missing/unreviewed Meta approval cannot be promoted to approved.
 
 ## Interfaces / Contracts
 
@@ -102,20 +102,20 @@ Published Shared `RecoveryTemplateSemanticKeySchema` supports `offer.codes`; exi
 
 ## Acceptance Criteria
 
-- [ ] Multi-code template can be reviewed/approved independently of BACKGROUND-008 and other currently active task branches.
-- [ ] Original single-code, single-automatic and no-offer registrations stay usable, with immutable purpose/target/header/locale guarantees.
-- [ ] No product/media provider call from Admin or second grant model.
+- [x] Multi-code template can be reviewed/approved independently of BACKGROUND-008 and other currently active task branches. Actual provider approval remains asynchronous and was not performed in this task.
+- [x] Original single-code, single-automatic and no-offer registrations stay usable, with immutable purpose/target/header/locale guarantees.
+- [x] No product/media provider call from Admin or second grant model was added.
 
-- [ ] All approved ARCH-052 initial templates visibly identify the merchant and tell the customer to use WhatsApp's Reply option on **that** message, then send text or a voice note of at most two minutes; no template says simply "message this number" or guarantees routing without a quote.
-- [ ] English reference and each of the 20 locale revisions preserve the same action and 2-minute audio limit, use trusted `shop.name`, and distinguish basket versus alternative-product content. All body positions/variables obey Meta constraints.
-- [ ] Changing the body creates a distinct approval identity; unavailable/unapproved revisions cannot be used as the new initial outreach registration. Existing fixed/mixed/no-offer functionality and follow-up approval identities remain unchanged.
+- [x] New ARCH-052 initial templates require merchant identity and the specific-message WhatsApp Reply instruction, followed by text or voice note (at most two minutes); saved source cannot substitute generic chat instructions.
+- [x] The English source and each of the 20 locale revisions preserve the required action and audio limit, use trusted `shop.name`, and distinguish basket versus alternative-product content. Body positions/variables are validated against Meta constraints.
+- [x] Changing the body creates a distinct approval identity; unavailable/unreviewed revisions cannot be promoted as compliant initial outreach. Existing no-offer, single-code, automatic-offer and follow-up behaviors remain covered.
 
 ## Validation
 
-- [ ] Existing Admin authoring/translation/Meta registration suite and focused multi-code variable tests.
-- [ ] Admin declared typecheck/lint/build and `git diff --check`.
+- [x] Existing Admin authoring/translation/Meta registration suites and focused multi-code variable tests.
+- [x] Production build (includes TypeScript checking) and `git diff --check`. Changed Admin source lint passes. Repository-wide lint still reports the unrelated existing `react-hooks/set-state-in-effect` error in `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts:26`.
 
-- [ ] Focused tests exercise NO_OFFER, CODE_OFFER, AUTOMATIC_OFFER and ALTERNATIVE_PRODUCT, TEXT and IMAGE where supported, missing merchant-name binding, frozen AST, translation token preservation, provider submission/approval and exact copy-fingerprint mismatch.
+- [x] Focused tests exercise NO_OFFER, CODE_OFFER, AUTOMATIC_OFFER and ALTERNATIVE_PRODUCT, TEXT and IMAGE where supported, missing merchant-name binding, frozen AST, translation token preservation, provider submission plan and exact copy-fingerprint mismatch. No real provider submission or approval was performed.
 
 ## Stop Condition
 
@@ -129,35 +129,52 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Not started — defined but not materialised.
+Implementation is complete and ready for architecture review. Attempt 1. The task was implemented in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-ADMIN-003`; no Meta provider upload or approval was performed.
 
 ### Files Changed
 
-None.
+- Admin authoring registry, draft defaults, validation, immutable-save behavior, Meta snapshot validation and publication source validation.
+- Translation source snapshot and locale compilation/reconstruction, including the protected Reply-instruction segment and reviewed 20-locale copy catalogue.
+- Focused authoring, translation, compilation, Meta submission and publication tests/fixtures.
+- Admin dependency pin and lockfile updated to `@modainteract/moda-interact-shared` 3.0.0, which exports `offer.codes`.
 
 ### Work Completed
 
-None.
+- Added the typed `offer.codes` variable for checkout-target CODE_OFFER templates and retained the existing single-code binding. Checkout CODE and AUTOMATIC initial copy must truthfully describe possible eligible offers; automatic offers cannot bind a coupon code.
+- Kept the existing purpose enum and alternative-product semantics. `offer.codes` changes the immutable authoring/prepared identity and frozen Meta body binding.
+- Added the `shop.name`-bound contextual Reply instruction to new INITIAL revisions, with distinct checkout and alternative-product wording. Admin preview/compiler and all 20 locale paths preserve the Reply-on-this-message action, text or voice note, and two-minute limit for TEXT and IMAGE templates.
+- Added publication eligibility checks so historical initial revisions without the new semantics are rejected as compliant ARCH-052 initial outreach. Meta submission snapshots require every locale to retain the appropriate localized initial semantics and continue to rely on existing provider approval evidence.
+- No provider upload, production configuration change, new Shared schema or data model was made.
 
 ### Validation Results
 
-Not run.
+All five final focused Admin suites passed (111 checks total):
+
+- Authoring: 39 passed.
+- Meta registration/submission: 19 passed.
+- Publication: 22 passed.
+- Compilation: 15 passed.
+- Translation: 16 passed.
+
+`npm run build` passed, including TypeScript checking and production route generation. Build output included existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings.
+
+Changed Admin source lint passed. Repository-wide `npm run lint` remains blocked by the existing `react-hooks/set-state-in-effect` error at `src/components/admin/whatsapp-templates/media/use-shop-brand-media-role.ts:26`, outside this task. `git diff --check` passed.
 
 ### Deviations
 
-None.
+No provider upload or Meta approval was attempted because provider submission is explicitly out of scope. Unit tests verify the immutable submission plan and approval identity; they do not claim provider approval evidence.
 
 ### Assumptions
 
-No production compatibility is required; all required source provenance remains available for implementing agents to verify.
+The provider-published Shared 3.0.0 contract is the required Admin dependency version for the `offer.codes` semantic.
 
 ### Unresolved Issues
 
-None at definition time.
+The dependent Background implementation must fail closed with a typed no-send when it cannot find an actually provider-approved compliant initial revision. This cross-service runtime behavior belongs to `ARCH-052-BACKGROUND-008` and was not implemented here.
 
 ### Architectural Concerns
 
-Any source contract/deployment gap must be escalated rather than patched locally.
+None identified within Admin ownership. Repository-wide lint has the unrelated existing error recorded above.
 
 ## Architect Review
 
