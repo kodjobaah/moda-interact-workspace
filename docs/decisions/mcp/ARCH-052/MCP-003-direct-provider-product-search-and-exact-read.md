@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -85,12 +85,12 @@ request or application-owned model contract is required.
 
 ## Work Items
 
-- [ ] Wire published `commerce_search_products` and `commerce_get_product` handlers to existing shop connections and the MCP-005 Woo reader, including only the response/variation extensions authorized below.
-- [ ] Extend Shopify and Woo product output mapping for `variantId:null`, provider category/collection IDs, optional image and sale evidence using the exact Shared contract. Extend the existing Woo reader request/response path to retrieve bounded variation records with real IDs and the required product fields.
-- [ ] Test entitlement, shop scope, partial/missing product fields, Woo simple/variation products, Shopify variant collections and direct provider access.
-- [ ] Test that product URLs are direct current-shop provider results with independently authenticated storefront-host ownership; valid Shopify custom domains and verified Woo origins remain usable, while spoofed/external hosts, cross-shop records and unknown-origin URLs return `url:null` without granting an arbitrary host. Woo permalink filtering must use the origin already authenticated inside the direct adapter and must not expose it to callers.
-- [ ] Validate generic result schema, tool descriptor names, cancellation, structured errors and declared MCP scripts.
-- [ ] Preserve and log original Shopify GraphQL/HTTP/SDK error strings and extension codes at the direct provider boundary; test 200+GraphQL `errors` and safe redaction without modifying the accepted Woo reader.
+- [x] Wire published `commerce_search_products` and `commerce_get_product` handlers to existing shop connections and the MCP-005 Woo reader, including only the response/variation extensions authorized below.
+- [x] Extend Shopify and Woo product output mapping for `variantId:null`, provider category/collection IDs, optional image and sale evidence using the exact Shared contract. Extend the existing Woo reader request/response path to retrieve bounded variation records with real IDs and the required product fields.
+- [x] Test entitlement, shop scope, partial/missing product fields, Woo simple/variation products, Shopify variant collections and direct provider access.
+- [x] Test that product URLs are direct current-shop provider results with independently authenticated storefront-host ownership; valid Shopify custom domains and verified Woo origins remain usable, while spoofed/external hosts, cross-shop records and unknown-origin URLs return `url:null` without granting an arbitrary host. Woo permalink filtering must use the origin already authenticated inside the direct adapter and must not expose it to callers.
+- [x] Validate generic result schema, tool descriptor names, cancellation, structured errors and declared MCP scripts.
+- [x] Preserve and log original Shopify GraphQL/HTTP/SDK error strings and extension codes at the direct provider boundary; test 200+GraphQL `errors` and safe redaction without modifying the accepted Woo reader.
 
 ## Interfaces / Contracts
 
@@ -112,19 +112,19 @@ Consumer of `@modainteract/moda-interact-shared/commerce` published by SHARED-01
 
 ## Acceptance Criteria
 
-- [ ] Search and exact-product tools work for both store types with published result schemas and no internal API proxy.
-- [ ] Woo simple products return `variantId:null`; genuine variants retain their source variation ID and are obtained through bounded provider reads.
-- [ ] Provider categories/collections are source IDs, not inferred category-label aliases; missing fields remain unknown/absent.
-- [ ] Shop/entitlement/credential access remains enforced and errors logged safely.
-- [ ] The tool never yields a customer-facing product URL whose storefront-host ownership cannot be established for its authenticated shop; absence is represented as `url:null` under the existing contract, not a fabricated product or a permissive new host allowlist.
+- [x] Search and exact-product tools work for both store types with published result schemas and no internal API proxy.
+- [x] Woo simple products return `variantId:null`; genuine variants retain their source variation ID and are obtained through bounded provider reads.
+- [x] Provider categories/collections are source IDs, not inferred category-label aliases; missing fields remain unknown/absent.
+- [x] Shop/entitlement/credential access remains enforced and errors logged safely.
+- [x] The tool never yields a customer-facing product URL whose storefront-host ownership cannot be established for its authenticated shop; absence is represented as `url:null` under the existing contract, not a fabricated product or a permissive new host allowlist.
 
-- [ ] Shopify GraphQL error-response and transport-exception tests assert original error message/extension code, correct provenance and request ID; no raw API payload leaks and no misleading empty success.
+- [x] Shopify GraphQL error-response and transport-exception tests assert original error message/extension code, correct provenance and request ID; no raw API payload leaks and no misleading empty success.
 
 ## Validation
 
-- [ ] MCP published-tool invocation tests, direct Shopify GraphQL and mocked Woo reader integration; tenant isolation, revoked tool/grant, schema validation, cursor behaviour, variation pagination/bounds and URL origin filtering.
-- [ ] Rerun the focused MCP-005 direct-reader security regression tests affected by the reader/port extension; verify grant, credential, origin, DNS, TLS, redirect, deadline and response-size behavior remains unchanged.
-- [ ] Declared MCP typecheck/build and `git diff --check`.
+- [x] MCP published-tool invocation tests, direct Shopify GraphQL and mocked Woo reader integration; tenant isolation, revoked tool/grant, schema validation, cursor behaviour, variation pagination/bounds and URL origin filtering.
+- [x] Rerun the focused MCP-005 direct-reader security regression tests affected by the reader/port extension; verify grant, credential, origin, DNS, TLS, redirect, deadline and response-size behavior remains unchanged.
+- [x] Declared MCP typecheck/build and `git diff --check`.
 
 ## Stop Condition
 
@@ -138,7 +138,7 @@ Expected MCP owning code: `src/execution/policy/`, `src/connections/resolver.ts`
 
 ### Status
 
-Attempt 3 implementation complete; submitted for Architect Review. The prior Attempt 2 review corrections are addressed, and no acceptance decision has been made by this agent.
+Architect accepted Attempt 3 on 2026-10-31. The implementation and review evidence below satisfy the task; no unresolved required work remains.
 
 ### Files Changed
 
@@ -169,7 +169,7 @@ None. Attempt 3 implemented the Architect’s required Shopify diagnostics/tests
 
 ### Unresolved Issues
 
-None known. Architect review remains pending.
+None identified during architect review.
 
 ### Git / VCS
 
@@ -362,3 +362,32 @@ The task is returned to Ready with the bounded scope amendment. Existing depende
 #### Follow-up
 
 Claim Attempt 2 through the canonical launcher after reading the amended requirements.
+
+
+### Attempt 3 Architect Review — Accepted
+
+#### Review Status
+
+Accepted — 2026-10-31. Attempt 3 is Complete.
+
+#### Review Notes
+
+The implementation provides the published Shopify and Woo product search/exact-read operations, preserves actual source IDs and bounded variation pagination, validates provider URLs against authenticated shop origins, and keeps Shopify source diagnostics bounded/redacted and out of public tool results. MCP-003 retains only Woo product/variation/permalink extensions; diagnostic-only Woo reader changes were removed and remain assigned to MCP-006. No blocker was found.
+
+#### Reviewed Files
+
+- Attempt 3 Completion Report, task Work Items, Acceptance Criteria and Validation.
+- Implementation task branch `task/ARCH-052-MCP-003` at `d3805c2bdad557d420201a38da056ebeabb13b5b`, matching `origin/task/ARCH-052-MCP-003`.
+- Shopify provider diagnostics and tests, product projection/executor and public-result test, Woo variation reader changes and focused regression tests.
+
+#### Validation Reviewed
+
+Reviewed the report: 51 focused tests passed; TypeScript typecheck and production compile passed; `git diff --check` passed. The focused suite includes the Shopify provenance/redaction/public-safety cases and Woo reader/security regressions. These checks were not rerun during architect review.
+
+#### Architecture Conformance
+
+Accepted. The submitted code stays within the task’s direct provider and output-contract boundaries. No API proxy, Shared schema or package publication change was introduced. MCP-005 and MCP-006 task records remain untouched.
+
+#### Follow-up
+
+ARCH-052-COMMERCE-007 and ARCH-052-GATEWAY-001 are now dependency-ready. Other enabled tasks remain pending until their remaining dependencies are complete.
