@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T04:13:34Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
 - ARCH-052-BACKGROUND-009
@@ -97,7 +97,7 @@ Source files: `moda-interact-background/src/providers/shopify-discount.provider.
 
 ### Status
 
-Ready for architect review after Attempt 6. In addition to source-backed discount projections and provider diagnostics, malformed job payloads and invalid timestamps now receive an explicit per-job Shared error log with bounded, redacted exception fields before their original errors propagate to BullMQ.
+Accepted after Attempt 6. Malformed job payloads and invalid timestamps receive explicit per-job Shared error logs with bounded, redacted exception fields, while original errors still propagate to BullMQ.
 
 ### Files Changed
 
@@ -476,3 +476,30 @@ Changes Requested. Attempt 5 resolves the provider diagnostic and sensitive non-
 ### Follow-up
 
 Return the task to `ready` for Attempt 6. Preserve Attempts 1–5 and the Attempt 5 implementation/report history. Keep `ARCH-052-MCP-002` pending until this task is accepted and its other dependencies are complete.
+
+
+## Architect Review — Attempt 6
+
+### Review Status
+
+Accepted — Complete.
+
+### Review Notes
+
+The remaining per-job logging gap is closed. Shared job parsing and `requestedAt` validation now execute inside the worker processor's failure boundary. Invalid payloads use the stable `SHOPIFY_DISCOUNT_SYNC_JOB_INVALID` reason code and the Shared diagnostic helper records bounded, redacted exception name, message, stack and causes. Invalid input is logged without job identifiers or payload-derived context. The worker rethrows the original exception, preserving BullMQ retry/rejection handling.
+
+The regressions cover malformed parser input and invalid timestamps, assert the diagnostic fields reach the Shared logger, verify sensitive payload values are absent, and confirm processor rejection. Provider response bodies remain excluded from logs. No remaining ARCH-052-BACKGROUND-011 acceptance gap was found.
+
+### Reviewed Files
+
+- `src/workers/shopify-discount-sync.worker.ts`
+- `tests/unit/workers/shopify-discount-sync.worker.test.ts`
+- Attempt 6 Completion Report and validation evidence.
+
+### Validation Reviewed
+
+Reviewed the reported 26 focused tests, changed-file ESLint, build/typecheck and `git diff --check`; these checks were not rerun during architect review.
+
+### Architecture Conformance
+
+Accepted. The implementation closes the requested malformed-job and invalid-timestamp logging gap, retains bounded/redacted diagnostics, excludes raw job payloads and preserves failure propagation. MCP-002 remains Pending because its other dependencies are incomplete. BACKGROUND-013 is now Ready because BACKGROUND-011 was its sole dependency.

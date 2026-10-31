@@ -18,10 +18,10 @@ The individual task YAML is authoritative. BACKGROUND-009 is Complete; the other
 | [ARCH-052-BACKGROUND-008](BACKGROUND-008-integrate-three-modes-into-initial-whatsapp-send.md) | Bind approved outreach variants and existing checkoutUrl via current send pipeline | Pending | `ARCH-052-BACKGROUND-010`, `ARCH-052-BACKGROUND-005`, `ARCH-052-ADMIN-001` |
 | [ARCH-052-BACKGROUND-009](BACKGROUND-009-preserve-shopify-merchant-selection-during-sync.md) | Make Shopify catalogue and lifecycle writers preserve merchant selection | Complete | — |
 | [ARCH-052-BACKGROUND-010](BACKGROUND-010-implement-langgraph-initial-outreach-offer-agent.md) | Implement the LangGraph InitialOutreachOfferAgent with existing MCP tools | Pending | `ARCH-052-MCP-002`, `ARCH-052-COMMERCE-007`, `ARCH-052-SHARED-010` |
-| [ARCH-052-BACKGROUND-011](BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | Enrich source-backed Shopify discount condition facts | Ready | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
+| [ARCH-052-BACKGROUND-011](BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | Enrich source-backed Shopify discount condition facts | Complete | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
 | [ARCH-052-BACKGROUND-012](BACKGROUND-012-upload-trusted-meta-image-template-sample.md) | Upload fixed Moda sample to Meta and attach a returned handle only in the provider IMAGE create request | Ready | `ARCH-052-ADMIN-002`, `ARCH-047-BACKGROUND-003` |
-| [ARCH-052-BACKGROUND-013](BACKGROUND-013-capture-complete-shopify-combination-identities.md) | Capture Shopify discount classes and own combination tags | Pending | `ARCH-052-BACKGROUND-011` |
+| [ARCH-052-BACKGROUND-013](BACKGROUND-013-capture-complete-shopify-combination-identities.md) | Capture Shopify discount classes and own combination tags | Ready | `ARCH-052-BACKGROUND-011` |
 
 BACKGROUND-009's repository-wide validation reconciliation is complete; its task record remains authoritative for the review evidence.
 
-BACKGROUND-011 is Ready for Attempt 5 after a post-acceptance error-diagnostics finding. BACKGROUND-013 is Pending for its expanded source-backed threshold facts and remains dependent on BACKGROUND-011.
+BACKGROUND-011 is Complete after the accepted Attempt 6 error-diagnostics correction. BACKGROUND-013 is Ready; MCP-002 remains Pending until its other upstream dependencies are complete.
