@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -56,6 +56,7 @@ The public URL displayed an image on 30 October 2026, but the exact original byt
 - Implement the Meta Graph resumable upload flow for the image sample: open upload session via `/{META_APP_ID}/uploads` using exact byte length/type/name, upload bytes to the returned session endpoint using the appropriate authenticated method and file offset, and parse a genuine returned `h` handle. Use the versioned Graph base already configured by the Meta adapter. Handle/token is opaque; a normal message media ID or a URL is **not** a template sample handle. Fail closed on missing/invalid/mismatched upload confirmation.
 - From the current frozen registration, form a **new in-memory provider-only copy** of components and insert `HEADER.example.header_handle: [h]` into its IMAGE header, then submit through the current `MetaTemplateProvider.create()` path. Never mutate the Prisma-frozen `componentsSnapshot`, Admin AST, `submittedContentHash`, semantic bindings or publication identity; no new database table, R2 object, queue message or Shared runtime schema.
 - Preserve existing validated provider CREATE preflight (`verifyWaba`, name collision GET), durable claim, POST intent/CAS, uncertain outcome reconciliation and idempotency. A sample-upload failure must not issue a Graph template-create POST, silently become a successful submission, or prevent independently approved TEXT templates from proceeding. Design the upload **before the durable CREATE claim** where practical so a temporary sample-fetch/upload failure does not strand a CREATE intent; upload retries are safe because they are not template CREATE retries.
+- Attempt 2 correction, as directed on 31 October 2026: preserve bounded, redacted Shopify HTTP error diagnostics when JSON `errors` is a string or object, and cover both shapes with regression tests. Do not log raw response bodies.
 
 ## Out of Scope
 
@@ -93,6 +94,7 @@ lifecycle solely for logging.
 - [x] Adapt frozen vs outbound provider IMAGE component validation and attach the handle **only** to a copied provider CREATE payload, preserving immutable snapshot/semantic approval and reconciliation hashing.
 - [x] Integrate with existing Meta template submit worker without weakening `recordPostIntent`, claim CAS, name collision, reconciliation, failure visibility or TEXT-only flow.
 - [x] Cover success and malformed/redirect/oversized MIME, invalid/missing App ID, wrong WABA, 429/5xx, malformed session/handle, repeated jobs and unknown CREATE state with focused tests.
+- [ ] Extend `extractGraphqlErrors()` to retain bounded, redacted message/code diagnostics when Shopify HTTP failure `errors` is a string or object; add regression coverage for each shape.
 
 ## Interfaces / Contracts
 
@@ -119,11 +121,13 @@ lifecycle solely for logging.
 - [x] No extra infrastructure service, DB migration, R2 persistence or five-minute proof contract.
 
 - [x] Inject distinct Meta sample-session/upload/CREATE error payloads, response absent and token-bearing errors; assert original messages/codes retained when safe, redaction flags set, credentials/handles absent and existing retry/no-CREATE behaviour unchanged.
+- [ ] Assert Shopify HTTP failure message/code retention, redaction and truncation for string/object `errors` bodies.
 
 ## Validation
 
 - [x] Existing ARCH-047 Background Meta template-management unit and integration suites, plus new mocked Meta upload/frozen-vs-provider validation and failure matrix.
 - [x] Relevant Background typecheck, focused tests, changed-file lint and `git diff --check`, using actual package.json scripts.
+- [ ] Focused Shopify provider tests, Background lint/build and `git diff --check` for the Attempt 2 correction.
 - [x] Record environment/App ID and live Meta-approval checks separately; never mark actual provider approval as passing based on mocks. If environment cannot supply the App ID, return a bounded deployment gap to the architect.
 
 ## Stop Condition
@@ -202,24 +206,24 @@ Route the missing `META_APP_ID` Blueprint wiring to a bounded `moda_gateway` tas
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-Planning only. ADMIN-002 and ARCH-047-BACKGROUND-003 are Complete, so this task is Ready. No Background implementation or live Meta upload has been performed.
+The directed Attempt 2 correction is to retain provider messages for HTTP failures whose JSON `errors` value is a string or object. `extractGraphqlErrors()` currently accepts arrays only, so these shapes lose the cause. Add focused string/object regression cases that assert the message/code survives while redaction and diagnostic bounds remain enforced. The prior Meta upload implementation and reported validation remain unchanged.
 
 ### Reviewed Files
 
-The existing Background Meta adapter and ADMIN-002 task/source were inspected to define the split.
+The Meta upload implementation and Shopify discount provider failure boundary were reviewed for this correction.
 
 ### Validation Reviewed
 
-No implementation tests executed.
+The reported Attempt 1 validation was not rerun during review. Run only the focused Shopify provider regression and task-declared lint/build for the correction.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+The diagnostic shape correction remains before acceptance; other Attempt 1 results are unchanged.
 
 ### Follow-up
 
-Materialise through `/moda-task ARCH-052-BACKGROUND-012` only when `depends_on` is Complete.
+Attempt 1 remains preserved. The task is Ready for Attempt 2.
