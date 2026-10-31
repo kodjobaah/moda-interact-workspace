@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-ADMIN-003
+- ARCH-052-BACKGROUND-014
 - ARCH-052-SHARED-012
 - ARCH-052-BACKGROUND-008
 - ARCH-052-GATEWAY-001
@@ -25,15 +26,17 @@ depends_on:
 - ARCH-052-MCP-001
 - ARCH-052-MCP-002
 - ARCH-052-MCP-003
+- ARCH-052-MCP-006
 - ARCH-052-COMMERCE-006
 - ARCH-052-COMMERCE-007
 - ARCH-052-BACKGROUND-010
 - ARCH-052-SHARED-010
 - ARCH-052-BACKGROUND-007
 - ARCH-052-BACKGROUND-012
+- ARCH-052-SHARED-014
 enables: []
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052-SYSTEM-TEST-002: Certify Woo initial outreach, MCP commerce facts and existing checkout CTA
@@ -89,9 +92,28 @@ Certify WooCommerce current merchant multi-selection against a source-backed 1..
 - Do not send raw checkout URLs, bearer tokens, customer personal data or untrusted media source URLs to logs/telemetry.
 - Provider cart, coupon and order mutation is prohibited in ARCH-052. Checkout-link creation and customer-click cart restoration are upstream/out of scope.
 
+### Mandatory deterministic targeting + stacking matrix (WooCommerce)
+
+Create source-like Woo checkout/coupon fixtures with stable line keys, exact product/variation/category IDs, observed pre-discount subtotal + authenticated currency, Woo coupon restriction snapshots and current merchant FIXED/AI policy:
+
+1. Product/category include+exclude, variation versus parent-product ID, excluded sale item with observed/unknown sale status, and unavailable category IDs; unknown source fields never silently imply ALL.
+2. `minimumAmount`/`maximumAmount` with inclusive boundary and wrong/missing store currency, **Woo zero/empty no-threshold values and zero global/per-user quotas correctly unrestricted versus positive exhausted quotas**, expired vs `expiryUnverified`, global/per-user usage restrictions, Woo email/metadata presence flags true/false/null and `limit_usage_to_x_items`; unsupported restrictions yield UNVERIFIABLE rather than a coupon claim.
+3. Two distinct eligible coupons both `individualUse:false` versus one true and one null; triple with one incompatible member; incomplete Woo customer/extension constraints block a claimed compatible group, without asserting Woo native acceptance in advance.
+4. FIXED selected versus unselected IDs and AI catalogue mode; offer revoked or basket generation changed after selection; one approved Meta plural message and the actual confirmed ordered `recoveryPromise` (not guessed restored savings); fallback to approved singleton or no-send without extra credit.
+5. Confirm ARCH-052 does **not** generate/validate the stored `checkoutUrl`, mutate Woo cart or apply coupons. Native coupon redemption/conflicts on resume are covered by **ARCH-053-SYSTEM-TEST-003**, not these tests.
+
+Each scenario must assert the eligibility verdict, line keys where relevant, subset/pair verdict, Meta binding, preserved confirmed receipt and tenant identity. Report mocked vs live provider evidence separately.
+
 ## Work Items
 
+### Provider-origin diagnostic certification — 31 October 2026 (mandatory)
+
+- [ ] Provider-origin diagnostics: inject Woo REST 400 (`{"code":"woocommerce_rest_invalid_product_id","message":"Invalid product ID."}`), 401, 503 and a request-timeout SDK error in the accepted direct reader (MCP-006), plus MCP non-2xx and OpenRouter/Meta errors. Assert actual Woo/SDK/MCP/Meta messages, statuses/codes and request IDs appear in the owning server-side Shared log with separate internal reason codes, without inventing upstream errors when none were returned.
+- [ ] Redaction and outcome preservation: inject credentials, customer emails/phone and signed URLs in error strings; assert redaction/truncation markers, no leakage to model/MCP/WhatsApp, no duplicate checkout recovery or credit, and unchanged authorized/denied/retry/fallback semantics.
+
 - [ ] Add Woo initial-outreach integrated scenarios.
+
+- [ ] Execute the five Woo eligibility/compatibility matrices above against validated MCP detail data and trusted cart lines, asserting explicit failure reasons and accurate approved fallback.
 - [ ] Exercise unchanged stored checkoutUrl CTA binding, coupon-rule failures and credit/STOP matrix; assert no checkout URL validation, restore-token issuance, private restore-link proxy or customer-click cart-restoration test is required by ARCH-052.
 - [ ] Record reproducible certification and residual external verification.
 
@@ -100,6 +122,8 @@ Certify WooCommerce current merchant multi-selection against a source-backed 1..
 Built-in MCP `commerce_get_discount_options`, published `commerce_search_products`/`commerce_get_product`, the existing generic `CommerceToolResultSchema`, SHARED-006 outreach purpose and SHARED-008 product contract, and the existing Meta initial-send/no-extra-database contract. SHARED-005 is a completed historical task, not an active proof consumer or publication prerequisite.
 
 ## Dependencies
+
+- `ARCH-052-MCP-006` — accepted Woo source-origin error preservation.
 
 - ARCH-052-BACKGROUND-008
 - ARCH-052-GATEWAY-001
@@ -113,11 +137,15 @@ Built-in MCP `commerce_get_discount_options`, published `commerce_search_product
 - ARCH-052-COMMERCE-007
 - ARCH-052-BACKGROUND-010
 
+
+- ARCH-052-SHARED-014
 ## Enables
 
 None.
 
 ## Acceptance Criteria
+
+- [ ] An upstream provider/SDK error cannot be replaced in logs by a guessed explanation; internal `reasonCode` remains separate, source provenance is truthful and security/redaction tests pass.
 
 - [ ] Alternative-product CTA URL derives from a successful same-shop MCP exact-product response matching the selected product/variant; hostile or model-authored product URLs fail closed to an approved NO_OFFER/no-send, never appear in outbound Meta parameters or the confirmed alternative-product promise. Existing `checkout.url` remains unchanged and receives no new ARCH-052 URL validation.
 
@@ -129,6 +157,8 @@ None.
 - [ ] Every WooCommerce offer advertised has contemporaneous checkout or alternative-product MCP catalogue evidence.
 - [ ] Direct MCP product search needs no hosted Moda API call.
 - [ ] Initial outreach passes the existing recovery checkout URL unchanged into the approved template, keeps original consent, credit and idempotent send behavior across 3 modes, and adds no checkout URL validation, link generation or API proxy.
+
+- [ ] Run provider-error fixtures with captured Shared logging sink across source services and injected transport/model failures; compare logged message to literal injected upstream error after only deliberate redaction/truncation, then verify no sensitive content and no provider error invented for local failures.
 
 ## Validation
 

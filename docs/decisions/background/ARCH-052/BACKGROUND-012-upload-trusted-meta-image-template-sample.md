@@ -21,7 +21,7 @@ enables:
   - ARCH-052-SYSTEM-TEST-001
   - ARCH-052-SYSTEM-TEST-002
 created: 2026-10-30
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # ARCH-052-BACKGROUND-012: Upload controlled IMAGE sample for Meta template submission
@@ -68,9 +68,23 @@ The public URL displayed an image on 30 October 2026, but the exact original byt
 - Only an approved immutable IMAGE registration with exact role, locale, current sender WABA, purpose/promotion target, hash and review eligibility can reach sample upload/provider create. Reject or quarantine untrusted `example` content in frozen snapshots; TEXT remains the existing zero-upload path.
 - Split/adjust Background validation explicitly: a frozen IMAGE registration **without** `header_handle` is the expected Admin transport shape, while a final **provider CREATE request** with IMAGE **must** contain exactly one valid Meta-produced handle. Keep `IMAGE_SAMPLE_HANDLE_REQUIRED` (or an equivalent fail-closed provider error) at the provider boundary, not the Admin registration-intent boundary. Never treat a nonempty arbitrary string as proof it came from Meta; only the trusted uploader return value is authorised for injection.
 - Preserve `observedContentHash()`'s existing example-free comparison and the submitted digest relationship. Mock Meta examples/handles in tests but do not hardcode, print or persist live returned handles. Exact identity, category and approved semantic binding remain fixed.
-- Treat Meta transient upload errors and timeouts as retryable without Graph template CREATE. Treat permanently invalid configured sample/configuration as actionable blocked failure; report bounded reason codes through the existing shared logger `@modainteract/moda-interact-shared/logging`, never raw Graph response bodies, full URL with credentials, image bytes, access tokens or handles. Unexpected exceptions must be logged and propagated through the existing failure path; do not silently swallow.
+- Treat Meta transient upload errors and timeouts as retryable without Graph template CREATE. Treat permanently invalid configured sample/configuration as actionable blocked failure; report the **actual originating Meta response error and original SDK exception** through the existing Shared logger, with the distinct internal reason code. Preserve provider message/code/request ID verbatim except marked security redaction/truncation. Never log **unredacted** Graph response bodies, full URL with credentials, image bytes, access tokens or handles. Unexpected exceptions must be logged and propagated through the existing failure path; do not silently swallow.
 - Require a trusted Meta app ID. If the active Render/Blueprint configuration does not provide it, **report the exact missing deployment wiring to moda_architect for a bounded moda_gateway task**; do not invent an app ID or substitute the WABA. No secrets in `render.yaml` or committed files. This is a deployment integration check, not a reason to block Admin authoring.
 - Read and comply with `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, `docs/observability/shared-logging.md`, task preparation packet and dedicated mirrored worktree synchronization evidence.
+
+**Original Meta API errors (31 October 2026):** At resumable upload
+session creation, binary upload and final Graph template CREATE, log each
+actual Meta failure under the existing Shared logger: original `error.message`,
+`error.code`, `error_subcode`, safely bounded `error_data`, HTTP status and
+Meta request/trace ID when supplied; for SDK/TLS failures preserve the actual
+exception name/message/cause and label it `sdk_exception`. The internal
+`META_*`/retry reason is separate and must not replace the returned message.
+Do not log upload bytes, sample download payload, Meta tokens, sample handles,
+complete URLs, response headers or raw unredacted bodies. Source fields may be
+redacted/truncated only for security with explicit flags. A successful retry or
+blocked template CREATE still requires logging the originating failure.
+Do not change Admin's immutable template intent or approval/registration
+lifecycle solely for logging.
 
 ## Work Items
 
@@ -103,6 +117,8 @@ The public URL displayed an image on 30 October 2026, but the exact original byt
 - [ ] Frozen IMAGE registration is allowed handle-free, but Graph IMAGE CREATE never lacks a proven handle. TEXT registration/create/reconciliation paths behave exactly as before.
 - [ ] Provider transport errors, retries, duplicate delivery, wrong WABA, malformed data and unsafe image bytes are observed without duplicate uncertain CREATE or silent failures.
 - [ ] No extra infrastructure service, DB migration, R2 persistence or five-minute proof contract.
+
+- [ ] Inject distinct Meta sample-session/upload/CREATE error payloads, response absent and token-bearing errors; assert original messages/codes retained when safe, redaction flags set, credentials/handles absent and existing retry/no-CREATE behaviour unchanged.
 
 ## Validation
 

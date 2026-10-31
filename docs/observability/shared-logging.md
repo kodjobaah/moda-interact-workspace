@@ -295,6 +295,65 @@ Stack is omitted by default.
 Consumers must still avoid wrapping secrets/provider payloads into custom error
 messages.
 
+### Provider-origin errors (mandatory for external integration failures)
+
+An internal reason code such as `MODEL_INVOCATION_FAILED`, `MCP_HTTP_SERVER_ERROR` or
+`MCP_WOOCOMMERCE_PROVIDER_FAILED` is a **classification**, NOT the original failure.
+When an upstream provider, MCP server or SDK actually supplies an error, preserve
+and log **that original returned error**, not a guessed/paraphrased explanation.
+This requirement applies equally to failure outcomes that are caught and converted
+to a typed fallback or retry result.
+
+At the owning source/adapter boundary, emit through the existing Shared logger a
+bounded structured failure containing, where the source actually supplied them:
+
+- `origin`: `provider_response`, `mcp_response`, `sdk_exception` or `internal`;
+  never label an internally generated message as provider-supplied;
+- `provider`, `operation`, `httpStatus`, `providerRequestId` and
+  `providerError.code`/`providerError.message` with the **source's original
+  code/message** (not an operator explanation);
+- original safe `providerError.details` (from the provider's structured error
+  object), or `providerErrorBody` when the provider returned a non-JSON error;
+- original SDK/transport `error.name` and `error.message` when no provider
+  response exists, plus the available `cause` chain at the application boundary;
+- separate Moda-owned `reasonCode`, correlation IDs, `redactionApplied` and
+  `truncated` flags. Do not populate missing upstream fields with guessed values.
+
+**Preserve source wording and value semantics.** The only permitted transformations
+of originating error text in logs are security redaction and bounded truncation;
+make these visible via `redactionApplied` / `truncated`. Extract the original
+provider error object, rather than the entire successful response, request, model
+completion, webhook, GraphQL data payload, MCP tool result or full response
+headers. For GraphQL HTTP 200 with `errors`, retain the actual provider
+`errors[].message`, `extensions.code` and safely bounded details. For an HTTP
+error with no structured `error` key, retain a bounded and safely redacted error
+response body if possible. Never log unfiltered provider response bodies.
+
+**Security before emission:** Provider error text is untrusted and can echo tokens,
+credentials, prompt text, headers, signed URLs, email/phone/address, customer
+names and payment data. Provider-specific adapters must remove those sensitive
+spans/fields **before** passing diagnostics to the Shared logger; the Shared
+logger's generic redaction is only a second defence. If safe extraction is
+impossible, record `redactionApplied: true` and the literal `[REDACTED]`
+for the unsafe portion, keeping real safe status/code/request ID and source
+exception metadata. Never substitute an invented provider explanation. Enforce
+Shared bounds and stricter per-provider size budgets where needed; never persist
+provider error bodies in discount snapshots, outreach prompts, MCP tool results,
+customer messages or analytics.
+
+Preserve actual exception `cause` in application error propagation; do not discard
+it to construct a new generic Error. Log the provider/SDK error **once at the
+boundary that received it**, with contextual downstream reason codes/correlation
+as needed. An expected fallback/no-send does not suppress the source failure log.
+Logging remains best-effort: a logging sink failure must not change business
+success, retries, cancellation, authorisation or customer-visible behaviour.
+
+Acceptance tests for each affected provider adapter inject a distinct real
+upstream message and check it survives in the emitted record (apart from explicit
+redaction/truncation), while injected secrets/PII do not; tests must also prove
+that no upstream error produces no fabricated `providerError` field. No new
+logging utility, Shared wire schema or generic error-response envelope is implied.
+
 ## Logging Failure Isolation
 
 Logging is best-effort.
