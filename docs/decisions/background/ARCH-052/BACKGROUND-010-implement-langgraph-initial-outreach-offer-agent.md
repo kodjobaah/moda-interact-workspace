@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
-executor: copilot
-claimed_at: 2026-10-31T13:59:41Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-SHARED-012
@@ -457,7 +457,7 @@ Use paths relative to the parent workspace when editing, and confirm the canonic
 
 ### Status
 
-Ready for Architect Review (Attempt 2). Both requested test corrections are implemented and focused validations pass. No architect acceptance decision has been made by this agent.
+Changes Requested (Attempt 2). The requested Aimock integration and helper-test matrix corrections are present, but alternative-product finalization can promote an expired or disabled offer because it does not enforce the offer's current provider eligibility.
 
 ### Files Changed
 
@@ -511,9 +511,7 @@ The change is limited to Background-owned tests. The task branch is submitted fo
 
 ## Architect Review
 
-### Review Status
-
-Attempt 1 — Changes Requested.
+### Attempt 1 Architect Review — Changes Requested
 
 ### Review Notes
 
@@ -557,3 +555,39 @@ Attempt 1 was returned to `ready`; the next canonical launcher claim increments
 the attempt once. Keep the implementation on the existing task branch and add
 the requested tests before resubmitting. No new Shared conversation runner is
 required.
+
+### Attempt 2 Architect Review — Changes Requested
+
+The two Attempt 1 test corrections are verified in the submitted diff:
+
+- `tests/integration/initial-outreach-offer-aimock.integration.test.ts` uses
+  `LLMock` from `@copilotkit/aimock` and the actual Shared
+  `OpenRouterModelClient`, with the model endpoint constrained to Aimock's
+  loopback server. It checks the model/tool/model/tool/model sequence and a
+  source-validated decision.
+- Eligibility, compatibility and graph fixtures were expanded as requested.
+  Unknown minimum-quantity scope is tested as `UNVERIFIABLE`, which follows the
+  task's explicit fail-closed rule; no undocumented provider behavior was
+  invented. The other task-specific limitation is recorded in the Completion
+  Report.
+
+One acceptance blocker remains. In `src/agents/initial-outreach-offer.graph.ts`,
+`productTargetMatches` checks product targeting and some static conditions, but
+does not reject `facts.unavailableAt`, non-active `providerStatus`, or expired
+`endsAt` / future `startsAt`. `finalResult` accepts an alternative promotion
+when this helper and the exact product read pass; it does not require the
+candidate's checkout eligibility verdict. As a result, an expired or revoked
+discount can be attached to an otherwise matching alternative product.
+
+Required correction: validate the offer's current source status and time
+eligibility before returning `ALTERNATIVE_PRODUCT_PROMOTION`, using an
+alternative-product-specific evaluator where basket eligibility cannot be
+reused. Add regressions for expired, not-yet-started, disabled and non-null
+`unavailableAt` offers, plus a valid offer/product case. Do not weaken the
+existing exact-product, same-shop, targeting or restrictions checks.
+
+Attempt 2's recorded tests, build, lint and diff check passed; no tests were
+rerun for this review. No implementation acceptance or downstream promotion
+was made. The task was returned to `ready`, with Attempt 2 retained; the next
+canonical claim increments the attempt once. `ARCH-052-BACKGROUND-008` and the
+system-test tasks remain Pending behind their other prerequisites.
