@@ -35,6 +35,7 @@ depends_on:
 - ARCH-052-BACKGROUND-007
 - ARCH-052-BACKGROUND-012
 - ARCH-052-SHARED-014
+- ARCH-052-BACKGROUND-016
 enables: []
 created: '2026-10-29'
 updated: 2026-10-31
@@ -139,7 +140,18 @@ Each scenario must assert the eligibility verdict, line keys where relevant, sub
   `ConversationMessage` and its `sentAt` establish actual customer outreach.
   No second send, Meta bypass, extra credit or media table.
 
+### Current source-price reconciliation and R2-image interaction — mandatory WooCommerce certification
+
+- Use a real/faithful checkout snapshot with product/variant IDs, per-unit saved price, quantity, currency and generation, plus current exact MCP `commerce_get_product` response. Assert one ordered BG016 line per required saved item with a matching `lineKey`, same shop/variant, and a new source read for every outbound retry. Merchant/shop currency equality **alone** cannot certify same checkout-market/session pricing; verify `catalogueComparison:DIFFERENT/EQUAL` and `checkoutPriceChange:UNVERIFIABLE` with current catalogue-only evidence, no fabricated payable-price increase/decrease or monetary savings copy.
+- Test saved 80.00 / catalogue 90.00 and 80.00 / 70.00; matching 80.00; currency mismatch; null price; wrong product/variant; future/missing observedAt; 101 lines; cancellation/20-second deadline; budget exhaustion and provider failure. No missing line can silently become COMPLETE or satisfy an effective threshold. No network provider call is executed directly by Background; no price preflight occurs on the WooCommerce event/ingress hot path.
+- Test changed price observations **between** agent selection and final send: revalidate same recovery generation/fingerprint, suppress stale effective subtotal thresholds, allow only independently supported price-neutral offers/templates or typed no-send, and retain one confirmed Meta message/credit. Assert no checkout URL validation/creation, no cart mutation and no second model run.
+- Cross-check optional BG007 R2 IMAGE: process selected source into 1125x600 padded JPEG, same-tenant domain/date/attempt key and publicly verified R2 URL; assert Meta header uses only that URL. An image successfully stored before a subsequent price/discount invalidation does **not** cause a send or constitute a send timestamp. Failures at source, transform, R2 PUT/HEAD/probe choose only approved TEXT/no-send and do not bypass price gates.
+
 ## Work Items
+
+- [ ] Add verified current-catalogue versus historical checkout-price comparisons for both directions, exact line/variant identity and unknown context; assert no invented payable-price or current-savings claim.
+- [ ] Exercise final-price recheck, effective monetary thresholds, changed generation/merchant settings, approved price-neutral fallback, idempotent outbound and original provider error fidelity.
+- [ ] Exercise R2-only Meta IMAGE binding and stale-price plus uploaded-but-unsent image, across transformed media/safe URL failures and approved TEXT fallback.
 
 ### Provider-origin diagnostic certification — 31 October 2026 (mandatory)
 
@@ -182,6 +194,10 @@ None.
 
 ## Acceptance Criteria
 
+- [ ] The source-backed price report and final Meta payload are consistent: observed catalogue differences are not represented as confirmed customer checkout changes; unknown comparable current subtotal never positively satisfies an effective threshold.
+- [ ] Missing/changed product or variant, currency mismatch or price-source failure prevents invalid offer/savings; the independently approved price-neutral TEXT path remains unaffected by optional R2 media failures.
+- [ ] The exact approved IMAGE URL is the verified transformed same-attempt R2 derivative, not MCP source URL or brand image; failed or superseded sends do not persist a false confirmed-send date or extra credit.
+
 - [ ] An upstream provider/SDK error cannot be replaced in logs by a guessed explanation; internal `reasonCode` remains separate, source provenance is truthful and security/redaction tests pass.
 
 - [ ] Alternative-product CTA URL derives from a successful same-shop MCP exact-product response matching the selected product/variant; hostile or model-authored product URLs fail closed to an approved NO_OFFER/no-send, never appear in outbound Meta parameters or the confirmed alternative-product promise. Existing `checkout.url` remains unchanged and receives no new ARCH-052 URL validation.
@@ -200,6 +216,8 @@ None.
 - [ ] A WooCommerce customer using WhatsApp Reply to a confirmed outbound initial message reaches its original recovery conversation for both text and audio, never another merchant's conversation; a missing/unapproved compliant template prevents the misleading invitation from being sent.
 
 ## Validation
+
+- [ ] Run targeted Background price-comparison and send-admission integration scenarios with simulated TEST MCP/Meta/R2; verify source errors are preserved safely and source identity remains shop-scoped. Live provider behaviour must be identified as tested or unavailable, not silently simulated as live evidence.
 
 - [ ] Negative integration cases: cross-tenant product result, wrong product/variant, missing/null URL, untrusted storefront origin, malformed/non-HTTPS URL, userinfo/port, hostname lookalike, private/loopback host and AI-proposed external link; verify no unsafe product CTA and no unapproved fallback. Positive case: independently trusted current-shop product URL and approved two-button index mapping.
 

@@ -21,6 +21,7 @@ depends_on:
 - ARCH-052-BACKGROUND-005
 - ARCH-052-ADMIN-001
 - ARCH-052-BACKGROUND-015
+- ARCH-052-BACKGROUND-016
 enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
@@ -106,7 +107,7 @@ The product URL evidence/validation helpers are Background-local (no new Shared 
 ### Final validation/admission contract — 31 October 2026 (mandatory)
 
 - Consume only a `CHECKOUT_DISCOUNT` 1..3 **validated** `InitialOutreachCheckoutOfferSet`, with the Background-local per-member eligibility/line-match and per-pair compatibility evidence from BACKGROUND-010. **Do not** call an LLM to prove eligibility, inspect product names to match coupons, call a new MCP proof endpoint or re-evaluate arbitrary untrusted model output in the sender.
-- Immediately before initial template preparation, **re-read** the current recovery `shopId`, generation and basket fingerprint, the current FIXED/AI/NONE merchant settings, current provider offer rows/IDs/codes/status/dates and the same-shop snapshot revision used by the agent. If any identity, checkout generation or source fact changed, **re-run the same pure BACKGROUND-010 eligibility/combination helpers on trusted current facts** or reject the stale set; do not reuse an old positive verdict. No network provider call is allowed in Background's final guard; if exact current facts cannot be established, return approved NO_OFFER or typed no-send. Do not invent a five-minute TTL or mutate a checkout.
+- Immediately before initial template preparation, **re-read** the current recovery `shopId`, generation and basket fingerprint, the current FIXED/AI/NONE merchant settings, current provider offer rows/IDs/codes/status/dates and the same-shop snapshot revision used by the agent. If any identity, checkout generation or source fact changed, **re-run the same pure BACKGROUND-010 eligibility/combination helpers on trusted current facts** or reject the stale set; do not reuse an old positive verdict. No **direct Shopify/Woo/hosted-API provider** call is allowed in Background's final guard; the separate BG016 price preflight may use the existing **private MCP exact-product** interface outside a database transaction. If exact current facts cannot be established, return approved NO_OFFER or typed no-send. Do not invent a five-minute TTL or mutate a checkout.
 - For a changed/invalid member, recompute the **maximal separately validated subset of the already proposed members** (no new offer from a different shop/candidate). Every remaining member must still pass every individual condition and all remaining pairs. A 3->2 or 2->1 reduction requires selecting the *actual* approved matching plural/singular Meta revision before variable binding; unapproved plural/mixed copy => independently approved singleton or NO_OFFER/no-send. Re-check source status and authorisation at actual dispatch/admission. Record a single message for the **actual** sent set, never the pre-trim original.
 - Bind `offer.codes` only from the ordered deliverable CODE members in the final verified set; automatic-only set has no code slot; mixed CODE/AUTOMATIC requires explicitly approved truthful mixed copy. Keep existing approved `offer.code` for single CODE. No aggregation of percentage savings, offer totals or claim that coupons were applied. The message receipt must preserve the exact ordered `InitialOutreachCheckoutOfferSet` in the original *confirmed* `ConversationMessage.content.recoveryPromise` and never in a second mutable claim. `RecoveryOutreachAttempt.outboundMessageId` must point to that confirmed message; retries/duplicate delivery must not create divergent receipts or extra credits.
 - If the current checkout's original coupons conflict with newly recommended coupons, do not promise they will stack; original Woo applied codes and native restore/apply behaviour are handled **only in ARCH-053**. ARCH-052 must not create a checkout URL, verify it, or call Woo/Shopify redemption APIs.
@@ -139,7 +140,19 @@ or credit charge. Preserve existing moderation, consent, idempotency and CAS.
 - The send gate MUST be enabled only when `ARCH-052-BACKGROUND-015` has validated the existing quoted-message route for text and audio. A send may not claim that Reply reaches the correct merchant if there is no durable mapping to the actual Meta-confirmed outbound message. Preserve duplicate-send/credit, moderation, consent, STOP and follow-up invariants.
 - Do not implement inbound transcription, standalone order-confirmation replies, a generic merchant inbox, or an order-to-conversation mapping in BACKGROUND-008; `BACKGROUND-015` owns the recovery reply route. Failed or uncertain Meta sends are not considered a valid quoted outbound until an existing confirmation/receipt is present.
 
+### Final price-sensitive admission and optional IMAGE boundary — mandatory
+
+This task owns the **final sender check**, not the BG016 comparison algorithm and not BG007's post-text image implementation. Immediately before selecting/binding the approved initial template and consuming the existing send-admission transaction, re-read the trusted recovery generation, basket fingerprint computed by BG016 `fingerprintRecoveryPricingBasket()`, and merchant settings and invoke BG016 price reconciliation **again for the current attempt**. Do not reuse the pre-LangGraph price observation on a later retry, claim a five-minute proof, fetch product prices from Shopify/Woo directly, or mutate the checkout. A newer checkout generation, changed line identity/quantity or unresolved current price context invalidates price-sensitive claims in the selected offer set. Recheck supported remaining offers and pairwise stacking with current source facts, choose only a source-supported approved price-neutral/singular/plural template, or return typed no-send. Do not run a second AI loop merely because prices changed.
+
+- An observed catalogue difference is not a confirmed customer payable-price change. Suppress stale totals, `offer.savings`, current/new line prices and any claimed price rise/fall when checkout context is unverified. Effective monetary thresholds require a fresh, fully verified `currentMerchandiseSubtotal` from BG016. If unavailable, the affected offer is UNVERIFIABLE, not eligible by historical value; a separately supported non-monetary offer or approved NO_OFFER template may still send.
+- Keep BG008's core **TEXT-first** functionality independent of BG007/ARCH-049 optional media. The optional IMAGE phase in BG007 must consume **only** the latter task's `OutreachProductMediaResult.kind:READY` with same shop/recovery/attempt/product/variant and verified R2 `publicImageUrl`; never bind raw MCP `product.imageUrl`, ShopBrand assets, R2 keys or unverified URLs to Meta. No BG008 -> BG007 dependency; BG007 depends on the accepted text sender and adds approved IMAGE after it. If optional media fails, use an independently approved TEXT variant without bypassing price/consent/discount send gates.
+- Preserve exactly one provider-confirmed outbound receipt and credit as already defined. A prepared image object is not evidence that outreach was sent. Keep Meta approved text/promotion words unchanged unless an independently approved revision exists. Log original provider/MCP failures via the Shared logger with bounded redaction and internal reason codes separately.
+
 ## Work Items
+
+- [ ] Invoke the accepted BG016 reconciliation at **final** initial send preparation and each retry; reject changed generation/fingerprint and stale price-sensitive claims, without directly calling Shopify/Woo providers.
+- [ ] Re-evaluate thresholds and 1..3 compatible offers against current verified facts; choose correct approved price-neutral/singular/plural fallback or no-send without a second LLM pass or extra Meta attempt.
+- [ ] Keep the approved TEXT path independent of BG007, but enforce that optional IMAGE enhancement can bind only a same-attempt BG007 READY R2 public derivative, never source product URL.
 
 - [ ] Extend existing WhatsApp template send/automated-message persistence for 0/1/2 approved dynamic URL buttons, preserving exact approved index-to-variable mapping and existing consent/moderation/idempotency/credit guards.
 - [ ] Bind `promotion.productUrl` only from BACKGROUND-010's authenticated current-shop `commerce_get_product` evidence; reject missing, mismatched, model-authored or unsafe product URLs with typed no-offer/no-send, and do not alter checkout URL handling.
@@ -161,6 +174,8 @@ or credit charge. Preserve existing moderation, consent, idempotency and CAS.
 
 ## Interfaces / Contracts
 
+**Price admission input:** `CheckoutPriceReconciliationService.reconcile(input: PriceReconciliationInput): Promise<CheckoutPriceReconciliation>` from BG016, called after current recovery/generation/fingerprint is established and before final offer/template binding. `catalogueComparison` never authorizes price-change/savings copy; only `currentMerchandiseSubtotal` backed by equivalent checkout-context evidence can support current monetary thresholds. **Optional IMAGE input (implemented after text send in BG007):** its existing Background-local `OutreachProductMediaResult`; send only a matching `READY.publicImageUrl` with an approved IMAGE header. Do not add a Shared schema or an R2 image record.
+
 **Product promotion evidence (Background-local type; do not put in Shared or MCP result envelope):**
 
 ```typescript
@@ -180,6 +195,8 @@ Shared-002 template `promotionTarget`, `checkout.url`/`promotion.productUrl` bin
 
 ## Dependencies
 
+- `ARCH-052-BACKGROUND-016` — current, attempt-scoped, deterministic price-reconciliation operation. This is a prerequisite for truthful final TEXT outreach; `BACKGROUND-007` remains the **downstream optional** IMAGE enhancement.
+
 - `ARCH-052-BACKGROUND-010` — accepted LangGraph agent and supported decision.
 - `ARCH-052-BACKGROUND-005` — basket/shop presentation.
 - `ARCH-052-ADMIN-001` — approved deterministic initial TEXT template target variants.
@@ -195,6 +212,10 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 - `ARCH-052-SYSTEM-TEST-003` — shared sender contextual reply certification.
 
 ## Acceptance Criteria
+
+- [ ] Final-send preflight detects fresh source price differences and unknown market/currency context; no stale checkout total, savings, unit-price change or threshold-qualified discount reaches Meta unless comparable current checkout evidence exists. Unchanged catalogue value alone never certifies checkout price.
+- [ ] Price-sensitive offer invalidation reselects only a currently supported compatible subset and an independently approved correct template, or typed no-send; unchanged no-price claim may still use the existing TEXT send with consent/STOP/credit guards intact.
+- [ ] TEXT send passes without BG007/R2; optional IMAGE send uses only BG007 READY `publicImageUrl` for exact shop/recovery/attempt/item and provider-approved header; image source URLs never appear in Meta header, recorded promise or provider-safe diagnostics.
 
 - [ ] Inject Meta Graph 400/429 and a transport exception; verify emitted records retain the original Meta message/code/subcode and request ID (when supplied), separate internal reason codes, bounded redaction and unchanged send-admission/retry/credit semantics.
 
@@ -215,6 +236,8 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 - [ ] The real Meta-confirmed outgoing provider message ID maps back to exactly one existing conversation and recovery/attempt and is not reused across merchants, retries or WABA identities. No customer guidance is advertised when the provider registration is unapproved or the binding is absent; no additional credit is consumed.
 
 ## Validation
+
+- [ ] Add final-preparation fake BG016 tests covering before/after AI price change, price rise/decrease, unchanged catalogue but unknown checkout context, stale attempt/generation, minimum subtotal boundary crossing, Meta-only R2 derivative, IMAGE unavailable -> approved TEXT, send/no-send/idempotent receipt. Assert zero new checkout URL/provider API code and no duplicated credit.
 
 - [ ] Background simulated Meta send tests for purpose/locale/target/header collision, one-button checkout, two-button alternative, unapproved second CTA, persisted receipt and follow-up, text-only when image work absent, and no ARCH-053 issuance calls.
 - [ ] Inject successful/failed MCP exact-product results and test same-shop correct product, Shopify custom storefront host accepted when independently authenticated, Woo origin accepted, cross-shop/wrong-variant provenance rejected, missing/null product URL, model-supplied URL ignored, wrong approved CTA index, and unsafe `http:`, `javascript:`, `data:`, credential-bearing, port-bearing, hostname-prefix lookalike, loopback/IP-literal, whitespace/control or overlength URLs. Assert typed NO_OFFER/no-send, zero unsafe outbound Meta parameters, zero alternative-product promise recorded for rejected sends, bounded logging without raw URLs, and unchanged `checkout.url` behavior.
