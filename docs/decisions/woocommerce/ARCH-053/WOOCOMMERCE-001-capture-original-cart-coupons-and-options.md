@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-31T09:12:48Z
+attempt: 1
 depends_on:
 - ARCH-053-API-001
 - ARCH-053-BACKGROUND-001
@@ -22,7 +22,7 @@ enables:
 - ARCH-053-WOOCOMMERCE-003
 - ARCH-053-WOOCOMMERCE-004
 created: 2026-10-29
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # ARCH-053-WOOCOMMERCE-001 — Capture original Woo cart coupons and restorable line data
