@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-10-31T13:11:26Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-016-DATABASE-002
@@ -88,12 +88,12 @@ Do not modify `src/app/actions/background-runtime-controls.ts` unless source ins
 
 ## Work Items
 
-- [ ] Update `RuntimeField` / `integerField()` to represent a field without an upper bound, without changing any other field's maximum.
-- [ ] Change the recovery lifetime field to `min=0`, `max=null`, `defaultValue=21`, with explicit zero semantics.
-- [ ] Adjust common validator and range display to account for `max === null`.
-- [ ] Make the HTML input omit `max` only for this field.
-- [ ] Replace old 1–90 tests with all allowed and rejected values, including values >90 and 0; add UI/metadata assertions for the missing `max` attribute, `step=1`, and unchanged other inputs.
-- [ ] Verify existing audited update and concurrency tests still pass; record actual results.
+- [x] Update `RuntimeField` / `integerField()` to represent a field without an upper bound, without changing any other field's maximum.
+- [x] Change the recovery lifetime field to `min=0`, `max=null`, `defaultValue=21`, with explicit zero semantics.
+- [x] Adjust common validator and range display to account for `max === null`.
+- [x] Make the HTML input omit `max` only for this field.
+- [x] Replace old 1–90 tests with all allowed and rejected values, including values >90 and 0; add UI/metadata assertions for the missing `max` attribute, `step=1`, and unchanged other inputs.
+- [x] Verify existing audited update and concurrency tests still pass; record actual results.
 
 ## Interfaces / Contracts
 
@@ -158,7 +158,11 @@ The only permitted business validation is *non-negative whole days*; SQL/Prisma 
 
 ### Status
 
-Attempt 1 returned with Changes Requested. The task remains at attempt 1; the launcher owns the next attempt increment.
+Ready for Review (Attempt 2). The requested behavioral action-test correction is implemented and validated. Attempt 1 details below are historical; its full-suite and repository-lint caveats apply only to that prior run.
+
+### Attempt 1 Historical Record
+
+Attempt 1 returned with Changes Requested. The launcher incremented the attempt for the current rework.
 
 ### Files Changed
 
@@ -201,6 +205,29 @@ None
 ### Architectural Concerns
 
 None
+
+### Attempt 2 Correction
+
+Replaced the action source-order assertion with tests that execute `mutateBackgroundRuntimeControlsAction` through the existing `loadPolicyModule` harness. The successful action test proves the configured lifetime changes from 21 to 180 days, the optimistic version advances from 7 to 8, and the audit contains exact complete before/after snapshots, the platform-admin identity, and the supplied reason. The same test suite verifies that a non-SUPER_ADMIN, stale expected version, and negative lifetime do not update configuration or create an audit. No production action code or action semantics changed.
+
+### Attempt 2 Files Changed
+
+- `moda-interact-admin/tests/security/admin-background-runtime-controls.test.mjs`
+- `moda-interact-admin/tests/unit/background-runtime-control-validation.test.ts`
+- Implementation commit: `4214934` (`test(admin): exercise runtime controls audit action`), pushed to `task/ARCH-016-ADMIN-003`.
+
+### Attempt 2 Validation Results
+
+- `node --test tests/security/admin-background-runtime-controls.test.mjs`: passed, 8 tests, including the successful audited action and permission/version/invalid-input checks.
+- `node --conditions=import --import tsx --test tests/unit/background-runtime-control-validation.test.ts`: passed, 8 tests.
+- `npm run build`: passed, including TypeScript checking. Existing BullMQ optional-dependency/critical-dependency warnings for `@valkey/valkey-glide` remain.
+- `npx eslint tests/security/admin-background-runtime-controls.test.mjs tests/unit/background-runtime-control-validation.test.ts`: exited 0; ESLint's existing ignore rules skipped both test files, so this did not lint their contents.
+- `git diff --check`: passed.
+- Full unit suite and repository-wide lint were not rerun. The 17 unrelated unit failures and unrelated lint error recorded above belong to Attempt 1 and are not Attempt 2 results.
+
+### Attempt 2 Deviations and Unresolved Issues
+
+None. Production action behavior remains unchanged.
 
 ## Architect Review
 
