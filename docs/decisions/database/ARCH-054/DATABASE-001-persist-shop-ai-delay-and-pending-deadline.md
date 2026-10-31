@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: codex
+claimed_at: 2026-10-31T20:25:33Z
+attempt: 2
 depends_on: []
 enables:
   - ARCH-054-BACKGROUND-001
