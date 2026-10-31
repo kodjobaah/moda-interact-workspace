@@ -93,6 +93,22 @@ Woo numeric source semantics are **not** synonymous with unknowns: a present `mi
 
 **Required completeness behaviour:** Compute the returned completeness from source proof **after** SHARED-011 combination projection. Remove the obsolete `COMBINATION_POLICY_NOT_REPRESENTED_IN_SHARED_FACTS` reason only when all corresponding new combination fields are genuinely mapped; keep all other legacy and newly observed uncertainty reasons. Do not equate an empty `unrepresentedConditions` array with `COMPLETE` if the source was missing required observations. Conversely, do not carry the old constant-false `PARTIAL` when the only reason was absent contract projection and the source is now fully represented. `offer.support:SUPPORTED` and `facts.completeness:COMPLETE` are still **not** an eligibility decision. Use no new MCP tool, basket read, provider network call or Zod business-rule refinement.
 
+### Actual failures from the owning MCP boundary (31 October 2026)
+
+This discount reader performs **PostgreSQL snapshot reads only**, not Shopify
+or WooCommerce HTTP calls. On an unexpected Prisma/DB/contract exception,
+log the actual original `Error.name`/`Error.message` and `cause` with the
+existing Shared logger, safely redacted and bounded, plus the distinct MCP
+reason code, trusted shop and operation. **Do not invent** Shopify, Woo or
+other provider error text when no provider was called. Preserve the existing
+public `CommerceToolResultSchema`/MCP error response (never expose DB
+exception details or raw provider logs as a tool result). When the handler
+receives a propagated `McpRequestError`, retain its existing status/code,
+log the originating cause where available and do not replace the original
+exception with a synthetic provider message. Unexpected exceptions remain
+visible and propagate to the existing failure boundary, not a silent
+`{details:null}` success.
+
 ## Work Items
 
 - [ ] Add bounded shop/mode-scoped keyset paging to the current discount lookup and exact Shared response, including cursor tamper/cross-tenant rejection.
@@ -101,6 +117,7 @@ Woo numeric source semantics are **not** synonymous with unknowns: a present `mi
 - [ ] Upgrade the MCP Shared pin and lockfile to the exact SHARED-014 published version, then map required-nullable `subtotalRequirementCurrency`, exact targeting/exclusion IDs, Woo `emailRestrictionsPresent`/`uninspectedMetadataPresent`, source restrictions and all source completeness reasons as specified above; do not treat missing Woo extension/customer restrictions as unrestricted. If either flag is true or null, include an explicit uncertainty reason; only verified `false` is absence of that particular restriction.
 - [ ] Respect current FIXED/AI/NONE policy on **every call**, including detail requests and calls after merchant policy changes.
 - [ ] Use the existing generic MCP envelope and published feature schema, with safe structured error logging.
+- [ ] Preserve actual Prisma/contract exception messages and causes in server-side Shared logs while keeping MCP client/tool error payloads minimal; never fabricate a provider error for a DB-only read.
 - [ ] Add PostgreSQL-backed tests for two shops, 120 discounts/page 75, selected vs unselected, revoked selections, missing details, Woo restrictions, Shopify partial rules and absent condition fields.
 
 ## Interfaces / Contracts
@@ -140,6 +157,8 @@ Existing `CommerceToolResultSchema` wraps `data`. See SHARED-009's complete Zod 
 - [ ] MCP source facts conform to **SHARED-014**, not the already published 2.8.1 schema: missing required `subtotalRequirementCurrency` property is a schema failure; a threshold without provable currency is incomplete; a verified no-threshold offer has `subtotalRequirementCurrency:null` without a false missing-currency warning. Truncated targeting and unknown exclusions never yield authoritative ALL; the obsolete unrepresentable-combination reason is removed only after complete new projection.
 - [ ] MCP does not call external providers or private proof APIs during discount options/details retrieval.
 - [ ] Generic MCP result, structured logging, tenancy and publisher/tool permissions remain intact.
+
+- [ ] Inject distinctive database, schema and `McpRequestError` failures; verify original origin and message in redacted server logs, no fake Shopify/Woo response, no exception content in model-facing MCP results and no catch-to-empty-success.
 
 ## Validation
 

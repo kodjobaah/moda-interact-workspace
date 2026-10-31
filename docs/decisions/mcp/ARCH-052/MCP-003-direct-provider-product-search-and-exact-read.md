@@ -25,7 +25,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052-MCP-003: Execute Shopify and WooCommerce product search directly inside MCP
@@ -62,6 +62,27 @@ No additional database table/column/migration, migration backfill, alternate pro
 - Secure direct Woo credential/transport belongs solely to MCP-005. MCP-003 consumes the port and tests projection/execution rather than reproducing encryption or SSRF logic.
 - Preserve source product identity and missing fields; no fabricated prices, sale evidence, variant IDs, categories, or links.
 
+### Provider-origin read diagnostics (31 October 2026)
+
+For the Shopify GraphQL search/exact-product operations owned here
+(`src/execution/policy/shopify-core.ts` and existing Shopify connection
+port), preserve the actual returned Shopify `errors[].message` and
+`extensions.code`, HTTP status/request ID and any safely bounded error
+details. Handle GraphQL 200 plus `errors` as a real source failure, not
+an empty result. If no provider response exists, record the original SDK/
+transport `Error.name`, `Error.message` and cause without inventing a
+provider error. Record Moda reason/status separately. Use the Shared logger,
+with explicit sensitive-span redaction and bounds, and do not expose real
+provider error payloads in `commerce_get_product`/`commerce_search_products`
+results or the LLM's MCP projection. Maintain tenant and URL-origin checks.
+
+The already accepted Woo REST reader (`src/connections/woocommerce/
+direct-product-reader.ts`) is **not** modified under MCP-003: the dedicated
+`ARCH-052-MCP-006` task owns the diagnostic-only correction to that accepted
+reader. MCP-003 may proceed independently; integrated Woo system validation
+waits for MCP-006. No new shared logging utility, transport proxy, HTTP
+request or application-owned model contract is required.
+
 ## Work Items
 
 - [ ] Wire published `commerce_search_products` and `commerce_get_product` handlers to existing shop connections and accepted MCP-005 Woo reader.
@@ -69,6 +90,7 @@ No additional database table/column/migration, migration backfill, alternate pro
 - [ ] Test entitlement, shop scope, partial/missing product fields, Woo simple/variation products, Shopify variant collections and direct provider access.
 - [ ] Test that product URLs are direct current-shop provider results with independently authenticated storefront-host ownership; valid Shopify custom domains and verified Woo origins remain usable, while spoofed/external hosts, cross-shop records and unknown-origin URLs return `url:null` without granting an arbitrary host.
 - [ ] Validate generic result schema, tool descriptor names, cancellation, structured errors and declared MCP scripts.
+- [ ] Preserve and log original Shopify GraphQL/HTTP/SDK error strings and extension codes at the direct provider boundary; test 200+GraphQL `errors` and safe redaction without modifying the accepted Woo reader.
 
 ## Interfaces / Contracts
 
@@ -95,6 +117,8 @@ Consumer of `@modainteract/moda-interact-shared/commerce` published by SHARED-01
 - [ ] Provider categories/collections are source IDs, not inferred category-label aliases; missing fields remain unknown/absent.
 - [ ] Shop/entitlement/credential access remains enforced and errors logged safely.
 - [ ] The tool never yields a customer-facing product URL whose storefront-host ownership cannot be established for its authenticated shop; absence is represented as `url:null` under the existing contract, not a fabricated product or a permissive new host allowlist.
+
+- [ ] Shopify GraphQL error-response and transport-exception tests assert original error message/extension code, correct provenance and request ID; no raw API payload leaks and no misleading empty success.
 
 ## Validation
 

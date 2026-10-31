@@ -4,7 +4,7 @@ title: Checkout-personalised initial outreach with direct MCP product reads and 
 status: proposed
 coordinator: moda_architect
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: 2026-10-31
 ---
 
 # ARCH-052: Checkout-personalised WhatsApp initial outreach
@@ -120,6 +120,24 @@ Unknown applicability, provider-unavailable, incomplete catalogue, timeout and r
 ## Observability and scalability
 
 Reuse `@modainteract/moda-interact-shared/logging`, existing OpenTelemetry/framework/BullMQ signals and domain-specific bounded events. Correlate shop/recovery/attempt IDs, mode, search page counts, source-supported checkout/alternative counts, typed provider result, model fallback, safe media fallback, Meta send result and retries—never coupon codes, raw complete URLs, credentials or customer PII. Throughput depends on actual actionable recoveries and bounded provider reads rather than raw Shopify ingress. Measure provider request budget, timeouts and queue lag under TEST; no claimed measured throughput.
+**Provider-origin diagnostics (31 October 2026).** `BACKGROUND-010`
+logs the original OpenRouter/SDK failure from the existing
+`CommerceModelInvocationFailure.cause` and the actual bounded MCP HTTP failure
+returned to `CommerceMcpClient`, alongside (not replaced by) Moda reason codes.
+`MCP-003` handles Shopify product API/GraphQL errors; new, narrowly scoped
+`MCP-006` corrects originating Woo REST error logging in the already accepted
+MCP-005 reader without reopening that task. `BACKGROUND-012` owns Meta sample
+upload/template CREATE errors; `BACKGROUND-013` owns Shopify discount-sync
+GraphQL errors; `BACKGROUND-008` owns final Meta send errors and
+`BACKGROUND-007` logs actual MCP media-read failures. MCP-002 performs DB-only
+reads and must never claim a provider response it did not receive. All provider
+error objects/messages are preserved in original source wording after explicit
+sensitive-data redaction/bounds, with source provenance and a separate internal
+reason code per `docs/observability/shared-logging.md`. Do not send original
+provider errors to the LLM, public MCP tool results or WhatsApp. A safe
+fallback/no-send still records the failure; no catch-and-continue that silently
+loses the original error. No new shared wire contract or logger is required.
+
 
 ## Development-only cutover (no preservation)
 
@@ -222,7 +240,8 @@ Individual task YAML is authoritative within the exported snapshot. SHARED-011, 
 | [ARCH-052-MCP-002](../decisions/mcp/ARCH-052/MCP-002-execute-published-discount-options-and-proof.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-013`, `ARCH-052-BACKGROUND-014`, `ARCH-052-MCP-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-011`, `ARCH-052-SHARED-014` |
 | [ARCH-052-MCP-003](../decisions/mcp/ARCH-052/MCP-003-direct-provider-product-search-and-exact-read.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-010`, `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-005` |
 | [ARCH-052-MCP-004](../decisions/mcp/ARCH-052/MCP-004-verify-alternative-product-discount-promotions.md) | `moda_mcp` | Superseded | — |
-| [ARCH-052-MCP-005](../decisions/mcp/ARCH-052/MCP-005-implement-direct-woocommerce-rest-product-reader.md) | `moda_mcp` | Ready | — |
+| [ARCH-052-MCP-005](../decisions/mcp/ARCH-052/MCP-005-implement-direct-woocommerce-rest-product-reader.md) | `moda_mcp` | Complete | — |
+| [ARCH-052-MCP-006](../decisions/mcp/ARCH-052/MCP-006-preserve-original-woo-provider-errors.md) | `moda_mcp` | Ready | `ARCH-052-MCP-005` |
 | [ARCH-052-SHARED-001](../decisions/shared/ARCH-052/SHARED-001-define-canonical-selected-discount-contract.md) | `moda_shared` | Superseded | — |
 | [ARCH-052-SHARED-002](../decisions/shared/ARCH-052/SHARED-002-define-checkout-template-binding-contract.md) | `moda_shared` | Complete | — |
 | [ARCH-052-SHARED-003](../decisions/shared/ARCH-052/SHARED-003-publish-initial-outreach-shared-contracts.md) | `moda_shared` | Complete | `ARCH-052-SHARED-002`, `ARCH-052-SHARED-006`, `ARCH-052-SHARED-008` |
@@ -243,7 +262,7 @@ Individual task YAML is authoritative within the exported snapshot. SHARED-011, 
 | [ARCH-052-ADMIN-003](../decisions/admin/ARCH-052/ADMIN-003-author-multi-discount-checkout-template-bindings.md) | `moda_admin` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-ADMIN-002` |
 | [ARCH-052-SHOPIFY-001](../decisions/shopify/ARCH-052/SHOPIFY-001-select-multiple-authorised-recovery-discounts.md) | `moda_app` | Complete | `ARCH-052-BACKGROUND-009` |
 | [ARCH-052-SYSTEM-TEST-001](../decisions/system-test/ARCH-052/SYSTEM-TEST-001-certify-shopify-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-BACKGROUND-013`, `ARCH-052-ADMIN-003`, `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-008`, `ARCH-052-SHOPIFY-001`, `ARCH-052-BACKGROUND-009`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-GATEWAY-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-012`, `ARCH-052-BACKGROUND-011`, `ARCH-052-SHARED-014` |
-| [ARCH-052-SYSTEM-TEST-002](../decisions/system-test/ARCH-052/SYSTEM-TEST-002-certify-woocommerce-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-ADMIN-003`, `ARCH-052-BACKGROUND-014`, `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-008`, `ARCH-052-GATEWAY-001`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-012`, `ARCH-052-SHARED-014` |
+| [ARCH-052-SYSTEM-TEST-002](../decisions/system-test/ARCH-052/SYSTEM-TEST-002-certify-woocommerce-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-ADMIN-003`, `ARCH-052-BACKGROUND-014`, `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-008`, `ARCH-052-GATEWAY-001`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-012`, `ARCH-052-SHARED-014`, `ARCH-052-MCP-006` |
 | [ARCH-052-WOOCOMMERCE-001](../decisions/woocommerce/ARCH-052/WOOCOMMERCE-001-expose-read-only-native-coupon-verification.md) | `moda_woocommerce` | Superseded | — |
 | [ARCH-052-WOOCOMMERCE-002](../decisions/woocommerce/ARCH-052/WOOCOMMERCE-002-create-secure-customer-initiated-checkout-resume.md) | `moda_woocommerce` | Superseded | — |
 
@@ -270,3 +289,5 @@ None delegated to implementation agents. Unknown provider-specific customer rest
 - 2026-10-29 **Attempt 4**: Dedicated InitialOutreachOfferAgent (no conversation runner), built-in discount MCP tools, code-defined published product tools, direct Woo/Shopify provider product searches inside MCP, optional cross-sell promotions after checkout proof fails, no hosted API broker for MCP product/coupon proof. Superseded COMMERCE-002/004/005, API-002/003, SHARED-007.
 
 - 2026-10-29 **Attempt 6**: Removed frozen merchant-policy and duplicate sent-offer snapshot; superseded SHARED-001/004, BACKGROUND-001/006 and redundant API-001; consolidated Woo restore-link adapter into BACKGROUND-008; retained current-settings MCP policy and existing generic tool envelope/confirmed outbound message receipt.
+
+- 2026-10-31: Required logging the actual provider/SDK errors with bounded sensitive-data redaction across outreach/model/MCP/Shopify/Meta boundaries; added MCP-006 for the accepted Woo reader. Internal reason codes remain separate.

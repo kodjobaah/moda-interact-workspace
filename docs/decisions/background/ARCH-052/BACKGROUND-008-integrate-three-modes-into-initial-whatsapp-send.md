@@ -109,6 +109,26 @@ The product URL evidence/validation helpers are Background-local (no new Shared 
 - Bind `offer.codes` only from the ordered deliverable CODE members in the final verified set; automatic-only set has no code slot; mixed CODE/AUTOMATIC requires explicitly approved truthful mixed copy. Keep existing approved `offer.code` for single CODE. No aggregation of percentage savings, offer totals or claim that coupons were applied. The message receipt must preserve the exact ordered `InitialOutreachCheckoutOfferSet` in the original *confirmed* `ConversationMessage.content.recoveryPromise` and never in a second mutable claim. `RecoveryOutreachAttempt.outboundMessageId` must point to that confirmed message; retries/duplicate delivery must not create divergent receipts or extra credits.
 - If the current checkout's original coupons conflict with newly recommended coupons, do not promise they will stack; original Woo applied codes and native restore/apply behaviour are handled **only in ARCH-053**. ARCH-052 must not create a checkout URL, verify it, or call Woo/Shopify redemption APIs.
 
+### Actual provider failures at final send (mandatory 31 October 2026)
+
+In the existing WhatsApp/Meta send integration (`src/services/whatsapp.service.ts`
+and the established send/admission failure path), log the **actual Meta Graph
+error** on non-success response: its original structured `error.message`,
+`error.code`, `error_subcode`, `error_data` (only safe bounded fields),
+HTTP status and Meta request/trace ID when supplied. Preserve the originating
+exception/cause chain and the existing typed retry/send outcome. A Meta error
+must never be logged merely as an inferred `META_SEND_FAILED`, a template
+approval hypothesis or a fabricated provider message. `reasonCode` remains
+separate. When Meta supplies no response, log the actual SDK/transport
+exception as `origin:sdk_exception` and do not invent `providerError`.
+
+Use the Shared logger and the provider-origin redaction contract in
+`docs/observability/shared-logging.md`; do not log tokens, raw HTTP headers,
+checkout/promotional URLs, actual customer template variables, provider success
+bodies or unredacted error payloads. The real Meta failure must be observable
+even where a permitted fallback/no-send/retry follows, without a second send
+or credit charge. Preserve existing moderation, consent, idempotency and CAS.
+
 ## Work Items
 
 - [ ] Extend existing WhatsApp template send/automated-message persistence for 0/1/2 approved dynamic URL buttons, preserving exact approved index-to-variable mapping and existing consent/moderation/idempotency/credit guards.
@@ -159,6 +179,8 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 
 ## Acceptance Criteria
 
+- [ ] Inject Meta Graph 400/429 and a transport exception; verify emitted records retain the original Meta message/code/subcode and request ID (when supplied), separate internal reason codes, bounded redaction and unchanged send-admission/retry/credit semantics.
+
 - [ ] Core text outreach sends without ARCH-049 media prerequisites or IMAGE template registration; independently approved two-button alternative template emits correct two provider CTA indexes and message receipt.
 - [ ] The initial WhatsApp sender does not request any URL from API/ARCH-053; `checkout.url` reads the stored value, and no new checkout-URL validator is introduced.
 
@@ -169,6 +191,8 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 
 - [ ] A multi-offer send requires one exact source-backed eligible matching-line decision per member (when line-specific), pairwise source-backed compatibility for every pair, current merchant selection/mode, unchanged checkout generation/fingerprint and an approved correct plural/mixed Meta revision; a revocation or changed fact never leaks a stale original set into rendered message or promise.
 - [ ] No duplicate send/billing, no added checkout URL verification or provider lookup, no checkout URL generation/proxy, no duplicate URL persistence and no change to final outbound consent/moderation/admission gates.
+
+- [ ] Final-send provider-error logging tests including a real distinct Meta error string, missing provider body and redacted customer/credential echo; verify emitted payloads and billing/idempotency remain unchanged.
 
 ## Validation
 

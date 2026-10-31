@@ -26,6 +26,7 @@ depends_on:
 - ARCH-052-MCP-001
 - ARCH-052-MCP-002
 - ARCH-052-MCP-003
+- ARCH-052-MCP-006
 - ARCH-052-COMMERCE-006
 - ARCH-052-COMMERCE-007
 - ARCH-052-BACKGROUND-010
@@ -105,6 +106,11 @@ Each scenario must assert the eligibility verdict, line keys where relevant, sub
 
 ## Work Items
 
+### Provider-origin diagnostic certification — 31 October 2026 (mandatory)
+
+- [ ] Provider-origin diagnostics: inject Woo REST 400 (`{"code":"woocommerce_rest_invalid_product_id","message":"Invalid product ID."}`), 401, 503 and a request-timeout SDK error in the accepted direct reader (MCP-006), plus MCP non-2xx and OpenRouter/Meta errors. Assert actual Woo/SDK/MCP/Meta messages, statuses/codes and request IDs appear in the owning server-side Shared log with separate internal reason codes, without inventing upstream errors when none were returned.
+- [ ] Redaction and outcome preservation: inject credentials, customer emails/phone and signed URLs in error strings; assert redaction/truncation markers, no leakage to model/MCP/WhatsApp, no duplicate checkout recovery or credit, and unchanged authorized/denied/retry/fallback semantics.
+
 - [ ] Add Woo initial-outreach integrated scenarios.
 
 - [ ] Execute the five Woo eligibility/compatibility matrices above against validated MCP detail data and trusted cart lines, asserting explicit failure reasons and accurate approved fallback.
@@ -116,6 +122,8 @@ Each scenario must assert the eligibility verdict, line keys where relevant, sub
 Built-in MCP `commerce_get_discount_options`, published `commerce_search_products`/`commerce_get_product`, the existing generic `CommerceToolResultSchema`, SHARED-006 outreach purpose and SHARED-008 product contract, and the existing Meta initial-send/no-extra-database contract. SHARED-005 is a completed historical task, not an active proof consumer or publication prerequisite.
 
 ## Dependencies
+
+- `ARCH-052-MCP-006` — accepted Woo source-origin error preservation.
 
 - ARCH-052-BACKGROUND-008
 - ARCH-052-GATEWAY-001
@@ -137,6 +145,8 @@ None.
 
 ## Acceptance Criteria
 
+- [ ] An upstream provider/SDK error cannot be replaced in logs by a guessed explanation; internal `reasonCode` remains separate, source provenance is truthful and security/redaction tests pass.
+
 - [ ] Alternative-product CTA URL derives from a successful same-shop MCP exact-product response matching the selected product/variant; hostile or model-authored product URLs fail closed to an approved NO_OFFER/no-send, never appear in outbound Meta parameters or the confirmed alternative-product promise. Existing `checkout.url` remains unchanged and receives no new ARCH-052 URL validation.
 
 - [ ] No invented coupon/product/category link or checkout discount when conditions are unknown/incomplete; a related product promotion is worded separately.
@@ -147,6 +157,8 @@ None.
 - [ ] Every WooCommerce offer advertised has contemporaneous checkout or alternative-product MCP catalogue evidence.
 - [ ] Direct MCP product search needs no hosted Moda API call.
 - [ ] Initial outreach passes the existing recovery checkout URL unchanged into the approved template, keeps original consent, credit and idempotent send behavior across 3 modes, and adds no checkout URL validation, link generation or API proxy.
+
+- [ ] Run provider-error fixtures with captured Shared logging sink across source services and injected transport/model failures; compare logged message to literal injected upstream error after only deliberate redaction/truncation, then verify no sensitive content and no provider error invented for local failures.
 
 ## Validation
 

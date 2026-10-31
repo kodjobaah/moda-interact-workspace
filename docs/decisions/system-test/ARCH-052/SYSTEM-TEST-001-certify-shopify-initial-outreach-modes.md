@@ -108,6 +108,11 @@ Any `UNKNOWN`/unsupported condition affecting eligibility or pair support must l
 
 ## Work Items
 
+### Provider-origin diagnostic certification — 31 October 2026 (mandatory)
+
+- [ ] Provider-origin diagnostics: inject Shopify discount-sync GraphQL `errors` with HTTP 200, product-search GraphQL 403, distinct OpenRouter 400/429 messages, Meta upload/CREATE/send failures and an MCP non-2xx response. At the owning logger boundary, assert **actual returned** source messages/codes/request IDs, distinct internal reason codes, original SDK transport exceptions where no response exists, and no invented provider detail. Distinct stages must be traceable with shop/recovery/attempt or request correlation.
+- [ ] Security/failure isolation: inject provider error strings containing bearer token, email, signed URL and prompt text; assert only explicitly redacted/truncated provider-origin fragments reach Shared logs, no such values reach MCP results, model context, WhatsApp or saved snapshots. Preserve retries, approved fallback and single-send/credit semantics; sink failures do not change business result.
+
 - [ ] Assemble isolated fixture and full initial send flows.
 - [ ] Run negative/race/fallback/provider-budget matrix.
 
@@ -142,6 +147,8 @@ None.
 
 ## Acceptance Criteria
 
+- [ ] An upstream provider/SDK error cannot be replaced in logs by a guessed explanation; internal `reasonCode` remains separate, source provenance is truthful and security/redaction tests pass.
+
 - [ ] Alternative-product CTA URL derives from a successful same-shop MCP exact-product response matching the selected product/variant; hostile or model-authored product URLs fail closed to an approved NO_OFFER/no-send, never appear in outbound Meta parameters or the confirmed alternative-product promise. Existing `checkout.url` remains unchanged and receives no new ARCH-052 URL validation.
 
 - [ ] No invented coupon/product/category link or checkout discount when conditions are unknown/incomplete; a related product promotion is worded separately.
@@ -152,6 +159,8 @@ None.
 - [ ] Every Shopify offer advertised has contemporaneous checkout or alternative-product MCP catalogue evidence.
 - [ ] Direct MCP product search needs no hosted Moda API call.
 - [ ] Initial outreach keeps original safety, credit and idempotent send behavior across 3 modes.
+
+- [ ] Run provider-error fixtures with captured Shared logging sink across source services and injected transport/model failures; compare logged message to literal injected upstream error after only deliberate redaction/truncation, then verify no sensitive content and no provider error invented for local failures.
 
 ## Validation
 

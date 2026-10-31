@@ -281,12 +281,77 @@ Apply the existing Shared `RUNTIME_DATA_AUTHORITY_INSTRUCTION` (not the conversa
 
 ### F. Error, retry, safety and logging semantics
 
-- Model failure/timeout/malformed output: log bounded reason code. If the graph already possesses at least one **same-shop, source-supported observed candidate**, use a deterministic fallback: source-supported CHECKOUT offers first, else source-supported ALTERNATIVE offers; highest *source-supported* savings in the same currency, then stable `offerId`, then stable product/variant identity. If observed catalogue/product facts lack comparable savings, order by stable offer/product IDs; never calculate or invent savings. No model invocation is required to choose a deterministic fallback after failure.
+- Model failure/timeout/malformed output: log the **actual originating provider/SDK/MCP error** when supplied, plus a separate bounded Moda reason code; do not substitute a fixed explanation. If the graph already possesses at least one **same-shop, source-supported observed candidate**, use a deterministic fallback: source-supported CHECKOUT offers first, else source-supported ALTERNATIVE offers; highest *source-supported* savings in the same currency, then stable `offerId`, then stable product/variant identity. If observed catalogue/product facts lack comparable savings, order by stable offer/product IDs; never calculate or invent savings. No model invocation is required to choose a deterministic fallback after failure.
 - No source-backed MCP information supporting an applicable discount: `NO_VERIFIED_OFFER` with reason `NO_APPLICABLE_OFFER` and correct incomplete flag; absence of evidence due to provider/tool failure, revocation or budget exhaustion must retain typed **operational** failure (so existing send workflow can retry/suppress) rather than be silently converted to a positive "nothing exists" conclusion.
 - `CommerceHostError` errors preserve `DENIED`, `INCOMPATIBLE_VERSION`, `UNAVAILABLE`, `CANCELLED`, `DEADLINE`; unexpected errors are logged and propagated to the owning Background retry boundary, not swallowed. Do not convert denied tool access to a fallback suggestion from another shop.
-- Use `createLogger`/`StructuredLogger` from `@modainteract/moda-interact-shared/logging`. Record at least `outreach.offer_agent.started`, `outreach.offer_agent.tool_called`, `outreach.offer_agent.model_step`, `outreach.offer_agent.completed`, `outreach.offer_agent.failed`, with shop/recovery/attempt ID, reason code, mode, selected outcome, model-step/tool-call counts and duration. Do not log raw MCP headers, customer names or contact data, coupon codes, URLs, product descriptions, provider error bodies, prompt text, model free text or credentials. No competing logging utilities and no unobserved catch-and-continue.
+- Use `createLogger`/`StructuredLogger` from `@modainteract/moda-interact-shared/logging`. Record at least `outreach.offer_agent.started`, `outreach.offer_agent.tool_called`, `outreach.offer_agent.model_step`, `outreach.offer_agent.completed`, `outreach.offer_agent.failed`, with shop/recovery/attempt ID, reason code, mode, selected outcome, model-step/tool-call counts and duration. On failures additionally preserve the **source-supplied original** provider/SDK/MCP error (subject only to explicit redaction/truncation) under the mandatory policy in `docs/observability/shared-logging.md`. Never log raw MCP headers, complete successful responses, customer names/contact data, coupon codes, checkout/product URLs, product descriptions, prompts, model free text or credentials. No competing logging utilities and no unobserved catch-and-continue.
 - MCP remains the authorisation boundary for every tool call. The agent performs an additional exact allowlist/input/output/final-ID check as defence in depth; it never determines whether a caller may use another merchant's tool. Preserve existing consent, STOP, outbound moderation, credit/idempotency and Meta template rules in BACKGROUND-008; do not move them into this graph.
 - Pre-production breaking rollout only; no legacy attempt adapter, backfill or compatibility shim.
+
+### G. Source-preserving provider diagnostics — mandatory implementation contract (31 October 2026)
+
+**Owning files and exact failure boundaries (do not delegate this to Shared or invent a new adapter):**
+
+1. `src/commerce/production-model.ts`: The published OpenRouter adapter already
+   wraps the original SDK/provider exception as the `cause` of
+   `CommerceModelInvocationFailure`. When model creation/invocation fails,
+   inspect the bounded original cause chain and log the **actual** upstream
+   `Error.name`, `Error.message`, provider `error.code`/message and status/request
+   ID when supplied. Keep `failure.diagnostic.reasonCode` and the existing fixed
+   `reasonMessage` as *separate internal fields*, never as
+   `providerError.message`. Do not catch and replace the original cause with a
+   new generic-only error. If the error originated locally (configuration,
+   request validation or cancellation), log `origin:internal` with the actual
+   local exception and **no manufactured providerError**. The existing Shared
+   OpenRouter adapter/runner, published package and model selection API remain
+   unchanged; no new Shared task is necessary for this path.
+2. `src/commerce/mcp-client.ts`: At the existing bounded HTTP transport,
+   capture the **actual non-2xx MCP response error** before throwing, including
+   status, a safely bounded/redacted JSON error object or non-JSON error body,
+   and a permitted request/correlation ID response header if present. This
+   explicitly includes HTTP 401/403, 429 and 5xx; preserve current
+   `CommerceHostError` code, retryability, abort/timeout and tenant checks.
+   Preserve source/error provenance through `CommerceHostError.cause` or a
+   Background-local diagnostic field while keeping the client-facing
+   `CommerceToolResultSchema` unchanged. The MCP response may be just
+   `{"error":"UNAVAILABLE"}`; log exactly that, never invent the unknown
+   underlying provider cause. MCP-side provider logs carry the actual Shopify/
+   Woo error, correlated to the MCP request.
+3. `src/agents/initial-outreach-offer.agent.ts` (or the owning agent boundary)
+   logs the final attempt result/failure with shop/recovery/outreach-attempt
+   correlation, operation, source provenance and internal `reasonCode`.
+   Successful safe fallbacks after model/tool errors must **not** suppress the
+   originating failure log. A close/finally failure gets its actual exception
+   logged but must not replace the primary error. Do not emit the same raw
+   provider body on each downstream wrap or retry.
+
+**Diagnostic fields:** `origin` (`provider_response`/`mcp_response`/
+`sdk_exception`/`internal`), `provider`, `operation`, `httpStatus`,
+`providerRequestId`, original `providerError.code`, `providerError.message`
+and bounded safe `providerError.details` or non-JSON `providerErrorBody`,
+`redactionApplied`, `truncated`, and independently `reasonCode`; fields absent
+from the original source stay absent. Original SDK exception `name`/`message`
+are authoritative when no provider response exists. Messages remain verbatim
+except required security redaction and truncation, which must be indicated.
+
+**Privacy and correctness:** Extract provider `error`/GraphQL `errors` fields,
+not whole responses, headers, prompts, MCP results, tool arguments or customer
+messages. Sensitive values inside free-form error strings must be removed
+**before** passing fields to the Shared logger; do not rely solely on the
+logger's generic redactor. If safe extraction cannot be established, retain
+safe source status/code/request ID, mark `redactionApplied:true`, redact the
+unsafe part and avoid making up another message. Never forward diagnostics to
+model context, approved WhatsApp text, MCP tool data or durable discount facts.
+
+**Required focused tests:** Simulate OpenRouter HTTP 400 with the literal
+`"This model does not support tool_choice"`, a distinct 429 provider error,
+non-OpenRouter SDK/TLS failure, MCP 401 and 503 with different original JSON
+error messages, non-JSON MCP error, absent upstream body, abortion and a
+malformed response. Assert the log retains each real upstream message/code
+with its correct origin and internal reason separately; absent messages remain
+absent. Inject a token, customer email and signed URL into error text and prove
+they do not appear in logs, model context, saved state or outgoing messages.
+Assert no changed retry/fallback, shared logger replacement or hidden catch.
 
 ## Work Items
 
@@ -299,6 +364,7 @@ Apply the existing Shared `RUNTIME_DATA_AUTHORITY_INSTRUCTION` (not the conversa
 - [ ] Implement the pure eligibility and combinations modules above, extend trusted context with generation, lineKey, source provider category/collection IDs, sale status and source-subtotal; use exact-product MCP only for missing source IDs when budget permits.
 - [ ] Validate **every** selected checkout offer against trusted basket/product/variant IDs and all source-represented restrictions; evaluate **every** pair, choose a maximal fully validated subset, and construct Shared offer set exclusively from typed MCP data.
 - [ ] Enforce MCP source-backed identity/claim validation, deterministic supported-offer fallback, typed incomplete/failure and guaranteed MCP close.
+- [ ] Preserve actual OpenRouter/SDK errors at `production-model.ts`, actual MCP HTTP error objects/bodies at `mcp-client.ts`, and propagate origin and cause through the agent boundary under section G; no guessed explanations or raw secrets.
 - [ ] After AI selects an alternative-product identity, bind the exact selected product/variant to a successful current-shop `commerce_get_product` MCP response and return the source-bound product record for BACKGROUND-008. Never pass through AI-generated product URLs or an unconfirmed search-only hit.
 - [ ] Add the named unit and Postgres context integration tests; run the exact required commands and document execution evidence, including no new Prisma migration.
 
@@ -338,6 +404,8 @@ Apply the existing Shared `RUNTIME_DATA_AUTHORITY_INSTRUCTION` (not the conversa
 - [ ] Model failure with source-supported candidates returns a deterministic supported-offer fallback; failure without supporting facts is classified as unavailable/no offer, not fabricated success.
 - [ ] Current conversational CommerceAgent and its MCP grants are unchanged; existing outreach consent/STOP/moderation, billing, Meta and delivery flows remain separate.
 
+- [ ] A real provider-supplied error message/code (including 400 and 429) and the original MCP HTTP error survive logging unchanged except marked security redactions/truncation; internal reason codes remain distinct. SDK-only/empty response errors are not labelled provider-supplied. No provider payload reaches the model/customer.
+
 ## Validation
 
 - [ ] `npx vitest run tests/unit/agents/initial-outreach-offer.agent.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/agents/initial-outreach-offer.eligibility.test.ts tests/unit/agents/initial-outreach-offer.combinations.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` — model/tool loop; NONE/FIXED/AI; checkout/alternative; merchant prompt; failures; injection; wrong tenant; revoked tool; incomplete pagination; no duplicate calls; budget/timeout/cancellation; MCP cleanup. Include model-generated URL injection, exact-product provenance, mismatched product/variant/shop, and failed/missing MCP exact-product response.
@@ -347,6 +415,8 @@ Apply the existing Shared `RUNTIME_DATA_AUTHORITY_INSTRUCTION` (not the conversa
 - [ ] `npm run build` — declared Background production build/typecheck via `prisma:generate && tsc`.
 - [ ] `git diff --check` — no whitespace issues.
 - [ ] Completion Report records test counts/results, actual LangGraph dependency version, implementation/parent worktree evidence, exact branch commits and any missing external test prerequisites without falsely marking them passed.
+
+- [ ] Focused provider diagnostic tests use injected Shared logger sink and model/MCP mocks, covering original cause, non-2xx body capture, redaction, absent/error-only body, no duplicate failure log and preserved retry/cancellation.
 
 ## Stop Condition
 

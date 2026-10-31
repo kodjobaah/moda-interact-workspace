@@ -62,6 +62,23 @@ BACKGROUND-011 Attempt 2 is awaiting architect review. It persists Basic `combin
 - `shopifyPlus` is a shop-scoped synchronised observation, not a per-offer fact discovered by the AI. Capture status once per sync and tie it to the same shop whose discounts are being fetched. A failed shop-plan read cannot create a false Plus entitlement; record `null` and the existing bounded operational failure semantics.
 - Do not add a Background-013 basket eligibility helper or a direct provider call during outbound message preparation; BACKGROUND-010 will evaluate source-backed line matches from MCP-002.
 
+### Shopify API error provenance (mandatory 31 October 2026)
+
+The existing `src/providers/shopify-discount.provider.ts` is the Shopify
+GraphQL fetch/normalisation boundary. For failed discount or shop-plan reads,
+record the **actual** Shopify HTTP or GraphQL `errors[].message` and
+source `extensions.code` (if present), original request ID, HTTP status and
+safe path/operation; preserve SDK/network exception name/message/cause when
+there is no HTTP/GraphQL error. GraphQL `errors` with HTTP 200 are failures,
+not successful empty discounts. Log source error text verbatim except marked
+PII/secret redaction and length truncation; internal `reasonCode`/sync state
+are separate. Do not log GraphQL queries containing credentials, source
+product data, request/response bodies, tokens or customer/discount codes.
+Keep existing sync generation/idempotency/failure semantics; an error must not
+mark source facts COMPLETE or silently overwrite the last trusted snapshot.
+Use only the Shared logger and the provider-origin policy; do not build a
+competing generic logger or create new external reads.
+
 ## Work Items
 
 - [ ] Add own tags/classes, shop-plan evidence and typed `minimumRequirement` (subtotal amount + currency or quantity) to both Basic GraphQL selections and normalize independently.
@@ -69,6 +86,7 @@ BACKGROUND-011 Attempt 2 is awaiting architect review. It persists Basic `combin
 - [ ] Test valid, malformed and ambiguous provider facts; record validation evidence.
 
 - [ ] Fix the constant-false completeness computation without losing any source uncertainty reason, and test a genuinely complete Basic fixture versus unsupported/partial/truncated fixtures.
+- [ ] Preserve original Shopify GraphQL/HTTP errors and SDK transport exceptions at the existing provider fetch boundary, with source provenance, separate internal reason and redaction/truncation markers.
 
 ## Interfaces / Contracts
 
@@ -90,6 +108,8 @@ Shopify Admin GraphQL 2026-07: `shop { plan { shopifyPlus } }` (one bounded shop
 - [ ] Complete source fixtures may report COMPLETE only when all relevant conditions and combination inputs were observed; incomplete cases retain precise, non-empty reasons instead of permanent false or fabricated true.
 - [ ] Both Basic selectors preserve existing discount data, seller selections and source-backed conditions without modifying provider availability/merchant flags. Subtotal threshold facts preserve the original `MoneyV2.amount/currencyCode` pair, and quantity thresholds cannot be mistaken for a zero subtotal.
 - [ ] No checkout mutation or additional provider lookup on the hot path.
+
+- [ ] Mock HTTP-200 GraphQL `errors`, HTTP 4xx/5xx provider error and SDK transport exception; assert actual Shopify message/code survives logging, secrets/codes do not leak and catalogue completeness/idempotency remains correct.
 
 ## Validation
 
