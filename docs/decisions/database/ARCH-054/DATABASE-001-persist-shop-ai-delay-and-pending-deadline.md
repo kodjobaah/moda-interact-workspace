@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: codex
 claimed_at: 2026-10-31T19:14:54Z
@@ -35,7 +35,7 @@ Architecture: `ARCH-054`
 
 Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md`
 
-Coordinator: `moda_architect`. Task **defined but not materialised**; no local Git/worktree/branch activity is claimed.
+Coordinator: `moda_architect`. Task materialised on the parent task branch; implementation Attempt 1 is complete and submitted for review.
 
 
 ## Objective
@@ -69,9 +69,9 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 
 ## Work Items
 
-- [ ] Add the four Prisma fields in existing models and generate the declared migration.
-- [ ] Add PostgreSQL CHECKs and btree due index with exact names above.
-- [ ] Test fresh migration, Prisma validation and client generation, DB constraints for -1/31/0.5, mixed-null snapshot, misordered timestamps and valid 0/30.
+- [x] Add the four Prisma fields in existing models and generate the declared migration.
+- [x] Add PostgreSQL CHECKs and btree due index with exact names above.
+- [x] Test fresh migration, Prisma validation and client generation, DB constraints for -1/31/0.5, mixed-null snapshot, misordered timestamps and valid 0/30.
 
 
 ## Interfaces / Contracts
@@ -95,14 +95,14 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Existing shop rows default to zero; fields are null on idle conversations.
-- [ ] Valid triple writes and nulling all three succeeds; invalid partial triple, out-of-range and negative revisions fail at DB.
-- [ ] Existing shop/recovery/conversation constraints remain valid; migration can run in disposable pg17 and Prisma generated client has declared names.
+- [x] Existing shop rows default to zero; fields are null on idle conversations.
+- [x] Valid triple writes and nulling all three succeeds; invalid partial triple, out-of-range and negative revisions fail at DB.
+- [x] Existing shop/recovery/conversation constraints remain valid; migration can run in disposable pg17 and Prisma generated client has declared names.
 
 
 ## Validation
 
-- [ ] `npm run validate`; `npm run prisma:generate`; apply migration to a disposable PostgreSQL; execute targeted constraint regression tests; `git diff --check`.
+- [x] `npm run validate`; `npm run prisma:generate`; apply migration to a disposable PostgreSQL; execute targeted constraint regression tests; `git diff --check`.
 
 
 ## Stop Condition
@@ -119,28 +119,48 @@ Use existing migration conventions; exact timestamp path is reserved for ARCH-05
 
 ### Status
 
-Not Started
+Implementation complete; ready for Architect review.
 
 ### Files Changed
 
-None
+- `prisma/schema.prisma`
+- `prisma/migrations/20261031170000_arch054_merchant_ai_response_delay/migration.sql`
+- `scripts/validate-arch054-ai-response-delay-schema.mjs`
+- `scripts/validate-arch054-ai-response-delay-migration.mjs`
+- `scripts/test-arch054-ai-response-delay-postgres.mjs`
+- `package.json` (focused validation commands)
 
 ### Work Completed
 
-None
+- Added `ShopSettings.aiResponseDelayMinutes` with default zero; retained the existing `recoveryDelayMinutes` field and default.
+- Added the nullable pending-AI deadline, control revision and frozen delay to `Conversation`; added the due-scan index.
+- Added named PostgreSQL checks for the shop delay range and all-or-none pending snapshot, including start timestamp, revision, delay range and deadline ordering.
+- Added focused Prisma schema/migration checks and PostgreSQL fresh/upgrade regression runs.
 
 ### Validation Results
 
-Not Run
+- `npm run validate` — passed.
+- `npm run prisma:generate` — passed with Prisma 6.19.3.
+- `npm run test:arch054-ai-response-delay-schema` — passed.
+- `npm run test:arch054-ai-response-delay-migration` — passed.
+- `npm run test:arch054-ai-response-delay:postgres:fresh` — passed against PostgreSQL 17 after applying all 68 migrations through this task.
+- `npm run test:arch054-ai-response-delay:postgres:upgrade` — passed; existing shop recovery delay and conversation start time remained unchanged, new fields received their intended defaults.
+- Database regressions cover valid 0 and 30 minute values, rejection of -1/31 and fractional integer text, negative revisions, partial snapshots, missing turn start, earlier deadlines, complete snapshot clearing, and due-index presence.
+- `git diff --check` — passed.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-None
+None.
 
 ### Worktree and Git Evidence
 
-Not materialised; implementing agent must record launcher-prepared dedicated parent/implementation worktree paths, start-of-attempt sync, branch SHAs, submodule pins and cleanup.
-
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-DATABASE-001`, branch `task/ARCH-054-DATABASE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-DATABASE-001`, branch `task/ARCH-054-DATABASE-001`.
+- Parent start-of-attempt sync: remote task branch fast-forward not needed; `origin/main` already current. Pre-claim head `7beffeb118e07f3da5f061288ba1fb7e025bb1de`; claim commit `2f738cd98630fd3b549cd3d82bccbeff3c49b087`.
+- Implementation start-of-attempt sync: remote task branch fast-forward not needed; `origin/main` already current. Pre-implementation head `b87e460e86de2044477f8c96b5c1c42e722de8f0`; implementation commit `42e23aebcc1ebacd817aa54b4ef3a0572afc6fa4` (`feat(database): persist merchant AI response delay`).
+- Recursive implementation submodules: sync passed; init/update passed; no entries were recorded.
+- Shared workspace and shared database source checkouts were not switched or modified for implementation. No other task worktree was reused. Disposable PostgreSQL containers were removed by the regression runner.
 
 ## Architect Review
 
