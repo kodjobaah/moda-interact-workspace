@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-10-31T20:25:33Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -119,7 +119,7 @@ Use existing migration conventions; exact timestamp path is reserved for ARCH-05
 
 ### Status
 
-Attempt 1 review requested a timezone-independent deadline comparison; Attempt 2 is ready to address it.
+Attempt 2 complete; the timezone-independent deadline correction is ready for Architect review.
 
 ### Files Changed
 
@@ -136,29 +136,32 @@ Attempt 1 review requested a timezone-independent deadline comparison; Attempt 2
 - Added the nullable pending-AI deadline, control revision and frozen delay to `Conversation`; added the due-scan index.
 - Added named PostgreSQL checks for the shop delay range and all-or-none pending snapshot, including start timestamp, revision, delay range and deadline ordering.
 - Added focused Prisma schema/migration checks and PostgreSQL fresh/upgrade regression runs.
+- Updated the pending-AI deadline check to interpret `pendingTurnStartedAt` as UTC with `AT TIME ZONE 'UTC'`, making the comparison independent of the session timezone.
 
 ### Validation Results
+
+Attempt 1 and Attempt 2 validation:
 
 - `npm run validate` — passed.
 - `npm run prisma:generate` — passed with Prisma 6.19.3.
 - `npm run test:arch054-ai-response-delay-schema` — passed.
-- `npm run test:arch054-ai-response-delay-migration` — passed.
+- `npm run test:arch054-ai-response-delay-migration` — passed; verifies explicit UTC conversion in the deadline constraint.
 - `npm run test:arch054-ai-response-delay:postgres:fresh` — passed against PostgreSQL 17 after applying all 68 migrations through this task.
 - `npm run test:arch054-ai-response-delay:postgres:upgrade` — passed; existing shop recovery delay and conversation start time remained unchanged, new fields received their intended defaults.
-- Database regressions cover valid 0 and 30 minute values, rejection of -1/31 and fractional integer text, negative revisions, partial snapshots, missing turn start, earlier deadlines, complete snapshot clearing, and due-index presence.
+- PostgreSQL regression inserts a valid UTC deadline after its UTC turn start under `America/Los_Angeles`, and rejects a deadline before turn start in that same non-UTC session timezone; existing range, snapshot, revision, and 0/30 boundary checks also pass.
 - `git diff --check` — passed.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-Review intake for Attempt 1: make the deadline check timezone-independent. The comparison between `pendingAiNotBeforeAt` (`timestamptz`) and `pendingTurnStartedAt` (`timestamp without time zone`) must interpret the stored turn-start timestamp as UTC explicitly. Attempt 1 remains unchanged; correction is assigned to Attempt 2.
+Attempt 1 P2 addressed in Attempt 2: the CHECK now compares `pendingAiNotBeforeAt` with `pendingTurnStartedAt AT TIME ZONE 'UTC'`. The PostgreSQL regression verifies valid and invalid comparisons under `America/Los_Angeles`.
 
 ### Worktree and Git Evidence
 
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-DATABASE-001`, branch `task/ARCH-054-DATABASE-001`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-DATABASE-001`, branch `task/ARCH-054-DATABASE-001`.
-- Parent start-of-attempt sync: remote task branch fast-forward not needed; `origin/main` already current. Pre-claim head `7beffeb118e07f3da5f061288ba1fb7e025bb1de`; claim commit `2f738cd98630fd3b549cd3d82bccbeff3c49b087`.
-- Implementation start-of-attempt sync: remote task branch fast-forward not needed; `origin/main` already current. Pre-implementation head `b87e460e86de2044477f8c96b5c1c42e722de8f0`; implementation commit `42e23aebcc1ebacd817aa54b4ef3a0572afc6fa4` (`feat(database): persist merchant AI response delay`).
+- Attempt 2 parent start-of-attempt sync: remote task branch fast-forward not needed; `origin/main` already current. Pre-claim head `7f0ab8785840f190a9d9540b9fae4f11b987c987`; claim commit `92ec8e1bbbefd41adc680b8cab4887264777d1a3`.
+- Attempt 2 implementation start-of-attempt sync: remote task branch fast-forward not needed; `origin/main` already current. Pre-implementation head `42e23aebcc1ebacd817aa54b4ef3a0572afc6fa4`; correction commit `7002f867f035742771889afcf4ae5874570c53f6` (`fix(database): compare pending deadline in UTC`).
 - Recursive implementation submodules: sync passed; init/update passed; no entries were recorded.
 - Shared workspace and shared database source checkouts were not switched or modified for implementation. No other task worktree was reused. Disposable PostgreSQL containers were removed by the regression runner.
 
