@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 23
-executor: copilot
-claimed_at: 2026-10-31T03:26:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-012
@@ -26,7 +26,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Portable task definition; defined but not materialised.** This package does not create a developer branch, checkout, commit or push.
+Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Materialised and completed in the launcher-resolved task worktrees.**
 
 ## Objective
 
@@ -416,7 +416,7 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ### Status
 
-Ready for Review.
+Complete — accepted by the architect on Attempt 1.
 
 ### Files Changed
 
@@ -459,26 +459,32 @@ None identified. The new schema export is present in the existing Commerce expor
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review
 
-Pending.
+#### Review Status
 
-### Review Notes
+Accepted — Complete (2026-10-31).
 
-No implementation reviewed.
+#### Review Notes
 
-### Reviewed Files
+The implementation matches the bounded contract change: `CommerceDiscountConditionFactsSchema` adds exactly one required nullable `subtotalRequirementCurrency` using the existing `CurrencySchema`; the inferred type therefore requires `string | null`. The change preserves the strict schema, existing `commerce.v1` nesting, and all prior fields. The tests cover source-known GBP independent of discount currency, absent and unknown threshold currency, conflicting threshold currencies, omission and invalid representations, strict unknown-key handling, and nested details/tool-result wrappers. No provider behavior, package metadata, consumer code or publication was included.
 
-None.
+The submitted implementation commit `0b13687d4584801b2aaef3bd625d5b2d6f693648` is present on `origin/task/ARCH-052-SHARED-013`; parent report commit `d67170ed2cfdfa6c25cebb726461cefd209c61b2` is also present on its task branch. Both launcher-resolved worktrees were clean and local/remote synchronized at review. Package version remains unpublished at `2.8.1`; publication stays with SHARED-014.
 
-### Validation Reviewed
+#### Reviewed Files
 
-Not run.
+- `moda-interact-shared/src/commerce/schemas.ts`
+- `moda-interact-shared/src/commerce/tool-contracts.test.ts`
+- This task definition and Completion Report.
 
-### Architecture Conformance
+#### Validation Reviewed
 
-Pending.
+The Completion Report records the focused suite (6 passed), full suite (402 passed, 1 skipped), typecheck, build, Commerce entrypoint validation and `git diff --check` as passing. These implementation validations were reviewed from the report and were not rerun during architect review.
 
-### Follow-up
+#### Architecture Conformance
 
-None.
+Accepted. The implementation satisfies the required nullable structural contract and preserves the published 2.8.1 artifact, with release work correctly held for SHARED-014. No unresolved implementation or architecture issue remains.
+
+#### Follow-up
+
+SHARED-013 is Complete. Mark ARCH-052-SHARED-014 Ready because its sole dependency is now Complete. Do not publish the package as part of this review. MCP-002 and BACKGROUND-010 remain Pending until their other dependencies are satisfied.
