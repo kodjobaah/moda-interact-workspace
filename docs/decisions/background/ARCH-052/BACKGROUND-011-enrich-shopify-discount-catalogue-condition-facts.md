@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-10-31T03:24:48Z
@@ -97,7 +97,7 @@ Source files: `moda-interact-background/src/providers/shopify-discount.provider.
 
 ### Status
 
-Ready for architect review after Attempt 4. The existing Shopify discount catalogue path now stores bounded provider-observed condition facts, projects Shopify Basic combination policy through Shared, and retains recurring-cycle limits in `ShopifyDiscount.providerSnapshot` while reporting unrepresented subscription limits as PARTIAL.
+Ready for architect review after Attempt 5. In addition to the source-backed discount projection, provider and SDK failures now reach the Shared logger with bounded, redacted explicit diagnostic fields; Shopify GraphQL source messages and codes are retained without logging response bodies. The catalogue stores a stable failure code separately from diagnostic text.
 
 ### Files Changed
 
@@ -226,6 +226,38 @@ Both `DiscountAutomaticBasic` and `DiscountCodeBasic` GraphQL fragments now sele
 - `npm run build` — passed, including Prisma Client generation and TypeScript compilation.
 - `git diff --check` — passed.
 - PostgreSQL selection integration was not rerun: this correction changes only Shopify provider fields/normalization and provider unit coverage; no persistence or database behavior changed. The earlier Attempt 2 integration result remains recorded above.
+
+ARCH-052-MCP-002 was not started.
+
+### Attempt 5 — Shared Logger Diagnostic Correction
+
+The prepared launcher claimed Attempt 5 as `codex` at `2026-10-31T03:24:48Z` and pushed parent claim commit `19805fa2adb1a2965f9d1b96db23499f5010ce65`. Its dependency gate passed for `ARCH-052-BACKGROUND-009` and `ARCH-052-SHARED-010`.
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`, starting at `1527b061a12be0bd8a2feb3d309d0887626ea3f5`; task-branch fast-forward was `not-needed`, and `origin/main` was already current.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`, starting at `871670b47bd9a3ccb9831eac42ffd1d5d1d1cd7a`; task-branch fast-forward was `not-needed`, and `origin/main` was already current.
+- Recursive submodule synchronization and initialization passed; the database submodule is at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+
+The provider now represents Shopify GraphQL errors with bounded provider response diagnostics. It preserves source `errors[].message`, `extensions.code`, HTTP status, and an available request ID. Provider message, code, request ID, exception message, stack, and up to three cause entries are redacted and bounded before becoming explicit fields passed to the Shared logger. Internally generated pagination/response failures have `origin: internal`; external GraphQL failures have `origin: provider_response`; transport exceptions retain `origin: sdk_exception`. Missing provider errors do not create a fabricated `providerErrors` field. The response body and successful GraphQL payload are never logged. Non-JSON HTTP error responses retain only HTTP status and a `providerResponseFormat: non_json` marker because their body cannot be safely filtered as structured source diagnostics.
+
+The catalogue service logs a stable `reasonCode` and persists `lastErrorCode: SHOPIFY_DISCOUNT_PROVIDER_FAILED`, independent of provider diagnostic text. The worker logs explicit exception stack/cause fields for internal and SDK failures and avoids a second log for provider failures already logged at the catalogue boundary. Failures continue to propagate for the existing retry behavior. Regression tests assert safe GraphQL message/code retention, diagnostics reaching the service/worker Shared logger fields, redaction of test credentials and PII, stable persisted failure classification, and single-boundary provider logging.
+
+#### Attempt 5 Architect Review disposition
+
+- **Preserve bounded, redacted actual diagnostics — implemented.** Added explicit exception name, message, stack, and bounded cause fields at the logging boundary; the Shared logger still owns output serialization and sink isolation.
+- **Preserve actionable Shopify GraphQL failures safely — implemented.** Retain sanitized provider message, code, status and request ID only; raw response bodies and customer/provider payloads are not logged.
+- **Keep catalogue state stable and add regressions — implemented.** Failure persistence uses a stable Moda reason code, and provider/service/worker tests verify safe diagnostic fields and no duplicate boundary log.
+- **Keep MCP-002 pending — satisfied.** No MCP-002 implementation was started.
+
+#### Attempt 5 validation
+
+- Focused command `npm test -- tests/unit/providers/shopify-discount.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts tests/unit/workers/shopify-discount-sync.worker.test.ts` — 3 files, 24 tests passed.
+- Changed-file ESLint across the provider, service, worker, and three corresponding unit test files — passed.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation.
+- `git diff --check` — passed in the implementation and parent task worktrees.
+- PostgreSQL selection integration was not rerun; the correction changes diagnostics and stable error classification only, and does not alter database queries or selection behavior. The earlier Attempt 2 integration evidence remains recorded above.
+
+The implementation changes are in `src/providers/shopify-discount.provider.ts`, `src/services/shopify-discount-catalogue.service.ts`, `src/workers/shopify-discount-sync.worker.ts`, and their three corresponding unit tests. No package, lockfile, submodule gitlink, database schema, or MCP implementation changes were made.
 
 ARCH-052-MCP-002 was not started.
 
