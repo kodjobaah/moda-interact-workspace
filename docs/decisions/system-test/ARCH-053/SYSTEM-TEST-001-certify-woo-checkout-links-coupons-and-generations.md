@@ -22,7 +22,7 @@ depends_on:
 - ARCH-046-WOOCOMMERCE-003
 enables: []
 created: 2026-10-29
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # ARCH-053-SYSTEM-TEST-001 — Certify core Woo checkout link and recovery-generation lifecycle
@@ -45,7 +45,7 @@ The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount
 - Verify capture of 1..50 core lines including variations/attributes and **no-applied-coupon** snapshot cases, canonical v1 HTTP schema → existing v1 queue projection, candidate update, admission's immutable `wooRestoreSnapshot` and URL, template CTA safety, authenticated resolution and cross-device customer confirmation. Full applied-coupon lifecycle is assigned to `ARCH-053-SYSTEM-TEST-002`.
 - Verify HTTP `woo.activity.v1` with or without phone, preserve canonical phone proof validation and reject `woo.activity.v2`/`woo.activity.v3` after coordinated cutover; none of these may create a second queue envelope.
 - Test 2 shops (correct installation auth and hostname), same original checkout with generation 1→resumption→generation 2, independent eligible initial outreach without cross-generation cap, duplicate event and retry suppression, historical URL revocation, order placement/paid suppression, consent withdrawal/STOP, status terminality and delivery retry failures.
-- Assert the core restore flow uses *current* Woo pricing/tax/shipping, no historical totals; do not certify coupon-bearing restores under this task. The complete original-coupon matrix and notice presentation are terminal SYSTEM-TEST-002 responsibilities.
+- Assert the core restore flow uses *current* Woo pricing/tax/shipping, no historical totals; do not certify coupon-bearing restores under this task. The complete original-coupon matrix and **storefront-silent private diagnostics / correct totals** are terminal SYSTEM-TEST-002 responsibilities.
 - Security matrix: WhatsApp preview GET and HEAD no cart mutation, forged POST/nonce, wrong token/wrong tenant, superseded generation, older link with newer shopping basket, existing cart confirmation, unsupported extension item/no silent partial restore, malicious URL host/subpath, no PII/coupon/token in logs/referrer, WordPress offline and API outage.
 - Capture manual direct return to original Woo session with unchanged fingerprint and new user interaction; confirm **one new delayed BullMQ candidate** (not an immediate CheckoutRecovery) and no event from idle homepage or passive scanner.
 
@@ -72,7 +72,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 - [ ] Create cross-service fixtures with two merchants and multiple Woo sessions/browsers.
 - [ ] Run core product/cross-device/Classic+Blocks restoration with `appliedCouponCodes: []` and recovery-generation scenario matrix.
-- [ ] Run security/consent/STOP/terminal/order/error/retry tests and record independent evidence.
+- [ ] Run security/consent/STOP/terminal/order/error/retry tests: assert technical failures have private diagnostics and **no Moda-generated errors or Woo notices triggered by Moda** in checkout HTML/redirect/session/console; record evidence.
 - [ ] Return defects to owning agent tasks with a precise failing reproduction; complete test report; do not mutate implementation.
 
 ## Interfaces / Contracts
@@ -95,10 +95,10 @@ None.
 
 - [ ] Create cross-service fixtures with two merchants and multiple Woo sessions/browsers.
 - [ ] Run core product/cross-device/Classic+Blocks restoration with `appliedCouponCodes: []` and recovery-generation scenario matrix.
-- [ ] Run security/consent/STOP/terminal/order/error/retry tests and record independent evidence.
+- [ ] Run security/consent/STOP/terminal/order/error/retry tests: assert technical failures have private diagnostics and **no Moda-generated errors or Woo notices triggered by Moda** in checkout HTML/redirect/session/console; record evidence.
 - [ ] Return defects to owning agent tasks with a precise failing reproduction; complete test report; do not mutate implementation.
 - [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
+- [ ] Tests demonstrate invalid/stale/replayed and unexpected failures never produce false restoration success, malformed URLs or **storefront-visible Moda errors**, while keeping recoverable server-side diagnostics.
 - [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
