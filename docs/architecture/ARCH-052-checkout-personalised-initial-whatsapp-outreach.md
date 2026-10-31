@@ -205,7 +205,7 @@ This section **supersedes earlier language implying that AI, MCP, `facts.complet
 
 ## Decisions / Tasks
 
-Individual task YAML is authoritative within the exported snapshot. SHARED-011, ARCH-053-SHARED-003 and SHARED-012 are Complete; published Shared is 2.8.1. BACKGROUND-011 has separate externally reported Attempt 2 review evidence that has not been reconciled into this export, so its stale Ready YAML must not override the active review claim. Developer-reported SHOPIFY-001, MCP-005 and ARCH-049-BACKGROUND-003 work remains active. MCP-002/MCP-003 and other unsatisfied-dependency work remain Pending; system tests are terminal. No database migration task is required.
+Individual task YAML is authoritative within the exported snapshot. SHARED-011, ARCH-053-SHARED-003 and SHARED-012 are Complete; published Shared is 2.8.1. BACKGROUND-011 has separate externally reported Attempt 2 review evidence that has not been reconciled into this export, so its stale Ready YAML must not override the active review claim. Developer-reported SHOPIFY-001, MCP-005 and ARCH-049-BACKGROUND-003 work remains active. MCP-003 is Complete; MCP-002 and other tasks with unsatisfied dependencies remain Pending. System tests are terminal. No database migration task is required.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
@@ -232,13 +232,13 @@ Individual task YAML is authoritative within the exported snapshot. SHARED-011, 
 | [ARCH-052-COMMERCE-003](../decisions/commerce/ARCH-052/COMMERCE-003-serve-authenticated-private-shopify-recovery-reads.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-COMMERCE-004](../decisions/commerce/ARCH-052/COMMERCE-004-author-published-discount-mcp-tools.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-COMMERCE-005](../decisions/commerce/ARCH-052/COMMERCE-005-publish-approved-mcp-discount-capabilities.md) | `moda_commerce` | Superseded | — |
-| [ARCH-052-COMMERCE-006](../decisions/commerce/ARCH-052/COMMERCE-006-bootstrap-product-search-and-get-product-tools.md) | `moda_commerce` | Ready | `ARCH-052-SHARED-010` |
-| [ARCH-052-COMMERCE-007](../decisions/commerce/ARCH-052/COMMERCE-007-publish-code-defined-product-tool-release.md) | `moda_commerce` | Pending | `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-003` |
+| [ARCH-052-COMMERCE-006](../decisions/commerce/ARCH-052/COMMERCE-006-bootstrap-product-search-and-get-product-tools.md) | `moda_commerce` | Complete | `ARCH-052-SHARED-010` |
+| [ARCH-052-COMMERCE-007](../decisions/commerce/ARCH-052/COMMERCE-007-publish-code-defined-product-tool-release.md) | `moda_commerce` | Ready | `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-003` |
 | [ARCH-052-COMMERCE-008](../decisions/commerce/ARCH-052/COMMERCE-008-verify-shopify-alternative-product-promotion.md) | `moda_commerce` | Superseded | — |
-| [ARCH-052-GATEWAY-001](../decisions/gateway/ARCH-052/GATEWAY-001-configure-private-recovery-product-read-transport.md) | `moda_gateway` | Pending | `ARCH-052-MCP-003` |
+| [ARCH-052-GATEWAY-001](../decisions/gateway/ARCH-052/GATEWAY-001-configure-private-recovery-product-read-transport.md) | `moda_gateway` | Ready | `ARCH-052-MCP-003` |
 | [ARCH-052-MCP-001](../decisions/mcp/ARCH-052/MCP-001-authorize-initial-recovery-outreach-tool-context.md) | `moda_mcp` | Complete | `ARCH-052-SHARED-003` |
 | [ARCH-052-MCP-002](../decisions/mcp/ARCH-052/MCP-002-execute-published-discount-options-and-proof.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-013`, `ARCH-052-BACKGROUND-014`, `ARCH-052-MCP-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-011`, `ARCH-052-SHARED-014` |
-| [ARCH-052-MCP-003](../decisions/mcp/ARCH-052/MCP-003-direct-provider-product-search-and-exact-read.md) | `moda_mcp` | Pending | `ARCH-052-SHARED-010`, `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-005` |
+| [ARCH-052-MCP-003](../decisions/mcp/ARCH-052/MCP-003-direct-provider-product-search-and-exact-read.md) | `moda_mcp` | Complete | `ARCH-052-SHARED-010`, `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-005` |
 | [ARCH-052-MCP-004](../decisions/mcp/ARCH-052/MCP-004-verify-alternative-product-discount-promotions.md) | `moda_mcp` | Superseded | — |
 | [ARCH-052-MCP-005](../decisions/mcp/ARCH-052/MCP-005-implement-direct-woocommerce-rest-product-reader.md) | `moda_mcp` | Complete | — |
 | [ARCH-052-MCP-006](../decisions/mcp/ARCH-052/MCP-006-preserve-original-woo-provider-errors.md) | `moda_mcp` | Ready | `ARCH-052-MCP-005` |

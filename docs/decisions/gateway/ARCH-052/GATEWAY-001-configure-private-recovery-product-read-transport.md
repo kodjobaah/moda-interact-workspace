@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 45
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: '2026-10-31'
 ---
 
 # ARCH-052-GATEWAY-001: Configure private Shopify proof and direct MCP WooCommerce REST access
