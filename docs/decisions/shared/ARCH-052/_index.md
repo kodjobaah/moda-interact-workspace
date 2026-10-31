@@ -21,6 +21,6 @@ Task materialisation is recorded per task; individual task YAML frontmatter is a
 | [ARCH-052-SHARED-011](SHARED-011-define-discount-combinations-and-outreach-offer-sets.md) | Define combination facts and bounded checkout offer sets | Complete | `ARCH-052-SHARED-010` |
 | [ARCH-052-SHARED-012](SHARED-012-publish-multi-discount-and-woo-v1-contract-update.md) | Publish accepted multi-discount and Woo v1 contract update | Complete | `ARCH-052-SHARED-011`, `ARCH-053-SHARED-003` |
 | [ARCH-052-SHARED-013](SHARED-013-project-subtotal-threshold-currency.md) | Add source-observed subtotal threshold currency to discount condition facts | Complete | `ARCH-052-SHARED-012` |
-| [ARCH-052-SHARED-014](SHARED-014-publish-threshold-currency-fact-contract.md) | Publish accepted subtotal-threshold currency wire update | Ready | `ARCH-052-SHARED-013` |
+| [ARCH-052-SHARED-014](SHARED-014-publish-threshold-currency-fact-contract.md) | Publish accepted subtotal-threshold currency wire update | Complete | `ARCH-052-SHARED-013` |
 
-SHARED-012 and SHARED-013 are architect-accepted Complete. Shared 2.8.1 is published; SHARED-014 is Ready to publish the accepted threshold-currency contract as a new immutable version.
+SHARED-012, SHARED-013 and SHARED-014 are architect-accepted Complete. Shared 2.8.1 and the accepted threshold-currency update in 3.0.0 are published.

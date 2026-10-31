@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 24
-executor: copilot
-claimed_at: 2026-10-31T03:59:37Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-013
@@ -27,7 +27,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Defined but not materialised.**
+Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Coordinator: `moda_architect`. **Materialised and completed in the launcher-resolved task worktrees.**
 
 ## Objective
 
@@ -98,7 +98,7 @@ Use the owning Shared repo's existing publication command and launcher-resolved 
 
 ### Status
 
-Ready for architect review. ARCH-052-SHARED-013 was Complete with an Accepted review before publication; version `3.0.0` is published and its registry tarball has been inspected.
+Complete — accepted by the architect on Attempt 1. ARCH-052-SHARED-013 was Complete with an Accepted review before publication; version `3.0.0` is published and its registry tarball has been inspected.
 
 ### Files Changed
 
@@ -140,26 +140,33 @@ The immutable `3.0.0` artifact is published with the accepted SHARED-013 impleme
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review
 
-Pending.
+#### Review Status
 
-### Review Notes
+Accepted — Complete (2026-10-31).
 
-No publication reviewed.
+#### Review Notes
 
-### Reviewed Files
+The publication task satisfies its release gate. SHARED-013 was already Complete with an Accepted architect review, and the publication branch contains that accepted source. The implementation diff is limited to the version fields in `package.json` and `package-lock.json`; no source, tests, export map or dependencies changed. Version `3.0.0` is a major release, appropriate for the newly required strict-contract field, and leaves immutable `2.8.1` untouched.
 
-None.
+The Completion Report records inspection of the exact registry tarball and its declarations/exports: required nullable `subtotalRequirementCurrency`, combination facts, checkout offer-set exports, Woo offer exports, and Commerce/Woo entrypoints. Its reported tarball integrity is `sha512-CvixJpQEL0nOQv+zoDUAveF0JA1G9PFrT2FN+ubYu94tEgjiLRMtHZGLyxfE5FUHroDt6ZajY/36j3EvyJyFuw==`, with SHA-1 `690daf0aa4684a545cc1c39a941ab2267f93b856`; the report states registry metadata and the downloaded tarball matched. The initial registry propagation delay was resolved and no duplicate publish was made.
 
-### Validation Reviewed
+#### Reviewed Files
 
-Not run.
+- `moda-interact-shared/package.json`
+- `moda-interact-shared/package-lock.json`
+- This task definition and Completion Report.
+- Accepted SHARED-013 implementation commit `0b13687d4584801b2aaef3bd625d5b2d6f693648` as release provenance.
 
-### Architecture Conformance
+#### Validation Reviewed
 
-Pending.
+Reviewed the recorded SHARED-013 acceptance gate, release metadata diff, `prepack` build, npm publication, registry metadata, exact downloaded tarball integrity and export inspection, and `git diff --check`. Tests, typecheck and lint were not rerun, as required by this publication task. Dependency advisories reported during `npm ci` are documented and outside this task's scope. These validations were reviewed from the report and were not rerun during architect review.
 
-### Follow-up
+#### Architecture Conformance
 
-None.
+Accepted. The exact accepted contract is available as immutable `@modainteract/moda-interact-shared@3.0.0`; the release is metadata-only in Git and follows the task's publication boundary. No unresolved publication or architecture issue remains.
+
+#### Follow-up
+
+SHARED-014 is Complete. MCP-002 and BACKGROUND-010 remain Pending because they still have other unsatisfied dependencies; publication clears only their SHARED-014 dependency. Do not begin their work through this review.
