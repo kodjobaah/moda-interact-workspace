@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-10-31T09:44:59Z
@@ -88,18 +88,18 @@ PHP `checkout.restoration` must conform to the published ARCH-053-SHARED-001 v1 
 
 ## Acceptance Criteria
 
-- [ ] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
-- [ ] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
-- [ ] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
-- [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
-- [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
+- [x] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
+- [x] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
+- [x] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
+- [x] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
+- [x] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
+- [x] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
-- [ ] `composer test` focused CheckoutCapture/CheckoutSnapshot tests
-- [ ] `npm run test:integration:wordpress` targeted snapshot serialization for Classic/Blocks with original coupon list and variations when environment available
-- [ ] `composer lint` and `git diff --check`
+- [x] `composer test` focused CheckoutCapture/CheckoutSnapshot tests
+- [x] `npm run test:integration:wordpress` targeted snapshot serialization for Classic/Blocks with original coupon list and variations when environment available
+- [x] `composer lint` and `git diff --check`
 
 ## Stop Condition
 
@@ -113,11 +113,11 @@ The plugin already has `CheckoutKey::SESSION_FIELD`, Action Scheduler and the v2
 
 ### Status
 
-Attempt 2 implementation is prepared, but required PHP and WordPress integration validation is blocked because `scripts/bootstrap-woocommerce.sh` reports that Docker is installed but its daemon is unavailable. The implementation is not ready for architect review until validation can run successfully.
+Attempt 2 implementation and required focused validation are complete. Ready for `moda_architect` review. The implementation branch and this report are pushed; no producer deployment was performed.
 
 ### Claim Release History
 
-Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, that claim was released. The launcher claimed Attempt 2 for Codex at `2026-10-31T09:44:59Z`, re-gated both dependencies, synchronized the dedicated parent and implementation task worktrees, and pushed the durable parent claim (`f92db4455fe861fda3a04b16a083cd7fcd654a55`). Implementation baseline was `b905dab216f8598269ebd32e8d70af150524d274`. Implementation commit `5f679b6` is pushed to `origin/task/ARCH-053-WOOCOMMERCE-001`. Attempt 2 remains active and is marked Blocked pending the developer-managed Docker daemon and required validation.
+Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, that claim was released. The launcher claimed Attempt 2 for Codex at `2026-10-31T09:44:59Z`, re-gated both dependencies, synchronized the dedicated parent and implementation task worktrees, and pushed the durable parent claim (`f92db4455fe861fda3a04b16a083cd7fcd654a55`). Implementation baseline was `b905dab216f8598269ebd32e8d70af150524d274`. Implementation commits `5f679b6` and `8f48e22` are pushed to `origin/task/ARCH-053-WOOCOMMERCE-001`. Attempt 2 is complete and ready for architect review.
 
 ### Files Changed
 
@@ -131,17 +131,19 @@ Implemented the bounded `woo.cart-restore.v1` snapshot with the complete origina
 
 ### Validation Results
 
-`git diff --check` — passed in the implementation worktree.
+`git diff --check` — passed in the implementation worktree after the final edits.
 
-`composer test -- tests/CheckoutCaptureTest.php` — blocked. Before PHP/Composer commands, the required `scripts/bootstrap-woocommerce.sh` reported: `ERROR: Docker is installed but the Docker daemon is not available. Start the configured Docker runtime, then rerun the bootstrap.` The subsequent Composer invocation confirmed `vendor/bin/phpunit` is absent. No PHP runtime command was run after bootstrap failed.
+`composer test -- tests/CheckoutCaptureTest.php` — passed: 16 tests, 145 assertions.
 
-`composer lint` — not run because the same bootstrap prerequisite is unavailable.
+`composer lint` — passed: all declared PHP files reported no syntax errors.
 
-`npm run test:integration:wordpress -- --checkout-only` — not run because the canonical WooCommerce bootstrap reports no Docker daemon. No integration runtime was started or substituted.
+`npm run test:integration:wordpress -- --checkout-only` — passed against the task-created disposable wp-env using Colima, port 8891. Classic and Blocks scenarios verified the original applied coupon and selected variation in the supported restoration projection; the checkout-only runner reported PASS and cleaned its temporary fixture data.
+
+The broad `npm run test:integration:wordpress` runner was attempted. Its first startup collided with the existing developer wp-env on port 8888. Retrying on an isolated port reached the checkout scenarios but exposed a missing Store API cart-session initialization in the new integration helper. The helper was corrected; the focused checkout-only integration was then run successfully on the disposable task environment. The developer environment on port 8888 was not modified.
 
 ### Deviations
 
-Validation is incomplete because the canonical WooCommerce bootstrap cannot find a running Docker daemon. The requested PHP test could not execute because its vendor PHPUnit binary is absent. No substitute runtime was installed or selected.
+The restricted shell could not reach the running Colima socket; host-level validation confirmed the configured Colima VM and canonical bootstrap. The task-specific wp-env cache is under the Colima-shared home directory and uses port 8891 to avoid the existing developer environment. The existing developer environment on port 8888 was left untouched.
 
 ### Assumptions
 
@@ -149,7 +151,7 @@ The canonical launcher packet supplied the authoritative worktree paths and depe
 
 ### Unresolved Issues
 
-The configured Docker daemon is unavailable. The developer must start the configured runtime (Colima) and rerun the task so the canonical bootstrap, PHP tests/lint and targeted WordPress integration validation can run. Do not bypass the bootstrap or start/replace the runtime from this task.
+None.
 
 ### Architectural Concerns
 
