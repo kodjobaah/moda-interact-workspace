@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 45
 executor: null
 claimed_at: null
@@ -194,7 +194,7 @@ The prepared API-002 implementation was present. The expected ARCH-016 database 
 
 `database/prisma/migrations/20260916150000_arch016_recovery_policy_discounts_outreach_generations/migration.sql` in the pinned database submodule adds `ck_arch016_checkout_recovery_lifetime CHECK ("checkoutRecoveryLifetimeDays" BETWEEN 1 AND 90)`. A search of all tracked migrations at that exact pin found no removal of this constraint. The API accepts valid PostgreSQL integer values as required, but the persisted canonical schema cannot currently store the task-required values above 90. No database-owned files were changed. `moda_architect` must reconcile the completed ARCH-016-DATABASE-002 dependency or sequence its corrected database pin before this task can satisfy the unrestricted-lifetime acceptance criterion.
 
-Architect reconciliation (2026-10-31): The canonical API implementation worktree is clean and contains pushed commits `e9fa59c` and `b73cb22`. The task remains blocked because its database submodule is pinned at `af77c594ecbfc78c26d01c0021a090830884bbff`, which does not include ARCH-016-DATABASE-002's accepted forward migration. The stale Copilot claim is cleared; status remains blocked and attempt 1 is preserved.
+Architect reconciliation (2026-10-31): The blocker is cleared by the accepted and published `ARCH-016-DATABASE-002` change. Canonical database `main` is `b87e460e86de2044477f8c96b5c1c42e722de8f0`, and contains `prisma/migrations/20261031110000_arch016_remove_recovery_lifetime_check/migration.sql`, which drops only `ck_arch016_checkout_recovery_lifetime`. The database task Completion Report records passing fresh and upgrade PostgreSQL validation, including values above 90 through `2147483647`. The published API task branch now points `database` to that exact canonical commit: API task commit `8b043e5ae0432312c6114311c0f69db86b7b1e07` changes only the database gitlink from `af77c594ecbfc78c26d01c0021a090830884bbff` to `b87e460e86de2044477f8c96b5c1c42e722de8f0`. API-004 is returned to `ready`; `executor` and `claimed_at` remain null, `attempt: 1` is preserved, and no new API attempt or implementation review is claimed. `Architect Review` remains Pending.
 
 ### Architectural Concerns
 
