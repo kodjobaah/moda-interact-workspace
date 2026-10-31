@@ -204,7 +204,9 @@ Details map exact Shopify provider IDs, basic values/threshold currencies, targe
 
 `npm run build` — passed.
 
-Changed-file ESLint command — passed. Full `npm run lint` — failed only on the existing unrelated unused `randomUUID` import at `src/connections/shopify/provider.ts:1`; no unrelated source was changed.
+`./node_modules/.bin/eslint src/execution/discount-catalogue.ts src/mcp/ports.ts src/mcp/registration.ts src/runtime/ports.ts src/runtime/prisma.ts src/runtime/service-ports.ts tests/unit/execution/discount-catalogue.test.ts tests/integration/prisma.integration.test.ts --max-warnings=0` — passed.
+
+`npm run lint` — failed only on the existing unrelated unused `randomUUID` import at `src/connections/shopify/provider.ts:1`; no unrelated source was changed.
 
 `git diff --check` — passed.
 
@@ -230,24 +232,24 @@ Escalate any unexpected provider API/auth/Shared/schema/contract gap to `moda_ar
 
 ### Review Status
 
-Pending. Returned for architect review; no acceptance decision has been made by this agent.
+Pending.
 
 ### Review Notes
 
-Implementation and evidence are submitted for review. The declared Docker integration command could not start because Docker is unavailable; see the Completion Report. No implementation is accepted by this agent.
+Task definition only. No implementation accepted.
 
 ### Reviewed Files
 
-Implementation files listed in the Completion Report and the task-owned validation evidence; architect review is pending.
+Relevant October 29, 2026 code snapshot and task definition; no implementation source changes for this task reviewed.
 
 ### Validation Reviewed
 
-209 MCP unit tests, source and integration typechecks, build, changed-file lint and `git diff --check` were reported passed. Docker PostgreSQL integration did not execute (`docker` binary unavailable). Full lint reports one unrelated existing unused import.
+None for implementation.
 
 ### Architecture Conformance
 
-Pending architect review. Shared contract, tenant/policy guards, PostgreSQL-only source reads and published MCP envelope are preserved. No architect acceptance decision has been made by this agent.
+Pending implementation review.
 
 ### Follow-up
 
-Developer: rerun `npm run test:integration:docker` from the implementation worktree in a Docker-enabled environment and attach the command result. `moda_architect`: review the implementation and evidence; this agent stops at `review` and does not start enabled tasks or merge/push main.
+Materialise through the canonical launcher only after all dependency task YAMLs are Complete.
