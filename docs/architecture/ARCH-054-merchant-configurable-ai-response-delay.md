@@ -149,13 +149,13 @@ Database migration → Shared implementation acceptance → Shared publication �
 |---|---|---|---|
 | ARCH-054-DATABASE-001 | moda_database | Complete | — |
 | ARCH-054-SHARED-001 | moda_shared | Ready | — |
-| ARCH-054-SHARED-002 | moda_shared | Ready | SHARED-001 |
+| ARCH-054-SHARED-002 | moda_shared | Complete | SHARED-001 |
 | ARCH-054-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
 | ARCH-054-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001, API-002, SHOPIFY-002 |
 | ARCH-054-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
-| ARCH-054-API-001 | moda_api | Pending | DATABASE-001, SHARED-002 |
+| ARCH-054-API-001 | moda_api | Ready | DATABASE-001, SHARED-002 |
 | ARCH-054-API-002 | moda_api | Complete | DATABASE-001 |
-| ARCH-054-SHOPIFY-001 | moda_app | Pending | DATABASE-001, SHARED-002 |
+| ARCH-054-SHOPIFY-001 | moda_app | Complete | DATABASE-001, SHARED-002 |
 | ARCH-054-SHOPIFY-002 | moda_app | Ready | DATABASE-001 |
 | ARCH-054-WOOCOMMERCE-001 | moda_woocommerce | Pending | API-001 |
 | ARCH-054-SYSTEM-TEST-001 | moda_system_test | Pending | all implementation/release tasks |
