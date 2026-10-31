@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-016-DATABASE-001
 enables:
@@ -83,12 +83,12 @@ scripts/validate-arch016-recovery-schema.mjs                                    
 
 ## Work Items
 
-- [ ] Verify schema column, old migration and new migration path.
-- [ ] Create only the forward `DROP CONSTRAINT` migration.
-- [ ] Add `scripts/test-arch016-recovery-lifetime-postgres.mjs` using the disposable `pgvector/pgvector:pg17` pattern from `scripts/test-arch050-initial-recovery-support-notification-postgres.mjs`, with `--mode fresh|upgrade`, a unique container name, `--network none`, and unconditional `finally` cleanup.
-- [ ] Add `test:arch016-recovery-lifetime:postgres:fresh` and `test:arch016-recovery-lifetime:postgres:upgrade` package commands.
-- [ ] Verify the legacy ARCH-016 schema validator does not assert that the old constraint remains **present in the current migrated schema**; if it does, scope the check to the historical migration or correct its expectation without changing unrelated assertions.
-- [ ] Record exact commands, container cleanup evidence and migration checks in the Completion Report.
+- [x] Verify schema column, old migration and new migration path.
+- [x] Create only the forward `DROP CONSTRAINT` migration.
+- [x] Add `scripts/test-arch016-recovery-lifetime-postgres.mjs` using the disposable `pgvector/pgvector:pg17` pattern from `scripts/test-arch050-initial-recovery-support-notification-postgres.mjs`, with `--mode fresh|upgrade`, a unique container name, `--network none`, and unconditional `finally` cleanup.
+- [x] Add `test:arch016-recovery-lifetime:postgres:fresh` and `test:arch016-recovery-lifetime:postgres:upgrade` package commands.
+- [x] Verify the legacy ARCH-016 schema validator checks the old constraint only in its historical migration, the new migration drops it, and current Prisma schema retains the unchanged field.
+- [x] Record exact commands, container cleanup evidence and migration checks in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -113,26 +113,23 @@ SQL post-migration invariant: `pg_constraint` has no `ck_arch016_checkout_recove
 
 ## Acceptance Criteria
 
-- [ ] New migration drops **only** the exact named lifetime CHECK constraint.
-- [ ] Fresh and upgrade PostgreSQL tests both pass without modifying the original migration.
-- [ ] Upgrade fixture seeded with an existing `21`-day singleton row preserves its ID, version and value; applying the migration does not reset it.
-- [ ] Fresh fixture retains the 21-day default; no `1..90` check survives.
-- [ ] All listed non-negative INTEGER examples including `0`, `91`, `180`, `365`, and `2147483647` can be persisted and read back.
-- [ ] Tests assert another existing constraint remains intact (use a concrete independent constraint found in the schema).
-- [ ] No data deletion, other schema changes or `_index.md` edits.
+- [x] New migration drops **only** the exact named lifetime CHECK constraint.
+- [x] Fresh and upgrade PostgreSQL tests both pass without modifying the original migration.
+- [x] Upgrade fixture seeded with an existing `21`-day singleton row preserves its ID, version and value; applying the migration does not reset it.
+- [x] Fresh fixture retains the 21-day default; no `1..90` check survives.
+- [x] All listed non-negative INTEGER examples including `0`, `91`, `180`, `365`, and `2147483647` can be persisted and read back.
+- [x] Tests assert another existing constraint remains intact (use a concrete independent constraint found in the schema).
+- [x] No data deletion, other schema changes or `_index.md` edits.
 
 ## Validation
 
-Run declared repository scripts, including:
-
-```bash
-npm run validate
-npm run prisma:generate
-npm run test:arch016-recovery-schema
-npm run test:arch016-recovery-lifetime:postgres:fresh
-npm run test:arch016-recovery-lifetime:postgres:upgrade
 git diff --check
-```
+- [x] `npm run validate`
+- [x] `npm run prisma:generate`
+- [x] `npm run test:arch016-recovery-schema`
+- [x] `npm run test:arch016-recovery-lifetime:postgres:fresh`
+- [x] `npm run test:arch016-recovery-lifetime:postgres:upgrade`
+- [x] `git diff --check`
 
 The PostgreSQL tests require disposable Docker/pgvector. If unavailable, report the exact blocker; do not mark them passed. Include the migration order and container-cleanup results.
 
@@ -148,27 +145,41 @@ Preserve already accepted ARCH-016 history. Do not change the schema default. So
 
 ### Status
 
-Not Started
+Accepted — Complete after Attempt 1 Architect Review.
 
 ### Files Changed
 
-None
+- `prisma/migrations/20261031110000_arch016_remove_recovery_lifetime_check/migration.sql`
+- `scripts/test-arch016-recovery-lifetime-postgres.mjs`
+- `scripts/validate-arch016-recovery-schema.mjs`
+- `package.json`
 
 ### Work Completed
 
-Not Started
+- Added exactly one forward migration containing only the named `DROP CONSTRAINT`; the historical migration and Prisma schema were not changed.
+- Added fresh/upgrade disposable PostgreSQL coverage with unique container names, `--network none`, and unconditional cleanup attempts. Assertions cover ordered migrations, upgrade row preservation, fresh default, integer metadata, removed lifetime constraint, preserved/enforced `ck_arch014_background_runtime_config_version`, and all eight required values. No negative recovery-lifetime SQL guarantee is claimed.
+- Added both PostgreSQL npm scripts and updated the static validator to retain the historical constraint assertion, check the forward drop and unchanged Prisma field, and allowlist only this task's migration/test paths.
+- Implementation commit `50c1c7e` (`feat(database): remove recovery lifetime range check`) was pushed to `origin/task/ARCH-016-DATABASE-002`.
 
 ### Validation Results
 
-Not Run
+- `npm run validate` — passed using the already-installed Prisma CLI from the canonical database checkout on `PATH`; the isolated task worktree had no local `node_modules`.
+- `npm run prisma:generate` — passed with Prisma 6.19.3; generated the client in ignored task-worktree `node_modules`.
+- `npm run test:arch016-recovery-schema` — passed, including a final rerun after Prisma generation.
+- `npm run test:arch016-recovery-lifetime:postgres:fresh` — passed; applied all 67 migrations in order, with `20260916150000_arch016_recovery_policy_discounts_outreach_generations` before the new final migration `20261031110000_arch016_remove_recovery_lifetime_check`; verified default 21, metadata, constraints and every requested value. `finally` removed container `moda-arch016-recovery-ad17c8eb-6136-4119-8fbf-b9d42d7eeb48`.
+- `npm run test:arch016-recovery-lifetime:postgres:upgrade` — passed; preserved singleton ID `default`, version `37` and value `21`, then verified metadata, constraints and every requested value. `finally` removed container `moda-arch016-recovery-0097ac4d-364b-4a8b-bc78-5ebcbcbf88bc`.
+- `git diff --check` — passed.
+- Both PostgreSQL test modes used `pgvector/pgvector:pg17` with `--network none`. The expected rejected negative-version probe confirmed the independent ARCH-014 check remains enforced.
+- Synchronization/claim evidence: prepared launcher packet recorded Copilot attempt 1 at `2026-10-31T11:31:08Z`; no startup synchronization was repeated. Parent task worktree was clean on `task/ARCH-016-DATABASE-002`, tracking `origin/task/ARCH-016-DATABASE-002`, at claim commit `2123ed64975524fa5bfb3687420b101bd393a2df`. Implementation task worktree was clean on the same task branch at base commit `af77c594ecbfc78c26d01c0021a090830884bbff` before implementation; implementation commit is pushed on the matching remote task branch.
 
 ### Deviations
 
-None
+- The isolated implementation worktree had no local dependencies. Prisma validation/generation used the existing canonical checkout's Prisma CLI via `PATH`; no dependency manifest or lockfile changes were made.
+- The on-demand workspace doctor reported one unrelated existing `moda-interact-admin` direct-Zod-declaration diagnostic; no changes were made outside this database task.
 
 ### Assumptions
 
-None
+The provided prepared-execution packet is authoritative for claim and synchronization evidence.
 
 ### Unresolved Issues
 
@@ -180,26 +191,50 @@ None
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review — Accepted
 
-Pending
+Accepted under `completion_mode: automatic`; set `status: complete`, cleared
+`executor` and `claimed_at`, and retained `attempt: 1`.
 
 ### Review Notes
 
-Pending implementation evidence.
+The implementation matches the authorized scope: one forward-only migration
+drops only `ck_arch016_checkout_recovery_lifetime`; the Prisma field remains
+`INTEGER NOT NULL DEFAULT 21`; no historical migration or other constraint was
+changed. The disposable PostgreSQL tests cover fresh and upgrade migration
+paths, required values through `2147483647`, preservation of the existing
+singleton row/version/value, and enforcement of the independent ARCH-014
+version constraint.
 
 ### Reviewed Files
 
-None
+- `prisma/migrations/20261031110000_arch016_remove_recovery_lifetime_check/migration.sql`
+- `scripts/test-arch016-recovery-lifetime-postgres.mjs`
+- `scripts/validate-arch016-recovery-schema.mjs`
+- `package.json`
+- This task definition and Completion Report
 
 ### Validation Reviewed
 
-None
+The Completion Report records successful `npm run validate`, Prisma client
+generation, the focused schema validator, fresh and upgrade PostgreSQL tests,
+and `git diff --check`. Both PostgreSQL modes applied all 67 migrations in
+order with `pgvector/pgvector:pg17` and `--network none`; both disposable
+containers were removed in `finally`. No tests were rerun for this review.
 
 ### Architecture Conformance
 
-Not assessed.
+The change removes the database's historical 90-day business ceiling without
+replacing it with a SQL policy check. The 21-day default and native PostgreSQL
+`INTEGER` storage bounds remain. Negative-value validation is correctly left
+to Admin and Background as assigned by the architecture.
 
 ### Follow-up
 
-None
+`ARCH-016-BACKGROUND-005` is now Ready because both
+`ARCH-016-DATABASE-002` and `ARCH-016-BACKGROUND-002` are Complete.
+`ARCH-016-ADMIN-003` remains Pending on Background-005, and the terminal
+system test remains Pending on its broader dependency set.
+
+No dependent implementation was started and no implementation branch was
+merged to `main`.
