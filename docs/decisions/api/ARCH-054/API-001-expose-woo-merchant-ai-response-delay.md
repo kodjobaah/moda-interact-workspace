@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-31T21:05:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-054-DATABASE-001
@@ -33,7 +33,7 @@ Architecture: `ARCH-054`
 
 Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md`
 
-Coordinator: `moda_architect`. Task **defined but not materialised**; no local Git/worktree/branch activity is claimed.
+Coordinator: `moda_architect`. Attempt 1 was blocked by the database schema dependency; the updated database submodule now resolves that blocker. The task is Ready for attempt 2.
 
 
 ## Objective
@@ -110,7 +110,7 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Blocked: API implementation and focused unit tests are complete, but the prepared database submodule commit does not contain the ARCH-054 ShopSettings field or migration. The PostgreSQL integration test, typecheck, and build therefore cannot pass until the database dependency is updated by its owner.
+Attempt 1 implementation and focused unit tests are complete. The database dependency blocker is resolved; the task is Ready for attempt 2 so the API owner can rerun PostgreSQL integration, typecheck, and build validation against the updated database submodule.
 
 ### Files Changed
 
@@ -132,7 +132,7 @@ Shared package metadata and installed dependency: PASS, exact `3.1.0`; npm packa
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-Database dependency blocker: initialized `database` submodule is pinned to `b87e460e86de2044477f8c96b5c1c42e722de8f0`; `database/prisma/schema.prisma` has no `ShopSettings.aiResponseDelayMinutes`, and its migration directory contains no `20261031170000_arch054_merchant_ai_response_delay` migration. Do not work around this in the API repository. `moda_database`/`moda_architect` must make the accepted database schema/migration available, after which regenerate Prisma Client and rerun PostgreSQL, typecheck, build, and full lint validation.
+Attempt 1 was blocked because its initial `database` submodule pin was `b87e460e86de2044477f8c96b5c1c42e722de8f0`, which lacked the ARCH-054 field and migration. Architect verification on 2026-10-31 confirms that the API task worktree now pins and checks out database commit `7c377282aa5819b3008b7d7f3018f44f4161523e`; that commit contains `ShopSettings.aiResponseDelayMinutes Int @default(0)` and migration `20261031170000_arch054_merchant_ai_response_delay/migration.sql`, which adds the column and range check. The gitlink matches the clean database checkout. The previous dependency blocker is resolved. The API owner must claim attempt 2 through the launcher and rerun the PostgreSQL integration test, typecheck, build, and remaining task validation; this status transition does not accept the implementation.
 
 ### Worktree and Git Evidence
 
