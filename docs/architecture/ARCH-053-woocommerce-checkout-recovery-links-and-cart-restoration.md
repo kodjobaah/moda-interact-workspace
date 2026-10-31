@@ -162,9 +162,9 @@ The task YAML files are authoritative for status and dependency eligibility. The
 | `ARCH-053-WOOCOMMERCE-001` | `moda_woocommerce` | Ready | API-001, BACKGROUND-001 |
 | `ARCH-053-WOOCOMMERCE-004` | `moda_woocommerce` | Pending | WOOCOMMERCE-001 |
 | `ARCH-053-API-002` | `moda_api` | Ready | SHARED-002, DATABASE-001 |
-| `ARCH-053-BACKGROUND-003` | `moda_background` | Ready (Attempt 2 validation) | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
+| `ARCH-053-BACKGROUND-003` | `moda_background` | Complete | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
 | `ARCH-053-BACKGROUND-004` | `moda_background` | Pending | ARCH-052-BACKGROUND-008 |
-| `ARCH-053-BACKGROUND-005` | `moda_background` | Pending | ARCH-016-BACKGROUND-005, BACKGROUND-003, ARCH-048-BACKGROUND-011 |
+| `ARCH-053-BACKGROUND-005` | `moda_background` | Complete | ARCH-016-BACKGROUND-005, BACKGROUND-003, ARCH-048-BACKGROUND-011 |
 | `ARCH-053-API-003` | `moda_api` | Pending | API-002, SHARED-002, BACKGROUND-004, ARCH-052-SHARED-012 |
 | `ARCH-053-API-004` | `moda_api` | Pending | ARCH-016-DATABASE-002, API-002 |
 | `ARCH-053-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | WOOCOMMERCE-001, API-002 |
@@ -188,7 +188,16 @@ Only system-test tasks may depend on another system test. `SYSTEM-TEST-003` runs
 
 ## Change History
 
-- 2026-10-31: Added one consolidated Background lifetime-consistency task (BACKGROUND-005) and one API resolver lifetime task (API-004); extended existing terminal SYSTEM-TEST-001. All checkout URL age decisions use the ARCH-016 canonical non-negative whole-day lifetime, without independent five-minute/seven-day checks. Implementation and testing remain pending; the updated multi-discount v1 amendment is preserved.
+- 2026-10-31: Added one consolidated Background lifetime-consistency task (BACKGROUND-005) and one API resolver lifetime task (API-004); extended existing terminal SYSTEM-TEST-001. All checkout URL age decisions use the ARCH-016 canonical non-negative whole-day lifetime, without independent five-minute/seven-day checks. BACKGROUND-005 is architect-accepted Complete; API-004 and the remaining system-test dependencies remain pending. The updated multi-discount v1 amendment is preserved.
+
+## Post-review update — BACKGROUND-005 Attempt 1 Accepted
+
+`ARCH-053-BACKGROUND-005` Attempt 1 is architect-accepted **Complete**. The
+single persisted ARCH-016 lifetime policy now governs Background checkout URL
+eligibility in conversation wrappers, automated template preparation and the
+locked Woo final-send fence. Exact-cutoff denial and the no-expiry-sweep Woo
+case are covered by the recorded validation. `ARCH-053-SYSTEM-TEST-001` remains
+Pending because API-004 and other explicit dependencies are still outstanding.
 
 - 2026-10-30: ARCH-053-BACKGROUND-003 unblocked by architect ruling: inactive/revoked installation is denied before recovery admission and again under the transaction fence, not admitted with `checkoutUrl:null`. Same task returned Ready for focused revocation regression coverage; code baseline retained and no new repository task or migration required. BACKGROUND-002 and ARCH-048-BACKGROUND-011 prerequisites are Complete in the submitted snapshot.
 - 2026-10-30: ARCH-053-DATABASE-001 accepted at Attempt 1; nullable generation-specific JSONB persistence and isolated fresh/upgrade checks are published. No dependent task was promoted while SHARED-002 remained Pending.
