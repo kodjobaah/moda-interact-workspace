@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -36,7 +36,7 @@ Architecture ID: `ARCH-052`. Architecture document: `docs/architecture/ARCH-052-
 
 ## Objective
 
-Integrate **generic published** `commerce_search_products` and `commerce_get_product` execution into MCP across Shopify and WooCommerce, consuming the accepted direct Woo reader from **MCP-005** instead of implementing a duplicate transport or calling the hosted API.
+Integrate **generic published** `commerce_search_products` and `commerce_get_product` execution into MCP across Shopify and WooCommerce. Consume the accepted direct Woo reader from **MCP-005**, with the bounded product-field, variation-read and permalink-validation extensions defined below; do not implement a duplicate transport or call the hosted API.
 
 ## Context
 
@@ -46,8 +46,8 @@ Integrate **generic published** `commerce_search_products` and `commerce_get_pro
 
 - Implement the published policy-operation dispatcher for `products.search` and `products.get` as defined by COMMERCE-006; use the published SHARED-010 product input/output schemas and the existing generic MCP response wrapper.
 - Shopify: reuse existing `src/execution/policy/shopify-core.ts` GraphQL product search and exact product lookup, extending projection to include genuine `categoryIds`/`collectionIds` if provider-returned and `variantId` from the actual variant; do not substitute product type/name for an ID.
-- WooCommerce: use **only the already accepted MCP-005** `ApprovedWooProductReader` and the existing `products.list`/`products.retrieve` connection ports. Map provider IDs to strings, simple products to `variantId:null`, variations to their real IDs, product/category IDs and storefront/image/price fields. No API proxy or new credential/keyring code in this task.
-- Preserve existing page cursors, request budgets, shop/feature permissions, actual provider product URLs, bounded results, and shared logger. A missing provider category/collection ID remains absent; a non-variant Woo product is not an error.
+- WooCommerce: consume the accepted MCP-005 `ApprovedWooProductReader` and existing connection/provider path. This task may extend that path only with the bounded read fields, variation operation and safe permalink projection in the Architect Scope Amendment below. Map provider IDs to strings, simple products to `variantId:null`, and variation products to source variation IDs; never infer identity or fields. No API proxy or new credential/keyring implementation.
+- Preserve existing page cursors, request budgets, shop/feature permissions, bounded results, and shared logger. A missing provider category/collection ID remains absent; a simple Woo product is valid with `variantId:null`. Validate Woo permalinks inside the direct adapter against the independently authenticated installation origin; use `url:null` when host ownership cannot be proved.
 - Keep result metadata compatible with product-search drafts published by COMMERCE-007; tool registration and publication are distinct tasks.
 - For the returned `CommerceProduct.url`, use only the direct authenticated provider response for the **same current shop**. Validate canonical storefront-host ownership at the provider adapter/projection boundary against an independently authenticated shop origin: WooCommerce's verified installation site origin or Shopify's authenticated storefront/primary-domain metadata (including legitimate custom storefront domains). Do **not** derive an allowed-host list from the candidate URL, discount description, AI output or untrusted query. If host ownership cannot be established, return `url:null` as permitted by the existing product schema; do not provide a customer-facing URL to BACKGROUND-010. No new Shared schema or hosted API route is required for this internal validation.
 
@@ -59,20 +59,20 @@ No additional database table/column/migration, migration backfill, alternate pro
 
 - The MCP host uses published Shared-010 package schemas; `CommerceProductSchema.variantId` is nullable and `categoryIds`/`collectionIds` contain only provider IDs, not inferred labels.
 - Shop identity, connection grant and `product_search` feature permission are mandatory. No MCP-to-API product requests or new product database.
-- Secure direct Woo credential/transport belongs solely to MCP-005. MCP-003 consumes the port and tests projection/execution rather than reproducing encryption or SSRF logic.
+- Secure direct Woo credential/transport and grant enforcement remain owned by the accepted MCP-005 adapter. MCP-003 may make the bounded response/variation extensions specified by the Architect Scope Amendment, but must preserve and regression-test MCP-005 encryption, origin, DNS, TLS, redirect, response-bound and grant-recheck protections; it must not reproduce those protections in a second transport.
 - Preserve source product identity and missing fields; no fabricated prices, sale evidence, variant IDs, categories, or links.
 
 ## Work Items
 
-- [ ] Wire published `commerce_search_products` and `commerce_get_product` handlers to existing shop connections and accepted MCP-005 Woo reader.
-- [ ] Extend Shopify and Woo product output mapping for `variantId:null`, provider category/collection IDs, optional image and sale evidence using the exact Shared contract.
+- [ ] Wire published `commerce_search_products` and `commerce_get_product` handlers to existing shop connections and the MCP-005 Woo reader, including only the response/variation extensions authorized below.
+- [ ] Extend Shopify and Woo product output mapping for `variantId:null`, provider category/collection IDs, optional image and sale evidence using the exact Shared contract. Extend the existing Woo reader request/response path to retrieve bounded variation records with real IDs and the required product fields.
 - [ ] Test entitlement, shop scope, partial/missing product fields, Woo simple/variation products, Shopify variant collections and direct provider access.
-- [ ] Test that product URLs are direct current-shop provider results with independently authenticated storefront-host ownership; valid Shopify custom domains and verified Woo origins remain usable, while spoofed/external hosts, cross-shop records and unknown-origin URLs return `url:null` without granting an arbitrary host.
+- [ ] Test that product URLs are direct current-shop provider results with independently authenticated storefront-host ownership; valid Shopify custom domains and verified Woo origins remain usable, while spoofed/external hosts, cross-shop records and unknown-origin URLs return `url:null` without granting an arbitrary host. Woo permalink filtering must use the origin already authenticated inside the direct adapter and must not expose it to callers.
 - [ ] Validate generic result schema, tool descriptor names, cancellation, structured errors and declared MCP scripts.
 
 ## Interfaces / Contracts
 
-Consumer of `@modainteract/moda-interact-shared/commerce` published by SHARED-010: `CommerceToolInputs.commerce_search_products`, `.commerce_get_product`, their `CommerceToolOutputs` and `CommerceProductSchema` with nullable `variantId`, optional `categoryIds`/`collectionIds`. Internal Woo port: `ApprovedWooProductReader.read` and `WooCommerceProductReadRequest` already defined in MCP; MCP-005 owns its direct adapter. COMMERCE-006 owns code-defined `products.search`/`products.get` draft registrations; COMMERCE-007 publishes after MCP-003 is accepted.
+Consumer of `@modainteract/moda-interact-shared/commerce` published by SHARED-010: `CommerceToolInputs.commerce_search_products`, `.commerce_get_product`, their `CommerceToolOutputs` and `CommerceProductSchema` with nullable `variantId`, optional `categoryIds`/`collectionIds`. Internal Woo port: retain `ApprovedWooProductReader.read` and extend the existing `WooCommerceProductReadRequest` union only for bounded variation reads. MCP-005 provides the accepted secure transport/grant baseline; MCP-003 owns the narrowly scoped product-field, variation and permalink extensions required by the projection. COMMERCE-006 owns code-defined `products.search`/`products.get` draft registrations; COMMERCE-007 publishes after MCP-003 is accepted.
 
 ## Dependencies
 
@@ -91,14 +91,15 @@ Consumer of `@modainteract/moda-interact-shared/commerce` published by SHARED-01
 ## Acceptance Criteria
 
 - [ ] Search and exact-product tools work for both store types with published result schemas and no internal API proxy.
-- [ ] Woo simple products return `variantId:null`; genuine variants retain their source ID.
+- [ ] Woo simple products return `variantId:null`; genuine variants retain their source variation ID and are obtained through bounded provider reads.
 - [ ] Provider categories/collections are source IDs, not inferred category-label aliases; missing fields remain unknown/absent.
 - [ ] Shop/entitlement/credential access remains enforced and errors logged safely.
 - [ ] The tool never yields a customer-facing product URL whose storefront-host ownership cannot be established for its authenticated shop; absence is represented as `url:null` under the existing contract, not a fabricated product or a permissive new host allowlist.
 
 ## Validation
 
-- [ ] MCP published-tool invocation tests, direct Shopify GraphQL and mocked Woo reader integration; tenant isolation, revoked tool/grant, schema validation and cursor behaviour.
+- [ ] MCP published-tool invocation tests, direct Shopify GraphQL and mocked Woo reader integration; tenant isolation, revoked tool/grant, schema validation, cursor behaviour, variation pagination/bounds and URL origin filtering.
+- [ ] Rerun the focused MCP-005 direct-reader security regression tests affected by the reader/port extension; verify grant, credential, origin, DNS, TLS, redirect, deadline and response-size behavior remains unchanged.
 - [ ] Declared MCP typecheck/build and `git diff --check`.
 
 ## Stop Condition
@@ -107,7 +108,7 @@ Once Work Items, acceptance criteria and validation are met, set task status to 
 
 ## Implementation Notes
 
-Expected MCP owning code: `src/execution/policy/`, `src/connections/resolver.ts`, `src/runtime/ports.ts` composition, and tests. **Do not implement** `src/connections/woocommerce/direct-product-reader.ts` here: MCP-005 owns it. No hosted API product route, no extra Prisma tables, no Shared edits. Publisher runs only in COMMERCE-007.
+Expected MCP owning code: `src/execution/policy/`, `src/connections/resolver.ts`, `src/runtime/ports.ts` composition, the existing Woo request/reader path for the exact bounded extension authorized above, and tests. Do not change credential decryption, grant resolution, authenticated origin resolution, pinned network transport or other MCP-005 security behavior. No hosted API product route, no extra Prisma tables, no Shared edits. Publisher runs only in COMMERCE-007.
 
 ## Completion Report
 
@@ -159,26 +160,38 @@ Attempt 1 returned for Architect direction before implementation. The launcher p
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review — Changes Requested
 
-Pending.
+#### Review Status
 
-### Review Notes
+Changes requested — 2026-10-31. Attempt 1 remains the reviewed attempt; the next launcher claim will create Attempt 2.
 
-Definition only; no implementation accepted.
+#### Review Notes
 
-### Reviewed Files
+Attempt 1 correctly identified a real mismatch between the task’s required Woo product projection and the accepted MCP-005 reader. MCP-005 is Complete and remains accepted. MCP-003 is amended to own a narrow extension of that reader for source product fields, bounded variation reads, and permalink validation inside the reader using its already verified installation origin. The amendment does not authorize changes to credential/grant security or network transport.
 
-Task definition and uploaded 29 October 2026 snapshot only.
+#### Required Changes
 
-### Validation Reviewed
+- Extend the existing Woo read request/reader path to return the source fields required by the published Shared product schema, including product type, permalink, image, regular/sale price, sale state, and variation identities.
+- Add a bounded, paginated read for actual variation records. Preserve source variation and parent IDs; do not synthesize IDs or mark variable parent products as actual variants. Respect the existing MCP deadline, request budget and result limit.
+- Validate each candidate Woo permalink inside the authenticated direct adapter against the independently verified `canonicalSiteUrl` host already loaded from the active installation. Return `url:null` on mismatch, malformed URL or unknown origin; do not expose the origin or create a caller-controlled allowlist.
+- Preserve MCP-005 grant, credential, DNS pinning, TLS, redirect, response-size, timeout and post-read grant-recheck behavior. Add focused regression coverage for those existing protections along with MCP-003 projection tests.
+- Leave MCP-005’s task record and accepted completion unchanged. No API proxy, Shared schema, database, or package publication changes are authorized.
 
-No implementation tests yet.
+#### Reviewed Files
 
-### Architecture Conformance
+- MCP-003 task definition and Attempt 1 Completion Report.
+- MCP-005 accepted task definition and Completion Report.
+- MCP-005 implementation report at `72ca88dd35967607e6749a5aed9b42cc49339d0b`; the direct adapter keeps the verified installation origin internal.
 
-Pending implementation review.
+#### Validation Reviewed
 
-### Follow-up
+No MCP-003 implementation validation was run or claimed.
 
-Materialise through canonical task launcher only after dependencies are Complete.
+#### Architecture Conformance
+
+The task is returned to Ready with the bounded scope amendment. Existing dependency MCP-005 remains Complete; no dependency regression or MCP-005 reopen is required.
+
+#### Follow-up
+
+Claim Attempt 2 through the canonical launcher after reading the amended requirements.
