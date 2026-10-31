@@ -259,6 +259,8 @@ The catalogue service logs a stable `reasonCode` and persists `lastErrorCode: SH
 
 The implementation changes are in `src/providers/shopify-discount.provider.ts`, `src/services/shopify-discount-catalogue.service.ts`, `src/workers/shopify-discount-sync.worker.ts`, and their three corresponding unit tests. No package, lockfile, submodule gitlink, database schema, or MCP implementation changes were made.
 
+Implementation commits `5106838d6d582eb9ef08484d9de71232a6bf33ef` and `cffbbd819850c1d33d0c6840f7ff13da26210edd` are pushed to `origin/task/ARCH-052-BACKGROUND-011`.
+
 ARCH-052-MCP-002 was not started.
 
 ## Architect Review
