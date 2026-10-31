@@ -30,8 +30,9 @@ Architecture ID: `ARCH-052`.
 
 Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 
-Coordinator: `moda_architect`. **Defined but not materialised**; this is an
-implementation task specification, not an execution claim.
+Coordinator: `moda_architect`. Materialised and executed through the canonical
+task launcher in dedicated mirrored task worktrees; see the Completion Report
+for the preparation and claim evidence.
 
 ## Objective
 
