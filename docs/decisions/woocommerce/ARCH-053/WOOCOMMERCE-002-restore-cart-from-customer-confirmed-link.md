@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -95,9 +95,10 @@ Guest URL uses ARCH-053-BACKGROUND-003 format; POST API resolve from API-002 onl
 - [x] Add server-side install-auth API resolve client with strict response validation and errors.
 - [x] Implement all-or-nothing core product restoration for snapshots with no applied coupons, current totals recalculation, session rebind + exactly one activity enqueue + wc_get_checkout_url redirect; reject coupon-bearing restore until WOOCOMMERCE-005.
 - [x] Exercise stale link, cross-device, existing-cart replace confirmation and rollback on failure, asserting no Moda error/notice appears on the storefront and real failure details remain in protected PHP diagnostics.
-- [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
-- [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
+- [x] Session-persistence failure restores the prior cart and session without queuing a resumption activity; activity-enqueue failure also restores the prior cart and session.
+- [x] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
+- [x] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
+- [x] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
@@ -117,7 +118,7 @@ The WordPress confirmation endpoint must bind to `home_url('/')` including merch
 
 ### Status
 
-Ready for Review
+Architect Accepted — Complete
 
 ### Attempt 2 Resubmission
 
@@ -191,7 +192,7 @@ The API response follows the complete `woo.restore.resolve.v1` contract, includi
 
 ### Unresolved Issues
 
-Run the WordPress integration in a disposable environment where the configured host port 8888 is available, then review the two baseline admin asset failures and the pre-existing PHPUnit warning separately.
+None for the accepted task scope. The checkout-only WordPress integration passed on port 8887. The full WordPress integration later failed in an unrelated contaminated shop-brand scenario, and the full PHP suite reported two pre-existing admin asset failures plus one existing test-harness warning; these are recorded above and do not affect the checkout restoration scenarios.
 
 ### Architectural Concerns
 
@@ -201,30 +202,29 @@ None identified. No cross-repository contract, database, queue, or deployment ch
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 addressed the earlier persistence rollback request and completed the checkout-only WordPress scenarios on port 8887. The full suite later failed in an unrelated, contaminated shop-brand scenario, after the checkout restore scenarios passed.
-
-One issue remains: `captureResumption()` currently enqueues the fresh checkout activity before `save_data()` persists the session. If session persistence fails, the callback reports failure and the cart/session are rolled back, but the Action Scheduler activity remains queued with a snapshot of the rejected restored basket. Ensure the durable activity is not queued until session persistence succeeds, and that an enqueue failure still rolls back the cart and session. Add regression coverage asserting that session-persistence failure leaves no resumption activity queued.
-
-The requested integration retry was completed on port 8887; checkout restore scenarios passed. The full suite's unrelated contaminated shop-brand failure is recorded in Attempt 2 above.
+Accepted after Attempt 2 follow-up. The controller persists the restored checkout key and completion marker before it calls `captureResumption()`. Session-persistence failure therefore exits before enqueueing an activity; enqueue failure restores the previous cart and session. Regression tests assert both failure paths leave no resumption action queued. Focused validation passed with 13 tests and 76 assertions, plus lint and diff checks. Checkout-only Classic and Blocks WordPress integration passed on port 8887. The full WordPress suite reached and passed checkout restore scenarios, then failed in the unrelated contaminated shop-brand scenario described in the Completion Report.
 
 ### Reviewed Files
 
 - `includes/Checkout/CheckoutResumeController.php`
 - `includes/Checkout/CheckoutCapture.php`
+- `includes/Checkout/CheckoutCartRestorer.php`
 - `tests/CheckoutResumeControllerTest.php`
+- `tests/CheckoutCartRestorerTest.php`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
 
 ### Validation Reviewed
 
-The Attempt 2 Completion Report records 12 focused PHP tests and 67 assertions passing, lint and diff checks passing, and checkout-only WordPress integration passing on port 8887. The full WordPress suite reached and passed checkout restore scenarios, then failed in an unrelated contaminated shop-brand scenario.
+The Attempt 2 follow-up report records 13 focused PHP tests and 76 assertions passing, lint and diff checks passing, and checkout-only WordPress integration passing on port 8887. The full WordPress suite reached and passed checkout restore scenarios, then failed in an unrelated contaminated shop-brand scenario.
 
 ### Architecture Conformance
 
-Changes Requested: order session persistence and durable activity enqueue so a failed restore cannot leave an activity for a cart that was rolled back. Preserve cart/session rollback when enqueue itself fails.
+Accepted: session persistence precedes activity enqueue; both persistence and enqueue failure paths restore the previous cart and session, and the regression tests verify that no queued activity remains on those failures.
 
 ### Follow-up
 
-Change the restore commit ordering so session persistence succeeds before the resumption activity is enqueued; on enqueue failure, roll back the cart and session. Add a regression assertion that session-persistence failure leaves no queued activity, update this task's Completion Report, and return it for architect review.
+No further implementation follow-up. ARCH-053-WOOCOMMERCE-005 is now Ready; ARCH-053-SYSTEM-TEST-001 remains Pending until its other dependencies are complete.
