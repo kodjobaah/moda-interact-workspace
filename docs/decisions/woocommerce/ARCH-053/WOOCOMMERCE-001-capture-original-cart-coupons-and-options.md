@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
 - ARCH-053-API-001
 - ARCH-053-BACKGROUND-001
@@ -29,7 +29,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Portable canonical task: defined but not materialised**; no Git branch, worktree, commit, push, review or producer deployment claimed.
+Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Task materialised in dedicated parent and implementation worktrees. Attempt 3 is submitted for review; no producer deployment is claimed.
 
 ## Objective
 
@@ -37,7 +37,7 @@ Capture original Woo cart coupons and restorable line data. One bounded outcome 
 
 ## Context
 
-The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. ARCH-048-BACKGROUND-007..011 task files are present, but none has been accepted Complete in this snapshot (007 Ready, 008–011 Pending). This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. The launcher freshly gated both dependencies as Complete before claiming Attempt 2.
 
 ## Scope
 
@@ -67,9 +67,9 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Work Items
 
-- [ ] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
-- [ ] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
-- [ ] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
+- [x] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
+- [x] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
+- [x] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
 
 ## Interfaces / Contracts
 
@@ -88,18 +88,18 @@ PHP `checkout.restoration` must conform to the published ARCH-053-SHARED-001 v1 
 
 ## Acceptance Criteria
 
-- [ ] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
-- [ ] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
-- [ ] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
-- [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
-- [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
+- [x] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
+- [x] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
+- [x] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
+- [x] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
+- [x] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
+- [x] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
-- [ ] `composer test` focused CheckoutCapture/CheckoutSnapshot tests
-- [ ] `npm run test:integration:wordpress` targeted snapshot serialization for Classic/Blocks with original coupon list and variations when environment available
-- [ ] `composer lint` and `git diff --check`
+- [x] `composer test` focused CheckoutCapture/CheckoutSnapshot tests
+- [x] Rerun the targeted Classic/Blocks checkout integration after the latest implementation changes; the checkout-only suite passed on Attempt 3 (see Completion Report).
+- [x] `composer lint` and `git diff --check`
 
 ## Stop Condition
 
@@ -113,31 +113,56 @@ The plugin already has `CheckoutKey::SESSION_FIELD`, Action Scheduler and the v2
 
 ### Status
 
-Not Started
+The implementation branch includes `69357b8`, logging correction `016992e`, privacy correction `09b259e`, and quoted-coupon correction `995c3ac`. Attempt 3's focused checkout-only integration passed on the `69357b8` snapshot, including guest and customer Classic and Blocks checkout flows and outage delivery/retry. Following the P2 review findings, exception causes are logged through WooCommerce's configured logger after bounded redaction, including free-text and quoted coupon codes and phone-like values. Architect review accepted Attempt 3 on 2026-10-31. No producer deployment was performed. The full integration suite was not rerun, per the user's instruction.
+
+### Claim Release History
+
+Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, that claim was released. The launcher claimed Attempt 2 for Codex at `2026-10-31T09:44:59Z`, re-gated both dependencies, synchronized the dedicated parent and implementation task worktrees, and pushed the durable parent claim (`f92db4455fe861fda3a04b16a083cd7fcd654a55`). Implementation baseline was `b905dab216f8598269ebd32e8d70af150524d274`. Implementation commits `5f679b6`, `8f48e22` and `69357b8` are pushed to `origin/task/ARCH-053-WOOCOMMERCE-001`; commit `69357b8` aligns PHP string bounds with the Shared schema’s UTF-16 code-unit semantics and adds boundary tests. Attempt 2 was returned to Ready following the guest outage request assertion failure. The launcher claimed Attempt 3 for Codex at `2026-10-31T12:48:06Z`; the same implementation snapshot passed the focused checkout-only integration on the task-specific disposable wp-env. The user then identified P2 logging privacy gaps while the task remained in review. Commit `016992e` adds bounded redacted exception causes to shared WooCommerce logs. Commit `09b259e` masks unlabelled coupon and phone values; commit `995c3ac` masks quoted coupon codes and tests the WooCommerce message form. The focused PHP suite passes at 18 tests / 166 assertions. Architect review accepted Attempt 3 on 2026-10-31.
 
 ### Files Changed
 
-None — portable task definition only.
+Implementation repository files: `composer.json`, `includes/Runtime.php`, `includes/Checkout/CheckoutDiagnosticLogger.php`, `includes/Checkout/CheckoutSnapshot.php`, `includes/Checkout/CheckoutCapture.php`, `includes/Checkout/CheckoutActivityPublisher.php`, `tests/CheckoutCaptureTest.php`, `tests/fixtures/woo-restore-v1.json`, and `tests/integration/scenarios/checkout-wordpress.mjs`.
+
+Parent task worktree: this task definition, the readiness updates for WOOCOMMERCE-002/003/004, and the ARCH-053 WooCommerce dependency index.
 
 ### Work Completed
 
-Not Started.
+Implemented the bounded `woo.cart-restore.v1` snapshot with the complete original coupon list and supported simple/variation lines; unsupported evidence carries a reason and no partial line data. Added Shared fixture parity and focused unsupported-cart cases. Checkout activity remains `woo.activity.v1`; verified phone proof stays in that envelope, and unverifiable phone values are omitted while other contact fields remain. Added Classic and Blocks integration coverage for a native variation with an applied coupon. Commit `69357b8` aligns text bounds with Shared UTF-16 code-unit lengths and adds supplementary-character boundary tests. Commit `016992e` routes checkout exceptions through WooCommerce's configured logger with bounded, redacted cause text. Commit `09b259e` redacts coupon codes in natural-language context and unlabelled phone-like values. Commit `995c3ac` redacts quoted coupon codes, including `Coupon code "SAVE10" does not exist`; regression coverage includes the reported examples. No producer deployment was performed.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+Initial Attempt 2 validation before commit `69357b8` passed: the focused PHP test had 16 tests / 145 assertions, `composer lint` passed, and the checkout-only WordPress integration passed on the disposable site at port 8891. That integration pass predates the latest integration-test assertion adjustment and is historical evidence only.
+
+Revalidation after `69357b8`:
+
+- `composer test -- tests/CheckoutCaptureTest.php` — passed: 17 tests, 150 assertions. PHPUnit printed a non-failing warning that it could not write `.phpunit.cache/test-results` under the restricted filesystem.
+- `composer lint` — passed: all declared PHP files reported no syntax errors.
+- `git diff --check` — passed.
+- Focused checkout-only WordPress integration on the task-specific disposable wp-env at port 8891 — **failed** at the guest checkout outage case. After Action Scheduler ran the captured event, the test expected one HTTPS request for event `woo-5fe2d1dcc3102b0151358f59f4652374`, but observed zero. The runner cleaned its fixture data. The task-specific wp-env was stopped afterward; the separate developer site on port 8888 was not changed.
+
+- Attempt 3 reran `npm run test:integration:wordpress -- --checkout-only` with the disposable environment on port 8892 — **passed** (`ARCH-035 checkout-only integration PASS`). It covered guest and customer Classic and Blocks flows, outage delivery/retry, cart clearing/refill, orders/HPOS, coupons and variation. The guest outage request was observed, so the Attempt 2 failure did not reproduce on this run. No implementation code changed from `69357b8`; the full integration suite was not rerun, as requested. The disposable environment was stopped afterward; the developer site on port 8888 was not changed.
+
+After the P2 diagnostics findings, commits `016992e`, `09b259e` and `995c3ac` validation:
+
+- `composer test -- tests/CheckoutCaptureTest.php` — passed: 18 tests, 166 assertions. PHPUnit printed a non-failing warning that it could not write `.phpunit.cache/test-results` under the restricted filesystem.
+- `composer lint` — passed: all declared PHP files reported no syntax errors, including the new diagnostic logger.
+- After `995c3ac`, `php -l` passed for `CheckoutDiagnosticLogger.php` and `CheckoutCaptureTest.php`.
+- `git diff --check` — passed.
+- WordPress integration was not rerun; the focused PHP/log-redaction change does not alter checkout behavior, and the user asked not to rerun the full integration suite.
+
+No production behavior or deployment was exercised.
 
 ### Deviations
 
-None.
+The restricted shell could not reach the running Colima socket; host-level validation confirmed the configured Colima VM and canonical bootstrap. The task-specific wp-env cache is under the Colima-shared home directory and uses port 8891 to avoid the existing developer environment. The existing developer environment on port 8888 was left untouched.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+The canonical launcher packet supplied the authoritative worktree paths and dependency gate for Attempt 3.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+None. The exception-cause logging and privacy findings were resolved in `016992e`, `09b259e` and `995c3ac`. Attempt 2's guest outage request failure was not reproduced by the successful Attempt 3 checkout-only integration run.
 
 ### Architectural Concerns
 
@@ -147,24 +172,31 @@ Return any cross-service schema/provider/transaction concern to `moda_architect`
 
 ### Review Status
 
-Pending
+Accepted — Attempt 3 (2026-10-31).
 
 ### Review Notes
 
-Not Reviewed — task not executed.
+The Attempt 3 checkout-only WordPress integration passed on the `69357b8` implementation snapshot, including guest/customer Classic and Blocks flows and the outage delivery/retry case. The Attempt 2 failure did not reproduce. The P2 exception-diagnostic findings were resolved in `016992e`, `09b259e` and `995c3ac`; the final correction adds bounded sanitization for unlabelled and quoted coupon codes and phone-like values. Reported validation for the final logging corrections passed: 18 focused tests / 166 assertions, PHP lint and `git diff --check`. WordPress integration was not rerun after these logging-only changes; they do not alter checkout behavior. No production deployment was exercised.
 
 ### Reviewed Files
 
-None.
+- `includes/Checkout/CheckoutSnapshot.php`
+- `includes/Checkout/CheckoutCapture.php`
+- `includes/Checkout/CheckoutActivityPublisher.php`
+- `includes/Checkout/CheckoutDiagnosticLogger.php`
+- `tests/CheckoutCaptureTest.php`
+- `tests/fixtures/woo-restore-v1.json`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
+- Attempt 3 Completion Report and corrections through `995c3ac`.
 
 ### Validation Reviewed
 
-None.
+Reviewed the submitted task report and implementation commits through `995c3ac`. The Attempt 3 focused checkout-only integration passed on the isolated wp-env at port 8892. The final logging-only correction's reported validation passed: 18 tests / 166 assertions, PHP lint and `git diff --check`; these were not rerun during this review. No full integration rerun was needed for the diagnostic-only correction.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+The bounded restoration projection, original coupon capture and canonical v1 phone proof follow the task contract. Exception messages retain useful cause detail only after bounded redaction; regression cases cover bearer tokens, URLs, email, unlabelled coupon/phone values and quoted coupon codes. The task meets its acceptance criteria.
 
-### Follow-up
+### Completion Decision
 
-None.
+Set the task to `complete` under `completion_mode: automatic`, preserving accepted Attempt 3 and clearing executor/claim metadata. Promoted WOOCOMMERCE-002, WOOCOMMERCE-003 and WOOCOMMERCE-004 to `ready` after rechecking their dependencies; later work remains gated on its own dependencies. Keep the producer undeployed until the coordinated API/Background pre-production rollout.
