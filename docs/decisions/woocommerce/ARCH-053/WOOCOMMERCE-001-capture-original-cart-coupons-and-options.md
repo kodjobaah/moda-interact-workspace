@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 40
 executor: codex
 claimed_at: 2026-10-31T09:44:59Z
@@ -29,7 +29,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Portable canonical task: defined but not materialised**; no Git branch, worktree, commit, push, review or producer deployment claimed.
+Architecture ID: `ARCH-053`. Document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Task materialised in dedicated parent and implementation worktrees. Attempt 2 is claimed by Codex; no producer deployment is claimed.
 
 ## Objective
 
@@ -37,7 +37,7 @@ Capture original Woo cart coupons and restorable line data. One bounded outcome 
 
 ## Context
 
-The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. ARCH-048-BACKGROUND-007..011 task files are present, but none has been accepted Complete in this snapshot (007 Ready, 008–011 Pending). This task is **Pending** from the snapshot/dependency inventory, subject to fresh launcher re-gating.
+ARCH-052 owns dynamic discount discovery and is not a checkout-URL implementation domain. The launcher freshly gated both dependencies as Complete before claiming Attempt 2.
 
 ## Scope
 
@@ -67,9 +67,9 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 ## Work Items
 
-- [ ] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
-- [ ] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
-- [ ] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
+- [x] Implement exact supported/unsupported cart projection and PHP parity tests for Shared fixture.
+- [x] Capture the complete original applied-coupon list within supported restoration JSON; a malformed/incomplete coupon list must mark restoration unsupported instead of silently dropping codes.
+- [x] Publish canonical v1 complete event using existing queued publisher and preserve existing phone/consent semantics.
 
 ## Interfaces / Contracts
 
@@ -113,35 +113,43 @@ The plugin already has `CheckoutKey::SESSION_FIELD`, Action Scheduler and the v2
 
 ### Status
 
-Not Started
+Attempt 2 implementation is prepared, but required PHP and WordPress integration validation is blocked because `scripts/bootstrap-woocommerce.sh` reports that Docker is installed but its daemon is unavailable. The implementation is not ready for architect review until validation can run successfully.
 
 ### Claim Release History
 
-Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, the claim was released before a new executor was prepared. The dedicated implementation worktree was clean at baseline `b905dab`; it had no source edits or implementation commit. The task is Ready with `attempt: 1`, `executor: null`, and `claimed_at: null`; the next launcher claim will be Attempt 2.
+Attempt 1 was claimed by Copilot at `2026-10-31T09:12:48Z`, but implementation did not begin. At the user's request, that claim was released. The launcher claimed Attempt 2 for Codex at `2026-10-31T09:44:59Z`, re-gated both dependencies, synchronized the dedicated parent and implementation task worktrees, and pushed the durable parent claim (`f92db4455fe861fda3a04b16a083cd7fcd654a55`). Implementation baseline was `b905dab216f8598269ebd32e8d70af150524d274`. Implementation commit `5f679b6` is pushed to `origin/task/ARCH-053-WOOCOMMERCE-001`. Attempt 2 remains active and is marked Blocked pending the developer-managed Docker daemon and required validation.
 
 ### Files Changed
 
-None — no implementation files changed.
+Implementation repository files: `includes/Checkout/CheckoutSnapshot.php`, `includes/Checkout/CheckoutCapture.php`, `includes/Checkout/CheckoutActivityPublisher.php`, `tests/CheckoutCaptureTest.php`, `tests/fixtures/woo-restore-v1.json`, and `tests/integration/scenarios/checkout-wordpress.mjs`.
+
+Parent task worktree: this task definition only.
 
 ### Work Completed
 
-Not Started.
+Implemented the bounded `woo.cart-restore.v1` snapshot with the complete original coupon list and supported simple/variation lines; unsupported evidence carries a reason and no partial line data. Added Shared fixture parity and focused unsupported-cart cases. Checkout activity remains `woo.activity.v1`; verified phone proof stays in that envelope, and unverifiable phone values are omitted while other contact fields remain. Added Classic and Blocks integration coverage for a native variation with an applied coupon. No producer deployment was performed.
 
 ### Validation Results
 
-Not Run — no implementation claimed.
+`git diff --check` — passed in the implementation worktree.
+
+`composer test -- tests/CheckoutCaptureTest.php` — blocked. Before PHP/Composer commands, the required `scripts/bootstrap-woocommerce.sh` reported: `ERROR: Docker is installed but the Docker daemon is not available. Start the configured Docker runtime, then rerun the bootstrap.` The subsequent Composer invocation confirmed `vendor/bin/phpunit` is absent. No PHP runtime command was run after bootstrap failed.
+
+`composer lint` — not run because the same bootstrap prerequisite is unavailable.
+
+`npm run test:integration:wordpress -- --checkout-only` — not run because the canonical WooCommerce bootstrap reports no Docker daemon. No integration runtime was started or substituted.
 
 ### Deviations
 
-None.
+Validation is incomplete because the canonical WooCommerce bootstrap cannot find a running Docker daemon. The requested PHP test could not execute because its vendor PHPUnit binary is absent. No substitute runtime was installed or selected.
 
 ### Assumptions
 
-Design reconciled against uploaded 2026-10-30 07:59 source snapshot; re-check source and prior task acceptance before implementation.
+The canonical launcher packet supplied the authoritative worktree paths and dependency gate for Attempt 2.
 
 ### Unresolved Issues
 
-None asserted as executed; dependencies must be materialised/accepted.
+The configured Docker daemon is unavailable. The developer must start the configured runtime (Colima) and rerun the task so the canonical bootstrap, PHP tests/lint and targeted WordPress integration validation can run. Do not bypass the bootstrap or start/replace the runtime from this task.
 
 ### Architectural Concerns
 
