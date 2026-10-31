@@ -9,18 +9,18 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 18
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-10-31T00:46:44Z
+attempt: 1
 depends_on:
 - ARCH-052-SHARED-011
 enables:
 - ARCH-052-SHARED-012
 - ARCH-053-API-003
 created: 2026-10-30
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # ARCH-053-SHARED-003 — Extend Woo restore v1 with confirmed checkout offer groups
