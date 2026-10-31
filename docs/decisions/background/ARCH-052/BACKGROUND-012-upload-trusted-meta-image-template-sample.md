@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: codex
-claimed_at: 2026-10-31T04:54:41Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-052-ADMIN-002
@@ -32,7 +32,7 @@ Architecture ID: `ARCH-052`.
 
 Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 
-Coordinator: `moda_architect`. This is a portable canonical definition (**defined but not materialised**). It does not imply a parent or implementation worktree, Git branch, commit, or push.
+Coordinator: `moda_architect`. This task definition is materialised in the dedicated parent and implementation worktrees for Attempt 1.
 
 ## Objective
 
@@ -88,11 +88,11 @@ lifecycle solely for logging.
 
 ## Work Items
 
-- [ ] Add a focused sample-image retrieval/upload adapter (e.g. `src/services/meta-template-management/image-header-sample.ts`) with a fixed, allowlisted Moda URL, bounded validated JPEG bytes and injected HTTP/fetch dependencies for deterministic tests.
-- [ ] Obtain the real Meta `h` sample handle with the correct App ID, Graph credentials and upload session, under existing WABA sender trust; classify transient/definitive errors safely.
-- [ ] Adapt frozen vs outbound provider IMAGE component validation and attach the handle **only** to a copied provider CREATE payload, preserving immutable snapshot/semantic approval and reconciliation hashing.
-- [ ] Integrate with existing Meta template submit worker without weakening `recordPostIntent`, claim CAS, name collision, reconciliation, failure visibility or TEXT-only flow.
-- [ ] Cover success and malformed/redirect/oversized MIME, invalid/missing App ID, wrong WABA, 429/5xx, malformed session/handle, repeated jobs and unknown CREATE state with focused tests.
+- [x] Add a focused sample-image retrieval/upload adapter (e.g. `src/services/meta-template-management/image-header-sample.ts`) with a fixed, allowlisted Moda URL, bounded validated JPEG bytes and injected HTTP/fetch dependencies for deterministic tests.
+- [x] Obtain a Meta-issued `h` from the resumable upload response using the configured App ID, Graph credentials and upload session under current WABA sender trust; classify transient/definitive errors safely. Live credentials are not available in this task environment, so the provider exchange is validated with a stub and live deployment is called out below.
+- [x] Adapt frozen vs outbound provider IMAGE component validation and attach the handle **only** to a copied provider CREATE payload, preserving immutable snapshot/semantic approval and reconciliation hashing.
+- [x] Integrate with existing Meta template submit worker without weakening `recordPostIntent`, claim CAS, name collision, reconciliation, failure visibility or TEXT-only flow.
+- [x] Cover success and malformed/redirect/oversized MIME, invalid/missing App ID, wrong WABA, 429/5xx, malformed session/handle, repeated jobs and unknown CREATE state with focused tests.
 
 ## Interfaces / Contracts
 
@@ -112,19 +112,19 @@ lifecycle solely for logging.
 
 ## Acceptance Criteria
 
-- [ ] A stubbed Meta Graph upload returns a syntactically valid `h` which is accepted **only from the trusted uploader** and produces exactly one correctly authenticated IMAGE CREATE request. The implementation is capable of using a real Meta-issued `h` in an authorised live environment; no actual provider approval is claimed without live evidence. Admin, merchants and customers cannot supply a sample handle.
-- [ ] No immutable schema, Prisma/registration bytes, digest, role, locale, WABA identity or published template fingerprint is modified by sample enrichment; final template POST fails closed when the sample upload fails.
-- [ ] Frozen IMAGE registration is allowed handle-free, but Graph IMAGE CREATE never lacks a proven handle. TEXT registration/create/reconciliation paths behave exactly as before.
-- [ ] Provider transport errors, retries, duplicate delivery, wrong WABA, malformed data and unsafe image bytes are observed without duplicate uncertain CREATE or silent failures.
-- [ ] No extra infrastructure service, DB migration, R2 persistence or five-minute proof contract.
+- [x] A stubbed Meta Graph upload returns a syntactically valid `h` which is accepted **only from the trusted uploader** and produces exactly one correctly authenticated IMAGE CREATE request. The implementation is capable of using a real Meta-issued `h` in an authorised live environment; no actual provider approval is claimed without live evidence. Admin, merchants and customers cannot supply a sample handle.
+- [x] No immutable schema, Prisma/registration bytes, digest, role, locale, WABA identity or published template fingerprint is modified by sample enrichment; final template POST fails closed when the sample upload fails.
+- [x] Frozen IMAGE registration is allowed handle-free, but Graph IMAGE CREATE never lacks a proven handle. TEXT registration/create/reconciliation paths behave exactly as before.
+- [x] Provider transport errors, retries, duplicate delivery, wrong WABA, malformed data and unsafe image bytes are observed without duplicate uncertain CREATE or silent failures.
+- [x] No extra infrastructure service, DB migration, R2 persistence or five-minute proof contract.
 
-- [ ] Inject distinct Meta sample-session/upload/CREATE error payloads, response absent and token-bearing errors; assert original messages/codes retained when safe, redaction flags set, credentials/handles absent and existing retry/no-CREATE behaviour unchanged.
+- [x] Inject distinct Meta sample-session/upload/CREATE error payloads, response absent and token-bearing errors; assert original messages/codes retained when safe, redaction flags set, credentials/handles absent and existing retry/no-CREATE behaviour unchanged.
 
 ## Validation
 
-- [ ] Existing ARCH-047 Background Meta template-management unit and integration suites, plus new mocked Meta upload/frozen-vs-provider validation and failure matrix.
-- [ ] Relevant Background typecheck, focused tests, changed-file lint and `git diff --check`, using actual package.json scripts.
-- [ ] Record environment/App ID and live Meta-approval checks separately; never mark actual provider approval as passing based on mocks. If environment cannot supply the App ID, return a bounded deployment gap to the architect.
+- [x] Existing ARCH-047 Background Meta template-management unit and integration suites, plus new mocked Meta upload/frozen-vs-provider validation and failure matrix.
+- [x] Relevant Background typecheck, focused tests, changed-file lint and `git diff --check`, using actual package.json scripts.
+- [x] Record environment/App ID and live Meta-approval checks separately; never mark actual provider approval as passing based on mocks. If environment cannot supply the App ID, return a bounded deployment gap to the architect.
 
 ## Stop Condition
 
@@ -138,23 +138,53 @@ Inspect the actual `src/services/meta-template-management/meta-graph.adapter.ts`
 
 ### Status
 
-Not Started.
+Implementation complete; returned to `review` for architect review.
 
 ### Files Changed
 
-None yet.
+- `src/services/meta-template-management/contracts.ts`
+- `src/services/meta-template-management/meta-graph.adapter.ts`
+- `src/services/meta-template-management/service.ts`
+- `src/services/meta-template-management/image-header-sample.ts` (new)
+- `src/services/shop-brand-media/safe-fetch.ts`
+- `tests/unit/services/meta-template-management/meta-management.test.ts`
+- `tests/unit/services/meta-template-management/image-header-sample.test.ts` (new)
+- `tests/unit/services/shop-brand-media/safe-fetch.test.ts`
 
 ### Work Completed
 
-None yet.
+- Added fixed JPEG retrieval on the existing DNS-pinned HTTPS image transport with redirect rejection, peer verification, bounded timeout/bytes, exact MIME and JPEG signature checks.
+- Added app-scoped Meta resumable upload with validated `META_APP_ID`, current `messaging.sender` token/WABA, exact file metadata, OAuth authorization, byte offset zero and strict session/handle parsing. A runtime-branded uploader result is required at the Graph CREATE boundary.
+- Frozen IMAGE registration validation now permits a sample-free header while rejecting untrusted examples/handles. The service uploads before the durable claim and attaches the handle only to a copied provider CREATE component array. The frozen row, claim input, digest, approved semantics and reconciliation comparison remain unchanged. TEXT continues through the zero-upload flow.
+- After claiming, the service verifies that the claimed frozen components still match the pre-upload snapshot before provider I/O; an intervening registration change is blocked without CREATE. The outbound copy is derived from the claimed components.
+- Preserved existing WABA verification, durable claim, name-collision read, post intent, CAS persistence, unknown-state fence, retry and reconciliation behavior.
+- Meta provider failures retain their original safe message/code/subcode/details/status/request ID or SDK exception/cause through the existing Shared logger. Credentials, URLs, email/phone spans, handles and bytes are excluded or redacted before emission; internal reason codes remain distinct.
+- Blueprint inspection found neither `moda-messaging-worker-production` in `moda-interact-gateway/render.production.yaml` nor `moda-messaging-worker-test` in `moda-interact-gateway/render.test.yaml` explicitly declares `META_APP_ID`. Both reference WhatsApp environment groups whose contents cannot be verified from the checked-in Blueprint. The implementation blocks when `META_APP_ID` is absent. Gateway wiring is reported for architect routing; no Gateway-owned files were changed.
+- Attempt-start synchronization evidence from the prepared launcher:
+  - Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-012`, branch `task/ARCH-052-BACKGROUND-012`, starting commit `db826ea7b4feaa0ab56900b17ede02d485a44640`; task branch fast-forward `not-needed`, `origin/main` `already-current`, claim commit `335bbfe1db05e5363bf65d3b5c4562fdc35329e0` pushed.
+  - Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-012`, branch `task/ARCH-052-BACKGROUND-012`, starting commit `f508c05dd60c37ce8125c9c4af98e292a90906e3`; task branch fast-forward `not-needed`, `origin/main` `already-current`, recursive submodules ready, database submodule at `af77c594ecbfc78c26d01c0021a090830884bbff`.
 
 ### Validation Results
 
-Not run.
+- Focused Meta template-management and safe-fetch suites: **56 tests passed**.
+- Guarded ARCH-047 Meta template-management PostgreSQL lifecycle integration: **1 test passed** using the disposable PostgreSQL runner.
+- `npm run build` (Prisma generation and TypeScript build): **passed**.
+- Changed-file ESLint and `git diff --check`: **passed**.
+- Dependencies were installed in isolated `/private/tmp/moda-background-012-deps` from the task worktree lockfile; Shared 2.8.1 was used. No package manifest/lockfile changes were made.
+- No live Meta upload or provider approval was performed. Mocked responses establish code path behavior only.
+
+### Git / VCS
+
+- Task branch: `task/ARCH-052-BACKGROUND-012` in both repositories.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-012`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-012`.
+- Both worktrees were the prepared dedicated worktrees; neither shared checkout was switched, and no other task worktree was reused.
+- Implementation repository commit: `c12419e850ea082058d69c060ebba0f4821b1865`; pushed to `origin/task/ARCH-052-BACKGROUND-012`.
+- Parent workspace task file: this report, committed and pushed on `origin/task/ARCH-052-BACKGROUND-012` for this review submission.
+- Submodule gitlink staged: no. Merged into implementation or workspace `main`: no.
 
 ### Deviations
 
-None.
+Gateway worker `META_APP_ID` wiring is outside Background ownership and needs architect routing to a bounded `moda_gateway` task. Live provider credentials and approval were not exercised.
 
 ### Assumptions
 
@@ -162,11 +192,11 @@ None.
 
 ### Unresolved Issues
 
-None established by implementation. `META_APP_ID` deployment wiring is a required live integration check.
+Live configuration still needs Gateway confirmation: both checked-in Render Blueprints omit an explicit `META_APP_ID` entry for the messaging worker and only point at WhatsApp environment groups. Add or confirm the App ID through Gateway-owned deployment configuration before live IMAGE registration; no secret value should be committed.
 
 ### Architectural Concerns
 
-Return provider/credential boundary changes to `moda_architect` instead of editing another repository.
+Route the missing `META_APP_ID` Blueprint wiring to a bounded `moda_gateway` task. The Background implementation fails closed until that configuration is supplied.
 
 ## Architect Review
 
