@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
 executor: null
 claimed_at: null
@@ -113,12 +113,12 @@ In `WooInitialSendFenceService.admitFinalSend`, the policy query is a SQL read a
 
 ## Work Items
 
-- [ ] Inspect the canonical ARCH-016 policy implementation, the three existing Background paths and their existing tests before editing.
-- [ ] Implement and test the shared Background-only pure lifetime predicate and injected persisted-policy reader.
-- [ ] Remove the seven-day wrapper cap and apply the configured cutoff while retaining all existing wrapper security guards.
-- [ ] Remove the five-minute template cap and bind `lastExternalActivityAt` plus validated canonical policy instead of `updatedAt`.
-- [ ] Add the locked-policy and locked-activity cutoff to the Woo final-send permit without disturbing its transaction and settlement semantics.
-- [ ] Add deterministic boundary/security tests and record exact validation commands and worktree/branch evidence.
+- [x] Inspect the canonical ARCH-016 policy implementation, the three existing Background paths and their existing tests before editing.
+- [x] Implement and test the shared Background-only pure lifetime predicate and injected persisted-policy reader.
+- [x] Remove the seven-day wrapper cap and apply the configured cutoff while retaining all existing wrapper security guards.
+- [x] Remove the five-minute template cap and bind `lastExternalActivityAt` plus validated canonical policy instead of `updatedAt`.
+- [x] Add the locked-policy and locked-activity cutoff to the Woo final-send permit without disturbing its transaction and settlement semantics.
+- [x] Add deterministic boundary/security tests and record exact validation commands and worktree/branch evidence.
 
 ## Interfaces / Contracts
 
@@ -140,24 +140,24 @@ In `WooInitialSendFenceService.admitFinalSend`, the policy query is a SQL read a
 
 ## Acceptance Criteria
 
-- [ ] No checkout URL path retains a five-minute/seven-day literal or a second URL-age setting; other unrelated short-lived evidence rules remain intact.
-- [ ] One policy reader and one pure evaluator are reused by wrappers and templates; the Woo SQL permit applies the same evaluator to SQL-locked evidence.
-- [ ] Tests for `0`, `1`, `21`, `91`, `180`, `365` and PostgreSQL maximum representable integer; negative/fractional/null/missing policy fails closed.
-- [ ] Tests confirm `now < activityAt` is denied, one millisecond before cutoff is eligible, and the **exact** cutoff is denied for wrapper, template and final Woo send.
-- [ ] A recovery aged six minutes or eight days (with lifetime 21) can bind a trusted checkout URL, whereas elapsed >=21 days cannot; moving only `recovery.updatedAt` does not refresh eligibility.
-- [ ] A shortened Admin lifetime takes effect on subsequent checks, with no dependence on the periodic expiry worker; the default 21 is read from persisted policy, not hardcoded into the binding.
-- [ ] Missing/invalid/unavailable policy never authorizes a URL or a final send; unexpected dependency errors are visible and retryable, not swallowed.
-- [ ] Existing tenant/domain/HTTPS, generation/lifecycle, template approval, consent, STOP, order, credit, idempotency and concurrency protections pass regression tests.
-- [ ] No external network access inside final-send SQL transaction; provider delivery and settlement remain unchanged.
-- [ ] No non-Background implementation source, `_index.md` or parent architecture edits by the repository agent.
+- [x] No checkout URL path retains a five-minute/seven-day literal or a second URL-age setting; other unrelated short-lived evidence rules remain intact.
+- [x] One policy reader and one pure evaluator are reused by wrappers and templates; the Woo SQL permit applies the same evaluator to SQL-locked evidence.
+- [x] Tests for `0`, `1`, `21`, `91`, `180`, `365` and PostgreSQL maximum representable integer; negative/fractional/null/missing policy fails closed.
+- [x] Tests confirm `now < activityAt` is denied, one millisecond before cutoff is eligible, and the **exact** cutoff is denied for wrapper, template and final Woo send.
+- [x] A recovery aged six minutes or eight days (with lifetime 21) can bind a trusted checkout URL, whereas elapsed >=21 days cannot; moving only `recovery.updatedAt` does not refresh eligibility.
+- [x] A shortened Admin lifetime takes effect on subsequent checks, with no dependence on the periodic expiry worker; the default 21 is read from persisted policy, not hardcoded into the binding.
+- [x] Missing/invalid/unavailable policy never authorizes a URL or a final send; unexpected dependency errors are visible and retryable, not swallowed.
+- [x] Existing tenant/domain/HTTPS, generation/lifecycle, template approval, consent, STOP, order, credit, idempotency and concurrency protections pass regression tests.
+- [x] No external network access inside final-send SQL transaction; provider delivery and settlement remain unchanged.
+- [x] No non-Background implementation source, `_index.md` or parent architecture edits by the repository agent.
 
 ## Validation
 
-- [ ] `npx vitest run tests/unit/services/conversation-wrappers/woo-checkout-link.test.ts tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts` (plus new pure-helper tests).
-- [ ] `node scripts/test-integration.mjs tests/integration/woo-initial-send-fence.integration.test.ts` using disposable test services, including the exact cutoff without an expiry sweep.
-- [ ] `npm run lint` and `npm run build` using repository declared scripts and prepared toolchain.
-- [ ] `git diff --check`; no `_index.md` changes or cross-repository implementation edits.
-- [ ] Completion Report with test counts, actual errors, prepared physical worktree evidence, parent/implementation branch SHAs, DB submodule pin and test-container cleanup.
+- [x] `npx vitest run tests/unit/services/conversation-wrappers/woo-checkout-link.test.ts tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts` (plus new pure-helper tests).
+- [x] `node scripts/test-integration.mjs tests/integration/woo-initial-send-fence.integration.test.ts` using disposable test services, including the exact cutoff without an expiry sweep.
+- [x] `npm run lint` and `npm run build` using repository declared scripts and prepared toolchain.
+- [x] `git diff --check`; no `_index.md` changes or cross-repository implementation edits.
+- [x] Completion Report with test counts, actual errors, prepared physical worktree evidence, parent/implementation branch SHAs, DB submodule pin and test-container cleanup.
 
 ## Stop Condition
 
@@ -171,7 +171,7 @@ This is deliberately **one Background task**: all three call sites must be compo
 
 ### Status
 
-Ready for Review.
+Architect-accepted Complete (Attempt 1).
 
 ### Files Changed
 
@@ -248,4 +248,36 @@ To be reviewed.
 
 ### Follow-up
 
-None.
+Attempt 1 accepted. The implementation and task/report branches remain on their
+task branches; no main merge or push was made.
+
+### Attempt 1 Architect Review — Accepted
+
+Accepted Attempt 1 as Complete. The shared BigInt-based evaluator implements
+the strict cutoff, immediately excludes zero-day/future activity, and supports
+the PostgreSQL `INTEGER` maximum. The persisted policy reader selects only the
+canonical `default` row and fails closed for missing or invalid data.
+
+All three Background paths consume the same policy: wrappers and automated
+template preparation preserve their existing URL, lifecycle and tenant checks,
+and the Woo final-send fence locks both recovery and global-policy evidence
+before applying the cutoff inside its existing transaction. The integration
+case confirms exact-cutoff suppression while the record remains `DETECTED`,
+without an expiry sweep and without granting a provider-dispatch key.
+
+The report records 81 focused unit tests, 6 PostgreSQL integration tests,
+lint, build, and `git diff --check` passing. No tests were rerun for this
+review.
+
+VCS review: implementation worktree
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-BACKGROUND-005`
+is clean at `33909a92b6c75b7524e3888b16ada21114bf6a05`, matching
+`origin/task/ARCH-053-BACKGROUND-005`. Parent task worktree
+`/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-BACKGROUND-005`
+was clean at submission commit `88f4fb65ce4afeefc057a59feb5789bf0a2b1ba9`,
+matching its remote task branch. The report records the database submodule pin
+and disposable-container cleanup. No merge to `main` was made.
+
+`ARCH-053-SYSTEM-TEST-001` remains Pending because other explicit dependencies,
+including `ARCH-053-API-004`, are not complete. This acceptance does not start
+the system test.
