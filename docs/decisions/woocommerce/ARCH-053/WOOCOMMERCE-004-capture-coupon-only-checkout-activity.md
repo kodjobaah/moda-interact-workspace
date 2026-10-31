@@ -117,7 +117,7 @@ Ready for Review
 
 ### Work Completed
 
-Registered Woo's applied/removed coupon actions with the one-code hook signature. The callback ignores the individual code and calls `captureExisting()`, which requires an already valid checkout key; the snapshot reads Woo's full canonical applied-coupon list. Existing fingerprinting therefore publishes a new v1 event for real coupon-list changes and suppresses identical snapshots. Added focused PHP callback coverage plus genuine Classic and Blocks HTTP integration for application, removal, no-total-change, full code list, same checkout key, and duplicate unchanged snapshots. Existing PHP snapshot cases continue to cover malformed and over-limit lists with unsupported restoration rather than truncation.
+Registered Woo's applied/removed coupon actions with the one-code hook signature. The callback ignores the individual code and calls `captureExisting()`, which requires an already valid checkout key; the snapshot reads Woo's full canonical applied-coupon list. Existing fingerprinting therefore publishes a new v1 event for real coupon-list changes and suppresses identical snapshots. Added focused PHP callback coverage plus genuine Classic and Blocks HTTP integration for application, stacking two coupons, removal, no-total-change, full code list, same checkout key, and duplicate unchanged snapshots. Existing PHP snapshot cases continue to cover malformed and over-limit lists with unsupported restoration rather than truncation.
 
 ### Validation Results
 
@@ -145,7 +145,7 @@ None.
 
 ### Worktree and Publication Evidence
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-004`, branch `task/ARCH-053-WOOCOMMERCE-004`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-004`, same task branch. Launcher claim commit: `2c96056db68b7bc4019833749ecf555e387d9aca`. Implementation began at `e5bc98b822f78be8ed01f3940627bc333eadd584`; implementation commit: `654fe7a` (`feat(woocommerce): capture checkout coupon changes`), pushed to the implementation task branch. The task record and review status are committed and pushed on the mirrored parent task branch. Changes remain limited to the owning WooCommerce repository and this task record. Neither branch is merged to `main`.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-004`, branch `task/ARCH-053-WOOCOMMERCE-004`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-004`, same task branch. Launcher claim commit: `2c96056db68b7bc4019833749ecf555e387d9aca`. Implementation began at `e5bc98b822f78be8ed01f3940627bc333eadd584`; implementation commits `654fe7a` (`feat(woocommerce): capture checkout coupon changes`) and `fb1d41b` (`test(woocommerce): verify stacked checkout coupons`) are pushed to the implementation task branch. The task record and review status are committed and pushed on the mirrored parent task branch. Changes remain limited to the owning WooCommerce repository and this task record. Neither branch is merged to `main`.
 
 ### Architectural Concerns
 
