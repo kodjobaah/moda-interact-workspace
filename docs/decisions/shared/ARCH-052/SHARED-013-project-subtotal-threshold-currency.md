@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 23
 executor: copilot
 claimed_at: 2026-10-31T03:26:57Z
@@ -68,11 +68,11 @@ No new source file, schema name, package entrypoint, alias, DTO, API tool, queue
 
 ## Work Items
 
-- [ ] In `src/commerce/schemas.ts` add the single specified property using the **full existing declaration** in the Interfaces / Contracts section as the normative target, without altering any other schema key.
-- [ ] In `src/commerce/tool-contracts.test.ts` add `subtotalRequirementCurrency: null` to the shared `discountFacts` fixture; all fixtures spreading it must therefore remain type-correct. Do not bypass `satisfies CommerceDiscountConditionFacts` with casts.
-- [ ] Add the explicit test shown below; retain all existing combination, providerDiscountId and tool result tests.
-- [ ] Run the repository-declared focused tests, full tests, typecheck, build, Commerce exports smoke check and whitespace validation. Record results and observed existing baseline failures, if any; do not claim unpublished artifacts are already available.
-- [ ] Update the task Completion Report and status to `review`, provide implementation SHA and dedicated worktree evidence, then STOP. Publication is SHARED-014.
+- [x] In `src/commerce/schemas.ts` add the single specified property using the **full existing declaration** in the Interfaces / Contracts section as the normative target, without altering any other schema key.
+- [x] In `src/commerce/tool-contracts.test.ts` add `subtotalRequirementCurrency: null` to the shared `discountFacts` fixture; all fixtures spreading it must therefore remain type-correct. Do not bypass `satisfies CommerceDiscountConditionFacts` with casts.
+- [x] Add the explicit test shown below; retain all existing combination, providerDiscountId and tool result tests.
+- [x] Run the repository-declared focused tests, full tests, typecheck, build, Commerce exports smoke check and whitespace validation. Record results and observed existing baseline failures, if any; do not claim unpublished artifacts are already available.
+- [x] Update the task Completion Report and status to `review`, provide implementation SHA and dedicated worktree evidence, then STOP. Publication is SHARED-014.
 
 ## Interfaces / Contracts
 
@@ -377,13 +377,13 @@ test("discount threshold currency is required and remains structurally nullable"
 
 ## Acceptance Criteria
 
-- [ ] `CommerceDiscountConditionFactsSchema` has **exactly one** added required key `subtotalRequirementCurrency` of `CurrencySchema.nullable()`; all original fields and `z.strictObject` behaviour remain intact.
-- [ ] `CommerceDiscountConditionFacts` inferred type requires the new `string | null` property; existing typed fixtures compile after explicit update.
-- [ ] `CommerceDiscountDetails` and the `commerce_get_discount_details` OK wrapper reject missing nested currency field, reject unknown keys and invalid currency forms, and accept valid full nested wire fixtures.
-- [ ] Verified GBP threshold with percent discount / `discountCurrency:null` is accepted; null with threshold, null without threshold, and conflicting-source scenarios are structurally representable (no business rule introduced in Zod).
-- [ ] Existing provider identity, combinations, targeting, offer-set and Woo restore contracts retain their exact keys, names, nullability and tests; no `commerce.v2` introduced.
-- [ ] Only `src/commerce/schemas.ts` and `src/commerce/tool-contracts.test.ts` are implementation-source changes. No package version bump, code publication, schema migration or other service edits.
-- [ ] Validation passes or environment-only baseline exceptions are explicitly documented with evidence; no new regression or silently swallowed error.
+- [x] `CommerceDiscountConditionFactsSchema` has **exactly one** added required key `subtotalRequirementCurrency` of `CurrencySchema.nullable()`; all original fields and `z.strictObject` behaviour remain intact.
+- [x] `CommerceDiscountConditionFacts` inferred type requires the new `string | null` property; existing typed fixtures compile after explicit update.
+- [x] `CommerceDiscountDetails` and the `commerce_get_discount_details` OK wrapper reject missing nested currency field, reject unknown keys and invalid currency forms, and accept valid full nested wire fixtures.
+- [x] Verified GBP threshold with percent discount / `discountCurrency:null` is accepted; null with threshold, null without threshold, and conflicting-source scenarios are structurally representable (no business rule introduced in Zod).
+- [x] Existing provider identity, combinations, targeting, offer-set and Woo restore contracts retain their exact keys, names, nullability and tests; no `commerce.v2` introduced.
+- [x] Only `src/commerce/schemas.ts` and `src/commerce/tool-contracts.test.ts` are implementation-source changes. No package version bump, code publication, schema migration or other service edits.
+- [x] Validation passes or environment-only baseline exceptions are explicitly documented with evidence; no new regression or silently swallowed error.
 
 ## Validation
 
@@ -398,9 +398,9 @@ npm run validate:commerce-entrypoints
 git diff --check
 ```
 
-- [ ] Focused discount contracts and full declared Shared suite.
-- [ ] Shared typecheck and build, then Commerce published-export smoke check against built output.
-- [ ] `git diff --check`, changed-files summary and Completion Report evidence of physical parent/implementation worktrees, branch sync, exact commits and relevant submodule state.
+- [x] Focused discount contracts and full declared Shared suite.
+- [x] Shared typecheck and build, then Commerce published-export smoke check against built output.
+- [x] `git diff --check`, changed-files summary and Completion Report evidence of physical parent/implementation worktrees, branch sync, exact commits and relevant submodule state.
 
 ## Stop Condition
 
@@ -416,35 +416,46 @@ When Work Items, Acceptance Criteria and required Validation are complete, updat
 
 ### Status
 
-Not Started — defined but not materialised.
+Ready for Review.
 
 ### Files Changed
 
-None.
+`moda-interact-shared/src/commerce/schemas.ts` and `moda-interact-shared/src/commerce/tool-contracts.test.ts` only. No package manifest or lockfile changes.
 
 ### Work Completed
 
-None.
+Added the required nullable `subtotalRequirementCurrency` key using existing `CurrencySchema`. Updated the shared typed discount facts fixture and added structural validation coverage for valid GBP percentage thresholds, no threshold, unknown and conflicting threshold currency, missing nested values, invalid currency representations, strict unknown-key rejection, and the unchanged `commerce.v1` result envelope.
+
+Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-SHARED-013`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHARED-013`; both task branches are `task/ARCH-052-SHARED-013`. Prepared claim commit in parent: `d658434ca01a720618167db561283aed9e63502a`. Prepared implementation head: `c0dfe52d6f456d4e03b66b3d1f5d57d86a3e2788`. Launcher dependency gate passed (`ARCH-052-SHARED-012` complete); recursive submodule initialization passed with none listed. Implementation commit: `0b13687d4584801b2aaef3bd625d5b2d6f693648`; pushed to `origin/task/ARCH-052-SHARED-013`. The artifact remains unpublished; package version remains `2.8.1` for the separate SHARED-014 release task.
 
 ### Validation Results
 
-Not run.
+All required checks passed in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-SHARED-013` using the workspace bootstrap-selected Node `24.19.0`:
+
+- `npx tsx --test src/commerce/tool-contracts.test.ts`: passed, 6 tests.
+- `npm test`: passed, 402 passed, 0 failed, 1 skipped (403 total).
+- `npm run typecheck`: passed.
+- `npm run build`: passed (ESM and declaration builds).
+- `npm run validate:commerce-entrypoints`: passed; clean-process Commerce and commerce/runner imports and regressions validated against local build output.
+- `git diff --check`: passed.
+
+`npm ci` used the checked-in lockfile because the dedicated implementation worktree had no `node_modules`; npm reported 3 dependency advisories (1 low, 2 high). This task did not modify dependencies or assess/remediate those advisories. The initial focused-test attempt before dependency installation failed at module loading with `ERR_MODULE_NOT_FOUND: zod`; after `npm ci`, the required focused test passed. No validation failure remains.
 
 ### Deviations
 
-None.
+None to implementation scope. npm audit advisories were emitted by dependency installation and are outside this task.
 
 ### Assumptions
 
-Pre-production breaking contract change; existing immutable published `2.8.1` remains unchanged.
+Pre-production breaking contract change; existing immutable published `2.8.1` remains unchanged. No publication or consumer availability is claimed.
 
 ### Unresolved Issues
 
-None at definition.
+None.
 
 ### Architectural Concerns
 
-Return any mismatch in actual published Shared exports or producer-source semantics to `moda_architect`.
+None identified. The new schema export is present in the existing Commerce export barrel and verified from local build output; publication is reserved for SHARED-014.
 
 ## Architect Review
 
