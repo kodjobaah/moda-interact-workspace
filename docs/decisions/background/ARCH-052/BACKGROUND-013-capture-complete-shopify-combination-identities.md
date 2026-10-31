@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 32
 executor: null
 claimed_at: null
@@ -35,7 +35,7 @@ Complete Shopify Basic discount combination snapshots by persisting each discoun
 
 ## Context
 
-BACKGROUND-011 Attempt 2 is awaiting architect review. It persists Basic `combinesWith` booleans and **allowed** same-line tags, but does not query the discount's own `tags` or `discountClasses`. Shopify Plus same-line stacking requires two-way tag matches and a trusted Plus entitlement; unobserved tags cannot be interpreted as a valid pair. Do not reopen or edit BACKGROUND-011 during review.
+BACKGROUND-011 was accepted after Attempt 4 and is now Ready for Attempt 5 to add actionable, bounded error diagnostics. It already captures Basic `combinesWith` booleans, allowed and own same-line tags, discount classes and trusted Plus entitlement. This task covers the newly identified source-backed `minimumRequirement` threshold facts and their currency; do not start it until BACKGROUND-011 is accepted again.
 
 ## Scope
 

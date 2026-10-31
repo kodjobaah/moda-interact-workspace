@@ -211,7 +211,7 @@ This section **supersedes earlier language implying that AI, MCP, `facts.complet
 
 **Current task frontier:** SHARED-011, SHARED-012, SHARED-013 and SHARED-014 are architect-accepted **Complete**; Shared 2.8.1 remains intact and the accepted threshold-currency contract is published as 3.0.0. BACKGROUND-014 is independently Ready. BG013, MCP-002, BG010/008 and terminal system tests now explicitly consume this corrected source and published-contract chain. Do not rewrite ongoing ARCH-049-BACKGROUND-003, ARCH-052-MCP-005 or ARCH-052-SHOPIFY-001 task/branches, or reset BACKGROUND-011's external Attempt 2 review claim based on its stale exported YAML. No implementation source has been changed by this coordination patch.
 
-**Reconciled task frontier:** SHARED-011, ARCH-053-SHARED-003 and SHARED-012 were accepted and published before this patch. Add SHARED-013/014 for exact currency denomination and BACKGROUND-014 for Woo restriction-presence; amend pending BACKGROUND-013, MCP-002, BACKGROUND-010/008 and terminal tests. The archived external BACKGROUND-011 Attempt 2 review report and active task branches are preserved; this is architecture documentation only.
+**Reconciled task frontier:** SHARED-011, ARCH-053-SHARED-003 and SHARED-012 were accepted and published before this patch. Add SHARED-013/014 for exact currency denomination and BACKGROUND-014 for Woo restriction-presence. BACKGROUND-013 is Ready after BACKGROUND-011 acceptance; MCP-002, BACKGROUND-010/008 and terminal tests retain their remaining prerequisites. BACKGROUND-011 is Complete after accepted Attempt 6; its Attempt 4 and Attempt 5 reports remain historical evidence.
 
 ## Decisions / Tasks
 
@@ -235,7 +235,7 @@ Individual task YAML is authoritative within the exported snapshot. SHARED-011, 
 | [ARCH-052-BACKGROUND-008](../decisions/background/ARCH-052/BACKGROUND-008-integrate-three-modes-into-initial-whatsapp-send.md) | `moda_background` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-ADMIN-003`, `ARCH-052-BACKGROUND-010`, `ARCH-052-BACKGROUND-005`, `ARCH-052-ADMIN-001`, `ARCH-052-BACKGROUND-015` |
 | [ARCH-052-BACKGROUND-009](../decisions/background/ARCH-052/BACKGROUND-009-preserve-shopify-merchant-selection-during-sync.md) | `moda_background` | Complete | — |
 | [ARCH-052-BACKGROUND-010](../decisions/background/ARCH-052/BACKGROUND-010-implement-langgraph-initial-outreach-offer-agent.md) | `moda_background` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-MCP-002`, `ARCH-052-COMMERCE-007`, `ARCH-052-SHARED-010`, `ARCH-052-SHARED-014` |
-| [ARCH-052-BACKGROUND-011](../decisions/background/ARCH-052/BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | `moda_background` | Review | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
+| [ARCH-052-BACKGROUND-011](../decisions/background/ARCH-052/BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | `moda_background` | Complete | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
 | [ARCH-052-BACKGROUND-012](../decisions/background/ARCH-052/BACKGROUND-012-upload-trusted-meta-image-template-sample.md) | `moda_background` | Ready | `ARCH-052-ADMIN-002`, `ARCH-047-BACKGROUND-003` |
 | [ARCH-052-COMMERCE-001](../decisions/commerce/ARCH-052/COMMERCE-001-verify-shopify-discount-against-current-checkout.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-COMMERCE-002](../decisions/commerce/ARCH-052/COMMERCE-002-read-authoritative-shopify-checkout-product-image.md) | `moda_commerce` | Superseded | — |
