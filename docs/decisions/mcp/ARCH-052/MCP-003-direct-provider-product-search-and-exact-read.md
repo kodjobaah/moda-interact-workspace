@@ -120,7 +120,8 @@ Attempt 2 implementation complete; submitted for Architect Review. Task status i
 
 - `moda-interact-mcp/package.json`, `package-lock.json` — pin published Shared 2.8.1 product contracts.
 - `moda-interact-mcp/src/connections/ports.ts`, `resolver.ts`, and `woocommerce/provider.ts` — admit only bounded product variation list/retrieve reads.
-- `moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts` — request the approved product and variation fields, return bounded variation pages, and null unsafe permalinks against the authenticated installation origin.
+- `moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts` — request the approved product and variation fields, return bounded variation pages, null unsafe permalinks against the authenticated installation origin, and log safe structured failure diagnostics.
+- `moda-interact-mcp/src/connections/shopify/provider.ts` — log safe structured provider failure diagnostics for Shopify product reads.
 - `moda-interact-mcp/src/execution/policy/shopify-core.ts`, `shopify-core-executor.ts`, `moda-interact-mcp/src/runtime/service-ports.ts` — implement published `products.search`/`products.get` execution for both store platforms, Shopify exact reads and custom storefront validation, Woo projection/pagination, and safe structured failure logging.
 - Focused tests for the direct Woo reader, provider allowlist, product adapters, and published executor.
 
@@ -132,12 +133,14 @@ Attempt 2 implementation complete; submitted for Architect Review. Task status i
 - Exact Woo variation reads verify both requested variation ID and parent ID. Simple products retain `variantId: null`; no identity, price or category IDs are inferred.
 - Preserved MCP-005 credential, grant, DNS, TLS, redirect, response-size, timeout and post-read grant checks. The adapter validates Woo permalinks against its already verified installation origin without exposing that origin.
 - Provider failures returned as policy errors are logged through the shared logger with an occurrence ID, operation, platform, shop ID, error code and retryability. Provider payloads, arguments and credentials are excluded. Thrown failures continue through the existing MCP error logger.
+- Follow-up diagnostic refinement logs the internal reason code, failure stage, duration, and available upstream status and provider request ID at both adapter boundaries; Woo also records response media type, size, and a validated provider error code, while Shopify records bounded GraphQL error codes, paths, and locations. These diagnostics are recorded before public error-code mapping loses detail. Raw response bodies, URLs, arguments, credentials and arbitrary exception messages remain excluded.
 
 ### Validation Results
 
-- Focused reader, provider, resolver, published executor and service-port checks: **41 passed, 0 failed**. This includes the MCP-005 grant/credential/DNS/redirect/deadline/response regressions, unsafe Woo and Shopify URL handling, Shopify custom domains, Woo variation pagination, exact parent identity and safe failure logging.
+- Focused reader, provider, resolver, published executor and service-port checks: **41 passed, 0 failed** before the final diagnostic refinement. This includes the MCP-005 grant/credential/DNS/redirect/deadline/response regressions, unsafe Woo and Shopify URL handling, Shopify custom domains, Woo variation pagination, exact parent identity and safe failure logging.
 - `npm run build`: passed.
-- `tsc --noEmit -p tsconfig.json`: passed.
+- `tsc --noEmit -p tsconfig.json`: passed after the diagnostic refinement.
+- No tests were run after the diagnostic refinement.
 - `git diff --check`: passed.
 
 ### Deviations
@@ -164,7 +167,7 @@ No new architecture concern identified. MCP-005 security codepaths are preserved
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-MCP-003`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-003`.
 - Dedicated worktrees were used; shared workspace/default implementation checkouts were not switched or edited for task implementation. No other task worktree was reused.
 - Start synchronization: parent `origin/main` was already current and the existing task branch was synchronized; implementation `origin/main` was already current and no remote implementation task branch existed at preparation. Recursive submodule initialization passed; database submodule was `139765042baad3901682cfe9c54a3d6bba73e75c`.
-- Implementation repository commit: `150beadc7506cbf4155857cb1109855516db8ea8`; pushed to `origin/task/ARCH-052-MCP-003`.
+- Implementation repository commits: `150beadc7506cbf4155857cb1109855516db8ea8` (product reads) and `04530c8` (safe provider diagnostics); both pushed to `origin/task/ARCH-052-MCP-003`.
 - Parent task-file claim commit: `ab54c2b8a63e98a3f05cbb19fc7b44246fac8fa3`; the completion report is included in the current parent task branch update.
 - Parent submodule gitlink staged: no. Implementation `main` merged: no. Workspace `main` merged: no.
 
