@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-31T12:14:32Z
@@ -80,12 +80,12 @@ A small internal helper placed alongside expiry logic and its focused tests is p
 
 ## Work Items
 
-- [ ] Replace the one lifetime `[1, 90]` bounded-map entry with a dedicated non-negative integer check, leaving unrelated runtime bounds unchanged.
-- [ ] Add refresh and startup tests for 0, 1, 21, 90, 91, 180, 365 and `2147483647`.
-- [ ] Add negative, fractional, non-finite and malformed-value tests that fail closed; retain all existing tests of runtime immutability and versioning.
-- [ ] Safely calculate the expiry cutoff (including large-value no-age-expiry handling) without invalid Prisma `Date` arguments.
-- [ ] Add expiry tests at 0, 21, 180, 365 and `2147483647` and at the exact cutoff; verify other lifecycle and race protections remain unchanged.
-- [ ] Record validation, changed paths and test results in the Completion Report.
+- [x] Replace the one lifetime `[1, 90]` bounded-map entry with a dedicated non-negative integer check, leaving unrelated runtime bounds unchanged.
+- [x] Add refresh and startup tests for 0, 1, 21, 90, 91, 180, 365 and `2147483647`.
+- [x] Add negative, fractional, non-finite and malformed-value tests that fail closed; retain all existing tests of runtime immutability and versioning.
+- [x] Safely calculate the expiry cutoff (including large-value no-age-expiry handling) without invalid Prisma `Date` arguments.
+- [x] Add expiry tests at 0, 21, 180, 365 and `2147483647` and at the exact cutoff; verify other lifecycle and race protections remain unchanged.
+- [x] Record validation, changed paths and test results in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -110,12 +110,12 @@ No new queue event, Published Shared schema, `expiresAt` column or derived durab
 
 ## Acceptance Criteria
 
-- [ ] Runtime accepts 0 and values above 90 (including the PostgreSQL INTEGER maximum) without substituting defaults.
-- [ ] Runtime rejects negatives, decimals, `NaN`, infinity and non-integer types; existing unrelated bounds still work.
-- [ ] At 0, expiry uses `cutoff=now`; active recoveries at/before that point expire. This may suppress all recovery outreach when 0 is configured and must be treated as deliberate admin policy.
-- [ ] No invalid `Date`, overflowing date serialization or unexpected database query occurs for very large allowed values; no recovery ages out when its threshold is beyond the representable timestamp range.
-- [ ] Expiry still records status history, cancels unsent attempts and handles concurrent activity correctly.
-- [ ] No new business maximum, new setting or unrelated service refactor.
+- [x] Runtime accepts 0 and values above 90 (including the PostgreSQL INTEGER maximum) without substituting defaults.
+- [x] Runtime rejects negatives, decimals, `NaN`, infinity and non-integer types; existing unrelated bounds still work.
+- [x] At 0, expiry uses `cutoff=now`; active recoveries at/before that point expire. This may suppress all recovery outreach when 0 is configured and must be treated as deliberate admin policy.
+- [x] No invalid `Date`, overflowing date serialization or unexpected database query occurs for very large allowed values; no recovery ages out when its threshold is beyond the representable timestamp range.
+- [x] Expiry still records status history, cancels unsent attempts and handles concurrent activity correctly.
+- [x] No new business maximum, new setting or unrelated service refactor.
 
 ## Validation
 
@@ -142,35 +142,53 @@ There is no newly imposed maximum. The native SQL `INTEGER` storage limit is not
 
 ### Status
 
-Not Started
+Attempt 1 implementation complete; returned to `review` for Architect review. No Architect acceptance decision has been made.
 
 ### Files Changed
 
-None
+- `moda-interact-background/src/runtime/background-runtime-config.ts`
+- `moda-interact-background/src/services/checkout-recovery-expiry.service.ts`
+- `moda-interact-background/tests/unit/runtime/background-runtime-config.test.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery-expiry.service.test.ts`
 
 ### Work Completed
 
-Not Started
+- Removed `checkoutRecoveryLifetimeDays` from the generic numeric bounds and added a dedicated non-negative safe-integer validator used by startup and refresh. Other numeric bounds are unchanged.
+- Added startup and refresh coverage for 0, 1, 21, 90, 91, 180, 365 and 2147483647, plus startup rejection of negative, fractional, NaN, infinity, string, null and object values. Invalid refresh retains the last known-good snapshot and logs the validation failure.
+- Replaced floating-point millisecond subtraction with exact BigInt cutoff arithmetic. The worker now checks PostgreSQL's minimum timestamp and JavaScript Date's maximum before constructing a Date; an unrepresentable cutoff returns 0 without querying Prisma.
+- Preserved the existing `lte` cutoff filter in both candidate selection and transactional `updateMany`, bounded pagination, status history, unsent-attempt cancellation and race recheck behavior. Added boundary tests for 0, 21, 180, 365, the exact inclusive cutoff, the maximum persisted Int and a PostgreSQL-out-of-range cutoff that JavaScript Date can represent.
+- Corrected short-page test fixtures so unused second-page mock results do not leak into later tests.
 
 ### Validation Results
 
-Not Run
+- `npm exec -- vitest run tests/unit/runtime/background-runtime-config.test.ts tests/unit/services/checkout-recovery-expiry.service.test.ts`: 2 files passed, 32 tests passed.
+- `npm run test:unit -- tests/unit/runtime/background-runtime-config.test.ts tests/unit/services/checkout-recovery-expiry.service.test.ts`: the package script expands to `vitest run tests/unit` plus the supplied paths, so the filter does not narrow the run. The full unit suite reported 315 files, 3,348 tests, 3,322 passed and 26 failed across unrelated suites; both task-owned files passed in the same run. The explicit Vitest invocation above is the supported focused validation.
+- `npm run lint`: passed.
+- `npm run build`: passed; Prisma Client generation and TypeScript compilation completed.
+- `git diff --check`: passed.
+- VS Code diagnostics: no errors in the four changed files.
+- Launcher prepared Attempt 1 at `2026-10-31T12:14:32Z`; dependencies `ARCH-016-DATABASE-002` and `ARCH-016-BACKGROUND-002` passed, recursive Database submodule was ready at `af77c594ecbfc78c26d01c0021a090830884bbff`, and the parent claim was pushed as `d90a4254d3009877aceb134a9cadf0b72171a42c`.
+- Implementation commit `aca1d2c` (`fix(BACKGROUND-005): accept unbounded recovery lifetimes`) was pushed to `origin/task/ARCH-016-BACKGROUND-005`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-016-BACKGROUND-005`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-016-BACKGROUND-005`.
+- Both task worktrees use branch `task/ARCH-016-BACKGROUND-005`. No implementation merge or Architect acceptance was performed.
 
 ### Deviations
 
-None
+- The repository's `test:unit` script hardcodes the entire `tests/unit` directory and appends positional paths, preventing focused filtering via the task-prescribed npm script. Ran the same installed Vitest runner directly with explicit target paths. The broad unit run remains non-green due to 26 failures outside this task's changed files.
+- The implementation branch inherited `origin/main` as its initial upstream, so the default GitKraken push correctly refused the mismatch. The commit was explicitly pushed to `origin/task/ARCH-016-BACKGROUND-005` and that task branch is now its upstream.
 
 ### Assumptions
 
-None
+The PostgreSQL timestamp lower bound is checked in Unix milliseconds; JavaScript Date's upper bound is stricter than PostgreSQL's upper timestamp limit and is used as the upper guard.
 
 ### Unresolved Issues
 
-None
+The full repository unit suite has 26 failures in unrelated test suites; the focused task suites, lint and build pass. No unrelated failures were changed.
 
 ### Architectural Concerns
 
-None
+None. No new business maximum or persistent/configuration field was introduced.
 
 ## Architect Review
 
