@@ -19,6 +19,6 @@ Task materialisation is recorded per task; individual task YAML frontmatter is a
 | [ARCH-052-SHARED-007](SHARED-007-reuse-commerce-runner-for-outreach-offer-choice.md) | Add outreach entrypoint to the existing Commerce runner | Superseded | — |
 | [ARCH-052-SHARED-008](SHARED-008-define-product-search-and-alternative-promotion-contracts.md) | Extend existing product schema and add exact `commerce_get_product` input/output | Complete | — |
 | [ARCH-052-SHARED-011](SHARED-011-define-discount-combinations-and-outreach-offer-sets.md) | Define combination facts and bounded checkout offer sets | Complete | `ARCH-052-SHARED-010` |
-| [ARCH-052-SHARED-012](SHARED-012-publish-multi-discount-and-woo-v1-contract-update.md) | Publish accepted multi-discount and Woo v1 contract update | Pending | `ARCH-052-SHARED-011`, `ARCH-053-SHARED-003` |
+| [ARCH-052-SHARED-012](SHARED-012-publish-multi-discount-and-woo-v1-contract-update.md) | Publish accepted multi-discount and Woo v1 contract update | Ready | `ARCH-052-SHARED-011`, `ARCH-053-SHARED-003` |
 
-SHARED-011 is architect-accepted Complete. ARCH-053-SHARED-003 is Ready after its dependency completed; SHARED-012 remains Pending until that task completes.
+SHARED-011 and ARCH-053-SHARED-003 are architect-accepted Complete. SHARED-012 is Ready to publish both accepted implementations together.
