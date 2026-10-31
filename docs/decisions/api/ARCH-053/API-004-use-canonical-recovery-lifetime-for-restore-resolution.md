@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
-executor: copilot
-claimed_at: 2026-10-31T14:31:50Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-016-DATABASE-002
@@ -138,7 +138,7 @@ This is one API task because it owns one API resolver. Do not import `moda-inter
 
 ### Status
 
-Ready for Review
+Architect review accepted Attempt 2 on 2026-10-31. This automatic-completion task is complete; no production deployment was performed.
 
 ### Files Changed
 
@@ -204,24 +204,30 @@ None asserted before implementation.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2 (2026-10-31).
 
 ### Review Notes
 
-Not reviewed.
+The resolver now reads the canonical `checkoutRecoveryLifetimeDays` on every request, validates the PostgreSQL integer range, and applies the exact strict millisecond cutoff without a seven-day or 90-day application cap. The implementation preserves tenant, generation, installation, token, URL, snapshot and terminal-state checks. The updated database submodule pin is the accepted ARCH-016-DATABASE-002 commit. The disposable PostgreSQL test creates the historical named 1–90 check, applies the pinned constraint-removal migration, asserts the check is gone, and then validates policy values through the PostgreSQL `INTEGER` maximum. Attempt 2 meets the task acceptance criteria.
 
 ### Reviewed Files
 
-None.
+- `src/woocommerce/recovery-restore/service.ts`
+- `src/woocommerce/recovery-restore/routes.ts`
+- `tests/unit/woocommerce/recovery-restore/service.test.ts`
+- `tests/unit/woocommerce/recovery-restore/routes.test.ts`
+- `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`
+- Pinned `database` submodule reference and migration.
+- Attempt 2 Completion Report.
 
 ### Validation Reviewed
 
-None.
+The submitted report records 10 focused unit tests, the disposable PostgreSQL integration test with the pinned migration applied, typecheck, targeted ESLint and `git diff --check` as passing. Repository-wide `npm run lint` remains blocked by the reported pre-existing `no-empty` finding in untouched `src/merchant/support/routes.ts:75`; no unrelated file was changed. I did not rerun tests or lint during this review.
 
 ### Architecture Conformance
 
-To be reviewed.
+The resolver follows the canonical platform lifetime, uses fail-closed behavior for missing or invalid configuration, preserves uniform customer denial responses, and leaves HTTP v1/Shared contracts and database ownership unchanged. No implementation blocker found.
 
-### Follow-up
+### Completion Decision
 
-None.
+Set `status: complete` under `completion_mode: automatic`, clear executor and claim metadata, and preserve Attempt 2. SYSTEM-TEST-001 remains pending because WOOCOMMERCE-002 and WOOCOMMERCE-003 are not complete; no downstream task was promoted by this review.
