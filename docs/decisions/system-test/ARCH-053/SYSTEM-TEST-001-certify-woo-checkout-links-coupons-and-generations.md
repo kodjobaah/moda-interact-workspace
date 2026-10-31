@@ -16,13 +16,16 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-053-BACKGROUND-003
+- ARCH-053-BACKGROUND-005
+- ARCH-053-API-004
+- ARCH-016-ADMIN-003
 - ARCH-053-WOOCOMMERCE-002
 - ARCH-053-WOOCOMMERCE-003
 - ARCH-048-BACKGROUND-011
 - ARCH-046-WOOCOMMERCE-003
 enables: []
 created: 2026-10-29
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # ARCH-053-SYSTEM-TEST-001 — Certify core Woo checkout link and recovery-generation lifecycle
@@ -45,9 +48,11 @@ The inspected snapshot is dated 2026-10-30 07:59. ARCH-052 owns dynamic discount
 - Verify capture of 1..50 core lines including variations/attributes and **no-applied-coupon** snapshot cases, canonical v1 HTTP schema → existing v1 queue projection, candidate update, admission's immutable `wooRestoreSnapshot` and URL, template CTA safety, authenticated resolution and cross-device customer confirmation. Full applied-coupon lifecycle is assigned to `ARCH-053-SYSTEM-TEST-002`.
 - Verify HTTP `woo.activity.v1` with or without phone, preserve canonical phone proof validation and reject `woo.activity.v2`/`woo.activity.v3` after coordinated cutover; none of these may create a second queue envelope.
 - Test 2 shops (correct installation auth and hostname), same original checkout with generation 1→resumption→generation 2, independent eligible initial outreach without cross-generation cap, duplicate event and retry suppression, historical URL revocation, order placement/paid suppression, consent withdrawal/STOP, status terminality and delivery retry failures.
-- Assert the core restore flow uses *current* Woo pricing/tax/shipping, no historical totals; do not certify coupon-bearing restores under this task. The complete original-coupon matrix and notice presentation are terminal SYSTEM-TEST-002 responsibilities.
+- Assert the core restore flow uses *current* Woo pricing/tax/shipping, no historical totals; do not certify coupon-bearing restores under this task. The complete original-coupon matrix and **storefront-silent private diagnostics / correct totals** are terminal SYSTEM-TEST-002 responsibilities.
 - Security matrix: WhatsApp preview GET and HEAD no cart mutation, forged POST/nonce, wrong token/wrong tenant, superseded generation, older link with newer shopping basket, existing cart confirmation, unsupported extension item/no silent partial restore, malicious URL host/subpath, no PII/coupon/token in logs/referrer, WordPress offline and API outage.
 - Capture manual direct return to original Woo session with unchanged fingerprint and new user interaction; confirm **one new delayed BullMQ candidate** (not an immediate CheckoutRecovery) and no event from idle homepage or passive scanner.
+- Exercise the canonical recovery lifetime in API restore resolution, AI/human conversation wrapper `checkout.url`, automated template checkout URL binding and locked Woo final-send admission. Include a Shopify wrapper/template URL fixture without changing Shopify URL generation.
+- Test `0`, `1`, `21`, `91`, `180`, `365`, and a large valid PostgreSQL INTEGER day value. With fixed clocks, verify future activity rejected, one millisecond before cutoff eligible, exact cutoff rejected, config missing/invalid fails closed, and shortened Admin config enforced before the periodic expiry sweep. A six-minute- and an eight-day-old checkout remain eligible under a 21-day lifetime when other security gates pass; changing only `recovery.updatedAt` does not refresh the age.
 
 ## Out of Scope
 
@@ -59,7 +64,7 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 - System test is terminal: all implementation/publication/infrastructure prerequisite tasks must be accepted **Complete** before running. Developer may first manually test integrations.
 - Do not claim true order safety for activity the plugin never delivered; record exact residual risk and monitoring. A test mock of Meta delivery is NOT production send activation.
-- Validate token/URL 7-day freshness, revocation, queue lag, retry/dedup boundaries and no cross-generation billing mutation. Do not send real WhatsApp messages.
+- Validate URL lifetime against persisted `checkoutRecoveryLifetimeDays` (not five-minute/seven-day hardcoded age rules), alongside revocation, queue lag, retry/dedup boundaries and no cross-generation billing mutation. Do not send real WhatsApp messages.
 
 ### Mandatory workflow/security invariants
 
@@ -72,7 +77,8 @@ No execution of Enabled tasks, unrelated cross-repository implementation, extra 
 
 - [ ] Create cross-service fixtures with two merchants and multiple Woo sessions/browsers.
 - [ ] Run core product/cross-device/Classic+Blocks restoration with `appliedCouponCodes: []` and recovery-generation scenario matrix.
-- [ ] Run security/consent/STOP/terminal/order/error/retry tests and record independent evidence.
+- [ ] Run security/consent/STOP/terminal/order/error/retry tests: assert technical failures have private diagnostics and **no Moda-generated errors or Woo notices triggered by Moda** in checkout HTML/redirect/session/console; record evidence.
+- [ ] Run a cross-service configured-lifetime matrix against the API resolver, both Background binding paths and Woo final-send guard, with expiry sweep delayed and no arbitrary five-minute/seven-day override.
 - [ ] Return defects to owning agent tasks with a precise failing reproduction; complete test report; do not mutate implementation.
 
 ## Interfaces / Contracts
@@ -82,6 +88,9 @@ Consumes accepted ARCH-053 Shared v1 restore, HTTP v1 activity, v1 queue optiona
 ## Dependencies
 
 - `ARCH-053-BACKGROUND-003` (must be architect-accepted Complete)
+- `ARCH-053-BACKGROUND-005` — consolidated Background lifetime correction (architect-accepted Complete)
+- `ARCH-053-API-004` — canonical API resolver lifetime correction (architect-accepted Complete)
+- `ARCH-016-ADMIN-003` — administrator-controlled non-negative integer days without a business cap (architect-accepted Complete)
 - `ARCH-053-WOOCOMMERCE-002` (must be architect-accepted Complete)
 - `ARCH-053-WOOCOMMERCE-003` (must be architect-accepted Complete)
 - `ARCH-048-BACKGROUND-011` (must be architect-accepted Complete)
@@ -95,16 +104,19 @@ None.
 
 - [ ] Create cross-service fixtures with two merchants and multiple Woo sessions/browsers.
 - [ ] Run core product/cross-device/Classic+Blocks restoration with `appliedCouponCodes: []` and recovery-generation scenario matrix.
-- [ ] Run security/consent/STOP/terminal/order/error/retry tests and record independent evidence.
+- [ ] Run security/consent/STOP/terminal/order/error/retry tests: assert technical failures have private diagnostics and **no Moda-generated errors or Woo notices triggered by Moda** in checkout HTML/redirect/session/console; record evidence.
+- [ ] All four URL eligibility paths agree on the canonical lifetime cutoff at 0/1/21/91/180/365/high days, including exact-boundary, future-dated and missing/invalid configuration cases.
+- [ ] Configurable lifetime changes take effect at next check without waiting for an expiry sweep. No five-minute/seven-day age cap remains, and `updatedAt` alone never renews eligibility.
 - [ ] Return defects to owning agent tasks with a precise failing reproduction; complete test report; do not mutate implementation.
 - [ ] No regression in tenant isolation, historical generation preservation, valid shopper cart or consent/STOP/terminal order guards.
-- [ ] Tests demonstrate invalid/stale/replayed and unexpected errors do not produce silent success or malformed URLs.
+- [ ] Tests demonstrate invalid/stale/replayed and unexpected failures never produce false restoration success, malformed URLs or **storefront-visible Moda errors**, while keeping recoverable server-side diagnostics.
 - [ ] No change outside assigned domain repository code plus owned task Completion Report; no ARCH-052 work.
 
 ## Validation
 
 - [ ] Existing system-test repository declared integration commands; include exact command/version/environment in evidence
 - [ ] Cross-browser real Woo tests without previously applied coupons, two-tenant Postgres/Redis integration and deterministic replay
+- [ ] Cross-service configured-lifetime matrix with fixed clock, persisted ARCH-016 policy and delayed expiry sweep; record the actual cutoff and results at each boundary
 - [ ] `git diff --check` and terminal Completion Report with explicit pass/fail matrix
 
 ## Stop Condition

@@ -23,7 +23,7 @@ depends_on:
 - ARCH-046-WOOCOMMERCE-003
 enables: []
 created: 2026-10-29
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # ARCH-053-SYSTEM-TEST-002 — Certify original applied-coupon capture persistence and restoration
@@ -44,7 +44,7 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 
 - Add coupon-specific e2e fixtures and scenarios in `moda-interact-system-test` using its existing runner and WordPress/Woo Classic and Checkout Blocks; coordinate real API/BullMQ/Background/PostgreSQL paths with provider mocks. Do not modify application repositories.
 - Exercise original coupon addition and removal on an observed checkout (including no change to products or totals), canonical HTTP v1→v1 queue payload, updating delayed candidate, immutable coupon evidence at recovery admission, and resolution for the correct generation.
-- From WhatsApp-like URL open on another browser, ensure GET does not mutate cart/recovery; confirm POST restores the original products and *attempts* exactly the original codes under current shop policy, recalculates price, and visibly notifies any rejections.
+- From WhatsApp-like URL open on another browser, ensure GET does not mutate cart/recovery; confirm POST restores the original products and *attempts* exactly the original codes under current shop policy, recalculates the price, records rejection privately and does **not** display any Moda-originated error or Woo error notice triggered by the plugin.
 - Verify coupon-only updates use the **same** `woo.activity.v1` checkout event and that v2/v3 HTTP checkout activity is rejected after pre-production cutover; do not treat missing restoration as an empty coupon list.
 - Coupon matrix: zero coupons (`[]`), one valid, expired, deleted, usage exhausted, minimum spend no longer met, product exclusion, stacking conflict, mixed valid/invalid, coupon removed before abandonment, and coupon-only update after a previously stored recovery (new generation).
 - Prove invalid coupon does not force previous total, block otherwise-valid products or trigger automatic ARCH-052 incentive replacement; test 2 tenants, stale generation URL and no token/coupon logging.
@@ -58,22 +58,22 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 ## Requirements
 
 - Only current WooCommerce policies determine if a historical coupon remains applicable. Business rejection and unexpected platform/restore failure must be separately visible in test reports.
-- Both Classic and Blocks must show notices after redirect and correct totals; no acceptance based solely on mocks for checkout UI.
+- Both Classic and Blocks must show accurate Woo totals and correctly applied coupon state **without any Moda-generated rejection/errors after redirect**. Ordinary pre-existing Woo notices and errors entered by the shopper directly remain unchanged; do not accept mock-only checkout UI results.
 - Only run after every listed implementation dependency is architect-accepted Complete and the developer has had the optional manual-verification checkpoint; system test is terminal and enables no implementation tasks.
 - Use exact shared schema from accepted `ARCH-053-SHARED-001` (PHP must match its JSON fixtures, not import Node code). Zod validates wire *shape*, never WooCommerce coupon policy. Preserve stable checkoutKey, tenant scoping and generation semantics.
-- Never log original coupon codes, raw restoration URLs/tokens, customer contact details or unbounded exception content. PHP uses existing safe plugin diagnostics; Node uses `@modainteract/moda-interact-shared/logging` if edited. Unexpected errors must be observable without breaking the shopper checkout.
+- Never log original coupon codes, raw restoration URLs/tokens, customer contact details or unbounded exception content. Merchant-side PHP uses existing protected server-side plugin diagnostics only; the Shared npm logger applies to hosted Node services, not WooCommerce PHP. Original safe failure details must be preserved privately, not rendered into storefront HTML/notices.
 - Honour launcher-prepared, dedicated synchronised task worktrees and `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`; the repository agent updates only its assigned task metadata and Completion Report. Never mark itself Complete or push main.
 
 ## Work Items
 
 - [ ] Build deterministic cross-service coupon fixtures for checkout events, candidate maturity, immutable recovery and WhatsApp link resolution.
-- [ ] Exercise original coupons under current valid/expired/restricted/stacking rules on Classic and Blocks; capture browser screenshots/log assertions where useful.
+- [ ] Exercise original coupons under current valid/expired/restricted/stacking rules on Classic and Blocks; assert the exact Woo totals, **absence of Moda/Woo plugin-induced error notices**, preservation of pre-existing Woo notices and protected server log details.
 - [ ] Test replay, coupon-only updates, generational identity, consent/STOP, never-issue-new-coupon and no loss of successfully restored products.
 - [ ] Produce a matrix in Completion Report linking each required scenario to command, evidence and pass/fail; report defects to owning agent task, not fix implementation.
 
 ## Interfaces / Contracts
 
-Consumes ARCH-053 Shared v1 restore snapshot, API v1 ingest with Shared-validated restoration, Background candidates/admission, API resolve v1 and WordPress coupon+notice tasks; ARCH-048 owns closure/new-generation rules. No new system contract.
+Consumes ARCH-053 Shared v1 restore snapshot, API v1 ingest with Shared-validated restoration, Background candidates/admission, API resolve v1 and WordPress coupon-restoration + private-outcome tasks; ARCH-048 owns closure/new-generation rules. No new system contract.
 
 ## Dependencies
 
@@ -91,11 +91,11 @@ None.
 ## Acceptance Criteria
 
 - [ ] A valid applied original coupon survives capture→queue→candidate→recovery→resolve→native reapplication and shows the current approved discount.
-- [ ] Expired/exhausted/ineligible coupon does not apply, old total is not restored, its notice is clearly visible after redirect and customer can still pay for valid products.
+- [ ] Expired/exhausted/ineligible coupon does not apply, old total is not restored, a private rejection diagnostic exists without a Moda/Woo plugin-generated error notice after redirect and customer can still pay for valid products.
 - [ ] Multiple coupons and coupon add/remove events yield the exact current Woo results with no dropped codes or duplicate sends.
 - [ ] Superseded generation, token failure, preview GET and cross-tenant access never restore or mutate any shopper cart.
 - [ ] ARCH-052 dynamic discount creation is not used anywhere in coupon restoration.
-- [ ] No new discounts/coupon extension, no automatic replacement of a previously applied invalid coupon, no silent omission of declined original coupon.
+- [ ] No new discounts/coupon extension, no automatic replacement of a previously applied invalid coupon, no silent omission from internal diagnostic evidence or falsification of the actual Woo total.
 - [ ] Failed/invalid/replayed operations do not create duplicate recovery generations, outbound attempts or billings.
 - [ ] Only owning repository implementation and authorised task metadata are changed; ARCH-052 remains untouched.
 
