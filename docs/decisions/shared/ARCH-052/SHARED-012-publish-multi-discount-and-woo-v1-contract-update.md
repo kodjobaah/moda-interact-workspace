@@ -59,7 +59,7 @@ SHARED-010 is Complete and its 2.7.0 version must not be overwritten. SHARED-011
 ## Work Items
 
 - [x] Verify both prerequisite Architect Reviews are Accepted and status Complete, and their reviewed SHAs are included in the release source tree.
-- [ ] Publish one version and record exact package release+registry evidence; check no source changed except authorised release metadata.
+- [x] Publish one version and record exact package release+registry evidence; check no source changed except authorised release metadata.
 
 ## Interfaces / Contracts
 
@@ -79,13 +79,13 @@ Existing `@modainteract/moda-interact-shared/commerce` and `/woocommerce` subpat
 
 ## Acceptance Criteria
 
-- [ ] The published registry artifact contains both additions and is visible at the recorded exact version.
-- [x] No implementation source changes, tests or builds were performed during this attempt.
+- [x] The published registry artifact contains both additions and is visible at the recorded exact version.
+- [x] No implementation source changes or tests were performed. The existing package `prepack` build ran solely to create the publishable artifact, with explicit user authorization on 2026-10-31.
 
 ## Validation
 
-- [ ] Publication permission and registry visibility.
-- [ ] Exact published version and source tree diff inspection.
+- [x] Publication permission and registry visibility.
+- [x] Exact published version and source tree diff inspection.
 
 ## Stop Condition
 
@@ -99,12 +99,13 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Returned for Architect direction. Attempt 1. Release metadata is prepared, but publication was not performed because the only available package workflow would require a build prohibited by this task.
+Ready for Architect review. Attempt 1. Published `@modainteract/moda-interact-shared@2.8.1` after the user explicitly authorized the existing `prepack` build needed to create the package artifact.
 
 ### Files Changed
 
 - `package.json` — version set to candidate `2.8.1`.
 - `package-lock.json` — root package version set to candidate `2.8.1`.
+- No implementation source files were changed. The generated `dist` output and installed dependencies are ignored build artifacts and are not part of the release-metadata commit.
 
 ### Work Completed
 
@@ -115,28 +116,34 @@ Returned for Architect direction. Attempt 1. Release metadata is prepared, but p
 - Verified the source exports include the accepted discount combination facts, initial outreach offer set, `offer.codes` binding and Woo `CHECKOUT_OFFERS` resolver branch.
 - Queried the public npm registry: latest published version is `2.8.0`; `2.8.1` is the next candidate. Confirmed the configured npm identity is authenticated and listed as a package owner.
 - Prepared only the candidate version metadata and lockfile. No source, tests or builds were changed/run.
-- Inspected the package `prepack` script: it runs `npm run build`. A no-script pack dry run confirmed the current checkout has no `dist` artifact and would package no exported JavaScript or declaration files. Publishing that artifact would be unusable; running the prepack build would conflict with this task's explicit no-build requirement.
+- Confirmed `package.json` `prepack` runs the repository's declared `npm run build` script. The task initially prohibited builds; after the conflict was explained, the user explicitly authorized the existing `prepack` build as necessary for this publication.
+- Installed the exact lockfile dependencies with `npm ci`, then published through the declared npm workflow. The prepack TypeScript/ESM and declaration build completed successfully. No tests were run and no implementation source was edited.
+- Verified the registry artifact itself by downloading `@modainteract/moda-interact-shared@2.8.1` with scripts disabled and inspecting its tarball metadata, export map and declarations. It includes the `./commerce`, `./woocommerce` and `./recovery-template-bindings` subpaths, `CommerceDiscountCombinationFactsSchema`, `InitialOutreachCheckoutOfferSetSchema`, `WooRestoreOutreachOfferV1Schema` with `CHECKOUT_OFFERS`, and `RecoveryTemplateSemanticKeySchema` with `offer.codes`.
 
 ### Validation Results
 
 - Prerequisite status and Architect acceptance: passed.
 - Reviewed SHA inclusion in release source tree: passed.
-- Registry visibility and current latest version: passed (`2.8.0`).
+- Pre-release registry check: latest was `2.8.0`; `2.8.1` was available.
 - Registry owner access: passed.
-- Candidate metadata diff: limited to `package.json` and `package-lock.json`, both `2.8.1`.
-- No package was published. The no-script pack dry run showed no `dist` output; standard `npm publish` invokes the prohibited prepack build.
+- Release metadata diff: limited to `package.json` and `package-lock.json`, both set to `2.8.1`.
+- Declared `npm publish --access public` workflow: passed; existing prepack build completed successfully.
+- Published registry version: `2.8.1`, latest tag; tarball: `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-2.8.1.tgz`.
+- Registry integrity: `sha512-wvYK8jLGPiLEoOU9biPpCZmJFRloJ5SgdpeCsIkENPev16c6WOViKMjqDTcoMnymVmNybOIc/e1otti80EDaug==`; shasum `20f54b250b6a6ec9659b3c33bf128f4a354009db`.
+- Downloaded artifact inspection: passed; 128 files, including the exact entrypoints and declarations listed above.
+- Source-tree diff after release metadata: no implementation source changes; no tests run. Build output remained ignored and uncommitted.
 
 ### Deviations
 
-Publication was not performed. The task requires a valid published artifact but forbids the build needed to produce `dist`; no alternative release workflow or prebuilt combined artifact exists in this checkout.
+The task's original no-build wording conflicted with its requirement to publish a complete artifact through the package's declared `prepack` workflow. The user explicitly authorized this existing prepack build before release. No other task scope was changed.
 
 ### Assumptions
 
-None beyond the task. The candidate remains `2.8.1` based on the registry state observed on 2026-10-31 and must be rechecked before any later publication.
+The release is visible as version `2.8.1` in the npm registry, with the integrity recorded above.
 
 ### Unresolved Issues
 
-Architect direction is required: either authorize the package's existing `prepack` build as part of publication or provide an approved, prebuilt artifact/release workflow that includes both accepted implementations without running a build in this task.
+None. The build restriction conflict was resolved by the user's explicit authorization, and registry publication plus artifact inspection passed.
 
 ### Architectural Concerns
 
@@ -151,9 +158,9 @@ No source or contract gap was found. The blocker is the conflict between the pub
 - Start synchronization: parent and implementation remote task branch fast-forwards were `not-needed`; `origin/main` was `already-current` in both worktrees.
 - Recursive implementation submodules: sync passed; update/init passed; ready, no entries.
 - Parent claim commit: `2afa020403a4aed48d8a8d437448272e5dae608e`, pushed by launcher.
-- Implementation release-metadata commit: `21b9434e4d14d8dcb17b8c74090d0e59d595eab7`; task-branch push was rejected by automatic review pending explicit authorization for this exact repository/branch.
-- Parent report commit: `386acd591df3bc67dd4ed99cf1a52497cb91f390`; task-branch push was rejected by automatic review pending explicit authorization for this exact repository/branch.
-- Package publication was not performed; it remains pending Architect direction on the no-build conflict.
+- Implementation release-metadata commit: `21b9434e4d14d8dcb17b8c74090d0e59d595eab7`; pushed to `task/ARCH-052-SHARED-012` after user authorization.
+- Parent report commit: `f43c68a563e05feabbe9e8c8bef1c79da38cad3a`; pushed to `task/ARCH-052-SHARED-012` after user authorization. A follow-up report commit will record the successful publication.
+- Package version `2.8.1` published to npm; no main-branch update was made.
 - No npm release or main-branch update was made.
 
 ## Architect Review
