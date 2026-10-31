@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-10-31T04:13:34Z
@@ -97,7 +97,7 @@ Source files: `moda-interact-background/src/providers/shopify-discount.provider.
 
 ### Status
 
-Ready for architect review after Attempt 5. In addition to the source-backed discount projection, provider and SDK failures now reach the Shared logger with bounded, redacted explicit diagnostic fields; Shopify GraphQL source messages and codes are retained without logging response bodies. The catalogue stores a stable failure code separately from diagnostic text.
+Ready for architect review after Attempt 6. In addition to source-backed discount projections and provider diagnostics, malformed job payloads and invalid timestamps now receive an explicit per-job Shared error log with bounded, redacted exception fields before their original errors propagate to BullMQ.
 
 ### Files Changed
 
@@ -260,6 +260,38 @@ The catalogue service logs a stable `reasonCode` and persists `lastErrorCode: SH
 The implementation changes are in `src/providers/shopify-discount.provider.ts`, `src/services/shopify-discount-catalogue.service.ts`, `src/workers/shopify-discount-sync.worker.ts`, and their three corresponding unit tests. No package, lockfile, submodule gitlink, database schema, or MCP implementation changes were made.
 
 Implementation commits `5106838d6d582eb9ef08484d9de71232a6bf33ef` and `cffbbd819850c1d33d0c6840f7ff13da26210edd` are pushed to `origin/task/ARCH-052-BACKGROUND-011`.
+
+ARCH-052-MCP-002 was not started.
+
+### Attempt 6 — Log Invalid Shopify Discount Sync Jobs
+
+The prepared launcher claimed Attempt 6 as `codex` at `2026-10-31T04:13:34Z` and pushed parent claim commit `f24073c0da5f42a343faf0ea65b0c8239833355e`. Its dependency gate passed for `ARCH-052-BACKGROUND-009` and `ARCH-052-SHARED-010`.
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`, starting at `e118ac0556d67bb40225685f572149fafe427b59`; task-branch fast-forward was `not-needed`, and `origin/main` was already current.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-011`, branch `task/ARCH-052-BACKGROUND-011`, starting at `cffbbd819850c1d33d0c6840f7ff13da26210edd`; task-branch fast-forward was `not-needed`, and `origin/main` was already current.
+- Recursive submodule synchronization and initialization passed; the database submodule is at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+
+The worker now performs shared job parsing, `requestedAt` validation, validated-field construction, and processing inside one per-job `try/catch`. Invalid payloads and timestamps emit `shopify.discount_sync.failed` with stable `reasonCode: SHOPIFY_DISCOUNT_SYNC_JOB_INVALID` and bounded, redacted `errorName`, `errorMessage`, `errorStack`, and cause fields. The invalid-input log omits job identifiers and payload-derived fields entirely. After successful validation, processing failures retain their existing stable sync reason and safe validated context. The worker rethrows the original exception in every failure case so BullMQ retry/rejection behavior is unchanged.
+
+#### Attempt 6 Architect Review disposition
+
+- **Log malformed job payloads through the Shared logger — implemented.** Added the parse operation to the existing processor failure boundary and a regression showing its actual redacted message, stack and cause reach the Shared logger.
+- **Log invalid `requestedAt` and preserve retry propagation — implemented.** Invalid timestamps receive the same stable invalid-job classification and reject to BullMQ; the regression asserts no reconciliation call occurs.
+- **Exclude raw payload and untrusted fields — implemented.** Tests assert malformed and invalid-timestamp log records omit the job ID, shop context and injected private payload values.
+- **Keep MCP-002 pending — satisfied.** No MCP-002 implementation was started.
+
+#### Attempt 6 validation
+
+- Focused command `npm test -- tests/unit/providers/shopify-discount.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts tests/unit/workers/shopify-discount-sync.worker.test.ts` — 3 files, 26 tests passed.
+- Changed-file ESLint across the provider, service, worker and three corresponding unit test files — passed.
+- `npm run build` — passed after aligning the safe worker context types with nullable `shopId` and `webhookTopic` in the Shared payload schema; includes Prisma Client generation and TypeScript compilation.
+- `git diff --check` — passed in the implementation and parent task worktrees.
+- PostgreSQL selection integration was not rerun; this correction is limited to worker job validation and error logging, without database behavior changes. The earlier Attempt 2 integration result remains recorded above.
+
+The Attempt 6 implementation changes only `src/workers/shopify-discount-sync.worker.ts` and `tests/unit/workers/shopify-discount-sync.worker.test.ts`. No package, lockfile, submodule gitlink, database schema or MCP implementation changes were made.
+
+Implementation commit `ab0feab2649ca2a175997d65ec57ff9fd7261971` is pushed to `origin/task/ARCH-052-BACKGROUND-011`.
 
 ARCH-052-MCP-002 was not started.
 
