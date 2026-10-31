@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: copilot
 claimed_at: 2026-10-31T09:24:43Z
@@ -163,7 +163,7 @@ Existing `CommerceToolResultSchema` wraps `data`. See SHARED-009's complete Zod 
 ## Validation
 
 - [x] Run MCP unit tests for pages, cursor tamper, tenant isolation, current policy, Woo and Shopify providerSnapshot mapping, and generic `CommerceToolResultSchema` conformance.
-- [ ] Run the authored and integration-typechecked real-PostgreSQL tests for two shops, selection changes, pagination and no provider calls. Docker is unavailable in this environment (`spawnSync docker ENOENT`); developer validation remains required.
+- [x] Run the authored and integration-typechecked real-PostgreSQL tests for two shops, selection changes, pagination and no provider calls. Docker results and remaining unrelated integration failures are recorded in the Attempt 2 report below.
 
 - [x] Add fixtures for product ID versus variant ID, category/collection IDs, excluded IDs, `hasNextPage`/overflow, missing money currency, Woo email/metadata presence flags true/false/null, unknown sale-item/expiry/usage restriction, exact provider identity, and Shopify fully observed Basic versus combination-only partial. Assert no tool produces a basket-level SUPPORTED decision.
 - [x] Run declared MCP typecheck/build and `git diff --check`; record actual command outcomes.
@@ -283,3 +283,31 @@ and missing PostgreSQL execution must be corrected/validated before acceptance.
 Resubmit after the targeted-source tests pass and the required disposable
 PostgreSQL suite has run successfully. Keep BACKGROUND-010 and terminal system
 tests pending until their full dependency sets are complete.
+
+### Attempt 2 Implementation and Validation — Submitted for Review
+
+Attempt 2 addresses the empty-target completeness finding and runs the required Docker-backed PostgreSQL suite. The discount-specific PostgreSQL scenario passes, but the complete integration suite remains red on two unrelated integration tests; no implementation acceptance is claimed. Attempt 1's Changes Requested review above is preserved as history.
+
+Implementation commit `89e9ad3` is recorded on `task/ARCH-052-MCP-002`.
+
+#### Changes
+
+- `projectShopifyTargeting` now adds `TARGETING_INCOMPLETE` when recognized `DiscountProducts` or `DiscountCollections` targeting resolves to `UNKNOWN`, including fully paged empty connections. Focused tests use otherwise-complete Shopify snapshots and assert `UNKNOWN`, `PARTIAL` and the explicit reason for both cases.
+- Corrected the existing PostgreSQL discount fixture to set `fixedShopifyDiscountId` when entering `FIXED` mode and clear it when switching to `AI_BEST_APPLICABLE`, matching the schema constraint.
+- Corrected the integration assertion for the deliberately cross-tenant cursor request to expect its single `MCP_DISCOUNT_CURSOR_INVALID` diagnostic; tenant rejection and no-provider-call assertions remain intact.
+
+#### Validation Results
+
+- `npx tsx --test tests/unit/execution/discount-catalogue.test.ts` — 14 passed, 0 failed.
+- `npm run test:unit` — 211 passed, 0 failed.
+- `npm run typecheck` — passed.
+- `npm run typecheck:integration` — passed after final integration fixture edits.
+- `npm run build` — passed.
+- `npx eslint src/execution/discount-catalogue.ts tests/unit/execution/discount-catalogue.test.ts tests/integration/prisma.integration.test.ts` — passed.
+- `git diff --check` — passed.
+- `npm run test:integration:docker` — ran with Docker/Colima. Final result: 12 passed, 2 failed, 1 intentionally skipped. The task-specific `discount tools page persisted snapshots and recheck tenant policy without provider calls` PostgreSQL scenario passed.
+- Remaining integration failures: `ARCH-043 sealed keyring and encrypted embedding against disposable migrated PostgreSQL` fails because `public.PlatformConfiguration` is absent; the pinned Database submodule revision is `139765042baad3901682cfe9c54a3d6bba73e75c` and does not track migration `20261017150000_arch043_platform_configuration`. `actionable failures create deduplicated generic incidents` fails with `MCP_OPERATIONAL_INCIDENT_REPORT_FAILED`. Neither failure is in the discount projection path. The full Docker suite therefore remains an explicit review issue, not a pass.
+
+#### Review Handoff
+
+Attempt 2 is submitted with status `review`. The empty-target regression is fixed and its focused tests pass. The Architect should decide whether the two unrelated PostgreSQL suite failures require prerequisite Database/operational follow-up before acceptance. No dependent task was started and no merge to `main` was performed.
