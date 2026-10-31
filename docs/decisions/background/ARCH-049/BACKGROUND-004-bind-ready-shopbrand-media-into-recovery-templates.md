@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-27T15:56:42Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-049-DATABASE-001
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-049-SYSTEM-TEST-001
 created: 2026-10-26
-updated: 2026-10-28
+updated: 2026-10-31
 ---
 
 # Bind verified ShopBrand R2 media into prepared recovery templates
@@ -85,11 +85,11 @@ Use `@modainteract/moda-interact-shared/logging` as already installed. Emit boun
 
 ## Work Items
 
-- [ ] Implement one shop-scoped READY-media adapter in its own focused module and tests.
-- [ ] Update the existing ARCH-047 image-header variable binding to require the frozen three-role selection.
-- [ ] Wire the adapter into production recovery preparation and preserve existing final-send admission.
-- [ ] Verify text-only templates, bad roles, stale media, multiple shops and immutable fingerprint compatibility.
-- [ ] Record changed paths, validation and worktree evidence in Completion Report.
+- [x] Implement one shop-scoped READY-media adapter in its own focused module and tests.
+- [x] Update the existing ARCH-047 image-header variable binding to require the frozen three-role selection.
+- [x] Wire the adapter into production recovery preparation and preserve existing final-send admission.
+- [x] Verify text-only templates, bad roles, stale media, multiple shops and immutable fingerprint compatibility.
+- [x] Record changed paths, validation and worktree evidence in Completion Report.
 
 ## Interfaces / Contracts
 
@@ -110,18 +110,18 @@ Input: `(shopId, role)` and saved `whatsAppMedia` JSONB plus the `shopBrand.publ
 
 ## Acceptance Criteria
 
-- [ ] Only the configured shop's current READY immutable derivative can become a Meta image header.
-- [ ] A TEXT-header message remains unchanged; a missing/unsafe image fails closed without using original source URL.
-- [ ] Admin's accepted frozen binding for each of LOGO/SQUARE_LOGO/COVER_IMAGE produces the exact corresponding runtime image header; content hashes remain compatible.
-- [ ] The existing late outbound admission receives the unchanged prepared media component without bypassing existing safeguards.
-- [ ] No R2 upload/fetch, Meta sample submission, schema migration or new generic logger is introduced.
+- [x] Only the configured shop's current READY immutable derivative can become a Meta image header.
+- [x] A TEXT-header message remains unchanged; a missing/unsafe image fails closed without using original source URL.
+- [x] Admin's accepted frozen binding for each of LOGO/SQUARE_LOGO/COVER_IMAGE produces the exact corresponding runtime image header; content hashes remain compatible.
+- [x] The existing late outbound admission receives the unchanged prepared media component without bypassing existing safeguards.
+- [x] No R2 upload/fetch, Meta sample submission, schema migration or new generic logger is introduced.
 
 ## Validation
 
-- [ ] Unit tests covering all three roles, absent/stale generation, cross-tenant asset, unsafe host, invalid key and output MIME/size.
-- [ ] Fixed Admin projection/fingerprint compatibility vectors (including rejection of mismatch).
-- [ ] Production composition tests proving READY adapter injection and IMAGE component delivery; automated initial + scheduled follow-up and text-only regression.
-- [ ] Existing Background typecheck, lint, focused tests and `git diff --check`.
+- [x] Unit tests covering all three roles, absent/stale generation, cross-tenant asset, unsafe host, invalid key and output MIME/size.
+- [x] Fixed Admin projection/fingerprint compatibility vectors (including rejection of mismatch).
+- [x] Production composition tests proving READY adapter injection and IMAGE component delivery; automated initial + scheduled follow-up and text-only regression.
+- [x] Existing Background typecheck, lint, focused tests and `git diff --check`.
 
 ## Stop Condition
 
@@ -135,43 +135,95 @@ Read relevant ARCH-047 BG001/BG006 accepted tasks and ARCH-049 DB001/ADMIN002 co
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at `2026-10-27T15:56:42Z`.
+In Review — Attempt 1 implementation and developer self-review passed; explicit developer completion is pending.
 
 ### Developer Takeover and Worktree Evidence
 
 - Parent task worktree:
   `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-049-BACKGROUND-004`
-  on `task/ARCH-049-BACKGROUND-004`. The existing task branch was clean and
-  matched `origin/task/ARCH-049-BACKGROUND-004` before synchronization. Current
-  parent `origin/main` was merged into the task branch without conflicts; the
-  published eligibility commit was preserved.
+  on `task/ARCH-049-BACKGROUND-004`. It was synchronized with `origin/main`
+  before this review; the parent branch is clean and its task branch contains
+  current mainline.
 - Implementation worktree:
   `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-049-BACKGROUND-004`
-  on `task/ARCH-049-BACKGROUND-004`, created from refreshed implementation
-  `origin/main` at `c37d644d90ef726c841c71b68650a43cd81f4abb` because no task
-  branch or canonical worktree existed in the implementation repository.
-- The pinned `database` submodule was initialized at
-  `f16d5fc955b1fa1215177cc89fb6fd326bfa65c8`; implementation and submodule
-  worktrees were clean at claim preparation. No source implementation has been
-  started yet.
-- Attempt 1 was claimed and recorded on the parent task branch. No merge or push
-  to `main` was performed. The concurrent WooCommerce task file was not edited.
+  on `task/ARCH-049-BACKGROUND-004`. Commit
+  `3d59eabf0d10cc3a6266dcd7f334eac275459293` is pushed to
+  `origin/task/ARCH-049-BACKGROUND-004`; the worktree is clean and local HEAD
+  matches the remote task branch.
+- The implementation task branch merged current `origin/main` into the task
+  branch. The conflict in
+  `src/services/recovery-template-preparation/recovery-template-preparer.service.ts`
+  was resolved while retaining mainline category/language inputs and the
+  configured READY-media adapter. No merge to `main` was performed.
+- The initial typecheck used stale installed Shared `2.5.1` although the
+  manifest pins `2.8.1`. `npm ci` restored the lockfile version; no package
+  manifest or lockfile change resulted. No schema or Shared source was changed.
+- Attempt 1 remains the only attempt. `moda_background` provided implementation
+  assistance at the developer's explicit request; execution/completion ownership
+  remains developer. The concurrent WooCommerce task file was not edited.
 
 ### Files Changed
 
-None.
+The implementation branch changes:
+
+- `docs/arch049-ready-media-binding.md`
+- `src/services/recovery-template-preparation/recovery-template-bindings.ts`
+- `src/services/recovery-template-preparation/recovery-template-brand.ts`
+- `src/services/recovery-template-preparation/recovery-template-preparer.service.ts`
+- `src/services/recovery-template-preparation/recovery-template.types.ts`
+- `src/services/shop-brand-media-runtime/contracts.ts`
+- `src/services/shop-brand-media-runtime/repository.ts`
+- `src/services/shop-brand-media-runtime/resolver.ts`
+- `tests/fixtures/arch049-admin-media-header-projection.json`
+- `tests/integration/arch049-ready-media.integration.test.ts`
+- `tests/unit/services/recovery-template-preparation/arch049-frozen-image-binding.test.ts`
+- `tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts`
+- `tests/unit/services/shop-brand-media-runtime/production-composition.test.ts`
+- `tests/unit/services/shop-brand-media-runtime/resolver.test.ts`
 
 ### Work Completed
 
-None.
+Implemented a shop-scoped READY-media adapter that reads `ShopBrand` by the
+authenticated `shopId`, obtains the current raw Shop domain and trusted
+`shopBrand.publicMedia` origin, and returns only a validated immutable R2
+derivative. It checks READY state, current source generation/fingerprint,
+canonical domain/role/content-hash object key, output MIME, dimensions, size and
+origin. It performs no image network access or upload.
+
+Frozen bindings support only the canonical `LOGO`, `SQUARE_LOGO` and
+`COVER_IMAGE` roles on IMAGE headers, verify the Admin-compatible frozen
+projection fingerprint, preserve BODY/button behavior and reject legacy or
+mismatched image bindings. Production preparation injects an operation-scoped
+trusted adapter; existing text-only preparation and outbound delivery/admission
+remain in place. Text bindings requesting a brand image URL resolve only the
+corresponding validated READY derivative.
 
 ### Validation Results
 
-Not run.
+Passed:
+
+- `npm ci` restored the lockfile-pinned Shared `2.8.1` dependency; no package
+  manifest or lockfile changes were made.
+- `npm run build` — Prisma client generation and TypeScript compilation passed.
+- `npm run lint` — passed.
+- Focused Vitest suite covering recovery-template preparation, frozen bindings,
+  runtime resolver/composition, registration and send paths — 10 files, 75
+  tests passed.
+- `node scripts/test-integration.mjs tests/integration/arch049-ready-media.integration.test.ts`
+  — 1 PostgreSQL integration test passed.
+- `git diff --check origin/main...HEAD` in the implementation worktree — passed.
+- Implementation task branch is pushed and clean; local HEAD matches the task
+  remote.
+
+`npm ci` reported 40 dependency audit findings (27 moderate, 13 high); dependency
+remediation was not part of this task and no audit-fix command was run.
 
 ### Deviations
 
-None.
+The assigned `moda_background` agent resolved the implementation-branch
+mainline merge conflict and completed the implementation as explicitly
+authorized bounded assistance during developer Attempt 1. No ownership,
+attempt-count or task-scope change was made.
 
 ### Assumptions
 
@@ -183,7 +235,10 @@ Meta sample-media procurement is an external integration prerequisite for real I
 
 ### Architectural Concerns
 
-None reported beyond the recorded Meta sample-media boundary.
+No additional concerns identified. Meta sample-media procurement remains an
+external prerequisite for real IMAGE template approval. The dependency audit
+findings reported by `npm ci` should be handled through the repository's normal
+dependency-security workflow, separately from this task.
 
 ## Architect Review
 
@@ -214,4 +269,45 @@ None.
 ## Dependency Frontier Reconciliation
 
 - Historical note: promoted from `pending` to `ready` on 2026-10-27 after `ARCH-049-DATABASE-001`, `ARCH-049-ADMIN-001`, `ARCH-047-ADMIN-003`, `ARCH-047-ADMIN-005`, and `ARCH-047-BACKGROUND-001` were verified complete. At that time, attempt was 0 and no implementation worktree existed.
-- Current claim supersedes that eligibility-only state: Attempt 1 is `in_progress`, executor is `developer`, and `claimed_at` is `2026-10-27T15:56:42Z`. The declared dependencies remain complete; no downstream task was started or promoted as part of this claim.
+- Attempt 1 is now in `review`; execution and completion authority remain
+  `developer`, with `executor` and `claimed_at` cleared for the review state.
+  Attempt count remains 1. The declared dependencies remain complete; no
+  downstream task was started or promoted as part of this review.
+
+## Developer Self-Review
+
+### Decision
+
+Passed. The implementation satisfies the task scope and acceptance criteria;
+status is `review` because `completion_mode` is `developer`. Explicit developer
+completion remains pending and is not inferred from this review.
+
+### Review Findings
+
+- READY media resolution is tenant-scoped and validates the current source
+  generation/fingerprint, canonical object key, trusted origin and verified
+  image metadata before returning a URL.
+- Frozen role selection is enforced for IMAGE headers and included in the
+  Admin-compatible fingerprint projection. TEXT headers, BODY/button bindings
+  and existing outbound admission/delivery behavior are covered by regression
+  tests.
+- No BG004-specific blocker or scope deviation was found. R2 fetch/upload,
+  schema changes, Shared source changes and `_index.md` edits were not introduced.
+
+### Validation Reviewed
+
+- Build, lint, 75 focused unit tests, 1 PostgreSQL integration test and
+  implementation diff check passed after restoring dependencies with `npm ci`.
+- The dependency audit findings from `npm ci` are recorded above; they were not
+  remediated in this task.
+
+### Implementation Publication
+
+`3d59eabf0d10cc3a6266dcd7f334eac275459293` is published on
+`origin/task/ARCH-049-BACKGROUND-004`. The implementation worktree is clean.
+The active developer claim was preserved through Attempt 1 and no branch was
+merged to `main`.
+
+### Explicit Completion
+
+Pending developer decision via `/moda_developer_update ARCH-049-BACKGROUND-004 complete`.
