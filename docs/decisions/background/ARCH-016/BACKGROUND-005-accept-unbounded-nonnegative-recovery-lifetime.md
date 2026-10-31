@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-31T12:14:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-016-DATABASE-002
@@ -142,7 +142,7 @@ There is no newly imposed maximum. The native SQL `INTEGER` storage limit is not
 
 ### Status
 
-Attempt 1 implementation complete; returned to `review` for Architect review. No Architect acceptance decision has been made.
+Attempt 1 was returned with Changes Requested. The task remains at attempt 1; the launcher owns the next attempt increment.
 
 ### Files Changed
 
@@ -194,24 +194,53 @@ None. No new business maximum or persistent/configuration field was introduced.
 
 ### Review Status
 
-Pending
+Attempt 1 — Changes Requested
 
 ### Review Notes
 
-Pending implementation evidence.
+The implementation correctly removes the 90-day runtime cap, validates
+non-negative safe integers, uses BigInt cutoff arithmetic, and preserves the
+existing inclusive query and transactional lifecycle safeguards. One
+acceptance blocker remains in the PostgreSQL lower-timestamp guard:
+
+1. `src/services/checkout-recovery-expiry.service.ts` sets
+   `MIN_POSTGRES_TIMESTAMP_MS` to `-212_760_172_800_000`. PostgreSQL source
+   defines `MIN_TIMESTAMP` as `-211813488000000000` microseconds relative to
+   the 2000 epoch. Converting that to Unix milliseconds requires adding the
+   2000-to-1970 epoch offset, yielding `-210_866_803_200_000`. The current
+   guard is earlier than PostgreSQL's actual minimum and can therefore accept
+   cutoffs that PostgreSQL cannot store. Correct the bound/conversion and add
+   boundary tests proving an in-range cutoff queries normally while a cutoff
+   just below the PostgreSQL minimum returns `0` without calling Prisma.
+
+References: [PostgreSQL timestamp range](https://www.postgresql.org/docs/current/datatype-datetime.html)
+and [PostgreSQL timestamp source](https://doxygen.postgresql.org/datatype_2timestamp_8h_source.html).
 
 ### Reviewed Files
 
-None
+- `src/runtime/background-runtime-config.ts`
+- `src/services/checkout-recovery-expiry.service.ts`
+- `tests/unit/runtime/background-runtime-config.test.ts`
+- `tests/unit/services/checkout-recovery-expiry.service.test.ts`
+- This task definition and Completion Report
 
 ### Validation Reviewed
 
-None
+The Completion Report records the two task-owned unit files passing (32 tests),
+lint, build and `git diff --check`. The broader unit suite reported 26 failures
+outside the changed files. No tests were rerun for this review; the focused
+test evidence does not cover the PostgreSQL lower-bound edge that remains an
+acceptance blocker.
 
 ### Architecture Conformance
 
-Not assessed.
+The runtime validation and BigInt calculation follow the architecture, but the
+incorrect PostgreSQL lower bound means the promised no-invalid-timestamp
+behavior is not yet met for every representable configuration value.
 
 ### Follow-up
 
-None
+Correct the lower timestamp bound and add tests immediately on both sides of
+the PostgreSQL minimum. Resubmit the same task after the focused tests, lint,
+build and diff check pass. Attempt remains 1; do not increment it in this
+review. `ARCH-016-ADMIN-003` and `ARCH-016-SYSTEM-TEST-001` remain Pending.
