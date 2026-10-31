@@ -192,7 +192,7 @@ Development-only `RecoveryOutreachAttempt` records with old single-discount `off
 
 **ARCH-053 boundary.** Woo link/restoration logic remains **exclusively ARCH-053**. ARCH-053-SHARED-003 extends the already-published `woo.restore.resolve.v1` response with a bounded CHECKOUT_OFFERS branch; the resolver is still first-release v1, with no v2 or legacy adapter. ARCH-053-API-003 reads only the confirmed receipt and WooCommerce-007/008 apply the whole offered code set under native Woo rules after explicit user confirmation, preserving originally applied coupon codes by default. This means the promotional set can be accurately displayed without guaranteeing Woo will redeem every code. ARCH-052 implementation tasks never depend on ARCH-053 system tests; **one Shared publication SHARED-012** follows both `ARCH-052-SHARED-011` and `ARCH-053-SHARED-003`, then releases the package for all consumers.
 
-**Concurrency protection.** Do not rewrite, reopen or modify the already-claimed implementation tasks `ARCH-052-SHOPIFY-001`, `ARCH-052-MCP-005` or unrelated `ARCH-049-BACKGROUND-003`. Their current execution must finish and be reviewed independently. Do not reopen BACKGROUND-011 while Attempt 2 is in review; BACKGROUND-013 begins only after architect acceptance of BACKGROUND-011. Snapshot YAML may predate these active external execution claims. No new database table, new provider-proof engine or new Woo checkout link path is needed.
+**Concurrency protection.** Do not rewrite, reopen or modify the already-claimed implementation tasks `ARCH-052-SHOPIFY-001`, `ARCH-052-MCP-005` or unrelated `ARCH-049-BACKGROUND-003`. Their current execution must finish and be reviewed independently. BACKGROUND-011 and BACKGROUND-013 are complete. Snapshot YAML may predate active external execution claims on unrelated tasks. No new database table, new provider-proof engine or new Woo checkout link path is needed.
 
 ### Deterministic basket eligibility and compatible-group evaluation — 31 October 2026
 
@@ -211,7 +211,7 @@ This section **supersedes earlier language implying that AI, MCP, `facts.complet
 
 **Current task frontier:** SHARED-011, SHARED-012, SHARED-013 and SHARED-014 are architect-accepted **Complete**; Shared 2.8.1 remains intact and the accepted threshold-currency contract is published as 3.0.0. BACKGROUND-014 is architect-accepted **Complete**, and BACKGROUND-015 is also **Complete**. BG013, MCP-002, BG010/008 and terminal system tests now explicitly consume this corrected source and published-contract chain. Do not rewrite ongoing ARCH-049-BACKGROUND-003, ARCH-052-MCP-005 or ARCH-052-SHOPIFY-001 task/branches, or reset BACKGROUND-011's external Attempt 2 review claim based on its stale exported YAML. No implementation source has been changed by this coordination patch.
 
-**Reconciled task frontier:** SHARED-011, ARCH-053-SHARED-003 and SHARED-012 were accepted and published before this patch. Add SHARED-013/014 for exact currency denomination and BACKGROUND-014 for Woo restriction-presence; amend pending BACKGROUND-013, MCP-002, BACKGROUND-010/008 and terminal tests. The archived external BACKGROUND-011 Attempt 2 review report and active task branches are preserved; this is architecture documentation only.
+**Reconciled task frontier:** SHARED-011, ARCH-053-SHARED-003 and SHARED-012 were accepted and published before this patch. Add SHARED-013/014 for exact currency denomination and BACKGROUND-014 for Woo restriction-presence. BACKGROUND-013 is Complete after accepted Attempt 1; MCP-002, BACKGROUND-010/008 and terminal tests retain their remaining prerequisites. BACKGROUND-011 is Complete after accepted Attempt 6; its Attempt 4 and Attempt 5 reports remain historical evidence.
 
 ## Decisions / Tasks
 
@@ -235,7 +235,7 @@ Individual task YAML is authoritative within the exported snapshot. SHARED-011, 
 | [ARCH-052-BACKGROUND-008](../decisions/background/ARCH-052/BACKGROUND-008-integrate-three-modes-into-initial-whatsapp-send.md) | `moda_background` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-ADMIN-003`, `ARCH-052-BACKGROUND-010`, `ARCH-052-BACKGROUND-005`, `ARCH-052-ADMIN-001`, `ARCH-052-BACKGROUND-015` |
 | [ARCH-052-BACKGROUND-009](../decisions/background/ARCH-052/BACKGROUND-009-preserve-shopify-merchant-selection-during-sync.md) | `moda_background` | Complete | — |
 | [ARCH-052-BACKGROUND-010](../decisions/background/ARCH-052/BACKGROUND-010-implement-langgraph-initial-outreach-offer-agent.md) | `moda_background` | Pending | `ARCH-052-SHARED-012`, `ARCH-052-MCP-002`, `ARCH-052-COMMERCE-007`, `ARCH-052-SHARED-010`, `ARCH-052-SHARED-014` |
-| [ARCH-052-BACKGROUND-011](../decisions/background/ARCH-052/BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | `moda_background` | Review | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
+| [ARCH-052-BACKGROUND-011](../decisions/background/ARCH-052/BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | `moda_background` | Complete | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
 | [ARCH-052-BACKGROUND-012](../decisions/background/ARCH-052/BACKGROUND-012-upload-trusted-meta-image-template-sample.md) | `moda_background` | Ready | `ARCH-052-ADMIN-002`, `ARCH-047-BACKGROUND-003` |
 | [ARCH-052-COMMERCE-001](../decisions/commerce/ARCH-052/COMMERCE-001-verify-shopify-discount-against-current-checkout.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-COMMERCE-002](../decisions/commerce/ARCH-052/COMMERCE-002-read-authoritative-shopify-checkout-product-image.md) | `moda_commerce` | Superseded | — |
@@ -251,7 +251,7 @@ Individual task YAML is authoritative within the exported snapshot. SHARED-011, 
 | [ARCH-052-MCP-003](../decisions/mcp/ARCH-052/MCP-003-direct-provider-product-search-and-exact-read.md) | `moda_mcp` | Complete | `ARCH-052-SHARED-010`, `ARCH-052-COMMERCE-006`, `ARCH-052-MCP-005` |
 | [ARCH-052-MCP-004](../decisions/mcp/ARCH-052/MCP-004-verify-alternative-product-discount-promotions.md) | `moda_mcp` | Superseded | — |
 | [ARCH-052-MCP-005](../decisions/mcp/ARCH-052/MCP-005-implement-direct-woocommerce-rest-product-reader.md) | `moda_mcp` | Complete | — |
-| [ARCH-052-MCP-006](../decisions/mcp/ARCH-052/MCP-006-preserve-original-woo-provider-errors.md) | `moda_mcp` | Ready | `ARCH-052-MCP-005` |
+| [ARCH-052-MCP-006](../decisions/mcp/ARCH-052/MCP-006-preserve-original-woo-provider-errors.md) | `moda_mcp` | Complete | `ARCH-052-MCP-005` |
 | [ARCH-052-SHARED-001](../decisions/shared/ARCH-052/SHARED-001-define-canonical-selected-discount-contract.md) | `moda_shared` | Superseded | — |
 | [ARCH-052-SHARED-002](../decisions/shared/ARCH-052/SHARED-002-define-checkout-template-binding-contract.md) | `moda_shared` | Complete | — |
 | [ARCH-052-SHARED-003](../decisions/shared/ARCH-052/SHARED-003-publish-initial-outreach-shared-contracts.md) | `moda_shared` | Complete | `ARCH-052-SHARED-002`, `ARCH-052-SHARED-006`, `ARCH-052-SHARED-008` |
