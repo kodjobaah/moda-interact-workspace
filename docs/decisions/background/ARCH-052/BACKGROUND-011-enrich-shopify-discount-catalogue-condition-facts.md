@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T02:06:34Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-052-BACKGROUND-009
@@ -318,3 +318,34 @@ The combination policy is now source-backed and projected through the available 
 ### Follow-up
 
 Return the task to `ready` for Attempt 4. Preserve prior attempt history and keep ARCH-052-MCP-002 unpromoted until this task is accepted and its other dependencies are complete.
+
+
+## Architect Review — Attempt 4
+
+### Review Status
+
+Accepted — Complete.
+
+### Review Notes
+
+Attempt 4 resolves the remaining completeness finding. Both Shopify Basic GraphQL fragments select `recurringCycleLimit`, and the existing provider snapshot retains the normalized value. A positive value is preserved and marks Shared facts PARTIAL because Shared 2.8.1 cannot represent the cycle cap; null, missing, or invalid values also mark facts PARTIAL with an explicit unavailable reason. Zero is retained as the source-backed unlimited value and does not reduce completeness. This matches Shopify's 2026-07 Admin API documentation for [DiscountAutomaticBasic](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/DiscountAutomaticBasic) and [DiscountCodeBasic](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/DiscountCodeBasic).
+
+The Attempt 3 Shared combination-facts projection remains valid. No Shared contract change is needed for this task; the unrepresentable positive cycle limit is explicitly surfaced as incomplete.
+
+### Reviewed Files
+
+- `src/providers/shopify-discount.provider.ts`
+- `tests/unit/providers/shopify-discount.provider.test.ts`
+- Attempt 4 Completion Report and VCS evidence.
+
+### Validation Reviewed
+
+Reviewed the reported 15 focused provider/service tests, changed-file ESLint, build, and `git diff --check`; these checks were not rerun during architect review. The implementation reports no database changes and appropriately did not rerun PostgreSQL selection integration.
+
+### Architecture Conformance
+
+Accepted. The bounded provider snapshot preserves source-backed combination and cycle-limit facts, marks unsupported or unavailable conditions PARTIAL, and keeps existing catalogue persistence and merchant selection behavior unchanged.
+
+### Follow-up
+
+Mark ARCH-052-BACKGROUND-011 Complete. The separate, unmaterialized ARCH-052-BACKGROUND-013 task is superseded because its tags, discount classes, and Plus entitlement requirements are delivered by this accepted implementation. Remove that redundant dependency from MCP-002 and SYSTEM-TEST-001. MCP-002 is dependency-ready; do not start it as part of this review.

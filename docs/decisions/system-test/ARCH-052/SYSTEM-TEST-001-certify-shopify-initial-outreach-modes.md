@@ -15,7 +15,6 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-052-BACKGROUND-013
 - ARCH-052-ADMIN-003
 - ARCH-052-SHARED-012
 - ARCH-052-BACKGROUND-008
@@ -37,7 +36,7 @@ depends_on:
 - ARCH-052-BACKGROUND-011
 enables: []
 created: '2026-10-29'
-updated: '2026-10-30'
+updated: '2026-10-31'
 ---
 
 # ARCH-052-SYSTEM-TEST-001: Certify Shopify initial outreach personalization and all offer modes

@@ -9,18 +9,16 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 32
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-052-BACKGROUND-011
-enables:
-- ARCH-052-MCP-002
-- ARCH-052-SYSTEM-TEST-001
+enables: []
 created: 2026-10-30
-updated: 2026-10-30
+updated: '2026-10-31'
 ---
 
 # ARCH-052-BACKGROUND-013 — Capture Shopify discount classes and own combination tags
@@ -35,7 +33,7 @@ Complete Shopify Basic discount combination snapshots by persisting each discoun
 
 ## Context
 
-BACKGROUND-011 Attempt 2 is awaiting architect review. It persists Basic `combinesWith` booleans and **allowed** same-line tags, but does not query the discount's own `tags` or `discountClasses`. Shopify Plus same-line stacking requires two-way tag matches and a trusted Plus entitlement; unobserved tags cannot be interpreted as a valid pair. Do not reopen or edit BACKGROUND-011 during review.
+Superseded by accepted ARCH-052-BACKGROUND-011 Attempt 4, which now captures each Basic discount's own tags and discount classes, the shop's Plus entitlement, allowed same-line tags, and bounded recurring-cycle facts in the existing provider snapshot. Do not materialize this duplicate task.
 
 ## Scope
 
@@ -95,7 +93,7 @@ Use the launcher-resolved dedicated mirrored parent/implementation worktrees and
 
 ### Status
 
-Not started — defined but not materialised.
+Superseded before materialization; its requirements are covered by accepted ARCH-052-BACKGROUND-011.
 
 ### Files Changed
 
@@ -126,6 +124,8 @@ None at definition time.
 Any source contract/deployment gap must be escalated rather than patched locally.
 
 ## Architect Review
+
+Superseded because accepted ARCH-052-BACKGROUND-011 Attempt 4 implements the complete bounded combination-identity snapshot. MCP-002 and SYSTEM-TEST-001 consume the accepted BACKGROUND-011 output directly.
 
 ### Review Status
 
