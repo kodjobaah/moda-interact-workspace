@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 33
-executor: copilot
-claimed_at: 2026-10-31T04:00:53Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -110,7 +110,7 @@ Use the existing pure normalization helper and tests; keep source editing paths 
 
 ### Status
 
-Ready for Review
+Complete — accepted by the architect on Attempt 1.
 
 ### Files Changed
 
@@ -147,7 +147,7 @@ Ready for Review
 
 ### Deviations
 
-No implementation-scope deviations. The task-specific changed-file lint passed; full-repository lint remains blocked by the unrelated finding recorded above.
+In the developer-approved follow-up recorded below, one line in `src/services/translation-reconciliation.service.ts` was changed to preserve the credential lookup exception as the `cause` of the existing generic error. This is outside the original coupon-normalization files but does not change outward error behavior; the focused translation-reconciliation test, build, and full repository lint passed after the correction. No other task-scope deviation occurred.
 
 ### Assumptions
 
@@ -155,7 +155,7 @@ The Woo REST response carries the source field when available; missing is not eq
 
 ### Unresolved Issues
 
-Full-repository lint has the unrelated pre-existing failure recorded in Validation Results. No task-specific unresolved implementation issue.
+None. The initial full-repository lint finding was resolved by the developer-approved cause-preservation correction; the final repository lint passed.
 
 ### Architectural Concerns
 
@@ -163,30 +163,39 @@ Report newly observed provider restriction types or unsafe data requirements to 
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review
 
-Pending.
+#### Review Status
 
-### Review Notes
+Accepted — Complete (2026-10-31).
 
-Definition only; no implementation reviewed.
+#### Review Notes
 
-### Reviewed Files
+The normalizer records `emailRestrictionsPresent` and `uninspectedMetadataPresent` without retaining source email restrictions or metadata. Empty arrays map to `false`; a valid nonempty email string array or any nonempty metadata array maps to `true`; missing, malformed and oversized values map to `null` and produce only bounded field-name issues. Existing coupon projection and identity behavior are preserved. Tests assert sensitive synthetic values are absent from serialized snapshots and diagnostics.
 
-`moda-interact-background/src/providers/woo-coupon-normalization.ts` (30 October 18:09 snapshot), architecture and existing coupon task definitions.
+The one-line cause-preservation change in `translation-reconciliation.service.ts` is outside the original task scope but was explicitly developer-approved and is documented above. It preserves the cause while retaining the same outward generic credential error; no unrelated feature behavior was introduced.
 
-### Validation Reviewed
+Implementation commits `8ecc53b` and `b13043e1d1a5a81d6dcae662137cd76dc3f87eee` are present on `origin/task/ARCH-052-BACKGROUND-014`; the parent report branch is synchronized at `d8d2812218e39ab6e90a4a40cd09e0694fb6b5bf`. Both worktrees are clean. The implementation branch tracks `origin/main` locally, but its task branch remote matches the submitted head.
 
-None for implementation.
+#### Reviewed Files
 
-### Architecture Conformance
+- `moda-interact-background/src/providers/woo-coupon-normalization.ts`
+- `moda-interact-background/tests/unit/providers/woo-coupon-normalization.test.ts`
+- `moda-interact-background/src/services/translation-reconciliation.service.ts` and its focused regression test.
+- This task definition and Completion Report.
 
-Pending implementation review.
+#### Validation Reviewed
 
-### Follow-up
+The Completion Report records the focused normalization tests (8 passed), translation-reconciliation test (4 passed), Background build, full repository lint and `git diff --check` as passing. Dependency audit findings from `npm ci` are disclosed and no dependency files changed. These validations were reviewed from the report and were not rerun during architect review.
 
-MCP-002 may begin only after this task and all its other prerequisites are architect-accepted Complete.
+#### Architecture Conformance
+
+Accepted. The snapshot provides the exact presence/unknown distinctions needed by MCP-002 while excluding raw email and metadata values. No schema, migration, live Woo call or separate proof service was added.
+
+#### Follow-up
+
+BACKGROUND-014 is Complete. MCP-002 and SYSTEM-TEST-002 remain Pending because they have other unsatisfied dependencies; this acceptance does not make either task eligible.
 
 ## Developer Approval
 
-Approved by the developer on 2026-10-31, including the requested credential-error cause-preservation correction. This records developer approval only; Architect Review remains Pending, so the task status remains `review` until the authorized architect acceptance step.
+Approved by the developer on 2026-10-31, including the requested credential-error cause-preservation correction. Architect acceptance is recorded above.
