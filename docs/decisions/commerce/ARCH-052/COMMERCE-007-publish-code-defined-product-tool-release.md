@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 70
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-31T05:40:15Z
+attempt: 1
 depends_on:
 - ARCH-052-COMMERCE-006
 - ARCH-052-MCP-003
@@ -23,7 +23,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-31'
+updated: 2026-10-31
 ---
 
 # ARCH-052-COMMERCE-007: Execute reviewed Commerce system-product-tool sync in TEST
@@ -153,7 +153,7 @@ After recording the authorised TEST publication outcome and developer Completion
 
 ### Status
 
-Not Started — portable publication definition, no execution claim.
+In Progress — Attempt 1 claimed by developer at 2026-10-31T05:40:15Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
