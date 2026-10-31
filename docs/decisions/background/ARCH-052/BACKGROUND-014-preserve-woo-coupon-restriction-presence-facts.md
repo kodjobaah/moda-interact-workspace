@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 33
 executor: copilot
 claimed_at: 2026-10-31T04:00:53Z
@@ -110,23 +110,40 @@ Use the existing pure normalization helper and tests; keep source editing paths 
 
 ### Status
 
-Not started — defined but not materialised.
+Ready for Review
 
 ### Files Changed
 
-None.
+- `moda-interact-background/src/providers/woo-coupon-normalization.ts`
+- `moda-interact-background/tests/unit/providers/woo-coupon-normalization.test.ts`
 
 ### Work Completed
 
-None.
+- Added `emailRestrictionsPresent` and `uninspectedMetadataPresent` to the existing safe provider snapshot. Empty source arrays map to `false`; valid nonempty email restriction arrays and nonempty metadata arrays map to `true`; missing, malformed or oversized fields map to `null`.
+- Kept source email and metadata arrays, values and keys out of snapshots and diagnostics. Ambiguous or oversized supplied fields emit only the bounded `optional_field_ignored` issue for the field name.
+- Preserved existing coupon identity, code deliverability, selection, status, bounds and other normalized restrictions. No schema, cross-service contract, API, or worker lifecycle changes.
+- Added focused tests covering empty, nonempty, missing, malformed and oversized inputs, including serialized snapshot/diagnostic assertions against synthetic sensitive values.
+
+#### Architect Review Correction Checklist
+
+- Read the complete task and latest `## Architect Review` before implementation.
+- Latest review status is `Pending`; it contains no `Changes Requested` outcome or correction items. Mandatory architect-review corrections: none.
+- Completed all task Work Items and Acceptance Criteria within the defined scope.
 
 ### Validation Results
 
-Not run.
+- `./node_modules/.bin/vitest run tests/unit/providers/woo-coupon-normalization.test.ts` — passed; 1 test file, 8 tests.
+- `./node_modules/.bin/eslint src/providers/woo-coupon-normalization.ts tests/unit/providers/woo-coupon-normalization.test.ts` — passed.
+- `npm run build` — passed, including Prisma client generation and TypeScript compilation.
+- `git diff --check` — passed.
+- `npm run lint` — repository-wide run is blocked by the unrelated existing `preserve-caught-error` error in `src/services/translation-reconciliation.service.ts:218`; neither changed file is implicated.
+- `npm ci` was required because the prepared implementation worktree had no `node_modules`; it completed from the existing lockfile without lockfile changes. npm reported 40 dependency audit findings (27 moderate, 13 high); dependency remediation is outside this task.
+- Launcher preparation evidence: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-014`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-014`; both task branches are `task/ARCH-052-BACKGROUND-014`. Prepared parent head was `5362773f36eec15e7e095764b040da6c5ce19680`, implementation head was `105f5ead7b3f39b6e66c5cd385443877d4c2729c`, and initialized database submodule was `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Implementation commit `8ecc53b` was pushed to `origin/task/ARCH-052-BACKGROUND-014`. The initial default push was refused because the local branch's configured upstream is `origin/main`; explicit ref push to the matching task branch succeeded without changing branch configuration.
 
 ### Deviations
 
-None.
+No implementation-scope deviations. The task-specific changed-file lint passed; full-repository lint remains blocked by the unrelated finding recorded above.
 
 ### Assumptions
 
@@ -134,7 +151,7 @@ The Woo REST response carries the source field when available; missing is not eq
 
 ### Unresolved Issues
 
-None at task definition time.
+Full-repository lint has the unrelated pre-existing failure recorded in Validation Results. No task-specific unresolved implementation issue.
 
 ### Architectural Concerns
 
