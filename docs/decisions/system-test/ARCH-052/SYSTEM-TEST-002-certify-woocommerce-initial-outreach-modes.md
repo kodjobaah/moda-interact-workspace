@@ -111,6 +111,34 @@ Each scenario must assert the eligibility verdict, line keys where relevant, sub
 - The confirmed outbound `providerMessageId` and existing attempt/message/conversation association must be queryable by the runtime route. An incoming quote to that outbound ID resolves the intended shop and recovery; the same customer/WhatsApp sender sharing another shop must never change the destination. STOP precedence, moderation, single-credit and no duplicate message remain unchanged.
 - Cross-platform same-number ambiguity and spoof/voice edge cases are covered by `ARCH-052-SYSTEM-TEST-003`; this task still certifies its **own** platform's end-to-end outreach and quoted Reply path.
 
+### Optional R2 product-media acceptance matrix — 31 October 2026
+
+- `ARCH-052-BACKGROUND-007` is terminal IMAGE-certification input; successful
+  IMAGE sending requires an exact same-shop `commerce_get_product` variant/
+  featured-image source, product-specific 1125x600 white-padded JPEG, verified
+  public R2 GET/hash and independently Meta-approved IMAGE variant. The public
+  header URL must begin at the configured R2 origin, **not** the merchant's raw
+  image URL; TEXT fallback must remain independent of image infrastructure.
+- For Shopify `Shop.domain`, verify `https://myshop.com` -> `myshop.com` and
+  `myshop.com` -> `myshop.com`. For Woo canonical installation URL verify
+  `https://myshop.com/myshop` -> `myshop.com-myshop` and nested path, `www`,
+  case-preserving Woo paths and distinct `/a-b` versus `/a/b` keys. Public URL
+  path must include exact platform, UTC preparation day and persisted outreach
+  attempt ID. Product and variant tokens must match source identity digests.
+- Exercise two registered shops, different platforms, two attempts on the
+  same day, next-day retry of one attempt, follow-up as a new attempt, domain
+  reassignment, untrusted image URL, wrong variant, revoked image, R2 HEAD
+  mismatch, public GET failure and missing R2 configuration. None may allow
+  cross-tenant object reuse or fallback to the original merchant image URL.
+- Verify transparent/portrait/tiny/high-resolution test sources produce
+  non-cropped, centred, white-padded **1125x600 JPEG**, with up/downscaling,
+  metadata stripped and final bytes <5 MiB. Preserve ARCH-049 ShopBrand
+  object layout and golden output test fixtures.
+- Simulate image ready Oct 31, Meta send Nov 1 and upload with failed Meta
+  send. R2 path indicates **preparation** date only; only the confirmed
+  `ConversationMessage` and its `sentAt` establish actual customer outreach.
+  No second send, Meta bypass, extra credit or media table.
+
 ## Work Items
 
 ### Provider-origin diagnostic certification — 31 October 2026 (mandatory)
