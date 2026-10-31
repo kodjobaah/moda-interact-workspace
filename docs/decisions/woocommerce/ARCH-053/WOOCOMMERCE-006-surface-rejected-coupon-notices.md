@@ -1,7 +1,7 @@
 ---
 id: ARCH-053-WOOCOMMERCE-006
 architecture_id: ARCH-053
-title: Display rejected original coupons and updated checkout totals
+title: Keep original coupon rejection errors off the merchant checkout
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -20,90 +20,90 @@ enables:
 - ARCH-053-SYSTEM-TEST-002
 - ARCH-053-WOOCOMMERCE-007
 created: 2026-10-29
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
-# ARCH-053-WOOCOMMERCE-006 — Display rejected original coupons and updated checkout totals
+# ARCH-053-WOOCOMMERCE-006 — Keep original coupon rejection errors off the merchant checkout
 
 ## Architecture
 
-Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Defined but not materialised**; the author has not created or pushed a developer task branch or implementation worktree.
+Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. This is a task-definition correction, not an implementation claim; task remains Pending.
 
 ## Objective
 
-Display rejected original coupons and updated checkout totals. This is a bounded, independently reviewable capability owned only by `moda_woocommerce` in `moda-interact-woocommerce`.
+Contain all Moda-initiated original-coupon rejection/error notices on the **server side** while allowing WooCommerce Classic and Blocks to show the correct payable total and successfully applied coupons. No Moda-generated errors are displayed on a merchant storefront after basket restoration.
 
 ## Context
 
-The 2026-10-29 snapshot captures products but lacks complete end-to-end original-coupon recovery. `ARCH-052` owns dynamic discount discovery and new offers, **not** previously applied Woo checkout coupons. The ARCH-053 complete restore contract is `woo.cart-restore.v1`, with `appliedCouponCodes: string[]` on the immutable snapshot. Do not design a separate coupon issuance engine or a new database coupon table.
+WOOCOMMERCE-005 attempts `snapshot.appliedCouponCodes` using native Woo coupon validation and returns structured internal applied/rejected results. Native Woo methods may populate `WC()->session` notices when the **plugin** attempts an expired, disabled, exhausted or ineligible original code. The new ARCH-053 storefront-silent rule supersedes this task's previous requirement to present those errors to shoppers. This task owns the narrow containment and accurate-total boundary, not new coupon policy or a generic logger.
 
 ## Scope
 
-- Create `moda-interact-woocommerce/includes/Checkout/CheckoutCouponNoticePresenter.php` (or a focused equivalent using existing Woo notice facilities); connect the result of `CheckoutCouponRestorer` to `CheckoutResumeController.php`. Add PHPUnit and WordPress integration tests for Classic and Checkout Blocks.
-- For each rejected original coupon produce one understandable, escaped, localisable customer-facing notice at the resumed checkout. Say a coupon is expired only if current Woo rejection reliably identifies expiry; otherwise explain that it cannot be applied and the current total has been recalculated.
-- Use WooCommerce session-backed notices or a verified Blocks-compatible mechanism that remains visible after `wp_safe_redirect(wc_get_checkout_url())`; do not assume a Classic notice automatically appears in Checkout Blocks. Exercise both in an actual Woo runtime.
-- Ensure valid original coupons remain visibly applied and the current payable total displayed by Woo exactly matches `WC()->cart` after recalculation. Avoid duplicating Woo core error notices or showing notices on GET/link preview.
-- Do not expose resolver tokens, other generation IDs, historical customer identity, original internal discount proofs or sensitive payload in notices.
+Only `moda-interact-woocommerce`:
+
+- **Create** `includes/Checkout/CheckoutCouponOutcomeHandler.php` as a focused private handler for the applied/rejected result returned by `CheckoutCouponRestorer` (WOOCOMMERCE-005). It records **bounded, private** rejection outcome codes/reasons without coupon values, phone/contact data, tokens or full URLs. Reuse current plugin server-side diagnostics; do not introduce a new logger.
+- **Update** `includes/Checkout/CheckoutResumeController.php` so the handler runs on the confirmed restoration POST **before** `wp_safe_redirect(wc_get_checkout_url())`; accurate Woo totals and applied-code state must be persisted to the WC session.
+- Implement **scoped containment** of Woo `error` notices emitted **by Moda's automatic original-coupon attempts**. Isolate or suppress only those notices; preserve all previously existing customer/merchant/Woo notices. Never call broad `wc_clear_notices()` or disable Woo's ordinary shopper-entered coupon errors.
+- Add focused PHPUnit plus real WordPress Classic and Checkout Blocks tests for coupon rejection, notice containment, no storefront leakage and correct Woo totals. Keep error diagnostics private even when WordPress debug display is configured by the merchant; do not modify `WP_DEBUG_DISPLAY` or merchant configuration.
 
 ## Out of Scope
 
-- No ARCH-052 dynamic discount selection, discount creation, extension of coupon expiry, or automatic coupon replacement.
-- No changes in other repository-owned source, no Woo production WhatsApp enablement, no bypass of consent/STOP/order or final-send guards.
-- No broad refactor, new Generic logger, direct WordPress access to Moda database/Redis, or continuation into enabled tasks.
+- No new public notices, banners, modals or status messages describing original coupon rejection/expiry; no replacement coupon or extension of coupon validity.
+- No ARCH-052 discount discovery, other repository source edits, new REST endpoint, coupon engine, generic PHP/JS logging framework or production WhatsApp activation.
+- Do not modify the existing WooCommerce user-entry coupon flow or remove pre-existing shopper/merchant notices.
 
 ## Requirements
 
-- Never silently omit a rejected coupon or promise the old discounted total; never show “expired” without authoritative Woo rejection evidence.
-- An expired original coupon must **not block** restoration of otherwise valid product lines. Shopper can continue with the updated total or choose another coupon through normal WooCommerce UI.
-- Notices must be bounded, correctly escaped, translatable and visible after redirect in both Classic and Blocks; rejected codes remain unapplied.
-- Preserve the confirmation GET no-mutation invariant, cross-device session and proper checkoutKey rebinding implemented in WOOCOMMERCE-002.
-- Use exact shared schema from accepted `ARCH-053-SHARED-001` (PHP must match its JSON fixtures, not import Node code). Zod validates wire *shape*, never WooCommerce coupon policy. Preserve stable checkoutKey, tenant scoping and generation semantics.
-- Never log original coupon codes, raw restoration URLs/tokens, customer contact details or unbounded exception content. PHP uses existing safe plugin diagnostics; Node uses `@modainteract/moda-interact-shared/logging` if edited. Unexpected errors must be observable without breaking the shopper checkout.
-- Honour launcher-prepared, dedicated synchronised task worktrees and `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`; the repository agent updates only its assigned task metadata and Completion Report. Never mark itself Complete or push main.
+- Expired, disabled, exhausted, restricted, non-stackable or unknown original coupons remain unapplied. Valid product lines remain restored and the total is recalculated using current Woo rules. **No Moda-originated coupon-rejection/error notice** is shown on Classic Checkout, Checkout Blocks or the redirect target.
+- Keep the rejected-code list strictly internal to this server-side flow; never store it in browser storage or GET/POST parameters or render it as HTML. Diagnostic identifiers may identify a *failure category*, but not a coupon value or historical customer.
+- Any native Woo error notices generated because the plugin itself called `apply_coupon()` must be scoped and removed/contained **without clearing unrelated pre-existing notices**. Ordinary coupon errors generated by shoppers directly through WooCommerce UI must continue to work.
+- For unexpected resolver, WP dependency or cart failures, record the **original safe error** and dependency response details privately, redact secrets/PII, and return/redirect safely with no Moda failure banner. Restore the prior cart when needed and never claim partial restoration succeeded.
+- WooCommerce PHP must **not** use `@modainteract/moda-interact-shared/logging`; that logger is for hosted Moda Node services. Use the existing plugin's server-side diagnostic approach. Do not swallow job exceptions: Action Scheduler owns durable retries, while customer-facing HTTP handlers contain errors after private logging.
+- Follow exact approved Shared v1 JSON representation; no coupon business rules in Shared/Zod, no mutation on GET/HEAD, and no changes to ARCH-048 generation, consent, STOP or billing protections.
+- Use launcher-prepared task worktrees. Edit only owned Woo files and this task's authorised execution metadata/Completion Report. No `_index.md`, no unrelated refactor or self-acceptance.
 
 ## Work Items
 
-- [ ] Wire applied/rejected coupon results to one notice per rejected code, plus current total display by Woo.
-- [ ] Prove Classic and Checkout Blocks notice persistence across the checkout redirect, with no duplicate notice on retry.
-- [ ] Test invalid/expired/usage exhausted/partial multi-coupon restoration and HTML-like coupon codes safely.
+- [ ] Implement `CheckoutCouponOutcomeHandler.php` with a bounded private result/diagnostic mapping (applied, rejected, unknown) and no HTML/notice output.
+- [ ] Integrate with the existing restorer and capture/remove *only* Moda-generated native Woo error notices before redirect, retaining existing unrelated messages.
+- [ ] Verify correct total and applied coupons with invalid/expired/usage-exhausted/mixed multiple codes in Classic and Blocks; verify no Moda-generated errors appear.
+- [ ] Test simulated dependency exception and restoration rollback: safe cart, private log with original redacted error, no frontend error/false success; do not change WordPress debug settings.
 
 ## Interfaces / Contracts
 
-Internal input from WOOCOMMERCE-005 `appliedCodes/rejectedCodes` plus current native Woo cart total; no new Shared/API/DB schema. The redirect still uses `wc_get_checkout_url()` as the final destination.
+**Input:** `CheckoutCouponRestorer` internal `{appliedCodes: string[], rejectedCodes: string[], cartTotalRecalculated: boolean}` and Woo cart/notice state. **Output:** persisted Woo cart/totals, unchanged unrelated notices, private bounded diagnostic events and no added customer-facing error content. No Shared/API/Database schema changes; final redirect stays `wc_get_checkout_url()`.
 
 ## Dependencies
 
-- `ARCH-053-WOOCOMMERCE-005` — must be architect-accepted Complete
+- `ARCH-053-WOOCOMMERCE-005` — must be architect-accepted Complete.
 
 ## Enables
 
 - `ARCH-053-SYSTEM-TEST-002`
-- `ARCH-053-WOOCOMMERCE-007` — later separately applies confirmed recommended code after original-coupon notices.
-- `ARCH-053-WOOCOMMERCE-007` — later separately applies confirmed recommended code after original-coupon notices.
+- `ARCH-053-WOOCOMMERCE-007`
 
 ## Acceptance Criteria
 
-- [ ] A customer whose SAVE10 expired sees an intelligible coupon-unavailable notice and actual new payable total; valid basket lines remain present.
-- [ ] For mixed original coupons, only rejected codes produce notices; valid coupons are shown applied; no stale prices, no duplicate notices.
-- [ ] Customer-facing message works in both Classic and Checkout Blocks and never leaks URL tokens/PII.
-- [ ] Unconfirmed link GET does not produce checkout notices, update cart, or close recovery.
-- [ ] No new discounts/coupon extension, no automatic replacement of a previously applied invalid coupon, no silent omission of declined original coupon.
-- [ ] Failed/invalid/replayed operations do not create duplicate recovery generations, outbound attempts or billings.
-- [ ] Only owning repository implementation and authorised task metadata are changed; ARCH-052 remains untouched.
+- [ ] Original `SAVE10` expired: current Woo total is displayed, coupon is not applied, and no Moda/Woo error notice attributable to automatic restore appears.
+- [ ] Mixed coupons: approved subset stays applied; private diagnostics record bounded rejection categories, not coupon codes or personal data.
+- [ ] Pre-existing Woo/cart/merchant notices and ordinary user-entered coupon validation remain intact.
+- [ ] Both Classic Checkout and Checkout Blocks have no Moda-generated error banners, notices, debug text or redirect error query parameters after restoration.
+- [ ] Previews/GETs do not mutate the cart, produce notices or emit checkout resumption activity.
+- [ ] Checkout/customer identity, correct prices, generation/consent gates, no automatic coupon replacements and no duplicate outreach remain protected.
 
 ## Validation
 
-- [ ] Run `composer test` focused coupon notice/controller tests
-- [ ] Run `npm run test:integration:wordpress` Classic and Blocks notice persistence scenarios or record exact failure/blocker
-- [ ] Run declared lint and `git diff --check`
+- [ ] Run the repository's declared focused `composer test` suite for coupon handling and diagnostic containment.
+- [ ] Run the existing WordPress integration harness for Classic/Blocks: invalid coupon and private logging, native notice isolation, checkout total, retry/redirect and fault injection. Record exact unavailable scripts as blockers rather than inventing scripts.
+- [ ] Run declared lint/static checks and `git diff --check`.
 
 ## Stop Condition
 
-After all Work Items, Acceptance Criteria and required Validation pass, record the exact commands/evidence, files, deviations and unresolved issues in `## Completion Report`, set the task to `review`, return to `moda_architect` and STOP. Do not implement another task.
+After Work Items, Acceptance Criteria and required Validation pass, complete only this task's Completion Report, set `status: review`, return to `moda_architect` and STOP. Do not implement dependent tasks.
 
 ## Implementation Notes
 
-Use WooCommerce’s built-in localisation and notice APIs wherever they can genuinely satisfy Classic + Blocks. If Blocks support requires new public assets or UI, stop and return an architectural dependency rather than silently suppressing the notice.
+Reuse existing Woo notice primitives **only for containment**, not error presentation. One possible implementation is a narrowly scoped before/after notice capture around programmatic coupon application; if this cannot reliably distinguish new plugin-generated errors from preexisting Woo messages, use a scoped Woo hook/validated supported API instead, then test. **Never clear all Woo notices** merely to satisfy the storefront-silent policy. Existing task filename remains stable to avoid changing task references or `_index.md` before final reconciliation.
 
 ## Completion Report
 

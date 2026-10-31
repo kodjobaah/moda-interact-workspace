@@ -22,7 +22,7 @@ depends_on:
 enables:
 - ARCH-053-WOOCOMMERCE-008
 created: 2026-10-30
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # ARCH-053-WOOCOMMERCE-007 — Apply confirmed outreach checkout coupon through native Woo validation
@@ -37,7 +37,7 @@ On a customer-confirmed restore POST, consume the first and only offer-aware res
 
 ## Context
 
-WOOCOMMERCE-002 restores products using the new single v1 server-to-server resolver; WOOCOMMERCE-005 reattempts original `snapshot.appliedCouponCodes`, and WOOCOMMERCE-006 presents original coupon rejection notices. SHARED-001 defines `outreachOffer` as mandatory in v1; API-003 supplies its verified confirmed-message value. This task **extends those**, not creates a second cart restore or discount engine. No older restoration resolver or pre-offer v1 consumer exists; do not create compatibility code.
+WOOCOMMERCE-002 restores products using the new single v1 server-to-server resolver; WOOCOMMERCE-005 reattempts original `snapshot.appliedCouponCodes`, and WOOCOMMERCE-006 privately handles original coupon rejections without storefront errors. SHARED-001 defines `outreachOffer` as mandatory in v1; API-003 supplies its verified confirmed-message value. This task **extends those**, not creates a second cart restore or discount engine. No older restoration resolver or pre-offer v1 consumer exists; do not create compatibility code.
 
 ## Scope
 
@@ -58,14 +58,14 @@ No discount discovery, coupon creation, modified expiry or usage constraints, or
 
 ### Confirmed multi-code group application — normative 30 October 2026
 
-Consume the published `CHECKOUT_OFFERS` v1 branch (2..3 source-verified entries), as well as existing single-code/automatic variants. After explicit customer-confirmed restore, validate existing **original** applied coupons first using native Woo APIs; attempt each recommended CODE item in immutable sent order using `WC()->cart->apply_coupon()`, never trust API's offer as proof of current Woo applicability. Automatic entries are informational and must never be forced into cart coupon state. If any recommended code fails/invalidates an original or any other recommended code, restore the original successfully applied coupon set, recalculate totals and return a typed **GROUP_CONFLICT / GROUP_REJECTED** outcome rather than persisting a partial advertised group. Do not silently remove originals or claim partial savings. Re-run live Woo validation after customer chooses any explicit alternative group in WOOCOMMERCE-008. Log bounded outcomes without coupon values.
+Consume the published `CHECKOUT_OFFERS` v1 branch (2..3 source-verified entries), as well as existing single-code/automatic variants. After explicit customer-confirmed restore, validate existing **original** applied coupons first using native Woo APIs; attempt each recommended CODE item in immutable sent order using `WC()->cart->apply_coupon()` (contain only Woo error notices originating from those **automatic** Moda attempts; no Moda error on the merchant checkout), never trust API's offer as proof of current Woo applicability. Automatic entries are informational and must never be forced into cart coupon state. If any recommended code fails/invalidates an original or any other recommended code, restore the original successfully applied coupon set, recalculate totals and return a typed **GROUP_CONFLICT / GROUP_REJECTED** outcome rather than persisting a partial advertised group. Do not silently remove originals or claim partial savings. Re-run live Woo validation after customer chooses any explicit alternative group in WOOCOMMERCE-008. Log bounded outcomes without coupon values.
 
 
 - Keep the existing no-mutation GET and explicit nonce-protected confirmation POST. V1 resolver is called **after confirmation only**, using the original signed recovery link; no browser-side installation credentials, no external visitor contact/discount parameters.
 - Restore product lines first. Reapply original coupons in their persisted order using WOOCOMMERCE-005. Only then process `outreachOffer`.
 - `CHECKOUT_CODE`: attempt the exact code **once** through `WC()->cart->apply_coupon($code)` if not already applied (use Woo's canonical code comparisons). Inspect the resulting actual `WC()->cart->get_applied_coupons()` and recalculated totals. Never treat API `providerDiscountId` or the WhatsApp text as proof of current eligibility; the code may expire, be disabled, be limited or become inapplicable.
 - `CHECKOUT_AUTOMATIC`: **never** call `apply_coupon`, fabricate a coupon, force a fee/price, add a WC filter, or assert savings. Recalculate native Woo totals and return a neutral `AUTOMATIC_NOT_FORCED` result; if the installed provider gives no reliable discount evidence, do not claim it applied.
-- `ALTERNATIVE_PRODUCT`: do not insert promoted items or apply its discount to the abandoned basket; return `NOT_APPLICABLE` with original basket untouched. `NONE/NO_CONFIRMED_OFFER` is a no-op; `NONE/UNVERIFIABLE` produces the diagnostic/UI outcome for WOOCOMMERCE-008 without inventing a code.
+- `ALTERNATIVE_PRODUCT`: do not insert promoted items or apply its discount to the abandoned basket; return `NOT_APPLICABLE` with original basket untouched. `NONE/NO_CONFIRMED_OFFER` is a no-op; `NONE/UNVERIFIABLE` produces a private diagnostic outcome for WOOCOMMERCE-008 without inventing a code.
 - If the recommended code is **already present** in original applied codes, do not apply twice or show a duplicate rejection; return `ALREADY_APPLIED` only after Woo confirms it is still in the cart.
 - If Woo applying the recommendation removes one or more previously successful original coupons due to stacking/individual-use rules, **undo the tentative recommendation**, restore the original applied set under Woo validation, recalculate, and return `CONFLICT_REQUIRES_CHOICE` with current original basket intact. An irrecoverable mid-apply/rollback error must take the existing protected cart rollback path; do not declare success after losing an original coupon.
 - Business rejections (expired, minimum spend, usage limits, excluded product, non-stackable) return typed `REJECTED`, but do not block checkout when product restoration succeeds. Do not infer `EXPIRED` unless Woo reliably distinguishes it. Recalculate with `WC()->cart->calculate_totals()` once after coupon processing. Do not restore historic prices, shipping or tax.
@@ -75,7 +75,7 @@ Consume the published `CHECKOUT_OFFERS` v1 branch (2..3 source-verified entries)
 
 - Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, the launcher preparation packet and the parent ARCH-053 architecture before claiming. Work from dedicated, synchronized mirrored task worktrees; record both physical paths, initial SHAs and validation in the Completion Report. A snapshot does not establish the developer's current branch/status.
 - Only change the **permitted owning-repository files** in Scope and this task's own authorised task metadata/Completion Report. No `_index.md`, no unrelated code, no other agent's task, no production WhatsApp activation, no merge/push to `main`.
-- Node services use `@modainteract/moda-interact-shared/logging`. Log bounded identifiers and event codes, not raw URLs, bearer tokens, coupon codes, full customer data, original message text or unbounded provider bodies. Log and propagate unexpected dependency errors to the owner; never silently swallow them. PHP uses existing plugin-safe diagnostics, not a new generic logger.
+- WooCommerce PHP executes on merchant-controlled WordPress servers and **must not import or implement** `@modainteract/moda-interact-shared/logging` (that npm export belongs only to hosted Moda Node processes). Use existing server-side plugin diagnostics (the current bounded `error_log()` pattern where applicable), not a new generic logger, `wc_add_notice()`, browser console output or shopper-visible HTML for Moda errors. Record a bounded event/reason and safe correlation identifier; preserve the original error message and relevant safe provider response details when available after redaction, without guessing a substitute cause. Never log bearer tokens, full restore URLs, coupon codes or customer PII. At storefront/controller boundaries catch and privately log unexpected errors, preserve or safely roll back the cart, and continue/redirect without Moda-originated error notices. At Action Scheduler and other retry-owning job boundaries, log and **propagate** retryable failures for durable retry/failure evidence; do not acknowledge them as success. Never globally suppress WordPress diagnostics or delete unrelated Woo notices.
 - Keep checkout restoration read-only in the hosted API and cart-local in WooCommerce. Never have PHP query Moda PostgreSQL/Redis or an API handler change a visitor cart. Never create a new discount, extend an expired coupon, use ARCH-052 discovery code, bypass merchant consent/STOP/order/final provider gates or impose a cross-generation outreach cap.
 - When the specified receipt/provider contract is absent, conflicting or untestable, **stop and return the gap to moda_architect**; do not invent an approximation, copy a Shared schema locally or broaden the task to another repo. System-test tasks are terminal and may not gate implementation tasks.
 
@@ -136,15 +136,15 @@ public function apply_outreach_offer(
 ): array;
 ```
 
-The reason is **bounded native Woo evidence** only: known `EXPIRED` when reliably identified, otherwise general `NOT_APPLICABLE`; no claim from guesswork. `rejectionReason` is for the customer notice presenter, not logged raw. The `recommendedCode` may be used in an escaped customer-facing notice or transient **WC-session-only** offer-choice state; it must not be copied into recovery URL/query params or logging.
+The reason is **bounded native Woo evidence** only: known `EXPIRED` when reliably identified, otherwise general `NOT_APPLICABLE`; no claim from guesswork. `rejectionReason` is strictly for private server-side diagnostics and decision flow, not customer notice presentation; log only bounded categories, not raw provider or coupon content. The `recommendedCode` may be used only in transient **WC-session-only** offer-choice state (never customer-facing error notices); it must not be copied into recovery URL/query params or logging.
 
 **Examples:**
 
 | Original | Outreach | Woo current outcome | Result |
 |---|---|---|---|
 | `SAVE10` valid | `EXTRA15` valid and stackable | Both remain applied | `APPLIED` |
-| `SAVE10` expired | `EXTRA15` valid | Only `EXTRA15` applied | `APPLIED`; original rejection notice still shown |
-| `SAVE10` valid | `EXTRA15` expired | Only `SAVE10` applied | `REJECTED`; offer notice later |
+| `SAVE10` expired | `EXTRA15` valid | Only `EXTRA15` applied | `APPLIED`; original rejection privately recorded; no generated storefront notice |
+| `SAVE10` valid | `EXTRA15` expired | Only `SAVE10` applied | `REJECTED`; offered rejection privately recorded; no generated storefront notice |
 | `SAVE10` valid | `EXTRA15` individually used | Original retained, offer not applied | `CONFLICT_REQUIRES_CHOICE` |
 | `EXTRA15` original and valid | recommended `EXTRA15` | One copy remains | `ALREADY_APPLIED` |
 | `SAVE10` valid | `CHECKOUT_AUTOMATIC` | Native totals only | `AUTOMATIC_NOT_FORCED` |
@@ -154,7 +154,7 @@ The reason is **bounded native Woo evidence** only: known `EXPIRED` when reliabl
 
 - `ARCH-053-API-003` — accepted v1 offer-aware read with provenance.
 - `ARCH-053-WOOCOMMERCE-005` — accepted original coupon reapplication.
-- `ARCH-053-WOOCOMMERCE-006` — accepted original-coupon notices, so no notices silently disappear.
+- `ARCH-053-WOOCOMMERCE-006` — accepted original-coupon private diagnostics and targeted error-notice containment.
 
 ## Enables
 
