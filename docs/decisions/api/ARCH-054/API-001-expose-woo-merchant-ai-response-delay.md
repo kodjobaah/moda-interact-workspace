@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 30
 executor: copilot
 claimed_at: 2026-10-31T22:03:08Z
@@ -65,8 +65,8 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 
 ## Work Items
 
-- [ ] Implement read/update service, strict request/response and route composition.
-- [ ] Add tests for 0,7,30, bad -1/31/float/string/extra fields, conflict/retry, same-value no-op, revocation while updating, cross-tenant tampering, concurrent writes and recovery-policy unaffected.
+- [x] Implement read/update service, strict request/response and route composition.
+- [x] Add tests for 0,7,30, bad -1/31/float/string/extra fields, conflict/retry, same-value no-op, revocation while updating, cross-tenant tampering, concurrent writes and recovery-policy unaffected.
 
 
 ## Interfaces / Contracts
@@ -87,8 +87,8 @@ Canonical Shared v1 examples (request) `{ "schemaVersion":1, "expectedRevision":
 
 ## Acceptance Criteria
 
-- [ ] Only authenticated same-tenant Woo read/write succeeds; no Shop ID from browser; revision and changed value consistent. Hosted API consumes exactly the published Shared package version and records it in the lockfile.
-- [ ] No modification to recovery-delay values, follow-up or human-send path; all failures return deterministic statuses and do not mutate settings.
+- [x] Only authenticated same-tenant Woo read/write succeeds; no Shop ID from browser; revision and changed value consistent. Hosted API consumes exactly the published Shared package version and records it in the lockfile.
+- [x] No modification to recovery-delay values, follow-up or human-send path; all failures return deterministic statuses and do not mutate settings.
 
 
 ## Validation
@@ -110,7 +110,7 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Attempt 1 implementation and focused unit tests are complete. The database dependency blocker is resolved; the task is Ready for attempt 2 so the API owner can rerun PostgreSQL integration, typecheck, and build validation against the updated database submodule.
+Attempt 2 implementation criteria and all validations except full-repository lint are complete. The task is blocked because required `npm run lint` still fails on the unrelated existing empty catch in `src/merchant/support/routes.ts:75`; that file is outside this task's scope and was not changed. The AI response-delay implementation's focused tests, PostgreSQL integration, typecheck, build, and diff check pass. Do not mark ready for review until the lint gate is resolved or the coordinator disposition changes the validation requirement.
 
 ### Files Changed
 
@@ -130,9 +130,30 @@ Shared package metadata and installed dependency: PASS, exact `3.1.0`; npm packa
 `npm run typecheck` and `npm run build`: BLOCKED by the same missing Prisma field (`TS2339`/`TS2353`).
 `npm run lint`: FAILS on existing unrelated `src/merchant/support/routes.ts:75` empty catch block; changed TypeScript files pass targeted ESLint.
 
-### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
+### Attempt 2 Validation Results
 
-Attempt 1 was blocked because its initial `database` submodule pin was `b87e460e86de2044477f8c96b5c1c42e722de8f0`, which lacked the ARCH-054 field and migration. Architect verification on 2026-10-31 confirms that the API task worktree now pins and checks out database commit `7c377282aa5819b3008b7d7f3018f44f4161523e`; that commit contains `ShopSettings.aiResponseDelayMinutes Int @default(0)` and migration `20261031170000_arch054_merchant_ai_response_delay/migration.sql`, which adds the column and range check. The gitlink matches the clean database checkout. The previous dependency blocker is resolved. The API owner must claim attempt 2 through the launcher and rerun the PostgreSQL integration test, typecheck, build, and remaining task validation; this status transition does not accept the implementation.
+`npx tsx --test tests/unit/merchant/ai-response-delay/settings.test.ts`: PASS, 5 tests.
+`node scripts/test-arch054-ai-response-delay-postgres.mjs`: PASS. Prisma Client generation succeeded; all 68 migrations deployed, including `20261031170000_arch054_merchant_ai_response_delay`; PostgreSQL integration passed tenant isolation, defaults, same-value no-op, compare-and-set race, and revocation checks.
+`npm run lint`: FAIL, one unrelated existing error at `src/merchant/support/routes.ts:75` (`no-empty`); no task-owned source change caused the failure, and the unrelated file was not modified.
+`npm run typecheck`: PASS; Prisma Client generation and TypeScript check succeeded.
+`npm run build`: PASS; Prisma Client generation and production TypeScript build succeeded.
+`git diff --check`: PASS.
+
+### Attempt 2 Launcher and Git Evidence
+
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-API-001`, branch `task/ARCH-054-API-001`; prepared parent head `6205d3baac470daa067150c36a18e1ade0b3e332`; Attempt 2 claim commit `07396377d2763a6012d31f5cec20c6ffb57ed9e2` was pushed by the launcher.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-API-001`, branch `task/ARCH-054-API-001`, implementation head `3cb67ea009ce00d0280d8ec7690a14a63222b2b9` (`already-current`).
+Launcher synchronization evidence: parent `origin/main` incorporated `yes`; implementation `origin/main` incorporation `already-current`; recursive submodule initialization/readiness passed; database submodule pinned at `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+Both worktrees were clean before validation. No API source changes or implementation submodule gitlink changes were made during Attempt 2. The parent task report is the only changed file in this attempt.
+
+### Attempt 2 Deviation / Assumptions / Unresolved Issues / Architectural Concerns
+
+The previous missing-Prisma-field blocker is resolved: the pinned database submodule includes `ShopSettings.aiResponseDelayMinutes Int @default(0)` and migration `20261031170000_arch054_merchant_ai_response_delay`. PostgreSQL integration, typecheck, build, and diff validation now pass. The only remaining required validation failure is the existing unrelated `no-empty` lint error at `src/merchant/support/routes.ts:75`. It was not changed because it is outside API-001 scope. Task remains blocked pending an authorized disposition of that repository lint failure.
+
+### Attempt 1 Deviation / Assumptions / Unresolved Issues / Architectural Concerns
+
+Attempt 1 was blocked because its initial `database` submodule pin was `b87e460e86de2044477f8c96b5c1c42e722de8f0`, which lacked the ARCH-054 field and migration. Architect verification on 2026-10-31 confirmed that the API task worktree would pin and check out database commit `7c377282aa5819b3008b7d7f3018f44f4161523e`; that commit contains `ShopSettings.aiResponseDelayMinutes Int @default(0)` and migration `20261031170000_arch054_merchant_ai_response_delay/migration.sql`, which adds the column and range check. The gitlink matches the clean database checkout. At the end of Attempt 1, the dependency blocker was considered resolved and Attempt 2 was requested to rerun PostgreSQL integration, typecheck, build, and remaining validation; that historical status did not accept the implementation.
 
 ### Worktree and Git Evidence
 
