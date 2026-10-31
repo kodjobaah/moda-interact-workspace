@@ -163,8 +163,8 @@ None identified during implementation.
 - Start synchronization: parent and implementation remote task branch fast-forwards were `not-needed`; `origin/main` was `already-current` in both worktrees.
 - Recursive implementation submodules: sync passed; update/init passed; ready, no entries.
 - Parent claim commit: `d8bf5857ce819613549aa22de528584370542571`, pushed by launcher.
-- Implementation commit: `fec2be64b148e48b328816632fa7b3ba3ae1565c`; publication pending.
-- Parent completion-record commit: pending.
+- Implementation commit: `fec2be64b148e48b328816632fa7b3ba3ae1565c`; push blocked by automatic review pending explicit authorization for this exact repository and branch.
+- Parent completion-record commit: `121285c7c59e6c42986f1dca51beba30a4ee00ae`; local. Its push was not attempted after the implementation push was rejected.
 - No package release or main-branch update was made.
 
 ## Architect Review
