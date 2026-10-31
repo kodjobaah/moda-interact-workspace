@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
-executor: codex
-claimed_at: 2026-10-31T03:57:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-012-MESSAGING-001
@@ -29,7 +29,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Owner: `moda_background` / `moda-interact-background`; coordinator `moda_architect`. This is a **portable definition, defined but not materialised**. The developer's launcher creates the canonical mirrored task worktrees when implementation starts; no branch/commit/push is asserted here.
+Architecture: `ARCH-052`. Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`. Owner: `moda_background` / `moda-interact-background`; coordinator `moda_architect`. **Materialised and completed in the launcher-resolved task worktrees.**
 
 ## Objective
 
@@ -133,7 +133,7 @@ Inspect current Background source before editing; use task-dedicated launcher-re
 
 ### Status
 
-Ready for Review — implementation and required validation complete; awaiting `moda_architect` review.
+Complete — accepted by the architect on Attempt 1.
 
 ### Files Changed
 
@@ -184,26 +184,31 @@ No missing source contract or routing owner was identified. Non-recovery order m
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Architect Review
 
-Pending.
+#### Review Status
 
-### Review Notes
+Accepted — Complete (2026-10-31).
 
-New scoped recovery guidance task; no implementation reviewed.
+The implementation meets the existing contextual-routing and new guidance requirements. The specified Reply/text/voice copy is present; the existing quoted-message routing was preserved and covered for both text and audio. Guidance reports a bounded `sent`/`suppressed`/`failed` outcome, and the inbound processor only records `guidance_sent` for a resolved provider send. Cache, database-admission, sender-resolution and Meta failures retain the original bounded/redacted diagnostics through the Shared structured logger; the STOP lock, deduplication guard, and no-retry behavior remain intact. Ambiguous audio returns before media download, transcription or AI processing. No out-of-scope router, schema, database or task changes were introduced.
 
-### Reviewed Files
+Implementation commit `7d0b00a16617d8a6be00b46c49018cc3f22f8aa4` and parent report commit `dc5796f00dd373466b966f7d29cb83d99b40f401` are present on their respective task branches. Both launcher-resolved worktrees were clean and synchronized at review.
 
-None.
+#### Reviewed Files
 
-### Validation Reviewed
+- `moda-interact-background/src/services/routing-guidance.service.ts`
+- `moda-interact-background/src/services/whatsapp-inbound-processing.service.ts`
+- Changed routing, guidance, inbound-processing, worker and PostgreSQL integration tests.
+- This task definition and Completion Report.
 
-No implementation validation yet.
+#### Validation Reviewed
 
-### Architecture Conformance
+The Completion Report records 291 broader unit tests passed, 5 PostgreSQL integration tests passed, build and changed-file lint passed, and `git diff --check` passed. It also records one unrelated pre-existing full-lint error at `translation-reconciliation.service.ts:218`; changed-file lint passed. These implementation checks were reviewed from the report and were not rerun during architect review.
 
-Pending implementation and review.
+#### Architecture Conformance
 
-### Follow-up
+Accepted. Existing recovery routing and STOP precedence are preserved, shared-sender guidance is safe for text and voice, and operational outcomes are recorded accurately. No unresolved implementation or architecture issue remains.
 
-None.
+#### Follow-up
+
+BACKGROUND-015 is Complete. BACKGROUND-008 and SYSTEM-TEST-003 remain Pending because BACKGROUND-008 has other unsatisfied prerequisites; this acceptance does not make either task eligible.
