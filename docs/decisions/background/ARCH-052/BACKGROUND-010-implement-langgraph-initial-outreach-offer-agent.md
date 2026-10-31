@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
 executor: copilot
 claimed_at: 2026-10-31T13:59:41Z
@@ -457,69 +457,57 @@ Use paths relative to the parent workspace when editing, and confirm the canonic
 
 ### Status
 
-Changes Requested (Attempt 1). The agent implementation is submitted, but acceptance is blocked by missing feature-specific Aimock integration coverage and the incomplete required deterministic eligibility/combination fixture matrix.
+Ready for Architect Review (Attempt 2). Both requested test corrections are implemented and focused validations pass. No architect acceptance decision has been made by this agent.
 
 ### Files Changed
 
-- `package.json`
-- `package-lock.json`
-- `src/agents/initial-outreach-offer.agent.ts`
-- `src/agents/initial-outreach-offer.combinations.ts`
-- `src/agents/initial-outreach-offer.eligibility.ts`
-- `src/agents/initial-outreach-offer.graph.ts`
-- `src/agents/initial-outreach-offer.instructions.ts`
-- `src/agents/initial-outreach-offer.types.ts`
-- `src/commerce/mcp-client.ts`
-- `src/commerce/production-model.ts`
-- `src/services/recovery-offers/initial-outreach-agent-context.service.ts`
-- `src/services/recovery-offers/recovery-outreach-mcp-selector.service.ts`
-- `tests/integration/initial-outreach-agent-context.integration.test.ts`
-- `tests/unit/agents/initial-outreach-offer.agent.test.ts`
+- `tests/integration/initial-outreach-offer-aimock.integration.test.ts`
 - `tests/unit/agents/initial-outreach-offer.combinations.test.ts`
 - `tests/unit/agents/initial-outreach-offer.eligibility.test.ts`
 - `tests/unit/agents/initial-outreach-offer.graph.test.ts`
-- `tests/unit/commerce/mcp-client.test.ts`
-- `tests/unit/commerce/production-model.test.ts`
-- `tests/unit/services/recovery-offers/initial-outreach-agent-context.service.test.ts`
-- `tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts`
 
 ### Work Completed
 
-- Added direct `@langchain/langgraph` dependency pinned to `1.4.15` and implemented the Background-owned initial-outreach agent, instruction prompt, graph, context composer, MCP selector, and pure eligibility/compatibility helpers.
-- Added attempt-scoped BG016 reconciliation validation, source-bound MCP decision paths, bounded model/tool execution, and source-diagnostic extraction/redaction in the Background model/MCP boundaries.
-- Added focused unit tests and a PostgreSQL context-composition integration test. The tests cover core targeting, threshold currency/boundaries, Woo zero sentinels, selected Shopify/Woo pairing cases, provider diagnostic redaction, and tool/context lifecycle.
-- Added and committed a final graph guard enforcing the maximum product-search and exact-product-read counts.
-- Implementation commits pushed to `origin/task/ARCH-052-BACKGROUND-010`: `e620501` and `0f8c3e9`.
+- Added a feature-specific Aimock integration that runs the actual Shared `OpenRouterModelClient` through a real `ChatOpenRouter` instance whose base URL is replaced only with the Aimock loopback HTTP endpoint. The constructor rejects missing, non-HTTP, or non-loopback routes before invocation.
+- Asserted the actual bounded sequence of model request, discount-options MCP call, model request, discount-details MCP call, and final model request; verified all three captured chat-completion requests were served by Aimock and checked the final source-validated checkout offer, provider identity, eligible line, generation, and fingerprint.
+- Expanded eligibility fixtures for excluded products, provider target pagination and incomplete exclusions, invalid provider dates/status, missing deliverable code, Woo expiry uncertainty, and high order total with a below-threshold merchandise subtotal.
+- Expanded compatibility fixtures for PRODUCT+SHIPPING reciprocal permissions, explicit false and unknown class permissions, and unknown same-line overlap falling back to a singleton. Added graph-boundary assertions for model-authored coupon/provider fields and mismatched source detail identity.
+- The published Shared facts do not expose documented minimum-quantity scope semantics. Existing tests prove the required conservative `UNVERIFIABLE` outcomes for unknown scope and missing line amount; a positive quantity-boundary fixture cannot be supported without inventing contract semantics and remains an explicit limitation for architect review.
+- Attempt 2 implementation commit pushed to `origin/task/ARCH-052-BACKGROUND-010`: `1f71bc3` (following `0f8c3e9` and `e620501`). `@langchain/langgraph` remains directly pinned at `1.4.15`; the already-declared `@copilotkit/aimock@1.45.1` was reused without dependency changes.
 
 ### Validation Results
 
-- `npm exec vitest -- run tests/unit/agents/initial-outreach-offer.agent.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/agents/initial-outreach-offer.eligibility.test.ts tests/unit/agents/initial-outreach-offer.combinations.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts tests/unit/commerce/mcp-client.test.ts tests/unit/commerce/production-model.test.ts tests/unit/services/recovery-offers/initial-outreach-agent-context.service.test.ts` — passed, 8 files / 56 tests.
-- `npm run build` — passed, including Prisma client generation and TypeScript compilation.
+- `npx vitest run tests/unit/agents/initial-outreach-offer.eligibility.test.ts tests/unit/agents/initial-outreach-offer.combinations.test.ts tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/agents/initial-outreach-offer.agent.test.ts` — passed, 4 files / 37 tests.
+- `node scripts/test-integration.mjs tests/integration/initial-outreach-offer-aimock.integration.test.ts` — passed, 1 file / 1 test.
+- `npm run build` — passed, including Prisma generation and TypeScript compilation; no migration was added.
 - `npm run lint` — passed.
-- `node scripts/test-integration.mjs tests/integration/initial-outreach-agent-context.integration.test.ts` — passed, 1 file / 1 test.
-- `node scripts/test-integration.mjs tests/integration/commerce/host.test.ts tests/integration/recovery-offer-postgres.integration.test.ts tests/integration/arch048-woo-initial-outreach.integration.test.ts` — passed, 3 files / 80 tests.
-- Relevant unit regression batch — 5 of 7 files passed (39 tests); two existing ARCH-047 recovery-offer tests failed because their logger assertions expect exception messages to be omitted, while the unchanged resolver currently logs `PII_SECRET` and `token=SECRET`. Those files and services were not changed by this task.
-- `git diff --check` — passed. Implementation worktree is clean and its remote task branch is at `0f8c3e9`.
-- The explicitly required detailed eligibility/combination fixture matrix is not complete in the new test files; the current tests cover only a subset of its named cases. This report does not claim that matrix or every acceptance criterion is complete.
+- `git diff --check` — passed.
+- The Attempt 2 focused validation does not rerun the previously documented unrelated ARCH-047 logger assertion failures; no code in that path changed.
+
+### Worktree and Revision Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree and implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-010` and `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-010`; both use `task/ARCH-052-BACKGROUND-010`. The canonical workspace and other task worktrees were not switched or modified.
+- Prepared launcher claim commit: `62e46edae1c734f0281639e41fd7d95ffe2e0fab`, Attempt 2, executor Copilot. The packet reported all six dependencies complete, parent synchronization with `origin/main` at preparation revision `158e7a41ad49c7238648774a22077e8d78067227`, and implementation task worktree reused from `0f8c3e94c7e1c58288417605d85335b21c46e712`.
+- Recursive implementation submodule sync/update passed during preparation; recorded database submodule commit: `af77c594ecbfc78c26d01c0021a090830884bbff`. No submodule gitlink was staged.
+- Implementation branch is pushed through `1f71bc3`; the parent task report is being committed separately on the same task branch. No merge to `main` was performed.
 
 ### Deviations
 
-- The first implementation-agent handoff returned without a report. The resulting commit and worktree state were independently inspected; the remaining product-call budget guard was completed and pushed in a follow-up task commit.
-- No changes were made to the unrelated legacy recovery-offer logger failures.
+- The positive minimum-quantity boundary case remains blocked by missing documented quantity-scope semantics in the consumed Shared contract. No behavior or type was invented to make that fixture pass.
 
 ### Assumptions
 
-The prepared launcher packet is authoritative for claim and synchronization evidence. Validation ran from the implementation task worktree with its installed dependencies.
+The prepared launcher packet is authoritative for the Attempt 2 claim, worktree isolation, synchronization, dependency gates, and recursive submodule setup. All implementation and validation ran in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-010` on `task/ARCH-052-BACKGROUND-010`; the canonical workspace and other task worktrees were not modified.
 
 ### Unresolved Issues
 
-- Expand the two pure-helper suites to demonstrate the full required named matrix, including remaining incomplete-target/status/quantity cases and all specified same-line, reciprocal, unknown-overlap, and class-permission combinations.
-- The existing ARCH-047 recovery-offer unit regression failures expose raw sensitive exception messages in an unchanged service path. This task did not alter that path; assess ownership and whether it is a separate required fix.
-- Reconcile the current broad task definition and the uncovered acceptance/test cases during Architect Review. No cross-repository changes were made.
+- Shared facts include `minimumQuantity` but no provider-documented eligibility scope. The helper conservatively abstains; architect review should determine whether the contract can provide the scope in a separately owned change.
+- Architect review remains the acceptance authority. The implementation is not marked accepted or complete.
 
 ### Architectural Concerns
 
-The implementation branch is limited to Background. The new implementation has not received architect acceptance; acceptance criteria remain unchecked where complete evidence is absent.
+The change is limited to Background-owned tests. The task branch is submitted for review only; acceptance criteria remain unchecked where complete evidence is absent.
 
 ## Architect Review
 
