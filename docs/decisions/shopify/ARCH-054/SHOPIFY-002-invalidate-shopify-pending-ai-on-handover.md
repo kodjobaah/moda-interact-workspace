@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: codex
 claimed_at: 2026-10-31T22:06:41Z
@@ -64,8 +64,8 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 
 ## Work Items
 
-- [ ] Extend the existing Shopify control service; add transaction-level race tests and rollback assertions.
-- [ ] Verify no replay after HUMAN->AI, no pending AI for HUMAN, no human dispatch delay and no regression to existing controls.
+- [x] Extend the existing Shopify control service; add transaction-level race tests and rollback assertions.
+- [x] Verify no replay after HUMAN->AI, no pending AI for HUMAN, no human dispatch delay and no regression to existing controls.
 
 
 ## Interfaces / Contracts
@@ -85,13 +85,18 @@ Existing ARCH-040 control DTO and `controlRevision` are unchanged; DATABASE-001 
 
 ## Acceptance Criteria
 
-- [ ] Shopify takeover suppresses a waiting or in-flight AI turn whose dispatch has not passed final admission; Resume AI cannot revive an old queued job.
-- [ ] Authenticated merchant human send remains immediate subject to normal guards.
+- [x] Shopify takeover suppresses a waiting or in-flight AI turn whose dispatch has not passed final admission; Resume AI cannot revive an old queued job.
+- [x] Authenticated merchant human send remains immediate subject to normal guards.
 
 
 ## Validation
 
-- [ ] Existing Shopify human-command/control service tests; Prisma transaction integration test; changed-file lint/typecheck/build per package.json; `git diff --check`.
+- [x] Existing Shopify human-command/control service tests: `npm test -- tests/unit/arch040-shopify-command.test.ts` — 36 tests passed.
+- [ ] Prisma transaction integration test: added and attempted with `MODA_DISPOSABLE_INTEGRATION=1`; Testcontainers could not start because this machine has no working container runtime (`Could not find a working container runtime strategy`).
+- [x] Changed-file lint: ESLint passed for the service and both test files.
+- [x] Typecheck: `npm run typecheck` passed.
+- [x] Build: `npm run build` passed. It emitted the existing Zod annotation and large-chunk warnings; there were no build errors.
+- [x] `git diff --check` passed.
 
 
 ## Stop Condition
@@ -108,27 +113,65 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `app/services/recoveries/recovery-human-commands.server.ts`
+- `tests/unit/arch040-shopify-command.test.ts`
+- `tests/integration/shopify-recovery-control-invalidation.postgres.integration.test.ts`
 
 ### Work Completed
 
-None
+- Shopify HUMAN takeover and Resume AI now increment `controlRevision`, clear the pending-turn deadline/revision/delay and processing lease, and advance `lastProcessedVersion` to the locked conversation's current `inboundVersion` in the same transaction as the control event.
+- The conditional write also matches the locked `inboundVersion`, so a failed compare-and-set cannot clear a newer turn. Idempotent transitions still exit before writing.
+- Added unit coverage for both transitions, lost compare-and-set, and no-op requests. Added a disposable PostgreSQL test for concurrent takeovers, event-write rollback, and stale-revision preservation of a newly opened AI turn.
+- The existing durable HUMAN command path remains unchanged and does not consult `aiResponseDelayMinutes`.
 
 ### Validation Results
 
-Not Run
+- Focused Shopify command/control suite: 36 passed.
+- Changed-file ESLint: passed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed (existing Zod annotation and large chunk warnings only).
+- `git diff --check`: passed.
+- PostgreSQL integration: test added and attempted, but unverified because Testcontainers reported no working container runtime. The three integration cases were therefore not executed.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-None
+- PostgreSQL transaction behavior still needs execution in an environment with a working Docker/container runtime.
+- The first `npm ci` attempt could not complete because the disk ran out of space (`ENOSPC`). The task worktree had no installed dependencies, so validation temporarily reused the exact-lockfile dependency tree from the preceding ARCH-054 Shopify worktree; its temporary `node_modules` symlink has been removed. No dependency manifest or lockfile changed.
+- The build completed with Rollup warnings for dependency annotations and a chunk larger than 500 kB; these are not build failures.
 
 ### Worktree and Git Evidence
 
-Not materialised; implementing agent must record launcher-prepared dedicated parent/implementation worktree paths, start-of-attempt sync, branch SHAs, submodule pins and cleanup.
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-SHOPIFY-002
+  parent branch: task/ARCH-054-SHOPIFY-002
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-SHOPIFY-002
+  implementation branch: task/ARCH-054-SHOPIFY-002
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no (the exact-lockfile dependency tree was temporarily linked for validation only)
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+  parent branch start SHA: 196bacc54c1b657657b35d54b4e66b207b44cfe8
+  implementation branch start SHA: db845bf5e67d0b1a6c853768f1abeb047402b3bd
+  durable claim commit: ac60a4c0a6711a297d62372dc2724654020ed23f (pushed)
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  database submodule commit: 7c377282aa5819b3008b7d7f3018f44f4161523e
+
+Implementation publication:
+  implementation commit: 0101f1bfb33e67e42c5d72a55c31022e3696901b (pushed to origin/task/ARCH-054-SHOPIFY-002)
+  parent task report: committed and pushed on task/ARCH-054-SHOPIFY-002
 
 
 ## Architect Review
