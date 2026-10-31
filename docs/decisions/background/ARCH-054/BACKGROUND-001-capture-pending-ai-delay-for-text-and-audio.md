@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 30
 executor: copilot
 claimed_at: 2026-10-31T22:53:09Z
@@ -67,9 +67,9 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 
 ## Work Items
 
-- [ ] Implement exact pure deadline computation and transaction helper (one owner, reusable for text/audio).
-- [ ] Modify first-text and audio completion paths; update `ConversationTurnState` projection with pending triple and original `controlMode`/`controlRevision`.
-- [ ] Add tests for 0,1,7,30, duplicate/out-of-order, concurrent first texts, mixed text/audio, settings changed mid-turn, HUMAN-mode inbound, tenant ownership and actual DB rollback.
+- [x] Implement exact pure deadline computation and transaction helper (one owner, reusable for text/audio).
+- [x] Modify first-text and audio completion paths; update `ConversationTurnState` projection with pending triple and original `controlMode`/`controlRevision`.
+- [x] Add tests for 0,1,7,30, duplicate/out-of-order, concurrent first texts, mixed text/audio, settings changed mid-turn, HUMAN-mode inbound, tenant ownership and actual DB rollback.
 
 
 ## Interfaces / Contracts
@@ -96,7 +96,11 @@ Internal pure `computePendingAiNotBeforeAt({pendingStartedAt:Date,delayMinutes:0
 
 ## Validation
 
-- [ ] `npx vitest run tests/unit/services/conversation.service.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts`; `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts`; changed-file lint/typecheck/build per available scripts; `git diff --check`.
+- [x] `npx vitest run tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts tests/unit/services/conversation.service.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts` — 43 tests passed.
+- [ ] `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts` — blocked: ephemeral PostgreSQL startup requires Docker; no Docker daemon/socket is available. Direct execution against the approved local database also failed because `localhost:5432` is unreachable.
+- [x] `npm run build` — passed, including Prisma Client generation and TypeScript build.
+- [x] Changed-file ESLint — passed.
+- [x] `git diff --check` — passed.
 
 
 ## Stop Condition
@@ -113,27 +117,66 @@ Do not perform a network call while a DB transaction is open. Source original ca
 
 ### Status
 
-Not Started
+Blocked: implementation and available validation are complete, but PostgreSQL concurrency and rollback integration tests could not execute because Docker is unavailable and the local PostgreSQL service is not running.
 
 ### Files Changed
 
-None
+- `src/services/conversation-ai-delay/pending-turn-deadline.ts`
+- `src/services/conversation-ai-delay/pending-turn-repository.ts`
+- `src/services/conversation.service.ts`
+- `src/services/inbound-whatsapp-audio.service.ts`
+- `src/services/whatsapp-inbound-processing.service.ts`
+- `tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts`
+- `tests/unit/services/conversation.service.test.ts`
+- `tests/unit/services/inbound-whatsapp-audio.service.test.ts`
+- `tests/integration/conversation-turn-scheduling.integration.test.ts`
 
 ### Work Completed
 
-None
+- Added pure, range-checked deadline computation and a shared row-locked transaction helper used by text receipt and successful audio transcription completion.
+- Captured merchant delay and current recovery control revision only when opening a pending AI recovery turn, using `CheckoutRecovery.shopId`; missing settings default to zero and corrupt persisted values fail without coercion.
+- Preserved the original pending timestamp/deadline/revision for later fragments. HUMAN inbound advances the processed watermark and clears pending/processing state; post-commit routing does not enqueue HUMAN-owned turns.
+- Added Shared-logger persistence failure handling that propagates the original exception; preserved standalone conversation timing and existing versioned queue identity.
+- Added focused unit coverage and PostgreSQL integration cases for concurrent first text, settings changes during a turn, and transaction rollback.
 
 ### Validation Results
 
-Not Run
+- `npx vitest run tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts tests/unit/services/conversation.service.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts` — passed, 3 files / 43 tests.
+- `npm run build` — passed; Prisma Client generation and TypeScript build completed.
+- Changed-file ESLint — passed.
+- `git diff --check` — passed.
+- Required `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts` — blocked before tests: Docker API unavailable at `/var/run/docker.sock` while starting `pgvector/pgvector:pg17`.
+- Direct integration-file attempt with `MODA_DISPOSABLE_INTEGRATION=1` and `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact` — blocked: no PostgreSQL server reachable at `localhost:5432`.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-None
+- The integration tests are authored but actual PostgreSQL race and rollback assertions remain unverified. Resume validation when the Docker daemon or the standard local PostgreSQL database is available; do not mark the task review-ready before those checks pass.
 
 ### Worktree and Git Evidence
 
-Not materialised; implementing agent must record launcher-prepared dedicated parent/implementation worktree paths, start-of-attempt sync, branch SHAs, submodule pins and cleanup.
+- Physical worktree isolation:
+  - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-BACKGROUND-001`
+  - parent branch: `task/ARCH-054-BACKGROUND-001`
+  - implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-BACKGROUND-001`
+  - implementation branch: `task/ARCH-054-BACKGROUND-001`
+  - shared workspace checkout switched/mutated for task work: no
+  - shared implementation checkout switched/mutated for task work: no
+  - another task worktree reused: no
+- Start-of-attempt synchronization from launcher packet:
+  - parent remote task branch fast-forwarded: not-needed
+  - parent `origin/main` incorporated: already-current
+  - implementation remote task branch fast-forwarded: not-needed
+  - implementation `origin/main` incorporated: already-current
+  - parent pre-claim head: `61a62c5e89eb8b749384de5024f60942aca3a34d`
+  - implementation initial head: `b7aa719240bf7e0d793db23dd956c4437c904ded`
+  - parent claim commit: `2bae65630708686cffe5bc77be8789506d8f54c4` (pushed)
+- Recursive implementation submodules:
+  - `git submodule sync --recursive`: passed
+  - `git submodule update --init --recursive`: passed
+  - recorded database submodule commit: `7c377282aa5819b3008b7d7f3018f44f4161523e`
+- Implementation commit: `7bb69d7bb959f96bc0b96ed6e381ac77ecfaf121`; pushed to `origin/task/ARCH-054-BACKGROUND-001`, with remote ref verified equal to the commit.
+- Implementation worktree was clean after commit. Parent report commit and push will be recorded in the execution result.
 
 
 ## Architect Review
