@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: codex
-claimed_at: 2026-10-31T19:14:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -119,7 +119,7 @@ Use existing migration conventions; exact timestamp path is reserved for ARCH-05
 
 ### Status
 
-Implementation complete; ready for Architect review.
+Attempt 1 review requested a timezone-independent deadline comparison; Attempt 2 is ready to address it.
 
 ### Files Changed
 
@@ -150,7 +150,7 @@ Implementation complete; ready for Architect review.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-None.
+Review intake for Attempt 1: make the deadline check timezone-independent. The comparison between `pendingAiNotBeforeAt` (`timestamptz`) and `pendingTurnStartedAt` (`timestamp without time zone`) must interpret the stored turn-start timestamp as UTC explicitly. Attempt 1 remains unchanged; correction is assigned to Attempt 2.
 
 ### Worktree and Git Evidence
 
