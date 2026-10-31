@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 2
 depends_on: ["ARCH-049-DATABASE-001", "ARCH-049-BACKGROUND-002", "ARCH-049-SHOPIFY-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-25
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # Synchronise Shopify Brand API sources into commerce.ShopBrand
@@ -120,7 +120,7 @@ No additional assumptions are authorised.
 
 ### Status
 
-Attempt 2 passed developer self-review on 2026-10-31 and is submitted for architect review. `completion_mode: developer`; explicit developer completion remains pending. Attempt 1's changes-requested review is preserved below.
+Developer completed Attempt 2 on 2026-10-31 after the passing developer self-review. The explicit Developer Completion Decision is recorded below. Attempt 1's changes-requested review is preserved.
 
 ### Files Changed
 
@@ -226,3 +226,12 @@ None.
 - Environment correction: `npm ci` restored the lockfile-pinned Shared `2.7.2`; the earlier TS2307 was from stale installed `2.5.1` and is resolved. Full `npm run lint` still reports one unrelated existing diagnostic in `translation-reconciliation.service.ts:218`; the file is unchanged and identical to `origin/main`.
 - Live Shopify grant/production-provider read was not performed and is not represented as a pass.
 - Transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. Since `completion_mode: developer`, explicit developer completion remains pending. No dependent task was started and no branch was merged to `main`.
+
+## Developer Completion Decision (Attempt 2, 2026-10-31)
+
+- The developer explicitly requested completion of `ARCH-049-BACKGROUND-003` after the durable passing Attempt 2 self-review and verification of the committed/pushed implementation branch and required focused validation.
+- Accepted attempt: Attempt 2; `attempt` remains 2. Lifecycle state is `status: complete`, `executor: null`, and `claimed_at: null`. `completion_mode: developer` is preserved.
+- Published implementation branch: `task/ARCH-049-BACKGROUND-003` at `bcac6edc1c4c6aaca8fb506f8fc2b0c8653a4065`, clean and up to date with `origin/task/ARCH-049-BACKGROUND-003`.
+- Parent completion decision is committed and pushed on `task/ARCH-049-BACKGROUND-003`; no task branch was merged to `main`.
+- Dependency frontier checked against records in the canonical parent task worktree: `ARCH-049-SYSTEM-TEST-001` remains pending/manual-gated because `ARCH-049-BACKGROUND-004` and `ARCH-049-WOOCOMMERCE-002` remain `ready`. All of its declared ARCH-047 dependencies are complete. No dependent task was started or promoted.
+- The unrelated repository-wide lint baseline diagnostic and absence of live Shopify grant/provider validation remain documented caveats; neither is represented as passing validation.
