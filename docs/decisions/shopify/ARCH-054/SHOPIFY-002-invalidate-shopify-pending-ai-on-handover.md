@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: codex
-claimed_at: 2026-10-31T22:06:41Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-054-DATABASE-001
@@ -178,24 +178,49 @@ Implementation publication:
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-None
+Code inspection found the control change clears pending AI scheduling and
+processing state atomically with the control revision and event write. The
+conditional write includes the locked `inboundVersion`, and the no-op path
+returns before mutation. No source-code correction is identified.
+
+The required PostgreSQL integration test did not execute because Testcontainers
+could not find a working container runtime. This leaves the core database
+behavior unverified: concurrent takeover serialization, rollback when event
+creation fails, and preservation of a fresh pending turn after a stale request.
+The unit tests use Prisma mocks and do not replace those checks.
+
+Keep Attempt 1 and the implementation branch unchanged. Return the task to
+`ready`; the next canonical task claim increments the attempt. Run the existing
+disposable PostgreSQL test in an environment with a working container runtime:
+`MODA_DISPOSABLE_INTEGRATION=1 npx vitest run tests/integration/shopify-recovery-control-invalidation.postgres.integration.test.ts`.
+Record the result, including all three cases, before resubmitting. The task is
+not accepted or complete.
 
 ### Reviewed Files
 
-None
+- `app/services/recoveries/recovery-human-commands.server.ts`
+- `tests/unit/arch040-shopify-command.test.ts`
+- `tests/integration/shopify-recovery-control-invalidation.postgres.integration.test.ts`
 
 ### Validation Reviewed
 
-None
+The Completion Report records the 36-test focused unit run, changed-file lint,
+typecheck, build and `git diff --check` as passing. The PostgreSQL test was
+attempted but did not start because no working Testcontainers runtime was
+available. Tests were not rerun for this review.
 
 ### Architecture Conformance
 
-Pending
+The implementation follows the existing control transaction and retains the
+Shop/conversation locks, control revision, and event transaction. Acceptance is
+withheld until the required PostgreSQL transaction evidence is available.
 
 ### Follow-up
 
-None
+Rerun and report the existing PostgreSQL integration test; no implementation
+change is currently requested. Do not promote `ARCH-054-BACKGROUND-002` until
+this task is accepted.
