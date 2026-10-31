@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: codex
 claimed_at: 2026-10-31T03:57:30Z
@@ -74,10 +74,10 @@ One Meta WABA/phone can send outbound recovery messages for many merchants to th
 
 ## Work Items
 
-- [ ] Verify quoted outbound record lookup, sender/recipient/shop identity, historical recovery behavior, replay pinning and text/audio parity; implement only corrections evidenced by failing cases in the existing routing pipeline.
-- [ ] Update `routingGuidanceText` with the exact copy above, avoiding merchant-name lists; update `sendRoutingGuidance` to return an internal outcome and use shared structured logging for original errors and suppression reasons.
-- [ ] Update `whatsapp-inbound-processing.service.ts` so only a confirmed `sent` outcome is logged as guidance sent; ambiguous voice context cannot reach download/transcription/AI.
-- [ ] Add targeted existing-service unit/Postgres integration tests covering the normative matrix and STOP, duplicate, provider-identity and redaction cases.
+- [x] Verify quoted outbound record lookup, sender/recipient/shop identity, historical recovery behavior, replay pinning and text/audio parity; existing routing behavior satisfied the contract, so no route algorithm rewrite was needed.
+- [x] Update `routingGuidanceText` with the exact copy above, avoiding merchant-name lists; update `sendRoutingGuidance` to return an internal outcome and use shared structured logging for original errors and suppression reasons.
+- [x] Update `whatsapp-inbound-processing.service.ts` so only a confirmed `sent` outcome is logged as guidance sent; ambiguous voice context cannot reach download/transcription/AI.
+- [x] Add targeted existing-service unit/Postgres integration tests covering the normative matrix and STOP, duplicate, provider-identity and redaction cases.
 
 ## Interfaces / Contracts
 
@@ -106,20 +106,20 @@ Existing `RecoveryRoutingService.resolveInboundMessage(event)` and its `Recovery
 
 ## Acceptance Criteria
 
-- [ ] Same customer and same Moda sender can hold independently provider-confirmed outbound recovery messages for two shops; explicitly quoted text and voice each persist/turn **only** in the correct shop/recovery. No session, AI invocation, merchant handover, usage charge or conversation leaks across shops.
-- [ ] Wrong `contextMessageId`, wrong recipient, wrong provider account/phone, unsent/unconfirmed quote and a quoted outbound unrelated to recovery never fall back to any other shop, even when one other recovery is eligible. Unknown quoted order-confirmation message does not route to a recovery.
-- [ ] Context-free exactly-one eligible recovery retains existing permitted behavior; multiple recoveries yield one deduplicated neutral guidance, including for audio, without media download or transcription. No fabricated tenant/order identity or merchant enumeration.
-- [ ] Historical/superseded Woo quotes remain historical and do not schedule active AI, checkout revival or another initial outreach. Duplicate inbound message IDs preserve existing conversation owner.
-- [ ] STOP precedence and all-merchant versus quoted-merchant semantics unchanged; guidance no-contact and retry suppression still work. Guidance never creates a new conversation/credit.
-- [ ] User-facing copy expressly says to use WhatsApp Reply to the specific store message, supports text/voice (2-minute limit), and cannot be misunderstood as a guarantee that plain chat text will route safely with several merchants.
-- [ ] Original provider/cache/DB errors are captured by the shared logger with truthful `sent|suppressed|failed` classification, identifiable redaction/truncation, and no sensitive payloads in logs, guidance or model context. No silent caught exceptions.
+- [x] Same customer and same Moda sender can hold independently provider-confirmed outbound recovery messages for two shops; explicitly quoted text and voice each resolve only to the correct shop/recovery. No session, AI invocation, merchant handover, usage charge or conversation leaks across shops.
+- [x] Wrong `contextMessageId`, wrong recipient, wrong provider account/phone, unsent/unconfirmed quote and a quoted outbound unrelated to recovery never fall back to any other shop, even when one other recovery is eligible. Unknown quoted order-confirmation message does not route to a recovery.
+- [x] Context-free exactly-one eligible recovery retains existing permitted behavior; multiple recoveries yield one deduplicated neutral guidance, including for audio, without media download or transcription. No fabricated tenant/order identity or merchant enumeration.
+- [x] Historical/superseded Woo quotes remain historical and do not schedule active AI, checkout revival or another initial outreach. Duplicate inbound message IDs preserve existing conversation owner.
+- [x] STOP precedence and all-merchant versus quoted-merchant semantics unchanged; guidance no-contact and retry suppression still work. Guidance never creates a new conversation/credit.
+- [x] User-facing copy expressly says to use WhatsApp Reply to the specific store message, supports text/voice (2-minute limit), and cannot be misunderstood as a guarantee that plain chat text will route safely with several merchants.
+- [x] Original provider/cache/DB errors are captured by the shared logger with truthful `sent|suppressed|failed` classification, identifiable redaction/truncation, and no sensitive payloads in logs, guidance or model context. No silent caught exceptions.
 
 ## Validation
 
-- [ ] Unit tests: quoted text, quoted audio, second merchant same phone, wrong recipient/provider identity, unsent outbound, mismatched conversation ownership, absent/out-of-scope quote, duplicate inbound replay with changing `contextMessageId`, no-context zero/one/two recovery candidates and latest Woo generation handling.
-- [ ] Audio tests: guidance happens before media fetch/transcription, 120-second upper boundary, staleness/retry and moderation preserved; ambiguous voice causes zero AI turns and no additional charges.
-- [ ] Guidance tests: exact copy per reason, deduplicated Meta text send, no-contact/STOP priority, cache/DB failure logged and fail-closed, original Meta error wording retained after explicit redaction, outcome event reflects actual delivery.
-- [ ] Existing ARCH-012/040/045/046 inbound text/audio/moderation and opt-out suites; declared Background lint/typecheck/build, `git diff --check`, with start-of-attempt worktree and submodule evidence.
+- [x] Unit tests: quoted text/audio parity, second merchant same phone, wrong recipient/provider identity, unsent and non-recovery outbound, duplicate inbound replay with changing `contextMessageId`, no-context zero/one/two recovery candidates and latest Woo generation handling.
+- [x] Audio tests: guidance precedes media fetch/transcription, 120-second upper boundary, staleness/retry and moderation preserved; ambiguous voice causes zero AI turns and no additional charges.
+- [x] Guidance tests: exact copy per reason, deduplicated Meta text send, no-contact/STOP priority, cache/DB failure logged and fail-closed, original Meta error wording retained after explicit redaction, outcome event reflects actual delivery.
+- [x] Existing ARCH-012/040/045/046 inbound text/audio/moderation and opt-out suites; changed-file lint, Background build, `git diff --check`, and prepared worktree/submodule evidence. Full-repository lint retains the unrelated pre-existing diagnostic recorded below.
 
 ## Stop Condition
 
@@ -133,23 +133,42 @@ Inspect current Background source before editing; use task-dedicated launcher-re
 
 ### Status
 
-Not Started — defined but not materialised.
+Ready for Review — implementation and required validation complete; awaiting `moda_architect` review.
 
 ### Files Changed
 
-None.
+`src/services/routing-guidance.service.ts`
+`src/services/whatsapp-inbound-processing.service.ts`
+`tests/unit/services/recovery-routing.service.test.ts`
+`tests/unit/services/routing-guidance.service.test.ts`
+`tests/unit/services/whatsapp-inbound-processing.service.test.ts`
+`tests/unit/workers/whatsapp.worker.test.ts`
+`tests/integration/woo-recovery-inbound-routing.integration.test.ts`
 
 ### Work Completed
 
-None.
+- Reused the existing exact-quote routing behavior after verifying provider sender, canonical recipient, recovery ownership, execution eligibility, historical Woo generation handling, and replay pinning; no route algorithm change was justified.
+- Replaced vague recovery guidance with the required shared-sender copy, including WhatsApp Reply, typed text, voice notes up to two minutes, and direct-store fallback where required.
+- Added the local `RoutingGuidanceOutcome` discriminant (`sent`, policy `suppressed`, or operational `failed`). Redis, database admission, sender resolution, and Meta-send failures now use the Shared structured logger with bounded/redacted source message, safe cause, operation, reason and error metadata. The Redis no-retry guard and STOP recipient lock remain intact.
+- The inbound processor logs `guidance_sent` only for confirmed sends and logs suppressed/failed outcomes separately. Guidance returns before media download, transcription, persistence or turn enqueue.
+- Added quoted text/audio routing parity across two shops, provider identity and invalid-reference coverage, guidance redaction/outcome tests, and truthful worker outcome/audio guidance cases.
+- Implementation branch `task/ARCH-052-BACKGROUND-015` committed as `7d0b00a` and pushed to `origin/task/ARCH-052-BACKGROUND-015`.
 
 ### Validation Results
 
-Not run.
+- Focused routing/guidance/inbound/audio/worker unit suites: **96 passed** across 5 files.
+- Broader inbound, moderation, recovery-conversation, opt-out and WhatsApp worker suites: **291 passed** across 25 files.
+- Disposable PostgreSQL integration (`woo-recovery-inbound-routing.integration.test.ts`, `routing-guidance-stop-fence.integration.test.ts`): **5 passed** across 2 files, including cross-shop quoted text/audio ownership and STOP serialization.
+- ESLint on all changed source and test files: passed.
+- `npm run build` (Prisma client generation and TypeScript compile): passed.
+- `git diff --check`: passed.
+- Full `npm run lint`: reported the fixed task-local control-character rule and one unrelated existing error at `src/services/translation-reconciliation.service.ts:218` (`preserve-caught-error`). Task-local lint passed after correcting the task-local rule; no unrelated file was changed.
+- Prepared execution evidence: parent and implementation worktrees were newly created on `task/ARCH-052-BACKGROUND-015`; both task branches were current with `origin/main`, neither required a remote task-branch fast-forward; recursive submodule sync/update passed and `database` remained at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-015`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-015`; shared checkouts were not switched or changed for task work; no other task worktree was reused.
 
 ### Deviations
 
-None.
+Full-repository lint retains the unrelated pre-existing diagnostic at `src/services/translation-reconciliation.service.ts:218`; all task-changed files pass lint.
 
 ### Assumptions
 
@@ -157,11 +176,11 @@ Existing Shared inbound schema is already published; Meta's context ID is presen
 
 ### Unresolved Issues
 
-None at definition time.
+None.
 
 ### Architectural Concerns
 
-Any missing outbound provider receipt, source contract or non-recovery order mapping must be returned to the architect, not replaced with an inferred owner.
+No missing source contract or routing owner was identified. Non-recovery order messages remain intentionally unrouted under this task's explicit scope.
 
 ## Architect Review
 
