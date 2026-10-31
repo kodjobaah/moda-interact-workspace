@@ -4,7 +4,7 @@ Architecture: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp
 Owner: `moda_background`
 Coordinator: `moda_architect`
 
-The individual task YAML is authoritative. BACKGROUND-009 has been materialised and is Ready for correction after review; the other listed tasks remain governed by their own status and materialisation state. Superseded tasks must never be executed.
+The individual task YAML is authoritative. BACKGROUND-009 is materialised and Complete; the other listed tasks remain governed by their own status and materialisation state. Superseded tasks must never be executed.
 
 | Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
@@ -16,9 +16,9 @@ The individual task YAML is authoritative. BACKGROUND-009 has been materialised 
 | [ARCH-052-BACKGROUND-006](BACKGROUND-006-resolve-fresh-woo-resume-checkout-links.md) | Resolve fresh authenticated Woo restore links at initial send preparation | Superseded | — |
 | [ARCH-052-BACKGROUND-007](BACKGROUND-007-resolve-verified-product-image-at-runtime.md) | Resolve optional checkout or promoted-product image via MCP at runtime | Pending | `ARCH-052-BACKGROUND-008`, `ARCH-052-ADMIN-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-007`, `ARCH-049-BACKGROUND-001`, `ARCH-049-BACKGROUND-004` |
 | [ARCH-052-BACKGROUND-008](BACKGROUND-008-integrate-three-modes-into-initial-whatsapp-send.md) | Bind approved outreach variants and existing checkoutUrl via current send pipeline | Pending | `ARCH-052-BACKGROUND-010`, `ARCH-052-BACKGROUND-005`, `ARCH-052-ADMIN-001` |
-| [ARCH-052-BACKGROUND-009](BACKGROUND-009-preserve-shopify-merchant-selection-during-sync.md) | Make Shopify catalogue and lifecycle writers preserve merchant selection | Ready | — |
+| [ARCH-052-BACKGROUND-009](BACKGROUND-009-preserve-shopify-merchant-selection-during-sync.md) | Make Shopify catalogue and lifecycle writers preserve merchant selection | Complete | — |
 | [ARCH-052-BACKGROUND-010](BACKGROUND-010-implement-langgraph-initial-outreach-offer-agent.md) | Implement the LangGraph InitialOutreachOfferAgent with existing MCP tools | Pending | `ARCH-052-MCP-002`, `ARCH-052-COMMERCE-007`, `ARCH-052-SHARED-010` |
 | [ARCH-052-BACKGROUND-011](BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | Enrich source-backed Shopify discount condition facts | Pending | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
 | [ARCH-052-BACKGROUND-012](BACKGROUND-012-upload-trusted-meta-image-template-sample.md) | Upload fixed Moda sample to Meta and attach a returned handle only in the provider IMAGE create request | Ready | `ARCH-052-ADMIN-002`, `ARCH-047-BACKGROUND-003` |
 
-BACKGROUND-009 is Ready for Attempt 3. Its latest Architect Review requires the repository-wide test failures to be identified and compared against the starting baseline, and the untouched lint failure to be confirmed; see the task report for the full correction contract. PostgreSQL lifecycle validation, launcher isolation/synchronization evidence, and materialisation wording are already accepted.
+BACKGROUND-009's repository-wide validation reconciliation is complete; its task record remains authoritative for the review evidence.

@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-30T19:47:52Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-052-BACKGROUND-009
 enables:
 - ARCH-052-SYSTEM-TEST-001
 created: '2026-10-29'
-updated: 2026-10-30
+updated: 2026-10-31
 ---
 
 # ARCH-052-SHOPIFY-001: Make Shopify merchant discount selection match WooCommerce checkboxes
@@ -30,7 +30,7 @@ Architecture ID: `ARCH-052`.
 
 Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 
-Coordinator: `moda_architect`. This is a **portable canonical definition — defined but not materialised**. No developer Git branch/worktree, commit or push is asserted.
+Coordinator: `moda_architect`. This task was materialised and executed through the canonical launcher-resolved parent and implementation task worktrees; Attempt 3 evidence is recorded below.
 
 ## Objective
 
@@ -221,19 +221,21 @@ The production catalogue sync function cannot be directly invoked from the assig
 
 ### Review Status
 
-Changes Requested — Attempt 2.
+Accepted — Attempt 3.
 
 ### Review History
 
 - **Attempt 1 — Changes Requested:** the complete 8,192-byte request-body limit was not enforced, and the PostgreSQL transaction/race test had not run. Attempt 2 addresses the full-body limit before form parsing (including missing or inaccurate `Content-Length`) and reports a successful three-test PostgreSQL run.
+- **Attempt 2 — Changes Requested:** the PostgreSQL test pre-seeded the new discount and did not exercise catalogue upsert behavior during the selection transaction. Attempt 3 adds deterministic interleaving and evidence for the production upsert semantics.
+- **Attempt 3 — Accepted:** the real PostgreSQL integration test passes with a new row created unchecked and an existing selected row preserved through catalogue upserts in the same transaction. The canonical worktree and commit histories support the reported isolated execution.
 
-### Review Notes
+### Attempt 2 Review Notes
 
 The required catalogue-sync race case remains unverified. In `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts`, `discountNew` is inserted as unchecked in `createShop()` before the save, then the save test asserts it remains unchecked. This does not execute a catalogue synchronization or exercise synchronization interleaved with the merchant selection transaction. The task's Validation explicitly requires real PostgreSQL transaction tests “including sync race,” and its Work Items require proving new sync items remain unchecked.
 
 For Attempt 3, add a PostgreSQL integration case that exercises the catalogue upsert behavior against the selection save in a deterministic concurrent/interleaved scenario. Assert that an already selected discount remains selected and a newly synchronized discount is unchecked after both operations complete. Keep source changes within this task's assigned repository; if the actual sync operation cannot be exercised from this repository, document the boundary and provide equivalent integration evidence that validates the production upsert semantics. Run the new test and record the actual result.
 
-### Reviewed Files
+### Attempt 2 Reviewed Files
 
 - `moda-interact/app/routes/app/settings-save/route.ts`
 - `moda-interact/app/services/recovery-policy/recovery-policy.server.ts`
@@ -242,14 +244,45 @@ For Attempt 3, add a PostgreSQL integration case that exercises the catalogue up
 - `moda-interact/tests/unit/settings-save-recovery-route.test.ts`
 - This task's Attempt 2 Completion Report and VCS evidence.
 
-### Validation Reviewed
+### Attempt 2 Validation Reviewed
 
 Attempt 2 reports 33 focused unit tests across four files, a separate 18-test route rerun, three PostgreSQL integration tests, typecheck, lint, build, and `git diff --check` passing. Source inspection confirms the full request stream is capped at 8,192 bytes before `formData()` parsing, and the route tests cover absent and inaccurate `Content-Length`. The PostgreSQL suite covers tenant isolation, atomic replacement/idempotence, dormant selections, and stale concurrent revisions, but does not run catalogue sync. These implementation validations were not rerun during architect review; `git diff --check` passed for this review-record edit.
 
-### Architecture Conformance
+### Attempt 2 Architecture Conformance
 
 Changes Requested. Attempt 2 resolves both Attempt 1 findings, and the selection UI, tenant-scoped transactional save, request-size limit, and reported worktree evidence otherwise conform. The required sync-race validation is still absent.
 
-### Follow-up
+### Attempt 2 Follow-up
 
 Return the same task to `ready` for Attempt 3. Preserve the Attempt 1 and Attempt 2 history. Do not promote ARCH-052-SYSTEM-TEST-001 until this task is accepted and its other dependencies are complete.
+
+### Attempt 3 Review
+
+#### Review Notes
+
+The requested sync-race evidence is present in the implementation, not only in the report. The integration case begins with no `discountNew` row, calls the real `saveMerchantRecoveryPolicy`, and interleaves the catalogue upserts after the service's second selection `updateMany` while the same PostgreSQL transaction remains open. After commit, it asserts the pre-existing selected row remains selected and the newly created catalogue row is unchecked.
+
+The test's upsert create/update fields match the production behavior in `moda-interact-background/src/services/shopify-discount-catalogue.service.ts`: new rows set `isAvailable: false`; updates omit `isAvailable`, while refreshing provider/catalogue metadata. This is the equivalent integration evidence explicitly allowed by the Attempt 2 correction because the actual sync service is owned by Background. The reported negative control that adds `isAvailable: false` to the update payload fails on the selected-row assertion, demonstrating regression sensitivity. No cross-repository implementation changes were made.
+
+Attempt 3 startup evidence is independently consistent with the canonical task histories: the parent claim commit `7213f4f53400a8838779ab43c39e86610810a73c` is on the dedicated parent worktree and follows the prior review state; the implementation commit `270e5dda914d9e4ec42c55812bf1c4485f138cee` follows the prior task tip `b1c5ce3b892ed85385a82e7b7a89a66a04f28c2f` and descends from implementation `origin/main`. The parent task worktree had incorporated its then-current mainline before the claim; the later `origin/main` update postdates the Attempt 3 submission. Both canonical worktree paths and matching task branches were verified. Recursive submodule status is clean and the database submodule is at the recorded gitlink `af77c594ecbfc78c26d01c0021a090830884bbff`.
+
+#### Reviewed Files
+
+- `tests/integration/shopify-recovery-discounts.postgres.integration.test.ts` at implementation commit `270e5dda914d9e4ec42c55812bf1c4485f138cee`.
+- `app/services/recovery-policy/recovery-policy.server.ts`.
+- Background production sync source `src/services/shopify-discount-catalogue.service.ts`.
+- Attempt 3 Completion Report, claim and submission commits, and both canonical task worktrees.
+
+#### Validation Reviewed
+
+- Reran `MODA_DISPOSABLE_INTEGRATION=1 DOCKER_HOST=unix://$HOME/.colima/default/docker.sock TESTCONTAINERS_RYUK_DISABLED=true npm test -- tests/integration/shopify-recovery-discounts.postgres.integration.test.ts` from the implementation worktree: **4/4 tests passed**.
+- Reviewed Attempt 3 report for focused unit tests (18/18), typecheck, focused ESLint and `git diff --check`; these passed as reported. Build and repository-wide lint were not rerun because Attempt 3 changed only the integration test; Attempt 2 records them passing.
+- Verified the Attempt 3 implementation commit is pushed to `origin/task/ARCH-052-SHOPIFY-001`, the parent submission commit is present on the parent task branch, and the recursive database submodule matches its gitlink. No main branch was changed.
+
+#### Architecture Conformance
+
+Accepted. The implementation satisfies the Attempt 2 correction without crossing repository ownership, and remains within the task's scope and validation contract.
+
+#### Follow-up
+
+Mark `ARCH-052-SHOPIFY-001` Complete and reconcile its domain index and the ARCH-052 execution table. `ARCH-052-SYSTEM-TEST-001` remains Pending because its other implementation and publication dependencies are incomplete; do not promote it from this acceptance alone.
