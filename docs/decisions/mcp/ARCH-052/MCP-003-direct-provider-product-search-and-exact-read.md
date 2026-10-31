@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 2
+executor: codex
+claimed_at: 2026-10-31T03:26:53Z
+attempt: 3
 depends_on:
 - ARCH-052-SHARED-010
 - ARCH-052-COMMERCE-006
