@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-31T21:08:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-054-DATABASE-001

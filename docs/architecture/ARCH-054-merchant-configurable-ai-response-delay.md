@@ -168,3 +168,4 @@ None blocking task definition. Whether to add optional merchant notifications fo
 ## Change history
 
 - 2026-10-31: Initial ARCH-054 definition, split from ARCH-040/ARCH-052; integer 0–30 merchant delay, zero additional delay for human replies, persisted deadline and takeover fencing.
+- 2026-10-31: Reconciled API-002 from Blocked to Ready after DATABASE-001 Attempt 2 acceptance. Its API implementation branch pins database commit `7c377282aa5819b3008b7d7f3018f44f4161523e`, which contains the ARCH-054 fields and migration.
