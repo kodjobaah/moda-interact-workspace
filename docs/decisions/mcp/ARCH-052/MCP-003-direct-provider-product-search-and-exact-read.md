@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: codex
-claimed_at: 2026-10-31T03:26:53Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-052-SHARED-010
@@ -135,6 +135,53 @@ Once Work Items, acceptance criteria and validation are met, set task status to 
 Expected MCP owning code: `src/execution/policy/`, `src/connections/resolver.ts`, `src/runtime/ports.ts` composition, the existing Woo request/reader path for the exact bounded extension authorized above, and tests. Do not change credential decryption, grant resolution, authenticated origin resolution, pinned network transport or other MCP-005 security behavior. No hosted API product route, no extra Prisma tables, no Shared edits. Publisher runs only in COMMERCE-007.
 
 ## Completion Report
+
+### Status
+
+Attempt 3 implementation complete; submitted for Architect Review. The prior Attempt 2 review corrections are addressed, and no acceptance decision has been made by this agent.
+
+### Files Changed
+
+- `moda-interact-mcp/src/connections/shopify/provider.ts` — preserve bounded, redacted Shopify provider diagnostics at the source boundary, with an injectable Shared logger for semantic tests.
+- `moda-interact-mcp/tests/unit/connections/shopify/provider.test.ts` — cover GraphQL and HTTP source messages, codes, status/request-ID provenance, transport errors and causes, explicit redaction, and bounds.
+- `moda-interact-mcp/tests/unit/execution/policy/shopify-core.test.ts` — prove provider messages and payloads do not reach the published tool result.
+- `moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts` — remove the diagnostic-only MCP-003 change; retain the authorized product, variation, and permalink implementation from the earlier task commit. Woo diagnostics remain MCP-006-owned.
+
+### Work Completed
+
+- Shopify GraphQL HTTP 200 `errors[]` failures now log the source `message`, `extensions.code`, safe path/location/extension details, HTTP status and provider request ID. Errors remain failures; they are not converted into empty successes.
+- Shopify HTTP errors log their source error message/code/details when structured. Non-JSON bodies are read with a 4 KiB cap and redacted before logging.
+- Shopify fetch/SDK failures with no provider response log the original exception name, message and up to two causes. The internal `McpRequestError` retains the original exception as its cause; no provider error object is invented when no provider response exists.
+- Each event identifies `origin` (`provider_response`, `sdk_exception`, or `internal`) and records the Moda `reasonCode` separately. Provider message text is capped at 768 characters; provider details at 1 KiB. Redaction and truncation are flagged.
+- Explicit source-text and structured-detail redaction covers credentials/tokens, email, phone, addresses, payment-card-like numbers, and sensitive detail keys. Provider responses, request arguments, and credentials are not returned in published tool results.
+- Removed Attempt 2’s Woo diagnostic event and field collection. The approved Woo product field, bounded variation-read, and permalink checks remain, and the existing MCP-005 security paths are unchanged.
+
+### Validation Results
+
+- Focused command: `/Users/kwadwoadomafriyie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --import tsx --test tests/unit/connections/shopify/provider.test.ts tests/unit/execution/policy/shopify-core.test.ts tests/unit/connections/woocommerce/direct-product-reader.test.ts tests/unit/connections/woocommerce/provider.test.ts tests/unit/connections/resolver.test.ts tests/unit/runtime/service-ports.test.ts` — **51 passed, 0 failed**.
+- Typecheck: `/Users/kwadwoadomafriyie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json` — passed.
+- Production TypeScript compile: `/Users/kwadwoadomafriyie/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/typescript/bin/tsc -p tsconfig.build.json` — passed.
+- `git diff --check` — passed.
+
+### Deviations
+
+None. Attempt 3 implemented the Architect’s required Shopify diagnostics/tests and removed MCP-003-owned Woo diagnostic changes without editing MCP-006 or MCP-005 task records.
+
+### Unresolved Issues
+
+None known. Architect review remains pending.
+
+### Git / VCS
+
+- Task branch: `task/ARCH-052-MCP-003` in both repositories.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-MCP-003`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-MCP-003`.
+- Launcher preparation: parent started at architect review commit `8e51cc5818103e43c196c148dd593533ce8e4494`; implementation started at `04530c8233db9e4dc42a1c82959597152f09f047`. Parent and implementation `origin/main` were already incorporated; neither task branch needed a remote task fast-forward. Recursive submodule synchronization and initialization passed; database submodule was `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- Launcher claim commit: `26eb7bd001946077cdbb7446b2c93b5e09a5b867`, pushed to the parent task branch.
+- Implementation commit `d3805c2` is pushed to `origin/task/ARCH-052-MCP-003`; no main branch was merged or modified.
+- Parent submodule gitlink staged: no. Shared/default checkout switched or used for implementation: no. Another task worktree reused: no.
+
+## Attempt 2 Completion Report (Historical)
 
 ### Status
 
