@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
 executor: copilot
 claimed_at: 2026-10-31T11:11:40Z
@@ -211,7 +211,7 @@ After the Work Items, Acceptance Criteria and Validation are complete, record re
 
 ### Status
 
-Implementation complete; returned to `review` for Architect review. No Architect acceptance decision has been made.
+Attempt 2 implementation complete; returned to `review` for Architect review. No Architect acceptance decision has been made.
 
 ### Files Changed
 
@@ -227,21 +227,27 @@ Implementation complete; returned to `review` for Architect review. No Architect
 - Implemented the canonical SHA-256 basket fingerprint, exact BigInt decimal comparisons, explicit catalogue-only comparison semantics, and immutable partial report with `UNVERIFIABLE` checkout-price change and null current subtotal.
 - Implemented trusted same-shop/recovery/attempt/generation/fingerprint checks before and after reads, ordered line results, Shopify/Woo variant rules, exact identity validation, invocation deduplication, four-way bounded concurrency, 20-second deadline and abort propagation.
 - Added focused unit tests for currency precision, invalid values, basket fingerprinting, line ordering, identity isolation, provider errors, retries, concurrency, deadline and cancellation.
+- Attempt 2 replaces raw source `Error` logging with a bounded `sourceError` projection. It retains safe error name/message/status/code, redacts emails, phone numbers, full URLs and credentials, suppresses embedded response payloads, and marks redaction/truncation accurately. The original source Error remains unchanged for propagation.
+- Added regression coverage for both trusted-state-reader and exact-product-reader failures, including safe diagnostic context, absence of injected PII/secrets/payload data, and identity-preserving propagation.
 
 ### Validation Results
 
 - `npx vitest run tests/unit/services/recovery-pricing/price-comparison.test.ts tests/unit/services/recovery-pricing/checkout-price-reconciliation.service.test.ts`: 2 files passed, 17 tests passed.
 - `npx eslint src/services/recovery-pricing`: passed.
 - `npm run build`: passed; Prisma client generated and TypeScript compilation completed.
+- Attempt 2 reran the focused comparison/service suite: 2 files passed, 17 tests passed; the service test alone also passed 12/12 after adding both redaction cases.
+- Attempt 2 reran `npx eslint src/services/recovery-pricing`, `npm run build`, and `git diff --check`: all passed.
 - Existing `tests/unit/services/abandoned-checkout-lookup.service.test.ts` and `tests/unit/services/checkout-recovery/recovery-snapshot-builder.service.test.ts`: 2 files passed, 17 tests passed.
 - `git diff --check`: passed for the implementation and task changes.
-- Implementation commits: `39af26b` and `38cf8a7`, pushed to `origin/task/ARCH-052-BACKGROUND-016`.
+- Implementation commits: `39af26b`, `38cf8a7` and Attempt 2 correction `9ebcc27`, pushed to `origin/task/ARCH-052-BACKGROUND-016`.
+- Attempt 2 launcher preparation claimed the task at `2026-10-31T11:11:40Z`, synchronized both existing worktrees, passed the dependency gate, and pushed parent claim commit `8111ca0e2c108bbf8030cc28c0d9bc6b65021e64`.
 - Launcher-resolved worktrees: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-016`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-016`. Both use branch `task/ARCH-052-BACKGROUND-016`.
 
 ### Deviations
 
 - Authenticated current-shop MCP integration was not run because no live TEST credential fixture was available. Existing Background MCP exact-product unit coverage was not present; injected service fakes were used without simulating a live provider.
 - No production reader adapter or consuming-task wiring was added; BG010/BG008 own production composition and adoption of the exported canonical fingerprint helper.
+- Attempt 2 addresses the Architect's email/phone logging blocker with a local safe diagnostic projection and regression tests; Shared logging code and contracts were not changed.
 
 ### Assumptions
 
