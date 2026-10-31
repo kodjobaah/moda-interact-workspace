@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
-executor: copilot
-claimed_at: 2026-10-31T09:24:43Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-SHARED-012
@@ -311,3 +311,28 @@ Implementation commit `89e9ad3` is recorded on `task/ARCH-052-MCP-002`.
 #### Review Handoff
 
 Attempt 2 is submitted with status `review`. The empty-target regression is fixed and its focused tests pass. The Architect should decide whether the two unrelated PostgreSQL suite failures require prerequisite Database/operational follow-up before acceptance. No dependent task was started and no merge to `main` was performed.
+
+### Attempt 2 Architect Review — Accepted
+
+Accepted under `completion_mode: automatic`; set `status: complete`, cleared
+`executor` and `claimed_at`, and retained `attempt: 2`.
+
+The empty Shopify product and collection targeting cases now retain
+`kind: UNKNOWN`, add `TARGETING_INCOMPLETE`, and produce `PARTIAL` facts. The
+focused regression tests cover both cases using otherwise-complete snapshots.
+The discount-specific PostgreSQL scenario passed, as did all 211 unit tests,
+typechecks, build, changed-file lint and `git diff --check`.
+
+The Docker suite remains 12 passed, 2 failed, 1 skipped. The failures are
+recorded as outstanding repository-level validation issues: the embedding
+scenario is blocked by the pinned Database submodule's missing
+`PlatformConfiguration` migration, and the separate operational-incident test
+fails with `MCP_OPERATIONAL_INCIDENT_REPORT_FAILED`. Neither exercises the
+discount projection path changed by this task. Because the task-specific
+PostgreSQL scenario and all task-focused validation passed, these failures do
+not block MCP-002 acceptance; the full Docker suite is explicitly not marked
+green.
+
+`ARCH-052-BACKGROUND-010` and both terminal system tests remain Pending because
+their full dependency sets are not complete. No dependent task was started and
+no implementation branch was merged to `main`.
