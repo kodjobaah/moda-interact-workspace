@@ -10,5 +10,8 @@ SHARED-001 is architect-accepted Complete with published implementation and pare
 |---|---|---|---|
 | [ARCH-053-SHARED-001](SHARED-001-define-woocommerce-cart-restore-contracts.md) | Define canonical Woo restoration wire schemas | Complete | — |
 | [ARCH-053-SHARED-002](SHARED-002-publish-woocommerce-restore-contracts.md) | Publish accepted Woo restoration contracts | Ready | ARCH-053-SHARED-001 |
+| [ARCH-053-SHARED-003](SHARED-003-extend-v1-confirmed-woo-offer-group-contract.md) | Extend Woo restore v1 with confirmed checkout offer groups | Ready | ARCH-052-SHARED-011 |
 
 ARCH-052 is separately owned dynamic-discount discovery; no checkout restoration tasks are to be implemented under ARCH-052.
+
+SHARED-003 is Ready following acceptance of ARCH-052-SHARED-011. ARCH-052-SHARED-012 remains Pending until SHARED-003 is Complete.
