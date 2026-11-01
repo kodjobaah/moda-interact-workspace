@@ -1,17 +1,17 @@
 ---
 id: ARCH-054
 title: Merchant-configurable delayed AI replies with immediate human handover
-status: agreed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # ARCH-054: Merchant-configurable delayed AI replies with immediate human handover
 
 ## Status and rollout
 
-Agreed task definition, **not implemented**. This is a new initiative and does not reopen ARCH-040 or ARCH-052. The attached 2026-10-31 16:28 snapshot is the inspected baseline. The developer's worktrees, remotes and launcher are unavailable here: all tasks in this document are **defined but not materialised**. No branch, worktree, commit or push is claimed. Do not edit `docs/decisions/**/_index.md` before final user-requested reconciliation.
+Implementation is underway. This is a new initiative and does not reopen ARCH-040 or ARCH-052. The attached 2026-10-31 16:28 snapshot is the inspected baseline. Task definitions are materialised in their canonical parent worktrees. Database, shared-contract, API-002 and Shopify-001/002 work is architect-accepted; remaining implementation and terminal system-test tasks are still pending or ready according to their dependencies.
 
 The feature is pre-production; a coordinated breaking database and contract rollout is permissible. Preserve currently valid human-message commands and Meta message histories. Queue items created under the previous processor must be drained/reconciled at rollout; never treat an old queued job as entitlement to send.
 
@@ -145,10 +145,10 @@ Database migration → Shared implementation acceptance → Shared publication �
 
 ## Decisions / task graph
 
-| Task | Owner | Initial status | Depends on |
+| Task | Owner | Current status | Depends on |
 |---|---|---|---|
 | ARCH-054-DATABASE-001 | moda_database | Complete | — |
-| ARCH-054-SHARED-001 | moda_shared | Ready | — |
+| ARCH-054-SHARED-001 | moda_shared | Complete | — |
 | ARCH-054-SHARED-002 | moda_shared | Complete | SHARED-001 |
 | ARCH-054-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
 | ARCH-054-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001, API-002, SHOPIFY-002 |
@@ -156,7 +156,7 @@ Database migration → Shared implementation acceptance → Shared publication �
 | ARCH-054-API-001 | moda_api | In Progress | DATABASE-001, SHARED-002 |
 | ARCH-054-API-002 | moda_api | Complete | DATABASE-001 |
 | ARCH-054-SHOPIFY-001 | moda_app | Complete | DATABASE-001, SHARED-002 |
-| ARCH-054-SHOPIFY-002 | moda_app | Ready | DATABASE-001 |
+| ARCH-054-SHOPIFY-002 | moda_app | Complete | DATABASE-001 |
 | ARCH-054-WOOCOMMERCE-001 | moda_woocommerce | Pending | API-001 |
 | ARCH-054-SYSTEM-TEST-001 | moda_system_test | Pending | all implementation/release tasks |
 | ARCH-054-SYSTEM-TEST-002 | moda_system_test | Pending | SYSTEM-TEST-001, BACKGROUND-003 |
@@ -168,4 +168,4 @@ None blocking task definition. Whether to add optional merchant notifications fo
 ## Change history
 
 - 2026-10-31: Initial ARCH-054 definition, split from ARCH-040/ARCH-052; integer 0–30 merchant delay, zero additional delay for human replies, persisted deadline and takeover fencing.
-- 2026-10-31: Reconciled API-002 from Blocked to Ready after DATABASE-001 Attempt 2 acceptance. Its API implementation branch pins database commit `7c377282aa5819b3008b7d7f3018f44f4161523e`, which contains the ARCH-054 fields and migration.
+- 2026-11-01: Accepted ARCH-054-SHOPIFY-002 at Attempt 2 after the disposable PostgreSQL transaction suite passed all three required cases. BACKGROUND-002 remains Pending because BACKGROUND-001 is Ready, not Complete; no downstream task became newly eligible.
