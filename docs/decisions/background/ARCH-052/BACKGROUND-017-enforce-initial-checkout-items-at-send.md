@@ -223,6 +223,7 @@ Physical worktree isolation:
 - Shared workspace checkout switched/mutated for task work: no
 - Shared implementation checkout switched/mutated for task work: no
 - Another task worktree reused: no
+- The canonical workspace had unrelated local changes at final verification; none were staged or modified for this task.
 
 Start-of-attempt synchronization:
 
@@ -233,14 +234,14 @@ Start-of-attempt synchronization:
 Implementation repository:
 
 - Repository: `moda-interact-background`
-- Commits: `83723711b01827292b3f1475242d520f34ebfac8`, `b32e223` (HEAD)
+- Commits: `83723711b01827292b3f1475242d520f34ebfac8`, `b32e2234b08f4750c785ae1dbcc374589fb6fa43` (HEAD)
 - Remote branch: `origin/task/ARCH-052-BACKGROUND-017`
 - Pushed: yes
 
 Parent workspace:
 
 - Task file: `docs/decisions/background/ARCH-052/BACKGROUND-017-enforce-initial-checkout-items-at-send.md`
-- First completion-report commit: `9a0f77378` (pushed; this report records that commit)
+- First completion-report commit: `9a0f7737829b049a4963bcaea9e4ab81693af1b5` (pushed; this report records that commit)
 - Remote branch: `origin/task/ARCH-052-BACKGROUND-017`
 - Pushed: yes
 - Submodule gitlink staged: no
