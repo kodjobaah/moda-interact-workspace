@@ -11,7 +11,7 @@ updated: 2026-11-01
 
 ## Status and rollout
 
-Implementation is underway. This is a new initiative and does not reopen ARCH-040 or ARCH-052. The attached 2026-10-31 16:28 snapshot is the inspected baseline. Task definitions are materialised in their canonical parent worktrees. Database, shared-contract, API-001/002 and Shopify-001/002 work is architect-accepted. WooCommerce-001 is Ready; remaining implementation and terminal system-test tasks remain pending or ready according to their dependencies.
+Implementation is underway. This is a new initiative and does not reopen ARCH-040 or ARCH-052. The attached 2026-10-31 16:28 snapshot is the inspected baseline. Task definitions are materialised in their canonical parent worktrees. Database, shared-contract, API-001/002 and Shopify-001/002 work is architect-accepted. WooCommerce-001 is architect-accepted Complete; remaining implementation and terminal system-test tasks remain pending or ready according to their dependencies.
 
 The feature is pre-production; a coordinated breaking database and contract rollout is permissible. Preserve currently valid human-message commands and Meta message histories. Queue items created under the previous processor must be drained/reconciled at rollout; never treat an old queued job as entitlement to send.
 
@@ -153,11 +153,11 @@ Database migration → Shared implementation acceptance → Shared publication �
 | ARCH-054-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
 | ARCH-054-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001, API-002, SHOPIFY-002 |
 | ARCH-054-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
-| ARCH-054-API-001 | moda_api | In Progress | DATABASE-001, SHARED-002 |
+| ARCH-054-API-001 | moda_api | Complete | DATABASE-001, SHARED-002 |
 | ARCH-054-API-002 | moda_api | Complete | DATABASE-001 |
 | ARCH-054-SHOPIFY-001 | moda_app | Complete | DATABASE-001, SHARED-002 |
 | ARCH-054-SHOPIFY-002 | moda_app | Complete | DATABASE-001 |
-| ARCH-054-WOOCOMMERCE-001 | moda_woocommerce | Ready | API-001 |
+| ARCH-054-WOOCOMMERCE-001 | moda_woocommerce | Complete | API-001 |
 | ARCH-054-SYSTEM-TEST-001 | moda_system_test | Pending | all implementation/release tasks |
 | ARCH-054-SYSTEM-TEST-002 | moda_system_test | Pending | SYSTEM-TEST-001, BACKGROUND-003 |
 
@@ -169,3 +169,4 @@ None blocking task definition. Whether to add optional merchant notifications fo
 
 - 2026-10-31: Initial ARCH-054 definition, split from ARCH-040/ARCH-052; integer 0–30 merchant delay, zero additional delay for human replies, persisted deadline and takeover fencing.
 - 2026-11-01: Accepted ARCH-054-SHOPIFY-002 at Attempt 2 after the disposable PostgreSQL transaction suite passed all three required cases. BACKGROUND-002 remains Pending because BACKGROUND-001 is Ready, not Complete; no downstream task became newly eligible.
+- 2026-11-01: Accepted ARCH-054-WOOCOMMERCE-001 at Attempt 1 after reviewing the protected Woo REST proxy, settings UI and submitted validation. No downstream task became newly eligible.
