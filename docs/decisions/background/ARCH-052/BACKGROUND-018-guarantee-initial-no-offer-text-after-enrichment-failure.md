@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 70
-executor: copilot
-claimed_at: 2026-11-01T18:18:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-052-BACKGROUND-008
@@ -292,28 +292,93 @@ Ready for Review
 
 Architect Review remains Pending. No schema, Shared/public contract, queue, provider API, checkout URL issuance/validation or other repository was changed. The launcher prepared Attempt 1 for `copilot`, passed the dependency gate, and initialized the implementation database submodule at `7c377282aa5819b3008b7d7f3018f44f4161523e`. Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. The shared/default workspace checkout was not used for task implementation. Parent claim commit: `993aff77062e3c9def8650ca74e464b4a6189191`.
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1. The task returns to `ready`; `executor` and
+`claimed_at` are cleared. Attempt 1 and its validation evidence remain
+preserved.
 
 ### Review Notes
 
-Not reviewed.
+The design and implementation cover the intended neutral fallback, retain the
+existing send and billing identity, and provide strong unit and Woo integration
+evidence. Acceptance is blocked by the following issues:
+
+1. **[P1] Reconcile with the merged BG017 implementation.** The implementation
+   branch is three commits behind current `origin/main`. BG017 has since merged
+   changes to the same preparation, selection, prepared-send and orchestration
+   files; the current `origin/main` diff removes the fallback implementation
+   and replaces portions of those shared paths with the mandatory basket guard.
+   Rebase/merge onto the current main and preserve both the fallback and BG017
+   guard, then rerun affected validation. The current submitted tree is not the
+   integrated source that would result from acceptance.
+2. **[P1] Add the required Shopify disposable PostgreSQL dispatch proof.** The
+   task explicitly requires PostgreSQL-backed final-admission coverage for
+   both platforms. Attempt 1 has Woo PostgreSQL/Redis integration coverage and
+   Shopify unit coverage only. Add or use a disposable Shopify integration
+   path that proves fallback, the same attempt/idempotency identity, one credit
+   and provider-confirmed finalization, plus mandatory no-send behavior.
+3. **[P1] Do not classify every thrown agent error as optional.**
+   `InitialOutreachOfferSelectionService.resolve()` maps every thrown error
+   from `this.agent()` to `AI_UNAVAILABLE`, except `CommerceHostError`, which
+   maps to `MCP_UNAVAILABLE`. Unknown/programming or required-state errors can
+   therefore enter the fallback path without evidence that they are optional.
+   Classify only recognized model/MCP optional failures; propagate or return a
+   retry disposition for unrecognized errors, and add a regression test proving
+   they do not send a fallback template.
+4. **[P2] Complete the declared build validation.** `npm run build` did not
+   complete because the local `tsc` shim was missing. Direct `tsc --noEmit`
+   passed, but it does not verify the repository build script. Restore the
+   prepared local build tooling and rerun `npm run build`, or record a
+   reproducible environment cause and a supported equivalent for the complete
+   build command.
+
+The reported full unit run, lint, direct TypeScript compilation, Woo
+PostgreSQL/Redis integration and emulator tests are useful evidence. No
+architect acceptance decision is made until the source is reconciled with
+BG017, the Shopify database path is covered, and failure classification is
+safe for unknown errors.
 
 ### Reviewed Files
 
-None.
+- `src/services/recovery-template-integration/initial-no-offer-fallback.service.ts`
+- `src/services/recovery-template-integration/initial-outreach-fallback-selection.ts`
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `src/services/recovery-offers/initial-outreach-offer-selection.service.ts`
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts`
+- `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`
+- Related unit and Woo integration tests.
+- The Attempt 1 Completion Report and validation evidence.
 
 ### Validation Reviewed
 
-None.
+- Focused unit suites: 136 tests passed; full unit suite: 3,592 tests passed.
+- Lint and direct TypeScript compilation passed.
+- Woo disposable PostgreSQL/Redis integration: 18 tests passed.
+- `npm run build` failed because the repository-local `tsc` shim was missing.
+- Shopify PostgreSQL initial-dispatch validation was not run or available.
+- Implementation worktree is clean, but its task branch is three commits behind
+  current `origin/main`; BG017 changed the same shared implementation paths.
+- Parent report and implementation branches were pushed before this review.
 
 ### Architecture Conformance
 
-Pending.
+The fallback uses the existing approved template path and retains the existing
+attempt, billing and provider guards. However, the broad error conversion can
+turn an unclassified failure into an optional fallback, and the implementation
+has not yet been reconciled with the merged BG017 basket guard. The submitted
+state therefore does not yet demonstrate conformance across the final shared
+send boundary.
 
 ### Follow-up
 
-None.
+Reconcile this branch with current `origin/main` and preserve both BG017 and
+BG018 behavior. Restrict fallback to positively classified optional AI/MCP or
+enrichment failures, with unrecognized failures remaining retryable or
+propagated. Add and run the Shopify disposable PostgreSQL path required by the
+task, rerun affected unit/Woo integration suites after reconciliation, and
+complete the declared build. Keep SYSTEM-TEST-001/002 blocked on their other
+prerequisites; no downstream status changed in this review.
