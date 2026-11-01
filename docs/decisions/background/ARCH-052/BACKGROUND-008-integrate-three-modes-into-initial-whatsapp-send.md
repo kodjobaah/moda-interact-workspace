@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 65
-executor: null
-claimed_at: null
-attempt: 3
+executor: copilot
+claimed_at: 2026-11-01T12:45:25Z
+attempt: 4
 depends_on:
 - ARCH-052-SHARED-012
 - ARCH-052-ADMIN-003
