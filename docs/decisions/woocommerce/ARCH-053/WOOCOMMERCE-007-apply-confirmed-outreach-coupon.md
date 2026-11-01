@@ -82,10 +82,10 @@ Consume the published `CHECKOUT_OFFERS` v1 branch (2..3 source-verified entries)
 
 ## Work Items
 
-- [ ] Parse the single strict v1 response with required `outreachOffer` exactly as SHARED-001 defines; no alternate version request.
-- [ ] Implement isolated outreach coupon restorer; preserve verified original coupons under stacking conflict and native totals.
-- [ ] Integrate it after WOOCOMMERCE-005 without another restore pipeline, capture event, cart replacement or URL issuer.
-- [ ] Add tests for all five offer kinds, valid/invalid code, original+recommended conflict, duplicate code, failed rollback and provider/API outage.
+- [x] Parse the single strict v1 response with required `outreachOffer` exactly as SHARED-001 defines; no alternate version request.
+- [x] Implement isolated outreach coupon restorer; preserve verified original coupons under stacking conflict and native totals.
+- [x] Integrate it after WOOCOMMERCE-005 without another restore pipeline, capture event, cart replacement or URL issuer.
+- [x] Add tests for all five offer kinds, valid/invalid code, original+recommended conflict, duplicate code, failed rollback and provider/API outage.
 
 ## Interfaces / Contracts
 
@@ -162,12 +162,12 @@ The reason is **bounded native Woo evidence** only: known `EXPIRED` when reliabl
 
 ## Acceptance Criteria
 
-- [ ] Code advertised in a **confirmed checkout** message is attempted on the shopper's current restored cart, but never guaranteed.
-- [ ] Valid original coupons remain applied unless shopper expressly chooses a different combination; Woo still applies all current restrictions.
-- [ ] An invalid recommended code cannot block otherwise valid basket restoration or replace/extend an expired coupon.
-- [ ] Automatic and alternative-product offers never force a discount/coupon on the original checkout.
-- [ ] GET previews do not resolve offers, mutate a cart or create new recovery activity; confirmed restore produces exactly one final update.
-- [ ] No new persisted offer table, no new provider-send, no checkout URL token/coupon logging.
+- [x] Code advertised in a **confirmed checkout** message is attempted on the shopper's current restored cart, but never guaranteed.
+- [x] Valid original coupons remain applied unless shopper expressly chooses a different combination; Woo still applies all current restrictions.
+- [x] An invalid recommended code cannot block otherwise valid basket restoration or replace/extend an expired coupon.
+- [x] Automatic and alternative-product offers never force a discount/coupon on the original checkout.
+- [x] GET previews do not resolve offers, mutate a cart or create new recovery activity; confirmed restore produces exactly one final update.
+- [x] No new persisted offer table, no new provider-send, no checkout URL token/coupon logging.
 
 ## Validation
 
@@ -187,23 +187,35 @@ The controller/restorer should have **one** final cart state for `CheckoutCaptur
 
 ### Status
 
-Not Started — portable task definition, not claimed.
+Implementation complete for Attempt 1; review submission is waiting on required PHP and WordPress integration validation. Task remains `in_progress` because those validation items could not run in this environment.
 
 ### Files Changed
 
-None.
+`composer.json`; `includes/Api/WooRestoreOfferContracts.php`; `includes/Api/WooRestoreResolveResponseValidator.php`; `includes/Checkout/CheckoutOutreachCouponRestorer.php`; `includes/Checkout/CheckoutCartRestorer.php`; `includes/Checkout/CheckoutCouponRestorer.php`; `includes/Checkout/CheckoutCouponOutcomeHandler.php`; `includes/Checkout/CheckoutResumeController.php`; `tests/WooRestoreOfferContractsTest.php`; `tests/CheckoutOutreachCouponRestorerTest.php`; `tests/CheckoutCartRestorerTest.php`; `tests/CheckoutCouponOutcomeHandlerTest.php`; `tests/CheckoutResumeControllerTest.php`.
 
 ### Work Completed
 
-Not Started.
+Added strict offer-union validation while retaining the existing strict v1 response and cart-snapshot checks. The confirmed POST passes the validated offer to the existing cart restore operation after original coupons. Native Woo coupon application is used for code offers; automatic offers are never forced, alternatives leave coupons/products unchanged, and rejected/conflicting groups roll back to the successfully applied original set. The restored coupon state is recalculated once before the existing final capture. Typed offer results are handed to the existing private outcome handler, which logs bounded categories/counts without coupon values. Controller/provider failures leave the current cart protected by the existing rollback boundary.
+
+Paired task worktrees and synchronization evidence:
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-007`; branch `task/ARCH-053-WOOCOMMERCE-007`; attempt-start HEAD `9c5022d70c610836729e37da1653e094575c0a1a`; launcher claim commit `cab705ca196172dd7e6b1f4108a896d387dd99c6` was pushed before implementation began.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-007`; branch `task/ARCH-053-WOOCOMMERCE-007`; attempt-start HEAD `df3a1ae2e0b0d65759cdb597af5e753441aeec28`; no submodules were required. The prepared launcher synchronized both task branches before claiming Attempt 1.
 
 ### Validation Results
 
-Not run. Report exact commands, results and any environment blockers after execution.
+Validation was attempted after sourcing `scripts/bootstrap-woocommerce.sh` from the canonical workspace. It initialized Node 24.19.0 but exited 1 because Docker is installed while its daemon is unavailable.
+
+- `composer test -- --filter 'WooRestoreOfferContractsTest|CheckoutOutreachCouponRestorerTest|CheckoutCartRestorerTest|CheckoutResumeControllerTest'` — blocked: `vendor/bin/phpunit` is absent.
+- `composer install --no-interaction --prefer-dist --no-progress` — blocked: Packagist DNS resolution failed (`Could not resolve host: repo.packagist.org`); Composer also could not create `vendor/` in this implementation worktree.
+- `composer lint` — PHP lint entries for the changed files passed, then the declared script exited 1 because it references the absent pre-existing file `tests/integration/checkout-consent-saved-block-variant.php`.
+- Direct `php -l` passed for each changed/new PHP implementation and test file.
+- `git diff --check` — passed.
+- The WordPress Classic/Blocks integration runner and current-expiry/stacking/rollback/v1-HTTP integration validation could not run because the Docker daemon is unavailable. The focused PHPUnit regressions are authored but remain unexecuted.
 
 ### Deviations
 
-None.
+Two narrow support changes extend the existing original-coupon restorer with an optional deferred totals calculation and the existing coupon outcome handler with bounded offer-outcome logging. These are needed to run exactly one totals calculation after both original and outreach coupon processing and to hand the typed offer outcome to the existing private presenter. No other repository or task metadata was changed.
 
 ### Assumptions
 
@@ -211,7 +223,7 @@ Defined from the 2026-10-30 uploaded snapshot. Re-read current task and reposito
 
 ### Unresolved Issues
 
-None claimed resolved. See explicit dependency/receipt gates above.
+Required PHP test execution and WordPress integration validation remain unresolved because dependencies cannot be installed in the current worktree/network environment and Docker's daemon is unavailable. The report must not be moved to `review` until those required validations have been run and reconciled.
 
 ### Architectural Concerns
 
