@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -164,28 +164,69 @@ Report new cross-service contracts, database schema/owner changes, secret handli
 
 No schema, database ownership, cross-service contract, or deployment changes were required.
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1. The task returns to `ready`; `executor` and
+`claimed_at` are cleared. Attempt 1 and its validation evidence remain
+preserved.
 
 ### Review Notes
 
-Awaiting implementation evidence.
+The bounded diagnostics and disposable PostgreSQL validation are in scope, and
+current focused runs pass without changing production transaction behavior.
+However, the explicit Work Item to establish the cause of the historical
+retained-read `{kind:"error"}` and publication `Transaction not found` remains
+unchecked. The Acceptance Criterion requiring evidence that distinguishes an
+environment, fixture or production defect for each original failure is also
+unchecked. Current tests passing after Prisma generation, and short focused
+profiles completing within the existing 10-second transaction timeout, prove
+that the failures do not reproduce in this prepared snapshot; they do not
+explain the historical failures.
 
 ### Reviewed Files
 
-None yet.
+- `tests/agent-configuration-retained-read.test.ts`
+- `tests/backend-postgres-rehearsal.test.ts`
+- `src/commerce/integration/backend/publication-storage.ts`
+- `src/commerce/publication/lifecycle.ts`
+- `scripts/arch044-disposable-suites.mjs`
+- `scripts/arch044-test-plan.test.mjs`
+- The Completion Report and Attempt 1 validation evidence.
 
 ### Validation Reviewed
 
-None yet.
+- Retained-read test: 1/1 passed; the historical `{kind:"error"}` was not
+  reproduced.
+- Disposable model PostgreSQL suite: 8/8 passed.
+- Disposable publication rehearsal: 3/3 passed; measured transaction
+  isolation, max-wait and timeout remained `ReadCommitted`, 1000 ms and
+  10000 ms. The profiled proofs completed in 2002 ms and 685 ms, with no
+  `Transaction not found` error.
+- Related model/effective/lifecycle tests: 53 passed; harness contract tests:
+  16/16 passed.
+- `git diff --check` passed. The existing unrelated TS2345 typecheck error is
+  accurately attributed outside this task.
 
 ### Architecture Conformance
 
-Not assessed.
+No production transaction, schema, isolation or timeout behavior changed.
+The instrumentation is opt-in and relays only bounded query count/duration and
+fixed transaction settings. No SQL, credentials or fixture identifiers are
+relayed. The implementation remains within scope, but the root-cause evidence
+required for acceptance is incomplete.
 
 ### Follow-up
 
-None yet.
+Compare each original failure with its historical baseline evidence. For the
+retained-read case, identify the relevant source/test-double/generated-client
+change between the failing baseline and the prepared snapshot, or provide a
+reproducible before/after comparison. For publication expiry, run the historical
+rehearsal under the original execution profile and capture the bounded
+transaction/query timeline, or compare the archived baseline invocation and
+environment with the current disposable focused path. If the historical
+artifacts cannot reproduce, record which evidence is unavailable and request
+an explicit disposition before marking the criterion complete. Do not change
+transaction settings or suppress the failures to force a pass. No downstream
+dependency status changed.
