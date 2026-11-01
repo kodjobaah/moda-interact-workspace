@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -421,3 +421,39 @@ propagated. Add and run the Shopify disposable PostgreSQL path required by the
 task, rerun affected unit/Woo integration suites after reconciliation, and
 complete the declared build. Keep SYSTEM-TEST-001/002 blocked on their other
 prerequisites; no downstream status changed in this review.
+
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Changes Requested — Attempt 2. The task returns to `ready`; Attempt 2 and its validation evidence remain preserved.
+
+### Review Notes
+
+The Attempt 2 changes resolve the prior findings: the implementation includes the merged BG017 checkout-items guard, optionality is no longer inferred from arbitrary thrown agent errors, the Shopify PostgreSQL dispatch path is covered, and the declared build completed using the installed TypeScript compiler on `PATH`.
+
+One blocking optional-failure routing gap remains. In `AutomatedRecoveryTemplateService`, `failureTrigger()` only recognizes AI/MCP availability, model deadline, and model budget failures. The current offer revalidator also returns typed retryable outcomes such as `OFFER_DISCOVERY_INCOMPLETE`, `SOURCE_FENCE_F1_*`, `CURRENT_SOURCE_READ_DEADLINE`, and `SOURCE_FENCE_F2_CHANGED`. Those are returned through `result.kind === "FAILURE"`, but currently fall through to `unavailable(result.reasonCode)` instead of preparing the approved no-offer TEXT fallback. This can still drop an otherwise eligible initial outreach when optional discount discovery/revalidation is incomplete or temporarily unavailable, contrary to the task objective.
+
+Classify the exact revalidation outcomes that represent optional enrichment failure and route those to fallback after the fallback service's fresh mandatory-state checks. Keep identity mismatch, stale/unauthorized proposal, required database/configuration state failures, mandatory policy failures, and unknown failure codes blocked or retryable; do not broadly treat every retryable failure as optional. Add regressions for the selected source-fence/deadline/incomplete cases and for mandatory or unknown reason codes remaining non-fallback.
+
+### Reviewed Files
+
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `src/services/recovery-offers/current-outreach-offer-revalidation.service.ts`
+- `src/services/recovery-offers/initial-outreach-offer-selection.service.ts`
+- `src/services/recovery-template-integration/initial-no-offer-fallback.service.ts`
+- Attempt 2 graph, coordinator and Shopify PostgreSQL integration tests.
+- The Attempt 2 Completion Report and preserved Attempt 1 Architect Review.
+
+### Validation Reviewed
+
+Reviewed the reported 21 Shopify/Woo PostgreSQL integration tests, focused graph/coordinator/fallback suites, lint, build, and complete unit run (3,611/3,612; the sole failure is reported as the unrelated ARCH-049 preparer expectation). No tests were rerun during this review.
+
+### Architecture Conformance
+
+The integration and guard corrections conform. Acceptance remains blocked because some explicitly optional discount-source failures still take the unavailable/no-send path rather than the approved no-offer fallback.
+
+### Follow-up
+
+At Attempt 3, classify the whitelisted retryable optional revalidation outcomes and route them to the fallback with fresh mandatory-state checks. Preserve fail-closed/retry behavior for mandatory, stale-identity, and unrecognized failures. Add the focused regressions, rerun affected validation, and resubmit. Keep SYSTEM-TEST-001 and SYSTEM-TEST-002 pending; no downstream task is promoted by this review.
