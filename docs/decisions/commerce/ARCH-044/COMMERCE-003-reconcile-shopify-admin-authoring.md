@@ -9,10 +9,8 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: codex
-claimed_at: 2026-11-01T15:58:39Z
 attempt: 1
 depends_on: []
 enables: []
@@ -58,11 +56,11 @@ The unchanged baseline reports **19 failures out of 43 tests** in `tests/shopify
 
 ## Work Items
 
-- [ ] Classify each of the 19 failing named tests as stale UI expectation or real behavior defect (record mapping in Completion Report).
-- [ ] Replace shared `startShopifyAdminTest()`/related fixtures with current supported validation/review behavior.
-- [ ] Reconcile affected Admin mapping, result-schema, CAS, role and Policy Operation assertions.
-- [ ] Preserve green tests among the original 43 and add regression coverage for deliberate live-Test deferral.
-- [ ] Fix production UI only where a new test demonstrates a genuine regression.
+- [x] Classify each of the 19 failing named tests as stale UI expectation or real behavior defect (record mapping in Completion Report).
+- [x] Replace shared `startShopifyAdminTest()`/related fixtures with current supported validation/review behavior.
+- [x] Reconcile affected Admin mapping, result-schema, CAS, role and Policy Operation assertions.
+- [x] Preserve green tests among the original 43 and add regression coverage for deliberate live-Test deferral.
+- [x] Fix production UI only where a new test demonstrates a genuine regression.
 
 ## Interfaces / Contracts
 
@@ -78,18 +76,22 @@ None directly. The architecture-level integrated validation remains after all ei
 
 ## Acceptance Criteria
 
-- [ ] All 43 tests in `tests/shopify-admin-tools-ui.test.tsx` pass without an embedded `Run Test` control.
-- [ ] The 19 originally failing cases each have an explicit resolution in the Completion Report, including Policy Operation ones.
-- [ ] Deferred Test state is visibly truthful; no live network/provider execution is introduced.
-- [ ] CAS, role, no-replay/no-double-write and preservation of unsaved mappings are covered.
-- [ ] No regressions in `tests/shopify-admin-authoring-validation.test.ts` and nearby persisted-editor tests.
+- [x] All 43 tests in `tests/shopify-admin-tools-ui.test.tsx` pass without an embedded `Run Test` control.
+- [x] The 19 originally failing cases each have an explicit resolution in the Completion Report, including Policy Operation ones.
+- [x] Deferred Test state is visibly truthful; no live network/provider execution is introduced.
+- [x] CAS, role, no-replay/no-double-write and preservation of unsaved mappings are covered.
+- [x] No regressions in `tests/shopify-admin-authoring-validation.test.ts` and nearby persisted-editor tests.
 
 ## Validation
 
-- [ ] `npx vitest run tests/shopify-admin-tools-ui.test.tsx`.
-- [ ] `npx vitest run tests/shopify-admin-authoring-validation.test.ts tests/persisted-shopify-admin-tool-editor.test.tsx tests/admin-graphql-compiler.test.ts tests/policy-operation-live-test-action.test.ts`.
-- [ ] `npm run typecheck`, changed-file ESLint, `git diff --check`.
-- [ ] Record the 19 original failing test names versus corrected behavior.
+- [x] `npx vitest run tests/shopify-admin-tools-ui.test.tsx` — PASS, exit 0; 1 file, 45 tests passed (Node 24.19.0).
+- [x] `npx vitest run tests/shopify-admin-tools-ui.test.tsx tests/shopify-admin-authoring-validation.test.ts tests/persisted-shopify-admin-tool-editor.test.tsx tests/admin-graphql-compiler.test.ts tests/policy-operation-live-test-action.test.ts` — PASS, exit 0; 5 files, 74 tests passed (Node 24.19.0).
+- [ ] `npm run typecheck` — Next schema sync and route type generation completed, then the TypeScript process produced no output for several minutes. It was interrupted (exit 130). A direct `npx tsc --noEmit --pretty false --diagnostics` retry behaved the same and was interrupted (exit 130); typecheck is unverified.
+- [x] `npx eslint tests/shopify-admin-tools-ui.test.tsx` — PASS, exit 0.
+- [x] `git diff --check` — PASS, exit 0.
+- [x] Prisma setup required by Vitest: `npx prisma generate --schema database/prisma/schema.prisma` — PASS, generated Prisma Client v6.19.3.
+
+The first Vitest startup attempt could not load the ungenerated Prisma client; after generation, both required test commands passed. The test worktree was otherwise clean and the schema sync produced no tracked change.
 
 ## Stop Condition
 
@@ -125,39 +127,74 @@ The current Test panel is deliberately deferred (evidence from baseline Testing 
 
 ### Status
 
-Not Started
+Ready for architect review. The requested UI and related regression suites pass. TypeScript validation remains unverified because both attempts remained silent after route type generation and were stopped; this limitation is recorded above.
 
 ### Files Changed
 
-None yet.
+No implementation files needed changes in this attempt. The task's reconciled behavior and regression cases were already present at implementation start commit `15d505ef0f84e8cab57af43dee0d78a83d969f93`; the required suites confirm the current snapshot. This attempt changes only this task report.
 
 ### Work Completed
 
-None yet.
+Inspected the persisted Shopify Admin editor, authoring tabs/controller, validation actions, and Policy Operation authoring and publication tests. Confirmed the Admin Test surface is intentionally deferred, local authoritative validation and mapping/result-contract checks remain available, and save/review/publish and Policy Operation behavior remain covered.
+
+The current `tests/shopify-admin-tools-ui.test.tsx` contains 45 tests (the task's original count was 43); all pass. The 19 exact unchanged-baseline failures map to the current coverage as follows:
+
+1. `offers Admin GraphQL and saves the exact validated definition` → current test of the same name; it validates and derives the local candidate, asserts deferred Test, and saves the exact definition.
+2. `requires a current Shopify Test for Save and shows the exact server-rendered result without writes` → `requires a current result contract for Save and never invokes the deferred live Test`; Save remains gated by the current result contract, and the live provider action is not called.
+3. `stales a successful Shopify Test when arguments change without persisting the transient edit` → `invalidates the current result contract when the Request changes without writes or a live Test`; Request edits stale the result contract and do not write or invoke a provider.
+4. `does not call C082 when no Studio shop is selected` → `defers live Shopify Test even when no Studio shop is selected`.
+5. `disables Shopify Test when the selected shop has no offline session` → `does not expose embedded Shopify Test even with a shop lacking an offline session`.
+6. `marks a failed C082 stage FAILED and never exposes a passed rendered result` → `never invokes the removed C082 provider action or displays a provider result`.
+7. `prevents an old run from resurfacing after shop and arguments both cycle A-to-B-to-A` → `keeps deferred Shopify Test inert across shop and Request A-to-B-to-A changes`.
+8. `saves once with the current CAS token and refreshes from the canonical revision` → current test of the same name; it asserts the current edit version, single save per action, and canonical returned revision.
+9. `keeps a Shopify CAS conflict visible without refreshing or overwriting local edits` → current test of the same name; conflict remains visible and local edits remain intact.
+10. `persists editable JSON string and numeric literal mappings` → current test of the same name; both literal forms are saved.
+11. `recomputes aggregate validity when a literal mapping switches to an input mapping` → current test of the same name; mapping validity follows the selected input mapping.
+12. `keeps another invalid literal mapping invalid while fixing one literal` → current test of the same name; one correction does not mask another invalid mapping.
+13. `ignores invalid literal state for variables removed from the current document` → current test of the same name; removed variables no longer affect current mapping validity.
+14. `derives and displays a read-only result shape without saving a persisted draft` → current test of the same name; derivation displays the shape without draft writes.
+15. `does not accept an old Shopify Review validation after candidate A-to-B-to-A` → current test of the same name; stale validation cannot authorize the current candidate.
+16. `saves the compiler-produced schema while preserving the persisted response template` → current test of the same name.
+17. `keeps Admin publication disabled for ADMIN and surfaces the typed live-test gate for SUPER_ADMIN` → `enforces ADMIN publication permissions and reports the standalone MCP live-test gate to SUPER_ADMIN`.
+18. `saves, publishes through the canonical action, and reopens the exact Policy binding read-only` → current test of the same name.
+19. `preserves Policy local edits on CAS conflict and unknown mutation outcome without retrying` → current test of the same name; local edits survive, and the mutation is not retried.
+
+Policy Operation's supported local simulated Test remains distinct from the deferred embedded Shopify Admin provider test. No live Shopify provider path was introduced.
 
 ### Validation Results
 
-Not run. Record each exact command, environment, exit code, test totals and any known-baseline differences. Baseline failures may not be silently treated as task successes.
+- `npx vitest run tests/shopify-admin-tools-ui.test.tsx`: PASS, 45 tests.
+- Required combined regression command: PASS, 74 tests across five files.
+- `npx eslint tests/shopify-admin-tools-ui.test.tsx`: PASS.
+- `git diff --check`: PASS.
+- `npm run typecheck`: interrupted after Next route type generation stalled without further output; no PASS claimed. Direct TypeScript retry was also interrupted after no output.
 
 ### Worktree / Synchronisation Evidence
 
-Not yet materialised. Record launcher-resolved canonical workspace root, dedicated parent and implementation worktrees, initial branch/commit identities and recursive submodule state when execution begins.
+Launcher preparation packet:
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-044-COMMERCE-003`, branch `task/ARCH-044-COMMERCE-003`, prepared HEAD `d70081a49fdd91a85336d303fcac75502e42eea7`.
+- Parent claim commit `e6b328e1a30000df724c49d59e079cede524174d` was committed and pushed by the launcher.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-044-COMMERCE-003`, branch `task/ARCH-044-COMMERCE-003`, HEAD `15d505ef0f84e8cab57af43dee0d78a83d969f93`; clean at completion.
+- Parent and implementation origin/main were already current; no remote task branch existed at preparation. The shared canonical checkout and shared implementation source checkout were not switched or edited; no other task worktree was reused.
+- Recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed. The initialized `database` submodule was at `af77c594ecbfc78c26d01c0021a090830884bbff`.
+- Isolated implementation dependency install used `npm ci --ignore-scripts`; Prisma client generation used the initialized schema submodule.
 
 ### Deviations
 
-None yet.
+No source edits were made because the requested reconciled UI and test coverage were already present in the prepared implementation snapshot. Typecheck could not be verified; both attempts were stopped after extended silence, and are not reported as passing.
 
 ### Assumptions
 
-Task definition based on the 2026-10-18 source snapshot and supplied baseline/task logs; re-inspect current implementation when executing.
+The prepared implementation snapshot is the authoritative current source; the task's 2026-10-18 baseline is historical evidence and does not override current behavior.
 
 ### Unresolved Issues
 
-None beyond the explicitly described diagnostics to investigate.
+TypeScript validation remains unverified because the command stalled without output after Next route type generation.
 
 ### Architectural Concerns
 
-Report new cross-service contracts, database schema/owner changes, secret handling issues, or deployment requirements to `moda_architect` without expanding scope.
+None. No cross-service contracts, provider credential behavior, or live Shopify execution paths changed.
 
 ## Architect Review
 
