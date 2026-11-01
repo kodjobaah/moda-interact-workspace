@@ -159,17 +159,17 @@ The task YAML files are authoritative for status and dependency eligibility. The
 | `ARCH-053-API-001` | `moda_api` | Complete | SHARED-002 |
 | `ARCH-053-BACKGROUND-001` | `moda_background` | Complete | SHARED-002 |
 | `ARCH-053-BACKGROUND-002` | `moda_background` | Complete | BACKGROUND-001, DATABASE-001 |
-| `ARCH-053-WOOCOMMERCE-001` | `moda_woocommerce` | Ready | API-001, BACKGROUND-001 |
-| `ARCH-053-WOOCOMMERCE-004` | `moda_woocommerce` | Pending | WOOCOMMERCE-001 |
+| `ARCH-053-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | API-001, BACKGROUND-001 |
+| `ARCH-053-WOOCOMMERCE-004` | `moda_woocommerce` | Complete | WOOCOMMERCE-001 |
 | `ARCH-053-API-002` | `moda_api` | Ready | SHARED-002, DATABASE-001 |
 | `ARCH-053-BACKGROUND-003` | `moda_background` | Complete | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
 | `ARCH-053-BACKGROUND-004` | `moda_background` | Pending | ARCH-052-BACKGROUND-008 |
 | `ARCH-053-BACKGROUND-005` | `moda_background` | Complete | ARCH-016-BACKGROUND-005, BACKGROUND-003, ARCH-048-BACKGROUND-011 |
 | `ARCH-053-API-003` | `moda_api` | Pending | API-002, SHARED-002, BACKGROUND-004, ARCH-052-SHARED-012 |
 | `ARCH-053-API-004` | `moda_api` | Ready | ARCH-016-DATABASE-002, API-002 |
-| `ARCH-053-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | WOOCOMMERCE-001, API-002 |
-| `ARCH-053-WOOCOMMERCE-005` | `moda_woocommerce` | Pending | WOOCOMMERCE-002, WOOCOMMERCE-004 |
-| `ARCH-053-WOOCOMMERCE-006` | `moda_woocommerce` | Pending | WOOCOMMERCE-005 |
+| `ARCH-053-WOOCOMMERCE-002` | `moda_woocommerce` | Complete | WOOCOMMERCE-001, API-002 |
+| `ARCH-053-WOOCOMMERCE-005` | `moda_woocommerce` | Complete | WOOCOMMERCE-002, WOOCOMMERCE-004 |
+| `ARCH-053-WOOCOMMERCE-006` | `moda_woocommerce` | Ready | WOOCOMMERCE-005 |
 | `ARCH-053-WOOCOMMERCE-007` | `moda_woocommerce` | Pending | API-003, WOOCOMMERCE-005, WOOCOMMERCE-006, ARCH-052-SHARED-012 |
 | `ARCH-053-WOOCOMMERCE-008` | `moda_woocommerce` | Pending | WOOCOMMERCE-007, WOOCOMMERCE-006 |
 | `ARCH-053-WOOCOMMERCE-003` | `moda_woocommerce` | Complete | WOOCOMMERCE-001 |
