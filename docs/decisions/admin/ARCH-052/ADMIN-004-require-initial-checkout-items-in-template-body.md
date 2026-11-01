@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
 executor: copilot
 claimed_at: 2026-11-01T16:51:13Z
@@ -144,7 +144,7 @@ Compiled position is determined by the existing `bodyText()` compiler from the o
 - [x] `tests/unit/arch047-template-authoring-ast.test.ts`: matrix and negative cases.
 - [x] `tests/unit/arch047-template-translations.test.ts`: all 20 locale structural/semantic/position checks.
 - [x] `tests/unit/arch047-template-compilation.test.ts`, `tests/unit/arch047-template-meta-snapshots.test.ts` and `tests/unit/arch047-template-publication-pure.test.ts`: frozen provider BODY, identity and approval checks.
-- [ ] `tests/integration/arch047-template-authoring.postgres.test.ts` and `tests/integration/arch047-template-publication.postgres.test.ts` with disposable PostgreSQL: accepted/rejected immutable revision flows; the publication suite had one unresolved `PARTIAL` fan-out result.
+- [x] `tests/integration/arch047-template-authoring.postgres.test.ts` and `tests/integration/arch047-template-publication.postgres.test.ts` with disposable PostgreSQL: accepted/rejected immutable revision flows; Attempt 2 publication fan-out and all remaining publication cases pass.
 - [x] Repository-declared changed-file lint, typecheck/build and `git diff --check`; record exact invoked commands/results, not assumed scripts.
 
 ## Stop Condition
@@ -159,10 +159,11 @@ Use the existing `authoring/registry.ts` and `validation.ts` path; no second ren
 
 ### Status
 
-Changes Requested — Attempt 1. The authoring, translation and focused
-publication checks are reviewable, but the PostgreSQL publication suite has an
-unresolved `PARTIAL` result in its 100-shop × 20-language fan-out case. The task
-returns to `ready`; Attempt 1 is preserved and the claim is clear.
+Ready for Review — Attempt 2. The publication PostgreSQL fan-out failure was
+attributed to a transient per-shop Prisma transaction timeout, recorded at
+shop/operation level, and recovered through the bounded retry path. The full
+disposable publication suite now passes; Attempt 1 and its review remain
+preserved below.
 
 ### Files Changed
 
@@ -172,6 +173,9 @@ returns to `ready`; Attempt 1 is preserved and the claim is clear.
 - `moda-interact-admin/src/components/admin/whatsapp-templates/authoring/template-family-purpose-selector.tsx`
 - `moda-interact-admin/src/lib/admin/whatsapp-templates/translations/source-snapshot.ts`
 - Related authoring, translation, compilation and Meta snapshot unit tests/fixtures.
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/publishing/assignment.ts`
+- `moda-interact-admin/tests/integration/arch047-template-publication.postgres.test.ts`
+- Attempt 2 implementation commit: `db86942` (`fix(admin): retry transient template publication transactions`), pushed to `origin/task/ARCH-052-ADMIN-004`.
 
 ### Work Completed
 
@@ -206,7 +210,12 @@ Start-of-attempt synchronization and submodules:
 - PASS — `npm run test:arch047-admin-meta:unit`: 18 unit tests and 1 component test passed, 0 failed.
 - PASS — `npm run test:arch047-admin-publication:unit`: 22 passed, 0 failed.
 - PASS — `npm run test:arch047-admin-authoring:postgres`: 2 passed, 0 failed using the disposable PostgreSQL harness; container cleanup was completed.
-- PARTIAL — `npm run test:arch047-admin-publication:postgres`: 4 passed, 1 failed. The 100-shop × 20-language fan-out test returned `PARTIAL` instead of `COMPLETE` after approximately 488 seconds; the other four integration cases passed. Its disposable container was removed after the failure. The cause has not been root-caused and remains for architect review.
+- HISTORICAL FAIL — Attempt 1 — `npm run test:arch047-admin-publication:postgres`: 4 passed, 1 failed. The 100-shop × 20-language fan-out returned `PARTIAL`; the latest Architect Review requested target-level diagnosis and a complete rerun.
+- PASS — Attempt 2 — `npm run test:arch047-admin-publication:postgres`: 5 passed, 0 failed; full suite duration 620.8 seconds. The 100-shop × 20-language case passed and ended `COMPLETE` with 2,000 succeeded targets and 0 failed targets. During the run, live database inspection attributed all 20 locale failures for `shop_0015` to the bulk operation with `TRANSACTION_TIMEOUT`; they were whole-shop atomic failures, not locale-specific failures. Earlier diagnostic reruns attributed whole-shop `TRANSACTION_TIMEOUT` failures to `shop_0007` and `shop_0056`, and `SERIALIZATION_CONFLICT` for `shop_0002` to the distinct overlapping-publication operation. The harness's bounded retry completed the transient failures. The remaining stale-approval, forced rollback/retry, overlapping-publication and external-identity conflict cases also passed.
+- PASS — Attempt 2 — `npm run test:arch047-admin-publication:unit`: 22 passed, 0 failed.
+- PASS — Attempt 2 — `npx tsc --noEmit`.
+- PASS — Attempt 2 — `npx eslint --no-warn-ignored src/lib/admin/whatsapp-templates/publishing/assignment.ts tests/integration/arch047-template-publication.postgres.test.ts`.
+- PASS — Attempt 2 — `git diff --check` in both task worktrees.
 - PASS — `npx tsc --noEmit`.
 - PASS — `npx eslint --no-warn-ignored` on the changed source/test paths; no errors.
 - PASS — `git diff --check`.
@@ -214,7 +223,7 @@ Start-of-attempt synchronization and submodules:
 
 ### Deviations
 
-The requested publication PostgreSQL script was run, but its high-volume fan-out case did not pass; this is reported above rather than represented as successful validation.
+Attempt 1's publication fan-out did not pass and remains recorded as historical evidence. Attempt 2 identified retryable Prisma transaction failures at the whole-shop operation boundary: `P2028` transaction timeouts and a `P2034` serialization conflict. The disposable container showed no ungranted PostgreSQL locks and low resource use; the failures were not locale-semantic errors or evidence of database lock contention. The timeout occurred inside the existing serializable per-shop publication transaction (30-second transaction timeout, 10-second max wait). The evidence points to transient publication transaction duration/conflict under the bulk and overlapping-publication workloads; it does not implicate the authoring/translation changes, and it does not support a resource-starved PostgreSQL harness diagnosis. The implementation preserves distinct bounded failure codes and safely retries these transient transaction failures; the complete suite passed.
 
 ### Assumptions
 
@@ -222,7 +231,7 @@ Only immutable newly authored Meta INITIAL revisions are accepted as compliant; 
 
 ### Unresolved Issues
 
-The high-volume publication PostgreSQL fan-out test remains PARTIAL instead of COMPLETE; its cause has not been root-caused. The four other PostgreSQL publication integration cases pass; architect review should decide whether the 100-shop case needs separate investigation.
+No unresolved publication failures remain in Attempt 2. The retryable failure code remains visible by shop and operation while failed, and successful retry leaves all 2,000 targets complete. No provider submission or approval was performed. `ARCH-052-BACKGROUND-017` and `ARCH-052-SYSTEM-TEST-004` remain pending; no dependency status changed.
 
 ### Architectural Concerns
 
