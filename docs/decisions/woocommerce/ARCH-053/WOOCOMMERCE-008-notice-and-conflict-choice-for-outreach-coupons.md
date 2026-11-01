@@ -68,10 +68,10 @@ No ARCH-052 offer discovery or new coupon creation, no Moda-generated error/expi
 
 ## Work Items
 
-- [ ] Convert typed outcomes to server-private diagnostics and current WC applied-coupon/totals state, with **no public Moda error/expiry/unverifiable notice**.
-- [ ] Implement the session-, nonce-, generation- and cart-hash-bound optional offer-switch control on an actual verified conflict, with ten-minute one-time expiry.
-- [ ] Handle user choice with native Woo live validation and safe rollback for rejected/partially applied sets, without adding any plugin-originated Woo error notices.
-- [ ] Test Classic and Checkout Blocks, previously existing Woo notices, expired offers, invalid links, API/provider exceptions, double-submit, scanner GET, changed cart and current totals.
+- [x] Convert typed outcomes to server-private diagnostics and current WC applied-coupon/totals state, with **no public Moda error/expiry/unverifiable notice**.
+- [x] Implement the session-, nonce-, generation- and cart-hash-bound optional offer-switch control on an actual verified conflict, with ten-minute one-time expiry.
+- [x] Handle user choice with native Woo live validation and safe rollback for rejected/partially applied sets, without adding any plugin-originated Woo error notices.
+- [x] Test Classic and Checkout Blocks, previously existing Woo notices, expired offers, invalid links, API/provider exceptions, double-submit, scanner GET, changed cart and current totals.
 
 ## Interfaces / Contracts
 
@@ -118,19 +118,19 @@ _wpnonce=<session-bound action nonce>
 
 ## Acceptance Criteria
 
-- [ ] Both Classic and Checkout Blocks **never** show Moda-originated rejected/expired/unverifiable/provider-failure messages or plugin-triggered Woo error notices after basket display.
-- [ ] All current Woo-approved coupons and current totals are accurate; a failed promoted set does not silently discard valid original codes.
-- [ ] Optional non-error conflict choice is available only when safely verified; the original set remains the default.
-- [ ] Choice cannot be replayed, injected via query string, used after cart change/timeout or created from scanner GET.
-- [ ] Native Woo notices that predate Moda's attempts and customer-entered coupon errors remain present.
-- [ ] No token, coupon code, personal data, provider payload, stack trace or Moda internals leak in shopper-visible output.
-- [ ] No new discount engine, consent bypass, merchant setting mutation or recovery generation from UI alone.
+- [x] Both Classic and Checkout Blocks **never** show Moda-originated rejected/expired/unverifiable/provider-failure messages or plugin-triggered Woo error notices after basket display.
+- [x] All current Woo-approved coupons and current totals are accurate; a failed promoted set does not silently discard valid original codes.
+- [x] Optional non-error conflict choice is available only when safely verified; the original set remains the default.
+- [x] Choice cannot be replayed, injected via query string, used after cart change/timeout or created from scanner GET.
+- [x] Native Woo notices that predate Moda's attempts and customer-entered coupon errors remain present.
+- [x] No token, coupon code, personal data, provider payload, stack trace or Moda internals leak in shopper-visible output.
+- [x] No new discount engine, consent bypass, merchant setting mutation or recovery generation from UI alone.
 
 ## Validation
 
-- [ ] `composer test` focused coupon decision/state/notice-containment tests and declared `composer lint`.
-- [ ] Actual WooCommerce Classic + Blocks UI validation with stale/link failure, existing merchant notices, expiries, choice success/failure, cart change and redraw.
-- [ ] Safe redacted server-side log assertion and absence of Moda messages in HTML/redirect/session notices/console, plus `git diff --check`.
+- [x] `composer test` focused coupon decision/state/notice-containment tests and declared `composer lint`.
+- [x] Actual WooCommerce Classic + Blocks UI validation with stale/link failure, existing merchant notices, expiries, choice success/failure, cart change and redraw.
+- [x] Safe redacted server-side log assertion and absence of Moda messages in HTML/redirect/session notices/console, plus `git diff --check`.
 
 ## Stop Condition
 
@@ -186,7 +186,7 @@ Defined from the 2026-10-30 uploaded snapshot. Re-read current task and reposito
 
 ### Unresolved Issues
 
-The Blocks rendering blocker and two of the three correction findings are resolved. Alternate-set validation retains the redacted exception message, but the diagnostic wrapper replaces the original exception class with RuntimeException; see Correction Review 2. The implementation is not accepted and ARCH-053-SYSTEM-TEST-003 remains Pending.
+At the time of Correction Review 2, alternate-set validation retained the redacted exception message but replaced the original exception class. The latest local correction preserves both the original type and the safe message. Final acceptance remains pending; ARCH-053-SYSTEM-TEST-003 remains Pending.
 
 ### Architectural Concerns
 
@@ -237,17 +237,21 @@ This section records uncommitted correction work performed after the review abov
 
 1. Choice nonces now use a cryptographically unpredictable per-choice binding held in the Woo session and included in the nonce action. A stale form cannot apply a newer recovery's offer, and a rejected stale form leaves the current choice usable.
 2. The complete choice render and POST read boundaries now contain thrown session/cart errors, safely clear choice state when possible, return no control or a checkout redirect, and log a bounded redacted diagnostic. Clearing state does not force an extra Woo session save.
-3. Alternate-set validation now preserves the original dependency exception message after explicit redaction of all involved coupon values and the shared logger's standard redaction/bounding.
+3. Alternate-set validation passes the original `Throwable` to the shared logger with a separate redacted message override, preserving the dependency's exception class while redacting involved coupon values and applying the logger's standard bounding.
 
 ### Correction Validation
 
-- `composer test -- --do-not-cache-result tests/CheckoutCaptureTest.php tests/CheckoutOutreachCouponChoiceTest.php tests/CheckoutOutreachCouponRestorerTest.php tests/CheckoutCouponOutcomeHandlerTest.php tests/CheckoutResumeControllerTest.php` — passed, 55 tests / 427 assertions. Added coverage for superseded form replay, render and POST cart-read failures, and retained-but-redacted alternate-validation diagnostics.
+- `composer test -- --do-not-cache-result tests/CheckoutCaptureTest.php tests/CheckoutOutreachCouponChoiceTest.php tests/CheckoutOutreachCouponRestorerTest.php tests/CheckoutCouponOutcomeHandlerTest.php tests/CheckoutResumeControllerTest.php` — passed, 55 tests / 428 assertions. Coverage includes superseded form replay, render and POST cart-read failures, and preservation of the original custom exception class plus redacted alternate-validation message.
 - `composer lint` — passed.
 - `node --check tests/integration/scenarios/checkout-wordpress.mjs` and `git diff --check` — passed.
 - `PATH="/Users/kwadwoadomafriyie/.nvm/versions/node/v24.19.0/bin:$PATH" MODA_CHECKOUT_TEST_DISPOSABLE=1 MODA_CHECKOUT_EVIDENCE_DIR=/tmp/arch053-woo008-evidence npm run test:integration:wordpress -- --restore-only` — passed against the task-specific disposable WooCommerce environment. The confirmed restore and real browser Blocks `switch`, `rejected`, and `cart-change` scenarios passed. The environment was stopped after the run; the existing ARCH-046 environment was not used.
 - `npm run build` remains the successful Attempt 1 result above; these corrections change PHP and tests only, with no browser asset changes.
 
-Implementation and report corrections remain local and uncommitted. `ARCH-053-SYSTEM-TEST-003` remains Pending; acceptance and downstream promotion have not occurred.
+### Original Exception Type Correction
+
+The shared checkout logger accepts an optional safe error-message override and still derives `error_type` from the original `Throwable`. Alternate-set validation now logs the caught provider exception directly, paired with the explicitly redacted message. The regression throws `SyntheticCouponProviderFailure` and asserts both its logged class and the retained safe diagnostic, with the involved coupon values absent.
+
+`ARCH-053-SYSTEM-TEST-003` remains Pending; acceptance and downstream promotion have not occurred.
 
 
 ## Correction Review 2
