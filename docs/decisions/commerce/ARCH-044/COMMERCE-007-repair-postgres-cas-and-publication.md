@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: [ARCH-044-COMMERCE-002]
 enables: []
 created: '2026-10-18'
-updated: '2026-10-18'
+updated: '2026-11-01'
 ---
 
 # Repair durable agent-configuration CAS and publication transaction validation
