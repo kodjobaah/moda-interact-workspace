@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
 executor: copilot
 claimed_at: 2026-11-01T12:27:03Z
@@ -417,6 +417,36 @@ Report discovered cross-repository/credential/MCP-catalogue issues to `moda_arch
 
 - Implementation branch: `task/ARCH-052-BACKGROUND-008`, pushed through `d2d51f4d56417cb07be6bf9918e79ad80e4e0398`.
 - Parent task branch: `task/ARCH-052-BACKGROUND-008`; this report/status update is to be committed and pushed separately.
+
+Completion Report status: Ready for Review. No Architect acceptance decision has been made by this agent.
+
+### Attempt 3 Completion Update
+
+#### Prepared Execution and Git Evidence
+
+- Executed the matching prepared Attempt 3 packet; the launcher had already claimed the task and pushed parent claim commit `7958fa8e07db073bc01291db8b01bce18b15d61b`. No claim was repeated.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-008`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-008`.
+- Both task branches are `task/ARCH-052-BACKGROUND-008`. Prepared parent pre-claim head was `4b2361dd48b26fb36a08e87876c249dbce43c5a1`; prepared implementation head was `d2d51f4d56417cb07be6bf9918e79ad80e4e0398`.
+- Packet recorded both worktrees reused, clean before claim, task-branch fast-forward `not-needed`, and `origin/main` `already-current`. At verification, parent HEAD and `origin/task/ARCH-052-BACKGROUND-008` were both `7958fa8e07db073bc01291db8b01bce18b15d61b`; implementation HEAD and its matching origin task ref were both `d2d51f4d56417cb07be6bf9918e79ad80e4e0398`.
+- Recursive implementation submodule sync/update passed; the database submodule was at `7c377282aa5819b3008b7d7f3018f44f4161523e`. Dependency gate passed. No worktree was recreated or reset.
+
+#### Attempt 3 Changes and Validation
+
+- Added `tests/unit/services/recovery-routing.service.test.ts`: `routes shared-sender quotes from the same phone to each exact merchant recovery` verifies two quoted provider message IDs for one customer phone and shared WABA resolve to distinct conversation, recovery and shop identities.
+- Added `tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts`: `binds each shared-WABA template to its own authenticated merchant name` verifies separate shop-scoped prepared `shop.name` values and catalogue lookups under the same WABA.
+- Added `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`: `passes the exact persisted SHOPIFY checkout URL to template preparation` and the corresponding `WOOCOMMERCE` case assert that the stored URL, including its original query encoding, is forwarded unchanged for both platform contexts.
+- Full Background unit suite passed: `pnpm test:unit`, 326 files and 3,492 tests. Focused task unit selection passed: 5 files and 151 tests, covering template preparation, confirmed-message follow-up/history, shared-sender routing and both platform F3 admission paths. Background `pnpm lint` and `pnpm exec tsc --noEmit` passed. `git diff --check` passed.
+- Isolated disposable PostgreSQL/integration results: `arch048-woo-initial-outreach.integration.test.ts` 17/17; `woo-initial-send-fence-races.integration.test.ts` 5/5; `arch052-discount-source-fence.integration.test.ts` 2/2; `initial-outreach-offer-aimock.integration.test.ts` 1/1; `arch052-shopify-discount-selection.integration.test.ts` 2/2; `arch052-initial-template-emulator.integration.test.ts` 1/1; `arch047-recovery-template-preparation.integration.test.ts` 1/1. The Woo initial-outreach suite covers concurrent dispatch/replay with one confirmed send and one credit; the current-source tests exercise persisted source mutation and the F3 unit cases deny dispatch after admission validation changes.
+- Follow-up evidence includes the coordinator tests `reads a confirmed singleton checkout offer-set receipt for follow-up verification` and `denies a follow-up when initial proof is missing or unsafe`, plus the quoted text/audio recovery-routing cases. This is unit/routing evidence; no new two-merchant Meta-confirmed end-to-end receipt test was added.
+
+#### Failure Classification and Remaining Scope
+
+- The earlier broad disposable PostgreSQL run remains recorded as 50 passed / 10 failed. The retained Attempt 2 report describes the failure categories (Woo trusted-context fixture mismatch, stale Woo race-log expectation, Aimock route assertion, and disposable PostgreSQL readiness/timeouts), but does not preserve the original ten individual test names. Those historical names could not be recovered, so they are not fabricated here.
+- The relevant current task suites for Woo initial outreach, Woo final-admission races, Aimock, and source fencing were rerun separately above and pass. Disposable PostgreSQL readiness/timeouts did not recur in these isolated runs. The combined broad batch was not rerun; these results do not certify it or establish that unrelated harness failures were resolved.
+- The added tests establish separate preparation and quoted-message routing boundaries, not a full two-shop Meta send with distinct committed `ConversationMessage`/attempt receipts. Nor do the new platform URL tests execute a full provider send. The task's complete all-mode/all-platform end-to-end matrix, every listed policy/source mutation, and downstream system certification remain unverified; corresponding checklist items remain unchecked.
+- The downstream system-test runner's `Unknown scenario ARCH-052-SYSTEM-TEST-001` remains a non-blocking downstream limitation. No runner changes or system-test certification are claimed. The separate template-registration logging path remains out of scope and unchanged.
+- No schema, Shared/MCP contract, checkout URL validation/issuance, provider cart mutation, or cross-repository changes were made.
 
 Completion Report status: Ready for Review. No Architect acceptance decision has been made by this agent.
 
