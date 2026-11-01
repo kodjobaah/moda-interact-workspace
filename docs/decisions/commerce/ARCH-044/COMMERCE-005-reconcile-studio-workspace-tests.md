@@ -9,15 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-01T17:07:33Z
+attempt: 1
 depends_on: []
 enables: []
 created: '2026-10-18'
-updated: '2026-10-18'
+updated: 2026-11-01
 ---
 
 # Restore Studio Workspace authoring behavior and regression tests
