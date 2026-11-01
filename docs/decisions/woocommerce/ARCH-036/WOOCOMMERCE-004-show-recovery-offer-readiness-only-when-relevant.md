@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-11-01T15:12:56Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-036-API-004"]
 enables: []
@@ -94,14 +94,14 @@ When FIXED is selected but catalogue unavailable:
 - [x] Validate the authenticated WordPress proxy and strict API payload contracts, including long coupon codes and provider-identifiable custom coupon types.
 - [x] Update native translation sources and all 20 supported locale release assets.
 - [x] Pass focused controller/component, PHP proxy, localization, lint, build and package checks listed below.
-- [ ] Complete the human-run LocalWP FIXED + catalogue ERROR walkthrough at desktop and narrow widths; retain evidence and verify both menu stages during that run.
+- [x] Complete the human-run LocalWP FIXED + catalogue ERROR walkthrough at desktop and narrow widths; retain evidence and verify both menu stages during that run.
 
 ## Acceptance criteria
 
 - [x] When **NONE** is saved, there is no coupon Refresh button, coupon-unavailable warning, empty placeholder box, or demand for catalogue readiness. Controller/view tests pass; the installed current build was observed in saved NONE with no coupon controls and disabled save/discard.
 - [x] Changing NONE -> AI and back enables/disables Save based only on real edits even when coupon catalogue GET fails. Controller tests cover isolated catalogue failure; the AI preference-only state was also observed in LocalWP.
 - [x] FIXED with CURRENT catalogue presents provider-identified, code-usable Woo rows including unchecked rows, regardless of type/amount/expiry/usage, with persistent selection across page/search and manual Save/Cancel. Controller and view tests cover these rows and selection; LocalWP displayed five current coupons.
-- [x] FIXED with non-current catalogue shows one actionable inline readiness message and a scoped Retry control, never an unexplained global Refresh button. Automated view/controller tests cover NOT_READY and retry; manual LocalWP ERROR-state interaction remains outstanding below.
+- [x] FIXED with non-current catalogue shows one actionable inline readiness message and a scoped Retry control, never an unexplained global Refresh button. Automated view/controller tests cover NOT_READY and retry; the Attempt 2 LocalWP ERROR-state walkthrough passed and evidence is retained below.
 - [x] Automated tests cover empty catalogue, catalogue failures, permission denial, 409 conflict, 503 mapping, duplicate save prevention, selection reset/discard, unknown types, zero/expired/exhausted metadata, and long codes; see focused JS and PHP tests.
 - [x] 20-locale support and existing recovery-policy/Store Category controls pass automated checks. LocalWP showed both WordPress menu stages and the recovery form at desktop and narrow widths without observed overflow.
 
@@ -110,7 +110,7 @@ When FIXED is selected but catalogue unavailable:
 - [x] React controller/component tests cover NONE/AI/FIXED with current/unavailable catalogues, paging, selection, discard, no autosave, failed saves, retry, unusual coupon metadata and long-code rendering.
 - [x] PHP WordPress proxy tests cover authenticated calls, authorization, rejected caller identity/revision/provider fields, and distinct unavailable/error status mapping; no browser-to-hosted credentials are sent.
 - [x] `npm run i18n:verify:20`, `npm run test:js`, `npm run test:php`, `npm run lint:js`, `npm run lint:css`, `npm run lint:php`, `npm run plugin-zip`, and `git diff --check` pass. `plugin-zip` also ran the production build and strict locale gate.
-- [ ] Manual LocalWP screenshot/interaction evidence is partial: saved NONE, staged AI, and FIXED with a CURRENT catalogue (five coupons) were observed at desktop/narrow widths, and both menu stages were present. Per developer direction, do not run browser tests in this update. A human still needs to capture/record FIXED with catalogue ERROR at both widths and verify the Retry behavior before task acceptance.
+- [x] Manual LocalWP screenshot/interaction evidence is complete for FIXED + catalogue ERROR. On the disposable Colima site, the initial catalogue request returned catalogue_not_current, the page showed exactly one inline status and a scoped Retry coupons button, and Retry loaded SAVE10 and removed the Retry button. Both WooCommerce > Moda Interact and Moda Interact > Recovery settings menu stages were verified. Desktop 1440 px and narrow 390 px layouts had no horizontal overflow. Screenshots: [desktop](evidence/WOOCOMMERCE-004-localwp-fixed-error-desktop.png), [narrow](evidence/WOOCOMMERCE-004-localwp-fixed-error-narrow.png).
 
 ## Stop condition
 
@@ -120,39 +120,87 @@ After bounded validated work, submit the developer Completion Report and mark th
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-11-01T15:12:56Z. Attempt 1 review history is preserved below.
+Ready for architect review — Developer Attempt 2. The outstanding manual
+validation is complete. Developer self-review passed; architect acceptance and
+the explicit developer completion decision remain pending.
 
 ### Files Changed
 
-The implementation branch changes 36 files across `be153a9` and `15d78a8`: Woo offer controller/client/view and panel integration, focused PHP/JS tests, and the POT/PO translation sources for all 20 locales. The follow-up commit `15d78a8e229b62a1dd864399816fd7815e97133f` resolves JS lint issues. No application source was changed during this task-record update.
+- No application source changed during Attempt 2. The implementation branch
+  already contains the completed Attempt 1 source. It was fast-forwarded to
+  current origin/main at d6a7709 and pushed to
+  task/ARCH-036-WOOCOMMERCE-004.
+- Added the two LocalWP evidence screenshots in this task's evidence folder.
+- Updated this task record with the walkthrough results and review lifecycle.
 
 ### Work Completed
 
-- Saved settings and catalogue fetches are independent; coupon-list failures no longer replace saved NONE/AI preferences.
-- Coupon controls are mode-scoped; FIXED supports search, pagination, persistent multi-page selection, manual Save/Discard, readiness feedback, and a scoped Retry action.
-- Unknown coupon types and zero/expired/exhausted metadata remain informational; complete long codes are preserved and WooCommerce redemption eligibility is stated clearly.
-- The server-side proxy retains installation authentication, strict bounded payload validation, and distinct authorization/conflict/catalogue-not-current/unavailable outcomes.
-- Locale source/release files, component/controller tests, and PHP proxy tests were updated.
+- Completed the required LocalWP FIXED + catalogue ERROR walkthrough on the
+  disposable Colima environment.
+- Confirmed the FIXED draft remains selected while the catalogue is not current,
+  one inline readiness message appears, and the Retry coupons action is scoped
+  to the coupon panel.
+- Confirmed Retry makes a second catalogue request, then displays SAVE10 and
+  removes the retry control after the fixture recovers.
+- Verified WooCommerce > Moda Interact and Moda Interact > Recovery settings
+  through the rendered WordPress menu hierarchy.
+- Captured desktop and narrow screenshots. No implementation source changes or
+  dependency changes were made in this attempt.
 
 ### Validation Results
 
-Verified after implementation commit `15d78a8` with Node 24.19.0/npm 11.17.0, PHP 8.5.11, Composer 2.10.3 and Docker 29.7.2:
-
-- `npm run i18n:verify:20`: pass; 332 source messages, 19/19 translation packs and 38 generated locale assets.
-- `npm run test:js`: pass; 40 test files and 234 unit tests, plus 37 integration/i18n tests.
-- `npm run test:php`: pass; 105 tests and 643 assertions.
-- `npm run lint:js`, `npm run lint:css`, `npm run lint:php`: pass. ESLint prints a repository legacy-config warning, with no lint errors.
-- `npm run plugin-zip`: pass; production build succeeded with two webpack bundle-size advisory warnings; archive audit verified 113 entries and all 20 locale assets (SHA-256 `7e51abe97e09f3c2d5bec4b891f7915ad60e0b892a5481ec4ca7d519377eecb9`).
-- `git diff --check origin/main...HEAD`: pass; implementation worktree clean and implementation commit published to `origin/task/ARCH-036-WOOCOMMERCE-004`.
-- LocalWP observations already available: saved NONE has no coupon warning/Retry and disabled Save/Discard; AI stages preference-only copy and enables Save when dirty; FIXED CURRENT shows five coupons; desktop/narrow layout and both menu stages were observed. The LocalWP catalogue ERROR + Retry scenario remains manual and unverified.
+- Attempt 1 automated validation remains applicable because no implementation
+  source changed: 234 JavaScript unit tests and 37 integration/i18n tests,
+  105 PHP tests with 643 assertions, JS/CSS/PHP lint, strict 20-locale checks,
+  plugin ZIP, and diff checks passed on the published implementation.
+- Attempt 2 production build passed using Node 24.19.0 and the canonical
+  WooCommerce dependency installation. Strict i18n verification passed with
+  568 source messages, 19/19 packs and 38 generated assets. Webpack emitted
+  three bundle-size advisory warnings.
+- Manual LocalWP walkthrough passed. The fixture returned 503
+  catalogue_not_current for the first catalogue request; the page rendered one
+  role=status message and Retry coupons. At both 1440 px desktop and 390 px
+  narrow widths, the panel remained visible and document width matched the
+  viewport. After Retry, the fixture returned SAVE10 and the Retry control was
+  removed.
+- The WordPress navigation DOM showed Moda Interact under WooCommerce and
+  Recovery settings under Moda Interact.
+- Evidence: [desktop screenshot](evidence/WOOCOMMERCE-004-localwp-fixed-error-desktop.png)
+  and [narrow screenshot](evidence/WOOCOMMERCE-004-localwp-fixed-error-narrow.png).
+- The LocalWP fixture only implemented the installation probe and offer/catalogue
+  endpoints; unrelated panels reported unavailable from the stub. The task site
+  was stopped after validation, and the unrelated ARCH-046 site was left running.
+- The task-specific implementation source is clean; the implementation task
+  branch tracks its published remote at d6a7709.
 
 ### Deviations
 
-No implementation scope deviation. The required LocalWP ERROR-state browser scenario is deferred to manual testing at the developer's direction; it is not represented as passed.
+No scope deviation. Attempt 2 completed the manual validation left open by
+Attempt 1 without changing application source.
+
+### Assumptions
+
+Hosted API deployment and end-to-end media behavior remain outside this task and
+are covered by their existing downstream architecture gates.
 
 ### Unresolved Issues
 
-Human validation remains: with FIXED selected and the catalogue in ERROR/non-current state, verify the single inline readiness message and scoped Retry control at desktop and narrow widths, capture evidence, and confirm the two-stage navigation. Do not mark task complete until this required manual validation is recorded.
+None for this task's required implementation or validation.
+
+### Architectural Concerns
+
+None. The prior attempt's source changes remain within the task's WooCommerce
+ownership boundary.
+
+## Developer Self-Review - Passed — Attempt 2
+
+The required LocalWP FIXED + catalogue ERROR scenario now passes with Retry
+recovery at desktop and narrow widths. Both menu levels were verified and
+screenshots are retained. The implementation task branch is clean and published.
+Lifecycle is transitioned to review; executor and claimed_at are cleared and
+attempt 2 is preserved. Because completion_mode is developer, explicit
+developer completion remains pending after architect acceptance. No downstream
+tasks declare this task as a dependency, so no dependency status changed.
 
 ## Developer Claim — Attempt 1
 
@@ -195,3 +243,20 @@ preserved. Reopening did not claim a new attempt.
 Dependency frontier audit: no task definition declares ARCH-036-WOOCOMMERCE-004
 in depends_on, and this task has no enables entries. No downstream task status
 required regression.
+
+
+## Developer Claim — Attempt 2
+
+- Reopened on the developer's request after Attempt 1's required LocalWP
+  FIXED + catalogue ERROR walkthrough remained outstanding; Attempt 1 history
+  and its review decision were preserved.
+- Developer claimed Attempt 2 at 2026-11-01T15:12:56Z. Parent task branch:
+  task/ARCH-036-WOOCOMMERCE-004; durable claim commit 3c00de988.
+- Implementation worktree:
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-WOOCOMMERCE-004.
+  At claim it was on the current origin/main snapshot; the previous
+  implementation task commit 15d78a8 was already an ancestor of main.
+- No implementation source changed during Attempt 2. After validation, the
+  task branch was fast-forwarded to current origin/main d6a7709 and published.
+- Dependency ARCH-036-API-004 remains Complete. No tasks declare this task in
+  depends_on, so the downstream frontier required no status changes.
