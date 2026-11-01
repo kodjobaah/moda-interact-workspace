@@ -156,7 +156,8 @@ Ready for Review — Attempt 2. Disposable infrastructure and discovery behavior
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-044-COMMERCE-002`, branch `task/ARCH-044-COMMERCE-002`, Attempt 2 base/head before this change `dbaec9ccabbde0debfb8a4016388b82bd04d236b`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-044-COMMERCE-002`, branch `task/ARCH-044-COMMERCE-002`, prepared base `410c9d55a1c1587bc0d836117a33efee4f9898de`, claim commit above.
 - Prepared launcher confirmed the correct dedicated worktrees/branches and initialized recursive submodule at `af77c594ecbfc78c26d01c0021a090830884bbff`; no synchronization ritual was repeated.
-- Attempt 2 implementation change: `scripts/arch044-disposable-suites.mjs` only; commit `5c79af6` (`test(commerce): report discovery fixture timing`), pushed to `origin/task/ARCH-044-COMMERCE-002`. Parent report changes are limited to this task file and will be committed/pushed on the matching parent task branch.
+- Attempt 2 implementation change: `scripts/arch044-disposable-suites.mjs` only; commit `5c79af6` (`test(commerce): report discovery fixture timing`), pushed to `origin/task/ARCH-044-COMMERCE-002`.
+- Parent report commit: `1684416b1` (`docs(ARCH-044-COMMERCE-002): record attempt 2 validation`), pushed to `origin/task/ARCH-044-COMMERCE-002`.
 - No submodule gitlink, other task file, index, architecture document, or main branch was modified.
 
 ### Deviations
@@ -166,7 +167,7 @@ Ready for Review — Attempt 2. Disposable infrastructure and discovery behavior
 
 ### Assumptions
 
-The named ARCH-044 opt-in scripts remain the approved fixture entrypoints. The PostgreSQL image pull timeout is an external local infrastructure/network blocker, not evidence of an application or test assertion failure.
+The named ARCH-044 opt-in scripts remain the approved fixture entrypoints. Attempt 2 used only the local disposable resources created by those scripts; no shared or production target was involved.
 
 ### Unresolved Issues
 
