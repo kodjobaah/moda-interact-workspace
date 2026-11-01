@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -58,9 +58,9 @@ Baseline `tests/agent-configuration-retained-read.test.ts:93` expected `{kind:"o
 
 ## Work Items
 
-- [ ] Reproduce the historical retained-read `{kind:"error"}` and establish its exact cause. On the current generated Prisma Client, the focused test passes; this does not establish why the historical failure occurred.
+- [x] Compare the retained-read service contract with the historical test-double revision. The fake omitted the required `shop.findUnique` delegate and availability data; this is code-supported as sufficient to produce the observed `{kind:"error"}`. The original baseline log/SHA is unavailable, so exact linkage to that historical assertion is not independently confirmed.
 - [x] Validate model/prompt pointer and edit-version semantics in real disposable PostgreSQL: the isolated model suite passed 8/8.
-- [ ] Reproduce the historical publication transaction expiry. The bounded profile runs passed without `Transaction not found`; query counts, durations and effective transaction settings were captured.
+- [x] Compare publication storage history and profile the current disposable rehearsal. The later storage optimization removes history-proportional release/member lookups, and current bounded runs pass without `Transaction not found` under unchanged settings. The exact historical trigger is not independently confirmed because baseline timing/artifacts are unavailable.
 - [x] Make only evidence-supported changes. No production storage behavior, timeout, isolation setting or schema was changed; the task added bounded opt-in diagnostic instrumentation because the historical expiry did not reproduce.
 - [x] Verify regression coverage for idempotency, CAS races and audit rollback in the existing PostgreSQL rehearsal; its scenarios passed in repeated disposable runs.
 
@@ -78,18 +78,18 @@ None directly. The architecture-level integrated validation remains after all ei
 
 ## Acceptance Criteria
 
-- [x] `tests/agent-configuration-retained-read.test.ts` passes; separate model/prompt CAS behavior also passed the real disposable PostgreSQL model suite. The historical in-memory `{kind:"error"}` cause remains unproven.
+- [x] `tests/agent-configuration-retained-read.test.ts` passes; separate model/prompt CAS behavior also passed the real disposable PostgreSQL model suite. Architect disposition: the historical fake mismatch is a sufficient code-supported explanation; the missing baseline log/SHA prevents exact historical linkage.
 - [x] `tests/backend-postgres-rehearsal.test.ts` passed repeatedly using disposable PostgreSQL without closed/expired transaction errors.
 - [x] Publication rollback, replay, stale CAS and two-client race scenarios pass and remain atomic in the rehearsal.
 - [x] No test suppresses errors, extends transaction settings arbitrarily or writes to non-disposable resources.
-- [ ] Complete evidence distinguishes environment, fixture and production defects for each original failure.
+- [x] Architect disposition — Attempt 2: the retained-read failure is attributable to a test-double contract mismatch by source comparison. For publication, the history-proportional transaction work was removed by the existing storage optimization and the current disposable proof passes with unchanged transaction settings. The exact historical baseline linkage is unconfirmed because the original log, SHA and query profile are unavailable; this limitation is accepted for task closure.
 
 ## Validation
 
-- [ ] `npx vitest run tests/agent-configuration-retained-read.test.ts`.
-- [ ] Existing `npm run test:arch020-backend-integration:postgres` rehearsal and `tests/backend-postgres-rehearsal.test.ts` under disposable infrastructure (follow actual script requirements).
-- [ ] `npx vitest run tests/agent-configuration-model.test.ts tests/agent-configuration-effective.test.ts tests/commerce-lifecycle.test.ts`.
-- [ ] `npm run typecheck`, affected integration validation, `git diff --check`.
+- [x] `npx vitest run tests/agent-configuration-retained-read.test.ts` — passed 1/1 in Attempt 1; not rerun in Attempt 2 because no implementation files changed.
+- [x] `tests/backend-postgres-rehearsal.test.ts` ran through the ARCH-044 disposable focus. The legacy `npm run test:arch020-backend-integration:postgres` wrapper was not used because it requires caller-supplied `DATABASE_URL`; the disposable runner provisioned and cleaned up its own PostgreSQL target.
+- [x] `npx vitest run tests/agent-configuration-model.test.ts tests/agent-configuration-effective.test.ts tests/commerce-lifecycle.test.ts` — passed 53 tests in Attempt 1; not rerun in Attempt 2.
+- [x] Typecheck and affected integration validation were run in Attempt 1; `git diff --check` passed. Typecheck exited 2 only for the unchanged unrelated TS2345 in `tests/system-commerce-tool-sync.test.ts:305:72`.
 
 ## Stop Condition
 
@@ -148,7 +148,7 @@ Ready for architect review — Attempt 1. Current focused tests pass and diagnos
 
 ### Deviations
 
-- The baseline error causes could not be reproduced on the current checkout. Diagnostic instrumentation and repeated focused proof runs were added to capture bounded evidence without changing application behavior or transaction settings. Acceptance criterion 5 remains open for architect disposition.
+- The baseline error causes could not be reproduced on the current checkout. Diagnostic instrumentation and repeated focused proof runs were added to capture bounded evidence without changing application behavior or transaction settings. At Attempt 1, acceptance criterion 5 remained open; the Attempt 2 architect disposition below resolves it with the recorded historical-evidence limitation.
 
 ### Assumptions
 
@@ -168,7 +168,7 @@ No schema, database ownership, cross-service contract, or deployment changes wer
 
 #### Status
 
-Ready for architect disposition — Attempt 2. The publication-expiry criterion remains unproven, so the task is `ready`, not review-ready. The Attempt 2 claim is cleared. No implementation files changed and no implementation commit was created. Attempt 1 validation and this complete Architect Review are preserved.
+Architect disposition recorded — Attempt 2. The test-double mismatch is accepted as the code-supported explanation for the retained-read error. The publication expiry is accepted as a history-sensitive transaction-duration risk addressed by the existing storage optimization, with exact historical causation unconfirmed because baseline artifacts are unavailable. Current disposable validation passed under unchanged settings. The task is `complete`; the Attempt 2 claim is cleared. No implementation files changed and no implementation commit was created. Attempt 1 validation and both reviews are preserved.
 
 #### Evidence table
 
@@ -187,9 +187,82 @@ Ready for architect disposition — Attempt 2. The publication-expiry criterion 
 - No disposable database was provisioned during Attempt 2, so no database cleanup was required. Attempt 1 reports zero owned Docker resources after its disposable runs.
 - No implementation commit or push was made. This parent task report is the only Attempt 2 change and will be committed and pushed on the mirrored task branch.
 
-#### Disposition requested
+#### Architect disposition requested (resolved below)
 
-The retained-read fake's missing required methods/availability data is a specific, code-supported explanation, but the original baseline log and source SHA are unavailable for exact historical confirmation. The publication failure's root cause remains unknown; only a plausible history-sensitive query cost and a later optimization are evidenced. Acceptance Criterion 5 remains unchecked. Request explicit architect disposition on whether the retained-read comparison is sufficient and what historical publication evidence or bounded follow-up is required before this criterion can be completed.
+The retained-read fake's missing required methods/availability data is a specific, code-supported explanation, but the original baseline log and source SHA are unavailable for exact historical confirmation. The publication failure's exact root cause remains unproven; the history-sensitive query cost and later production optimization are evidenced, and current disposable proofs pass. The Architect Review below records the closure decision and limitation.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted — Attempt 2. With `completion_mode: automatic`, the task transitions
+to `status: complete`; executor and claim are clear. The Attempt 1 review and
+its evidence remain preserved below.
+
+### Disposition
+
+The retained-read failure is accepted as a test-double contract mismatch: the
+historical fake lacked the `shop.findUnique` delegate and availability shape
+called by the unchanged service. The original baseline SHA and log are
+unavailable, so direct reproduction against that exact artifact is not
+possible; the source comparison is sufficient to classify the failure as a
+fixture defect for this task.
+
+For publication, the exact historical expiry cannot be attributed conclusively
+without its original query timeline and invocation profile. The current source
+contains a later, directly relevant optimization removing per-release and
+per-member history-proportional lookups from the interactive transaction, with
+comments identifying transaction-deadline risk. The disposable PostgreSQL
+proof passes repeatedly under the unchanged `ReadCommitted`, 1-second
+max-wait and 10-second timeout settings, and still verifies rollback,
+replay, stale CAS and two-client races. I accept this as sufficient evidence
+that the current production path is repaired, while recording historical
+causation as unconfirmed rather than claiming the optimization is proven to be
+the sole original cause.
+
+The missing baseline log/SHA is an accepted evidence limitation because the
+report documented the search and no implementation or schema gap remains in the
+current snapshot. No additional task split or downstream change is required.
+
+### Reviewed Files
+
+- `tests/agent-configuration-retained-read.test.ts` and its prior test-double
+  history at `7dfc284^..7dfc284`.
+- `src/commerce/agent-configuration/` retained model/prompt services and
+  availability helper.
+- `src/commerce/integration/backend/publication-storage.ts`, including the
+  history-proportional query optimization at `15d505e`.
+- `src/commerce/publication/lifecycle.ts`.
+- `tests/backend-postgres-rehearsal.test.ts` and the focused diagnostic relay.
+- Attempt 1 validation and Attempt 2 evidence comparison.
+
+### Validation Reviewed
+
+- Retained-read test: 1/1 passed; real disposable model suite: 8/8 passed.
+- Related model/effective/lifecycle suites: 53 passed.
+- Disposable publication rehearsal: 3/3 passed in repeated runs. Profiled
+  proofs completed in 2002 ms and 685 ms under `ReadCommitted`,
+  `maxWaitMs=1000`, `timeoutMs=10000`; no transaction expiry occurred.
+- Harness contracts: 16/16 passed; cleanup reported zero owned Docker
+  resources.
+- Attempt 2 changed no implementation files and ran no tests; the reviewed
+  Attempt 1 evidence remains the current test evidence. The unrelated
+  TS2345 typecheck error is recorded accurately.
+- The report branch is pushed at `16a81f244`; no task implementation branch or
+  main branch changed in Attempt 2.
+
+### Architecture Conformance
+
+Conforms to ARCH-044. No production transaction setting, schema, or failure
+handling was weakened. The test-double mismatch is classified at the fixture
+boundary; the current publication implementation avoids repeated history
+queries and remains atomic under the same transaction profile. The exact
+historical publication trigger remains an explicit uncertainty, not a claim
+that the original baseline was reproduced.
+
+### Follow-up
+
+Accepted and Complete at Attempt 2. No downstream dependency status changed.
 
 ## Architect Review — Attempt 1
 

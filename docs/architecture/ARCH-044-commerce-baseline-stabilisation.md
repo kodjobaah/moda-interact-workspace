@@ -206,7 +206,7 @@ No database schema migration is planned. If one becomes necessary it requires a 
 | ARCH-044-COMMERCE-004 | moda_commerce | Ready | — | New Tool 7 failures + Woo provider component-boundary 1 |
 | ARCH-044-COMMERCE-005 | moda_commerce | Ready | — | Studio Workspace 6 failures |
 | ARCH-044-COMMERCE-006 | moda_commerce | Ready | — | Agent validation error code + MCP extraction boundary (2) |
-| ARCH-044-COMMERCE-007 | moda_commerce | Ready | ARCH-044-COMMERCE-002 (complete) | Agent model/prompt CAS + PostgreSQL publication transaction (2) |
+| ARCH-044-COMMERCE-007 | moda_commerce | Complete | ARCH-044-COMMERCE-002 (complete) | Agent model/prompt CAS + PostgreSQL publication transaction (2) |
 | ARCH-044-COMMERCE-008 | moda_commerce | Ready | — | React ref lint 2 errors |
 
 These eight tasks cover **all 38** unchanged-baseline failing assertions, the six suite-setup failures, the two lint errors, and the separately observed Code Runtime smoke/proof discrepancy. No ninth task is requested. Because the scope is a single-repository baseline correction and no new end-to-end inter-service flow is introduced, a separate system-test implementation task is not currently justified; the integrated Commerce validation is a required architectural final gate. Reassess if runtime changes cross service boundaries.
