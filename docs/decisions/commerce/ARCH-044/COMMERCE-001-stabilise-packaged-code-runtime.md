@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -104,7 +104,10 @@ Known smoke location: `scripts/code-runtime-packaged-smoke.mjs` checks v2 compil
 
 ### Status
 
-Ready for Review
+Complete — Attempt 1. Architect acceptance is recorded. The historical
+`070d8bd1` helper artifact remains unattributed because its original bytes and
+environment are unavailable; current pinned-toolchain reproducibility is
+verified and matches the unchanged-baseline artifact.
 
 ### Files Changed
 
@@ -151,7 +154,7 @@ The reported `070d8bd1` helper digest came from a separate historical task workt
 
 ### Unresolved Issues
 
-The historical `070d8bd1` helper artifact cannot be causally attributed without the original artifact, lock/install state and environment. The full Commerce suite still has unrelated failures, and standalone typecheck has the single unrelated `ProcessEnv` diagnostic identified above. Architect review should decide whether the unavailable historical artifact blocks closure or whether current pinned-toolchain reproducibility and passing Code Runtime evidence are sufficient.
+The historical `070d8bd1` helper artifact cannot be causally attributed without the original artifact, lock/install state and environment. Current pinned-toolchain output is reproducible and matches the unchanged-baseline artifact; the unavailable historical artifact is recorded as a provenance limitation, not attributed to Node or a dependency. The full Commerce suite still has unrelated failures, and standalone typecheck has the single unrelated `ProcessEnv` diagnostic identified above.
 
 ### Architectural Concerns
 
@@ -161,24 +164,55 @@ Report new cross-service contracts, database schema/owner changes, secret handli
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1. With `completion_mode: automatic`, the task transitions
+to `status: complete`; executor and claim are clear, and the attempt remains 1.
 
 ### Review Notes
 
-Awaiting implementation evidence.
+The current package and smoke path reproduce identical helper, manifest,
+WASM and worker hashes across clean runs under the pinned Node/npm and locked
+dependencies. The packaged v2 compile-only test includes a throwing top-level
+statement and returns no execution payload. Focused Code Runtime proof/helper
+tests pass repeatedly at one and four workers, and the full four-worker run
+reports no Code Runtime failures. The missing historical `070d8bd1` artifact
+prevents causal attribution of that earlier difference, but it does not
+contradict the current reproducibility evidence and is transparently documented.
 
 ### Reviewed Files
 
-None yet.
+- `scripts/code-runtime-packaged-smoke.mjs`
+- `src/commerce/code-runtime/kernel.ts`
+- `src/commerce/code-runtime/worker.mjs`
+- `src/commerce/code-runtime/helpers-v2-entry.js`
+- `tests/code-runtime-proof.test.ts`
+- `tests/code-runtime-helper-bundle.test.ts`
+- The task Completion Report and provenance/validation evidence.
 
 ### Validation Reviewed
 
-None yet.
+- Packaged smoke passed twice from a clean generated-artifact state with
+  identical recorded hashes.
+- Focused proof/helper tests passed twice at one worker and once at four
+  workers (16 tests per run); the four-worker repository run had no
+  Code Runtime failures.
+- Production build and focused lint passed. Typecheck reports one unrelated
+  `ProcessEnv` diagnostic; broad-suite failures are documented as unrelated
+  and no Code Runtime tests failed.
+- Architect verified the implementation branch is clean and synchronized at
+  `15d505e`, with the published task ref present. `git diff --check
+  origin/main...HEAD` passed.
 
 ### Architecture Conformance
 
-Not assessed.
+Conforms to the current Commerce Code Runtime contract: compile-only remains
+non-executing, v1/v2 helper exposure remains frozen, guest host capabilities
+remain denied, and worker deadlines/cancellation preserve capacity semantics.
+No production runtime or cross-service contract changes were introduced by this
+task attempt.
 
 ### Follow-up
 
-None yet.
+Accepted and Complete at Attempt 1. The documented inability to attribute the
+missing historical helper artifact is not a blocker because the current clean
+package is reproducible and matches the unchanged-baseline bytes. No downstream
+task declares this task as a dependency; no dependency status changed.
