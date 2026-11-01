@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-10-31T22:36:03Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-054-DATABASE-001
 enables:
   - ARCH-054-BACKGROUND-002
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 
@@ -240,3 +240,36 @@ withheld until the required PostgreSQL transaction evidence is available.
 Rerun and report the existing PostgreSQL integration test; no implementation
 change is currently requested. Do not promote `ARCH-054-BACKGROUND-002` until
 this task is accepted.
+
+### Attempt 2 Architect Review
+
+#### Review Status
+
+Accepted — Attempt 2
+
+#### Review Notes
+
+The implementation preserves the existing authenticated control flow and locks, checks the expected revision and locked inbound version, and updates the control mode, revision, pending-turn metadata, processing lease, and processed watermark in one transaction with the control event. The conditional update must affect one row before the event is written. A stale revision is rejected before mutation, and idempotent mode requests remain non-mutating. No production-code correction is required.
+
+The Attempt 2 PostgreSQL integration evidence covers the three outstanding cases: concurrent takeover serialization and atomic invalidation, transaction rollback when event persistence fails, and preservation of a newly opened turn after a stale request. The fixture corrections are limited to using the seeded unique feature, valid initial conversation state, and disposal-based cleanup.
+
+#### Reviewed Files
+
+- `app/services/recoveries/recovery-human-commands.server.ts`
+- `tests/unit/arch040-shopify-command.test.ts`
+- `tests/integration/shopify-recovery-control-invalidation.postgres.integration.test.ts`
+
+#### Validation Reviewed
+
+- Attempt 1 focused Shopify command/control tests: 36 passed.
+- Attempt 1 changed-file lint, typecheck, build, and diff check: passed; the report identifies existing build warnings.
+- Attempt 2 disposable PostgreSQL integration: all 3 tests passed, including the requested concurrent, rollback, and stale-turn cases.
+- Attempt 2 changed-file ESLint and `git diff --check`: passed.
+
+#### Architecture Conformance
+
+Accepted. The Shopify transition fences pending AI work by advancing the durable control revision and clearing the pending turn atomically. Human command admission remains on its existing path and does not use the configured AI delay. The implementation does not claim to recall a provider request already dispatched. Attempt 2 synchronization and physical worktree evidence are recorded in the Completion Report.
+
+#### Follow-up
+
+`ARCH-054-SHOPIFY-002` is Complete at Attempt 2. `ARCH-054-BACKGROUND-002` remains Pending because `ARCH-054-BACKGROUND-001` is still Ready and not Complete. Do not promote BACKGROUND-002 until all three declared dependencies are Complete.
