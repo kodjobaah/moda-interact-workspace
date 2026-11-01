@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -107,7 +107,7 @@ After all scoped Work Items and Acceptance Criteria are demonstrably satisfied, 
 
 ### Status
 
-Ready for Review
+Accepted and Complete — Attempt 1
 
 ### Files Changed
 
@@ -163,24 +163,62 @@ Report new cross-service contracts, database schema/owner changes, secret handli
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1. With `completion_mode: automatic`, the task transitions
+to `status: complete`; executor and claim are clear, and Attempt 1 is preserved.
 
 ### Review Notes
 
-Awaiting implementation evidence.
+The two reported baseline failures are reconciled against current canonical
+behavior. The Agent validator delegates to the bounded Nunjucks validator:
+unknown paths return `invalid_result_path`, an unresolved loop alias is
+rejected as `unsupported_template_construct`, and `invalid_collection_path`
+is reserved for a schema path that resolves to a non-array value. The tests
+retain checks for invalid and unsafe paths.
+
+The MCP extraction boundary also conforms to the current architecture. Commerce
+has no direct SDK dependency or runtime SDK import; the only SDK package is
+nested under the pinned dev-only Shopify schema tool. The schema sync path
+remains reproducible, and the boundary regression keeps the embedded server,
+route and execution path absent while preserving the private standalone client.
+No validator, test, package or lockfile change was needed because the prepared
+snapshot already satisfies these contracts.
+
+The reported typecheck failure is the unchanged, unrelated TS2345 in
+`tests/system-commerce-tool-sync.test.ts:305`; it does not undermine these
+focused contract checks.
 
 ### Reviewed Files
 
-None yet.
+- `src/commerce/tool-authoring/agent-contract-validation.ts`
+- `src/commerce/tool-authoring/nunjucks-template.ts`
+- `tests/agent-contract-validation.test.ts`
+- `tests/commerce-mcp-extraction-boundary.test.ts`
+- `tests/result-template-authoring.test.ts`
+- `tests/nunjucks-template.test.ts`
+- `package.json`, `package-lock.json`, and the Shopify schema sync script.
+- The task Completion Report and validation evidence.
 
 ### Validation Reviewed
 
-None yet.
+- Four focused suites passed: 26 tests across Agent contract validation,
+  Commerce MCP extraction boundary, result-template authoring and Nunjucks.
+- Shopify schema synchronization passed against pinned
+  `@shopify/dev-mcp@1.15.4`; dependency inspection showed the MCP SDK only as
+  its nested dev dependency.
+- Focused ESLint, Prisma generation and `git diff --check` passed.
+- Typecheck completed with the documented unrelated TS2345 diagnostic.
+- Implementation branch is published and clean at `15d505e`; the parent task
+  report was clean and synchronized before this review update.
 
 ### Architecture Conformance
 
-Not assessed.
+Conforms to ARCH-044 and ARCH-032. Validation remains bounded and typed, the
+standalone MCP service remains the only MCP runtime, and Shopify's schema
+source remains a dev-only build input. No new runtime contract or dependency
+change was introduced.
 
 ### Follow-up
 
-None yet.
+Accepted and Complete at Attempt 1. The unrelated typecheck diagnostic remains
+with its owning task. No downstream task depends on or is enabled by this task,
+so no dependency status changed.
