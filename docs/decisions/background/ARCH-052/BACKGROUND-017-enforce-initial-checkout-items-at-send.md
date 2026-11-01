@@ -240,7 +240,7 @@ Implementation repository:
 Parent workspace:
 
 - Task file: `docs/decisions/background/ARCH-052/BACKGROUND-017-enforce-initial-checkout-items-at-send.md`
-- Commit: recorded after the report commit
+- First completion-report commit: `9a0f77378` (pushed; this report records that commit)
 - Remote branch: `origin/task/ARCH-052-BACKGROUND-017`
 - Pushed: yes
 - Submodule gitlink staged: no
