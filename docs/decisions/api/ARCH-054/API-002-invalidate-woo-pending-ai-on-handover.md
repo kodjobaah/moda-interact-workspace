@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-054-DATABASE-001
 enables:
@@ -64,8 +64,8 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 
 ## Work Items
 
-- [ ] Add atomic pending invalidation to control transition transaction.
-- [ ] Test pending AI=>HUMAN, HUMAN=>AI, duplicate control request, concurrent inbound/claim, stale queued job after control toggles, existing 409, and HUMAN text dispatch independence.
+- [x] Add atomic pending invalidation to control transition transaction.
+- [x] Test pending AI=>HUMAN, HUMAN=>AI, duplicate control request, concurrent inbound/claim, stale queued job after control toggles, existing 409, and HUMAN text dispatch independence.
 
 
 ## Interfaces / Contracts
@@ -85,13 +85,13 @@ No new public control request field. Existing `controlRevision` and `expectedCon
 
 ## Acceptance Criteria
 
-- [ ] One durable control transition atomically invalidates old pending state, across workers; no stale AI reply after final admission fence.
-- [ ] Existing Woo tenant auth and human-message behaviour remain unchanged; focused integration tests pass.
+- [x] One durable control transition atomically invalidates old pending state, across workers; no stale AI reply after final admission fence.
+- [x] Existing Woo tenant auth and human-message behaviour remain unchanged; focused integration tests pass.
 
 
 ## Validation
 
-- [ ] Focused API conversation-control unit/PostgreSQL tests using declared script; changed-file lint/build/typecheck per package.json; `git diff --check`.
+- [x] Focused API conversation-control unit/PostgreSQL tests using declared script; changed-file lint/build/typecheck per package.json; `git diff --check`.
 
 
 ## Stop Condition
@@ -108,51 +108,110 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+Implementation: `src/merchant/conversations/control/service.ts` and `tests/integration/merchant/conversations/control.service.postgres.test.ts`.
+Parent task file: `docs/decisions/api/ARCH-054/API-002-invalidate-woo-pending-ai-on-handover.md`.
 
 ### Work Completed
 
-None
+- Confirmed the previous blocker is resolved: the prepared database submodule is at `7c377282aa5819b3008b7d7f3018f44f4161523e`; its Prisma model includes the three pending-AI columns and its migrations contain `20261031170000_arch054_merchant_ai_response_delay`.
+- Extended the locked Woo control read to capture the current `inboundVersion`; the successful CAS update now changes control mode/revision and, in that same transaction, clears `pendingTurnStartedAt`, all three pending-AI fields, and both processing-claim fields, while advancing `lastProcessedVersion` to that locked inbound version.
+- Same-mode requests remain read-only no-ops, stale expected revisions remain 409 conflicts, and the existing audit event, Woo authentication, suspension checks, and recovery/shop ownership locks are unchanged.
+- Extended the disposable PostgreSQL control test for AI→HUMAN and HUMAN→AI invalidation, no-op behavior, stale revision, and takeover waiting for an in-flight inbound/claim transaction before consuming its new version and clearing pending work. The old queued job is fenced because its pending metadata is cleared and its captured control revision is no longer current.
+- Existing human-send PostgreSQL coverage passed, confirming HUMAN command admission remains independent of the AI delay fields.
 
 ### Validation Results
 
-Not Run
+- `npm run test:arch040-conversation-control:postgres`: passed; fresh migrations including ARCH-054 applied and the PostgreSQL concurrency/control test passed.
+- `node --import tsx --test tests/unit/merchant/conversations/control/*.test.ts`: passed, 6/6.
+- `npm run test:arch040-human-send:postgres`: passed, 4/4; immediate HUMAN command behavior remains unchanged.
+- `npm run build`: passed.
+- `npm run typecheck`: passed.
+- `npx eslint src/merchant/conversations/control/service.ts tests/integration/merchant/conversations/control.service.postgres.test.ts --max-warnings=0`: passed.
+- `npm run lint`: repository-wide lint reports one error in untouched `src/merchant/support/routes.ts:75` (`no-empty`); no task-changed file is implicated.
+- `git diff --check`: passed.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-None
+No architectural deviation. The queued AI job cannot be recalled, but it is no longer authorized after a control transition: the transition clears the pending turn and the existing worker's original control-revision fence rejects stale work before final provider admission. A provider operation already dispatched remains non-recallable as specified by ARCH-054. Repository-wide lint remains blocked only by the unrelated existing `no-empty` diagnostic noted above.
 
 ### Worktree and Git Evidence
 
-Not materialised; implementing agent must record launcher-prepared dedicated parent/implementation worktree paths, start-of-attempt sync, branch SHAs, submodule pins and cleanup.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-API-002`
+  parent branch: `task/ARCH-054-API-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-API-002`
+  implementation branch: `task/ARCH-054-API-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization (launcher packet):
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+  parent prepared head: `08c184a1a9c8356488d90b166c58a0277c1524e9`
+  implementation prepared head: `25fb95062355b15cbadc954db1164fd94fc2cfa7`
+
+Recursive implementation submodules (launcher packet):
+  `git submodule sync --recursive`: passed
+  `git submodule update --init --recursive`: passed
+  recorded database submodule commit: `7c377282aa5819b3008b7d7f3018f44f4161523e`
+
+Publication:
+  implementation task branch commit: `954fd95`
+  parent task branch commit: completion report commit
+  both task branches pushed: yes
 
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
 
-None
+The service retains the authenticated Shop/installation/recovery-conversation
+locks and revision checks. Each successful mode transition increments the
+revision, clears pending AI and processing-claim fields, and advances
+`lastProcessedVersion` from the locked inbound version in the same transaction
+as the audit event. Same-mode requests return before mutation, while stale
+revisions remain conflicts. The human-send path is unchanged.
+
+The updated Database submodule pin supplies the fields from accepted
+DATABASE-001. No control wire contract or provider-send receipt behavior changed.
+Accepted Attempt 2 and marked this automatic-completion task Complete. The
+dependent BACKGROUND-002 remains Pending because its other prerequisites,
+including BACKGROUND-001 and SHOPIFY-002, are incomplete.
 
 ### Reviewed Files
 
-None
+- `src/merchant/conversations/control/service.ts`
+- `tests/integration/merchant/conversations/control.service.postgres.test.ts`
 
 ### Validation Reviewed
 
-None
+Reviewed the Completion Report evidence: PostgreSQL control/concurrency tests,
+six unit tests, four HUMAN-send PostgreSQL tests, build, typecheck,
+changed-file ESLint, and `git diff --check` passed. Repository-wide lint still
+reports the documented `no-empty` error in untouched
+`src/merchant/support/routes.ts:75`; it does not affect changed files. Tests
+were not rerun for this review.
 
 ### Architecture Conformance
 
-Pending
+Conforms to ARCH-054's atomic pending-turn invalidation requirement and leaves
+the existing final provider-admission revision fence, HUMAN command flow,
+consent and Meta policy boundaries intact.
 
 ### Follow-up
 
-None
+No implementation correction is required. Keep `ARCH-054-BACKGROUND-002`
+Pending until all of its declared prerequisites are Complete. No main-branch
+merge was performed.
