@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
-executor: copilot
-claimed_at: 2026-11-01T20:00:13Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-052-BACKGROUND-008
@@ -291,6 +291,45 @@ Ready for Review
 ### Architectural Concerns
 
 Architect Review remains Pending. No schema, Shared/public contract, queue, provider API, checkout URL issuance/validation or other repository was changed. The launcher prepared Attempt 1 for `copilot`, passed the dependency gate, and initialized the implementation database submodule at `7c377282aa5819b3008b7d7f3018f44f4161523e`. Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. The shared/default workspace checkout was not used for task implementation. Parent claim commit: `993aff77062e3c9def8650ca74e464b4a6189191`.
+
+### Attempt 2 Completion Report
+
+#### Status
+
+Ready for architect review. Attempt 1's review and evidence above are preserved; the four requested implementation and validation corrections are addressed below. This report does not make an architect acceptance decision.
+
+#### Files Changed in Attempt 2
+
+- `moda-interact-background/src/agents/initial-outreach-offer.graph.ts`
+- `moda-interact-background/src/services/recovery-offers/initial-outreach-offer-selection.service.ts`
+- `moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `moda-interact-background/tests/unit/agents/initial-outreach-offer.graph.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-offers/initial-outreach-offer-selection.service.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts`
+- `moda-interact-background/tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts` (new)
+
+#### Work Completed
+
+- Confirmed the implementation task branch includes BG017 via merge `e1933b7` (including `42f1f88`) and retained its mandatory checkout-items BODY binding guard. Updated the fallback unit fixture to supply the required saved-items BODY position; no competing BODY-position policy was introduced.
+- Restricted thrown-error fallback to retryable `CommerceHostError("UNAVAILABLE")` and typed `CommerceModelInvocationFailure` at `model.invoke`. In the graph, that model failure is represented by the exact typed `UNAVAILABLE / AI_UNAVAILABLE / retryable` result. Coordinator failure-result handling now uses exact typed code/reason/retryable combinations; denied, configuration, invalid-result, generic graph-operation and non-retryable failures remain unavailable and do not prepare fallback.
+- Added graph, selection and coordinator regressions for typed optional failures and unknown/mandatory failure propagation.
+- Added a disposable PostgreSQL Shopify dispatch integration. It exercises persisted consent, approved `INITIAL_NO_OFFER` template registration and checkout bindings, recovery attempt, billing reservation, final outbound permit, provider-confirmed message and finalization. Moderation is stubbed only at its assessment boundary because the disposable environment has no platform moderation credentials; the PostgreSQL send fence and provider-delivery path remain active. A required-consent denial case proves no recovery, attempt, reservation or provider call is created.
+- Implementation commit `6858b12` (`fix(background): tighten initial fallback failure routing`) was pushed to `task/ARCH-052-BACKGROUND-018`.
+
+#### Validation Results
+
+- `npx vitest run tests/unit/agents/initial-outreach-offer.graph.test.ts tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`: passed, 2 files / 46 tests.
+- `npx vitest run tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts`: passed, 1 file / 16 tests.
+- The focused offer-selection, coordinator, Shopify recovery-initiation and Woo initial-outreach unit suites passed, 4 files / 81 tests. The complete final unit run passed 3,611 of 3,612 tests across 334 files; its sole failure is the existing unrelated `tests/unit/services/recovery-template-preparation/arch049-frozen-image-binding.test.ts` expectation for `NO_APPROVED_ASSIGNMENT`, where the current preparer returns `DEFINITION_UNAVAILABLE`.
+- `node scripts/test-integration.mjs tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts tests/integration/arch048-woo-initial-outreach.integration.test.ts`: passed, 2 files / 21 tests (2 Shopify PostgreSQL and 19 Woo PostgreSQL/Redis).
+- `npm run lint`: passed.
+- The unmodified `npm run build` initially found the pnpm-store compiler but no `node_modules/.bin/tsc` shim (`sh: tsc: command not found`). The complete declared build then passed with the installed TypeScript 6.0.3 compiler temporarily exposed on PATH: `PATH="$PWD/node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/bin:$PATH" npm run build`. Prisma generation and `tsc` both completed; no package or lockfile change was required.
+- `git diff --check`: passed.
+
+#### Attempt 2 Handoff
+
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. The Attempt 2 parent claim commit `3756ac7c41effef37558584903e1a82299aa9feb` was pushed before implementation; this report follows implementation commit `6858b12`. Attempt 2 does not merge either task branch to `main`, modify another repository, or alter the Attempt 1 Architect Review.
 
 ## Architect Review — Attempt 1
 
