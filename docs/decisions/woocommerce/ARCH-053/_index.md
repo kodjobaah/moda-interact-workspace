@@ -15,6 +15,6 @@ Assigned agent: `moda_woocommerce`. Coordinator: `moda_architect`.
 | [ARCH-053-WOOCOMMERCE-005](WOOCOMMERCE-005-reapply-original-coupons-at-restore.md) | Reapply original basket coupons through native WooCommerce validation | Complete | ARCH-053-WOOCOMMERCE-002, ARCH-053-WOOCOMMERCE-004 |
 | [ARCH-053-WOOCOMMERCE-006](WOOCOMMERCE-006-surface-rejected-coupon-notices.md) | Keep original coupon rejection errors off the merchant checkout | Complete | ARCH-053-WOOCOMMERCE-005 |
 | [ARCH-053-WOOCOMMERCE-007](WOOCOMMERCE-007-apply-confirmed-outreach-coupon.md) | Apply confirmed outreach checkout coupon through native Woo validation | Complete | ARCH-053-API-003, ARCH-053-WOOCOMMERCE-005, ARCH-053-WOOCOMMERCE-006, ARCH-052-SHARED-012 |
-| [ARCH-053-WOOCOMMERCE-008](WOOCOMMERCE-008-notice-and-conflict-choice-for-outreach-coupons.md) | Handle outreach coupon outcomes privately and offer a safe stacking choice | Ready | ARCH-053-WOOCOMMERCE-007, ARCH-053-WOOCOMMERCE-006 |
+| [ARCH-053-WOOCOMMERCE-008](WOOCOMMERCE-008-notice-and-conflict-choice-for-outreach-coupons.md) | Handle outreach coupon outcomes privately and offer a safe stacking choice | Complete | ARCH-053-WOOCOMMERCE-007, ARCH-053-WOOCOMMERCE-006 |
 
 ARCH-052 is exclusively dynamic-discount discovery. ARCH-053 only restores previously applied original Woo coupons and core basket data; no dynamic incentive work is authorized.

@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 68
 executor: null
 claimed_at: null
@@ -27,7 +27,7 @@ updated: 2026-11-01
 
 ## Architecture
 
-`ARCH-053` — `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`, coordinated by `moda_architect`. Materialised. Attempt 1 received Changes Requested; Attempt 2 is submitted for Architect Review.
+`ARCH-053` — `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`, coordinated by `moda_architect`. Materialised. Attempt 1 received Changes Requested; Attempt 2 was accepted by moda_architect on 2026-11-01.
 
 ## Objective
 
@@ -144,7 +144,7 @@ Use supported Woo cart/coupon and Blocks extension surfaces, not direct Blocks R
 
 ### Status
 
-Ready for Review — Attempt 2. All three architect corrections are implemented with focused regressions. The prior live Checkout Blocks rendering blocker remains resolved. This task is submitted for architect review; it is not accepted or Complete. `ARCH-053-SYSTEM-TEST-003` remains Pending.
+Complete — Attempt 2 accepted by moda_architect on 2026-11-01. All three correction findings are resolved with focused regressions. The prior live Checkout Blocks rendering blocker remains resolved. `ARCH-053-SYSTEM-TEST-003` remains Pending because other required dependencies are incomplete.
 
 ### Files Changed
 
@@ -185,7 +185,7 @@ Defined from the 2026-10-30 uploaded snapshot. Re-read current task and reposito
 
 ### Unresolved Issues
 
-No unresolved implementation findings remain from the two correction reviews. Architect acceptance is pending. `ARCH-053-SYSTEM-TEST-003` remains Pending until this task is accepted.
+No unresolved implementation findings remain. `ARCH-053-SYSTEM-TEST-003` remains Pending because SYSTEM-TEST-001, SYSTEM-TEST-002 and ARCH-046-WOOCOMMERCE-003 are not Complete.
 
 ### Architectural Concerns
 
@@ -277,4 +277,19 @@ Preserve the source exception type in the private diagnostic and add the regress
 
 Implemented: `CheckoutOutreachCouponRestorer::canApplyChoiceSetAlone()` now sends the original caught throwable to `CheckoutDiagnosticLogger::record()` with a separate safe-message override. The logger records the original exception class while applying bounded redaction to the message. The regression throws `SyntheticCouponProviderFailure` and asserts the exact logged class, the retained safe provider diagnostic, and the absence of both coupon values.
 
-Validation after this final correction: the task-focused checkout suite passed (55 tests / 428 assertions), `composer lint` passed, and the prior isolated WordPress/WooCommerce integration passed its Classic restore and real Blocks `switch`, `rejected`, and `cart-change` scenarios. The live integration preceded this logger-only PHP change; the new type assertion and PHP lint were rerun afterward. SYSTEM-TEST-003 remains Pending until architect acceptance.
+Validation after this final correction: the task-focused checkout suite passed (55 tests / 428 assertions), `composer lint` passed, and the prior isolated WordPress/WooCommerce integration passed its Classic restore and real Blocks `switch`, `rejected`, and `cart-change` scenarios. The live integration preceded this logger-only PHP change; the new type assertion and PHP lint were rerun afterward. SYSTEM-TEST-003 remains Pending because other required dependencies are not Complete.
+
+
+## Architect Acceptance — Attempt 2
+
+### Decision
+
+Accepted — 2026-11-01. The per-choice nonce binding prevents superseded forms from acting on newer recoveries; checkout render and POST read failures are contained; and alternate-set diagnostics retain the source exception class with a bounded, redacted message. The regression verifies the exception type, useful provider message, and absence of coupon values. No remaining implementation findings.
+
+### Validation Reviewed
+
+Reviewed the Attempt 2 report and pushed implementation at `c0c24e243fe016f2de341714baf5fdc996efa144`, with parent report submission `ced33340b`. Reported validation: 55 focused PHP tests / 428 assertions, `composer lint`, JavaScript syntax and diff checks, and disposable WordPress/WooCommerce Classic/Blocks checkout integration. The live integration preceded the final logger-only change; focused tests and lint ran after it. No tests were rerun during architect review.
+
+### Downstream
+
+`ARCH-053-SYSTEM-TEST-003` remains Pending. Its other prerequisites `ARCH-053-SYSTEM-TEST-001`, `ARCH-053-SYSTEM-TEST-002` and `ARCH-046-WOOCOMMERCE-003` are not Complete, so this acceptance does not make the downstream task Ready.
