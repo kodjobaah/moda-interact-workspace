@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-11-01T14:21:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-012
@@ -242,24 +242,32 @@ Escalate contract or ownership gaps instead of inventing a new transport or pers
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Not reviewed.
+The receipt parser's positive-kind allowlist excludes `ALTERNATIVE_PRODUCT_PROMOTION`, which is the actual confirmed-message receipt written by ARCH-053-BACKGROUND-004 for alternative-product offers. Those valid receipts are therefore returned as `NONE/UNVERIFIABLE` rather than `ALTERNATIVE_PRODUCT`. The current parser tests miss this writer shape. They also assert that a `CHECKOUT_DISCOUNT` receipt tagged `ALTERNATIVE_PRODUCT` with an invalid offer set is a valid alternative-product receipt; that contradictory receipt must be `UNVERIFIABLE`.
 
 ### Reviewed Files
 
-None.
+- `src/woocommerce/recovery-restore/offer-receipt.ts`
+- `src/woocommerce/recovery-restore/offer-resolver.ts`
+- `src/woocommerce/recovery-restore/service.ts`
+- `src/woocommerce/recovery-restore/routes.ts`
+- `src/composition/woocommerce.ts`
+- `tests/unit/woocommerce/recovery-restore/offer-receipt.test.ts`
+- `tests/unit/woocommerce/recovery-restore/offer-resolver.test.ts`
+- `tests/unit/woocommerce/recovery-restore/service.test.ts`
+- `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`
 
 ### Validation Reviewed
 
-None.
+Reviewed the reported 19 focused tests, PostgreSQL-backed relation test, typecheck, build, focused lint, and diff check. The full test run had 9 unrelated failures among 655 tests; repository-wide lint has the recorded unrelated `no-empty` finding. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+Changes requested for parsing the confirmed alternative-product receipt variant. The authenticated v1 resolver, generation recheck, checkout group handling, and fail-closed behavior otherwise conform based on the inspected code and submitted validation report.
 
 ### Follow-up
 
-None.
+Keep this task at Attempt 1 and return it to Ready. Parse the exact `ALTERNATIVE_PRODUCT_PROMOTION` shape written by BACKGROUND-004, validate its method-specific fields and explicit target, and project it to `ALTERNATIVE_PRODUCT` without returning a coupon code. Reject a `CHECKOUT_DISCOUNT` receipt tagged as alternative-product and reject malformed or ambiguous alternative receipts as `NONE/UNVERIFIABLE`. Add code and automatic alternative-product tests using the production receipt shape. `ARCH-053-WOOCOMMERCE-007` remains Pending until API-003 is accepted Complete.
