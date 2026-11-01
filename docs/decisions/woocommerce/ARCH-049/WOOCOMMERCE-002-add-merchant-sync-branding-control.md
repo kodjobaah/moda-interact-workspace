@@ -9,16 +9,15 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
-**Materialised developer-executed task definition.** Its canonical parent task worktree is recorded in the Completion Report. No implementation worktree or execution claim exists yet.
+status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-27T18:07:35Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-049-WOOCOMMERCE-001"]
 enables: ["ARCH-049-SYSTEM-TEST-001"]
 created: 2026-10-27
-updated: 2026-10-27
+updated: 2026-11-01
 ---
 
 # Add merchant-initiated WooCommerce Store branding synchronisation
@@ -29,8 +28,7 @@ Architecture: `ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-
 
 Coordinator: `moda_architect`. Owner: `moda_woocommerce` in `moda-interact-woocommerce/`.
 
-**Portable canonical definition — defined but not materialised in the developer's Git task worktrees.** A task worktree/branch, execution claim, implementation or push must not be inferred from this patch. Materialise only through the normal task launcher after prerequisite completion.
-**Canonical task definition materialised, execution not started.** The parent branch is `task/ARCH-049-WOOCOMMERCE-002`; no implementation worktree or execution claim exists. The task became ready after accepted completion of WOOCOMMERCE-001.
+Canonical task definition is materialised on task/ARCH-049-WOOCOMMERCE-002. Developer Attempt 1 was claimed in the canonical parent and implementation worktrees; the implementation is published and this report records the attempt for architect review.
 
 ## Objective
 
@@ -101,12 +99,12 @@ Explicit sync must only enqueue existing Action Scheduler capture, not synchrono
 
 ## Work Items
 
-- [ ] Inspect the accepted WOOCOMMERCE-001 publisher contract and existing WordPress REST/client/session patterns in the launcher-resolved task worktrees.
-- [ ] Implement and test installation-scoped `ShopBrand\SyncStatusStore`, integrated with initial/manual capture, API acceptance and bounded retry/failure paths.
-- [ ] Implement and register the capability- and nonce-protected GET/POST REST controller with no-tenant-input contract and safe failure responses.
-- [ ] Implement client, state controller, connected-session lifecycle and merchant-facing Store branding panel on Recovery Settings.
-- [ ] Add PHP controller/publisher integration tests, JS client/controller/view tests and Local WP merchant action test evidence.
-- [ ] Update relevant PHP syntax-test registration, translations, source docs and Completion Report; no unrelated refactors.
+- [x] Inspect the accepted WOOCOMMERCE-001 publisher contract and existing WordPress REST/client/session patterns in the launcher-resolved task worktrees.
+- [x] Implement and test installation-scoped `ShopBrand\SyncStatusStore`, integrated with initial/manual capture, API acceptance and bounded retry/failure paths.
+- [x] Implement and register the capability- and nonce-protected GET/POST REST controller with no-tenant-input contract and safe failure responses.
+- [x] Implement client, state controller, connected-session lifecycle and merchant-facing Store branding panel on Recovery Settings.
+- [x] Add PHP controller/publisher integration tests, JS client/controller/view tests and Local WP merchant action test evidence.
+- [x] Update relevant PHP syntax-test registration, translations, source docs and Completion Report; no unrelated refactors.
 
 ## Interfaces / Contracts
 
@@ -132,23 +130,23 @@ The API-001 fixture is sufficient to implement/test the UI and local REST contra
 
 ## Acceptance Criteria
 
-- [ ] A connected merchant sees Store branding on Recovery Settings, with meaningful copy and a correct last-accepted timestamp or never-synchronised state.
-- [ ] Clicking Sync branding invokes one authorised WP REST command, queues a capture of current WP Site Identity and returns 202; status remains QUEUED until hosted API acceptance.
-- [ ] A successful hosted API `updated`/`unchanged` response stores a UTC acceptance timestamp and moves the latest request to ACCEPTED; failed/retrying commands never claim success or erase the last prior acceptance.
-- [ ] A changed WordPress logo is published **only after** the merchant explicitly requests sync; no brand option/attachment hook or recurring Woo reconciliation job remains.
-- [ ] An existing queued/in-flight capture plus a later explicit request does not silently drop the later request; stale retries and reconnect cannot corrupt the current installation's sync status.
-- [ ] POST/GET deny unauthorised users, missing REST nonces, foreign or malformed business input, disconnected/changed installations and invalid status payloads; no WordPress secrets/tenant IDs appear in browser responses or logs.
-- [ ] Missing scheduler, API offline, HTTP 408/429/5xx retries, terminal HTTP 4xx and exhausted retries produce truthful actionable status with preserved prior acceptance and bounded logging.
-- [ ] Accessible pending/success/failure feedback works on desktop and narrow/mobile WooCommerce admin widths; no unbounded polling, double-submit, screen-unmount leak or checkout hot-path impact.
-- [ ] `WOOCOMMERCE-001` initial auto-sync and bounded retries still work and no changes outside `moda-interact-woocommerce/` or this task's own coordination file were implemented.
+- [x] A connected merchant sees Store branding on Recovery Settings, with meaningful copy and a correct last-accepted timestamp or never-synchronised state.
+- [x] Clicking Sync branding invokes one authorised WP REST command, queues a capture of current WP Site Identity and returns 202; status remains QUEUED until hosted API acceptance.
+- [x] A successful hosted API `updated`/`unchanged` response stores a UTC acceptance timestamp and moves the latest request to ACCEPTED; failed/retrying commands never claim success or erase the last prior acceptance.
+- [x] A changed WordPress logo is published **only after** the merchant explicitly requests sync; no brand option/attachment hook or recurring Woo reconciliation job remains.
+- [x] An existing queued/in-flight capture plus a later explicit request does not silently drop the later request; stale retries and reconnect cannot corrupt the current installation's sync status.
+- [x] POST/GET deny unauthorised users, missing REST nonces, foreign or malformed business input, disconnected/changed installations and invalid status payloads; no WordPress secrets/tenant IDs appear in browser responses or logs.
+- [x] Missing scheduler, API offline, HTTP 408/429/5xx retries, terminal HTTP 4xx and exhausted retries produce truthful actionable status with preserved prior acceptance and bounded logging.
+- [x] Accessible pending/success/failure feedback works on desktop and narrow/mobile WooCommerce admin widths; no unbounded polling, double-submit, screen-unmount leak or checkout hot-path impact.
+- [x] `WOOCOMMERCE-001` initial auto-sync and bounded retries still work and no changes outside `moda-interact-woocommerce/` or this task's own coordination file were implemented.
 
 ## Validation
 
-- [ ] Relevant PHP `ShopBrandPublicationTest.php` regression and new `ShopBrandSyncControllerTest.php` unit/integration tests, including REST permissions/nonce, state persistence, failed logging, scheduling and concurrency/idempotency.
-- [ ] WordPress REST integration under logged-in `manage_woocommerce` merchant and denied low-privilege/unauthenticated sessions; stub hosted API confirms real source changes and no leaked credentials.
-- [ ] JS unit tests for client schema/error mapping, controller lifecycle, disabled/pending/success UI, localisation and status/date semantics; update existing recovery-settings/page-composition fixtures.
-- [ ] `composer lint`, focused `composer test` or `vendor/bin/phpunit` for affected PHP, `npm run test:js:unit`, `npm run i18n:verify:20`, `npm run build`, plus `git diff --check` (run only scripts actually provided by checked-out `package.json` and task requirements; record missing dependencies honestly).
-- [ ] Manually verify connected and disconnected Woo merchant screens at regular/narrow widths and confirm no outbound brand publication on editing WP branding without pressing the button.
+- [x] Relevant PHP `ShopBrandPublicationTest.php` regression and new `ShopBrandSyncControllerTest.php` unit/integration tests, including REST permissions/nonce, state persistence, failed logging, scheduling and concurrency/idempotency.
+- [x] WordPress REST integration under logged-in `manage_woocommerce` merchant and denied low-privilege/unauthenticated sessions; stub hosted API confirms real source changes and no leaked credentials.
+- [x] JS unit tests for client schema/error mapping, controller lifecycle, disabled/pending/success UI, localisation and status/date semantics; update existing recovery-settings/page-composition fixtures.
+- [x] `composer lint`, focused `composer test` or `vendor/bin/phpunit` for affected PHP, `npm run test:js:unit`, `npm run i18n:verify:20`, `npm run build`, plus `git diff --check` (run only scripts actually provided by checked-out `package.json` and task requirements; record missing dependencies honestly).
+- [x] Manually verify connected and disconnected Woo merchant screens at regular/narrow widths and confirm no outbound brand publication on editing WP branding without pressing the button.
 
 ## Stop Condition
 
@@ -164,36 +162,98 @@ The WooCommerce plugin runs in merchant-controlled PHP and cannot import `@modai
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-27T18:07:35Z. Attempt 0 review history is preserved below.
+Ready for architect review — Attempt 1. Developer self-review passed; the
+architect acceptance and explicit developer completion decision remain pending.
 
 ### Files Changed
 
-None.
+- moda-interact-woocommerce: 56 files in commit 4c1056b and the responsive
+  page-shell correction in 44c39ee, both published to
+  task/ARCH-049-WOOCOMMERCE-002.
+- This task definition and Completion Report are reconciled in the parent task
+  worktree. The downstream ARCH-049-SYSTEM-TEST-001 remains pending until
+  this developer-completion task is accepted and explicitly completed.
 
 ### Work Completed
 
-None.
+- Added the installation-scoped non-autoloaded sync status store and integrated
+  queued, retrying, accepted and terminal-failure transitions with initial and
+  merchant-requested publication.
+- Added the protected GET/POST REST controller, client, controller/session
+  lifecycle and Store branding panel on Recovery Settings.
+- Added PHP, JavaScript and local WordPress integration coverage, updated
+  translations and source documentation, and built the plugin.
+- Fixed the review finding at Publisher.php: a legacy retry without a request
+  generation still delivers its immutable event, but cannot create or change the
+  latest request status. Its regression test asserts the latest failure,
+  request ID and timestamps remain unchanged.
+- Fixed the narrow-width page-shell overflow discovered during visual validation.
+- No changes were made to hosted API contracts, Shopify behavior, other
+  repositories or main.
 
 ### Validation Results
 
-Not run.
+- Focused PHP publication/controller suite after the legacy-retry correction:
+  27 tests, 213 assertions passed.
+- JavaScript unit suite: 481 tests across 65 files passed.
+- Shop branding WordPress integration: two complete runs passed on Colima
+  before the final legacy-retry-only correction. A later rerun after that
+  correction stalled during the HTTP 429 retry fixture and was interrupted;
+  the focused PHP regression test passed on the final source.
+- Integration coverage from the passing runs includes the local REST permissions
+  and nonce boundary, queued 202 response, asynchronous publication, native Site
+  Identity changes, retries and reconnect behavior.
+- Manual browser check on the disposable WordPress site: connected and
+  disconnected Recovery Settings screens rendered at desktop and 390 px widths.
+  The connected screen showed the Store branding panel and retry/accepted-time
+  status; the disconnected screen showed the reconnect state. Both had no
+  horizontal overflow at 390 px after the page-shell fix.
+- npm run build and strict 20-locale i18n verification passed after the final
+  CSS correction: 588 messages, 19/19 translation packs and 38 generated
+  assets. Build reports the existing 318 KiB JS and 471 KiB entrypoint size
+  warnings.
+- git diff --check passed.
+- composer lint linted the changed PHP files, then failed on the repository's
+  pre-existing missing
+  tests/integration/checkout-consent-saved-block-variant.php fixture.
+- The task-specific WordPress site was stopped after validation. The unrelated
+  ARCH-046 WordPress site was left running.
 
 ### Deviations
 
-None.
+The final full WordPress integration rerun did not complete after the
+legacy-retry-only correction; that correction was validated by its focused PHP
+regression test. The two earlier complete integration runs passed before that
+correction.
 
 ### Assumptions
 
-None beyond the explicit architecture and task contract.
+Hosted API deployment and media processing remain the ARCH-049 system-test gate.
+This task reports API acceptance and does not claim that background image
+processing is complete.
 
 ### Unresolved Issues
 
-No unresolved explicit dependencies. Hosted API integration remains a terminal
-system-test gate; it is not a prerequisite for this task's local implementation.
+- The integration rerun described above did not complete. No source failure was
+  observed before it stalled in the retry fixture.
+- Repository-wide composer lint remains blocked by the pre-existing missing
+  checkout-consent integration fixture.
 
 ### Architectural Concerns
 
-None reported; escalate any API contract, cross-repository schema or provider capability change to `moda_architect` rather than implementing it locally.
+None. The legacy retry remains bounded by existing delivery behavior and is
+prevented from mutating generation-aware status.
+
+## Developer Self-Review - Passed
+
+Attempt 1 implementation and task scope were reviewed against the requirements.
+The P2 legacy-retry status overwrite is corrected and covered by a focused
+regression test. Source changes are committed and pushed on the implementation
+task branch; validation and the incomplete rerun are recorded above. Lifecycle
+is transitioned to review, with executor and claimed_at cleared and attempt 1
+preserved. Because completion_mode is developer, explicit developer completion
+remains pending after architect acceptance. The downstream system test remains
+pending and was not promoted.
 
 ## Architect Review
 
