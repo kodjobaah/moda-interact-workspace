@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: codex
 claimed_at: 2026-11-01T14:37:36Z
@@ -486,7 +486,7 @@ separate service is authorised by this definition.
 
 ### Status
 
-Ready for architect review. Attempt 1 is complete; the task remains in `review` and has not been accepted or merged.
+Ready for architect review. Attempt 2 addresses the requested namespace-guard correction; the task remains in `review` and has not been accepted or merged.
 
 ### Files Changed
 
@@ -496,6 +496,8 @@ In `moda-interact-background`:
 - Reused ARCH-049 safe fetch, image verification, immutable PUT/HEAD and public GET/hash mechanisms while preserving the brand writer’s `shop-brands`-only boundary.
 - Added optional approved `CHECKOUT_PRODUCT` IMAGE selection and binding with final attempt revalidation and approved TEXT fallback.
 - Added resolver/key/transformer/writer tests, IMAGE/TEXT preparer tests, stale-price no-send coverage and Shared logger diagnostic assertions.
+- Corrected the strict merchant-site segment guard to accept canonical uppercase path bytes and final uppercase `~XX` escapes, while rejecting malformed/noncanonical escapes, invalid UTF-8 and dot-only path segments.
+- Added regressions proving normalized `/A` and `/store-` values pass the segment guard, `buildOutreachProductObjectKey()` and `isOutreachProductObjectKey()`.
 - Changed no Prisma schema, Shared contract, API, bucket, worker, architecture index or downstream task definition.
 
 ### Work Completed
@@ -508,12 +510,23 @@ Attempt preparation evidence: launcher claim commit `c4e27437d587494cb3216cefb8f
 
 While execution was in progress, Background `origin/main` advanced to `0c08cf55a260723d563212b8a8292e9e9d9a37ea`; the task branch was fast-forwarded to that commit before final revalidation. Implementation is committed and pushed as `17961151846e3b6d92225ceb564556a9949fc22b` on `task/ARCH-052-BACKGROUND-007`.
 
+Attempt 2 launcher evidence: claim commit `0697d715cb4d2b167d25b326f38b70b52c7fe5d4` was pushed before execution. Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-007` was synchronized at `6e62d9a1f8e7d50b64be538f713697129213548a`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-007` was synchronized at `17961151846e3b6d92225ceb564556a9949fc22b`. The launcher reported both task branches already current, all dependencies Complete and recursive submodules ready; `database` remained pinned at `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+
+Architect correction disposition: implemented in `src/services/recovery-product-media/merchant-site-segment.ts`; fixed-vector regressions in `tests/unit/services/recovery-product-media/merchant-site-segment.test.ts` and key-construction/guard regressions in `tests/unit/services/recovery-product-media/outreach-product-object-key.test.ts`. Implementation commit `690c39301da0c7c713822eb08fc6358a6f0691f4` was pushed to `task/ARCH-052-BACKGROUND-007`.
+
 ### Validation Results
 
-Passed:
+Attempt 1 validation before the requested correction passed:
 
 - `npx vitest run tests/unit/services/recovery-product-media tests/unit/services/shop-brand-media tests/unit/services/recovery-template-preparation tests/unit/services/recovery-template-integration tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts` — 23 files, 259 tests.
 - The focused coverage includes both merchant platforms, exact product identity, retries and revocation, date/key vectors, real image bytes with injected R2/probe ports, approved IMAGE binding, unavailable/stale TEXT fallback, 30-second deadline cancellation, and stale price admission blocking an already prepared IMAGE/offer before send or receipt/credit attribution.
+- `npm run lint` — passed.
+- `npm run build` (including Prisma client generation and TypeScript compilation) — passed.
+- `git diff --check` — passed.
+
+Attempt 2 correction validation passed:
+
+- `npx vitest run tests/unit/services/recovery-product-media/merchant-site-segment.test.ts tests/unit/services/recovery-product-media/outreach-product-object-key.test.ts` — 2 files, 50 tests.
 - `npm run lint` — passed.
 - `npm run build` (including Prisma client generation and TypeScript compilation) — passed.
 - `git diff --check` — passed.
