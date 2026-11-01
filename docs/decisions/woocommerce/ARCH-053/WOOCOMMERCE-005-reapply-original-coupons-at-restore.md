@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 55
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-10-31T22:10:13Z
+attempt: 1
 depends_on:
 - ARCH-053-WOOCOMMERCE-002
 - ARCH-053-WOOCOMMERCE-004
@@ -27,7 +27,7 @@ updated: 2026-10-31
 
 ## Architecture
 
-Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Defined but not materialised**; the author has not created or pushed a developer task branch or implementation worktree.
+Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. **Materialised**; the implementation branch `task/ARCH-053-WOOCOMMERCE-005` and its implementation worktree are prepared, and the implementation branch is pushed.
 
 ## Objective
 
@@ -63,9 +63,9 @@ The 2026-10-29 snapshot captures products but lacks complete end-to-end original
 
 ## Work Items
 
-- [ ] Implement isolated `CheckoutCouponRestorer` and call it after restored products, before completion/redirect; ensure its automatic coupon attempts cannot leave Moda-triggered Woo error notices in the session.
-- [ ] Apply original coupons using Woo native APIs and recalculate totals; return independently testable applied/rejected outcomes.
-- [ ] Add tests for valid, expired, deleted, usage-exhausted, minimum spend, product-excluded, non-stackable and mixed multiple original coupons.
+- [x] Implement isolated `CheckoutCouponRestorer` and call it after restored products, before completion/redirect; ensure its automatic coupon attempts cannot leave Moda-triggered Woo error notices in the session.
+- [x] Apply original coupons using Woo native APIs and recalculate totals; return independently testable applied/rejected outcomes.
+- [x] Add tests for valid, expired, deleted, usage-exhausted, minimum spend, product-excluded, non-stackable and mixed multiple original coupons.
 
 ## Interfaces / Contracts
 
@@ -92,9 +92,9 @@ Input: `snapshot.appliedCouponCodes` from generation-bound API resolver (`ARCH-0
 
 ## Validation
 
-- [ ] Run `composer test` focused CouponRestorer and CartRestorer cases
-- [ ] Run available Woo integration tests for live coupon validity, price and totals; report environment blockers
-- [ ] Run declared PHP lint/static checks and `git diff --check`
+- [x] Run `composer test` focused CouponRestorer and CartRestorer cases
+- [x] Run available Woo integration tests for live coupon validity, price and totals; report environment blockers
+- [x] Run changed-file PHP lint and `git diff --check`; repository-wide Composer lint reports the pre-existing missing test file.
 
 ## Stop Condition
 
@@ -108,19 +108,39 @@ Only restoring to the shopper’s **current** cart is allowed; preserve safe tra
 
 ### Status
 
-Not Started
+Ready for Review — the focused WooCommerce checkout integration completed with the original-coupon restore assertions passing.
 
 ### Files Changed
 
-None — task is defined but not materialised.
+- `includes/Checkout/CheckoutCouponRestorer.php` — applies original coupon codes through `WC_Cart::apply_coupon`, verifies actual applied coupons, contains coupon error notices, recalculates current totals and returns a private applied/rejected result.
+- `includes/Checkout/CheckoutCartRestorer.php` — permits validated coupon-bearing snapshots, runs coupon restoration after item restoration under capture suppression, returns the structured private result and redacts exact coupon values from failure logs.
+- `includes/Checkout/CheckoutResumeController.php` — removes the previous empty-coupon rejection while retaining the confirmed `NONE` offer guard.
+- `includes/Runtime.php` — loads the coupon restorer.
+- `tests/CheckoutCartRestorerTest.php` — covers coupon-bearing restore, valid/rejected mixed codes, continued attempts, error-notice containment, totals and unexpected-error rollback.
+- `tests/CheckoutResumeControllerTest.php` — isolates the test logger for restore failure coverage.
+- `tests/integration/scenarios/checkout-wordpress.mjs` — exercises one valid and one deleted original coupon, current discounted total and absence of a shopper-visible rejected code.
+- `composer.json` — includes the new class in declared PHP lint.
 
 ### Work Completed
 
-Not Started.
+- Implemented native Woo coupon application in the captured order after products and variations are restored.
+- Coupon rejection remains nonfatal; later original codes are attempted and only codes present in Woo's actual applied-coupon state are reported as applied.
+- Totals are recalculated after coupon attempts. Historical totals and discount values are not reused.
+- Scoped Woo coupon-error filters contain coupon validation errors during each automatic attempt; unrelated existing notices are preserved. Unexpected failures use the existing rollback path and diagnostics redact coupon values.
+- The controller continues to reject confirmed outreach offers and now accepts coupon-bearing restore snapshots.
+- The restorer returns `{appliedCodes, rejectedCodes, cartTotalRecalculated}` internally for the next task's private outcome handling; no public API or shopper-facing coupon outcome was added.
 
 ### Validation Results
 
-Not Run.
+- `composer test -- --filter 'CheckoutCartRestorerTest|CheckoutResumeControllerTest' --do-not-cache-result --display-warnings` — passed: 11 tests, 68 assertions, no warnings.
+- PHP lint for all changed PHP files — passed.
+- `composer lint` — reached all changed PHP files successfully, then failed because the repository script references the absent `tests/integration/checkout-consent-saved-block-variant.php`.
+- `git diff --check` — passed.
+- `node --check tests/integration/scenarios/checkout-wordpress.mjs` — passed.
+- Full `composer test -- --do-not-cache-result` — 292 tests passed; four unrelated existing failures remain in `CheckoutConsentCaptureTest`, `CheckoutConsentPresentationTest`, and two `PluginTest` cases.
+- Full `npm run test:js:node` with host loopback access — 112/113 passed; one unrelated existing `wordpress-api-fixture.test.mjs` assertion rejects a six-digit fractional timestamp (`.000000Z`) where its fixture expects three digits.
+- `MODA_CHECKOUT_TEST_DISPOSABLE=1 npm run test:integration:wordpress -- --checkout-only` — passed on the disposable Colima wp-env. Output included `ARCH-053 confirmed Woo restore integration PASS` and `ARCH-035 checkout-only integration PASS`. The live test restored a cart with `arch053save10` and `arch053-deleted-code`: Woo applied only the valid original coupon, recalculated the variation total to `1799`, recorded only the applied coupon in fresh resumption evidence, and rendered checkout without exposing the rejected code.
+- Full `npm run test:integration:wordpress` — attempted, but not completed: the first run hit host `ENOSPC`; after reclaiming 5.4 GiB from the regenerable npm cache and restarting Colima, the broad run advanced through connection checks but stalled while draining the unrelated ShopBrand Action Scheduler scenario. The task-specific `--checkout-only` suite then completed and passed. The disposable task wp-env was stopped after validation, and the two pre-existing local WooCommerce wp-env stacks plus Portainer were restored to `Up`.
 
 ### Deviations
 
@@ -132,7 +152,7 @@ Codebase snapshot dated 2026-10-29; inspect actual HEAD after launcher preparati
 
 ### Unresolved Issues
 
-None asserted until work is claimed.
+- Repository-wide PHP and Node suites retain the unrelated failures listed above.
 
 ### Architectural Concerns
 
