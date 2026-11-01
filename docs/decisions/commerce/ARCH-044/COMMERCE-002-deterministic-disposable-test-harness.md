@@ -159,7 +159,8 @@ Ready for Review; disposable integration acceptance is blocked by the local pinn
 - Implementation change commit: `dbaec9c` (`test(commerce): namespace discovery admission fixture`), pushed to `origin/task/ARCH-044-COMMERCE-002`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-044-COMMERCE-002`, branch `task/ARCH-044-COMMERCE-002`, prepared pre-claim HEAD `d70081a49fdd91a85336d303fcac75502e42eea7`; launcher claim commit is above.
 - Launcher evidence: dedicated worktrees, matching task branches, clean initial worktrees, dependency gate passed (no explicit dependencies), and recursive database submodule ready at `af77c594ecbfc78c26d01c0021a090830884bbff`. Prepared synchronization was not rerun.
-- Implementation and parent changes will be committed/pushed only to their corresponding task branches. No submodule gitlink, other task file, index, architecture document, or main branch is modified.
+- Parent report commit: `daedbab19` (`docs(ARCH-044-COMMERCE-002): record harness validation`), pushed to `origin/task/ARCH-044-COMMERCE-002`.
+- Both remote task refs were verified at implementation `dbaec9c` and parent `daedbab19`; both task worktrees are clean. No submodule gitlink, other task file, index, architecture document, or main branch was modified.
 
 ### Deviations
 
@@ -174,7 +175,7 @@ The named ARCH-044 opt-in scripts remain the approved fixture entrypoints. The P
 
 - Rerun `npm run test:arch044:focus -- tests/discovery-limits.test.ts` once the pinned image is available; record admitted count, 61st rejection, latency, and owned-resource cleanup.
 - Run the six required PostgreSQL/Redis suites and `npm run test:arch044:full` with the disposable harness once image provisioning is available. Record each suite's actual totals and every failure; do not treat the harness's synthetic negative-case failure as an application result.
-- Capture final exit status for `npm run typecheck` and `git diff --check`.
+- Capture an explicit exit code for `git diff --check`; its invocation produced no diagnostic output but the terminal did not expose an exit status.
 
 ### Architectural Concerns
 
