@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 55
 executor: null
 claimed_at: null
@@ -159,7 +159,7 @@ Treat the receipt's **target** as trusted business provenance established before
 
 ### Status
 
-Ready for Architect review — Attempt 1. The accepted ARCH-052-BACKGROUND-008 receipt already persisted the ordered `CHECKOUT_DISCOUNT.offerSet`, but positive promise variants did not persist an explicit `promotionTarget`. Added that narrowly scoped target to the existing receipt and follow-up parser; no architect acceptance decision has been made.
+Correction implemented and resubmitted for Architect review — Attempt 1. Addressed the requested parser gap for new automatic alternative-product receipts whose JSON omits `code`; no architect acceptance decision has been made.
 
 ### Files Changed
 
@@ -178,6 +178,8 @@ Added explicit `promotionTarget: CHECKOUT` to the existing ordered `CHECKOUT_DIS
 
 `previousPromise()` retains explicit target values for follow-up checks, reads legacy target-less code receipts without inventing a target, recognizes the existing alternative-product receipt discriminator, and fails closed on a checkout group carrying an alternative target. Follow-up cannot switch an alternative-product promise into a checkout offer.
 
+Addressed the architect-requested correction: `previousPromise()` now accepts `ALTERNATIVE_PRODUCT_PROMOTION` automatic receipts with the explicit `ALTERNATIVE_PRODUCT` target and no `code` property, while retaining compatibility with historical `code: null`. Any contradictory non-null `code` value remains invalid. A serialized receipt regression asserts that the target is retained; malformed and contradictory code values are rejected, and the targetless legacy regression remains fail-closed for follow-up.
+
 The ordered Shared offer set remains in the same `recoveryPromise`; no second snapshot/table or Meta send path was introduced. `prepareAutomatedTemplateInput().effectiveText` is written to the existing `ConversationMessage.content` before moderation/admission; after provider confirmation the same message is marked `SENT` with its actual provider ID and remains linked through the existing outreach attempt. Added assertions at the content-write and emulator serialization boundaries.
 
 Accepted ARCH-052-BACKGROUND-008 implementation evidence: commit `3505dfa10ebe38c9d765e34d9c69f4065a5b92f5`, accepted by `moda_architect` at Attempt 4; the implementation is present through current Background main merge `d144efc4c77415280523719b168e8b1c8feeb486`.
@@ -192,6 +194,8 @@ Passed `npm run test:unit` — 326 files, 3,494 tests.
 Passed `npm run lint`.
 Passed `npm run build` (Prisma client generation and TypeScript compilation).
 Passed `git diff --check`.
+
+Architect-requested correction validation: passed `node_modules/.bin/vitest run tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts` — 1 file, 23 tests; passed `tsc --noEmit`; passed ESLint on both changed files; passed `git diff --check`. The full suite/build/lint above were run before this isolated parser correction and were not rerun afterward.
 
 No real customer send or downstream system certification was performed.
 
@@ -218,7 +222,7 @@ None identified. The correction uses the existing confirmed `ConversationMessage
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-BACKGROUND-004`, branch `task/ARCH-053-BACKGROUND-004`; prepared head `d144efc4c77415280523719b168e8b1c8feeb486`.
 - Parent and implementation task branches fast-forwarded `not-needed`; `origin/main` was already incorporated in both worktrees. Recursive submodule sync/update passed; database submodule commit `7c377282aa5819b3008b7d7f3018f44f4161523e`.
 - Shared workspace and shared implementation source checkout were not switched or mutated; no other task worktree was reused. No submodule gitlink was changed.
-- Implementation commit `8973478` and parent task report commit `b06fc4087` are pushed to their matching `origin/task/ARCH-053-BACKGROUND-004` branches. No `main` branch operation was performed.
+- Original implementation commit `8973478`, parent submission commit `b06fc4087`, architect reopen commit `cde3d5b99`, and parser correction commit `6179035` are on their matching `origin/task/ARCH-053-BACKGROUND-004` branches. No `main` branch operation was performed.
 
 ## Architect Review
 
