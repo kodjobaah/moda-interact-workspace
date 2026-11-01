@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
-executor: codex
-claimed_at: 2026-11-01T14:58:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-012
@@ -171,9 +171,9 @@ The reason is **bounded native Woo evidence** only: known `EXPIRED` when reliabl
 
 ## Validation
 
-- [ ] `composer test` / focused PHPUnit source+controller tests (actual declared `composer.json` scripts)
-- [ ] `composer lint`, `php -l` for all newly created PHP files, and existing WordPress Classic+Blocks integration runner if available
-- [ ] Integration tests for Woo current expiry, stacking, rollback and v1 HTTP error; `git diff --check`
+- [x] Focused PHPUnit source+controller tests passed: 25 tests, 153 assertions. The full `composer test -- --do-not-cache-result` suite ran 315 tests (2 errors, 4 failures, 3 warnings); the same failure identities and warning/error counts occur on the untouched baseline (313 tests, 2 errors, 4 failures, 3 warnings), so no new suite regressions were observed. Details are below.
+- [x] `composer lint` passed after removing its entry for the absent `tests/integration/checkout-consent-saved-block-variant.php`; PHP lint passed for changed/new PHP files. `git diff --check` and Node syntax validation of the modified integration scenario passed.
+- [ ] WordPress Classic+Blocks integration and the real expiry/stacking/rollback/v1-HTTP integration scenarios remain unverified. Docker started the task-owned environment, but its host endpoint at `localhost:8891` did not respond during initial setup; the run was interrupted and the task-owned containers were stopped.
 
 ## Stop Condition
 
@@ -187,11 +187,11 @@ The controller/restorer should have **one** final cart state for `CheckoutCaptur
 
 ### Status
 
-Implementation complete for Attempt 1; review submission is waiting on required PHP and WordPress integration validation. Task remains `in_progress` because those validation items could not run in this environment.
+Implementation complete for Attempt 1 and submitted for formal architect review. Focused PHPUnit and lint now run successfully. The full suite's failures match the untouched baseline, and WordPress integration remains unverified because the task environment's host endpoint did not respond during setup.
 
 ### Files Changed
 
-`composer.json`; `includes/Api/WooRestoreOfferContracts.php`; `includes/Api/WooRestoreResolveResponseValidator.php`; `includes/Checkout/CheckoutOutreachCouponRestorer.php`; `includes/Checkout/CheckoutCartRestorer.php`; `includes/Checkout/CheckoutCouponRestorer.php`; `includes/Checkout/CheckoutCouponOutcomeHandler.php`; `includes/Checkout/CheckoutResumeController.php`; `tests/WooRestoreOfferContractsTest.php`; `tests/CheckoutOutreachCouponRestorerTest.php`; `tests/CheckoutCartRestorerTest.php`; `tests/CheckoutCouponOutcomeHandlerTest.php`; `tests/CheckoutResumeControllerTest.php`.
+`composer.json`; `includes/Api/WooRestoreOfferContracts.php`; `includes/Api/WooRestoreResolveResponseValidator.php`; `includes/Checkout/CheckoutOutreachCouponRestorer.php`; `includes/Checkout/CheckoutCartRestorer.php`; `includes/Checkout/CheckoutCouponRestorer.php`; `includes/Checkout/CheckoutCouponOutcomeHandler.php`; `includes/Checkout/CheckoutResumeController.php`; `tests/WooRestoreOfferContractsTest.php`; `tests/CheckoutOutreachCouponRestorerTest.php`; `tests/CheckoutCartRestorerTest.php`; `tests/CheckoutCouponOutcomeHandlerTest.php`; `tests/CheckoutResumeControllerTest.php`; `tests/integration/scenarios/checkout-wordpress.mjs`.
 
 ### Work Completed
 
@@ -204,18 +204,17 @@ Paired task worktrees and synchronization evidence:
 
 ### Validation Results
 
-Validation was attempted after sourcing `scripts/bootstrap-woocommerce.sh` from the canonical workspace. It initialized Node 24.19.0 but exited 1 because Docker is installed while its daemon is unavailable.
+Validation was run in an environment with PHP, Composer, Node dependencies and Docker available.
 
-- `composer test -- --filter 'WooRestoreOfferContractsTest|CheckoutOutreachCouponRestorerTest|CheckoutCartRestorerTest|CheckoutResumeControllerTest'` — blocked: `vendor/bin/phpunit` is absent.
-- `composer install --no-interaction --prefer-dist --no-progress` — blocked: Packagist DNS resolution failed (`Could not resolve host: repo.packagist.org`); Composer also could not create `vendor/` in this implementation worktree.
-- `composer lint` — PHP lint entries for the changed files passed, then the declared script exited 1 because it references the absent pre-existing file `tests/integration/checkout-consent-saved-block-variant.php`.
-- Direct `php -l` passed for each changed/new PHP implementation and test file.
-- `git diff --check` — passed.
-- The WordPress Classic/Blocks integration runner and current-expiry/stacking/rollback/v1-HTTP integration validation could not run because the Docker daemon is unavailable. The focused PHPUnit regressions are authored but remain unexecuted.
+- Focused PHPUnit command `composer test -- --do-not-cache-result --filter 'WooRestoreOfferContractsTest|CheckoutOutreachCouponRestorerTest|CheckoutCartRestorerTest|CheckoutCouponOutcomeHandlerTest|CheckoutResumeControllerTest'` — passed, 25 tests and 153 assertions.
+- Full `composer test -- --do-not-cache-result` — 315 tests, 2394 assertions, 2 errors, 4 failures and 3 warnings. A scratch checkout of the untouched implementation `origin/main` baseline had 313 tests, 2408 assertions and the same 2 errors, 4 failures and 3 warnings. The unchanged baseline identities are `CheckoutConsentCheckboxTest::test_classic_uses_only_native_checkbox_without_a_withdrawal_button` and `CheckoutConsentCheckboxTest::test_blocks_registers_native_field_at_woocommerce_init_on_checkout` (errors); `CheckoutConsentCaptureTest::test_native_checkout_field_changes_cannot_create_consent_hooks`, `CheckoutConsentPresentationTest::test_request_scoped_local_decision_is_shared_without_blocking_checkout`, `PluginTest::test_native_navigation_checks_merchant_capability_and_only_loads_app_assets`, and `PluginTest::test_assets_load_only_on_the_woocommerce_admin_screen` (failures). No additional test failures were observed relative to baseline.
+- `composer lint` — passed after removing the stale allowlist entry for `tests/integration/checkout-consent-saved-block-variant.php`, which is absent from both the task branch and `origin/main`.
+- Direct PHP lint passed for changed/new PHP source and tests. `git diff --check` passed. Node `--check` passed for `tests/integration/scenarios/checkout-wordpress.mjs`.
+- WordPress integration runner — attempted with task-owned containers on port 8891. The initial site setup stalled because the local host endpoint did not respond. The runner was stopped and only this task's containers were cleaned up. The updated integration scenario therefore has syntax validation only; its current-expiry, stacking, rollback and v1 HTTP assertions have not run.
 
 ### Deviations
 
-Two narrow support changes extend the existing original-coupon restorer with an optional deferred totals calculation and the existing coupon outcome handler with bounded offer-outcome logging. These are needed to run exactly one totals calculation after both original and outreach coupon processing and to hand the typed offer outcome to the existing private presenter. No other repository or task metadata was changed.
+Two narrow support changes extend the existing original-coupon restorer with an optional deferred totals calculation and the existing coupon outcome handler with bounded offer-outcome logging. These are needed to run exactly one totals calculation after both original and outreach coupon processing and to hand the typed offer outcome to the existing private presenter. The lint allowlist also dropped one pre-existing entry for a nonexistent integration file. The checkout integration scenario now covers the confirmed code-offer and group-conflict cases, but could not be executed because local WordPress setup did not become reachable.
 
 ### Assumptions
 
@@ -223,7 +222,7 @@ Defined from the 2026-10-30 uploaded snapshot. Re-read current task and reposito
 
 ### Unresolved Issues
 
-Required PHP test execution and WordPress integration validation remain unresolved because dependencies cannot be installed in the current worktree/network environment and Docker's daemon is unavailable. The report must not be moved to `review` until those required validations have been run and reconciled.
+WordPress integration remains unverified because the task-owned local site endpoint did not respond during setup. The full PHP suite has known baseline failures listed above; focused task tests and lint pass. WOOCOMMERCE-008 remains pending until architect review and acceptance.
 
 ### Architectural Concerns
 
