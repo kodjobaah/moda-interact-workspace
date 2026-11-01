@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-31T22:40:01Z
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-054-WOOCOMMERCE-001
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 
@@ -110,7 +110,7 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Ready for Architect review. Attempt 2 implementation criteria and all task-specific validations are complete. Full `npm run lint` still fails on the unrelated existing empty catch in `src/merchant/support/routes.ts:75`; that out-of-scope file is unchanged. The coordinator authorized a task-scoped exception to this lint gate so API-001 can proceed to review. This exception is not implementation acceptance.
+Ready for Architect review. Attempt 3 implementation criteria and all task-specific validations are complete. Full `npm run lint` still fails on the unrelated existing empty catch in `src/merchant/support/routes.ts:75`; that out-of-scope file is unchanged. The coordinator authorized a task-scoped exception to this lint gate so API-001 can proceed to review. This exception is not implementation acceptance.
 
 ### Files Changed
 
@@ -150,6 +150,28 @@ Both worktrees were clean before validation. No API source changes or implementa
 ### Attempt 2 Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
 The previous missing-Prisma-field blocker is resolved: the pinned database submodule includes `ShopSettings.aiResponseDelayMinutes Int @default(0)` and migration `20261031170000_arch054_merchant_ai_response_delay`. PostgreSQL integration, typecheck, build, and diff validation pass. Full-repository lint still reports the existing unrelated `no-empty` error at `src/merchant/support/routes.ts:75`; the file remains unchanged. `moda_architect` authorized a task-scoped exception to the lint gate for review. This exception does not accept the implementation or change the lint result.
+
+### Attempt 3 Summary
+
+Addressed the Architect Review correction by comparing `expectedRevision` before the identical-value no-op. A same-value PUT with the current revision succeeds without writing; a stale same-value PUT returns HTTP 409 with `ai_response_delay_conflict` and does not write. The task remains scoped to the existing API implementation; no recovery-policy behavior or other repository-owned files were changed.
+
+### Attempt 3 Files Changed
+
+Implementation commit `50ddbb0a93e6a5650456054b2c693aa7fd3fded8` changes `src/merchant/ai-response-delay/service.ts`, `tests/unit/merchant/ai-response-delay/settings.test.ts`, and `tests/integration/merchant/ai-response-delay/service.postgres.test.ts`. The parent conflict-merge commit `dba4297a8bd5113f378c24059afce5f258dd30e7` remains in parent task-branch history.
+
+### Attempt 3 Tests and Validation Results
+
+`npx tsx --test tests/unit/merchant/ai-response-delay/settings.test.ts`: PASS, 6 tests. The added regression `same-value PUT succeeds only with the current revision and never writes` verifies current-revision HTTP 200/no write and stale-revision HTTP 409 `{ error: "ai_response_delay_conflict" }`/no write. The service test `current-revision same-value retries do not write; stale different values conflict` also passes.
+`node scripts/test-arch054-ai-response-delay-postgres.mjs`: PASS, 1 PostgreSQL integration test; all 68 migrations applied, including ARCH-054. The integration covers tenant isolation, defaults, same-value no-op, compare-and-set race, and revocation; its current-revision no-op uses the returned revision.
+`npm run typecheck`: PASS.
+`npm run build`: PASS.
+`npx eslint src/merchant/ai-response-delay/service.ts tests/unit/merchant/ai-response-delay/settings.test.ts tests/integration/merchant/ai-response-delay/service.postgres.test.ts`: PASS.
+`git diff 50ddbb0a93e6a5650456054b2c693aa7fd3fded8^ 50ddbb0a93e6a5650456054b2c693aa7fd3fded8 --check`: PASS.
+`npm run lint`: FAILS only on the existing unrelated `no-empty` at `src/merchant/support/routes.ts:75`. That file is unchanged, and the coordinator-approved task-scoped exception recorded above applies; targeted ESLint on all changed implementation/test files passes.
+
+### Attempt 3 Deviations / Assumptions / Unresolved Issues / Architectural Concerns
+
+No implementation deviations or unresolved task requirements. The known full-lint exception remains the only validation limitation; all other required focused validations passed. The task is submitted for Architect review and is not marked Complete.
 
 ### Attempt 1 Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
