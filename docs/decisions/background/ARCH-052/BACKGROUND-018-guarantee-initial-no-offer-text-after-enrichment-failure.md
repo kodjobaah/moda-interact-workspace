@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -489,3 +489,39 @@ Ready for architect review. Attempt 1 and Attempt 2 Architect Reviews and comple
 ### Attempt 3 Handoff
 
 Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. Parent claim commit `86cade1369e2958551b36198c4b1784d1d58d73b` was pushed before implementation; this report follows implementation commit `b39a84e`. Neither task branch was merged to `main`; no downstream task status was changed.
+
+
+## Architect Review — Attempt 3
+
+### Review Status
+
+Changes Requested — Attempt 3. The task returns to `ready`; Attempt 3 and its validation evidence remain preserved.
+
+### Review Notes
+
+The exact reason-code whitelist closes the Attempt 2 gap for the listed retryable discount-source failures, and its tests keep several unknown and mandatory failures out of fallback. One safety distinction is still lost before classification:
+
+1. In `CurrentOutreachOfferRevalidationService`, `CURRENT_SOURCE_READ_DEADLINE` is returned when either the service's own read deadline expires **or** the caller's `input.signal` is aborted. `failureTrigger()` whitelists that same code, so cancellation can invoke fallback despite the task's no-fallback cancellation rule.
+2. For F2, every unavailable second fence is collapsed to `SOURCE_FENCE_F2_CHANGED`; the code returns that same retryable value whether the fence is available with a changed digest or unavailable because of `CONTEXT_UNAVAILABLE`, `CANCELLED`, or another required-state/input failure. `failureTrigger()` whitelists `SOURCE_FENCE_F2_CHANGED`, so those failures can also invoke fallback.
+
+Keep distinct typed outcomes: classify only an available F2 fence whose digest changed as optional source drift, and classify the service-owned MCP read deadline as optional while external cancellation, required-context failure and invalid input remain blocked or retryable. Add regressions that exercise these exact upstream result paths, not only synthetic coordinator reason codes. Then rerun the affected suites and resubmit.
+
+### Reviewed Files
+
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `src/services/recovery-offers/current-outreach-offer-revalidation.service.ts`
+- `src/services/recovery-offers/current-discount-source-fence.ts`
+- `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`
+- The Attempt 3 Completion Report and preserved Attempt 1/2 reviews.
+
+### Validation Reviewed
+
+Reviewed the reported 93 focused unit tests, 21 Shopify/Woo PostgreSQL integration tests, lint, build, and `git diff --check`. No full unit suite was run in Attempt 3, as recorded. No tests were rerun during this review.
+
+### Architecture Conformance
+
+Attempt 3 routes the intended optional source failures, but it does not yet preserve the required distinction between optional source drift, external cancellation, and unavailable required state. Acceptance is blocked until those outcomes remain distinct through classification.
+
+### Follow-up
+
+At Attempt 4, preserve cancellation and required-state reason codes in the source revalidator. Only a known, retryable optional source failure or an available-but-changed source fence may trigger no-offer fallback. Add upstream-path regressions for an aborted caller signal and unavailable F2 reads, and confirm neither calls fallback; keep the deadline and available changed-fence cases eligible for fallback. Rerun focused validation and resubmit. SYSTEM-TEST-001 and SYSTEM-TEST-002 remain Pending; no downstream task is promoted.
