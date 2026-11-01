@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
-executor: copilot
-claimed_at: 2026-11-01T20:46:27Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-052-BACKGROUND-008
@@ -457,3 +457,35 @@ The integration and guard corrections conform. Acceptance remains blocked becaus
 ### Follow-up
 
 At Attempt 3, classify the whitelisted retryable optional revalidation outcomes and route them to the fallback with fresh mandatory-state checks. Preserve fail-closed/retry behavior for mandatory, stale-identity, and unrecognized failures. Add the focused regressions, rerun affected validation, and resubmit. Keep SYSTEM-TEST-001 and SYSTEM-TEST-002 pending; no downstream task is promoted by this review.
+
+## Attempt 3 Completion Report
+
+### Status
+
+Ready for architect review. Attempt 1 and Attempt 2 Architect Reviews and completion evidence are preserved; this report records only the Attempt 3 correction and validation. No architect acceptance decision is made by this report.
+
+### Files Changed
+
+- `moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `moda-interact-background/tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`
+
+### Work Completed
+
+- Extended `failureTrigger()` with an exact allowlist for retryable discount-source outcomes: `OFFER_DISCOVERY_INCOMPLETE`, `CURRENT_SOURCE_READ_DEADLINE`, F1 `CATALOGUE_UNAVAILABLE`, `READ_DEADLINE_EXCEEDED`, `READ_FAILED`, `SOURCE_DATA_INVALID`, `SOURCE_ROW_UNAVAILABLE`, `SOURCE_TOO_LARGE`, and `SOURCE_FENCE_F2_CHANGED`. These map to `DISCOUNT_REVALIDATION_UNAVAILABLE` and use the existing fallback service, which rereads current mandatory state before preparation.
+- The mapping requires result code `UNAVAILABLE` and `retryable: true`; it does not match by prefix or regex. F1 context-unavailable, cancellation and invalid-input results; changed current context; stale/unauthorized proposals; mandatory/non-retryable failures; and unknown reasons remain unavailable without preparing fallback.
+- Added positive routing tests for each whitelisted source outcome and negative tests for mandatory, context-drift and unknown failure outcomes.
+- Implementation commit `b39a84e` (`fix(background): route typed source failures to no-offer fallback`) was pushed to `task/ARCH-052-BACKGROUND-018`.
+
+### Validation Results
+
+- `npx vitest run tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`: passed, 1 file / 48 tests.
+- `npx vitest run tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts tests/unit/services/recovery-offers/current-outreach-offer-revalidation.service.test.ts tests/unit/services/recovery-offers/initial-outreach-offer-selection.service.test.ts tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts`: passed, 4 files / 93 tests.
+- `node scripts/test-integration.mjs tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts tests/integration/arch048-woo-initial-outreach.integration.test.ts`: passed, 2 files / 21 tests (2 Shopify PostgreSQL and 19 Woo PostgreSQL/Redis).
+- `PATH="$PWD/node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/bin:$PATH" npm run build`: passed; Prisma generation and TypeScript compilation completed.
+- `npm run lint`: passed.
+- `git diff --check`: passed.
+- No full unit-suite rerun was performed during Attempt 3; Attempt 2's complete run and its single unrelated ARCH-049 expectation failure remain documented in the Attempt 2 report.
+
+### Attempt 3 Handoff
+
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. Parent claim commit `86cade1369e2958551b36198c4b1784d1d58d73b` was pushed before implementation; this report follows implementation commit `b39a84e`. Neither task branch was merged to `main`; no downstream task status was changed.
