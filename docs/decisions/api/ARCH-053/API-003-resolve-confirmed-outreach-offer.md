@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-11-01T14:46:57Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-SHARED-012
@@ -243,11 +243,11 @@ Escalate contract or ownership gaps instead of inventing a new transport or pers
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-The receipt parser's positive-kind allowlist excludes `ALTERNATIVE_PRODUCT_PROMOTION`, which is the actual confirmed-message receipt written by ARCH-053-BACKGROUND-004 for alternative-product offers. Those valid receipts are therefore returned as `NONE/UNVERIFIABLE` rather than `ALTERNATIVE_PRODUCT`. The current parser tests miss this writer shape. They also assert that a `CHECKOUT_DISCOUNT` receipt tagged `ALTERNATIVE_PRODUCT` with an invalid offer set is a valid alternative-product receipt; that contradictory receipt must be `UNVERIFIABLE`.
+Attempt 2 resolves the finding: `ALTERNATIVE_PRODUCT_PROMOTION` now accepts the exact production CODE and AUTOMATIC receipt shapes, requires the explicit `ALTERNATIVE_PRODUCT` target and method-specific fields, and projects to `ALTERNATIVE_PRODUCT` without exposing a code. Malformed or contradictory receipts, including `CHECKOUT_DISCOUNT` tagged as alternative-product, return `NONE/UNVERIFIABLE`. The regression tests exercise both writer shapes and the contradiction case. The production writer was inspected and matches the parser's required field sets.
 
 ### Reviewed Files
 
@@ -263,12 +263,12 @@ The receipt parser's positive-kind allowlist excludes `ALTERNATIVE_PRODUCT_PROMO
 
 ### Validation Reviewed
 
-Reviewed the reported 19 focused tests, PostgreSQL-backed relation test, typecheck, build, focused lint, and diff check. The full test run had 9 unrelated failures among 655 tests; repository-wide lint has the recorded unrelated `no-empty` finding. No tests were rerun during this review.
+Reviewed Attempt 2's 21 focused restore tests, PostgreSQL-backed relation test, typecheck, build, focused lint, and diff check. The full test run and repository-wide lint were not rerun; the report preserves the previously identified unrelated failures and lint finding. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-Changes requested for parsing the confirmed alternative-product receipt variant. The authenticated v1 resolver, generation recheck, checkout group handling, and fail-closed behavior otherwise conform based on the inspected code and submitted validation report.
+Accepted. The correction now parses the confirmed alternative-product receipt variant emitted by BACKGROUND-004. The authenticated v1 resolver, generation recheck, checkout group handling, and fail-closed behavior conform based on the inspected code and submitted validation report.
 
 ### Follow-up
 
-Keep this task at Attempt 1 and return it to Ready. Parse the exact `ALTERNATIVE_PRODUCT_PROMOTION` shape written by BACKGROUND-004, validate its method-specific fields and explicit target, and project it to `ALTERNATIVE_PRODUCT` without returning a coupon code. Reject a `CHECKOUT_DISCOUNT` receipt tagged as alternative-product and reject malformed or ambiguous alternative receipts as `NONE/UNVERIFIABLE`. Add code and automatic alternative-product tests using the production receipt shape. `ARCH-053-WOOCOMMERCE-007` remains Pending until API-003 is accepted Complete.
+The Attempt 1 follow-up is resolved by the submitted Attempt 2 correction. The historical follow-up requested retaining Attempt 1, but the deterministic launcher claimed and recorded Attempt 2; acceptance preserves that recorded attempt number. `ARCH-053-WOOCOMMERCE-007` is now Ready because its other dependencies are Complete.
