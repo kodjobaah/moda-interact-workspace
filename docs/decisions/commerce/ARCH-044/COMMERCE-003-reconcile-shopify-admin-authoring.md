@@ -9,8 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -127,7 +129,7 @@ The current Test panel is deliberately deferred (evidence from baseline Testing 
 
 ### Status
 
-Ready for architect review. The requested UI and related regression suites pass. TypeScript validation remains unverified because both attempts remained silent after route type generation and were stopped; this limitation is recorded above.
+Changes Requested — Attempt 1. The requested UI and related regression suites pass, but the implementation task branch is not published to `origin` and TypeScript validation remains unverified. The task returns to `ready` with Attempt 1 preserved and the claim clear.
 
 ### Files Changed
 
@@ -200,24 +202,54 @@ None. No cross-service contracts, provider credential behavior, or live Shopify 
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1. The task returns to `ready`; `executor` and
+`claimed_at` are cleared, and Attempt 1 is preserved for the next claim.
 
 ### Review Notes
 
-Awaiting implementation evidence.
+The behavior reconciliation is sound: the deferred Shopify Admin Test remains
+inert, local validation and result-contract checks remain available, and the
+persisted Save/Review/CAS and Policy Operation paths retain focused regression
+coverage. All 45 tests in the primary UI suite and 74 tests in the required
+combined suite are reported passing. However, `git ls-remote --heads origin
+task/ARCH-044-COMMERCE-003` returned no branch, while the canonical
+implementation worktree is on a local `task/ARCH-044-COMMERCE-003` branch at
+`15d505e` tracking `origin/main`. The implementation task branch must be
+published before this task can be accepted. The required typecheck also remains
+unverified: both the project command and direct `tsc` retry were interrupted
+after prolonged silence, and no successful or definitive failure result is
+recorded.
 
 ### Reviewed Files
 
-None yet.
+- Persisted Shopify Admin authoring tests and their current UI/controller
+  behavior.
+- Policy Operation authoring and publication regression tests.
+- Task implementation and VCS report, including current task-branch refs.
 
 ### Validation Reviewed
 
-None yet.
+- Reported UI suite: 45 tests passed.
+- Reported five-file regression suite: 74 tests passed.
+- Reported ESLint and Prisma generation passed.
+- Architect verified `git diff --check origin/main...HEAD` and `git show --check`; both passed.
+- `npm run typecheck` and the direct TypeScript retry remain unverified after
+  interruption; no PASS is claimed.
+- Parent task report branch is clean and synchronized at `bacf7ea3`. The local
+  implementation branch points to `15d505e`, but no corresponding remote task
+  ref exists.
 
 ### Architecture Conformance
 
-Not assessed.
+The implementation preserves the deferred live-Shopify boundary, local schema
+validation, CAS protections and role-gated publication. No live provider path
+or new cross-service contract was introduced. Publication and typecheck gaps
+must be reconciled before acceptance.
 
 ### Follow-up
 
-None yet.
+Publish `task/ARCH-044-COMMERCE-003` from the canonical implementation
+worktree and verify the remote ref matches the intended commit; update the VCS
+evidence. Resolve the required typecheck with a successful run or a definitive,
+reviewable result. Keep Attempt 1 and the task at `ready` until those items are
+recorded. No downstream task is promoted.
