@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
-executor: codex
-claimed_at: 2026-10-31T22:10:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-053-WOOCOMMERCE-002
@@ -20,7 +20,7 @@ depends_on:
 enables:
 - ARCH-053-WOOCOMMERCE-006
 created: 2026-10-29
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # ARCH-053-WOOCOMMERCE-005 — Reapply original basket coupons through native WooCommerce validation
@@ -82,13 +82,13 @@ Input: `snapshot.appliedCouponCodes` from generation-bound API resolver (`ARCH-0
 
 ## Acceptance Criteria
 
-- [ ] Valid original coupon appears as an applied Woo coupon after restoration; payable total is recalculated under current shop state.
-- [ ] Expired or otherwise rejected coupon never appears as applied, product restoration succeeds, recalculated current total has no invalid discount, and rejection is returned privately to the WOOCOMMERCE-006 outcome handler; the checkout displays only Woo-approved applied coupons and current totals.
-- [ ] Multiple codes with a mix of valid/invalid/stacking rules produce the actual Woo-approved subset and a full rejection list.
-- [ ] Cannot force the original coupon discount or silently mint another coupon; unexpected errors remain visible to protected server diagnostics and cannot produce false success or a Moda storefront error notice.
-- [ ] No new discounts/coupon extension, no automatic replacement of a previously applied invalid coupon, and no silent omission from **private outcome reporting**. No Moda-generated coupon-error notice on the storefront.
-- [ ] Failed/invalid/replayed operations do not create duplicate recovery generations, outbound attempts or billings.
-- [ ] Only owning repository implementation and authorised task metadata are changed; ARCH-052 remains untouched.
+- [x] Valid original coupon appears as an applied Woo coupon after restoration; payable total is recalculated under current shop state.
+- [x] Expired or otherwise rejected coupon never appears as applied, product restoration succeeds, recalculated current total has no invalid discount, and rejection is returned privately to the WOOCOMMERCE-006 outcome handler; the checkout displays only Woo-approved applied coupons and current totals.
+- [x] Multiple codes with a mix of valid/invalid/stacking rules produce the actual Woo-approved subset and a full rejection list.
+- [x] Cannot force the original coupon discount or silently mint another coupon; unexpected errors remain visible to protected server diagnostics and cannot produce false success or a Moda storefront error notice.
+- [x] No new discounts/coupon extension, no automatic replacement of a previously applied invalid coupon, and no silent omission from **private outcome reporting**. No Moda-generated coupon-error notice on the storefront.
+- [x] Failed/invalid/replayed operations do not create duplicate recovery generations, outbound attempts or billings.
+- [x] Only owning repository implementation and authorised task metadata are changed; ARCH-052 remains untouched.
 
 ## Validation
 
@@ -158,28 +158,48 @@ Codebase snapshot dated 2026-10-29; inspect actual HEAD after launcher preparati
 
 Return schema, lifecycle and multi-repository discrepancies to `moda_architect` rather than improvising.
 
+### Git / VCS
+
+- Task branch: `task/ARCH-053-WOOCOMMERCE-005`.
+- Parent workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-005`, branch `task/ARCH-053-WOOCOMMERCE-005`, clean at review start; parent task/report head `acb5cb1510f4d0cd71feb68d3274169447c64031`, matching `origin/task/ARCH-053-WOOCOMMERCE-005` before this review overlay.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-005`, branch `task/ARCH-053-WOOCOMMERCE-005`, clean at review; implementation commit `9e5f1082e09de1aebed688fff2b74a2b9d952fe8`, matching `origin/task/ARCH-053-WOOCOMMERCE-005`.
+- Dedicated task worktrees verified; shared checkouts were not switched for this task. Neither task branch is merged to `main`.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Not reviewed.
+The implementation follows the approved restore boundary: products are restored first, saved coupon codes are attempted in captured order through WooCommerce native validation, actual applied state determines the private result, and totals are recalculated from current shop state. Expected coupon rejection does not cancel product restoration; unexpected failure uses the existing protected rollback path. Coupon error notices are scoped to the automatic attempts, preserving unrelated notices. No public API contract or coupon-issuance behavior was added.
+
+The task-specific disposable WordPress checkout integration passed for a valid and a deleted code, confirming only the valid coupon was applied, the current total was recalculated, and the rejected code was not exposed on checkout. Focused tests and changed-file lint passed. The reported broad-suite failures and stalled unrelated integration scenario are documented and do not invalidate the task-specific passing evidence.
 
 ### Reviewed Files
 
-None.
+- `includes/Checkout/CheckoutCouponRestorer.php`
+- `includes/Checkout/CheckoutCartRestorer.php`
+- `includes/Checkout/CheckoutResumeController.php`
+- `includes/Runtime.php`
+- `tests/CheckoutCartRestorerTest.php`
+- `tests/CheckoutResumeControllerTest.php`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
+- `composer.json`
+- This task definition and Completion Report.
 
 ### Validation Reviewed
 
-None.
+- Focused PHPUnit: 11 tests, 68 assertions passed.
+- Changed PHP lint, JavaScript syntax check and `git diff --check` passed.
+- Disposable WooCommerce checkout integration passed the task-specific original-coupon restoration assertions.
+- Broader PHP and Node suite failures and the unrelated stalled broad WordPress integration are recorded above; task-specific validation passed.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Conforms to ARCH-053: original coupons are restored only through native Woo rules, historical totals are not reused, rejected outcomes stay private, storefront error notices are contained, and implementation/report scope stays within the owning repository and task record.
 
 ### Follow-up
 
-None.
+`ARCH-053-WOOCOMMERCE-006` is promoted to `ready` in this branch because its only dependency is now complete. The launcher will continue to report it as pending from `main` until this accepted parent task branch is integrated. No other downstream task is promoted by this review.

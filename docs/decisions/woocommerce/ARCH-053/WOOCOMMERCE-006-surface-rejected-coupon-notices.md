@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -20,14 +20,14 @@ enables:
 - ARCH-053-SYSTEM-TEST-002
 - ARCH-053-WOOCOMMERCE-007
 created: 2026-10-29
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # ARCH-053-WOOCOMMERCE-006 — Keep original coupon rejection errors off the merchant checkout
 
 ## Architecture
 
-Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. This is a task-definition correction, not an implementation claim; task remains Pending.
+Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. This task is dependency-ready after architect acceptance of WOOCOMMERCE-005; it is ready for the next execution claim.
 
 ## Objective
 
