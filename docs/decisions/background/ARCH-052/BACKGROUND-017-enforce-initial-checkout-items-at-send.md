@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
-executor: codex
-claimed_at: 2026-11-01T18:17:44Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-052-ADMIN-004
@@ -31,7 +31,7 @@ updated: 2026-11-01
 
 - Parent: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 - Owner: `moda_background`, repository `moda-interact-background/`.
-- This task is **defined but not materialised**. It MUST NOT begin before the four listed dependencies are architect-accepted Complete, and MUST NOT be implemented in the active BACKGROUND-008 worktree.
+- This task is materialised and was started only after all four listed dependencies were architect-accepted Complete. It was implemented in its dedicated BACKGROUND-017 worktree, separate from BACKGROUND-008.
 
 ## Objective
 
@@ -112,11 +112,11 @@ The basket summary comes exclusively from the **actual saved checkout lines** of
 
 ## Work Items
 
-- [ ] Add and test pure INITIAL-only `decideInitialCheckoutItemsBinding()`.
-- [ ] Integrate into approved registration selection and selected-template preparation for TEXT and IMAGE, with existing immutable fingerprint verification.
-- [ ] Add transient verified BODY-position witness and reject any initial prepared send lacking it.
-- [ ] Exercise NO_OFFER, single/multi CODE, AUTOMATIC, ALTERNATIVE_PRODUCT, locale fallbacks, image fallback and cross-shop invalid checkout items.
-- [ ] Confirm BG008's final source/price/consent/credit admission checks and follow-up remain unchanged.
+- [x] Add and test pure INITIAL-only `decideInitialCheckoutItemsBinding()`.
+- [x] Integrate into approved registration selection and selected-template preparation for TEXT and IMAGE, with existing immutable fingerprint verification.
+- [x] Add transient verified BODY-position witness and reject any initial prepared send lacking it.
+- [x] Exercise NO_OFFER, single/multi CODE, AUTOMATIC, ALTERNATIVE_PRODUCT, locale fallbacks, image fallback and cross-shop invalid checkout items.
+- [x] Confirm BG008's final source/price/consent/credit admission checks and follow-up remain unchanged.
 
 ## Interfaces / Contracts
 
@@ -137,20 +137,20 @@ The basket summary comes exclusively from the **actual saved checkout lines** of
 
 ## Acceptance Criteria
 
-- [ ] Each required approved INITIAL variant in both Shopify and Woo sends has exactly one verified `checkout.itemsSummary` BODY binding and the original saved basket displayed at the correct Meta parameter position.
-- [ ] NONE of the legacy/missing/duplicate/corrupt/HEADER-only/empty/cross-tenant cases can send a WhatsApp template or commit an additional credit.
-- [ ] Offer fallback, NO_OFFER, IMAGE → TEXT, and 20-locale language resolution cannot bypass the binding; lacking a compliant approved variant is typed no-send.
-- [ ] No guessed items, offer products substituted as basket contents, false monetary claims or modification to checkout state.
-- [ ] Existing FOLLOW_UP message and merchant HUMAN reply remain unaffected; no new Meta or Shared contract.
-- [ ] Original provider/SDK errors remain observable through the shared structured logger, not rewritten as guessed causes.
+- [x] Each required approved INITIAL variant in both Shopify and Woo sends has exactly one verified `checkout.itemsSummary` BODY binding and the original saved basket displayed at the correct Meta parameter position.
+- [x] NONE of the legacy/missing/duplicate/corrupt/HEADER-only/empty/cross-tenant cases can send a WhatsApp template or commit an additional credit.
+- [x] Offer fallback, NO_OFFER, IMAGE → TEXT, and 20-locale language resolution cannot bypass the binding; lacking a compliant approved variant is typed no-send.
+- [x] No guessed items, offer products substituted as basket contents, false monetary claims or modification to checkout state.
+- [x] Existing FOLLOW_UP message and merchant HUMAN reply remain unaffected; no new Meta or Shared contract.
+- [x] Original provider/SDK errors remain observable through the shared structured logger, not rewritten as guessed causes.
 
 ## Validation
 
-- [ ] `tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts`: frozen position, mismatches, BODY summary missing/duplicate, missing saved lines and shop mismatch.
-- [ ] `tests/unit/services/recovery-template-integration/prepared-template-send.test.ts`: positive and negative final BODY-position admission, follow-up regression.
-- [ ] `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`: all INITIAL offer/target branches, TEXT and IMAGE where approved, no-send and exact shop association.
-- [ ] `tests/integration/arch047-recovery-template-preparation.integration.test.ts` and BG008's existing integration harness: saved source lines, locale/Meta registration and no duplicate billing under retry.
-- [ ] Changed-file lint, repository-declared TypeScript build/check and `git diff --check`, plus focused tests and disposable PostgreSQL validation. Record command/evidence and environment gaps.
+- [x] `tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts`: frozen position, mismatches, BODY summary missing/duplicate, missing saved lines and shop mismatch.
+- [x] `tests/unit/services/recovery-template-integration/prepared-template-send.test.ts`: positive and negative final BODY-position admission, follow-up regression.
+- [x] `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`: all INITIAL offer/target branches, TEXT and IMAGE where approved, no-send and exact shop association.
+- [x] `tests/integration/arch047-recovery-template-preparation.integration.test.ts` and BG008's existing integration harness: saved source lines, locale/Meta registration and no duplicate billing under retry.
+- [x] Changed-file lint, repository-declared TypeScript build/check and `git diff --check`, plus focused tests and disposable PostgreSQL validation. Record command/evidence and environment gaps.
 
 ## Stop Condition
 
@@ -164,19 +164,21 @@ Start via the canonical launcher; resolve the implementation repository's dedica
 
 ### Status
 
-Not Started.
+Ready for architect review. Attempt 1 is implemented, validated, committed and pushed. The task remains in `review`; it is not architect-accepted or merged.
 
 ### Files Changed
 
-None.
+In `moda-interact-background`:
+
+- Added `initial-checkout-items-policy.ts` to require one contiguous, positioned `checkout.itemsSummary` BODY binding for INITIAL templates while preserving unrestricted FOLLOW_UP behavior.
+- Filtered noncompliant INITIAL registrations before language/assignment selection and rechecked the exact selected registration before running the existing frozen component verifier and trusted saved-line resolver.
+- Added the transient verified BODY-position witness to `PreparedRecoveryTemplate`; final send-field construction rejects missing/invalid positions, missing or duplicate BODY components, and empty summary parameters with a typed local admission error.
+- Made malformed saved checkout line arrays fail closed instead of silently omitting unsafe rows. Cross-shop, empty, missing and malformed saved lines return `BINDING_VALUE_UNAVAILABLE`.
+- Updated preparer, send-admission, automated-service, WhatsApp-emulator and Woo initial-outreach fixtures to assert the original saved basket at its frozen position. No Shared contract, database schema, provider identity, offer admission, consent, STOP, billing, or FOLLOW_UP behavior changed.
 
 ### Work Completed
 
-None.
-
-### Validation Results
-
-Not run.
+`decideInitialCheckoutItemsBinding()` now checks only the bounded initial BODY-binding policy. `prepareFrozenComponents()` remains the authority for the immutable registration digest, component/token validation and binding fingerprint. The final transport gate uses the witness together with the existing `FinalTemplateIdentity`.
 
 ### Deviations
 
@@ -184,15 +186,67 @@ None.
 
 ### Assumptions
 
-BG008 and BG007 will be architect-accepted before this task begins; production send uses the same frozen registration read by the preparer.
+All four declared dependencies were Complete at launcher admission. Production preparation uses the exact frozen registration selected for the authenticated shop and resolves checkout summary content from the existing saved recovery line items.
 
 ### Unresolved Issues
 
-None known.
+None known. The prepared result carries a nonpersisted position witness only; actual basket text remains derived from saved `CheckoutRecovery.lineItems`.
 
 ### Architectural Concerns
 
-None at definition time.
+No architectural deviation. No new cross-service contract, persistence, provider registration, billing event or sender path was added.
+
+### Validation Results
+
+All requested validation passed on the committed implementation snapshot:
+
+- Focused unit suites: **4 files, 55 tests passed** — policy, recovery-template preparer, final send admission, and automated recovery-template service.
+- Disposable PostgreSQL/Redis validation: `node scripts/test-integration.mjs tests/integration/arch047-recovery-template-preparation.integration.test.ts tests/integration/arch048-woo-initial-outreach.integration.test.ts` — **2 files, 20 tests passed**, including saved basket preparation, both-tenant lookup, Woo concurrent retry, one provider request and one usage/credit commit. A missing-summary approved registration is also suppressed before provider dispatch, reservation or usage-event creation.
+- WhatsApp emulator: `MODA_DISPOSABLE_INTEGRATION=1 npx vitest run tests/integration/arch052-initial-template-emulator.integration.test.ts` — **1 file, 1 test passed** for no-offer, checkout-code and alternative-product initial payloads.
+- `npm run build` — passed, including Prisma client generation and repository TypeScript compilation.
+- ESLint on all changed source and test files — passed.
+- `git diff --check` — passed.
+
+Environment: Colima was the selected Docker context; the disposable integration runner completed successfully.
+
+### Git / VCS
+
+Task branch: `task/ARCH-052-BACKGROUND-017`.
+
+Physical worktree isolation:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-017`
+- Parent branch: `task/ARCH-052-BACKGROUND-017`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-017`
+- Implementation branch: `task/ARCH-052-BACKGROUND-017`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+Start-of-attempt synchronization:
+
+- Parent task branch synchronized by launcher at `a6942e0d8b33a5bce9677d67918f3b28e5bf86fe`; claim commit `0dd8db8d07a7323eaa530fe3ba9b775a76b1081b` was pushed before implementation.
+- Implementation task worktree started at `e8c650a236b0cd4efdc9f69fdf42efc9390d0ab4`; its starting content matched the current `origin/main` baseline.
+- Recursive implementation submodules: initialized and verified by launcher; `database` pinned at `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+
+Implementation repository:
+
+- Repository: `moda-interact-background`
+- Commits: `83723711b01827292b3f1475242d520f34ebfac8`, `b32e223` (HEAD)
+- Remote branch: `origin/task/ARCH-052-BACKGROUND-017`
+- Pushed: yes
+
+Parent workspace:
+
+- Task file: `docs/decisions/background/ARCH-052/BACKGROUND-017-enforce-initial-checkout-items-at-send.md`
+- Commit: recorded after the report commit
+- Remote branch: `origin/task/ARCH-052-BACKGROUND-017`
+- Pushed: yes
+- Submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
