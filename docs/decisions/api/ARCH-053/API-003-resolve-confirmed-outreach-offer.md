@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-11-01T14:46:57Z
@@ -196,35 +196,36 @@ The resolver should share one authorization implementation with v1: do not fork 
 
 ### Status
 
-Ready for Review — implementation and required focused validation are complete. Full-suite and repository-wide lint limitations are recorded below.
+Ready for Review — the Architect Review correction is implemented and required focused validation passed. This is Attempt 2; no Architect acceptance is claimed.
 
 ### Files Changed
 
-Implementation repository (`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-003`, branch `task/ARCH-053-API-003`): `src/composition/woocommerce.ts`; `src/woocommerce/recovery-restore/contract.ts`; `src/woocommerce/recovery-restore/service.ts`; new `src/woocommerce/recovery-restore/offer-receipt.ts` and `offer-resolver.ts`; `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`; and unit tests `routes.test.ts`, `service.test.ts`, `offer-receipt.test.ts`, `offer-resolver.test.ts` under `tests/unit/woocommerce/recovery-restore/`.
+Implementation repository (`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-003`, branch `task/ARCH-053-API-003`): cumulative task files are `src/composition/woocommerce.ts`; `src/woocommerce/recovery-restore/contract.ts`, `service.ts`, `offer-receipt.ts`, and `offer-resolver.ts`; `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`; and the `routes.test.ts`, `service.test.ts`, `offer-receipt.test.ts`, and `offer-resolver.test.ts` unit tests under `tests/unit/woocommerce/recovery-restore/`. Attempt 2 changed only `src/woocommerce/recovery-restore/offer-receipt.ts` and `tests/unit/woocommerce/recovery-restore/offer-receipt.test.ts`.
 
 ### Work Completed
 
-Implemented the receipt parser using published Shared schemas, a sequence-one Prisma relation reader that accepts only confirmed outbound automated messages scoped to the authorized shop/recovery/generation/conversation, and dependency injection into the existing API-002 resolver. The service retains the same strict v1 route and authorization checks, rechecks recovery eligibility and identity after the evidence read, and returns a fully validated v1 response. Added focused parser, reader, route, recheck, and disposable-PostgreSQL relation coverage. No schema, Shared package, route registration, credential, queue, provider call, or write behavior was added.
+Attempt 2 addresses the Architect Review finding. The BG004 writer in `moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts` persists `ALTERNATIVE_PRODUCT_PROMOTION` with explicit `promotionTarget: "ALTERNATIVE_PRODUCT"`, `offerId`, `providerDiscountId`, `method`, `productId`, `variantId`, and `productTitle`; CODE additionally has `code`, while AUTOMATIC has no `code` field. The API parser now requires that exact key set and method-specific shape, validates the explicit target and nonblank evidence fields, and projects either method to Shared `{ kind: "ALTERNATIVE_PRODUCT" }` without returning the coupon code. Generic CODE/AUTOMATIC alternative-target promises and `CHECKOUT_DISCOUNT` tagged as alternative-product are now `NONE/UNVERIFIABLE`; malformed or ambiguous alternative receipts fail closed. Tests cover both production shapes, code non-leakage, malformed method fields, and the contradictory checkout-group regression.
+
+The original API-003 implementation remains intact: it uses the published Shared schemas, reads only the confirmed sequence-one attempt/message relation scoped to the authorized shop/recovery/generation/conversation, reuses API-002 authorization and rechecks eligibility after the evidence read. No route, schema, Shared, Background, Woo/plugin, queue, provider-call, or write behavior was changed.
 
 ### Validation Results
 
-Validation was run in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-003` on `task/ARCH-053-API-003`. Launcher-prepared implementation SHA: `dac44bc9e01c181db25f58abf693ba2b6ee85a3f`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-API-003` prepared at `822966fa5da2db9c155045e58de777a8e8fcb3d3`, with claim commit `870beb590810cfa265857a311fa587a4fe43d61c`. The prepared dependency gate passed for `ARCH-052-SHARED-012`, `ARCH-053-API-002`, `ARCH-053-SHARED-002`, and `ARCH-053-BACKGROUND-004`; the database submodule was at `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+Launcher Attempt 2 evidence: task claim commit `70670476eee0de394cf9e75d7b1c7c06d4c851f3`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-API-003` synchronized at architect report commit `980884c8316b65f657c3f0e99299c44ab1717f68`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-003` started at `98d85c947bcb5670eaaa9367a186d282d201d3e1`; database submodule `7c377282aa5819b3008b7d7f3018f44f4161523e`. Launcher dependency gate passed for `ARCH-052-SHARED-012`, `ARCH-053-API-002`, `ARCH-053-SHARED-002`, and `ARCH-053-BACKGROUND-004`.
 
-- `npx tsx --test tests/unit/woocommerce/recovery-restore/*.test.ts`: passed, 19 tests.
-- `npm run test:arch053-recovery-restore:postgres`: passed, 1 PostgreSQL-backed test, including current/old generation, failed/unconfirmed attempt, duplicate group, and relation scoping cases.
+- `npx tsx --test tests/unit/woocommerce/recovery-restore/offer-receipt.test.ts`: passed, 5 tests.
+- `npx tsx --test tests/unit/woocommerce/recovery-restore/*.test.ts`: passed, 21 tests across parser, resolver, service, and route.
+- `npm run test:arch053-recovery-restore:postgres`: passed, 1 PostgreSQL-backed relation/generation test.
 - `npm run typecheck`: passed.
 - `npm run build`: passed.
 - `npm exec -- eslint src/woocommerce/recovery-restore src/composition/woocommerce.ts tests/unit/woocommerce/recovery-restore tests/integration/woocommerce/recovery-restore --max-warnings=0`: passed.
 - `git diff --check`: passed.
-- Full `npm test`: 646 passed, 9 failed. Failures are outside the changed restore paths: billing redaction assertions, route-count/integration-runner inventory, merchant knowledge/upload routes, promotions, and store-context logging assertions. No restore-specific tests failed; unrelated failures were not modified.
-- Full `npm run lint`: reports only the unrelated `no-empty` finding at `src/merchant/support/routes.ts:75`; focused lint for all task-owned files passed.
-- `npm ci` installed dependencies without manifest/lock changes. Environment Node was `24.21.0` versus package engine `24.19.0`; typecheck, build, and focused tests completed successfully. npm reported 15 audit findings; dependency changes are outside this task.
+- Full `npm test` and repository-wide `npm run lint` were not rerun in Attempt 2. The prior report records 9 unrelated full-suite failures and the unrelated `no-empty` finding at `src/merchant/support/routes.ts:75`; this correction did not touch those paths.
 
-Implementation commit: `98d85c9` (`feat(api): resolve confirmed Woo outreach offers`), pushed to `origin/task/ARCH-053-API-003`. The parent task/report is being published on its mirrored `task/ARCH-053-API-003` branch.
+Implementation commit: `a755724bba304dcc2b9c7f1bf390aa121b3c6558` (`fix(api): parse alternative-product recovery receipts`), pushed to `origin/task/ARCH-053-API-003`.
 
 ### Deviations
 
-None to implementation scope. Full unit-suite and repository-wide lint failures listed above are outside the task-owned files and were left unchanged.
+None to implementation scope. Full-suite and repository-wide lint findings were not rerun and remain outside the task-owned files.
 
 ### Assumptions
 
@@ -232,7 +233,7 @@ The prepared Shared package version `3.1.0` contains the required published v1 r
 
 ### Unresolved Issues
 
-No task-scope implementation issue remains. The nine unrelated full-suite failures and the unrelated full-lint finding remain for their respective owners; see Validation Results.
+No task-scope implementation issue remains. The previously reported unrelated full-suite failures and full-lint finding remain for their respective owners; see Validation Results.
 
 ### Architectural Concerns
 
