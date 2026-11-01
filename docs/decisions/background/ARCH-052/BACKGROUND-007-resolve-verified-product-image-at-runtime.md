@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-01T13:58:26Z
+attempt: 1
 depends_on:
 - ARCH-052-BACKGROUND-008
 - ARCH-052-ADMIN-002
@@ -25,7 +25,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # ARCH-052-BACKGROUND-007: Resolve optional checkout or promoted-product image via MCP at runtime
