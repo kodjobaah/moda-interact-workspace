@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
 executor: copilot
 claimed_at: 2026-11-01T18:18:05Z
@@ -233,35 +233,64 @@ Treat the approved no-offer template as a **neutral basket reminder**; do not as
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `moda-interact-background/src/services/recovery-template-integration/initial-no-offer-fallback.service.ts` (new)
+- `moda-interact-background/src/services/recovery-template-integration/initial-outreach-fallback-selection.ts` (new)
+- `moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `moda-interact-background/src/services/recovery-offers/initial-outreach-offer-selection.service.ts`
+- `moda-interact-background/src/agents/initial-outreach-offer.agent.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-initiation.service.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts`
+- `moda-interact-background/src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`
+- `moda-interact-background/tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts` (new)
+- `moda-interact-background/tests/unit/services/recovery-template-integration/initial-outreach-fallback-selection.test.ts` (new)
+- `moda-interact-background/tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+- `moda-interact-background/tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts`
+- `moda-interact-background/tests/integration/arch048-woo-initial-outreach.integration.test.ts`
+- `moda-interact-background/tests/integration/fixtures/arch048-woo-outreach.fixture.ts`
+- `moda-interact-background/tests/integration/fixtures/woo-approved-initial-template.fixture.ts`
 
 ### Work Completed
 
-None.
+- Added the task-normative local fallback result/port and pure classifier for optional enrichment failure, mandatory block, transient required state, and provider uncertainty.
+- Added injectable fallback preparation that re-reads current shop, recovery and sequence-one attempt state; checks durable provider dispatch identity; formats only saved basket data; uses persisted checkout URL and current WABA; and prepares the approved `INITIAL_NO_OFFER` TEXT through the existing preparer. Missing approval/binding fails closed and missing approved registration records a durable configuration diagnostic.
+- Routed merchant `NONE` mode directly to the shared fallback and routed eligible optional enrichment failures to that same fallback without another offer-agent call. Shopify and Woo keep their existing attempt, billing/credit, idempotency, final consent/STOP, recovery/order and provider-admission/reconciliation guards. FOLLOW_UP is unchanged.
+- Preserved originating AI/MCP errors and causes through shared structured logging with existing redaction conventions.
+- Added focused classifier, fallback, coordinator and both-provider send-composition unit tests. Updated the disposable Woo integration registration to exercise the required saved-basket BODY and persisted checkout CTA bindings.
+- Implementation commit `a0a1a55` (`feat(background): add initial no-offer fallback`) was pushed to `task/ARCH-052-BACKGROUND-018` in `moda-interact-background`.
 
 ### Validation Results
 
-Not run.
+- Focused five-suite Vitest run: passed, 5 files / 136 tests.
+- `npm run test:unit`: passed, 333 files / 3,592 tests.
+- `npm run lint`: passed.
+- `node node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/bin/tsc --noEmit`: passed.
+- `node scripts/test-integration.mjs tests/integration/arch048-woo-initial-outreach.integration.test.ts`: passed, 1 file / 18 tests using disposable PostgreSQL and Redis.
+- `git diff --check`: passed.
+- `npm run build`: Prisma generation completed, but the script could not find the repository-local `tsc` executable shim. Direct invocation of the installed TypeScript compiler passed as noted above.
+- No dedicated Shopify PostgreSQL initial-dispatch integration test exists in this repository; Shopify fallback composition and billing/idempotency/finalization were validated by the focused unit suite, but the task's requested Shopify PostgreSQL-backed validation remains outstanding.
 
 ### Deviations
 
-None.
+- The task's two-provider PostgreSQL integration validation is incomplete because the repository provides a disposable PostgreSQL/Redis integration harness only for Woo initial outreach. No new Shopify integration harness was added within this task.
+- The full broader matrix of every named optional source failure, adversarial mandatory-policy race and downstream system certification was not executed. The existing named acceptance/validation checkboxes remain unchanged for architect review.
 
 ### Assumptions
 
-None.
+- Runtime availability and approval of the per-shop `INITIAL_NO_OFFER` Meta registration remain external operational prerequisites; the implementation checks current assignment/registration and fails closed when unavailable.
 
 ### Unresolved Issues
 
-None.
+- Add or run a Shopify PostgreSQL-backed initial-dispatch integration covering fallback, billing identity, durable idempotency and confirmed finalization.
+- Review typed reason-code routing in `AutomatedRecoveryTemplateService` against all BG008 optional and mandatory failure boundaries; unrecognized outcomes currently fail closed.
 
 ### Architectural Concerns
 
-None.
+Architect Review remains Pending. No schema, Shared/public contract, queue, provider API, checkout URL issuance/validation or other repository was changed. The launcher prepared Attempt 1 for `copilot`, passed the dependency gate, and initialized the implementation database submodule at `7c377282aa5819b3008b7d7f3018f44f4161523e`. Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. The shared/default workspace checkout was not used for task implementation. Parent claim commit: `993aff77062e3c9def8650ca74e464b4a6189191`.
 
 ## Architect Review
 
