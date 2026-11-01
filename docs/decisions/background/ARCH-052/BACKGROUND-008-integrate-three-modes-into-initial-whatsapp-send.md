@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 65
-executor: copilot
-claimed_at: 2026-10-31T15:28:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-SHARED-012
@@ -397,6 +397,8 @@ Pending.
 
 Planning only; no source implementation accepted.
 
+The developer confirmed Attempt 1 was interrupted. The stale parent claim was released to Ready with attempt 1 preserved. This is lifecycle reconciliation only; the implementation worktree remains dirty and untouched, and no implementation review or acceptance was performed. Launcher preparation must not overwrite or clean those changes.
+
 ### Reviewed Files
 
 The task definition was authored from the 29 October 2026 snapshot. The implementation agent has not performed Architect Review.
@@ -411,4 +413,4 @@ To be determined by `moda_architect` after implementation handoff.
 
 ### Follow-up
 
-Complete the outstanding validation and publication requirements, then hand the task to `moda_architect`; do not reset or reclaim the active Attempt 1.
+Preserve the existing implementation changes in the canonical Background task worktree. The task is Ready, but a new prepared attempt must not begin until the implementation worktree can pass mandatory clean-worktree synchronization without discarding or stashing those changes. No Attempt 2 was claimed.
