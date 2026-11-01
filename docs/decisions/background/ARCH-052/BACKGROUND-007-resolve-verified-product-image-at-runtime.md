@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: codex
-claimed_at: 2026-11-01T14:37:36Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-BACKGROUND-008
@@ -554,11 +554,11 @@ Report discovered cross-repository/credential/provider-proof issues to `moda_arc
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-`normalizeOutreachMerchantSite()` correctly preserves uppercase path characters and encodes every non-allowlisted path byte as `~XX`. However, `isOutreachMerchantSiteSegment()` rejects uppercase literal characters and requires the whole segment to end in a lowercase letter or digit. Consequently, valid normalized values such as `myshop.com-A` and values ending in an encoded byte such as `myshop.com-store~2D` are rejected by both object-key construction and the independent object-key guard. This violates the required merchant-site encoding and can make optional IMAGE preparation unavailable for valid merchant paths.
+The namespace guard now accepts the canonical output grammar from `normalizeOutreachMerchantSite()`: preserved uppercase path bytes and final uppercase `~XX` escapes. It rejects lowercase/malformed escapes, noncanonical escaped literal bytes, invalid UTF-8, path separators, controls, and dot-only segments. Regressions prove normalized `/A` and `/store-` pass the segment guard and both object-key construction and validation. The original implementation also satisfies the trusted source identity, exact key/date/hash, bounded image processing, immutable R2 write and public verification, approved IMAGE binding, and TEXT fallback requirements based on inspected code and the Attempt 1 report.
 
 ### Reviewed Files
 
@@ -574,12 +574,12 @@ Changes Requested
 
 ### Validation Reviewed
 
-Reviewed the reported 259 focused tests, lint, build, and diff check. Live R2 public-origin smoke was not run and is reported as unavailable; fake R2 ports with real transformed JPEG bytes were exercised. No tests were rerun during this review.
+Reviewed Attempt 2 correction validation: 50 focused tests across the namespace and key suites, lint, build, and `git diff --check` passed. Attempt 1's broader 259 focused tests also passed before the isolated guard change. Live R2 public-origin smoke was not run because no live R2 smoke configuration was available; the report records fake R2 ports and real transformed JPEG bytes. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-Changes requested for the normalized merchant-site segment validator. The source identity checks, date/hash key structure, image transformation and verification, isolated R2 writer, public probe, approved IMAGE binding, and TEXT fallback otherwise conform to the task based on the submitted report and inspected source.
+Accepted. The implementation preserves the trusted merchant identity boundary, injective path encoding, attempt-specific immutable object keys, safe image processing, separate product R2 key guard, current-product revalidation, approved IMAGE-only URL binding, and TEXT fallback.
 
 ### Follow-up
 
-Keep this task at Attempt 1 and return it to Ready. Align `isOutreachMerchantSiteSegment()` with the canonical segment grammar emitted by `normalizeOutreachMerchantSite()`: accept preserved uppercase ASCII path bytes and allow a final `~XX` encoded byte, while retaining strict malformed-escape and dot-segment rejection. Add tests proving normalized `/A` and a path ending in a disallowed byte (for example `/store-`) pass both `buildOutreachProductObjectKey()` and `isOutreachProductObjectKey()`. The existing system-test tasks remain Pending until their other dependencies and this task are Complete.
+No dependent task is newly eligible. `ARCH-052-BACKGROUND-017` remains Pending because `ARCH-052-ADMIN-004` is Ready; `ARCH-052-SYSTEM-TEST-001`, `ARCH-052-SYSTEM-TEST-002`, and `ARCH-052-SYSTEM-TEST-004` remain gated by their other prerequisites.
