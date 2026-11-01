@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
-executor: codex
-claimed_at: 2026-11-01T00:15:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-053-WOOCOMMERCE-005
@@ -27,7 +27,7 @@ updated: 2026-11-01
 
 ## Architecture
 
-Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. This task is dependency-ready after architect acceptance of WOOCOMMERCE-005; it is ready for the next execution claim.
+Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Materialised, implemented and accepted on Attempt 1; status Complete.
 
 ## Objective
 
@@ -109,7 +109,7 @@ Reuse existing Woo notice primitives **only for containment**, not error present
 
 ### Status
 
-Ready for Review
+Accepted — Attempt 1
 
 ### Files Changed
 
@@ -157,28 +157,48 @@ Ready for Review
 
 None.
 
+### Git / VCS
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-006`, branch `task/ARCH-053-WOOCOMMERCE-006`, clean at review; parent report commit `b405cec7c9bd356abe43d5764ee850f417b29847`, matching `origin/task/ARCH-053-WOOCOMMERCE-006`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-006`, branch `task/ARCH-053-WOOCOMMERCE-006`, clean at review; implementation commit `375fa886e672a812a60953067c2c2ac4969ec421`, matching `origin/task/ARCH-053-WOOCOMMERCE-006`.
+- Dedicated task worktrees verified. Neither task branch is merged to `main`.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Not reviewed.
+The implementation contains native coupon rejection text only during Moda's automatic restoration attempts, using the scoped `woocommerce_coupon_error` filter. It does not clear session notices or suppress the broader `woocommerce_add_error` hook, so unrelated notices and ordinary shopper-entered coupon errors remain available. The private outcome handler records bounded outcome categories and counts without coupon values, and runs after the restore commit but before redirect. The integration fixture exercises valid, expired, usage-exhausted and deleted codes through Classic and Blocks checkout, with current totals, applied-code state, redirect safety, preview non-mutation and ordinary shopper error behavior covered.
+
+The focused PHPUnit and disposable WordPress integration suites passed. The repository lint command remains blocked only by its existing reference to a missing integration PHP file; all changed PHP files were linted directly.
 
 ### Reviewed Files
 
-None.
+- `includes/Checkout/CheckoutCouponOutcomeHandler.php`
+- `includes/Checkout/CheckoutCouponRestorer.php`
+- `includes/Checkout/CheckoutResumeController.php`
+- `includes/Runtime.php`
+- `composer.json`
+- `tests/CheckoutCartRestorerTest.php`
+- `tests/CheckoutCouponOutcomeHandlerTest.php`
+- `tests/CheckoutResumeControllerTest.php`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
+- This task definition and Completion Report.
 
 ### Validation Reviewed
 
-None.
+- Focused PHPUnit: 41 tests, 370 assertions passed.
+- Disposable WordPress checkout integration passed in Classic and Blocks scenarios for valid, expired, exhausted and deleted codes; current totals and privacy checks passed.
+- Direct PHP lint for changed files, Node syntax check and `git diff --check` passed.
+- `composer run lint` reached all changed PHP files and then stopped at the documented unrelated missing test target.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Conforms to ARCH-053's storefront-silent rule: rejected original coupon details remain private, only plugin-generated coupon errors are contained, Woo controls applied coupon state and current totals, and normal customer notices and coupon validation are preserved. No API/schema, discount creation, or unrelated repository changes were introduced.
 
 ### Follow-up
 
-None.
+WOOCOMMERCE-005, the required upstream dependency, is Complete. No downstream task is promoted: WOOCOMMERCE-007 remains blocked by API-003, and SYSTEM-TEST-002 remains blocked by ARCH-046-WOOCOMMERCE-003.

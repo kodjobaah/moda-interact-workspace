@@ -13,6 +13,6 @@ Assigned agent: `moda_woocommerce`. Coordinator: `moda_architect`.
 | [ARCH-053-WOOCOMMERCE-003](WOOCOMMERCE-003-capture-manual-return-to-unchanged-woo-checkout.md) | Detect human return to an unchanged existing Woo checkout | Complete | ARCH-053-WOOCOMMERCE-001 |
 | [ARCH-053-WOOCOMMERCE-004](WOOCOMMERCE-004-capture-coupon-only-checkout-activity.md) | Publish coupon additions and removals as Woo checkout activity | Complete | ARCH-053-WOOCOMMERCE-001 |
 | [ARCH-053-WOOCOMMERCE-005](WOOCOMMERCE-005-reapply-original-coupons-at-restore.md) | Reapply original basket coupons through native WooCommerce validation | Complete | ARCH-053-WOOCOMMERCE-002, ARCH-053-WOOCOMMERCE-004 |
-| [ARCH-053-WOOCOMMERCE-006](WOOCOMMERCE-006-surface-rejected-coupon-notices.md) | Keep original coupon rejection errors off the merchant checkout | Ready | ARCH-053-WOOCOMMERCE-005 |
+| [ARCH-053-WOOCOMMERCE-006](WOOCOMMERCE-006-surface-rejected-coupon-notices.md) | Keep original coupon rejection errors off the merchant checkout | Complete | ARCH-053-WOOCOMMERCE-005 |
 
 ARCH-052 is exclusively dynamic-discount discovery. ARCH-053 only restores previously applied original Woo coupons and core basket data; no dynamic incentive work is authorized.

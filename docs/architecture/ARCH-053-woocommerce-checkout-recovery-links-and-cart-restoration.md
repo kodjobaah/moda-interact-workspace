@@ -169,7 +169,7 @@ The task YAML files are authoritative for status and dependency eligibility. The
 | `ARCH-053-API-004` | `moda_api` | Ready | ARCH-016-DATABASE-002, API-002 |
 | `ARCH-053-WOOCOMMERCE-002` | `moda_woocommerce` | Complete | WOOCOMMERCE-001, API-002 |
 | `ARCH-053-WOOCOMMERCE-005` | `moda_woocommerce` | Complete | WOOCOMMERCE-002, WOOCOMMERCE-004 |
-| `ARCH-053-WOOCOMMERCE-006` | `moda_woocommerce` | Ready | WOOCOMMERCE-005 |
+| `ARCH-053-WOOCOMMERCE-006` | `moda_woocommerce` | Complete | WOOCOMMERCE-005 |
 | `ARCH-053-WOOCOMMERCE-007` | `moda_woocommerce` | Pending | API-003, WOOCOMMERCE-005, WOOCOMMERCE-006, ARCH-052-SHARED-012 |
 | `ARCH-053-WOOCOMMERCE-008` | `moda_woocommerce` | Pending | WOOCOMMERCE-007, WOOCOMMERCE-006 |
 | `ARCH-053-WOOCOMMERCE-003` | `moda_woocommerce` | Complete | WOOCOMMERCE-001 |
