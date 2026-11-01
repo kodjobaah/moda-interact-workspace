@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
 executor: copilot
 claimed_at: 2026-11-01T12:10:18Z
@@ -308,7 +308,7 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-In Progress — Attempt 1 remains active; implementation and report are not ready for Architect Review.
+Ready for Review — Attempt 2 implementation and validation evidence are recorded below. Attempt 1 details below are retained as historical evidence and are superseded where noted by the Attempt 2 completion update.
 
 ### Files Changed
 
@@ -368,7 +368,7 @@ Latest validation on 1 November: `pnpm test:unit` passed — 326 files / 3,488 t
 
 Downstream system-test listing was attempted in `moda-interact-system-test` with the three ARCH-052 task IDs; the runner returned `Unknown scenario ARCH-052-SYSTEM-TEST-001`. No downstream system tests were executed or claimed.
 
-Still not certified: complete two-platform end-to-end/system coverage, a clean combined broad PostgreSQL regression gate, and all acceptance items above. The revised Aimock test now passes and is no longer an unresolved issue. The focused Woo initial-outreach and final-permit suites pass in isolation; the selected safety integration files pass when the slow STOP case is rerun with an appropriate timeout. Keep status `in_progress`; do not hand off for Architect Review.
+At the end of Attempt 1, complete two-platform end-to-end/system coverage, a clean combined broad PostgreSQL regression gate, and several acceptance items remained uncertified. Attempt 2 validation and remaining gaps are recorded below.
 
 ### Deviations
 
@@ -380,11 +380,45 @@ The accepted 31 October architect unblock is followed: no MCP revision/snapshot 
 
 ### Unresolved Issues
 
-Remaining acceptance gaps include adversarial permission/source revocation coverage, full PostgreSQL/two-platform/system tests, and a clean combined broad regression gate. The downstream system-test runner does not recognize the ARCH-052 task IDs as executable scenarios. New implementation/report changes are not yet committed or pushed; the earlier implementation commit `895bfb3` remains on the remote. No Architect Review or status transition to `review` has occurred.
+At the end of Attempt 1, remaining acceptance gaps included adversarial permission/source revocation coverage, full PostgreSQL/two-platform/system tests, and a clean combined broad regression gate. The downstream system-test runner did not recognize the ARCH-052 task IDs as executable scenarios. Attempt 2 disposition follows.
 
 ### Architectural Concerns
 
 Report discovered cross-repository/credential/MCP-catalogue issues to `moda_architect`.
+
+### Attempt 2 Completion Update
+
+#### Changes and Evidence
+
+- Preserved and continued the existing implementation from checkpoint commit `d2d51f4`; no user changes were discarded or rewritten.
+- Added the bounded promotional product URL safety check and current-source revalidation/template-selection coverage in the checkpoint. Checkout URL handling remains unchanged.
+- Pushed the implementation task branch `task/ARCH-052-BACKGROUND-008`. The branch contains the earlier implementation commit `895bfb3`, synchronization merge `178d236`, and preserved checkpoint `d2d51f4`.
+- Updated only this task's status and Completion Report. The `## Architect Review` section remains untouched.
+
+#### Attempt 2 Validation
+
+- Passed full Background unit suite: 326 files, 3,488 tests.
+- Passed Background lint and TypeScript no-emit typecheck.
+- Passed focused source-fence, offer-revalidation, approved-template selection, and Woo send-admission tests: 4 files, 65 tests.
+- Passed WhatsApp send adapter and provider-failure unit tests: 2 files, 35 tests.
+- Passed persisted source-fence PostgreSQL integration: 1 file, 2 tests; passed Shopify discount-selection PostgreSQL integration: 1 file, 2 tests; passed WhatsApp template emulator: 1 file, 1 test.
+- Passed initial-send/Aimock/Woo F3/template-preparation integrations: 4 files, 13 tests; passed final-template permit/status and Support-notice integrations: 3 files, 12 tests.
+- Passed `git diff --check` for the implementation branch.
+
+#### Remaining Gaps and Disposition
+
+- The earlier broad PostgreSQL integration batch remains non-passing (50 passed, 10 failed) as documented above; focused relevant suites pass, but this is not a clean combined regression gate.
+- Full downstream system certification remains unavailable: the system-test runner reported `Unknown scenario ARCH-052-SYSTEM-TEST-001`. This attempt did not claim system tests passed.
+- The task's complete matrix of adversarial merchant permission/source revocation, every platform/mode/outcome combination, and all historical receipt/follow-up scenarios is not fully certified by the focused tests run here. The remaining matrix is returned for Architect review; no broader acceptance is claimed.
+- The known registration-error integration finding for a plain non-JSON provider response remains outside this task's final-send adapter slice; final send adapter error/redaction tests passed.
+- No schema, Shared/MCP contract, checkout URL validation/issuance, provider cart mutation, or cross-repository changes were made.
+
+#### Branches
+
+- Implementation branch: `task/ARCH-052-BACKGROUND-008`, pushed through `d2d51f4d56417cb07be6bf9918e79ad80e4e0398`.
+- Parent task branch: `task/ARCH-052-BACKGROUND-008`; this report/status update is to be committed and pushed separately.
+
+Completion Report status: Ready for Review. No Architect acceptance decision has been made by this agent.
 
 
 ## Architect Review
