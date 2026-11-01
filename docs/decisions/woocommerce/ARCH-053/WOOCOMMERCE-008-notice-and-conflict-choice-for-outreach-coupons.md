@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 68
-executor: codex
-claimed_at: 2026-11-01T22:39:04Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-053-WOOCOMMERCE-007
@@ -27,7 +27,7 @@ updated: 2026-11-01
 
 ## Architecture
 
-`ARCH-053` — `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`, coordinated by `moda_architect`. Materialised. Attempt 1 has received Architect Review — Changes Requested; the same task is Ready for correction with the execution claim cleared.
+`ARCH-053` — `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`, coordinated by `moda_architect`. Materialised. Attempt 1 received Changes Requested; Attempt 2 is submitted for Architect Review.
 
 ## Objective
 
@@ -144,29 +144,28 @@ Use supported Woo cart/coupon and Blocks extension surfaces, not direct Blocks R
 
 ### Status
 
-Changes Requested — Attempt 1. The live Checkout Blocks rendering blocker is resolved and its passing validation remains valid. Architect review of the local implementation found three blocking deficiencies: stale choice forms can act on a newer recovery, cart/session read exceptions can escape checkout boundaries, and alternate-set validation replaces the original dependency error. Return the same task to Ready with executor and claimed_at cleared; preserve Attempt 1 until the next claim. Implementation and report changes remain local and unpublished.
+Ready for Review — Attempt 2. All three architect corrections are implemented with focused regressions. The prior live Checkout Blocks rendering blocker remains resolved. This task is submitted for architect review; it is not accepted or Complete. `ARCH-053-SYSTEM-TEST-003` remains Pending.
 
 ### Files Changed
 
-`moda-interact-woocommerce`: `composer.json`, `moda-interact.php`, `webpack.config.js`, `includes/Runtime.php`, checkout coupon/restore/presenter classes, `src/checkout-outreach-choice.js`, focused PHPUnit tests and WooCommerce integration scenario, plus the POT and 19 locale packs.
+`moda-interact-woocommerce`: `composer.json`, `moda-interact.php`, `webpack.config.js`, `includes/Runtime.php`, checkout coupon/restore/presenter classes including `CheckoutDiagnosticLogger.php`, `src/checkout-outreach-choice.js`, focused PHPUnit tests and WooCommerce integration scenario, plus the POT and 19 locale packs.
 
 ### Work Completed
 
-Implemented session-only choice state with same-origin, nonce-protected one-time POST; cart, coupon-set and checkout-generation checks; rollback and notice preservation; sanitized private diagnostics; Classic control and Blocks SlotFill assets. The corrected live Classic scenario explicitly verifies the native checkout form, confirms that the original coupon remains applied by default, and confirms the offered coupon is applied only after explicit choice with a recalculated Woo total. A real WooCommerce conflict case also exposed and fixed the rejected-offer path where Woo preserves an individual-use original coupon.
+Implemented session-only choice state with a per-choice nonce action, same-origin one-time POST, cart/coupon/generation checks, guarded rollback and notice preservation, sanitized private diagnostics, and Classic/Blocks controls. Stale recovery forms cannot act on a later choice or invalidate its current control. Render and POST cart-read exceptions are contained and privately logged. Alternate-set validation retains the original exception class and safe message while explicitly redacting coupon values. The live Classic and Blocks scenarios confirm the original coupon default, explicit switching, expired-offer rollback and cart-change redraw.
 
 ### Validation Results
 
-Start-of-attempt synchronization: the parent task worktree was clean at `ca0cc535a`; the implementation worktree was clean at `b0a96fb` on `task/ARCH-053-WOOCOMMERCE-008`. Both matched the launcher-prepared task branch at claim.
+Attempt 2 preparation and synchronization evidence from the launcher: parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-008`, branch `task/ARCH-053-WOOCOMMERCE-008`, remote task fast-forward `not-needed`, `origin/main` incorporated `yes`, synchronized HEAD `aa774530084adfddf76eb122aeb68fe6dbf5370d`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-008`, same task branch, remote task fast-forward `not-needed`, `origin/main` incorporated `already-current`, HEAD `c0c24e243fe016f2de341714baf5fdc996efa144`. The launcher claimed Attempt 2 as Codex at `2026-11-01T22:39:04Z`, with dependency gate passed. Recursive submodule sync and initialization passed; no recursive submodules were listed. The shared workspace checkouts were not switched for implementation work.
 
-- `composer test -- --do-not-cache-result tests/CheckoutCaptureTest.php tests/CheckoutOutreachCouponChoiceTest.php tests/CheckoutOutreachCouponRestorerTest.php tests/CheckoutCouponOutcomeHandlerTest.php tests/CheckoutResumeControllerTest.php` — rerun after presenter simplification: passed, 51 tests / 407 assertions.
-- `composer lint` — rerun after presenter simplification: passed.
-- `npm run build` — original Attempt 1 result retained: passed; strict i18n verification covered 589 source messages and 19 locale packs. Webpack reported the existing 318 KiB main bundle size warning. This assistance changed PHP registration and the integration scenario, so the unchanged browser assets were not rebuilt.
+- `composer test -- --do-not-cache-result tests/CheckoutCaptureTest.php tests/CheckoutOutreachCouponChoiceTest.php tests/CheckoutOutreachCouponRestorerTest.php tests/CheckoutCouponOutcomeHandlerTest.php tests/CheckoutResumeControllerTest.php` — passed, 55 tests / 428 assertions. Regressions cover superseded form replay, render and POST cart-read exceptions, and original custom exception class plus redacted provider message.
+- `composer lint` — passed after the final logger change.
 - `node --check tests/integration/scenarios/checkout-wordpress.mjs` and `git diff --check` — passed.
-- Original live run — reproduced the missing Checkout Blocks failure. The earlier Classic result did not prove native checkout rendering because the footer fallback could render the choice on the coming-soon page.
-- `MODA_CHECKOUT_TEST_DISPOSABLE=1 MODA_CHECKOUT_EVIDENCE_DIR=/tmp/arch053-woo008-evidence npm run test:integration:wordpress -- --restore-only` — final assistance run passed, exit 0. The existing confirmed-restore and coupon-observation assertions passed, together with three real Chromium Blocks scenarios: `switch`, `rejected` and `cart-change`. Each waits for the mounted Checkout block and checks shopper-visible totals against the Store API; the scenarios verify the original default, explicit native form submission, full rollback when the offered coupon expires, one-time control removal, and changed-cart redraw. No browser exceptions occurred. Choice form fields contain only the action and nonce; ordinary Woo coupon badges remain authoritative.
+- `npm run build` — passed on Attempt 1; strict i18n verification covered 589 source messages and 19 locale packs. Webpack reported the existing 318 KiB main bundle size warning. Attempt 2 changes PHP and tests only; no browser asset changed.
+- Disposable WordPress/WooCommerce integration — passed: confirmed restore and real Chromium Blocks `switch`, `rejected`, and `cart-change` scenarios. The scenario checked actual totals, original-coupon default, explicit choice, expired-offer rollback, one-use removal and changed-cart redraw. This integration was run before the final logger-only PHP change; the focused exception-class regression and lint were rerun after it. The task-specific environment was stopped. The subsequent Woo bootstrap reported Docker's daemon unavailable, so the UI integration was not rerun after that logger-only change.
 - Local validation log: `/tmp/arch053-woo008-blocks-totals.log`. Optional before/after screenshots for all three Blocks scenarios are in `/tmp/arch053-woo008-evidence/`; these are local assistance artifacts, not published task evidence.
 
-The task-specific `wp-env` was isolated from the existing ARCH-046 environment. Its connection fixture used schema version 1, credential version 2 and the canonical local site URL.
+The task-specific `wp-env` was isolated from the existing ARCH-046 environment. Its connection fixture used schema version 1, credential version 2 and the canonical local site URL. The prepared launcher claim commit is `c2f301603a07c66ac1ae43cda185d2b599680c28`; the implementation commit is `c0c24e243fe016f2de341714baf5fdc996efa144`.
 
 ### Checkout Blocks assistance
 
@@ -186,7 +185,7 @@ Defined from the 2026-10-30 uploaded snapshot. Re-read current task and reposito
 
 ### Unresolved Issues
 
-At the time of Correction Review 2, alternate-set validation retained the redacted exception message but replaced the original exception class. The latest local correction preserves both the original type and the safe message. Final acceptance remains pending; ARCH-053-SYSTEM-TEST-003 remains Pending.
+No unresolved implementation findings remain from the two correction reviews. Architect acceptance is pending. `ARCH-053-SYSTEM-TEST-003` remains Pending until this task is accepted.
 
 ### Architectural Concerns
 
@@ -273,3 +272,9 @@ Changes Requested — correction review, 2026-11-01. The stale-form nonce and ch
 ### Follow-up
 
 Preserve the source exception type in the private diagnostic and add the regression before resubmission. The task remains Ready at Attempt 1 with its claim cleared; use the prescribed task workflow to claim the correction attempt and synchronize the mirrored task branches. ARCH-053-SYSTEM-TEST-003 remains Pending.
+
+## Correction Review 2 Response
+
+Implemented: `CheckoutOutreachCouponRestorer::canApplyChoiceSetAlone()` now sends the original caught throwable to `CheckoutDiagnosticLogger::record()` with a separate safe-message override. The logger records the original exception class while applying bounded redaction to the message. The regression throws `SyntheticCouponProviderFailure` and asserts the exact logged class, the retained safe provider diagnostic, and the absence of both coupon values.
+
+Validation after this final correction: the task-focused checkout suite passed (55 tests / 428 assertions), `composer lint` passed, and the prior isolated WordPress/WooCommerce integration passed its Classic restore and real Blocks `switch`, `rejected`, and `cart-change` scenarios. The live integration preceded this logger-only PHP change; the new type assertion and PHP lint were rerun afterward. SYSTEM-TEST-003 remains Pending until architect acceptance.
