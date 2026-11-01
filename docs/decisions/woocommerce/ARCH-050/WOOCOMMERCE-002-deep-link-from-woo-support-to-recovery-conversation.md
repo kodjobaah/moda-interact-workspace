@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-050-API-002
 enables:
@@ -68,11 +68,11 @@ No new Woo public endpoint or background-provider callback is allowed.
 
 ## Work Items
 
-- [ ] Upgrade PHP history validator and JS page validator to exact Support v2 item shape; preserve v1 command receipts.
-- [ ] Add pure safe `recoveryConversationHref(recoveryId)` based on current `recoveryDetailHref`; extend Support card action/label without altering billing actions.
-- [ ] Set transcript anchor and post-mount focus/scroll (if required by lazy render).
-- [ ] Test malformed, missing, cross-shop/null, wrong code/version, billing link regression and WordPress capability/nonce restrictions.
-- [ ] Add failure-path tests distinguishing intentionally unavailable recovery links from thrown Support transport/contract errors; verify plugin error state and non-swallowing PHP error boundary.
+- [x] Upgrade PHP history validator and JS page validator to exact Support v2 item shape; preserve v1 command receipts.
+- [x] Add pure safe `recoveryConversationHref(recoveryId)` based on current `recoveryDetailHref`; extend Support card action/label without altering billing actions.
+- [x] Set transcript anchor and post-mount focus/scroll after the async detail component mounts.
+- [x] Test malformed, missing, null/cross-shop reference, wrong code/version, billing link regression and WordPress capability/nonce restrictions.
+- [x] Add failure-path tests distinguishing intentionally unavailable recovery links from thrown Support transport/contract errors; verify plugin error state and non-swallowing PHP error boundary.
 
 ## Interfaces / Contracts
 
@@ -100,18 +100,18 @@ export function recoveryConversationHref(recoveryId) {
 
 ## Acceptance Criteria
 
-- [ ] Recognised notification displays localized View conversation and opens the exact Woo recovery conversation panel.
-- [ ] Malformed/null ID, unrelated/wrong-version code, non-SYSTEM or unavailable message produces no recovery link.
-- [ ] PHP/browser validators both accept complete v2 history and reject malformed versions/unknown fields; v1 compose/read still work.
-- [ ] No billing action regression and no unauthorized recovery access through manually changed WP URL.
-- [ ] Async loading still lands at the transcript; WordPress auth/nonce/install checks stay unchanged.
-- [ ] Real Support read/contract failure is shown as failure rather than silently replaced with an empty page; intentional null recovery references simply omit the link.
+- [x] Recognised notification displays localized View conversation and opens the exact Woo recovery conversation panel.
+- [x] Malformed/null ID, unrelated/wrong-version code, non-SYSTEM or unavailable message produces no recovery link.
+- [x] PHP/browser validators both accept complete v2 history and reject malformed versions/unknown fields; v1 compose/read still work.
+- [x] No billing action regression and no unauthorized recovery access through manually changed WP URL.
+- [x] Async loading still lands at the transcript; WordPress auth/nonce/install checks stay unchanged.
+- [x] Real Support read/contract failure is shown as failure rather than silently replaced with an empty page; intentional null recovery references simply omit the link.
 
 ## Validation
 
-- [ ] Focused Support/recovery detail JS tests via `npm run test:js:unit` and `npm run test:php` for PHP strict validator/controller.
-- [ ] Negative browser/PHP test verifies failed v2 history/transport does not show a successful empty inbox; check bounded PHP logging when a new catch is introduced.
-- [ ] `npm run i18n:verify:20`, `npm run build`, targeted lint, `git diff --check`.
+- [x] Focused Support/recovery detail JS tests via `npm run test:js:unit` and `npm run test:php` for PHP strict validator/controller.
+- [x] Negative browser/PHP test verifies failed v2 history/transport does not show a successful empty inbox; check bounded PHP logging when a new catch is introduced.
+- [x] `npm run i18n:verify:20`, `npm run build`, targeted lint, `git diff --check`.
 
 ## Stop Condition
 
@@ -125,62 +125,154 @@ Use the already-existing WP `recoveryDetailHref` sanitization instead of constru
 
 ### Status
 
-Not Started.
+Ready for architect review. Attempt 2 is a report-only correction; implementation remains at commit `540a36533071cd9e51a5b8a817877839e97aa049`, and functional validation evidence below remains from Attempt 1.
 
 ### Files Changed
 
-None (definition only).
+Support PHP/JS contracts and controller logging; recovery detail navigation and conversation section; Support and recovery detail tests; gettext POT and all 19 PO catalogs.
 
 ### Work Completed
 
-None.
+Woo Support history now strictly validates schema v2 with a required nullable, safe `checkoutRecoveryId` on every message. Compose/read receipts remain v1. Eligible recovery outreach notices get a local, validated conversation link and translated label; the existing billing destinations and labels remain intact. The conversation section has a stable anchor, and the connected detail screen scrolls to it after mount when the URL carries the anchor. Unexpected Support proxy exceptions are logged through `wc_get_logger()` with a stable operation and bounded class/code context; logger failures preserve the sanitized 503 response. PHP and browser failure paths are covered.
 
 ### Validation Results
 
-Not executed; no implementation claimed.
+`npm run test:js:unit`: passed, 61 files / 464 tests. `npm run test:php`: passed, 217 tests / 1,670 assertions with one PHP warning. A diagnostic `vendor/bin/phpunit --display-warnings` run identified it: `RecoveryPolicyControllerTest.php:14` reads the unset global `$moda_interact_test_logger` when `wc_get_logger()` is called by `ConnectionControllerTest::test_connect_challenge_persists_only_server_state_then_probe_returns_safe_principal` and `ConnectionControllerTest::test_persistence_failure_keeps_previous_connection_and_never_returns_new_credential`. The test-only logger stub is defined by the recovery-policy test file, but those connection tests run before that test class's `setUp()` initializes the global. This is a test-fixture initialization warning, not a failed assertion or product runtime failure; all tests and assertions completed and PHPUnit exited 0. The diagnostic run also printed a separate PHP warning after completion because the sandbox denied PHPUnit's write to `.phpunit.cache/test-results`; it did not change the test count or result. No implementation change was made for either warning. `npm run i18n:verify:20`: passed as part of `npm run build` (558 source messages; 19/19 translation packs); build passed with existing webpack bundle-size warnings. PHP lint passed. Targeted JS lint passed on all changed JS files. `git diff --check` passed. Full-repository JS lint reports existing issues in unrelated integration files; changed task files pass targeted lint.
 
 ### Deviations
 
-None.
+No `ModaApiClient.php` change was needed because `merchantSupportHistory()` already routes successful history responses through `SupportResponseValidator::history()`.
 
 ### Assumptions
 
-The task is based on the 2026-10-26 uploaded snapshot and must recheck current canonical code during execution.
+The completed API-002 schema is the source of truth for the v2 history shape. Existing Woo `wc_get_logger()` is the appropriate plugin-side exception logger; the Node Shared logger is not imported into the PHP plugin.
 
 ### Unresolved Issues
 
-None recorded at definition time.
+The repository-wide JS lint command reports pre-existing formatting/rule violations in unrelated integration files. All changed task JavaScript files pass targeted lint.
 
 ### Architectural Concerns
 
-Return newly discovered cross-repository/schema/security/contract issues to `moda_architect`.
+None discovered. Existing capability, REST nonce, installation identity and hosted tenant authorization paths remain unchanged.
 
 ### Task Branch / Worktree Evidence
 
-Not materialised. Launcher-resolved parent/implementation task worktree, synchronization and branch evidence are required at execution.
+Physical isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-050-WOOCOMMERCE-002` on `task/ARCH-050-WOOCOMMERCE-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-050-WOOCOMMERCE-002` on `task/ARCH-050-WOOCOMMERCE-002`. Neither shared checkout was switched for task work; no other task worktree was reused.
+
+Attempt 1 start-of-attempt synchronization, from its original prepared packet:
+
+- Parent starting HEAD: `c78aee0260461190e617b1ec456192049c83c6a7`; remote task-branch fast-forward: not needed; `origin/main` incorporated: yes, by synchronization merge `01f29cf9ca61ce85c6b5f85f1cb1031671462230`.
+- Implementation starting HEAD: `68887350ae485bcdc354581f26096006b73afbe1`; remote task-branch fast-forward: not needed; `origin/main` incorporated: already current at that HEAD.
+- Recursive implementation submodule sync and update passed. The prepared packet had no submodule entries; the WooCommerce repository has no registered submodules, so there are no submodule commit IDs to list.
+
+Attempt 2 report-correction launcher packet: parent worktree was at `5800b789dac347e4d3ba5b99d7119f58648adb6a`; implementation worktree was at `540a36533071cd9e51a5b8a817877839e97aa049`. For both, remote task-branch fast-forward was not needed and `origin/main` was already incorporated. Recursive submodule sync/update passed and reported no entries. The launcher claimed Attempt 2 and pushed claim commit `8c8eca91eee92694ae0e8e9bc27ce8b3d29a246a`; the Attempt 2 report correction preserves the Attempt 1 implementation and functional validation.
 
 ## Architect Review
 
-### Review Status
+### Attempt 2 Architect Review
 
-Pending.
+#### Review Status
 
-### Review Notes
+Accepted
 
-Awaiting implementation.
+#### Review Notes
 
-### Reviewed Files
+The Attempt 2 correction supplies the missing workflow and validation evidence. The original Attempt 1 prepared packet now records the starting HEADs for both dedicated worktrees, the task-branch and `origin/main` synchronization outcomes, and recursive submodule preparation; it also states that the WooCommerce repository has no registered submodules. Attempt 2's launcher packet and report-only correction are separately identified.
 
-None.
+The PHP warning is explicitly attributed to an unset test-only logger global read by the `RecoveryPolicyControllerTest.php` stub when two `ConnectionControllerTest` cases call `wc_get_logger()` before that test fixture initializes the global. The report records all 217 tests and 1,670 assertions passing with exit code 0. The separate PHPUnit cache write warning is also identified as sandbox-related and post-run. Neither warning indicates a task implementation failure, and no rerun is needed for this review.
 
-### Validation Reviewed
+The implementation at `540a36533071cd9e51a5b8a817877839e97aa049` remains the previously reviewed, clean implementation branch. Its strict API-002 v2 history validation, locally generated recovery conversation link, billing-link preservation, transcript anchor and post-mount navigation, and bounded failure logging remain within task scope and WooCommerce ownership. All task acceptance criteria and required validation are reported complete. `ARCH-050-API-002` is complete. The task is accepted and completed under `completion_mode: automatic`.
 
-None.
+#### Reviewed Files
 
-### Architecture Conformance
+- Task Completion Report and Attempt 2 synchronization/validation evidence.
+- Implementation branch `task/ARCH-050-WOOCOMMERCE-002` at `540a36533071cd9e51a5b8a817877839e97aa049` and its previously reviewed implementation diff.
+- `includes/Api/SupportResponseValidator.php`, `includes/Rest/SupportController.php`, `src/support/support-contract.js`, `src/support/support-message-card.js`, `src/recoveries/detail/detail-navigation.js`, `src/recoveries/detail/connected-recovery-detail-screen.js`, and `src/recoveries/detail/conversation/conversation-panel.js`, plus their task tests.
+- `ARCH-050` architecture and `ARCH-050-API-002` dependency record.
 
-Not yet reviewed.
+#### Validation Reviewed
 
-### Follow-up
+Reviewed the recorded passing `npm run test:js:unit` (61 files / 464 tests), `npm run test:php` (217 tests / 1,670 assertions), `npm run build`, `npm run i18n:verify:20`, PHP lint, targeted changed-file JS lint, and `git diff --check`. The report identifies the non-failing PHP test-fixture warning and the separate post-run cache-write warning. No validation was rerun. Parent task branch `1fba1f77d5d9e60b068e6e296b29c3bff1aaf7e9` and implementation task branch `540a36533071cd9e51a5b8a817877839e97aa049` are clean and match their locally recorded remote-tracking refs.
 
-None.
+#### Architecture Conformance
+
+Conforms to task scope, ARCH-050, the API-002 contract, WooCommerce repository boundaries, and required worktree-isolation evidence. No implementation changes are requested.
+
+#### Follow-up
+
+`ARCH-050-SYSTEM-TEST-002` remains Pending because `ARCH-050-WOOCOMMERCE-001` and other listed prerequisites are not yet complete. No dependent implementation task is promoted by this acceptance.
+
+
+### Attempt 1 Architect Review
+
+#### Review Status
+
+Changes Requested — report/evidence only
+
+#### Review Notes
+
+The implementation diff and recorded functional validation conform to the task
+scope. The strict Support history v2 validators, same-site local conversation
+link, existing fixed billing links, transcript anchor, async detail mount, and
+failure-path handling are consistent with the task and the accepted
+`ARCH-050-API-002` dependency. No implementation change is requested.
+
+Acceptance is withheld because the Completion Report does not include the
+required start-of-attempt synchronization evidence. It records the launcher
+worktree paths and task branch names, but not the starting HEADs or the task
+branch / `origin/main` synchronization outcomes for both repositories. The
+statement that a later prepare refused to overwrite Attempt 1 is not a substitute
+for the original prepared packet evidence. The PHP test report also says “one
+warning” without identifying or classifying that warning.
+
+#### Reviewed Files
+
+- Implementation commit `540a36533071cd9e51a5b8a817877839e97aa049` and its 32-file diff from `origin/main`.
+- `includes/Api/SupportResponseValidator.php`
+- `includes/Rest/SupportController.php`
+- `src/support/support-contract.js`
+- `src/support/support-message-card.js`
+- `src/recoveries/detail/detail-navigation.js`
+- `src/recoveries/detail/connected-recovery-detail-screen.js`
+- `src/recoveries/detail/conversation/conversation-panel.js`
+- The task’s PHP and JavaScript tests and Completion Report.
+- `ARCH-050` architecture and `ARCH-050-API-002` dependency record.
+
+#### Validation Reviewed
+
+The report records passing `npm run test:js:unit` (61 files / 464 tests),
+`npm run test:php` (217 tests / 1,670 assertions), `npm run build` and
+`npm run i18n:verify:20`, PHP lint, targeted JS lint, and `git diff --check`.
+The implementation branch is clean at the pushed commit. I did not rerun the
+checks. The PHP test warning is not described, so its significance cannot yet
+be assessed.
+
+#### Architecture Conformance
+
+The code changes stay within WooCommerce ownership and implement the API-002 v2
+contract without exposing an external URL or bypassing recovery authorization.
+The claimed dependency `ARCH-050-API-002` is Complete in this task branch. The
+implementation worktree and parent worktree paths match the launcher-resolved
+canonical task locations. Workflow evidence remains incomplete pending the
+prepared packet synchronization details and warning classification.
+
+#### Follow-up
+
+Return this same task to the existing execution path for a report-only
+correction. Preserve the implementation at `540a36533071cd9e51a5b8a817877839e97aa049`
+and the recorded validation; no code changes or test reruns are requested unless
+the warning investigation shows a validation failure. Add to the Completion
+Report, from the original Attempt 1 prepared packet:
+
+1. The parent and implementation starting HEADs.
+2. For each repository, the remote task-branch fast-forward result and whether
+   `origin/main` was already incorporated.
+3. Recursive submodule synchronization/update outcome and commit evidence, or
+   explicitly state that the implementation repository has no registered
+   submodules.
+4. The exact `npm run test:php` warning and why it is non-blocking or how it was
+   resolved.
+
+The Attempt 1 claim remains historical. Task status is Ready, executor/claim are
+cleared, and `attempt: 1` is preserved so the next authorized claim increments
+it once. No dependent task is promoted.
