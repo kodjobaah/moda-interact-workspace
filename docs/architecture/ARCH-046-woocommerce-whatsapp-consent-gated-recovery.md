@@ -4,7 +4,7 @@ title: WooCommerce Moda checkbox consent and customer-phone admission
 status: proposed
 coordinator: moda_architect
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-11-01
 ---
 
 # ARCH-046 — WooCommerce WhatsApp consent-gated recovery
@@ -46,10 +46,19 @@ WooCommerce lacks a uniform WhatsApp recovery permission source comparable to Sh
 
 ## Proposed Architecture
 
+### 1 November 2026 — consent evidence is not feature entitlement (superseding capture gate)
+
+**Approved correction:** The customer grants or withdraws merchant-scoped WhatsApp marketing consent through a trusted Woo checkout action. That decision is **passive evidence**, not permission to create a CheckoutRecovery or send WhatsApp messages. The hosted API-007 v2 consent writer already excludes subscription/billing-plan/feature lookups; the Woo producer must not reintroduce the same gate through `GET /v1/merchant/feature-preferences` before GRANT. This decision supersedes older text below that conditions **consent capture** on `checkout_recovery.effective`, `planEligible`, or a remote feature-preferences response.
+
+- **Capture boundary (WOOCOMMERCE-003):** render the one optional checkbox when the WordPress plugin has a locally valid, connected installation/site identity. On a real deliberate GRANT/REVOKE validate active checkout, nonce/Cart Token, shopper/session, server-observed canonical recipient, disclosure, ordering and revocable proof as appropriate. POST only the approved v2 consent event over authenticated server-to-server transport. Do not perform hosted subscription/feature preference reads on checkbox render, status hydration, check, uncheck, or retry. The hosted consent endpoint still authenticates/rechecks installation, shop and credentials and enforces tenant isolation, idempotency, current consent and STOP non-override.
+- **Recovery and messaging boundary:** only the normal checkout reconciliation/admission and final outbound gates may evaluate enabled features, plan entitlement, recipient-specific current consent, merchant suppression and authoritative STOP. Disabled or plan-ineligible recovery must block recovery and messages **but not prevent an otherwise valid opt-in evidence write**. A consent change does not enqueue/restart recovery, send a message, reserve a credit or clear STOP.
+- **Identity and UI:** an explicitly checked UI is not durable consent until the hosted writer acknowledges it. Local checked/unchecked choice must survive ordinary form edits without fabricating a grant. Account/session/phone changes require identity and destination revalidation; a pre-existing phone-specific evidence reference cannot silently authorize another recipient. A separate contract decision is needed for automatically transferring verified person-level preference to a different destination; this correction does not authorize that transfer.
+- **Scope and sequencing:** this is a correction of the existing in-progress `ARCH-046-WOOCOMMERCE-003` implementation, not a reopening of completed WOOCOMMERCE-001/002 or API-007 and not a new API task. Retain API-006 proof-backed returning-state review gate. Correct `ARCH-046-SYSTEM-TEST-001` to cover entitlement-disabled capture and downstream admission suppression. No `_index.md`, DB schema or runtime repository is modified by this architect documentation patch.
+
 ### Checkout customer action
 
-- **WOOCOMMERCE-001:** one opt-in field and clear Recovery Settings guidance in existing plugin UI when connected and recovery feature enabled. The field is not installed permanently into the theme and disappears on later page loads when feature/plugin becomes inactive. No support for arbitrary third-party consent plugins.
-- **WOOCOMMERCE-002/003:** use supported Classic/Blocks hooks; verify that the customer actively selected/withdrew the checkbox during a current checkout (server-side field observation, normal WooCommerce nonce/session protections). A stale checkout page cannot submit a new GRANT after disconnect/feature-disable. Pre-submit acknowledgements determine when consent is valid; if checkout activity overtakes the consent ACK, that checkout may remain ineligible.
+- **WOOCOMMERCE-001, refined in WOOCOMMERCE-003:** one optional opt-in field and clear Recovery Settings guidance in the existing plugin UI when the installation is locally connected and site identity is valid; **recovery plan/feature entitlement does not gate the customer decision or its recording**. The field is not installed permanently into the theme and disappears on later page loads when the installation/plugin becomes invalid or inactive. No support for arbitrary third-party consent plugins.
+- **WOOCOMMERCE-002/003:** use supported Classic/Blocks hooks; verify that the customer actively selected/withdrew the checkbox during a current checkout (server-side field observation, normal WooCommerce nonce/session protections). A stale checkout page cannot submit a new GRANT after installation disconnect/revocation, invalid session or site mismatch; **a recovery-feature disable alone does not revoke customer consent or reject a valid GRANT**. Pre-submit acknowledgements determine when consent evidence exists; checkout activity overtaking the ACK may still be ineligible for recovery.
 - **API-001:** authenticate WooInstallation (derive shop), verify the deliberate checkbox action, canonicalise the server-observed number, look up by `Customer.shopId` + active `CustomerPhone` canonical phone. Reuse the single match or create an ordinary Customer/CustomerPhone when none exists; ambiguous matches deny the consent write without merging customers. **Matching a number never sets GRANTED**: only a verified affirmative checkbox event does. Withdrawals/regrants use monotonic revisions and stable idempotency IDs. Atomically store current decision and evidence fact.
 
 ### Current state and evidence
@@ -61,7 +70,7 @@ WooCommerce lacks a uniform WhatsApp recovery permission source comparable to Sh
 
 ### Normal recovery only
 
-An eventual separately approved Woo checkout recovery engine reads the active installation and current CustomerPhone during **ordinary** checkout reconciliation. Missing/UNKNOWN/REVOKED/no-contact/ambiguous identity → no CheckoutRecovery, no attempt, no credit and checkout-keyed merchant Support notice when applicable. If consent is granted later, it updates CustomerPhone only; a later ordinary checkout event may create the first recovery after fresh eligibility checks. No guaranteed revisit of old carts and no consent-specific background wakeups.
+An eventual separately approved Woo checkout recovery engine evaluates recovery feature state, plan entitlement, active installation and current recipient-specific CustomerPhone during **ordinary** checkout reconciliation. Missing/UNKNOWN/REVOKED/no-contact/ambiguous identity → no CheckoutRecovery, no attempt, no credit and checkout-keyed merchant Support notice when applicable. If consent is granted later, it updates CustomerPhone only; a later ordinary checkout event may create the first recovery after fresh eligibility checks. No guaranteed revisit of old carts and no consent-specific background wakeups.
 
 ### Marketing purpose and shared STOP behaviour
 
@@ -149,6 +158,7 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 
 ## Change History
 
+- 2026-11-01: Approved passive, authenticated consent evidence independent of recovery-feature entitlement; removed Woo capture-side hosted feature-preferences gate in the WOO-003 correction contract while keeping recovery admission/send-time entitlement, consent and STOP checks. Phone-change preference transfer remains separately gated.
 - 2026-10-20: Initial Woo consent capture and recovery gate proposal.
 - 2026-10-21: Removed 72-hour consent expiry, consent-wakeup/poller and consent-blocked CheckoutRecovery rows.
 - 2026-10-21: Consolidated Database/Shared ownership, removed third-party consent provider selection, and merged merchant guidance into the checkout UI task.

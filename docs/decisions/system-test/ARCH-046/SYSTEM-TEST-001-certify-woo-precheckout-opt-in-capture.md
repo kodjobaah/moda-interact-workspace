@@ -26,7 +26,7 @@ depends_on:
   - ARCH-046-WOOCOMMERCE-007
 enables: []
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-11-01
 ---
 
 # Certify Woo pre-submission WhatsApp consent capture on LocalWP
@@ -54,7 +54,7 @@ The current Woo integration is ARCH-035 capture-only. Consent is stored on Custo
 ## Scope
 
 - Run connected LocalWP Classic and Blocks for guest/account customers, pre-submit grant, revoke, later grant and abandon-before-order scenarios. Check shared CustomerPhone current decision and **one append-only evidence fact per accepted change**, accurate disclosure/version and exactly one idempotent event retry.
-- Verify default unknown with one initially unchecked Moda checkbox when installed/connected and recovery-enabled; no checkbox when disabled/deactivated/disconnected, no grant from an already-open stale page after disabling recovery, and no selectable external-provider mode.
+- Verify the default-unknown checkbox is initially unchecked on a locally connected and valid Woo installation **independently of recovery feature enablement or plan entitlement**. A valid deliberate GRANT is recorded even with disabled/ineligible recovery. Deactivated/disconnected/revoked installations and invalid checkout identities cannot create a GRANT; no selectable external-provider mode.
 - Test guest identity, phone change, same account across verified checkouts, out-of-order replay, API outage while checkout continues, 20 locales and HPOS. No 72-hour consent expiry.
 - Verify the checkbox disclosure clearly identifies WhatsApp **abandoned-basket marketing**, the merchant and the exact consent purpose across supported locales. An unchecked checkbox or an ordinary phone number cannot be recorded as marketing opt-in. After standalone STOP, Woo CustomerPhone remains blocked alongside other currently registered merchants' records even if the customer later checks the Woo opt-in box or Shopify separately reports `SUBSCRIBED`; this capture-only test must assert no STOP clearance.
 - Assert **zero CheckoutRecovery rows, provider sends, recovery credits, BullMQ consent-driven jobs or evidence processing/claim/ack fields** during capture-only rollout. Consent history is audit only, not a worklist.
@@ -75,6 +75,7 @@ The current Woo integration is ARCH-035 capture-only. Consent is stored on Custo
 
 - [ ] Build separated realistic Classic/Blocks fixtures, executors, DB and consent assertions.
 - [ ] Run customer/phone grant/revoke/installation lifecycle/no-recovery and regression tests.
+- [ ] Prove Classic and Blocks perform no hosted feature-preferences read before recording valid opt-in, including when the feature preferences API times out; inspect authenticated v2 write ACK, PostgreSQL consent/evidence and zero recovery/credit/WhatsApp side effects when plan or feature is disabled.
 - [ ] Record LocalWP, API, DB evidence and skipped constraints.
 
 ## Interfaces / Contracts
@@ -100,7 +101,7 @@ None
 ## Acceptance Criteria
 
 - [ ] Current phone/source is on existing CustomerPhone/installation; exactly one `commerce.WhatsAppConsentEvidence` audit table and no worklist.
-- [ ] Actual Classic/Blocks secure consent decisions before order and later withdrawal are proven on real WP/API/PostgreSQL.
+- [ ] Actual Classic/Blocks secure consent decisions before order and later withdrawal are proven on real WP/API/PostgreSQL, without using recovery-feature entitlement as a consent-write prerequisite.
 - [ ] No recovery, credit, outbound provider send, consent-driven queue or scheduled checkout recheck in the capture-only phase.
 
 - [ ] Existing Customer/CustomerPhone may be resolved by one unambiguous merchant-scoped canonical phone, while a grant still requires an authenticated deliberate checkbox action; ambiguous matches, stale sender permission and consent-driven recovery jobs are rejected.
