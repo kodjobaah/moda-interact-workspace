@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: pending
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 65
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-041-API-014
 enables:
@@ -29,8 +29,8 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `pending` according to explicit dependencies in this snapshot; readiness is re-gated by the launcher before an attempt.
+- **Definition state:** materialised on the canonical parent `task/ARCH-041-API-012` branch and published with the task report.
+- **Task state:** `complete`, Attempt 1; its sole explicit dependency, `ARCH-041-API-014`, was complete before the implementation attempt.
 
 ## Objective
 
@@ -43,8 +43,8 @@ API-008 through API-011 extract the remaining billing and merchant handlers. `sr
 ## Scope
 
 - Define one API-local shared Node HTTP route interface at `src/http/route-handler.ts` with the existing `handle(IncomingMessage, ServerResponse): Promise<boolean>` semantics; adopt that exact type for server route registration without changing existing `false` fallthrough.
-- Introduce a small explicit `src/composition/` dependency-assembly module (e.g. `merchant.ts`, `billing.ts`, `woocommerce.ts`, `routes.ts` as justified) and ordered HTTP handler collection wired from `src/index.ts` to `src/server.ts`. Only construct collaborators used by accepted routes; no placeholder files.
-- Register health, Woo REST-read authorisation/callback, signed billing webhook, all merchant handlers, billing handlers and finally install/connect/probe with correct method routing. Use the *accepted* upstream ARCH-026/035/036/040 route inventory (refreshed by API-008), not a stale route list from API-001.
+- Introduce a small explicit `src/composition/` dependency-assembly module (e.g. `merchant.ts`, `billing.ts`, `woocommerce.ts`, `routes.ts` as justified) and ordered HTTP handler collection wired from `src/index.ts` to `src/server.ts`. Only construct collaborators required by routes that exist in the execution baseline; no placeholder files or prospective feature endpoints.
+- Register health, Woo REST-read authorisation/callback, signed billing webhook, all merchant handlers, billing handlers and finally install/connect/probe with correct method routing. Use the **actual served route inventory** characterized by API-008 and refreshed after API-011; do not synthesize handlers for pending ARCH-026/035/040 tasks.
 - Keep domain services constructed once at startup, with injected Prisma client, config, authenticator and logger; do not construct per request.
 - Preserve server start/shutdown idempotence, readiness deadline, error handling and signal shutdown behaviour.
 
@@ -59,11 +59,11 @@ API-008 through API-011 extract the remaining billing and merchant handlers. `sr
 - No new HTTP framework, reflection-based route discovery, global catch-all auth or generic provider credential handler.
 - Preserve the route security matrix: public health, Woo site proof for connect, installation bearer/principal for merchant/billing and probe, HMAC-signed billing webhook, and one-time REST-read callback capabilities. No global authentication wrapper, no *new* auth implementation or policy: consume the authenticator and principal already relocated by API-014; no Woo PHP/Shopify changes.
 - On routes that share a path but differ by method, respect each handler’s `false` result and never shadow GET with POST.
-- No missing existing API route even when introduced by accepted ARCH-026/035/036/040 tasks. Keep existing canonical bearer principal/credential-version semantics and protect callback/webhook endpoints from installation-router fallthrough.
+- No missing existing API route, including any already implemented under ARCH-026/035/036/040. Preserve canonical bearer principal/credential-version semantics and protect callback/webhook endpoints from installation-router fallthrough; do not add routes solely from pending feature specifications.
 
 ## Work Items
 
-- [ ] Compare the post-API-011 accepted route inventory and API-008 characterization updates with the proposed final route composition; register every accepted route and test its method, security boundary, denial and error fallthrough. Record coverage in the Completion Report.
+- [ ] Compare the routes actually served after API-011 and API-008 characterization updates with the proposed final composition; register every existing route and test its method, security boundary, denial and error fallthrough. Record coverage in the Completion Report.
 
 - [ ] Establish `src/http/route-handler.ts` as a single narrow handler contract consumed by the top-level dispatcher and feature-owned routes.
 - [ ] Move the nested merchant/billing route registry out of `createWooInstallationRoutes` and shrink the Woo installation router to connect/probe responsibility.
@@ -85,7 +85,7 @@ Canonical API-local `src/http/route-handler.ts` with `handle(IncomingMessage, Se
 
 ## Acceptance Criteria
 
-- [ ] Every accepted ARCH-026/035/036/040 endpoint existing at composition time has a registered handler and path+method/security characterization; callback and webhook routes retain distinct guards and wrong methods fall through as before.
+- [ ] Every endpoint already served at composition time has a registered handler and path+method/security characterization, regardless of its historical initiative; pending feature endpoints not yet implemented are not introduced. Callback and webhook guards and wrong-method fallthrough are preserved.
 
 - [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
 - [ ] `src/composition/` and `src/http/route-handler.ts` exist with exercised, genuinely used production responsibilities; do not create placeholder files or a generic framework.
@@ -118,23 +118,33 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 This is the integration boundary for earlier route extractions. Do not allow the architecture to imply that the new general router authenticates signed provider callbacks with Woo installation credentials. Record all handler registrations including any newly accepted ARCH-040 routes.
 
+## Developer Execution Ownership Amendment
+
+The developer explicitly requested preparation through `/moda_developer_create ARCH-041-API-012`. Execution ownership is changed from `agent` to `developer`, and completion authority from `automatic` to `developer`. `assigned_agent: moda_api`, `repository: moda-interact-api`, task scope, dependencies, acceptance criteria and validation requirements remain unchanged. This amendment does not represent implementation or architectural review.
+
 ## Completion Report
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+Complete — Attempt 1 implementation passed developer self-review, Architect Review was accepted as supplied with the explicit completion request, and the developer recorded completion on 2026-10-16. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None. To be recorded by the executing agent.
+15 files changed in implementation commit `f0f496f567fa577fc5c9902881b1cb810986d2d9`: added `src/http/route-handler.ts` and four `src/composition/` modules; updated `src/index.ts`, `src/server.ts`, and the Woo installation router; adjusted directly affected route tests; added `tests/unit/composition/routes.test.ts` and updated `tests/unit/http/route-dispatch.test.ts`. No API schema, endpoint contract, database, or cross-repository changes.
 
 ### Work Completed
 
-None.
+Extracted a canonical `ApiRouteHandler` contract and moved app assembly to explicit billing, merchant, and Woo route factories. The top-level order places REST-read callbacks and signed billing webhook before merchant/billing routes and installation connect/probe last. Health endpoints remain handled directly by the server. The Woo installation router now handles only connect and auth probe. Services are constructed once at startup and injected into route factories. Composition characterization covers implemented route families, method collisions/fallthrough, callback and webhook precedence, health behavior, and bounded error handling.
 
 ### Validation Results
 
-Not run; source snapshot inspection is not a test run. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers.
+Passed focused command `npx tsx --test tests/unit/composition/routes.test.ts tests/unit/http/route-dispatch.test.ts src/server.test.ts src/woocommerce/installation/routes.test.ts src/billing/commands/routes.test.ts src/billing/presentation/routes.test.ts` (34/34).
+
+Passed `npm test` (407 passed, 0 failed, 42 skipped; skips are conditional PostgreSQL cases), `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check origin/main...HEAD`.
+
+Passed `npm run test:integration` with disposable PostgreSQL: Woo installation (13), bootstrap (2), store context (1), category reads (1), category writes (3), REST-read authorization (4), and ARCH-041 billing (17); 41 integration tests passed, 0 failed. Disposable infrastructure was cleaned up.
+
+Implementation commit `f0f496f567fa577fc5c9902881b1cb810986d2d9` is published to `origin/task/ARCH-041-API-012`. The canonical parent task branch is synchronized and published; parent and implementation worktrees were clean at review. Launcher preparation recorded the canonical worktree paths, dependency gate and recursive-submodule synchronization evidence.
 
 ### Deviations
 
@@ -156,24 +166,42 @@ Return any contract/ownership/security/data/queue or new infrastructure gap to `
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+The developer explicitly supplied “Architect Review Accepted” with the completion request. Acceptance is recorded against implementation commit `f0f496f567fa577fc5c9902881b1cb810986d2d9` and the validation evidence in the Completion Report; no additional architect review notes were supplied.
 
 ### Reviewed Files
 
-None — review will inspect the exact source diff and task/report branches.
+`src/composition/billing.ts`, `merchant.ts`, `routes.ts`, `woocommerce.ts`, `src/http/route-handler.ts`, `src/index.ts`, `src/server.ts`, `src/woocommerce/installation/routes.ts`, affected route tests, and the API-012 task/report branch.
 
 ### Validation Reviewed
 
-Not run.
+Reviewed focused composition/dispatch/server/Woo/billing tests (34/34), full `npm test` (407 passed, 0 failed, 42 skipped), `npm run typecheck`, `npm run lint`, `npm run build`, `git diff --check origin/main...HEAD`, and `npm run test:integration` (41 disposable-PostgreSQL tests passed).
 
 ### Architecture Conformance
 
-To be assessed against `ARCH-041`, the canonical task and actual implementation.
+Accepted for the bounded composition refactor. Route ownership, method fallthrough, health/readiness, callback/webhook authentication isolation, and lifecycle behavior are covered; no wire-contract or schema changes were made.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+Accepted. API-013 is promoted to `ready` as the sole direct downstream task. ARCH-041-SYSTEM-TEST-001 remains `pending` until API-013 is complete.
+
+### Developer Self-Review - Passed
+
+- Attempt: 1.
+- Reviewed implementation commit: `f0f496f567fa577fc5c9902881b1cb810986d2d9`.
+- Result: scope, route inventory, security boundaries, lifecycle behavior and validation passed; task moved to `review` before the explicit completion decision.
+
+### Developer Completion Decision
+
+- Decision: Complete.
+- Authorized action: `/moda_developer_update ARCH-041-API-012 complete`.
+- Date: 2026-10-16.
+- Accepted review: Architect Review Accepted, as explicitly supplied by the developer with this completion request.
+- Attempt: 1, unchanged.
+- Implementation commit: `f0f496f567fa577fc5c9902881b1cb810986d2d9`, published to `origin/task/ARCH-041-API-012`.
+- Parent task/report branch: `task/ARCH-041-API-012`.
+- Dependency frontier: API-013 promoted to `ready`; ARCH-041-SYSTEM-TEST-001 remains `pending` because API-013 is not complete.
+- No task branch was merged to `main`.

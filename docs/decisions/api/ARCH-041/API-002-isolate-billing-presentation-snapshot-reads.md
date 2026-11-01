@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: pending
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 25
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-041-API-001
 enables:
@@ -29,8 +29,12 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `pending` according to explicit dependencies in this snapshot; readiness is re-gated by the launcher before an attempt.
+- **Definition state:** materialised on parent branch `task/ARCH-041-API-002` in the canonical parent task worktree.
+- **Task state:** `complete`; Developer Attempt 1 passed self-review and was explicitly completed by the developer. Attempt remains 1 and execution claim fields are clear.
+
+### Developer Takeover
+
+The task was defined for agent execution with automatic completion. The developer explicitly invoked `/moda_developer_create ARCH-041-API-002`, taking over implementation and completion authority. `assigned_agent: moda_api`, scope, dependencies, acceptance criteria and validation requirements are unchanged. The task is now `execution_mode: developer` and `completion_mode: developer`.
 
 ## Objective
 
@@ -64,10 +68,10 @@ The accepted API-001 migration-backed billing test runner is the shared database
 
 ## Work Items
 
-- [ ] Create the narrow snapshot-loading collaborator and move query-only logic into it.
-- [ ] Adjust the existing service to use it inside the existing transaction.
-- [ ] Add/update focused snapshot tests for invalid Shop, missing subscription, multiple unresolved operations, purchase overflow, and concurrent snapshot consistency.
-- [ ] Run existing billing-read and catalogue tests, including migration-backed PostgreSQL tests against an actually provisioned instance.
+- [x] Create the narrow snapshot-loading collaborator and move query-only logic into it.
+- [x] Adjust the existing service to use it inside the existing transaction.
+- [x] Add/update focused snapshot tests for invalid Shop, missing subscription, multiple unresolved operations, purchase overflow, and concurrent snapshot consistency.
+- [x] Run existing billing-read and catalogue tests, including migration-backed PostgreSQL tests against an actually provisioned instance.
 
 ## Interfaces / Contracts
 
@@ -83,23 +87,23 @@ Internal API-only module contracts; input `WooInstallationPrincipal`, Prisma tra
 
 ## Acceptance Criteria
 
-- [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
-- [ ] One `RepeatableRead` transaction contains every dependent read for one billing response.
-- [ ] All old billing response variants and integrity failures remain unchanged.
-- [ ] Migration-backed PostgreSQL tests demonstrate no cross-tenant read, write or isolation regression.
-- [ ] No changed public exports used by other repositories.
+- [x] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
+- [x] One `RepeatableRead` transaction contains every dependent read for one billing response.
+- [x] All old billing response variants and integrity failures remain unchanged.
+- [x] Migration-backed PostgreSQL tests demonstrate no cross-tenant read, write or isolation regression.
+- [x] No changed public exports used by other repositories.
 
-- [ ] Migration-backed PostgreSQL integration proves this task’s relevant persisted transaction, replay, collision, concurrency and/or integrity invariants against actual applied schema migrations; an unexecuted run is not a pass.
+- [x] Migration-backed PostgreSQL integration proves this task’s relevant persisted transaction, replay, collision, concurrency and/or integrity invariants against actual applied schema migrations; an unexecuted run is not a pass.
 
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); execute the accepted `node scripts/test-arch041-billing-postgres.mjs` runner for billing PostgreSQL evidence and record commands/results separately. This runner **must run `prisma migrate deploy`** (not `prisma db push`) to exercise actual migration-defined constraints/triggers. If Docker/PG cannot run, mark validation **not run/blocked**; neither mocks nor `db push` establish a PostgreSQL pass.
-- [ ] Focused billing presentation unit tests and `src/billing/presentation/billing-read.postgres.test.ts` using the API-001 migration-backed runner; if PostgreSQL cannot run, record the task as blocked rather than passed.
-- [ ] `npm run typecheck` (includes Prisma generate).
-- [ ] `npm run lint`.
-- [ ] `npm test` (existing declared script).
-- [ ] `npm run build`.
-- [ ] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
+- [x] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); execute the accepted `node scripts/test-arch041-billing-postgres.mjs` runner for billing PostgreSQL evidence and record commands/results separately. This runner **must run `prisma migrate deploy`** (not `prisma db push`) to exercise actual migration-defined constraints/triggers. If Docker/PG cannot run, mark validation **not run/blocked**; neither mocks nor `db push` establish a PostgreSQL pass.
+- [x] Focused billing presentation unit tests and `src/billing/presentation/billing-read.postgres.test.ts` using the API-001 migration-backed runner; if PostgreSQL cannot run, record the task as blocked rather than passed.
+- [x] `npm run typecheck` (includes Prisma generate).
+- [x] `npm run lint`.
+- [x] `npm test` (existing declared script).
+- [x] `npm run build`.
+- [x] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
 
 ## Stop Condition
 
@@ -119,31 +123,43 @@ Do not split into independent SQL reads across different transactions. An explic
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+Complete — Developer Attempt 1 passed self-review and was explicitly completed by the developer on 2026-10-16. The attempt remains 1; `executor` and `claimed_at` are cleared.
 
 ### Files Changed
 
-None. To be recorded by the executing agent.
+- `src/billing/presentation/billing-read.service.ts`
+- `src/billing/presentation/billing-snapshot.reader.ts`
+- `src/billing/presentation/billing-read.postgres.test.ts`
+- `tests/unit/billing/presentation/billing-snapshot.test.ts`
+
+Implementation commit `829c0a17635addb0734b6fb6e0df5aa92d4b611d` is pushed to API branch `task/ARCH-041-API-002`. Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-002`, branch `task/ARCH-041-API-002`. Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-041-API-002`, branch `task/ARCH-041-API-002`.
 
 ### Work Completed
 
-None.
+Extracted query-only billing presentation reads into the internal, transaction-bound `BillingSnapshotReader`, retaining one `RepeatableRead` transaction and moving the shop, six bounded core reads, conditional catalogue lookups and confirmed-cancellation lookup behind it. Shop validation, error precedence and response projection remain in `BillingPresentationReadService`. Added focused selector/tenant/limit/error tests and a PostgreSQL concurrent-update test demonstrating the response continues to use its established MVCC snapshot. No schema, migration, Shared, public API or unrelated changes were made.
 
 ### Validation Results
 
-Not run; source snapshot inspection is not a test run. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers.
+- `node --import tsx --test src/billing/presentation/billing-read.service.test.ts tests/unit/billing/presentation/billing-snapshot.test.ts`: 17 passed, 0 failed, 0 skipped.
+- `npm test`: 356 total; 314 passed, 0 failed, 42 skipped (database-dependent suites skipped without their configured DB URL).
+- `node scripts/test-arch041-billing-postgres.mjs`: 16 passed, 0 failed, 0 skipped. The runner created disposable PostgreSQL, applied all 49 migrations with `prisma migrate deploy`, and ran billing read/catalogue plus recurring and recovery-credit PostgreSQL suites. This includes the same-RepeatableRead concurrent-update snapshot assertion.
+- `npm run typecheck`: passed (includes Prisma Client generation).
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `git diff --check origin/main...HEAD`: passed.
+- At implementation reconciliation, both canonical task worktrees were clean and each task branch matched its remote. API implementation branch `task/ARCH-041-API-002` remains at `829c0a17635addb0734b6fb6e0df5aa92d4b611d`. This parent task/report update is being published on the same parent task branch. Recursive `database` submodule is initialized at `139765042baad3901682cfe9c54a3d6bba73e75c`. No merge to `main` was performed.
 
 ### Deviations
 
-None.
+None. Implementation remains within API-002 scope; no assigned-agent assistance was used.
 
 ### Assumptions
 
-The 2026-10-16 00:01:47 uploaded ZIP is a **snapshot only**. At execution the canonical Git mainline, active task state and accepted dependencies must be rechecked; do not assume this snapshot represents the live developer worktree.
+Validation was run in the canonical launcher-resolved implementation worktree against the checked-out current API mainline and applied migrations. Skipped tests in `npm test` are existing database-dependent suites; the dedicated disposable PostgreSQL runner executed the required billing suites successfully.
 
 ### Unresolved Issues
 
-None at definition time. Execution-dependent blockers and newly discovered constraints must be recorded.
+None known. ARCH-041-API-003 is now dependency-eligible; its own task record is updated separately through its canonical parent task worktree.
 
 ### Architectural Concerns
 
@@ -153,24 +169,32 @@ Return any contract/ownership/security/data/queue or new infrastructure gap to `
 
 ### Review Status
 
-Pending.
+Developer self-review passed for Attempt 1; the developer explicitly completed the task on 2026-10-16. No separate architect review was performed in this developer completion workflow.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+Developer self-review passed for Attempt 1; explicit developer completion was received on 2026-10-16.
 
 ### Reviewed Files
 
-None — review will inspect the exact source diff and task/report branches.
+The four implementation/test files listed in the Completion Report; API branch `task/ARCH-041-API-002` at `829c0a17635addb0734b6fb6e0df5aa92d4b611d`.
 
 ### Validation Reviewed
 
-Not run.
+17 focused presentation unit tests, 314 passed/42 skipped in `npm test`, 16 migration-backed PostgreSQL suites, typecheck, lint, build and `git diff --check` all passed as detailed in the Completion Report.
 
 ### Architecture Conformance
 
-To be assessed against `ARCH-041`, the canonical task and actual implementation.
+Developer self-review found the API-002 scope and acceptance criteria satisfied; the developer explicitly accepted completion. The implementation remains in the task branch and has not been merged to `main`.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+No merge to `main` was performed. The API-003 dependency frontier was recalculated and its unclaimed task was marked ready on its own parent task branch.
+
+## Developer Self-Review - Passed (Attempt 1)
+
+Attempt 1 satisfies the defined Work Items and Acceptance Criteria. The database reads remain tenant-scoped and within the existing `RepeatableRead` transaction; selectors, ordering, limits, conditional query order, error mapping and the public response contract are preserved. Required unit, PostgreSQL migration, typecheck, lint, build and diff validations passed. Implementation is committed and pushed, and both canonical worktrees were clean and synchronized at review. No deviation or known unresolved implementation issue remains. The developer explicitly approved completion on 2026-10-16.
+
+## Developer Completion Decision (Attempt 1)
+
+The developer explicitly approved completion at `2026-10-16T04:05:00+0100` after the passing Attempt 1 self-review. Task status is `complete`; attempt 1 is unchanged, and `executor`/`claimed_at` are cleared. No task branch was merged to `main`. The unclaimed dependent task ARCH-041-API-003 was recalculated and marked ready on its own canonical parent task branch.

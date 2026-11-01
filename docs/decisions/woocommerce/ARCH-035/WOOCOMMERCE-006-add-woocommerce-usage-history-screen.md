@@ -7,20 +7,20 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: pending
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-035-WOOCOMMERCE-012
 enables:
   - ARCH-035-WOOCOMMERCE-010
   - ARCH-035-SYSTEM-TEST-001
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-16
 ---
 
 # ARCH-035-WOOCOMMERCE-006: Add Shopify-parity Woo Usage History UI
@@ -31,6 +31,10 @@ updated: 2026-10-11
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
 - Source baseline: `moda-interact-workspace(20261011-192347).zip`; portable definition, not a materialised parent/implementation task branch.
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-006` for this ready task. Execution and completion ownership are taken over from the assigned agent and set to `developer`/`developer`; logical ownership remains `assigned_agent: moda_woocommerce`. Scope, dependencies, acceptance criteria and validation requirements are unchanged. The canonical launcher will claim Attempt 1 after worktree synchronization and dependency verification.
 
 ## Objective
 
@@ -70,11 +74,12 @@ Source references:
 
 ## Work Items
 
-- [ ] Inspect and map source UI: Shopify: app/components/dashboard/UsageEvents.tsx; app/routes/app/usage/route.jsx.
-- [ ] Implement the bounded UI using separate presentation, controller/state, and supported transport modules.
-- [ ] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states.
-- [ ] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
-- [ ] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
+- [x] Inspect and map source UI: Shopify: app/components/dashboard/UsageEvents.tsx; app/routes/app/usage/route.jsx.
+- [x] Implement the bounded UI using separate presentation, controller/state, and supported transport modules.
+- [x] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states.
+- [x] Provide 20-locales native gettext translation assets.
+- [x] Record the LocalWP keyboard/responsive validation disposition: the user reports the plugin is installed and satisfactory; explicit developer completion accepts this report without claiming an independent walkthrough or reinstall.
+- [x] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
 
 ## Interfaces / Contracts
 
@@ -93,21 +98,22 @@ Source references:
 
 ## Acceptance Criteria
 
-- [ ] Billing plan/purchase history remains unchanged and Usage History is distinguishable from purchase transactions.
-- [ ] Period/filters/pagination preserve input and avoid duplicate requests; absent data is identified as unavailable rather than zero usage.
-- [ ] Back links and native page accessibility work.
-- [ ] New strings are translated in all 20 supported Admin locales (admin UI locale, site fallback; store/conversation language unchanged).
-- [ ] Existing Billing/connection/category experience and WordPress capability/nonce safeguards remain intact.
-- [ ] No backend service or database code is changed.
+- [x] Billing plan/purchase history remains unchanged and Usage History is distinguishable from purchase transactions.
+- [x] Period/filters/pagination preserve input and avoid duplicate requests; absent data is identified as unavailable rather than zero usage.
+- [x] Back links and native page accessibility work.
+- [x] New strings are translated in all 20 supported Admin locales (admin UI locale, site fallback; store/conversation language unchanged).
+- [x] Existing Billing/connection/category experience and WordPress capability/nonce safeguards remain intact.
+- [x] No backend service or database code is changed.
 
 ## Validation
 
-- [ ] Existing repository-declared focused JS component/controller tests for relevant UI states.
-- [ ] Relevant PHP admin navigation/capability/nonce tests if PHP files are touched.
-- [ ] npm run test:i18n and npm run i18n:verify:20 (20 locales, POT/PO/compiled assets).
-- [ ] npm run test:js; npm run test:php when PHP is touched; npm run build; npm run plugin-zip.
-- [ ] Manual LocalWP admin navigation/keyboard/responsive/error/unavailable-state demonstration; record whether APIs are real or absent.
-- [ ] git diff --check and canonical task launch/worktree evidence from actual developer environment.
+- [x] Existing repository-declared focused JS component/controller tests for relevant UI states: 18 focused controller/screen tests passed; the screen suite passed 11/11 after adding the empty-state fixture.
+- [x] Relevant PHP admin navigation/capability/nonce tests if PHP files are touched: `npm run test:php` passed (105 tests, 645 assertions).
+- [x] `npm run test:i18n` and `npm run i18n:verify:20`: 28 i18n tests passed; 407 source messages, 19/19 translation packs, and 38 generated assets verified.
+- [x] `npm run test:js`: 47 files and 292 tests passed; 37 integration/i18n checks passed.
+- [x] `npm run build` and `npm run plugin-zip`: build succeeded with webpack entrypoint-size advisories; production archive verified (113 entries, 20/20 locales, 38 compiled assets).
+- [x] Manual LocalWP validation disposition: user reports the existing install is satisfactory and explicitly supplied “Architect Review Accepted.” No independent login-protected walkthrough or reinstall was performed. No approved usage-history API exists; production shows unavailable rather than synthetic records.
+- [x] `git diff --check` and canonical task launch/worktree evidence: clean diff; Attempt 1 task worktrees and dependency were verified by the canonical launcher; implementation commit `76babb3` and test follow-up `ad6311b` are published on the task branch.
 
 ## Stop Condition
 
@@ -143,58 +149,89 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-Not Started.
+Complete — Attempt 1 was claimed by the developer at 2026-10-16T17:20:07Z and explicitly completed after “Architect Review Accepted.” The user-reported LocalWP satisfaction is accepted as the manual-validation disposition; no independent admin walkthrough was performed.
 
 ### Files Changed
 
-None.
+45 implementation files changed across the Usage History UI, native navigation, locale catalogs, and focused tests. The implementation commits are `76babb3` and `ad6311b` on `task/ARCH-035-WOOCOMMERCE-006`.
 
 ### Work Completed
 
-None.
+Added a distinct native Usage History screen with Current/Past views, period selection and cursor navigation, event filtering, page sizing, event pagination, recovery links, accessible state messaging, and locale-aware formatting. Presentation, controller/lifecycle, and transport remain modular; Billing Purchase History is unchanged. Added fixture coverage for ready/empty/loading/unavailable/denied/error/cursor states and request invalidation.
 
 ### Validation Results
 
-Not run.
+Focused Usage History tests passed (controller/screen suite; final screen suite 11/11). `npm run test:i18n` passed 28 tests; `npm run i18n:verify:20` verified 407 source messages, 19/19 packs and 38 assets. `npm run test:js` passed 47 files/292 tests plus 37 integration/i18n checks. `npm run test:php` passed 105 tests/645 assertions. `composer lint` reported no PHP syntax errors. `npm run build` succeeded with webpack bundle-size advisories. `npm run plugin-zip` verified the 113-entry production archive and all 20 locales. `git diff --check` passed. `npm run lint` is not defined by this package; the package-defined `composer lint` was run instead.
 
 ### Deviations
 
-None.
+The user reports that the plugin is installed in LocalWP and is satisfactory. The explicit developer completion accepts that report; it is not represented as an independently observed keyboard, responsive, error, or unavailable-state walkthrough. The Woo plugin has no approved usage-history endpoint; the production client therefore remains explicitly unavailable and never issues a guessed request or displays fabricated activity.
 
 ### Assumptions
 
-This definition is portable and has not been claimed. Any missing hosted API capability is external to ARCH-035 and may require a separate architecture.
+Attempt 1 is claimed in the canonical developer worktrees. Fixture history is test-only; the missing hosted usage-history API remains external to this UI task and may require separate architecture.
 
 ### Unresolved Issues
 
-No backend capability is asserted by this UI-only task. Document discovered API gaps in the completion report.
+No backend capability is asserted by this UI-only task. The production usage-history API is absent and documented above; no API, database, shared contract, or background changes were made.
 
 ### Architectural Concerns
 
-None reported at definition time.
+The unavailable hosted usage-history API is an external dependency and must remain out of scope. Manual LocalWP validation remains unverified.
 
 ## Architect Review
 
 ### Review Status
 
-Pending implementation.
+Accepted by the developer-as-architect on 2026-10-16 after automated reconciliation. LocalWP satisfaction is user-reported, not independently observed.
 
 ### Review Notes
 
-No implementation reviewed.
+Implementation was source-compared with the named Shopify UsageEvents component/route and the Woo billing boundary. Billing remains distinct; missing hosted usage data is shown as unavailable. No backend or database files changed.
+
+
+**Architect reconciliation (2026-10-16):** Native navigation prerequisite WOOCOMMERCE-012 is now Complete. Usage History remains absent. Status promoted from Pending to Ready after dependency reconciliation. No source code was changed by this promotion.
 
 ### Reviewed Files
 
-None.
+Usage History screen/controller/client/formatting modules, native navigation and page-surface integration, locale catalogs, and focused JS/PHP tests. Automated validation results are recorded in the Completion Report. User-reported LocalWP satisfaction is not treated as independently observed evidence.
 
 ### Validation Reviewed
 
-Not run.
+Automated JS, i18n, PHP, build, package and diff checks passed as listed in the Completion Report. No live LocalWP walkthrough was performed.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to the UI-only boundary. The page is functional as a UI surface but honestly unavailable for real history until an approved usage-history API exists. No new endpoint or data source was invented.
 
 ### Follow-up
 
-Return to architect for UI review and source comparison.
+No further task-scoped work. The developer explicitly accepted the recorded LocalWP validation disposition; downstream eligibility is reconciled below.
+
+## Developer Self-Review
+
+### Review Status
+
+Accepted — Attempt 1 meets the UI-only scope and acceptance criteria. Focused and repository-wide JS checks, PHP tests/lint, i18n, build, packaging and diff checks passed. The user-reported LocalWP satisfaction is explicitly accepted as validation evidence, without claiming an independent walkthrough.
+
+### Reviewed Files
+
+The implementation diff on `task/ARCH-035-WOOCOMMERCE-006` (45 files), including the Usage History screen/controller/client/formatting modules, native navigation and page integration, locale catalogs, and JS/PHP tests. The follow-up empty-state test is included in commit `ad6311b`.
+
+### Validation Reviewed
+
+Focused Usage History controller/screen tests; `npm run test:i18n`; `npm run i18n:verify:20`; `npm run test:js` (47 files/292 tests plus 37 integration/i18n checks); `npm run test:php` (105 tests/645 assertions); `composer lint`; `npm run build`; `npm run plugin-zip`; and `git diff --check`. Results and webpack bundle-size advisories are recorded above.
+
+### Architecture Conformance
+
+Conforms to the UI-only boundary. No backend, database, shared-contract, or background changes were made. The unavailable hosted usage-history API is not fabricated; production presents an unavailable state.
+
+## Developer Completion Decision
+
+On 2026-10-16, the developer explicitly invoked `/moda_developer_update ARCH-035-WOOCOMMERCE-006 complete` and supplied “Architect Review Accepted.” Attempt 1 remains the accepted attempt; status is `complete`, with `executor: null` and `claimed_at: null`. The user-reported LocalWP satisfaction is accepted as the validation disposition; no independent admin walkthrough or plugin installation was performed. Neither task branch was merged into `main`.
+
+### Dependency Frontier
+
+- `ARCH-035-WOOCOMMERCE-010` remains `pending` on the canonical parent baseline until this completed task record is integrated. Its other dependency, `ARCH-035-WOOCOMMERCE-013`, is complete. No WOO-010 worktree was claimed or task file changed.
+- `ARCH-035-SYSTEM-TEST-001` remains `pending`: its dependency set still includes WOO-010 and other incomplete tasks, and the system-test manual gate remains in force. No system-test worktree was claimed or task file changed.
+- No architecture `_index.md`, submodule pointer, or `main` branch was changed.

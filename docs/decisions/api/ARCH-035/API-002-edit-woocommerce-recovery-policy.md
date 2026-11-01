@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 92
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: []
 enables: []
 created: 2026-10-11
-updated: 2026-10-12
+updated: 2026-10-16
 ---
 
 # ARCH-035-API-002: Expose safe Woo recovery policy reads and updates
@@ -177,26 +177,28 @@ None reported at definition time.
 
 ### Review Status
 
-Pending implementation.
+Accepted — retrospective code-based review, 16 October 2026.
 
 ### Review Notes
 
-No implementation reviewed.
+Read/save policy and revision-based update with tenant/override protections.
+
+This is a **retrospective, source-code-based architectural reconciliation** against the developer-provided 2026-10-16 10:58:55 workspace ZIP. The source snapshot is not the historical paired task worktrees or Git branches; an original launcher packet, accepted task commit, Completion Report validation and LocalWP run cannot be reconstructed from it. Retain `attempt: 0` and the original developer/agent Completion Report; no historical execution claim or test pass is manufactured.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/src/merchant/recovery-policy/{service.ts,routes.ts,request.ts,contract.ts}`
+- `moda-interact-api/src/merchant/recovery-policy/{service.test.ts,routes.test.ts,service.postgres.test.ts,openapi-contract.test.ts}`
+- `moda-interact-api/openapi/woocommerce-merchant-recovery-policy-v1.yaml`
 
 ### Validation Reviewed
 
-Not run.
+Test files for route, tenant, pagination, query/contract and (where applicable) PostgreSQL paths inspected but **not executed**: this snapshot has no Node dependencies or database services. OpenAPI path is present. No live/disposable PostgreSQL, lint/typecheck/build or launcher/worktree evidence was available.
 
 ### Architecture Conformance
 
-Pending.
+The inspected implementation provides the task's bounded capability and uses the approved architecture/repository boundary. The source-based reconciliation is not a claim of unobserved runtime validation, task worktree isolation or release certification.
 
 ### Follow-up
 
-**Superseded by ARCH-035 UI-only scope revision (11 October 2026).** This definition is historical and MUST NOT be claimed or executed under ARCH-035. Backend/data/event/coupon capabilities require a separately agreed architecture if ever authorised. No implementation was reviewed or accepted.
-
-Return to architect on implementation submission.
+Continue normal work only for other, incomplete ARCH-035 tasks. The terminal SYSTEM-TEST-001 remains blocked until every required UI implementation is Complete.

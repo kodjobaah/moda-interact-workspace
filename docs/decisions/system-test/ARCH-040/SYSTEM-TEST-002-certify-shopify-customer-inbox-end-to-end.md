@@ -15,11 +15,17 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-SHOPIFY-003
-  - ARCH-040-BACKGROUND-003
+  - ARCH-040-SHOPIFY-001
+  - ARCH-040-BACKGROUND-002
+  - ARCH-040-BACKGROUND-006
+  - ARCH-040-BACKGROUND-007
+  - ARCH-040-BACKGROUND-008
+  - ARCH-040-BACKGROUND-009
+  - ARCH-040-SHOPIFY-004
+  - ARCH-040-SHOPIFY-005
 enables: []
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-18
 ---
 
 # ARCH-040-SYSTEM-TEST-002 — Certify Shopify recovery-detail conversation and basket end-to-end
@@ -34,12 +40,12 @@ Certify the **existing Shopify Recoveries -> Recovery Detail** human/AI conversa
 
 ## Context
 
-SHOPIFY-001/002/003 enrich the current recovery-detail loader/page/actions. Background and Prisma own the one-thread and follow-up invariants. The desktop/mobile ASCII layouts in SHOPIFY-002 are acceptance evidence. This Shopify certification is independently executable after Shopify-003 and the shared Background-003 prerequisite, regardless of Woo API, WooCommerce or shared-runtime SYSTEM-TEST-001 task status.
+Consolidated SHOPIFY-001 implements the current recovery-detail reader, page and human controls as one complete feature. Background and Prisma own the one-thread and follow-up invariants. The desktop/mobile ASCII layouts in consolidated SHOPIFY-001 are acceptance evidence. This Shopify certification is independently executable after its Shopify and shared Background prerequisites, regardless of Woo API, WooCommerce or SYSTEM-TEST-001 status.
 
 ## Scope
 
 - Browser E2E on the authenticated embedded Shopify recovery-detail route, including basket/related/milestones and existing transcript.
-- Test mode control, open/closed customer window, human command lifecycle and one follow-up/credit race across AI/Human.
+- Test mode control, open/closed customer window, human command lifecycle and one follow-up/credit race across AI/Human. Include unverified/pre-initial/future inbound records and exact 24-hour / no-reply merchant-template eligibility according to the approved ARCH-040 policy.
 
 ## Out of Scope
 
@@ -47,11 +53,35 @@ No new `/app/conversations` navigation/route, standalone inbox, staff assignment
 
 ## Requirements
 
+### Shopify moderation acceptance scenario
+
+Using the same existing Recovery Detail page and fake provider, show pending -> blocked/revise for flagged HUMAN command, persist and visually label flagged inbound while preventing AI execution, then demonstrate an allowed reply and normal provider status. Verify shop scoping, no extra credit and no new Conversations navigation. Do not depend on WooCommerce or its API.
+
+- Verify consolidated SHOPIFY-001 delivers basket, transcript and authenticated human control/send actions together on that exact screen. No hosted Woo API/WordPress calls.
+
 - Start from current `Recoveries` list, select an existing customer, and assert same `/app/recoveries/:id` renders accurate saved checkout items/quantities/variants/totals plus transcript, context and existing back-navigation.
-- Test desktop two-column and mobile stacked basket/context layout against SHOPIFY-002 ASCII with snapshots/screenshots.
+- Test desktop two-column and mobile stacked basket/context layout against SHOPIFY-001 ASCII with snapshots/screenshots.
 - Test no basket or invalid JSON fallback, no conversation, terminal recovery, pagination, mixed HUMAN/AGENT/AUTOMATION/CUSTOMER messages, safe links/receipts/audio placeholders.
 - Exercise Take Over/Resume with revision conflicts and async provider race; open-window free text, closed-window approved template, follow-up used, duplicate clicks, sent/failed receipt and one credit.
 - Verify cross-shop denied, one Conversation ID retained, no separate conversation UI/DB and no call to Woo-only hosted API.
+
+### Shopify-only abuse-protection scenarios
+
+- Exercise authenticated Shopify Recovery Detail with Admin-suspended shop: basket/transcript remain readable, Take Over and reply/template controls disable and server rejects forged requests, Resume AI is allowed. Verify accepted-before-suspended command is stopped by Background; safe typed error and recovery credit are correct.
+- Verify independent Shopify actor never calls Woo hosted API and this certification does not depend on Woo tasks/system tests.
+
+
+### Shopify producer boundary certification
+
+Verify the Shopify action writes the canonical persisted command and does not enqueue a Shopify-specific BullMQ job or send WhatsApp directly. Exercise takeover, HUMAN message draft and idempotent submission in the existing recovery detail, then have the shared Background dispatcher process the command with the same status/credit semantics as a producer-neutral fixture. Assert `RECOVERY_HISTORY` is not treated as human-send entitlement, terminal recovery is read-only, and a provider permit admitted just before takeover is displayed honestly as not recallable. Preserve the task's existing ASCII screen/layout coverage and developer validation separation.
+
+
+### Service-window and configured follow-up certification (2026-10-20 policy)
+
+- Verify only provider-verified CUSTOMER inbound since sequence-1 sent time opens/refreshes the rolling 24-hour free-text window; no outbound template, future, pre-initial or unverified record opens it. Exact `V+24h` is closed.
+- Use the existing **effective configured follow-up due** (`sequence1.followUpDueAt`) and the one sequence-two slot for deliberate HUMAN templates after an expired or absent customer window. Test enabled/due 15-minute, 60-minute and 48-hour follow-ups; disabled/null/not-yet-due cases are denied. No `initialSentAt+24h` extra wait.
+- Scheduled AUTOMATION no-response follow-up runs at the existing configured due only while unengaged; a customer reply suppresses automation even if that customer's service window subsequently expires. Expiry itself never creates a new scheduled job.
+- Assert command acceptance and Background final permit make the same eligibility decision, with provider/credit never double-counted. No cross-platform implementation dependency and no second Conversation.
 
 ## Work Items
 
@@ -65,8 +95,14 @@ Shopify app server loaders/actions backed by Prisma + Background command/Meta tr
 
 ## Dependencies
 
-- ARCH-040-SHOPIFY-003
-- ARCH-040-BACKGROUND-003
+- ARCH-040-SHOPIFY-001
+- ARCH-040-BACKGROUND-002
+- ARCH-040-BACKGROUND-006
+- ARCH-040-BACKGROUND-007
+- ARCH-040-BACKGROUND-008
+- ARCH-040-BACKGROUND-009
+- ARCH-040-SHOPIFY-004
+- ARCH-040-SHOPIFY-005
 
 ## Enables
 
@@ -74,12 +110,14 @@ None.
 
 ## Acceptance Criteria
 
+- [ ] Shopify recovery detail visibly distinguishes moderation state from WhatsApp delivery, with blocked content never sent and no new inbox.
+
 - [ ] Existing Recoveries UI, basket, transcript and context work on wide/narrow view without duplicate inbox.
 - [ ] Human + AI share one thread and sequence-2 follow-up/credit with safe race behaviour.
 
 ## Validation
 
-- [ ] Browser/system suite and screenshots of SHOPIFY-002 ASCII states.
+- [ ] Browser/system suite and screenshots of SHOPIFY-001 ASCII states.
 - [ ] Disposable PostgreSQL/provider mock evidence, `git diff --check` and canonical worktree evidence.
 
 ## Implementation Notes

@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-026-API-006
 created: 2026-10-09
-updated: 2026-10-09
+updated: 2026-10-16
 ---
 
 # Read authenticated localized Woo Store Category options and profile
@@ -150,24 +150,36 @@ None.
 
 ### Review Status
 
-Pending.
+Accepted — retrospective implementation-evidence reconciliation, 2026-10-16.
 
 ### Review Notes
 
-Not reviewed.
+The authenticated localized category/profile GET boundary is implemented, using the installation principal, validated locale, bounded response, canonical Commerce category/profile reads and registered API routing.
+
+This is an explicit architecture-level retrospective closure based on the 2026-10-16 supplied code snapshot, **not** a reconstruction of an original task execution or CI run. The attached archive has no Git worktrees/commits or historical launcher packet, so mirrored-branch isolation, claim provenance, original attempts, historical test results and actual WordPress/HTTPS/provider execution cannot be independently certified here. Original `attempt: 0` and executor-owned Completion Report are preserved without manufacturing evidence. These provenance limitations do not establish process compliance. Terminal integrated Woo provider certification remains `ARCH-026-SYSTEM-TEST-001`.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/src/merchant/store-categories/routes.ts`
+- `moda-interact-api/src/merchant/store-categories/store-categories-read.service.ts`
+- `moda-interact-api/src/merchant/store-categories/catalogue-read.ts`
+- `moda-interact-api/src/merchant/store-categories/profile-read.ts`
+- `moda-interact-api/src/merchant/store-categories/schema.ts`
+- `moda-interact-api/src/index.ts`
 
 ### Validation Reviewed
 
-None.
+- `moda-interact-api/src/merchant/store-categories/routes.test.ts` (test present and inspected; not independently executed in this read-only archive)
+- `moda-interact-api/src/merchant/store-categories/store-categories-read.service.test.ts` (test present and inspected; not independently executed in this read-only archive)
+- `moda-interact-api/src/merchant/store-categories/store-categories-read.service.postgres.test.ts` (test present and inspected; not independently executed in this read-only archive)
+- `moda-interact-api/src/merchant/store-categories/openapi-contract.test.ts` (test present and inspected; not independently executed in this read-only archive)
+- Static cross-file wiring and source inspection: completed for this task's bounded implementation.
+- No new API TypeScript, PHP unit, WordPress integration, PostgreSQL or live provider tests were executed as part of this reconciliation unless explicitly listed as PASS above.
 
 ### Architecture Conformance
 
-Pending.
+Accepted for bounded code-level implementation reconciliation. Live/integrated runtime acceptance is reserved for terminal system-test evidence. No source-code change is authorised by this review.
 
 ### Follow-up
 
-None.
+`ARCH-026-SYSTEM-TEST-001` — certify the integrated HTTPS callback, real Woo consent/read and credential/tenant/billing isolation. Recover missing Git/provenance records separately if full historical workflow certification is required; do not invent them.

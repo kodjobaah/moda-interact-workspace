@@ -1,17 +1,17 @@
 ---
 id: ARCH-030
 title: WooCommerce REST tool Test and Review in CommerceAgent Studio
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-16
 ---
 
 # ARCH-030: WooCommerce REST tool Test and Review in CommerceAgent Studio
 
 ## Status
 
-Proposed; these are **portable task definitions, not materialised task branches**. ARCH-030 is already referenced by the existing WooCommerce authoring catalogue. No implementation is claimed by this document.
+In Progress. The COMMERCE-001 task is materialised and its Attempt 1 remains Ready for correction following developer review; no implementation has been accepted.
 
 ## Problem
 
@@ -54,7 +54,7 @@ Selected, authorised WooCommerce store + Woo tool draft
     -> current Shop/draft Test gate -> Review -> Save Commerce draft
 ```
 
-**Implementation boundary:** Both tasks belong to `moda-interact-commerce` (`moda_commerce`). The store itself supplies operation-specific success/failure; no new hosted Moda API feature is being proposed. Before wiring a live request, COMMERCE-001 must identify the already-approved server-side path for resolving and authorizing the selected WooCommerce store, including credential safety. The current snapshot does not establish a safe in-Commerce credential transport. **If no such path is available, report that exact blocker to the architect; do not fabricate credentials, create an unrestricted proxy, or silently move work into another repository.** No claim of completed live testing is valid without a real authorized store call.
+**Approved implementation boundary (14 October 2026):** Both tasks belong to `moda-interact-commerce` (`moda_commerce`). The developer explicitly approved a **Commerce-local, server-only, WooCommerce GET test executor**, using `shopId` to locate the **existing** WooCommerce installation and active REST-read grant and **ARCH-039's canonical `COMMERCE_CONNECTION_KEYS_JSON` plus published Shared credential decryption/AAD helpers** to read the grant. This is the same canonical keyring/envelope convention used by API-002 and Background; the earlier `MODA_WOO_REST_READ_KEYRING` name is superseded. Commerce must not create its own grant store, credential lifecycle, installation authorization or new encryption scheme. The store itself supplies operation-specific success/denial. The execution boundary is **not** a Commerce-to-API call, a new hosted API endpoint or a gateway/Shared contract. The permitted provider request is only a catalogued GET against the installation's canonical site, using a bounded SSRF-safe transport (DNS/IP checks, pinned peer address, TLS validation, no redirects, response limits and timeout). Every execution independently authorizes the principal and shop, checks the active REST-read scope and rechecks the grant after I/O. Credentials remain server-only, never reach browser previews or logs, and the test does not mutate WooCommerce. An absent/invalid approved grant or inability to enforce these safeguards must fail closed. A passing mock is not live-store evidence.
 
 ## Repository Responsibilities
 
@@ -69,14 +69,14 @@ No other tasks are part of this agreed scope.
 
 - The existing WooCommerce operation catalogue and Request/Response/Result Template drafts remain Commerce-owned.
 - A test uses only the chosen catalogued `GET` operation, validated path/query values and a server-authorized store. Do not accept arbitrary destinations or credential/header overrides from the browser.
-- Test results remain ephemeral, do not persist provider payloads as tool definitions, and must be bound to store identity and all relevant authoring revisions. A successful test supplies server-verifiable, expiring proof bound to the authorised store and canonical draft fingerprint for the later Save gate; browser-only status is not trusted proof.
+- Test results remain ephemeral, do not persist provider payloads as tool definitions, and must be bound to store identity and all relevant authoring revisions. A successful test supplies server-verifiable, expiring proof bound to the authorised store, canonical draft, validated example inputs and resolved effective GET path; browser-only status is not trusted proof. COMMERCE-002 must carry the ephemeral tested examples into its server-side Save verification so it can recompute the same request/fingerprint; examples and provider payloads must not become persisted tool-definition data.
 - Review/Save must build a valid Commerce-local Woo tool draft from its existing authoring fields, extend only Commerce-owned validation/persistence where necessary, and not claim published runtime executability.
 - Permission, missing connection, not found, timeout and malformed response are distinct user-visible outcomes; a provider `401`/`403` alone must not silently disconnect a store.
 
 ## Failure Handling, Security and Observability
 
 - Server authorization checks are mandatory and must be independently re-evaluated for every test and save. Future merchant access must not allow a merchant to test another store.
-- Bound time, response size, page sizes, preview size and concurrent requests; sanitize PII and sensitive Woo settings; never expose API keys, auth headers, secrets or complete sensitive customer responses in UI/logs.
+- Bound time, response size, page sizes, preview size and concurrent requests. Apply field/path-aware PII and sensitive-setting redaction **even when an author selects the sensitive field**, and render any displayed Result Template preview from preview-safe projected values. Preserve useful non-sensitive selected values. Never expose API keys, auth headers, secrets or complete sensitive customer responses in UI/logs or signed test proof.
 - Retry is user-triggered, duplicate-click safe and does not manufacture a passing result on failure. Older in-flight results cannot overwrite the newer Shop/draft.
 - Use existing shared structured logging for any new runtime log events, with bounded metadata and no sensitive request/response bodies. Do not add duplicate generic HTTP telemetry.
 
@@ -93,9 +93,13 @@ Classification: pre-production for WooCommerce Studio tool authoring. Existing m
 
 ## Open Questions
 
-- Verify the real server-side store-specific Woo request/credential boundary before implementing a live call. Discovery of a missing capability is a blocker to report, not permission to create API/Shared/Gateway tasks in this initiative.
+- The approved Commerce-local credential consumption/GET transport boundary is limited to Studio testing. If security checks cannot be demonstrated, fail closed and escalate instead of delegating arbitrary provider requests to a new service.
+- A production merchant-approved WooCommerce store is still needed for live integration evidence; mock transports do not satisfy this evidence.
 - Production execution of saved Woo tools and future merchant Studio access remain intentionally out of scope.
 
 ## Change History
 
 - 2026-10-14: Defined exactly two Commerce-owned tasks: WooCommerce Test and WooCommerce Review/Save. Supersedes the previous ARCH-030 task-definition proposals including Shared, API and Gateway tasks.
+- 2026-10-14: Recorded developer approval for Commerce-local server-only decryption of existing WooCommerce read grants and secure GET transport; the earlier speculative API/Gateway requirement is expressly superseded. No new credential ownership or grant lifecycle was authorized.
+
+- 2026-10-16: Reconciled the previously approved Commerce-local transport with ARCH-039's later canonical keyring and Shared credential API. Only the obsolete environment-variable/keyring mechanism is superseded; the two-task ARCH-030 boundary, Commerce-local GET test execution and COMMERCE-002 implementation are unchanged. Clarified that selected sensitive customer fields and Woo settings must be redacted in all displayed previews and rendered template output.

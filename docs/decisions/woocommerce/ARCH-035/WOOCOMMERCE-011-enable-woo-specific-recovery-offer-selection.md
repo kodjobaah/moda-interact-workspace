@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 25
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: []
 enables: []
 created: 2026-10-11
-updated: 2026-10-12
+updated: 2026-10-16
 ---
 
 # ARCH-035-WOOCOMMERCE-011: Preview WooCommerce coupons in Recovery Settings
@@ -177,24 +177,28 @@ No persisted provider coupon identity exists under this UI-only task.
 
 ### Review Status
 
-Pending.
+Accepted — retrospective code-based review, 16 October 2026.
 
 ### Review Notes
 
-Stage 1 is a read-only preview. Earlier superseded cross-service implementation specifications remain historical and are not reactivated.
+Read-only, paginated local Woo coupon preview; no persisted preview selection.
+
+This is a **retrospective, source-code-based architectural reconciliation** against the developer-provided 2026-10-16 10:58:55 workspace ZIP. The source snapshot is not the historical paired task worktrees or Git branches; an original launcher packet, accepted task commit, Completion Report validation and LocalWP run cannot be reconstructed from it. Retain `attempt: 0` and the original developer/agent Completion Report; no historical execution claim or test pass is manufactured.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/includes/Rest/RecoveryCouponCatalogueController.php`
+- `moda-interact-woocommerce/src/recovery-settings/woo-coupons/{coupon-preview.js,coupon-list.js,coupon-client.js}`
+- `moda-interact-woocommerce/tests/js/recovery-coupon-preview.test.js`
 
 ### Validation Reviewed
 
-None.
+This session directly passed `npm run test:i18n` (28 tests) and `npm run i18n:verify:20` (332 current PHP/React gettext strings, 19 translation packs / 20 canonical locales). Related Woo PHP controller and native navigation files passed `php -l`. JS component/integration tests and API TypeScript test cases were inspected as source, but `node_modules` are absent from the ZIP and their execution, PHP integration, LocalWP browser evidence, production build, package ZIP, disposable PostgreSQL proof and launcher worktree verification were **not** run in this session.
 
 ### Architecture Conformance
 
-Pending developer validation.
+The inspected implementation provides the task's bounded capability and uses the approved architecture/repository boundary. The source-based reconciliation is not a claim of unobserved runtime validation, task worktree isolation or release certification.
 
 ### Follow-up
 
-Separate architecture required for durable selected coupon and send-time proof.
+Continue normal work only for other, incomplete ARCH-035 tasks. The terminal SYSTEM-TEST-001 remains blocked until every required UI implementation is Complete.

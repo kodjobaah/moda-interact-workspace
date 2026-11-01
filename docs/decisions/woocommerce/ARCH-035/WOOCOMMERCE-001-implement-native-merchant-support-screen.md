@@ -7,19 +7,19 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: pending
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-035-WOOCOMMERCE-012
 enables:
   - ARCH-035-SYSTEM-TEST-001
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-16
 ---
 
 # ARCH-035-WOOCOMMERCE-001: Build native Woo merchant Support screen UI
@@ -29,7 +29,12 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: `moda-interact-workspace(20261011-192347).zip`; portable definition, not a materialised parent/implementation task branch.
+- Definition state: materialised on parent branch `task/ARCH-035-WOOCOMMERCE-001` in the canonical parent task worktree. The canonical launcher prepared the implementation task worktree for Attempt 1.
+- Task state: `complete`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 was explicitly completed by the developer after its accepted self-review. The execution claim is cleared; the attempt number is unchanged.
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-001`, taking over execution and completion authority from the prior `execution_mode: agent`, `completion_mode: automatic` definition. Execution/completion modes are now `developer`/`developer`; logical ownership remains `assigned_agent: moda_woocommerce`, and task scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 1 was claimed after canonical worktree preparation and dependency verification.
 
 ## Objective
 
@@ -69,11 +74,11 @@ Source references:
 
 ## Work Items
 
-- [ ] Inspect and map source UI: Shopify: app/routes/app/merchant-support/route.jsx.
-- [ ] Implement the bounded UI using separate presentation, controller/state, and supported transport modules.
-- [ ] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states.
-- [ ] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
-- [ ] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
+- [x] Inspect and map source UI: Shopify: app/routes/app/merchant-support/route.jsx.
+- [x] Implement the bounded UI using separate presentation, controller/state, and supported transport modules.
+- [x] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states.
+- [x] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
+- [x] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
 
 ## Interfaces / Contracts
 
@@ -91,21 +96,21 @@ Source references:
 
 ## Acceptance Criteria
 
-- [ ] Thread ordering, pagination, message kinds, translated/original switching and 500-grapheme validation match the Shopify interaction model.
-- [ ] Duplicate clicks cannot create duplicate UI submits; stale responses after reconnect/disconnect are not applied.
-- [ ] No Shopify-only refund action, invented send acknowledgement or message persisted in browser storage.
-- [ ] New strings are translated in all 20 supported Admin locales (admin UI locale, site fallback; store/conversation language unchanged).
-- [ ] Existing Billing/connection/category experience and WordPress capability/nonce safeguards remain intact.
-- [ ] No backend service or database code is changed.
+- [x] Thread ordering, pagination, message kinds, translated/original switching and 500-grapheme validation match the Shopify interaction model.
+- [x] Duplicate clicks cannot create duplicate UI submits; stale responses after reconnect/disconnect are not applied.
+- [x] No Shopify-only refund action, invented send acknowledgement or message persisted in browser storage.
+- [x] New strings are translated in all 20 supported Admin locales (admin UI locale, site fallback; store/conversation language unchanged).
+- [x] Existing Billing/connection/category experience and WordPress capability/nonce safeguards remain intact.
+- [x] No backend service or database code is changed.
 
 ## Validation
 
-- [ ] Existing repository-declared focused JS component/controller tests for relevant UI states.
-- [ ] Relevant PHP admin navigation/capability/nonce tests if PHP files are touched.
-- [ ] npm run test:i18n and npm run i18n:verify:20 (20 locales, POT/PO/compiled assets).
-- [ ] npm run test:js; npm run test:php when PHP is touched; npm run build; npm run plugin-zip.
-- [ ] Manual LocalWP admin navigation/keyboard/responsive/error/unavailable-state demonstration; record whether APIs are real or absent.
-- [ ] git diff --check and canonical task launch/worktree evidence from actual developer environment.
+- [x] Existing repository-declared focused JS component/controller tests for relevant UI states.
+- [x] Relevant PHP admin navigation/capability/nonce tests if PHP files are touched.
+- [x] npm run test:i18n and npm run i18n:verify:20 (20 locales, POT/PO/compiled assets).
+- [x] npm run test:js; npm run test:php when PHP is touched; npm run build; npm run plugin-zip.
+- [x] Manual LocalWP admin navigation/keyboard/responsive/error/unavailable-state demonstration; developer confirms manual checks; API operations are absent and production remains unavailable.
+- [x] git diff --check and canonical task launch/worktree evidence from actual developer environment.
 
 ## Stop Condition
 
@@ -148,58 +153,95 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-Not Started.
+Developer Completion Decision — Attempt 1 explicitly completed by the developer after the accepted self-review. Status is `complete`; `executor` and `claimed_at` are cleared; the attempt number is unchanged.
 
 ### Files Changed
 
-None.
+- Native Admin Support navigation and surface routing: `includes/Admin/NativeNavigation.php`, `src/native-admin/page-surface.js`, `src/page.js`, `src/page/connected-workspace.js`.
+- Modular Support UI, state/controller, transport boundary, validation and styles: `src/support/**`, `src/index.scss`.
+- Navigation/PHP/component/controller tests and gettext assets: `tests/PluginTest.php`, `tests/js/**`, `tests/i18n/**`, `languages/moda-interact.pot`, and 19 translated locale packs.
+- Responsive shell correction and regression assertion: `src/support/styles/_support.scss`, `tests/js/support-screen.test.js` (implementation commit `fab5e9f`).
 
 ### Work Completed
 
-None.
+- Replaced the Support placeholder with a native WordPress Admin screen composed from separate thread, message-card, pager, composer, controller, hook and client modules.
+- Added fixture-driven coverage for primary/paginated, empty, loading, unavailable, denied, read/send error, grapheme count, duplicate submission, stale response and provider-safe system-link behavior.
+- Added translated/original message rendering, unread labels, 500-grapheme composer validation, single-submit protection, confirmation-gated send success and connection-identity remount protection.
+- Fixed the Support shell's narrow viewport overflow with scoped `border-box` sizing; the focused regression test and production CSS build pass.
+- No backend/API, database, shared-contract or background code was added or changed. No fixture data enters production; read/send/mark-read remain disabled because no approved Woo privileged proxy/API operations exist.
 
 ### Validation Results
 
-Not run.
+- `npx vitest run tests/js/support-screen.test.js`: 5 passed.
+- `npm run test:js`: 42 Vitest files / 248 tests passed; 37 Node integration/i18n tests passed.
+- `npm run test:i18n`: 28 passed. `npm run i18n:verify:20`: 355 source messages, 19/19 translation packs and 38 generated assets passed strict verification; release manifest reports 20/20 languages.
+- `npm run test:php`: 105 tests / 644 assertions passed after installing the lockfile's Composer dev dependencies. `npm run lint:php`: no syntax errors.
+- `npm run build`: passed. Webpack emitted a non-blocking performance recommendation because the 278 KiB entrypoint exceeds the 244 KiB advisory limit.
+- `npm run plugin-zip`: production archive verified, version 0.1.0, 113 entries, 20/20 languages and 38 compiled assets; SHA-256 `d251347223985ea2971bb45d3ba5d383ca5e6fb51285140d13fbf44c1bdf80f`.
+- `git diff --check`: passed for implementation and parent task changes. Canonical route/worktrees were verified; implementation commit `fab5e9f` is pushed.
+- Manual checks: developer confirms LocalWP navigation, keyboard, responsive, error and unavailable-state checks. Shared sandbox inspection showed the explicit production unavailable state with unsupported controls disabled and no synthetic messages. That sandbox still served pre-fix CSS after rebuild, so the sizing correction is evidenced by the focused test and rebuilt production CSS rather than that cached asset.
 
 ### Deviations
 
-None.
+- The Woo privileged REST/API surface has no approved support read, compose/send or mark-read operations. Per scope, production reports messages/sending unavailable and disables those actions; no endpoint was invented. Disabled production capabilities are covered by tests.
 
 ### Assumptions
 
-This definition is portable and has not been claimed. Any missing hosted API capability is external to ARCH-035 and may require a separate architecture.
+- `ARCH-035-WOOCOMMERCE-012` remains complete and the task's developer takeover/materialisation evidence is authoritative.
+- The missing support proxy/API operations remain external to this UI-only task and require a separately owned architecture/task before production functionality can be enabled.
 
 ### Unresolved Issues
 
-No backend capability is asserted by this UI-only task. Document discovered API gaps in the completion report.
+- Production support read/send/mark-read are unavailable until an approved authenticated Woo privileged proxy and corresponding hosted support contract exist. This task intentionally leaves all three capabilities false.
 
 ### Architectural Concerns
 
-None reported at definition time.
+No scope or architecture deviation identified. Production behavior is truthful in the absence of support API operations; no fake success or persisted message state is introduced.
 
 ## Architect Review
 
 ### Review Status
 
-Pending implementation.
+Developer self-review accepted Attempt 1. The developer then explicitly completed the task under `completion_mode: developer`; no separate architect review is pending for this completion decision.
 
 ### Review Notes
 
-No implementation reviewed.
+Reviewed the implementation diff, Shopify reference route, Woo navigation/surface wiring, support UI/controller/client/validation, focused tests, locale assets, PHP navigation tests and task/worktree state. The UI-only boundary, unsupported-operation behavior, state lifecycle and validation evidence conform to the task. Developer reports the requested LocalWP manual checks complete. The runtime limitation is the documented external API gap.
+
+
+**Architect reconciliation (2026-10-16):** Native navigation prerequisite WOOCOMMERCE-012 is now Complete. Support remains a placeholder. Status promoted from Pending to Ready after dependency reconciliation. No source code was changed by this promotion.
 
 ### Reviewed Files
 
-None.
+- `includes/Admin/NativeNavigation.php`
+- `src/native-admin/page-surface.js`, `src/page.js`, `src/page/connected-workspace.js`
+- `src/support/**`, `src/support/styles/_support.scss`
+- `tests/PluginTest.php`, `tests/js/**`, `tests/i18n/**`
+- `languages/moda-interact.pot` and supported locale catalogues
 
 ### Validation Reviewed
 
-Not run.
+See Completion Report. All required automated test, lint, translation, build, package and diff checks passed. Manual validation is recorded from developer confirmation; the shared browser was not treated as evidence for the post-build CSS correction because it continued serving a cached/pre-fix asset.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to UI-only scope. No backend service, database or shared-contract changes; no invented endpoints, fixture production data, browser persistence or Shopify-only code. Unsupported production operations remain disabled and explicitly explained.
 
 ### Follow-up
 
-Return to architect for UI review and source comparison.
+`ARCH-035-SYSTEM-TEST-001` remains `pending` until its other nine Woo UI dependencies are Complete; this completion does not claim or promote it. A future API-owned task must establish the approved support proxy/contract before enabling read, send or mark-read.
+
+### Developer Self-Review - Accepted
+
+- Attempt: 1 (unchanged).
+- Implementation commit: `fab5e9f` on `task/ARCH-035-WOOCOMMERCE-001`, pushed to its mirrored remote branch.
+- Parent task/report branch: `task/ARCH-035-WOOCOMMERCE-001`; report update is committed and pushed separately.
+- Decision: accepted for architect review; task remains `review` because `completion_mode: developer`. No merge to `main` and no downstream task promotion performed.
+- Decision: accepted for architect review; task was `review` at that point because `completion_mode: developer`. No merge to `main` and no downstream task promotion was performed by the self-review.
+
+### Developer Completion Decision
+
+- Developer explicitly invoked `/moda_developer_update ARCH-035-WOOCOMMERCE-001 complete` on 2026-10-16.
+- Preconditions verified: accepted Attempt 1 review is durable; implementation commit `fab5e9f` and prior parent report commit `dcd84e2d` are pushed; Work Items, Acceptance Criteria and required validations are recorded as satisfied.
+- Transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1` (unchanged).
+- No task branch was merged to `main`. The enabled system-test task remains pending on its other declared dependencies; no downstream frontier promotion was made.

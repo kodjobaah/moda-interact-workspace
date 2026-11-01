@@ -1,169 +1,175 @@
 ---
 id: ARCH-035-API-008
 architecture_id: ARCH-035
-title: Accept durable Woo checkout and order events
+title: Accept Woo checkout snapshots into BullMQ
 task_kind: implementation
 domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: superseded
-priority: 65
+execution_mode: developer
+completion_mode: developer
+status: complete
+priority: 50
 executor: null
 claimed_at: null
-attempt: 0
-depends_on:
-  - ARCH-035-SHARED-001
-  - ARCH-035-DATABASE-001
-enables:
-  - ARCH-035-BACKGROUND-001
-  - ARCH-035-WOOCOMMERCE-007
-  - ARCH-035-WOOCOMMERCE-008
+attempt: 1
+depends_on: []
+enables: [ARCH-035-API-019, ARCH-035-WOOCOMMERCE-007, ARCH-035-BACKGROUND-001]
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-20
 ---
 
-# ARCH-035-API-008: Accept durable Woo checkout and order events
+# ARCH-035-API-008: Accept Woo checkout snapshots into BullMQ
+
+## Developer Takeover
+
+On 2026-10-20, the developer explicitly took ownership of Attempt 1 for implementation. The logical repository owner remains `moda_api`; this amendment changes only execution and completion authority to developer mode. The task scope, dependencies, acceptance criteria and architectural ownership are unchanged.
 
 ## Architecture
 
-- Architecture ID: `ARCH-035`
-- Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
-- Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Architecture: `ARCH-035`; document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
+- Coordinator: `moda_architect`; baseline: `moda-interact-workspace(20261018-121025).zip`, revised 2026-10-20.
+- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. Task is defined but not materialised in the developer workspace.
 
 ## Objective
 
-Extend Moda API with the authenticated, bounded Woo plugin-to-API commerce-event ingress, durable acceptance and asynchronous processing handoff.
+Implement authenticated, bounded, idempotent checkout event acceptance by durably enqueuing validated Woo checkout snapshots.
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
-ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
-provider-neutral Moda domain state. The current capability is not established by this task definition.
+The current Shopify webhooks enqueue to BullMQ; no WooCommerce activity receipt table is required by the agreed capture-only scope. The existing API Woo installation principal is the authentication authority. The Shopify recovery workers cannot parse Woo payloads.
 
-## Deterministic implementation specification — mandatory
+## Scope
 
-**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
-negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
-in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
-field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
-incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
-
-**Files:** new `src/woocommerce/activity/{routes,ingest.service,claim.service,contract}.ts`, bounded Jest/tsx unit
-and Postgres tests and `openapi/woocommerce-activity-v1.yaml`; wire once into
-`src/woocommerce/installation/routes.ts` (thin route dispatch only) and `src/index.ts`. Use the exact published
-Shared `woo.activity.v1` schema, and accepted DATABASE-001 `WooCommerceActivityReceipt`/`WooCommerceCheckoutLineage`;
-no additional migration.
-
-**Endpoint:** `POST /v1/woocommerce/activity` with an exact Shared v1 body and `Authorization: Bearer <installation
-credential>`, `X-Moda-Installation-Id` existing header; no query string, no WordPress REST nonce (server-to-server).
-Require active verified Woo Shop/installation and current credential version **before any body processing**. Reject
-16-KiB+ payload, unknown event field, foreign origin in checkoutUrl and invalid consent/phone. Return 202
-`{schemaVersion:1,receiptId,acceptance:"RECORDED"}` on first event and 200 `{...,acceptance:"REPLAY"}` for same
-`(shopId,eventId,digest)`; 409 `activity_event_conflict` for same eventId/different digest. Never accept shopId in
-request.
-
-**Transaction:** lock Shop then `(shopId,checkoutKey)` lineage; insert receipt (`PENDING`, digest of canonical
-Shared-normalized body) and upsert lineage in one serializable/retry-safe transaction. When order event arrives,
-establish terminalState and terminalOrderId before 202 response; do not allow a later checkout upsert to downgrade
-the terminal. `lastRevision` is **acceptance** high-water; `lastAppliedRevision` is owned by Background-001 and remains unchanged on HTTP ingress; stale lower-revision snapshots remain recorded but will be IGNORED
-downstream. For ORDER_PAID, irrevocably fence the lineage. If persistence fails, return failure and do not
-acknowledge; Redis/BullMQ publication, if used, is an **optional hint** after commit and the Background DB claim loop
-must pick up rows on loss. Do not create CheckoutRecovery, refund, usage credit or WhatsApp outbound in this HTTP
-handler.
-
-**Negative matrix:** active vs revoked/rotated installation; forged shop in body; same eventId replay/changed digest;
-cross-Shop equal checkoutKey; order-before-checkout; two concurrent paid events; order after abandoned checkout;
-invalid URL/PII/bytes; Redis unavailable; DB commit failure. Prove a pending durable receipt remains discoverable
-with no Redis queue. Log eventId/kind/shopId/status/latency only, never PII or snapshot.
-
-## High-level scope (non-authoritative summary)
-
-- Authenticate active installation credential before parsing/processing; derive shopId only from principal and strict Shared v1 envelope.
-- Persist idempotent event receipts and order correlation before acknowledging; enqueue/reconcile via existing approved background mechanism with retry-safe outbox/claim semantics.
-- Reject foreign identities, invalid transitions, oversized payloads, stale credentials and malformed PII; log only safe event IDs/types and outcomes.
-- Do not instantiate CheckoutRecovery or send WhatsApp from the HTTP request, and do not expose the commerce ingest route in browser/WordPress JS.
+- Register `POST /v1/woocommerce/activity` through the existing API route composition, not a new HTTP server or billing endpoint.
+- Validate only `CHECKOUT_UPDATED` in this task; document the complete envelope in OpenAPI with the order cases reserved for API-019.
+- Use current Woo installation authentication and verify `Shop.platform === WOOCOMMERCE` before accepting events.
+- Create an API-owned producer for a Woo-specific checkout BullMQ queue using the existing Redis connection/configuration; do not publish to Shopify queues.
+- Provide bounded unit tests and producer/Redis integration proof.
 
 ## Out of Scope
 
-- Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
-- Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
+- Customer WhatsApp opt-in/consent forms, permission evidence or allowlist management.
+- Recovery materialisation, scheduling, outreach, WhatsApp, AI, charging or offer selection.
+- New Woo activity receipts/lineage tables, new Shared contracts or Shopify-event impersonation.
+- Changes to another repository or any `docs/decisions/**/_index.md` file.
 
-## Implementation work items — mandatory
+## Requirements
 
-- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
-- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
-- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
-- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
-- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
+- Accept only active, correctly authenticated installations; reject client-supplied shop identity, malformed bodies, unsupported types and oversized data.
+- Canonical API schema fixes the meaning of checkoutKey, eventId, occurredAt, currency, total, optional bounded items and contact; it does not require consent flags.
+- Use deterministic BullMQ job ID scoped to authenticated shop and event ID, and include a content digest to detect conflicting retained replays where possible.
+- Acknowledge `202` only after BullMQ has accepted a job; Redis enqueue failure returns a retryable error and no success claim.
+- Document that job-ID deduplication lasts only while the Redis job exists; do not promise a permanent replay ledger, unconditional `409`, or a durable HTTP receipt ID.
+- Use the shared structured logger; do not log payloads, phone numbers, tokens or credentials.
 
-## Cross-repository boundary (common requirements)
+## Work Items
 
-- Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
-- Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
-- For merchant display, all 20 supported WordPress UI locales use administrator language with site fallback; this must not change Shop or customer conversation language.
-- New or changed externally visible API fields require strict bounded runtime schema validation and a matching OpenAPI/Shared contract owned by the producer.
-- No additional external interface is authorised beyond the bounded scope above.
+- [x] Implement route + strict schema + producer as small separate modules.
+- [x] Add OpenAPI/fixture examples and scoped duplicate/error responses.
+- [x] Test invalid and revoked installation, cross-tenant event ID, queue failure, bounded payload, replay and conflicting retained job.
+- [x] Demonstrate existing Shopify/merchant API routes unchanged; focused route-composition tests pass with current route counts.
+
+## Interfaces / Contracts
+
+**API-owned `woo.activity.v1` contract** (published as strict OpenAPI + integration fixtures, not a new Shared package in this bounded scope):
+
+```json
+{
+  "schemaVersion": "woo.activity.v1",
+  "eventId": "stable-opaque-event-id",
+  "eventType": "CHECKOUT_UPDATED",
+  "checkoutKey": "stable-shop-scoped-key",
+  "occurredAt": "2026-10-20T12:00:00.000Z",
+  "checkout": { "currency": "GBP", "total": "29.99", "items": [] }
+}
+```
+
+`eventType` is one of `CHECKOUT_UPDATED`, `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED`. For orders, use an `order` object with `orderId`, status and same `checkoutKey`; `checkout` is absent. A Woo producer sends no shop ID: API resolves Shop from installation credentials. Bounded customer/contact fields and line-item fields must be explicitly defined in the authoritative API schema; omit unavailable fields rather than fabricating them. Correlation key is `(authenticated shopId, checkoutKey)`. Stable `eventId` is retained on retries of the **same emitted event**; later genuine updates use a new `eventId`.
+
+The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented by API-008; order event types are enabled by API-019 on the same route. Queue payloads retain `schemaVersion`, authenticated `shopId`, event identity, kind, checkout key and bounded validated snapshot. Background must validate the queued payload again and must **not** call the Shopify event parser. These contracts are specific to this API/Background integration; if a published cross-service primitive becomes necessary, stop and return the new ownership requirement to the architect rather than implement a competing Shared module.
 
 ## Dependencies
 
-- `ARCH-035-SHARED-001` must be architect-accepted Complete before this task is claimed.
-- `ARCH-035-DATABASE-001` must be architect-accepted Complete before this task is claimed.
+None
 
 ## Enables
 
-- `ARCH-035-BACKGROUND-001`
+- `ARCH-035-API-019`
 - `ARCH-035-WOOCOMMERCE-007`
-- `ARCH-035-WOOCOMMERCE-008`
+- `ARCH-035-BACKGROUND-001`
 
 ## Acceptance Criteria
 
-- [ ] Auth/reconnect/revoke, replay/out-of-order, bad payload and concurrent duplicate integration tests.
-- [ ] Durable receive-before-ack, queue failure/retry and tenant-boundary proofs.
-- [ ] No Shopify ingress or billing API regression.
-- [ ] Scope stays within `moda-interact-api` and preserves approved cross-provider and 20-locale contracts.
-- [ ] Baseline, task launcher isolation, implementation commit, parent task report and regression evidence are recorded without false claims for unavailable provider services.
-- [ ] `git diff --check` and repository-required build/test/lint commands pass or precise blockers are reported.
+- [x] Real Woo installation principal determines shop; forged shop identifiers rejected.
+- [x] Valid checkout event becomes a Woo-only BullMQ job before `202` response.
+- [x] Failed enqueue does not report accepted; retry with same event ID is safe within retained job window.
+- [x] No CheckoutRecovery, provider billing or outbound message is created.
+- [x] No Shopify queue receives a Woo payload.
 
 ## Validation
 
-- [ ] Run repository-declared focused test suites plus full typecheck/lint/build where applicable.
-- [ ] Run real integration/black-box provider or disposable database evidence when this task's scope includes that dependency; do not substitute a mocked success.
-- [ ] Check tenant isolation, disconnected/revoked credential handling, idempotency and requested negative cases.
-- [ ] For Woo UI tasks, run `npm run test:i18n`, `npm run i18n:verify:20`, PHP/JS tests, admin-locale test, `npm run plugin-zip` and manual LocalWP workflow.
-- [ ] Verify `git diff --check` and submit the canonical Completion Report; leave all `_index.md` files untouched until explicit reconciliation.
+- [x] Focused API route/schema/producer unit tests (12 passed).
+- [x] Redis/BullMQ integration: authenticated enqueue, retained duplicate, failed queue, cross-tenant isolation (2 passed).
+- [x] API typecheck, lint, build, changed-file diff check; focused route composition (6 passed).
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
-Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+After work items, acceptance criteria and required validation are satisfied, finish the Completion Report, transition the task to `review`, return it to `moda_architect`, and STOP. Do not proceed to enabled tasks.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
-service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
-widening scope.
+Use the established hosted API composition/authenticator and existing BullMQ infrastructure. If API Redis producer capability is absent, add the smallest bounded producer wiring in the API; Gateway owns deployment wiring. Do not create a DB receipt table or publish unrecognised jobs on the Shopify queue.
 
 ## Completion Report
 
 ### Status
 
-Not Started.
+Complete — Attempt 1 accepted and explicitly completed by the developer on 2026-10-20. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None.
+- `README.md`
+- `openapi/woocommerce-activity-v1.yaml`
+- `package.json`, `package-lock.json`
+- `scripts/test-arch035-woo-activity-redis.mjs`
+- `src/composition/routes.ts`, `src/composition/woocommerce.ts`, `src/index.ts`, `src/server.ts`
+- `src/woocommerce/activity/contract.ts`
+- `src/woocommerce/activity/producer.ts`
+- `src/woocommerce/activity/redis-producer.ts`
+- `src/woocommerce/activity/request.ts`
+- `src/woocommerce/activity/routes.ts`
+- `tests/fixtures/woocommerce/activity/checkout-event.ts`
+- `tests/fixtures/woocommerce/activity/checkout.json`
+- `tests/fixtures/woocommerce/activity/reserved-order.json`
+- `tests/integration/woocommerce/activity/redis-queue.test.ts`
+- `tests/unit/composition/real-route-registration.test.ts`
+- `tests/unit/composition/routes.test.ts`
+- `tests/unit/woocommerce/activity/contract.test.ts`
+- `tests/unit/woocommerce/activity/openapi.test.ts`
+- `tests/unit/woocommerce/activity/producer.test.ts`
+- `tests/unit/woocommerce/activity/routes.test.ts`
 
 ### Work Completed
 
-None.
+- Added the authenticated `POST /v1/woocommerce/activity` checkout-capture route using the existing Woo installation principal and explicit Woo platform validation.
+- Added strict bounded `woo.activity.v1` checkout parsing, documented OpenAPI and fixtures; order events remain reserved for API-019.
+- Added an API-owned Woo-only BullMQ producer with shop/event-scoped deterministic job IDs, retained-job content-digest conflict detection, and retryable enqueue failures.
+- Added route, producer, Redis/BullMQ integration tests and API documentation. No database receipt, recovery, billing or outbound messaging behavior was introduced.
+- Corrected stale existing route-registration test counts discovered during task validation; verified actual route composition passes.
 
 ### Validation Results
 
-Not run.
+- `npm run test:arch035-woo-activity:unit`: passed, 12 tests.
+- `npm run test:arch035-woo-activity:redis`: passed, 2 tests, including transport failure without a `202` response.
+- `npx tsx --test tests/unit/composition/routes.test.ts tests/unit/composition/real-route-registration.test.ts`: passed, 6 tests after correcting stale route counts.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with zero warnings.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- Implementation task branch is clean except for an unrelated pre-existing `database` submodule gitlink modification. That pointer targets commit `69c0c8b` from ARCH-040-DATABASE-005 and was not staged or changed by this task.
+- Implementation commits are published on `origin/task/ARCH-035-API-008`, ending at `e28e5d9e06a3ef38ae45e9ca842a3a58c5ccbe31`.
 
 ### Deviations
 
@@ -171,40 +177,51 @@ None.
 
 ### Assumptions
 
-Dependencies will be rechecked at task claim time; no generated task document itself creates a branch, provider credential, tested artifact or release.
+Developer must materialise and claim the task in its canonical isolated parent and implementation worktrees. Snapshot is not evidence of current remote task state.
 
 ### Unresolved Issues
 
-None identified beyond documented dependencies/provider gating.
+None within API-008 scope. Redis job-ID deduplication remains intentionally bounded by the BullMQ retained-job window; this is documented and no permanent replay ledger is promised.
 
 ### Architectural Concerns
 
-None reported at definition time.
+Capture-only is not permanent event archiving. Completed BullMQ jobs can expire; future recovery enablement must consider that captured past events may be unavailable.
 
 ## Architect Review
 
 ### Review Status
 
-Pending implementation.
+Developer Self-Review Accepted; developer completion decision recorded below.
 
 ### Review Notes
 
-No implementation reviewed.
+Scope reopened from Superseded only for the 20 October 2026 WooCommerce checkout/order capture exception. Historical supersession remains in Git. Attempt 1 satisfies its current API-008 checkout-only requirements; order events remain disabled for API-019. The implementation commit and all task-specific validation are published/recorded. The unrelated database gitlink modification was preserved and excluded from task commits.
 
 ### Reviewed Files
 
-None.
+- Woo activity contract, request parser, route, producer, Redis adapter and route composition.
+- API-008 OpenAPI and fixture files.
+- Focused unit/integration tests and route registration test.
 
 ### Validation Reviewed
 
-Not run.
+- Woo activity unit: 12 passed.
+- Disposable Redis/BullMQ integration: 2 passed.
+- API route composition: 6 passed.
+- Typecheck, lint, build and diff check: passed.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to the capture-only API-008 scope: existing Woo installation authentication determines tenant identity; only checkout updates are enabled; jobs use a dedicated Woo queue; enqueue completion precedes `202`; no persistent receipt ledger, recovery processing, billing, or provider send is introduced. Existing route composition remains valid.
 
 ### Follow-up
 
-**Superseded by ARCH-035 UI-only scope revision (11 October 2026).** This definition is historical and MUST NOT be claimed or executed under ARCH-035. Backend/data/event/coupon capabilities require a separately agreed architecture if ever authorised. No implementation was reviewed or accepted.
+API-019 and WooCommerce-007 are dependency-ready. Background-001 remains pending because it also depends on WooCommerce-007.
 
-Return to architect on implementation submission.
+### Developer Self-Review Accepted
+
+Attempt 1 passes review. All API-008 Work Items and Acceptance Criteria are complete, implementation commits are published on the canonical task branch, and the required focused validations pass. The implementation checkout's unrelated database gitlink modification remains untouched and uncommitted.
+
+### Developer Completion Decision
+
+On 2026-10-20, the developer explicitly completed ARCH-035-API-008 after the durable Attempt 1 Accepted review. Status is `complete`; executor and claimed_at are null; attempt remains 1. No merge to `main` was performed.

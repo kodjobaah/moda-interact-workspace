@@ -18,9 +18,10 @@ depends_on:
   - ARCH-038-DATABASE-001
   - ARCH-038-COMMERCE-001
   - ARCH-038-COMMERCE-002
+  - ARCH-038-COMMERCE-003
 enables: []
 created: 2026-10-13
-updated: 2026-10-13
+updated: 2026-10-16
 ---
 # Certify Studio Preview policy isolation and run snapshots
 
@@ -46,6 +47,8 @@ Studio Preview has its own Redis reservation and may run long model calls; displ
 - Exercise Test Conversation creation for saved PREVIEW, explicit effective LIVE (read-only) and temporary CUSTOM modes, including Shop inheritance and mixed overrides. Confirm LIVE values are copied into Preview state without LIVE writes or live workflow execution.
 - Validate terminal expiration/cancel/retry and logs, including reservation versus deadline consistency.
 - Verify initial/max polling configuration does not appear in run-admission or execution policy payloads; validate intentional, authorised policy-source selection only at Test Conversation creation.
+- Verify no live Preview runtime consumes either retired `COMMERCE_PREVIEW_RUN_DEADLINE_MS` or `COMMERCE_PREVIEW_RUN_OUTPUT_TOKENS`: setting them to conflicting values cannot change effective policy selection, stored snapshot or runner input.
+- Exercise the dedicated `PreviewExecutionLimits` React component integrated beside the separate polling controls.
 - Exercise Studio Preview policy UI: required Platform fields, Shop Override/Inherit, read-only effective-source summary, audit history, all three policy-source modes, custom field validation/reset, server-side auth, and the independent browser-only polling configuration.
 
 ## Out of Scope
@@ -66,13 +69,14 @@ Studio Preview has its own Redis reservation and may run long model calls; displ
 
 ## Interfaces / Contracts
 
-Terminal architecture certification of unified DATABASE-001 + COMMERCE-001/002.
+Terminal architecture certification of unified DATABASE-001 + COMMERCE-001/002/003.
 
 ## Dependencies
 
 - `ARCH-038-DATABASE-001`
 - `ARCH-038-COMMERCE-001`
 - `ARCH-038-COMMERCE-002`
+- `ARCH-038-COMMERCE-003`
 
 ## Enables
 
@@ -84,6 +88,7 @@ None
 - [ ] No orphan RUNNING states after terminal deadline or cancellation.
 - [ ] Evidence is complete and reproducible.
 - [ ] Studio Preview editor and audit history show correct per-field inherited/effective values and provenance; LIVE simulation is read-only, custom inputs do not write policy/audit rows, and polling settings never leak into execution.
+- [ ] Legacy Preview budget environment variables are ignored even when set, and the separate React component controls only server-authorised, frozen test budgets; polling remains display-only.
 - [ ] The three policy modes produce correctly labelled immutable conversation budgets, including `modelSteps`/`remoteCalls`, and existing conversations are unaffected by changes to saved PREVIEW/LIVE policies or UI controls.
 
 ## Validation
