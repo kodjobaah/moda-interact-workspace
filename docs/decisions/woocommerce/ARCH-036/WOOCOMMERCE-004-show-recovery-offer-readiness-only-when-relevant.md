@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: complete
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 1
 depends_on: ["ARCH-036-API-004"]
 enables: []
 created: 2026-10-15
-updated: 2026-10-16
+updated: 2026-11-01
 ---
 
 # ARCH-036-WOOCOMMERCE-004 — Mode-scoped UX with merchant-controlled coupon selection
@@ -179,3 +179,19 @@ Human validation remains: with FIXED selected and the catalogue in ERROR/non-cur
 ### Required Follow-up
 
 Have a human run and record the outstanding LocalWP FIXED + catalogue ERROR check at desktop and narrow widths, including the inline readiness message, Retry behavior and both WordPress menu stages. Then reconcile the task again; keep this attempt number unless a new implementation claim is actually started.
+
+
+## Developer Override - Reopened
+
+The task metadata previously marked this task complete at Attempt 1, but its
+Completion Report and review record state that the required LocalWP FIXED +
+catalogue ERROR validation remains outstanding. At the developer's request, the
+task is reopened for implementation takeover and completion of that required
+scenario. Attempt 1 history and all prior review evidence are preserved.
+
+Lifecycle transition: status ready; executor and claimed_at cleared; attempt 1
+preserved. Reopening did not claim a new attempt.
+
+Dependency frontier audit: no task definition declares ARCH-036-WOOCOMMERCE-004
+in depends_on, and this task has no enables entries. No downstream task status
+required regression.
