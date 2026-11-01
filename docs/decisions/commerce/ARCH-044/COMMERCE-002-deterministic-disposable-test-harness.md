@@ -80,7 +80,7 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] All six named suites could not be exercised: the disposable runner timed out pulling the pinned PostgreSQL image before creating fixture resources or executing assertions. This is an explicit infrastructure blocker; import-time setup behavior is not claimed as live-verified.
+- [ ] Five PostgreSQL/Redis-gated suites could not be exercised: the disposable runner timed out pulling the pinned PostgreSQL image before creating fixture resources or executing assertions. The sixth named suite, Tool Editor dispatch, passed 9/9 in the unit lane. Database-backed import/setup behavior is not claimed as live-verified.
 - [x] Separate unit/UI and integration workflows are documented with the declared npm scripts and no pnpm dependency.
 - [ ] Isolation/cleanup behavior is covered by harness contract tests, but successful live PostgreSQL/Redis setup and cleanup could not be evidenced in this attempt.
 - [ ] The discovery test now requires the run namespace and emits 60/61 plus request timing diagnostics, but actual 60-allowed/61st-rejected behavior remains unverified due the infrastructure blocker.
