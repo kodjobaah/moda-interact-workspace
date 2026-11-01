@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
 enables:
 - ARCH-053-WOOCOMMERCE-007
 created: 2026-10-30
-updated: 2026-10-30
+updated: 2026-11-01
 ---
 
 # ARCH-053-API-003 — Resolve confirmed initial outreach offer in Woo restore response v1
