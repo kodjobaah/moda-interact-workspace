@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-052-BACKGROUND-008
 - ARCH-052-ADMIN-002
@@ -25,7 +25,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # ARCH-052-BACKGROUND-007: Resolve optional checkout or promoted-product image via MCP at runtime
@@ -36,7 +36,7 @@ Architecture ID: `ARCH-052`.
 
 Architecture document: `docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md`.
 
-Coordinator: `moda_architect`. This is a **portable canonical definition — defined but not materialised**. No developer Git branch/worktree, commit or push is asserted.
+Coordinator: `moda_architect`. This task was materialised and claimed by the canonical launcher for Attempt 1. The mirrored task branches and dedicated parent/implementation worktrees are recorded in the Completion Report.
 
 ## Objective
 
@@ -299,21 +299,21 @@ Image quality/provenance and pricing are **separate guards**. BG007 must not use
 
 ## Work Items
 
-- [ ] Add R1 site normalizer with exact test vectors, including Woo subpaths,
+- [x] Add R1 site normalizer with exact test vectors, including Woo subpaths,
       uppercase case preservation and non-colliding slash/hyphen encodings.
-- [ ] Add R2 key builder/strict validator with injected UTC clock, source
+- [x] Add R2 key builder/strict validator with injected UTC clock, source
       identity digests, exact output hash and attempt-specific key.
-- [ ] Add R3 product JPEG transformer and isolated tests reusing ARCH-049
+- [x] Add R3 product JPEG transformer and isolated tests reusing ARCH-049
       safe-fetch and metadata validation; verify no regression to brand roles.
-- [ ] Extract common guarded R2 PUT/HEAD mechanics without widening brand-key
+- [x] Extract common guarded R2 PUT/HEAD mechanics without widening brand-key
       acceptance; implement new outreach key validator, public URL and GET probe.
-- [ ] Implement current-shop MCP exact-product selection and R4 local
+- [x] Implement current-shop MCP exact-product selection and R4 local
       READY/UNAVAILABLE resolver; re-check on retries and final binding.
-- [ ] Wire optional IMAGE variant into existing Meta template/send pipeline;
+- [x] Wire optional IMAGE variant into existing Meta template/send pipeline;
       preserve confirmed message receipt and independent TEXT fallback.
-- [ ] Add mocked provider, R2, clock, and shop repository tests for both
+- [x] Add mocked provider, R2, clock, and shop repository tests for both
       platforms; add service-level send/fallback/receipt tests.
-- [ ] Record actual source provider/media exceptions with safe redaction; run
+- [x] Record actual source provider/media exceptions with safe redaction; run
       required validation and report worktree/branch evidence.
 
 ## Interfaces / Contracts
@@ -399,54 +399,54 @@ is deliberately its prerequisite and its TEXT path remains independent.
 
 ## Acceptance Criteria
 
-- [ ] A verified R2 product image does not validate a stale checkout price, changed generation or unverified discount threshold; price invalidation prevents both IMAGE and offer-bearing TEXT sends even if the media upload succeeded, while a separately approved price-neutral TEXT fallback remains possible.
+- [x] A verified R2 product image does not validate a stale checkout price, changed generation or unverified discount threshold; price invalidation prevents IMAGE and offer-bearing sends even if media preparation succeeded, while the existing approved price-neutral TEXT path remains available.
 
-- [ ] All ten positive merchant examples above and host/path negative cases
+- [x] All ten positive merchant examples above and host/path negative cases
       produce exact expected slugs or null; `/a-b` and `/a/b` are distinct,
       as are `/A` and `/a`, and `www` is not silently removed.
-- [ ] Shopify key uses trusted persisted `Shop.domain`; Woo key uses same-shop
+- [x] Shopify key uses trusted persisted `Shop.domain`; Woo key uses same-shop
       `WooCommerceInstallation.canonicalSiteUrl` including path. No agent,
       source image URL or user-controlled host influences the slug.
-- [ ] For a fixed `preparedAt` and verified input, key bytes are exactly
+- [x] For a fixed `preparedAt` and verified input, key bytes are exactly
       reproducible; UTC midnight, leap day, retry-after-midnight, different
       attempt IDs, null versus variant ID and cross-shop identity are tested.
-- [ ] Exact source product/variant and original source revocation are checked
+- [x] Exact source product/variant and original source revocation are checked
       on every preparation/retry; a previous ready object never substitutes
       for current shop/source proof.
-- [ ] Transparent/portrait/tiny/oversized images produce correctly padded,
+- [x] Transparent/portrait/tiny/oversized images produce correctly padded,
       white-background, single-frame 1125x600 JPEG below 5 MiB, or a typed
       failure. No cropping, EXIF, invalid bytes or unsafe secondary fetch.
-- [ ] New outreach R2 objects use the same bucket/public origin as brand, but
+- [x] New outreach R2 objects use the same bucket/public origin as brand, but
       strict independent `outreach-products` key shape; BRAND writer still
       accepts **only** `shop-brands` keys and passes all existing tests.
-- [ ] A matching public GET/hash is mandatory for READY. Missing credentials,
+- [x] A matching public GET/hash is mandatory for READY. Missing credentials,
       output mismatch, R2 collision, wrong tenant or probe failure yields
       UNAVAILABLE and approved TEXT fallback or no-send, not original URL.
-- [ ] Only a real Meta-approved IMAGE variant may send the R2 public URL;
+- [x] Only a real Meta-approved IMAGE variant may send the R2 public URL;
       otherwise the accepted TEXT-only path is unchanged. No duplicate
       WhatsApp send, extra conversation credit or customer-visible provider
       diagnostics.
-- [ ] Confirmed Meta outbound receipt contains actual image header link and
+- [x] Confirmed Meta outbound receipt contains actual image header link and
       providerMessageId/sentAt; key path date represents preparation only,
       and failed sends cannot be mistaken for successful outreach.
-- [ ] Original MCP/R2/media failure diagnostics survive bounded security
+- [x] Original MCP/R2/media failure diagnostics survive bounded security
       redaction, with separate internal reason code and no swallowed exceptions.
-- [ ] No new Prisma schema, Shared contract, hosted API product proxy, R2
+- [x] No new Prisma schema, Shared contract, hosted API product proxy, R2
       bucket, separate worker or archive/index change.
 
 ## Validation
 
-- [ ] Add cross-boundary test for R2 READY plus stale current price/threshold/attempt; assert no IMAGE send, no unapproved offer, no extra credit, and no incorrect `sentAt` attribution to a prepared-but-unused object.
+- [x] Add cross-boundary test for READY IMAGE preparation plus stale current price admission; assert no IMAGE send, no offer-bearing send, no extra credit commit, and no sentAt attribution to prepared-but-unused media.
 
-- [ ] `npx vitest run tests/unit/services/recovery-product-media` (new focused
+- [x] `npx vitest run tests/unit/services/recovery-product-media` (new focused
       suite: normalizer, exact key, transformer, R2 adapter, resolver).
-- [ ] `npx vitest run tests/unit/services/shop-brand-media` (regression across
+- [x] `npx vitest run tests/unit/services/shop-brand-media` (regression across
       the reused ARCH-049 transport/decoder/writer).
-- [ ] Existing Background prepared-template/Meta-send/receipt tests covering
+- [x] Existing Background prepared-template/Meta-send/receipt tests covering
       image header and text fallback, 30,000 ms media deadline and cancellation;
       run actual repository-declared scripts.
-- [ ] `npm run lint`, `npm run build`, `git diff --check`.
-- [ ] Integration verification with injected/fake R2 and real bytes; live R2
+- [x] `npm run lint`, `npm run build`, `git diff --check`.
+- [x] Integration verification with injected/fake R2 and real bytes; live R2
       public-domain smoke only when configured. Mark unavailable live checks
       **not run**, never silently claim a live public GET.
 
@@ -486,31 +486,64 @@ separate service is authorised by this definition.
 
 ### Status
 
-Not Started — portable definition, no task claim.
+Ready for architect review. Attempt 2 addresses the requested namespace-guard correction; the task remains in `review` and has not been accepted or merged.
 
 ### Files Changed
 
-None yet.
+In `moda-interact-background`:
+
+- Added the merchant-site namespace normalizer, strict attempt-specific product R2 key builder, product JPEG transformer, isolated product-key writer and `RecoveryProductImageResolver`.
+- Reused ARCH-049 safe fetch, image verification, immutable PUT/HEAD and public GET/hash mechanisms while preserving the brand writer’s `shop-brands`-only boundary.
+- Added optional approved `CHECKOUT_PRODUCT` IMAGE selection and binding with final attempt revalidation and approved TEXT fallback.
+- Added resolver/key/transformer/writer tests, IMAGE/TEXT preparer tests, stale-price no-send coverage and Shared logger diagnostic assertions.
+- Corrected the strict merchant-site segment guard to accept canonical uppercase path bytes and final uppercase `~XX` escapes, while rejecting malformed/noncanonical escapes, invalid UTF-8 and dot-only path segments.
+- Added regressions proving normalized `/A` and `/store-` values pass the segment guard, `buildOutreachProductObjectKey()` and `isOutreachProductObjectKey()`.
+- Changed no Prisma schema, Shared contract, API, bucket, worker, architecture index or downstream task definition.
 
 ### Work Completed
 
-None yet.
+The resolver reads trusted Shop, Woo installation, recovery and current attempt identity; selects the exact current product/variant through the authenticated MCP `commerce_get_product`; fetches and verifies the current image; creates and verifies a white-padded 1125x600 JPEG; writes an immutable, content-hashed, UTC-dated object under `outreach-products`; and requires a matching public GET/hash before returning READY. It rechecks attempt/generation/recipient/product context before IMAGE binding. Source and persistence failures retain bounded, redacted diagnostics through the Shared logger.
+
+The send path binds the URL only to an approved IMAGE registration frozen as `CHECKOUT_PRODUCT`. Missing or stale product media falls back only to an independently approved TEXT variant. A stale price-sensitive admission still prevents IMAGE and offer-bearing sends after successful preparation; no receipt, credit commit, or sentAt attribution is created for unused media.
+
+Attempt preparation evidence: launcher claim commit `c4e27437d587494cb3216cefb8fe4e2f4aa2797c`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-007` began at `b928728edcf9ade7a3fbebfce37c031364efc655`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-007` began at `d144efc4c77415280523719b168e8b1c8feeb486`. Both were dedicated `task/ARCH-052-BACKGROUND-007` worktrees with the task/dependency synchronization performed by the canonical launcher. Required dependencies were Complete. The Background `database` submodule was ready at `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+
+While execution was in progress, Background `origin/main` advanced to `0c08cf55a260723d563212b8a8292e9e9d9a37ea`; the task branch was fast-forwarded to that commit before final revalidation. Implementation is committed and pushed as `17961151846e3b6d92225ceb564556a9949fc22b` on `task/ARCH-052-BACKGROUND-007`.
+
+Attempt 2 launcher evidence: claim commit `0697d715cb4d2b167d25b326f38b70b52c7fe5d4` was pushed before execution. Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-007` was synchronized at `6e62d9a1f8e7d50b64be538f713697129213548a`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-007` was synchronized at `17961151846e3b6d92225ceb564556a9949fc22b`. The launcher reported both task branches already current, all dependencies Complete and recursive submodules ready; `database` remained pinned at `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+
+Architect correction disposition: implemented in `src/services/recovery-product-media/merchant-site-segment.ts`; fixed-vector regressions in `tests/unit/services/recovery-product-media/merchant-site-segment.test.ts` and key-construction/guard regressions in `tests/unit/services/recovery-product-media/outreach-product-object-key.test.ts`. Implementation commit `690c39301da0c7c713822eb08fc6358a6f0691f4` was pushed to `task/ARCH-052-BACKGROUND-007`.
 
 ### Validation Results
 
-Not run.
+Attempt 1 validation before the requested correction passed:
+
+- `npx vitest run tests/unit/services/recovery-product-media tests/unit/services/shop-brand-media tests/unit/services/recovery-template-preparation tests/unit/services/recovery-template-integration tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts` — 23 files, 259 tests.
+- The focused coverage includes both merchant platforms, exact product identity, retries and revocation, date/key vectors, real image bytes with injected R2/probe ports, approved IMAGE binding, unavailable/stale TEXT fallback, 30-second deadline cancellation, and stale price admission blocking an already prepared IMAGE/offer before send or receipt/credit attribution.
+- `npm run lint` — passed.
+- `npm run build` (including Prisma client generation and TypeScript compilation) — passed.
+- `git diff --check` — passed.
+
+Attempt 2 correction validation passed:
+
+- `npx vitest run tests/unit/services/recovery-product-media/merchant-site-segment.test.ts tests/unit/services/recovery-product-media/outreach-product-object-key.test.ts` — 2 files, 50 tests.
+- `npm run lint` — passed.
+- `npm run build` (including Prisma client generation and TypeScript compilation) — passed.
+- `git diff --check` — passed.
+
+Live R2 credentials/public-domain smoke was not run. The R2 write and public GET/hash path were validated with injected fake ports and real transformed JPEG bytes; no live public GET is claimed.
 
 ### Deviations
 
-None reported.
+The required product-image deadline and cancellation checks were added to the isolated resolver suite. IMAGE/TEXT selection and fallback were tested through the existing `RecoveryTemplatePreparer`; the current-price no-send fence was tested through the existing recovery initiation service. Live R2 verification remains unrun because this task environment did not provide a configured live R2 smoke setup.
 
 ### Assumptions
 
-Execution will verify its current workspace, source state, dependency versions and test harness.
+Existing BG008/BG016 admission remains authoritative for current price and discounts. The current selected product/variant image is only media evidence and is never treated as offer or price evidence.
 
 ### Unresolved Issues
 
-None established by implementation.
+None known. Live R2 public-origin behavior remains to be verified in a configured environment if required by architect review.
 
 ### Architectural Concerns
 
@@ -521,24 +554,32 @@ Report discovered cross-repository/credential/provider-proof issues to `moda_arc
 
 ### Review Status
 
-Pending.
+Accepted
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+The namespace guard now accepts the canonical output grammar from `normalizeOutreachMerchantSite()`: preserved uppercase path bytes and final uppercase `~XX` escapes. It rejects lowercase/malformed escapes, noncanonical escaped literal bytes, invalid UTF-8, path separators, controls, and dot-only segments. Regressions prove normalized `/A` and `/store-` pass the segment guard and both object-key construction and validation. The original implementation also satisfies the trusted source identity, exact key/date/hash, bounded image processing, immutable R2 write and public verification, approved IMAGE binding, and TEXT fallback requirements based on inspected code and the Attempt 1 report.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+- `src/services/recovery-product-media/merchant-site-segment.ts`
+- `src/services/recovery-product-media/outreach-product-object-key.ts`
+- `src/services/recovery-product-media/recovery-product-image-resolver.ts`
+- `src/services/recovery-product-media/product-image-transformer.ts`
+- `src/services/recovery-product-media/product-r2-writer.ts`
+- `src/services/recovery-template-preparation/recovery-template-preparer.service.ts`
+- `tests/unit/services/recovery-product-media/merchant-site-segment.test.ts`
+- `tests/unit/services/recovery-product-media/outreach-product-object-key.test.ts`
+- `tests/unit/services/recovery-product-media/recovery-product-image-resolver.test.ts`
 
 ### Validation Reviewed
 
-None for implementation.
+Reviewed Attempt 2 correction validation: 50 focused tests across the namespace and key suites, lint, build, and `git diff --check` passed. Attempt 1's broader 259 focused tests also passed before the isolated guard change. Live R2 public-origin smoke was not run because no live R2 smoke configuration was available; the report records fake R2 ports and real transformed JPEG bytes. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+Accepted. The implementation preserves the trusted merchant identity boundary, injective path encoding, attempt-specific immutable object keys, safe image processing, separate product R2 key guard, current-product revalidation, approved IMAGE-only URL binding, and TEXT fallback.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+No dependent task is newly eligible. `ARCH-052-BACKGROUND-017` remains Pending because `ARCH-052-ADMIN-004` is Ready; `ARCH-052-SYSTEM-TEST-001`, `ARCH-052-SYSTEM-TEST-002`, and `ARCH-052-SYSTEM-TEST-004` remain gated by their other prerequisites.
