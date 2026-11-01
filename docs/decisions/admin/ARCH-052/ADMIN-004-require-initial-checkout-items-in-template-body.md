@@ -203,7 +203,7 @@ Start-of-attempt synchronization and submodules:
 - PASS — `npm run test:arch047-admin-meta:unit`: 18 unit tests and 1 component test passed, 0 failed.
 - PASS — `npm run test:arch047-admin-publication:unit`: 22 passed, 0 failed.
 - PASS — `npm run test:arch047-admin-authoring:postgres`: 2 passed, 0 failed using the disposable PostgreSQL harness; container cleanup was completed.
-- PARTIAL — `npm run test:arch047-admin-publication:postgres`: 4 passed, 1 failed. The 100-shop × 20-language fan-out test returned `PARTIAL` instead of `COMPLETE` after approximately 488 seconds; the other four integration cases passed. Its disposable container was removed after the failure. The failure is not isolated to this task and remains for architect review.
+- PARTIAL — `npm run test:arch047-admin-publication:postgres`: 4 passed, 1 failed. The 100-shop × 20-language fan-out test returned `PARTIAL` instead of `COMPLETE` after approximately 488 seconds; the other four integration cases passed. Its disposable container was removed after the failure. The cause has not been root-caused and remains for architect review.
 - PASS — `npx tsc --noEmit`.
 - PASS — `npx eslint --no-warn-ignored` on the changed source/test paths; no errors.
 - PASS — `git diff --check`.
@@ -219,7 +219,7 @@ Only immutable newly authored Meta INITIAL revisions are accepted as compliant; 
 
 ### Unresolved Issues
 
-The existing high-volume publication PostgreSQL fan-out test remains PARTIAL instead of COMPLETE. The four other PostgreSQL publication integration cases pass; architect review should decide whether the 100-shop case needs separate investigation.
+The high-volume publication PostgreSQL fan-out test remains PARTIAL instead of COMPLETE; its cause has not been root-caused. The four other PostgreSQL publication integration cases pass; architect review should decide whether the 100-shop case needs separate investigation.
 
 ### Architectural Concerns
 
