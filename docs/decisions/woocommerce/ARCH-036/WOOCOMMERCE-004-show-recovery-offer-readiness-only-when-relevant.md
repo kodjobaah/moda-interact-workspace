@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-11-01T15:12:56Z
+attempt: 2
 depends_on: ["ARCH-036-API-004"]
 enables: []
 created: 2026-10-15
@@ -120,7 +120,7 @@ After bounded validated work, submit the developer Completion Report and mark th
 
 ### Status
 
-Developer Attempt 1 implementation is complete and published. Automated validation passes. The developer self-review requests only the remaining human-run LocalWP ERROR-state evidence; task status is `ready`, executor is cleared, and attempt remains 1. No browser validation was run in this update.
+In Progress — Attempt 2 claimed by developer at 2026-11-01T15:12:56Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
