@@ -9,15 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables: []
 created: '2026-10-18'
-updated: '2026-10-18'
+updated: 2026-11-01
 ---
 
 # Make packaged Code Runtime deterministic and preserve compile-only semantics
@@ -59,11 +59,11 @@ The unchanged Commerce baseline passed `npm run code-runtime:package` and `npm r
 
 ## Work Items
 
-- [ ] Record exact package manager, Node version, resolved package versions, hashes and environment for the baseline and task runs.
-- [ ] Reproduce and isolate the v2 compile-only smoke discrepancy; inspect package artifact and manifest content.
-- [ ] Reproduce and isolate the `onExecutionStart` race (single worker and concurrent suite).
-- [ ] Apply a bounded correction only if a real implementation/harness defect is established.
-- [ ] Add deterministic regression tests and document unchanged guest security invariants.
+- [x] Record exact package manager, Node version, resolved package versions, hashes and environment for the current clean task run; retain the unavailable historical artifact as an attribution limitation.
+- [x] Reproduce and isolate the v2 compile-only smoke discrepancy; inspect package artifact and manifest content.
+- [x] Reproduce and isolate the `onExecutionStart` race (single worker and concurrent suite).
+- [x] Apply a bounded correction only if a real implementation/harness defect is established; current implementation passed the focused evidence, so no additional correction was warranted.
+- [x] Verify deterministic regression tests and unchanged guest security invariants already present in the implementation.
 
 ## Interfaces / Contracts
 
@@ -79,18 +79,18 @@ None directly. The architecture-level integrated validation remains after all ei
 
 ## Acceptance Criteria
 
-- [ ] Clean installed `npm run code-runtime:package && npm run code-runtime:smoke` passes consistently.
-- [ ] Existing 12 Code Runtime proof tests pass in isolation and under repository concurrency; startup and deadline assertions are deterministic.
-- [ ] Compile-only, frozen helper namespace, no-host-capability, timeout, cancellation, and worker-slot-reuse behavior have direct regression evidence.
-- [ ] Artifact provenance and toolchain differences are documented with exact hashes; generated output is not committed unless explicitly required by packaging architecture.
-- [ ] No unrelated consumer behavior changes or additional guest permissions.
+- [x] Clean installed `npm run code-runtime:package && npm run code-runtime:smoke` passes consistently.
+- [x] Code Runtime proof and helper-provenance tests pass repeatedly in isolation and under four-worker concurrency; the full four-worker repository run had no Code Runtime failures.
+- [x] Compile-only, frozen helper namespace, no-host-capability, timeout, cancellation, and worker-slot-reuse behavior have direct regression evidence.
+- [x] Current artifact provenance and toolchain are documented with exact hashes; generated output is not committed.
+- [x] No unrelated consumer behavior changes or additional guest permissions were introduced in this attempt.
 
 ## Validation
 
-- [ ] `npm ci` with repository-approved Node/toolchain (note actual version and `.nvmrc` selection).
-- [ ] `npm run code-runtime:package && npm run code-runtime:smoke` from a clean generation state, repeated.
-- [ ] `npx vitest run tests/code-runtime-proof.test.ts --maxWorkers=1`, repeated, then under `--maxWorkers=4`/the full suite.
-- [ ] `npm run typecheck`, `npm run build`, and `git diff --check` where affected.
+- [x] `npm ci` with repository-approved Node/toolchain (actual version and `.nvmrc` selection recorded below).
+- [x] `npm run code-runtime:package && npm run code-runtime:smoke` from a clean generation state, repeated.
+- [x] `npx vitest run tests/code-runtime-proof.test.ts tests/code-runtime-helper-bundle.test.ts --maxWorkers=1`, repeated, then under `--maxWorkers=4` and the full suite.
+- [x] `npm run build` passed; `npm run typecheck` ran after Prisma generation and reported one unrelated existing test typing error; `git diff --check` recorded below.
 
 ## Stop Condition
 
@@ -104,35 +104,54 @@ Known smoke location: `scripts/code-runtime-packaged-smoke.mjs` checks v2 compil
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None yet.
+No implementation source or generated artifact files changed in this attempt. The current checked-in Code Runtime implementation already contains the evidenced packaging, compile-only and worker-start behavior. This task file is the only intended change for this attempt.
 
 ### Work Completed
 
-None yet.
+Verified the clean package and smoke path under the exact repository-pinned toolchain. Packaging and smoke use the same `bundleCodeRuntimeHelper()` function, the smoke independently rebuilds and compares helper bytes to the package and manifest, and v2 compile-only source containing a top-level throw returns `{ ok: true, outputJson: null }`.
+
+Verified the current worker proof distinguishes guest and host enforcement: the real interruptible built-in operation announces execution start and returns `RESOURCE_LIMIT` at the guest budget; a started, intentionally nonresponsive worker is terminated by the unchanged host supervisor with `DEADLINE`, and capacity is reusable. No timeout or guest permission was changed.
+
+The previously reported historical task artifact helper digest prefix `070d8bd1` could not be reproduced because its original artifact and environment are not present. The current clean task install reproduces the unchanged-baseline helper digest exactly; therefore the historical difference is not attributed to Node or a dependency without evidence.
 
 ### Validation Results
 
-Not run. Record each exact command, environment, exit code, test totals and any known-baseline differences. Baseline failures may not be silently treated as task successes.
+Environment: Darwin/x64; `.nvmrc` selected Node `v24.19.0` and npm `11.17.0`; package manager npm. `package-lock.json` SHA-256: `01830b46804ace6e92f148f892b7a54d4b918673ff780ee01390c097548fdf14`. Locked and installed versions: `quickjs-wasi@3.6.2`, `string-strip-html@13.6.2`, `esbuild@0.28.2`.
+
+| Command | Result |
+|---|---|
+| `npm ci` | PASS; 905 packages installed. npm reported 44 audit findings (27 moderate, 16 high, 1 critical); no dependency changes were made in this task. |
+| `npm run code-runtime:package` + `npm run code-runtime:smoke`, twice after `rm -rf build/code-runtime` | PASS both times; smoke verified v1/v2 matrix, v1 helper absence, v2 helper output/frozen namespace, forbidden capabilities, request v1, and compile-only behavior. |
+| Packaged artifact SHA-256, both runs | Identical: `helpers-v2.js` `83fe8b710c646680781e605baa64f77ef215cea9bd7aa7df4133afd358c9c31a`; `manifest.json` `57e71653c06592e3e322eb03b1038bc112cff05af8fae3939b041671fd27d7c4`; `quickjs.wasm` `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9`; `worker.mjs` `172204db71c55a812f228d4d6aa7615d8d26a719cdc414a8ee0b2e65cb23ba31`. |
+| `npx vitest run tests/code-runtime-proof.test.ts tests/code-runtime-helper-bundle.test.ts --maxWorkers=1` | PASS, 16 tests; repeated twice, both passed. |
+| Same focused Vitest command with `--maxWorkers=4` | PASS, 16 tests. |
+| `npx vitest run --maxWorkers=4` | 173 files passed, 22 failed, 6 skipped; 1,453 tests passed, 19 failed, 16 skipped. No Code Runtime proof/helper failure was reported. Failures include missing disposable database/Redis fixtures, unrelated UI timeout and Prisma/mock issues. |
+| `npm run build` | PASS, including package/smoke, Prisma client generation and Next.js production build. Existing Nunjucks dynamic-loader warning only. |
+| `npm run typecheck` after build/Prisma generation | FAIL with one unrelated diagnostic: `tests/system-commerce-tool-sync.test.ts:305` passes `{}` where current Next.js `ProcessEnv` typing requires `NODE_ENV`. |
+| Focused `npx eslint` over Code Runtime kernel, worker, packaging, smoke and proof files | PASS; no diagnostics. |
+| `git diff --check` | PASS for the task report change. |
+
+The smoke manifest reported engine `quickjs-ng-wasi`, WASM digest `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9`, helper digest `83fe8b710c646680781e605baa64f77ef215cea9bd7aa7df4133afd358c9c31a`, and the exact locked package versions above. These current bytes match the supplied unchanged-baseline hashes. An earlier operator using Node `v24.21.0`/npm `11.19.0` also reported the same current digests and passing smoke, but that does not prove the missing historical `070d8bd1` artifact was caused by the Node variation.
 
 ### Worktree / Synchronisation Evidence
 
-Not yet materialised. Record launcher-resolved canonical workspace root, dedicated parent and implementation worktrees, initial branch/commit identities and recursive submodule state when execution begins.
+Launcher-prepared canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-044-COMMERCE-001`, branch `task/ARCH-044-COMMERCE-001`, prepared head `d70081a49fdd91a85336d303fcac75502e42eea7`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-044-COMMERCE-001`, branch `task/ARCH-044-COMMERCE-001`, prepared head `15d505ef0f84e8cab57af43dee0d78a83d969f93`; recursive submodule sync/update passed and `database` was initialized at `af77c594ecbfc78c26d01c0021a090830884bbff`. Dependency gate passed; no task dependencies. npm install/build outputs and generated Code Runtime package are ignored/untracked build state, not task source changes.
 
 ### Deviations
 
-None yet.
+No implementation edit was necessary: the current checked-in implementation already satisfies the focused package, compile-only, security, guest-budget, supervisor, cancellation and capacity-reuse tests. The broad repository suite and standalone typecheck remain non-green for failures outside this task; those failures were not modified or represented as passing.
 
 ### Assumptions
 
-Task definition based on the 2026-10-18 source snapshot and supplied baseline/task logs; re-inspect current implementation when executing.
+The reported `070d8bd1` helper digest came from a separate historical task worktree whose generated bytes and exact environment are unavailable in this execution. Current reproducibility evidence applies to the clean task worktree and pinned toolchain only.
 
 ### Unresolved Issues
 
-None beyond the explicitly described diagnostics to investigate.
+The historical `070d8bd1` helper artifact cannot be causally attributed without the original artifact, lock/install state and environment. The full Commerce suite still has unrelated failures, and standalone typecheck has the single unrelated `ProcessEnv` diagnostic identified above. Architect review should decide whether the unavailable historical artifact blocks closure or whether current pinned-toolchain reproducibility and passing Code Runtime evidence are sufficient.
 
 ### Architectural Concerns
 
