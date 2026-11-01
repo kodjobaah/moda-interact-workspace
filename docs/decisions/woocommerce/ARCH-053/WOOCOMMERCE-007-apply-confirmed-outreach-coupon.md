@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 65
 executor: null
 claimed_at: null
@@ -232,24 +232,39 @@ Escalate contract or ownership gaps instead of inventing a new transport or pers
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Not reviewed.
+Static review found the implementation consistent with the specified v1 offer handling: native Woo coupon validation is used, recommended groups are not left partially applied, original successful coupons are restored after conflicts, and coupon values are excluded from the offer outcome diagnostics. No implementation defect was identified in the inspected paths.
+
+The task's Validation section still has the WordPress Classic+Blocks integration and real current-expiry, stacking, rollback, and v1-HTTP scenarios unchecked. The report confirms the integration scenario only passed syntax validation because the task-owned WordPress host did not respond. Those integration scenarios are an explicit validation item, so the task cannot be accepted yet.
 
 ### Reviewed Files
 
-None.
+- `includes/Api/WooRestoreOfferContracts.php`
+- `includes/Api/WooRestoreResolveResponseValidator.php`
+- `includes/Api/ModaApiClient.php`
+- `includes/Checkout/CheckoutOutreachCouponRestorer.php`
+- `includes/Checkout/CheckoutCartRestorer.php`
+- `includes/Checkout/CheckoutCouponRestorer.php`
+- `includes/Checkout/CheckoutCouponOutcomeHandler.php`
+- `includes/Checkout/CheckoutResumeController.php`
+- `tests/WooRestoreOfferContractsTest.php`
+- `tests/CheckoutOutreachCouponRestorerTest.php`
+- `tests/CheckoutCartRestorerTest.php`
+- `tests/CheckoutCouponOutcomeHandlerTest.php`
+- `tests/CheckoutResumeControllerTest.php`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
 
 ### Validation Reviewed
 
-None.
+Reviewed the report of 25 focused PHPUnit tests (153 assertions), baseline-matched full-suite failures, `composer lint`, PHP syntax checks, `git diff --check`, and Node syntax validation. The WordPress integration and its live expiry/stacking/rollback/v1-HTTP assertions were not run. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+The implementation conforms based on static inspection. Acceptance is blocked only on the explicitly required integration validation, which remains unverified.
 
 ### Follow-up
 
-None.
+Keep Attempt 1 recorded and return the task to Ready. Run the task-owned WordPress Classic+Blocks integration scenario, including current expiry, stackable offer application, group conflict/rollback preserving original coupons, and v1 HTTP error handling. Confirm the runner reaches the local site and that cleanup leaves no task-owned containers running. Update the unchecked Validation item and resubmit for review after the required scenarios pass.
