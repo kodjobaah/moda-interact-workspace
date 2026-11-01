@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
 executor: copilot
 claimed_at: 2026-11-01T15:43:05Z
@@ -90,11 +90,11 @@ IMAGE headers are optional and separate; `checkout.itemsSummary` remains a textu
 
 ## Work Items
 
-- [ ] Update eligible-variable registry for all INITIAL variants without broadening FOLLOW_UP/wrapper variables.
-- [ ] Enforce exactly-one BODY semantic at all publishable validation paths; reject missing/duplicate/header-only/static imitations.
-- [ ] Update INITIAL defaults and alternative-product copy; preserve locale-aware Reply tail and source translation structure.
-- [ ] Update compiled/translated Meta examples, immutable revision and snapshot conformance tests across 20 locales.
-- [ ] Document Meta reapproval requirement for revised immutable template versions; do not claim provider approval was executed.
+- [x] Update eligible-variable registry for all INITIAL variants without broadening FOLLOW_UP/wrapper variables.
+- [x] Enforce exactly-one BODY semantic at all publishable validation paths; reject missing/duplicate/header-only/static imitations.
+- [x] Update INITIAL defaults and alternative-product copy; preserve locale-aware Reply tail and source translation structure.
+- [x] Update compiled/translated Meta examples, immutable revision and snapshot conformance tests across 20 locales.
+- [x] Document Meta reapproval requirement for revised immutable template versions; do not claim provider approval was executed.
 
 ## Interfaces / Contracts
 
@@ -132,20 +132,20 @@ Compiled position is determined by the existing `bodyText()` compiler from the o
 
 ## Acceptance Criteria
 
-- [ ] For every INITIAL variant in matrix A/B, `eligibleVariables` allows the BODY semantic and `validateTemplateAst(..., { requireInitialReply:true })` rejects any absent/duplicated checkout-summary variable.
-- [ ] Each of the 20 locale review/publication paths round-trips exactly one BODY semantic, its provider position, and the localized original-basket label; existing BODY parameter, language and character limits hold.
-- [ ] Header-only, literal imitation, missing and duplicated body nodes fail; TEXT/IMAGE, single/multi CODE, AUTOMATIC and alternative-product remain distinct and correct.
-- [ ] Translation and publication preserve the existing `shop.name` + contextual Reply, dynamic buttons and offer provenance rules.
-- [ ] New BODY revisions are immutable and must obtain independent Meta approval; no previously approved hash/registration is altered or implicitly accepted.
-- [ ] Existing FOLLOW_UP and wrapper validation/authoring paths remain unchanged.
+- [x] For every INITIAL variant in matrix A/B, `eligibleVariables` allows the BODY semantic and `validateTemplateAst(..., { requireInitialReply:true })` rejects any absent/duplicated checkout-summary variable.
+- [x] Each of the 20 locale review/publication paths round-trips exactly one BODY semantic, its provider position, and the localized original-basket label; existing BODY parameter, language and character limits hold.
+- [x] Header-only, literal imitation, missing and duplicated body nodes fail; TEXT/IMAGE, single/multi CODE, AUTOMATIC and alternative-product remain distinct and correct.
+- [x] Translation and publication preserve the existing `shop.name` + contextual Reply, dynamic buttons and offer provenance rules.
+- [x] New BODY revisions are immutable and must obtain independent Meta approval; no previously approved hash/registration is altered or implicitly accepted.
+- [x] Existing FOLLOW_UP and wrapper validation/authoring paths remain unchanged.
 
 ## Validation
 
-- [ ] `tests/unit/arch047-template-authoring-ast.test.ts`: matrix and negative cases.
-- [ ] `tests/unit/arch047-template-translations.test.ts`: all 20 locale structural/semantic/position checks.
-- [ ] `tests/unit/arch047-template-compilation.test.ts`, `tests/unit/arch047-template-meta-snapshots.test.ts` and `tests/unit/arch047-template-publication-pure.test.ts`: frozen provider BODY, identity and approval checks.
-- [ ] `tests/integration/arch047-template-authoring.postgres.test.ts` and `tests/integration/arch047-template-publication.postgres.test.ts` with disposable PostgreSQL: accepted/rejected immutable revision flows.
-- [ ] Repository-declared changed-file lint, typecheck/build and `git diff --check`; record exact invoked commands/results, not assumed scripts.
+- [x] `tests/unit/arch047-template-authoring-ast.test.ts`: matrix and negative cases.
+- [x] `tests/unit/arch047-template-translations.test.ts`: all 20 locale structural/semantic/position checks.
+- [x] `tests/unit/arch047-template-compilation.test.ts`, `tests/unit/arch047-template-meta-snapshots.test.ts` and `tests/unit/arch047-template-publication-pure.test.ts`: frozen provider BODY, identity and approval checks.
+- [x] `tests/integration/arch047-template-authoring.postgres.test.ts` and `tests/integration/arch047-template-publication.postgres.test.ts` with disposable PostgreSQL: accepted/rejected immutable revision flows.
+- [x] Repository-declared changed-file lint, typecheck/build and `git diff --check`; record exact invoked commands/results, not assumed scripts.
 
 ## Stop Condition
 
@@ -159,23 +159,59 @@ Use the existing `authoring/registry.ts` and `validation.ts` path; no second ren
 
 ### Status
 
-Not Started.
+Implemented; submitted for architect review.
 
 ### Files Changed
 
-None.
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/authoring/registry.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/authoring/validation.ts`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/authoring/draft-operations.ts`
+- `moda-interact-admin/src/components/admin/whatsapp-templates/authoring/template-family-purpose-selector.tsx`
+- `moda-interact-admin/src/lib/admin/whatsapp-templates/translations/source-snapshot.ts`
+- Related authoring, translation, compilation and Meta snapshot unit tests/fixtures.
 
 ### Work Completed
 
-None.
+- `checkout.itemsSummary` is eligible in INITIAL BODY across NO_OFFER, CHECKOUT and ALTERNATIVE_PRODUCT variants; existing FOLLOW_UP checkout eligibility remains unchanged, and wrapper/header/footer/button palettes are not broadened.
+- Publication-compliant INITIAL AST validation now requires exactly one BODY semantic node. Missing/static-only, duplicate and header-only cases fail at existing `requireInitialReply: true` boundaries.
+- New INITIAL drafts and stage/offer/target changes maintain one labelled original-basket binding while preserving the reviewed Reply tail. Alternative-product proof copy is kept separate from the abandoned basket.
+- Translation snapshots protect the semantic node and refuse incomplete INITIAL source snapshots. Locale fixture flows retain localized basket wording, and compilation/snapshot tests verify one frozen provider BODY position in all 20 locales.
+- Revised source content produces new immutable hashes/positions; historical registrations were not rewritten. A changed initial Meta template revision still requires independent Meta review and provider approval. No provider submission or approval was executed.
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-ADMIN-004`
+- parent branch: `task/ARCH-052-ADMIN-004`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-ADMIN-004`
+- implementation branch: `task/ARCH-052-ADMIN-004`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization and submodules:
+- parent remote task branch fast-forwarded: not-needed; parent origin/main incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed; implementation origin/main incorporated: already-current
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- implementation `database` submodule: initialized at `7c377282aa5819b3008b7d7f3018f44f4161523e`
 
 ### Validation Results
 
-Not run.
+- PASS — `npm run test:arch047-admin-authoring:unit`: 41 passed, 0 failed.
+- PASS — `npm run test:arch047-admin-translations:unit`: 16 passed, 0 failed.
+- PASS — `npm run test:arch047-admin-compilation:unit`: 15 passed, 0 failed.
+- PASS — `npm run test:arch047-admin-meta:unit`: 18 unit tests and 1 component test passed, 0 failed.
+- PASS — `npm run test:arch047-admin-publication:unit`: 22 passed, 0 failed.
+- PASS — `npm run test:arch047-admin-authoring:postgres`: 2 passed, 0 failed using the disposable PostgreSQL harness; container cleanup was completed.
+- PARTIAL — `npm run test:arch047-admin-publication:postgres`: 4 passed, 1 failed. The 100-shop × 20-language fan-out test returned `PARTIAL` instead of `COMPLETE` after approximately 488 seconds; the other four integration cases passed. Its disposable container was removed after the failure. The failure is not isolated to this task and remains for architect review.
+- PASS — `npx tsc --noEmit`.
+- PASS — `npx eslint --no-warn-ignored` on the changed source/test paths; no errors.
+- PASS — `git diff --check`.
+- Dependency setup — `npm ci` completed from the repository lockfile in the isolated implementation worktree; no tracked dependency files changed.
 
 ### Deviations
 
-None.
+The requested publication PostgreSQL script was run, but its high-volume fan-out case did not pass; this is reported above rather than represented as successful validation.
 
 ### Assumptions
 
@@ -183,11 +219,11 @@ Only immutable newly authored Meta INITIAL revisions are accepted as compliant; 
 
 ### Unresolved Issues
 
-None in task scope.
+The existing high-volume publication PostgreSQL fan-out test remains PARTIAL instead of COMPLETE. The four other PostgreSQL publication integration cases pass; architect review should decide whether the 100-shop case needs separate investigation.
 
 ### Architectural Concerns
 
-None at definition time.
+No source or provider schema change was introduced. Independent Meta approval remains required for every revised immutable template revision; this task did not contact Meta or claim approval.
 
 ## Architect Review
 
