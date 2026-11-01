@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-31T22:40:01Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-054-DATABASE-001
@@ -190,11 +190,11 @@ Shared workspace and source checkouts were not switched or mutated; no other tas
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-The authenticated tenant checks, Shared v1 schemas, transaction-time installation recheck, shop lock, monotonic revision, safe first-row defaults, and limited update fields conform to the task. One optimistic-concurrency requirement is not met: `MerchantAiResponseDelayService.update` returns successfully for an unchanged value before comparing `expectedRevision`. The task requires revision equality; a stale same-value request must not bypass that precondition.
+The Attempt 3 fix now compares `expectedRevision` before the same-value no-op path. The focused regression covers a same-value PUT with the current revision succeeding without a write and a stale same-value PUT returning HTTP 409 with `ai_response_delay_conflict`, also without a write. The authenticated tenant boundary, published Shared v1 schemas, transactional installation recheck, row locking, monotonic timestamp, safe first-row defaults, and delay-only update remain consistent with the task.
 
 ### Reviewed Files
 
@@ -210,12 +210,12 @@ The authenticated tenant checks, Shared v1 schemas, transaction-time installatio
 
 ### Validation Reviewed
 
-Reviewed the reported 5 passing focused unit tests, PostgreSQL integration, targeted ESLint, typecheck, build, and diff check. Full-repository lint still reports the unrelated pre-existing `no-empty` at `src/merchant/support/routes.ts:75`; the task-scoped exception is recorded. No validation was rerun during this review.
+Reviewed the Attempt 3 report: 6 focused unit tests; PostgreSQL integration passed with tenant isolation, defaults, no-op, compare-and-set race, and revocation coverage; typecheck and build passed; targeted ESLint and diff checks passed. Full-repository lint still reports the unrelated existing `no-empty` at `src/merchant/support/routes.ts:75`; the task-scoped exception was authorized and the file remains unchanged. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-Changes requested for the stale-revision behavior. The rest of the reviewed API boundary and persistence behavior conforms to the task and published Shared contract.
+Accepted. The service uses the published Shared v1 request/response schemas, enforces the specified optimistic revision check, and preserves tenant authorization and existing recovery settings.
 
 ### Follow-up
 
-Keep this task at Attempt 2 and return it to Ready. Check `expectedRevision` before the same-value no-op path. Add a regression proving a same-value request with the current revision succeeds without writing, while a same-value request with a stale revision returns `409 ai_response_delay_conflict` and does not write. `ARCH-054-WOOCOMMERCE-001` remains Pending until API-001 is accepted and Complete.
+`ARCH-054-WOOCOMMERCE-001` is now Ready because its only dependency, API-001, is Complete. No other task is promoted by this acceptance.
