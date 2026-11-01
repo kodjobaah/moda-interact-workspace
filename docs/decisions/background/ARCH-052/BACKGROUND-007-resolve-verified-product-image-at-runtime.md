@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: codex
-claimed_at: 2026-11-01T13:58:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-BACKGROUND-008
@@ -541,24 +541,32 @@ Report discovered cross-repository/credential/provider-proof issues to `moda_arc
 
 ### Review Status
 
-Pending.
+Changes Requested
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+`normalizeOutreachMerchantSite()` correctly preserves uppercase path characters and encodes every non-allowlisted path byte as `~XX`. However, `isOutreachMerchantSiteSegment()` rejects uppercase literal characters and requires the whole segment to end in a lowercase letter or digit. Consequently, valid normalized values such as `myshop.com-A` and values ending in an encoded byte such as `myshop.com-store~2D` are rejected by both object-key construction and the independent object-key guard. This violates the required merchant-site encoding and can make optional IMAGE preparation unavailable for valid merchant paths.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+- `src/services/recovery-product-media/merchant-site-segment.ts`
+- `src/services/recovery-product-media/outreach-product-object-key.ts`
+- `src/services/recovery-product-media/recovery-product-image-resolver.ts`
+- `src/services/recovery-product-media/product-image-transformer.ts`
+- `src/services/recovery-product-media/product-r2-writer.ts`
+- `src/services/recovery-template-preparation/recovery-template-preparer.service.ts`
+- `tests/unit/services/recovery-product-media/merchant-site-segment.test.ts`
+- `tests/unit/services/recovery-product-media/outreach-product-object-key.test.ts`
+- `tests/unit/services/recovery-product-media/recovery-product-image-resolver.test.ts`
 
 ### Validation Reviewed
 
-None for implementation.
+Reviewed the reported 259 focused tests, lint, build, and diff check. Live R2 public-origin smoke was not run and is reported as unavailable; fake R2 ports with real transformed JPEG bytes were exercised. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+Changes requested for the normalized merchant-site segment validator. The source identity checks, date/hash key structure, image transformation and verification, isolated R2 writer, public probe, approved IMAGE binding, and TEXT fallback otherwise conform to the task based on the submitted report and inspected source.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+Keep this task at Attempt 1 and return it to Ready. Align `isOutreachMerchantSiteSegment()` with the canonical segment grammar emitted by `normalizeOutreachMerchantSite()`: accept preserved uppercase ASCII path bytes and allow a final `~XX` encoded byte, while retaining strict malformed-escape and dot-segment rejection. Add tests proving normalized `/A` and a path ending in a disallowed byte (for example `/store-`) pass both `buildOutreachProductObjectKey()` and `isOutreachProductObjectKey()`. The existing system-test tasks remain Pending until their other dependencies and this task are Complete.
