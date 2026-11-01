@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
 executor: null
 claimed_at: null
@@ -228,11 +228,11 @@ None identified. The correction uses the existing confirmed `ConversationMessage
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-The positive alternative-product receipt now records `promotionTarget: ALTERNATIVE_PRODUCT`, and the automatic variant correctly omits a coupon `code` field. However, `previousPromise()` accepts an `ALTERNATIVE_PRODUCT_PROMOTION` automatic receipt only when `evidence.code === null`. It therefore rejects the exact automatic receipt shape written by this implementation, so follow-up cannot retain the confirmed promise and returns `INITIAL_PROMISE_UNAVAILABLE`.
+The parser correction accepts both the new code-less `ALTERNATIVE_PRODUCT_PROMOTION` automatic receipt and the legacy `code: null` shape, preserves `promotionTarget: ALTERNATIVE_PRODUCT`, and rejects contradictory or malformed code values. The serialized-receipt regression covers the exact new shape, while the targetless legacy receipt remains fail-closed. The confirmed message continues to use the existing `recoveryPromise` storage and provider-confirmed receipt linkage; the ordered checkout offer set and existing send gates are preserved.
 
 ### Reviewed Files
 
@@ -246,12 +246,12 @@ The positive alternative-product receipt now records `promotionTarget: ALTERNATI
 
 ### Validation Reviewed
 
-Reviewed the reported focused template/receipt tests, durable-content and provider-confirmed receipt tests, template emulator, outreach integration, full unit suite, lint, build/typecheck, and diff check. No tests were rerun during this review.
+Reviewed the reported parser suite (23 tests), TypeScript check, targeted ESLint, and diff check after the correction. The full unit suite, lint, build, template emulator, and outreach integration passed before the isolated parser fix; they were not rerun after it. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-Changes requested for the automatic alternative-product receipt parser. The explicit target write, checkout-group preservation, legacy targetless fail-closed behavior, and existing receipt storage path otherwise conform to the task.
+Accepted. Positive receipts persist the explicit target in the existing confirmed-message promise, automatic alternatives remain code-less, and legacy targetless receipts do not acquire an inferred target.
 
 ### Follow-up
 
-Keep this task at Attempt 1 and return it to Ready. Update `previousPromise()` to accept the new code-less `method: AUTOMATIC` alternative-product receipt while still rejecting contradictory or malformed code data. Add a regression that parses the exact serialized automatic alternative-product receipt and verifies that the `ALTERNATIVE_PRODUCT` target is retained; preserve the existing legacy targetless fail-closed test. No downstream task is promoted until this task is accepted Complete.
+`ARCH-053-API-003` is now Ready because its other dependencies (`ARCH-053-API-002`, `ARCH-053-SHARED-002`, and `ARCH-052-SHARED-012`) are Complete. No other downstream task is newly eligible.
