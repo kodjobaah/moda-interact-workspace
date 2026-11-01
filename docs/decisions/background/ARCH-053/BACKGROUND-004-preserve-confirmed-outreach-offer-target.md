@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
-executor: copilot
-claimed_at: 2026-11-01T13:14:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-052-BACKGROUND-008
@@ -224,24 +224,30 @@ None identified. The correction uses the existing confirmed `ConversationMessage
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Not reviewed.
+The positive alternative-product receipt now records `promotionTarget: ALTERNATIVE_PRODUCT`, and the automatic variant correctly omits a coupon `code` field. However, `previousPromise()` accepts an `ALTERNATIVE_PRODUCT_PROMOTION` automatic receipt only when `evidence.code === null`. It therefore rejects the exact automatic receipt shape written by this implementation, so follow-up cannot retain the confirmed promise and returns `INITIAL_PROMISE_UNAVAILABLE`.
 
 ### Reviewed Files
 
-None.
+- `src/services/recovery-template-integration/prepared-template-send.ts`
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `src/services/recovery-offers/recovery-offer.types.ts`
+- `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`
+- `tests/unit/services/recovery-template-integration/prepared-template-send.test.ts`
+- `tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts`
+- `tests/integration/arch052-initial-template-emulator.integration.test.ts`
 
 ### Validation Reviewed
 
-None.
+Reviewed the reported focused template/receipt tests, durable-content and provider-confirmed receipt tests, template emulator, outreach integration, full unit suite, lint, build/typecheck, and diff check. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+Changes requested for the automatic alternative-product receipt parser. The explicit target write, checkout-group preservation, legacy targetless fail-closed behavior, and existing receipt storage path otherwise conform to the task.
 
 ### Follow-up
 
-None.
+Keep this task at Attempt 1 and return it to Ready. Update `previousPromise()` to accept the new code-less `method: AUTOMATIC` alternative-product receipt while still rejecting contradictory or malformed code data. Add a regression that parses the exact serialized automatic alternative-product receipt and verifies that the `ALTERNATIVE_PRODUCT` target is retained; preserve the existing legacy targetless fail-closed test. No downstream task is promoted until this task is accepted Complete.
