@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -178,6 +178,70 @@ The named ARCH-044 opt-in scripts remain the approved fixture entrypoints. Attem
 ### Architectural Concerns
 
 Report new cross-service contracts, database schema/owner changes, secret handling issues, or deployment requirements to `moda_architect` without expanding scope.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Changes Requested — Attempt 2. The task returns to `ready`; `executor` and
+`claimed_at` are cleared. Attempt 1 and its review remain preserved below.
+
+### Review Notes
+
+The Attempt 2 implementation stays within scope. The disposable harness ran,
+cleanup was verified, and the live discovery test proved 60 permitted requests
+and the 61st `RATE_LIMITED` response without changing the quota or deadline.
+The three simpler PostgreSQL suites and the Tool Editor mock validation also
+passed.
+
+The task is not ready for acceptance because two of the five PostgreSQL/Redis
+target suites that motivated this work still fail in the disposable path:
+`c20-integration-fixture` times out after 60 seconds and
+`studio-integration-c20` times out in `beforeAll` after 10 seconds. These are
+fixture-backed suites explicitly in this task's scope, and the report itself
+says they need focused diagnosis. Also resolve why the full planner's reported
+201-file inventory leaves `tests/system-commerce-tool-sync-postgres.test.ts`
+unexecuted, or document and encode its correct fixture partition so the full
+path executes it. Keep the full-path failure visible until that suite runs.
+
+The 35 general-lane assertion failures and the unchanged TS2345 typecheck
+failure are accurately reported and need not be fixed here unless diagnosis
+shows they are caused by this harness change. Do not raise timeouts, suppress
+suites, or modify application behavior merely to obtain a green result.
+
+### Reviewed Files
+
+- `tests/discovery-limits.test.ts`
+- `scripts/arch044-disposable-suites.mjs`
+- `scripts/arch044-test-plan.mjs`
+- `docs/arch044-disposable-tests.md`
+- The task Completion Report and Attempt 2 validation evidence.
+
+### Validation Reviewed
+
+- Harness contract tests: 15/15 passed.
+- Focused live discovery test: 1/1 passed; 60/60 admitted, request 61 rejected,
+  elapsed 2294 ms, max request 77 ms; cleanup reported zero owned Docker
+  resources.
+- Three named database suites passed: model 8/8, prompts 5/5, OpenRouter 1/1.
+- C20 fixture: 1 pass, 1 timeout at 60 seconds. Studio C20: 0 passed, 6
+  skipped after the 10-second `beforeAll` timeout.
+- Full path exited 1: 35 general assertion failures and one registered suite
+  missing from execution. Disposable cleanup passed.
+- `git diff --check origin/main...HEAD` passed.
+- Typecheck failure remains the documented unchanged TS2345 at
+  `tests/system-commerce-tool-sync.test.ts:305:72`.
+
+### Follow-up
+
+On the next attempt, run focused disposable diagnostics for the C20 and Studio
+C20 fixture suites, correct the fixture/setup issue or record concrete evidence
+that isolates an external blocker, and ensure the planner runs
+`tests/system-commerce-tool-sync-postgres.test.ts` in its intended isolated
+phase. Re-run those focused suites and the harness contract checks, then update
+the Completion Report with exact results and cleanup evidence. Keep unrelated
+full-lane failures and the unrelated typecheck error attributed accurately.
+`ARCH-044-COMMERCE-007` remains pending.
 
 ## Architect Review — Attempt 1
 
