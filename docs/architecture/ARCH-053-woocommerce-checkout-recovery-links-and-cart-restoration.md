@@ -148,7 +148,7 @@ The only new task in ARCH-053 is SHARED-003. Existing pending ARCH-053-BACKGROUN
 
 ## Decisions / Tasks
 
-The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001, SHARED-001, SHARED-002, SHARED-003, BACKGROUND-001, BACKGROUND-002 and API-001 Complete**; **BACKGROUND-003 (focused validation-only rework), API-002 and WOOCOMMERCE-001 are Ready**. Other tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. The existing v1 contract does not cover grouped offers; ARCH-053-SHARED-003 extends that first-release v1 union and ARCH-052-SHARED-012 is its joint publication gate.
+The task YAML files are authoritative for status and dependency eligibility. The current frontier has **DATABASE-001, SHARED-001, SHARED-002, SHARED-003, BACKGROUND-001, BACKGROUND-002 and API-001 Complete**; **BACKGROUND-003 (focused validation-only rework), API-002, API-003 and WOOCOMMERCE-001 are Ready**. Other tasks remain Pending until their stated dependencies are satisfied. The five new recommended-offer tasks are `BACKGROUND-004`, `API-003`, `WOOCOMMERCE-007`, `WOOCOMMERCE-008` and terminal `SYSTEM-TEST-003`. The existing v1 contract does not cover grouped offers; ARCH-053-SHARED-003 extends that first-release v1 union and ARCH-052-SHARED-012 is its joint publication gate.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
@@ -161,16 +161,16 @@ The task YAML files are authoritative for status and dependency eligibility. The
 | `ARCH-053-BACKGROUND-002` | `moda_background` | Complete | BACKGROUND-001, DATABASE-001 |
 | `ARCH-053-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | API-001, BACKGROUND-001 |
 | `ARCH-053-WOOCOMMERCE-004` | `moda_woocommerce` | Complete | WOOCOMMERCE-001 |
-| `ARCH-053-API-002` | `moda_api` | Ready | SHARED-002, DATABASE-001 |
+| `ARCH-053-API-002` | `moda_api` | Complete | SHARED-002, DATABASE-001 |
 | `ARCH-053-BACKGROUND-003` | `moda_background` | Complete | BACKGROUND-002, ARCH-048-BACKGROUND-011 |
-| `ARCH-053-BACKGROUND-004` | `moda_background` | Pending | ARCH-052-BACKGROUND-008 |
+| `ARCH-053-BACKGROUND-004` | `moda_background` | Complete | ARCH-052-BACKGROUND-008 |
 | `ARCH-053-BACKGROUND-005` | `moda_background` | Complete | ARCH-016-BACKGROUND-005, BACKGROUND-003, ARCH-048-BACKGROUND-011 |
-| `ARCH-053-API-003` | `moda_api` | Pending | API-002, SHARED-002, BACKGROUND-004, ARCH-052-SHARED-012 |
+| `ARCH-053-API-003` | `moda_api` | Complete | API-002, SHARED-002, BACKGROUND-004, ARCH-052-SHARED-012 |
 | `ARCH-053-API-004` | `moda_api` | Ready | ARCH-016-DATABASE-002, API-002 |
 | `ARCH-053-WOOCOMMERCE-002` | `moda_woocommerce` | Complete | WOOCOMMERCE-001, API-002 |
 | `ARCH-053-WOOCOMMERCE-005` | `moda_woocommerce` | Complete | WOOCOMMERCE-002, WOOCOMMERCE-004 |
 | `ARCH-053-WOOCOMMERCE-006` | `moda_woocommerce` | Complete | WOOCOMMERCE-005 |
-| `ARCH-053-WOOCOMMERCE-007` | `moda_woocommerce` | Pending | API-003, WOOCOMMERCE-005, WOOCOMMERCE-006, ARCH-052-SHARED-012 |
+| `ARCH-053-WOOCOMMERCE-007` | `moda_woocommerce` | Ready | API-003, WOOCOMMERCE-005, WOOCOMMERCE-006, ARCH-052-SHARED-012 |
 | `ARCH-053-WOOCOMMERCE-008` | `moda_woocommerce` | Pending | WOOCOMMERCE-007, WOOCOMMERCE-006 |
 | `ARCH-053-WOOCOMMERCE-003` | `moda_woocommerce` | Complete | WOOCOMMERCE-001 |
 | `ARCH-053-SYSTEM-TEST-001` | `moda_system_test` | Pending | BACKGROUND-003, BACKGROUND-005, API-004, WOOCOMMERCE-002, WOOCOMMERCE-003, ARCH-016-ADMIN-003, ARCH-048-BACKGROUND-011, ARCH-046-WOOCOMMERCE-003 |

@@ -8,4 +8,4 @@ The individual task YAML frontmatter is authoritative.
 
 | Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
-| [ARCH-054-WOOCOMMERCE-001](WOOCOMMERCE-001-add-woo-ai-response-delay-settings.md) | Add WooCommerce AI delay control through protected WordPress REST | Ready | `ARCH-054-API-001` |
+| [ARCH-054-WOOCOMMERCE-001](WOOCOMMERCE-001-add-woo-ai-response-delay-settings.md) | Add WooCommerce AI delay control through protected WordPress REST | Complete | `ARCH-054-API-001` |
