@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
 executor: copilot
 claimed_at: 2026-11-01T12:45:25Z
@@ -447,6 +447,42 @@ Completion Report status: Ready for Review. No Architect acceptance decision has
 - The added tests establish separate preparation and quoted-message routing boundaries, not a full two-shop Meta send with distinct committed `ConversationMessage`/attempt receipts. Nor do the new platform URL tests execute a full provider send. The task's complete all-mode/all-platform end-to-end matrix, every listed policy/source mutation, and downstream system certification remain unverified; corresponding checklist items remain unchecked.
 - The downstream system-test runner's `Unknown scenario ARCH-052-SYSTEM-TEST-001` remains a non-blocking downstream limitation. No runner changes or system-test certification are claimed. The separate template-registration logging path remains out of scope and unchanged.
 - No schema, Shared/MCP contract, checkout URL validation/issuance, provider cart mutation, or cross-repository changes were made.
+
+Completion Report status: Ready for Review. No Architect acceptance decision has been made by this agent.
+
+### Attempt 4 Completion Update
+
+#### Architect Review Corrections
+
+- Re-ran the exact previously timed-out PostgreSQL case, `binds current shop policy, sequence-one attempt, published instructions and same-fingerprint price evidence`, alone through the disposable harness. The test received a 30-second timeout and passed 1/1 in 283 ms; no task-attributable failure was found.
+- Reconciled the original 12-file disposable PostgreSQL batch from the retained-output evidence recorded in the latest Architect Review. It remains **50 passed / 10 failed** and was not rerun as a batch. In `arch048-woo-initial-outreach.integration.test.ts`, the original failed selectors were `persists exactly one confirmed send, Free credit charge and usage event under concurrent dispatch/replay`, `cancels a resumed generation, releases its reserved free credit once, and permits generation two independently`, the placed/paid/cancelled variants of `releases the reserved credit when placed arrives after the last preflight but before provider permit`, and `rechecks authoritative local STOP after reservation and refunds without sending` (original `BASKET_CURRENCY_INVALID`); `releases a resumed attempt from its exact paid-included reservation owner and replays idempotently` originally timed out at five seconds. The isolated suite passed 17/17 in Attempt 3 and 18/18 in Attempt 4, covering these cases after the trusted-context fixture corrections.
+- The exact `rolls back the provider permit on a post-write database fault, logs and allows a safe retry` selector in `woo-initial-send-fence-races.integration.test.ts` originally failed on the old synthetic-error assertion; its isolated rerun passed 5/5 in Attempt 3.
+- The exact `routes real model/tool/model turns through loopback and returns the source-validated offer` selector in `initial-outreach-offer-aimock.integration.test.ts` originally failed on route construction; its revised isolated rerun passed 1/1 in Attempt 3.
+- Added `keeps shared-sender confirmed sends and quoted replies isolated by merchant` to the disposable Woo initial-outreach integration. Two shop recoveries use the same customer phone and approved WABA. The emulated provider confirmation captures each prepared `shop.name` parameter from its authenticated shop-domain fallback, persists distinct provider message IDs, and finalizes each existing message/attempt link. Quoting each ID routes to the matching shop, recovery and conversation. Concurrent dispatch produced exactly two `sent` and two `already-initialized` outcomes; replay left one confirmed outbound message and one usage event per merchant. No production send seam or schema was added.
+- Downstream system certification remains downstream and non-blocking. No system-test certification was attempted in Attempt 4; the earlier `Unknown scenario ARCH-052-SYSTEM-TEST-001` remains a runner limitation, not a Background failure.
+
+#### Attempt 4 Validation
+
+- `node scripts/test-integration.mjs tests/integration/initial-outreach-agent-context.integration.test.ts` — passed, 1 file / 1 test, disposable PostgreSQL and Redis; the requested case alone.
+- `node scripts/test-integration.mjs tests/integration/arch048-woo-initial-outreach.integration.test.ts` — passed, 1 file / 18 tests, disposable PostgreSQL and Redis. An initial run was 17/18 because the test incorrectly assumed `Shop.name` exists; the test was corrected to assert the preparer's trusted, shop-scoped domain fallback, and the final run passed.
+- `pnpm test:unit` — passed, 326 files / 3,492 tests.
+- `pnpm lint` — passed.
+- `pnpm exec tsc --noEmit` — passed.
+- `git diff --check` — passed.
+
+#### Remaining Gaps
+
+- The original combined 50/10 PostgreSQL run remains non-passing; isolated passes do not certify the combined batch. The broader all-mode/all-platform matrix, adversarial source/policy cases, and downstream system certification remain unverified. Existing unchecked acceptance items remain unchecked.
+- The separate ARCH-047 template-registration logging finding and other previously documented non-task findings were not changed. No Shared/MCP contract, database schema, checkout URL issuance/validation, provider cart mutation, or cross-repository change was made.
+
+#### Prepared Execution and Git Evidence
+
+- Attempt 4 was launcher-prepared and claimed/pushed as executor `copilot`; parent claim commit: `f007d773853f3f9e9cd5fcfb57e94913d8158eb3`. Dependency gate passed.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-008`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-008`. Both use `task/ARCH-052-BACKGROUND-008`. No shared/default checkout or other task worktree was switched or used.
+- Start-of-attempt synchronization in the packet: both task branches fast-forwarded `not-needed`; `origin/main` was `already-current` in both worktrees.
+- Recursive implementation submodule sync and update passed; database submodule commit: `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+- Implementation commit `3505dfa10ebe38c9d765e34d9c69f4065a5b92f5` was pushed to the implementation task branch. This parent task report is the only parent-worktree change and will be committed/pushed on the matching parent task branch.
 
 Completion Report status: Ready for Review. No Architect acceptance decision has been made by this agent.
 
