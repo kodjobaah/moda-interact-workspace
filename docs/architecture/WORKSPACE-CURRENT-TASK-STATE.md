@@ -1857,3 +1857,13 @@ current Render plan is claimed capacity-proven.
 
 COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 are promoted Ready; none is
 automatically claimed or launched.
+
+## ARCH-049 dependency-frontier update — 2026-11-01
+
+`ARCH-049-WOOCOMMERCE-002` is architect-accepted and explicitly developer-
+completed at Attempt 1. Its implementation branch is published at
+`44c39ee927606c5b9caef135fb8f4f3d271d62c6`; the parent completion record is
+published at `a7f2a940a`. All declared dependencies of
+`ARCH-049-SYSTEM-TEST-001` are now Complete. The system-test task is `Ready`,
+Attempt 0, with no claim. It remains terminal/manual-gated and requires explicit
+developer invocation before execution; this frontier update does not launch it.
