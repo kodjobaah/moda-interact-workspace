@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 65
-executor: copilot
-claimed_at: 2026-11-01T12:45:25Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
 - ARCH-052-SHARED-012
@@ -491,38 +491,32 @@ Completion Report status: Ready for Review. No Architect acceptance decision has
 
 ### Review Status
 
-Changes Requested — Attempt 3. The same task is ready for Attempt 4 after this review is published.
+Accepted — Attempt 4.
 
 ### Review Notes
 
-The Attempt 3 unit, lint, typecheck, and isolated integration results are useful, and the prepared-worktree evidence is complete. The attempt-3 branch adds the requested separate shared-sender routing, merchant-name preparation, stored checkout URL binding, and follow-up/history unit coverage. Review remains Changes Requested because the historical PostgreSQL failure evidence can now be recovered, one task-relevant failed integration case has no reported rerun, and the required confirmed-send tenant-isolation assertion remains unverified.
+Both bounded corrections from the Attempt 3 review are satisfied. The previously timed-out trusted-context PostgreSQL selector is reported passing alone (1/1, 283 ms with a 30-second test timeout). The new disposable Woo integration exercises two shop recoveries sharing one customer phone and WABA, verifies each shop-scoped merchant parameter, distinct provider message IDs, confirmed outbound messages linked through each attempt to the correct recovery/conversation, quote routing to the matching recovery, and duplicate/replay behavior with one usage event and one sent message per shop.
 
-1. Reconcile the original 50-passed/10-failed run using the retained output artifact `copilot-terminal-output-497a3257-de64-4f30-af89-6c7203abf711.txt`; do not rerun the entire 12-file batch solely to recreate its aggregate. The exact failed cases and original outcomes are:
-  - `tests/integration/arch048-woo-initial-outreach.integration.test.ts`: `persists exactly one confirmed send, Free credit charge and usage event under concurrent dispatch/replay`; `cancels a resumed generation, releases its reserved free credit once, and permits generation two independently`; `releases a resumed attempt from its exact paid-included reservation owner and replays idempotently`; `releases the reserved credit when placed arrives after the last preflight but before provider permit`; the corresponding `paid` and `cancelled` cases; and `rechecks authoritative local STOP after reservation and refunds without sending`. The first, second, placed/paid/cancelled, and STOP cases failed with `BASKET_CURRENCY_INVALID`; the paid-included case timed out at the default five seconds. Attempt 3 reports this isolated file passing 17/17 after fixture corrections. In the next Completion Report, map each exact selector to that run/result; do not report the original combined batch as passing.
-  - `tests/integration/woo-initial-send-fence-races.integration.test.ts`: `rolls back the provider permit on a post-write database fault, logs and allows a safe retry` failed because the old assertion expected a synthetic `PERSISTENCE_FAILURE` instead of the injected originating error. Attempt 3 reports this isolated file passing 5/5; record that exact selector/result.
-  - `tests/integration/initial-outreach-offer-aimock.integration.test.ts`: `routes real model/tool/model turns through loopback and returns the source-validated offer` failed because the expected local model route construction was absent. Attempt 3 reports the revised isolated Aimock test passing 1/1; record that exact selector/result.
-  - `tests/integration/initial-outreach-agent-context.integration.test.ts`: `binds current shop policy, sequence-one attempt, published instructions and same-fingerprint price evidence` timed out at five seconds. No Attempt 3 rerun is recorded. Run this exact case alone against a fresh disposable PostgreSQL environment with a suitable test timeout (for example 30 seconds), then record its exact result and classify any remaining timeout using the readiness evidence. Fix it only if the failure is attributable to this task.
-
-  No names are to be invented. The current exact log plus the Attempt 3 isolated suite totals are evidence for the nine rerun cases; only the trusted-context case needs a new execution unless a reviewable run artifact contradicts those totals. Do not expand this task into the separate template-registration logging path or claim the combined 50/10 run passed.
-
-2. Add one bounded Background integration assertion for the remaining shared-sender acceptance gap. Using two shop recoveries for the same customer phone and shared WABA with a mocked/emulated Meta confirmation, assert each send binds its own trusted `shop.name`, receives a distinct provider message ID, persists the existing confirmed `ConversationMessage` and `RecoveryOutreachAttempt.outboundMessageId` relationship to the correct shop/recovery/conversation, and routes a quote of each ID back to that same recovery. Replay/duplicate delivery must not create another confirmed message or credit charge. The existing preparer and router unit tests are useful but do not jointly prove this durable confirmed-send path, as the Attempt 3 report acknowledges. Keep this in Background ownership; do not make downstream system certification a prerequisite.
-
-3. Keep the report's other explicitly unverified all-mode/all-platform cases unchecked unless the current evidence proves them. Record the Attempt 3 focused pass totals as submitted, and do not claim the `Unknown scenario ARCH-052-SYSTEM-TEST-001` attempt as a Background failure; system tests remain terminal downstream work.
+The original combined PostgreSQL batch remains a failed historical result (50 passed / 10 failed) and was not rerun; focused isolated reruns do not convert it into a passing batch. The broader Shopify/Woo mode matrix and downstream system certification remain unverified and are not claimed as passed. Those are retained as explicit limitations for their terminal system-test tasks. This acceptance resolves the specific review blockers and accepts the Background implementation; it is not a claim that the combined batch or full platform matrix passed.
 
 ### Reviewed Files
 
-- Attempt 3 implementation commit `904dedcce53354416b2ebcf04075bb12119911c6` and its three changed unit-test files.
-- Completion Report Attempt 3 and retained broad PostgreSQL failure output `copilot-terminal-output-497a3257-de64-4f30-af89-6c7203abf711.txt`.
-- The Attempt 2 review and corrections preserved in parent task-branch history.
+- Implementation commit `3505dfa10ebe38c9d765e34d9c69f4065a5b92f5`, including `tests/integration/arch048-woo-initial-outreach.integration.test.ts`, its fixture, and the trusted-context integration timeout adjustment.
+- The Attempt 4 Completion Report and the task's Attempt 3 correction contract.
+- Background source/test boundary for confirmed offer receipts and shared-sender recovery routing.
 
 ### Validation Reviewed
 
-Reviewed, but did not independently rerun, the submitted `pnpm test:unit` (326 files / 3,492 tests), focused unit selection (5 files / 151 tests), lint, typecheck, and isolated integration results. The historical output confirms 4 failed files / 10 failed tests in the original broad batch and provides the exact selectors above. Attempt 3 reports isolated passes of 17/17 Woo initial-outreach tests, 5/5 Woo send-fence race tests, and 1/1 Aimock test; no isolated rerun of the trusted-context test is reported. Implementation worktree is clean on `task/ARCH-052-BACKGROUND-008` at `904dedcce53354416b2ebcf04075bb12119911c6`, equal to `origin/task/ARCH-052-BACKGROUND-008`. Parent task worktree is clean on the same-named branch at `a8bc79107d13768619ebee3570134deb3d23ffde`, equal to its origin task ref. The prepared packet records clean reused canonical worktrees, `origin/main` already current, recursive submodule update passing, database submodule `7c377282aa5819b3008b7d7f3018f44f4161523e`, and dependency gate passing.
+- Submitted exact trusted-context PostgreSQL selector: 1/1 passed in isolation; not independently rerun during this review.
+- Submitted Woo initial-outreach PostgreSQL/Redis integration: 18/18 passed.
+- Submitted `pnpm test:unit`: 326 files / 3,492 tests passed; `pnpm lint`, `pnpm exec tsc --noEmit`, and `git diff --check` passed.
+- The original combined PostgreSQL batch remains 50 passed / 10 failed and was not rerun. No system-test task was executed.
+- Verified implementation branch `task/ARCH-052-BACKGROUND-008` is clean at `3505dfa10ebe38c9d765e34d9c69f4065a5b92f5`, equal to its origin task ref and descended from current `origin/main`. Verified parent task branch was clean at report commit `2a0ee9ae2f1a9a04a9df0ee98f3c1a8d522f93e9`, equal to its origin task ref before this review update. Attempt 4's report records canonical dedicated worktrees, launcher preparation, synchronization, recursive submodule preparation, and dependency-gate evidence.
 
 ### Architecture Conformance
 
-The inspected ownership and attempt-isolation requirements conform. Acceptance is withheld for the two bounded test/evidence gaps above. The original broad batch remains recorded as non-passing; isolated suite reruns are not represented as a clean combined regression gate.
+Conforms to the accepted Background ownership boundary and the Attempt 4 correction contract. No implementation source was changed during review. The persisted cross-merchant receipt behavior is covered in the new Background integration test; full cross-platform/mode certification remains downstream and unverified.
 
 ### Follow-up
 
-Return this same task to `ready`; preserve `attempt: 3`, clear `executor` and `claimed_at`, and preserve both task branches and all implementation commits. `moda_background` owns the bounded corrections above. All declared dependencies are Complete. After this parent review update is committed and pushed, the deterministic launcher may prepare and claim Attempt 4 in the same canonical task worktrees; normal synchronization and dependency checks still apply. The domain index and architecture task table already show `Ready` and remain consistent.
+No further correction is required in BACKGROUND-008. The accepted task satisfies the direct dependency for `ARCH-052-SYSTEM-TEST-003`, which is Ready. `ARCH-052-SYSTEM-TEST-001` and `ARCH-052-SYSTEM-TEST-002` remain Pending because their other implementation prerequisites are not all Complete. `ARCH-053-BACKGROUND-004` is Ready as a separate consumer task; its required explicit `promotionTarget` receipt field is not present in the current promise type and remains its owning task's scope.

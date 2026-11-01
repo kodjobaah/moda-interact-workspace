@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
 - ARCH-053-API-003
 created: 2026-10-30
-updated: 2026-10-30
+updated: 2026-11-01
 ---
 
 # ARCH-053-BACKGROUND-004 — Preserve checkout-vs-alternative target in confirmed outreach receipt
