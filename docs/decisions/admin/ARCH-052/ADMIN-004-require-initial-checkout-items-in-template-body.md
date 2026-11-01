@@ -9,16 +9,19 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 25
-executor: copilot
-claimed_at: 2026-11-01T16:51:13Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-052-ADMIN-003
   - ARCH-052-BACKGROUND-005
 enables:
   - ARCH-052-BACKGROUND-017
+  - ARCH-052-BACKGROUND-018
+  - ARCH-052-SYSTEM-TEST-001
+  - ARCH-052-SYSTEM-TEST-002
   - ARCH-052-SYSTEM-TEST-004
 created: 2026-10-31
 updated: 2026-11-01
@@ -159,11 +162,11 @@ Use the existing `authoring/registry.ts` and `validation.ts` path; no second ren
 
 ### Status
 
-Ready for Review — Attempt 2. The publication PostgreSQL fan-out failure was
-attributed to a transient per-shop Prisma transaction timeout, recorded at
-shop/operation level, and recovered through the bounded retry path. The full
-disposable publication suite now passes; Attempt 1 and its review remain
-preserved below.
+Accepted and Complete — Attempt 2. The publication PostgreSQL fan-out failure
+was attributed to transient per-shop Prisma transaction and serialization
+failures, recorded at shop/operation level, and recovered through the bounded
+retry path. The full disposable publication suite now passes; Attempt 1 and its
+review remain preserved below.
 
 ### Files Changed
 
@@ -231,13 +234,87 @@ Only immutable newly authored Meta INITIAL revisions are accepted as compliant; 
 
 ### Unresolved Issues
 
-No unresolved publication failures remain in Attempt 2. The retryable failure code remains visible by shop and operation while failed, and successful retry leaves all 2,000 targets complete. No provider submission or approval was performed. `ARCH-052-BACKGROUND-017` and `ARCH-052-SYSTEM-TEST-004` remain pending; no dependency status changed.
+No unresolved publication failures remain in Attempt 2. Retryable failure codes remain visible by shop and operation while failed, and successful retry leaves all 2,000 targets complete. No provider submission or approval was performed. On architect acceptance, BACKGROUND-017 and BACKGROUND-018 become Ready because their other dependencies are complete; SYSTEM-TEST-004 remains Pending until BACKGROUND-017 is complete.
 
 ### Architectural Concerns
 
 No source or provider schema change was introduced. Independent Meta approval remains required for every revised immutable template revision; this task did not contact Meta or claim approval.
 
-## Architect Review
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted — Attempt 2. With `completion_mode: automatic`, the task transitions
+to `status: complete`; executor and claim are clear, and Attempt 1 with its
+review remains preserved.
+
+### Review Notes
+
+Attempt 2 closes the publication failure left unresolved in Attempt 1. The
+report correlates failures to whole-shop transaction rollback for
+`TRANSACTION_TIMEOUT` and `SERIALIZATION_CONFLICT`; it does not attribute the
+failures to individual locale content or claim provider approval. The Admin
+publication path now maps Prisma `P2028` and `P2034` to bounded failure codes
+and admits those codes to the existing user-triggered retry path with the
+existing three-attempt cap. The 100-shop × 20-locale regression verifies that
+failed shops roll back all 20 locale targets and that retry reaches 2,000
+successful targets without failed rows. Other publication cases also passed.
+
+The required initial `checkout.itemsSummary` authoring, translation,
+compilation, immutable revision and approval semantics remain covered by the
+reported unit and disposable PostgreSQL suites. No existing provider approval
+was modified, and no external Meta approval is claimed. The typecheck result is
+the unchanged unrelated TS2345 in
+`tests/system-commerce-tool-sync.test.ts:305:72`.
+
+Dependency review found that BACKGROUND-018 and SYSTEM-TEST-001/002 also
+declare ADMIN-004 as a prerequisite, although ADMIN-004's `enables` list had
+omitted them. The task record and ARCH-052 status matrix now include those
+relationships. BACKGROUND-017 and BACKGROUND-018 are Ready because all their
+dependencies are Complete. SYSTEM-TEST-001/002 remain Pending on their other
+implementation prerequisites, and SYSTEM-TEST-004 remains Pending until
+BACKGROUND-017 is accepted Complete.
+
+### Reviewed Files
+
+- `src/lib/admin/whatsapp-templates/authoring/registry.ts`
+- `src/lib/admin/whatsapp-templates/authoring/validation.ts`
+- `src/lib/admin/whatsapp-templates/authoring/draft-operations.ts`
+- `src/lib/admin/whatsapp-templates/translations/source-snapshot.ts`
+- `src/lib/admin/whatsapp-templates/publishing/assignment.ts`
+- Related authoring, translation, compilation and Meta snapshot tests.
+- `tests/integration/arch047-template-publication.postgres.test.ts`
+- The Attempt 2 Completion Report and validation evidence.
+
+### Validation Reviewed
+
+- Authoring, translation, compilation, Meta snapshot and publication unit
+  suites passed (41, 16, 15, 19, and 22 tests respectively).
+- Disposable authoring PostgreSQL suite passed 2/2.
+- Disposable publication PostgreSQL suite passed 5/5; the 100 × 20 fan-out
+  ended COMPLETE with 2,000 succeeded targets and zero failed targets after
+  bounded retry. Stale approval, rollback/retry, overlapping publication and
+  external-identity conflict cases also passed.
+- `npx tsc --noEmit`, changed-file ESLint and `git diff --check` passed.
+- Typecheck remains separately non-green only for the reported unrelated
+  ProcessEnv diagnostic; no Meta provider submission or approval was performed.
+
+### Architecture Conformance
+
+Conforms to ARCH-052. The immutable template and locale approval lifecycle is
+preserved; retry is bounded to transaction timeout/serialization failures and
+remains an explicit publication retry. No customer/provider data is written to
+failure diagnostics, no prior Meta registration is rewritten, and no provider
+approval is fabricated.
+
+### Follow-up
+
+Accepted and Complete at Attempt 2. BACKGROUND-017 and BACKGROUND-018 are
+promoted to Ready. SYSTEM-TEST-001/002 remain Pending on other prerequisites;
+SYSTEM-TEST-004 stays Pending until BACKGROUND-017 completes. No `_index.md`
+was changed; the architecture status matrix and dependent task frontmatter
+record the promotions.
+## Architect Review — Attempt 1
 
 ### Review Status
 

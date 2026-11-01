@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 65
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-052-SYSTEM-TEST-004
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # ARCH-052-BACKGROUND-017: Reject initial sends without the checkout-items BODY binding
