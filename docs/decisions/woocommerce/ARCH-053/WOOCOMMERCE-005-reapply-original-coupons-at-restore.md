@@ -161,7 +161,7 @@ Return schema, lifecycle and multi-repository discrepancies to `moda_architect` 
 ### Git / VCS
 
 - Task branch: `task/ARCH-053-WOOCOMMERCE-005`.
-- Parent workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-005`, branch `task/ARCH-053-WOOCOMMERCE-005`, clean at review start; parent task/report head `acb5cb1510f4d0cd71feb68d3274169447c64031`, matching `origin/task/ARCH-053-WOOCOMMERCE-005` before this review overlay.
+- Parent workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-005`, branch `task/ARCH-053-WOOCOMMERCE-005`, clean at review start; parent task/report head `acb5cb1510f4d0cd71feb68d3274169447c64031`, matching `origin/task/ARCH-053-WOOCOMMERCE-005` before this review overlay. Architect review and dependency-frontier update committed as `f1585886` and pushed to `origin/task/ARCH-053-WOOCOMMERCE-005`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-005`, branch `task/ARCH-053-WOOCOMMERCE-005`, clean at review; implementation commit `9e5f1082e09de1aebed688fff2b74a2b9d952fe8`, matching `origin/task/ARCH-053-WOOCOMMERCE-005`.
 - Dedicated task worktrees verified; shared checkouts were not switched for this task. Neither task branch is merged to `main`.
 
