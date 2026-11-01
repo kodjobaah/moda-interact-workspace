@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-11-01T18:40:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: [ARCH-044-COMMERCE-002]
 enables: []
@@ -106,7 +106,7 @@ Dependent on ARCH-044-COMMERCE-002 so tests have an explicit disposable PostgreS
 
 ## Completion Report
 
-### Status
+### Attempt 1 Status
 
 Ready for architect review — Attempt 1. Current focused tests pass and diagnostic profiling did not reproduce the historical publication expiry. The exact causes of the historical retained-read error and publication `Transaction not found` remain unproven, so the final acceptance criterion is unchecked and no root-cause claim is made. The task lifecycle is `review`; execution claim cleared.
 
@@ -163,6 +163,33 @@ The named ARCH-044 disposable focus is the approved isolated PostgreSQL path. Th
 Report new cross-service contracts, database schema/owner changes, secret handling issues, or deployment requirements to `moda_architect` without expanding scope.
 
 No schema, database ownership, cross-service contract, or deployment changes were required.
+
+### Attempt 2 — Historical evidence comparison
+
+#### Status
+
+Ready for architect disposition — Attempt 2. The publication-expiry criterion remains unproven, so the task is `ready`, not review-ready. The Attempt 2 claim is cleared. No implementation files changed and no implementation commit was created. Attempt 1 validation and this complete Architect Review are preserved.
+
+#### Evidence table
+
+| Evidence source | Historical/baseline evidence | Prepared snapshot comparison | Result and uncertainty |
+|---|---|---|---|
+| `baseline-vitest.log` and `typescript(20261018-183033)` | The task and ARCH-044 document describe the retained-read `{kind: "error"}` and publication `Transaction not found` after roughly 50 seconds. The baseline Git SHA was not recorded. | Searched the canonical workspace and both prepared worktrees, including hidden/ignored paths, for `baseline-vitest.log`, `20261018-183033`, and task-named artifacts. No matching artifact was available. | Original stack details, runner profile, fixture contents, and environment cannot be cross-checked. The architecture confirms the logs were external and the exact baseline SHA was unknown. |
+| Retained-read test double and service contract | The pre-correction test at `7dfc284^` has no `shop` delegate; its model has no `availabilityId`, `configurationSchemaVersion`, `configuration`, or availability relation. | Commit `7dfc284` (2026-10-19) adds `shop.findUnique`, those model/availability fields and relation, and current provider casing. `assertModelSelectable` calls `shop.findUnique` and queries the model with `include: { availability: true }`; the configuration service maps an uncaught fake-method/shape failure to `{kind: "error"}`. `git diff --stat 7dfc284^ HEAD` shows only the retained-read test changed among the scoped model/prompt source, availability helper and test paths. The current focused test passed 1/1 in Attempt 1. | A concrete test-double contract mismatch is identified and is sufficient to produce an error with the unchanged service; the fixture correction aligns the fake to the required service calls. The exact baseline SHA/log is unavailable, so linkage to the recorded historical assertion is strong but not independently auditable against that log. No production defect is demonstrated. |
+| Publication storage and rehearsal | The report describes an audit-create failure after about 50 seconds, but supplies no historical query timeline, row counts, or execution profile. | `15d505e` (2026-10-31) changes `publication-storage.ts`: it avoids per-release/feature/member existence queries, uses initial release/audit IDs to persist only new immutable rows, and batches audit inserts. The source change is explicitly intended to avoid history-proportional work exhausting the fixed deadline. Attempt 1's current disposable profile passed 3/3 with `ReadCommitted`, `maxWaitMs=1000`, `timeoutMs=10000`; measured proofs were 2,002 ms / 215 queries / 2,004 ms total query time / 61 ms max query, and 685 ms / 62 queries / 677 ms total / 59 ms max. | The historical query-amplification path and later optimization are established, making transaction-duration pressure plausible. No baseline metrics or original invocation/environment were found, and the historical source/profile was not safely replayable from available artifacts. Therefore the optimization cannot be claimed as the proven cause of the reported expiry. |
+| Prisma client and database schema | No historical generated-client artifact was available. | At `7dfc284^`, `package.json` and `package-lock.json` declare `prisma` and `@prisma/client` 6.19.3; current declarations and generated client are also 6.19.3. The known submodule pin changed from `aa3fd024db3a1484f72f8033b87f56ad27f4640d` to `af77c594ecbfc78c26d01c0021a090830884bbff`; the scoped schema diff contains no changes to agent configuration CAS fields or model availability fields. | No Prisma version change is evidenced across those known snapshots. An exact baseline-generated-client comparison remains unavailable because the baseline SHA and generated artifact were not supplied. |
+
+#### Commands and validation
+
+- Scoped Git history/diffs: inspected `7dfc284^..7dfc284` for the retained-read test double and publication rehearsal, and `15d505e` for publication storage, package declarations, and schema reference. The retained-read implementation paths were unchanged in the scoped `7dfc284^..HEAD` comparison.
+- Artifact search: no baseline log or named historical run artifact was present in the canonical workspace, parent worktree, or implementation worktree. The implementation artifact directory contains ARCH-020-COMMERCE-008 screenshots, not these baseline logs.
+- Package scripts were read from the implementation `package.json` before deciding on validation. No tests were rerun because no code changed and the Attempt 1 passing results remain the current implementation evidence. The unrelated `npm run typecheck` TS2345 failure remains as recorded in Attempt 1; it was not rerun.
+- No disposable database was provisioned during Attempt 2, so no database cleanup was required. Attempt 1 reports zero owned Docker resources after its disposable runs.
+- No implementation commit or push was made. This parent task report is the only Attempt 2 change and will be committed and pushed on the mirrored task branch.
+
+#### Disposition requested
+
+The retained-read fake's missing required methods/availability data is a specific, code-supported explanation, but the original baseline log and source SHA are unavailable for exact historical confirmation. The publication failure's root cause remains unknown; only a plausible history-sensitive query cost and a later optimization are evidenced. Acceptance Criterion 5 remains unchecked. Request explicit architect disposition on whether the retained-read comparison is sufficient and what historical publication evidence or bounded follow-up is required before this criterion can be completed.
 
 ## Architect Review — Attempt 1
 
