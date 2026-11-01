@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 25
-executor: copilot
-claimed_at: 2026-11-01T15:43:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-052-ADMIN-003
@@ -144,7 +144,7 @@ Compiled position is determined by the existing `bodyText()` compiler from the o
 - [x] `tests/unit/arch047-template-authoring-ast.test.ts`: matrix and negative cases.
 - [x] `tests/unit/arch047-template-translations.test.ts`: all 20 locale structural/semantic/position checks.
 - [x] `tests/unit/arch047-template-compilation.test.ts`, `tests/unit/arch047-template-meta-snapshots.test.ts` and `tests/unit/arch047-template-publication-pure.test.ts`: frozen provider BODY, identity and approval checks.
-- [x] `tests/integration/arch047-template-authoring.postgres.test.ts` and `tests/integration/arch047-template-publication.postgres.test.ts` with disposable PostgreSQL: accepted/rejected immutable revision flows.
+- [ ] `tests/integration/arch047-template-authoring.postgres.test.ts` and `tests/integration/arch047-template-publication.postgres.test.ts` with disposable PostgreSQL: accepted/rejected immutable revision flows; the publication suite had one unresolved `PARTIAL` fan-out result.
 - [x] Repository-declared changed-file lint, typecheck/build and `git diff --check`; record exact invoked commands/results, not assumed scripts.
 
 ## Stop Condition
@@ -159,7 +159,10 @@ Use the existing `authoring/registry.ts` and `validation.ts` path; no second ren
 
 ### Status
 
-Implemented; submitted for architect review.
+Changes Requested — Attempt 1. The authoring, translation and focused
+publication checks are reviewable, but the PostgreSQL publication suite has an
+unresolved `PARTIAL` result in its 100-shop × 20-language fan-out case. The task
+returns to `ready`; Attempt 1 is preserved and the claim is clear.
 
 ### Files Changed
 
@@ -229,24 +232,54 @@ No source or provider schema change was introduced. Independent Meta approval re
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1. The task returns to `ready`; `executor` and
+`claimed_at` are cleared, and Attempt 1 is preserved for the next claim.
 
 ### Review Notes
 
-Awaiting repository implementation.
+The implementation preserves the required INITIAL BODY binding across the
+offer matrix and locale flows, and the reported unit and focused authoring
+integration suites pass. However, the publication PostgreSQL run had one
+failure: the 100-shop × 20-language operation returned `PARTIAL` rather than
+`COMPLETE` after about 488 seconds. The report has no root cause or target-level
+failure evidence. Because this task changes locale snapshots and immutable
+publication content, this result must be investigated before acceptance rather
+than assumed to be unrelated or environmental.
 
 ### Reviewed Files
 
-None.
+- `src/lib/admin/whatsapp-templates/authoring/registry.ts`
+- `src/lib/admin/whatsapp-templates/authoring/validation.ts`
+- `src/lib/admin/whatsapp-templates/authoring/draft-operations.ts`
+- `src/lib/admin/whatsapp-templates/translations/source-snapshot.ts`
+- Related translation, compilation, Meta snapshot and publication tests.
+- The Completion Report's disposable PostgreSQL results.
 
 ### Validation Reviewed
 
-None.
+- Reported authoring, translation, compilation, Meta snapshot and publication
+  unit suites passed.
+- The disposable authoring PostgreSQL suite passed 2/2.
+- The disposable publication PostgreSQL suite had 4 passes and 1 failure; the
+  100-shop × 20-language fan-out returned `PARTIAL` instead of `COMPLETE`.
+- Typecheck, changed-file lint, build and `git diff --check` are reported as
+  passing. The implementation branch is clean and synchronized at
+  `38fec2f4`; the parent report branch was clean at `b7757ceb` before this
+  review overlay.
 
 ### Architecture Conformance
 
-Not yet assessed.
+The source changes stay within Admin-owned authoring, translation and
+publication paths. The single unresolved PostgreSQL fan-out result prevents
+confirming the published immutable revision flow at scale; no provider approval
+was claimed or simulated.
 
 ### Follow-up
 
-None.
+Identify which target or locale caused the partial publication, establish
+whether the failure is caused by this change, publication behavior, or the test
+environment, then rerun the full publication PostgreSQL suite and record the
+result. Do not treat the four passing cases as a pass for the entire suite.
+Keep Attempt 1 and `status: ready` until the failure is resolved or supported by
+a reproducible baseline comparison. `ARCH-052-BACKGROUND-017` and
+`ARCH-052-SYSTEM-TEST-004` remain pending; no dependency status changed.
