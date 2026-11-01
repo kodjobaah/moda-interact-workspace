@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -27,7 +27,7 @@ updated: 2026-11-01
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Bounded follow-up to `ARCH-036-WOOCOMMERCE-003`, using the corrected settings-read contract from `ARCH-036-API-004`.
 - Owner: `moda_woocommerce`, repository `moda-interact-woocommerce`; coordinator: `moda_architect`.
-- API-004 is Complete. This task is materialised and has completed Developer Attempt 1; automated implementation checks pass and one manual validation scenario remains.
+- API-004 is Complete. Developer Attempt 2 completed the required manual scenario without changing application source; the Attempt 1 implementation and automated checks remain applicable. See the Completion Report for current validation evidence.
 
 ## Observed defect
 
@@ -120,9 +120,8 @@ After bounded validated work, submit the developer Completion Report and mark th
 
 ### Status
 
-Ready for architect review — Developer Attempt 2. The outstanding manual
-validation is complete. Developer self-review passed; architect acceptance and
-the explicit developer completion decision remain pending.
+Complete — Developer Attempt 2. Architect acceptance was recorded, followed by
+the explicit developer completion decision on 2026-11-01.
 
 ### Files Changed
 
@@ -211,7 +210,7 @@ tasks declare this task as a dependency, so no dependency status changed.
 - Start-of-attempt synchronization: fetched `origin --prune` in both canonical worktrees; each task branch starts at current `origin/main`, so no merge was required. Shared/default checkouts were not switched or used as substitutes. No other task worktree was reused.
 - No implementation files were changed by claim preparation. The developer now owns implementation in the canonical WooCommerce worktree. No branch was merged to `main`.
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
@@ -260,3 +259,36 @@ required regression.
   task branch was fast-forwarded to current origin/main d6a7709 and published.
 - Dependency ARCH-036-API-004 remains Complete. No tasks declare this task in
   depends_on, so the downstream frontier required no status changes.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted — Attempt 2. The task remains `status: review` until the developer
+records the explicit completion decision required by `completion_mode: developer`.
+
+### Review Evidence
+
+- The parent task record is Attempt 2, `status: review`, with executor and claim
+  cleared. Its branch was clean and synchronized with `origin/task/ARCH-036-WOOCOMMERCE-004` at `78f7d4116` before this review overlay.
+- The implementation worktree was clean and synchronized at `d6a7709`. Attempt 2 changed no application source; the previously reviewed Attempt 1 implementation remains the code under review.
+- The LocalWP walkthrough record covers the initial `catalogue_not_current` response, the single coupon-catalogue status message, scoped Retry action, successful retry displaying SAVE10 and removing Retry, and both WordPress menu levels. The submitted desktop and 390 px screenshots show the FIXED error state and no visible horizontal overflow. The report identifies unrelated unavailable panels as a limitation of the scoped LocalWP fixture.
+- Attempt 1 automated tests remain applicable because source is unchanged. Attempt 2 build and strict 20-locale verification passed; the report records bundle-size advisory warnings.
+
+### Architecture Conformance
+
+Conforms to ARCH-036: saved offer mode remains independent of catalogue readiness, coupon selection remains merchant-controlled, Retry is scoped to the FIXED catalogue state, and WooCommerce retains coupon redemption validity. No downstream task declares this task as a dependency.
+
+### Follow-up
+
+Architect acceptance is recorded. Keep the task in `review` with executor and
+claim clear until the developer explicitly completes it. No dependency status
+changes are required.
+
+## Developer Completion Decision
+
+The developer explicitly invoked completion after the durable architect
+acceptance for Attempt 2. The accepted attempt remains 2; the task transitions
+to `status: complete` with `executor: null` and `claimed_at: null`. The
+implementation task branch remains published at
+`d6a7709caacec5d838f207935f9a51c10ebdd1c4`.
