@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 65
-executor: copilot
-claimed_at: 2026-11-01T12:27:03Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-052-SHARED-012
@@ -455,35 +455,38 @@ Completion Report status: Ready for Review. No Architect acceptance decision has
 
 ### Review Status
 
-Changes Requested — Attempt 2. Reclaim the same task as Attempt 3 after this review is published.
+Changes Requested — Attempt 3. The same task is ready for Attempt 4 after this review is published.
 
 ### Review Notes
 
-The implementation branch is materially implemented and the focused unit, lint, typecheck, and integration results recorded in the Completion Report are useful evidence. Spot checks of the current-source revalidator, template preparation, Shopify/Woo final-admission call sites, and Meta error logging show the F1/F2/F3 and provider-admission paths are present. This review does not accept the task because the report itself leaves required acceptance and validation coverage incomplete.
+The Attempt 3 unit, lint, typecheck, and isolated integration results are useful, and the prepared-worktree evidence is complete. The attempt-3 branch adds the requested separate shared-sender routing, merchant-name preparation, stored checkout URL binding, and follow-up/history unit coverage. Review remains Changes Requested because the historical PostgreSQL failure evidence can now be recovered, one task-relevant failed integration case has no reported rerun, and the required confirmed-send tenant-isolation assertion remains unverified.
 
-1. The Attempt 2 report says the required adversarial merchant-permission/source-revocation cases, full platform/mode/outcome matrix, and historical receipt/follow-up cases are not fully certified. Complete the missing task-scoped cases, including cross-shop shared-sender identity, current-policy/source mutation before dispatch, exact stored `checkoutUrl` binding for both platforms, confirmed-message follow-up/history, and duplicate-send/credit behavior. Update Work Items, Acceptance Criteria, and Validation only where evidence now supports completion; leave any genuinely unverified item unchecked and explain it.
-2. The required broad PostgreSQL integration attempt is recorded as 50 passed / 10 failed. Later focused batches are not evidence that every failure was resolved or classified. Re-run the task-relevant failed cases in isolated disposable environments; fix failures attributable to this task and record exact test names/results. For unrelated harness/baseline failures, provide reproducible evidence and a bounded explanation rather than claiming the broader gate passed. Do not expand this task into the separate template-registration logging path.
-3. Attempt 2's Completion Report does not record the launcher-prepared packet or the required physical-isolation/start-of-attempt synchronization evidence for both repositories. Add the exact canonical worktree paths, task branches and prepared heads, clean-state/remote synchronization, parent and implementation mainline-sync outcome, and recursive implementation submodule preparation evidence from the packet. The current worktrees are the canonical registered paths and are clean; do not recreate or reset them, and preserve all implementation commits.
-4. The report's `Unknown scenario ARCH-052-SYSTEM-TEST-001` result is not a reason to block this implementation task. System tests are terminal downstream validation; do not change their runner or claim their certification here.
+1. Reconcile the original 50-passed/10-failed run using the retained output artifact `copilot-terminal-output-497a3257-de64-4f30-af89-6c7203abf711.txt`; do not rerun the entire 12-file batch solely to recreate its aggregate. The exact failed cases and original outcomes are:
+  - `tests/integration/arch048-woo-initial-outreach.integration.test.ts`: `persists exactly one confirmed send, Free credit charge and usage event under concurrent dispatch/replay`; `cancels a resumed generation, releases its reserved free credit once, and permits generation two independently`; `releases a resumed attempt from its exact paid-included reservation owner and replays idempotently`; `releases the reserved credit when placed arrives after the last preflight but before provider permit`; the corresponding `paid` and `cancelled` cases; and `rechecks authoritative local STOP after reservation and refunds without sending`. The first, second, placed/paid/cancelled, and STOP cases failed with `BASKET_CURRENCY_INVALID`; the paid-included case timed out at the default five seconds. Attempt 3 reports this isolated file passing 17/17 after fixture corrections. In the next Completion Report, map each exact selector to that run/result; do not report the original combined batch as passing.
+  - `tests/integration/woo-initial-send-fence-races.integration.test.ts`: `rolls back the provider permit on a post-write database fault, logs and allows a safe retry` failed because the old assertion expected a synthetic `PERSISTENCE_FAILURE` instead of the injected originating error. Attempt 3 reports this isolated file passing 5/5; record that exact selector/result.
+  - `tests/integration/initial-outreach-offer-aimock.integration.test.ts`: `routes real model/tool/model turns through loopback and returns the source-validated offer` failed because the expected local model route construction was absent. Attempt 3 reports the revised isolated Aimock test passing 1/1; record that exact selector/result.
+  - `tests/integration/initial-outreach-agent-context.integration.test.ts`: `binds current shop policy, sequence-one attempt, published instructions and same-fingerprint price evidence` timed out at five seconds. No Attempt 3 rerun is recorded. Run this exact case alone against a fresh disposable PostgreSQL environment with a suitable test timeout (for example 30 seconds), then record its exact result and classify any remaining timeout using the readiness evidence. Fix it only if the failure is attributable to this task.
+
+  No names are to be invented. The current exact log plus the Attempt 3 isolated suite totals are evidence for the nine rerun cases; only the trusted-context case needs a new execution unless a reviewable run artifact contradicts those totals. Do not expand this task into the separate template-registration logging path or claim the combined 50/10 run passed.
+
+2. Add one bounded Background integration assertion for the remaining shared-sender acceptance gap. Using two shop recoveries for the same customer phone and shared WABA with a mocked/emulated Meta confirmation, assert each send binds its own trusted `shop.name`, receives a distinct provider message ID, persists the existing confirmed `ConversationMessage` and `RecoveryOutreachAttempt.outboundMessageId` relationship to the correct shop/recovery/conversation, and routes a quote of each ID back to that same recovery. Replay/duplicate delivery must not create another confirmed message or credit charge. The existing preparer and router unit tests are useful but do not jointly prove this durable confirmed-send path, as the Attempt 3 report acknowledges. Keep this in Background ownership; do not make downstream system certification a prerequisite.
+
+3. Keep the report's other explicitly unverified all-mode/all-platform cases unchecked unless the current evidence proves them. Record the Attempt 3 focused pass totals as submitted, and do not claim the `Unknown scenario ARCH-052-SYSTEM-TEST-001` attempt as a Background failure; system tests remain terminal downstream work.
 
 ### Reviewed Files
 
-- `src/services/recovery-offers/current-discount-source-fence.ts`
-- `src/services/recovery-offers/current-outreach-offer-revalidation.service.ts`
-- `src/services/recovery-template-integration/automated-recovery-template.service.ts`
-- `src/services/checkout-recovery/recovery-initiation.service.ts`
-- `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`
-- `src/services/whatsapp.service.ts`
-- Focused source-fence, revalidation, template-selection, WhatsApp, and PostgreSQL integration tests named in the Completion Report.
+- Attempt 3 implementation commit `904dedcce53354416b2ebcf04075bb12119911c6` and its three changed unit-test files.
+- Completion Report Attempt 3 and retained broad PostgreSQL failure output `copilot-terminal-output-497a3257-de64-4f30-af89-6c7203abf711.txt`.
+- The Attempt 2 review and corrections preserved in parent task-branch history.
 
 ### Validation Reviewed
 
-Inspected the reported TypeScript, lint, unit, PostgreSQL and emulator results; they were not independently rerun during this review. Both task worktrees report clean and their matching task branches are up to date with origin. The implementation branch head is `d2d51f4d56417cb07be6bf9918e79ad80e4e0398`, with `origin/main` in its ancestry via synchronization merge `178d2362e436c732092b71658284a7973aa2692a`. The parent task branch head is `d9fa895d51621e36b24c286bf15c4f81fd797fc5`.
+Reviewed, but did not independently rerun, the submitted `pnpm test:unit` (326 files / 3,492 tests), focused unit selection (5 files / 151 tests), lint, typecheck, and isolated integration results. The historical output confirms 4 failed files / 10 failed tests in the original broad batch and provides the exact selectors above. Attempt 3 reports isolated passes of 17/17 Woo initial-outreach tests, 5/5 Woo send-fence race tests, and 1/1 Aimock test; no isolated rerun of the trusted-context test is reported. Implementation worktree is clean on `task/ARCH-052-BACKGROUND-008` at `904dedcce53354416b2ebcf04075bb12119911c6`, equal to `origin/task/ARCH-052-BACKGROUND-008`. Parent task worktree is clean on the same-named branch at `a8bc79107d13768619ebee3570134deb3d23ffde`, equal to its origin task ref. The prepared packet records clean reused canonical worktrees, `origin/main` already current, recursive submodule update passing, database submodule `7c377282aa5819b3008b7d7f3018f44f4161523e`, and dependency gate passing.
 
 ### Architecture Conformance
 
-The inspected send/admission paths remain within Background ownership and preserve the existing admission flow. Acceptance is withheld because required test scenarios remain uncertified, the broad PostgreSQL result is non-passing/unclassified, and the task report lacks the required attempt-isolation/synchronization evidence.
+The inspected ownership and attempt-isolation requirements conform. Acceptance is withheld for the two bounded test/evidence gaps above. The original broad batch remains recorded as non-passing; isolated suite reruns are not represented as a clean combined regression gate.
 
 ### Follow-up
 
-Return this same task to `ready`; keep `attempt: 2`, clear `executor` and `claimed_at`, and preserve both task branches and all implementation commits. `moda_background` owns the bounded corrections above. All declared dependencies are currently Complete. After this parent report update is committed/pushed, the deterministic launcher may prepare and claim Attempt 3 in the same canonical task worktrees; it must still perform its normal synchronization and dependency gate before claiming.
+Return this same task to `ready`; preserve `attempt: 3`, clear `executor` and `claimed_at`, and preserve both task branches and all implementation commits. `moda_background` owns the bounded corrections above. All declared dependencies are Complete. After this parent review update is committed and pushed, the deterministic launcher may prepare and claim Attempt 4 in the same canonical task worktrees; normal synchronization and dependency checks still apply. The domain index and architecture task table already show `Ready` and remain consistent.
