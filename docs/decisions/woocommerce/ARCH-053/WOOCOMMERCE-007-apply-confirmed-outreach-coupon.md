@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 65
 executor: null
 claimed_at: null
@@ -240,13 +240,11 @@ Escalate contract or ownership gaps instead of inventing a new transport or pers
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Static review found the implementation consistent with the specified v1 offer handling: native Woo coupon validation is used, recommended groups are not left partially applied, original successful coupons are restored after conflicts, and coupon values are excluded from the offer outcome diagnostics. No implementation defect was identified in the inspected paths.
-
-The task's Validation section still has the WordPress Classic+Blocks integration and real current-expiry, stacking, rollback, and v1-HTTP scenarios unchecked. The report confirms the integration scenario only passed syntax validation because the task-owned WordPress host did not respond. Those integration scenarios are an explicit validation item, so the task cannot be accepted yet.
+Attempt 2 resolves the previous rollback defect: WooCommerce may leave sparse numeric indexes in its applied-coupon list after removing tentative offer codes. The restorer now normalizes live coupon values before validating and restoring the original set. The regression covers sparse indexes, and the focused live WordPress scenarios verify confirmed offer application, group-conflict rollback preserving the original basket and coupon, expired/rejected original coupons, and a v1 resolver 503 preserving the visitor basket. The implementation otherwise follows the strict v1 response, native Woo validation, one totals recalculation, and private bounded diagnostics requirements.
 
 ### Reviewed Files
 
@@ -263,16 +261,17 @@ The task's Validation section still has the WordPress Classic+Blocks integration
 - `tests/CheckoutCartRestorerTest.php`
 - `tests/CheckoutCouponOutcomeHandlerTest.php`
 - `tests/CheckoutResumeControllerTest.php`
+- `tests/integration/run-wordpress.mjs`
 - `tests/integration/scenarios/checkout-wordpress.mjs`
 
 ### Validation Reviewed
 
-Reviewed the report of 25 focused PHPUnit tests (153 assertions), baseline-matched full-suite failures, `composer lint`, PHP syntax checks, `git diff --check`, and Node syntax validation. The WordPress integration and its live expiry/stacking/rollback/v1-HTTP assertions were not run. No tests were rerun during this review.
+Reviewed Attempt 2's reported focused coupon/cart suite (13 tests, 68 assertions), full suite with only the six documented baseline failures, `composer lint`, PHP syntax checks, `git diff --check`, Node syntax checks, and the restore-only WordPress Classic+Blocks run covering expiry/rejection, stackable offer application, group rollback, and v1 HTTP 503. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-The implementation conforms based on static inspection. Acceptance is blocked only on the explicitly required integration validation, which remains unverified.
+Accepted. Attempt 2 fixes the integration-discovered sparse-array rollback defect and provides the required live restore integration evidence. The documented full-suite failures match the untouched baseline.
 
 ### Follow-up
 
-Keep Attempt 1 recorded and return the task to Ready. Run the task-owned WordPress Classic+Blocks integration scenario, including current expiry, stackable offer application, group conflict/rollback preserving original coupons, and v1 HTTP error handling. Confirm the runner reaches the local site and that cleanup leaves no task-owned containers running. Update the unchecked Validation item and resubmit for review after the required scenarios pass.
+The Attempt 1 validation finding is resolved in Attempt 2. `ARCH-053-WOOCOMMERCE-008` is Ready now that this dependency is Complete; `ARCH-053-SYSTEM-TEST-003` remains Pending on its other prerequisites.
