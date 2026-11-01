@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-11-01T14:21:34Z
@@ -81,10 +81,10 @@ For a confirmed `promotionTarget:CHECKOUT` initial receipt with 2..3 source-grou
 
 ## Work Items
 
-- [ ] Reuse the exact API-002 authorize/resolve operation under one v1 resolver endpoint; preserve all existing API-002 tests.
-- [ ] Implement strict initial-confirmed outbound attempt/message receipt read; map to the exact Shared v1 union, with no text parsing or mutable discount lookup.
-- [ ] Fail closed on absent/unverifiable offer evidence, with distinct provider-unknown vs DB-outage semantics and bounded logs.
-- [ ] Add Postgres/route tests for tenant, generation, receipt and error cases; verify single-v1 strict contract validation.
+- [x] Reuse the exact API-002 authorize/resolve operation under one v1 resolver endpoint; preserve all existing API-002 tests.
+- [x] Implement strict initial-confirmed outbound attempt/message receipt read; map to the exact Shared v1 union, with no text parsing or mutable discount lookup.
+- [x] Fail closed on absent/unverifiable offer evidence, with distinct provider-unknown vs DB-outage semantics and bounded logs.
+- [x] Add Postgres/route tests for tenant, generation, receipt and error cases; verify single-v1 strict contract validation.
 
 ## Interfaces / Contracts
 
@@ -171,18 +171,18 @@ The reader is called **only after** successful API-002 authorization. Source que
 
 ## Acceptance Criteria
 
-- [ ] The single v1 resolver remains strictly validated and now enriches mandatory `outreachOffer`; no v2 schema or route is introduced.
-- [ ] Correct confirmed checkout code is returned **only** when outbound status, provider ID, attempt linkage, shop, recovery/generation and explicit target all match.
-- [ ] Alternative-product offer and AUTOMATIC offer never leak a checkout code to be applied; NONE never removes existing original coupons.
-- [ ] No sent evidence / unverified content / DB failure are distinct, covered by tests and diagnostic events without coupon codes.
-- [ ] Cross-tenant and terminal/superseded recovery never exposes offer or basket; API remains read-only.
-- [ ] No new offer storage, discovery, outbound or API credential exposure.
+- [x] The single v1 resolver remains strictly validated and now enriches mandatory `outreachOffer`; no v2 schema or route is introduced.
+- [x] Correct confirmed checkout code is returned **only** when outbound status, provider ID, attempt linkage, shop, recovery/generation and explicit target all match.
+- [x] Alternative-product offer and AUTOMATIC offer never leak a checkout code to be applied; NONE never removes existing original coupons.
+- [x] No sent evidence / unverified content / DB failure are distinct, covered by tests and diagnostic events without coupon codes.
+- [x] Cross-tenant and terminal/superseded recovery never exposes offer or basket; API remains read-only.
+- [x] No new offer storage, discovery, outbound or API credential exposure.
 
 ## Validation
 
-- [ ] `npm test` targeted API route/offer parser tests and `npm run typecheck` (actual package scripts)
-- [ ] Postgres-backed relation/tenant test with duplicate, failed, unconfirmed, current vs old generation receipts
-- [ ] `npm run build` if changed source is in production compilation; `git diff --check`
+- [x] Targeted API route/offer parser tests and `npm run typecheck` (actual package scripts)
+- [x] Postgres-backed relation/tenant test with duplicate, failed, unconfirmed, current vs old generation receipts
+- [x] `npm run build` and `git diff --check`
 
 ## Stop Condition
 
@@ -196,31 +196,43 @@ The resolver should share one authorization implementation with v1: do not fork 
 
 ### Status
 
-Not Started — portable task definition, not claimed.
+Ready for Review — implementation and required focused validation are complete. Full-suite and repository-wide lint limitations are recorded below.
 
 ### Files Changed
 
-None.
+Implementation repository (`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-003`, branch `task/ARCH-053-API-003`): `src/composition/woocommerce.ts`; `src/woocommerce/recovery-restore/contract.ts`; `src/woocommerce/recovery-restore/service.ts`; new `src/woocommerce/recovery-restore/offer-receipt.ts` and `offer-resolver.ts`; `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`; and unit tests `routes.test.ts`, `service.test.ts`, `offer-receipt.test.ts`, `offer-resolver.test.ts` under `tests/unit/woocommerce/recovery-restore/`.
 
 ### Work Completed
 
-Not Started.
+Implemented the receipt parser using published Shared schemas, a sequence-one Prisma relation reader that accepts only confirmed outbound automated messages scoped to the authorized shop/recovery/generation/conversation, and dependency injection into the existing API-002 resolver. The service retains the same strict v1 route and authorization checks, rechecks recovery eligibility and identity after the evidence read, and returns a fully validated v1 response. Added focused parser, reader, route, recheck, and disposable-PostgreSQL relation coverage. No schema, Shared package, route registration, credential, queue, provider call, or write behavior was added.
 
 ### Validation Results
 
-Not run. Report exact commands, results and any environment blockers after execution.
+Validation was run in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-003` on `task/ARCH-053-API-003`. Launcher-prepared implementation SHA: `dac44bc9e01c181db25f58abf693ba2b6ee85a3f`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-API-003` prepared at `822966fa5da2db9c155045e58de777a8e8fcb3d3`, with claim commit `870beb590810cfa265857a311fa587a4fe43d61c`. The prepared dependency gate passed for `ARCH-052-SHARED-012`, `ARCH-053-API-002`, `ARCH-053-SHARED-002`, and `ARCH-053-BACKGROUND-004`; the database submodule was at `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+
+- `npx tsx --test tests/unit/woocommerce/recovery-restore/*.test.ts`: passed, 19 tests.
+- `npm run test:arch053-recovery-restore:postgres`: passed, 1 PostgreSQL-backed test, including current/old generation, failed/unconfirmed attempt, duplicate group, and relation scoping cases.
+- `npm run typecheck`: passed.
+- `npm run build`: passed.
+- `npm exec -- eslint src/woocommerce/recovery-restore src/composition/woocommerce.ts tests/unit/woocommerce/recovery-restore tests/integration/woocommerce/recovery-restore --max-warnings=0`: passed.
+- `git diff --check`: passed.
+- Full `npm test`: 646 passed, 9 failed. Failures are outside the changed restore paths: billing redaction assertions, route-count/integration-runner inventory, merchant knowledge/upload routes, promotions, and store-context logging assertions. No restore-specific tests failed; unrelated failures were not modified.
+- Full `npm run lint`: reports only the unrelated `no-empty` finding at `src/merchant/support/routes.ts:75`; focused lint for all task-owned files passed.
+- `npm ci` installed dependencies without manifest/lock changes. Environment Node was `24.21.0` versus package engine `24.19.0`; typecheck, build, and focused tests completed successfully. npm reported 15 audit findings; dependency changes are outside this task.
+
+Implementation commit: `98d85c9` (`feat(api): resolve confirmed Woo outreach offers`), pushed to `origin/task/ARCH-053-API-003`. The parent task/report is being published on its mirrored `task/ARCH-053-API-003` branch.
 
 ### Deviations
 
-None.
+None to implementation scope. Full unit-suite and repository-wide lint failures listed above are outside the task-owned files and were left unchanged.
 
 ### Assumptions
 
-Defined from the 2026-10-30 uploaded snapshot. Re-read current task and repository HEAD after launcher preparation.
+The prepared Shared package version `3.1.0` contains the required published v1 request/response and checkout-offer set schemas; the canonical database schema contains the required recovery, conversation, attempt and outbound-message relations. No cross-repository contract or schema work was required.
 
 ### Unresolved Issues
 
-None claimed resolved. See explicit dependency/receipt gates above.
+No task-scope implementation issue remains. The nine unrelated full-suite failures and the unrelated full-lint finding remain for their respective owners; see Validation Results.
 
 ### Architectural Concerns
 
