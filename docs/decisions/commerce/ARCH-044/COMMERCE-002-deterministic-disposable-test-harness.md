@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -92,7 +92,7 @@ None.
 - [ ] Run all six named suites using the disposable test harness; capture setup and cleanup evidence (blocked before suite execution by pinned image pull timeout).
 - [ ] `npx vitest run tests/tool-editor-dispatch.test.tsx tests/discovery-limits.test.ts` against appropriate isolated fixtures (Tool Editor passed in unit lane; discovery fixture was blocked before test execution).
 - [ ] `npm test -- --maxWorkers=4` with full fixture environment; full-lane wrapper invocation returned no usable output/exit status, so no result is claimed.
-- [ ] `git diff --check`: command produced no diagnostic output, but the terminal did not return an explicit exit status; not counted as verified.
+- [x] Architect review ran `git diff --check origin/main...HEAD` and `git show --check dbaec9c`; both exited successfully with no whitespace errors.
 - [ ] `npm run typecheck`: exit 1 after successful schema sync and Next route type generation. Existing unrelated error: `tests/system-commerce-tool-sync.test.ts:305:72`, TS2345, `{}` is not assignable to `ProcessEnv` because `NODE_ENV` is required. No change was made to that out-of-scope test.
 
 ## Stop Condition
@@ -120,7 +120,7 @@ Additionally: `tests/discovery-limits.test.ts` timed out at 30,000 ms under Redi
 
 ### Status
 
-Ready for Review; disposable integration acceptance is blocked by the local pinned PostgreSQL image pull timeout. No acceptance is claimed for live PostgreSQL/Redis suites or the full suite.
+Changes Requested — Attempt 1. The harness and namespace instrumentation are reviewable, but required live PostgreSQL/Redis and discovery-limit validation remain unverified after the pinned image pull timed out. The task returns to `ready`; Attempt 1 is preserved and the claim is clear.
 
 ### Files Changed
 
@@ -147,7 +147,7 @@ Ready for Review; disposable integration acceptance is blocked by the local pinn
 - `npm run test:arch044:focus -- tests/discovery-limits.test.ts`: failed before test execution while pulling `pgvector/pgvector:pg17` (`pull postgres: TIMEOUT`, runner pull deadline 300 seconds). Output showed `Docker context PASS`, then the image pull, followed by `[C20-FIXTURE] FAILED`; no database/Redis test assertion ran and no fixture resources had been created. A subsequent invocation returned no usable output/exit status and is not counted as evidence. Therefore 60 permitted / 61st rejected and live cleanup remain unverified.
 - `npm run test:arch044:full`: invoked once, but the terminal returned no usable output or exit status; no full-suite result is claimed. The required internal `npm test -- --maxWorkers=4` phase is therefore unverified.
 - `npm run typecheck`: exit 1 after schema sync and Next route type generation. `tsc` reported `tests/system-commerce-tool-sync.test.ts:305:72`, TS2345 (`{}` is not assignable to `ProcessEnv`; required `NODE_ENV` missing). This is in an untouched, unrelated test. The editor diagnostic tool reported no errors in the modified `tests/discovery-limits.test.ts`.
-- `git diff --check`: pending explicit exit evidence.
+- Architect review ran `git diff --check origin/main...HEAD` and `git show --check dbaec9c`; both passed.
 - The requested combined `npx vitest run tests/tool-editor-dispatch.test.tsx tests/discovery-limits.test.ts` was not run as a raw command because the files require different fixture lanes. Tool Editor was verified in the unit lane; discovery was invoked through the disposable focus lane and blocked before test execution.
 - No assertion failures from live integration suites are known because the disposable PostgreSQL image pull prevented suite execution. The current attempt does not establish that the six named suites or all remaining tests pass.
 
@@ -175,34 +175,60 @@ The named ARCH-044 opt-in scripts remain the approved fixture entrypoints. The P
 
 - Rerun `npm run test:arch044:focus -- tests/discovery-limits.test.ts` once the pinned image is available; record admitted count, 61st rejection, latency, and owned-resource cleanup.
 - Run the six required PostgreSQL/Redis suites and `npm run test:arch044:full` with the disposable harness once image provisioning is available. Record each suite's actual totals and every failure; do not treat the harness's synthetic negative-case failure as an application result.
-- Capture an explicit exit code for `git diff --check`; its invocation produced no diagnostic output but the terminal did not expose an exit status.
 
 ### Architectural Concerns
 
 Report new cross-service contracts, database schema/owner changes, secret handling issues, or deployment requirements to `moda_architect` without expanding scope.
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1. The task returns to `ready`; `executor` and
+`claimed_at` are cleared, and Attempt 1 is preserved for the next claim.
 
 ### Review Notes
 
-Awaiting implementation evidence.
+The test-planner/harness changes and namespace/timing instrumentation are within
+scope. The partial `importOriginal()` mock already preserves
+`ResponseTemplateSchema`, and the Tool Editor unit suite passed. The current
+submission does not meet its live-fixture acceptance evidence: the five
+PostgreSQL/Redis-gated suites were not executed, the discovery test did not
+prove the 60-allowed/61st-`RATE_LIMITED` behavior, and the full-lane invocation
+returned no usable result. An image-pull timeout is a truthful environment
+blocker, but it does not demonstrate that the new test workflow provisions,
+runs and cleans up its disposable fixtures.
 
 ### Reviewed Files
 
-None yet.
+- `tests/discovery-limits.test.ts`
+- `scripts/arch044-test-plan.mjs`
+- `scripts/run-c20-fixture-disposable.mjs`
+- `docs/arch044-disposable-tests.md`
+- The task Completion Report and validation evidence.
 
 ### Validation Reviewed
 
-None yet.
+- Reported harness contract tests: 15/15 passed.
+- Reported Tool Editor dispatch unit test: 9/9 passed.
+- Reported build and strict i18n validation passed; Attempt 1 automated results remain applicable because Attempt 2 changed no application source.
+- The disposable PostgreSQL image pull timed out before resource creation or test execution; live Redis 60/61 behavior and the full suite therefore remain unverified.
+- Architect review ran `git diff --check origin/main...HEAD` and `git show --check dbaec9c`; both passed.
+- The reported typecheck failure is in untouched `tests/system-commerce-tool-sync.test.ts` and remains outside this task's scope.
 
 ### Architecture Conformance
 
-Not assessed.
+The submitted code does not change production quota or Redis behavior. The
+synthetic admin identity includes the run namespace and the test preserves the
+60/61 assertions and 30-second deadline. Acceptance still requires live
+disposable-fixture evidence for the declared scenarios.
 
 ### Follow-up
 
-None yet.
+On the next attempt, run the five blocked PostgreSQL/Redis suites with the
+disposable harness, including `tests/discovery-limits.test.ts`; record the
+actual 60 admissions, 61st rejection, timing and owned-resource cleanup. Run
+the required fixture-backed full path and capture its exit status and suite
+results. Preserve honest failure reporting; do not alter the quota, deadline,
+or skip suites to manufacture a pass. The parent task remains `ready` at
+Attempt 1 with no executor or claim. `ARCH-044-COMMERCE-007` remains pending.
