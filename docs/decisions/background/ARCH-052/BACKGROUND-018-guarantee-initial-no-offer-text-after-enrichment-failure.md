@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
-executor: copilot
-claimed_at: 2026-11-01T21:56:25Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-052-BACKGROUND-008
@@ -525,3 +525,37 @@ Attempt 3 routes the intended optional source failures, but it does not yet pres
 ### Follow-up
 
 At Attempt 4, preserve cancellation and required-state reason codes in the source revalidator. Only a known, retryable optional source failure or an available-but-changed source fence may trigger no-offer fallback. Add upstream-path regressions for an aborted caller signal and unavailable F2 reads, and confirm neither calls fallback; keep the deadline and available changed-fence cases eligible for fallback. Rerun focused validation and resubmit. SYSTEM-TEST-001 and SYSTEM-TEST-002 remain Pending; no downstream task is promoted.
+
+## Attempt 4 Completion Report
+
+### Status
+
+Ready for architect review. The Attempt 1, 2 and 3 reports and all Architect Review sections are preserved. This report records the Attempt 4 correction and validation; no architect acceptance decision is made by this report.
+
+### Files Changed
+
+- `moda-interact-background/src/services/recovery-offers/current-outreach-offer-revalidation.service.ts`
+- `moda-interact-background/tests/unit/services/recovery-offers/current-outreach-offer-revalidation.service.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`
+
+### Work Completed
+
+- Caller cancellation during authenticated optional source reads now returns `CURRENT_SOURCE_READ_CANCELLED` with `retryable: false`; only expiration of the service-owned read budget returns the fallback-eligible `CURRENT_SOURCE_READ_DEADLINE` with `retryable: true`.
+- An unavailable F2 source fence preserves its specific cause as `SOURCE_FENCE_F2_<reasonCode>`. Only an available F2 fence whose source digest differs from F1 returns the fallback-eligible `SOURCE_FENCE_F2_CHANGED`.
+- The coordinator allowlist remains exact. Added upstream regressions for caller cancellation, the service-owned timeout, and unavailable F2 outcomes, plus coordinator negatives proving cancellation and required-state/input failures do not prepare fallback.
+- Added an injectable source-read budget with the production default unchanged, enabling deterministic timeout coverage.
+- Implementation commit `870c0933c4e394edaeffef3f2ee902255a7f1fd7` was pushed to `task/ARCH-052-BACKGROUND-018`.
+
+### Validation Results
+
+- Focused revalidation and coordinator suites: passed, 2 files / 82 tests.
+- Revalidation, offer-selection, coordinator and fallback suites: passed, 4 files / 104 tests.
+- `node scripts/test-integration.mjs tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts tests/integration/arch048-woo-initial-outreach.integration.test.ts`: passed, 2 files / 21 tests.
+- `npm run lint`: passed.
+- `PATH="$PWD/node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/bin:$PATH" npm run build`: passed; Prisma generation and TypeScript compilation completed.
+- `git diff --check`: passed; editor diagnostics reported no errors in the changed implementation and test files.
+- The full unit suite was not rerun in Attempt 4. Attempt 2's full-suite result remains documented in its report: 3,611/3,612 tests passed, with one unrelated ARCH-049 frozen-image reason expectation failure.
+
+### Attempt 4 Handoff
+
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. Parent claim commit `7e647d111748eacfe94def3a0ce991e9fffbbf28` preceded implementation commit `870c0933c4e394edaeffef3f2ee902255a7f1fd7`. No downstream task status was changed; SYSTEM-TEST-001 and SYSTEM-TEST-002 remain Pending. The task is returned to review for `moda_architect`; this report does not make an acceptance decision.
