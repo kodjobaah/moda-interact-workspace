@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 65
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-052-SHARED-012
 - ARCH-053-API-003
@@ -82,10 +82,10 @@ Consume the published `CHECKOUT_OFFERS` v1 branch (2..3 source-verified entries)
 
 ## Work Items
 
-- [ ] Parse the single strict v1 response with required `outreachOffer` exactly as SHARED-001 defines; no alternate version request.
-- [ ] Implement isolated outreach coupon restorer; preserve verified original coupons under stacking conflict and native totals.
-- [ ] Integrate it after WOOCOMMERCE-005 without another restore pipeline, capture event, cart replacement or URL issuer.
-- [ ] Add tests for all five offer kinds, valid/invalid code, original+recommended conflict, duplicate code, failed rollback and provider/API outage.
+- [x] Parse the single strict v1 response with required `outreachOffer` exactly as SHARED-001 defines; no alternate version request.
+- [x] Implement isolated outreach coupon restorer; preserve verified original coupons under stacking conflict and native totals.
+- [x] Integrate it after WOOCOMMERCE-005 without another restore pipeline, capture event, cart replacement or URL issuer.
+- [x] Add tests for all five offer kinds, valid/invalid code, original+recommended conflict, duplicate code, failed rollback and provider/API outage.
 
 ## Interfaces / Contracts
 
@@ -162,18 +162,18 @@ The reason is **bounded native Woo evidence** only: known `EXPIRED` when reliabl
 
 ## Acceptance Criteria
 
-- [ ] Code advertised in a **confirmed checkout** message is attempted on the shopper's current restored cart, but never guaranteed.
-- [ ] Valid original coupons remain applied unless shopper expressly chooses a different combination; Woo still applies all current restrictions.
-- [ ] An invalid recommended code cannot block otherwise valid basket restoration or replace/extend an expired coupon.
-- [ ] Automatic and alternative-product offers never force a discount/coupon on the original checkout.
-- [ ] GET previews do not resolve offers, mutate a cart or create new recovery activity; confirmed restore produces exactly one final update.
-- [ ] No new persisted offer table, no new provider-send, no checkout URL token/coupon logging.
+- [x] Code advertised in a **confirmed checkout** message is attempted on the shopper's current restored cart, but never guaranteed.
+- [x] Valid original coupons remain applied unless shopper expressly chooses a different combination; Woo still applies all current restrictions.
+- [x] An invalid recommended code cannot block otherwise valid basket restoration or replace/extend an expired coupon.
+- [x] Automatic and alternative-product offers never force a discount/coupon on the original checkout.
+- [x] GET previews do not resolve offers, mutate a cart or create new recovery activity; confirmed restore produces exactly one final update.
+- [x] No new persisted offer table, no new provider-send, no checkout URL token/coupon logging.
 
 ## Validation
 
-- [ ] `composer test` / focused PHPUnit source+controller tests (actual declared `composer.json` scripts)
-- [ ] `composer lint`, `php -l` for all newly created PHP files, and existing WordPress Classic+Blocks integration runner if available
-- [ ] Integration tests for Woo current expiry, stacking, rollback and v1 HTTP error; `git diff --check`
+- [x] Full `composer test -- --do-not-cache-result` ran 325 tests, 2467 assertions, with 2 errors, 4 failures and 3 warnings. All six failures are the same consent/navigation test identities recorded in the untouched baseline during Attempt 1; the changed task tests passed. The focused post-fix coupon/cart suite also passed (13 tests, 68 assertions). Details are below.
+- [x] `composer lint`, PHP syntax checks for changed PHP files, Node syntax checks for both changed integration files, and `git diff --check` passed. The lint script no longer references the absent `tests/integration/checkout-consent-saved-block-variant.php`.
+- [x] The focused real WordPress Classic+Blocks restore integration passed, including expired/rejected originals, stackable offer application, group-conflict rollback, and a v1 resolver HTTP 503. The disposable task-owned WordPress environment was stopped after the run.
 
 ## Stop Condition
 
@@ -187,23 +187,42 @@ The controller/restorer should have **one** final cart state for `CheckoutCaptur
 
 ### Status
 
-Not Started — portable task definition, not claimed.
+Implementation complete for Attempt 2 and submitted for formal architect review. The integration-discovered coupon-state defect is fixed and the focused real WordPress restore scenarios pass. The full PHP suite still has the unrelated baseline errors and failures listed below; the task-specific tests pass.
 
 ### Files Changed
 
-None.
+`composer.json`; `includes/Api/WooRestoreOfferContracts.php`; `includes/Api/WooRestoreResolveResponseValidator.php`; `includes/Checkout/CheckoutOutreachCouponRestorer.php`; `includes/Checkout/CheckoutCartRestorer.php`; `includes/Checkout/CheckoutCouponRestorer.php`; `includes/Checkout/CheckoutCouponOutcomeHandler.php`; `includes/Checkout/CheckoutResumeController.php`; `tests/WooRestoreOfferContractsTest.php`; `tests/CheckoutOutreachCouponRestorerTest.php`; `tests/CheckoutCartRestorerTest.php`; `tests/CheckoutCouponOutcomeHandlerTest.php`; `tests/CheckoutResumeControllerTest.php`; `tests/integration/run-wordpress.mjs`; `tests/integration/scenarios/checkout-wordpress.mjs`.
 
 ### Work Completed
 
-Not Started.
+Added strict offer-union validation while retaining the existing strict v1 response and cart-snapshot checks. The confirmed POST passes the validated offer to the existing cart restore operation after original coupons. Native Woo coupon application is used for code offers; automatic offers are never forced, alternatives leave coupons/products unchanged, and rejected/conflicting groups roll back to the successfully applied original set. The restored coupon state is recalculated once before the existing final capture. Typed offer results are handed to the existing private outcome handler, which logs bounded categories/counts without coupon values. Controller/provider failures leave the current cart protected by the existing rollback boundary.
+
+Attempt 2 fixed a real WooCommerce rollback edge case found by the WordPress integration. `remove_coupon()` unsets numeric entries from Woo's applied-coupon array, leaving sparse numeric indexes. The offer restorer now normalizes the live values before validating the state, so a rejected group can remove tentative codes, reapply the original coupon, and keep the restored snapshot basket. A focused unit regression covers sparse indexes. The integration runner also has a restore-only mode to execute this task's real scenarios without waiting on unrelated order-lifecycle checks; its 503 case verifies that a v1 provider error preserves the visitor's basket.
+
+Paired task worktrees and synchronization evidence:
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-007`; branch `task/ARCH-053-WOOCOMMERCE-007`; attempt-start HEAD `9c5022d70c610836729e37da1653e094575c0a1a`; launcher claim commit `cab705ca196172dd7e6b1f4108a896d387dd99c6` was pushed before implementation began.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-007`; branch `task/ARCH-053-WOOCOMMERCE-007`; attempt-start HEAD `df3a1ae2e0b0d65759cdb597af5e753441aeec28`; no submodules were required. The prepared launcher synchronized both task branches before claiming Attempt 1.
+
+Attempt 2 synchronization:
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-007`; branch `task/ARCH-053-WOOCOMMERCE-007`; synchronized attempt-start HEAD `ea1c30dfc0ea9f0f070e562f418bb556cf7290fe`; launcher claim commit `6e73db94f3adf6eac7ff4b0b53aa1776ca6e0029` was pushed before implementation began.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-007`; branch `task/ARCH-053-WOOCOMMERCE-007`; synchronized attempt-start HEAD `08ed62f2854a65d7570644462a0a2cbcfdec6276`, including current `origin/main`; no submodules were required.
 
 ### Validation Results
 
-Not run. Report exact commands, results and any environment blockers after execution.
+Validation was run in an environment with PHP, Composer, Node dependencies and Docker available.
+
+- Focused post-fix command `composer test -- --do-not-cache-result --filter 'CheckoutOutreachCouponRestorerTest|CheckoutCartRestorerTest'` — passed, 13 tests and 68 assertions.
+- Full `composer test -- --do-not-cache-result` — 325 tests, 2467 assertions, 2 errors, 4 failures and 3 warnings. The same two errors and four failures identified against the untouched origin/main baseline in Attempt 1 remain in unchanged consent/navigation tests: `CheckoutConsentCheckboxTest::test_classic_uses_only_native_checkbox_without_a_withdrawal_button` and `CheckoutConsentCheckboxTest::test_blocks_registers_native_field_at_woocommerce_init_on_checkout` (errors); `CheckoutConsentCaptureTest::test_native_checkout_field_changes_cannot_create_consent_hooks`, `CheckoutConsentPresentationTest::test_request_scoped_local_decision_is_shared_without_blocking_checkout`, `PluginTest::test_native_navigation_checks_merchant_capability_and_only_loads_app_assets`, and `PluginTest::test_assets_load_only_on_the_woocommerce_admin_screen` (failures). No task-owned test failed.
+- `composer lint` — passed after removing the stale allowlist entry for `tests/integration/checkout-consent-saved-block-variant.php`, which is absent from both the task branch and `origin/main`.
+- Direct PHP lint passed for changed/new PHP source and tests. `git diff --check` passed. Node `--check` passed for `tests/integration/scenarios/checkout-wordpress.mjs`.
+- `MODA_CHECKOUT_TEST_DISPOSABLE=1 WP_ENV_PORT=8891 npm run test:integration:wordpress -- --restore-only` — passed with `ARCH-053 restore-only integration PASS`. This exercised live Woo Classic and Blocks restore paths, expired and rejected original coupons, confirmed offer application, group conflict rollback preserving the snapshot and original coupon, and v1 resolver HTTP 503 preserving the current visitor basket. The task-owned WordPress site was stopped after validation.
+- The repository-wide WordPress runner was also attempted but stalled in an unrelated order-lifecycle setup before reaching coupon restoration; the new restore-only mode isolates the required task scenarios. It passed.
 
 ### Deviations
 
-None.
+Two narrow support changes extend the existing original-coupon restorer with an optional deferred totals calculation and the existing coupon outcome handler with bounded offer-outcome logging. These are needed to run exactly one totals calculation after both original and outreach coupon processing and to hand the typed offer outcome to the existing private presenter. The lint allowlist also dropped one pre-existing entry for a nonexistent integration file. Attempt 2 added sparse-array normalization, its regression test, and a restore-only WordPress runner mode with an explicit provider-outage case.
 
 ### Assumptions
 
@@ -211,7 +230,7 @@ Defined from the 2026-10-30 uploaded snapshot. Re-read current task and reposito
 
 ### Unresolved Issues
 
-None claimed resolved. See explicit dependency/receipt gates above.
+The full PHP suite retains the known baseline errors and failures listed above. No task-specific test failures remain. WOOCOMMERCE-008 remains pending until architect review and acceptance.
 
 ### Architectural Concerns
 
@@ -221,24 +240,38 @@ Escalate contract or ownership gaps instead of inventing a new transport or pers
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Not reviewed.
+Attempt 2 resolves the previous rollback defect: WooCommerce may leave sparse numeric indexes in its applied-coupon list after removing tentative offer codes. The restorer now normalizes live coupon values before validating and restoring the original set. The regression covers sparse indexes, and the focused live WordPress scenarios verify confirmed offer application, group-conflict rollback preserving the original basket and coupon, expired/rejected original coupons, and a v1 resolver 503 preserving the visitor basket. The implementation otherwise follows the strict v1 response, native Woo validation, one totals recalculation, and private bounded diagnostics requirements.
 
 ### Reviewed Files
 
-None.
+- `includes/Api/WooRestoreOfferContracts.php`
+- `includes/Api/WooRestoreResolveResponseValidator.php`
+- `includes/Api/ModaApiClient.php`
+- `includes/Checkout/CheckoutOutreachCouponRestorer.php`
+- `includes/Checkout/CheckoutCartRestorer.php`
+- `includes/Checkout/CheckoutCouponRestorer.php`
+- `includes/Checkout/CheckoutCouponOutcomeHandler.php`
+- `includes/Checkout/CheckoutResumeController.php`
+- `tests/WooRestoreOfferContractsTest.php`
+- `tests/CheckoutOutreachCouponRestorerTest.php`
+- `tests/CheckoutCartRestorerTest.php`
+- `tests/CheckoutCouponOutcomeHandlerTest.php`
+- `tests/CheckoutResumeControllerTest.php`
+- `tests/integration/run-wordpress.mjs`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
 
 ### Validation Reviewed
 
-None.
+Reviewed Attempt 2's reported focused coupon/cart suite (13 tests, 68 assertions), full suite with only the six documented baseline failures, `composer lint`, PHP syntax checks, `git diff --check`, Node syntax checks, and the restore-only WordPress Classic+Blocks run covering expiry/rejection, stackable offer application, group rollback, and v1 HTTP 503. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+Accepted. Attempt 2 fixes the integration-discovered sparse-array rollback defect and provides the required live restore integration evidence. The documented full-suite failures match the untouched baseline.
 
 ### Follow-up
 
-None.
+The Attempt 1 validation finding is resolved in Attempt 2. `ARCH-053-WOOCOMMERCE-008` is Ready now that this dependency is Complete; `ARCH-053-SYSTEM-TEST-003` remains Pending on its other prerequisites.
