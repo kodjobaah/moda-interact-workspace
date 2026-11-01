@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -162,8 +162,8 @@ The WooCommerce plugin runs in merchant-controlled PHP and cannot import `@modai
 
 ### Status
 
-Architect accepted — Attempt 1. The task remains in `review` pending the explicit
-developer completion decision required by `completion_mode: developer`.
+Complete — Attempt 1. Architect acceptance was recorded, followed by the
+explicit developer completion decision on 2026-11-01.
 
 ### Files Changed
 
@@ -171,8 +171,8 @@ developer completion decision required by `completion_mode: developer`.
   page-shell correction in 44c39ee, both published to
   task/ARCH-049-WOOCOMMERCE-002.
 - This task definition and Completion Report are reconciled in the parent task
-  worktree. The downstream ARCH-049-SYSTEM-TEST-001 remains pending until
-  this developer-completion task is accepted and explicitly completed.
+  worktree. ARCH-049-SYSTEM-TEST-001 is dependency-ready after this completion,
+  but remains unclaimed behind its manual system-test gate.
 
 ### Work Completed
 
@@ -293,4 +293,11 @@ Conforms to ARCH-049: the merchant explicitly queues a current Site Identity cap
 
 ### Follow-up
 
-Architect acceptance is recorded. Because `completion_mode` is `developer`, the task remains `status: review` with executor and claim cleared until the developer records the explicit completion decision. `ARCH-049-SYSTEM-TEST-001` remains pending and was not promoted.
+Architect acceptance is recorded and the developer explicitly completed this task on 2026-11-01. All declared dependencies of `ARCH-049-SYSTEM-TEST-001` are now complete, so its task record is dependency-ready; it remains unclaimed and manual-gated. No system-test execution was started.
+
+## Developer Completion Decision
+
+The developer explicitly invoked completion after the durable architect
+acceptance for Attempt 1. The accepted attempt remains 1; the task transitions
+to `status: complete` with `executor: null` and `claimed_at: null`. The mirrored
+implementation branch remains published at `44c39ee927606c5b9caef135fb8f4f3d271d62c6`.
