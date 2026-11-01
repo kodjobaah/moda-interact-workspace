@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 65
-executor: copilot
-claimed_at: 2026-11-01T12:10:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-052-SHARED-012
@@ -425,26 +425,35 @@ Completion Report status: Ready for Review. No Architect acceptance decision has
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 2. Reclaim the same task as Attempt 3 after this review is published.
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+The implementation branch is materially implemented and the focused unit, lint, typecheck, and integration results recorded in the Completion Report are useful evidence. Spot checks of the current-source revalidator, template preparation, Shopify/Woo final-admission call sites, and Meta error logging show the F1/F2/F3 and provider-admission paths are present. This review does not accept the task because the report itself leaves required acceptance and validation coverage incomplete.
 
-The developer confirmed Attempt 1 was interrupted. The stale parent claim was released to Ready with attempt 1 preserved. This is lifecycle reconciliation only; the implementation worktree remains dirty and untouched, and no implementation review or acceptance was performed. Launcher preparation must not overwrite or clean those changes.
+1. The Attempt 2 report says the required adversarial merchant-permission/source-revocation cases, full platform/mode/outcome matrix, and historical receipt/follow-up cases are not fully certified. Complete the missing task-scoped cases, including cross-shop shared-sender identity, current-policy/source mutation before dispatch, exact stored `checkoutUrl` binding for both platforms, confirmed-message follow-up/history, and duplicate-send/credit behavior. Update Work Items, Acceptance Criteria, and Validation only where evidence now supports completion; leave any genuinely unverified item unchecked and explain it.
+2. The required broad PostgreSQL integration attempt is recorded as 50 passed / 10 failed. Later focused batches are not evidence that every failure was resolved or classified. Re-run the task-relevant failed cases in isolated disposable environments; fix failures attributable to this task and record exact test names/results. For unrelated harness/baseline failures, provide reproducible evidence and a bounded explanation rather than claiming the broader gate passed. Do not expand this task into the separate template-registration logging path.
+3. Attempt 2's Completion Report does not record the launcher-prepared packet or the required physical-isolation/start-of-attempt synchronization evidence for both repositories. Add the exact canonical worktree paths, task branches and prepared heads, clean-state/remote synchronization, parent and implementation mainline-sync outcome, and recursive implementation submodule preparation evidence from the packet. The current worktrees are the canonical registered paths and are clean; do not recreate or reset them, and preserve all implementation commits.
+4. The report's `Unknown scenario ARCH-052-SYSTEM-TEST-001` result is not a reason to block this implementation task. System tests are terminal downstream validation; do not change their runner or claim their certification here.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot. The implementation agent has not performed Architect Review.
+- `src/services/recovery-offers/current-discount-source-fence.ts`
+- `src/services/recovery-offers/current-outreach-offer-revalidation.service.ts`
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`
+- `src/services/whatsapp.service.ts`
+- Focused source-fence, revalidation, template-selection, WhatsApp, and PostgreSQL integration tests named in the Completion Report.
 
 ### Validation Reviewed
 
-Focused local TypeScript, lint, diff, and Vitest evidence is recorded above; no independent Architect Review has occurred.
+Inspected the reported TypeScript, lint, unit, PostgreSQL and emulator results; they were not independently rerun during this review. Both task worktrees report clean and their matching task branches are up to date with origin. The implementation branch head is `d2d51f4d56417cb07be6bf9918e79ad80e4e0398`, with `origin/main` in its ancestry via synchronization merge `178d2362e436c732092b71658284a7973aa2692a`. The parent task branch head is `d9fa895d51621e36b24c286bf15c4f81fd797fc5`.
 
 ### Architecture Conformance
 
-To be determined by `moda_architect` after implementation handoff.
+The inspected send/admission paths remain within Background ownership and preserve the existing admission flow. Acceptance is withheld because required test scenarios remain uncertified, the broad PostgreSQL result is non-passing/unclassified, and the task report lacks the required attempt-isolation/synchronization evidence.
 
 ### Follow-up
 
-Preserve the existing implementation changes in the canonical Background task worktree. The task is Ready, but a new prepared attempt must not begin until the implementation worktree can pass mandatory clean-worktree synchronization without discarding or stashing those changes. No Attempt 2 was claimed.
+Return this same task to `ready`; keep `attempt: 2`, clear `executor` and `claimed_at`, and preserve both task branches and all implementation commits. `moda_background` owns the bounded corrections above. All declared dependencies are currently Complete. After this parent report update is committed/pushed, the deterministic launcher may prepare and claim Attempt 3 in the same canonical task worktrees; it must still perform its normal synchronization and dependency gate before claiming.
