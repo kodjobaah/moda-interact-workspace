@@ -11,6 +11,8 @@ execution_mode: agent
 completion_mode: automatic
 status: review
 priority: 10
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables: [ARCH-044-COMMERCE-007]
