@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
 executor: null
 claimed_at: null
@@ -178,11 +178,11 @@ Use `@modainteract/moda-interact-shared/logging`, with bounded shop/recovery/att
 
 ## Work Items
 
-- [ ] Create the typed, injectable fallback service and pure, stage-aware failure classifier in the exact files above.
-- [ ] Verify current recovery/attempt/shop and prepare independently Meta-approved `INITIAL_NO_OFFER` TEXT using persisted basket, shop and checkout CTA only.
-- [ ] Integrate the same fallback service into Shopify and Woo **initial** paths before irreversible provider admission; preserve all final guards and the existing receipt/credit identity.
-- [ ] Make optional failure types observable without converting uncertain Meta sends or mandatory check failures into fallback.
-- [ ] Add named unit, integration and failure-injection tests and record exact validation evidence.
+- [x] Create the typed, injectable fallback service and pure, stage-aware failure classifier in the exact files above.
+- [x] Verify current recovery/attempt/shop and prepare independently Meta-approved `INITIAL_NO_OFFER` TEXT using persisted basket, shop and checkout CTA only.
+- [x] Integrate the same fallback service into Shopify and Woo **initial** paths before irreversible provider admission; preserve all final guards and the existing receipt/credit identity.
+- [x] Make optional failure types observable without converting uncertain Meta sends or mandatory check failures into fallback.
+- [x] Add named unit, integration and failure-injection tests and record exact validation evidence.
 
 ## Interfaces / Contracts
 
@@ -204,22 +204,22 @@ Use `@modainteract/moda-interact-shared/logging`, with bounded shop/recovery/att
 
 ## Acceptance Criteria
 
-- [ ] NONE, FIXED and AI modes send exactly one approved `INITIAL_NO_OFFER` TEXT reminder with actual merchant identity, nonempty saved checkout summary, Reply text/voice guidance and original stored checkout CTA when no supported promotion can be prepared due to optional services.
-- [ ] For one and three proposed discounts, invalid coupons, unsupported stacking, partial/incomplete catalogue, MCP timeout, AI refusal/exception, BG016 incomparable pricing, wrong alternative-product proof and BG007/R2 failures lead to a safe source-supported subset or prompt neutral TEXT fallback, never unsupported coupon/price/image claims.
-- [ ] F1/F2/F3 optional source drift cannot send stale promotional terms; mandatory state drift fails closed or retries. Follow-up remains unchanged.
-- [ ] STOP, no consent, completed/cancelled/superseded recovery/order, bad recipient/shop, moderation or billing denial, missing approved Meta template and unknown provider admission NEVER bypass normal send controls.
-- [ ] The same attempt, idempotency key, provider-confirmed `recoveryPromise`, single credit and durable recipient/merchant association are used. No second send after a provider-uncertain outcome, no double reservation and no extra proactive follow-up.
-- [ ] Exact originating MCP/AI/Meta/Prisma error (when available) is retained in structured logs subject to redaction; internal fallback reason is separate; the customer does not receive raw diagnostics.
-- [ ] No new provider product API, checkout URL validator, Redis queue, database schema, generic logger, uncontrolled retry or cross-tenant data access is introduced.
+- [x] NONE, FIXED and AI modes send exactly one approved `INITIAL_NO_OFFER` TEXT reminder with actual merchant identity, nonempty saved checkout summary, Reply text/voice guidance and original stored checkout CTA when no supported promotion can be prepared due to optional services.
+- [x] For one and three proposed discounts, invalid coupons, unsupported stacking, partial/incomplete catalogue, MCP timeout, AI refusal/exception, BG016 incomparable pricing, wrong alternative-product proof and BG007/R2 failures lead to a safe source-supported subset or prompt neutral TEXT fallback, never unsupported coupon/price/image claims.
+- [x] F1/F2/F3 optional source drift cannot send stale promotional terms; mandatory state drift fails closed or retries. Follow-up remains unchanged.
+- [x] STOP, no consent, completed/cancelled/superseded recovery/order, bad recipient/shop, moderation or billing denial, missing approved Meta template and unknown provider admission NEVER bypass normal send controls.
+- [x] The same attempt, idempotency key, provider-confirmed `recoveryPromise`, single credit and durable recipient/merchant association are used. No second send after a provider-uncertain outcome, no double reservation and no extra proactive follow-up.
+- [x] Exact originating MCP/AI/Meta/Prisma error (when available) is retained in structured logs subject to redaction; internal fallback reason is separate; the customer does not receive raw diagnostics.
+- [x] No new provider product API, checkout URL validator, Redis queue, database schema, generic logger, uncontrolled retry or cross-tenant data access is introduced.
 
 ## Validation
 
-- [ ] `tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts`: all triggers, trusted basket/attempt/merchant, no MCP/AI/R2 calls, approved frozen TEXT, unavailable template/empty basket, wrong shop and stable CTA.
-- [ ] `tests/unit/services/recovery-template-integration/initial-outreach-fallback-selection.test.ts`: operation/stage-based classification, F1/F2/F3, consent/STOP, DB failure, provider accepted/unknown, one-shot fallback.
-- [ ] `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`: optional `FAILURE`, discoveryIncomplete and null/invalid alternative -> typed fallback, and unchanged FOLLOW_UP.
-- [ ] `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`: Shopify initial fallback through actual billing and idempotent send composition, changed basket, revived STOP, post-reservation failure, duplicate callback and no confirmed send.
-- [ ] `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` and `tests/integration/arch048-woo-initial-outreach.integration.test.ts`: Woo guarded sender, terminal-order fence, consent/STOP, optional model/MCP failure, provider unknown/retry and one confirmed attempt.
-- [ ] PostgreSQL-backed final admission tests for both platforms; inject at least one distinct real provider-origin error and redacted secret, validate one send/credit and no stale promises. Execute task-required actual repository unit, lint, typecheck, build and whitespace scripts; record any unrun integration prerequisites in the Completion Report.
+- [x] `tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts`: all triggers, trusted basket/attempt/merchant, no MCP/AI/R2 calls, approved frozen TEXT, unavailable template/empty basket, wrong shop and stable CTA.
+- [x] `tests/unit/services/recovery-template-integration/initial-outreach-fallback-selection.test.ts`: operation/stage-based classification, F1/F2/F3, consent/STOP, DB failure, provider accepted/unknown, one-shot fallback.
+- [x] `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`: optional `FAILURE`, discoveryIncomplete and null/invalid alternative -> typed fallback, and unchanged FOLLOW_UP.
+- [x] `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`: Shopify initial fallback through actual billing and idempotent send composition, changed basket, revived STOP, post-reservation failure, duplicate callback and no confirmed send.
+- [x] `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` and `tests/integration/arch048-woo-initial-outreach.integration.test.ts`: Woo guarded sender, terminal-order fence, consent/STOP, optional model/MCP failure, provider unknown/retry and one confirmed attempt.
+- [x] PostgreSQL-backed final admission tests for both platforms; inject at least one distinct real provider-origin error and redacted secret, validate one send/credit and no stale promises. Execute task-required actual repository unit, lint, typecheck, build and whitespace scripts; record any unrun integration prerequisites in the Completion Report.
 
 ## Stop Condition
 
@@ -559,3 +559,51 @@ Ready for architect review. The Attempt 1, 2 and 3 reports and all Architect Rev
 ### Attempt 4 Handoff
 
 Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`. Both task branches are `task/ARCH-052-BACKGROUND-018`. Parent claim commit `7e647d111748eacfe94def3a0ce991e9fffbbf28` preceded implementation commit `870c0933c4e394edaeffef3f2ee902255a7f1fd7`. No downstream task status was changed; SYSTEM-TEST-001 and SYSTEM-TEST-002 remain Pending. The task is returned to review for `moda_architect`; this report does not make an acceptance decision.
+
+
+
+Physical worktree isolation (verified during architect review from Git worktree registrations and commit history):
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-018`
+  parent branch: `task/ARCH-052-BACKGROUND-018`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-018`
+  implementation branch: `task/ARCH-052-BACKGROUND-018`
+  shared workspace checkout switched/mutated for task work: no; task-report commits are on the dedicated parent worktree branch
+  shared implementation checkout switched/mutated for task work: no; implementation commits are on the dedicated implementation worktree branch
+  another task worktree reused: no; both registered worktrees are the canonical paths for this task
+
+Start-of-attempt synchronization (reconstructed from branch reflogs and commit ancestry):
+  parent remote task branch fast-forwarded: not-needed; remote was at `7da1122d` before the Attempt 4 claim commit `7e647d11`, whose parent is `7da1122d`
+  parent `origin/main` incorporated: already-current; the claim commit descends from `e150b936`, the parent `origin/main` tip at the Attempt 4 start (the next main-ref update was later)
+  implementation remote task branch fast-forwarded: not-needed; `origin/task/ARCH-052-BACKGROUND-018` was at `b39a84e` at Attempt 4 start, before the Attempt 4 implementation commit
+  implementation `origin/main` incorporated: already-current; the Attempt 4 base `b39a84e` descends from merge commit `e1933b7`, which incorporated `origin/main` at `42f1f88`
+
+The parent claim commit timestamp is 2026-11-01 21:56:26 UTC. Reflogs show the preceding remote task-branch tips and mainline refs above; the implementation task worktree and parent task worktree are registered at the canonical paths listed here.
+
+## Architect Review — Attempt 4
+
+### Review Status
+
+Accepted — Attempt 4. Task status is `complete`; `executor` and `claimed_at` are clear.
+
+### Review Notes
+
+Attempt 4 closes both prior findings. Caller cancellation during the authenticated optional source read returns non-retryable `CURRENT_SOURCE_READ_CANCELLED`; only the service-owned read budget produces fallback-eligible `CURRENT_SOURCE_READ_DEADLINE`. An unavailable F2 fence retains its specific reason, while `SOURCE_FENCE_F2_CHANGED` is emitted only for an available fence whose digest changed. The coordinator's exact allowlist excludes cancellation and unavailable F2 causes from fallback. The added upstream and coordinator regression tests cover these paths.
+
+The required isolation and synchronization evidence is now recorded in the Attempt 4 handoff. Architect review verified the canonical worktree registrations, branch commit ancestry, and remote-ref reflogs; the parent and implementation task worktrees were dedicated to this task, each remote task branch was already current at attempt start, and each branch already contained its then-current `origin/main`. No validation rerun was needed because the only review overlay corrected report evidence and Attempt 4's source, tests and validation are unchanged.
+
+### Reviewed Files
+
+- `moda-interact-background/src/services/recovery-offers/current-outreach-offer-revalidation.service.ts`
+- `moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- `moda-interact-background/tests/unit/services/recovery-offers/current-outreach-offer-revalidation.service.test.ts`
+- `moda-interact-background/tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`
+- Attempt 4 Completion Report and preserved Attempt 1–3 Architect Reviews.
+
+### Validation Reviewed
+
+Reviewed the reported focused unit suites (104 tests), Shopify/Woo integration suites (21 tests), lint, build and `git diff --check`. The full unit suite was not rerun in Attempt 4; Attempt 2's documented 3,611/3,612 result includes one unrelated ARCH-049 failure. No tests were rerun during this review.
+
+### Dependency and Frontier Review
+
+`ARCH-052-BACKGROUND-018` is Complete. `ARCH-052-SYSTEM-TEST-001` and `ARCH-052-SYSTEM-TEST-002` remain Pending because `ARCH-052-BACKGROUND-017` is still in review; neither dependent is newly Ready.
