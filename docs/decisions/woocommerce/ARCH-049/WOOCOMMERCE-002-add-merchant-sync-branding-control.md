@@ -162,8 +162,8 @@ The WooCommerce plugin runs in merchant-controlled PHP and cannot import `@modai
 
 ### Status
 
-Ready for architect review — Attempt 1. Developer self-review passed; the
-architect acceptance and explicit developer completion decision remain pending.
+Architect accepted — Attempt 1. The task remains in `review` pending the explicit
+developer completion decision required by `completion_mode: developer`.
 
 ### Files Changed
 
@@ -259,24 +259,38 @@ pending and was not promoted.
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1. Developer completion remains pending.
 
 ### Review Notes
 
-None.
+The final implementation addresses both review findings. A Sync branding click made during a pending status read waits for that read and then submits one command if the session is still eligible; the regression test covers the initial-load race. Legacy retries without a request generation still deliver their immutable observation, but pass an empty generation through status transitions, so they cannot become the latest request or overwrite the current status; the focused regression test verifies the failure state, request ID and timestamps remain unchanged. The 390 px layout correction applies `box-sizing: border-box` to the page shell and the submitted visual check reports no horizontal overflow.
+
+The implementation stays within the WooCommerce repository and existing ShopBrand publisher. It preserves the protected REST boundary, installation-scoped status, explicit merchant trigger, bounded retries, and the distinction between API acceptance and downstream image processing.
 
 ### Reviewed Files
 
-None.
+- `includes/Rest/ShopBrandSyncController.php`
+- `includes/ShopBrand/SyncStatusStore.php`
+- `includes/ShopBrand/Publisher.php`
+- `src/shop-brand-sync-client.js`
+- `src/shop-brand-sync-controller.js`
+- `src/recovery-settings/store-brand-panel.js`
+- `src/page/*` and Recovery Settings integration changes.
+- ShopBrand PHP, JavaScript and WordPress integration tests.
+- Responsive style changes, translation catalogs, and this task report.
 
 ### Validation Reviewed
 
-None.
+- Focused PHP publication/controller tests after the legacy-retry correction: 27 tests, 213 assertions passed.
+- JavaScript unit suite: 481 tests across 65 files passed.
+- Two ShopBrand WordPress integration runs completed before the final legacy-retry correction. The rerun after that correction stalled in the HTTP 429 retry fixture; the final correction has focused PHP regression coverage, and the limitation is documented.
+- Build, strict 20-locale verification and `git diff --check` passed. Desktop and 390 px connected/disconnected screen checks report no horizontal overflow after the page-shell correction.
+- `composer lint` linted changed PHP files, then stopped at the documented pre-existing missing checkout-consent fixture.
 
 ### Architecture Conformance
 
-Not reviewed.
+Conforms to ARCH-049: the merchant explicitly queues a current Site Identity capture through the existing publisher; status reflects hosted API acceptance only; retries and old completions cannot falsely advance current status; and the UI does not claim media processing is complete. No hosted API, Shopify, Background or other repository contracts changed.
 
 ### Follow-up
 
-None.
+Architect acceptance is recorded. Because `completion_mode` is `developer`, the task remains `status: review` with executor and claim cleared until the developer records the explicit completion decision. `ARCH-049-SYSTEM-TEST-001` remains pending and was not promoted.
