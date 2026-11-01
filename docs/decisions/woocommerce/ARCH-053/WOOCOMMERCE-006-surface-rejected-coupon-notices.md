@@ -9,25 +9,25 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 55
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-053-WOOCOMMERCE-005
 enables:
 - ARCH-053-SYSTEM-TEST-002
 - ARCH-053-WOOCOMMERCE-007
 created: 2026-10-29
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # ARCH-053-WOOCOMMERCE-006 — Keep original coupon rejection errors off the merchant checkout
 
 ## Architecture
 
-Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. This is a task-definition correction, not an implementation claim; task remains Pending.
+Architecture: `ARCH-053`; document: `docs/architecture/ARCH-053-woocommerce-checkout-recovery-links-and-cart-restoration.md`. Coordinator: `moda_architect`. Materialised, implemented and accepted on Attempt 1; status Complete.
 
 ## Objective
 
@@ -64,10 +64,10 @@ Only `moda-interact-woocommerce`:
 
 ## Work Items
 
-- [ ] Implement `CheckoutCouponOutcomeHandler.php` with a bounded private result/diagnostic mapping (applied, rejected, unknown) and no HTML/notice output.
-- [ ] Integrate with the existing restorer and capture/remove *only* Moda-generated native Woo error notices before redirect, retaining existing unrelated messages.
-- [ ] Verify correct total and applied coupons with invalid/expired/usage-exhausted/mixed multiple codes in Classic and Blocks; verify no Moda-generated errors appear.
-- [ ] Test simulated dependency exception and restoration rollback: safe cart, private log with original redacted error, no frontend error/false success; do not change WordPress debug settings.
+- [x] Implement `CheckoutCouponOutcomeHandler.php` with a bounded private result/diagnostic mapping (applied, rejected, unknown) and no HTML/notice output.
+- [x] Integrate with the existing restorer and suppress only native coupon error notices during Moda coupon attempts, retaining existing unrelated notices.
+- [x] Verify correct total and applied coupons with invalid/expired/usage-exhausted/mixed multiple codes in Classic and Blocks; verify no Moda-generated errors appear.
+- [x] Test simulated dependency exception and restoration rollback: safe cart, private log with original redacted error, no frontend error/false success; do not change WordPress debug settings.
 
 ## Interfaces / Contracts
 
@@ -84,18 +84,18 @@ Only `moda-interact-woocommerce`:
 
 ## Acceptance Criteria
 
-- [ ] Original `SAVE10` expired: current Woo total is displayed, coupon is not applied, and no Moda/Woo error notice attributable to automatic restore appears.
-- [ ] Mixed coupons: approved subset stays applied; private diagnostics record bounded rejection categories, not coupon codes or personal data.
-- [ ] Pre-existing Woo/cart/merchant notices and ordinary user-entered coupon validation remain intact.
-- [ ] Both Classic Checkout and Checkout Blocks have no Moda-generated error banners, notices, debug text or redirect error query parameters after restoration.
-- [ ] Previews/GETs do not mutate the cart, produce notices or emit checkout resumption activity.
-- [ ] Checkout/customer identity, correct prices, generation/consent gates, no automatic coupon replacements and no duplicate outreach remain protected.
+- [x] Original `SAVE10` expired: current Woo total is displayed, coupon is not applied, and no Moda/Woo error notice attributable to automatic restore appears.
+- [x] Mixed coupons: approved subset stays applied; private diagnostics record bounded rejection categories, not coupon codes or personal data.
+- [x] Pre-existing Woo/cart/merchant notices and ordinary user-entered coupon validation remain intact.
+- [x] Both Classic Checkout and Checkout Blocks have no Moda-generated error banners, notices, debug text or redirect error query parameters after restoration.
+- [x] Previews/GETs do not mutate the cart, produce notices or emit checkout resumption activity.
+- [x] Checkout/customer identity, correct prices, generation/consent gates, no automatic coupon replacements and no duplicate outreach remain protected.
 
 ## Validation
 
-- [ ] Run the repository's declared focused `composer test` suite for coupon handling and diagnostic containment.
-- [ ] Run the existing WordPress integration harness for Classic/Blocks: invalid coupon and private logging, native notice isolation, checkout total, retry/redirect and fault injection. Record exact unavailable scripts as blockers rather than inventing scripts.
-- [ ] Run declared lint/static checks and `git diff --check`.
+- [x] Run the repository's declared focused `composer test` suite for coupon handling and diagnostic containment.
+- [x] Run the existing WordPress integration harness for Classic/Blocks: invalid coupon and private logging, native notice isolation, checkout total, retry/redirect and fault injection. Record exact unavailable scripts as blockers rather than inventing scripts.
+- [x] Run declared lint/static checks and `git diff --check`. `composer run lint` linted all changed PHP files but then stopped at the existing missing target `tests/integration/checkout-consent-saved-block-variant.php`; changed PHP files were linted directly, and Node syntax plus diff checks passed.
 
 ## Stop Condition
 
@@ -109,58 +109,96 @@ Reuse existing Woo notice primitives **only for containment**, not error present
 
 ### Status
 
-Not Started
+Accepted — Attempt 1
 
 ### Files Changed
 
-None — task is defined but not materialised.
+- `composer.json`
+- `includes/Checkout/CheckoutCouponOutcomeHandler.php`
+- `includes/Checkout/CheckoutCouponRestorer.php`
+- `includes/Checkout/CheckoutResumeController.php`
+- `includes/Runtime.php`
+- `tests/CheckoutCartRestorerTest.php`
+- `tests/CheckoutCouponOutcomeHandlerTest.php`
+- `tests/CheckoutResumeControllerTest.php`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
 
 ### Work Completed
 
-Not Started.
+- Added a private outcome handler that records only bounded applied/rejected/unknown outcomes and counts; coupon values are never included in those diagnostics.
+- Hooked coupon rejection suppression only to Woo's `woocommerce_coupon_error` filter during each Moda-initiated `apply_coupon()` call. Existing and unrelated Woo errors remain untouched.
+- Invoked outcome handling after restored cart totals/session state and checkout resumption activity are committed, before the controller redirects to checkout.
+- Added unit coverage for mixed/rejected outcomes, coupon-code-free logs, scoped error suppression, unrelated notices, dependency failure, rollback, redaction and safe redirects.
+- Extended real Classic/Blocks restoration fixtures with valid, expired, usage-exhausted and deleted coupon codes, and verified current totals and no rejected-code leakage. Normal shopper-entered coupon errors remain in Woo's ordinary AJAX response.
 
 ### Validation Results
 
-Not Run.
+- `composer test -- --filter 'CheckoutCouponOutcomeHandlerTest|CheckoutCartRestorerTest|CheckoutResumeControllerTest|CheckoutCaptureTest' --display-warnings` — passed: 41 tests, 370 assertions, no warnings.
+- `MODA_CHECKOUT_TEST_DISPOSABLE=1 npm run test:integration:wordpress -- --checkout-only` — passed against the isolated task wp-env. Includes `ARCH-053 confirmed Woo restore integration PASS` and `ARCH-035 checkout-only integration PASS`; Classic and Blocks restore checks covered valid, expired, exhausted and deleted original codes, private error handling, nonce/redirect safety and correct totals.
+- `php -l` on each changed PHP source/test file — passed.
+- `node --check tests/integration/scenarios/checkout-wordpress.mjs` — passed.
+- `git diff --check` — passed.
+- `composer run lint` — all changed PHP files passed before the declared script stopped at its pre-existing missing target `tests/integration/checkout-consent-saved-block-variant.php`.
 
 ### Deviations
 
-None.
+- The first full integration attempt used an incorrect assertion that expected Woo's shopper-entered coupon rejection to persist from its AJAX response into the later checkout render. The test now checks the ordinary Woo error at its actual response boundary; the final focused Classic/Blocks integration run passes.
+- The repository-wide Composer lint script references a missing unrelated integration PHP file. All changed PHP files were linted directly; the stale script entry was left untouched as out of scope.
 
 ### Assumptions
 
-Codebase snapshot dated 2026-10-29; inspect actual HEAD after launcher preparation before implementing.
+- Existing WooCommerce and plugin checkout behavior remains the compatibility baseline; only coupon errors produced during the plugin's own original-code attempts are suppressed.
 
 ### Unresolved Issues
 
-None asserted until work is claimed.
+- The existing Composer lint script cannot complete until its reference to the absent `tests/integration/checkout-consent-saved-block-variant.php` is reconciled.
 
 ### Architectural Concerns
 
-Return schema, lifecycle and multi-repository discrepancies to `moda_architect` rather than improvising.
+None.
+
+### Git / VCS
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-WOOCOMMERCE-006`, branch `task/ARCH-053-WOOCOMMERCE-006`, clean at review; parent report commit `b405cec7c9bd356abe43d5764ee850f417b29847`, matching `origin/task/ARCH-053-WOOCOMMERCE-006` before review. Architect acceptance and status updates committed as `187bc9a7` and pushed to the same remote task branch.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-WOOCOMMERCE-006`, branch `task/ARCH-053-WOOCOMMERCE-006`, clean at review; implementation commit `375fa886e672a812a60953067c2c2ac4969ec421`, matching `origin/task/ARCH-053-WOOCOMMERCE-006`.
+- Dedicated task worktrees verified; parent branch is synchronized after the architect review update. Neither task branch is merged to `main`.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Not reviewed.
+The implementation contains native coupon rejection text only during Moda's automatic restoration attempts, using the scoped `woocommerce_coupon_error` filter. It does not clear session notices or suppress the broader `woocommerce_add_error` hook, so unrelated notices and ordinary shopper-entered coupon errors remain available. The private outcome handler records bounded outcome categories and counts without coupon values, and runs after the restore commit but before redirect. The integration fixture exercises valid, expired, usage-exhausted and deleted codes through Classic and Blocks checkout, with current totals, applied-code state, redirect safety, preview non-mutation and ordinary shopper error behavior covered.
+
+The focused PHPUnit and disposable WordPress integration suites passed. The repository lint command remains blocked only by its existing reference to a missing integration PHP file; all changed PHP files were linted directly.
 
 ### Reviewed Files
 
-None.
+- `includes/Checkout/CheckoutCouponOutcomeHandler.php`
+- `includes/Checkout/CheckoutCouponRestorer.php`
+- `includes/Checkout/CheckoutResumeController.php`
+- `includes/Runtime.php`
+- `composer.json`
+- `tests/CheckoutCartRestorerTest.php`
+- `tests/CheckoutCouponOutcomeHandlerTest.php`
+- `tests/CheckoutResumeControllerTest.php`
+- `tests/integration/scenarios/checkout-wordpress.mjs`
+- This task definition and Completion Report.
 
 ### Validation Reviewed
 
-None.
+- Focused PHPUnit: 41 tests, 370 assertions passed.
+- Disposable WordPress checkout integration passed in Classic and Blocks scenarios for valid, expired, exhausted and deleted codes; current totals and privacy checks passed.
+- Direct PHP lint for changed files, Node syntax check and `git diff --check` passed.
+- `composer run lint` reached all changed PHP files and then stopped at the documented unrelated missing test target.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Conforms to ARCH-053's storefront-silent rule: rejected original coupon details remain private, only plugin-generated coupon errors are contained, Woo controls applied coupon state and current totals, and normal customer notices and coupon validation are preserved. No API/schema, discount creation, or unrelated repository changes were introduced.
 
 ### Follow-up
 
-None.
+WOOCOMMERCE-005, the required upstream dependency, is Complete. No downstream task is promoted: WOOCOMMERCE-007 remains blocked by API-003, and SYSTEM-TEST-002 remains blocked by ARCH-046-WOOCOMMERCE-003.

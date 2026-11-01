@@ -8,4 +8,5 @@ The individual task YAML frontmatter is authoritative.
 
 | Task | Bounded outcome | Status | Dependencies |
 |---|---|---|---|
-| [ARCH-054-API-001](API-001-expose-woo-merchant-ai-response-delay.md) | Expose merchant AI response delay through the authenticated Woo API | Ready | `ARCH-054-DATABASE-001`, `ARCH-054-SHARED-002` |
+| [ARCH-054-API-001](API-001-expose-woo-merchant-ai-response-delay.md) | Expose merchant AI response delay through the authenticated Woo API | In Progress | `ARCH-054-DATABASE-001`, `ARCH-054-SHARED-002` |
+| [ARCH-054-API-002](API-002-invalidate-woo-pending-ai-on-handover.md) | Invalidate pending AI on Woo human-control transitions | Complete | `ARCH-054-DATABASE-001` |
