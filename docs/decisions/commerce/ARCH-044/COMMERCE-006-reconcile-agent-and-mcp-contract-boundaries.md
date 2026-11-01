@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-11-01T17:08:25Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -56,13 +56,13 @@ Two baseline failures are independent signs of stale contract assertions: (1) `t
 3. `@shopify/dev-mcp` remains a dev-only schema generation input; any packaging/dependency changes must retain documented reproducible schema sync.
 4. Every corrected test must demonstrate the actual contract, not merely avoid the assertion.
 
-## Work Items
+### Work Items
 
-- [ ] Resolve and document `invalid_collection_path` versus `invalid_result_path` semantics with current validator and consumer evidence.
-- [ ] Add/update exact typed-validation tests while retaining rejection behavior.
-- [ ] Inventory `@modelcontextprotocol/sdk` use and the current Commerce/MCP boundary; decide remove/move/retain with evidence.
-- [ ] Correct the boundary test and any justified dependency/package-lock entry.
-- [ ] Run the complete nearby contract and extraction regression tests.
+- [x] Resolve and document `invalid_collection_path` versus `invalid_result_path` semantics with current validator and consumer evidence.
+- [x] Verify exact typed-validation tests retain rejection behavior for unknown paths, unresolved loop aliases, resolved non-array loop sources and unsafe paths.
+- [x] Inventory `@modelcontextprotocol/sdk` use and the current Commerce/MCP boundary; confirm the SDK is used only transitively by Shopify's dev-only schema-generation tooling.
+- [x] Verify the boundary test and package manifest/lockfile reflect actual imports and ownership; no further dependency edit is justified.
+- [x] Run the complete nearby contract and extraction regression tests.
 
 ## Interfaces / Contracts
 
@@ -76,19 +76,19 @@ None.
 
 None directly. The architecture-level integrated validation remains after all eight tasks.
 
-## Acceptance Criteria
+### Acceptance Criteria
 
-- [ ] Both original failing tests pass with defensible source/contract evidence.
-- [ ] Unknown scalar/collection paths remain invalid and produce safe typed diagnostics.
-- [ ] No embedded MCP route/server or forbidden Commerce execution path is reintroduced.
-- [ ] Relevant SDK dependence is reconciled against actual imports and runtime ownership; package-lock is consistent if changed.
-- [ ] No scope expansion to new MCP product behavior.
+- [x] Both original failing tests pass with defensible source/contract evidence.
+- [x] Unknown scalar/collection paths remain invalid and produce safe typed diagnostics.
+- [x] No embedded MCP route/server or forbidden Commerce execution path is reintroduced.
+- [x] Relevant SDK dependence is reconciled against actual imports and runtime ownership; package-lock is consistent if changed.
+- [x] No scope expansion to new MCP product behavior.
 
-## Validation
+### Validation
 
-- [ ] `npx vitest run tests/agent-contract-validation.test.ts tests/commerce-mcp-extraction-boundary.test.ts tests/result-template-authoring.test.ts tests/nunjucks-template.test.ts`.
-- [ ] `npm run typecheck`, `npm run schema:sync`, changed-file lint, `git diff --check`.
-- [ ] Check package manifests/lockfile dependency ownership if any dependency changes.
+- [x] `npx vitest run tests/agent-contract-validation.test.ts tests/commerce-mcp-extraction-boundary.test.ts tests/result-template-authoring.test.ts tests/nunjucks-template.test.ts`.
+- [x] `npm run typecheck`, `npm run schema:sync`, focused ESLint, `git diff --check` (typecheck result and unrelated diagnostic recorded below).
+- [x] Verify package manifests/lockfile dependency ownership; no package or lockfile change was needed.
 
 ## Stop Condition
 
@@ -107,35 +107,53 @@ After all scoped Work Items and Acceptance Criteria are demonstrably satisfied, 
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None yet.
+No implementation source, test, package manifest or lockfile files changed in this attempt; the prepared Commerce snapshot already contains the behavior and regression assertions required by this task. This task definition is the only intended parent-worktree change.
 
 ### Work Completed
 
-None yet.
+Confirmed the canonical validator delegates Agent response-template validation through `validateResponseTemplateAuthoring` to the bounded Nunjucks AST validator. Unknown paths, including a missing collection path, resolve as `invalid_result_path`; the attempted loop alias remains unbound and is reported as `unsupported_template_construct`. `invalid_collection_path` is reserved for a path that resolves to a non-array schema (the test covers an existing object used as a loop source). Unsafe paths remain rejected with bounded typed issues. The deprecated compatibility adapter preserves these canonical issues.
+
+Verified the extraction boundary against current code and dependency state: the Commerce manifest has no direct `@modelcontextprotocol/sdk` dependency; source under `app/`, `lib/`, `src/` and `scripts/` has no SDK imports; the only installed SDK is nested under dev-only `@shopify/dev-mcp@1.15.4`. The boundary test also checks the embedded route/server/executor are absent and retained local, private-live-client and fixture flows remain present. Shopify schema synchronization succeeds using the pinned dev package, so that dev-only dependency remains necessary.
+
+Both original failing test identities and neighboring result-template/Nunjucks contract tests pass. No validator behavior change, dependency removal or test weakening was needed because the prepared snapshot already expresses the verified contract.
 
 ### Validation Results
 
-Not run. Record each exact command, environment, exit code, test totals and any known-baseline differences. Baseline failures may not be silently treated as task successes.
+Environment: macOS, Node/npm selected from the workspace toolchain; `npm ci` installed 905 packages from the existing lockfile. npm reported 44 audit findings (27 moderate, 16 high, 1 critical); no dependency changes were made. Install scripts were awaiting approval, so the Prisma client was generated directly from the already-initialized pinned schema before the final typecheck.
+
+| Command | Result |
+|---|---|
+| `npx vitest run tests/agent-contract-validation.test.ts tests/commerce-mcp-extraction-boundary.test.ts tests/result-template-authoring.test.ts tests/nunjucks-template.test.ts` | PASS, 4 files, 26 tests. |
+| `npm run schema:sync` | PASS; Shopify Admin `2026-07` artifact matched the pinned `@shopify/dev-mcp@1.15.4` source (SHA-256 `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`). |
+| `npm ls @modelcontextprotocol/sdk --all` | PASS; only `@shopify/dev-mcp@1.15.4 -> @modelcontextprotocol/sdk@1.29.0` is present. |
+| `npx prisma generate --schema database/prisma/schema.prisma` | PASS; generated Prisma Client v6.19.3 from the pinned database submodule schema. |
+| `npm run typecheck` | FAIL with one unrelated TS2345 at `tests/system-commerce-tool-sync.test.ts:305`: `{}` omits required `NODE_ENV` from Next.js `ProcessEnv`. Initial generated-client errors disappeared after Prisma generation. |
+| Focused `npx eslint` over the Agent validator, Nunjucks/result-template validators and the four focused tests | PASS, no diagnostics. |
+| `git diff --check` | PASS. |
+
+The focused validation covers both originally failing tests and the neighboring contract suites. No full repository test suite was run for this bounded task.
 
 ### Worktree / Synchronisation Evidence
 
-Not yet materialised. Record launcher-resolved canonical workspace root, dedicated parent and implementation worktrees, initial branch/commit identities and recursive submodule state when execution begins.
+Launcher preparation packet: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-044-COMMERCE-006`, branch `task/ARCH-044-COMMERCE-006`, prepared head `22de3c80c93f2a09b9839bdedb18dc9649dd6321`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-044-COMMERCE-006`, branch `task/ARCH-044-COMMERCE-006`, head `15d505ef0f84e8cab57af43dee0d78a83d969f93`.
+
+The launcher reported parent remote-task fast-forward `not-needed`, parent `origin/main` already current before claim and incorporated during final sync; implementation remote-task fast-forward `not-needed`, implementation `origin/main` already current. Claim Attempt 1 was committed and pushed as `1f8a068b179f497d02f5eef7fb8002705070d4b2`; final parent sync head was `405aa38541cfc613871edd5cd487f69c86f0510d`. Recursive `git submodule sync` and `git submodule update --init` passed; `database` is initialized at `af77c594ecbfc78c26d01c0021a090830884bbff`. The shared workspace checkout was not switched or mutated for task implementation, and no other task worktree was reused.
 
 ### Deviations
 
-None yet.
+No source or test edits were necessary because the prepared snapshot already contains the corrected validation assertions and package boundary, and all focused tests pass. The required typecheck remains blocked by the unrelated `ProcessEnv` test typing diagnostic stated above.
 
 ### Assumptions
 
-Task definition based on the 2026-10-18 source snapshot and supplied baseline/task logs; re-inspect current implementation when executing.
+The 2026-10-18 baseline expectations describe issues already reconciled in the current prepared Commerce snapshot; this attempt verified the live source, consumers, dependency tree and tests rather than recreating the historical failures.
 
 ### Unresolved Issues
 
-None beyond the explicitly described diagnostics to investigate.
+`npm run typecheck` is not fully green because of the unrelated `tests/system-commerce-tool-sync.test.ts:305` `ProcessEnv` diagnostic. No task-owned source or test regression was found.
 
 ### Architectural Concerns
 
