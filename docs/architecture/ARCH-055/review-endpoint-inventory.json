@@ -1,0 +1,558 @@
+{
+  "total": 61,
+  "business": 59,
+  "health": 2,
+  "unique_method_path_pairs": 61,
+  "counting_rule": "One registered HTTP method/path combination; parameter values and internal helpers not separate endpoints. Callback :token is the same route originally labelled :id. Static registration inspection, not an HTTP smoke test.",
+  "inventory": [
+    {
+      "id": "E01",
+      "method": "POST",
+      "path": "/v1/woocommerce/installations/connect",
+      "decision": "Retain activation transaction; consolidate transaction-local Shop and credential-result reads.",
+      "increment": 1,
+      "evidence_file": "woocommerce-api-database-review-01-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/installation/routes.ts"
+    },
+    {
+      "id": "E02",
+      "method": "GET",
+      "path": "/v1/woocommerce/installation",
+      "decision": "Retain one authentication lookup; no write or explicit transaction needed.",
+      "increment": 2,
+      "evidence_file": "woocommerce-api-database-review-02-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/installation/routes.ts"
+    },
+    {
+      "id": "E03",
+      "method": "POST",
+      "path": "/v1/woocommerce/activity",
+      "decision": "Retain queue acceptance; preserve and correctly classify database/Redis errors.",
+      "increment": 2,
+      "evidence_file": "woocommerce-api-database-review-02-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/activity/routes.ts"
+    },
+    {
+      "id": "E04",
+      "method": "POST",
+      "path": "/v1/woocommerce/whatsapp-consent",
+      "decision": "Retain consent/evidence atomicity; acknowledge duplicate before recipient locking.",
+      "increment": 2,
+      "evidence_file": "woocommerce-api-database-review-02-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/consent/routes.ts"
+    },
+    {
+      "id": "E05",
+      "method": "GET",
+      "path": "/v1/woocommerce/customer-recovery-selection",
+      "decision": "Assess snapshot read without recipient write-style locks; preserve transactional principal check.",
+      "increment": 2,
+      "evidence_file": "woocommerce-api-database-review-02-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/recovery-selection/routes.ts"
+    },
+    {
+      "id": "E06",
+      "method": "POST",
+      "path": "/v1/woocommerce/customer-recovery-selection",
+      "decision": "Retain revision/STOP coordination and transaction; preserve original errors.",
+      "increment": 2,
+      "evidence_file": "woocommerce-api-database-review-02-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/recovery-selection/routes.ts"
+    },
+    {
+      "id": "E07",
+      "method": "POST",
+      "path": "/v1/woocommerce/shop-brand",
+      "decision": "Retain merge/ordering locks; reuse newly created brand result.",
+      "increment": 3,
+      "evidence_file": "woocommerce-api-database-review-03-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/shop-brand/routes.ts"
+    },
+    {
+      "id": "E08",
+      "method": "POST",
+      "path": "/v1/woocommerce/recovery-restore/resolve",
+      "decision": "Retain later eligibility reread; require full-schema validation and useful diagnostics.",
+      "increment": 3,
+      "evidence_file": "woocommerce-api-database-review-03-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/recovery-restore/routes.ts"
+    },
+    {
+      "id": "E09",
+      "method": "POST",
+      "path": "/v1/woocommerce/read-authorizations",
+      "decision": "Retain guarded pending insert; fix error classification and clarify Shop lifecycle gate.",
+      "increment": 3,
+      "evidence_file": "woocommerce-api-database-review-03-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/rest-read/authorization.routes.ts"
+    },
+    {
+      "id": "E10",
+      "method": "GET",
+      "path": "/v1/woocommerce/read-authorization",
+      "decision": "Retain non-locking status read; measure latest-attempt index candidate.",
+      "increment": 3,
+      "evidence_file": "woocommerce-api-database-review-03-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/rest-read/authorization.routes.ts"
+    },
+    {
+      "id": "E11",
+      "method": "DELETE",
+      "path": "/v1/woocommerce/read-authorization",
+      "decision": "Correct stale-generation cancellation and current-principal gating; retain atomic revoke.",
+      "increment": 3,
+      "evidence_file": "woocommerce-api-database-review-03-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/rest-read/authorization.routes.ts"
+    },
+    {
+      "id": "E12",
+      "method": "POST",
+      "path": "/v1/woocommerce/read-authorizations/callback/:token",
+      "decision": "Retain attempt/grant atomicity; fix overlapping replay and commit-time Shop lifecycle check.",
+      "increment": 4,
+      "evidence_file": "woocommerce-api-database-review-04-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/rest-read/authorization.routes.ts"
+    },
+    {
+      "id": "E13",
+      "method": "GET",
+      "path": "/v1/woocommerce/read-authorizations/return",
+      "decision": "Retain informational read; preflight impossible locale proofs before secret lookup.",
+      "increment": 4,
+      "evidence_file": "woocommerce-api-database-review-04-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/rest-read/authorization.routes.ts"
+    },
+    {
+      "id": "E14",
+      "method": "GET",
+      "path": "/v1/merchant/bootstrap",
+      "decision": "Retain narrow business projection; no mandatory query refactor established.",
+      "increment": 4,
+      "evidence_file": "woocommerce-api-database-review-04-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/bootstrap/routes.ts"
+    },
+    {
+      "id": "E15",
+      "method": "PUT",
+      "path": "/v1/merchant/store-context",
+      "decision": "Retain conditional write; assess no-op suppression without losing stale-principal conflicts.",
+      "increment": 4,
+      "evidence_file": "woocommerce-api-database-review-04-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/store-context/routes.ts"
+    },
+    {
+      "id": "E16",
+      "method": "GET",
+      "path": "/v1/merchant/store-categories",
+      "decision": "Make profile/configuration projection coherent; narrow prompt text and identity queries.",
+      "increment": 4,
+      "evidence_file": "woocommerce-api-database-review-04-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/store-categories/routes.ts"
+    },
+    {
+      "id": "E17",
+      "method": "POST",
+      "path": "/v1/merchant/store-category",
+      "decision": "Retain atomic publication; remove new-lineage history reads and pending-draft pre-read.",
+      "increment": 5,
+      "evidence_file": "woocommerce-api-database-review-05-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/store-categories/selection-routes.ts"
+    },
+    {
+      "id": "E18",
+      "method": "GET",
+      "path": "/v1/merchant/feature-preferences",
+      "decision": "Retain consistent snapshot; narrow entitlement projections and consolidate identity reads.",
+      "increment": 5,
+      "evidence_file": "woocommerce-api-database-review-05-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/feature-preferences/routes.ts"
+    },
+    {
+      "id": "E19",
+      "method": "PUT",
+      "path": "/v1/merchant/feature-preferences",
+      "decision": "Retain revision/entitlement checks; fix timing overwrite; assess batched changed-row persistence.",
+      "increment": 5,
+      "evidence_file": "woocommerce-api-database-review-05-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/feature-preferences/routes.ts"
+    },
+    {
+      "id": "E20",
+      "method": "GET",
+      "path": "/v1/merchant/recovery-policy",
+      "decision": "Retain settings/override snapshot; narrow fields.",
+      "increment": 5,
+      "evidence_file": "woocommerce-api-database-review-05-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/recovery-policy/routes.ts"
+    },
+    {
+      "id": "E21",
+      "method": "PUT",
+      "path": "/v1/merchant/recovery-policy",
+      "decision": "Retain existing result reuse and no-write replay semantics.",
+      "increment": 5,
+      "evidence_file": "woocommerce-api-database-review-05-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/recovery-policy/routes.ts"
+    },
+    {
+      "id": "E22",
+      "method": "GET",
+      "path": "/v1/merchant/ai-response-delay",
+      "decision": "Retain snapshot; select delay/revision only and consolidate read identity.",
+      "increment": 6,
+      "evidence_file": "woocommerce-api-database-review-06-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/ai-response-delay/routes.ts"
+    },
+    {
+      "id": "E23",
+      "method": "PUT",
+      "path": "/v1/merchant/ai-response-delay",
+      "decision": "Retain ordered locks and no-op; preserve error causes and include existing suite in aggregate tests.",
+      "increment": 6,
+      "evidence_file": "woocommerce-api-database-review-06-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/ai-response-delay/routes.ts"
+    },
+    {
+      "id": "E24",
+      "method": "GET",
+      "path": "/v1/merchant/recoveries",
+      "decision": "Retain exact count/page snapshot; skip page fetch after zero count; measure deep paging/search.",
+      "increment": 6,
+      "evidence_file": "woocommerce-api-database-review-06-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/recoveries/routes.ts"
+    },
+    {
+      "id": "E25",
+      "method": "GET",
+      "path": "/v1/merchant/recoveries/:id",
+      "decision": "Retain actual inbound/eligibility evidence; do not substitute summary timestamps.",
+      "increment": 6,
+      "evidence_file": "woocommerce-api-database-review-06-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/recoveries/detail/routes.ts"
+    },
+    {
+      "id": "E26",
+      "method": "GET",
+      "path": "/v1/merchant/recoveries/:id/messages",
+      "decision": "Use lookahead and bounded existence; narrow ownership load; retain moderation matching.",
+      "increment": 6,
+      "evidence_file": "woocommerce-api-database-review-06-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/recoveries/detail/routes.ts"
+    },
+    {
+      "id": "E27",
+      "method": "GET",
+      "path": "/v1/merchant/recoveries/:id/related",
+      "decision": "Use lookahead and bounded existence; retain exact Shop/customer identity.",
+      "increment": 7,
+      "evidence_file": "woocommerce-api-database-review-07-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/recoveries/detail/routes.ts"
+    },
+    {
+      "id": "E28",
+      "method": "GET",
+      "path": "/v1/merchant/recovery-summary",
+      "decision": "Consolidate narrow identity/policy reads; decide snapshot contract.",
+      "increment": 7,
+      "evidence_file": "woocommerce-api-database-review-07-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/recovery-summary/routes.ts"
+    },
+    {
+      "id": "E29",
+      "method": "POST",
+      "path": "/v1/merchant/conversations/:id/messages",
+      "decision": "Correct public retry-key/internal claim uniqueness mismatch; retain durable atomic admission.",
+      "increment": 7,
+      "evidence_file": "woocommerce-api-database-review-07-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/conversations/messages/routes.ts"
+    },
+    {
+      "id": "E30",
+      "method": "GET",
+      "path": "/v1/merchant/conversations/:id/send-commands/:commandId",
+      "decision": "Match moderation against prepared outgoing text; narrow fields; review read lock contract.",
+      "increment": 7,
+      "evidence_file": "woocommerce-api-database-review-07-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/conversations/messages/routes.ts"
+    },
+    {
+      "id": "E31",
+      "method": "GET",
+      "path": "/v1/merchant/conversations/:id/follow-up-templates",
+      "decision": "Fix root-client configuration query within transaction and failure-to-empty classification.",
+      "increment": 7,
+      "evidence_file": "woocommerce-api-database-review-07-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/conversations/messages/routes.ts"
+    },
+    {
+      "id": "E32",
+      "method": "POST",
+      "path": "/v1/merchant/conversations/:id/control",
+      "decision": "Retain conversation/audit atomicity, Shop coordination and revision semantics.",
+      "increment": 8,
+      "evidence_file": "woocommerce-api-database-review-08-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/conversations/control/routes.ts"
+    },
+    {
+      "id": "E33",
+      "method": "GET",
+      "path": "/v1/merchant/merchant-knowledge",
+      "decision": "Preserve explicit best-effort read; direct ACTIVE-revision query instead of aggregate/fetch.",
+      "increment": 8,
+      "evidence_file": "woocommerce-api-database-review-08-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/routes.ts"
+    },
+    {
+      "id": "E34",
+      "method": "POST",
+      "path": "/v1/merchant/merchant-knowledge/sources",
+      "decision": "Retain source/revision atomicity; return locked principal fields and skip unused preference lookup.",
+      "increment": 8,
+      "evidence_file": "woocommerce-api-database-review-08-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/commands.routes.ts"
+    },
+    {
+      "id": "E35",
+      "method": "PATCH",
+      "path": "/v1/merchant/merchant-knowledge/sources/:id",
+      "decision": "Guard actual mutation by tenant/generation against Background writer.",
+      "increment": 8,
+      "evidence_file": "woocommerce-api-database-review-08-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/commands.routes.ts"
+    },
+    {
+      "id": "E36",
+      "method": "DELETE",
+      "path": "/v1/merchant/merchant-knowledge/sources/:id",
+      "decision": "Guard actual delete by generation; compact only surviving rows whose positions change.",
+      "increment": 8,
+      "evidence_file": "woocommerce-api-database-review-08-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/commands.routes.ts"
+    },
+    {
+      "id": "E37",
+      "method": "POST",
+      "path": "/v1/merchant/merchant-knowledge/sources/:id/refresh",
+      "decision": "Retain generation/revision atomicity; strengthen UPDATE predicate and common-helper reuse.",
+      "increment": 9,
+      "evidence_file": "woocommerce-api-database-review-09-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/commands.routes.ts"
+    },
+    {
+      "id": "E38",
+      "method": "PUT",
+      "path": "/v1/merchant/merchant-knowledge/order",
+      "decision": "Retain full membership/atomic order; stage only changed rows and use ID/position projection.",
+      "increment": 9,
+      "evidence_file": "woocommerce-api-database-review-09-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/commands.routes.ts"
+    },
+    {
+      "id": "E39",
+      "method": "POST",
+      "path": "/v1/merchant/merchant-knowledge/upload-intents",
+      "decision": "Bind purpose to retry metadata; preserve immutable asset identity and bounded live-intent admission.",
+      "increment": 9,
+      "evidence_file": "woocommerce-api-database-review-09-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/upload.routes.ts"
+    },
+    {
+      "id": "E40",
+      "method": "POST",
+      "path": "/v1/merchant/merchant-knowledge/upload-finalize",
+      "decision": "Coordinate cleanup and final asset state; bind replay to original intake; recheck MIME policy.",
+      "increment": 9,
+      "evidence_file": "woocommerce-api-database-review-09-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/upload.routes.ts"
+    },
+    {
+      "id": "E41",
+      "method": "PATCH",
+      "path": "/v1/merchant/merchant-knowledge/uploads/:id",
+      "decision": "Bound eligible-prefix reads and skip identical metadata; retain metadata-only contract.",
+      "increment": 9,
+      "evidence_file": "woocommerce-api-database-review-09-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/upload.routes.ts"
+    },
+    {
+      "id": "E42",
+      "method": "POST",
+      "path": "/v1/merchant/merchant-knowledge/uploads/:id/reprocess",
+      "decision": "Retain guarded two-write transaction; bound eligibility and document 409/preflight boundary.",
+      "increment": 10,
+      "evidence_file": "woocommerce-api-database-review-10-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/merchant-knowledge/upload.routes.ts"
+    },
+    {
+      "id": "E43",
+      "method": "GET",
+      "path": "/v1/merchant/promotions",
+      "decision": "Retain exact counts and snapshot; skip zero-count pages.",
+      "increment": 10,
+      "evidence_file": "woocommerce-api-database-review-10-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/promotions/routes.ts"
+    },
+    {
+      "id": "E44",
+      "method": "PUT",
+      "path": "/v1/merchant/promotions/selection",
+      "decision": "Retain grant balances/selection atomicity; assess returned-row reuse with emitted-SQL evidence.",
+      "increment": 10,
+      "evidence_file": "woocommerce-api-database-review-10-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/promotions/routes.ts"
+    },
+    {
+      "id": "E45",
+      "method": "GET",
+      "path": "/v1/merchant/discount-catalogue",
+      "decision": "Preserve safety and complete pagination; measure variable batch cost and correct assumed scan bound.",
+      "increment": 10,
+      "evidence_file": "woocommerce-api-database-review-10-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/discount-offers/routes.ts"
+    },
+    {
+      "id": "E46",
+      "method": "GET",
+      "path": "/v1/merchant/discount-offers",
+      "decision": "Keep settings readable independently of catalogue readiness; narrow fields.",
+      "increment": 10,
+      "evidence_file": "woocommerce-api-database-review-10-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/discount-offers/routes.ts"
+    },
+    {
+      "id": "E47",
+      "method": "PUT",
+      "path": "/v1/merchant/discount-offers",
+      "decision": "Persist selection differences only; reuse settings and locked onboarding state.",
+      "increment": 11,
+      "evidence_file": "woocommerce-api-database-review-11-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/discount-offers/routes.ts"
+    },
+    {
+      "id": "E48",
+      "method": "GET",
+      "path": "/v1/merchant/usage-history",
+      "decision": "Retain accounting snapshot; combine count/sum and reuse period rows; preserve evidence semantics.",
+      "increment": 11,
+      "evidence_file": "woocommerce-api-database-review-11-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/usage-history/routes.ts"
+    },
+    {
+      "id": "E49",
+      "method": "GET",
+      "path": "/v1/merchant/support/messages",
+      "decision": "Decide page/unread snapshot contract; simplify unique translation join.",
+      "increment": 11,
+      "evidence_file": "woocommerce-api-database-review-11-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/support/routes.ts"
+    },
+    {
+      "id": "E50",
+      "method": "POST",
+      "path": "/v1/merchant/support/messages",
+      "decision": "Combine thread bookkeeping writes; retain durable translation repair and original queue errors.",
+      "increment": 11,
+      "evidence_file": "woocommerce-api-database-review-11-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/support/routes.ts"
+    },
+    {
+      "id": "E51",
+      "method": "POST",
+      "path": "/v1/merchant/support/messages/:id/read",
+      "decision": "Retain conditional mark and concurrent-winner reread; update-first is workload-dependent.",
+      "increment": 11,
+      "evidence_file": "woocommerce-api-database-review-11-source-evidence.txt",
+      "route_source": "moda-interact-api/src/merchant/support/routes.ts"
+    },
+    {
+      "id": "E52",
+      "method": "GET",
+      "path": "/v1/billing",
+      "decision": "Retain capacity/operation snapshot; reuse proven identical pending catalogue target.",
+      "increment": 12,
+      "evidence_file": "woocommerce-api-database-review-12-source-evidence.txt",
+      "route_source": "moda-interact-api/src/billing/presentation/routes.ts"
+    },
+    {
+      "id": "E53",
+      "method": "GET",
+      "path": "/v1/billing/plans",
+      "decision": "Retain whole-catalogue locale fallback; retrieve candidate translations only.",
+      "increment": 12,
+      "evidence_file": "woocommerce-api-database-review-12-source-evidence.txt",
+      "route_source": "moda-interact-api/src/billing/presentation/routes.ts"
+    },
+    {
+      "id": "E54",
+      "method": "POST",
+      "path": "/v1/billing/subscription",
+      "decision": "Retain intent/provider/outcome separation; strengthen admitted principal; bound operation-history check.",
+      "increment": 12,
+      "evidence_file": "woocommerce-api-database-review-12-source-evidence.txt",
+      "route_source": "moda-interact-api/src/billing/commands/routes.ts"
+    },
+    {
+      "id": "E55",
+      "method": "DELETE",
+      "path": "/v1/billing/subscription",
+      "decision": "Retain deferred lifecycle effects; reuse locked rows and guarded write results.",
+      "increment": 12,
+      "evidence_file": "woocommerce-api-database-review-12-source-evidence.txt",
+      "route_source": "moda-interact-api/src/billing/commands/routes.ts"
+    },
+    {
+      "id": "E56",
+      "method": "POST",
+      "path": "/v1/billing/subscription/switch",
+      "decision": "Retain exact replay quote and same-provider-contract checks; narrow warm materialisation reads.",
+      "increment": 12,
+      "evidence_file": "woocommerce-api-database-review-12-source-evidence.txt",
+      "route_source": "moda-interact-api/src/billing/commands/routes.ts"
+    },
+    {
+      "id": "E57",
+      "method": "GET",
+      "path": "/v1/billing/recovery-credit-purchases",
+      "decision": "Retain exact history/refund snapshot; skip page read after zero count; add migrated read tests.",
+      "increment": 13,
+      "evidence_file": "woocommerce-api-database-review-13-source-evidence.txt",
+      "route_source": "moda-interact-api/src/billing/purchase-history/routes.ts"
+    },
+    {
+      "id": "E58",
+      "method": "POST",
+      "path": "/v1/billing/recovery-credit-purchases",
+      "decision": "Retain REQUESTED purchase plus intent atomicity; strengthen principal gate and reuse write results.",
+      "increment": 13,
+      "evidence_file": "woocommerce-api-database-review-13-source-evidence.txt",
+      "route_source": "moda-interact-api/src/billing/commands/routes.ts"
+    },
+    {
+      "id": "E59",
+      "method": "POST",
+      "path": "/v1/billing/webhooks/woocommerce",
+      "decision": "Retain durable receipt acceptance, exact raw digest and duplicate integrity lookup; no extra outbox.",
+      "increment": 13,
+      "evidence_file": "woocommerce-api-database-review-13-source-evidence.txt",
+      "route_source": "moda-interact-api/src/woocommerce/billing/webhooks/woo-billing-webhook-route.ts"
+    },
+    {
+      "id": "E60",
+      "method": "GET",
+      "path": "/health/live",
+      "decision": "Retain zero-database dependency and bounded process-only response.",
+      "increment": 13,
+      "evidence_file": "woocommerce-api-database-review-13-source-evidence.txt",
+      "route_source": "moda-interact-api/src/server.ts"
+    },
+    {
+      "id": "E61",
+      "method": "GET",
+      "path": "/health/ready",
+      "decision": "Retain SELECT 1 and safe response; bound underlying probe work, not just response deadline.",
+      "increment": 13,
+      "evidence_file": "woocommerce-api-database-review-13-source-evidence.txt",
+      "route_source": "moda-interact-api/src/server.ts"
+    }
+  ]
+}

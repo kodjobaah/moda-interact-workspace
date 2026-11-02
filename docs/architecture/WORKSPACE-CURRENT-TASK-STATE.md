@@ -1867,3 +1867,9 @@ published at `a7f2a940a`. All declared dependencies of
 `ARCH-049-SYSTEM-TEST-001` are now Complete. The system-test task is `Ready`,
 Attempt 0, with no claim. It remains terminal/manual-gated and requires explicit
 developer invocation before execution; this frontier update does not launch it.
+
+## ARCH-052-BACKGROUND-018 Attempt 4 architect acceptance — 2026-11-01
+
+`ARCH-052-BACKGROUND-018` is Complete / Accepted at Attempt 4. The review confirmed the distinction between caller cancellation and the service-owned optional-source deadline, and between an unavailable F2 fence and an available changed fence. The task report records the worktree and start-of-attempt synchronization evidence reconstructed from task worktree registrations, commit ancestry and remote-ref reflogs.
+
+`ARCH-052-SYSTEM-TEST-001` and `ARCH-052-SYSTEM-TEST-002` remain Pending; `ARCH-052-BACKGROUND-017` is still in review, so neither system-test dependant is Ready.
