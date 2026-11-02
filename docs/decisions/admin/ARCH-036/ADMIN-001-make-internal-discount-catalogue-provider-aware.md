@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: ["ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
-updated: 2026-10-14
+updated: 2026-11-02
 ---
 
 # ARCH-036-ADMIN-001 — Show provider-aware discount provenance in Moda Admin
@@ -36,7 +36,7 @@ Make Admin discount catalogue and recovery policy presentation provider-aware wi
 ## Context
 
 
-The existing Admin console reads discount rows and ShopSettings/override FK. BACKGROUND-001 adds **Woo rows only** into the same table. For Woo, `providerStatus` is provider lifecycle and `isAvailable` is merchant selection; for Shopify, `isAvailable` retains its existing provider-availability meaning. Background owns Woo provider synchronisation; API-002 owns Woo merchant checkbox changes. Admin must not conflate these platform-specific meanings.
+The existing Admin console reads discount rows and ShopSettings/override FK. BACKGROUND-001 adds **Woo rows only** into the same table. For Woo, `providerStatus` is provider lifecycle and `isAvailable` is merchant selection; for Shopify, accepted ARCH-052-BACKGROUND-009 also makes `isAvailable` merchant selection; provider availability is represented separately. Background owns Woo provider synchronisation; API-002 owns Woo merchant checkbox changes. Admin must keep merchant selection and provider validity distinct on both platforms.
 
 ## Scope
 
@@ -51,7 +51,7 @@ Update internal list/filter/badges and recovery override presentation for **Woo*
 
 ## Requirements
 
-- For Woo, never interpret `isAvailable=false` as deleted/provider unavailable; show unselected ACTIVE coupons as provider-valid. For Shopify, preserve the existing meaning: `isAvailable` is provider availability, not the merchant checkbox.
+- For Woo, never interpret `isAvailable=false` as deleted/provider unavailable; show unselected ACTIVE coupons as provider-valid. For Shopify, preserve the accepted ARCH-052-BACKGROUND-009 meaning: `isAvailable` is merchant selection; use provider status/current-catalogue/liveness fields for provider validity.
 - Only ACTIVE/current/in-date/fixedSelectable discounts can appear as eligible provider choices. Explicitly distinguish current expired, removed, unsupported and revoked/stale catalogue.
 - Admin override FIXED retains one **real same-Shop discount FK** and is independent of Woo merchant checkbox selections; use valid provider/catalogue predicates rather than requiring a Woo checkbox to be checked. Preserve Shopify override behaviour, audit and authorization without inventing multi-coupon override storage or placing Woo namespace in an FK.
 - No SQL/schema changes, historical row deletions, security/role expansion or cross-tenant catalogue leakage.
@@ -157,3 +157,7 @@ To be determined after implementation inspection.
 ### Follow-up
 
 Await canonical materialisation, execution and review.
+
+## Definition reconciliation — 2026-11-02
+
+Admin main 420b86a still filters running/selectable discounts using isAvailable:true in src/lib/admin/data.ts (around lines 342–370), and tenant-recovery-settings.tsx presents Shopify-specific catalogue/override labels. Provider-aware Woo display and checkbox-independent Woo override choices remain unimplemented. Apply the corrected Shopify selection semantics above and run the required tenant/override/regression tests.

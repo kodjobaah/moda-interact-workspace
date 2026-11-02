@@ -15,9 +15,9 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: ["ARCH-036-BACKGROUND-001"]
-enables: ["ARCH-036-SYSTEM-TEST-002"]
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-11-02
 ---
 
 # ARCH-036-COMMERCE-001 — Adapt existing Commerce discount evaluator for Woo normalized rules
@@ -160,3 +160,7 @@ To be determined after implementation inspection.
 ### Follow-up
 
 Await canonical materialisation, execution and review.
+
+## Definition reconciliation — 2026-11-02
+
+Explicitly deferred by the controlling ARCH-036 scope; do not promote or execute merely because BACKGROUND-001 is complete. Commerce main d0ade08 retains src/commerce/discounts/reader/reader.ts with Shopify read_discounts/fraction semantics and the existing evaluator/preview adapter; no Woo cached-rule adapter is established. Any future approved work must reuse this retained conversation/preview evaluator and must not recreate ARCH-052 initial-outreach MCP/proof infrastructure. Initial-outreach certification moved to ARCH-052-SYSTEM-TEST-002.

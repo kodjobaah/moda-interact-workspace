@@ -1,0 +1,9 @@
+# ARCH-036 Admin Tasks
+
+Architecture: [ARCH-036-shared-commerce-discount-catalogue](../../../architecture/ARCH-036-shared-commerce-discount-catalogue.md).
+
+Reconciled on 2026-11-02. Individual task frontmatter and review reports are authoritative. Superseded tasks must not be executed.
+
+| Task | Outcome | Status | Dependencies |
+|---|---|---|---|
+| [ARCH-036-ADMIN-001](ADMIN-001-make-internal-discount-catalogue-provider-aware.md) | Show provider status and merchant selection separately in Admin | ready | `ARCH-036-BACKGROUND-001` |

@@ -1873,3 +1873,10 @@ developer invocation before execution; this frontier update does not launch it.
 `ARCH-052-BACKGROUND-018` is Complete / Accepted at Attempt 4. The review confirmed the distinction between caller cancellation and the service-owned optional-source deadline, and between an unavailable F2 fence and an available changed fence. The task report records the worktree and start-of-attempt synchronization evidence reconstructed from task worktree registrations, commit ancestry and remote-ref reflogs.
 
 `ARCH-052-SYSTEM-TEST-001` and `ARCH-052-SYSTEM-TEST-002` remain Pending; `ARCH-052-BACKGROUND-017` is still in review, so neither system-test dependant is Ready.
+
+
+## Current reconciliation — 2 November 2026
+
+ARCH-036 through ARCH-054 were reconciled against current implementation and task-branch evidence. This dated reconciliation supersedes older status snapshots for those tasks; it does not certify unrun scenarios or override developer-controlled completion.
+
+See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.

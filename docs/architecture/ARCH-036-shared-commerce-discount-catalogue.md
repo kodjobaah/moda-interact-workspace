@@ -108,3 +108,10 @@ Already-superseded `DATABASE-001/002` remain unexecutable; the new `DATABASE-003
 - **2026-10-13 Attempt 9:** replace the global BullMQ schedule with the existing PostgreSQL global lease (`WOO_COUPON_SYNC_DISPATCH`), add one enum-only `DATABASE-003` prerequisite, retain one-off BullMQ **shop** jobs and the 30-minute per-shop refresh target. Five in-session implementation tasks plus terminal `SYSTEM-TEST-001`, without altering CommerceAgent, outbound recovery or Shopify behaviour.
 
 ARCH-036 remains Proposed. No implementation is accepted, and the document does not claim that coupon offers can be safely applied or sent.
+
+
+## Current reconciliation — 2 November 2026
+
+ARCH-036-COMMERCE-001 remains deferred. SYSTEM-TEST-002 is superseded by ARCH-052-SYSTEM-TEST-002 for the accepted current initial-outreach contract. Shopify and Woo isAvailable flags both represent merchant selection; provider validity remains separate.
+
+See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.

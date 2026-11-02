@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-036-BACKGROUND-001", "ARCH-036-API-002", "ARCH-036-WOOCOMMERCE-003", "ARCH-036-ADMIN-001"]
 enables: []
 created: 2026-10-12
-updated: 2026-10-13
+updated: 2026-11-02
 ---
 
 # ARCH-036-SYSTEM-TEST-001 — Certify shared catalogue sync and merchant selection
@@ -53,7 +53,7 @@ Black-box Background + authenticated API-owned provider connection + database + 
 
 - Exercise full multi-page background-provider coupon fetching with verified Woo REST read grant, direct outbound canonical URL/TLS/SSRF constraints, expired/removed/restricted coupon handling and incomplete generation fail-closed.
 - Assert real Woo rows use `woo:coupon:<id>`, `providerSnapshot` JSONB, provider lifecycle status separate from `isAvailable` merchant flags. New rows unchecked, active resync preserves checkboxes; transient provider error cannot clear selections.
-- Test two Woo merchants plus Shopify: shop isolation, current ACTIVE/fixedSelectable checked and unchecked UI rows, paging/search, two-stage WordPress navigation and 20 locales. Assert Shopify `isAvailable` remains provider availability and existing single-FK merchant selection is unchanged.
+- Test two Woo merchants plus Shopify: shop isolation, current ACTIVE/fixedSelectable checked and unchecked UI rows, paging/search, two-stage WordPress navigation and 20 locales. Assert Shopify `isAvailable` remains merchant selection under accepted ARCH-052-BACKGROUND-009, with provider status/liveness checked separately; preserve the existing fixed-override FK.
 - Save multiple checkbox selections through API-002 with one real same-Shop FK anchor for Woo FIXED; reject invalid/foreign/conflicting/empty FIXED writes atomically. Prove no Shopify flag-alignment migration is needed and existing one-FK merchant behaviour remains unchanged on **unchanged SQL schema**.
 - Confirm grant revocation, rotation/missing keyring and LocalWP unreachable-host constraints have honest blocked/unavailable outcomes; never present provider failure as an empty successful catalogue. Run system tests only after all listed implementation tasks are accepted.
 
@@ -84,7 +84,7 @@ None within this session. Commerce/outreach certification is separately deferred
 
 ## Acceptance Criteria
 
-- [ ] Woo selection flags and provider availability are independent; Shopify retains its existing provider-availability meaning for `isAvailable`.
+- [ ] Woo selection flags and provider availability are independent; Shopify also retains the accepted merchant-selection meaning of `isAvailable` from ARCH-052-BACKGROUND-009, with provider validity checked independently.
 - [ ] Active unselected coupons are visible; expired/removed coupons cannot be selected.
 - [ ] `FIXED` FK/constraint pass with one real Woo row while multiple flags are selected.
 - [ ] All provider/data isolation and Shopify compatibility checks pass.
@@ -164,3 +164,7 @@ To be determined after implementation inspection.
 ### Follow-up
 
 Await canonical materialisation, execution and review.
+
+## Definition reconciliation — 2026-11-02
+
+Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Incomplete prerequisites: ARCH-036-ADMIN-001: ready. Status pending does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.
