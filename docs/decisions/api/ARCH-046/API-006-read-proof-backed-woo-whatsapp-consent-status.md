@@ -275,4 +275,4 @@ Materialise and execute this developer-owned task when ready; verify actual WOO-
 
 ## Definition reconciliation — 2026-11-02
 
-The canonical task report is Ready for Attempt 1 rework, not unstarted Attempt 0. Implementation 53df5aa adds src/woocommerce/consent-status/{routes,service,contract}.ts; additional uncommitted PHP compatibility fixtures, timing assertions and diagnostic redaction changes are present. Preserve the developer self-review correction contract and existing claim/attempt metadata. Those active edits are not accepted or published by this reconciliation.
+The canonical task report is Ready following Attempt 1 self-review; the next claim starts Attempt 2, not an unstarted Attempt 0. Implementation 53df5aa adds src/woocommerce/consent-status/{routes,service,contract}.ts; additional uncommitted PHP compatibility fixtures, timing assertions and diagnostic redaction changes are present. Preserve the developer self-review correction contract and existing claim/attempt metadata. Those active edits are not accepted or published by this reconciliation.

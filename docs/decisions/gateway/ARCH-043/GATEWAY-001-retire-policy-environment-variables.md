@@ -42,7 +42,7 @@ updated: 2026-11-02
 - Architecture: `ARCH-043` — `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Proposed schema/key contract: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Repository owner: `moda-interact-gateway` / `moda_gateway`.
-- Portable definition only: **defined but not materialised**; task worktrees, claims and Git commits must be established by normal task launcher.
+- Parent task definition is materialised on `task/ARCH-043-GATEWAY-001`; route-only verification resolves this canonical file as Ready. Attempt remains 0 with no execution claim. Prepare the implementation worktree and claim through the normal task launcher.
 
 ## Objective
 
