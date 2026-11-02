@@ -21,6 +21,7 @@ The individual task YAML is authoritative. BACKGROUND-009 is Complete; the other
 | [ARCH-052-BACKGROUND-011](BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | Enrich source-backed Shopify discount condition facts | Complete | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
 | [ARCH-052-BACKGROUND-012](BACKGROUND-012-upload-trusted-meta-image-template-sample.md) | Upload fixed Moda sample to Meta and attach a returned handle only in the provider IMAGE create request | Ready | `ARCH-052-ADMIN-002`, `ARCH-047-BACKGROUND-003` |
 | [ARCH-052-BACKGROUND-013](BACKGROUND-013-capture-complete-shopify-combination-identities.md) | Capture Shopify discount classes and own combination tags | Complete | `ARCH-052-BACKGROUND-011` |
+| [ARCH-052-BACKGROUND-018](BACKGROUND-018-guarantee-initial-no-offer-text-after-enrichment-failure.md) | Send approved neutral initial TEXT when optional enrichment fails | Complete | `ARCH-052-BACKGROUND-008`, `ARCH-052-ADMIN-004`, `ARCH-052-BACKGROUND-005` |
 
 BACKGROUND-009's repository-wide validation reconciliation is complete; its task record remains authoritative for the review evidence.
 
