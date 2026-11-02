@@ -1,5 +1,5 @@
 {
-  "definition_revision": 2,
+  "definition_revision": 3,
   "tasks": [
     {
       "task_id": "ARCH-055-DATABASE-001",
@@ -110,12 +110,12 @@
         {
           "path": "src/woocommerce/rest-read/authorization.service.ts",
           "baseline_exists": true,
-          "action": "MODIFY begin/revoke and callback commit to call the current-principal helper inside their existing/new short transaction. Begin INSERT stays inside that transaction. Revoke updateMany filters installationId/shopId/credentialVersionSnapshot/status=PENDING, with no expiresAt exclusion, and sets FAILED/consumedAt/current existing failureCode; then revokes the current grant atomically. Old-generation attempts are not targeted. Callback constructs the expected principal from its original token-resolved installation snapshot, not from an unauthenticated request body; no network verification inside its commit transaction."
+          "action": "MODIFY begin/revoke and callback commit to call the current-principal helper inside their existing/new short transaction. Begin INSERT stays inside that transaction. Revoke updateMany filters installationId/shopId/credentialVersionSnapshot/status=PENDING, with no expiresAt exclusion, and sets FAILED/consumedAt/current existing failureCode; then revokes the current grant atomically. Old-generation attempts are not targeted. Callback constructs the expected principal from its original token-resolved installation snapshot, not from an unauthenticated request body; no network verification inside its commit transaction. Revision3: map only typed principal-gate mismatches to WooReadAuthorizationError(409, shop_unavailable), preserving cause with an appended optional ErrorOptions constructor argument; unexpected helper-read failures retain the existing 500/internal_error route."
         },
         {
           "path": "src/woocommerce/rest-read/authorization.service.ts",
           "baseline_exists": true,
-          "action": "MODIFY callback lost-consumption/P2034 handling: end the failed transaction, reload token-bound attempt and its currently selected grant; acknowledge only a matching SUCCEEDED attempt with matching selected authorizationAttemptId/shop/install binding. Do not rotate/mint on acknowledgement; a revoked matching grant may be acknowledged without reactivation. Superseded/missing/mismatched evidence remains the existing conflict. Recognised domain errors retain safe statuses; actual database/provider failures retain original causes."
+          "action": "MODIFY callback lost-consumption/P2034 handling: end the failed transaction, reload token-bound attempt and its currently selected grant; acknowledge only a matching SUCCEEDED attempt with matching selected authorizationAttemptId/shop/install binding. Do not rotate/mint on acknowledgement; a revoked matching grant may be acknowledged without reactivation. Superseded/missing/mismatched evidence remains the existing conflict. Recognised domain errors retain safe statuses; actual database/provider failures retain original causes. Revision3: map only typed principal-gate mismatches to WooReadAuthorizationError(409, shop_unavailable), preserving cause with an appended optional ErrorOptions constructor argument; unexpected helper-read failures retain the existing 500/internal_error route."
         },
         {
           "path": "src/woocommerce/rest-read/authorization.routes.ts",
@@ -138,8 +138,8 @@
       "test_cases": [
         {
           "id": "A01",
-          "fixture": "Authenticate, pause before admission; rotate/revoke/suspend, then resume begin/revoke/callback commit",
-          "expected": "No stale mutation or grant; no additional provider call caused by conflict; existing caller error mapping preserved."
+          "fixture": "Authenticate/token-resolve; pause before helper; rotate/revoke/suspend, then resume start/revoke/callback commit",
+          "expected": "409 shop_unavailable, no new mutation; callback may have one prior verification but no repeat. Unexpected helper-read failure: 500 internal_error. Exact envelopes and replay200 defined in canonical revision-3 table."
         },
         {
           "id": "A02",
@@ -162,7 +162,8 @@
           "expected": "No immediate create reread; exact/stale writes suppressed as before, newer timestamp still advances."
         }
       ],
-      "registration": "Add principal-races to new scripts/test-arch055-installation-postgres.mjs and lifecycle-races to scripts/test-woocommerce-rest-read-authorization-postgres.mjs. Add the new unit file explicitly to this task Validation. Existing brand runner remains."
+      "registration": "Add principal-races to new scripts/test-arch055-installation-postgres.mjs and lifecycle-races to scripts/test-woocommerce-rest-read-authorization-postgres.mjs. Add the new unit file explicitly to this task Validation. Existing brand runner remains.",
+      "acceptance_clarification": "docs/decisions/api/ARCH-055/API-001-harden-installation-and-read-authorization-lifecycle.md#exact-public-outcomes-for-the-new-principal-gate--revision-3"
     },
     {
       "task_id": "ARCH-055-API-002",
@@ -302,8 +303,8 @@
         },
         {
           "id": "C03",
-          "fixture": "Feature changed/no-op/stale and Admin eligibility change during PUT",
-          "expected": "Original policy/fingerprint preserved; timings contain distinct initial/final phases with no overwrite."
+          "fixture": "C03a mapping disable after admission; C03b disable before admission; C03c current/stale no-op controls; exact barriers in canonical task",
+          "expected": "C03a: 200, stored/returned enabled=true; planEligible/editable/effective/required=false; revision equals later GET and differs from R0; initial/final timings distinct. C03b: old R0=>409 feature_preferences_conflict, fresh disabled Rd=>409 feature_preferences_denied, no write. C03c: current no-op200/no write/no final reload; stale no-op409 conflict."
         },
         {
           "id": "C04",
@@ -316,7 +317,8 @@
           "expected": "Single summary statement keeps default, source and safe failure semantics."
         }
       ],
-      "registration": "Run the category test through the new settings runner; append the feature test to scripts/test-arch035-feature-preferences-postgres.mjs. API-009 alone updates aggregate package.json integration wiring."
+      "registration": "Run the category test through the new settings runner; append the feature test to scripts/test-arch035-feature-preferences-postgres.mjs. API-009 alone updates aggregate package.json integration wiring.",
+      "acceptance_clarification": "docs/decisions/api/ARCH-055/API-003-consolidate-merchant-settings-and-category-projections.md#exact-c03-schedule-and-expected-response--revision-3"
     },
     {
       "task_id": "ARCH-055-API-004",
@@ -571,17 +573,17 @@
         {
           "path": "src/billing/commands/recurring-intent.ts",
           "baseline_exists": true,
-          "action": "CALL accepted API-001 current-principal helper at new/replay transaction admission before Subscription lock; reuse its locked Shop fields. Do not resolve credentials after persisting a new intent. Keep original expected revision/current quote comparisons."
+          "action": "CALL accepted API-001 current-principal helper at new/replay transaction admission before Subscription lock; reuse its locked Shop fields. Do not resolve credentials after persisting a new intent. Keep original expected revision/current quote comparisons. Revision3: typed principal mismatch maps to the respective domain error 409/billing_shop_invalid with cause and no operation/purchase/provider IDs; unknown helper-read failure propagates to 500/internal_error."
         },
         {
           "path": "src/billing/commands/recovery-credit-intent.ts",
           "baseline_exists": true,
-          "action": "CALL accepted API-001 current-principal helper at new/replay transaction admission before Subscription lock; reuse its locked Shop fields. Do not resolve credentials after persisting a new intent. Keep original expected revision/current quote comparisons."
+          "action": "CALL accepted API-001 current-principal helper at new/replay transaction admission before Subscription lock; reuse its locked Shop fields. Do not resolve credentials after persisting a new intent. Keep original expected revision/current quote comparisons. Revision3: typed principal mismatch maps to the respective domain error 409/billing_shop_invalid with cause and no operation/purchase/provider IDs; unknown helper-read failure propagates to 500/internal_error."
         },
         {
           "path": "src/billing/commands/recurring-intent.ts",
           "baseline_exists": true,
-          "action": "Replace all recurring history load/sort with bounded findFirst over exact unresolved OR applicable confirmed cancellation predicate; include provider reference and Free-terminal-reset exception, not last-N history."
+          "action": "Replace all recurring history load/sort with bounded findFirst over exact unresolved OR applicable confirmed cancellation predicate; include provider reference and Free-terminal-reset exception, not last-N history. Revision3: typed principal mismatch maps to the respective domain error 409/billing_shop_invalid with cause and no operation/purchase/provider IDs; unknown helper-read failure propagates to 500/internal_error."
         },
         {
           "path": "src/billing/commands/recurring-outcome.ts",
@@ -596,7 +598,7 @@
         {
           "path": "src/billing/commands/recovery-credit-intent.ts",
           "baseline_exists": true,
-          "action": "Select purchase ID only from create. Reuse accepted materialisation contract from API-001, preserving warm/cold validation and no early paid/credit activation."
+          "action": "Select purchase ID only from create. Reuse accepted materialisation contract from API-001, preserving warm/cold validation and no early paid/credit activation. Revision3: typed principal mismatch maps to the respective domain error 409/billing_shop_invalid with cause and no operation/purchase/provider IDs; unknown helper-read failure propagates to 500/internal_error."
         },
         {
           "path": "src/woocommerce/billing/initial-free-activation.service.ts",
@@ -607,6 +609,16 @@
           "path": "src/woocommerce/billing/woo-billing-client.ts",
           "baseline_exists": true,
           "action": "Preserve original transport/read/parse cause, HTTP status and bounded safe provider details through typed errors; public/durable codes unchanged; do not log headers/raw bodies/confirmation URLs or retry uncertain writes."
+        },
+        {
+          "path": "src/billing/commands/recurring-command-error.ts",
+          "baseline_exists": true,
+          "action": "APPEND optional ErrorOptions after all existing constructor parameters and pass to super(code, options); keep existing callers/public envelope unchanged. Use exact canonical revision-3 gate mapping; do not discard the helper cause."
+        },
+        {
+          "path": "src/billing/commands/recovery-credit-command-error.ts",
+          "baseline_exists": true,
+          "action": "APPEND optional ErrorOptions after all existing constructor parameters and pass to super(code, options); keep existing callers/public envelope unchanged. Use exact canonical revision-3 gate mapping; do not discard the helper cause."
         }
       ],
       "new_files": [
@@ -615,8 +627,8 @@
       "test_cases": [
         {
           "id": "G01",
-          "fixture": "Real auth then reconnect/revoke before create/cancel/switch/purchase admission",
-          "expected": "Reject stale before durable intent/provider call; current principal still works."
+          "fixture": "Real auth then reconnect/revoke/suspend before create/cancel/switch/purchase admission, including existing-key replay",
+          "expected": "409 billing_shop_invalid with no IDs/providerErrorCode, no new durable rows/provider calls; existing rows unchanged. Unexpected helper-read failure: 500 internal_error. Current principal works; post-admission outcome unchanged."
         },
         {
           "id": "G02",
@@ -639,7 +651,8 @@
           "expected": "Original redacted diagnostics; existing safe output and no blind provider resend."
         }
       ],
-      "registration": "Append to scripts/test-arch041-billing-postgres.mjs, which already owns billing migrations/outcomes. Fixture must create a real installation/authenticator, not a constructed principal only."
+      "registration": "Append to scripts/test-arch041-billing-postgres.mjs, which already owns billing migrations/outcomes. Fixture must create a real installation/authenticator, not a constructed principal only.",
+      "acceptance_clarification": "docs/decisions/api/ARCH-055/API-007-harden-durable-billing-command-admission.md#exact-billing-admission-errors--revision-3"
     },
     {
       "task_id": "ARCH-055-API-008",
@@ -949,5 +962,6 @@
       ],
       "registration": "Use existing runner suite selection. Exact package additions remain system:arch055:plan=node scripts/run-system-tests.js --suite arch055 --list and system:arch055=node scripts/run-system-tests.js --suite arch055 --execute."
     }
-  ]
+  ],
+  "api_measurement_contract": "docs/architecture/ARCH-055/task-definition-contract.md#repeatable-api-evidence-protocol--revision-3"
 }

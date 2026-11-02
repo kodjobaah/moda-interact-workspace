@@ -25,3 +25,7 @@ No `_index.md`, existing task status, schema or runtime source file is part of t
 Read `task-definition-contract.md` and `deterministic-execution-map.json` with the canonical tasks. Database has exact Prisma fragments, complete expected forward SQL, package additions and F/U tests; consumer tasks have exact edit maps/interfaces/regression outcomes. Workflow policy stays in services. No new task or endpoint was added.
 
 This revision is a documentation-only follow-up to the original attempt1 packet. Do not apply it over active implementation claims/reports or an already executed conflicting ARCH-055 migration without reconciliation. The frozen review-ledger/report/inventory files are unchanged.
+
+## Definition revision 3
+
+Small follow-up to unchanged revision-2 definitions: exact REST/billing current-principal error mappings, feature-preference C03a–c outcomes, and fixed API measurement profiles. Read the three amended task files and the shared `task-definition-contract.md`; `deterministic-execution-map.json` points to the authoritative contracts. The task manifest marks only API-001/003/007 as revision3; other task texts remain revision2. Thirteen tasks, all execution metadata/dependencies, Database SQL and frozen review files are unchanged. Do not apply over live claims/reports without reconciliation.
