@@ -251,3 +251,10 @@ Add `woocommerce.auth` as a sealed platform-owned `{consumerKey,consumerSecret}`
 DATABASE-001 originally introduced two key-specific secret CHECK allowlists. The developer reports having authored a forward migration to remove those restrictions; this migration must be verified and applied before enabling writes to the three additional purposes. No `ARCH-043-DATABASE-002` task will be created. Database generic integrity, uniqueness and append-only audit remain required. Secret purpose allowlisting, sealed-value validation and redacted audit enforcement are now owned by authorised server-side writers/readers; prohibit untrusted direct SQL writes and document the reduced database-level defence in depth. `ARCH-043-ADMIN-002` owns the Admin secret writer **and** its Auth.js DB-backed cutover; Commerce's equivalent is within COMMERCE-001/002. Complete system tests only after the consumers' actual source changes, validation and approved rollout. No `_index.md` change in this decision patch.
 
 Admin Auth.js bootstrap and DB-only cutover remain inside `ARCH-043-ADMIN-002`; no additional Admin authentication cutover task is created.
+
+
+## Current reconciliation — 2 November 2026
+
+The current task inventory and canonical 001 cutover/certification definitions govern remaining work. Accepted messaging.meta direct database reads supersede the historical Messaging exclusion for that purpose only. No private resolver route is introduced.
+
+See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.

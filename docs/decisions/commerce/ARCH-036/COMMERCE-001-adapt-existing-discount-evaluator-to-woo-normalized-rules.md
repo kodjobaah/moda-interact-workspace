@@ -9,15 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: ["ARCH-036-BACKGROUND-001"]
-enables: ["ARCH-036-SYSTEM-TEST-002"]
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-11-02
 ---
 
 # ARCH-036-COMMERCE-001 — Adapt existing Commerce discount evaluator for Woo normalized rules
@@ -27,11 +27,11 @@ updated: 2026-10-12
 - Architecture ID: `ARCH-036`.
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`.
-- Portable canonical task definition; **defined but not materialised**. No Git branch, worktree, commit or push has been made.
+- Canonical parent task definition is published on `task/ARCH-036-COMMERCE-001`. Implementation remains unclaimed; prepare it through `/moda_developer_create` before editing application code.
 
 ## Objective
 
-Reuse ARCH-020 deterministic discount rule/evidence machinery for normalized Woo coupons without introducing a second evaluator.
+Extend the retained Commerce deterministic discount reader/evaluator and local preview operations to consume existing Woo catalogue facts. Reuse one evaluator and preserve existing Shopify behavior. This is cached, advisory evaluation, not proof that Woo will redeem a coupon.
 
 ## Context
 
@@ -40,7 +40,7 @@ Commerce already contains deterministic discount reader/evaluator machinery for 
 
 ## Scope
 
-Add provider-neutral cached-rule reader/adapter for Woo `percent` and `fixed_cart` coupon snapshots, relying on the existing evidence evaluator and trusted basket facts. Do not implement storefront writes or an independent Commerce coupon database.
+Implement a Commerce-owned, tenant-scoped Woo cached-rule adapter and wire it into the existing `discounts.getOptions` / `discounts.evaluate` local operation path in `src/commerce/preview/local-policy-providers.ts`, using the existing reader/evaluator contracts. Inspect the current dispatch and trusted basket/product-fact adapters before editing; route by the authoritative Shop platform, never by an untrusted offer identifier. Support only demonstrably representable `percent` and `fixed_cart` facts. No background conversation worker or ARCH-052 initial-outreach change is required.
 
 ## Out of Scope
 
@@ -51,23 +51,25 @@ Add provider-neutral cached-rule reader/adapter for Woo `percent` and `fixed_car
 
 ## Requirements
 
-
-- Normalize supported Woo `percent` and `fixed_cart` rules from existing `providerSnapshot`, current `providerStatus`, `fixedSelectable`, timestamps and trusted basket facts. For FIXED use selected-only candidates; for AI include all supported ACTIVE candidates. Do not conflate merchant checkbox selection with provider/current/checkout eligibility.
-- Preserve existing Shopify single-FK reader/evaluator inputs and regression fixtures. The adapter does not authenticate to WooCommerce or fetch Woo coupons; only Background owns direct live proof.
-- Verify the existing CommerceAgent operation uses the adapted evaluator. Background-003 independently owns send-time coupon proof and must not depend on this task; Commerce evaluation alone never certifies outbound proof or warrants a new cross-service schema.
-- Fail closed for unsupported rules, unknown facts or missing provenance; no new Shared contract, DB model or additional outbound side effects.
+- Read the current same-Shop catalogue and discount rows, including provider identity, lifecycle, freshness, expiry, merchant selection and bounded `providerSnapshot` facts. `isAvailable` is merchant selection on both platforms, not provider validity. Reject foreign-Shop and wrong-provider IDs before evaluating them.
+- For Woo merchant NONE return no options; FIXED uses valid checked candidates; AI_BEST_APPLICABLE uses valid supported candidates regardless of checked state. Honor an existing effective Admin single-FK override independently of merchant checked flags. Do not change Shopify policy semantics or store additional policy state.
+- Inspect the actual snapshot producer `src/providers/woo-coupon-normalization.ts` in Background. Optional or absent attributes do not prove absence of restrictions. `providerStatus=ACTIVE` and `fixedSelectable` establish catalogue/code usability, not checkout eligibility. Never fabricate trusted currency, tax basis, rounding/allocation, usage, email, category, sale-item or customer facts to obtain ELIGIBLE.
+- Woo percentage amounts use percentage units (for example 10 means 10%); the existing Shopify reader accepts fractions (0.10 means 10%). Use a provider-specific conversion into the common rule model with decimal-safe handling; retain Shopify boundary regressions. Fixed-cart rules require trusted matching currency and supported amount/allocation semantics.
+- Incomplete, malformed, stale or unsupported facts produce existing UNKNOWN/UNSUPPORTED/error outcomes; evaluate known failed conditions as ineligible. Preserve cancellation, deadlines, bounded pagination and existing evidence provenance/fingerprinting. Do not present cached evidence as a provider redemption guarantee.
+- Wire the adapter through the actual existing Commerce local-operation registrations, not only a standalone helper. Woo evaluation must not require Shopify `read_discounts`, a Shopify session/domain or a fabricated Shopify product identity. Use existing trusted basket/product-fact inputs; when a required Woo input is unavailable, return UNKNOWN/unavailable rather than fetch live Woo data or silently fall back to Shopify. Any genuinely missing cross-service contract is an architect blocker.
+- Preserve published operation inputs/results and evidence contracts. No new Shared release, schema, direct Woo provider fetch, coupon mutation, redemption, outbound send or second evaluator. ARCH-052 owns current initial-outreach runtime and source validation; retired ARCH-036-BACKGROUND-003 is not a dependency or proof consumer.
 
 ## Work Items
 
-- [ ] Map supported Woo snapshot rules into existing evaluator inputs.
-- [ ] Reuse/extend existing deterministic evidence adapters, not duplicate logic.
-- [ ] Add provider-separated Shopify/Woo evaluation, tie/unknown/invalid-rule tests.
-- [ ] Document proof consumer inputs required by Background runtime.
+- [ ] Trace the current options/evaluation registration, effective policy and trusted basket inputs; record the concrete integration seam.
+- [ ] Implement tenant/provider-scoped cached Woo rule reads and explicit unit/unknown-condition mapping into the retained evaluator.
+- [ ] Integrate existing options/evaluation operations with provider dispatch and preserve Shopify authorization and behavior.
+- [ ] Add focused operation-level tests for Woo policies/override, invalid/foreign IDs, stale/partial data, deadlines and Shopify regression.
+- [ ] Document exactly which cached facts can be evaluated and which remain UNKNOWN; do not claim outbound or provider redemption certification.
 
 ## Interfaces / Contracts
 
-
-Existing ARCH-020 Commerce discount reader/evaluator interfaces and current shared package exports where already in use, **not** new ARCH-036 Shared exports. Existing `providerSnapshot` data produced by BACKGROUND-001. Background-003 owns selection/reverification/outbound.
+Existing ARCH-020 Commerce reader/evaluator, `DiscountRuleSnapshot`, local operation and published evidence contracts; existing Shop policy and Woo `providerSnapshot` rows from accepted ARCH-036-BACKGROUND-001. Internal Commerce adapters may change within this task. Published cross-service contracts and ARCH-052 initial-outreach code remain unchanged.
 
 ## Dependencies
 
@@ -76,20 +78,22 @@ Existing ARCH-020 Commerce discount reader/evaluator interfaces and current shar
 
 ## Enables
 
-
-- `ARCH-036-SYSTEM-TEST-002`
+None. The retired ARCH-036-SYSTEM-TEST-002 is not reactivated. ARCH-052 initial-outreach certification does not depend on this cached-evaluator work.
 
 ## Acceptance Criteria
 
-- [ ] Woo FIXED evaluator considers selected alternatives, AI considers all supported ACTIVE coupons.
-- [ ] One eligible offer result maximum, no stacking/false claim.
-- [ ] Missing provenance and unsupported restrictions are denied or UNKNOWN.
-- [ ] Existing Shopify evaluator regression fixtures pass.
+- [ ] Real local options/evaluation registrations reach the Woo adapter for an authenticated Woo Shop; Shopify operations retain their existing provider path.
+- [ ] NONE/FIXED/AI and effective Admin override obey the rules above, with same-Shop/provider isolation and no forced Shopify credentials for Woo.
+- [ ] A complete supported fixture with trusted basket facts yields the correct deterministic evidence; incomplete or unsupported real snapshots cannot produce fabricated eligibility.
+- [ ] Woo 10% and Shopify 0.10 normalization agree, without unit mixing; fixed-cart currency/rounding uncertainty fails closed.
+- [ ] One offer is evaluated per evaluation operation; no new stacking, coupon application or one-offer limit is imposed on ARCH-052 initial outreach.
+- [ ] Existing Shopify reader/evaluator/preview regression fixtures pass; no new schema, published contract or outbound behavior is introduced.
 
 ## Validation
 
-- [ ] Commerce focused evaluator/reader integration and property-style fixtures
-- [ ] Declared Commerce typecheck/lint/test/build and `git diff --check`
+- [ ] Focused reader/evaluator tests plus registered local-operation integration covering Woo success, UNKNOWN/unsupported, merchant modes, override precedence, tenant/provider rejection, stale catalogue and cancellation/deadline.
+- [ ] Existing Shopify reader/evaluator/preview tests, including percentage normalization and fixed-policy behavior.
+- [ ] Run repository-declared typecheck, changed-file lint, build and `git diff --check`; report any existing unrelated failure accurately. Use disposable PostgreSQL for database-backed integration when required by the actual test path; never test against persistent merchant data.
 
 ## Stop Condition
 
@@ -160,3 +164,7 @@ To be determined after implementation inspection.
 ### Follow-up
 
 Await canonical materialisation, execution and review.
+
+## Definition reconciliation — 2026-11-02
+
+The earlier four-task-session deferral is lifted by the developer’s explicit request on 2 November 2026 to correct this definition so implementation can begin. This bounded Commerce evaluator/preview work is now Ready; ARCH-036-BACKGROUND-001 is Complete. The old Background-003 proof ownership, retired SYSTEM-TEST-002 dependency and initial-outreach one-offer assumption are removed. Implementation remains unclaimed at Attempt 0, with developer-controlled completion: architect acceptance followed by an explicit developer completion decision.

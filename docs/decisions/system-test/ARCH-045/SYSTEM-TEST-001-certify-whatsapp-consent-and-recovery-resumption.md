@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -27,7 +27,7 @@ depends_on:
   - ARCH-045-BACKGROUND-005
 enables: []
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-11-02
 ---
 # Certify Shopify phone-consent sync and normal reconciliation gating
 
@@ -187,3 +187,7 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Definition reconciliation — 2026-11-02
+
+Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Every declared prerequisite is Complete in the reconciled records; dependency readiness is satisfied. Status ready does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.

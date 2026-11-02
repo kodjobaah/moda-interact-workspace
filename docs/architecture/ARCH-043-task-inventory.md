@@ -73,3 +73,10 @@ The snapshot has DATABASE-001 and ADMIN-002 Complete; SHOPIFY-001 is therefore m
 The earlier historical statement that there is no Messaging runtime integration is superseded for **`messaging.meta` only**. Define exactly one new task, `ARCH-043-MESSAGING-001` (`docs/decisions/messaging/ARCH-043/MESSAGING-001-database-backed-meta-webhook-credentials.md`), owner `moda_messaging`, status **Ready in the supplied snapshot**, depends on Complete `ARCH-043-DATABASE-001` and `ARCH-043-ADMIN-002`. The definition is **portable; not materialised or claimed**. The existing historical task inventory tables/statuses above remain an as-of-date record and must not be treated as updated live branch state.
 
 All implementation, tests and `pg` dependency additions occur in **`moda-interact-messaging`**. Only the already published Shared Node crypto/logging APIs are consumed. **No new Shared primitive, Shared task, publication gate, Prisma schema, database migration or other repository implementation** is authorised. External Render DB/unseal provisioning is necessary before hosted cutover but is not performed by this Messaging task. Existing System Test tasks are neither started nor given new dependencies by this amendment.
+
+
+## Current reconciliation — 2 November 2026
+
+The canonical GATEWAY-001 and SYSTEM-TEST-001 definitions absorb the retired 002 drafts; duplicate 001 files are removed. Both depend on accepted Messaging and Background credential consumers. Required keyrings/config-unseal roots and explicitly accepted authentication fallback remain protected. Earlier snapshot statuses and exclusions are historical.
+
+See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.

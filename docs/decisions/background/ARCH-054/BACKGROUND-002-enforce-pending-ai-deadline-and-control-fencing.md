@@ -164,3 +164,7 @@ Pending
 ### Follow-up
 
 None
+
+## Definition reconciliation — 2026-11-02
+
+Background main 10e72d7 still uses conversation-turn-processor.service.ts control ownership checks and has no pendingAiNotBeforeAt/pendingAiControlRevision enforcement in runtime source. Frozen-deadline scheduling, original control-revision fencing and final-admission behavior remain unimplemented; BACKGROUND-001 validation is still a prerequisite.

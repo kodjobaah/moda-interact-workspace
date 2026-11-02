@@ -34,7 +34,7 @@ depends_on:
   - ARCH-045-BACKGROUND-005
 enables: []
 created: 2026-10-23
-updated: 2026-10-29
+updated: 2026-11-02
 ---
 
 # ARCH-048-SYSTEM-TEST-001 — Certify Woo multi-generation checkout recovery
@@ -192,3 +192,7 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Definition reconciliation — 2026-11-02
+
+Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Incomplete prerequisites: ARCH-046-WOOCOMMERCE-003: in_progress. Status pending does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.
