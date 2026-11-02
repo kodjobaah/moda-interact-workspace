@@ -9,17 +9,17 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-11-02T21:41:52Z
+attempt: 1
 depends_on: []
 enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: '2026-11-02'
+updated: 2026-11-02
 ---
 
 # ARCH-055-API-003: Consolidate merchant settings and category projections
