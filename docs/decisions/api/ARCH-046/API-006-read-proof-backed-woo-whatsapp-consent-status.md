@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-11-01T23:22:48Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-046-API-007
@@ -86,13 +86,13 @@ Implement the missing **read-only, installation-authenticated, proof-backed** `P
 
 ## Work Items
 
-- [ ] Implement exact `woo.whatsapp-consent-status.v1` request/response types, strict bounded parser and stable route error contract, separate from the v2 **write** parser.
-- [ ] Implement evidence-first, tenant- and installation-scoped indexed read comparing grant evidence with the **current** CustomerPhone decision, revision and sequence; confirm no mutation or queue work.
-- [ ] Register actual HTTP dispatch in `src/composition/woocommerce.ts`, `src/composition/routes.ts` and `src/index.ts`, preserving existing consent-write dispatch and authentication.
-- [ ] Add unit tests for request authentication/headers/version/body limits, exact status response, no PII and safe error propagation.
-- [ ] Add disposable PostgreSQL tests for current grant, lost-ACK duplicate, REVOKE/newer GRANT, wrong tenant/installation/phone, old revision, ended phone, rotation and database failure.
-- [ ] Add a real HTTP contract test (authenticated API + Woo client contract fixture) and documented request/response examples; add only the minimal focused test scripts to `package.json` if the existing runner is insufficient.
-- [ ] Inspect and record database query count/timing as measured results and regression-check absence of billing/feature queries, writes and recovery/send side effects.
+- [x] Implement exact `woo.whatsapp-consent-status.v1` request/response types, strict bounded parser and stable route error contract, separate from the v2 **write** parser.
+- [x] Implement evidence-first, tenant- and installation-scoped indexed read comparing grant evidence with the **current** CustomerPhone decision, revision and sequence; service query tests enforce one joined read and no feature/subscription query.
+- [x] Register status dispatch in `src/composition/woocommerce.ts`, `src/composition/routes.ts` and `src/index.ts`, preserving existing consent-write dispatch and authentication.
+- [x] Add unit tests for authentication order, headers/version/body limits, exact status response, no-store behavior and generic error propagation.
+- [ ] Complete disposable PostgreSQL coverage for the full required matrix. Current integration exercises current grant, wrong event/phone, other shop, REVOKE/newer GRANT, credential rotation and revoked installation; it does not explicitly exercise lost-ACK status replay, same-shop alternate installation, ended phone, old revision as a separate case, or a database failure through the integrated route.
+- [ ] Complete a real HTTP contract test against the Woo PHP client contract fixture. The authenticated API route is exercised through `createWooRoutes` and `composeApiRoutes`, and the PHP validator was inspected, but no cross-repository fixture invokes/verifies the client contract.
+- [ ] Record query timing and explicitly prove absence of writes and all recovery/send side effects. Integration records three observed SQL statements and one joined evidence query; the requirement for measured status-query timing and the full no-side-effect assertion remains incomplete.
 
 ## Interfaces / Contracts
 
@@ -140,13 +140,13 @@ No implementation task depends on a system-test task. Do not reopen API-007 or s
 ## Acceptance Criteria
 
 - [ ] A real API-007 v2 GRANT acknowledged by Woo produces a server-held proof that API-006 returns `CONFIRMED_GRANTED` for the same installed merchant/shop/current canonical phone, with **no additional consent write** on page hydration.
-- [ ] Same-shop matching phone with missing/forged/wrong-event proof is `UNVERIFIED`; no phone-only, customer-ID-only or account-ID-only authority is accepted. A separate shop using the same phone cannot learn or reuse that proof.
-- [ ] REVOKE, stale evidence after later checkbox decisions and account/recipient/installation mismatch never return confirmed; a replayed old GRANT cannot restore checked state.
-- [ ] Unauthorized/revoked/rotated installation, invalid HTTP/body/version and DB outage reject with correct bounded status and no leaked details; no stale grant is confirmed following a prior committed revocation.
-- [ ] HTTP 200 responses exactly match `woo.whatsapp-consent-status.v1` `{schemaVersion,state}`, with `no-store` and no PII; actual Woo `wooConsentStatus()` accepts them without changing its existing validator.
-- [ ] Status reads do not query subscription/feature preferences, create CheckoutRecovery, enqueue any job, send Meta messages, alter CustomerPhone or evidence, or commit billing/credits.
-- [ ] Original errors are available in safe server-side Shared diagnostics without swallowing/replacing the underlying provider error; no sensitive request material in logs.
-- [ ] All required API unit/PostgreSQL/HTTP contract validation passes and Completion Report includes exact changed files, measured query evidence and dedicated physical-worktree/start-of-attempt provenance.
+- [x] Same-shop wrong-event/phone and cross-shop same-phone probes return `UNVERIFIED`; no caller-supplied customer or installation fields are accepted. Missing evidence is tested as `UNVERIFIED` at the service/unit boundary.
+- [ ] REVOKE, stale evidence and credential rotation are covered, but same-shop alternate installation, ended-phone and explicit account/customer mismatch integration cases remain untested.
+- [x] Unauthorized/revoked installation, malformed HTTP/body/version and a database failure are covered by route/unit tests; REVOKE followed by an old proof returns `UNVERIFIED`. The DB-failure case is a mocked route failure, not a disposable PostgreSQL outage.
+- [ ] Exact HTTP 200 body and `no-store` are verified through the real composed API HTTP route, and the current PHP validator was inspected; automated compatibility with the actual Woo client fixture remains unverified.
+- [ ] Unit SQL inspection excludes subscription/feature queries and the integration checks no recovery rows for the covered flow; no complete assertion yet proves there are no writes, enqueued jobs, sends or billing/credit effects for every status probe.
+- [ ] The route preserves provider error metadata and has phone-redaction tests, but redaction tests do not prove event/shop/customer/installation identifiers cannot appear in error message, stack or cause.
+- [ ] Focused unit/PostgreSQL, typecheck and build pass. Repository lint has one unrelated `no-empty` error; query timing, full PostgreSQL matrix and automated Woo client contract validation are still outstanding, so full acceptance is not demonstrated.
 
 ## Validation
 
@@ -173,23 +173,37 @@ After the Work Items, Acceptance Criteria and required Validation are complete, 
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-11-01T23:22:48Z. Attempt 0 review history is preserved below.
+Developer Self-Review — Changes Requested, Attempt 1. The endpoint, composition wiring and core proof checks are implemented, and focused unit, PostgreSQL, typecheck and build validation pass. Acceptance is not demonstrated: required PostgreSQL scenarios, the Woo PHP contract fixture, measured query timing/full no-side-effect assertions, and complete diagnostic redaction evidence remain outstanding. Repository-wide lint reports one error in unchanged `src/merchant/support/routes.ts`. Attempt 1 execution claim is cleared; do not increment the attempt until the next developer claim.
 
 ### Files Changed
 
-None (implementation not started).
+- Implementation commit `53df5aa` changes 16 API files: status-v1 contract/parser/service/route, composition wiring, OpenAPI and HTTP documentation, focused unit and PostgreSQL tests, package script, and disposable integration runner. No implementation worktree files are uncommitted.
+- Parent task file updated for this developer self-review; no unrelated task or index file changed.
 
 ### Work Completed
 
-None.
+- Implemented the read-only authenticated status route. It returns the exact two-key status-v1 body with `Cache-Control: no-store`; uses the existing Woo installation authenticator; and performs one joined, parameterized evidence/current-consent SQL read after authentication.
+- The SQL scopes evidence to authenticated shop, installation, event and phone; joins the current CustomerPhone and shop-scoped Customer; checks active Woo installation/shop and credential version; requires matching GRANT purpose, decision, source, revision, decision sequence, verification fields, and excludes ended phones.
+- The actual route is registered in the HTTP composition path. Tests instantiate a real HTTP server around `composeApiRoutes`, exercise the real v2 writer and status handler, and verify one joined evidence query, cross-shop rejection, stale proof after REVOKE/newer GRANT, credential rotation and revoked installation behavior.
+- Reviewed `ModaApiClient::wooConsentStatus()` and confirmed its exact successful response keys/version/state match the API response shape. Automated invocation of the Woo PHP client or a cross-repository contract fixture was not found.
+- No schema, Woo PHP source, billing, recovery, queue, or message-send behavior was changed.
 
 ### Validation Results
 
-Not run. Test commands above are required for execution, not reported as passed.
+- Environment: macOS, Node `v24.21.0`, npm `11.19.0`; API package pins Node `24.19.0`; database submodule at the launcher-prepared revision. Implementation task worktree is clean and its task branch tracks the remote.
+- `npm run test:arch046-woo-consent-status:unit`: passed, 10/10 tests.
+- `npm run test:arch046-woo-consent:unit`: passed, 6/6 tests.
+- `npm run test:arch046-woo-consent:postgres`: passed, 12/12 integration tests on a disposable PostgreSQL database after all 68 migrations. The status route reported `actual_status_read_sql_statements=3; joined_evidence_queries=1`; this is count evidence, not query timing. No end-to-end status-probe duration was recorded.
+- `npm run typecheck`: passed.
+- `npm run build`: passed.
+- `npm run lint`: failed on the existing unrelated `src/merchant/support/routes.ts:75` `no-empty` diagnostic. No task-changed files were implicated.
+- Focused `npx eslint src/woocommerce/consent-status src/composition/routes.ts src/composition/woocommerce.ts src/index.ts tests/unit/woocommerce/consent-status tests/unit/composition/routes.test.ts tests/integration/woocommerce/consent-status scripts/test-arch046-woo-consent-postgres.mjs`: passed with no diagnostics.
+- `git diff --check origin/main...HEAD`: passed. No implementation files are uncommitted.
+- Integration-runner output reported 12/12 pass. Three other containers with the runner's name prefix were present from earlier runs (created at 23:24, 23:25 and 23:44 UTC); their database names did not match this run's database, so none were removed. The current run's dedicated database name was not among those containers. Do not claim global prefix cleanup from this check.
 
 ### Deviations
 
-None.
+- This review does not mark the task passing because the acceptance criteria require more than the current focused evidence. The specific remaining coverage/evidence gaps are listed in Work Items, Acceptance Criteria and Developer Self-Review below.
 
 ### Assumptions
 
@@ -197,17 +211,47 @@ The API-007 v2 writer and the WOO-003 status client remain the agreed transport 
 
 ### Unresolved Issues
 
-The developer must verify API-007 and ARCH-045 schema pins on the actual prepared API task branch before implementation. The older missing status endpoint is not fixed by defining this task.
+- Add disposable PostgreSQL cases for lost-ACK status replay, same-shop alternate installation, ended phone, explicit old revision and DB failure as applicable to the fixture contract.
+- Add the Woo PHP client contract fixture/compatibility test; record status-query duration as well as SQL statement count and assert absence of writes/side effects.
+- Expand diagnostic redaction tests to cover event/shop/customer/installation identifiers in error message, stack and cause without dropping safe provider name/code/status.
+- Repository lint has an unrelated existing error in `src/merchant/support/routes.ts:75`.
 
 ### Architectural Concerns
 
 None requiring a new schema or service. Returning-checkout identity is bound locally in Woo; the API independently verifies an exact authenticated grant/current-recipient tuple. If a different principal-binding contract is needed, stop and return to `moda_architect` rather than inventing browser identity fields.
 
-## Architect Review
+## Developer Self-Review — Changes Requested (Attempt 1)
+
+### Review Outcome
+
+Changes Requested. The current endpoint implementation and focused validations are promising, but required evidence and several explicitly named integration scenarios are incomplete. This is a review result, not a completion decision. The task transitions to `ready`; `executor` and `claimed_at` are cleared; `attempt` remains 1.
+
+### Required Corrections
+
+1. Extend the disposable PostgreSQL status scenarios to verify lost-ACK duplicate/replay behavior, same-shop alternate installation rejection, ended CustomerPhone rejection, explicit stale-revision behavior, and database failure handling at the appropriate integration boundary.
+2. Add an automated compatibility fixture/test for the actual Woo `wooConsentStatus()` response validator, rather than relying only on source inspection and matching JSON literals.
+3. Measure status-read duration and query timing in the disposable integration test, and assert the status probe performs no writes or recovery/send/billing side effects. Retain the existing one joined evidence query assertion.
+4. Prove diagnostic redaction for event, shop, customer and installation identifiers across error message, stack and cause. Keep safe provider error name/code/status while preventing sensitive identifiers from reaching logs.
+5. Rerun the focused unit and disposable PostgreSQL suites, typecheck, build, changed-file lint and `git diff --check`; retain the repository-wide lint result as an unrelated existing failure unless the owner resolves it.
+
+### Evidence Reviewed
+
+- API implementation branch commit `53df5aa` (`feat(arch046-api-006)`), published on `origin/task/ARCH-046-API-006`; changed 16 files, with no uncommitted implementation changes.
+- Parent task branch initially at `e7db39226`, with developer claim commit `d9e16f187`; dedicated parent and implementation worktrees are clean before this review update.
+- Focused status unit tests 10/10; existing consent unit tests 6/6; disposable PostgreSQL integration 12/12; typecheck/build passed; changed-file lint passed; full lint failed only at unchanged `src/merchant/support/routes.ts:75` (`no-empty`).
+- The PostgreSQL integration logged three SQL statements for status and one joined evidence query. Query timing was not measured. The integration assertions do not cover the full scenario matrix listed above.
+- The Woo PHP validator was inspected and uses the same exact status-v1 schema/state keys, but no cross-repository executable compatibility fixture was run.
+- A check found three unrelated pre-existing containers matching the disposable runner prefix; their database names were different from this run. They were not removed because ownership was not established.
+
+### Lifecycle
+
+`status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. The next `/moda_developer_create ARCH-046-API-006` claim creates Attempt 2. Completion remains pending; do not mark Complete until a passing review and explicit developer completion decision.
+
+## Architect Review — Initial Definition
 
 ### Review Status
 
-Pending — no implementation submitted.
+Pending at task definition time; no API implementation had been submitted for architect review then. The later Attempt 1 implementation and developer self-review are recorded above.
 
 ### Review Notes
 
