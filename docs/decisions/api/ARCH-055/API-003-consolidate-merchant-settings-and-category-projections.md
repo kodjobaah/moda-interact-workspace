@@ -28,6 +28,8 @@ updated: '2026-11-02'
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
+**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `ready` solely from the dependency graph below.
 
 ## Objective
@@ -56,13 +58,38 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 - `scripts/test-arch041-cross-domain-postgres.mjs`
 - `scripts/test-arch054-ai-response-delay-postgres.mjs`
 
+Additional explicit registration/module paths for this revision:
+
+- `scripts/test-arch055-merchant-settings-postgres.mjs`
+
+### Exact edit map — definition revision 2
+
+Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
+
+| File / symbol touchpoint | Deterministic edit |
+|---|---|
+| `src/merchant/store-categories/store-categories-read.service.ts; src/merchant/store-categories/profile-read.ts` | MODIFY read(): choose a short RepeatableRead transaction (not an alternative design); include principal, catalogue, profile and environment configuration reads in that tx. Extend the local read database port with $transaction; no FOR UPDATE/FOR SHARE on category GET. |
+| `src/merchant/store-categories/selection-publication.ts` | TRACK newly created lineage. Only that branch skips draft/latest reads and publishes revision=1. Pending-draft branch uses exact id/promptId/status=DRAFT update and requires count=1, removing its pre-read. Existing-lineage checks remain. |
+| `src/merchant/feature-preferences/service.ts; src/merchant/feature-preferences/timing.ts` | NARROW selected scalar/relation fields without changing fingerprint inputs. Name first-load phases initial.subscriptionLookupMs/initial.featuresLookupMs/initial.preferencesLookupMs/initial.projectionMs and reload phases final.*. Preserve overall timers, sequential changed upserts and final reload. |
+| `src/merchant/recovery-policy/service.ts; src/merchant/ai-response-delay/service.ts` | NARROW settings/override selections to projection/revision fields. Retain recovery-policy old-revision identical replay versus AI-delay revision-before-no-op; AI minutes 0..30 integers/default0. |
+| `src/merchant/recovery-summary/recovery-summary.service.ts` | CONSOLIDATE principal/settings/override into one parameterised statement returning one joined tenant row (LEFT JOIN optional settings/override). Validate identity in the service and project the existing policy/default/expiry semantics. No reporting metrics or writes. |
+| `scripts/test-arch055-merchant-settings-postgres.mjs` | CREATE canonical migration runner for existing bootstrap/store-context/category-read/category-write fixtures plus the new coherent-read race suite. Keep old aggregate runner untouched until API-009 reconciliation. |
+
+**Exact new implementation/test paths (not baseline files claimed to exist):**
+
+- `scripts/test-arch055-merchant-settings-postgres.mjs`
+- `tests/integration/merchant/store-categories/arch055-coherent-read.postgres.test.ts`
+- `tests/integration/merchant/feature-preferences/arch055-admin-interleaving.postgres.test.ts`
+
+**Test registration:** Run the category test through the new settings runner; append the feature test to scripts/test-arch035-feature-preferences-postgres.mjs. API-009 alone updates aggregate package.json integration wiring.
+
 ## Out of Scope
 
 No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, new microservice/queue, speculative index migration, live payment/refund certification, public schema version change, autonomous follow-on task, or implementation outside the owning repository. No `_index.md` edits. Keep retained endpoint behaviour under regression, rather than manufacturing source changes for every reviewed route.
 
 ## Requirements
 
-1. Category GET must return a coherent profile/configuration selection: use one actual statement or a short read-only Repeatable Read snapshot. Do not use FOR UPDATE to serialize GETs. Test publication between former reads. Do not transfer complete prompt text merely to calculate eligibility unless exact whitespace semantics cannot yet be preserved in a tested projection.
+1. Category GET must return a coherent profile/configuration selection: use the short read-only Repeatable Read transaction selected in the exact edit map below. Do not use FOR UPDATE to serialize GETs. Test publication between former reads. Do not transfer complete prompt text merely to calculate eligibility unless exact whitespace semantics cannot yet be preserved in a tested projection.
 
 2. Category publication remains Serializable and atomic. For a newly created lineage, skip redundant draft/latest-history lookups and publish revision one; existing lineages keep their checks. Fold pending-draft ownership/status validation into an exact-one conditional update. Preserve subscription, generation, source-evidence and configuration guards.
 
@@ -78,6 +105,10 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 
 8. Preserve original causes in all touched domain wrappers. Consolidate read-only identity queries locally only where every field/predicate survives; do not introduce a universal auth cache or weaken mutation locks. Migrate category/bootstrap/context fixtures rather than weakening canonical constraints. ARCH-055-API-009 owns package.json aggregate wiring for the existing AI-delay runner.
 
+### Evidence-only choices and exact scope precedence
+
+The exact edit map selects the mandatory implementation pattern for this revision. All earlier wording such as MEASURE-FIRST, MEASURE/DECIDE, "may", "only after SQL validation" or optional batching/index/lock alternatives means **measure and retain the baseline in this task** unless the exact map explicitly selects that change. Return evidence/recommendation for a later architect amendment; the executor does not invent a third alternative or silently broaden the acceptance contract. Schema changes are authorised only by DATABASE-001's exact SQL. New source/test files are only the named additions; unexpected paths, missing pinned capabilities or migration-name conflicts are stop-and-report conditions.
+
 ### Common execution and safety contract
 
 - Read this task, the parent architecture, `docs/observability/shared-logging.md` and the four workspace VCS/worktree/developer/materialisation policies. Use the launcher-resolved dedicated parent and implementation worktrees; do not invent paths or start another task. A prepared launcher packet is accepted startup evidence.
@@ -86,7 +117,7 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 - Shared logging is `@modainteract/moda-interact-shared/logging`. Preserve the actual original Prisma/SDK/provider message, code, cause and relevant safe response details through typed errors. Internal reason codes supplement, never replace, that evidence. Redact secrets, signed capabilities, customer content and connection URLs; public responses stay bounded. No generic local logger or duplicate framework telemetry.
 - Preserve tenant scoping, canonical Shared schemas, immutable evidence, deliberate no-op/replay rules and original provider ambiguity. No provider/Redis/R2 I/O inside a database transaction. Read endpoints remain free of writes unless an explicitly unchanged contract says otherwise.
 - Review baseline observations are static. Run regression tests against canonical migrations on disposable PostgreSQL 17 + pgvector, using separate connections and explicit barriers for races. Do not substitute mocks, `db push` or review-only Python models for lock/trigger proof.
-- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. Optional MEASURE-FIRST items can conclude 'retain', with evidence and rationale; mandatory correctness changes cannot be deferred this way.
+- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. MEASURE-FIRST/MEASURE-DECIDE items are evidence-only in this revision: retain baseline behaviour, record the named experiment and recommend to the architect; do not implement an optional alternative without a separate scope amendment; mandatory correctness changes cannot be deferred this way.
 - Existing baseline failures are handled through `docs/development-baseline.md` only when actually encountered and relevant. Do not waive new regressions. Record commands actually executed and leave unavailable validations unchecked.
 - Do not edit any `docs/decisions/**/_index.md`, old task status, the parent architecture, another task or shared execution rollup from a repository implementation task. Parent report updates are confined to this task file. No merge or push to main.
 
@@ -124,18 +155,32 @@ None. The source baseline is context, not a fabricated dependency on historical 
 - [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
+### Required regression matrix — definition revision 2
+
+Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
+
+| Case | Fixture / operation | Required result |
+|---|---|---|
+| C01 | Publish profile B/config B between the previous two profile/config reads | GET returns all A or all B, never old profile with new provenance. |
+| C02 | First lineage, existing empty lineage, valid/foreign/published pending draft | Only genuinely new lineage uses revision1 shortcut; invalid draft affects zero rows and full rollback. |
+| C03 | Feature changed/no-op/stale and Admin eligibility change during PUT | Original policy/fingerprint preserved; timings contain distinct initial/final phases with no overwrite. |
+| C04 | AI delay 0/1/30, negative/fraction/31; policy old-revision identical replay | Original allowed/rejected values and deliberately different replay rules unchanged. |
+| C05 | No settings/override, active override, expired override, malformed row | Single summary statement keeps default, source and safe failure semantics. |
+
+No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
+
 ## Validation
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
 - [ ] `npx tsx --test "tests/unit/merchant/store-categories/*.test.ts" "tests/unit/merchant/store-context/*.test.ts" "tests/unit/merchant/feature-preferences/*.test.ts" "tests/unit/merchant/recovery-policy/*.test.ts" "tests/unit/merchant/ai-response-delay/*.test.ts"`
-- [ ] `node scripts/test-woocommerce-installation-postgres.mjs`
+- [ ] `node scripts/test-arch055-merchant-settings-postgres.mjs`
 - [ ] `node scripts/test-arch035-feature-preferences-postgres.mjs`
 - [ ] `node scripts/test-arch041-cross-domain-postgres.mjs`
 - [ ] `node scripts/test-arch054-ai-response-delay-postgres.mjs`
 - [ ] `npm run typecheck`
 - [ ] `git diff --check`
-- [ ] Run the repository's declared linter against the exact changed source/test files; record any broader unchanged baseline failure separately.
+- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition

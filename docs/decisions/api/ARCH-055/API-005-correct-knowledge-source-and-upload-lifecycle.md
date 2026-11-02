@@ -29,6 +29,8 @@ updated: '2026-11-02'
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
+**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
 
 ## Objective
@@ -50,17 +52,39 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 - `scripts/test-arch035-merchant-knowledge-postgres.mjs`
 - `scripts/test-arch035-knowledge-upload-postgres.mjs`
 
+### Exact edit map — definition revision 2
+
+Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
+
+| File / symbol touchpoint | Deterministic edit |
+|---|---|
+| `src/merchant/merchant-knowledge/commands.service.ts` | RETURN locked principal fields rather than reread; use a writer entitlement projection without the unused preference lookup. For web PATCH/refresh/URL-change/DELETE mutations use id+shopId+currentGeneration=expectedGeneration and exact-one result; keep source/revision atomicity and existing no-op/replay rules. |
+| `src/merchant/merchant-knowledge/read.service.ts` | REPLACE ACTIVE groupBy+fetch with direct ACTIVE findMany for the page source IDs. Preserve latest-vs-ACTIVE distinction and best-effort multi-query contract; no new encompassing transaction. |
+| `src/merchant/merchant-knowledge/commands.service.ts` | ORDER/compact only rows whose final position changes; stage positive unique positions above current maximum, then final positions in deterministic order. Require safe integer range and no intermediate collision; full membership and atomic rollback remain. Untouched row updatedAt stays unchanged. |
+| `src/merchant/merchant-knowledge/upload.service.ts` | INTENT: write intentPurposeKey once and compare it with all existing format/file/MIME/hash/size retry metadata. PENDING null legacy purpose conflicts; never infer/bind it. New key stays based on original Shop/request identity, not purpose. |
+| `src/merchant/merchant-knowledge/upload.service.ts` | FINALISE: in committing transaction keep Shop/installation checks, then SELECT the same-Shop asset FOR NO KEY UPDATE, recheck state/expiry/purpose/file metadata/MIME after lock wait. For replacement next lock/revalidate the source generation. Hold asset/source coordination through AVAILABLE+original revision insert. Cleanup takes asset FOR UPDATE; the entitlement writer locks source and inserts a revision whose FK can take asset KEY SHARE. NO KEY UPDATE is selected to avoid an incompatible asset-key lock while waiting for that source; test this exact competing writer. Do not wait on provider/R2 under these locks. |
+| `src/merchant/merchant-knowledge/upload.service.ts` | AVAILABLE replay: find original intake using uploadedAssetId + reason IN (CREATE,FILE_REPLACE), take2 and require exactly one valid same-Shop/source/format/purpose binding; return its persisted sourceId/revisionId/generation. Do not select arbitrary/latest REPROCESS. Legacy completed null-purpose assets require original source purpose to prove the request binding. |
+| `src/merchant/merchant-knowledge/upload.service.ts; openapi/merchant-knowledge-v1.yaml` | Bound existing-upload eligibility to first K eligible sources with target fields, including web sources in rank; skip identical metadata after validation. Keep reprocess generation CAS/two writes and preflight contract; document existing 409 and sequential append, no new request field. |
+
+**Exact new implementation/test paths (not baseline files claimed to exist):**
+
+- `tests/integration/merchant/merchant-knowledge/arch055-generation-races.postgres.test.ts`
+- `tests/integration/merchant/merchant-knowledge/arch055-upload-lifecycle.postgres.test.ts`
+- `tests/integration/merchant/merchant-knowledge/arch055-ordering.postgres.test.ts`
+
+**Test registration:** Add generation/order files to scripts/test-arch035-merchant-knowledge-postgres.mjs; add upload file to scripts/test-arch035-knowledge-upload-postgres.mjs. No schema copies/migrations in API.
+
 ## Out of Scope
 
 No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, new microservice/queue, speculative index migration, live payment/refund certification, public schema version change, autonomous follow-on task, or implementation outside the owning repository. No `_index.md` edits. Keep retained endpoint behaviour under regression, rather than manufacturing source changes for every reviewed route.
 
 ## Requirements
 
-1. Web PATCH/DELETE/refresh/URL change must put shopId, source ID and the expected generation in the actual conditional mutation and require exactly one changed row, or revalidate under a correctly ordered source lock. Test against the real Background entitlement-generation writer, not only another API request. Preserve metadata-only versus ingestion changes, unique revision insertion rollback and current refresh duplicate semantics.
+1. Web PATCH/DELETE/refresh/URL change must put shopId, source ID and the expected generation in the actual conditional mutation and require exactly one changed row, as fixed in the exact edit map; do not substitute an ID-only mutation after an earlier read. Test against the real Background entitlement-generation writer, not only another API request. Preserve metadata-only versus ingestion changes, unique revision insertion rollback and current refresh duplicate semantics.
 
 2. Upload intent must persist and compare intentPurposeKey with the already persisted retry metadata. The existing deterministic Shop/request-key asset ID is unchanged. Changed purpose conflicts even when both purposes accept the same format. Old pending assets with null purpose are not rebound: return a safe conflict requiring a new intent/key; they expire naturally. Do not delete storage or invent historical purpose.
 
-3. Finalisation retains preliminary validation -> external HEAD/bounded GET/hash -> final transaction. In the final transaction coordinate with cleanup using a freshly locked asset (or equivalent exact guarded transition held through revision insertion), recheck status, tenant, immutable metadata, purpose, expiry after waits, current MIME membership and target source/generation. Cleanup-wins must reject without resurrection; finalisation-wins must leave a committed reference cleanup respects.
+3. Finalisation retains preliminary validation -> external HEAD/bounded GET/hash -> final transaction. In the final transaction coordinate with cleanup using the asset FOR NO KEY UPDATE lock selected below, held through revision insertion, recheck status, tenant, immutable metadata, purpose, expiry after waits, current MIME membership and target source/generation. Cleanup-wins must reject without resurrection; finalisation-wins must leave a committed reference cleanup respects.
 
 4. AVAILABLE replay resolves the single original CREATE/FILE_REPLACE intake revision, never an arbitrary REPROCESS/ENTITLEMENT_CHANGE. Validate ownership/binding and return its original sourceId/revisionId/generation. Missing or ambiguous intake evidence fails closed; existing completed unbound legacy assets remain readable/reprocessable and may replay only where original-intake evidence proves the request binding.
 
@@ -76,6 +100,10 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 
 10. Preserve original exceptions through web-command wrappers; upload routes already retain original diagnostics and must not regress. Measure live/expired intent counts but do not add speculative indexes.
 
+### Evidence-only choices and exact scope precedence
+
+The exact edit map selects the mandatory implementation pattern for this revision. All earlier wording such as MEASURE-FIRST, MEASURE/DECIDE, "may", "only after SQL validation" or optional batching/index/lock alternatives means **measure and retain the baseline in this task** unless the exact map explicitly selects that change. Return evidence/recommendation for a later architect amendment; the executor does not invent a third alternative or silently broaden the acceptance contract. Schema changes are authorised only by DATABASE-001's exact SQL. New source/test files are only the named additions; unexpected paths, missing pinned capabilities or migration-name conflicts are stop-and-report conditions.
+
 ### Common execution and safety contract
 
 - Read this task, the parent architecture, `docs/observability/shared-logging.md` and the four workspace VCS/worktree/developer/materialisation policies. Use the launcher-resolved dedicated parent and implementation worktrees; do not invent paths or start another task. A prepared launcher packet is accepted startup evidence.
@@ -84,7 +112,7 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 - Shared logging is `@modainteract/moda-interact-shared/logging`. Preserve the actual original Prisma/SDK/provider message, code, cause and relevant safe response details through typed errors. Internal reason codes supplement, never replace, that evidence. Redact secrets, signed capabilities, customer content and connection URLs; public responses stay bounded. No generic local logger or duplicate framework telemetry.
 - Preserve tenant scoping, canonical Shared schemas, immutable evidence, deliberate no-op/replay rules and original provider ambiguity. No provider/Redis/R2 I/O inside a database transaction. Read endpoints remain free of writes unless an explicitly unchanged contract says otherwise.
 - Review baseline observations are static. Run regression tests against canonical migrations on disposable PostgreSQL 17 + pgvector, using separate connections and explicit barriers for races. Do not substitute mocks, `db push` or review-only Python models for lock/trigger proof.
-- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. Optional MEASURE-FIRST items can conclude 'retain', with evidence and rationale; mandatory correctness changes cannot be deferred this way.
+- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. MEASURE-FIRST/MEASURE-DECIDE items are evidence-only in this revision: retain baseline behaviour, record the named experiment and recommend to the architect; do not implement an optional alternative without a separate scope amendment; mandatory correctness changes cannot be deferred this way.
 - Existing baseline failures are handled through `docs/development-baseline.md` only when actually encountered and relevant. Do not waive new regressions. Record commands actually executed and leave unavailable validations unchecked.
 - Do not edit any `docs/decisions/**/_index.md`, old task status, the parent architecture, another task or shared execution rollup from a repository implementation task. Parent report updates are confined to this task file. No merge or push to main.
 
@@ -124,6 +152,21 @@ The public API remains unchanged except documentation corrections explicitly aut
 - [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
+### Required regression matrix — definition revision 2
+
+Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
+
+| Case | Fixture / operation | Required result |
+|---|---|---|
+| E01 | Pause API after source read, actual-equivalent worker advances generation | Metadata PATCH/DELETE reject stale; URL/refresh rollback; no deletion of newer revision. |
+| E02 | Expired cleanup wins after pre-network read but before finalisation asset lock | No resurrection, no new revision; finalisation conflicts. Reverse schedule commits reference and cleanup skips deletion. |
+| E03 | Wait for asset lock across expiry; policy MIME changes during R2 | Recheck rejects current invalid state, no forged expiry, all writes roll back. |
+| E04 | Intent retry changes only purpose; legacy unbound pending; replay after REPROCESS | Changed purpose/unbound pending conflict; original source/revision/generation replay remains exact after later revisions. |
+| E05 | Swap adjacent pair among100; delete last source; unchanged metadata | 4 position writes for swap,0 for delete-tail compaction,0 metadata update; untouched timestamps preserved. |
+| E06 | Commit succeeds then response projection throws | Log committed outcome separately; no assumed rollback or blind new generation. |
+
+No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
+
 ## Validation
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
@@ -133,7 +176,7 @@ Run from the **implementation repository** in its launcher-resolved worktree, af
 - [ ] `npx tsx --test "tests/unit/merchant/merchant-knowledge/*.test.ts"`
 - [ ] `npm run typecheck`
 - [ ] `git diff --check`
-- [ ] Run the repository's declared linter against the exact changed source/test files; record any broader unchanged baseline failure separately.
+- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition

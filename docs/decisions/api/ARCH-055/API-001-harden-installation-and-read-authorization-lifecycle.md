@@ -30,6 +30,8 @@ updated: '2026-11-02'
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
+**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
 
 ## Objective
@@ -66,6 +68,33 @@ Required new paths (only these are allowed to be absent at startup):
 
 - `src/auth/woo-installation/current-mutation-principal.ts`
 
+Additional explicit registration/module paths for this revision:
+
+- `scripts/test-arch055-installation-postgres.mjs`
+
+### Exact edit map — definition revision 2
+
+Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
+
+| File / symbol touchpoint | Deterministic edit |
+|---|---|
+| `src/auth/woo-installation/current-mutation-principal.ts` | CREATE the transaction-only helper and error/type exports below; lock Shop FOR UPDATE before installation FOR SHARE, validate exact principal fields and return the locked Shop/onboarding values. No root client or network dependency. |
+| `src/woocommerce/installation/connection-service.ts; src/woocommerce/billing/initial-free-activation.service.ts` | MODIFY reconnect to load onboarding with its existing transaction-local Shop read; supply that loaded result to activation. Guard rotation by id/shopId/observed credentialVersion, use a returning update and require exactly one result. Preserve the original observed version over retries and proof outside the transaction. |
+| `src/woocommerce/shop-brand/service.ts` | MODIFY first-row creation to use its returned brand fields; retain existing-row locking, source timestamps and media merge logic. |
+| `src/woocommerce/rest-read/authorization.service.ts` | MODIFY begin/revoke and callback commit to call the current-principal helper inside their existing/new short transaction. Begin INSERT stays inside that transaction. Revoke updateMany filters installationId/shopId/credentialVersionSnapshot/status=PENDING, with no expiresAt exclusion, and sets FAILED/consumedAt/current existing failureCode; then revokes the current grant atomically. Old-generation attempts are not targeted. Callback constructs the expected principal from its original token-resolved installation snapshot, not from an unauthenticated request body; no network verification inside its commit transaction. |
+| `src/woocommerce/rest-read/authorization.service.ts; src/woocommerce/rest-read/authorization.routes.ts` | MODIFY callback lost-consumption/P2034 handling: end the failed transaction, reload token-bound attempt and its currently selected grant; acknowledge only a matching SUCCEEDED attempt with matching selected authorizationAttemptId/shop/install binding. Do not rotate/mint on acknowledgement; a revoked matching grant may be acknowledged without reactivation. Superseded/missing/mismatched evidence remains the existing conflict. Recognised domain errors retain safe statuses; actual database/provider failures retain original causes. |
+| `scripts/test-arch055-installation-postgres.mjs` | CREATE an installation-only canonical migrate-deploy runner using the existing disposable pg17 harness pattern; run existing connection-service suite plus the new principal race suite. Do not convert the shared db-push runner while API-003 fixtures are unfinished. |
+
+**Exact new implementation/test paths (not baseline files claimed to exist):**
+
+- `src/auth/woo-installation/current-mutation-principal.ts`
+- `scripts/test-arch055-installation-postgres.mjs`
+- `tests/unit/auth/woo-installation/current-mutation-principal.test.ts`
+- `tests/integration/woocommerce/installation/arch055-principal-races.postgres.test.ts`
+- `tests/integration/woocommerce/rest-read/arch055-lifecycle-races.postgres.test.ts`
+
+**Test registration:** Add principal-races to new scripts/test-arch055-installation-postgres.mjs and lifecycle-races to scripts/test-woocommerce-rest-read-authorization-postgres.mjs. Add the new unit file explicitly to this task Validation. Existing brand runner remains.
+
 ## Out of Scope
 
 No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, new microservice/queue, speculative index migration, live payment/refund certification, public schema version change, autonomous follow-on task, or implementation outside the owning repository. No `_index.md` edits. Keep retained endpoint behaviour under regression, rather than manufacturing source changes for every reviewed route.
@@ -74,19 +103,23 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 
 1. Implement ADR-01/04. Add the API-local current-mutation-principal port specified below. Lock Shop first, then the installation; validate canonical URL, shop binding, platform, Shop ACTIVE, installation ACTIVE/unrevoked and expected credential version. Return transaction-local Shop fields for callers; no root-client query or network operation is allowed in this helper. ARCH-055-API-007 consumes it later.
 
-2. Reconnect: reuse the transaction-local Shop/onboarding result in Free activation, and use a guarded returning update for credential rotation. Keep the pre-proof observed-version CAS, Serializable retry policy, exact Free lifetime grant, paid-subscription preservation and site-control proof outside transactions. Make feature-graph loading lazy or narrow on warm Free-plan reuse only after SQL validation; do not remove transaction-local policy/catalogue rechecks.
+2. Reconnect: reuse the transaction-local Shop/onboarding result in Free activation, and use a guarded returning update for credential rotation. Keep the pre-proof observed-version CAS, Serializable retry policy, exact Free lifetime grant, paid-subscription preservation and site-control proof outside transactions. Narrow warm Free-plan feature projections to consumed fields; lazy extra cold-path loading is evidence-only until an architect amendment; do not remove transaction-local policy/catalogue rechecks.
 
 3. Brand first creation: use the create result instead of immediately selecting it again. Preserve source ordering, worker-maintained media JSON, first-writer coordination, current installation check and writes that advance genuinely newer observation timestamps.
 
 4. REST begin/revoke: validate the current principal in the mutation transaction. Revoke only the current generation's still-PENDING attempts; terminal FAILED cancellation must not fail solely because expiry elapsed while waiting. Leave already-unusable old-generation attempts out of the cancellation set. Cancel attempts and revoke the selected grant atomically; never claim provider-side key deletion.
 
-5. Callback: provider verification remains outside the transaction. Revalidate lifecycle/version when committing; use Database mint guards; recognise a completed matching replay after a conditional-consumption or serialization race without issuing another grant or rotating a revoked one. Superseded/mismatched attempts remain conflicts. Correct overlap acknowledgement without returning success for all failures.
+5. Callback: provider verification remains outside the transaction. Revalidate lifecycle/version in API service code when committing; retain existing Database mint guards without adding new policy triggers; recognise a completed matching replay after a conditional-consumption or serialization race without issuing another grant or rotating a revoked one. Superseded/mismatched attempts remain conflicts. Correct overlap acknowledgement without returning success for all failures.
 
 6. Begin/callback/revoke errors retain actual Prisma/provider causes and distinguish invalid/stale requests from unexpected dependency failures. Generic 409/503 output does not justify discarding diagnostics. Return-page impossible-proof preflight may avoid configuration reads only if it reuses existing parser rules.
 
 7. Keep GET installation at one authenticated lookup and REST status non-locking. Measure latest-attempt ordering plans; do not add its proposed index without separate architect approval. Catalogue/status projections may be narrowed, not credential-cached.
 
-8. Convert installation tests to canonical migrations and adjust fixtures to actual constraints. Do not globally change unrelated category/bootstrap tests in the same shared harness; ARCH-055-API-003 owns their fixture changes and ARCH-055-API-009 performs final aggregate wiring.
+8. Use the new installation-only canonical runner specified below and adjust its fixtures to actual constraints. Do not convert the shared old runner while category/bootstrap fixtures are unfinished; API-003 supplies its separate canonical runner and API-009 reconciles the aggregate.
+
+### Evidence-only choices and exact scope precedence
+
+The exact edit map selects the mandatory implementation pattern for this revision. All earlier wording such as MEASURE-FIRST, MEASURE/DECIDE, "may", "only after SQL validation" or optional batching/index/lock alternatives means **measure and retain the baseline in this task** unless the exact map explicitly selects that change. Return evidence/recommendation for a later architect amendment; the executor does not invent a third alternative or silently broaden the acceptance contract. Schema changes are authorised only by DATABASE-001's exact SQL. New source/test files are only the named additions; unexpected paths, missing pinned capabilities or migration-name conflicts are stop-and-report conditions.
 
 ### Common execution and safety contract
 
@@ -96,7 +129,7 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 - Shared logging is `@modainteract/moda-interact-shared/logging`. Preserve the actual original Prisma/SDK/provider message, code, cause and relevant safe response details through typed errors. Internal reason codes supplement, never replace, that evidence. Redact secrets, signed capabilities, customer content and connection URLs; public responses stay bounded. No generic local logger or duplicate framework telemetry.
 - Preserve tenant scoping, canonical Shared schemas, immutable evidence, deliberate no-op/replay rules and original provider ambiguity. No provider/Redis/R2 I/O inside a database transaction. Read endpoints remain free of writes unless an explicitly unchanged contract says otherwise.
 - Review baseline observations are static. Run regression tests against canonical migrations on disposable PostgreSQL 17 + pgvector, using separate connections and explicit barriers for races. Do not substitute mocks, `db push` or review-only Python models for lock/trigger proof.
-- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. Optional MEASURE-FIRST items can conclude 'retain', with evidence and rationale; mandatory correctness changes cannot be deferred this way.
+- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. MEASURE-FIRST/MEASURE-DECIDE items are evidence-only in this revision: retain baseline behaviour, record the named experiment and recommend to the architect; do not implement an optional alternative without a separate scope amendment; mandatory correctness changes cannot be deferred this way.
 - Existing baseline failures are handled through `docs/development-baseline.md` only when actually encountered and relevant. Do not waive new regressions. Record commands actually executed and leave unavailable validations unchecked.
 - Do not edit any `docs/decisions/**/_index.md`, old task status, the parent architecture, another task or shared execution rollup from a repository implementation task. Parent report updates are confined to this task file. No merge or push to main.
 
@@ -113,6 +146,26 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 New API-local file `src/auth/woo-installation/current-mutation-principal.ts`: export `requireCurrentWooMutationPrincipal(tx: Prisma.TransactionClient, principal: WooInstallationPrincipal): Promise<CurrentWooMutationPrincipal>`. The returned readonly projection contains `shopId`, `installationId`, `credentialVersion`, `canonicalSiteUrl`, `shopDomain` and `onboardingCompleted`. It accepts only a transaction client and always requires ACTIVE mutation eligibility. Use an exported typed conflict error with original cause where applicable; callers map it to their existing safe public contract. This helper is not for suspended-Shop Support GETs, pure authentication probes or unauthenticated connect proof.
 
 The public API remains unchanged except documentation corrections explicitly authorised here. Database changes are consumed only after ARCH-055-DATABASE-001 acceptance/integration. Existing published Shared package exports remain authoritative; do not import sibling source.
+
+```ts
+export type CurrentWooMutationPrincipal = Readonly<{
+  shopId: string;
+  installationId: string;
+  credentialVersion: number;
+  canonicalSiteUrl: string;
+  shopDomain: string;
+  onboardingCompleted: boolean;
+}>;
+export declare class WooMutationPrincipalConflictError extends Error {
+  readonly code: "woo_mutation_principal_stale";
+  constructor(options?: ErrorOptions);
+}
+export declare function requireCurrentWooMutationPrincipal(
+  tx: Prisma.TransactionClient,
+  principal: WooInstallationPrincipal,
+): Promise<CurrentWooMutationPrincipal>;
+```
+Validation is Shop.id=principal.shopId, domain=canonicalSiteUrl, platform=WOOCOMMERCE, shopifyShopId=null, status=ACTIVE; installation.id/shopId/canonicalSiteUrl/credentialVersion equal the principal, status=ACTIVE and revokedAt=null. Return only the listed fields. Known mismatch throws the typed conflict; unexpected Prisma errors propagate unchanged. Caller maps only this conflict to its existing public endpoint contract. Never use this helper for suspended-Shop Support reads or unauthenticated connection proof.
 
 ## Dependencies
 
@@ -135,18 +188,33 @@ The public API remains unchanged except documentation corrections explicitly aut
 - [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
+### Required regression matrix — definition revision 2
+
+Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
+
+| Case | Fixture / operation | Required result |
+|---|---|---|
+| A01 | Authenticate, pause before admission; rotate/revoke/suspend, then resume begin/revoke/callback commit | No stale mutation or grant; no additional provider call caused by conflict; existing caller error mapping preserved. |
+| A02 | Expired current-generation pending attempt + new current grant; revoke | Attempt FAILED and grant REVOKED commit together; failed timestamp is current, not forged to expiry; old-generation pending rows do not block. |
+| A03 | Two callbacks both observe PENDING before verification | One grant/consumption; matching loser receives replay acknowledgement; no duplicate rotation. Superseded and mismatch losers remain conflict. |
+| A04 | Reconnect active/onboarded and uninstalled/onboarded with late activation failure | One transaction-local Shop read and returning credential result; all original paid/free balances and rollback preserved. |
+| A05 | First brand create, stale/exact/newer same-image observation | No immediate create reread; exact/stale writes suppressed as before, newer timestamp still advances. |
+
+No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
+
 ## Validation
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
 - [ ] `npm run prisma:generate`
 - [ ] `npx tsx --test "tests/unit/woocommerce/installation/*.test.ts" "tests/unit/woocommerce/rest-read/*.test.ts" "tests/unit/woocommerce/shop-brand/*.test.ts"`
-- [ ] `node scripts/test-woocommerce-installation-postgres.mjs`
+- [ ] `node scripts/test-arch055-installation-postgres.mjs`
 - [ ] `node scripts/test-woocommerce-rest-read-authorization-postgres.mjs`
 - [ ] `node scripts/test-arch049-shop-brand-postgres.mjs`
+- [ ] `npx tsx --test tests/unit/auth/woo-installation/current-mutation-principal.test.ts`
 - [ ] `npm run typecheck`
 - [ ] `git diff --check`
-- [ ] Run the repository's declared linter against the exact changed source/test files; record any broader unchanged baseline failure separately.
+- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition

@@ -29,6 +29,8 @@ updated: '2026-11-02'
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
+**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
 
 ## Objective
@@ -55,6 +57,24 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 - `src/auth/woo-installation/current-mutation-principal.ts [provided by accepted ARCH-055-API-001; consume only]`
 - `src/woocommerce/billing/initial-free-activation.service.ts [consume reviewed helper; no unrelated Free policy change]`
 
+### Exact edit map — definition revision 2
+
+Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
+
+| File / symbol touchpoint | Deterministic edit |
+|---|---|
+| `src/billing/commands/recurring-intent.ts; src/billing/commands/recovery-credit-intent.ts` | CALL accepted API-001 current-principal helper at new/replay transaction admission before Subscription lock; reuse its locked Shop fields. Do not resolve credentials after persisting a new intent. Keep original expected revision/current quote comparisons. |
+| `src/billing/commands/recurring-intent.ts` | Replace all recurring history load/sort with bounded findFirst over exact unresolved OR applicable confirmed cancellation predicate; include provider reference and Free-terminal-reset exception, not last-N history. |
+| `src/billing/commands/recurring-outcome.ts; src/billing/commands/recovery-credit-outcome.ts` | Use guarded returning update for a winning outcome; retain zero-row reread and provider-reference advisory/collision guards. No post-admission rotation veto on valid evidence. |
+| `src/billing/commands/recovery-credit-intent.ts; src/woocommerce/billing/initial-free-activation.service.ts` | Select purchase ID only from create. Reuse accepted materialisation contract from API-001, preserving warm/cold validation and no early paid/credit activation. |
+| `src/woocommerce/billing/woo-billing-client.ts` | Preserve original transport/read/parse cause, HTTP status and bounded safe provider details through typed errors; public/durable codes unchanged; do not log headers/raw bodies/confirmation URLs or retry uncertain writes. |
+
+**Exact new implementation/test paths (not baseline files claimed to exist):**
+
+- `tests/integration/billing/commands/arch055-installation-admission.postgres.test.ts`
+
+**Test registration:** Append to scripts/test-arch041-billing-postgres.mjs, which already owns billing migrations/outcomes. Fixture must create a real installation/authenticator, not a constructed principal only.
+
 ## Out of Scope
 
 No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, new microservice/queue, speculative index migration, live payment/refund certification, public schema version change, autonomous follow-on task, or implementation outside the owning repository. No `_index.md` edits. Keep retained endpoint behaviour under regression, rather than manufacturing source changes for every reviewed route.
@@ -77,6 +97,10 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 
 8. Billing webhook remains the exact raw-body-digest receipt-only acceptance path. Do not add installed auth, Shop lookups, outbox, Redis publication or a duplicate-path preliminary read.
 
+### Evidence-only choices and exact scope precedence
+
+The exact edit map selects the mandatory implementation pattern for this revision. All earlier wording such as MEASURE-FIRST, MEASURE/DECIDE, "may", "only after SQL validation" or optional batching/index/lock alternatives means **measure and retain the baseline in this task** unless the exact map explicitly selects that change. Return evidence/recommendation for a later architect amendment; the executor does not invent a third alternative or silently broaden the acceptance contract. Schema changes are authorised only by DATABASE-001's exact SQL. New source/test files are only the named additions; unexpected paths, missing pinned capabilities or migration-name conflicts are stop-and-report conditions.
+
 ### Common execution and safety contract
 
 - Read this task, the parent architecture, `docs/observability/shared-logging.md` and the four workspace VCS/worktree/developer/materialisation policies. Use the launcher-resolved dedicated parent and implementation worktrees; do not invent paths or start another task. A prepared launcher packet is accepted startup evidence.
@@ -85,7 +109,7 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 - Shared logging is `@modainteract/moda-interact-shared/logging`. Preserve the actual original Prisma/SDK/provider message, code, cause and relevant safe response details through typed errors. Internal reason codes supplement, never replace, that evidence. Redact secrets, signed capabilities, customer content and connection URLs; public responses stay bounded. No generic local logger or duplicate framework telemetry.
 - Preserve tenant scoping, canonical Shared schemas, immutable evidence, deliberate no-op/replay rules and original provider ambiguity. No provider/Redis/R2 I/O inside a database transaction. Read endpoints remain free of writes unless an explicitly unchanged contract says otherwise.
 - Review baseline observations are static. Run regression tests against canonical migrations on disposable PostgreSQL 17 + pgvector, using separate connections and explicit barriers for races. Do not substitute mocks, `db push` or review-only Python models for lock/trigger proof.
-- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. Optional MEASURE-FIRST items can conclude 'retain', with evidence and rationale; mandatory correctness changes cannot be deferred this way.
+- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. MEASURE-FIRST/MEASURE-DECIDE items are evidence-only in this revision: retain baseline behaviour, record the named experiment and recommend to the architect; do not implement an optional alternative without a separate scope amendment; mandatory correctness changes cannot be deferred this way.
 - Existing baseline failures are handled through `docs/development-baseline.md` only when actually encountered and relevant. Do not waive new regressions. Record commands actually executed and leave unavailable validations unchecked.
 - Do not edit any `docs/decisions/**/_index.md`, old task status, the parent architecture, another task or shared execution rollup from a repository implementation task. Parent report updates are confined to this task file. No merge or push to main.
 
@@ -123,6 +147,20 @@ The public API remains unchanged except documentation corrections explicitly aut
 - [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
+### Required regression matrix — definition revision 2
+
+Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
+
+| Case | Fixture / operation | Required result |
+|---|---|---|
+| G01 | Real auth then reconnect/revoke before create/cancel/switch/purchase admission | Reject stale before durable intent/provider call; current principal still works. |
+| G02 | Rotate only after admitted intent commits, then provider outcome arrives | Persist valid outcome; no credit/paid activation before verified reconciliation. |
+| G03 | No matching operation/older unresolved/confirmed cancellation/different contract/Free reset | Bounded blocker exactly equivalent to original policy; never latest-only. |
+| G04 | Outcome conditional update loses to newer durable result | Return winner by reread; no downgrade or invented success. |
+| G05 | Transport/HTTP/parse/config failure and repeated request | Original redacted diagnostics; existing safe output and no blind provider resend. |
+
+No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
+
 ## Validation
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
@@ -131,7 +169,7 @@ Run from the **implementation repository** in its launcher-resolved worktree, af
 - [ ] `npx tsx --test "tests/unit/billing/commands/*.test.ts" "tests/unit/woocommerce/billing/*.test.ts" "tests/unit/woocommerce/billing/webhooks/*.test.ts"`
 - [ ] `npm run typecheck`
 - [ ] `git diff --check`
-- [ ] Run the repository's declared linter against the exact changed source/test files; record any broader unchanged baseline failure separately.
+- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition

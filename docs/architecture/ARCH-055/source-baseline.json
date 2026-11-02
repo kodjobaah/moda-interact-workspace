@@ -91,5 +91,13 @@
   ],
   "original_ledger_sha256": "341d4a240df031c9cb5bd975122520ace92cd77fb7f3442bde52b5a1b55459cc",
   "original_report_markdown_sha256": "5d35a2b6613a95a15bef0bb4ebec92056da626075870117befb5129a7e134edc",
-  "baseline_text_normalisation": "Only trailing spaces/tabs and line endings normalised for git apply --whitespace=error-all. Substantive line content unchanged. Original source hashes retained."
+  "baseline_text_normalisation": "Only trailing spaces/tabs and line endings normalised for git apply --whitespace=error-all. Substantive line content unchanged. Original source hashes retained.",
+  "definition_revision_2": {
+    "date": "2026-11-02",
+    "example_file": "DATABASE-001-persist-woo-restore-snapshot.md",
+    "example_sha256": "6c62ea6917f9f1f671b6619e6b6f331de5d64ebab52d0a31e8928acf8a7c1f91",
+    "predecessor_patch_sha256": "bae359ff14ccd605e2718963f3be058999f61dac83a1ced27cb279be934e39eb",
+    "basis": "user-requested deterministic task definitions and forward migrations; API-owned business policy",
+    "runtime_validation": "not executed; definition/patch checks only"
+  }
 }

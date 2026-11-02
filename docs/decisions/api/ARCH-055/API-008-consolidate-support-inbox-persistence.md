@@ -28,6 +28,8 @@ updated: '2026-11-02'
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
+**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `ready` solely from the dependency graph below.
 
 ## Objective
@@ -47,13 +49,29 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 - `tests/integration/merchant/support/`
 - `scripts/test-arch035-woo-support-postgres.mjs`
 
+### Exact edit map — definition revision 2
+
+Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
+
+| File / symbol touchpoint | Deterministic edit |
+|---|---|
+| `src/merchant/support/read.service.ts` | CHOOSE one parameterised data statement (CTEs allowed) for page plus total/unread after existing principal checks; the empty page still returns aggregate. Keep transaction ReadCommitted and existing share locks. Join AVAILABLE translation using unique messageId/targetLanguageTag, not latest-row lateral query. |
+| `src/merchant/support/commands.service.ts` | Compose combines thread create/conflict bookkeeping/version into initial UPSERT RETURNING id, then message/translation writes inside same tx. Replay check remains before write. Mark-read remains unchanged conditional-write/winner-reread algorithm. |
+| `src/merchant/support/translation-queue.ts` | Replace empty Queue error listener with safe original-error logging through injected shared logger. Queue add stays after commit and existing durable repair unchanged. |
+
+**Exact new implementation/test paths (not baseline files claimed to exist):**
+
+- `tests/integration/merchant/support/arch055-snapshot-and-thread.postgres.test.ts`
+
+**Test registration:** Append to scripts/test-arch035-woo-support-postgres.mjs. Existing selection callers using installation.ts must pass unchanged tests; no global helper-policy rewrite.
+
 ## Out of Scope
 
 No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, new microservice/queue, speculative index migration, live payment/refund certification, public schema version change, autonomous follow-on task, or implementation outside the owning repository. No `_index.md` edits. Keep retained endpoint behaviour under regression, rather than manufacturing source changes for every reviewed route.
 
 ## Requirements
 
-1. Adopt ADR-05: page items and total/unread count must represent one statement/snapshot. Prefer a single parameterised support-data projection including the empty-page aggregate; alternatively use a short Repeatable Read GET after testing principal/share-lock interaction. Keep all existing visibility, language, tenant and system-message recovery-link checks.
+1. Adopt ADR-05: page items and total/unread count must represent one statement/snapshot. Use the single parameterised support-data statement including the empty-page aggregate selected below; preserve existing transaction isolation and principal/share-lock semantics. Keep all existing visibility, language, tenant and system-message recovery-link checks.
 
 2. Replace latest-row lateral translation machinery with the unique messageId/targetLanguageTag left join, preserving AVAILABLE filtering, missing-translation visibility and body suppression. Measure the emitted plan; do not add an index already supplied by uniqueness.
 
@@ -65,6 +83,10 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 
 6. Suspended Shops retain approved read/mark access but not compose access. ARCH-055-API-002 consumes the installation helper for its existing checks; any shared-helper edit must preserve those callers and their focused regressions. No global mutation-policy rewrite is authorised.
 
+### Evidence-only choices and exact scope precedence
+
+The exact edit map selects the mandatory implementation pattern for this revision. All earlier wording such as MEASURE-FIRST, MEASURE/DECIDE, "may", "only after SQL validation" or optional batching/index/lock alternatives means **measure and retain the baseline in this task** unless the exact map explicitly selects that change. Return evidence/recommendation for a later architect amendment; the executor does not invent a third alternative or silently broaden the acceptance contract. Schema changes are authorised only by DATABASE-001's exact SQL. New source/test files are only the named additions; unexpected paths, missing pinned capabilities or migration-name conflicts are stop-and-report conditions.
+
 ### Common execution and safety contract
 
 - Read this task, the parent architecture, `docs/observability/shared-logging.md` and the four workspace VCS/worktree/developer/materialisation policies. Use the launcher-resolved dedicated parent and implementation worktrees; do not invent paths or start another task. A prepared launcher packet is accepted startup evidence.
@@ -73,7 +95,7 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 - Shared logging is `@modainteract/moda-interact-shared/logging`. Preserve the actual original Prisma/SDK/provider message, code, cause and relevant safe response details through typed errors. Internal reason codes supplement, never replace, that evidence. Redact secrets, signed capabilities, customer content and connection URLs; public responses stay bounded. No generic local logger or duplicate framework telemetry.
 - Preserve tenant scoping, canonical Shared schemas, immutable evidence, deliberate no-op/replay rules and original provider ambiguity. No provider/Redis/R2 I/O inside a database transaction. Read endpoints remain free of writes unless an explicitly unchanged contract says otherwise.
 - Review baseline observations are static. Run regression tests against canonical migrations on disposable PostgreSQL 17 + pgvector, using separate connections and explicit barriers for races. Do not substitute mocks, `db push` or review-only Python models for lock/trigger proof.
-- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. Optional MEASURE-FIRST items can conclude 'retain', with evidence and rationale; mandatory correctness changes cannot be deferred this way.
+- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. MEASURE-FIRST/MEASURE-DECIDE items are evidence-only in this revision: retain baseline behaviour, record the named experiment and recommend to the architect; do not implement an optional alternative without a separate scope amendment; mandatory correctness changes cannot be deferred this way.
 - Existing baseline failures are handled through `docs/development-baseline.md` only when actually encountered and relevant. Do not waive new regressions. Record commands actually executed and leave unavailable validations unchecked.
 - Do not edit any `docs/decisions/**/_index.md`, old task status, the parent architecture, another task or shared execution rollup from a repository implementation task. Parent report updates are confined to this task file. No merge or push to main.
 
@@ -109,6 +131,20 @@ None. The source baseline is context, not a fabricated dependency on historical 
 - [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
+### Required regression matrix — definition revision 2
+
+Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
+
+| Case | Fixture / operation | Required result |
+|---|---|---|
+| H01 | Pause former page/count boundary while message is marked read | One data-statement old or new coherent page/unread result, including empty pages. |
+| H02 | Translation missing/pending/AVAILABLE and system recovery link foreign | Existing visibility/body suppression/tenant link rules unchanged. |
+| H03 | Message/translation insertion fails after thread upsert; Admin concurrent reply | Entire transaction rolls back; reply version coordination preserved. |
+| H04 | Redis error event/add timeout after durable compose | Message stays committed; original bounded cause logged; repair can dispatch. |
+| H05 | Two readers mark same message; already-read replay; suspended/foreign message | Winner timestamp returned, no timestamp rewrite, existing permitted/denied policies retained. |
+
+No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
+
 ## Validation
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
@@ -118,7 +154,7 @@ Run from the **implementation repository** in its launcher-resolved worktree, af
 - [ ] `npm run test:arch046-woo-selection:unit`
 - [ ] `npm run typecheck`
 - [ ] `git diff --check`
-- [ ] Run the repository's declared linter against the exact changed source/test files; record any broader unchanged baseline failure separately.
+- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition

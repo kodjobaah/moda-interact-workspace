@@ -38,6 +38,8 @@ updated: '2026-11-02'
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
+**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
 
 ## Objective
@@ -66,6 +68,38 @@ Required new paths (only these are allowed to be absent at startup):
 - `src/harness/arch055/`
 - `test/harness/arch055-contracts.test.js`
 
+### Exact edit map — definition revision 2
+
+Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
+
+| File / symbol touchpoint | Deterministic edit |
+|---|---|
+| `catalogue/scenarios.json; src/harness/runner.js; src/harness/selection.js` | REGISTER arch055 suite and the twelve exact scenarios below; preserve runner/executor/evidence conventions. Scenario IDs ARCH055-IDENTITY-001, ARCH055-CONSENT-001, ARCH055-SETTINGS-001, ARCH055-INBOX-001, ARCH055-KNOWLEDGE-001, ARCH055-COMMERCIAL-001, ARCH055-BILLING-001, ARCH055-SUPPORT-001, ARCH055-READINESS-001, ARCH055-MIGRATION-001, ARCH055-CLAIM-001, ARCH055-COVERAGE-001. |
+| `src/harness/arch055/executors.js; src/harness/arch055/fixtures.js; src/harness/arch055/assertions.js; src/harness/arch055/contracts.js` | CREATE modular router/fixtures/assertions/contracts. Add separate identity.js, consent.js, settings.js, inbox.js, knowledge.js, commercial.js, billing.js, support.js, readiness.js, migration.js, claim.js, coverage.js executor modules under same directory; do not build one monolith. Use actual services/HTTP; providers sandbox/emulated, never live payments. |
+| `test/harness/arch055-contracts.test.js; package.json` | CREATE harness registration/strict failure tests. Add system:arch055:plan and system:arch055 keys already specified; no alternate runner. |
+
+**Exact new implementation/test paths (not baseline files claimed to exist):**
+
+- `src/harness/arch055/executors.js`
+- `src/harness/arch055/fixtures.js`
+- `src/harness/arch055/assertions.js`
+- `src/harness/arch055/contracts.js`
+- `src/harness/arch055/identity.js`
+- `src/harness/arch055/consent.js`
+- `src/harness/arch055/settings.js`
+- `src/harness/arch055/inbox.js`
+- `src/harness/arch055/knowledge.js`
+- `src/harness/arch055/commercial.js`
+- `src/harness/arch055/billing.js`
+- `src/harness/arch055/support.js`
+- `src/harness/arch055/readiness.js`
+- `src/harness/arch055/migration.js`
+- `src/harness/arch055/claim.js`
+- `src/harness/arch055/coverage.js`
+- `test/harness/arch055-contracts.test.js`
+
+**Test registration:** Use existing runner suite selection. Exact package additions remain system:arch055:plan=node scripts/run-system-tests.js --suite arch055 --list and system:arch055=node scripts/run-system-tests.js --suite arch055 --execute.
+
 ## Out of Scope
 
 No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, new microservice/queue, speculative index migration, live payment/refund certification, public schema version change, autonomous follow-on task, or implementation outside the owning repository. No `_index.md` edits. Keep retained endpoint behaviour under regression, rather than manufacturing source changes for every reviewed route.
@@ -90,6 +124,10 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 
 9. Validate migration fresh/upgrade and coordinated rollout preflight, bounded readiness under concurrent outage/recovery and original-error redaction. Record repo SHA/worktree/branch/submodule pins, fixture provenance, exact commands, runner outputs and complete container/resource cleanup.
 
+### Evidence-only choices and exact scope precedence
+
+The exact edit map selects the mandatory implementation pattern for this revision. All earlier wording such as MEASURE-FIRST, MEASURE/DECIDE, "may", "only after SQL validation" or optional batching/index/lock alternatives means **measure and retain the baseline in this task** unless the exact map explicitly selects that change. Return evidence/recommendation for a later architect amendment; the executor does not invent a third alternative or silently broaden the acceptance contract. Schema changes are authorised only by DATABASE-001's exact SQL. New source/test files are only the named additions; unexpected paths, missing pinned capabilities or migration-name conflicts are stop-and-report conditions.
+
 ### Common execution and safety contract
 
 - Read this task, the parent architecture, `docs/observability/shared-logging.md` and the four workspace VCS/worktree/developer/materialisation policies. Use the launcher-resolved dedicated parent and implementation worktrees; do not invent paths or start another task. A prepared launcher packet is accepted startup evidence.
@@ -98,7 +136,7 @@ No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, 
 - Shared logging is `@modainteract/moda-interact-shared/logging`. Preserve the actual original Prisma/SDK/provider message, code, cause and relevant safe response details through typed errors. Internal reason codes supplement, never replace, that evidence. Redact secrets, signed capabilities, customer content and connection URLs; public responses stay bounded. No generic local logger or duplicate framework telemetry.
 - Preserve tenant scoping, canonical Shared schemas, immutable evidence, deliberate no-op/replay rules and original provider ambiguity. No provider/Redis/R2 I/O inside a database transaction. Read endpoints remain free of writes unless an explicitly unchanged contract says otherwise.
 - Review baseline observations are static. Run regression tests against canonical migrations on disposable PostgreSQL 17 + pgvector, using separate connections and explicit barriers for races. Do not substitute mocks, `db push` or review-only Python models for lock/trigger proof.
-- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. Optional MEASURE-FIRST items can conclude 'retain', with evidence and rationale; mandatory correctness changes cannot be deferred this way.
+- For each mandatory optimisation capture before/after actual SQL and affected rows on the same fixtures; distinguish client calls, SQL statements and row/byte changes. State workload and measurement limits. MEASURE-FIRST/MEASURE-DECIDE items are evidence-only in this revision: retain baseline behaviour, record the named experiment and recommend to the architect; do not implement an optional alternative without a separate scope amendment; mandatory correctness changes cannot be deferred this way.
 - Existing baseline failures are handled through `docs/development-baseline.md` only when actually encountered and relevant. Do not waive new regressions. Record commands actually executed and leave unavailable validations unchecked.
 - Do not edit any `docs/decisions/**/_index.md`, old task status, the parent architecture, another task or shared execution rollup from a repository implementation task. Parent report updates are confined to this task file. No merge or push to main.
 
@@ -146,6 +184,18 @@ No implementation task. Final architectural verification follows system validati
 - [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
+### Required regression matrix — definition revision 2
+
+Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
+
+| Case | Fixture / operation | Required result |
+|---|---|---|
+| L01 | All implementation dependencies accepted and developer elects to execute | Record accepted pins/migrations, real auth/races and cleanup; no production-performance certification. |
+| L02 | Each scoped race with real competitors and barriers | Before-state reproduction where feasible, after-state expected outcomes; failures block, never silently skip. |
+| L03 | All61 endpoint register entries including retained routes | Unique route coverage rows with method/path, owner, test ID, pass/fail/not-run, SQL/row evidence; no aggregate speedup claim. |
+
+No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
+
 ## Validation
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
@@ -156,7 +206,7 @@ Run from the **implementation repository** in its launcher-resolved worktree, af
 - [ ] `npm run system:arch055:plan`
 - [ ] `npm run system:arch055`
 - [ ] `git diff --check`
-- [ ] Run the repository's declared linter against the exact changed source/test files; record any broader unchanged baseline failure separately.
+- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition
