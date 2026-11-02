@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-11-02T18:28:25Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-054-BACKGROUND-002
@@ -32,7 +32,7 @@ Architecture: `ARCH-054`
 
 Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md`
 
-Coordinator: `moda_architect`. Task **defined but not materialised**; no local Git/worktree/branch activity is claimed.
+Coordinator: `moda_architect`. Task materialised on matching parent and implementation task branches; Attempt 1 reviewed with Changes Requested.
 
 
 ## Objective
@@ -66,7 +66,7 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 ## Work Items
 
   - [x] Implement bounded SQL scanner and existing queue enqueue adapter; wire startup and graceful shutdown.
-  - [x] Test Redis outage then repair, multiple replicas, stale HUMAN/control-revision candidate, duplicate jobs, fair keyset pagination, crash/restart and a missed versioned enqueue.
+  - [ ] Test Redis outage then repair, multiple replicas, stale HUMAN/control-revision candidate, duplicate jobs, fair keyset pagination, crash/restart and a missed versioned enqueue.
 
 
 ## Interfaces / Contracts
@@ -109,7 +109,7 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Ready for architect review
+Attempt 1 reviewed — Changes Requested. Ready for a new claim on the same task branches; no acceptance or completion.
 
 ### Files Changed
 
@@ -177,27 +177,41 @@ No implementation submodule gitlink was changed.
 
 ### Review Status
 
-Pending
+**Changes Requested — Attempt 1, 2 November 2026.** Return to Ready, clear executor/claimed_at, preserve Attempt 1. The next launcher claim increments the attempt; do not create a replacement branch. No architect acceptance.
 
-### Review Notes
+### Finding — P2: retained failed jobs prevent durable repair
 
-None
+At `src/services/conversation-ai-delay/pending-turn-repair.ts:101–119`, repair calls `queue.add` using the deterministic versioned ID and unconditionally increments `requeued`. The existing queue retains failed jobs (no removeOnFail policy), and ordinary conversation processing can throw after releasing the processing lease while preserving the pending deadline/version. BullMQ treats an add with the retained failed job's ID as a duplicate: it does not move that job back to waiting. Every later pass reports a successful repair while the same pending turn remains stuck until external intervention or newer inbound.
 
-### Reviewed Files
+Independently reproduced with the installed BullMQ and isolated Redis: enqueue the exact job name/data/options used by repair, execute it once with a Worker that throws a transient processor error, close that worker, then repeat the identical queue.add. Result:
 
-None
+```text
+before repair: failed
+after repair queue.add: failed
+counts: {"waiting":0,"delayed":0,"failed":1}
+```
+
+The temporary Redis container was removed; no implementation files changed. Source inspection confirms `ConversationTurnProcessor` releases the lease and rethrows, `ConversationService.releaseTurn` only clears processing fields, and the production queue supplies neither automatic failed-job removal nor a failed-state retry in the new repair path.
+
+### Required correction
+
+Handle retained terminal failed jobs explicitly using a bounded, race-safe retry/reconciliation path. Preserve deterministic deduplication and frozen deadlines; never remove or replace active jobs. A failed job must become executable when the persisted turn is still pending, and repeated/concurrent repair passes must remain safe. Do not count a retained terminal failed job as successfully requeued. Add a real Redis regression that fails a versioned job, runs repair, and proves execution resumes without requiring another inbound message; include concurrent repair and unchanged deadline/ownership gates. Reuse the existing execution-time control/version fences.
 
 ### Validation Reviewed
 
-None
+- Independently ran focused scanner/poller/messaging-startup unit suites: **3 files / 5 tests passed**.
+- Independently ran the submitted repair and messaging-startup integration suites together through `scripts/test-integration.mjs`: **2 files / 4 tests passed**, disposable PostgreSQL/Redis, successful runner exit.
+- Independent retained-failed-job probe reproduced the finding above. Submitted integration tests cover waiting/delayed duplicates, not a retained failed job.
+- `git diff --check` passed. Executor-reported lint/build remain recorded as supplied results; not rerun in this review.
+- `ed5b8037018fcae54fe1b10f89ddcda6de48f138` matches the remote implementation task ref. Canonical physical worktrees and task branches verified; no implementation changes or main merge performed.
 
-### Architecture Conformance
+### Positive findings and dependency frontier
 
-Pending
+Cross-pass cursor progression, bounded pages/pass counts, narrow SQL projection, ownership/lease filtering, original enqueue error propagation, injected cadence and nonoverlapping shutdown wiring conform to the intended design. The blocking issue is retained failed-job liveness. ARCH-054-SYSTEM-TEST-001 remains Pending because BACKGROUND-003 is not accepted Complete; no downstream promotion or test execution is authorized by this review.
 
 ### Follow-up
 
-None
+Correct the retained-failed-job path and publish the regression evidence on the same mirrored task branches. Historical submission evidence above remains preserved; it does not imply acceptance.
 
 ## Definition reconciliation — 2026-11-02
 

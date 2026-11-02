@@ -2,7 +2,7 @@
 
 Architecture: [ARCH-054-merchant-configurable-ai-response-delay](../../../architecture/ARCH-054-merchant-configurable-ai-response-delay.md).
 
-The individual task YAML frontmatter is authoritative. BACKGROUND-002 is Accepted and Complete at Attempt 2; BACKGROUND-003 is Ready and unclaimed. System certification remains pending.
+The individual task YAML frontmatter is authoritative. BACKGROUND-002 is Accepted and Complete at Attempt 2; BACKGROUND-003 is Ready for rework after Attempt 1 Changes Requested (retained failed jobs prevent repair); its claim is cleared. System certification remains pending.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
