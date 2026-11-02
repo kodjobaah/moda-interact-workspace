@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 32
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
 - ARCH-052-MCP-002
 - ARCH-052-SYSTEM-TEST-001
 created: 2026-10-30
-updated: 2026-10-31
+updated: 2026-11-02
 ---
 
 # ARCH-052-BACKGROUND-013 — Capture Shopify discount classes and own combination tags
@@ -243,3 +243,21 @@ commit `4fdc5c8` is pushed to `origin/task/ARCH-052-BACKGROUND-013`.
 
 No scope deviations or known blockers. No live provider requests were made.
 The task awaits architect review; this agent makes no acceptance decision.
+
+## Architect Review — Attempt 2 (2026-11-02)
+
+### Review Status
+
+Accepted. `completion_mode: automatic`; task Complete at Attempt 2, with no active executor or claim.
+
+### Review Notes
+
+Inspected implementation `4fdc5c8` in the canonical implementation task worktree. `extractGraphqlErrors` now normalizes array, string and object provider error forms into the existing bounded diagnostic projection. Array count limits remain intact; string/object messages and extension codes still pass through the existing redaction and truncation path. No provider lookup, merchant selection, catalogue completeness or public response semantics changed. The reopened non-array HTTP error-body finding is resolved.
+
+### Validation Reviewed
+
+Architect reran `npm test -- --reporter=dot tests/unit/providers/shopify-discount.provider.test.ts` using installed Node 24.19.0: 1 file, 31 tests passed. Inspected the new HTTP 401 string/object regressions for literal upstream message retention, secret redaction, size bounds and object error code. The submitted Attempt 2 lint, build and whitespace checks remain recorded; implementation source was not changed during this review. The initial attempt to invoke npm found no npm on PATH; using the installed Node toolchain resolved that tooling issue.
+
+### Worktree and Dependency Reconciliation
+
+The dedicated parent and implementation task branches remain `task/ARCH-052-BACKGROUND-013`. The implementation was clean at the reviewed published commit before validation. Attempt 2 launcher synchronization and recursive-submodule evidence are retained above. This acceptance does not reopen already accepted consumers; terminal ARCH-052 Shopify system certification remains gated by its other prerequisites, including GATEWAY-001.
