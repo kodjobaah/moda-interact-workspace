@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-11-02T13:55:04Z
@@ -68,9 +68,9 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 
 ## Work Items
 
-- [ ] Add deterministic `eligibleAtMs` helper and apply preclaim delay scheduling and CAS.
-- [ ] Preserve original revision through all AI operations and final provider admission; add stale-version/replay protections.
-- [ ] Add unit/integration tests covering 0/1/7/30, burst coalescing, changed merchant setting, job duplicate/out-of-order, HUMAN->AI cycles, newer inbound during LLM await, and provider dispatch winning/losing races.
+- [x] Add deterministic `eligibleAtMs` helper and apply preclaim delay scheduling and CAS.
+- [x] Preserve original revision through all AI operations and final provider admission; add stale-version/replay protections.
+- [x] Add unit/integration tests covering 0/1/7/30, burst coalescing, changed merchant setting, job duplicate/out-of-order, HUMAN->AI cycles, newer inbound during LLM await, and provider dispatch winning/losing races.
 
 
 ## Interfaces / Contracts
@@ -92,14 +92,14 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 
 ## Acceptance Criteria
 
-- [ ] No AGENT invocation before persisted eligibleAt; routing guidance and safety checks do not wait for the merchant delay, and only one current turn is claimed across workers.
-- [ ] Human commands are never delayed by AI setting; no ghost reply after successful pre-dispatch takeover or H->AI resume.
-- [ ] 0 minutes preserves existing quiet window; any delay does not consume a BullMQ worker while waiting; no provider call inside DB transaction.
+- [x] No AGENT invocation before persisted eligibleAt; routing guidance and safety checks do not wait for the merchant delay, and only one current turn is claimed across workers.
+- [x] Human commands are never delayed by AI setting; no ghost reply after successful pre-dispatch takeover or H->AI resume.
+- [x] 0 minutes preserves existing quiet window; any delay does not consume a BullMQ worker while waiting; no provider call inside DB transaction.
 
 
 ## Validation
 
-- [ ] `npx vitest run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/services/recovery-conversation/recovery-conversation-services.test.ts`; `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts`; focused Redis/Meta mock concurrency tests, lint/typecheck/build per declared scripts; `git diff --check`.
+- [x] `npx vitest run tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/services/recovery-conversation/recovery-conversation-services.test.ts`; `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts`; focused Redis/Meta mock concurrency tests, lint/typecheck/build per declared scripts; `git diff --check`.
 
 
 ## Stop Condition
@@ -116,27 +116,62 @@ Explicit test: at t=12:00 first inbound and delay=5, second at t=12:02, eligible
 
 ### Status
 
-Not Started
+Implementation complete; ready for `moda_architect` review.
 
 ### Files Changed
 
-None
+- `src/services/conversation-turn-processor.service.ts`
+- `src/services/conversation.service.ts`
+- `src/services/conversation-ai-delay/eligibility.ts`
+- `tests/integration/conversation-turn-scheduling.integration.test.ts`
+- Focused processor, conversation-service, and deadline-helper unit tests.
 
 ### Work Completed
 
-None
+- Added deterministic `resolveEligibleAt` calculation and kept merchant delay enforcement after moderation, abuse admission, and routing classification; only AGENT execution waits, with the turn released before delayed BullMQ rescheduling.
+- Fenced initial claim, completion, suppression, model execution, and provider admission against the original pending control revision. Newer inbound versions are re-enqueued; stale prepared output is failed without provider send.
+- Cleared the frozen deadline/revision fields atomically on successful completion or stale suppression and preserved version/lease ownership on release.
+- Added helper, processor-race, service-CAS, and PostgreSQL transaction/snapshot coverage.
 
 ### Validation Results
 
-Not Run
+- PASS: task-required processor and recovery-conversation unit suites, 77 tests.
+- PASS: focused processor, conversation-service, and deadline-helper unit suites, 82 tests.
+- PASS: `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts`, 4 tests.
+- PASS: `npm run build` (Prisma Client generation and TypeScript compilation).
+- PASS: `npm run lint` and `git diff --check`.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-None
+No scope or contract deviation. ARCH-040 control-transition triggers reject synthetic direct mode/revision updates, so HUMAN-to-AI stale-revision fencing is covered by processor ownership/CAS unit tests rather than bypassing the required audit-event path in PostgreSQL fixtures.
 
 ### Worktree and Git Evidence
 
-Not materialised; implementing agent must record launcher-prepared dedicated parent/implementation worktree paths, start-of-attempt sync, branch SHAs, submodule pins and cleanup.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-BACKGROUND-002`
+  parent branch: `task/ARCH-054-BACKGROUND-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-BACKGROUND-002`
+  implementation branch: `task/ARCH-054-BACKGROUND-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  `git submodule sync --recursive`: passed
+  `git submodule update --init --recursive`: passed
+  recorded submodule commit: `database` at `7c377282aa5819b3008b7d7f3018f44f4161523e`
+
+Git:
+  implementation commit: `35772c5` (`feat(background): enforce frozen AI deadline and control fence`), pushed to `origin/task/ARCH-054-BACKGROUND-002`
+  parent claim commit: `799bd7815c92dd7abf6dd5b7c287366525aefe75`
+  implementation starting HEAD: `ea04a633370be407af4090c18abcffae1145e62f`
 
 
 ## Architect Review
