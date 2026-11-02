@@ -195,3 +195,30 @@ Reviewed the eight changed/untracked files in the canonical implementation workt
 Fix the provider guard and add behavioral read/write coverage. Correct the new Shopify label/test wording that calls `isAvailable` provider availability: accepted ARCH-052 makes it merchant selection, although this task preserves Shopify's existing filter behavior. Complete the required desktop/narrow UI checks. Reconcile the Completion Report and publish the implementation through the developer workflow before requesting final acceptance; an explicit developer completion decision remains required after acceptance. No implementation edits or commits were made by the architect.
 
 Reviewed working-tree fingerprint (SHA-256 of the ordered eight relative paths and file bytes, NUL-separated): `edaad7bfef545031d882bd0a4e9f256dd6734dcfae97a5f7421be3de761f6932`.
+
+
+## Architect local correction review — Attempt 1, 2 November 2026
+
+### Decision
+
+**Changes requested: remaining validation gaps; no final architect acceptance.** The earlier Shopify/Woo identity regression is fixed. Keep the developer-owned `in_progress` claim and Attempt 1 unchanged. Implementation remains uncommitted; no downstream promotion or implementation publication is performed by this review.
+
+### Verified correction
+
+Shopify now rejects Woo IDs/types and no longer treats merchant selection as provider validity. Woo selection remains independent of assignment. Both list and write paths share eligibility checks. The server action calls the extracted override service and retains its SUPER_ADMIN guard, actor/reason/expiry handling and serializable transaction. The table presents merchant selection separately on both platforms. No schema changes were found.
+
+### Remaining findings
+
+1. **P2 — complete the requested behavioral security/transaction evidence.** The new service tests are useful and execute real service logic, but `tests/unit/arch036-admin-recovery-policy-override.test.ts:60–120` implements rollback itself by cloning state and committing only after the callback resolves. It cannot demonstrate PostgreSQL audit/override atomicity. Every service invocation supplies `authorize: async () => "admin-1"` (line 140), so actual role rejection remains covered only by source-string assertions. No new behavioral test invokes the catalogue read, and the successful Shopify case remains a helper test rather than an override service/action regression. Complete the prior review's isolated database transaction check, exercise real authorization denial with no writes, and add behavioral catalogue/read and successful Shopify override coverage. Record test-double evidence separately from database evidence; do not claim the former certifies database rollback.
+2. **P2 — required visual validation remains outstanding.** The task explicitly requires desktop/narrow layout and label verification. Missing local AUTH_URL/database configuration explains the absent check but does not satisfy it. Use an isolated configured test app or a representative rendered fixture exercising the actual component and styles, with active selected/unselected, inactive/stale, empty/error and override states. Record screenshots/results for desktop and narrow widths before acceptance. Do not use persistent merchant data.
+
+### Independent validation and limits
+
+Ran under Node 24.19.0:
+`node --conditions=import --import tsx --test tests/unit/arch036-admin-discount-eligibility.test.ts tests/unit/arch036-admin-recovery-policy-override.test.ts tests/security/admin-tenant-recovery-policy.test.mjs tests/security/admin-shopify-discount-sync.test.mjs`.
+
+**14/14 passed:** 4 eligibility helper cases, 5 override service cases using transaction doubles, and 5 source-inspection security/UI cases. `git diff --check` passed. Executor-reported TypeScript, changed-file ESLint and production build passes were not independently rerun; optional BullMQ warnings remain reported. No visual verification was performed in this review.
+
+The ten reviewed implementation files remain local and unchanged by the reviewer. Reconcile the stale Completion Report placeholders and publish through the developer workflow after required validation is complete. ARCH-036-SYSTEM-TEST-001 remains unpromoted. Historical findings and evidence are preserved above.
+
+Reviewed working-tree fingerprint (SHA-256 of the ordered ten paths listed in this review's inspection and file bytes, NUL-separated): `b4579a46f0c8b4a5d3eff3cd7b9b8f4fe24e6835f5ff14c3829f73ccb87e0cb2`.
