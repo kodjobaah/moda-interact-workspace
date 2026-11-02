@@ -9,18 +9,22 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 95
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-SYSTEM-TEST-001", "ARCH-036-COMMERCE-001", "ARCH-036-BACKGROUND-003"]
+depends_on: []
 enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-11-02
 ---
 
 # ARCH-036-SYSTEM-TEST-002 — Certify eligible Woo discount outreach and failure handling
+
+> **Superseded on 2026-11-02 — do not claim or execute.** Current owner: `ARCH-052-SYSTEM-TEST-002`. This deferred task expected one coupon and depends on superseded BACKGROUND-003 live-proof work. Accepted ARCH-052 implements the current multi-offer, source-fenced initial outreach contract and its Woo system certification; the old single-coupon contract must not drive a new test suite. Deferred Commerce conversation/preview evaluator work is not implicitly authorized or completed.
+> Original sections below remain historical provenance; their work items and dependency list are not operative.
+
 
 ## Architecture
 

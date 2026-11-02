@@ -400,3 +400,10 @@ None delegated to implementation agents. Unknown provider-specific customer rest
 - 2026-10-29 **Attempt 6**: Removed frozen merchant-policy and duplicate sent-offer snapshot; superseded SHARED-001/004, BACKGROUND-001/006 and redundant API-001; consolidated Woo restore-link adapter into BACKGROUND-008; retained current-settings MCP policy and existing generic tool envelope/confirmed outbound message receipt.
 
 - 2026-10-31: Required logging the actual provider/SDK errors with bounded sensitive-data redaction across outreach/model/MCP/Shopify/Meta boundaries; added MCP-006 for the accepted Woo reader. Internal reason codes remain separate.
+
+
+## Current reconciliation — 2 November 2026
+
+BACKGROUND-013 Attempt 2 is accepted, BACKGROUND-017 accepted completion is reconciled, and SYSTEM-TEST-004 is Ready for manual execution. Gateway transport verification and terminal scenario certification remain outstanding.
+
+See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.

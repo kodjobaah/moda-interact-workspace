@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 90
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
   - ARCH-041-API-014
 enables: []
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-11-02
 ---
 
 # ARCH-041-SYSTEM-TEST-001 — Certify refactored hosted API parity end-to-end
@@ -174,3 +174,7 @@ To be assessed against `ARCH-041`, the canonical task and actual implementation.
 ### Follow-up
 
 Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+
+## Definition reconciliation — 2026-11-02
+
+Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Every declared prerequisite is Complete in the reconciled records; dependency readiness is satisfied. Status ready does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.
