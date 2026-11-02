@@ -171,3 +171,8 @@ None blocking task definition. Whether to add optional merchant notifications fo
 - 2026-11-01: Accepted ARCH-054-SHOPIFY-002 at Attempt 2 after the disposable PostgreSQL transaction suite passed all three required cases. BACKGROUND-002 remains Pending because BACKGROUND-001 is Ready, not Complete; no downstream task became newly eligible.
 - 2026-11-01: Accepted ARCH-054-WOOCOMMERCE-001 at Attempt 1 after reviewing the protected Woo REST proxy, settings UI and submitted validation. No downstream task became newly eligible.
 - 2026-11-02: Accepted ARCH-054-BACKGROUND-001 at Attempt 1 after reviewing the text/audio transaction capture, branch/worktree evidence, and successful four-test PostgreSQL integration run. BACKGROUND-002 is Ready; no implementation was started.
+
+
+### 2 November 2026 — BACKGROUND-002 Attempt 1 review
+
+Changes Requested on implementation `35772c5`: retain the frozen deadline/control-revision implementation, close the final current-inbound-version dispatch-admission race, and add recovery-specific PostgreSQL/Redis validation of delay and audited takeover/dispatch races. Independent selected unit run passed 100 tests; an adversarial before-provider ownership-await regression reproduced stale send admission. BACKGROUND-002 returns to Ready with claim cleared, Attempt 1 preserved; BACKGROUND-003 and terminal system tests remain Pending.

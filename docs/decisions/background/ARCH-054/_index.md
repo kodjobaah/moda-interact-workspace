@@ -2,7 +2,7 @@
 
 Architecture: [ARCH-054-merchant-configurable-ai-response-delay](../../../architecture/ARCH-054-merchant-configurable-ai-response-delay.md).
 
-The individual task YAML frontmatter is authoritative. BACKGROUND-002 is Ready now that BACKGROUND-001, API-002, and SHOPIFY-002 are Complete.
+The individual task YAML frontmatter is authoritative. BACKGROUND-002 is Ready for rework after Attempt 1 Changes Requested: final inbound-version dispatch fencing and feature-specific integration evidence are outstanding. Its prerequisites are Complete. BACKGROUND-003 remains Pending until architect acceptance of BACKGROUND-002.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|

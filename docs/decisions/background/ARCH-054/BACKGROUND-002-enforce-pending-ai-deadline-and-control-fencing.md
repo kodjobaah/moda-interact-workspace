@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-11-02T13:55:04Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-054-BACKGROUND-001
@@ -116,7 +116,7 @@ Explicit test: at t=12:00 first inbound and delay=5, second at t=12:02, eligible
 
 ### Status
 
-Implementation complete; ready for `moda_architect` review.
+Attempt 1 submitted implementation; architect review requests corrections below. Task is Ready for the next attempt; Attempt 1 evidence is preserved.
 
 ### Files Changed
 
@@ -174,32 +174,47 @@ Git:
   implementation starting HEAD: `ea04a633370be407af4090c18abcffae1145e62f`
 
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending
+**Changes Requested — 2 November 2026.** Implementation `35772c5b3232c5fe7a7afbc523e2762e28068177`; submitted report `cf40bfc86`. Return to Ready, preserve Attempt 1, clear executor/claimed_at. No architect acceptance or completion is recorded.
 
 ### Review Notes
 
-None
+1. **P1 — current inbound version is not fenced at final send admission.** `conversation-turn-processor.service.ts:614` checks `hasChanged`, but the subsequent `sendPreparedText` closure awaits `checkControl` at line 327 and forwards only `expectedControlRevision` at lines 332–334. New ingress can commit during that await, or during delivery preparation/moderation, without changing control revision. `outbound-message-delivery.service.ts` and `outbound-send-fence.service.ts` accept/check no original inbound version, so the outdated prepared reply can still acquire a provider permit. A temporary processor regression that advances version 3 to 4 during the before-provider ownership await failed: send admission was called once with revision 2 and no inbound-version fence. This is an unclosed task/architecture guarantee, not evidence that the existing control-revision fence is broken. Carry the original observed version to the short, locked final dispatch-admission transaction; reject and fail the stale prepared output and ensure the latest pending version remains scheduled with its original deadline. Preserve the existing rule that an already admitted/dispatched provider request cannot be recalled.
+2. **P2 — feature-specific database/queue integration evidence is missing.** The four passing cases in `conversation-turn-scheduling.integration.test.ts` cover two BG001 snapshot transactions and two older standalone scheduling scenarios. The processor fixture sets `checkoutRecoveryId: null`, has no real ownership service and mocks send admission; the only integration-file change in this attempt adds an unused fixture method. None exercises the BG002 nonzero recovery deadline, original-revision claim/completion CAS, successful audited takeover/resume, or final provider winning/losing races. Add bounded disposable PostgreSQL/Redis coverage using real recovery state and legal control-transition/audit paths; do not bypass the database trigger. Mock the external model/Meta call, not the durable ownership/final-permit logic under review.
 
 ### Reviewed Files
 
-None
+- All 11 changed implementation/test files at `35772c5`.
+- Existing `src/services/recovery-conversation/ai-turn-ownership.service.ts`.
+- Existing `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts` and `src/services/recovery-conversation/outbound-send-fence.service.ts`.
+- Parent architecture, task definition, Completion Report, and dedicated worktree/branch evidence.
 
 ### Validation Reviewed
 
-None
+- Independent focused run: **4 suites / 100 tests passed** (processor, recovery-conversation services, conversation service, eligibility helper), Node 24.19.0.
+- Temporary adversarial regression: **1 test failed**, reproducing the final ownership-await stale-send boundary. The temporary test was removed; implementation worktree remains clean. Reproduction and output are retained in [review evidence](evidence/BACKGROUND-002-attempt-1-review.md).
+- Submitted 77-test and 82-test runs overlap; the independent 100-test run is the combined selected suite, not their sum.
+- Submitted four integration passes, build and lint are recorded as executor evidence; architect did not rerun those commands. The four integration cases do not establish the missing BG002 scenarios.
+- Implementation local HEAD equals its published task ref; no implementation source or branch was changed by this review.
 
 ### Architecture Conformance
 
-Pending
+Frozen deadline calculation, AGENT-only gate placement, persisted original control revision, BullMQ delay reuse and short database operations follow the design. Final current-inbound-version admission and required feature integration proof remain incomplete. No schema/Shared/public contract change is needed for the correction.
 
 ### Follow-up
 
-None
+Reclaim the same task through the normal launcher for Attempt 2. Fix P1 and cover it both at the processor boundary and in the locked final permit; include new ingress during outbound preparation/moderation. Add P2 recovery integration covering pre-due release/reschedule with no reservation/model call, due execution, original frozen deadline across newer ingress, duplicate/out-of-order jobs and valid takeover/resume/final-admission races. Preserve all existing moderation, billing, consent, idempotency and HUMAN behavior. BACKGROUND-003 stays Pending; no downstream task is promoted or executed.
+
+## Review correction scope — 2 November 2026
+
+The permitted Background-only correction scope also includes the existing internal admission/delivery ports, `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`, `src/services/recovery-conversation/outbound-send-fence.service.ts`, and its existing SQL projection/helper if needed to compare the original inbound version inside the final permit. Do not invent a new provider queue, call a provider inside a transaction, change public Shared contracts, or weaken non-turn HUMAN/AUTOMATION/initial-outreach behavior. Add targeted tests alongside the existing processor/fence/integration suites.
+
+- [ ] Original observed inbound version is checked atomically with final dispatch admission; stale prepared output cannot pass after newer ingress wins the lock.
+- [ ] Real recovery PostgreSQL/Redis execution proves the frozen deadline and original control-revision behavior, including audited control transitions and both final-admission outcomes.
 
 ## Definition reconciliation — 2026-11-02
 
-Background main 10e72d7 still uses conversation-turn-processor.service.ts control ownership checks and has no pendingAiNotBeforeAt/pendingAiControlRevision enforcement in runtime source. Frozen-deadline scheduling, original control-revision fencing and final-admission behavior remain unimplemented; BACKGROUND-001 validation is still a prerequisite.
+Historical pre-implementation snapshot (superseded by Attempt 1 and its review above): Background main 10e72d7 used conversation-turn-processor.service.ts control ownership checks and has no pendingAiNotBeforeAt/pendingAiControlRevision enforcement in runtime source. Frozen-deadline scheduling, original control-revision fencing and final-admission behavior remain unimplemented; BACKGROUND-001 validation is still a prerequisite.

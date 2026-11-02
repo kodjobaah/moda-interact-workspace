@@ -1885,3 +1885,8 @@ See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-0
 ### ARCH-036 implementation readiness — 2 November 2026
 
 The developer authorized lifting COMMERCE-001’s prior session deferral for its corrected cached evaluator/local-preview scope. ADMIN-001 and COMMERCE-001 are Ready, unclaimed at Attempt 0, with developer-controlled completion. Their Background prerequisite is Complete. No downstream task is started or completed by this amendment.
+
+
+### ARCH-054-BACKGROUND-002 review — 2 November 2026
+
+Attempt 1 Changes Requested; Ready with executor/claimed_at cleared. Original inbound version is not yet enforced in the locked final send permit, and the reported four integration cases do not cover recovery delay/control execution. 100 selected unit tests passed; one adversarial race regression failed. BACKGROUND-003 remains Pending. See the canonical task Architect Review for correction scope and evidence.
