@@ -272,3 +272,8 @@ Implementation base: `420b86aa90ca9dbb13f4c1af796ee7b60d38d05f`. Reviewed files 
 SHA-256 of the ordered paths and file bytes, NUL-separated: `d502430f07b08c9d6bdc11ce56f82c1d46ea5e44d2f080646bdf85d8f8896f55`.
 
 Independent PostgreSQL output: [review log](evidence/ADMIN-001-local-validation-postgres.md).
+
+
+### Viewport evidence clarification — 2 November 2026
+
+The developer clarified that screenshots were returned as inline browser-tool images in the implementation conversation and were not saved to repository files. Recorded measurements: at 1440px viewport width, document width was 1440px; at 390px viewport width, document width was 390px. The discount table measured 672px within its own 251px horizontal scroll area. These measurements support the reported absence of page-level horizontal overflow and containment of table scrolling. They are developer-reported conversation evidence, not screenshots independently inspected by this reviewer. No repository screenshot path exists; none is claimed. This clarification supplements the local review without changing its publication boundary, task lifecycle, or downstream eligibility.
