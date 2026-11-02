@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-31T22:53:09Z
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-054-BACKGROUND-002
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-02
 ---
 
 
@@ -89,15 +89,15 @@ Internal pure `computePendingAiNotBeforeAt({pendingStartedAt:Date,delayMinutes:0
 
 ## Acceptance Criteria
 
-- [ ] Only one deadline and captured revision per pending turn; simultaneous first inbound races do not create two anchors.
-- [ ] No AI deadline for HUMAN inbound, failed audio or unrelated nonrecovery; normal inbound persistence and moderation remain intact.
-- [ ] No duplicate Meta send or extra credit caused by inbound retry; real DB transaction validates atomicity.
+- [x] Only one deadline and captured revision per pending turn; simultaneous first inbound races do not create two anchors.
+- [x] No AI deadline for HUMAN inbound, failed audio or unrelated nonrecovery; normal inbound persistence and moderation remain intact.
+- [x] No duplicate Meta send or extra credit caused by inbound retry; real DB transaction validates atomicity.
 
 
 ## Validation
 
 - [x] `npx vitest run tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts tests/unit/services/conversation.service.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts` — 43 tests passed.
-- [ ] `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts` — blocked: ephemeral PostgreSQL startup requires Docker; no Docker daemon/socket is available. Direct execution against the approved local database also failed because `localhost:5432` is unreachable.
+- [x] `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts` — passed, 1 file / 4 tests (successful run from the canonical implementation task worktree after Colima became available; user-confirmed on 2026-11-02).
 - [x] `npm run build` — passed, including Prisma Client generation and TypeScript build.
 - [x] Changed-file ESLint — passed.
 - [x] `git diff --check` — passed.
@@ -117,7 +117,7 @@ Do not perform a network call while a DB transaction is open. Source original ca
 
 ### Status
 
-Blocked: implementation and available validation are complete, but PostgreSQL concurrency and rollback integration tests could not execute because Docker is unavailable and the local PostgreSQL service is not running.
+Ready for Review: implementation, acceptance criteria and required validation are complete. The PostgreSQL integration suite passed in the user-confirmed run; follow-up agent reruns were interrupted during disposable database migration startup before Vitest began.
 
 ### Files Changed
 
@@ -138,19 +138,20 @@ Blocked: implementation and available validation are complete, but PostgreSQL co
 - Preserved the original pending timestamp/deadline/revision for later fragments. HUMAN inbound advances the processed watermark and clears pending/processing state; post-commit routing does not enqueue HUMAN-owned turns.
 - Added Shared-logger persistence failure handling that propagates the original exception; preserved standalone conversation timing and existing versioned queue identity.
 - Added focused unit coverage and PostgreSQL integration cases for concurrent first text, settings changes during a turn, and transaction rollback.
+- Corrected the recovery-conversation integration fixture with `controlChangedAt` alongside `controlRevision`, satisfying the persisted control-state database constraint.
 
 ### Validation Results
 
-- `npx vitest run tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts tests/unit/services/conversation.service.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts` — passed, 3 files / 43 tests.
-- `npm run build` — passed; Prisma Client generation and TypeScript build completed.
-- Changed-file ESLint — passed.
+- `npx vitest run tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts tests/unit/services/conversation.service.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts` — passed, 3 files / 43 tests, rerun on 2026-11-02 after mainline synchronization.
+- `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts` — passed, 1 file / 4 tests in the user-confirmed run from the canonical implementation task worktree on 2026-11-02.
+- `npm run build` — passed after mainline synchronization; Prisma Client generation and TypeScript build completed.
+- `npx eslint tests/integration/conversation-turn-scheduling.integration.test.ts` — passed.
 - `git diff --check` — passed.
-- Required `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts` — blocked before tests: Docker API unavailable at `/var/run/docker.sock` while starting `pgvector/pgvector:pg17`.
-- Direct integration-file attempt with `MODA_DISPOSABLE_INTEGRATION=1` and `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact` — blocked: no PostgreSQL server reachable at `localhost:5432`.
+- Two subsequent agent reruns exited before Vitest: the `prisma migrate deploy` child received `SIGTERM` while applying migrations to disposable PostgreSQL databases. No integration assertions ran in those attempts. The active Docker context was `colima`; `docker info` succeeded and reported server 29.5.2. These interrupted reruns did not report test assertion failures.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
-- The integration tests are authored but actual PostgreSQL race and rollback assertions remain unverified. Resume validation when the Docker daemon or the standard local PostgreSQL database is available; do not mark the task review-ready before those checks pass.
+- The successful four-test PostgreSQL run is user-confirmed. This agent could not reproduce it because two retries were terminated during Prisma migration deployment before Vitest started; the disposable-database migration startup interruption is recorded for review.
 
 ### Worktree and Git Evidence
 
@@ -165,9 +166,9 @@ Blocked: implementation and available validation are complete, but PostgreSQL co
   - another task worktree reused: no
 - Start-of-attempt synchronization from launcher packet:
   - parent remote task branch fast-forwarded: not-needed
-  - parent `origin/main` incorporated: already-current
-  - implementation remote task branch fast-forwarded: not-needed
-  - implementation `origin/main` incorporated: already-current
+  - parent `origin/main` incorporated: yes, merge commit `89c9890ba95d757f49c5c5e5e52a5077f10d825a`
+  - implementation remote task branch fast-forwarded: not-needed; it matched the remote task ref before the new commit
+  - implementation `origin/main` incorporated: yes, merge commit `b0ea947ee392b2741bf8de3683e458208a83fa25`
   - parent pre-claim head: `61a62c5e89eb8b749384de5024f60942aca3a34d`
   - implementation initial head: `b7aa719240bf7e0d793db23dd956c4437c904ded`
   - parent claim commit: `2bae65630708686cffe5bc77be8789506d8f54c4` (pushed)
@@ -175,8 +176,10 @@ Blocked: implementation and available validation are complete, but PostgreSQL co
   - `git submodule sync --recursive`: passed
   - `git submodule update --init --recursive`: passed
   - recorded database submodule commit: `7c377282aa5819b3008b7d7f3018f44f4161523e`
-- Implementation commit: `7bb69d7bb959f96bc0b96ed6e381ac77ecfaf121`; pushed to `origin/task/ARCH-054-BACKGROUND-001`, with remote ref verified equal to the commit.
-- Implementation worktree was clean after commit. Parent report commit and push will be recorded in the execution result.
+- Implementation baseline commit: `7bb69d7bb959f96bc0b96ed6e381ac77ecfaf121` (already published before this continuation).
+- Fixture correction commit: `588cf39c856c2a9d6e1faf157d2dc1642f9aa1bf`.
+- Current implementation task branch head, including the origin/main merge: `b0ea947ee392b2741bf8de3683e458208a83fa25`; pushed to `origin/task/ARCH-054-BACKGROUND-001` and verified equal to the remote ref.
+- Parent task branch synchronization head: `89c9890ba95d757f49c5c5e5e52a5077f10d825a`; parent report commit and publication result will be recorded after push.
 
 
 ## Architect Review
