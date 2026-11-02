@@ -224,7 +224,7 @@ Blocked: implementation committed and pushed, but required final executable vali
 
 ### Files Changed
 
-See implementation commit `b3e2b80` in `moda-interact-api`. Changes are limited to the exact API source, test and runner paths in this task's edit map, including the two named ARCH-055 PostgreSQL suites and the new settings runner. No schema/migration, package aggregate wiring, parent architecture, other repository, or gitlink was changed.
+See implementation commits `b3e2b80` and `e20cecc` in `moda-interact-api`. The follow-up commit fixes strict types for narrowed projection payloads and the PostgreSQL race-test harnesses. Changes are limited to the exact API source, test and runner paths in this task's edit map, including the two named ARCH-055 PostgreSQL suites and the new settings runner. No schema/migration, package aggregate wiring, parent architecture, other repository, or gitlink was changed.
 
 ### Work Completed
 
@@ -243,9 +243,11 @@ See implementation commit `b3e2b80` in `moda-interact-api`. Changes are limited 
 - PASS: focused `feature-preferences`, `recovery-policy`, and `ai-response-delay` unit suites — 43 passed after projection/timing edits.
 - PASS: recovery-summary service unit suite — 6 passed after consolidating the query.
 - PASS: focused feature-preference timing/no-op unit suite — 3 passed; verifies all eight initial/final timing fields for changed updates and absence of final phases for no-op.
-- PASS: `git diff --check` as the first part of the final validation command.
-- INCOMPLETE: `npm run typecheck` initially reported three TS1005 syntax errors in Prisma logging options; all three lines were corrected. A subsequent run generated Prisma Client 6.19.3 but the compiler did not return an exit result before the terminal stopped responding. No final typecheck pass is claimed.
-- NOT RUN / NO RESULT: `node scripts/test-arch055-merchant-settings-postgres.mjs`, `node scripts/test-arch035-feature-preferences-postgres.mjs`, `node scripts/test-arch041-cross-domain-postgres.mjs`, `node scripts/test-arch054-ai-response-delay-postgres.mjs`, `npm run lint`, and the complete task unit command. The new PostgreSQL suites therefore have no executed migration/fixture identity, SQL result, race outcome, rollback proof, or cleanup result to report.
+- PASS: focused follow-up ESLint over the six changed type-fix files and `git diff --check`.
+- PARTIAL: complete task unit command ran 87 tests: 85 passed and 2 failed in the unchanged Store Context route log assertions. The failures observe additional original-error metadata emitted by the shared logger (`errorName`, `errorMessage`, `errorStack`, `errorCause`) compared with the assertions' expected payload. No Store Context route or unit-test file was changed by this task.
+- FAIL (unchanged baseline): `npm run lint` reports only `src/merchant/support/routes.ts:75` (`no-empty`); this file is outside the task's changed-file set. Focused lint on the changed files passes.
+- INCOMPLETE: `npm run typecheck` generated Prisma Client 6.19.3. Its first completed compiler result listed 26 errors in feature-preference narrowing and the new/existing query-event integration harnesses. Follow-up fixes were committed in `e20cecc`; a rerun remained active for several minutes without a compiler exit result and was stopped. A direct `npx --no-install tsc --noEmit -p tsconfig.json` produced no diagnostics in the tool response, but no explicit exit status was captured, so no final typecheck pass is claimed.
+- NO RESULT: `node scripts/test-arch055-merchant-settings-postgres.mjs` advanced through canonical migrations into the five-suite test process on its first launch, but the terminal did not return its test output or cleanup result. A rerun also returned no attributable result while other ARCH-055 API tasks were concurrently running migration validation. `node scripts/test-arch035-feature-preferences-postgres.mjs`, `node scripts/test-arch041-cross-domain-postgres.mjs`, and `node scripts/test-arch054-ai-response-delay-postgres.mjs` were not run to a recorded result. The new PostgreSQL suites therefore have no recorded migration/fixture identity, SQL result, race outcome, rollback proof, or resource-cleanup confirmation.
 - Evidence encoded in the tests but not yet observed on PostgreSQL: first lineage expects zero revision-history SELECTs; existing lineage expects two; pending draft expects zero pre-read SELECTs and one conditional UPDATE; context equal-value writes retain one UPDATE/one affected row each and stale principal yields zero rows; a 20-preference changed set retains 20 sequential upsert statements/rows; C03a/b/c use an upsert barrier and a second Prisma client. These are assertions, not claimed measurements.
 - Measurement limitation retained by design: category prompt eligibility still reads `promptText` because the current JavaScript `trim()` whitespace semantics do not have a verified equivalent narrow projection in this task. Existing unit coverage includes whitespace-only prompt text. Feature batching and store-context no-op suppression remain unchanged pending actual SQL/workload validation.
 
@@ -254,20 +256,22 @@ See implementation commit `b3e2b80` in `moda-interact-api`. Changes are limited 
 - Used prepared launcher packet: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-003`; both on `task/ARCH-055-API-003`. No preparation, claim, dependency or submodule setup was repeated.
 - Launcher evidence: Attempt 1, executor `copilot`, dependency gate passed, nested Database pin `7c377282aa5819b3008b7d7f3018f44f4161523e`.
 - Implementation commit `b3e2b80` (`feat(api): consolidate merchant settings projections`) was pushed to `origin/task/ARCH-055-API-003`.
-- Parent task/report commit and push are pending. No parent implementation gitlink was changed or staged.
+- Follow-up implementation commit `e20cecc` (`fix(api): type narrowed settings projections and race tests`) was pushed to `origin/task/ARCH-055-API-003`.
+- Parent task/report blocker commit `fba966a` is pushed to `origin/task/ARCH-055-API-003`. No parent implementation gitlink was changed or staged.
 
 ### Deviations
 
-Required final validation could not be completed because terminal commands stopped returning a completion result after Prisma generation. The task is blocked for validation; no unverified PostgreSQL behavior is represented as passing.
+Required final validation could not be completed because PostgreSQL runner output was not captured and TypeScript compilation did not provide a final exit result while other ARCH-055 task validations were running concurrently. The task remains blocked; no unverified PostgreSQL behavior or typecheck result is represented as passing. Full lint and the complete task unit matrix have the failures recorded above; unrelated baseline files were not edited.
 
 ### Assumptions
 
-Prepared launcher state and the stated accepted Database pin are authoritative. Canonical migration behavior remains unverified because the new runner did not produce an execution result.
+Prepared launcher state and the stated accepted Database pin are authoritative. Canonical migration/test behavior and disposable-container cleanup remain unverified because the runner did not produce an attributable final result.
 
 ### Unresolved Issues
 
--Run the complete required unit command, all four PostgreSQL runners, `npm run typecheck`, `npm run lint`, and final `git diff --check`; resolve any implementation/test failures without weakening the task contract.
--Specifically observe C01/C02 and exact C03a/b/c state, HTTP/service outcomes, revision comparisons, SQL/rows, rollback, migration identity and resource cleanup. Only then may the task move to review.
+- Resolve the two Store Context unit log-shape failures only if they are determined to be new regressions; otherwise record the verified baseline comparison. Do not edit unrelated Support code solely to clear the existing lint failure.
+- Capture a final `npm run typecheck` result and run the complete unit command, all four PostgreSQL runners, full lint, and final `git diff --check` with attributable exit results.
+- Specifically observe C01/C02 and exact C03a/b/c state, HTTP/service outcomes, revision comparisons, SQL/rows, rollback, migration identity and resource cleanup. Only then may the task move to review.
 
 ### Architectural Concerns
 
