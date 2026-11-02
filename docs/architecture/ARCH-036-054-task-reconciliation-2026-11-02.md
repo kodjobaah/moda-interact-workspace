@@ -1,6 +1,6 @@
 # ARCH-036–ARCH-054 task-definition reconciliation — 2026-11-02
 
-Scope: reconcile the 39 open task IDs, four completed records absent from main, and the ARCH-051 promotion identified in the previous audit. Current task worktrees and published implementation branches were inspected. This is architecture/task documentation reconciliation, with one focused implementation review; it does not certify unexecuted system scenarios.
+Scope: reconcile the 39 open task IDs, four completed records initially absent from main, and the ARCH-051 promotion identified in the previous audit. Current task worktrees and published implementation branches were inspected. This is architecture/task documentation reconciliation, with one focused implementation review; it does not certify unexecuted system scenarios.
 
 ## Source evidence
 
@@ -14,7 +14,7 @@ Scope: reconcile the 39 open task IDs, four completed records absent from main, 
 ## Decisions
 
 - ARCH-052-BACKGROUND-013 Attempt 2 accepted after actual source review and 31/31 focused provider tests. Recorded lint/build remain applicable; no source changes made.
-- Preserve accepted completion records from ARCH-043-MESSAGING-001, ARCH-044-COMMERCE-007, ARCH-044-COMMERCE-008 and ARCH-052-BACKGROUND-017 task branches; their previously identified publication gaps are now resolved on those task branches, while main still needs the task-record reconciliation.
+- Preserve accepted completion records from ARCH-043-MESSAGING-001, ARCH-044-COMMERCE-007, ARCH-044-COMMERCE-008 and ARCH-052-BACKGROUND-017 task branches; their publication gaps are resolved. These accepted reports and BG013 acceptance were also merged into main during this reconciliation; the documentation branch incorporates main at `24063a060`.
 - Restore the accepted ARCH-051 task/architecture/index; retire the conflicting old ARCH-050 stabilisation architecture. ARCH-050 remains the Support-notice initiative.
 - Deduplicate ARCH-043 GATEWAY-001 and SYSTEM-TEST-001 using the paths named by the controlling inventory. Supersede legacy GATEWAY-002/SYSTEM-TEST-002 into those canonical tasks, preserving their useful security/rollback certification requirements.
 - Retire deferred ARCH-036-SYSTEM-TEST-002 in favor of current ARCH-052 Woo initial-outreach certification; the old one-coupon/live-proof contract and superseded BG003 dependency no longer describe the accepted runtime. ARCH-036-COMMERCE-001 remains explicitly deferred.
