@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 95
 executor: null
 claimed_at: null
@@ -23,7 +23,7 @@ depends_on:
   - ARCH-045-BACKGROUND-005
 enables: []
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # ARCH-052-SYSTEM-TEST-003 — Certify exact quoted-message text and voice routing across merchants on one sender

@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 90
 executor: null
 claimed_at: null
@@ -17,14 +17,14 @@ attempt: 0
 depends_on: ["ARCH-049-ADMIN-001", "ARCH-049-DATABASE-001", "ARCH-049-SHOPIFY-001", "ARCH-049-BACKGROUND-001", "ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-API-001", "ARCH-049-WOOCOMMERCE-001", "ARCH-049-WOOCOMMERCE-002", "ARCH-049-ADMIN-002", "ARCH-049-BACKGROUND-004", "ARCH-047-ADMIN-005", "ARCH-047-BACKGROUND-001", "ARCH-047-BACKGROUND-003", "ARCH-047-BACKGROUND-006"]
 enables: []
 created: 2026-10-25
-updated: 2026-10-27
+updated: 2026-11-01
 ---
 
 # Certify ShopBrand source ingestion, R2 READY media and WhatsApp image headers
 
 ## Architecture
 
-`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. **Portable task definition, not materialised in a developer Git worktree.**
+`ARCH-049` — `docs/architecture/ARCH-049-shopbrand-public-media-configuration.md`; coordinator `moda_architect`. Task definition is materialised on `task/ARCH-049-SYSTEM-TEST-001`; all declared dependencies are complete as of 2026-11-01. The task is ready but remains unclaimed behind the terminal manual gate.
 
 ## Objective
 
@@ -96,6 +96,18 @@ Consumes accepted production implementation and its agreed contracts, including 
 - ARCH-047-BACKGROUND-001
 - ARCH-047-BACKGROUND-003
 - ARCH-047-BACKGROUND-006
+
+### Dependency readiness reconciliation — 2026-11-01
+
+All explicit dependencies above are Complete. `ARCH-049-WOOCOMMERCE-002` is
+architect-accepted at Attempt 1 and explicitly developer-completed; its
+implementation is published at `44c39ee927606c5b9caef135fb8f4f3d271d62c6`, and
+its parent completion record is published at `a7f2a940a`. The reconciled
+dependency task definition and WooCommerce index are included on this branch.
+This system-test task is now `ready`, with `attempt: 0`, `executor: null` and
+`claimed_at: null`. It remains terminal and manual-gated: readiness does not
+authorize a claim or execution; the developer must invoke it explicitly. No
+system-test implementation or validation was started.
 
 ## Enables
 

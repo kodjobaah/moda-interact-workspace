@@ -1,0 +1,953 @@
+{
+  "definition_revision": 2,
+  "tasks": [
+    {
+      "task_id": "ARCH-055-DATABASE-001",
+      "repository": "moda-interact-database",
+      "task_file": "docs/decisions/database/ARCH-055/DATABASE-001-establish-api-lifecycle-persistence-contracts.md",
+      "edits": [
+        {
+          "path": "prisma/schema.prisma",
+          "baseline_exists": true,
+          "action": "Insert exactly followUpClaimKey String? @db.VarChar(255) and intentPurposeKey String? @db.VarChar(64); preserve all existing definitions."
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true,
+          "action": "Insert three exact ARCH-055 script keys from task."
+        }
+      ],
+      "new_files": [
+        "prisma/migrations/20261102120000_arch055_rest_read_lifecycle/migration.sql",
+        "prisma/migrations/20261102121000_arch055_human_follow_up_claim_identity/migration.sql",
+        "prisma/migrations/20261102122000_arch055_upload_intake_identity/migration.sql",
+        "scripts/test-arch055-database-contracts-postgres.mjs",
+        "scripts/validate-arch055-database-contracts.mjs",
+        "scripts/fixtures/arch055/legacy-fixtures.mjs",
+        "scripts/fixtures/arch055/assertions.mjs"
+      ],
+      "test_cases": [
+        {
+          "id": "F01",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "F02",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "F03",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "F04",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "F05",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "F06",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "U01",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "U02",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "U03",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "U04",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "U05",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "U06",
+          "expected": "Exact acceptance row in canonical Database task"
+        },
+        {
+          "id": "U07",
+          "expected": "Exact acceptance row in canonical Database task"
+        }
+      ],
+      "registration": "Exact three package.json additions and fresh/upgrade runner in task."
+    },
+    {
+      "task_id": "ARCH-055-API-001",
+      "repository": "moda-interact-api",
+      "task_file": "docs/decisions/api/ARCH-055/API-001-harden-installation-and-read-authorization-lifecycle.md",
+      "edits": [
+        {
+          "path": "src/auth/woo-installation/current-mutation-principal.ts",
+          "baseline_exists": false,
+          "action": "CREATE the transaction-only helper and error/type exports below; lock Shop FOR UPDATE before installation FOR SHARE, validate exact principal fields and return the locked Shop/onboarding values. No root client or network dependency."
+        },
+        {
+          "path": "src/woocommerce/installation/connection-service.ts",
+          "baseline_exists": true,
+          "action": "MODIFY reconnect to load onboarding with its existing transaction-local Shop read; supply that loaded result to activation. Guard rotation by id/shopId/observed credentialVersion, use a returning update and require exactly one result. Preserve the original observed version over retries and proof outside the transaction."
+        },
+        {
+          "path": "src/woocommerce/billing/initial-free-activation.service.ts",
+          "baseline_exists": true,
+          "action": "MODIFY reconnect to load onboarding with its existing transaction-local Shop read; supply that loaded result to activation. Guard rotation by id/shopId/observed credentialVersion, use a returning update and require exactly one result. Preserve the original observed version over retries and proof outside the transaction."
+        },
+        {
+          "path": "src/woocommerce/shop-brand/service.ts",
+          "baseline_exists": true,
+          "action": "MODIFY first-row creation to use its returned brand fields; retain existing-row locking, source timestamps and media merge logic."
+        },
+        {
+          "path": "src/woocommerce/rest-read/authorization.service.ts",
+          "baseline_exists": true,
+          "action": "MODIFY begin/revoke and callback commit to call the current-principal helper inside their existing/new short transaction. Begin INSERT stays inside that transaction. Revoke updateMany filters installationId/shopId/credentialVersionSnapshot/status=PENDING, with no expiresAt exclusion, and sets FAILED/consumedAt/current existing failureCode; then revokes the current grant atomically. Old-generation attempts are not targeted. Callback constructs the expected principal from its original token-resolved installation snapshot, not from an unauthenticated request body; no network verification inside its commit transaction."
+        },
+        {
+          "path": "src/woocommerce/rest-read/authorization.service.ts",
+          "baseline_exists": true,
+          "action": "MODIFY callback lost-consumption/P2034 handling: end the failed transaction, reload token-bound attempt and its currently selected grant; acknowledge only a matching SUCCEEDED attempt with matching selected authorizationAttemptId/shop/install binding. Do not rotate/mint on acknowledgement; a revoked matching grant may be acknowledged without reactivation. Superseded/missing/mismatched evidence remains the existing conflict. Recognised domain errors retain safe statuses; actual database/provider failures retain original causes."
+        },
+        {
+          "path": "src/woocommerce/rest-read/authorization.routes.ts",
+          "baseline_exists": true,
+          "action": "MODIFY callback lost-consumption/P2034 handling: end the failed transaction, reload token-bound attempt and its currently selected grant; acknowledge only a matching SUCCEEDED attempt with matching selected authorizationAttemptId/shop/install binding. Do not rotate/mint on acknowledgement; a revoked matching grant may be acknowledged without reactivation. Superseded/missing/mismatched evidence remains the existing conflict. Recognised domain errors retain safe statuses; actual database/provider failures retain original causes."
+        },
+        {
+          "path": "scripts/test-arch055-installation-postgres.mjs",
+          "baseline_exists": false,
+          "action": "CREATE an installation-only canonical migrate-deploy runner using the existing disposable pg17 harness pattern; run existing connection-service suite plus the new principal race suite. Do not convert the shared db-push runner while API-003 fixtures are unfinished."
+        }
+      ],
+      "new_files": [
+        "src/auth/woo-installation/current-mutation-principal.ts",
+        "scripts/test-arch055-installation-postgres.mjs",
+        "tests/unit/auth/woo-installation/current-mutation-principal.test.ts",
+        "tests/integration/woocommerce/installation/arch055-principal-races.postgres.test.ts",
+        "tests/integration/woocommerce/rest-read/arch055-lifecycle-races.postgres.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "A01",
+          "fixture": "Authenticate, pause before admission; rotate/revoke/suspend, then resume begin/revoke/callback commit",
+          "expected": "No stale mutation or grant; no additional provider call caused by conflict; existing caller error mapping preserved."
+        },
+        {
+          "id": "A02",
+          "fixture": "Expired current-generation pending attempt + new current grant; revoke",
+          "expected": "Attempt FAILED and grant REVOKED commit together; failed timestamp is current, not forged to expiry; old-generation pending rows do not block."
+        },
+        {
+          "id": "A03",
+          "fixture": "Two callbacks both observe PENDING before verification",
+          "expected": "One grant/consumption; matching loser receives replay acknowledgement; no duplicate rotation. Superseded and mismatch losers remain conflict."
+        },
+        {
+          "id": "A04",
+          "fixture": "Reconnect active/onboarded and uninstalled/onboarded with late activation failure",
+          "expected": "One transaction-local Shop read and returning credential result; all original paid/free balances and rollback preserved."
+        },
+        {
+          "id": "A05",
+          "fixture": "First brand create, stale/exact/newer same-image observation",
+          "expected": "No immediate create reread; exact/stale writes suppressed as before, newer timestamp still advances."
+        }
+      ],
+      "registration": "Add principal-races to new scripts/test-arch055-installation-postgres.mjs and lifecycle-races to scripts/test-woocommerce-rest-read-authorization-postgres.mjs. Add the new unit file explicitly to this task Validation. Existing brand runner remains."
+    },
+    {
+      "task_id": "ARCH-055-API-002",
+      "repository": "moda-interact-api",
+      "task_file": "docs/decisions/api/ARCH-055/API-002-streamline-consent-and-recovery-ingress.md",
+      "edits": [
+        {
+          "path": "src/woocommerce/activity/routes.ts",
+          "baseline_exists": true,
+          "action": "MODIFY failures to retain original causes and identify authentication/database versus connection/publication stage. Leave the queue acceptance path and producer retained-job verification unchanged."
+        },
+        {
+          "path": "src/woocommerce/activity/redis-producer.ts",
+          "baseline_exists": true,
+          "action": "MODIFY failures to retain original causes and identify authentication/database versus connection/publication stage. Leave the queue acceptance path and producer retained-job verification unchanged."
+        },
+        {
+          "path": "src/woocommerce/consent/service.ts",
+          "baseline_exists": true,
+          "action": "MOVE existing immutable-evidence lookup after event lock but before recipient lock. Exact digest replay returns original acknowledgement; only new evidence proceeds to recipient lock/current-phone mutation/evidence insert."
+        },
+        {
+          "path": "src/woocommerce/recovery-selection/service.ts",
+          "baseline_exists": true,
+          "action": "SPLIT GET recipient lookup from mutation lookup: GET omits recipient advisory lock and FOR UPDATE; keep transaction-local Shop/installation checks. POST retains current lock and revision order."
+        },
+        {
+          "path": "src/woocommerce/recovery-restore/service.ts",
+          "baseline_exists": true,
+          "action": "KEEP the two deliberate eligibility reads; preserve bounded original SQL/Prisma identifiers in error diagnostics. Replace reduced schema setup in the restore fixture/runner with canonical migrations, not another local schema."
+        },
+        {
+          "path": "src/woocommerce/recovery-restore/routes.ts",
+          "baseline_exists": true,
+          "action": "KEEP the two deliberate eligibility reads; preserve bounded original SQL/Prisma identifiers in error diagnostics. Replace reduced schema setup in the restore fixture/runner with canonical migrations, not another local schema."
+        },
+        {
+          "path": "scripts/test-arch053-recovery-restore-postgres.mjs",
+          "baseline_exists": true,
+          "action": "KEEP the two deliberate eligibility reads; preserve bounded original SQL/Prisma identifiers in error diagnostics. Replace reduced schema setup in the restore fixture/runner with canonical migrations, not another local schema."
+        }
+      ],
+      "new_files": [
+        "tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts",
+        "tests/integration/woocommerce/recovery-restore/arch055-revalidation.postgres.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "B01",
+          "fixture": "Accepted GRANT retried after REVOKE and after real-equivalent STOP",
+          "expected": "Acknowledges historical evidence without changing current permission/STOP; duplicate path omits recipient lock."
+        },
+        {
+          "id": "B02",
+          "fixture": "Concurrent status GET and selection POST/STOP/reconnect",
+          "expected": "GET is a committed snapshot; stale POST still conflicts and final consent guard remains authoritative."
+        },
+        {
+          "id": "B03",
+          "fixture": "Authentication Prisma failure; Redis readiness failure; retained-job conflict",
+          "expected": "Correct stage and original redacted cause; no new PostgreSQL business writes."
+        },
+        {
+          "id": "B04",
+          "fixture": "Recovery completes or installation rotates between restore evidence reads",
+          "expected": "No restoration returned after failed final check; canonical constraints exercised."
+        }
+      ],
+      "registration": "Register the first new file in scripts/test-arch046-woo-consent-postgres.mjs and the second in scripts/test-arch053-recovery-restore-postgres.mjs; preserve existing suite lists."
+    },
+    {
+      "task_id": "ARCH-055-API-003",
+      "repository": "moda-interact-api",
+      "task_file": "docs/decisions/api/ARCH-055/API-003-consolidate-merchant-settings-and-category-projections.md",
+      "edits": [
+        {
+          "path": "src/merchant/store-categories/store-categories-read.service.ts",
+          "baseline_exists": true,
+          "action": "MODIFY read(): choose a short RepeatableRead transaction (not an alternative design); include principal, catalogue, profile and environment configuration reads in that tx. Extend the local read database port with $transaction; no FOR UPDATE/FOR SHARE on category GET."
+        },
+        {
+          "path": "src/merchant/store-categories/profile-read.ts",
+          "baseline_exists": true,
+          "action": "MODIFY read(): choose a short RepeatableRead transaction (not an alternative design); include principal, catalogue, profile and environment configuration reads in that tx. Extend the local read database port with $transaction; no FOR UPDATE/FOR SHARE on category GET."
+        },
+        {
+          "path": "src/merchant/store-categories/selection-publication.ts",
+          "baseline_exists": true,
+          "action": "TRACK newly created lineage. Only that branch skips draft/latest reads and publishes revision=1. Pending-draft branch uses exact id/promptId/status=DRAFT update and requires count=1, removing its pre-read. Existing-lineage checks remain."
+        },
+        {
+          "path": "src/merchant/feature-preferences/service.ts",
+          "baseline_exists": true,
+          "action": "NARROW selected scalar/relation fields without changing fingerprint inputs. Name first-load phases initial.subscriptionLookupMs/initial.featuresLookupMs/initial.preferencesLookupMs/initial.projectionMs and reload phases final.*. Preserve overall timers, sequential changed upserts and final reload."
+        },
+        {
+          "path": "src/merchant/feature-preferences/timing.ts",
+          "baseline_exists": true,
+          "action": "NARROW selected scalar/relation fields without changing fingerprint inputs. Name first-load phases initial.subscriptionLookupMs/initial.featuresLookupMs/initial.preferencesLookupMs/initial.projectionMs and reload phases final.*. Preserve overall timers, sequential changed upserts and final reload."
+        },
+        {
+          "path": "src/merchant/recovery-policy/service.ts",
+          "baseline_exists": true,
+          "action": "NARROW settings/override selections to projection/revision fields. Retain recovery-policy old-revision identical replay versus AI-delay revision-before-no-op; AI minutes 0..30 integers/default0."
+        },
+        {
+          "path": "src/merchant/ai-response-delay/service.ts",
+          "baseline_exists": true,
+          "action": "NARROW settings/override selections to projection/revision fields. Retain recovery-policy old-revision identical replay versus AI-delay revision-before-no-op; AI minutes 0..30 integers/default0."
+        },
+        {
+          "path": "src/merchant/recovery-summary/recovery-summary.service.ts",
+          "baseline_exists": true,
+          "action": "CONSOLIDATE principal/settings/override into one parameterised statement returning one joined tenant row (LEFT JOIN optional settings/override). Validate identity in the service and project the existing policy/default/expiry semantics. No reporting metrics or writes."
+        },
+        {
+          "path": "scripts/test-arch055-merchant-settings-postgres.mjs",
+          "baseline_exists": false,
+          "action": "CREATE canonical migration runner for existing bootstrap/store-context/category-read/category-write fixtures plus the new coherent-read race suite. Keep old aggregate runner untouched until API-009 reconciliation."
+        }
+      ],
+      "new_files": [
+        "scripts/test-arch055-merchant-settings-postgres.mjs",
+        "tests/integration/merchant/store-categories/arch055-coherent-read.postgres.test.ts",
+        "tests/integration/merchant/feature-preferences/arch055-admin-interleaving.postgres.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "C01",
+          "fixture": "Publish profile B/config B between the previous two profile/config reads",
+          "expected": "GET returns all A or all B, never old profile with new provenance."
+        },
+        {
+          "id": "C02",
+          "fixture": "First lineage, existing empty lineage, valid/foreign/published pending draft",
+          "expected": "Only genuinely new lineage uses revision1 shortcut; invalid draft affects zero rows and full rollback."
+        },
+        {
+          "id": "C03",
+          "fixture": "Feature changed/no-op/stale and Admin eligibility change during PUT",
+          "expected": "Original policy/fingerprint preserved; timings contain distinct initial/final phases with no overwrite."
+        },
+        {
+          "id": "C04",
+          "fixture": "AI delay 0/1/30, negative/fraction/31; policy old-revision identical replay",
+          "expected": "Original allowed/rejected values and deliberately different replay rules unchanged."
+        },
+        {
+          "id": "C05",
+          "fixture": "No settings/override, active override, expired override, malformed row",
+          "expected": "Single summary statement keeps default, source and safe failure semantics."
+        }
+      ],
+      "registration": "Run the category test through the new settings runner; append the feature test to scripts/test-arch035-feature-preferences-postgres.mjs. API-009 alone updates aggregate package.json integration wiring."
+    },
+    {
+      "task_id": "ARCH-055-API-004",
+      "repository": "moda-interact-api",
+      "task_file": "docs/decisions/api/ARCH-055/API-004-correct-recovery-inbox-and-human-send-persistence.md",
+      "edits": [
+        {
+          "path": "src/merchant/conversations/messages/admission.service.ts",
+          "baseline_exists": true,
+          "action": "PREALLOCATE randomUUID() once after replay resolution for each new command; set new template command.id=followUpClaimKey and attempt.initiationKey to that ID in one transaction. HUMAN_TEXT followUpClaimKey=null. Keep public idempotencyKey/hash and exact-one conditional claim."
+        },
+        {
+          "path": "src/merchant/conversations/messages/status.service.ts",
+          "baseline_exists": true,
+          "action": "MATCH HUMAN_TEXT assessment digest to persisted preparedTextBody; missing preparation remains pending and no original text fallback. Remove unused body fields from selected response data; template digest remains unchanged."
+        },
+        {
+          "path": "src/platform-configuration/composition.ts",
+          "baseline_exists": true,
+          "action": "ADD the transaction-bound sender factory below using the existing configuration reader, Shared crypto, environment and logger. Catalogue accepts tx plus factory and resolves sender via that tx. Remove catch-to-empty for unexpected DB/unseal failures. Text/replay must not call the factory."
+        },
+        {
+          "path": "src/merchant/conversations/messages/follow-up-catalogue.ts",
+          "baseline_exists": true,
+          "action": "ADD the transaction-bound sender factory below using the existing configuration reader, Shared crypto, environment and logger. Catalogue accepts tx plus factory and resolves sender via that tx. Remove catch-to-empty for unexpected DB/unseal failures. Text/replay must not call the factory."
+        },
+        {
+          "path": "src/composition/merchant.ts",
+          "baseline_exists": true,
+          "action": "ADD the transaction-bound sender factory below using the existing configuration reader, Shared crypto, environment and logger. Catalogue accepts tx plus factory and resolves sender via that tx. Remove catch-to-empty for unexpected DB/unseal failures. Text/replay must not call the factory."
+        },
+        {
+          "path": "src/merchant/recoveries/detail/pages.ts",
+          "baseline_exists": true,
+          "action": "REPLACE navigation counts with lookahead for fetched direction and one bounded opposite-direction existence query only for next/previous navigation. First/latest message and first related pages need no extra navigation query. Keep all current cursor and ordering rules."
+        },
+        {
+          "path": "src/merchant/recoveries/detail/read.service.ts",
+          "baseline_exists": true,
+          "action": "NARROW messages/related ownership projection but retain every customer/conversation relationship check. Skip recovery-list page fetch after same-snapshot total=0; exact count and summary verified inbound reads remain."
+        },
+        {
+          "path": "src/merchant/recoveries/list.service.ts",
+          "baseline_exists": true,
+          "action": "NARROW messages/related ownership projection but retain every customer/conversation relationship check. Skip recovery-list page fetch after same-snapshot total=0; exact count and summary verified inbound reads remain."
+        },
+        {
+          "path": "src/merchant/conversations/control/service.ts",
+          "baseline_exists": true,
+          "action": "KEEP audited transitions/locks/revision semantics; retain original handled causes without changing successful SQL sequence."
+        }
+      ],
+      "new_files": [
+        "tests/integration/merchant/conversations/arch055-claims-and-prepared-status.postgres.test.ts",
+        "tests/integration/merchant/conversations/arch055-transaction-config.postgres.test.ts",
+        "tests/integration/merchant/recoveries/detail/arch055-pagination.postgres.test.ts",
+        "tests/integration/merchant/recoveries/arch055-list.postgres.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "D01",
+          "fixture": "Two Shops and mixed platforms use public send-1; one retries",
+          "expected": "Distinct persisted internal claims; same-Shop replay returns original command/key and no second claim."
+        },
+        {
+          "id": "D02",
+          "fixture": "Original body Hello; prepared body Store: Hello; wrong/missing/allowed/blocked assessments",
+          "expected": "Only exact prepared digest matches; template unchanged; missing prepared body pending."
+        },
+        {
+          "id": "D03",
+          "fixture": "Real sender configuration reader under a one-connection transaction test; DB/unseal fails",
+          "expected": "No root-client query waits for a second connection; failure remains failure, never ordinary empty choices."
+        },
+        {
+          "id": "D04",
+          "fixture": "51/105 messages and >5 related rows; tied timestamps/deleted boundaries/foreign IDs",
+          "expected": "Same items/cursors as baseline; no full navigation COUNT; moderation and tenant checks retained."
+        },
+        {
+          "id": "D05",
+          "fixture": "Claim denied or command insert fails after attempt claim",
+          "expected": "Entire claim rolls back; no dangling follow-up ownership or credit changes."
+        }
+      ],
+      "registration": "Append conversation files to scripts/test-arch040-woo-human-send-postgres.mjs and recovery files to scripts/test-arch041-cross-domain-postgres.mjs; preserve existing suites."
+    },
+    {
+      "task_id": "ARCH-055-API-005",
+      "repository": "moda-interact-api",
+      "task_file": "docs/decisions/api/ARCH-055/API-005-correct-knowledge-source-and-upload-lifecycle.md",
+      "edits": [
+        {
+          "path": "src/merchant/merchant-knowledge/commands.service.ts",
+          "baseline_exists": true,
+          "action": "RETURN locked principal fields rather than reread; use a writer entitlement projection without the unused preference lookup. For web PATCH/refresh/URL-change/DELETE mutations use id+shopId+currentGeneration=expectedGeneration and exact-one result; keep source/revision atomicity and existing no-op/replay rules."
+        },
+        {
+          "path": "src/merchant/merchant-knowledge/read.service.ts",
+          "baseline_exists": true,
+          "action": "REPLACE ACTIVE groupBy+fetch with direct ACTIVE findMany for the page source IDs. Preserve latest-vs-ACTIVE distinction and best-effort multi-query contract; no new encompassing transaction."
+        },
+        {
+          "path": "src/merchant/merchant-knowledge/commands.service.ts",
+          "baseline_exists": true,
+          "action": "ORDER/compact only rows whose final position changes; stage positive unique positions above current maximum, then final positions in deterministic order. Require safe integer range and no intermediate collision; full membership and atomic rollback remain. Untouched row updatedAt stays unchanged."
+        },
+        {
+          "path": "src/merchant/merchant-knowledge/upload.service.ts",
+          "baseline_exists": true,
+          "action": "INTENT: write intentPurposeKey once and compare it with all existing format/file/MIME/hash/size retry metadata. PENDING null legacy purpose conflicts; never infer/bind it. New key stays based on original Shop/request identity, not purpose."
+        },
+        {
+          "path": "src/merchant/merchant-knowledge/upload.service.ts",
+          "baseline_exists": true,
+          "action": "FINALISE: in committing transaction keep Shop/installation checks, then SELECT the same-Shop asset FOR NO KEY UPDATE, recheck state/expiry/purpose/file metadata/MIME after lock wait. For replacement next lock/revalidate the source generation. Hold asset/source coordination through AVAILABLE+original revision insert. Cleanup uses asset FOR UPDATE; source-locked revision writers may take compatible asset FK KEY SHARE. Test the exact lock schedule. Do not wait on provider/R2 under these locks."
+        },
+        {
+          "path": "src/merchant/merchant-knowledge/upload.service.ts",
+          "baseline_exists": true,
+          "action": "AVAILABLE replay: find original intake using uploadedAssetId + reason IN (CREATE,FILE_REPLACE), take2 and require exactly one valid same-Shop/source/format/purpose binding; return its persisted sourceId/revisionId/generation. Do not select arbitrary/latest REPROCESS. Legacy completed null-purpose assets require original source purpose to prove the request binding."
+        },
+        {
+          "path": "src/merchant/merchant-knowledge/upload.service.ts",
+          "baseline_exists": true,
+          "action": "Bound existing-upload eligibility to first K eligible sources with target fields, including web sources in rank; skip identical metadata after validation. Keep reprocess generation CAS/two writes and preflight contract; document existing 409 and sequential append, no new request field."
+        },
+        {
+          "path": "openapi/merchant-knowledge-v1.yaml",
+          "baseline_exists": true,
+          "action": "Bound existing-upload eligibility to first K eligible sources with target fields, including web sources in rank; skip identical metadata after validation. Keep reprocess generation CAS/two writes and preflight contract; document existing 409 and sequential append, no new request field."
+        }
+      ],
+      "new_files": [
+        "tests/integration/merchant/merchant-knowledge/arch055-generation-races.postgres.test.ts",
+        "tests/integration/merchant/merchant-knowledge/arch055-upload-lifecycle.postgres.test.ts",
+        "tests/integration/merchant/merchant-knowledge/arch055-ordering.postgres.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "E01",
+          "fixture": "Pause API after source read, actual-equivalent worker advances generation",
+          "expected": "Metadata PATCH/DELETE reject stale; URL/refresh rollback; no deletion of newer revision."
+        },
+        {
+          "id": "E02",
+          "fixture": "Expired cleanup wins after pre-network read but before finalisation asset lock",
+          "expected": "No resurrection, no new revision; finalisation conflicts. Reverse schedule commits reference and cleanup skips deletion."
+        },
+        {
+          "id": "E03",
+          "fixture": "Wait for asset lock across expiry; policy MIME changes during R2",
+          "expected": "Recheck rejects current invalid state, no forged expiry, all writes roll back."
+        },
+        {
+          "id": "E04",
+          "fixture": "Intent retry changes only purpose; legacy unbound pending; replay after REPROCESS",
+          "expected": "Changed purpose/unbound pending conflict; original source/revision/generation replay remains exact after later revisions."
+        },
+        {
+          "id": "E05",
+          "fixture": "Swap adjacent pair among100; delete last source; unchanged metadata",
+          "expected": "4 position writes for swap,0 for delete-tail compaction,0 metadata update; untouched timestamps preserved."
+        },
+        {
+          "id": "E06",
+          "fixture": "Commit succeeds then response projection throws",
+          "expected": "Log committed outcome separately; no assumed rollback or blind new generation."
+        }
+      ],
+      "registration": "Add generation/order files to scripts/test-arch035-merchant-knowledge-postgres.mjs; add upload file to scripts/test-arch035-knowledge-upload-postgres.mjs. No schema copies/migrations in API."
+    },
+    {
+      "task_id": "ARCH-055-API-006",
+      "repository": "moda-interact-api",
+      "task_file": "docs/decisions/api/ARCH-055/API-006-optimise-commercial-settings-and-reporting-projections.md",
+      "edits": [
+        {
+          "path": "src/merchant/promotions/read.ts",
+          "baseline_exists": true,
+          "action": "KEEP counts and snapshot; if offerCount/historyCount=0 return that empty page without corresponding findMany. Keep selected grant independent of page."
+        },
+        {
+          "path": "src/merchant/discount-offers/service.ts",
+          "baseline_exists": true,
+          "action": "Save validates full submitted ID set, computes removed/added set differences and updates only those flags with count checks. Reuse settings write return and locked onboarding value; retain final selected-set/override reads. Narrow GET catalogue/settings/override projections; no CURRENT gating for saved settings or Save."
+        },
+        {
+          "path": "src/merchant/usage-history/history.service.ts",
+          "baseline_exists": true,
+          "action": "Combine count/_sum into one aggregate. Historical view skips unused current-linked period; retain internal period rows to reuse default/matching requested period. Preserve cursor-anchor validation and off-page explicit period lookup."
+        },
+        {
+          "path": "src/merchant/usage-history/periods.ts",
+          "baseline_exists": true,
+          "action": "Combine count/_sum into one aggregate. Historical view skips unused current-linked period; retain internal period rows to reuse default/matching requested period. Preserve cursor-anchor validation and off-page explicit period lookup."
+        },
+        {
+          "path": "src/billing/presentation/billing-read.service.ts",
+          "baseline_exists": true,
+          "action": "Reuse pending catalogue row only on an exact operational-plan handle match. Keep latest versus unresolved purchases and confirmed cancellation evidence."
+        },
+        {
+          "path": "src/billing/presentation/plan-catalogue-read.service.ts",
+          "baseline_exists": true,
+          "action": "Build requested/base/default/base/en candidate set after Shop lookup; constrain both translation relations to it. Choose one complete locale for whole catalogue; preserve overflow101."
+        },
+        {
+          "path": "src/billing/purchase-history/service.ts",
+          "baseline_exists": true,
+          "action": "Skip page query only after zero count inside same snapshot; preserve refund overflow11 and latest/completed distinction."
+        }
+      ],
+      "new_files": [
+        "tests/integration/billing/purchase-history/arch055-history.postgres.test.ts",
+        "tests/integration/merchant/usage-history/arch055-query-shapes.postgres.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "F01",
+          "fixture": "Offers/history independently empty",
+          "expected": "Correct totals/page defaults; only corresponding page fetch omitted."
+        },
+        {
+          "id": "F02",
+          "fixture": "50 unchanged coupons + mode change; one replaced coupon; invalid foreign ID",
+          "expected": "0/2 flag row assignments; full validation/anchor/rollback unchanged."
+        },
+        {
+          "id": "F03",
+          "fixture": "Current/past/explicit period, signed negative corrections, v1/v2 ambiguity",
+          "expected": "Exact accounting/DTOs unchanged; aggregate one call; no lost cursor-anchor check."
+        },
+        {
+          "id": "F04",
+          "fixture": "Whole-catalogue fallback and no complete locale",
+          "expected": "One chosen locale or original failure; not mixed per-plan language."
+        },
+        {
+          "id": "F05",
+          "fixture": "Empty/nonempty history,>10refunds, concurrent refund changes",
+          "expected": "Same count/page snapshot, no silently truncated invalid refund evidence."
+        }
+      ],
+      "registration": "Append history to scripts/test-arch041-billing-postgres.mjs and usage to scripts/test-arch035-usage-history-postgres.mjs. Retain promotion/discount suites. Measure-first items below are evidence-only, not discretionary source changes."
+    },
+    {
+      "task_id": "ARCH-055-API-007",
+      "repository": "moda-interact-api",
+      "task_file": "docs/decisions/api/ARCH-055/API-007-harden-durable-billing-command-admission.md",
+      "edits": [
+        {
+          "path": "src/billing/commands/recurring-intent.ts",
+          "baseline_exists": true,
+          "action": "CALL accepted API-001 current-principal helper at new/replay transaction admission before Subscription lock; reuse its locked Shop fields. Do not resolve credentials after persisting a new intent. Keep original expected revision/current quote comparisons."
+        },
+        {
+          "path": "src/billing/commands/recovery-credit-intent.ts",
+          "baseline_exists": true,
+          "action": "CALL accepted API-001 current-principal helper at new/replay transaction admission before Subscription lock; reuse its locked Shop fields. Do not resolve credentials after persisting a new intent. Keep original expected revision/current quote comparisons."
+        },
+        {
+          "path": "src/billing/commands/recurring-intent.ts",
+          "baseline_exists": true,
+          "action": "Replace all recurring history load/sort with bounded findFirst over exact unresolved OR applicable confirmed cancellation predicate; include provider reference and Free-terminal-reset exception, not last-N history."
+        },
+        {
+          "path": "src/billing/commands/recurring-outcome.ts",
+          "baseline_exists": true,
+          "action": "Use guarded returning update for a winning outcome; retain zero-row reread and provider-reference advisory/collision guards. No post-admission rotation veto on valid evidence."
+        },
+        {
+          "path": "src/billing/commands/recovery-credit-outcome.ts",
+          "baseline_exists": true,
+          "action": "Use guarded returning update for a winning outcome; retain zero-row reread and provider-reference advisory/collision guards. No post-admission rotation veto on valid evidence."
+        },
+        {
+          "path": "src/billing/commands/recovery-credit-intent.ts",
+          "baseline_exists": true,
+          "action": "Select purchase ID only from create. Reuse accepted materialisation contract from API-001, preserving warm/cold validation and no early paid/credit activation."
+        },
+        {
+          "path": "src/woocommerce/billing/initial-free-activation.service.ts",
+          "baseline_exists": true,
+          "action": "Select purchase ID only from create. Reuse accepted materialisation contract from API-001, preserving warm/cold validation and no early paid/credit activation."
+        },
+        {
+          "path": "src/woocommerce/billing/woo-billing-client.ts",
+          "baseline_exists": true,
+          "action": "Preserve original transport/read/parse cause, HTTP status and bounded safe provider details through typed errors; public/durable codes unchanged; do not log headers/raw bodies/confirmation URLs or retry uncertain writes."
+        }
+      ],
+      "new_files": [
+        "tests/integration/billing/commands/arch055-installation-admission.postgres.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "G01",
+          "fixture": "Real auth then reconnect/revoke before create/cancel/switch/purchase admission",
+          "expected": "Reject stale before durable intent/provider call; current principal still works."
+        },
+        {
+          "id": "G02",
+          "fixture": "Rotate only after admitted intent commits, then provider outcome arrives",
+          "expected": "Persist valid outcome; no credit/paid activation before verified reconciliation."
+        },
+        {
+          "id": "G03",
+          "fixture": "No matching operation/older unresolved/confirmed cancellation/different contract/Free reset",
+          "expected": "Bounded blocker exactly equivalent to original policy; never latest-only."
+        },
+        {
+          "id": "G04",
+          "fixture": "Outcome conditional update loses to newer durable result",
+          "expected": "Return winner by reread; no downgrade or invented success."
+        },
+        {
+          "id": "G05",
+          "fixture": "Transport/HTTP/parse/config failure and repeated request",
+          "expected": "Original redacted diagnostics; existing safe output and no blind provider resend."
+        }
+      ],
+      "registration": "Append to scripts/test-arch041-billing-postgres.mjs, which already owns billing migrations/outcomes. Fixture must create a real installation/authenticator, not a constructed principal only."
+    },
+    {
+      "task_id": "ARCH-055-API-008",
+      "repository": "moda-interact-api",
+      "task_file": "docs/decisions/api/ARCH-055/API-008-consolidate-support-inbox-persistence.md",
+      "edits": [
+        {
+          "path": "src/merchant/support/read.service.ts",
+          "baseline_exists": true,
+          "action": "CHOOSE one parameterised data statement (CTEs allowed) for page plus total/unread after existing principal checks; the empty page still returns aggregate. Keep transaction ReadCommitted and existing share locks. Join AVAILABLE translation using unique messageId/targetLanguageTag, not latest-row lateral query."
+        },
+        {
+          "path": "src/merchant/support/commands.service.ts",
+          "baseline_exists": true,
+          "action": "Compose combines thread create/conflict bookkeeping/version into initial UPSERT RETURNING id, then message/translation writes inside same tx. Replay check remains before write. Mark-read remains unchanged conditional-write/winner-reread algorithm."
+        },
+        {
+          "path": "src/merchant/support/translation-queue.ts",
+          "baseline_exists": true,
+          "action": "Replace empty Queue error listener with safe original-error logging through injected shared logger. Queue add stays after commit and existing durable repair unchanged."
+        }
+      ],
+      "new_files": [
+        "tests/integration/merchant/support/arch055-snapshot-and-thread.postgres.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "H01",
+          "fixture": "Pause former page/count boundary while message is marked read",
+          "expected": "One data-statement old or new coherent page/unread result, including empty pages."
+        },
+        {
+          "id": "H02",
+          "fixture": "Translation missing/pending/AVAILABLE and system recovery link foreign",
+          "expected": "Existing visibility/body suppression/tenant link rules unchanged."
+        },
+        {
+          "id": "H03",
+          "fixture": "Message/translation insertion fails after thread upsert; Admin concurrent reply",
+          "expected": "Entire transaction rolls back; reply version coordination preserved."
+        },
+        {
+          "id": "H04",
+          "fixture": "Redis error event/add timeout after durable compose",
+          "expected": "Message stays committed; original bounded cause logged; repair can dispatch."
+        },
+        {
+          "id": "H05",
+          "fixture": "Two readers mark same message; already-read replay; suspended/foreign message",
+          "expected": "Winner timestamp returned, no timestamp rewrite, existing permitted/denied policies retained."
+        }
+      ],
+      "registration": "Append to scripts/test-arch035-woo-support-postgres.mjs. Existing selection callers using installation.ts must pass unchanged tests; no global helper-policy rewrite."
+    },
+    {
+      "task_id": "ARCH-055-API-009",
+      "repository": "moda-interact-api",
+      "task_file": "docs/decisions/api/ARCH-055/API-009-bound-readiness-and-reconcile-api-validation.md",
+      "edits": [
+        {
+          "path": "src/database.ts",
+          "baseline_exists": true,
+          "action": "CREATE one dedicated readiness-only PrismaClient per process in addition to existing business client. Derive its URL without logging it; preserve all existing non-timeout/security arguments and override connection_limit=1, pool_timeout=1, connect_timeout=1, socket_timeout=1. No extra driver package. probe uses only parameter-free SELECT1. Disconnect both clients only on normal shutdown; never disconnect business client on readiness timeout."
+        },
+        {
+          "path": "src/readiness-probe.ts",
+          "baseline_exists": false,
+          "action": "CREATE single-flight adapter around that one delegate. inFlight cleared only by actual delegate settlement, never observer HTTP timeout. Concurrent requests await same promise; new request after settlement starts fresh probe, not cached success. Existing 2000ms observer deadline and liveness response unchanged."
+        },
+        {
+          "path": "src/server.ts",
+          "baseline_exists": true,
+          "action": "CREATE single-flight adapter around that one delegate. inFlight cleared only by actual delegate settlement, never observer HTTP timeout. Concurrent requests await same promise; new request after settlement starts fresh probe, not cached success. Existing 2000ms observer deadline and liveness response unchanged."
+        },
+        {
+          "path": "scripts/test-arch055-readiness-postgres.mjs",
+          "baseline_exists": false,
+          "action": "CREATE canonical disposable PG runner and real HTTP failure/recovery suite. Test dedicated pool/query bounds (blocking injected query only in test adapter), network/connect failure, at most1 physical connection/probe, and no business-client shutdown."
+        },
+        {
+          "path": "tests/integration/http/arch055-readiness.postgres.test.ts",
+          "baseline_exists": false,
+          "action": "CREATE canonical disposable PG runner and real HTTP failure/recovery suite. Test dedicated pool/query bounds (blocking injected query only in test adapter), network/connect failure, at most1 physical connection/probe, and no business-client shutdown."
+        },
+        {
+          "path": "scripts/test-woocommerce-installation-postgres.mjs",
+          "baseline_exists": true,
+          "action": "AFTER API-001..008 acceptance, replace old db-push orchestration with calls to the accepted installation/settings canonical runners; preserve all previous suites. Append AI-delay and ARCH-055 readiness runners to test:integration exactly once, plus explicit script keys below."
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true,
+          "action": "AFTER API-001..008 acceptance, replace old db-push orchestration with calls to the accepted installation/settings canonical runners; preserve all previous suites. Append AI-delay and ARCH-055 readiness runners to test:integration exactly once, plus explicit script keys below."
+        }
+      ],
+      "new_files": [
+        "src/readiness-probe.ts",
+        "scripts/test-arch055-readiness-postgres.mjs",
+        "tests/unit/http/arch055-readiness-single-flight.test.ts",
+        "tests/integration/http/arch055-readiness.postgres.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "I01",
+          "fixture": "20+concurrent readiness requests with held delegate",
+          "expected": "One underlying probe; all observer deadlines bounded; no early guard clear or old-success cache."
+        },
+        {
+          "id": "I02",
+          "fixture": "Actual dedicated pool held or test query pg_sleep>timeout; connection failure then restoration",
+          "expected": "Underlying failure settles within asserted5s safety ceiling; next request recovers, business client unaffected. 5s is acceptance ceiling, not configured SQL timeout."
+        },
+        {
+          "id": "I03",
+          "fixture": "Database outage with /health/live",
+          "expected": "Immediate200 and no DB/config/provider/queue call."
+        },
+        {
+          "id": "I04",
+          "fixture": "Shutdown after success, outage and in-flight deadline",
+          "expected": "Both clients cleaned once, no leaked resources/secret logs."
+        },
+        {
+          "id": "I05",
+          "fixture": "Run aggregate suite on current accepted migration pin",
+          "expected": "Every retained suite and new registration included; no db-push/reduced schema substitutes."
+        }
+      ],
+      "registration": "Add exact script keys test:arch055-installation:postgres, test:arch055-merchant-settings:postgres, test:arch055-readiness:postgres, mapping respectively to node scripts/test-arch055-installation-postgres.mjs, node scripts/test-arch055-merchant-settings-postgres.mjs, node scripts/test-arch055-readiness-postgres.mjs. Preserve all existing script keys."
+    },
+    {
+      "task_id": "ARCH-055-BACKGROUND-001",
+      "repository": "moda-interact-background",
+      "task_file": "docs/decisions/background/ARCH-055/BACKGROUND-001-consume-persisted-human-follow-up-claim-identity.md",
+      "edits": [
+        {
+          "path": "src/services/recovery-conversation/merchant-send-command.service.ts",
+          "baseline_exists": true,
+          "action": "ADD followUpClaimKey to command persistence projection/type; carry it unchanged to dispatch/cancel/fence/repair. Do not derive key from a request or command.id for historical records."
+        },
+        {
+          "path": "src/services/recovery-conversation/human-command-dispatcher.service.ts",
+          "baseline_exists": true,
+          "action": "REPLACE human attempt.initiationKey versus command.idempotencyKey ownership comparisons with stored followUpClaimKey; missing/blank template field is explicit fail-closed internal error before provider or release. HUMAN_TEXT does not require key. Every release CAS retains expected attempt/key/current owner/outcome predicates."
+        },
+        {
+          "path": "src/services/recovery-conversation/outbound-send-fence.service.ts",
+          "baseline_exists": true,
+          "action": "REPLACE human attempt.initiationKey versus command.idempotencyKey ownership comparisons with stored followUpClaimKey; missing/blank template field is explicit fail-closed internal error before provider or release. HUMAN_TEXT does not require key. Every release CAS retains expected attempt/key/current owner/outcome predicates."
+        },
+        {
+          "path": "src/services/recovery-conversation/follow-up-claim-cancellation.service.ts",
+          "baseline_exists": true,
+          "action": "REPLACE human attempt.initiationKey versus command.idempotencyKey ownership comparisons with stored followUpClaimKey; missing/blank template field is explicit fail-closed internal error before provider or release. HUMAN_TEXT does not require key. Every release CAS retains expected attempt/key/current owner/outcome predicates."
+        }
+      ],
+      "new_files": [
+        "tests/unit/services/recovery-conversation/arch055-claim-key.test.ts",
+        "tests/integration/arch055-follow-up-identity.integration.test.ts"
+      ],
+      "test_cases": [
+        {
+          "id": "J01",
+          "fixture": "New Woo and Shopify key=command ID; legacy backfilled key differs",
+          "expected": "Both dispatch/cancel with their persisted key; never recompute legacy key."
+        },
+        {
+          "id": "J02",
+          "fixture": "Cancelled owner and reclaimed same attempt; old worker resumes",
+          "expected": "Old command cannot release or dispatch later owner."
+        },
+        {
+          "id": "J03",
+          "fixture": "Null/blank template key, UNKNOWN/provider-admitted/SENT command",
+          "expected": "Missing key blocks safely; no unsafe release/resend/double credit; preserve prepared-body moderation."
+        }
+      ],
+      "registration": "Append new integration file to package.json test:arch040-background-runtime:postgres node scripts/test-integration.mjs file list; retain existing files. Existing unit directory command includes new unit test."
+    },
+    {
+      "task_id": "ARCH-055-SHOPIFY-001",
+      "repository": "moda-interact",
+      "task_file": "docs/decisions/shopify/ARCH-055/SHOPIFY-001-bind-human-follow-up-commands-to-internal-claim-key.md",
+      "edits": [
+        {
+          "path": "app/services/recoveries/recovery-human-commands.server.ts",
+          "baseline_exists": true,
+          "action": "AFTER matching replay resolution allocate randomUUID() for a new command. Template creates command.id=followUpClaimKey and attempt.initiationKey identical in existing transaction; HUMAN_TEXT null. Explicitly select no private new field into public response. Never replace public retry key/hash."
+        },
+        {
+          "path": "tests/unit/arch040-shopify-command.test.ts",
+          "baseline_exists": true,
+          "action": "ASSERT created command ID and claim key and template/null differentiation; update mock return fields without pretending mocks prove shared DB constraints. Retain public fields/locale/template policy."
+        },
+        {
+          "path": "tests/unit/arch047-shopify-follow-up-sender.test.ts",
+          "baseline_exists": true,
+          "action": "ASSERT created command ID and claim key and template/null differentiation; update mock return fields without pretending mocks prove shared DB constraints. Retain public fields/locale/template policy."
+        },
+        {
+          "path": "tests/fixtures/arch047-shopify-follow-up.ts",
+          "baseline_exists": true,
+          "action": "ASSERT created command ID and claim key and template/null differentiation; update mock return fields without pretending mocks prove shared DB constraints. Retain public fields/locale/template policy."
+        }
+      ],
+      "new_files": [],
+      "test_cases": [
+        {
+          "id": "K01",
+          "fixture": "Two Shops submit same key and same-Shop exact/conflicting replay",
+          "expected": "Distinct internal identity across Shops; exact replay same command; conflicting payload unchanged rejection."
+        },
+        {
+          "id": "K02",
+          "fixture": "Template insert fails after claim; HUMAN_TEXT success",
+          "expected": "Transaction rollback; human text key null and unchanged behaviour."
+        }
+      ],
+      "registration": "Existing two exact vitest files in task Validation; real cross-platform PostgreSQL/Background proof belongs to terminal system test, not an invented implementation prerequisite."
+    },
+    {
+      "task_id": "ARCH-055-SYSTEM-TEST-001",
+      "repository": "moda-interact-system-test",
+      "task_file": "docs/decisions/system-test/ARCH-055/SYSTEM-TEST-001-validate-database-correctness-and-efficiency-end-to-end.md",
+      "edits": [
+        {
+          "path": "catalogue/scenarios.json",
+          "baseline_exists": true,
+          "action": "REGISTER arch055 suite and the twelve exact scenarios below; preserve runner/executor/evidence conventions. Scenario IDs ARCH055-IDENTITY-001, ARCH055-CONSENT-001, ARCH055-SETTINGS-001, ARCH055-INBOX-001, ARCH055-KNOWLEDGE-001, ARCH055-COMMERCIAL-001, ARCH055-BILLING-001, ARCH055-SUPPORT-001, ARCH055-READINESS-001, ARCH055-MIGRATION-001, ARCH055-CLAIM-001, ARCH055-COVERAGE-001."
+        },
+        {
+          "path": "src/harness/runner.js",
+          "baseline_exists": true,
+          "action": "REGISTER arch055 suite and the twelve exact scenarios below; preserve runner/executor/evidence conventions. Scenario IDs ARCH055-IDENTITY-001, ARCH055-CONSENT-001, ARCH055-SETTINGS-001, ARCH055-INBOX-001, ARCH055-KNOWLEDGE-001, ARCH055-COMMERCIAL-001, ARCH055-BILLING-001, ARCH055-SUPPORT-001, ARCH055-READINESS-001, ARCH055-MIGRATION-001, ARCH055-CLAIM-001, ARCH055-COVERAGE-001."
+        },
+        {
+          "path": "src/harness/selection.js",
+          "baseline_exists": true,
+          "action": "REGISTER arch055 suite and the twelve exact scenarios below; preserve runner/executor/evidence conventions. Scenario IDs ARCH055-IDENTITY-001, ARCH055-CONSENT-001, ARCH055-SETTINGS-001, ARCH055-INBOX-001, ARCH055-KNOWLEDGE-001, ARCH055-COMMERCIAL-001, ARCH055-BILLING-001, ARCH055-SUPPORT-001, ARCH055-READINESS-001, ARCH055-MIGRATION-001, ARCH055-CLAIM-001, ARCH055-COVERAGE-001."
+        },
+        {
+          "path": "src/harness/arch055/executors.js",
+          "baseline_exists": false,
+          "action": "CREATE modular router/fixtures/assertions/contracts. Add separate identity.js, consent.js, settings.js, inbox.js, knowledge.js, commercial.js, billing.js, support.js, readiness.js, migration.js, claim.js, coverage.js executor modules under same directory; do not build one monolith. Use actual services/HTTP; providers sandbox/emulated, never live payments."
+        },
+        {
+          "path": "src/harness/arch055/fixtures.js",
+          "baseline_exists": false,
+          "action": "CREATE modular router/fixtures/assertions/contracts. Add separate identity.js, consent.js, settings.js, inbox.js, knowledge.js, commercial.js, billing.js, support.js, readiness.js, migration.js, claim.js, coverage.js executor modules under same directory; do not build one monolith. Use actual services/HTTP; providers sandbox/emulated, never live payments."
+        },
+        {
+          "path": "src/harness/arch055/assertions.js",
+          "baseline_exists": false,
+          "action": "CREATE modular router/fixtures/assertions/contracts. Add separate identity.js, consent.js, settings.js, inbox.js, knowledge.js, commercial.js, billing.js, support.js, readiness.js, migration.js, claim.js, coverage.js executor modules under same directory; do not build one monolith. Use actual services/HTTP; providers sandbox/emulated, never live payments."
+        },
+        {
+          "path": "src/harness/arch055/contracts.js",
+          "baseline_exists": false,
+          "action": "CREATE modular router/fixtures/assertions/contracts. Add separate identity.js, consent.js, settings.js, inbox.js, knowledge.js, commercial.js, billing.js, support.js, readiness.js, migration.js, claim.js, coverage.js executor modules under same directory; do not build one monolith. Use actual services/HTTP; providers sandbox/emulated, never live payments."
+        },
+        {
+          "path": "test/harness/arch055-contracts.test.js",
+          "baseline_exists": false,
+          "action": "CREATE harness registration/strict failure tests. Add system:arch055:plan and system:arch055 keys already specified; no alternate runner."
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true,
+          "action": "CREATE harness registration/strict failure tests. Add system:arch055:plan and system:arch055 keys already specified; no alternate runner."
+        }
+      ],
+      "new_files": [
+        "src/harness/arch055/executors.js",
+        "src/harness/arch055/fixtures.js",
+        "src/harness/arch055/assertions.js",
+        "src/harness/arch055/contracts.js",
+        "src/harness/arch055/identity.js",
+        "src/harness/arch055/consent.js",
+        "src/harness/arch055/settings.js",
+        "src/harness/arch055/inbox.js",
+        "src/harness/arch055/knowledge.js",
+        "src/harness/arch055/commercial.js",
+        "src/harness/arch055/billing.js",
+        "src/harness/arch055/support.js",
+        "src/harness/arch055/readiness.js",
+        "src/harness/arch055/migration.js",
+        "src/harness/arch055/claim.js",
+        "src/harness/arch055/coverage.js",
+        "test/harness/arch055-contracts.test.js"
+      ],
+      "test_cases": [
+        {
+          "id": "L01",
+          "fixture": "All implementation dependencies accepted and developer elects to execute",
+          "expected": "Record accepted pins/migrations, real auth/races and cleanup; no production-performance certification."
+        },
+        {
+          "id": "L02",
+          "fixture": "Each scoped race with real competitors and barriers",
+          "expected": "Before-state reproduction where feasible, after-state expected outcomes; failures block, never silently skip."
+        },
+        {
+          "id": "L03",
+          "fixture": "All61 endpoint register entries including retained routes",
+          "expected": "Unique route coverage rows with method/path, owner, test ID, pass/fail/not-run, SQL/row evidence; no aggregate speedup claim."
+        }
+      ],
+      "registration": "Use existing runner suite selection. Exact package additions remain system:arch055:plan=node scripts/run-system-tests.js --suite arch055 --list and system:arch055=node scripts/run-system-tests.js --suite arch055 --execute."
+    }
+  ]
+}

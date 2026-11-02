@@ -17,6 +17,7 @@ attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
   - ARCH-046-API-001
+  - ARCH-046-API-006
   - ARCH-035-API-020
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-WOOCOMMERCE-003
@@ -35,7 +36,7 @@ depends_on:
   - ARCH-048-WOOCOMMERCE-003
 enables: []
 created: 2026-10-20
-updated: 2026-10-25
+updated: 2026-11-01
 ---
 
 # Certify Woo consent-gated first recovery creation and later opt-in

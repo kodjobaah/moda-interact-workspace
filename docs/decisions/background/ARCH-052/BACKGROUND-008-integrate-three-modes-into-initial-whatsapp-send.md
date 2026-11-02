@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 65
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 4
 depends_on:
 - ARCH-052-SHARED-012
 - ARCH-052-ADMIN-003
@@ -27,7 +27,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-002
 - ARCH-052-SYSTEM-TEST-003
 created: '2026-10-29'
-updated: 2026-10-31
+updated: 2026-11-01
 ---
 
 # ARCH-052-BACKGROUND-008: Send approved checkout or alternative-product promotion via existing initial outreach
@@ -107,10 +107,34 @@ The product URL evidence/validation helpers are Background-local (no new Shared 
 ### Final validation/admission contract — 31 October 2026 (mandatory)
 
 - Consume only a `CHECKOUT_DISCOUNT` 1..3 **validated** `InitialOutreachCheckoutOfferSet`, with the Background-local per-member eligibility/line-match and per-pair compatibility evidence from BACKGROUND-010. **Do not** call an LLM to prove eligibility, inspect product names to match coupons, call a new MCP proof endpoint or re-evaluate arbitrary untrusted model output in the sender.
-- Immediately before initial template preparation, **re-read** the current recovery `shopId`, generation and basket fingerprint, the current FIXED/AI/NONE merchant settings, current provider offer rows/IDs/codes/status/dates and the same-shop snapshot revision used by the agent. If any identity, checkout generation or source fact changed, **re-run the same pure BACKGROUND-010 eligibility/combination helpers on trusted current facts** or reject the stale set; do not reuse an old positive verdict. No **direct Shopify/Woo/hosted-API provider** call is allowed in Background's final guard; the separate BG016 price preflight may use the existing **private MCP exact-product** interface outside a database transaction. If exact current facts cannot be established, return approved NO_OFFER or typed no-send. Do not invent a five-minute TTL or mutate a checkout.
+- Immediately before initial template preparation, **re-read** the current recovery `shopId`, generation and basket fingerprint, the current FIXED/AI/NONE merchant settings, current provider offer rows/IDs/codes/status/dates and a fresh, Background-local current-source fence (catalogue `syncGeneration` plus a digest of the selected same-shop rows) **instead of** an MCP revision field or an identity comparison to the snapshot seen by BG010. Treat the BG010 result as candidates only. Re-read each candidate through authenticated `commerce_get_discount_details`, re-run the same pure BACKGROUND-010 eligibility/combination helpers on trusted current facts and reject stale or unsupported members; do not reuse an old positive verdict. No **direct Shopify/Woo/hosted-API provider** call is allowed in Background's final guard; the separate BG016 price preflight may use the existing **private MCP exact-product** interface outside a database transaction. If exact current facts cannot be established, return approved NO_OFFER or typed no-send. Do not invent a five-minute TTL or mutate a checkout.
 - For a changed/invalid member, recompute the **maximal separately validated subset of the already proposed members** (no new offer from a different shop/candidate). Every remaining member must still pass every individual condition and all remaining pairs. A 3->2 or 2->1 reduction requires selecting the *actual* approved matching plural/singular Meta revision before variable binding; unapproved plural/mixed copy => independently approved singleton or NO_OFFER/no-send. Re-check source status and authorisation at actual dispatch/admission. Record a single message for the **actual** sent set, never the pre-trim original.
 - Bind `offer.codes` only from the ordered deliverable CODE members in the final verified set; automatic-only set has no code slot; mixed CODE/AUTOMATIC requires explicitly approved truthful mixed copy. Keep existing approved `offer.code` for single CODE. No aggregation of percentage savings, offer totals or claim that coupons were applied. The message receipt must preserve the exact ordered `InitialOutreachCheckoutOfferSet` in the original *confirmed* `ConversationMessage.content.recoveryPromise` and never in a second mutable claim. `RecoveryOutreachAttempt.outboundMessageId` must point to that confirmed message; retries/duplicate delivery must not create divergent receipts or extra credits.
 - If the current checkout's original coupons conflict with newly recommended coupons, do not promise they will stack; original Woo applied codes and native restore/apply behaviour are handled **only in ARCH-053**. ARCH-052 must not create a checkout URL, verify it, or call Woo/Shopify redemption APIs.
+
+### Accepted current-source revalidation contract — ARCH-052 architect unblock (31 October 2026)
+
+**Supersedes only the prior requirement to identify/compare the source revision used by BG010.** Do not add `sourceRevision`, `snapshotId` or any new property to `CommerceToolResultSchema`, `CommerceDiscountDetailsSchema` or MCP results. Do not modify accepted Shared/MCP tasks, add an MCP tool, call Shopify/Woo directly or invent an independent source-of-truth for discount conditions. `InitialOutreachAgentResult` is a **candidate proposal**, not a valid send-time eligibility certificate. The `CommerceDiscountConditionFacts.observedAt` timestamp is evidence of observation, **not** a catalogue revision and not a five-minute proof.
+
+**A. Exact files, types and ownership** (Background repository only):
+
+- Create `src/services/recovery-offers/current-discount-source-fence.ts`: `readCurrentDiscountSourceFence(input): Promise<DiscountSourceFenceResult>`. Inject the existing Prisma client/transaction factory, clock and cancellation, not module-global mutable state. Use `canonicalJson` from the published `@modainteract/moda-interact-shared/commerce` and Node `createHash('sha256')`, not a new serializer or Shared schema. Export a readonly `DiscountSourceFence` containing `{shopId, platform, syncGeneration, selectedOfferIds, snapshotDigest}`; `snapshotDigest` is a lowercase 64-character SHA-256 hex digest. A `UNAVAILABLE` result includes one stable internal reason code; never export/log raw discount codes or `providerSnapshot`.
+- Create `src/services/recovery-offers/current-outreach-offer-revalidation.service.ts`: `revalidateCurrentOutreachOffer(input): Promise<CurrentOutreachOfferDecision>`. Inject current context/price-report builder, `RecoveryOutreachMcpSelectorService`, source-fence reader and clock. `input` is `{shopId, checkoutRecoveryId, outreachAttemptId, proposed: InitialOutreachAgentResult, signal: AbortSignal}`. The discriminated output is `CHECKOUT_DISCOUNT` with **fresh** `InitialOutreachCheckoutOfferSet`, `members`, eligible-line decisions and pairwise group; `ALTERNATIVE_PRODUCT_PROMOTION` with exact refreshed source-bound offer/product; `NO_VERIFIED_OFFER`; or typed `FAILURE` (no unchecked offer may survive). All types remain Background-local; reuse imported BG010/BG016 and published commerce types. Use actual repository-relative imports; no duplicated cross-service type or eligibility algorithm.
+- Integrate into the existing `initial-outreach-offer-selection.service.ts` and `recovery-template-integration/automated-recovery-template.service.ts` (plus both owning initial-send paths: `src/services/checkout-recovery/recovery-initiation.service.ts`, `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts` and its `woo-recovery-outreach.adapters.ts` template/sender ports). The revalidator must run **after** BG010 and the refreshed BG016 context and **before** choosing/formatting the approved template. Existing `selectCompatibleCheckoutOffers` and `evaluateCheckoutDiscount` remain the only checkout eligibility/stacking algorithms. Extract the current pure `productTargetMatches` predicate from `agents/initial-outreach-offer.graph.ts` into a shared **Background-local** helper and call it from both BG010 and the final alternate-product guard; do not create a second targeting implementation.
+
+**B. Deterministic source fence, both platforms:**
+
+1. Validate 1..3 unique original `offerId` values for CHECKOUT or exactly 1 for ALTERNATIVE_PRODUCT. Never introduce a fourth/new ID or a different-shop offer. Query the existing `ShopifyDiscountCatalogue` (used by *both* Shopify and Woo sync) by authenticated `shopId`; query only those exact `ShopifyDiscount.id` rows with `shopId` in the same **short** `RepeatableRead` read-only transaction. Network/MCP/Meta operations MUST NOT execute in that transaction. Validate the `Shop.platform` against the recovery and each source row. Use `select` fields; no unbounded catalogue scan.
+2. Require catalogue `status='CURRENT'`, finite positive `syncGeneration`, `activeSyncToken=null`, `unavailableAt=null`, and non-null `lastSuccessfulSyncAt`; every selected discount must exist exactly once with matching `shopId`, `lastSeenSyncGeneration=syncGeneration` and `unavailableAt=null`. This rejects a sync in progress, a failed/unavailable catalogue, or a Woo coupon retained after missing the most recent successful scan. Fail closed when unavailable. Do **not** treat a stale-but-previously-successful synchronisation as proof of current provider truth.
+3. Create the digest over `canonicalJson({shopId,platform,catalogue,discounts})` encoded as UTF-8 with prefix `ARCH052_DISCOUNT_SOURCE_FENCE_V1\0`. The `catalogue` projection uses keys `status`, `syncGeneration`, `activeSyncToken`, `lastSuccessfulSyncAt`, `unavailableAt`. The `discounts` array is sorted ascending by internal `id`; each object uses exactly `id`, `shopId`, `shopifyDiscountNodeId`, `method`, `providerStatus`, `startsAt`, `endsAt`, `singleRedeemCode`, `codeCount`, `fixedSelectable`, `isAvailable`, `unavailableAt`, `lastSeenSyncGeneration`, `lastSyncedAt`, `updatedAt`, `providerSnapshot`. Convert Dates to UTC `.toISOString()` and preserve JSON `null`; the JSON snapshot remains internal to digest computation. The chosen published `canonicalJson` handles canonical key ordering; limit every fence database transaction to 2,000 ms `maxWait` and 10,000 ms `timeout` and reject expiration; reject missing/invalid fields, any individual `providerSnapshot` larger than 1,048,576 canonical UTF-8 bytes or a complete serialized digest input larger than 4,194,304 UTF-8 bytes; do not add a local generic JSON serializer. Hash **actual** persisted values, not a guessed revision or model text.
+4. Take fence `F1`; open one new authenticated purpose-scoped MCP session and `tools/list`; call `commerce_get_discount_details({offerId})` **once for each original ID** (maximum three), plus exact `commerce_get_product` for the selected alternative product when needed. Apply the published `CommerceToolOutputs` validators in the existing selector. Bound this final discount/product read to **15,000 ms total**, with propagated cancellation, maximum three details and one exact product read. Treat `ERROR`, `details:null`, missing/invalid identity, unsupported/partial required conditions and exhausted budget as unavailable for that member; capture originating provider/MCP errors through the existing Shared logger. Close the MCP client in `finally` without losing the original error.
+5. Take fence `F2` immediately after MCP reads and **require exact equality** of `shopId`, `platform`, `syncGeneration`, ordered IDs and `snapshotDigest` with `F1`. If unequal, fail the *entire* proposed discount group closed (approved NO_OFFER or typed no-send), not a mixed-generation offer. Recheck trusted merchant mode/selection and checkout/attempt generation, status and BG016 fingerprint before member evaluation. **Do not** attempt to prove F1 equals BG010's earlier observation; old BG010 evidence is discarded for eligibility.
+6. For each fresh `details`, require exact `details.offer.offerId`, non-null `providerDiscountId`, matching provider and original `providerDiscountId`/method/code. Use **the just-returned** `details.offer` as `offerFromOptions` for `evaluateCheckoutDiscount({context: refreshedContext, offerFromOptions: details.offer, details, priceReconciliation: refreshedPriceReport, evaluatedAt: clock()})`; it is not a fabricated catalogue option. This is allowed only because the authenticated `commerce_get_discount_details` response already includes a validated `CommerceOfferSchema` and MCP reauthorises the offer **on every detail call**. Do not claim an offer appears in all pages of `commerce_get_discount_options`; no options scan or cursor is necessary. `SUPPORTED` only passes individually; `UNVERIFIABLE` and `NOT_APPLICABLE` are excluded.
+7. Recompute `selectCompatibleCheckoutOffers({candidates: freshSupportedCandidates, proposedOfferIds: originalOrder})`; use only its supported 1..3 subset. Never reuse old `members`, `eligibility`, `group`, code, description or persisted sent promise from the model choice. When a member disappears or loses eligibility, reselect an independently Meta-approved matching single/plural/code/automatic template; mixed copy that is not approved must reduce to another **separately validated** subset or approved NO_OFFER/no-send. If `mode=NONE`, skip all discount calls; if FIXED changed or a policy override revoked an ID, no stale offer may pass. No second AI invocation or newly discovered offer is allowed.
+8. For `ALTERNATIVE_PRODUCT_PROMOTION`, perform the same discount/merchant/source fencing, then require a *fresh* successful `commerce_get_product` for the original exact product/variant and use the BG010 pure product-target matcher with current facts. Preserve MCP-authenticated shop identity and current safe storefront URL as defined by the existing promotion URL policy. If the product/discount changed, is unverified or cannot be re-proven, use approved NO_OFFER or typed no-send—never claim a coupon applies to the abandoned cart and never invent an alternative.
+9. At **actual provider-send admission**, take fence `F3` and re-read the attempt/recovery generation, BG016 basket fingerprint and current merchant mode/selected IDs. Require they still match the validated offer/`F2`. If changed, suppress the prepared promotion before Meta dispatch; do not reuse/restart old positive proof. Re-run BG016 at the final price-sensitive preparation boundary as already required and fail closed on new unknown monetary conditions. Perform all these reads outside the Meta call and without holding a database transaction across MCP/network operations. Pass the *in-memory* F2 token only on the `prepared` branch of the existing `AutomatedTemplateResult` and through the existing Woo `WooMarketingTemplate`/template-selector port; never serialize it into `ConversationMessage.content`, a Meta payload or a new persistence model. In Shopify `RecoveryInitiationService.handleCheckoutCreated`, validate F3 **after** `billingService.revalidateBeforeProvider` and **before** `outboundWhatsAppAdmissionService.sendTemplate`. In Woo `WooRecoveryOutreachService`, validate F3 **after** the second consent/order/template/credit checks and **before** `sender.sendInitial`, using the accepted token from the originally prepared template; the second Woo template comparison must not trigger a second AI invocation. For either platform, on pre-provider denial release the credit via the existing `releaseBeforeProvider` path and do not mark an unknown provider failure or send an older prepared template. Existing STOP/moderation/credit/idempotency gates remain authoritative. There is an unavoidable provider-side race after final admission; a sent WhatsApp message cannot be recalled.
+
+**C. Exact failure and evidence semantics:** `F1/F2/F3` are in-memory, attempt-local *consistency checks*, not a stored five-minute certificate, independent durable ledger or proof of live Shopify/Woo redemption. A change to synchronised source or permission is never treated as an unchanged offer. On incomplete source, missing catalogue, mismatch, grant revocation, incomplete targeting, unknown price context, source churn or timeout: retain only a newly demonstrated eligible and pair-compatible subset when the two-sided fence is stable; otherwise select an independently approved compliant NO_OFFER or typed no-send. Never silently treat stale/missing as no discounts available; never introduce checkout-URL validation or direct provider HTTP calls. Audit the final actually sent offer set only through the existing confirmed `ConversationMessage.content`/`recoveryPromise` and `RecoveryOutreachAttempt.outboundMessageId`; log bounded shop/recovery/attempt, digest prefix, reason and original errors, not raw URLs/codes/provider snapshots.
 
 ### Actual provider failures at final send (mandatory 31 October 2026)
 
@@ -172,6 +196,8 @@ This task owns the **final sender check**, not the BG016 comparison algorithm an
 - [ ] Extend/verify the existing provider-confirmed `ConversationMessage` receipt (`providerMessageId`, `sentAt`, `conversationId`, existing attempt link) so quoted text and voice events can resolve the same recovery; do not add another mapping table or another delivery attempt.
 - [ ] Enforce no-send when a compliant approved revision or confirmed quoted-message receipt capability is missing; test retry, duplicate provider callbacks and historical recovery generation.
 
+- [ ] Implement BG008-local current-discount source fence and final discount/product revalidator with a fresh MCP session and existing BG010/BG016 helpers. Verify F1/F2 equality and F3 provider-admission fencing; tests must distinguish current persisted evidence from live provider redemption. No Shared/MCP contract changes.
+
 ## Interfaces / Contracts
 
 **Price admission input:** `CheckoutPriceReconciliationService.reconcile(input: PriceReconciliationInput): Promise<CheckoutPriceReconciliation>` from BG016, called after current recovery/generation/fingerprint is established and before final offer/template binding. `catalogueComparison` never authorizes price-change/savings copy; only `currentMerchandiseSubtotal` backed by equivalent checkout-context evidence can support current monetary thresholds. **Optional IMAGE input (implemented after text send in BG007):** its existing Background-local `OutreachProductMediaResult`; send only a matching `READY.publicImageUrl` with an approved IMAGE header. Do not add a Shared schema or an R2 image record.
@@ -192,6 +218,8 @@ BACKGROUND-010 constructs this only after the MCP response validates; the model 
 
 
 Shared-002 template `promotionTarget`, `checkout.url`/`promotion.productUrl` binding and URL-button contracts; existing `CheckoutRecovery.checkoutUrl` for both platforms; Background-local `InitialOutreachAgentResult`; existing persisted `recoveryPromise`/`ConversationMessage.content` receipt and `RecoveryOutreachAttempt.outboundMessageId`; existing Meta approval, consent, credit and send pipeline unchanged. No API restore-link response or new URL schema.
+
+**Final source-state equivalence (architect-approved):** use published `CommerceToolInputs/Outputs.commerce_get_discount_details` and `commerce_get_product`, current shop/attempt/price context, existing `ShopifyDiscountCatalogue.syncGeneration` and exact same-shop `ShopifyDiscount` fields to build `DiscountSourceFence`. No new MCP wire fields or same-BG010-snapshot identity requirement. F1/F2 must agree before accepting fresh eligibility; F3 must still agree at actual dispatch admission. The source fence never substitutes for `CommerceDiscountConditionFacts`, BG016 or final native checkout validation.
 
 ## Dependencies
 
@@ -235,6 +263,9 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 - [ ] Every ARCH-052 initial message from a shared Meta phone identifies the correct tenant merchant and instructs the customer to quote **this** message using WhatsApp Reply and to send text or a voice note (two-minute limit). This remains true for no offer, one-to-three compatible discounts, alternative product, and approved TEXT/IMAGE variants.
 - [ ] The real Meta-confirmed outgoing provider message ID maps back to exactly one existing conversation and recovery/attempt and is not reused across merchants, retries or WABA identities. No customer guidance is advertised when the provider registration is unapproved or the binding is absent; no additional credit is consumed.
 
+- [ ] F1 and F2 bracket same-shop MCP detail reads with a CURRENT shared Shopify/Woo catalogue generation and selected-row canonical digest; F3 prevents a stale Meta send after current source/policy mutation. Missing, ongoing/failed sync, wrong shop, mismatched generation or changed row/snapshot always fail closed. No MCP revision field or direct provider API was added.
+- [ ] Each original checkout offer is refreshed through `commerce_get_discount_details`, independently re-evaluated by BG010's existing pure helper and pair checker; all source-bound output bindings and provider-confirmed receipts use only the surviving current subset. Alternative promotions require independently refreshed product-and-offer targeting, with no duplicate targeting engine.
+
 ## Validation
 
 - [ ] Add final-preparation fake BG016 tests covering before/after AI price change, price rise/decrease, unchanged catalogue but unknown checkout context, stale attempt/generation, minimum subtotal boundary crossing, Meta-only R2 derivative, IMAGE unavailable -> approved TEXT, send/no-send/idempotent receipt. Assert zero new checkout URL/provider API code and no duplicated credit.
@@ -252,6 +283,9 @@ Product images (`BACKGROUND-007`/`ADMIN-002`) and Gateway deployed topology are 
 Use actual repository scripts rather than assuming uniform `npm` commands; record required integration harness/environment gaps without claiming unrun tests passed.
 
 - [ ] Inject two shops sharing one Meta sender and one customer phone, source-backed `shop.name` values and distinct Meta message IDs; verify exact tenant-specific template parameter binding, correct durable receipt/attempt link, no cross-merchant context leakage, approved-only revisions, duplicate/retry semantics and typed no-send before approval.
+
+- [ ] Add `tests/unit/services/recovery-offers/current-discount-source-fence.test.ts` and `current-outreach-offer-revalidation.service.test.ts`: two shops (same phone), both Shopify/Woo catalogue, Shopify and Woo F3 placement immediately before their existing `sendTemplate`/`sendInitial` provider admission, frozen in-memory token never persisted, duplicate Woo template selection not rerunning the agent, `syncGeneration` changes during reads, same-generation mutable row/code/status/`providerSnapshot` changes, changing FIXED selection/override, missing/old Woo coupon, no catalogue, missing/failed/partial detail, 3-to-2 and 2-to-1 re-evaluation, stale pair tags, missing alternative product, retry and F3 dispatch race. Assert F1/F2/F3 failure always blocks stale promotional claims, no raw provider data in logs, and no DB transaction spans MCP/Meta.
+- [ ] Exercise the existing final-send/Meta/credit regression suites after integrating this guard; run focused lint, typecheck, full Background tests and the PostgreSQL/two-platform integration validation required by this task (report any genuinely unavailable harness instead of claiming it passed).
 
 ## Stop Condition
 
@@ -274,59 +308,215 @@ Source ownership is restricted to the assigned repository plus this task file. `
 
 ### Status
 
-Not Started — portable definition, no task claim.
+Ready for Review — Attempt 2 implementation and validation evidence are recorded below. Attempt 1 details below are retained as historical evidence and are superseded where noted by the Attempt 2 completion update.
 
 ### Files Changed
 
-None yet.
+Implementation work is in the dedicated Background task worktree. This task file records the current implementation and validation state.
 
 ### Work Completed
 
-None yet.
+Implemented or extended the existing initial outreach path with attempt-scoped BG010/BG016 composition, post-agent trusted context refresh, target/header/shop-name-aware approved TEXT selection, singular/plural checkout CODE binding selection, maximal homogeneous offer-set fallback, alternative-product source provenance checks, separate checkout/product CTA binding, ordered multi-button persistence/transport, Woo attempt-ID forwarding, and singleton confirmed checkout-offer receipt parsing for follow-up.
+
+Added the architect-approved Background-local current-discount source fence and final offer revalidator. F1/F2 use bounded same-shop RepeatableRead reads, catalogue `syncGeneration`, selected-row generation checks, and a canonical SHA-256 digest; a fresh authenticated MCP session rereads each proposed discount and exact alternative product outside database transactions. Fresh checkout decisions reuse BG010's eligibility and pair-selection helpers; alternative product targeting reuses its extracted pure matcher. F3 rechecks current recovery/attempt/price/policy and the source digest before Shopify and Woo provider admission. The token exists only in memory, and Woo no longer repeats template/agent selection at its second pre-provider check.
+
+Added focused coverage for source-fence isolation/digest changes, F1/F2 churn, exact-product refresh and mismatch, F3 admission denial on both platforms, duplicate Woo selection avoidance, promotional URL rejection, and the previously implemented template/transport/receipt behavior.
+
+Extended the existing Woo disposable outreach fixtures with the saved basket, published trusted prompt configuration, and approved CHECKOUT/shop-name template bindings now required by the initial sender. Added the same required basket fields to the generation-two recovery fixture; these are fixture-only changes and do not weaken the production trust checks.
+
+Fixed the Shopify discount facts producer to include the schema-required subtotal currency while preserving the published decimal-string subtotal representation. Removed untrusted exception text from model-bridge, credential-revocation, conversation-wrapper, and generic recovery-offer logs; retained the original exception propagation. Corrected the initial-outreach finalization log to avoid duplicating a raw error message and aligned brittle runtime/billing assertions with current shared logging and package-version contracts.
 
 ### Validation Results
 
-Not run.
+Passed: `pnpm exec tsc --noEmit`.
+
+Passed: `pnpm lint`.
+
+Passed focused Vitest run: 10 files, 131 tests, covering source fencing/revalidation, Shopify materialization, Woo admission, worker loading, legacy template-media behavior, and Support-notice finalization. All 12 files that failed in the preceding full-suite run also passed in a focused rerun after local fixes.
+
+Passed: `git diff --check`.
+
+Passed PostgreSQL source-fence integration through the disposable harness: 1 file, 2 tests. Both Shopify and WooCommerce persisted rows were exercised; a same-generation row update changed the digest, and a stale-generation row failed closed.
+
+Passed existing ARCH-052 discount-selection PostgreSQL integration: 1 file, 2 tests.
+
+Passed WhatsApp Cloud API emulator integration: 1 file, 1 test covering generated no-offer, checkout-code, and alternative-product payloads, including approved template identity/language and ordered URL button parameters.
+
+Full Background unit suite (`pnpm test:unit`): an earlier run passed 326 files / 3,470 tests. This was superseded on 1 November by a fresh full run: **326 files / 3,488 tests passed**.
+
+Additional Background safety unit selection: **passed** — 17 files and 206 tests covering Woo admission/send fence and notice finalization, Shopify consent, moderation, outbound admission, and credit/send admission.
+
+Broader PostgreSQL integration attempt across 12 consent, STOP, moderation, credit, notification, and outreach files: **not passed** — 50 passed / 10 failed. Failures included the incomplete Woo trusted-context fixtures (currency/basket and prompt/template contract, addressed in the fixture updates above), an existing Woo permit-race log assertion that expected a sanitized synthetic error instead of the injected original error, an Aimock route construction assertion, and timeout/disposable-PostgreSQL readiness failures. This run is evidence of gaps, not a passing broad regression gate.
+
+Focused Woo PostgreSQL/Redis initial-outreach integration: **passed in isolation** — 1 file, 17 tests. This run used the corrected trusted-context/template fixtures and a fresh disposable PostgreSQL/Redis environment. It resolves the previously inconclusive result for this focused suite, but does not establish a clean combined broad integration gate.
+
+Focused Woo final-send-permit race integration: **passed in isolation** — 1 file, 5 tests. The permit logs a bounded `PERSISTENCE_FAILURE` plus safe error name/code, rethrows the original database exception, and preserves race behavior. Its focused unit selection passed with the current-source revalidation tests — 2 files, 30 tests.
+
+Focused unit safety validation after those integration attempts: **passed** — 206/206 as above. Targeted ESLint on the three edited Woo fixture/test files and `git diff --check` completed without diagnostics.
+
+Focused repeat of the eight selected consent/STOP/moderation/notification/recipient/template-admission PostgreSQL integration files: **passed after timeout isolation** — 38 tests total. The initial combined run had 35/36 pass because one general STOP-ordering case exceeded Vitest's default five-second timeout; rerunning that file with `--testTimeout 30000` passed all 3 tests. This focused result does not include the separate failing Woo initial-outreach or provider-race files.
+
+Continued Attempt 1 validation: the current-source revalidation unit file passed — 23/23, including 3-to-2 and 2-to-1 proposed subsets, FIXED revocation, inactive/expired offers, exact-product refresh, and unsafe promotional URL rejection. A Background-local syntax guard now rejects non-HTTPS, credentials, explicit ports, fragments, whitespace/control characters, localhost/IP-literal hosts, and overlength promotional URLs before binding. It applies only to `promotion.productUrl`; stored `CheckoutRecovery.checkoutUrl` remains unchanged. This does not prove selection of the matching approved singular/plural Meta revision or end-to-end receipt for a reduced set.
+
+The focused Woo permit unit and current-source revalidation suites passed together — 2 files, 41 tests. The automated template coordinator suite passed — 20/20, including 3-to-2 plural and 2-to-1 singular approved-revision selection, receipt payload containing only the surviving offers, one resolver invocation, and fail-closed behavior when the plural revision is unavailable. These coordinator tests use the real template preparer/receipt builder but do not simulate Meta confirmation or a database commit. Changed-file ESLint and `pnpm exec tsc --noEmit` passed after the URL guard and coordinator cases were added.
+
+The focused template-preparer unit suite passed — 19/19. The ARCH-047 PostgreSQL template-preparation integration passed — 1/1 after its fixture was updated with the required promotion target, authenticated shop-name binding, and Reply instructions. `WhatsAppService` unit validation passed — 24/24, including source-faithful Meta error logging, redaction of injected phone/token/URL data, transport cause-chain preservation, and ordered dynamic buttons. Targeted ESLint on the modified implementation/test files and `pnpm exec tsc --noEmit` completed without diagnostics; `git diff --check` passed.
+
+The ARCH-047 Meta provider-failure integration was rerun in isolation and remains **failed — 2/2**: the separate template-registration error path logs a plain non-JSON provider response body as `providerErrorMessage`/`providerErrorBody`. This is not the final WhatsApp send adapter owned by the send-logging acceptance item, so it was not changed in this attempt; it remains an adjacent logging finding for architect disposition.
+
+Latest validation on 1 November: `pnpm test:unit` passed — 326 files / 3,488 tests; `pnpm lint` passed; `pnpm exec tsc --noEmit` passed. The updated Aimock integration now uses direct HTTP requests to a loopback-validated LLMock endpoint and a typed `CommerceModelInvoker`, following the working local HTTP pattern rather than the constructor mock seam. It passed with the focused disposable integration batch: 6 files / 24 tests across Aimock, both-platform source-fence persistence, Shopify discount selection, Woo initial outreach, template preparation and the WhatsApp template emulator. A second focused disposable batch passed: 6 files / 28 tests across Woo send-fence/admission races, Shopify final-template permit/status admission and initial outreach Support notification. These focused results do not replace the previously failed combined broad PostgreSQL run or downstream system certification.
+
+Downstream system-test listing was attempted in `moda-interact-system-test` with the three ARCH-052 task IDs; the runner returned `Unknown scenario ARCH-052-SYSTEM-TEST-001`. No downstream system tests were executed or claimed.
+
+At the end of Attempt 1, complete two-platform end-to-end/system coverage, a clean combined broad PostgreSQL regression gate, and several acceptance items remained uncertified. Attempt 2 validation and remaining gaps are recorded below.
 
 ### Deviations
 
-None reported.
+The implemented F1/F2 fence brackets fresh MCP reads and detects changes to synchronized source rows, but it does not prove live Shopify/Woo redemption state. F3 has a provider-side race after the final admission check, as acknowledged by the accepted contract. Several listed adversarial, multi-member trimming, Postgres, and system-test cases remain unimplemented/unrun. The available broad integration run also surfaced the separately recorded failures above; do not treat it as regression certification.
 
 ### Assumptions
 
-Execution will verify its current workspace, source state, dependency versions and test harness.
+The accepted 31 October architect unblock is followed: no MCP revision/snapshot property or Shared/MCP contract change was introduced. The local catalogue generation and selected-row digest are used only as attempt-local consistency checks, not as a live provider eligibility certificate.
 
 ### Unresolved Issues
 
-None established by implementation.
+At the end of Attempt 1, remaining acceptance gaps included adversarial permission/source revocation coverage, full PostgreSQL/two-platform/system tests, and a clean combined broad regression gate. The downstream system-test runner did not recognize the ARCH-052 task IDs as executable scenarios. Attempt 2 disposition follows.
 
 ### Architectural Concerns
 
 Report discovered cross-repository/credential/MCP-catalogue issues to `moda_architect`.
+
+### Attempt 2 Completion Update
+
+#### Changes and Evidence
+
+- Preserved and continued the existing implementation from checkpoint commit `d2d51f4`; no user changes were discarded or rewritten.
+- Added the bounded promotional product URL safety check and current-source revalidation/template-selection coverage in the checkpoint. Checkout URL handling remains unchanged.
+- Pushed the implementation task branch `task/ARCH-052-BACKGROUND-008`. The branch contains the earlier implementation commit `895bfb3`, synchronization merge `178d236`, and preserved checkpoint `d2d51f4`.
+- Updated only this task's status and Completion Report. The `## Architect Review` section remains untouched.
+
+#### Attempt 2 Validation
+
+- Passed full Background unit suite: 326 files, 3,488 tests.
+- Passed Background lint and TypeScript no-emit typecheck.
+- Passed focused source-fence, offer-revalidation, approved-template selection, and Woo send-admission tests: 4 files, 65 tests.
+- Passed WhatsApp send adapter and provider-failure unit tests: 2 files, 35 tests.
+- Passed persisted source-fence PostgreSQL integration: 1 file, 2 tests; passed Shopify discount-selection PostgreSQL integration: 1 file, 2 tests; passed WhatsApp template emulator: 1 file, 1 test.
+- Passed initial-send/Aimock/Woo F3/template-preparation integrations: 4 files, 13 tests; passed final-template permit/status and Support-notice integrations: 3 files, 12 tests.
+- Passed `git diff --check` for the implementation branch.
+
+#### Remaining Gaps and Disposition
+
+- The earlier broad PostgreSQL integration batch remains non-passing (50 passed, 10 failed) as documented above; focused relevant suites pass, but this is not a clean combined regression gate.
+- Full downstream system certification remains unavailable: the system-test runner reported `Unknown scenario ARCH-052-SYSTEM-TEST-001`. This attempt did not claim system tests passed.
+- The task's complete matrix of adversarial merchant permission/source revocation, every platform/mode/outcome combination, and all historical receipt/follow-up scenarios is not fully certified by the focused tests run here. The remaining matrix is returned for Architect review; no broader acceptance is claimed.
+- The known registration-error integration finding for a plain non-JSON provider response remains outside this task's final-send adapter slice; final send adapter error/redaction tests passed.
+- No schema, Shared/MCP contract, checkout URL validation/issuance, provider cart mutation, or cross-repository changes were made.
+
+#### Branches
+
+- Implementation branch: `task/ARCH-052-BACKGROUND-008`, pushed through `d2d51f4d56417cb07be6bf9918e79ad80e4e0398`.
+- Parent task branch: `task/ARCH-052-BACKGROUND-008`; this report/status update is to be committed and pushed separately.
+
+Completion Report status: Ready for Review. No Architect acceptance decision has been made by this agent.
+
+### Attempt 3 Completion Update
+
+#### Prepared Execution and Git Evidence
+
+- Executed the matching prepared Attempt 3 packet; the launcher had already claimed the task and pushed parent claim commit `7958fa8e07db073bc01291db8b01bce18b15d61b`. No claim was repeated.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-008`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-008`.
+- Both task branches are `task/ARCH-052-BACKGROUND-008`. Prepared parent pre-claim head was `4b2361dd48b26fb36a08e87876c249dbce43c5a1`; prepared implementation head was `d2d51f4d56417cb07be6bf9918e79ad80e4e0398`.
+- Packet recorded both worktrees reused, clean before claim, task-branch fast-forward `not-needed`, and `origin/main` `already-current`. At verification, parent HEAD and `origin/task/ARCH-052-BACKGROUND-008` were both `7958fa8e07db073bc01291db8b01bce18b15d61b`; implementation HEAD and its matching origin task ref were both `d2d51f4d56417cb07be6bf9918e79ad80e4e0398`.
+- Recursive implementation submodule sync/update passed; the database submodule was at `7c377282aa5819b3008b7d7f3018f44f4161523e`. Dependency gate passed. No worktree was recreated or reset.
+
+#### Attempt 3 Changes and Validation
+
+- Added `tests/unit/services/recovery-routing.service.test.ts`: `routes shared-sender quotes from the same phone to each exact merchant recovery` verifies two quoted provider message IDs for one customer phone and shared WABA resolve to distinct conversation, recovery and shop identities.
+- Added `tests/unit/services/recovery-template-preparation/recovery-template-preparer.test.ts`: `binds each shared-WABA template to its own authenticated merchant name` verifies separate shop-scoped prepared `shop.name` values and catalogue lookups under the same WABA.
+- Added `tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts`: `passes the exact persisted SHOPIFY checkout URL to template preparation` and the corresponding `WOOCOMMERCE` case assert that the stored URL, including its original query encoding, is forwarded unchanged for both platform contexts.
+- Full Background unit suite passed: `pnpm test:unit`, 326 files and 3,492 tests. Focused task unit selection passed: 5 files and 151 tests, covering template preparation, confirmed-message follow-up/history, shared-sender routing and both platform F3 admission paths. Background `pnpm lint` and `pnpm exec tsc --noEmit` passed. `git diff --check` passed.
+- Isolated disposable PostgreSQL/integration results: `arch048-woo-initial-outreach.integration.test.ts` 17/17; `woo-initial-send-fence-races.integration.test.ts` 5/5; `arch052-discount-source-fence.integration.test.ts` 2/2; `initial-outreach-offer-aimock.integration.test.ts` 1/1; `arch052-shopify-discount-selection.integration.test.ts` 2/2; `arch052-initial-template-emulator.integration.test.ts` 1/1; `arch047-recovery-template-preparation.integration.test.ts` 1/1. The Woo initial-outreach suite covers concurrent dispatch/replay with one confirmed send and one credit; the current-source tests exercise persisted source mutation and the F3 unit cases deny dispatch after admission validation changes.
+- Follow-up evidence includes the coordinator tests `reads a confirmed singleton checkout offer-set receipt for follow-up verification` and `denies a follow-up when initial proof is missing or unsafe`, plus the quoted text/audio recovery-routing cases. This is unit/routing evidence; no new two-merchant Meta-confirmed end-to-end receipt test was added.
+
+#### Failure Classification and Remaining Scope
+
+- The earlier broad disposable PostgreSQL run remains recorded as 50 passed / 10 failed. The retained Attempt 2 report describes the failure categories (Woo trusted-context fixture mismatch, stale Woo race-log expectation, Aimock route assertion, and disposable PostgreSQL readiness/timeouts), but does not preserve the original ten individual test names. Those historical names could not be recovered, so they are not fabricated here.
+- The relevant current task suites for Woo initial outreach, Woo final-admission races, Aimock, and source fencing were rerun separately above and pass. Disposable PostgreSQL readiness/timeouts did not recur in these isolated runs. The combined broad batch was not rerun; these results do not certify it or establish that unrelated harness failures were resolved.
+- The added tests establish separate preparation and quoted-message routing boundaries, not a full two-shop Meta send with distinct committed `ConversationMessage`/attempt receipts. Nor do the new platform URL tests execute a full provider send. The task's complete all-mode/all-platform end-to-end matrix, every listed policy/source mutation, and downstream system certification remain unverified; corresponding checklist items remain unchecked.
+- The downstream system-test runner's `Unknown scenario ARCH-052-SYSTEM-TEST-001` remains a non-blocking downstream limitation. No runner changes or system-test certification are claimed. The separate template-registration logging path remains out of scope and unchanged.
+- No schema, Shared/MCP contract, checkout URL validation/issuance, provider cart mutation, or cross-repository changes were made.
+
+Completion Report status: Ready for Review. No Architect acceptance decision has been made by this agent.
+
+### Attempt 4 Completion Update
+
+#### Architect Review Corrections
+
+- Re-ran the exact previously timed-out PostgreSQL case, `binds current shop policy, sequence-one attempt, published instructions and same-fingerprint price evidence`, alone through the disposable harness. The test received a 30-second timeout and passed 1/1 in 283 ms; no task-attributable failure was found.
+- Reconciled the original 12-file disposable PostgreSQL batch from the retained-output evidence recorded in the latest Architect Review. It remains **50 passed / 10 failed** and was not rerun as a batch. In `arch048-woo-initial-outreach.integration.test.ts`, the original failed selectors were `persists exactly one confirmed send, Free credit charge and usage event under concurrent dispatch/replay`, `cancels a resumed generation, releases its reserved free credit once, and permits generation two independently`, the placed/paid/cancelled variants of `releases the reserved credit when placed arrives after the last preflight but before provider permit`, and `rechecks authoritative local STOP after reservation and refunds without sending` (original `BASKET_CURRENCY_INVALID`); `releases a resumed attempt from its exact paid-included reservation owner and replays idempotently` originally timed out at five seconds. The isolated suite passed 17/17 in Attempt 3 and 18/18 in Attempt 4, covering these cases after the trusted-context fixture corrections.
+- The exact `rolls back the provider permit on a post-write database fault, logs and allows a safe retry` selector in `woo-initial-send-fence-races.integration.test.ts` originally failed on the old synthetic-error assertion; its isolated rerun passed 5/5 in Attempt 3.
+- The exact `routes real model/tool/model turns through loopback and returns the source-validated offer` selector in `initial-outreach-offer-aimock.integration.test.ts` originally failed on route construction; its revised isolated rerun passed 1/1 in Attempt 3.
+- Added `keeps shared-sender confirmed sends and quoted replies isolated by merchant` to the disposable Woo initial-outreach integration. Two shop recoveries use the same customer phone and approved WABA. The emulated provider confirmation captures each prepared `shop.name` parameter from its authenticated shop-domain fallback, persists distinct provider message IDs, and finalizes each existing message/attempt link. Quoting each ID routes to the matching shop, recovery and conversation. Concurrent dispatch produced exactly two `sent` and two `already-initialized` outcomes; replay left one confirmed outbound message and one usage event per merchant. No production send seam or schema was added.
+- Downstream system certification remains downstream and non-blocking. No system-test certification was attempted in Attempt 4; the earlier `Unknown scenario ARCH-052-SYSTEM-TEST-001` remains a runner limitation, not a Background failure.
+
+#### Attempt 4 Validation
+
+- `node scripts/test-integration.mjs tests/integration/initial-outreach-agent-context.integration.test.ts` — passed, 1 file / 1 test, disposable PostgreSQL and Redis; the requested case alone.
+- `node scripts/test-integration.mjs tests/integration/arch048-woo-initial-outreach.integration.test.ts` — passed, 1 file / 18 tests, disposable PostgreSQL and Redis. An initial run was 17/18 because the test incorrectly assumed `Shop.name` exists; the test was corrected to assert the preparer's trusted, shop-scoped domain fallback, and the final run passed.
+- `pnpm test:unit` — passed, 326 files / 3,492 tests.
+- `pnpm lint` — passed.
+- `pnpm exec tsc --noEmit` — passed.
+- `git diff --check` — passed.
+
+#### Remaining Gaps
+
+- The original combined 50/10 PostgreSQL run remains non-passing; isolated passes do not certify the combined batch. The broader all-mode/all-platform matrix, adversarial source/policy cases, and downstream system certification remain unverified. Existing unchecked acceptance items remain unchecked.
+- The separate ARCH-047 template-registration logging finding and other previously documented non-task findings were not changed. No Shared/MCP contract, database schema, checkout URL issuance/validation, provider cart mutation, or cross-repository change was made.
+
+#### Prepared Execution and Git Evidence
+
+- Attempt 4 was launcher-prepared and claimed/pushed as executor `copilot`; parent claim commit: `f007d773853f3f9e9cd5fcfb57e94913d8158eb3`. Dependency gate passed.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-052-BACKGROUND-008`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-052-BACKGROUND-008`. Both use `task/ARCH-052-BACKGROUND-008`. No shared/default checkout or other task worktree was switched or used.
+- Start-of-attempt synchronization in the packet: both task branches fast-forwarded `not-needed`; `origin/main` was `already-current` in both worktrees.
+- Recursive implementation submodule sync and update passed; database submodule commit: `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+- Implementation commit `3505dfa10ebe38c9d765e34d9c69f4065a5b92f5` was pushed to the implementation task branch. This parent task report is the only parent-worktree change and will be committed/pushed on the matching parent task branch.
+
+Completion Report status: Ready for Review. No Architect acceptance decision has been made by this agent.
 
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 4.
 
 ### Review Notes
 
-Planning only; no source implementation accepted.
+Both bounded corrections from the Attempt 3 review are satisfied. The previously timed-out trusted-context PostgreSQL selector is reported passing alone (1/1, 283 ms with a 30-second test timeout). The new disposable Woo integration exercises two shop recoveries sharing one customer phone and WABA, verifies each shop-scoped merchant parameter, distinct provider message IDs, confirmed outbound messages linked through each attempt to the correct recovery/conversation, quote routing to the matching recovery, and duplicate/replay behavior with one usage event and one sent message per shop.
+
+The original combined PostgreSQL batch remains a failed historical result (50 passed / 10 failed) and was not rerun; focused isolated reruns do not convert it into a passing batch. The broader Shopify/Woo mode matrix and downstream system certification remain unverified and are not claimed as passed. Those are retained as explicit limitations for their terminal system-test tasks. This acceptance resolves the specific review blockers and accepts the Background implementation; it is not a claim that the combined batch or full platform matrix passed.
 
 ### Reviewed Files
 
-The task definition was authored from the 29 October 2026 snapshot; a code implementation has not been reviewed.
+- Implementation commit `3505dfa10ebe38c9d765e34d9c69f4065a5b92f5`, including `tests/integration/arch048-woo-initial-outreach.integration.test.ts`, its fixture, and the trusted-context integration timeout adjustment.
+- The Attempt 4 Completion Report and the task's Attempt 3 correction contract.
+- Background source/test boundary for confirmed offer receipts and shared-sender recovery routing.
 
 ### Validation Reviewed
 
-None for implementation.
+- Submitted exact trusted-context PostgreSQL selector: 1/1 passed in isolation; not independently rerun during this review.
+- Submitted Woo initial-outreach PostgreSQL/Redis integration: 18/18 passed.
+- Submitted `pnpm test:unit`: 326 files / 3,492 tests passed; `pnpm lint`, `pnpm exec tsc --noEmit`, and `git diff --check` passed.
+- The original combined PostgreSQL batch remains 50 passed / 10 failed and was not rerun. No system-test task was executed.
+- Verified implementation branch `task/ARCH-052-BACKGROUND-008` is clean at `3505dfa10ebe38c9d765e34d9c69f4065a5b92f5`, equal to its origin task ref and descended from current `origin/main`. Verified parent task branch was clean at report commit `2a0ee9ae2f1a9a04a9df0ee98f3c1a8d522f93e9`, equal to its origin task ref before this review update. Attempt 4's report records canonical dedicated worktrees, launcher preparation, synchronization, recursive submodule preparation, and dependency-gate evidence.
 
 ### Architecture Conformance
 
-To be determined after implementation review.
+Conforms to the accepted Background ownership boundary and the Attempt 4 correction contract. No implementation source was changed during review. The persisted cross-merchant receipt behavior is covered in the new Background integration test; full cross-platform/mode certification remains downstream and unverified.
 
 ### Follow-up
 
-Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+No further correction is required in BACKGROUND-008. The accepted task satisfies the direct dependency for `ARCH-052-SYSTEM-TEST-003`, which is Ready. `ARCH-052-SYSTEM-TEST-001` and `ARCH-052-SYSTEM-TEST-002` remain Pending because their other implementation prerequisites are not all Complete. `ARCH-053-BACKGROUND-004` is Ready as a separate consumer task; its required explicit `promotionTarget` receipt field is not present in the current promise type and remains its owning task's scope.

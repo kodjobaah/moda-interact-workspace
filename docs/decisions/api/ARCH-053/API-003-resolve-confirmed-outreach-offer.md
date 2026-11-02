@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-052-SHARED-012
 - ARCH-053-API-002
@@ -22,7 +22,7 @@ depends_on:
 enables:
 - ARCH-053-WOOCOMMERCE-007
 created: 2026-10-30
-updated: 2026-10-30
+updated: 2026-11-01
 ---
 
 # ARCH-053-API-003 — Resolve confirmed initial outreach offer in Woo restore response v1
@@ -81,10 +81,10 @@ For a confirmed `promotionTarget:CHECKOUT` initial receipt with 2..3 source-grou
 
 ## Work Items
 
-- [ ] Reuse the exact API-002 authorize/resolve operation under one v1 resolver endpoint; preserve all existing API-002 tests.
-- [ ] Implement strict initial-confirmed outbound attempt/message receipt read; map to the exact Shared v1 union, with no text parsing or mutable discount lookup.
-- [ ] Fail closed on absent/unverifiable offer evidence, with distinct provider-unknown vs DB-outage semantics and bounded logs.
-- [ ] Add Postgres/route tests for tenant, generation, receipt and error cases; verify single-v1 strict contract validation.
+- [x] Reuse the exact API-002 authorize/resolve operation under one v1 resolver endpoint; preserve all existing API-002 tests.
+- [x] Implement strict initial-confirmed outbound attempt/message receipt read; map to the exact Shared v1 union, with no text parsing or mutable discount lookup.
+- [x] Fail closed on absent/unverifiable offer evidence, with distinct provider-unknown vs DB-outage semantics and bounded logs.
+- [x] Add Postgres/route tests for tenant, generation, receipt and error cases; verify single-v1 strict contract validation.
 
 ## Interfaces / Contracts
 
@@ -171,18 +171,18 @@ The reader is called **only after** successful API-002 authorization. Source que
 
 ## Acceptance Criteria
 
-- [ ] The single v1 resolver remains strictly validated and now enriches mandatory `outreachOffer`; no v2 schema or route is introduced.
-- [ ] Correct confirmed checkout code is returned **only** when outbound status, provider ID, attempt linkage, shop, recovery/generation and explicit target all match.
-- [ ] Alternative-product offer and AUTOMATIC offer never leak a checkout code to be applied; NONE never removes existing original coupons.
-- [ ] No sent evidence / unverified content / DB failure are distinct, covered by tests and diagnostic events without coupon codes.
-- [ ] Cross-tenant and terminal/superseded recovery never exposes offer or basket; API remains read-only.
-- [ ] No new offer storage, discovery, outbound or API credential exposure.
+- [x] The single v1 resolver remains strictly validated and now enriches mandatory `outreachOffer`; no v2 schema or route is introduced.
+- [x] Correct confirmed checkout code is returned **only** when outbound status, provider ID, attempt linkage, shop, recovery/generation and explicit target all match.
+- [x] Alternative-product offer and AUTOMATIC offer never leak a checkout code to be applied; NONE never removes existing original coupons.
+- [x] No sent evidence / unverified content / DB failure are distinct, covered by tests and diagnostic events without coupon codes.
+- [x] Cross-tenant and terminal/superseded recovery never exposes offer or basket; API remains read-only.
+- [x] No new offer storage, discovery, outbound or API credential exposure.
 
 ## Validation
 
-- [ ] `npm test` targeted API route/offer parser tests and `npm run typecheck` (actual package scripts)
-- [ ] Postgres-backed relation/tenant test with duplicate, failed, unconfirmed, current vs old generation receipts
-- [ ] `npm run build` if changed source is in production compilation; `git diff --check`
+- [x] Targeted API route/offer parser tests and `npm run typecheck` (actual package scripts)
+- [x] Postgres-backed relation/tenant test with duplicate, failed, unconfirmed, current vs old generation receipts
+- [x] `npm run build` and `git diff --check`
 
 ## Stop Condition
 
@@ -196,31 +196,44 @@ The resolver should share one authorization implementation with v1: do not fork 
 
 ### Status
 
-Not Started — portable task definition, not claimed.
+Ready for Review — the Architect Review correction is implemented and required focused validation passed. This is Attempt 2; no Architect acceptance is claimed.
 
 ### Files Changed
 
-None.
+Implementation repository (`/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-003`, branch `task/ARCH-053-API-003`): cumulative task files are `src/composition/woocommerce.ts`; `src/woocommerce/recovery-restore/contract.ts`, `service.ts`, `offer-receipt.ts`, and `offer-resolver.ts`; `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`; and the `routes.test.ts`, `service.test.ts`, `offer-receipt.test.ts`, and `offer-resolver.test.ts` unit tests under `tests/unit/woocommerce/recovery-restore/`. Attempt 2 changed only `src/woocommerce/recovery-restore/offer-receipt.ts` and `tests/unit/woocommerce/recovery-restore/offer-receipt.test.ts`.
 
 ### Work Completed
 
-Not Started.
+Attempt 2 addresses the Architect Review finding. The BG004 writer in `moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts` persists `ALTERNATIVE_PRODUCT_PROMOTION` with explicit `promotionTarget: "ALTERNATIVE_PRODUCT"`, `offerId`, `providerDiscountId`, `method`, `productId`, `variantId`, and `productTitle`; CODE additionally has `code`, while AUTOMATIC has no `code` field. The API parser now requires that exact key set and method-specific shape, validates the explicit target and nonblank evidence fields, and projects either method to Shared `{ kind: "ALTERNATIVE_PRODUCT" }` without returning the coupon code. Generic CODE/AUTOMATIC alternative-target promises and `CHECKOUT_DISCOUNT` tagged as alternative-product are now `NONE/UNVERIFIABLE`; malformed or ambiguous alternative receipts fail closed. Tests cover both production shapes, code non-leakage, malformed method fields, and the contradictory checkout-group regression.
+
+The original API-003 implementation remains intact: it uses the published Shared schemas, reads only the confirmed sequence-one attempt/message relation scoped to the authorized shop/recovery/generation/conversation, reuses API-002 authorization and rechecks eligibility after the evidence read. No route, schema, Shared, Background, Woo/plugin, queue, provider-call, or write behavior was changed.
 
 ### Validation Results
 
-Not run. Report exact commands, results and any environment blockers after execution.
+Launcher Attempt 2 evidence: task claim commit `70670476eee0de394cf9e75d7b1c7c06d4c851f3`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-053-API-003` synchronized at architect report commit `980884c8316b65f657c3f0e99299c44ab1717f68`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-053-API-003` started at `98d85c947bcb5670eaaa9367a186d282d201d3e1`; database submodule `7c377282aa5819b3008b7d7f3018f44f4161523e`. Launcher dependency gate passed for `ARCH-052-SHARED-012`, `ARCH-053-API-002`, `ARCH-053-SHARED-002`, and `ARCH-053-BACKGROUND-004`.
+
+- `npx tsx --test tests/unit/woocommerce/recovery-restore/offer-receipt.test.ts`: passed, 5 tests.
+- `npx tsx --test tests/unit/woocommerce/recovery-restore/*.test.ts`: passed, 21 tests across parser, resolver, service, and route.
+- `npm run test:arch053-recovery-restore:postgres`: passed, 1 PostgreSQL-backed relation/generation test.
+- `npm run typecheck`: passed.
+- `npm run build`: passed.
+- `npm exec -- eslint src/woocommerce/recovery-restore src/composition/woocommerce.ts tests/unit/woocommerce/recovery-restore tests/integration/woocommerce/recovery-restore --max-warnings=0`: passed.
+- `git diff --check`: passed.
+- Full `npm test` and repository-wide `npm run lint` were not rerun in Attempt 2. The prior report records 9 unrelated full-suite failures and the unrelated `no-empty` finding at `src/merchant/support/routes.ts:75`; this correction did not touch those paths.
+
+Implementation commit: `a755724bba304dcc2b9c7f1bf390aa121b3c6558` (`fix(api): parse alternative-product recovery receipts`), pushed to `origin/task/ARCH-053-API-003`.
 
 ### Deviations
 
-None.
+None to implementation scope. Full-suite and repository-wide lint findings were not rerun and remain outside the task-owned files.
 
 ### Assumptions
 
-Defined from the 2026-10-30 uploaded snapshot. Re-read current task and repository HEAD after launcher preparation.
+The prepared Shared package version `3.1.0` contains the required published v1 request/response and checkout-offer set schemas; the canonical database schema contains the required recovery, conversation, attempt and outbound-message relations. No cross-repository contract or schema work was required.
 
 ### Unresolved Issues
 
-None claimed resolved. See explicit dependency/receipt gates above.
+No task-scope implementation issue remains. The previously reported unrelated full-suite failures and full-lint finding remain for their respective owners; see Validation Results.
 
 ### Architectural Concerns
 
@@ -230,24 +243,32 @@ Escalate contract or ownership gaps instead of inventing a new transport or pers
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Not reviewed.
+Attempt 2 resolves the finding: `ALTERNATIVE_PRODUCT_PROMOTION` now accepts the exact production CODE and AUTOMATIC receipt shapes, requires the explicit `ALTERNATIVE_PRODUCT` target and method-specific fields, and projects to `ALTERNATIVE_PRODUCT` without exposing a code. Malformed or contradictory receipts, including `CHECKOUT_DISCOUNT` tagged as alternative-product, return `NONE/UNVERIFIABLE`. The regression tests exercise both writer shapes and the contradiction case. The production writer was inspected and matches the parser's required field sets.
 
 ### Reviewed Files
 
-None.
+- `src/woocommerce/recovery-restore/offer-receipt.ts`
+- `src/woocommerce/recovery-restore/offer-resolver.ts`
+- `src/woocommerce/recovery-restore/service.ts`
+- `src/woocommerce/recovery-restore/routes.ts`
+- `src/composition/woocommerce.ts`
+- `tests/unit/woocommerce/recovery-restore/offer-receipt.test.ts`
+- `tests/unit/woocommerce/recovery-restore/offer-resolver.test.ts`
+- `tests/unit/woocommerce/recovery-restore/service.test.ts`
+- `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`
 
 ### Validation Reviewed
 
-None.
+Reviewed Attempt 2's 21 focused restore tests, PostgreSQL-backed relation test, typecheck, build, focused lint, and diff check. The full test run and repository-wide lint were not rerun; the report preserves the previously identified unrelated failures and lint finding. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+Accepted. The correction now parses the confirmed alternative-product receipt variant emitted by BACKGROUND-004. The authenticated v1 resolver, generation recheck, checkout group handling, and fail-closed behavior conform based on the inspected code and submitted validation report.
 
 ### Follow-up
 
-None.
+The Attempt 1 follow-up is resolved by the submitted Attempt 2 correction. The historical follow-up requested retaining Attempt 1, but the deterministic launcher claimed and recorded Attempt 2; acceptance preserves that recorded attempt number. `ARCH-053-WOOCOMMERCE-007` is now Ready because its other dependencies are Complete.

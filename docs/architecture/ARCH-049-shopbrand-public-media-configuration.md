@@ -174,6 +174,15 @@ Task YAML is authoritative. `ready` is eligibility of a portable definition, **n
 | ARCH-049-BACKGROUND-004 | moda_background | Pending | ARCH-049-DATABASE-001, ARCH-049-ADMIN-001, ARCH-047-BACKGROUND-001, ARCH-047-BACKGROUND-006 (prior prerequisites Complete) |
 | ARCH-049-SYSTEM-TEST-001 | moda_system_test | Pending | All ARCH-049 implementations above plus accepted ARCH-047 Admin/compiler, BG001/BG003/BG006; **not** ARCH-047-BACKGROUND-007 |
 
+**Dependency-frontier reconciliation (2026-11-01):** all explicit dependencies
+of `ARCH-049-SYSTEM-TEST-001` are Complete. In particular,
+`ARCH-049-WOOCOMMERCE-002` was architect-accepted at Attempt 1 and explicitly
+developer-completed; its implementation is published at
+`44c39ee927606c5b9caef135fb8f4f3d271d62c6`. The system-test task is therefore
+`ready` with no claim, and remains terminal/manual-gated until explicit developer
+invocation. This dated reconciliation supersedes the initial snapshot status
+above; it does not start the system test.
+
 **Why these edges:** BG001 does not read ShopBrand and therefore needs only the already-accepted public-media settings, not DB001. BG002 owns the versioned source-write helper and depends on DB001 + BG001. BG003 imports that helper, so BG002 is a real module dependency. Woo is a producer of the frozen `woo.shop-brand.v1` API contract and can be built against an independent fixture; production publishing and the terminal System Test still require API001. Admin002 and BG004 each own their half of a published JSON binding contract and can be developed independently with fixed fixtures after DB001.
 
 **Media-provider completion boundary:** the completed ARCH-047 Admin compiler currently builds TEXT headers, and the completed Meta BG003 module rejects IMAGE headers without `example.header_handle`. Admin002 must extend the former using the existing compiler, while the Meta sample-handle acquisition path must be verified before declaring provider IMAGE-template creation usable. If there is no trusted producer of that handle, the architect must define a bounded owning correction rather than silently counting the feature as Complete. BG004 consumes only verified READY R2 asset metadata; it cannot manufacture sample handles. A missing Meta sample is not a reason to weaken runtime media eligibility or create a competing image processor.
