@@ -168,3 +168,34 @@ Await canonical materialisation, execution and review.
 ## Definition reconciliation — 2026-11-02
 
 The earlier four-task-session deferral is lifted by the developer’s explicit request on 2 November 2026 to correct this definition so implementation can begin. This bounded Commerce evaluator/preview work is now Ready; ARCH-036-BACKGROUND-001 is Complete. The old Background-003 proof ownership, retired SYSTEM-TEST-002 dependency and initial-outreach one-offer assumption are removed. Implementation remains unclaimed at Attempt 0, with developer-controlled completion: architect acceptance followed by an explicit developer completion decision.
+
+
+## Architect local implementation review — Attempt 1, 2 November 2026
+
+### Decision and lifecycle
+
+**Changes requested on the local working-tree implementation; no architect acceptance.** This is the requested pre-submission review, not completion. Preserve `status: in_progress`, `executor: developer`, the original claim timestamp, Attempt 1 and developer-controlled completion. No downstream task is promoted or executed. The developer still owns reconciliation and publication of the implementation through `/moda_developer_update ARCH-036-COMMERCE-001`.
+
+Reviewed six changed/untracked files in the canonical implementation worktree, based on HEAD `d0ade086b60b42a4145cc7e50836c2b2c8258de5`. The implementation remains uncommitted and unpublished. Only this parent review/evidence is published by the architect.
+
+### Finding
+
+**P2 — the first selected page is incorrectly used as the complete authorization set.** In `src/commerce/preview/local-policy-providers.ts:318–323`, Woo FIXED policy reads at most 50 checked rows, filters dates after that limit, and puts only those IDs in `fixedOfferIds`. `reader.ts:183–195` then treats this bounded subset as the complete selected set: an exact request for a valid 51st selected coupon is rejected with DENIED. `getDiscountOptions` queries only those first 50 IDs, so its provider cannot see the additional selected rows and returns `truncated: false`. Expired/not-started rows occupying that first page can further hide valid later rows. This breaks the required selected-candidate semantics and accurate bounded pagination.
+
+Preserve bounded reads; do not solve this with an unbounded selected-set load. Separate exact same-Shop selected-ID authorization from the bounded options scan, or use an equivalent bounded design that can authorize an exact selected coupon beyond page one. Apply relevant validity predicates before page limits and accurately signal when the offered set is truncated. Preserve the independent effective Admin override and reject truly unselected/foreign/provider-mismatched IDs.
+
+### Validation and inspected behavior
+
+- Independent run with Node 24.19.0: the **two submitted test files passed, 6/6 tests**.
+- Two temporary review diagnostics used the actual registered local operations with a Prisma fixture honoring the `take`, ID-filter and cursor arguments for 51 selected coupons. Both failed: options returned `truncated: false` instead of true; exact evaluation of `woo:coupon:151` returned DENIED. This establishes the bounded-set defect without claiming a live database run. [Reproduction and output](evidence/COMMERCE-001-attempt-1-pagination-review.md).
+- Temporary diagnostic file was removed after execution; no implementation source/test changes retained by the architect. `git diff --check` passed before review publication.
+- Inspected the current Background snapshot producer: `WooCoupon:code`, `woo:coupon:<id>`, explicit percentage units, bounded optional restriction facts and code identity agree with the adapter. Same-Shop/platform dispatch, Woo scope separation, fixed override precedence, unknown restrictions, currency/rounding limitations, cancellation/deadline gates and conservative absence of provider-redemption claims are the appropriate direction.
+- Current Woo calculation semantics and trusted product facts remain intentionally unavailable; the support matrix documents this. The synthetic arithmetic fixture is not provider proof. This review does not request inventing facts or widening ARCH-052 outreach behavior.
+- Actual Shopify local-operation routing is not exercised by the six submitted tests: the fraction comparison injects Shopify-shaped data under a Woo policy. Include a real Shopify-policy/local-registration regression with valid/missing scopes and preserved FIXED behavior when addressing the defect, as required by the task. Also cover expired leading rows, a selected ID beyond the first page, accurate truncation, and continued denial of unselected/foreign IDs.
+- Lint, build and the existing `tests/system-commerce-tool-sync.test.ts:305` NODE_ENV typecheck failure are recorded as executor-reported results; architect did not rerun those commands.
+
+### Follow-up
+
+Correct the bounded-selection/authorization behavior and supply the focused regressions above. Reconcile the Completion Report and publish implementation evidence through the developer workflow before final architect acceptance. Completion still requires the explicit developer completion decision after acceptance; no claim or lifecycle transition was made by this review.
+
+Reviewed working-tree fingerprint (SHA-256 of the ordered six relative paths and file bytes, NUL-separated): `fc4caffd64a3892180a29f6f0f85be3b3f7163679a843392638b7516cf779a38`.
