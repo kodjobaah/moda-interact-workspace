@@ -28,10 +28,11 @@ depends_on:
 - ARCH-043-MCP-001
 - ARCH-043-ADMIN-004
 - ARCH-043-API-004
+- ARCH-043-MESSAGING-001
 enables:
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
-updated: '2026-10-17'
+updated: 2026-11-02
 ---
 
 # Remove retired application-policy environment variables
@@ -54,9 +55,9 @@ Gateway owns the Render Blueprints and deployment topology, not repository consu
 ## Scope
 
 - Review the Render Blueprint and environment-specific configuration for both policy and secret variables.
-- Remove Commerce keyring/active ID and supported AUTH_SECRET/Google/Shopify OAuth declarations only when each participating consumer demonstrates secure DB-only startup, rotation and recovery. **Do not remove META_APP_SECRET or WHATSAPP_VERIFY_TOKEN from Messaging**: that integration is excluded from ARCH-043.
+- Retire service-specific policy/provider declarations only after their current consumer proves database authority and safe startup/rotation. Preserve the externally required ARCH-039 credential keyring, active writer selector, Commerce-only HMAC, config-unseal roots and accepted absent-row Auth.js fallback. Messaging now has its separately accepted MESSAGING-001 database reader; do not infer that every deployment credential with a similar name is obsolete.
 - Keep `DATABASE_URL`, Redis, deploy identity/URLs, `OTEL_*` and the externally managed `MODA_CONFIG_UNSEAL_KEY` or KMS identity; never commit the root value.
-- No private Meta endpoint or API-002-specific internal service identity is created. Do not add API-to-Messaging connectivity. Keep Messaging webhook verification environment credentials and record the environment-specific rollback matrix.
+- No private Meta endpoint or API-002-specific internal service identity is created. Do not add API-to-Messaging connectivity. Record the environment-specific rollback matrix. Any Messaging credential retirement must be supported by its accepted direct database reader and deployment verification, without a private API resolver.
 
 ## Out of Scope
 
@@ -65,7 +66,7 @@ Gateway owns the Render Blueprints and deployment topology, not repository consu
 ## Requirements
 ### 17 October 2026 reconciliation guardrails
 
-Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin/Commerce: they are deliberate fallback bundles on **absent** DB auth records and are resolved only on authentication requests. Keep `AUTH_URL`, `WOO_BILLING_ENVIRONMENT`, `MODA_WOO_REST_READ_PUBLIC_ORIGIN`, cryptographic unwrap roots, and Meta webhook verification (`META_APP_SECRET`/`WHATSAPP_VERIFY_TOKEN`) external. Retire only per-service credential names actually made obsolete by the eight additional accepted consumer tasks, with a rollback matrix; never assume that an Admin UI setting automatically migrates all consumers.
+Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin/Commerce: they are deliberate fallback bundles on **absent** DB auth records and are resolved only on authentication requests. Keep `AUTH_URL`, `WOO_BILLING_ENVIRONMENT`, `MODA_WOO_REST_READ_PUBLIC_ORIGIN` and required cryptographic unwrap roots external. Inspect the accepted Messaging reader before deciding whether its old verification environment declarations are obsolete; do not remove unrelated ingress credentials. Retire only per-service credential names actually made obsolete by the eight additional accepted consumer tasks, with a rollback matrix; never assume that an Admin UI setting automatically migrates all consumers.
 
 
 - Maintain test/production separation and no secret values in Blueprint.
@@ -75,7 +76,7 @@ Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin
 
 - [ ] Audit `render.test.yaml`, `render.production.yaml` and canonical `render.yaml` where applicable for policy variables replaced by ARCH-043.
 - [ ] Remove obsolete settings only after the owning consumer explicitly proves database-only behaviour and safe rollback.
-- [ ] Keep required bootstrap variables, Messaging Meta verification credentials, other public-ingress credentials not migrated by an accepted consumer, DB/Redis, OTEL and Woo-plugin local connection environment variables.
+- [ ] Keep required bootstrap variables, ingress credentials not migrated by an accepted consumer, DB/Redis, OTEL and Woo-plugin local connection environment variables. Verify the accepted Messaging reader before retiring any Messaging-specific legacy values.
 - [ ] Record environment-specific deploy sequencing and a rollback table.
 - [ ] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
 
@@ -92,17 +93,20 @@ Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin
 
 ## Dependencies
 
-- `ARCH-043-ADMIN-001`
-- `ARCH-043-ADMIN-002`
-- `ARCH-043-BACKGROUND-001`
-- `ARCH-043-BACKGROUND-002`
-- `ARCH-043-API-001`
-- `ARCH-043-API-002`
-- `ARCH-043-COMMERCE-001`
-- `ARCH-043-COMMERCE-002`
-- `ARCH-043-SHOPIFY-001`
-- `ARCH-043-SHOPIFY-002`
-- `ARCH-043-MCP-001`
+- ARCH-043-ADMIN-001
+- ARCH-043-ADMIN-002
+- ARCH-043-BACKGROUND-001
+- ARCH-043-BACKGROUND-002
+- ARCH-043-API-001
+- ARCH-043-API-002
+- ARCH-043-COMMERCE-001
+- ARCH-043-COMMERCE-002
+- ARCH-043-SHOPIFY-001
+- ARCH-043-SHOPIFY-002
+- ARCH-043-MCP-001
+- ARCH-043-ADMIN-004
+- ARCH-043-API-004
+- ARCH-043-MESSAGING-001
 
 ## Enables
 
@@ -200,3 +204,13 @@ None
 ## 17 October 2026 ARCH-043 extension (architect-owned amendment)
 
 Do not remove Admin/Commerce Auth.js env credentials until ADMIN-002 and COMMERCE-002 demonstrate DB bootstrap/rotation; remove R2/env upload fields only after all API/Shopify/Background consumers use the single sealed record. Do not remove merchant-specific WooCommerce REST credentials; global `woocommerce.auth` has no approved runtime consumer.
+
+## Controlling consolidation — 2026-11-02
+
+This is the single active Gateway cutover task. It owns the former GATEWAY-002 deployment/least-privilege/rollback checks as well as non-secret policy cleanup. Preserve externally required `COMMERCE_CONNECTION_KEYS_JSON`, writer `COMMERCE_CONNECTION_ACTIVE_KEY_ID`, Commerce-only `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`, and config-unseal roots wherever the inspected service still consumes them. A database record named `commerce.connectionKeys` does not authorize removing another service's ARCH-039 reader keyring. Keep Admin/Commerce absent-row authentication fallback as implemented; invalid/revoked configured records remain fail-closed.
+
+Inspect both actual Render Blueprints and their positive/negative validators. Current `ac092dc` still declares migrated Knowledge/translation/transcription settings and attaches provider groups. Produce a per-service variable-to-current-reader matrix before removing only proven obsolete references. Validate test/production separation, key distribution, revoked/tampered credentials, cold-start behavior and rollback; no deployment is performed by this definition reconciliation.
+
+## Definition reconciliation — 2026-11-02
+
+Source evidence: Gateway ac092dc render.test.yaml, render.production.yaml, tests/validate-render-blueprints.sh and its negative suite still contain policy/provider environment groups. Definition deduplicated and consolidated; code/deployment validation is still required. Canonical ARCH-039 keyring/authentication fallback retention is mandatory as detailed above.
