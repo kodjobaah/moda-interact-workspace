@@ -91,6 +91,6 @@ Scope: reconcile the 39 open task IDs, four completed records initially absent f
 The developer subsequently authorized preparing ARCH-036-ADMIN-001 and ARCH-036-COMMERCE-001 for implementation. Commerce’s earlier deferral is lifted for the corrected cached evaluator/local-preview scope; both tasks are now Ready, Attempt 0 and unclaimed. The earlier per-task table records the preceding audit snapshot. Outstanding task count remains 35; this amendment changes Commerce from Pending to Ready and does not certify implementation.
 
 
-### ARCH-036-COMMERCE-001 completion — 2026-11-02
+### ARCH-036-ADMIN-001 completion — 2026-11-02
 
-Attempt 1 is accepted and explicitly developer-completed. Implementation `67107a79567cf91df7fdb25dbbefe63abae07233` is published, and the canonical task report records the passing correction review and known unrelated typecheck limitation. This supersedes the Commerce pending/ready entries in the historical audit above. No active downstream dependency is unblocked; SYSTEM-TEST-002 remains superseded. This update does not re-audit or change other task states or aggregate counts.
+ADMIN-001 Attempt 1 is accepted and explicitly developer-completed; published implementation `3267cef1760af15d80c0ea36bd5ee29d01131205`. The canonical completion report records independent automated validation and developer-reported viewport evidence. SYSTEM-TEST-001 now has all four prerequisites Complete and is dependency-ready (Ready, Attempt 0, unclaimed), with manual launch still required. This supersedes these tasks' historical ready/pending audit entries without certifying system tests or re-auditing unrelated aggregate counts.

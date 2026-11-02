@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 90
 executor: null
 claimed_at: null
@@ -168,3 +168,8 @@ Await canonical materialisation, execution and review.
 ## Definition reconciliation — 2026-11-02
 
 Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Incomplete prerequisites: ARCH-036-ADMIN-001: ready. Status pending does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.
+
+
+## Dependency-frontier reconciliation — 2026-11-02
+
+ARCH-036-ADMIN-001 Attempt 1 is accepted and explicitly completed; BACKGROUND-001, API-002 and WOOCOMMERCE-003 are also Complete. All explicit implementation prerequisites are satisfied. Status is now Ready (dependency-ready), Attempt 0, executor/claimed_at null. Explicit manual launch is still required; no claim, implementation, system execution or certification result is implied. This supersedes the earlier incomplete-prerequisite note. The eligibility update is published with the accepting Admin parent task branch; no separate system-test task branch existed at reconciliation.

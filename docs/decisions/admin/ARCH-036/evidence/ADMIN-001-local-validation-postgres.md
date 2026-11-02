@@ -1,0 +1,56 @@
+# Independent PostgreSQL validation output
+
+```text
+NOTICE:  schema "public" already exists, skipping
+NOTICE:  identifier "PlatformBillingPolicy_lifetimeFreeRecoveryAllowance_non_negative" will be truncated to "PlatformBillingPolicy_lifetimeFreeRecoveryAllowance_non_negativ"
+NOTICE:  identifier "MerchantPricingUsageTier_merchantPricingUsageEventId_position_key" will be truncated to "MerchantPricingUsageTier_merchantPricingUsageEventId_position_k"
+NOTICE:  identifier "MerchantPricingPlanHighlightTranslation_merchantPricingPlanHighlightId_fkey" will be truncated to "MerchantPricingPlanHighlightTranslation_merchantPricingPlanHigh"
+NOTICE:  identifier "ShopRecoveryPolicyOverrideAuditEvent_platformAdminId_occurredAt_idx" will be truncated to "ShopRecoveryPolicyOverrideAuditEvent_platformAdminId_occurredAt"
+NOTICE:  identifier "CommerceExternalConnectionRevision_connectionId_revisionNumber_key" will be truncated to "CommerceExternalConnectionRevision_connectionId_revisionNumber_"
+NOTICE:  identifier "CommercePromptTemplateCategory_enabled_displayOrder_displayName_id_idx" will be truncated to "CommercePromptTemplateCategory_enabled_displayOrder_displayName"
+NOTICE:  identifier "CommercePromptTemplateRevision_templateId_status_revisionNumber_idx" will be truncated to "CommercePromptTemplateRevision_templateId_status_revisionNumber"
+NOTICE:  identifier "CommerceStudioMerchantAccess_shopId_provider_providerSubject_key" will be truncated to "CommerceStudioMerchantAccess_shopId_provider_providerSubject_ke"
+NOTICE:  identifier "CommerceStudioMerchantAccess_provider_providerSubject_active_idx" will be truncated to "CommerceStudioMerchantAccess_provider_providerSubject_active_id"
+NOTICE:  index "CommerceAgentPromptRevision_sourceTemplateRevisionId_idx" does not exist, skipping
+NOTICE:  identifier "CommerceStoreCategoryTaxonomyMapping_shopifyTaxonomyCategoryId_key" will be truncated to "CommerceStoreCategoryTaxonomyMapping_shopifyTaxonomyCategoryId_"
+NOTICE:  identifier "MerchantKnowledgeChunk_embeddingIndexVersion_embeddingDimensions_idx" will be truncated to "MerchantKnowledgeChunk_embeddingIndexVersion_embeddingDimension"
+NOTICE:  identifier "CommerceModelCatalogueEntry_availabilityId_provider_providerModelId_key" will be truncated to "CommerceModelCatalogueEntry_availabilityId_provider_providerMod"
+NOTICE:  identifier "CommerceModelCatalogueEntry_availabilityId_enabled_displayName_id_idx" will be truncated to "CommerceModelCatalogueEntry_availabilityId_enabled_displayName_"
+NOTICE:  identifier "CommerceStoreCategoryTaxonomyMapping_taxonomy_metadata_bundle_check" will be truncated to "CommerceStoreCategoryTaxonomyMapping_taxonomy_metadata_bundle_c"
+NOTICE:  identifier "CommerceStoreCategoryTaxonomyMapping_categoryId_conditionKey_key" will be truncated to "CommerceStoreCategoryTaxonomyMapping_categoryId_conditionKey_ke"
+NOTICE:  identifier "CommerceStoreCategoryTaxonomyMappingTranslation_display_name_check" will be truncated to "CommerceStoreCategoryTaxonomyMappingTranslation_display_name_ch"
+NOTICE:  identifier "CommerceStoreCategoryTaxonomyMappingTranslation_mappingId_locale_key" will be truncated to "CommerceStoreCategoryTaxonomyMappingTranslation_mappingId_local"
+NOTICE:  identifier "CommerceStoreCategoryTaxonomyMappingTranslation_locale_mappingId_idx" will be truncated to "CommerceStoreCategoryTaxonomyMappingTranslation_locale_mappingI"
+NOTICE:  identifier "CommerceTranslationModelConfiguration_environment_provider_model_key" will be truncated to "CommerceTranslationModelConfiguration_environment_provider_mode"
+NOTICE:  identifier "CommerceTranslationModelConfiguration_environment_displayName_key" will be truncated to "CommerceTranslationModelConfiguration_environment_displayName_k"
+NOTICE:  identifier "CommerceTranslationModelConfiguration_environment_enabled_displayName_id_idx" will be truncated to "CommerceTranslationModelConfiguration_environment_enabled_displ"
+NOTICE:  identifier "CommerceStoreCategoryTranslationRun_categoryId_status_requestedAt_idx" will be truncated to "CommerceStoreCategoryTranslationRun_categoryId_status_requested"
+NOTICE:  identifier "CommerceStoreCategoryTranslationBatch_provider_providerBatchId_key" will be truncated to "CommerceStoreCategoryTranslationBatch_provider_providerBatchId_"
+NOTICE:  identifier "CommerceStoreCategoryTranslationBatch_runId_status_createdAt_idx" will be truncated to "CommerceStoreCategoryTranslationBatch_runId_status_createdAt_id"
+NOTICE:  identifier "CommerceStoreCategoryTranslationBatch_status_nextSubmitAt_createdAt_idx" will be truncated to "CommerceStoreCategoryTranslationBatch_status_nextSubmitAt_creat"
+NOTICE:  identifier "CommerceStoreCategoryTranslationBatch_status_nextPollAt_createdAt_idx" will be truncated to "CommerceStoreCategoryTranslationBatch_status_nextPollAt_created"
+NOTICE:  identifier "CommerceStoreCategoryTranslationItem_run_entity_field_locale_key" will be truncated to "CommerceStoreCategoryTranslationItem_run_entity_field_locale_ke"
+NOTICE:  identifier "CommerceStoreCategoryTranslationItem_status_batch_retry_createdAt_idx" will be truncated to "CommerceStoreCategoryTranslationItem_status_batch_retry_created"
+NOTICE:  identifier "CommerceStoreCategoryTranslationItem_runId_targetLanguageTag_idx" will be truncated to "CommerceStoreCategoryTranslationItem_runId_targetLanguageTag_id"
+NOTICE:  identifier "CommerceStoreCategoryTranslationBatchItem_batchId_translationItemId_key" will be truncated to "CommerceStoreCategoryTranslationBatchItem_batchId_translationIt"
+NOTICE:  identifier "CommerceStoreCategoryTranslationBatchItem_translationItemId_createdAt_idx" will be truncated to "CommerceStoreCategoryTranslationBatchItem_translationItemId_cre"
+NOTICE:  identifier "CommerceStoreCategoryTranslationBatchItem_translationItemId_fkey" will be truncated to "CommerceStoreCategoryTranslationBatchItem_translationItemId_fke"
+NOTICE:  identifier "CommerceAuditEvent_translationModelConfigurationId_createdAt_id_idx" will be truncated to "CommerceAuditEvent_translationModelConfigurationId_createdAt_id"
+NOTICE:  identifier "WooCommerceBillingWebhookReceipt_providerContractId_receivedAt_idx" will be truncated to "WooCommerceBillingWebhookReceipt_providerContractId_receivedAt_"
+NOTICE:  identifier "WooCommerceBillingWebhookReceipt_billingOperationId_receivedAt_idx" will be truncated to "WooCommerceBillingWebhookReceipt_billingOperationId_receivedAt_"
+✔ seed a disposable tenant for the manual viewport check (122.027799ms)
+✔ catalogue read scopes rows to one shop and separates Shopify selection from validity (66.037508ms)
+✔ Shopify fixed override persists with a real same-Shop FK and audit despite unchecked selection (118.753046ms)
+✔ database-backed authorization denies non-SUPER_ADMIN and inactive admins before writes (64.849658ms)
+✔ PostgreSQL rolls back the inserted audit when the override upsert fails (109.220133ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1140.615372
+PASS ARCH-036 Admin disposable PostgreSQL tests
+
+```

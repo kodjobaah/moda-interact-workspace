@@ -9,7 +9,7 @@ updated: 2026-10-13
 
 # ARCH-036 — WooCommerce coupon catalogue and merchant configuration
 
-> **Current scope amendment — 2 November 2026:** The developer has explicitly authorized implementation preparation for ADMIN-001 and COMMERCE-001. COMMERCE-001 is now accepted and explicitly completed at Attempt 1; ADMIN-001 retains its own authoritative task lifecycle. The Commerce deferral in the historical October session below is lifted only for the cached evaluator/local-preview scope in its corrected task definition. SYSTEM-TEST-002 remains superseded; ARCH-052 retains initial outreach and provider source validation.
+> **Current scope amendment — 2 November 2026:** The developer has explicitly authorized implementation preparation for ADMIN-001 and COMMERCE-001. ADMIN-001 is accepted and explicitly completed at Attempt 1. SYSTEM-TEST-001 is dependency-ready and remains manually launched; Commerce follows its own authoritative task record. The Commerce deferral in the historical October session below is lifted only for the cached evaluator/local-preview scope in its corrected task definition. SYSTEM-TEST-002 remains superseded; ARCH-052 retains initial outreach and provider source validation.
 
 
 ## Status and session boundary
