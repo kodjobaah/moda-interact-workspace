@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -161,3 +161,8 @@ None
 ## Definition reconciliation — 2026-11-02
 
 Background main 10e72d7 has no implemented overdue frozen-AI-turn repair path. Keep this task Pending behind BACKGROUND-002; existing generic conversation processing/reconciliation does not prove delayed-turn durable repair or 10k-turn capacity.
+
+
+## Dependency readiness — 2 November 2026
+
+ARCH-054-BACKGROUND-002 is architect-accepted Complete at Attempt 2 (`64d1be0`). Its sole dependency is satisfied; this task is Ready, Attempt 0, unclaimed. Prepare through the normal launcher; this promotion does not execute repair work.
