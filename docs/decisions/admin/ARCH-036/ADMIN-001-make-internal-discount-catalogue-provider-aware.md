@@ -166,3 +166,32 @@ Admin main 420b86a still filters running/selectable discounts using isAvailable:
 ## Implementation readiness — 2026-11-02
 
 Ready, Attempt 0, unclaimed. The accepted Background prerequisite is complete. Implement only Admin queries, UI and server-side override validation; neither Commerce work nor new provider fetching is a prerequisite. Keep developer-controlled completion: submit for architect acceptance, then await the explicit developer completion decision.
+
+
+## Architect local implementation review — Attempt 1, 2 November 2026
+
+### Decision and lifecycle
+
+**Changes requested on the local working-tree implementation; no architect acceptance.** The developer requested review before formal submission. Preserve `status: in_progress`, `executor: developer`, the original claim timestamp, Attempt 1 and developer-controlled completion. Do not mark this task Complete, clear its active claim, or promote ARCH-036-SYSTEM-TEST-001. The earlier Completion Report placeholders still await developer reconciliation through `/moda_developer_update ARCH-036-ADMIN-001`.
+
+Reviewed the eight changed/untracked files in the canonical implementation worktree, based on implementation HEAD `420b86aa90ca9dbb13f4c1af796ee7b60d38d05f`. These implementation changes are uncommitted and unpublished; this review does not publish them. The parent review note is separately published on the task branch.
+
+### Findings
+
+1. **P2 — enforce provider identity on the Shopify path too.** `src/lib/admin/discount-eligibility.ts:44` returns `discount.isAvailable` for Shopify after shared catalogue checks, before validating provider identity. A same-Shop ACTIVE/current row with `shopifyDiscountNodeId: "woo:coupon:27"`, `providerType: "WooCoupon:percent"`, `isAvailable: true` and `fixedSelectable: true` returns assignable for a SHOPIFY Shop. The database schema does not enforce provider identity against the Shop platform. Both the list and override writer use this helper, so such a wrong-provider row can be displayed/assigned despite the task's explicit target-provider requirement. Validate the existing Shopify identity/type shape without changing the existing merchant-selection predicate; add wrong-provider tests in both directions. The observed input does not demonstrate cross-tenant access: same-Shop filtering is already present.
+2. **P2 — execute the required read/write security cases.** The five focused checks in `tests/security/admin-tenant-recovery-policy.test.mjs` and `admin-shopify-discount-sync.test.mjs` use source-string assertions. The four added unit tests execute only the eligibility helper. No changed test actually runs the catalogue read or `upsertTenantRecoveryPolicyOverrideAction` against a controlled transaction to prove unchecked Woo assignment, foreign-Shop/wrong-provider rejection, invalidation between listing and submit, role denial, and atomic audit/override rollback. Add behavioral coverage at the real action/service boundary (with a suitable isolated database fixture for transaction behavior) and verify the existing Shopify path. A regex matching `Serializable` or an audit call is not evidence that those behaviors hold.
+
+### Validation and positive findings
+
+- Independently ran `node --conditions=import --import tsx --test tests/unit/arch036-admin-discount-eligibility.test.ts tests/security/admin-tenant-recovery-policy.test.mjs tests/security/admin-shopify-discount-sync.test.mjs`: **9/9 passed** (4 helper tests and 5 source-inspection tests), Node 24.19.0.
+- Independently imported the actual eligibility helper with the Shopify/Woo identity-mismatch fixture described above: returned `{ "wrongProviderAssignable": true }`. No source changes were needed for reproduction.
+- `git diff --check` passed.
+- Inspected same-Shop queries, current-generation/unavailable/expiry predicates, Woo checkbox-independent assignment, SUPER_ADMIN checks, existing reason/actor/expiry fields, audit and override in one serializable transaction, and provider-separated display. These are the appropriate implementation direction. No schema changes found.
+- Executor-reported TypeScript, changed-file ESLint and production build passes are recorded as supplied evidence, not independently rerun. Existing BullMQ build warnings and repository-wide lint failure in `use-shop-brand-media-role.ts` remain reported baseline limitations.
+- Required desktop/narrow-screen verification was not supplied or performed in this review; record it with the final developer submission.
+
+### Follow-up
+
+Fix the provider guard and add behavioral read/write coverage. Correct the new Shopify label/test wording that calls `isAvailable` provider availability: accepted ARCH-052 makes it merchant selection, although this task preserves Shopify's existing filter behavior. Complete the required desktop/narrow UI checks. Reconcile the Completion Report and publish the implementation through the developer workflow before requesting final acceptance; an explicit developer completion decision remains required after acceptance. No implementation edits or commits were made by the architect.
+
+Reviewed working-tree fingerprint (SHA-256 of the ordered eight relative paths and file bytes, NUL-separated): `edaad7bfef545031d882bd0a4e9f256dd6734dcfae97a5f7421be3de761f6932`.
