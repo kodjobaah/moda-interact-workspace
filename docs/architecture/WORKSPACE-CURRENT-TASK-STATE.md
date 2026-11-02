@@ -1890,3 +1890,8 @@ The developer authorized lifting COMMERCE-001’s prior session deferral for its
 ### ARCH-054-BACKGROUND-002 review — 2 November 2026
 
 Attempt 1 Changes Requested; Ready with executor/claimed_at cleared. Original inbound version is not yet enforced in the locked final send permit, and the reported four integration cases do not cover recovery delay/control execution. 100 selected unit tests passed; one adversarial race regression failed. BACKGROUND-003 remains Pending. See the canonical task Architect Review for correction scope and evidence.
+
+
+### ARCH-054-BACKGROUND-002 accepted — 2 November 2026
+
+Attempt 2 accepted on implementation `64d1be0`; task Complete with claim cleared. Independent review passed 129 unit tests and 11 disposable PostgreSQL/Redis integration tests. Both Attempt 1 findings are resolved. BACKGROUND-003 promoted to Ready, Attempt 0 and unclaimed. ARCH-054 system tasks remain Pending; no downstream work was executed. This supersedes the earlier Changes Requested snapshot.

@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-054-BACKGROUND-001
@@ -219,7 +219,7 @@ The permitted Background-only correction scope also includes the existing intern
 
 ### Status
 
-Implementation corrections complete and submitted for architect review. Attempt 1 and its review evidence remain preserved above. No downstream task was started.
+Attempt 2 accepted by moda_architect on 2 November 2026; task Complete under automatic completion. Attempt 1 and its review evidence remain preserved above. BACKGROUND-003 is Ready but has not been started.
 
 ### Corrections Completed
 
@@ -263,3 +263,27 @@ Implementation corrections complete and submitted for architect review. Attempt 
 ## Definition reconciliation — 2026-11-02
 
 Historical pre-implementation snapshot (superseded by Attempt 1 and its review above): Background main 10e72d7 used conversation-turn-processor.service.ts control ownership checks and has no pendingAiNotBeforeAt/pendingAiControlRevision enforcement in runtime source. Frozen-deadline scheduling, original control-revision fencing and final-admission behavior remain unimplemented; BACKGROUND-001 validation is still a prerequisite.
+
+
+## Architect Review — Attempt 2, 2 November 2026
+
+### Review Status
+
+**Accepted — Complete, Attempt 2.** Reviewed implementation `64d1be07522ae7742eb3e8dd2c85ebf2b2900441` and submitted parent report `5b88ef2aa`. Executor and claimed_at are explicitly null. No unresolved blocking findings from this review.
+
+### Previous findings resolved
+
+- **P1 resolved:** The processor passes its immutable observed inbound version through prepared-text admission and delivery. Recovery SQL re-reads inboundVersion after taking the existing Shop/Conversation locks; the final permit checks the original version before persisting dispatch admission. The general non-recovery fence also honors the optional version, preserving shared processor behavior. A stale send fails preparation without provider I/O, while a permit committed before later ingress remains valid. The existing control revision, moderation, consent, billing, idempotency and HUMAN boundaries remain in place; provider calls stay outside database transactions.
+- **P2 resolved:** The recovery suite now uses real ConversationService persistence, real ownership/delivery/final-permit services and disposable PostgreSQL/Redis for delayed recovery execution. It covers pre-due release/reschedule without reservation/model work, execution when due, frozen deadlines across newer inbound, duplicate/out-of-order jobs, audited takeover/resume, inbound winning during the final ownership await and outbound moderation, and a permit winning before later ingress. External model/provider fixtures remain bounded; the existing Aimock/emulator cases still pass.
+
+### Reviewed scope and validation
+
+- Inspected all ten Attempt 2 changed files, the original processor gate, delivery forwarding, locked recovery SQL projection, both final fences, unit regressions and integration fixture/test behavior.
+- Independently reran **5 focused unit suites / 129 tests: passed** (processor, recovery-conversation services, conversation service, eligibility helper and outbound delivery).
+- Independently reran `node scripts/test-integration.mjs tests/integration/recovery-human-ai-ownership.integration.test.ts tests/integration/conversation-turn-scheduling.integration.test.ts` using the repository's disposable infrastructure: **2 files / 11 tests passed** (7 recovery-control + 4 scheduling). Runner exited successfully.
+- Node 24.19.0. Recorded executor typecheck, build and lint passes remain applicable; architect did not repeat those commands. `git diff --check` passed.
+- Implementation worktree was clean, and local HEAD matched the published task ref at `64d1be0`. Dedicated physical worktree/submodule evidence remains recorded in the Completion Reports. No implementation edits, commits, merges or main pushes were made by the architect.
+
+### Dependency disposition
+
+BACKGROUND-003's only prerequisite is now Complete, so promote it from Pending to Ready while preserving Attempt 0 and empty claim fields. SYSTEM-TEST-001 still depends on unfinished BACKGROUND-003; SYSTEM-TEST-002 depends on BACKGROUND-003 and SYSTEM-TEST-001. Both remain Pending and manually launched. Architecture completion is not asserted. Developer retains implementation/main integration ownership.
