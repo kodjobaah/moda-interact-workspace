@@ -199,3 +199,28 @@ Preserve bounded reads; do not solve this with an unbounded selected-set load. S
 Correct the bounded-selection/authorization behavior and supply the focused regressions above. Reconcile the Completion Report and publish implementation evidence through the developer workflow before final architect acceptance. Completion still requires the explicit developer completion decision after acceptance; no claim or lifecycle transition was made by this review.
 
 Reviewed working-tree fingerprint (SHA-256 of the ordered six relative paths and file bytes, NUL-separated): `fc4caffd64a3892180a29f6f0f85be3b3f7163679a843392638b7516cf779a38`.
+
+
+## Architect local correction review — Attempt 1, 2 November 2026
+
+### Outcome
+
+**Previous P2 resolved; no new blocking implementation findings in the inspected local changes.** This supersedes the earlier local Changes Requested finding, while preserving its evidence as history. This is a working-tree correction review, not acceptance of a published submission or a task-completion decision. Preserve `in_progress`, `executor: developer`, the original claim and Attempt 1. No downstream transition is required (`enables` is empty).
+
+### Correction verified
+
+The policy resolver now distinguishes an exact requested offer from options enumeration. Exact Woo FIXED authorization uses a same-Shop, selected, current-generation, valid-provider and in-date `findFirst` query; it does not depend on the first options page. Options select 51 valid rows to detect overflow, expose at most 50 IDs and propagate truncation through the reader. Date predicates occur before query limits in selection and provider reads. Effective Admin overrides retain their independent single-ID path; Shopify retains its FIXED/provider-scope path. The support matrix documents the bound and exact authorization behavior.
+
+### Independent validation
+
+- Submitted focused suites: **2 files / 8 tests passed**. These cover percentage units, selection/override behavior, stale catalogue/deadline rejection, 51 selections/expired rows, foreign-Shop rejection and registered Shopify FIXED routing with present/missing `read_discounts` scope.
+- Added one temporary review-only diagnostic with a cursor-aware Prisma fixture: **passed**. It asserts the exact 50 distinct expected IDs after excluding an expired row, `truncated: true`, `woo:coupon:151` reaching evaluation as UNAVAILABLE rather than DENIED, and unselected `woo:coupon:999` remaining DENIED. Combined run: **3 files / 9 tests passed**, Node 24.19.0. [Diagnostic and output](evidence/COMMERCE-001-attempt-1-selection-recheck.md).
+- The temporary test was removed after execution; implementation edits remain solely developer-owned. `git diff --check` passed.
+- Executor-reported changed-file lint and production build passes remain recorded as supplied evidence; the Nunjucks warning and pre-existing NODE_ENV typecheck error at `tests/system-commerce-tool-sync.test.ts:305` are not claimed resolved. Those commands were not independently repeated by the architect.
+- Woo trusted product facts/calculation semantics remain unavailable in the actual local adapter, so UNAVAILABLE/unsupported behavior is deliberate. No fabricated eligibility, provider redemption guarantee, new public contract or ARCH-052 behavior is approved by this review.
+
+### Publication and completion boundary
+
+Implementation remains uncommitted on the canonical task worktree based on `d0ade086b60b42a4145cc7e50836c2b2c8258de5`. Reconcile the Completion Report and publish the implementation through `/moda_developer_update ARCH-036-COMMERCE-001` before final acceptance of the submitted revision. Developer-controlled completion still requires an explicit developer completion decision. This review publishes only parent documentation/evidence and does not change task lifecycle or implementation Git state.
+
+Reviewed working-tree fingerprint (SHA-256 of the ordered six relative paths and file bytes, NUL-separated): `cd237a1aae9ef4226f4a0905a56c4052899166c9dc934eab4ddfe45e19ff74b6`.
