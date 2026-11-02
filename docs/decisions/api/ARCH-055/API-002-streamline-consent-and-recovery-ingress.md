@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 25
 executor: copilot
 claimed_at: 2026-11-02T21:41:52Z
@@ -33,32 +33,78 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `ready` solely from the dependency graph below.
 
 ## Objective
-
 Keep the recovery-ingress safety boundary intact while separating duplicate/read-only work from mutation locking and retaining original database/queue errors.
+Blocked. Implementation changes are present on the implementation task branch, but the required disposable PostgreSQL validations cannot reach their Docker-published localhost ports, and the final typecheck/lint results could not be obtained. Do not treat this as Ready for Review.
 
 ## Context
-
 Source: the 1 November 2026 workspace snapshot and the 2 November 2026 completed database review. Covered endpoint entries: `E03`, `E04`, `E05`, `E06`, `E08`. Consult `docs/architecture/ARCH-055/review-ledger.md` for the original evidence; `docs/architecture/ARCH-055/endpoint-task-map.csv` fixes the primary owner of every route. New architectural choices are explicitly frozen in the parent's ADR sections; they are not retrospectively claimed as facts from the review.
+### Files Changed
 
-## Scope
-
-One owning repository: `moda-interact-api`. Paths below are relative to that repository. Directory entries are bounded to this task's requirements, not authority for unrelated refactoring.
-
-- `src/woocommerce/activity/`
-- `src/woocommerce/consent/`
-- `src/woocommerce/recovery-selection/`
-- `src/woocommerce/recovery-restore/`
-- `tests/unit/woocommerce/activity/`
-- `tests/unit/woocommerce/consent/`
-- `tests/unit/woocommerce/recovery-selection/`
-- `tests/unit/woocommerce/recovery-restore/`
-- `tests/integration/woocommerce/consent/`
-- `tests/integration/woocommerce/recovery-restore/`
+- `src/woocommerce/activity/routes.ts`
+- `src/woocommerce/activity/redis-producer.ts`
+- `src/woocommerce/consent/service.ts`
+- `src/woocommerce/recovery-selection/service.ts`
+- `src/woocommerce/recovery-restore/routes.ts`
 - `scripts/test-arch046-woo-consent-postgres.mjs`
 - `scripts/test-arch053-recovery-restore-postgres.mjs`
-- `src/merchant/support/installation.ts [read-only dependency; ARCH-055-API-008 owns changes]`
+- `tests/unit/woocommerce/activity/routes.test.ts`
+- `tests/integration/woocommerce/consent/races.postgres.test.ts`
+- `tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts`
+- `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`
+- `tests/integration/woocommerce/recovery-restore/arch055-revalidation.postgres.test.ts`
 
+## Scope
+One owning repository: `moda-interact-api`. Paths below are relative to that repository. Directory entries are bounded to this task's requirements, not authority for unrelated refactoring.
+### Work Completed
+
+- Consent event handling now checks immutable evidence after event-key coordination and before the recipient advisory lock; exact replay returns the prior acknowledgement without restoring later REVOKE/STOP state. New evidence still takes recipient coordination.
+- Recovery-selection GET avoids recipient advisory and row-level write locks; mutation retains the existing locking path.
+- Activity failures distinguish authentication/database and Redis connection/publication stages. Bounded diagnostics retain safe error code/cause details and redact connection URLs; Redis error events are attached as causes to readiness failures. Queue acceptance and retained-job verification were not intentionally changed.
+- Restore diagnostics preserve bounded safe Prisma/SQL identifiers and causes. The restore runner deploys canonical migrations in its disposable database, and its fixture uses canonical schema fields/constraints.
+- Added the exact named consent/selection PostgreSQL regression file and registered it in the consent runner. Added the named restore revalidation test to the restore runner.
+
+- `src/woocommerce/activity/`
+- `src/woocommerce/recovery-selection/`
+### Validation Results
+
+- `npm run test:arch035-woo-activity:unit`: passed, 25 tests, before the final Redis event-cause propagation edit. Re-run required.
+- `npm run test:arch046-woo-consent:unit`: passed, 6 tests.
+- `npm run test:arch046-woo-selection:unit`: passed, 3 tests.
+- `node --import tsx --test tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts`: file loaded; 2 tests skipped because the PostgreSQL test URL was not set. This is a parse check only, not integration evidence.
+- `npm run test:arch046-woo-consent:postgres`: blocked before migrations/tests; Prisma P1001 could not reach Docker-published `127.0.0.1:32775`.
+- `npm run test:arch053-recovery-restore:postgres`: blocked before migrations/tests; Prisma P1001 could not reach Docker-published `127.0.0.1:32778`.
+- `npm run test:arch035-woo-activity:redis`: invoked, but no conclusive command output was returned; result unverified.
+- `npm run typecheck`: Prisma Client generation succeeded; no final `tsc` exit/result was returned. Typecheck unverified.
+- `npm run lint`: invoked, but no conclusive command output was returned; lint unverified.
+- `git diff --check`: invoked, but no conclusive command output was returned; result unverified.
+- M03 baseline/candidate SQL, affected-row, timing, retry and invocation measurements were not captured. The consent and restore PostgreSQL suites did not reach test execution. Do not substitute inferred SQL counts for measurements.
+- No production p95 or capacity inference is made. Docker-backed test resources could not be confirmed beyond runner cleanup behavior.
+- `src/woocommerce/recovery-restore/`
+- `tests/unit/woocommerce/activity/`
+- `tests/unit/woocommerce/recovery-selection/`
+### Worktree and Git Evidence
+
+- Prepared launcher packet accepted: task `ARCH-055-API-002`, executor `copilot`, attempt 1, status `in_progress`, dependency gate passed.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-002`, branch `task/ARCH-055-API-002`. Launcher claim commit: `6e3b37698b72f31f747b4f33d21de952b28341fc`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-002`, branch `task/ARCH-055-API-002`; initial implementation HEAD `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`.
+- Prepared Database submodule pin: `7c377282aa5819b3008b7d7f3018f44f4161523e`; no schema/migration edits made.
+- Implementation and parent report changes are not yet committed or pushed. No main merge/push was performed. Publish only to the two task branches after recording this blocked report.
+- Implementation commit `903be9f` is pushed to `task/ARCH-055-API-002`. The parent report is the only remaining uncommitted change and will be published on its mirrored `task/ARCH-055-API-002` branch. No main merge/push was performed.
+- `tests/unit/woocommerce/recovery-restore/`
+- `tests/integration/woocommerce/consent/`
+- `scripts/test-arch046-woo-consent-postgres.mjs`
+### Deviations
+
+- None to implementation behavior or schema scope. Task lifecycle is `blocked` rather than `review` because required migrated PostgreSQL evidence and final lint/typecheck evidence are unavailable.
+- `scripts/test-arch053-recovery-restore-postgres.mjs`
+- `src/merchant/support/installation.ts [read-only dependency; ARCH-055-API-008 owns changes]`
 ### Exact edit map — definition revision 2
+### Unresolved Issues
+
+- Restore fixture and consent/selection concurrency tests have not executed against canonical PostgreSQL migrations because the Docker-published ports were unreachable.
+- Redis integration, final typecheck, lint and diff-check outcomes remain unverified.
+- M03 before/after SQL and affected-row measurements remain outstanding.
+- Re-run these validations in an environment where the disposable PostgreSQL containers are reachable; then update this report and task lifecycle.
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
@@ -186,27 +232,57 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Blocked. Implementation changes are present on the implementation task branch, but the required disposable PostgreSQL validations cannot reach their Docker-published localhost ports, and the final typecheck/lint results could not be obtained. Do not treat this as Ready for Review.
 
 ### Files Changed
 
-None.
+- `src/woocommerce/activity/routes.ts`
+- `src/woocommerce/activity/redis-producer.ts`
+- `src/woocommerce/consent/service.ts`
+- `src/woocommerce/recovery-selection/service.ts`
+- `src/woocommerce/recovery-restore/routes.ts`
+- `scripts/test-arch046-woo-consent-postgres.mjs`
+- `scripts/test-arch053-recovery-restore-postgres.mjs`
+- `tests/unit/woocommerce/activity/routes.test.ts`
+- `tests/integration/woocommerce/consent/races.postgres.test.ts`
+- `tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts`
+- `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`
+- `tests/integration/woocommerce/recovery-restore/arch055-revalidation.postgres.test.ts`
 
 ### Work Completed
 
-None. Task definition only.
+- Consent event handling checks immutable evidence after event-key coordination and before the recipient advisory lock. Exact replay returns the prior acknowledgement without restoring later REVOKE/STOP state; new evidence still takes recipient coordination.
+- Recovery-selection GET avoids recipient advisory and row-level write locks; mutation retains the existing locking path.
+- Activity failures distinguish authentication/database and Redis connection/publication stages. Bounded diagnostics retain safe error code/cause details and redact connection URLs; Redis error events are attached as causes to readiness failures. Queue acceptance and retained-job verification were not intentionally changed.
+- Restore diagnostics preserve bounded safe Prisma/SQL identifiers and causes. The restore runner deploys canonical migrations in its disposable database, and its fixture uses canonical schema fields/constraints.
+- Added the exact named consent/selection PostgreSQL regression file and registered it in the consent runner. Added the named restore revalidation test to the restore runner.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+- `npm run test:arch035-woo-activity:unit`: passed, 25 tests, before the final Redis event-cause propagation edit. Re-run required.
+- `npm run test:arch046-woo-consent:unit`: passed, 6 tests.
+- `npm run test:arch046-woo-selection:unit`: passed, 3 tests.
+- `node --import tsx --test tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts`: file loaded; 2 tests skipped because the PostgreSQL test URL was not set. This is a parse check only, not integration evidence.
+- `npm run test:arch046-woo-consent:postgres`: blocked before migrations/tests; Prisma P1001 could not reach Docker-published `127.0.0.1:32775`.
+- `npm run test:arch053-recovery-restore:postgres`: blocked before migrations/tests; Prisma P1001 could not reach Docker-published `127.0.0.1:32778`.
+- `npm run test:arch035-woo-activity:redis`: invoked, but no conclusive command output was returned; result unverified.
+- `npm run typecheck`: Prisma Client generation succeeded; no final `tsc` exit/result was returned. Typecheck unverified.
+- `npm run lint`: invoked, but no conclusive command output was returned; lint unverified.
+- `git diff --check`: invoked, but no conclusive command output was returned; result unverified.
+- M03 baseline/candidate SQL, affected-row, timing, retry and invocation measurements were not captured. The consent and restore PostgreSQL suites did not reach test execution. Do not substitute inferred SQL counts for measurements.
+- No production p95 or capacity inference is made. Docker-backed test resources could not be confirmed beyond runner cleanup behavior.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+- Prepared launcher packet accepted: task `ARCH-055-API-002`, executor `copilot`, attempt 1, status `in_progress`, dependency gate passed.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-002`, branch `task/ARCH-055-API-002`. Launcher claim commit: `6e3b37698b72f31f747b4f33d21de952b28341fc`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-002`, branch `task/ARCH-055-API-002`; initial implementation HEAD `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`.
+- Prepared Database submodule pin: `7c377282aa5819b3008b7d7f3018f44f4161523e`; no schema/migration edits made.
+- Implementation and parent report changes are not yet committed or pushed. No main merge/push was performed. Publish only to the two task branches after recording this blocked report.
 
 ### Deviations
 
-None authorised.
+- None to implementation behavior or schema scope. Task lifecycle is `blocked` rather than `review` because required migrated PostgreSQL evidence and final lint/typecheck evidence are unavailable.
 
 ### Assumptions
 
@@ -214,7 +290,10 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+- Restore fixture and consent/selection concurrency tests have not executed against canonical PostgreSQL migrations because the Docker-published ports were unreachable.
+- Redis integration, final typecheck, lint and diff-check outcomes remain unverified.
+- M03 before/after SQL and affected-row measurements remain outstanding.
+- Re-run these validations in an environment where the disposable PostgreSQL containers are reachable; then update this report and task lifecycle.
 
 ### Architectural Concerns
 
