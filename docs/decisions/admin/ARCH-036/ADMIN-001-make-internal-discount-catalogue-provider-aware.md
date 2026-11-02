@@ -222,3 +222,53 @@ Ran under Node 24.19.0:
 The ten reviewed implementation files remain local and unchanged by the reviewer. Reconcile the stale Completion Report placeholders and publish through the developer workflow after required validation is complete. ARCH-036-SYSTEM-TEST-001 remains unpromoted. Historical findings and evidence are preserved above.
 
 Reviewed working-tree fingerprint (SHA-256 of the ordered ten paths listed in this review's inspection and file bytes, NUL-separated): `b4579a46f0c8b4a5d3eff3cd7b9b8f4fe24e6835f5ff14c3829f73ccb87e0cb2`.
+
+
+## Architect local validation recheck — Attempt 1, 2 November 2026
+
+### Outcome
+
+**No new blocking implementation findings in the inspected working-tree correction.** The prior transaction/authorization/read-validation gap is independently resolved. The developer reports completing the previously missing 1440px and 390px checks and correcting the discovered expanded-table overflow. That visual result is executor-reported, not independently reproduced: screenshot paths were requested but were not available in the inspected task evidence at this review. Preserve that distinction in final submission; retain viewport artifacts with the final report.
+
+This is local correction review, not acceptance of a published revision or task completion. Preserve developer-owned `in_progress`, original claim and Attempt 1. No downstream task is promoted; implementation remains uncommitted. Earlier review findings are preserved as history.
+
+### Verified behavior
+
+- The real server action delegates transaction authorization to `authorizeTenantRecoveryPolicyOverride`; the integration suite uses this same helper and rejects persisted ADMIN and inactive SUPER_ADMIN records without audit or override writes.
+- `getTenantDetail` uses the extracted `readAdminDiscountCatalogue`; real PostgreSQL tests verify same-Shop reads, wrong-provider non-assignability, stale/error catalogue behavior and selection-independent Shopify eligibility.
+- A real unchecked Shopify FK and audit persist successfully. A PostgreSQL trigger forces the override write to fail after audit insertion, proving rollback of both writes through the actual service transaction.
+- Narrow-layout corrections constrain the parent table with fixed columns, allow tenant identity text to wrap, and retain local horizontal scrolling for the discount table. No new application authorization or schema changes were introduced by these corrections.
+
+### Independent validation
+
+- Disposable PostgreSQL runner: **5/5 passed**, comprising four behavioral integration cases plus the viewport-fixture seed case. Ran `node scripts/test-arch036-admin-recovery-policy-postgres.mjs` under Node 24.19.0; migrations succeeded, runner exited successfully after its cleanup path. No persistent database was used.
+- Behavioral helper/service tests: **9/9 passed**; source-inspection security/UI contracts: **5/5 passed**. These are distinct from live visual verification.
+- `git diff --check`: passed.
+- Current lint/typecheck/build were not rerun by the reviewer; earlier executor-reported results and BullMQ warning remain historical evidence, not newly verified results for every added file.
+
+### Publication boundary
+
+Reconcile the Completion Report, retain final validation/viewport evidence and publish through `/moda_developer_update ARCH-036-ADMIN-001` before final acceptance of a submitted revision. Developer-controlled completion still requires an explicit completion decision. This review changes only parent documentation and evidence, not implementation or lifecycle metadata.
+
+Implementation base: `420b86aa90ca9dbb13f4c1af796ee7b60d38d05f`. Reviewed files (sorted):
+
+- `package.json`
+- `scripts/test-arch036-admin-recovery-policy-postgres.mjs`
+- `src/app/actions/tenant.ts`
+- `src/components/admin/tenant-recovery-settings.tsx`
+- `src/components/admin/tenant-row.tsx`
+- `src/components/admin/tenant-table.tsx`
+- `src/lib/admin/data.ts`
+- `src/lib/admin/discount-catalogue.ts`
+- `src/lib/admin/discount-eligibility.ts`
+- `src/lib/admin/recovery-policy-override.ts`
+- `src/lib/admin/types.ts`
+- `tests/integration/arch036-admin-recovery-policy.postgres.test.ts`
+- `tests/security/admin-shopify-discount-sync.test.mjs`
+- `tests/security/admin-tenant-recovery-policy.test.mjs`
+- `tests/unit/arch036-admin-discount-eligibility.test.ts`
+- `tests/unit/arch036-admin-recovery-policy-override.test.ts`
+
+SHA-256 of the ordered paths and file bytes, NUL-separated: `d502430f07b08c9d6bdc11ce56f82c1d46ea5e44d2f080646bdf85d8f8896f55`.
+
+Independent PostgreSQL output: [review log](evidence/ADMIN-001-local-validation-postgres.md).
