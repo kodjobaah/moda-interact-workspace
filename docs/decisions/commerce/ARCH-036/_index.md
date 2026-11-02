@@ -3,8 +3,8 @@
 Architecture: [ARCH-036-shared-commerce-discount-catalogue](../../../architecture/ARCH-036-shared-commerce-discount-catalogue.md).
 
 Reconciled on 2026-11-02. Individual task frontmatter and review reports are authoritative. Superseded tasks must not be executed.
-COMMERCE-001 remains deferred by the architecture scope decision.
+The developer lifted the earlier deferral on 2 November 2026 for the corrected cached evaluator/local-preview scope; implementation is Ready and unclaimed.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [ARCH-036-COMMERCE-001](COMMERCE-001-adapt-existing-discount-evaluator-to-woo-normalized-rules.md) | Adapt existing Commerce discount evaluator for Woo normalized rules | pending | `ARCH-036-BACKGROUND-001` |
+| [ARCH-036-COMMERCE-001](COMMERCE-001-adapt-existing-discount-evaluator-to-woo-normalized-rules.md) | Adapt existing Commerce discount evaluator for Woo normalized rules | ready | `ARCH-036-BACKGROUND-001` |

@@ -84,3 +84,8 @@ Scope: reconcile the 39 open task IDs, four completed records initially absent f
 ## Remaining work count
 
 35 active tasks remain: 26 system-certification tasks and 9 implementation/deferred tasks. 14 system-certification tasks are Ready for manual execution. Superseded records are excluded.
+
+
+## Subsequent developer scope decision — 2 November 2026
+
+The developer subsequently authorized preparing ARCH-036-ADMIN-001 and ARCH-036-COMMERCE-001 for implementation. Commerce’s earlier deferral is lifted for the corrected cached evaluator/local-preview scope; both tasks are now Ready, Attempt 0 and unclaimed. The earlier per-task table records the preceding audit snapshot. Outstanding task count remains 35; this amendment changes Commerce from Pending to Ready and does not certify implementation.

@@ -9,6 +9,9 @@ updated: 2026-10-13
 
 # ARCH-036 — WooCommerce coupon catalogue and merchant configuration
 
+> **Current scope amendment — 2 November 2026:** The developer has explicitly authorized implementation preparation for ADMIN-001 and COMMERCE-001. Both are Ready. The Commerce deferral in the historical October session below is lifted only for the cached evaluator/local-preview scope in its corrected task definition. SYSTEM-TEST-002 remains superseded; ARCH-052 retains initial outreach and provider source validation.
+
+
 ## Status and session boundary
 
 **Proposed — task refinement Attempt 9 (13 October 2026).** This session authorises **five implementation tasks**: the narrowly scoped `ARCH-036-DATABASE-003` global-lease enum migration, `ARCH-036-BACKGROUND-001`, `ARCH-036-API-002`, `ARCH-036-WOOCOMMERCE-003`, and `ARCH-036-ADMIN-001`. Their purpose is to synchronise existing Woo coupons into the current database, display them and persist merchant settings, without modifying CommerceAgent or recovery execution. A separate terminal `ARCH-036-SYSTEM-TEST-001` validates these outcomes; it is not an implementation task.
@@ -115,3 +118,8 @@ ARCH-036 remains Proposed. No implementation is accepted, and the document does 
 ARCH-036-COMMERCE-001 remains deferred. SYSTEM-TEST-002 is superseded by ARCH-052-SYSTEM-TEST-002 for the accepted current initial-outreach contract. Shopify and Woo isAvailable flags both represent merchant selection; provider validity remains separate.
 
 See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.
+
+
+## Implementation preparation — 2 November 2026
+
+ADMIN-001 separates provider validity, merchant selection and independent same-Shop Admin override assignment without changing Shopify behavior. COMMERCE-001 reuses the retained evaluator through actual Commerce local options/evaluation registrations, with explicit Woo units and UNKNOWN handling; no new provider-proof infrastructure or Background changes are authorized. Both depend on Complete ARCH-036-BACKGROUND-001. They remain developer-executed and developer-completed, unclaimed at Attempt 0. ADMIN-001 continues to gate SYSTEM-TEST-001. Commerce has no downstream launch dependency and does not reactivate SYSTEM-TEST-002.

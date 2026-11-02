@@ -1880,3 +1880,8 @@ developer invocation before execution; this frontier update does not launch it.
 ARCH-036 through ARCH-054 were reconciled against current implementation and task-branch evidence. This dated reconciliation supersedes older status snapshots for those tasks; it does not certify unrun scenarios or override developer-controlled completion.
 
 See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.
+
+
+### ARCH-036 implementation readiness — 2 November 2026
+
+The developer authorized lifting COMMERCE-001’s prior session deferral for its corrected cached evaluator/local-preview scope. ADMIN-001 and COMMERCE-001 are Ready, unclaimed at Attempt 0, with developer-controlled completion. Their Background prerequisite is Complete. No downstream task is started or completed by this amendment.

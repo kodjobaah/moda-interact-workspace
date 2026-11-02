@@ -7,3 +7,5 @@ Reconciled on 2026-11-02. Individual task frontmatter and review reports are aut
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
 | [ARCH-036-ADMIN-001](ADMIN-001-make-internal-discount-catalogue-provider-aware.md) | Show provider status and merchant selection separately in Admin | ready | `ARCH-036-BACKGROUND-001` |
+
+Admin reads and override writes must independently validate same-Shop provider choices; selection flags do not prove checkout eligibility. See the task’s 2 November readiness correction.
