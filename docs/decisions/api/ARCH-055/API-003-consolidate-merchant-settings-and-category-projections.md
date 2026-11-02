@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 30
 executor: copilot
 claimed_at: 2026-11-02T21:41:52Z
@@ -220,39 +220,58 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Blocked: implementation committed and pushed, but required final executable validation is incomplete.
 
 ### Files Changed
 
-None.
+See implementation commit `b3e2b80` in `moda-interact-api`. Changes are limited to the exact API source, test and runner paths in this task's edit map, including the two named ARCH-055 PostgreSQL suites and the new settings runner. No schema/migration, package aggregate wiring, parent architecture, other repository, or gitlink was changed.
 
 ### Work Completed
 
-None. Task definition only.
+- Category GET now verifies principal, catalogue, profile and environment configuration inside a read-only RepeatableRead transaction; profile/catalogue helpers accept the transaction client.
+- Category publication tracks new lineage, assigns revision 1 without lineage-history reads only for that branch, and conditionally publishes a pending draft by id/promptId/DRAFT with exactly one affected row.
+- Feature preference reads use narrowed selections while preserving all current revision hash inputs; `initial.*` and `final.*` timings are separately captured. Sequential upserts, persisted timestamp reload and current no-op behavior are retained.
+- Recovery-policy and AI-delay reads select their consumed fields while preserving distinct replay behavior and AI-delay validation/defaults.
+- Recovery summary uses one parameterized tenant-bound LEFT JOIN statement and retains identity checks, defaults, override expiry/source, and cause-preserving invalid-policy errors.
+- Added canonical migration-backed settings runner, coherent-category race suite, C03a/b/c feature interleaving suite, and SQL/affected-row measurements for retained batching/context no-op candidates. The ARCH-035 runner now includes the C03 suite; package aggregate wiring and the ARCH-054 runner remain unchanged.
+- Database conflict wrappers touched by the implementation retain original Prisma causes. Bootstrap projection and store-context behavior were not broadened.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+- PASS: `npx --no-install tsx --test tests/unit/merchant/store-categories/*.test.ts` — 24 passed after the category read/publication changes.
+- PASS: focused category-read unit suite — 6 passed after moving reads into RepeatableRead.
+- PASS: focused `feature-preferences`, `recovery-policy`, and `ai-response-delay` unit suites — 43 passed after projection/timing edits.
+- PASS: recovery-summary service unit suite — 6 passed after consolidating the query.
+- PASS: focused feature-preference timing/no-op unit suite — 3 passed; verifies all eight initial/final timing fields for changed updates and absence of final phases for no-op.
+- PASS: `git diff --check` as the first part of the final validation command.
+- INCOMPLETE: `npm run typecheck` initially reported three TS1005 syntax errors in Prisma logging options; all three lines were corrected. A subsequent run generated Prisma Client 6.19.3 but the compiler did not return an exit result before the terminal stopped responding. No final typecheck pass is claimed.
+- NOT RUN / NO RESULT: `node scripts/test-arch055-merchant-settings-postgres.mjs`, `node scripts/test-arch035-feature-preferences-postgres.mjs`, `node scripts/test-arch041-cross-domain-postgres.mjs`, `node scripts/test-arch054-ai-response-delay-postgres.mjs`, `npm run lint`, and the complete task unit command. The new PostgreSQL suites therefore have no executed migration/fixture identity, SQL result, race outcome, rollback proof, or cleanup result to report.
+- Evidence encoded in the tests but not yet observed on PostgreSQL: first lineage expects zero revision-history SELECTs; existing lineage expects two; pending draft expects zero pre-read SELECTs and one conditional UPDATE; context equal-value writes retain one UPDATE/one affected row each and stale principal yields zero rows; a 20-preference changed set retains 20 sequential upsert statements/rows; C03a/b/c use an upsert barrier and a second Prisma client. These are assertions, not claimed measurements.
+- Measurement limitation retained by design: category prompt eligibility still reads `promptText` because the current JavaScript `trim()` whitespace semantics do not have a verified equivalent narrow projection in this task. Existing unit coverage includes whitespace-only prompt text. Feature batching and store-context no-op suppression remain unchanged pending actual SQL/workload validation.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+- Used prepared launcher packet: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-003`; both on `task/ARCH-055-API-003`. No preparation, claim, dependency or submodule setup was repeated.
+- Launcher evidence: Attempt 1, executor `copilot`, dependency gate passed, nested Database pin `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+- Implementation commit `b3e2b80` (`feat(api): consolidate merchant settings projections`) was pushed to `origin/task/ARCH-055-API-003`.
+- Parent task/report commit and push are pending. No parent implementation gitlink was changed or staged.
 
 ### Deviations
 
-None authorised.
+Required final validation could not be completed because terminal commands stopped returning a completion result after Prisma generation. The task is blocked for validation; no unverified PostgreSQL behavior is represented as passing.
 
 ### Assumptions
 
-The uploaded source snapshot is the design baseline, not proof of current remote state. Reconcile only relevant drift on the real launcher baseline; return contract-changing drift to the architect.
+Prepared launcher state and the stated accepted Database pin are authoritative. Canonical migration behavior remains unverified because the new runner did not produce an execution result.
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+-Run the complete required unit command, all four PostgreSQL runners, `npm run typecheck`, `npm run lint`, and final `git diff --check`; resolve any implementation/test failures without weakening the task contract.
+-Specifically observe C01/C02 and exact C03a/b/c state, HTTP/service outcomes, revision comparisons, SQL/rows, rollback, migration identity and resource cleanup. Only then may the task move to review.
 
 ### Architectural Concerns
 
-Report ownership, schema, contract, external dependency, new index/infrastructure or transaction-boundary gaps here. Do not expand scope silently.
+None identified. Optional changed-row batching, store-context no-op suppression and prompt-text narrowing remain evidence-only/retained as required by the task.
 
 ## Architect Review
 
