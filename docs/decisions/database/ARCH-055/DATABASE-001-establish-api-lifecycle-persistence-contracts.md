@@ -30,7 +30,7 @@ updated: 2026-11-02
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
-**Definition revision:** 2. Explicit narrow persistence contract. Implementation Attempt 1 has been published for review, with required predecessor validations still blocked by stale migration-order assumptions.
+**Definition revision:** 3. Explicit narrow persistence contract. Implementation Attempt 1 has been published for review, with required predecessor validations still blocked by stale migration-order assumptions.
 
 **Definition state:** materialised and executed in the launcher-prepared worktrees below. Attempt 1 is returned to `ready`; implementation is not accepted and no dependent task was advanced.
 
@@ -46,10 +46,12 @@ Source: the 1 November 2026 workspace snapshot and the 2 November 2026 completed
 
 All implementation paths below are relative to `moda-interact-database`. This is an edit allowlist, not permission to modify consumer schema copies.
 
-**Modify exactly these existing files:**
+**Modify exactly these existing files (revision 3 includes a bounded validator compatibility amendment):**
 
 - `prisma/schema.prisma`: only the two field insertions shown below.
 - `package.json`: only the three script entries shown below; preserve every existing key, dependency and command.
+- `scripts/validate-arch040-human-prepared-schema.mjs`: only migration-boundary compatibility needed to retain all existing structural assertions after forward migrations.
+- `scripts/test-arch040-human-prepared-postgres.mjs`: only migration-boundary compatibility and reuse/execution of the unchanged prepared-body/permit/state/release behavioral assertions against the ARCH-055 post-migration schema.
 
 **Create exactly these files:**
 
@@ -61,7 +63,7 @@ All implementation paths below are relative to `moda-interact-database`. This is
 - `scripts/fixtures/arch055/legacy-fixtures.mjs`
 - `scripts/fixtures/arch055/assertions.mjs`
 
-These are **nine implementation files in total**. This task file's execution metadata/Completion Report is the separately permitted parent-repository write. No other implementation file is authorised. Existing validators and prior migration files are read-only. If a new task-relevant blocker genuinely requires another path, return it before editing that path.
+These are **eleven permitted implementation files in total** after the revision 3 validator compatibility amendment. Attempt 1 changed only the original nine. This task file's execution metadata/Completion Report is the separately permitted parent-repository write. No other implementation file is authorised. All other existing validators and every prior migration file remain read-only. The two named ARCH-040 validator exceptions do not authorize changing expected guard behavior or weakening assertions. If a new task-relevant blocker genuinely requires another path, return it before editing that path.
 
 ### Exact Prisma insertions — not replacement models
 
@@ -477,24 +479,29 @@ No storage or transaction-boundary concern found in the tested ARCH-055 migratio
 
 ### Review Status
 
-Pending.
+**Changes Requested — Attempt 1, 2 November 2026.** Remain Ready with null executor/claimed_at and Attempt 1 unchanged. Not accepted; no dependent task promoted.
 
-### Review Notes
+### Findings
 
-Definition issued; implementation has not been reviewed or accepted.
+1. **P2 — static validation is tied to an uncommitted working tree.** `scripts/validate-arch055-database-contracts.mjs:28–36` requires every implementation path in `git diff HEAD` or untracked files, then uses `HEAD` as the pre-change schema/package/hash baseline. Published `4fded01` is clean, so the required command cannot validate that revision; even removing the dirty-file requirement would insert the fields into an already-updated baseline. Use a stable, verified pre-ARCH-055 baseline (the recorded `7c377282aa5819b3008b7d7f3018f44f4161523e`, or an equivalent explicit immutable baseline), and validate the task commit diff plus any local task changes. Required checks must pass on the clean published checkout. Preserve exact-schema/package/allowlist/predecessor assertions; do not simply remove them.
+2. **P2 — new harnesses repeat the forbidden latest-migration assumption.** The PostgreSQL runner asserts `migrations.slice(-3)` equals the ARCH-055 targets (line 15), and the static validator does the same (line 20). The task explicitly requires compatibility with later migrations. Locate the named target boundaries, validate their relative order, and apply only predecessors plus these targets; later migrations must not break historical tests. The existing ARCH-040 latest-only assumptions are confirmed in its static validator and PostgreSQL runner. Revision 3 narrowly authorizes the two named validator files above to remove this ordering blocker while preserving all guard checks. Ensure F06 runs on the schema **after ARCH-055**, not only a historical ARCH-040-only database.
+3. **P2 — complete the claimed acceptance-matrix proof.** U02 seeds a cancelled command whose attempt already has `later-owner-key`, but creates no later command sharing that attempt; it is not the required actual cancellation/reclaim pair. Add both historical owners under canonical guards and prove each backfills its own key with attempt/provider evidence unchanged. F03/F04 assertions also need explicit failed-attempt grant rejection, stale successful consumption, terminal retry and immutable-identity rejection; checking zero grants without attempting the forbidden grant does not prove rejection. U05 must snapshot and compare duplicate history after failed migration, not only column/index absence. U07 must prove runner cleanup after a failing top-level assertion/nonzero exit; caught U03/U05 failures inside an otherwise successful run do not by themselves establish that exit path. Keep each case's results explicit rather than broadly claiming U01–U06 complete.
 
-### Reviewed Files
+### Scope disposition
 
-No implementation submitted for this task.
+The three migration SQL bodies match the prescribed executable SQL after whitespace/comments are normalized, and the Prisma diff contains only the two nullable insertions. No new migration change is requested by this review. Do not edit existing migration history, relax guard behavior, or deploy consumers. The definition's edit allowlist is now eleven files solely to unblock the two named ARCH-040 validator adaptations. All other scope boundaries remain intact.
 
-### Validation Reviewed
+### Validation provenance
 
-No implementation validation submitted.
-
-### Architecture Conformance
-
-To be assessed against ARCH-055 and this task's frozen contract.
+Implementation remote ref verified: `4fded01b247d2f5d40d1ba3977f2eedbb55f4669`. Fresh/upgrade PostgreSQL results above remain executor-reported; not independently rerun during this static review. The known missing F06 proof is not waived. Review execution evidence is appended below when available. No implementation changes or main merge performed.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Claim the next attempt normally on the same task branches, address the harness and matrix findings, run all required commands on the committed revision, and publish the updated evidence. The next launcher claim increments the attempt once. All downstream tasks remain gated on accepted Database completion; no consumer pin is approved yet.
+
+
+### Independent execution evidence
+
+Using installed workspace-selected Node v24.19.0, the clean published revision's static validator failed with `AssertionError: Expected task file is absent: package.json` at line 32. This independently confirms finding 1; the earlier pre-commit passing result is not a passing result for the published checkout. All three executable migration bodies were compared with the definition after whitespace/comment normalization and matched exactly.
+
+U07 argument checks independently passed for six inputs: no arguments; `--mode`; `--mode invalid`; `--mode fresh extra`; `--unknown fresh`; and `--mode upgrade --mode fresh`. Each exited 1 with the expected usage assertion. A PATH-injected Docker sentinel recorded zero Docker invocations across all six cases. No external database was contacted. The missing invalid-argument evidence is now supplied; the separate forced top-level SQL/assertion-failure cleanup proof remains required.
