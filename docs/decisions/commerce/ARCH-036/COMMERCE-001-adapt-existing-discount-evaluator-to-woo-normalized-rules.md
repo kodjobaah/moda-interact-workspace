@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-11-02T14:41:55Z
+attempt: 1
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: []
 created: 2026-10-12
@@ -109,7 +109,7 @@ For developer execution, use the canonical `/moda_developer_create ARCH-036-COMM
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-11-02T14:41:55Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
