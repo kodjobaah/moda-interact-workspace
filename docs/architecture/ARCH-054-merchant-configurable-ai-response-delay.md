@@ -4,7 +4,7 @@ title: Merchant-configurable delayed AI replies with immediate human handover
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-31
-updated: 2026-11-01
+updated: 2026-11-02
 ---
 
 # ARCH-054: Merchant-configurable delayed AI replies with immediate human handover
@@ -150,8 +150,8 @@ Database migration → Shared implementation acceptance → Shared publication �
 | ARCH-054-DATABASE-001 | moda_database | Complete | — |
 | ARCH-054-SHARED-001 | moda_shared | Complete | — |
 | ARCH-054-SHARED-002 | moda_shared | Complete | SHARED-001 |
-| ARCH-054-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
-| ARCH-054-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001, API-002, SHOPIFY-002 |
+| ARCH-054-BACKGROUND-001 | moda_background | Complete | DATABASE-001 |
+| ARCH-054-BACKGROUND-002 | moda_background | Ready | BACKGROUND-001, API-002, SHOPIFY-002 |
 | ARCH-054-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
 | ARCH-054-API-001 | moda_api | Complete | DATABASE-001, SHARED-002 |
 | ARCH-054-API-002 | moda_api | Complete | DATABASE-001 |
@@ -170,3 +170,4 @@ None blocking task definition. Whether to add optional merchant notifications fo
 - 2026-10-31: Initial ARCH-054 definition, split from ARCH-040/ARCH-052; integer 0–30 merchant delay, zero additional delay for human replies, persisted deadline and takeover fencing.
 - 2026-11-01: Accepted ARCH-054-SHOPIFY-002 at Attempt 2 after the disposable PostgreSQL transaction suite passed all three required cases. BACKGROUND-002 remains Pending because BACKGROUND-001 is Ready, not Complete; no downstream task became newly eligible.
 - 2026-11-01: Accepted ARCH-054-WOOCOMMERCE-001 at Attempt 1 after reviewing the protected Woo REST proxy, settings UI and submitted validation. No downstream task became newly eligible.
+- 2026-11-02: Accepted ARCH-054-BACKGROUND-001 at Attempt 1 after reviewing the text/audio transaction capture, branch/worktree evidence, and successful four-test PostgreSQL integration run. BACKGROUND-002 is Ready; no implementation was started.

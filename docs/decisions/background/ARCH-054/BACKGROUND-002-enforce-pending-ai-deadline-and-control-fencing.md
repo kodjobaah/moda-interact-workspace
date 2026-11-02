@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -34,7 +34,7 @@ Architecture: `ARCH-054`
 
 Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md`
 
-Coordinator: `moda_architect`. Task **defined but not materialised**; no local Git/worktree/branch activity is claimed.
+Coordinator: `moda_architect`. Task materialised on the parent task branch. Its implementation worktree will be prepared when the task is claimed through the normal execution workflow.
 
 
 ## Objective
