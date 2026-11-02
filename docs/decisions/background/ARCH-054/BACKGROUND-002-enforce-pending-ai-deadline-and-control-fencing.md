@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-11-02T15:41:55Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
   - ARCH-054-BACKGROUND-001
@@ -212,8 +212,53 @@ Reclaim the same task through the normal launcher for Attempt 2. Fix P1 and cove
 
 The permitted Background-only correction scope also includes the existing internal admission/delivery ports, `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`, `src/services/recovery-conversation/outbound-send-fence.service.ts`, and its existing SQL projection/helper if needed to compare the original inbound version inside the final permit. Do not invent a new provider queue, call a provider inside a transaction, change public Shared contracts, or weaken non-turn HUMAN/AUTOMATION/initial-outreach behavior. Add targeted tests alongside the existing processor/fence/integration suites.
 
-- [ ] Original observed inbound version is checked atomically with final dispatch admission; stale prepared output cannot pass after newer ingress wins the lock.
-- [ ] Real recovery PostgreSQL/Redis execution proves the frozen deadline and original control-revision behavior, including audited control transitions and both final-admission outcomes.
+- [x] Original observed inbound version is checked atomically with final dispatch admission; stale prepared output cannot pass after newer ingress wins the lock.
+- [x] Real recovery PostgreSQL/Redis execution proves the frozen deadline and original control-revision behavior, including audited control transitions and both final-admission outcomes.
+
+## Completion Report — Attempt 2
+
+### Status
+
+Implementation corrections complete and submitted for architect review. Attempt 1 and its review evidence remain preserved above. No downstream task was started.
+
+### Corrections Completed
+
+- Carried the processor's immutable `observedVersion` through the internal prepared-text admission port and delivery service. Both recovery and general send fences compare it against the conversation version while holding the existing Shop/Conversation lock order, before persisting a dispatch permit. Recovery context SQL supplies the version used by that check. A mismatch fails the prepared message and does not call the provider; a permit committed first remains irreversible and is not recalled by later ingress.
+- Added a processor regression for a newer inbound during the awaited final ownership check and delivery coverage proving the version reaches the general fence.
+- Added disposable PostgreSQL/Redis recovery execution coverage for pre-due no-reservation/no-agent behavior, due execution, frozen deadline across newer inbound, duplicate/out-of-order job IDs, legal audited HUMAN-to-AI takeover/resume suppression, inbound winning during moderation, and the opposite ordering where the provider permit commits before later inbound.
+- Updated the real Aimock integration adapter to use BG002's persisted pending snapshot and revision-fenced claim/completion/suppression behavior. Its existing takeover/resume case continues to use legal ARCH-040 audit events.
+
+### Validation Results
+
+- PASS: focused unit suites, **5 files / 129 tests**: processor, recovery-conversation services, conversation service, eligibility helper, and outbound delivery.
+- PASS: disposable recovery PostgreSQL/Redis suite, `npm run test:integration -- tests/integration/recovery-human-ai-ownership.integration.test.ts`, **7 tests**.
+- PASS: existing disposable scheduling PostgreSQL/Redis suite, `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts`, **4 tests**.
+- PASS: `npx tsc --noEmit`.
+- PASS: `npm run build` (Prisma Client generation and TypeScript compilation).
+- PASS: `npm run lint`.
+- PASS: `git diff --check`.
+
+### Files Changed
+
+- `src/services/conversation-turn-processor.service.ts`
+- `src/services/outbound-whatsapp-admission.service.ts`
+- `src/services/outbound-whatsapp-admission/general-outbound-send-fence.service.ts`
+- `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`
+- `src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `src/services/recovery-conversation/recovery-conversation.sql.ts`
+- `tests/integration/fixtures/arch040-ai-turn.fixture.ts`
+- `tests/integration/recovery-human-ai-ownership.integration.test.ts`
+- `tests/unit/services/conversation-turn-processor/facade-agent-races.cases.ts`
+- `tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts`
+
+### Worktree and Git Evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-054-BACKGROUND-002`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-054-BACKGROUND-002`
+- Implementation commit: `64d1be0` (`fix(background): fence recovery sends by inbound version`), pushed to `origin/task/ARCH-054-BACKGROUND-002`.
+- Database submodule remains pinned at `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+- Both dedicated worktrees were clean after implementation commit and before this parent report update.
+- No schema, Shared/public API, queue, worker, trigger, or provider transaction changes were made.
 
 ## Definition reconciliation — 2026-11-02
 
