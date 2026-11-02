@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: codex
-claimed_at: 2026-11-02T22:06:40Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -30,9 +30,9 @@ updated: 2026-11-02
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
-**Definition revision:** 3. Explicit narrow persistence contract. Implementation Attempt 1 has been published for review, with required predecessor validations still blocked by stale migration-order assumptions.
+**Definition revision:** 3. Explicit narrow persistence contract, including the bounded ARCH-040 validator compatibility amendment. Attempt 2 addresses the published Attempt 1 review.
 
-**Definition state:** materialised and executed in the launcher-prepared worktrees below. Attempt 1 is returned to `ready`; implementation is not accepted and no dependent task was advanced.
+**Definition state:** materialised in the canonical launcher-prepared worktrees. Attempt 2 corrections and required validation are complete and submitted for architect review. The implementation is not accepted and no dependent task was advanced.
 
 ## Objective
 
@@ -327,9 +327,9 @@ The static validator checks exactly two Prisma additions, three ordered migratio
 - [x] Insert the two exact nullable Prisma fields; preserve all other schema declarations.
 - [x] Create the three forward migration files with the expected SQL; predecessor hashes remain unchanged.
 - [x] Add the three exact package script keys, static validator and modular fresh/upgrade runner.
-- [ ] Implement every F/U case in the acceptance matrix, including CLAIMED backfill and transactional trigger re-enable failure.
-- [ ] Run declared schema/client/diff/static/fresh/upgrade and predecessor checks; ARCH-040 checks remain blocked as recorded below.
-- [ ] Record the accepted database-pin handoff and coordinated producer/consumer rollout; return for review without executing consumers.
+- [x] Implement and exercise every F/U case in the acceptance matrix, including CLAIMED backfill and transactional trigger re-enable failure.
+- [x] Run declared schema/client/diff/static/fresh/upgrade and predecessor checks, including ARCH-040 checks after ARCH-055.
+- [x] Record that consumer pin adoption and coordinated rollout remain gated on acceptance and belong to downstream tasks; return for review without executing consumers.
 
 ## Interfaces / Contracts
 
@@ -371,7 +371,7 @@ None. The source baseline is context, not a fabricated dependency on historical 
 | U06 | Hash all predecessor migrations and snapshot non-target schema objects | No predecessor edits, missing objects, changed grant function or leftover disabled triggers. |
 | U07 | Invalid/missing/extra mode args; forced SQL assertion failure | Non-zero result, no external DB contact, container cleanup even on failure. |
 
-- [ ] Every F/U case passed on canonical disposable PostgreSQL or remains explicitly unchecked with a blocked return.
+- [x] Every F/U case passed on canonical disposable PostgreSQL, with U07 invalid-argument Docker-sentinel evidence and forced top-level failure cleanup evidence recorded below.
 - [x] Exactly the approved implementation files changed; original application policy moved to owning service tasks, not replaced by new database triggers.
 - [x] Migration application order, SQL hashes, fixture identities, backfill counts, diff evidence and cleanup recorded.
 - [ ] Tasks remain unaccepted until architect review; no consumer deployment or production migration claimed.
@@ -380,16 +380,16 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 Run from the launcher-resolved Database implementation worktree, using its installed toolchain:
 
-- [ ] `npm run validate`
-- [ ] `npm run prisma:generate`
-- [ ] `npm run test:arch055-database-contracts`
-- [ ] `npm run test:arch055-database-contracts:postgres:fresh`
-- [ ] `npm run test:arch055-database-contracts:postgres:upgrade`
-- [ ] `npm run test:arch026-woocommerce-rest-read-grant`
-- [ ] `npm run test:arch040-human-prepared-schema`
-- [ ] `npm run test:arch040-human-prepared:postgres`
-- [ ] `npx eslint --max-warnings=0 scripts/test-arch055-database-contracts-postgres.mjs scripts/validate-arch055-database-contracts.mjs scripts/fixtures/arch055/legacy-fixtures.mjs scripts/fixtures/arch055/assertions.mjs`
-- [ ] `git diff --check`
+- [x] `npm run validate`
+- [x] `npm run prisma:generate`
+- [x] `npm run test:arch055-database-contracts`
+- [x] `npm run test:arch055-database-contracts:postgres:fresh`
+- [x] `npm run test:arch055-database-contracts:postgres:upgrade`
+- [x] `npm run test:arch026-woocommerce-rest-read-grant`
+- [x] `npm run test:arch040-human-prepared-schema`
+- [x] `npm run test:arch040-human-prepared:postgres`
+- [x] `npx eslint --max-warnings=0 scripts/test-arch055-database-contracts-postgres.mjs scripts/validate-arch055-database-contracts.mjs scripts/fixtures/arch055/legacy-fixtures.mjs scripts/fixtures/arch055/assertions.mjs scripts/test-arch040-human-prepared-postgres.mjs scripts/validate-arch040-human-prepared-schema.mjs`
+- [x] `git diff --check`
 
 Before editing, the runner/static validator captures the pre-change schema and canonical migration hashes in its disposable work directory. Run the installed Prisma v6 schema-to-schema diff with `--from-schema-datamodel <captured-baseline-schema> --to-schema-datamodel prisma/schema.prisma --script` and assert exactly the two column additions, no unrelated Prisma changes. This baseline path is runtime-generated test evidence, not a developer-specific hardcoded location. Static validator tests the hand-authored SQL separately.
 
@@ -411,7 +411,9 @@ If any ARCH-055 migration from a different definition was already executed anywh
 
 ### Status
 
-Implementation completed for Attempt 1 and published on the task branch. Task returned to **Ready** because required ARCH-040 predecessor validation cannot run against the expanded migration chain without an architect-approved reconciliation. Do not accept or promote dependants yet.
+Attempt 1 was published and returned to **Ready** after architect review. Attempt 2 corrections are implemented and all required validations pass; this task is submitted as **Review** for architect acceptance. No dependent task is advanced before acceptance.
+
+The Files Changed, Work Completed, Validation Results, Worktree and Git Evidence, Deviations, Assumptions, Unresolved Issues, and Architectural Concerns immediately below are the historical Attempt 1 report. Attempt 2's current evidence is recorded after the immutable Attempt 1 architect review.
 
 ### Files Changed
 
@@ -474,6 +476,46 @@ The canonical source baseline remained unchanged at task start: all 68 predecess
 ### Architectural Concerns
 
 No storage or transaction-boundary concern found in the tested ARCH-055 migrations. The predecessor validator/order coupling is a cross-task validation blocker. The static catalogue snapshot showed no non-target functions, constraints, indexes or triggers changed; U01–U06 database proof passed in both fresh and upgrade harnesses.
+
+## Attempt 2 Completion Report
+
+### Corrections
+
+- `scripts/validate-arch055-database-contracts.mjs` now uses immutable verified baseline `7c377282aa5819b3008b7d7f3018f44f4161523e`, checks it is an ancestor of the task checkout, and computes the exact allowlist from the baseline-to-HEAD committed diff plus local tracked and untracked changes. The schema/package snapshots and all 68 predecessor hashes are read from that baseline, so validation passes from the clean published checkout as well as during local work.
+- `scripts/test-arch055-database-contracts-postgres.mjs` and the static validator locate the three named target migrations, assert their relative order, and validate/apply canonical migrations only through target 3. They no longer require ARCH-055 to remain the latest migration.
+- `scripts/validate-arch040-human-prepared-schema.mjs` and `scripts/test-arch040-human-prepared-postgres.mjs` now validate the ARCH-040 boundary independently of later migrations and run against the canonical chain through ARCH-055. Existing prepared-body, permit, state, release, moderation, lease, tenant, and concurrency assertions were preserved.
+- The ARCH-055 PostgreSQL runner now applies one migration per `psql` connection. Combining eight predecessor migrations in one session caused PostgreSQL to stop accepting connections in this local Docker environment; applying them individually completed successfully in both modes. Each applied migration name and SHA-256 is emitted after success.
+- The upgrade fixtures now include both sides of an actual cancellation/reclaim on one attempt: the cancelled command retains and backfills `key-cancelled`, while the later accepted command backfills `later-owner-key`. The full old row snapshots include attempt and provider evidence and are compared after migration.
+- F03/F04 now explicitly exercise failed-attempt grant rejection, stale successful consumption after credential rotation, terminal retry, and immutable identity rejection, in addition to the existing expired failure, successful-consumption-without-same-transaction-grant, and failure-time-before-creation checks.
+- U05 compares the full duplicate-intake history snapshot after migration 3 fails, as well as checking the column/index rollback. U07 has both the six invalid/missing/extra argument cases with zero Docker invocations (independent architect execution) and a forced top-level assertion failure after startup; the latter exits 1 and confirms the runner's `finally` removes its isolated container.
+
+### Attempt 2 Validation Results
+
+- **PASS** — `npm run validate`: Prisma schema valid.
+- **PASS** — `npm run prisma:generate`: Prisma Client v6.19.3 generated. The ordinary attempt encountered `EPERM` replacing a generated file; the same required command passed on retry with elevated filesystem access.
+- **PASS** — `npm run test:arch055-database-contracts`: exactly two nullable Prisma additions, approved 11-path implementation allowlist, named target ordering through `20261102122000_arch055_upload_intake_identity`, and all 68 predecessor hashes verified from the immutable baseline.
+- **PASS** — `npm run test:arch055-database-contracts:postgres:fresh` and `...:upgrade`: canonical migrations through target 3; F01–F05, U01–U06, full failure rollback snapshots, and cleanup. Fresh prints `PASS ARCH-055 PostgreSQL fresh`; upgrade prints `PASS ARCH-055 PostgreSQL upgrade`. Both network-disabled PostgreSQL 17 containers were removed.
+- **PASS** — `npm run test:arch040-human-prepared-schema`: existing structural and trigger checks preserved with ARCH-055 later in the chain.
+- **PASS** — `npm run test:arch040-human-prepared:postgres`: fresh and upgrade scenarios both passed on the schema through ARCH-055, including frozen body/digest and template checks, nonhuman actors, lease/tenant guards, terminal tombstones, provider permits, concurrency first-writer behavior, and historical assessment/provider/terminal/pending intent preservation.
+- **PASS** — `npm run test:arch026-woocommerce-rest-read-grant`: REST read-only grant static invariants.
+- **PASS** — Focused ESLint on all four ARCH-055 scripts/modules and both authorized ARCH-040 validators/runners; `git diff --check`.
+- **PASS** — U07 invalid argument evidence: six invocations (no arguments; missing mode value; invalid mode; extra argument; unknown option; repeated mode) each exited 1 before Docker, with a PATH-injected Docker sentinel recording zero invocations. This evidence was independently collected by the architect and is retained from the Attempt 1 review.
+- **PASS** — U07 forced process-failure cleanup: `ARCH055_TEST_FORCE_TOP_LEVEL_ASSERTION=1 node scripts/test-arch055-database-contracts-postgres.mjs --mode fresh` emitted the expected assertion after startup, exited 1, and `docker inspect` confirmed `moda-arch055-c52550e5-d08c-4c85-b511-e0167128f132` had been removed.
+- **PASS** — Target migration SHA-256 values unchanged: `c129466fdb53190b7f8ce6c2d3a04867c6bacbd55e334c5e0bceeb1b28e4e53b`, `e4689790fbba7f606803b2d0370a66ba8b4f57bb3cb0b67b154336f90c2d41fb`, `e9ce08d49576f84a4e1b95c39637c69e97f0f620b4fae608fadf2712fefb6a37`.
+
+### Attempt 2 Worktree and Git Evidence
+
+- Launcher-resolved root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-DATABASE-001`, branch `task/ARCH-055-DATABASE-001`. Attempt 2 claim publication is `fd83fdb27`; synchronized parent SHA at the start of the attempt was `5e3afd7f27750a4442f914e0f5514df5a5b7080c`, with `origin/main` already incorporated and no fast-forward required.
+- Database implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-DATABASE-001`, branch `task/ARCH-055-DATABASE-001`. Synchronized implementation SHA at attempt start was `4fded01b247d2f5d40d1ba3977f2eedbb55f4669`, with `origin/main` already current and no fast-forward required.
+- Launcher recursive submodule sync and update passed; neither task worktree contained submodule entries.
+- Attempt 2 implementation changes are confined to the four validator/runner files explicitly added by definition revision 3. No migration, Prisma schema, package script, consumer pin, architecture index, downstream task, or workspace gitlink changed.
+- Implementation correction commit `5907b45` (`fix(ARCH-055-DATABASE-001): reconcile migration validation proofs`) is pushed to `origin/task/ARCH-055-DATABASE-001`.
+- The Attempt 2 parent report is the only parent-worktree change and is published separately; no task definition, architecture index, downstream task, or workspace gitlink is staged with it.
+
+### Attempt 2 Disposition
+
+All listed Work Items, Acceptance Criteria, and required Validation are checked against execution evidence. Task status is `review`, Attempt 2 preserved, `executor: null`, and `claimed_at: null`. No acceptance, consumer rollout, dependency promotion, or main-branch merge is claimed; those remain gated on architect review.
 
 ## Architect Review
 
