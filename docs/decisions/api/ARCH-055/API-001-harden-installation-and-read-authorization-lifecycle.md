@@ -30,7 +30,7 @@ updated: '2026-11-02'
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
-**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+**Definition revision:** 3. Small acceptance clarification over revision 2; execution metadata, dependencies and migration scope are unchanged.
 
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
 
@@ -165,7 +165,24 @@ export declare function requireCurrentWooMutationPrincipal(
   principal: WooInstallationPrincipal,
 ): Promise<CurrentWooMutationPrincipal>;
 ```
-Validation is Shop.id=principal.shopId, domain=canonicalSiteUrl, platform=WOOCOMMERCE, shopifyShopId=null, status=ACTIVE; installation.id/shopId/canonicalSiteUrl/credentialVersion equal the principal, status=ACTIVE and revokedAt=null. Return only the listed fields. Known mismatch throws the typed conflict; unexpected Prisma errors propagate unchanged. Caller maps only this conflict to its existing public endpoint contract. Never use this helper for suspended-Shop Support reads or unauthenticated connection proof.
+Validation is Shop.id=principal.shopId, domain=canonicalSiteUrl, platform=WOOCOMMERCE, shopifyShopId=null, status=ACTIVE; installation.id/shopId/canonicalSiteUrl/credentialVersion equal the principal, status=ACTIVE and revokedAt=null. Return only the listed fields. Known mismatch throws the typed conflict; unexpected Prisma errors propagate unchanged. Caller maps only this conflict according to the exact revision-3 table below; API-007 defines its billing mappings in its own task. Never use this helper for suspended-Shop Support reads or unauthenticated connection proof.
+
+### Exact public outcomes for the new principal gate — revision 3
+
+Scope: the `WooMutationPrincipalConflictError` introduced by this task, not a blanket change to unrelated domain-error mapping. Existing public vocabulary comes from `src/woocommerce/rest-read/authorization.service.ts` and `authorization.routes.ts:210–230` in the source snapshot. The mapping of the NEW transaction-local failure to that vocabulary is fixed here. Missing/mismatched Shop or installation, suspended/non-ACTIVE lifecycle, non-null revocation, wrong binding/domain/platform or credential-version mismatch all produce the same bounded gate response. Do not disclose which comparison failed to the caller.
+
+| Operation / condition | Exact HTTP result | Commit and provider boundary |
+|---|---|---|
+| POST `/v1/woocommerce/read-authorizations`: helper rejects after successful HTTP authentication | `409`, JSON `{"error":"shop_unavailable"}` | Roll back; no new attempt; no provider verification call. Secret/configuration reads already made are not provider HTTP calls. |
+| DELETE `/v1/woocommerce/read-authorization`: helper rejects | `409`, JSON `{"error":"shop_unavailable"}` | No attempt cancellation or grant revocation commits; no provider call. |
+| POST callback: original token-bound principal fails the committing helper | `409`, JSON `{"error":"shop_unavailable"}` | No attempt consumption or grant rotation commits. One verification may already have completed outside the transaction; do not repeat it because admission failed. |
+| An unexpected database exception originates in a helper read (not a typed principal mismatch or an already recognised retryable/domain conflict) | `500`, JSON `{"error":"internal_error"}` | Roll back admission. Propagate the actual exception unchanged to existing error logging; do not turn every database exception into `shop_unavailable` or `authorization_conflict`. |
+| Installed request rejected by HTTP authentication before the service runs | `401`, JSON `{"error":"unauthorized"}` | No service mutation or provider verification. This row does not add installation-header authentication to the bearer-token callback. |
+| Callback conditional-consumption loser resolves matching, durably SUCCEEDED attempt/current selected-grant binding as specified by revision 2 | `200`, empty body (NOT `204`) | Acknowledge persisted result only; no second grant/rotation. Matching revoked grant stays revoked; superseded/missing/mismatched binding remains `409`, JSON `{"error":"authorization_conflict"}`. |
+
+Implement the three gate mappings in `authorization.service.ts`: catch only `instanceof WooMutationPrincipalConflictError` and wrap as `WooReadAuthorizationError(409, "shop_unavailable", { cause: error })`. Append an optional `ErrorOptions` argument to that existing domain-error constructor and pass it to `super`; preserve all existing two-argument callers. Keep the helper's internal `woo_mutation_principal_stale` code in its cause, not as a new public error code. Unexpected failures must not be swallowed by the callback's outer catch. Existing known expiry, token, permissions, provider-verification and bounded serialization-retry mappings remain unchanged; this clarification does not redefine them.
+
+Extend `tests/unit/woocommerce/rest-read/authorization.routes.test.ts` for exact status/body and safe logging. In the already named principal/lifecycle PostgreSQL files, authenticate or resolve the valid callback token, pause before the helper, rotate/revoke/suspend using the other connection, then resume. Assert no new committed attempt/grant mutation and the table result. For the callback variant, release the verifier BEFORE the pause and assert exactly one verification, with none on acknowledgement/retry. Inject an unexpected helper-read exception separately and assert 500 plus preserved cause, not a guessed principal conflict. Keep request body/security headers and logging redaction unchanged; no new public DTO.
 
 ## Dependencies
 
@@ -194,7 +211,7 @@ Tests extend the named existing suites and the exact new files listed in Scope. 
 
 | Case | Fixture / operation | Required result |
 |---|---|---|
-| A01 | Authenticate, pause before admission; rotate/revoke/suspend, then resume begin/revoke/callback commit | No stale mutation or grant; no additional provider call caused by conflict; existing caller error mapping preserved. |
+| A01 | Authenticate/token-resolve, pause before the helper; rotate/revoke/suspend, then resume start/revoke/callback commit | Exact revision-3 table: 409 shop_unavailable, no new mutation; callback may have one prior verification but no repeat. Unexpected helper-read failure is 500 internal_error, not a principal mismatch. |
 | A02 | Expired current-generation pending attempt + new current grant; revoke | Attempt FAILED and grant REVOKED commit together; failed timestamp is current, not forged to expiry; old-generation pending rows do not block. |
 | A03 | Two callbacks both observe PENDING before verification | One grant/consumption; matching loser receives replay acknowledgement; no duplicate rotation. Superseded and mismatch losers remain conflict. |
 | A04 | Reconnect active/onboarded and uninstalled/onboarded with late activation failure | One transaction-local Shop read and returning credential result; all original paid/free balances and rollback preserved. |
@@ -216,6 +233,8 @@ Run from the **implementation repository** in its launcher-resolved worktree, af
 - [ ] `git diff --check`
 - [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+
+- [ ] Assert every revision-3 gate/replay row using the named route and migrated principal/lifecycle tests; record exact HTTP body, committed rows and verifier count.
 
 ## Stop Condition
 

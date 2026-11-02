@@ -28,7 +28,7 @@ updated: '2026-11-02'
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
-**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+**Definition revision:** 3. Small acceptance clarification over revision 2; execution metadata, dependencies and migration scope are unchanged.
 
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `ready` solely from the dependency graph below.
 
@@ -163,11 +163,32 @@ Tests extend the named existing suites and the exact new files listed in Scope. 
 |---|---|---|
 | C01 | Publish profile B/config B between the previous two profile/config reads | GET returns all A or all B, never old profile with new provenance. |
 | C02 | First lineage, existing empty lineage, valid/foreign/published pending draft | Only genuinely new lineage uses revision1 shortcut; invalid draft affects zero rows and full rollback. |
-| C03 | Feature changed/no-op/stale and Admin eligibility change during PUT | Original policy/fingerprint preserved; timings contain distinct initial/final phases with no overwrite. |
+| C03 | Mapping disabled after admission versus before admission; current/stale no-op controls | Follow exact C03a–c below: post-admission save returns 200 with enabled=true but planEligible/editable/effective=false; pre-admission old revision is 409 conflict, fresh disabled revision is 409 denied; no-op does not write/reload. |
 | C04 | AI delay 0/1/30, negative/fraction/31; policy old-revision identical replay | Original allowed/rejected values and deliberately different replay rules unchanged. |
 | C05 | No settings/override, active override, expired override, malformed row | Single summary statement keeps default, source and safe failure semantics. |
 
 No new Prisma models/fields/constraints/indexes or migrations are authorised in this repository task. Consume the accepted Database pin only where required. All migration corrections, including changes to installed functions/CHECKs, belong in new forward scripts owned by DATABASE-001 or a later explicit Database scope amendment. Never edit an applied migration, reset schema or supply an automatic down migration.
+
+### Exact C03 schedule and expected response — revision 3
+
+This is a preservation test, not a new feature-admission policy. The inspected `service.ts:52–106,141–168` checks editability/revision against its initial load, performs changed upserts, then reloads under ReadCommitted; `routes.ts:45–81` maps successful updates to 200 and domain conflicts to 409. The published Shared selector requires an enabled plan mapping for effective activation. Retain those choices, sequential upserts and the final reload.
+
+Use the existing fixture pattern in `tests/integration/merchant/feature-preferences/service.postgres.test.ts`. In the already authorised `arch055-admin-interleaving.postgres.test.ts`, seed one ACTIVE Woo Shop/installation, ACTIVE subscription/plan, and target feature F with `active=true`, `activationMode=MERCHANT_OPT_IN`, `systemRequired=false`, enabled plan mapping and a persisted merchant preference `enabled=false`. Keep all other records static. Obtain initial revision R0 using the real read service. No production hook or Admin-repository edit is required.
+
+**C03a — Admin mapping disable after admission, before the write:**
+
+1. Start the real update with `expectedRevision=R0` and one change `{ featureId: F.id, enabled: true }`.
+2. A test-only transaction-client wrapper pauses at the FIRST `shopFeaturePreference.upsert` invocation, before forwarding it to the real client. All initial loads, revision/editability checks and change selection have therefore finished. All other client operations pass through to real migrated PostgreSQL.
+3. On a second independent connection execute `billingPlanFeature.update({ where: { planId_featureId: { planId, featureId: F.id } }, data: { enabled: false } })` and await COMMIT. Do not change Feature.active, Subscription status, Plan.active, or take the API's Shop lock. This isolates the mapping-change case.
+4. Release the barrier, allow the real upsert and complete final reload to finish, then commit. A failed Admin commit fails the test; do not release on a sleep or assume it committed.
+5. Require successful service return / HTTP **200**. The stored preference is `enabled=true`, the mapping remains `enabled=false`, and F's returned fields are exactly `enabled=true`, `planEligible=false`, `editable=false`, `effective=false`, `required=false`. Other response fields keep their baseline shape. R1 differs from R0 and equals the revision from a fresh GET after both commits with no intervening writes; do not hardcode a digest containing generated timestamps.
+6. Both `initial.subscriptionLookupMs`, `initial.featuresLookupMs`, `initial.preferencesLookupMs`, `initial.projectionMs` and the four corresponding `final.*` values exist as finite non-negative numbers. Each phase is recorded once; use call/phase assertions rather than requiring unequal durations. No effective capability is granted by the accepted preference alone.
+
+**C03b — Admin mapping disable before admission:** reset the same fixture, capture R0, commit mapping disable BEFORE starting PUT, then submit the old R0. Require HTTP **409**, `{"error":"feature_preferences_conflict"}` and unchanged preference/timestamp. Read fresh disabled revision Rd and submit the same enable change using Rd: require **409**, `{"error":"feature_preferences_denied"}` with no preference write. Initial expected-revision failure takes precedence over editability failure. A separate route test can assert the envelope from the real service result/error; it must not replace the two-connection persistence assertion.
+
+**C03c — No-op/stale controls:** reset with mapping enabled and preference=false. Current R0 with change=false returns **200**, R0 unchanged, no upsert and no `final.*` load timings. After a normal successful change advances the revision, an empty or identical-value request with old R0 returns **409**/`feature_preferences_conflict`, with no additional write. Unexpected infrastructure errors retain the existing 500/internal_error path.
+
+Only the precise schedules above are frozen here. Subscription cancellation, Feature deactivation or Admin changes during individual statements are not silently declared equivalent to C03a. Keep existing tests for those other facts and return any discovered policy gap rather than introducing stronger locks or new rejection rules under this clarification.
 
 ## Validation
 
@@ -182,6 +203,8 @@ Run from the **implementation repository** in its launcher-resolved worktree, af
 - [ ] `git diff --check`
 - [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+
+- [ ] Execute C03a, C03b and C03c with the exact barrier/commit order and HTTP/state/revision/timing outcomes above.
 
 ## Stop Condition
 

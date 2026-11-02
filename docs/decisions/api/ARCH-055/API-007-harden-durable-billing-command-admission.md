@@ -29,7 +29,7 @@ updated: '2026-11-02'
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
-**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+**Definition revision:** 3. Small acceptance clarification over revision 2; execution metadata, dependencies and migration scope are unchanged.
 
 **Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
 
@@ -127,6 +127,26 @@ Consumes ARCH-055-API-001 current-mutation-principal port and existing canonical
 
 The public API remains unchanged except documentation corrections explicitly authorised here. Database changes are consumed only after ARCH-055-DATABASE-001 acceptance/integration. Existing published Shared package exports remain authoritative; do not import sibling source.
 
+### Exact billing admission errors — revision 3
+
+This fixes the NEW helper-to-domain mapping without changing provider-facing operations or existing replay/quote errors. Source vocabulary/envelopes: `recurring-intent.ts:66–77`, `recovery-credit-intent.ts:38–57`, `commands/routes.ts:68–98,142–165` and `command-http.ts:96–112`.
+
+| Operation / condition | Exact HTTP result | Persistence / external-operation result |
+|---|---|---|
+| POST `/v1/billing/subscription`: current-principal helper rejects | `409`, JSON `{"error":"billing_shop_invalid"}` | No new operation, materialised plan or subscription change commits; zero subscription-create provider calls. |
+| DELETE `/v1/billing/subscription`: helper rejects | `409`, JSON `{"error":"billing_shop_invalid"}` | No new CANCEL operation; zero provider DELETE calls. |
+| POST `/v1/billing/subscription/switch`: helper rejects | `409`, JSON `{"error":"billing_shop_invalid"}` | No new SWITCH operation or target materialisation commits; zero switch provider calls. |
+| POST `/v1/billing/recovery-credit-purchases`: helper rejects | `409`, JSON `{"error":"billing_shop_invalid"}` | No new purchase/operation/credits; zero purchase provider calls. |
+| Same stale gate on a request whose idempotency key already exists | Same endpoint-specific `409`/`billing_shop_invalid` result | Existing operation/purchase remains unchanged; no replay/provider call. This retains revision 2's gate before both new and replay admission. |
+| Missing/invalid installed HTTP credentials | `401`, JSON `{"error":"unauthorized"}` | Admission is never called. |
+| Unexpected helper-read database exception, distinct from the typed mismatch/recognised existing domain retry | `500`, JSON `{"error":"internal_error"}` | Roll back admission; no provider call; preserve original exception for existing internal-error logging. |
+
+Recurring intents map only `instanceof WooMutationPrincipalConflictError` to `RecurringBillingCommandError(409, "billing_shop_invalid", undefined, undefined, { cause: error })`. Purchase intents map it to `RecoveryCreditPurchaseCommandError(409, "billing_shop_invalid", undefined, undefined, undefined, { cause: error })`. Append optional `ErrorOptions` after the existing constructor parameters in `recurring-command-error.ts` and `recovery-credit-command-error.ts`, and pass it to `super`; preserve existing callers. For these pre-admission errors omit `operationId`, `purchaseId` and `providerErrorCode` entirely, not null. Do not map arbitrary Prisma/provider failures to this mismatch. Domain wrappers retain the internal helper and its cause without exposing diagnostic details in JSON.
+
+Provider configuration resolution stays BEFORE new-intent persistence as already defined: unavailable configuration still returns `503`/`billing_provider_unavailable`, with no intent/provider call. Gate-race tests therefore provide valid configuration; they must not accidentally test configuration failure instead. Configuration reads/unsealing are not external financial operations. Rotation only AFTER intent commit retains G02: persist the provider outcome, not a new admission error.
+
+Extend the existing `tests/unit/billing/commands/subscription-routes.test.ts` and `recovery-credit-routes.test.ts` for exact envelopes; the named `arch055-installation-admission.postgres.test.ts` must exercise real authentication and barrier-controlled rotation/revocation/suspension for all four routes, including one existing-key replay. Assert unchanged row counts/balances and zero provider-method invocations on rejection. No new files, public schemas or retry semantics are introduced by this mapping clarification.
+
 ## Dependencies
 
 - `ARCH-055-API-001` must have `status: complete` and an accepted review.
@@ -153,7 +173,7 @@ Tests extend the named existing suites and the exact new files listed in Scope. 
 
 | Case | Fixture / operation | Required result |
 |---|---|---|
-| G01 | Real auth then reconnect/revoke before create/cancel/switch/purchase admission | Reject stale before durable intent/provider call; current principal still works. |
+| G01 | Real auth then reconnect/revoke/suspend before create/cancel/switch/purchase admission; repeat with an existing key | Exact revision-3 table: 409 billing_shop_invalid without IDs, no new durable rows/provider calls; unchanged existing rows. Unknown helper-read failure is 500 internal_error. Current principal still works. |
 | G02 | Rotate only after admitted intent commits, then provider outcome arrives | Persist valid outcome; no credit/paid activation before verified reconciliation. |
 | G03 | No matching operation/older unresolved/confirmed cancellation/different contract/Free reset | Bounded blocker exactly equivalent to original policy; never latest-only. |
 | G04 | Outcome conditional update loses to newer durable result | Return winner by reread; no downgrade or invented success. |
@@ -171,6 +191,8 @@ Run from the **implementation repository** in its launcher-resolved worktree, af
 - [ ] `git diff --check`
 - [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+
+- [ ] Assert all four billing gate mappings, existing-key rejection and unchanged post-admission outcomes; record zero financial provider calls on rejected admission.
 
 ## Stop Condition
 
