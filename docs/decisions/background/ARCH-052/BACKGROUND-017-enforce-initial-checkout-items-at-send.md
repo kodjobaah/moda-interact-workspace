@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 65
 executor: null
 claimed_at: null
@@ -164,7 +164,7 @@ Start via the canonical launcher; resolve the implementation repository's dedica
 
 ### Status
 
-Ready for architect review. Attempt 1 is implemented, validated, committed and pushed. The task remains in `review`; it is not architect-accepted or merged.
+Accepted and Complete — Attempt 1. Implementation and validation evidence are accepted. The task is complete; no merge to main is implied.
 
 ### Files Changed
 
@@ -249,28 +249,62 @@ Parent workspace:
 Merged to implementation main: no
 Merged to workspace main: no
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1. With `completion_mode: automatic`, the task transitions
+to `status: complete`; executor and claim are clear, and Attempt 1 is preserved.
 
 ### Review Notes
 
-Awaiting implementation.
+The Background-local guard enforces the frozen `checkout.itemsSummary` BODY
+binding during INITIAL registration selection, exact selected-registration
+preparation and final send construction. The trusted saved checkout lines are
+used for the actual BODY value. The final send checks the verified 1-based
+position, unique BODY component and nonempty parameter before constructing the
+provider request. The tests cover both providers, required offer/header/locale
+paths, malformed or cross-shop saved data, missing/duplicate/corrupt bindings,
+no-send/no-billing behavior and unchanged FOLLOW_UP handling.
+
+The implementation preserves the existing fingerprint, provider identity,
+consent, STOP, offer, billing and usage gates. No Shared contract, persistence,
+provider registration or approval state was added. The reported build, focused
+lint, unit suites, disposable integration suites and emulator test pass; no
+validation failure or unresolved issue was reported.
 
 ### Reviewed Files
 
-None.
+- `src/services/recovery-template-preparation/initial-checkout-items-policy.ts`
+- `src/services/recovery-template-preparation/recovery-template-selection.ts`
+- `src/services/recovery-template-preparation/recovery-template-preparer.service.ts`
+- `src/services/recovery-template-preparation/recovery-template.types.ts`
+- `src/services/recovery-template-integration/prepared-template-send.ts`
+- `src/services/recovery-template-integration/automated-recovery-template.service.ts`
+- The related unit and integration tests listed in the Completion Report.
 
 ### Validation Reviewed
 
-None.
+- Focused unit suites: 55 tests passed across four files.
+- Disposable PostgreSQL/Redis preparation and Woo integration: 20 tests
+  passed across two files, including missing-summary suppression before
+  provider dispatch, reservation and usage-event creation.
+- WhatsApp emulator: 1 integration test passed for NO_OFFER, checkout-code
+  and alternative-product initial payloads.
+- `npm run build`, changed-file ESLint and `git diff --check` passed.
+- The implementation branch is published and clean at `b32e223`; the parent
+  report was submitted and synchronized before this review update.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Conforms to ARCH-052. The existing Admin frozen registration and BG005 trusted
+summary remain authoritative. The guard applies to all INITIAL variants and
+preserves FOLLOW_UP, HUMAN reply, offer and image semantics. No Shared or
+cross-service contract, database schema, provider approval or billing behavior
+was changed.
 
 ### Follow-up
 
-None.
+Accepted and Complete at Attempt 1. All declared implementation dependencies
+are Complete; promote `ARCH-052-SYSTEM-TEST-004` to Ready for terminal
+cross-platform certification. No `_index.md` was changed.
