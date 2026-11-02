@@ -55,6 +55,12 @@ WooCommerce lacks a uniform WhatsApp recovery permission source comparable to Sh
 - **Identity and UI:** an explicitly checked UI is not durable consent until the hosted writer acknowledges it. Local checked/unchecked choice must survive ordinary form edits without fabricating a grant. Account/session/phone changes require identity and destination revalidation; a pre-existing phone-specific evidence reference cannot silently authorize another recipient. A separate contract decision is needed for automatically transferring verified person-level preference to a different destination; this correction does not authorize that transfer.
 - **Scope and sequencing:** this is a correction of the existing in-progress `ARCH-046-WOOCOMMERCE-003` implementation, not a reopening of completed WOOCOMMERCE-001/002 or API-007 and not a new API task. Retain API-006 proof-backed returning-state review gate. Correct `ARCH-046-SYSTEM-TEST-001` to cover entitlement-disabled capture and downstream admission suppression. No `_index.md`, DB schema or runtime repository is modified by this architect documentation patch.
 
+### 1 November 2026 — API-006 returning-checkout consent status read
+
+`ARCH-046-API-006` is now a **defined but not materialised** API implementation task; its prerequisites `ARCH-046-API-007`, `ARCH-045-DATABASE-002`, and `ARCH-045-SHARED-002` are Complete in the supplied primary snapshot. WooCommerce WOO-003 already sends server-held acknowledged proof through `POST /v1/woocommerce/whatsapp-consent/status`, but the hosted route is missing. The API-006 v1 request contains exactly `schemaVersion`, `canonicalPhone`, and `grantEventId`; the response is exactly `{schemaVersion,state}` with `CONFIRMED_GRANTED | UNVERIFIED`. The API authenticates the installation and compares the stored GRANT evidence against authoritative current CustomerPhone revision, decision, merchant/recipient scope and STOP/no-contact state. Stale/foreign/changed evidence is opaque `UNVERIFIED` and never turns historical evidence into current consent. The read is **not** an entitlement query or a preliminary requirement for same-checkout REVOKE; it must not write consent or schedule recovery.
+
+API-006 remains separate from the in-progress WOO-003 task. WOO-003 cannot claim real returning-checkout certification until this hosted reader is completed and verified against the actual Woo client; both terminal ARCH-046 system tests depend on API-006. No new schema, Shared publication or Gateway service is required by the inspected status-read design. Keep all domain `_index.md` files unchanged until final architecture reconciliation.
+
 ### Checkout customer action
 
 - **WOOCOMMERCE-001, refined in WOOCOMMERCE-003:** one optional opt-in field and clear Recovery Settings guidance in the existing plugin UI when the installation is locally connected and site identity is valid; **recovery plan/feature entitlement does not gate the customer decision or its recording**. The field is not installed permanently into the theme and disappears on later page loads when the installation/plugin becomes invalid or inactive. No support for arbitrary third-party consent plugins.
@@ -136,9 +142,11 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 | `ARCH-046-API-003` | `moda_api` | superseded | — |
 | `ARCH-046-API-004` | `moda_api` | superseded | — |
 | `ARCH-046-API-005` | `moda_api` | ready | `ARCH-045-DATABASE-002` |
+| `ARCH-046-API-007` | `moda_api` | complete | `ARCH-046-API-001`, `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
+| `ARCH-046-API-006` | `moda_api` | ready (definition only) | `ARCH-046-API-007`, `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
 | `ARCH-046-WOOCOMMERCE-001` | `moda_woocommerce` | ready | — |
 | `ARCH-046-WOOCOMMERCE-002` | `moda_woocommerce` | pending | `ARCH-035-WOOCOMMERCE-007`, `ARCH-046-API-001`, `ARCH-046-WOOCOMMERCE-001` |
-| `ARCH-046-WOOCOMMERCE-003` | `moda_woocommerce` | pending | `ARCH-046-WOOCOMMERCE-002` |
+| `ARCH-046-WOOCOMMERCE-003` | `moda_woocommerce` | in_progress | `ARCH-046-WOOCOMMERCE-002` |
 | `ARCH-046-WOOCOMMERCE-004` | `moda_woocommerce` | superseded | `ARCH-046-API-002` |
 | `ARCH-046-WOOCOMMERCE-005` | `moda_woocommerce` | superseded | — |
 | `ARCH-046-WOOCOMMERCE-006` | `moda_woocommerce` | superseded | — |
@@ -147,8 +155,8 @@ DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted t
 | `ARCH-046-BACKGROUND-002` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-045-BACKGROUND-005` |
 | `ARCH-046-BACKGROUND-003` | `moda_background` | superseded | — |
 | `ARCH-046-BACKGROUND-004` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
-| `ARCH-046-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-046-WOOCOMMERCE-001`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
-| `ARCH-046-SYSTEM-TEST-002` | `moda_system_test` | blocked | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-035-API-020`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-035-WOOCOMMERCE-016`, `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-046-BACKGROUND-004`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
+| `ARCH-046-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-046-WOOCOMMERCE-001`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-046-API-006`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
+| `ARCH-046-SYSTEM-TEST-002` | `moda_system_test` | blocked | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-035-API-020`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-035-WOOCOMMERCE-016`, `ARCH-046-API-006`, `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-046-BACKGROUND-004`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
 
 ## Open Questions
 

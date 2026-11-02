@@ -1,0 +1,95 @@
+{
+  "source_archive": "moda-interact-workspace(20261101-205935).zip",
+  "source_archive_sha256": "ee42bb83ee441ba9018779e760967a5bf87edcbc429eecc58699f1419863861b",
+  "highest_architecture_id_found_in_snapshot_docs": "ARCH-054",
+  "selected_architecture_id": "ARCH-055",
+  "live_remote_checked": false,
+  "report_pdf_sha256": "aa1f2a4491aca04b21bb24d8d15db0fb305b72d4c137b2227c41096cbde48d3a",
+  "report_markdown_sha256": "cfd25686d14b99ea5237279d5912e04e1adc842de8a68e531efaabf6455e08fe",
+  "ledger_sha256": "e44ecb1ddb230bb6958e2b6546c0e19995525de5e7bb1dc4bb01e32531b129b9",
+  "additional_source_inspection": [
+    {
+      "path": "docs/agent-vcs-ownership-policy.md",
+      "sha256": "0ab0d3c006aac13171baecb96bc83ec71bea33fb14e1f50483330b48246a1903"
+    },
+    {
+      "path": "docs/agent-worktree-isolation-policy.md",
+      "sha256": "a02a630ef2ab8a69dce3499a45af9ba1179a3adc6d9b5d1203048093e00c80fa"
+    },
+    {
+      "path": "docs/developer-task-workflow.md",
+      "sha256": "7c39b4314095cb1fd7986480752a9e829ce3dc34cf55bdc6346878f8a5727b92"
+    },
+    {
+      "path": "docs/task-definition-materialization.md",
+      "sha256": "343d51d289b08bb46200aaa702498d04a2fee7d774ae7e1cd1850eba14430f59"
+    },
+    {
+      "path": "docs/observability/shared-logging.md",
+      "sha256": "fd61d64de52701e56b79501deeb7fdc23aa022cfa324395623a72221c738fb8b"
+    },
+    {
+      "path": "moda-interact-api/package.json",
+      "sha256": "94edfbf54919843007223299e76b30b4f9414e47919a7a36cd6cdec34ec452bc"
+    },
+    {
+      "path": "moda-interact-database/package.json",
+      "sha256": "980196e76f7f92af559ba520537dac2580b363301a5631b273d101da7b9d5718"
+    },
+    {
+      "path": "moda-interact-background/package.json",
+      "sha256": "44fada6098b465b442be86628aa3b1914d255e6b0146fe0f30cddb0656a9dae5"
+    },
+    {
+      "path": "moda-interact/package.json",
+      "sha256": "57d3a525d784d79b704b5b13fd9bb1a2ece57ddf7e4346d200de643ad118dfcd"
+    },
+    {
+      "path": "moda-interact-system-test/package.json",
+      "sha256": "ed2e3961c953cdfdc1829d888293dfbc7d3ee6d23db4e4db3c383808ec4f8eab"
+    },
+    {
+      "path": "moda-interact-database/prisma/schema.prisma",
+      "sha256": "45df5e44bdc1e7e29495e391a1754477f0df362c667d648f4b6893b6541f5c0d"
+    },
+    {
+      "path": "moda-interact-api/src/merchant/conversations/messages/admission.service.ts",
+      "sha256": "ddda962f959aa0c47c3de272ba4abed74b10cdc7090eae636cc24651d40cbabc"
+    },
+    {
+      "path": "moda-interact/app/services/recoveries/recovery-human-commands.server.ts",
+      "sha256": "34e95297002263a10000d0d1c212dbc720344d81c5c9755d9850a1e0e4a42d1d"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/merchant-send-command.service.ts",
+      "sha256": "39fc37b5ed1025bb3fdb9ff353ddcfd0625a3634555d683119c9daa286c2b2b1"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/human-command-dispatcher.service.ts",
+      "sha256": "0df07c10ffe99a3e8cd7cabaebd0e98c8339ebe738daec3d44656e8c8d311a03"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts",
+      "sha256": "265946ead0a63dac10343065a49ad2e33df1032436fd12aa9a9e51207cf3a835"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/follow-up-claim-cancellation.service.ts",
+      "sha256": "e787ea306e369dd871f044fe9edaebf9adede8ca3730689eb357a392c7f3e049"
+    },
+    {
+      "path": "moda-interact-database/prisma/migrations/20261010120000_arch026_woocommerce_rest_read_grant/migration.sql",
+      "sha256": "2a18247512c10ad58784d7d4095f82df22f6e568559f05fe7a681ebe434150ef"
+    },
+    {
+      "path": "moda-interact-database/prisma/migrations/20261019133000_arch040_follow_up_reservation_release/migration.sql",
+      "sha256": "72ce08527d8c08add8d8540aff8a3ae25e352ee64fd3dd0d159b35400914a675"
+    },
+    {
+      "path": "moda-interact-database/prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql",
+      "sha256": "30c4e717002e1c2d1c8ed306c9b4ed051630adcd5a0122c0cde11645389c36b8"
+    }
+  ],
+  "original_ledger_sha256": "341d4a240df031c9cb5bd975122520ace92cd77fb7f3442bde52b5a1b55459cc",
+  "original_report_markdown_sha256": "5d35a2b6613a95a15bef0bb4ebec92056da626075870117befb5129a7e134edc",
+  "baseline_text_normalisation": "Only trailing spaces/tabs and line endings normalised for git apply --whitespace=error-all. Substantive line content unchanged. Original source hashes retained."
+}

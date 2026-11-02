@@ -1,0 +1,379 @@
+[
+  {
+    "id": "ARCH-055-DATABASE-001",
+    "path": "docs/decisions/database/ARCH-055/DATABASE-001-establish-api-lifecycle-persistence-contracts.md",
+    "title": "Establish the persistence contracts required by the API corrections",
+    "domain": "database",
+    "repo": "moda-interact-database",
+    "agent": "moda_database",
+    "status": "ready",
+    "deps": [],
+    "enables": [
+      "ARCH-055-BACKGROUND-001",
+      "ARCH-055-API-001",
+      "ARCH-055-API-005",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      9,
+      11,
+      12,
+      29,
+      39,
+      40
+    ]
+  },
+  {
+    "id": "ARCH-055-BACKGROUND-001",
+    "path": "docs/decisions/background/ARCH-055/BACKGROUND-001-consume-persisted-human-follow-up-claim-identity.md",
+    "title": "Consume the persisted human follow-up claim identity",
+    "domain": "background",
+    "repo": "moda-interact-background",
+    "agent": "moda_background",
+    "status": "pending",
+    "deps": [
+      "ARCH-055-DATABASE-001"
+    ],
+    "enables": [
+      "ARCH-055-SHOPIFY-001",
+      "ARCH-055-API-004",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      29,
+      30,
+      31,
+      35,
+      36,
+      37,
+      40
+    ]
+  },
+  {
+    "id": "ARCH-055-SHOPIFY-001",
+    "path": "docs/decisions/shopify/ARCH-055/SHOPIFY-001-bind-human-follow-up-commands-to-internal-claim-key.md",
+    "title": "Keep the Shopify producer compatible with shared follow-up dispatch",
+    "domain": "shopify",
+    "repo": "moda-interact",
+    "agent": "moda_app",
+    "status": "pending",
+    "deps": [
+      "ARCH-055-BACKGROUND-001"
+    ],
+    "enables": [
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      29
+    ]
+  },
+  {
+    "id": "ARCH-055-API-001",
+    "path": "docs/decisions/api/ARCH-055/API-001-harden-installation-and-read-authorization-lifecycle.md",
+    "title": "Harden installation and REST-read authorisation lifecycle",
+    "domain": "api",
+    "repo": "moda-interact-api",
+    "agent": "moda_api",
+    "status": "pending",
+    "deps": [
+      "ARCH-055-DATABASE-001"
+    ],
+    "enables": [
+      "ARCH-055-API-007",
+      "ARCH-055-API-009",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      1,
+      2,
+      7,
+      9,
+      10,
+      11,
+      12,
+      13
+    ]
+  },
+  {
+    "id": "ARCH-055-API-002",
+    "path": "docs/decisions/api/ARCH-055/API-002-streamline-consent-and-recovery-ingress.md",
+    "title": "Streamline consent and recovery ingress without weakening STOP",
+    "domain": "api",
+    "repo": "moda-interact-api",
+    "agent": "moda_api",
+    "status": "ready",
+    "deps": [],
+    "enables": [
+      "ARCH-055-API-009",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      3,
+      4,
+      5,
+      6,
+      8
+    ]
+  },
+  {
+    "id": "ARCH-055-API-003",
+    "path": "docs/decisions/api/ARCH-055/API-003-consolidate-merchant-settings-and-category-projections.md",
+    "title": "Consolidate merchant settings and category projections",
+    "domain": "api",
+    "repo": "moda-interact-api",
+    "agent": "moda_api",
+    "status": "ready",
+    "deps": [],
+    "enables": [
+      "ARCH-055-API-009",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      28
+    ]
+  },
+  {
+    "id": "ARCH-055-API-004",
+    "path": "docs/decisions/api/ARCH-055/API-004-correct-recovery-inbox-and-human-send-persistence.md",
+    "title": "Correct recovery inbox and human-send persistence",
+    "domain": "api",
+    "repo": "moda-interact-api",
+    "agent": "moda_api",
+    "status": "pending",
+    "deps": [
+      "ARCH-055-BACKGROUND-001"
+    ],
+    "enables": [
+      "ARCH-055-API-009",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      24,
+      25,
+      26,
+      27,
+      29,
+      30,
+      31,
+      32
+    ]
+  },
+  {
+    "id": "ARCH-055-API-005",
+    "path": "docs/decisions/api/ARCH-055/API-005-correct-knowledge-source-and-upload-lifecycle.md",
+    "title": "Correct knowledge-source and upload lifecycle",
+    "domain": "api",
+    "repo": "moda-interact-api",
+    "agent": "moda_api",
+    "status": "pending",
+    "deps": [
+      "ARCH-055-DATABASE-001"
+    ],
+    "enables": [
+      "ARCH-055-API-009",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ]
+  },
+  {
+    "id": "ARCH-055-API-006",
+    "path": "docs/decisions/api/ARCH-055/API-006-optimise-commercial-settings-and-reporting-projections.md",
+    "title": "Optimise commercial settings and reporting projections",
+    "domain": "api",
+    "repo": "moda-interact-api",
+    "agent": "moda_api",
+    "status": "ready",
+    "deps": [],
+    "enables": [
+      "ARCH-055-API-009",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      52,
+      53,
+      57
+    ]
+  },
+  {
+    "id": "ARCH-055-API-007",
+    "path": "docs/decisions/api/ARCH-055/API-007-harden-durable-billing-command-admission.md",
+    "title": "Harden durable billing-command admission",
+    "domain": "api",
+    "repo": "moda-interact-api",
+    "agent": "moda_api",
+    "status": "pending",
+    "deps": [
+      "ARCH-055-API-001"
+    ],
+    "enables": [
+      "ARCH-055-API-009",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      54,
+      55,
+      56,
+      58,
+      59
+    ]
+  },
+  {
+    "id": "ARCH-055-API-008",
+    "path": "docs/decisions/api/ARCH-055/API-008-consolidate-support-inbox-persistence.md",
+    "title": "Consolidate Support-inbox persistence",
+    "domain": "api",
+    "repo": "moda-interact-api",
+    "agent": "moda_api",
+    "status": "ready",
+    "deps": [],
+    "enables": [
+      "ARCH-055-API-009",
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      49,
+      50,
+      51
+    ]
+  },
+  {
+    "id": "ARCH-055-API-009",
+    "path": "docs/decisions/api/ARCH-055/API-009-bound-readiness-and-reconcile-api-validation.md",
+    "title": "Bound readiness and reconcile API validation entrypoints",
+    "domain": "api",
+    "repo": "moda-interact-api",
+    "agent": "moda_api",
+    "status": "pending",
+    "deps": [
+      "ARCH-055-API-001",
+      "ARCH-055-API-002",
+      "ARCH-055-API-003",
+      "ARCH-055-API-004",
+      "ARCH-055-API-005",
+      "ARCH-055-API-006",
+      "ARCH-055-API-007",
+      "ARCH-055-API-008"
+    ],
+    "enables": [
+      "ARCH-055-SYSTEM-TEST-001"
+    ],
+    "entries": [
+      60,
+      61
+    ]
+  },
+  {
+    "id": "ARCH-055-SYSTEM-TEST-001",
+    "path": "docs/decisions/system-test/ARCH-055/SYSTEM-TEST-001-validate-database-correctness-and-efficiency-end-to-end.md",
+    "title": "Validate the accepted database corrections end to end",
+    "domain": "system-test",
+    "repo": "moda-interact-system-test",
+    "agent": "moda_system_test",
+    "status": "pending",
+    "deps": [
+      "ARCH-055-DATABASE-001",
+      "ARCH-055-BACKGROUND-001",
+      "ARCH-055-SHOPIFY-001",
+      "ARCH-055-API-001",
+      "ARCH-055-API-002",
+      "ARCH-055-API-003",
+      "ARCH-055-API-004",
+      "ARCH-055-API-005",
+      "ARCH-055-API-006",
+      "ARCH-055-API-007",
+      "ARCH-055-API-008",
+      "ARCH-055-API-009"
+    ],
+    "enables": [],
+    "entries": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ]
+  }
+]
