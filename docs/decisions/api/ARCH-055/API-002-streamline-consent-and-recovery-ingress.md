@@ -30,11 +30,11 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `ready` solely from the dependency graph below.
+**Definition state:** materialised and claimed. The launcher prepared the dedicated parent and implementation worktrees, passed the dependency gate, and recorded Attempt 1 for executor `copilot`.
 
 ## Objective
 Keep the recovery-ingress safety boundary intact while separating duplicate/read-only work from mutation locking and retaining original database/queue errors.
-Blocked. The consent PostgreSQL suite passed after an initial transient P1001, but restore PostgreSQL fixtures fail with SQLSTATE 23502 and final typecheck/lint fail on the committed implementation. M03 paired SQL/affected-row measurements remain unavailable. Do not treat this as Ready for Review.
+Blocked. The required unit, Redis, consent PostgreSQL, restore PostgreSQL and typecheck validations now pass. Lint reports one unrelated existing `no-empty` error in `src/merchant/support/routes.ts:75`. The mandatory M03 paired baseline/candidate SQL and affected-row measurements have not been captured, so this is not Ready for Review.
 
 ## Context
 Source: the 1 November 2026 workspace snapshot and the 2 November 2026 completed database review. Covered endpoint entries: `E03`, `E04`, `E05`, `E06`, `E08`. Consult `docs/architecture/ARCH-055/review-ledger.md` for the original evidence; `docs/architecture/ARCH-055/endpoint-task-map.csv` fixes the primary owner of every route. New architectural choices are explicitly frozen in the parent's ADR sections; they are not retrospectively claimed as facts from the review.
@@ -67,17 +67,17 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 - `src/woocommerce/recovery-selection/`
 ### Validation Results
 
-- `npm run test:arch035-woo-activity:unit`: passed after the final implementation edit, 25/25 tests.
-- `npm run test:arch035-woo-activity:redis`: passed, 2/2 disposable Redis/BullMQ tests, including transport failure not returning HTTP 202. Runner reported its disposable Redis validation passed and removed its test container.
+- `npm run test:arch035-woo-activity:unit`: passed, 25/25 tests.
+- `npm run test:arch035-woo-activity:redis`: passed, 2/2 disposable Redis/BullMQ tests, including transport failure not returning HTTP 202. The runner reported successful disposable Redis validation and cleanup.
 - `npm run test:arch046-woo-consent:unit`: passed, 6/6 tests.
 - `npm run test:arch046-woo-selection:unit`: passed, 3/3 tests.
-- `npm run test:arch046-woo-consent:postgres`: first attempt failed during migration deployment with Prisma P1001 at `127.0.0.1:32787`. Retried once; all 68 canonical migrations applied and all 13 PostgreSQL tests passed, including duplicate replay before recipient lock, GET through a held phone-row lock, concurrent GRANT/REVOKE and STOP, credential rotation, rollback, and tenant isolation. Runner cleanup completed.
-- `npm run test:arch053-recovery-restore:postgres`: all 68 canonical migrations applied, then 0/2 tests passed. Both tests failed during fixture setup with PostgreSQL SQLSTATE `23502` (NOT NULL violation): `arch055-revalidation.postgres.test.ts` at fixture setup line 36 and `service.postgres.test.ts` at line 77. The test containers were cleaned up. This is a fixture failure, not a connectivity failure.
-- `npm run typecheck`: failed after Prisma Client generation with 3 TS2554 errors. `src/index.ts:35` and `tests/integration/woocommerce/activity/redis-queue.test.ts:41,107` call `createWooCheckoutRedisProducer` with one argument although its committed signature requires a `StructuredLogger` second argument.
-- `npm run lint`: failed with 3 errors: empty block at `src/merchant/support/routes.ts:75`; unused `logger` parameter at `src/woocommerce/activity/redis-producer.ts:9`; unused `shop` binding at `tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts:83`.
-- `git diff --check`: passed; implementation worktree is clean at `903be9f`.
-- Docker engine reachability verified with configured `docker` CLI (`colima`; Docker Engine 29.7.2). The initial consent P1001 was not reproducible on retry. Both PostgreSQL runner containers and the Redis test container were removed by their scripts; no matching task-test containers remained.
-- M03 baseline/candidate SQL, affected-row, timing, retry and invocation measurements were not captured. The consent-runner timing/statement counters are explicitly labeled for ARCH-046-API-007 and do not measure M03's duplicate replay, new event, or recovery-selection GET profiles. The task-start baseline was not paired with the candidate using the required identical, restored fixtures and five recorded samples. No measurements are inferred from unrelated counters.
+- `npm run test:arch046-woo-consent:postgres`: all 68 canonical migrations applied and all 13 PostgreSQL tests passed, including duplicate replay before recipient lock, GET through a held phone-row lock, concurrent GRANT/REVOKE and STOP, credential rotation, rollback, and tenant isolation. Runner cleanup completed. An earlier transient P1001 was resolved by retry.
+- `npm run test:arch053-recovery-restore:postgres`: all 68 canonical migrations applied and both tests passed (2/2), including completion, generation, and lifetime changes between the two eligibility reads. Runner cleanup completed.
+- `npm run typecheck`: passed after Prisma Client generation.
+- `npm run lint`: one unrelated existing failure remains at `src/merchant/support/routes.ts:75` (`no-empty`). The task-local unused parameter/binding findings are fixed; no out-of-scope lint change was made.
+- `git diff --check`: passed. The task correction commit is `a96bc83d0fd4715d73f575858a5b684d2d489552`, published to `origin/task/ARCH-055-API-002`; implementation worktree is clean.
+- Docker engine reachability was verified with the configured `docker` CLI (`colima`; Docker Engine 29.7.2). PostgreSQL and Redis runners reported cleanup on completed runs.
+- M03 baseline/candidate SQL, affected-row, timing, retry and invocation measurements were not captured. Existing consent-runner counters are explicitly labeled for ARCH-046-API-007 and do not measure M03's duplicate replay, new event, or recovery-selection GET profiles. No measurements are inferred from unrelated counters. The task-start baseline SHA is `fa2a857`; however, the required paired runs using identical restored fixtures, two discarded warm-ups and five recorded samples per version were not executed.
 - No production p95 or capacity inference is made.
 - `src/woocommerce/recovery-restore/`
 - `tests/unit/woocommerce/activity/`
@@ -86,24 +86,23 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 
 - Prepared launcher packet accepted: task `ARCH-055-API-002`, executor `copilot`, attempt 1, status `in_progress`, dependency gate passed.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-002`, branch `task/ARCH-055-API-002`. Launcher claim commit: `6e3b37698b72f31f747b4f33d21de952b28341fc`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-002`, branch `task/ARCH-055-API-002`, final implementation HEAD `903be9f4baf0fdecf56d5acc13db28ab051bd63d`, clean and published to `origin/task/ARCH-055-API-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-002`, branch `task/ARCH-055-API-002`, final implementation HEAD `a96bc83d0fd4715d73f575858a5b684d2d489552`, clean and published to `origin/task/ARCH-055-API-002`. The task includes implementation commit `903be9f4baf0fdecf56d5acc13db28ab051bd63d` and fixture/type correction commit `a96bc83d0fd4715d73f575858a5b684d2d489552`.
 - Prepared Database submodule pin: `7c377282aa5819b3008b7d7f3018f44f4161523e`; no schema/migration edits made.
-- Implementation commit `903be9f` was not changed or rewritten during this resume; its task branch remains published. The parent task/report branch was clean at `a80d08a40` before this report update. Publish this report update only to the mirrored parent `task/ARCH-055-API-002` branch. No main merge/push was performed.
+- The implementation branch contains the original implementation commit `903be9f` plus correction commit `a96bc83`; both are published on the task branch. This parent report update is limited to the current task file. No main merge/push was performed.
 - `tests/unit/woocommerce/recovery-restore/`
 - `tests/integration/woocommerce/consent/`
 - `scripts/test-arch046-woo-consent-postgres.mjs`
 ### Deviations
 
-- None to implementation behavior or schema scope. Task lifecycle is `blocked` rather than `review` because required migrated PostgreSQL evidence and final lint/typecheck evidence are unavailable.
+- No schema or public contract changes were made. Fixture corrections supply canonical required timestamps, cast bound enum parameters, and mutate the existing recovery row for the generation race because canonical uniqueness prevents inserting another row for the same Shop/checkout token. Task lifecycle remains `blocked` because required M03 paired measurements are unavailable; the unrelated lint finding is recorded separately.
 - `scripts/test-arch053-recovery-restore-postgres.mjs`
 - `src/merchant/support/installation.ts [read-only dependency; ARCH-055-API-008 owns changes]`
 ### Exact edit map — definition revision 2
 ### Unresolved Issues
 
-- Restore PostgreSQL tests remain blocked by NOT NULL violations in both fixture setups after all canonical migrations applied; correct fixture ownership/follow-up is required before those tests can pass.
-- `npm run typecheck` and `npm run lint` remain failing with the exact committed-source errors above. No implementation edits were made during this resume, per the request to preserve the published commit.
-- M03 paired before/after SQL and affected-row measurements remain outstanding; existing consent benchmark counters cover a different task/profile and cannot stand in for M03 evidence.
-- Consent/selection PostgreSQL validation, Redis integration, unit suites and diff check passed as recorded. Task remains blocked pending the typecheck/lint defects, restore fixture failures and M03 evidence.
+- M03 paired before/after SQL and affected-row measurements remain outstanding; existing consent benchmark counters cover a different task/profile and cannot stand in for M03 evidence. Capture the required success-path profiles using the same restored fixtures, baseline `fa2a857` and candidate `a96bc83`, including actual SQL shapes, affected rows, two warm-ups and five recorded samples per version.
+- Full lint still reports the unrelated existing `src/merchant/support/routes.ts:75` `no-empty` finding. It was left unchanged because it is outside this task's edit map.
+- All listed unit, Redis, consent PostgreSQL, restore PostgreSQL, typecheck and diff-check validations passed. Keep the task blocked until M03 evidence is captured and reviewed; no production p95 or capacity claim is made.
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
@@ -231,7 +230,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Blocked. Consent PostgreSQL, unit, Redis, and diff checks passed; restore PostgreSQL fixtures fail with SQLSTATE 23502, typecheck and lint fail on committed code, and M03 paired measurements are unavailable. Keep this task blocked.
+Blocked. Required unit, Redis, canonical consent/restore PostgreSQL and typecheck checks pass. Lint has one unrelated existing failure at `src/merchant/support/routes.ts:75`; required M03 paired measurements remain outstanding.
 
 ### Files Changed
 
@@ -258,30 +257,28 @@ Blocked. Consent PostgreSQL, unit, Redis, and diff checks passed; restore Postgr
 
 ### Validation Results
 
-- `npm run test:arch035-woo-activity:unit`: passed, 25 tests, before the final Redis event-cause propagation edit. Re-run required.
-- `npm run test:arch046-woo-consent:unit`: passed, 6 tests.
-- `npm run test:arch046-woo-selection:unit`: passed, 3 tests.
-- `node --import tsx --test tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts`: file loaded; 2 tests skipped because the PostgreSQL test URL was not set. This is a parse check only, not integration evidence.
-- `npm run test:arch046-woo-consent:postgres`: blocked before migrations/tests; Prisma P1001 could not reach Docker-published `127.0.0.1:32775`.
-- `npm run test:arch053-recovery-restore:postgres`: blocked before migrations/tests; Prisma P1001 could not reach Docker-published `127.0.0.1:32778`.
-- `npm run test:arch035-woo-activity:redis`: invoked, but no conclusive command output was returned; result unverified.
-- `npm run typecheck`: Prisma Client generation succeeded; no final `tsc` exit/result was returned. Typecheck unverified.
-- `npm run lint`: invoked, but no conclusive command output was returned; lint unverified.
-- `git diff --check`: invoked, but no conclusive command output was returned; result unverified.
-- M03 baseline/candidate SQL, affected-row, timing, retry and invocation measurements were not captured. The consent and restore PostgreSQL suites did not reach test execution. Do not substitute inferred SQL counts for measurements.
-- No production p95 or capacity inference is made. Docker-backed test resources could not be confirmed beyond runner cleanup behavior.
+- `npm run test:arch035-woo-activity:unit`: passed, 25/25 tests.
+- `npm run test:arch035-woo-activity:redis`: passed, 2/2 disposable Redis/BullMQ tests; runner cleanup completed.
+- `npm run test:arch046-woo-consent:unit`: passed, 6/6 tests.
+- `npm run test:arch046-woo-selection:unit`: passed, 3/3 tests.
+- `npm run test:arch046-woo-consent:postgres`: all 68 canonical migrations applied and 13/13 tests passed; runner cleanup completed.
+- `npm run test:arch053-recovery-restore:postgres`: all 68 canonical migrations applied and 2/2 tests passed; runner cleanup completed.
+- `npm run typecheck`: passed after Prisma Client generation.
+- `npm run lint`: one unrelated existing `no-empty` error remains at `src/merchant/support/routes.ts:75`; task-local findings were corrected.
+- `git diff --check`: passed.
+- M03 baseline/candidate SQL, affected-row, timing, retry and invocation measurements remain outstanding. Existing ARCH-046 counters are not a substitute. No production p95 or capacity inference is made.
 
 ### Worktree and Git Evidence
 
 - Prepared launcher packet accepted: task `ARCH-055-API-002`, executor `copilot`, attempt 1, status `in_progress`, dependency gate passed.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-002`, branch `task/ARCH-055-API-002`. Launcher claim commit: `6e3b37698b72f31f747b4f33d21de952b28341fc`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-002`, branch `task/ARCH-055-API-002`, final implementation HEAD `903be9f4baf0fdecf56d5acc13db28ab051bd63d`, clean and published to `origin/task/ARCH-055-API-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-002`, branch `task/ARCH-055-API-002`, final implementation HEAD `a96bc83d0fd4715d73f575858a5b684d2d489552`, clean and published to `origin/task/ARCH-055-API-002`.
 - Prepared Database submodule pin: `7c377282aa5819b3008b7d7f3018f44f4161523e`; no schema/migration edits made.
 - Implementation commit `903be9f` was not changed or rewritten during this resume; its task branch remains published. The parent task/report branch was clean at `a80d08a40` before this report update. Publish this report update only to the mirrored parent `task/ARCH-055-API-002` branch. No main merge/push was performed.
 
 ### Deviations
 
-- None to implementation behavior or schema scope. Task lifecycle is `blocked` rather than `review` because required migrated PostgreSQL evidence and final lint/typecheck evidence are unavailable.
+- Fixture/type corrections were made within the task's named implementation/test paths. No schema or public contract changes were made. Task lifecycle remains `blocked` because M03 measurement evidence is unavailable; the unrelated lint failure is recorded separately.
 
 ### Assumptions
 
@@ -289,10 +286,9 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 ### Unresolved Issues
 
-- Restore PostgreSQL tests remain blocked by NOT NULL violations in both fixture setups after all canonical migrations applied; correct fixture ownership/follow-up is required before those tests can pass.
-- `npm run typecheck` and `npm run lint` remain failing with the exact committed-source errors above. No implementation edits were made during this resume, per the request to preserve the published commit.
 - M03 paired before/after SQL and affected-row measurements remain outstanding; existing consent benchmark counters cover a different task/profile and cannot stand in for M03 evidence.
-- Consent/selection PostgreSQL validation, Redis integration, unit suites and diff check passed as recorded. Task remains blocked pending the typecheck/lint defects, restore fixture failures and M03 evidence.
+- Full lint still reports the unrelated existing `src/merchant/support/routes.ts:75` `no-empty` finding; this file is outside the task edit map and remains unchanged.
+- Unit, Redis, consent PostgreSQL, restore PostgreSQL, typecheck and diff-check validations passed. Task remains blocked pending M03 evidence.
 
 ### Architectural Concerns
 
@@ -306,15 +302,15 @@ Pending.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+Implementation report updated after validation; architect review is pending. Task remains blocked pending M03 paired measurement evidence.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+Implementation commits `903be9f` and `a96bc83` are submitted on the task branch for review when the measurement gate is satisfied.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Unit, Redis, canonical consent/restore PostgreSQL, typecheck and diff-check results are recorded above; M03 paired measurements remain outstanding.
 
 ### Architecture Conformance
 
