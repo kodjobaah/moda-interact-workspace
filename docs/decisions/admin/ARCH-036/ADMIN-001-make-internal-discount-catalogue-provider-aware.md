@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 60
-executor: developer
-claimed_at: 2026-11-02T14:30:35Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: ["ARCH-036-SYSTEM-TEST-001"]
@@ -27,7 +27,7 @@ updated: 2026-11-02
 - Architecture ID: `ARCH-036`.
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`.
-- Canonical parent task definition is published on `task/ARCH-036-ADMIN-001`. Implementation remains unclaimed; prepare it through `/moda_developer_create` before editing application code.
+- Canonical parent task definition is published on `task/ARCH-036-ADMIN-001`. Attempt 1 is accepted and explicitly developer-completed; both task branches are published.
 
 ## Objective
 
@@ -58,10 +58,10 @@ Update internal list/filter/badges and recovery override presentation for **Woo*
 
 ## Work Items
 
-- [ ] Update `src/lib/admin/data.ts` catalogue queries and `src/components/admin/tenant-recovery-settings.tsx` presentation so Woo catalogue validity, assignability and merchant selection are separate; preserve existing Shopify behavior.
-- [ ] Preserve Admin single-FK override and audit semantics.
-- [ ] Add provider-aware Shop, empty/error and inactive coupon fixtures.
-- [ ] Test merchant/Admin isolation and Shopify regression.
+- [x] Update `src/lib/admin/data.ts` catalogue queries and `src/components/admin/tenant-recovery-settings.tsx` presentation so Woo catalogue validity, assignability and merchant selection are separate; preserve existing Shopify behavior.
+- [x] Preserve Admin single-FK override and audit semantics.
+- [x] Add provider-aware Shop, empty/error and inactive coupon fixtures.
+- [x] Test merchant/Admin isolation and Shopify regression.
 
 ## Interfaces / Contracts
 
@@ -78,16 +78,16 @@ Existing Prisma discount/policy rows and shop/role authorisation. No API-001 rea
 
 ## Acceptance Criteria
 
-- [ ] Admin shows ACTIVE unselected coupons distinctly from removed/expired coupons.
-- [ ] Both list reads and override writes enforce the target Shop/provider; stale, removed, expired, unselectable and foreign-Shop IDs are rejected on the server, including rows invalidated after the list was loaded.
-- [ ] Existing Shopify Admin override and audit work **without changing Shopify behaviour**; Woo FIXED override can choose a valid same-Shop coupon independently of the merchant checkbox flags.
-- [ ] No database change.
+- [x] Admin shows ACTIVE unselected coupons distinctly from removed/expired coupons.
+- [x] Both list reads and override writes enforce the target Shop/provider; stale, removed, expired, unselectable and foreign-Shop IDs are rejected on the server, including rows invalidated after the list was loaded.
+- [x] Existing Shopify Admin override and audit work **without changing Shopify behaviour**; Woo FIXED override can choose a valid same-Shop coupon independently of the merchant checkbox flags.
+- [x] No database change.
 
 ## Validation
 
-- [ ] Focused Admin read/write tests for ACTIVE checked and unchecked Woo rows, stale catalogue, expiry, removed/unselectable rows, foreign-Shop IDs and a stale-choice write; prove unchecked valid Woo coupons remain assignable by Admin while existing Shopify predicates remain unchanged.
-- [ ] Verify desktop/narrow layouts, provider/selection labels and existing override actor/reason/audit/expiry behavior; no merchant checkbox-write endpoint or new permissions.
-- [ ] Role/tenant constraints, lint, typecheck/build and `git diff --check`.
+- [x] Focused Admin read/write tests for ACTIVE checked and unchecked Woo rows, stale catalogue, expiry, removed/unselectable rows, foreign-Shop IDs and a stale-choice write; prove unchecked valid Woo coupons remain assignable by Admin while existing Shopify predicates remain unchanged.
+- [x] Verify desktop/narrow layouts, provider/selection labels and existing override actor/reason/audit/expiry behavior; no merchant checkbox-write endpoint or new permissions.
+- [x] Role/tenant constraints, lint, typecheck/build and `git diff --check`.
 
 ## Stop Condition
 
@@ -103,61 +103,51 @@ For developer execution, use the canonical `/moda_developer_create ARCH-036-ADMI
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-11-02T14:30:35Z. Attempt 0 review history is preserved below.
+Complete — Attempt 1, 2 November 2026. Architect Review Accepted; explicit developer completion decision recorded below. Claim cleared, attempt unchanged, execution/completion modes remain developer-owned.
 
-### Files Changed
+### Work Completed and Files Changed
 
-None.
-
-### Work Completed
-
-None.
+- `discount-eligibility.ts`, `discount-catalogue.ts`, `data.ts` and `types.ts`: same-Shop/provider/current-generation/date validation, provider validity separate from selection, and shared catalogue read behavior.
+- `recovery-policy-override.ts` and `app/actions/tenant.ts`: extracted real authorization and serializable override transaction; valid unchecked Woo and Shopify choices retain real same-Shop FKs, actor/reason/expiry and atomic audit behavior.
+- `tenant-recovery-settings.tsx`, `tenant-row.tsx` and `tenant-table.tsx`: provider/selection/eligibility labels and bounded responsive table layout.
+- Two unit suites, two security/UI contract files, disposable PostgreSQL suite/runner and package script cover the changed behavior.
+- Material assistance: developer-requested moda_admin implementation and review corrections. Ownership remained developer-controlled. No schema, merchant checkbox-write endpoint or permission expansion.
 
 ### Validation Results
 
-Not run; task not claimed.
+- Independently verified 9/9 behavioral unit tests and 5/5 source-inspection security/UI contracts.
+- Independently verified disposable PostgreSQL suite: 5/5 (four behavioral cases plus viewport fixture seed), including real failed-upsert audit rollback, inactive/non-SUPER_ADMIN denial, shop-scoped reads and unchecked Shopify assignment. Runner completed its cleanup path. [Retained output](evidence/ADMIN-001-local-validation-postgres.md).
+- Final publication check: TypeScript `tsc --noEmit` passed; changed-file ESLint completed with zero errors and five ignored-test-file warnings. Those ignored files are not claimed lint-validated.
+- `git diff --check` passed. Production build previously reported passing by executor with optional BullMQ warnings; not repeated during publication.
+- Developer-reported browser measurements: desktop viewport/document 1440/1440px; phone viewport/document 390/390px; discount table 672px inside a 251px local scroll area. No page-level horizontal overflow reported. Inline screenshots were not saved in the repository and were not independently inspected by this reviewer. Recorded measurements are accepted as developer validation evidence.
 
-### Deviations
+### Remaining Limits / Deviations
 
-None.
+No task-blocking findings remain. Validation provenance above is explicit: database/unit checks are independent; browser measurements and earlier build are executor-reported. No provider redemption guarantee or cross-service behavior change is introduced. System certification remains a separate manual task.
 
-### Assumptions
+### Git / VCS and Physical Isolation
 
-The implementation executor will verify local checkout, dependencies and available toolchain at claim time.
-
-### Unresolved Issues
-
-None recorded by an implementation executor.
-
-### Architectural Concerns
-
-Report schema, cross-service or provider-proof deviations to `moda_architect` instead of silently expanding scope.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-ADMIN-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-ADMIN-001`.
+- Both branches: `task/ARCH-036-ADMIN-001`, canonical route revalidated.
+- Start-of-attempt parent mainline incorporation: `7677963b8`; developer claim: `5abef60ae`. Implementation baseline: `420b86aa90ca9dbb13f4c1af796ee7b60d38d05f`. No new attempt or mainline merge during completion.
+- Implementation commit: `3267cef1760af15d80c0ea36bd5ee29d01131205`, pushed to the matching remote task branch.
+- Parent prior durable review/evidence: `4ff87cce2`, viewport clarification `af1f60abf`. This completion report is identified by its containing parent completion commit and published on the same task branch.
+- Shared checkouts not switched or used for task edits; no other task worktree reused. No parent submodule gitlink staged. Neither branch merged into main.
+- Reviewed 16-file fingerprint unchanged at publication: `d502430f07b08c9d6bdc11ce56f82c1d46ea5e44d2f080646bdf85d8f8896f55`.
 
 ## Architect Review
 
-### Review Status
+**Accepted — Attempt 1.** The published implementation matches the previously reviewed working-tree correction. Prior provider identity and validation findings are resolved; review history below is retained as provenance and superseded by this acceptance.
 
-Pending.
+### Developer Self-Review Accepted and Explicit Completion Decision
 
-### Review Notes
+The developer explicitly invoked `/moda_developer_update ARCH-036-ADMIN-001 complete Architect Review Accepted`. Reconciliation confirms the required work, validation and reviewed implementation are durable and published. Record the explicit decision: **Complete**, Attempt 1 unchanged, executor and claimed_at cleared.
 
-Portable definition only, not implementation acceptance.
+### Dependency Frontier
 
-### Reviewed Files
-
-Current 12 October 2026 source snapshot used to define ownership; implementation not yet reviewed.
-
-### Validation Reviewed
-
-None from this task.
-
-### Architecture Conformance
-
-To be determined after implementation inspection.
-
-### Follow-up
-
-Await canonical materialisation, execution and review.
+ARCH-036-BACKGROUND-001 (Attempt 3), API-002 (Attempt 2) and WOOCOMMERCE-003 (Attempt 1) are Complete. With this acceptance all four explicit prerequisites for ARCH-036-SYSTEM-TEST-001 are Complete: it becomes dependency-ready at Attempt 0, unclaimed, with explicit manual launch still required. No system tests are executed or certified by this update. SYSTEM-TEST-002 remains superseded.
 
 ## Definition reconciliation — 2026-11-02
 
