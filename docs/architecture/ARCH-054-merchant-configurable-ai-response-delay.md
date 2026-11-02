@@ -152,13 +152,13 @@ Database migration → Shared implementation acceptance → Shared publication �
 | ARCH-054-SHARED-002 | moda_shared | Complete | SHARED-001 |
 | ARCH-054-BACKGROUND-001 | moda_background | Complete | DATABASE-001 |
 | ARCH-054-BACKGROUND-002 | moda_background | Complete | BACKGROUND-001, API-002, SHOPIFY-002 |
-| ARCH-054-BACKGROUND-003 | moda_background | Ready | BACKGROUND-002 |
+| ARCH-054-BACKGROUND-003 | moda_background | Complete | BACKGROUND-002 |
 | ARCH-054-API-001 | moda_api | Complete | DATABASE-001, SHARED-002 |
 | ARCH-054-API-002 | moda_api | Complete | DATABASE-001 |
 | ARCH-054-SHOPIFY-001 | moda_app | Complete | DATABASE-001, SHARED-002 |
 | ARCH-054-SHOPIFY-002 | moda_app | Complete | DATABASE-001 |
 | ARCH-054-WOOCOMMERCE-001 | moda_woocommerce | Complete | API-001 |
-| ARCH-054-SYSTEM-TEST-001 | moda_system_test | Pending | all implementation/release tasks |
+| ARCH-054-SYSTEM-TEST-001 | moda_system_test | Ready | all implementation/release tasks |
 | ARCH-054-SYSTEM-TEST-002 | moda_system_test | Pending | SYSTEM-TEST-001, BACKGROUND-003 |
 
 ## Open questions
@@ -181,3 +181,8 @@ Changes Requested on implementation `35772c5`: retain the frozen deadline/contro
 ### 2 November 2026 — BACKGROUND-002 Attempt 2 accepted
 
 Accepted `64d1be0`: original inbound version now reaches both locked final send fences, resolving the stale-dispatch race. Independent validation passed 129 focused unit tests and 11 disposable PostgreSQL/Redis integration tests, including recovery delay and both admission race orderings. BACKGROUND-002 is Complete; BACKGROUND-003 is Ready, unclaimed at Attempt 0. Both terminal system tasks remain Pending; ARCH-054 is not yet implemented end to end.
+
+
+## BACKGROUND-003 acceptance — 2 November 2026
+
+Accepted Attempt 2 (`8d120af`): bounded repair now retries retained failed jobs only when due, preserves active jobs and frozen state, and handles concurrent replicas. Independent verification passed 7 focused unit tests and 5 disposable integration tests. BACKGROUND-003 is Complete. SYSTEM-TEST-001 is Ready for explicit manual launch; SYSTEM-TEST-002 remains Pending on that certification. This supersedes prior readiness notes; end-to-end architecture certification remains outstanding.
