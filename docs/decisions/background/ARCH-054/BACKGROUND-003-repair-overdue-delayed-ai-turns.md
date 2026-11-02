@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-054-SYSTEM-TEST-001
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-02
 ---
 
 
@@ -157,3 +157,7 @@ Pending
 ### Follow-up
 
 None
+
+## Definition reconciliation — 2026-11-02
+
+Background main 10e72d7 has no implemented overdue frozen-AI-turn repair path. Keep this task Pending behind BACKGROUND-002; existing generic conversation processing/reconciliation does not prove delayed-turn durable repair or 10k-turn capacity.

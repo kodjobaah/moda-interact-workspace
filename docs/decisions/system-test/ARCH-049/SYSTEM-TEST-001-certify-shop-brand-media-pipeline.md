@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-049-ADMIN-001", "ARCH-049-DATABASE-001", "ARCH-049-SHOPIFY-001", "ARCH-049-BACKGROUND-001", "ARCH-049-BACKGROUND-002", "ARCH-049-BACKGROUND-003", "ARCH-049-API-001", "ARCH-049-WOOCOMMERCE-001", "ARCH-049-WOOCOMMERCE-002", "ARCH-049-ADMIN-002", "ARCH-049-BACKGROUND-004", "ARCH-047-ADMIN-005", "ARCH-047-BACKGROUND-001", "ARCH-047-BACKGROUND-003", "ARCH-047-BACKGROUND-006"]
 enables: []
 created: 2026-10-25
-updated: 2026-11-01
+updated: 2026-11-02
 ---
 
 # Certify ShopBrand source ingestion, R2 READY media and WhatsApp image headers
@@ -196,3 +196,7 @@ Not reviewed.
 ### Follow-up
 
 None.
+
+## Definition reconciliation — 2026-11-02
+
+Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Every declared prerequisite is Complete in the reconciled records; dependency readiness is satisfied. Status ready does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.

@@ -23,7 +23,7 @@ depends_on:
   - ARCH-045-BACKGROUND-005
 enables: []
 created: 2026-10-31
-updated: 2026-11-01
+updated: 2026-11-02
 ---
 
 # ARCH-052-SYSTEM-TEST-003 — Certify exact quoted-message text and voice routing across merchants on one sender
@@ -179,3 +179,7 @@ Pending implementation and review.
 ### Follow-up
 
 None.
+
+## Definition reconciliation — 2026-11-02
+
+Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Every declared prerequisite is Complete in the reconciled records; dependency readiness is satisfied. Status ready does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.

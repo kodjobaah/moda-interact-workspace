@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-054-BACKGROUND-003
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-02
 ---
 
 
@@ -34,7 +34,7 @@ Architecture: `ARCH-054`
 
 Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md`
 
-Coordinator: `moda_architect`. Task **defined but not materialised**; no local Git/worktree/branch activity is claimed.
+Coordinator: `moda_architect`. Task materialised on the parent task branch. Its implementation worktree will be prepared when the task is claimed through the normal execution workflow.
 
 
 ## Objective
@@ -164,3 +164,7 @@ Pending
 ### Follow-up
 
 None
+
+## Definition reconciliation — 2026-11-02
+
+Background main 10e72d7 still uses conversation-turn-processor.service.ts control ownership checks and has no pendingAiNotBeforeAt/pendingAiControlRevision enforcement in runtime source. Frozen-deadline scheduling, original control-revision fencing and final-admission behavior remain unimplemented; BACKGROUND-001 validation is still a prerequisite.

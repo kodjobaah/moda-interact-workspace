@@ -20,7 +20,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-11-01
+updated: 2026-11-02
 ---
 
 # Complete returning Woo consent, v2 publishing and verified checkout status
@@ -276,3 +276,7 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Definition reconciliation — 2026-11-02
+
+The active implementation includes ModaApiClient::wooConsentStatus and CheckoutConsentCapture returning-shopper proof/withdrawal handling. Uncommitted Blocks-status and WordPress-harness changes remain in the dedicated implementation worktree. Preserve its active developer claim. Required real Classic/Blocks behavior and API-006 contract validation must be submitted by the owner; code presence does not establish completion.
