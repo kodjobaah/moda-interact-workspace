@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 50
-executor: developer
-claimed_at: 2026-11-02T14:41:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: []
@@ -27,7 +27,7 @@ updated: 2026-11-02
 - Architecture ID: `ARCH-036`.
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`.
-- Canonical parent task definition is published on `task/ARCH-036-COMMERCE-001`. Implementation remains unclaimed; prepare it through `/moda_developer_create` before editing application code.
+- Canonical parent task definition is published on `task/ARCH-036-COMMERCE-001`. Attempt 1 is accepted and explicitly completed by the developer; both task branches are published.
 
 ## Objective
 
@@ -61,11 +61,11 @@ Implement a Commerce-owned, tenant-scoped Woo cached-rule adapter and wire it in
 
 ## Work Items
 
-- [ ] Trace the current options/evaluation registration, effective policy and trusted basket inputs; record the concrete integration seam.
-- [ ] Implement tenant/provider-scoped cached Woo rule reads and explicit unit/unknown-condition mapping into the retained evaluator.
-- [ ] Integrate existing options/evaluation operations with provider dispatch and preserve Shopify authorization and behavior.
-- [ ] Add focused operation-level tests for Woo policies/override, invalid/foreign IDs, stale/partial data, deadlines and Shopify regression.
-- [ ] Document exactly which cached facts can be evaluated and which remain UNKNOWN; do not claim outbound or provider redemption certification.
+- [x] Trace the current options/evaluation registration, effective policy and trusted basket inputs; record the concrete integration seam.
+- [x] Implement tenant/provider-scoped cached Woo rule reads and explicit unit/unknown-condition mapping into the retained evaluator.
+- [x] Integrate existing options/evaluation operations with provider dispatch and preserve Shopify authorization and behavior.
+- [x] Add focused operation-level tests for Woo policies/override, invalid/foreign IDs, stale/partial data, deadlines and Shopify regression.
+- [x] Document exactly which cached facts can be evaluated and which remain UNKNOWN; do not claim outbound or provider redemption certification.
 
 ## Interfaces / Contracts
 
@@ -82,18 +82,18 @@ None. The retired ARCH-036-SYSTEM-TEST-002 is not reactivated. ARCH-052 initial-
 
 ## Acceptance Criteria
 
-- [ ] Real local options/evaluation registrations reach the Woo adapter for an authenticated Woo Shop; Shopify operations retain their existing provider path.
-- [ ] NONE/FIXED/AI and effective Admin override obey the rules above, with same-Shop/provider isolation and no forced Shopify credentials for Woo.
-- [ ] A complete supported fixture with trusted basket facts yields the correct deterministic evidence; incomplete or unsupported real snapshots cannot produce fabricated eligibility.
-- [ ] Woo 10% and Shopify 0.10 normalization agree, without unit mixing; fixed-cart currency/rounding uncertainty fails closed.
-- [ ] One offer is evaluated per evaluation operation; no new stacking, coupon application or one-offer limit is imposed on ARCH-052 initial outreach.
-- [ ] Existing Shopify reader/evaluator/preview regression fixtures pass; no new schema, published contract or outbound behavior is introduced.
+- [x] Real local options/evaluation registrations reach the Woo adapter for an authenticated Woo Shop; Shopify operations retain their existing provider path.
+- [x] NONE/FIXED/AI and effective Admin override obey the rules above, with same-Shop/provider isolation and no forced Shopify credentials for Woo.
+- [x] A complete supported fixture with trusted basket facts yields the correct deterministic evidence; incomplete or unsupported real snapshots cannot produce fabricated eligibility.
+- [x] Woo 10% and Shopify 0.10 normalization agree, without unit mixing; fixed-cart currency/rounding uncertainty fails closed.
+- [x] One offer is evaluated per evaluation operation; no new stacking, coupon application or one-offer limit is imposed on ARCH-052 initial outreach.
+- [x] Existing Shopify reader/evaluator/preview regression fixtures pass; no new schema, published contract or outbound behavior is introduced.
 
 ## Validation
 
-- [ ] Focused reader/evaluator tests plus registered local-operation integration covering Woo success, UNKNOWN/unsupported, merchant modes, override precedence, tenant/provider rejection, stale catalogue and cancellation/deadline.
-- [ ] Existing Shopify reader/evaluator/preview tests, including percentage normalization and fixed-policy behavior.
-- [ ] Run repository-declared typecheck, changed-file lint, build and `git diff --check`; report any existing unrelated failure accurately. Use disposable PostgreSQL for database-backed integration when required by the actual test path; never test against persistent merchant data.
+- [x] Focused reader/evaluator tests plus registered local-operation integration covering Woo success, UNKNOWN/unsupported, merchant modes, override precedence, tenant/provider rejection, stale catalogue and cancellation/deadline.
+- [x] Existing Shopify reader/evaluator/preview tests, including percentage normalization and fixed-policy behavior.
+- [x] Run repository-declared typecheck, changed-file lint, build and `git diff --check`; report any existing unrelated failure accurately. Use disposable PostgreSQL for database-backed integration when required by the actual test path; never test against persistent merchant data.
 
 ## Stop Condition
 
@@ -109,61 +109,53 @@ For developer execution, use the canonical `/moda_developer_create ARCH-036-COMM
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-11-02T14:41:55Z. Attempt 0 review history is preserved below.
+Complete — Attempt 1. Architect Review Accepted and explicit Developer Completion Decision recorded on 2026-11-02. Execution and completion modes remain developer-owned; claim cleared without incrementing the attempt.
 
-### Files Changed
+### Files Changed and Work Completed
 
-None.
+- `src/commerce/preview/local-policy-providers.ts`: authoritative Shop-platform dispatch, same-Shop/current-generation Woo catalogue reads, merchant NONE/FIXED/AI policy, independent Admin override, and conservative trusted-input handling through registered local operations.
+- `src/commerce/discounts/reader/reader.ts` and `types.ts`: Woo percentage-unit conversion, normalized cached-rule mapping, exact FIXED authorization independent of bounded options, and truncation propagation. Dates are filtered before limits; options remain bounded to 50.
+- `tests/arch036-commerce-discount-reader.test.ts` and `tests/arch036-commerce-local-discounts.test.ts`: focused mapping/arithmetic and operation coverage including 51 selections, expired leading rows, foreign-Shop rejection, override, stale/deadline handling and Shopify FIXED scope regression.
+- `docs/discount-support-matrix.md`: supported cached facts, bounded selection behavior, and unavailable/unsupported cases.
 
-### Work Completed
-
-None.
+Material assistance: developer-requested `moda_commerce` implementation assistance; independent architect review identified the selection-pagination P2, then verified its correction. Execution ownership stayed with the developer.
 
 ### Validation Results
 
-Not run; task not claimed.
+- Independently verified submitted suites: 8/8 tests; additional cursor-aware review diagnostic: 1/1. Combined 3 files / 9 tests passed under Node 24.19.0. Diagnostic source/output is retained in `evidence/COMMERCE-001-attempt-1-selection-recheck.md`; temporary implementation test removed.
+- Changed-file lint and production build passed as reported by the executor; existing Nunjucks warning remains. These were not independently rerun during publication.
+- Repository typecheck was run and reports the existing unrelated NODE_ENV error at `tests/system-commerce-tool-sync.test.ts:305`; not recorded as passing.
+- `git diff --check` passed again before publication. Reviewed six-file SHA-256 fingerprint matches the published content: `cd237a1aae9ef4226f4a0905a56c4052899166c9dc934eab4ddfe45e19ff74b6`.
+- Registered-operation tests use isolated Prisma fixtures; no persistent merchant database was used.
 
-### Deviations
+### Deviations, Assumptions and Remaining Limits
 
-None.
+No new schema, published contracts, live Woo reads, checkout mutation or ARCH-052 outreach changes. Synthetic complete fixtures establish deterministic arithmetic, not provider redemption proof. The actual Woo adapter lacks trusted product facts/calculation semantics and deliberately returns UNAVAILABLE/unsupported; the 51st selected coupon is authorized but cannot fabricate eligibility. The known unrelated typecheck failure is accepted as a documented validation limitation. No task-blocking issue remains.
 
-### Assumptions
+### Git / VCS and Physical Isolation
 
-The implementation executor will verify local checkout, dependencies and available toolchain at claim time.
-
-### Unresolved Issues
-
-None recorded by an implementation executor.
-
-### Architectural Concerns
-
-Report schema, cross-service or provider-proof deviations to `moda_architect` instead of silently expanding scope.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-COMMERCE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-COMMERCE-001`.
+- Both branches: `task/ARCH-036-COMMERCE-001`; route revalidated with the canonical launcher.
+- Parent start-of-attempt mainline incorporation is recorded by `a63797f45`; claim is `4233ad771`. Implementation started at mainline `d0ade086b60b42a4145cc7e50836c2b2c8258de5`. No new attempt or new mainline merge was performed during completion.
+- Implementation commit: `67107a79567cf91df7fdb25dbbefe63abae07233`, pushed to `origin/task/ARCH-036-COMMERCE-001`.
+- Prior durable passing correction review: parent `25efb16a6fc65ef74905baa8085dfdf5818b82b0`. This completion report is published in the subsequent parent completion commit (its containing Git commit identifies the report revision).
+- Shared checkouts were not switched or used for task changes; no other task worktree reused; no parent submodule gitlink staged. Neither branch merged into main.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+**Accepted — Attempt 1**, 2026-11-02. The previously reviewed local correction is now published unchanged as `67107a79567cf91df7fdb25dbbefe63abae07233`. The prior P2 is resolved and no blocking findings remain. Historical pre-submission reviews below are preserved, superseded by this acceptance.
 
-### Review Notes
+### Developer Self-Review Accepted and Completion Decision
 
-Portable definition only, not implementation acceptance.
+The explicit `/moda_developer_update ARCH-036-COMMERCE-001 complete Architect Review Accepted` request authorizes completion after reconciliation/publication. The six-file implementation matches the independently reviewed fingerprint; Work Items and Acceptance Criteria are satisfied within the documented cached/advisory scope. Record the developer's explicit completion decision: **Complete**, Attempt 1 unchanged, executor and claimed_at cleared.
 
-### Reviewed Files
+### Dependency Frontier
 
-Current 12 October 2026 source snapshot used to define ownership; implementation not yet reviewed.
-
-### Validation Reviewed
-
-None from this task.
-
-### Architecture Conformance
-
-To be determined after implementation inspection.
-
-### Follow-up
-
-Await canonical materialisation, execution and review.
+`ARCH-036-BACKGROUND-001` is the accepted prerequisite. No active task explicitly depends on COMMERCE-001, and `enables` is empty. The historical SYSTEM-TEST-002 reference is inside a superseded task whose operative `depends_on` is empty; it remains superseded. No downstream task is promoted and no manual system-test gate is changed.
 
 ## Definition reconciliation — 2026-11-02
 
