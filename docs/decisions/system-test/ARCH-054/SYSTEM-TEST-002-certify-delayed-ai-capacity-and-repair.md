@@ -165,3 +165,8 @@ Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios a
 ## Dependency reconciliation — 2 November 2026
 
 BACKGROUND-002 is Complete after Attempt 2 architect acceptance. BACKGROUND-003 is Ready but unfinished; this system task remains Pending. No execution or certification is implied.
+
+
+## Dependency reconciliation — 2 November 2026
+
+BACKGROUND-003 is Accepted and Complete at Attempt 2. SYSTEM-TEST-001 is dependency-ready but not Complete; this task remains Pending, Attempt 0, unclaimed. Manual launch/certification gates are unchanged.

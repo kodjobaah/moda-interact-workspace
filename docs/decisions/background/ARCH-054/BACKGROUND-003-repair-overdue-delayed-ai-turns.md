@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-11-02T19:26:38Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-054-BACKGROUND-002
@@ -32,7 +32,7 @@ Architecture: `ARCH-054`
 
 Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md`
 
-Coordinator: `moda_architect`. Task materialised on matching parent and implementation task branches; Attempt 1 reviewed with Changes Requested.
+Coordinator: `moda_architect`. Task materialised on matching parent and implementation task branches; Attempt 2 accepted and Complete; Attempt 1 review history retained below.
 
 
 ## Objective
@@ -109,7 +109,7 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Attempt 2 submitted for architect review. Attempt 1 Changes Requested finding is addressed; no acceptance or completion decision has been made.
+Complete — Architect Accepted, Attempt 2, 2 November 2026. Automatic completion applied after independent review; claim cleared and attempt preserved.
 
 ### Files Changed
 
@@ -147,7 +147,7 @@ Attempt 2 submitted for architect review. Attempt 1 Changes Requested finding is
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
 - The Redis-outage recovery path is tested by injecting the original enqueue error at the queue boundary, verifying PostgreSQL pending state is unchanged, and retrying through the same repair service. Real Redis-backed integration cases verify concurrent replica and restart deduplication through BullMQ deterministic IDs.
-- The retained-failed-job P2 is addressed in Attempt 2; validation confirms the existing failed record becomes executable without replacing active jobs or changing the frozen deadline. Awaiting independent architect review.
+- The retained-failed-job P2 is addressed in Attempt 2; validation confirms the existing failed record becomes executable without replacing active jobs or changing the frozen deadline. Independently verified and accepted at Attempt 2.
 - `npm ci` reported 40 dependency audit findings (27 moderate, 13 high); dependency remediation was outside this task and no dependency manifests or lockfiles were changed.
 
 ### Worktree and Git Evidence
@@ -181,6 +181,24 @@ No implementation submodule gitlink was changed.
 
 
 ## Architect Review
+
+### Current decision — Accepted, Attempt 2
+
+Accepted implementation `8d120afa51337d408296c7b0f9bc746499ecd530`, independently verified against the remote task ref. The retained-failed-job P2 is resolved. No new blocking findings. Under `completion_mode: automatic`, set Complete, clear executor/claimed_at, and preserve Attempt 2.
+
+The repair looks up the deterministic job and retries only failed jobs whose persisted eligibility is due. Existing waiting/delayed/active jobs are skipped. BullMQ's failed-state retry provides the atomic transition; a losing replica rechecks state and reports skipped after a competing transition. Genuine retry errors that leave the job failed still propagate with correlation. Repair does not mutate frozen database deadlines or pending ownership state; existing execution-time fences remain authoritative.
+
+Independent validation (Node 24.19.0):
+
+- Focused scanner/poller/messaging-startup suites: **3 files / 7 tests passed**.
+- Repair and messaging-startup disposable PostgreSQL/Redis suites: **2 files / 5 tests passed**, including the real retained-failed-job concurrent retry. The regression confirms one recovery enqueue and one replica skip, unchanged persisted deadline/ownership before execution, and successful subsequent execution without new inbound. Its worker models the processing gate; it is not full provider-send certification.
+- `git diff --check` passed. Executor-reported typecheck/lint/build results retained as supplied evidence; not independently repeated for this review.
+- Both canonical worktrees inspected, implementation clean and published; no source changes or merges to main made by the reviewer. Parent submission `e8fc9c34` precedes this acceptance commit.
+
+Dependency frontier: all explicit implementation/release prerequisites of ARCH-054-SYSTEM-TEST-001 are Complete. It becomes Ready, Attempt 0, unclaimed, with manual launch still required. SYSTEM-TEST-002 remains Pending on SYSTEM-TEST-001; its BACKGROUND-003 prerequisite is now satisfied. No system certification is claimed.
+
+### Historical Attempt 1 review
+
 
 ### Review Status
 

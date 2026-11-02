@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -186,3 +186,8 @@ Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios a
 ## Dependency reconciliation — 2 November 2026
 
 BACKGROUND-002 is Complete after Attempt 2 architect acceptance. BACKGROUND-003 is Ready but unfinished; this system task remains Pending. No execution or certification is implied.
+
+
+## Dependency readiness — 2 November 2026
+
+BACKGROUND-003 is Accepted and Complete at Attempt 2 (`8d120af`). All eleven explicit dependencies were checked against their canonical task records and are Complete. This task is Ready (dependency-ready), Attempt 0, unclaimed. Manual launch remains required; no certification has run or passed through this update. This supersedes historical incomplete-prerequisite notes. No separate published task branch existed at reconciliation; eligibility is recorded on the accepting Background parent branch.

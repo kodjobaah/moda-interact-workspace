@@ -7,7 +7,7 @@ Ready means implementation prerequisites are complete; system certification stil
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [ARCH-054-SYSTEM-TEST-001](SYSTEM-TEST-001-certify-delayed-ai-and-human-bypass.md) | Certify delayed AI replies and immediate human response end to end | pending | `ARCH-054-DATABASE-001`, `ARCH-054-SHARED-001`, `ARCH-054-SHARED-002`, `ARCH-054-API-001`, `ARCH-054-API-002`, `ARCH-054-SHOPIFY-001`, `ARCH-054-SHOPIFY-002`, `ARCH-054-WOOCOMMERCE-001`, `ARCH-054-BACKGROUND-001`, `ARCH-054-BACKGROUND-002`, `ARCH-054-BACKGROUND-003` |
+| [ARCH-054-SYSTEM-TEST-001](SYSTEM-TEST-001-certify-delayed-ai-and-human-bypass.md) | Certify delayed AI replies and immediate human response end to end | ready | `ARCH-054-DATABASE-001`, `ARCH-054-SHARED-001`, `ARCH-054-SHARED-002`, `ARCH-054-API-001`, `ARCH-054-API-002`, `ARCH-054-SHOPIFY-001`, `ARCH-054-SHOPIFY-002`, `ARCH-054-WOOCOMMERCE-001`, `ARCH-054-BACKGROUND-001`, `ARCH-054-BACKGROUND-002`, `ARCH-054-BACKGROUND-003` |
 | [ARCH-054-SYSTEM-TEST-002](SYSTEM-TEST-002-certify-delayed-ai-capacity-and-repair.md) | Certify 10k pending turns and durable Redis/worker recovery | pending | `ARCH-054-SYSTEM-TEST-001`, `ARCH-054-BACKGROUND-003` |
 
-BACKGROUND-002 is Complete at Attempt 2. BACKGROUND-003 is Ready; both system tasks remain Pending until their full prerequisite sets are Complete.
+BACKGROUND-002 and BACKGROUND-003 are Complete at Attempt 2. SYSTEM-TEST-001 is dependency-ready and requires manual launch; SYSTEM-TEST-002 remains Pending until SYSTEM-TEST-001 is Complete.
