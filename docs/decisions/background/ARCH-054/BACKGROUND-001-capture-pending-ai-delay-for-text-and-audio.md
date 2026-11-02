@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-31T22:53:09Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-054-DATABASE-001
@@ -32,7 +32,7 @@ Architecture: `ARCH-054`
 
 Document: `docs/architecture/ARCH-054-merchant-configurable-ai-response-delay.md`
 
-Coordinator: `moda_architect`. Task **defined but not materialised**; no local Git/worktree/branch activity is claimed.
+Coordinator: `moda_architect`. Task materialised on the parent `task/ARCH-054-BACKGROUND-001` branch and implemented in its dedicated Background task worktree.
 
 
 ## Objective
@@ -187,24 +187,39 @@ Ready for Review: implementation, acceptance criteria and required validation ar
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Accepted after inspecting the implementation against the task and ARCH-054 capture contract. The shared helper locks the conversation row before deciding whether a turn is opening, validates recovery-to-shop ownership, reads the merchant setting only for a new AI recovery turn, defaults a missing settings row to zero, rejects corrupt persisted values, and writes the inbound version and frozen deadline/revision atomically. Later fragments do not rewrite the snapshot. Audio capture occurs only after successful transcription, using transcription completion time and the existing stale-event check. The post-commit routing path skips AI enqueue while HUMAN mode owns the conversation; no queue or provider operation is performed in the transaction. Persistence errors are logged through the Shared logger and propagated. The inspected changes remain within task scope.
+
+The successful PostgreSQL integration run recorded for this session (`node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts`) passed 1 file / 4 tests in 4.09s. The two later attempts stopped during disposable-database `prisma migrate deploy` before Vitest began, so they are not test failures and do not supersede the successful run. Fixture correction `588cf39c856c2a9d6e1faf157d2dc1642f9aa1bf` is included in implementation HEAD `b0ea947ee392b2741bf8de3683e458208a83fa25`.
 
 ### Reviewed Files
 
-None
+- `src/services/conversation-ai-delay/pending-turn-deadline.ts`
+- `src/services/conversation-ai-delay/pending-turn-repository.ts`
+- `src/services/conversation.service.ts`
+- `src/services/inbound-whatsapp-audio.service.ts`
+- `src/services/whatsapp-inbound-processing.service.ts`
+- `tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts`
+- `tests/unit/services/conversation.service.test.ts`
+- `tests/unit/services/inbound-whatsapp-audio.service.test.ts`
+- `tests/integration/conversation-turn-scheduling.integration.test.ts`
+- Parent ARCH-054 architecture, Background task index, and prerequisite task frontmatter.
 
 ### Validation Reviewed
 
-None
+- Focused unit suite: 3 files / 43 tests passed, including after mainline synchronization.
+- PostgreSQL integration: 1 file / 4 tests passed in 4.09s in the successful user-confirmed session run. Later retries were terminated during Prisma migration deployment before Vitest began.
+- `npm run build`: passed after mainline synchronization, including Prisma Client generation and TypeScript build.
+- Changed-file ESLint and `git diff --check`: passed.
+- Parent task branch is clean at `1b203ad3212d158d561ec734e15e70d421a4d955`, equal to `origin/task/ARCH-054-BACKGROUND-001`. Implementation task branch is clean at `b0ea947ee392b2741bf8de3683e458208a83fa25`, equal to its remote. Both are registered at their canonical dedicated task worktree paths. Recursive database submodule is initialized at `7c377282aa5819b3008b7d7f3018f44f4161523e`.
 
 ### Architecture Conformance
 
-Pending
+Conforms to ARCH-054 and task scope: capture is atomic with inbound persistence, uses recovery-owned shop identity, freezes the delay/control revision only at pending-turn opening, preserves the text/audio timing distinction, and does not add queue infrastructure or move scheduling into the transaction. Branch/worktree and synchronization evidence is consistent with the VCS and isolation policies. No blocking correctness, scope, validation, or branch-hygiene findings remain.
 
 ### Follow-up
 
-None
+ARCH-054-BACKGROUND-002 is Ready because BACKGROUND-001, API-002, and SHOPIFY-002 are Complete. This review does not claim or start that task.
