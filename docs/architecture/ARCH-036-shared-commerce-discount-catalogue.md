@@ -9,7 +9,7 @@ updated: 2026-10-13
 
 # ARCH-036 — WooCommerce coupon catalogue and merchant configuration
 
-> **Current scope amendment — 2 November 2026:** The developer has explicitly authorized implementation preparation for ADMIN-001 and COMMERCE-001. Both are Ready. The Commerce deferral in the historical October session below is lifted only for the cached evaluator/local-preview scope in its corrected task definition. SYSTEM-TEST-002 remains superseded; ARCH-052 retains initial outreach and provider source validation.
+> **Current scope amendment — 2 November 2026:** The developer has explicitly authorized implementation preparation for ADMIN-001 and COMMERCE-001. ADMIN-001 is accepted and explicitly completed at Attempt 1. SYSTEM-TEST-001 is dependency-ready and remains manually launched; Commerce follows its own authoritative task record. The Commerce deferral in the historical October session below is lifted only for the cached evaluator/local-preview scope in its corrected task definition. SYSTEM-TEST-002 remains superseded; ARCH-052 retains initial outreach and provider source validation.
 
 
 ## Status and session boundary
@@ -117,7 +117,7 @@ ARCH-036 remains Proposed. No implementation is accepted, and the document does 
 
 ARCH-036-COMMERCE-001 remains deferred. SYSTEM-TEST-002 is superseded by ARCH-052-SYSTEM-TEST-002 for the accepted current initial-outreach contract. Shopify and Woo isAvailable flags both represent merchant selection; provider validity remains separate.
 
-See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.
+See [the task-by-task reconciliation](https://github.com/kodjobaah/moda-interact-workspace/blob/codex/reconcile-arch-036-054/docs/architecture/ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.
 
 
 ## Implementation preparation — 2 November 2026
