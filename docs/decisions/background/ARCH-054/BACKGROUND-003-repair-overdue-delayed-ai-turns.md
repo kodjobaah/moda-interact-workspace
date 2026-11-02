@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-11-02T19:26:38Z
@@ -66,7 +66,7 @@ No unrelated architecture changes, new standalone chat service, per-user timer j
 ## Work Items
 
   - [x] Implement bounded SQL scanner and existing queue enqueue adapter; wire startup and graceful shutdown.
-  - [ ] Test Redis outage then repair, multiple replicas, stale HUMAN/control-revision candidate, duplicate jobs, fair keyset pagination, crash/restart and a missed versioned enqueue.
+  - [x] Test Redis outage then repair, multiple replicas, stale HUMAN/control-revision candidate, duplicate jobs, fair keyset pagination, crash/restart and a missed versioned enqueue.
 
 
 ## Interfaces / Contracts
@@ -109,7 +109,7 @@ Implement only the identified repository-owned changes; preserve original provid
 
 ### Status
 
-Attempt 1 reviewed — Changes Requested. Ready for a new claim on the same task branches; no acceptance or completion.
+Attempt 2 submitted for architect review. Attempt 1 Changes Requested finding is addressed; no acceptance or completion decision has been made.
 
 ### Files Changed
 
@@ -130,19 +130,24 @@ Attempt 1 reviewed — Changes Requested. Ready for a new claim on the same task
 - Added the 30-second periodic repair lifecycle with one in-flight pass, retry on the next cadence after failure, and graceful timer cancellation/active-pass shutdown. Messaging startup passes the existing queue after readiness and registers the closer.
 - Added focused unit and disposable PostgreSQL/Redis coverage for fairness under an older-row flood, cursor wrap, bounded 10,000-row scans, HUMAN/control-revision/lease exclusions, latest-version repair, simulated Redis enqueue outage and recovery, concurrent replicas, deterministic duplicate suppression, restart recovery, overdue/future delay calculation, and startup/shutdown wiring.
 - Implementation commit: `ed5b803` (`feat(background): repair pending delayed AI turns`), pushed to `task/ARCH-054-BACKGROUND-003`.
+- Attempt 2 P2 correction: look up the deterministic job ID before enqueue. Existing waiting/delayed/active jobs are left untouched; a retained failed job is retried only when its frozen eligibility is due, using BullMQ's atomic `Job.retry("failed")` with exhausted-attempt counters reset. If another replica wins the state transition, the losing retry rereads job state and records a skip unless it remains failed; active jobs are never removed or replaced. A successful new `queue.add` is counted as requeued without a follow-up lookup that could misclassify that new job as a duplicate.
+- Added a real disposable Redis regression that fails a one-attempt versioned job, runs two repair instances concurrently, and proves exactly one retry proceeds without new inbound data while the pending deadline and ownership revision remain unchanged. The successful retried worker claims and completes the same version once.
+- Attempt 2 implementation commit: `8d120af` (`fix(background): retry retained failed turn jobs`), pushed to `task/ARCH-054-BACKGROUND-003`.
 
 ### Validation Results
 
 - `node_modules/.bin/vitest run tests/unit/services/conversation-ai-delay/pending-turn-repair.test.ts tests/unit/services/conversation-ai-delay/start-pending-turn-repair.test.ts tests/unit/runtime/arch047-meta-messaging-startup.test.ts` — passed, 3 files / 5 tests.
-- `node scripts/test-integration.mjs tests/integration/arch054-pending-turn-repair.integration.test.ts` — passed, 1 file / 3 tests using disposable PostgreSQL and Redis.
+- Attempt 2 focused unit command for scanner/poller/startup — passed, 3 files / 7 tests.
+- `node scripts/test-integration.mjs tests/integration/arch054-pending-turn-repair.integration.test.ts` — passed, 1 file / 4 tests using disposable PostgreSQL and Redis; includes retained failed-job retry with concurrent repair.
 - `node scripts/test-integration.mjs tests/integration/arch047-meta-messaging-startup.integration.test.ts` — passed, 1 file / 1 test using disposable PostgreSQL and Redis.
-- `npm run lint` — passed.
-- `npm run build` — passed; Prisma Client generation and TypeScript compilation completed.
-- `git diff --check` — passed.
+- Attempt 2 `npm run lint` — passed.
+- Attempt 2 `npm run build` — passed; Prisma Client generation and TypeScript compilation completed.
+- Attempt 2 `git diff --check` — passed.
 
 ### Deviation / Assumptions / Unresolved Issues / Architectural Concerns
 
 - The Redis-outage recovery path is tested by injecting the original enqueue error at the queue boundary, verifying PostgreSQL pending state is unchanged, and retrying through the same repair service. Real Redis-backed integration cases verify concurrent replica and restart deduplication through BullMQ deterministic IDs.
+- The retained-failed-job P2 is addressed in Attempt 2; validation confirms the existing failed record becomes executable without replacing active jobs or changing the frozen deadline. Awaiting independent architect review.
 - `npm ci` reported 40 dependency audit findings (27 moderate, 13 high); dependency remediation was outside this task and no dependency manifests or lockfiles were changed.
 
 ### Worktree and Git Evidence
@@ -170,6 +175,8 @@ Recursive implementation submodules (launcher packet):
 
 Task claim commit: `60f3ae0dbeac672fcfe302f356423b8f674c7913` (pushed).
 Implementation commit: `ed5b803` (pushed to the explicit task branch ref).
+Attempt 2 claim commit: `4ff20cdeef93ea4fb72bd5ae98efb613cd00c737` (pushed).
+Attempt 2 implementation commit: `8d120af` (pushed to the explicit task branch ref).
 No implementation submodule gitlink was changed.
 
 
