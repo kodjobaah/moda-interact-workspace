@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
-executor: codex
-claimed_at: 2026-11-03T10:18:24Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on: []
 enables:
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised in the canonical dedicated task worktrees. Attempt 3 was submitted and reviewed on 2026-11-03; Changes Requested returns it to `ready` with claim cleared and Attempt 3 preserved. The next attempt must be claimed by the normal launcher.
+**Definition state:** materialised in the canonical dedicated task worktrees. Attempt 4 was submitted and reviewed on 2026-11-03; Changes Requested returns it to Ready with claim cleared and Attempt 4 preserved. Only the normal launcher may claim Attempt 5.
 
 ## Objective
 
@@ -161,7 +161,7 @@ None. The source baseline is context, not a fabricated dependency on historical 
 - [x] Coupon mode-only change touches zero coupon rows; one-of-50 replacement touches two, with full identity validation retained.
 - [x] One aggregate supplies count and sum; historical-period and cursor validation remain correct.
 - [x] Settings remain available during coupon sync/outage; whole-catalogue locale fallback is unchanged.
-- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication. Attempt 4 corrects the two route helpers; real Shared-sink safe-cause/code and privacy regressions pass.
+- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication. Attempt 4 retains codes and simple cause messages, but the review below identifies remaining loss of ordinary Prisma-formatted failure details.
 - [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
@@ -610,3 +610,30 @@ Under this task's existing Common execution contract and DATABASE-001's accepted
 Record the prepared `7c37728` pin separately from the post-reconciliation `8e74634` pin, exact tree-equivalence evidence, regenerated canonical client and actual typecheck/affected validation results in the Completion Report. Keep any baseline comparison results obtained before adoption explicit; do not describe an unavailable check as passed. The commercial measurement artifact remains historical evidence against the identical accepted schema/migration tree; this gitlink correction and diagnostic-only rework do not themselves require rerunning unaffected commercial profiles.
 
 The complete Attempt 3 diagnostic Changes Requested contract remains mandatory. This amendment grants no test waiver, acceptance, claim change or downstream promotion. A failed check after alignment must still be investigated and reported on its actual evidence.
+
+
+## Architect Review — Attempt 4, 3 November 2026
+
+### Review Status
+
+**Changes Requested.** Reviewed implementation `6757372ddc2b7cae7ab3e9714546ea309a53ff9a` and parent submission `53f3b9ae482ecd2390820dd15b5b23b077a19b7a`. Return to Ready, clear executor/claimed_at and retain Attempt 4. No acceptance or downstream promotion.
+
+### Remaining Finding
+
+1. **[P2] Preserve the safe failure reason after Prisma's invocation preamble.** Both route helpers now retain the immediate cause and database code, but their first redaction expression (`/\bInvalid[\s\S]*?\binvocation\b[\s\S]*/gi`) replaces everything from `Invalid` to the end of the message. Ordinary Prisma errors start with an invocation preamble and place the actual constraint/transaction failure after it. A safe message such as `Invalid prisma.example.update() invocation: ... Foreign key constraint violated on the constraint: safe_fk_constraint` therefore loses the entire originating reason. This is the remaining portion of the Attempt 3 original-message finding, not a request for a new diagnostic framework. Redact invocation arguments/query/customer context while retaining a bounded safe database failure description and code. Add a realistic multiline Prisma-format regression to both route tests, including a secret-bearing invocation section, through the real Shared sink. Continue excluding raw stacks/metadata/customer values and preserving the public response; do not merely remove the redaction wholesale.
+
+Independent reproduction constructed a `PrismaClientKnownRequestError` with a normal multiline invocation preamble and safe foreign-key failure suffix, wrapped it in each existing domain error, and invoked the actual GET routes with the real Shared logger. Both returned their unchanged public 409, but emitted `errorCause: { name: "PrismaClientKnownRequestError", message: "\n[REDACTED]" }` and `databaseCode: "P2003"`; the original safe failure description was absent. The new tests use messages that start directly with `Original ... failure`, so they do not exercise this normal Prisma format.
+
+### Resolved Items and Validation
+
+- Explicit cause projection, code retention, direct unwrapped discount conflict logging, original-exception immutability, public response stability and tested secret/truncation handling are improved and supported by the new real-sink tests.
+- Independently reran the full required five-directory focused matrix on Node 24.19.0: **108 passed, 0 failed, 0 skipped**.
+- Independently checked `git diff --check fe7658a..HEAD`: passed.
+- Confirmed the authorized Database pin `8e74634ff92be9900f693c0c449ffce888e7d617` has no tree difference from accepted `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. The pin correction is accepted scope and introduces no schema change.
+- Measurement artifact remains unchanged at SHA-256 `c790ad66f5f911223c1af1bf1fa36d2508ddd24c091cceb87a7d926df46b2b63`. The previous M11–M14/F01–F05 evidence and broad failure classifications remain applicable; unaffected measurements do not need repeating for this diagnostic correction.
+- Reviewed reported final typecheck and changed-file lint passes; these were not independently rerun. No new full-suite/full-lint or PostgreSQL execution is claimed in this review.
+- Both task branches matched their published revisions and worktrees were clean before this overlay. Review scope was the correction commit, its tests, accepted pin amendment and retained evidence.
+
+### Follow-up
+
+Apply the bounded message-preservation correction in the existing two routes and tests, run affected/focused regressions, typecheck, changed-file lint and diff checks, and resubmit with actual results. Preserve historical reports and commercial evidence. API-009 and SYSTEM-TEST-001 remain Pending because API-006 is not Complete. The next launcher claim owns Attempt 5. No implementation edits/commits/pushes, parent gitlink changes, deployment or main merge were made by this review.
