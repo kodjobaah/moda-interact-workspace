@@ -177,7 +177,7 @@ No new service, queue, provider integration, public route, Render topology, secr
 | `ARCH-055-BACKGROUND-001` | moda_background | Consume the persisted human follow-up claim identity | complete | `ARCH-055-DATABASE-001` |
 | `ARCH-055-SHOPIFY-001` | moda_app | Keep the Shopify producer compatible with shared follow-up dispatch | ready | `ARCH-055-BACKGROUND-001` |
 | `ARCH-055-API-001` | moda_api | Harden installation and REST-read authorisation lifecycle | complete | `ARCH-055-DATABASE-001` |
-| `ARCH-055-API-002` | moda_api | Streamline consent and recovery ingress without weakening STOP | in_progress | — |
+| `ARCH-055-API-002` | moda_api | Streamline consent and recovery ingress without weakening STOP | complete | — |
 | `ARCH-055-API-003` | moda_api | Consolidate merchant settings and category projections | in_progress | — |
 | `ARCH-055-API-004` | moda_api | Correct recovery inbox and human-send persistence | ready | `ARCH-055-BACKGROUND-001` |
 | `ARCH-055-API-005` | moda_api | Correct knowledge-source and upload lifecycle | complete | `ARCH-055-DATABASE-001` |
@@ -234,4 +234,4 @@ The existing API before/after evidence requirement now uses the fixed protocol/p
 
 ## Current execution frontier — 3 November 2026
 
-DATABASE-001 is Complete at Attempt 2 (`5907b4572ea9efc2a24c07e4c3bd3e107db4260b`); BACKGROUND-001 is Complete; SHOPIFY-001 is Ready; API-001 is Complete at Attempt 1; API-002, API-003 and API-006 are In Progress; API-004 is Ready; API-005 is Complete at Attempt 2; API-007 is Ready at Attempt 0; API-008 is Complete. API-009 remains Pending until API-002/003/004/006/007 complete. SYSTEM-TEST-001 remains Pending on the remaining implementation work. This supersedes initial-state table entries only where stated and does not change unrelated task statuses. Database acceptance includes the two narrowly authorized ARCH-040 validator compatibility amendments. Initial definition manifests remain historical; individual canonical task records are authoritative. No production rollout or architecture-wide completion is claimed.
+DATABASE-001 is Complete at Attempt 2 (`5907b4572ea9efc2a24c07e4c3bd3e107db4260b`); BACKGROUND-001 is Complete; SHOPIFY-001 is Ready; API-001 is Complete at Attempt 1; API-002 is Complete at Attempt 3; API-003 and API-006 are In Progress; API-004 is Ready; API-005 is Complete at Attempt 2; API-007 is Ready at Attempt 0; API-008 is Complete. API-009 remains Pending until API-003/004/006/007 complete. SYSTEM-TEST-001 remains Pending on the remaining implementation work. This supersedes initial-state table entries only where stated and does not change unrelated task statuses. Database acceptance includes the two narrowly authorized ARCH-040 validator compatibility amendments. Initial definition manifests remain historical; individual canonical task records are authoritative. No production rollout or architecture-wide completion is claimed.
