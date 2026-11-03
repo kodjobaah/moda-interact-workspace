@@ -270,3 +270,11 @@ Reviewed published implementation `369a3e243a480a87085c47c220ab26d45709cca3` aga
 The canonical task report is Ready following Attempt 1 self-review; the next claim starts Attempt 2, not an unstarted Attempt 0. Implementation 53df5aa adds src/woocommerce/consent-status/{routes,service,contract}.ts; additional uncommitted PHP compatibility fixtures, timing assertions and diagnostic redaction changes are present. Preserve the developer self-review correction contract and existing claim/attempt metadata. Those active edits are not accepted or published by this reconciliation.
 
 This historical note describes the 2 November state; the 3 November follow-up above records subsequent publication and validation accurately. It does not reset the current developer ownership, Ready status or Attempt 1.
+
+## Attempt 2 developer assistance — 3 November 2026
+
+Restored diagnostic redaction and regression coverage in the recreated implementation worktree. The disposable PostgreSQL test exercises duplicate GRANT replay, installation and customer mismatch, ended recipients, stale revisions, and generic 503 with recovery after a temporary evidence-table rename. The runner now executes the status test separately and runs the shared fixture suites once.
+
+Validation passed: 13 status unit tests, 14 active PostgreSQL tests (one opt-in benchmark skipped), typecheck, focused ESLint, and diff checks. Seven warm status probes used three statements each, including one joined evidence query. Local HTTP p50/p95 were 19.91/44.10 ms and joined SQL p50/p95 were 5/20 ms. The measured probes preserved evidence, phone, and recovery state. This run did not independently snapshot every send or billing table.
+
+Implementation and this evidence are local changes for developer reconciliation. Attempt 2 remains in progress.
