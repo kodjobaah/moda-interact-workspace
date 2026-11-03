@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -360,3 +360,10 @@ Attempt 2 typecheck, 64/64 focused unit tests, focused ESLint, and `git diff --c
 ### Follow-up
 
 After Docker/containerd can read the canonical image, the developer/architect should return the task to `ready`; then a fresh launcher claim can rerun the required PostgreSQL suite, D02/D03 assertions, and paired M06/M07 baseline/candidate measurements. Reconcile the checkboxes with observed results before resubmission. `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` remain pending.
+
+
+## Architect Readiness Reconciliation — 2026-11-03
+
+The previously unreadable pgvector PostgreSQL image (`sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8`) now starts a disposable container and reports PostgreSQL 17.11. ARCH-055-BACKGROUND-001 remains Complete. API-004 returns to Ready with Attempt 2 preserved and both claim fields null. The next launcher invocation may claim Attempt 3.
+
+The Attempt 2 Changes Requested contract remains in force. Required migrated PostgreSQL regressions and paired M06/M07 baseline/candidate measurements still need execution and review. Downstream eligibility continues to depend on acceptance and completion.
