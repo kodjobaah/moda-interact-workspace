@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: 2026-11-03T19:06:05Z
+attempt: 3
 depends_on:
   - ARCH-046-WOOCOMMERCE-002
 enables:
@@ -221,7 +221,7 @@ Do not blindly implement an API-006 lookup from an invented endpoint/response sc
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-11-03T14:03:36Z. Attempt 1 review history is preserved below.
+In Progress — Attempt 3 claimed by developer at 2026-11-03T19:06:05Z. Attempt 2 review history is preserved below.
 
 ### Implementation and Publication
 
