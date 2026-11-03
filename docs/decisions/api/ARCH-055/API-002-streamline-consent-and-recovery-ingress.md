@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 25
-executor: copilot
-claimed_at: 2026-11-03T02:12:22Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -250,6 +250,32 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 Report ownership, schema, contract, external dependency, new index/infrastructure or transaction-boundary gaps here. Do not expand scope silently.
 
+## Completion Report — Attempt 2
+
+### Status
+
+Blocked. The B04 installation-rotation interleaving is implemented and passed the canonical restore PostgreSQL suite (2/2, all 68 migrations). The M03 harness completed candidate-only assertions for all three profiles with two warm-ups and five recorded samples each, but the required paired baseline `fa2a857` comparison did not complete. Do not use the candidate-only timing output as paired evidence.
+
+### Rework
+
+- Added test-local Prisma SQL/query and transaction observation for duplicate replay, new event for the same recipient, and recovery-selection GET in `tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts`.
+- Added state/evidence snapshots and assertions for affected target rows, lock counts, SQL shapes, transaction-control statements, retries, and external invocations. The measurement clock is `2026-11-02T12:00:00.000Z`; consent evidence remains append-only, so samples use isolated fixtures in the disposable database.
+- Added opt-in baseline/candidate execution to `scripts/test-arch046-woo-consent-postgres.mjs`, archiving the pinned baseline into a temporary directory and running the same M03 test without changing baseline history.
+- The existing restore scenario covers a separate-connection installation credential rotation during offer resolution and verifies final denial for the original principal. Its test title now explicitly names credential rotation.
+
+### Validation Results
+
+- Candidate-only M03 profile test: passed its three profiles and emitted seven sample records per profile (two warm-ups and five recorded samples). This run is not a paired comparison and does not resolve Finding 1.
+- Paired M03 runner: not completed. Earlier runner attempts failed with Prisma `P1001` against the published disposable PostgreSQL port; one invocation hung because TCP `psql` lacked the disposable password. The runner was corrected to probe PostgreSQL TCP readiness and pass `PGPASSWORD` to its TCP `psql` calls, but no successful post-correction paired result was captured.
+- Restore PostgreSQL suite after adding credential rotation: passed 2/2 with all 68 canonical migrations, as recorded during this attempt. No restore logic changed in the final title-only edit.
+- The changed M03 TypeScript test and runner reported no VS Code diagnostics. `git diff --check` passed before the final runner readiness/password edits; terminal execution became unavailable before those final edits could receive an executable check.
+
+### Remaining Work
+
+- Re-run `ARCH055_M03_COMPARE_BASELINE=1 npm run test:arch046-woo-consent:postgres` from the implementation worktree. Confirm both baseline and candidate complete every profile with two warm-ups and five recorded samples, then retain raw samples and report descriptive min/median/max.
+- Run the canonical consent PostgreSQL suite, restore PostgreSQL suite, typecheck, and `git diff --check` after the runner corrections. Report any infrastructure failure without inferring paired values.
+- Keep the task in progress; do not promote API-009 or SYSTEM-TEST-001 until the paired evidence is complete and reviewed.
+
 ## Architect Review
 
 ### Decision — Changes Requested, Attempt 1, 3 November 2026
@@ -272,3 +298,14 @@ Not accepted. Return to Ready for the next normal claim, preserving Attempt 1 an
 ### Task-definition reconciliation and next step
 
 Removed duplicated Completion Report material that had been interleaved into Objective/Context/Scope, restoring the original authorized scope lists and deterministic edit map from the claim revision. Retained the submitted Completion Report and its validation limitations as history. No new files, production behavior or wider scope is authorized or needed. Capture M03 and B04 in the existing allowed test paths, reconcile the Work Items/Acceptance Criteria, and submit the next attempt on the same branch pair. API-009 and SYSTEM-TEST-001 remain gated on acceptance.
+
+
+### Recovery decision — Changes Requested, stranded Attempt 2, 3 November 2026
+
+Attempt 2 is not accepted. Preserve its report above as historical executor evidence, including its validation limitations. Its statement to keep the task in progress is superseded by this recovery decision. Return the same task to Ready, clear executor/claimed_at, and preserve `attempt: 2`; only the normal prepared launcher may claim Attempt 3.
+
+The reported terminal loss and explicit remaining-work handoff establish an interrupted attempt rather than completed validation. Inspection found the parent report uncommitted and three uncommitted task-owned implementation files in the canonical dedicated implementation worktree: `scripts/test-arch046-woo-consent-postgres.mjs`, `tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts`, and `tests/integration/woocommerce/recovery-restore/arch055-revalidation.postgres.test.ts`. Preserve and publish those changes on the existing mirrored task branches before rerunning preparation; do not discard them, rewrite baseline history, or infer a passing measurement. The repository owner performs implementation checkpoint publication; this architect recovery performs no implementation edits or acceptance.
+
+The route-only launcher confirms the canonical primary root, dedicated parent/implementation paths and mirrored `task/ARCH-055-API-002` branch already recorded above. Route-only output is topology evidence, not a prepared execution packet or a claim. Start new implementation only after successful normal `--prepare`.
+
+The Attempt 1 Findings remain the correction contract: finish the paired M03 baseline/candidate evidence and verify B04 credential rotation with the canonical migrated runner. The stranded diff adds candidate/baseline measurement scaffolding, TCP readiness/password fixes, and a credential-rotation scenario, but no new executable validation was performed by this recovery. Re-run the required changed-runner checks, retain actual raw samples and descriptive summaries, and reconcile Work Items/Acceptance Criteria/Validation honestly before review. Candidate-only assertions cannot satisfy paired evidence. API-009 and SYSTEM-TEST-001 remain pending; no architecture scope, dependency or implementation contract changes are authorized.
