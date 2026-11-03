@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-11-03T15:58:46Z
+attempt: 2
 depends_on:
   - ARCH-046-API-007
   - ARCH-045-DATABASE-002
@@ -173,7 +173,7 @@ After the Work Items, Acceptance Criteria and required Validation are complete, 
 
 ### Status
 
-Developer Self-Review — Changes Requested, Attempt 1, reconciled 2026-11-03. The PHP client fixture and broader proof/installation diagnostic coverage are implemented. The required PostgreSQL scenario matrix and customer-identifier redaction evidence remain incomplete. Current disposable PostgreSQL validation could not start because Docker's image storage returns input/output errors. No acceptance or completion decision is recorded.
+In Progress — Attempt 2 claimed by developer at 2026-11-03T15:58:46Z. Attempt 1 review history is preserved below.
 
 ### Files Changed and Publication
 
