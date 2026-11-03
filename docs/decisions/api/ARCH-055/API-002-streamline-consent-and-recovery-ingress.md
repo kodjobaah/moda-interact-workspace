@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 25
-executor: codex
-claimed_at: 2026-11-03T05:57:37Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised and claimed. The launcher prepared the dedicated parent and implementation worktrees, passed the dependency gate, and recorded Attempt 1 for executor `copilot`.
+**Definition state:** materialised. Attempt 3 was accepted by the architect on 3 November 2026. The task is Complete; API-009 and SYSTEM-TEST-001 remain gated by other prerequisites.
 
 ## Objective
 
@@ -351,7 +351,7 @@ Task branch: `task/ARCH-055-API-002` in both repositories.
 - Prepared dependency gate passed; reused correct dedicated worktrees; both remote task branches required no fast-forward and both already incorporated origin/main. Recursive submodule sync/update passed and recorded Database pin above was ready.
 - Durable Codex Attempt 3 claim: `45cc5e9457b3f81da9db0e7141bbde028b50d1f3`, pushed. Shared workspace/implementation checkout was not switched for task work; no other task worktree reused.
 - Final implementation commit: `7d0aa37d821ac6187e8c8587c02f8c10fb3cd3e5`, pushed to `origin/task/ARCH-055-API-002`; worktree clean.
-- Parent submission consists only of this task file and the architect-authorized evidence artifact. Parent submission commit is the commit containing this report; claim/recovery provenance is above. Publish on `origin/task/ARCH-055-API-002`; no implementation submodule gitlink staged.
+- Attempt 3 parent submission consists only of this task file and the architect-authorized evidence artifact; submission commit `44916e6deb134bb56814aead1aee343a9ce3f2d9` is pushed to `origin/task/ARCH-055-API-002`. The architect acceptance record is being added on the same parent task branch; claim/recovery provenance is above. No implementation submodule gitlink is staged.
 - Successful disposable PostgreSQL/Redis runners exited after cleanup; the baseline temporary archive and comparison databases/container were removed by runner finally blocks. Unrelated pre-existing containers were left untouched.
 - No force push, implementation/workspace main merge or main push. No enabled task started or promoted.
 
@@ -392,6 +392,22 @@ The reported terminal loss and explicit remaining-work handoff establish an inte
 The route-only launcher confirms the canonical primary root, dedicated parent/implementation paths and mirrored `task/ARCH-055-API-002` branch already recorded above. Route-only output is topology evidence, not a prepared execution packet or a claim. Start new implementation only after successful normal `--prepare`.
 
 The Attempt 1 Findings remain the correction contract: finish the paired M03 baseline/candidate evidence and verify B04 credential rotation with the canonical migrated runner. The stranded diff adds candidate/baseline measurement scaffolding, TCP readiness/password fixes, and a credential-rotation scenario, but no new executable validation was performed by this recovery. Re-run the required changed-runner checks, retain actual raw samples and descriptive summaries, and reconcile Work Items/Acceptance Criteria/Validation honestly before review. Candidate-only assertions cannot satisfy paired evidence. API-009 and SYSTEM-TEST-001 remain pending; no architecture scope, dependency or implementation contract changes are authorized.
+
+### Acceptance decision — Attempt 3, 3 November 2026
+
+Accepted. The duplicate consent path checks immutable event evidence before recipient coordination and preserves later REVOKE/STOP state. Recovery-selection GET omits recipient advisory and row-write locks while POST retains them. The restore path retains both eligibility reads, and the canonical migrated B04 test covers installation rotation between them. Activity failure handling distinguishes authentication/database from Redis publication failures and preserves bounded original diagnostics. Paired M03 evidence contains two warm-ups and five recorded samples for each of three profiles on baseline and candidate, with normalized SQL, affected-row assertions and descriptive durations; the artifact contains parameterized SQL shapes, not raw parameter values. No runtime correctness, test-coverage, evidence-integrity or scope gap remains. No production rollout or integrated Background pass is claimed.
+
+### Validation reviewed
+
+Reviewed the submitted results: activity unit 25/25, consent unit 6/6, selection unit 3/3, Redis integration 2/2, consent PostgreSQL 13 passed with one separately executed opt-in M03 test, restore PostgreSQL 2/2, typecheck, and `git diff --check` passed. The M03 artifact contains 48 JSONL records: 42 samples and six summaries (two warm-ups and five measured samples per version/profile). Full lint retains only the documented existing error in untouched `src/merchant/support/routes.ts:75`. These validations were not rerun during architect review.
+
+### Dependency frontier
+
+API-009 remains Pending because API-003, API-004, API-006 and API-007 are not Complete. SYSTEM-TEST-001 remains Pending because SHOPIFY-001 and API-003/004/006/007 remain incomplete. API-002 was the only newly completed prerequisite in this review; no downstream task becomes Ready.
+
+### Reviewed files
+
+`src/woocommerce/activity/{routes.ts,redis-producer.ts}`, `src/woocommerce/consent/service.ts`, `src/woocommerce/recovery-selection/service.ts`, `src/woocommerce/recovery-restore/{routes.ts,service.ts}`, the named canonical migration runners and race tests, and `docs/decisions/api/ARCH-055/evidence/API-002-attempt-3-m03.jsonl`.
 
 
 ### Evidence-retention amendment — Attempt 3, 3 November 2026
