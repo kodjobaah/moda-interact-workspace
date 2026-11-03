@@ -9,18 +9,18 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-11-03T05:55:07Z
+attempt: 1
 depends_on:
 - ARCH-055-BACKGROUND-001
 enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: '2026-11-03'
+updated: 2026-11-03
 ---
 
 # ARCH-055-API-004: Correct recovery inbox and human-send persistence
