@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
 - ARCH-055-API-005
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: 2026-11-02
+updated: 2026-11-03
 ---
 
 # ARCH-055-DATABASE-001: Add explicit persistence metadata and narrowly correct existing guards
@@ -407,7 +407,7 @@ All three SQL scripts are forward deployments. The one existing CHECK replacemen
 
 If any ARCH-055 migration from a different definition was already executed anywhere relevant, STOP: do not rewrite that history or reuse these names for different SQL. Return the applied migration names/checksums so a separately named forward reconciliation can be defined. The same applies if the pinned baseline function has changed. No application implementation is authorised here.
 
-## Completion Report
+## Completion Report — historical Attempt 1
 
 ### Status
 
@@ -518,6 +518,34 @@ No storage or transaction-boundary concern found in the tested ARCH-055 migratio
 All listed Work Items, Acceptance Criteria, and required Validation are checked against execution evidence. Task status is `review`, Attempt 2 preserved, `executor: null`, and `claimed_at: null`. No acceptance, consumer rollout, dependency promotion, or main-branch merge is claimed; those remain gated on architect review.
 
 ## Architect Review
+
+### Current decision — Accepted, Attempt 2, 3 November 2026
+
+**Accepted and Complete.** Reviewed published implementation `5907b4572ea9efc2a24c07e4c3bd3e107db4260b` and parent submission `8d5e77161ab952c800d1d687e7a24d297790cbbd`; both matched remote task refs and canonical worktrees were clean before review edits. All three prior P2 findings are resolved. Automatic completion applies; Attempt 2 is preserved and executor/claimed_at remain null. Historical Attempt 1 findings and earlier submission disposition below are superseded by this decision.
+
+The static validator uses a verified immutable pre-change baseline and passes on the committed checkout. PostgreSQL harnesses apply through named migration boundaries. The authorized ARCH-040 adaptations retain their behavioral assertions on the schema after ARCH-055. New cases cover actual cancellation/reclaim owners, failed-grant/stale-success/terminal/identity rejection, duplicate-history preservation and process-failure cleanup. Migration SQL and the two Prisma additions are unchanged by rework. No new blocking findings.
+
+### Independent validation
+
+Using workspace-selected Node v24.19.0:
+
+- ARCH-055 static validator passed on the clean published revision: exact schema/package changes, approved 11-file scope, and all 68 predecessor hashes.
+- ARCH-040 structural validator passed.
+- ARCH-055 PostgreSQL **upgrade** suite passed: F01–F05, U01/U02/U04 preservation with actual reclaim pair, U03 transactional rollback/retry, U05 duplicate history/DDL rollback, U06 non-target catalogue preservation. Network-disabled disposable PostgreSQL 17 container removed.
+- ARCH-040 PostgreSQL **fresh** suite passed after applying through ARCH-055: prepared body/digest, moderation/template, nonhuman actor, lease/tenant, terminal tombstone, provider permit and first-writer concurrency guards.
+- U07 forced top-level assertion exited 1; cleanup was logged and a Docker inspect confirmed the owned container absent. Six invalid-argument/no-Docker cases retain the earlier independent evidence.
+- `git diff --check` passed. Executor's ARCH-055 fresh, ARCH-040 upgrade, Prisma validation/generation, REST-read static and lint results remain supplied evidence, not additional independently repeated runs.
+
+### Accepted pin and rollout handoff
+
+Accepted Database pin: `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Consumers adopt it only in their own task worktrees. No consumer pin, production migration, deployment or main merge is performed here. For deployment, quiesce relevant command producers/consumers before the exclusive-lock metadata backfill; apply the three forward migrations in their prescribed order. Duplicate original-intake history must stop rollout for explicit reconciliation, never automatic deletion or relabelling. Preserve the dependency sequence: Database first, then persisted-key Background consumer, then API-004/Shopify producers; API-001/API-005 own their respective admission/purpose contracts. Historical template keys remain their own original keys, HUMAN_TEXT remains null, and missing/new purpose or claim semantics stay service-owned.
+
+### Dependency frontier
+
+ARCH-055-BACKGROUND-001, ARCH-055-API-001 and ARCH-055-API-005 each depend solely on this task and are now Ready, Attempt 0, unclaimed. Their separate task branches/worktrees were absent at reconciliation; readiness is published on this accepting parent branch. SYSTEM-TEST-001 remains Pending on its other implementation dependencies, with its manual gate unchanged. No other task is implicitly completed or launched.
+
+### Historical Attempt 1 review
+
 
 ### Review Status
 

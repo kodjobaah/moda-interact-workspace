@@ -15,6 +15,16 @@
           "path": "package.json",
           "baseline_exists": true,
           "action": "Insert three exact ARCH-055 script keys from task."
+        },
+        {
+          "path": "scripts/validate-arch040-human-prepared-schema.mjs",
+          "baseline_exists": true,
+          "action": "Definition revision 3 exception: preserve existing guard assertions while reconciling migration boundaries and validating against the schema through ARCH-055."
+        },
+        {
+          "path": "scripts/test-arch040-human-prepared-postgres.mjs",
+          "baseline_exists": true,
+          "action": "Definition revision 3 exception: preserve existing guard assertions while reconciling migration boundaries and validating against the schema through ARCH-055."
         }
       ],
       "new_files": [

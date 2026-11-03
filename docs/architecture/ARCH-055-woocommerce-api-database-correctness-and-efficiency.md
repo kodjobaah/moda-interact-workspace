@@ -230,3 +230,8 @@ All persistence changes use new versioned forward `migration.sql` files. No old 
 ## Definition revision 3 — acceptance clarification only
 
 The existing API before/after evidence requirement now uses the fixed protocol/profiles in `docs/architecture/ARCH-055/task-definition-contract.md` for API-001 through API-009. API-001 and API-007 pin public mappings for the new current-principal gate; API-003 pins the source-preserving C03 Admin-mapping interleaving. The task files and execution map carry those exact outcomes. No new product policy, implementation task, dependency, source edit, schema field or migration SQL is introduced. All other revision-2 choices, evidence-only restrictions and the forward-only migration contract remain unchanged. Definition revision is not an execution attempt or acceptance.
+
+
+## Current execution frontier — 3 November 2026
+
+DATABASE-001 is Accepted and Complete at Attempt 2 (`5907b4572ea9efc2a24c07e4c3bd3e107db4260b`). BACKGROUND-001, API-001 and API-005 are now Ready, Attempt 0, unclaimed; SYSTEM-TEST-001 remains Pending on the remaining implementation work. This supersedes their initial-state table entries without changing unrelated task statuses. Database acceptance includes the two narrowly authorized ARCH-040 validator compatibility amendments. Initial definition manifests remain historical; individual canonical task records are authoritative. No production rollout or architecture-wide completion is claimed.
