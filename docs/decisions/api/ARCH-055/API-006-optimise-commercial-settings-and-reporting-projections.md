@@ -9,17 +9,17 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
-executor: copilot
-claimed_at: 2026-11-02T21:41:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: 2026-11-02
+updated: 2026-11-03
 ---
 
 # ARCH-055-API-006: Optimise commercial settings and reporting projections
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `ready` solely from the dependency graph below.
+**Definition state:** materialised. Attempt 1 was claimed through the canonical launcher and is returned to `ready` after architect review; its attempt number remains 1.
 
 ## Objective
 
@@ -200,7 +200,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Submitted for architect review; acceptance remains blocked on the required baseline/candidate sample protocol and unrelated repository validation failures.
+Changes Requested — Architect Review Attempt 1, 2026-11-03. The required baseline/candidate measurement protocol and validation-baseline classification remain incomplete; the task is returned to `ready` with the claim cleared.
 
 ### Files Changed
 
@@ -277,28 +277,33 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 No schema, transaction-boundary, public contract or ownership change was required. The documented evidence gap and unrelated broad-suite failures require architect disposition before acceptance.
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending.
+Changes Requested — 2026-11-03. Attempt 1 remains unchanged; task returned to `ready`, with `executor` and `claimed_at` cleared. No acceptance or downstream promotion.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+1. **[P1] Complete the mandatory comparative evidence protocol.** The task's fixed M11–M14 profiles require two discarded warm-ups and five restored recorded samples per version against the prepared baseline `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`, with matching disposable PostgreSQL 17 + pgvector fixtures. The report explicitly says these samples and the required per-profile SQL/client-call/transaction/affected-row/timing evidence were not collected. The passing query-shape and correctness tests do not establish the required before/after evidence. Required F01–F05 outcomes are also left unchecked; the named 30-period/31-event usage profile and refund-history overflow/concurrent-refund profile are not evidenced. Record the fixed-protocol results and retain/defer decisions for M11–M14 and the evidence-only alternatives, or return a concrete baseline incompatibility with the failed command and evidence. Do not infer performance from target counts or mock call counts.
+
+2. **[P2] Classify broad validation failures against the task-start baseline and declared toolchain.** The full `npm test` run has eight failures that were not compared with the prepared start SHA, and `npm run lint` fails at an untouched support route. The recorded runtime is Node 24.21.0/npm 11.19.0 while the repository declares Node 24.19.0/npm 11.17.0, despite the task's instruction to use the declared toolchain. Establish which failures are baseline versus candidate regressions, and rerun required checks using the repository toolchain (or record a specific toolchain blocker) before acceptance.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+- Task definition revision 2, its unchecked Work Items, Acceptance Criteria and Validation items.
+- Attempt 1 Completion Report and declared fixed protocol in `docs/architecture/ARCH-055/task-definition-contract.md`.
+- Implementation branch `task/ARCH-055-API-006` at `8c8558ae44315ccb4564169aad94e454c3074ec7`, relative to prepared start `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`; changed paths and SQL-shape regression coverage were inspected.
+- Canonical parent and implementation worktree status and task-branch publication state.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+The report records the focused migrated PostgreSQL suites, 103 focused unit tests, typecheck, and diff check passing. It also records the eight full-suite failures, the support-route lint error, missing comparative samples, and runtime-version mismatch. No tests or measurements were rerun during this architect review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+The source changes are within the revision-2 edit map, and the implementation branch is pushed and clean. Acceptance remains blocked by the mandatory comparative evidence and unresolved validation classification. The unchanged baseline behavior for evidence-only options is not enough by itself; the task requires measured retain/defer decisions.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Keep the same task branch and Attempt 1. Complete M11–M14 with the fixed baseline/candidate procedure and F01–F05 regression outcomes, record raw samples and measured SQL/calls/rows/timings, classify broad validation failures against the task-start baseline using the declared runtime, and reconcile the unchecked task criteria. Do not begin API-009 or SYSTEM-TEST-001. Both remain Pending because API-006 is not Complete. No implementation source was changed by this review.
