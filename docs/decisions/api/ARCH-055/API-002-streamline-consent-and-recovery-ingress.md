@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
 executor: codex
 claimed_at: 2026-11-03T05:57:37Z
@@ -76,6 +76,8 @@ Paths are relative to the owning implementation repository. These steps are mand
 
 **Test registration:** Register the first new file in scripts/test-arch046-woo-consent-postgres.mjs and the second in scripts/test-arch053-recovery-restore-postgres.mjs; preserve existing suite lists.
 
+**Task-local parent evidence exception — Attempt 3:** In addition to this task file, the repository executor may create, stage, commit and push only `docs/decisions/api/ARCH-055/evidence/API-002-attempt-3-m03.jsonl` in the dedicated parent task worktree/branch. Retain the actual raw M03 normalized-SQL sample records and descriptive summaries there; exclude connection URLs, credentials, raw SQL parameter values and customer bodies. This is a directly task-owned review artifact, not implementation code, a new benchmark framework or authority to edit other parent coordination files. The Completion Report must identify the artifact and measurement limits.
+
 ## Out of Scope
 
 No unrelated platform redesign, generic repository-wide ORM/auth/cache rewrite, new microservice/queue, speculative index migration, live payment/refund certification, public schema version change, autonomous follow-on task, or implementation outside the owning repository. No `_index.md` edits. Keep retained endpoint behaviour under regression, rather than manufacturing source changes for every reviewed route.
@@ -112,11 +114,11 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Refactor duplicate consent and read-only selection branches separately from mutation code.
-- [ ] Correct activity stage classification and error preservation.
-- [ ] Extend existing migrated races for late STOP/REVOKE, credential rotation, concurrent GETs and stale POST.
-- [ ] Run restore races against canonical migrations, including completion/generation/lifetime changes between the two reads.
-- [ ] Record source-level and actual SQL counts for fresh, duplicate, GET and failure paths.
+- [x] Refactor duplicate consent and read-only selection branches separately from mutation code.
+- [x] Correct activity stage classification and error preservation.
+- [x] Extend existing migrated races for late STOP/REVOKE, credential rotation, concurrent GETs and stale POST.
+- [x] Run restore races against canonical migrations, including completion/generation/lifetime changes between the two reads.
+- [x] Record source-level and actual SQL counts for fresh, duplicate, GET and failure paths.
 
 ## Interfaces / Contracts
 
@@ -135,14 +137,14 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 ## Acceptance Criteria
 
-- [ ] Consent duplicate path drops one recipient-lock query without touching permission state.
-- [ ] Selection GET no longer takes recipient write-style locks; POST/final send remain authoritative.
-- [ ] Real Background STOP compatibility is preserved and included in terminal integrated scenarios.
-- [ ] Restore can observe a disqualifying state change after offer resolution.
-- [ ] No new external call occurs inside a database transaction and queue acceptance semantics are unchanged.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
-- [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
+- [x] Consent duplicate path drops one recipient-lock query without touching permission state.
+- [x] Selection GET no longer takes recipient write-style locks; POST/final send remain authoritative.
+- [x] Real Background STOP compatibility is preserved and included in terminal integrated scenarios.
+- [x] Restore can observe a disqualifying state change after offer resolution.
+- [x] No new external call occurs inside a database transaction and queue acceptance semantics are unchanged.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
 
@@ -161,16 +163,16 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npm run test:arch035-woo-activity:unit`
-- [ ] `npm run test:arch035-woo-activity:redis`
-- [ ] `npm run test:arch046-woo-consent:unit`
-- [ ] `npm run test:arch046-woo-consent:postgres`
-- [ ] `npm run test:arch046-woo-selection:unit`
-- [ ] `npm run test:arch053-recovery-restore:postgres`
-- [ ] `npm run typecheck`
-- [ ] `git diff --check`
-- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
-- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+- [x] `npm run test:arch035-woo-activity:unit`
+- [x] `npm run test:arch035-woo-activity:redis`
+- [x] `npm run test:arch046-woo-consent:unit`
+- [x] `npm run test:arch046-woo-consent:postgres`
+- [x] `npm run test:arch046-woo-selection:unit`
+- [x] `npm run test:arch053-recovery-restore:postgres`
+- [x] `npm run typecheck`
+- [x] `git diff --check`
+- [x] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
+- [x] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition
 
@@ -276,6 +278,87 @@ Blocked. The B04 installation-rotation interleaving is implemented and passed th
 - Run the canonical consent PostgreSQL suite, restore PostgreSQL suite, typecheck, and `git diff --check` after the runner corrections. Report any infrastructure failure without inferring paired values.
 - Keep the task in progress; do not promote API-009 or SYSTEM-TEST-001 until the paired evidence is complete and reviewed.
 
+
+## Completion Report — Attempt 3
+
+### Status
+
+Ready for Review. Both Changes Requested findings are implemented and validated. Activity/consent/selection unit suites, disposable Redis, canonical consent/restore PostgreSQL, typecheck and diff checks passed. Full lint retains exactly one unchanged, unrelated Support-route error; the task-owned unused fixture binding was corrected. No task is accepted or promoted by this executor.
+
+### Correction checklist and files
+
+1. **M03 paired evidence — implemented.** `scripts/test-arch046-woo-consent-postgres.mjs` clones the same canonically migrated empty database for baseline and candidate, and runs identical test-local instrumentation from `tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts`. The baseline runs in a temporary archive, never the shared checkout. Fixed the baseline GET row-lock expectation, observed database-client calls/callback attempts, full target/evidence snapshots, affected-row assertions and new-event linkage. Post-operation assertions are outside the timing window. The only source edit after the paired run removes an unused local fixture binding without changing execution.
+2. **B04 credential rotation — implemented.** The preserved `tests/integration/woocommerce/recovery-restore/arch055-revalidation.postgres.test.ts` scenario commits credential rotation through a separate Prisma connection during awaited offer resolution. It asserts initially eligible version 1, offer resolution reached, version 2 committed, and final null restoration for the original principal. Completion, generation and lifetime scenarios also passed. No restore runtime change was required in Attempt 3.
+3. **Interrupted attempt recovery — implemented.** Preserved the prior report and three stranded implementation files in checkpoint `7548d52`. Architect recovery `39037ba1d01ae9107382a7ad155e032001aba525` returned Attempt 2 to Ready; the normal launcher then claimed Attempt 3. The clean nested Database checkout was restored to the implementation branch's exact recorded gitlink before successful preparation. No history was discarded or rewritten.
+
+### Measurement provenance and method
+
+- Existing command: `ARCH055_M03_COMPARE_BASELINE=1 npm run test:arch046-woo-consent:postgres`.
+- Baseline: `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`; Attempt 3 prepared implementation HEAD: `447b9ea78267508992f84668d07284556bc18a08`; final candidate: `7d0aa37d821ac6187e8c8587c02f8c10fb3cd3e5`.
+- Node `24.19.0`, npm `11.17.0`, Prisma Client `6.19.3`; PostgreSQL 17 + `pgvector/pgvector:pg17`.
+- Database pin: `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. All 71 canonical migrations deployed. Sorted manifest of relative migration paths plus each file's SHA-256 has aggregate SHA-256 `78229b296aeea5037bd3efa6476eeb1e305ca93f31bfae523b9835fe28032db8`. No migration/schema bytes changed.
+- Three separate profiles per version; two discarded warm-ups and five recorded executions each: 42 raw executions and six summaries. One operation at a time, reused warmed client per version, fixture setup and verification outside measured windows; injectable business clock `2026-11-02T12:00:00.000Z`.
+- Equivalent independent databases are cloned from one migrated empty template. Each execution gets a fresh isolated fixture outside the measurement window, with the same stable fixture IDs and population order in each version; this preserves append-only evidence instead of deleting it. Production-generated UUID evidence identities and DB-generated timestamps are not forced equal across versions. Each version must preserve its own full phone/evidence snapshots on no-op operations.
+- Raw normalized SQL/transaction control, returned rows, raw affected-row counts, net target-row changes, operation/transaction duration and observed callback retry counts are retained in [the task-owned evidence artifact](evidence/API-002-attempt-3-m03.jsonl). Database calls count transaction entry plus observed raw query/execute calls, separately from one service invocation. Transaction duration includes acquisition and callback bookkeeping; it is not pure pool wait.
+- External-port invocations, wire bytes, driver-internal retries and trigger-internal work are not runtime-measured. Selected service constructors/imports expose no provider/Redis/R2 ports; this is static evidence, not an invented measured zero. Timings include instrumentation overhead and local scheduling variability; no production percentile/capacity or latency-percentage claim is made.
+
+### Paired SQL and state results
+
+Counts below held for every recorded sample. SQL includes BEGIN, isolation SET and COMMIT; each sample observed one committed transaction, no rollback and zero callback re-entry retries.
+
+| Profile | Logical DB calls baseline→candidate | SQL statements baseline→candidate | Advisory locks baseline→candidate | FOR UPDATE baseline→candidate | Affected target rows |
+|---|---:|---:|---:|---:|---:|
+| Exact consent replay after REVOKE/STOP | 5→4 | 7→6 | 2→1 | 0→0 | 0→0 |
+| New event, same recipient | 8→8 | 10→10 | 2→2 | 1→1 | 2→2 |
+| Recovery-selection GET | 5→4 | 7→6 | 1→0 | 1→0 | 0→0 |
+
+Replay returns the original acknowledgement and preserves every current phone field/timestamp and immutable evidence row after later REVOKE and persisted CUSTOMER_STOP. GET preserves every target/evidence field. New REVOKE increments revision/sequence, preserves no-contact fields, links the new evidence to the same phone, and reports raw affected counts `[1,1]` for current-state update/evidence insertion. Mutation coordination remains intact.
+
+### Descriptive duration samples
+
+All values are milliseconds, shown as min/median/max over five recorded executions; raw warm-ups and samples remain in the artifact.
+
+| Version | Profile | Operation ms | Transaction ms |
+|---|---|---:|---:|
+| baseline | duplicate-replay | 98.55/183.03/573.36 | 98.24/182.82/573.12 |
+| baseline | new-event-same-recipient | 40.58/156.42/332.41 | 40.37/156.22/332.21 |
+| baseline | selection-get | 29.26/74.21/491.47 | 29.23/74.18/491.44 |
+| candidate | duplicate-replay | 34.46/109.22/128.85 | 34.22/109/128.46 |
+| candidate | new-event-same-recipient | 42.56/81.02/507.02 | 42.31/80.8/506.82 |
+| candidate | selection-get | 22.53/43.93/373.77 | 22.5/43.9/373.74 |
+
+### Validation and regression matrix
+
+- `npm run test:arch035-woo-activity:unit`: **25/25 passed**. Authentication/database, Redis readiness/publication and retained-job failures preserve bounded original diagnostic causes.
+- `npm run test:arch035-woo-activity:redis`: final isolated run **2/2 passed**; authenticated HTTP acceptance, tenant isolation, retained dedupe/conflict and closed-port failure covered. An earlier run failed its initial publish with HTTP 503 versus 202; this is recorded, not hidden. The focused rerun passed without source/timeout changes.
+- `npm run test:arch046-woo-consent:unit`: **6/6 passed**.
+- `npm run test:arch046-woo-selection:unit`: **3/3 passed**.
+- `npm run test:arch046-woo-consent:postgres`: **13 passed, 1 opt-in M03 test skipped** in the normal suite, all 71 canonical migrations deployed. M03 separately passed baseline and candidate. Real-connection schedules cover replay/held recipient locks, competing GRANT/REVOKE, in-flight STOP, reconnect credential rotation, stale selection and rollback on evidence-insert failure.
+- `npm run test:arch053-recovery-restore:postgres`: **2/2 passed**, all 71 canonical migrations deployed; B04 completion/generation/lifetime/credential-rotation checks reject stale restoration after offer resolution.
+- `npm run typecheck`: **passed** after canonical Prisma generation.
+- `git diff --check`: **passed**, including final fixture-binding correction.
+- `npm run lint`: final run reports only unchanged `src/merchant/support/routes.ts:75:17`, `no-empty`. This file is byte-identical to pinned baseline `fa2a857`; task paths have no remaining lint finding. No matching baseline ID was found in the development-baseline registry; historical Attempt 1 records the same issue.
+- Initial bulk-shell container startup failures came from that non-login shell not resolving Docker. Corrected the validation invocation to the normal login shell; no product/configuration change or weakened test was used.
+- B01/B02/B03/B04 are covered by the corresponding passed local suites. API-local STOP/REVOKE regressions use real-equivalent persisted STOP and preserve existing Shop coordination. Actual Background runtime integration is explicitly assigned to terminal SYSTEM-TEST-001; it was not executed here and no integrated pass is claimed.
+
+### Git / VCS and cleanup
+
+Task branch: `task/ARCH-055-API-002` in both repositories.
+
+- Canonical root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent dedicated worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-002`.
+- Implementation dedicated worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-002`.
+- Prepared dependency gate passed; reused correct dedicated worktrees; both remote task branches required no fast-forward and both already incorporated origin/main. Recursive submodule sync/update passed and recorded Database pin above was ready.
+- Durable Codex Attempt 3 claim: `45cc5e9457b3f81da9db0e7141bbde028b50d1f3`, pushed. Shared workspace/implementation checkout was not switched for task work; no other task worktree reused.
+- Final implementation commit: `7d0aa37d821ac6187e8c8587c02f8c10fb3cd3e5`, pushed to `origin/task/ARCH-055-API-002`; worktree clean.
+- Parent submission consists only of this task file and the architect-authorized evidence artifact. Parent submission commit is the commit containing this report; claim/recovery provenance is above. Publish on `origin/task/ARCH-055-API-002`; no implementation submodule gitlink staged.
+- Successful disposable PostgreSQL/Redis runners exited after cleanup; the baseline temporary archive and comparison databases/container were removed by runner finally blocks. Unrelated pre-existing containers were left untouched.
+- No force push, implementation/workspace main merge or main push. No enabled task started or promoted.
+
+### Remaining limits
+
+The unchanged Support lint finding is outside this task's edit map. Actual Background terminal integration remains SYSTEM-TEST-001's responsibility. No task-owned correctness or paired-measurement requirement remains knowingly incomplete; await architect review.
+
 ## Architect Review
 
 ### Decision — Changes Requested, Attempt 1, 3 November 2026
@@ -309,3 +392,8 @@ The reported terminal loss and explicit remaining-work handoff establish an inte
 The route-only launcher confirms the canonical primary root, dedicated parent/implementation paths and mirrored `task/ARCH-055-API-002` branch already recorded above. Route-only output is topology evidence, not a prepared execution packet or a claim. Start new implementation only after successful normal `--prepare`.
 
 The Attempt 1 Findings remain the correction contract: finish the paired M03 baseline/candidate evidence and verify B04 credential rotation with the canonical migrated runner. The stranded diff adds candidate/baseline measurement scaffolding, TCP readiness/password fixes, and a credential-rotation scenario, but no new executable validation was performed by this recovery. Re-run the required changed-runner checks, retain actual raw samples and descriptive summaries, and reconcile Work Items/Acceptance Criteria/Validation honestly before review. Candidate-only assertions cannot satisfy paired evidence. API-009 and SYSTEM-TEST-001 remain pending; no architecture scope, dependency or implementation contract changes are authorized.
+
+
+### Evidence-retention amendment — Attempt 3, 3 November 2026
+
+Authorize the single task-local parent JSONL artifact named in Scope to retain paired M03 raw samples and summaries durably without duplicating approximately 100 KB inside the Completion Report. This narrowly supersedes prior no-new-files wording only for that parent evidence artifact; implementation/test paths and runtime scope remain unchanged. The executor may publish it with the current task report on parent `task/ARCH-055-API-002`. Preserve actual observed results and explicit missing-visibility labels; this amendment neither accepts the implementation nor promotes downstream tasks.
