@@ -9,17 +9,17 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-11-02T21:41:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: 2026-11-02
+updated: 2026-11-03
 ---
 
 # ARCH-055-API-003: Consolidate merchant settings and category projections
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 3. Small acceptance clarification over revision 2; execution metadata, dependencies and migration scope are unchanged.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `ready` solely from the dependency graph below.
+**Definition state:** materialised in the dedicated matching parent and implementation task worktrees. Attempt 1 was implemented and published; architect review on 2026-11-03 returns Changes Requested and `ready`, with the claim cleared. The next launcher claim owns Attempt 2.
 
 ## Objective
 
@@ -220,7 +220,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Blocked: implementation committed and pushed, but required final executable validation is incomplete.
+Attempt 1 submission: blocked, with implementation committed and pushed but required final executable validation incomplete. Architect disposition on 2026-11-03: Changes Requested; returned to `ready` with the claim cleared. The submitted evidence below is retained as history; the Architect Review records independently observed results.
 
 ### Files Changed
 
@@ -281,24 +281,29 @@ None identified. Optional changed-row batching, store-context no-op suppression 
 
 ### Review Status
 
-Pending.
+**Changes Requested — Attempt 1, 2026-11-03.** Not accepted. Return to `ready`, preserve Attempt 1 and clear `executor`/`claimed_at` so the launcher can prepare the correction attempt.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+1. **P2 — Repair canonical migration-backed fixtures and cleanup.** Independent `node scripts/test-arch055-merchant-settings-postgres.mjs` applied all 68 migrations but finished with **1 passed, 7 failed**. Bootstrap/category fixtures use bare UUID slugs/keys that can violate `CommercePromptTemplateCategory_slug_check` / `CommercePromptTemplate_key_check`. Store-context's revocation fixture sets `revokedAt` on an ACTIVE installation, violating `WooCommerceInstallation_status_revoked_at_check`. The new coherent-read test's finally block deletes protected prompt revisions (`arch055-coherent-read.postgres.test.ts:184`), raising `ARCH021 agent prompt revisions cannot be deleted` and masking its original failure. Adapt the task-owned fixtures and teardown to canonical constraints without weakening migrations or triggers; preserve the primary failure if cleanup also fails. These fixtures are this task's explicit migration-runner responsibility, not an unrelated baseline waiver.
+2. **P2 — Correct the C01 publication/read barrier order.** In `arch055-coherent-read.postgres.test.ts:93`, category B is fully committed before `read.read()` starts at line 114. The gate at lines 115–116 performs no concurrent publication, yet line 118 expects category A. RepeatableRead cannot return pre-transaction state in that schedule. Start the read while A is current, pause after its snapshot is established, commit B through an independent transaction, release the read and assert coherent A; a fresh read must return coherent B. Keep independent query-count cases separate if needed and reach the later pending-draft rollback assertions.
+3. **P2 — Supply required M04/M05 paired evidence and completed validation.** The submission has test assertions but no executed baseline/candidate comparison for the fixed profiles in `docs/architecture/ARCH-055/task-definition-contract.md:69–70`. Capture the task-start SHA and candidate SHA, matching schema/fixtures, two warm-ups and five restored-fixture samples per version/variant, actual SQL/transaction shapes, returned/affected rows, timings, retries and external-port counts. Retaining batching/context no-op behavior and prompt text is allowed; it does not waive required measurements. Record successful remaining PostgreSQL runners including C03a–c, and verify any claimed unit/lint baseline failures with attributable results.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+Reviewed the `fa2a857..e20ceccafeade2c53bdb5ec5942b65a9ccffcc43` implementation diff: category read/publication, feature preference selections/timing/routes, recovery policy and AI-delay projections, recovery summary join, changed unit/integration tests and PostgreSQL runner registration. Reviewed the canonical definition, frozen evidence protocol and Completion Report at parent `d1992a5da6b3ac093b5ca519fb7be1a2a1809efe`. Both published task refs matched their local heads before this overlay; implementation was clean.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+- Independent **PASS**: `npm run typecheck`, including Prisma Client 6.19.3 generation and TypeScript compilation, exit 0 with Node 24.19.0. This resolves the submission's missing final compiler result for the reviewed candidate.
+- Independent **FAIL**: canonical merchant-settings PostgreSQL runner, **8 tests: 1 passed, 7 failed, 0 skipped**, after all 68 migrations applied. The runner reported failure during its test phase. The uniquely named disposable container was removed; a subsequent Docker inventory contained no matching settings-runner containers.
+- Independent **PASS**: `git diff --check fa2a857..HEAD`.
+- Independent required unit matrix: **87 tests, 85 passed, 2 failed**, matching the reported Store Context route logger assertions. Store Context runtime and unit-test files are unchanged from `fa2a857`; a separate baseline execution was not performed, so this is not a claimed verified baseline pass. Submitted focused unit results and documented lint failure were reviewed. The other three required PostgreSQL runners have no recorded passing result and were not independently rerun after the concrete settings-suite failures were established.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+Source inspection supports the chosen read-only RepeatableRead category boundary, conditional pending-draft update, genuinely-new-lineage shortcut, preserved feature fingerprint inputs/sequential upserts, separate initial/final timing names, narrowed policy/AI-delay reads and tenant-bound summary join. Acceptance is withheld for the concrete validation defects and missing evidence above. No schema, product-policy or discretionary optimisation change is requested.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Correct the three findings on the same implementation branch, run the required validation and attach observed evidence to this report before resubmission. Keep historical submission limitations distinguishable from new results. `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` remain `pending`; API-003 is not complete, so no downstream promotion is justified. No implementation changes, implementation commits/pushes, gitlink changes or main merges were made during this review.
