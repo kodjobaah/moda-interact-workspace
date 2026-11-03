@@ -9,17 +9,17 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 25
-executor: copilot
-claimed_at: 2026-11-02T21:41:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: 2026-11-02
+updated: 2026-11-03
 ---
 
 # ARCH-055-API-002: Streamline consent and recovery ingress without weakening STOP
@@ -33,76 +33,32 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 **Definition state:** materialised and claimed. The launcher prepared the dedicated parent and implementation worktrees, passed the dependency gate, and recorded Attempt 1 for executor `copilot`.
 
 ## Objective
+
 Keep the recovery-ingress safety boundary intact while separating duplicate/read-only work from mutation locking and retaining original database/queue errors.
-Blocked. The required unit, Redis, consent PostgreSQL, restore PostgreSQL and typecheck validations now pass. Lint reports one unrelated existing `no-empty` error in `src/merchant/support/routes.ts:75`. The mandatory M03 paired baseline/candidate SQL and affected-row measurements have not been captured, so this is not Ready for Review.
 
 ## Context
-Source: the 1 November 2026 workspace snapshot and the 2 November 2026 completed database review. Covered endpoint entries: `E03`, `E04`, `E05`, `E06`, `E08`. Consult `docs/architecture/ARCH-055/review-ledger.md` for the original evidence; `docs/architecture/ARCH-055/endpoint-task-map.csv` fixes the primary owner of every route. New architectural choices are explicitly frozen in the parent's ADR sections; they are not retrospectively claimed as facts from the review.
-### Files Changed
 
-- `src/woocommerce/activity/routes.ts`
-- `src/woocommerce/activity/redis-producer.ts`
-- `src/woocommerce/consent/service.ts`
-- `src/woocommerce/recovery-selection/service.ts`
-- `src/woocommerce/recovery-restore/routes.ts`
-- `scripts/test-arch046-woo-consent-postgres.mjs`
-- `scripts/test-arch053-recovery-restore-postgres.mjs`
-- `tests/unit/woocommerce/activity/routes.test.ts`
-- `tests/integration/woocommerce/consent/races.postgres.test.ts`
-- `tests/integration/woocommerce/consent/arch055-duplicate-and-selection.postgres.test.ts`
-- `tests/integration/woocommerce/recovery-restore/service.postgres.test.ts`
-- `tests/integration/woocommerce/recovery-restore/arch055-revalidation.postgres.test.ts`
+Source: the 1 November 2026 workspace snapshot and the 2 November 2026 completed database review. Covered endpoint entries: `E03`, `E04`, `E05`, `E06`, `E08`. Consult `docs/architecture/ARCH-055/review-ledger.md` for the original evidence; `docs/architecture/ARCH-055/endpoint-task-map.csv` fixes the primary owner of every route. New architectural choices are explicitly frozen in the parent's ADR sections; they are not retrospectively claimed as facts from the review.
 
 ## Scope
-One owning repository: `moda-interact-api`. Paths below are relative to that repository. Directory entries are bounded to this task's requirements, not authority for unrelated refactoring.
-### Work Completed
 
-- Consent event handling now checks immutable evidence after event-key coordination and before the recipient advisory lock; exact replay returns the prior acknowledgement without restoring later REVOKE/STOP state. New evidence still takes recipient coordination.
-- Recovery-selection GET avoids recipient advisory and row-level write locks; mutation retains the existing locking path.
-- Activity failures distinguish authentication/database and Redis connection/publication stages. Bounded diagnostics retain safe error code/cause details and redact connection URLs; Redis error events are attached as causes to readiness failures. Queue acceptance and retained-job verification were not intentionally changed.
-- Restore diagnostics preserve bounded safe Prisma/SQL identifiers and causes. The restore runner deploys canonical migrations in its disposable database, and its fixture uses canonical schema fields/constraints.
-- Added the exact named consent/selection PostgreSQL regression file and registered it in the consent runner. Added the named restore revalidation test to the restore runner.
+One owning repository: `moda-interact-api`. Paths below are relative to that repository. Directory entries are bounded to this task's requirements, not authority for unrelated refactoring.
 
 - `src/woocommerce/activity/`
+- `src/woocommerce/consent/`
 - `src/woocommerce/recovery-selection/`
-### Validation Results
-
-- `npm run test:arch035-woo-activity:unit`: passed, 25/25 tests.
-- `npm run test:arch035-woo-activity:redis`: passed, 2/2 disposable Redis/BullMQ tests, including transport failure not returning HTTP 202. The runner reported successful disposable Redis validation and cleanup.
-- `npm run test:arch046-woo-consent:unit`: passed, 6/6 tests.
-- `npm run test:arch046-woo-selection:unit`: passed, 3/3 tests.
-- `npm run test:arch046-woo-consent:postgres`: all 68 canonical migrations applied and all 13 PostgreSQL tests passed, including duplicate replay before recipient lock, GET through a held phone-row lock, concurrent GRANT/REVOKE and STOP, credential rotation, rollback, and tenant isolation. Runner cleanup completed. An earlier transient P1001 was resolved by retry.
-- `npm run test:arch053-recovery-restore:postgres`: all 68 canonical migrations applied and both tests passed (2/2), including completion, generation, and lifetime changes between the two eligibility reads. Runner cleanup completed.
-- `npm run typecheck`: passed after Prisma Client generation.
-- `npm run lint`: one unrelated existing failure remains at `src/merchant/support/routes.ts:75` (`no-empty`). The task-local unused parameter/binding findings are fixed; no out-of-scope lint change was made.
-- `git diff --check`: passed. The task correction commit is `a96bc83d0fd4715d73f575858a5b684d2d489552`, published to `origin/task/ARCH-055-API-002`; implementation worktree is clean.
-- Docker engine reachability was verified with the configured `docker` CLI (`colima`; Docker Engine 29.7.2). PostgreSQL and Redis runners reported cleanup on completed runs.
-- M03 baseline/candidate SQL, affected-row, timing, retry and invocation measurements were not captured. Existing consent-runner counters are explicitly labeled for ARCH-046-API-007 and do not measure M03's duplicate replay, new event, or recovery-selection GET profiles. No measurements are inferred from unrelated counters. The task-start baseline SHA is `fa2a857`; however, the required paired runs using identical restored fixtures, two discarded warm-ups and five recorded samples per version were not executed.
-- No production p95 or capacity inference is made.
 - `src/woocommerce/recovery-restore/`
 - `tests/unit/woocommerce/activity/`
+- `tests/unit/woocommerce/consent/`
 - `tests/unit/woocommerce/recovery-selection/`
-### Worktree and Git Evidence
-
-- Prepared launcher packet accepted: task `ARCH-055-API-002`, executor `copilot`, attempt 1, status `in_progress`, dependency gate passed.
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-002`, branch `task/ARCH-055-API-002`. Launcher claim commit: `6e3b37698b72f31f747b4f33d21de952b28341fc`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-002`, branch `task/ARCH-055-API-002`, final implementation HEAD `a96bc83d0fd4715d73f575858a5b684d2d489552`, clean and published to `origin/task/ARCH-055-API-002`. The task includes implementation commit `903be9f4baf0fdecf56d5acc13db28ab051bd63d` and fixture/type correction commit `a96bc83d0fd4715d73f575858a5b684d2d489552`.
-- Prepared Database submodule pin: `7c377282aa5819b3008b7d7f3018f44f4161523e`; no schema/migration edits made.
-- The implementation branch contains the original implementation commit `903be9f` plus correction commit `a96bc83`; both are published on the task branch. This parent report update is limited to the current task file. No main merge/push was performed.
 - `tests/unit/woocommerce/recovery-restore/`
 - `tests/integration/woocommerce/consent/`
+- `tests/integration/woocommerce/recovery-restore/`
 - `scripts/test-arch046-woo-consent-postgres.mjs`
-### Deviations
-
-- No schema or public contract changes were made. Fixture corrections supply canonical required timestamps, cast bound enum parameters, and mutate the existing recovery row for the generation race because canonical uniqueness prevents inserting another row for the same Shop/checkout token. Task lifecycle remains `blocked` because required M03 paired measurements are unavailable; the unrelated lint finding is recorded separately.
 - `scripts/test-arch053-recovery-restore-postgres.mjs`
 - `src/merchant/support/installation.ts [read-only dependency; ARCH-055-API-008 owns changes]`
-### Exact edit map — definition revision 2
-### Unresolved Issues
 
-- M03 paired before/after SQL and affected-row measurements remain outstanding; existing consent benchmark counters cover a different task/profile and cannot stand in for M03 evidence. Capture the required success-path profiles using the same restored fixtures, baseline `fa2a857` and candidate `a96bc83`, including actual SQL shapes, affected rows, two warm-ups and five recorded samples per version.
-- Full lint still reports the unrelated existing `src/merchant/support/routes.ts:75` `no-empty` finding. It was left unchanged because it is outside this task's edit map.
-- All listed unit, Redis, consent PostgreSQL, restore PostgreSQL, typecheck and diff-check validations passed. Keep the task blocked until M03 evidence is captured and reviewed; no production p95 or capacity claim is made.
+### Exact edit map — definition revision 2
 
 Paths are relative to the owning implementation repository. These steps are mandatory; they do not authorise schema/migration changes outside DATABASE-001. Existing broad directory entries above are bounded by these named operations and the checked-in deterministic-execution-map.json. Preserve every unrelated field, public DTO, predicate and script registration.
 
@@ -226,7 +182,7 @@ The existing source tests and the report are not a substitute for executing the 
 
 Implement in coherent internal commits/work packages (correctness first, bounded queries second, tests with each change). This reduces task count without creating one unreviewable all-API patch. Preserve ordinary task ownership; the architect reviews the completed unit.
 
-## Completion Report
+## Completion Report — submitted Attempt 1
 
 ### Status
 
@@ -296,26 +252,23 @@ Report ownership, schema, contract, external dependency, new index/infrastructur
 
 ## Architect Review
 
-### Review Status
+### Decision — Changes Requested, Attempt 1, 3 November 2026
 
-Pending.
+Not accepted. Return to Ready for the next normal claim, preserving Attempt 1 and clearing executor/claimed_at. Missing task-owned evidence is actionable rework, not an unresolved architecture or infrastructure dependency. No downstream promotion. The submitted blocked report above is historical; this decision supersedes its lifecycle instructions.
 
-### Review Notes
+### Findings
 
-Implementation report updated after validation; architect review is pending. Task remains blocked pending M03 paired measurement evidence.
+1. **P2 — M03 mandatory paired measurements remain missing.** Passing correctness tests and pre-existing ARCH-046 counters do not establish the required before/after SQL and affected-row result. Use the existing named consent integration file/runner; no new production telemetry or benchmark framework is required. Compare prepared baseline `fa2a857` with candidate `a96bc83d0fd4715d73f575858a5b684d2d489552` (or the final correction SHA) against identical disposable canonical schema and restored fixtures. Measure separately: exact committed consent replay, new event for the same recipient, and recovery-selection GET. Apply the fixed comparison procedure in `docs/architecture/ARCH-055/task-definition-contract.md`: two discarded warm-ups and five recorded samples per version/profile; fixture restoration outside each measured window; warmed client; normalized emitted SQL plus transaction-control statements, client calls, returned/affected rows, timings, retries and external invocations. Prove replay removes the recipient-lock statement without changing permission/STOP, new events retain atomic coordination/evidence, and GET omits recipient advisory/FOR UPDATE. Preserve raw samples and descriptive min/median/max; no production percentile claim. Instrument both versions identically in isolated review/test checkouts; never rewrite baseline history or run baseline tests in the shared checkout. If actual incompatibility occurs, record the exact failing baseline invocation instead of inferring a numeric comparison.
+2. **P2 — B04 installation-rotation interleaving is not covered.** `tests/integration/woocommerce/recovery-restore/arch055-revalidation.postgres.test.ts` mutates completion, recovery generation and lifetime, but never rotates the installation between the two reads. Existing restore fixtures have initial credential versions; consent's reconnect test exercises a different operation. Add a scenario to the existing restore file where the first read succeeds, a separate connection commits installation credential rotation during offer resolution, and the second read rejects restoration for the original principal. Keep canonical constraints and prove offer resolution was reached, so an initially ineligible fixture cannot give a false pass.
 
-### Reviewed Files
+### Review and validation
 
-Implementation commits `903be9f` and `a96bc83` are submitted on the task branch for review when the measurement gate is satisfied.
+- Inspected implementation changes from prepared baseline `fa2a857` through `a96bc83`: consent replay checks immutable evidence after event coordination and before recipient coordination; only selection GET drops recipient advisory/FOR UPDATE; mutation retains locking; both restore eligibility reads remain. Queue retained-job verification remains unchanged. No additional runtime correctness finding established in this review.
+- Independently ran activity unit **25/25**, consent unit **6/6**, and selection unit **3/3**; `git diff --check` passed.
+- Supplied Redis **2/2**, consent PostgreSQL **13/13**, restore PostgreSQL **2/2**, and typecheck results are recorded as executor evidence; not independently rerun for this review. The unrelated existing support-route lint error is not the reason for Changes Requested.
+- No M03 measurements were captured by this review. Do not infer them from source or test counts.
+- Canonical task route/worktrees inspected; no implementation changes, consumer pins, production operations or main merge performed.
 
-### Validation Reviewed
+### Task-definition reconciliation and next step
 
-Unit, Redis, canonical consent/restore PostgreSQL, typecheck and diff-check results are recorded above; M03 paired measurements remain outstanding.
-
-### Architecture Conformance
-
-To be assessed against ARCH-055 and this task's frozen contract.
-
-### Follow-up
-
-Only the authorised review may accept this task and promote dependants.
+Removed duplicated Completion Report material that had been interleaved into Objective/Context/Scope, restoring the original authorized scope lists and deterministic edit map from the claim revision. Retained the submitted Completion Report and its validation limitations as history. No new files, production behavior or wider scope is authorized or needed. Capture M03 and B04 in the existing allowed test paths, reconcile the Work Items/Acceptance Criteria, and submit the next attempt on the same branch pair. API-009 and SYSTEM-TEST-001 remain gated on acceptance.
