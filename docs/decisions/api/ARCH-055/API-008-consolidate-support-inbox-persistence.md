@@ -9,17 +9,17 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 35
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on: []
 enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: '2026-11-02'
+updated: 2026-11-03
 ---
 
 # ARCH-055-API-008: Consolidate Support-inbox persistence
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `ready` solely from the dependency graph below.
+**Definition state:** materialised. Attempt 1 has completed implementation and was returned to Ready by architect review for the required query-plan evidence; the attempt remains 1 and the claim is cleared.
 
 ## Objective
 
@@ -101,10 +101,10 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Implement coherent list/count projection and unique translation lookup.
-- [ ] Combine thread bookkeeping writes and add rollback plus concurrent Admin reply fixtures.
-- [ ] Log queue-emitted connection failures without changing durable repair semantics.
-- [ ] Add coordinated mark-read race tests; measure rather than automatically switch query order.
+- [x] Implement coherent list/count projection and unique translation lookup.
+- [x] Combine thread bookkeeping writes and add rollback plus concurrent Admin reply fixtures.
+- [x] Log queue-emitted connection failures without changing durable repair semantics.
+- [x] Add coordinated mark-read race tests; measure rather than automatically switch query order.
 
 ## Interfaces / Contracts
 
@@ -123,13 +123,13 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 ## Acceptance Criteria
 
-- [ ] Message readAt and unread count are consistent under a controlled mark-read interleaving.
-- [ ] New composition saves one thread write while replay still performs no writes.
-- [ ] A queue outage leaves a durable pending translation that the existing reconciler can repair.
-- [ ] Concurrent read markers return the same winning timestamp; foreign/unavailable messages remain ineligible.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
-- [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
+- [x] Message readAt and unread count are consistent under a controlled mark-read interleaving.
+- [x] New composition saves one thread write while replay still performs no writes.
+- [x] A queue outage leaves a durable pending translation that the existing reconciler can repair; the persisted PENDING row remains eligible for its existing repair scan.
+- [x] Concurrent read markers return the same winning timestamp; foreign/unavailable messages remain ineligible.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
 
@@ -149,13 +149,13 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npm run test:arch035-woo-support:unit`
-- [ ] `npm run test:arch035-woo-support:postgres`
-- [ ] `npm run test:arch046-woo-selection:unit`
-- [ ] `npm run typecheck`
-- [ ] `git diff --check`
-- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
-- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+- [x] `npm run test:arch035-woo-support:unit` — 15 tests passed.
+- [x] `npm run test:arch035-woo-support:postgres` — candidate M16 and existing Support integration passed on final source; 68 canonical migrations applied to disposable PostgreSQL 17 + pgvector.
+- [x] `npm run test:arch046-woo-selection:unit` — 3 tests passed.
+- [x] `npm run typecheck` — Prisma Client generation and TypeScript check completed without diagnostics.
+- [x] `git diff --check` — passed.
+- [x] `npm run lint` was run; it reports one unchanged baseline issue in `src/merchant/support/routes.ts:75` (`no-empty`). No unrelated file was changed.
+- [x] Before/after SQL, client-call, affected-row, sample timing, and deterministic concurrency/rollback/replay evidence is recorded below.
 
 ## Stop Condition
 
@@ -171,27 +171,67 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Accepted and Complete — Attempt 2. The evidence-only query-plan correction requested by architect review is recorded; implementation source is unchanged from Attempt 1.
+
+**Architect review correction disposition — implemented:** Added same-fixture baseline/candidate first-page and empty-page plan evidence below. No implementation or test file changes are included in Attempt 2. Focused PostgreSQL validation passed 2/2 after plan capture.
 
 ### Files Changed
 
-None.
+Changed in `moda-interact-api`:
+
+- `src/merchant/support/read.service.ts`
+- `src/merchant/support/commands.service.ts`
+- `src/merchant/support/translation-queue.ts`
+- `src/index.ts` (inject the Shared logger into the translation dispatcher)
+- `tests/unit/merchant/support/translation-queue.test.ts`
+- `tests/integration/merchant/support/arch055-snapshot-and-thread.postgres.test.ts`
+- `tests/integration/merchant/support/service.postgres.test.ts`
+- `scripts/test-arch035-woo-support-postgres.mjs`
 
 ### Work Completed
 
-None. Task definition only.
+Implemented one parameterized page/count/unread statement with an empty-page aggregate and the unique AVAILABLE translation join. Compose now advances the thread metadata and version in its initial UPSERT, then inserts the message and optional PENDING translation in the same Read Committed transaction. Matching replay remains read-only. Mark-read keeps the conditional update and winner reread. Queue error events and enqueue failures log bounded, redacted original messages, codes and causes through the Shared logger; dispatch remains post-commit.
+
+The captured baseline page SQL consisted of the bounded ascending message SELECT with its AVAILABLE translation LATERAL lookup, followed by the visible/unread COUNT SELECT. Candidate SQL is one `WITH scoped AS MATERIALIZED (...)`, with `aggregate` and `page` CTEs and a `LEFT JOIN support.MerchantMessageTranslation` on `(messageId,targetLanguageTag)` plus `status='AVAILABLE'`; `aggregate LEFT JOIN page` retains counts for an empty page. Baseline compose emitted the thread INSERT/`ON CONFLICT ... UPDATE updatedAt RETURNING id`, the message INSERT, then a thread UPDATE of last-message timestamps, version and `needsAdminResponse`. Candidate emitted one thread UPSERT that sets those fields and increments the existing version, followed by the same message INSERT and optional translation INSERT. The test captured normalized emitted statement text without parameters, and transaction-control statements separately.
+
+H01 forces a commit between the returned Support data statement and response mapping; the candidate page/readAt and unread count remain from one snapshot. H02 checks pending translation body suppression and a foreign recovery link. H03 injects a message insert failure after the thread upsert and races an Admin-shaped message/version write against compose; rollback and final version assertions pass. H04 checks an emitted Queue error with credential-bearing message/cause and verifies redaction; the existing integration test verifies an enqueue rejection leaves its PENDING translation committed with no current batch and no retry deadline, which matches the existing reconciler's due-PENDING eligibility. It does not run the Background worker or a real Redis dispatcher end-to-end. H05 uses a held row lock and PostgreSQL activity barrier while two mark-read calls race, then verifies the winner timestamp and replay stability.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+**Environment and fixture:** Node `24.19.0`; Prisma `6.19.3`; `pgvector/pgvector:pg17` (PostgreSQL `17.11`); canonical 68-migration schema from Database pin `7c377282aa5819b3008b7d7f3018f44f4161523e`. The test uses one thread with 105 visible messages, fixed `2026-11-02T12:00:00.000Z` fixture timestamps, current-language AVAILABLE translations, 21 pre-read rows and 84 unread. It also tests an empty page, translated and untranslated compose, replay, H01–H05, and cleans its Shops; the runner removed the disposable database container.
+
+**Candidate validation:** `npm run test:arch035-woo-support:unit` passed 15/15; `npm run test:arch035-woo-support:postgres` passed 2/2 (M16 and existing Support integration) on the final candidate in Attempt 1 and passed 2/2 again in Attempt 2 while capturing plans; `npm run test:arch046-woo-selection:unit` passed 3/3; `npm run typecheck` completed without diagnostics; `git diff --check` passed. `npm run lint` reports only the pre-existing empty block at unchanged `src/merchant/support/routes.ts:75`. Attempt 2 made no committed source or test changes; temporary plan-capture instrumentation was removed after collection.
+
+**M16 comparison protocol:** Baseline source is task-start SHA `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`; candidate source commit is `0b208f9` (the final repair-eligibility test assertion is in `28c9c52`). Each profile used the same disposable canonical migrations and fixture, two discarded warmups, then five measured service calls with the fixture reset outside the timing window. Client-call counts include the existing principal checks and transaction control. SQL event durations are summed per sample and are distinct from service elapsed time. Result rows and persisted thread/message state were verified after the measured boundary. Queue dispatch was a deterministic in-process port; network bytes, pool wait and trigger-internal work were not measured. Five samples are descriptive only, and the noisy timings do not support a production latency claim.
+
+**Attempt 2 query-plan comparison:** Captured actual baseline page and count SQL and the emitted candidate statement with `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` on the same disposable PostgreSQL `17.11` + pgvector database and unchanged M16 fixture (105 visible messages, 105 AVAILABLE translations, 21 already read, 84 unread). After fixture insertion, `ANALYZE` refreshed statistics on `MerchantSupportMessage`, `MerchantSupportThread`, `MerchantMessageTranslation` and `CheckoutRecovery` before any measured plan. Baseline first-page and empty-page each execute the page SELECT plus count SELECT; candidate executes one statement in each profile. The temporary diagnostic instrumentation was removed after capture; no source/test change is part of Attempt 2.
+
+| Profile | Baseline emitted plan | Candidate emitted plan | Shared buffers and actual rows |
+|---|---|---|---|
+| First page (50) | Page: `Limit -> Sort -> Nested Loop`, 105 visible message rows; the lateral AVAILABLE-translation subplan scanned 105 translation rows once for each of 105 messages. Separate count: `Aggregate` over 105 messages. | One statement with the materialized scoped CTE, aggregate/page branches, and direct `(messageId,targetLanguageTag)` AVAILABLE join. The page branch returned 50 rows and the aggregate branch one row. | Baseline page+count: 323 shared hits, 0 reads, 0 temp blocks. Candidate: 8 shared hits, 0 reads, 0 temp blocks. |
+| Empty page (offset 150) | Page still sorted/scanned 105 visible messages and ran the lateral translation subplan 105 times, then returned 0 rows. Separate count returned one row. | One statement scanned the scoped set for its aggregate and page branch; the page returned 0 rows, translation access ran 0 loops, and the outer aggregate returned one row, mapped to an empty item list. | Baseline page+count: 323 shared hits, 0 reads, 0 temp blocks. Candidate: 4 shared hits, 0 reads, 0 temp blocks. |
+
+The fixture is intentionally small: PostgreSQL selected sequential scans for the tiny relations, so these results do not establish production index selection or scaling. Actual `EXPLAIN ANALYZE` elapsed times varied substantially between sequential statements; they are not used to claim a latency improvement. The existing unique `(messageId,targetLanguageTag)` index remains unchanged, no index was added, and this evidence does not authorize source changes.
+
+| M16 profile | Baseline: five service ms / five SQL-event ms; client calls | Candidate: five service ms / five SQL-event ms; client calls | Rows / state evidence |
+|---|---|---|---|
+| First 50 | `[45.746,73.493,51.896,36.421,50.536]` / `[36,63,42,26,42]`; 7 each | `[67.740,190.473,34.075,255.453,71.923]` / `[58,177,25,248,60]`; 6 each | 50 rows each; 0 affected rows; candidate uses 1 page/count statement vs baseline 2. |
+| Empty page | `[26.608,45.725,35.316,47.791,66.565]` / `[18,35,29,38,59]`; 7 each | `[38.361,30.132,33.234,37.432,34.415]` / `[33,23,28,32,28]`; 6 each | 0 rows each; aggregate still returned; 0 affected rows. |
+| Compose translated | `[173.304,72.962,50.089,61.906,97.744]` / `[161,61,37,51,87]`; 10 each | `[62.841,57.632,104.234,66.226,67.872]` / `[53,47,94,57,58]`; 9 each | 1 message and 1 PENDING translation persisted; thread version 1; one dispatch-port call. Thread bookkeeping SQL: 2→1. |
+| Compose without translation | `[57.147,62.494,101.632,75.627,58.747]` / `[48,52,92,66,49]`; 9 each | `[49.363,107.206,69.986,270.691,272.051]` / `[41,100,61,262,262]`; 8 each | 1 message persisted; thread version 1; 0 dispatch calls. Thread bookkeeping SQL: 2→1. |
+| Matching replay | `[29.890,83.394,41.182,52.208,47.396]` / `[19,76,36,47,41]`; 6 each | `[109.864,485.385,130.307,87.022,86.580]` / `[105,478,124,81,81]`; 6 each | 1 existing message; 0 affected rows; version unchanged; 0 writes in both versions. |
+
+Each service operation used one Read Committed transaction (BEGIN, isolation SET, COMMIT); no rollback occurred in measured profiles. Candidate SQL evidence is emitted by the named integration test as `ARCH055_M16_EVIDENCE`; the persisted checks above verify one thread version increment and one message/translation per new compose. The fixed correctness scenarios separately verify rollback and the two-reader winner schedule.
+
+The task-start M16 comparison passed. The full baseline runner also ran the existing Support test, which failed only at the newly added redaction assertion because baseline code logged `redis://secret` verbatim; the candidate run passes that assertion. No baseline failure is represented as a candidate validation pass. Attempt 2 completes the requested emitted-plan measurement; no planner/latency improvement claim is made beyond the fixture-specific buffer and plan observations above.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+Attempt 2 canonical launcher packet: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-008`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-008`; both use `task/ARCH-055-API-008`. The parent branch was current at review commit `cca669ef6`; the launcher claim was committed/pushed as `a80e4670`. The implementation branch remained at `28c9c522`, already current with `origin/main`; no implementation changes were made in Attempt 2. The launcher passed recursive submodule sync/update and confirmed Database pin `7c377282aa5819b3008b7d7f3018f44f4161523e`. The disposable PostgreSQL container was removed by the runner. This task report is submitted on its matching parent task branch.
 
 ### Deviations
 
-None authorised.
+One minimal out-of-map caller edit was needed in `src/index.ts` to inject the Shared logger into `MerchantSupportTranslationDispatcher`; the exact edit map named the dispatcher implementation but omitted its sole construction site. No other scope was added. Reported explicitly for architect review.
 
 ### Assumptions
 
@@ -199,7 +239,7 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+No unresolved implementation or evidence findings remain. The necessary `src/index.ts` logger-injection caller was a one-line construction-site edit and is disclosed above. M16 timings are noisy and support no latency claim. The full lint command retains the unrelated `no-empty` at `routes.ts:75`. ARCH-055-API-009 and ARCH-055-SYSTEM-TEST-001 remain Pending because their other prerequisites are incomplete.
 
 ### Architectural Concerns
 
@@ -209,24 +249,58 @@ Report ownership, schema, contract, external dependency, new index/infrastructur
 
 ### Review Status
 
-Pending.
+Changes Requested.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+The implementation and reported correctness evidence conform to the selected persistence, replay, mark-read, queue-repair, tenant, and logging requirements. However, Requirement 2 explicitly requires measuring the emitted query plan. The Completion Report says actual query plans were not collected, leaving this mandatory evidence incomplete.
+
+1. **P2 — Capture the emitted query plan.** Using the same canonical PostgreSQL 17 + pgvector fixture and the actual baseline and candidate page SQL, record comparable `EXPLAIN (ANALYZE, BUFFERS)` output for the first-page and empty-page profiles. Keep fixture state and relevant planner settings fixed, redact no SQL parameters because the test fixture is synthetic, and document plan shape, actual rows, buffer activity, and limitations. Do not add an index or change source based on the plan without an explicit scope amendment. If empty-page plan capture is not applicable to the emitted statement shape, document the exact reason and retain an explicit plan comparison for the non-empty page. This is validation/evidence-only; no implementation source change is requested unless the plan exposes a correctness defect that must be returned to the architect.
+
+The claimed validations and task branches were inspected; tests were not rerun during this review.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+- `src/merchant/support/read.service.ts`
+- `src/merchant/support/commands.service.ts`
+- `src/merchant/support/translation-queue.ts`
+- `src/index.ts`
+- `tests/unit/merchant/support/translation-queue.test.ts`
+- `tests/integration/merchant/support/arch055-snapshot-and-thread.postgres.test.ts`
+- `tests/integration/merchant/support/service.postgres.test.ts`
+- `scripts/test-arch035-woo-support-postgres.mjs`
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Inspected the Completion Report's final candidate results: Support unit 15/15, PostgreSQL integration 2/2 with canonical 68 migrations, Woo selection unit 3/3, typecheck and diff check passed. Lint retains the reported unchanged `routes.ts:75` `no-empty` baseline issue. M16 client-call and row evidence was reviewed; execution plans were not collected, as the report states. No checks were rerun during architect review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+The source changes remain within ARCH-055-API-008's API ownership and frozen contracts. The one-line `src/index.ts` logger injection is a necessary construction-site edit for the named dispatcher change and is disclosed. No schema, migration, public contract, dependency, or unrelated source changes were found in the submitted diff. Correctness and queue-repair behavior are supported by the reported test matrix. Review remains unaccepted only because the mandatory emitted-plan measurement is absent.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Task returned to `ready` at Attempt 1 with `executor` and `claimed_at` cleared. Dependants remain gated and unchanged. Resubmit after adding the requested plan evidence to Validation/Completion Report and pushing the task record.
+
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted — 2026-11-03. With `completion_mode: automatic`, task status is Complete at Attempt 2; executor and claim are clear.
+
+### Review Notes
+
+The Attempt 2 evidence resolves the sole Attempt 1 finding. It captures actual baseline and candidate `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` plans for first-page and empty-page requests on the same canonical PostgreSQL 17.11 fixture after refreshed statistics. The report records each plan shape, actual rows, buffer activity and fixture limitations; it makes no unsupported latency or production-scale claim and adds no index or source change. The M16 two-warmup/five-sample comparison and the required correctness scenarios are also recorded. The earlier necessary `src/index.ts` logger injection remains a disclosed narrow construction-site edit. No remaining acceptance blocker.
+
+### Validation Reviewed
+
+Reviewed the reported Support PostgreSQL suite (2/2) after Attempt 2 plan capture, Attempt 1's complete M16 baseline/candidate suite, and the focused unit, selection, typecheck and diff checks. The unchanged lint issue is documented. Temporary plan-capture instrumentation was removed and both task worktrees are clean and synchronized. No tests or measurements were rerun during this architect review.
+
+### Architecture Conformance
+
+Conforms to the frozen API-008 edit map and support-inbox contracts. The plan comparison is evidence-only; no speculative index, schema, public DTO or transaction change was introduced.
+
+### Downstream
+
+ARCH-055-API-009 and ARCH-055-SYSTEM-TEST-001 remain Pending because their other dependencies are incomplete; this task's acceptance does not make them Ready.
