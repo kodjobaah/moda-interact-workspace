@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 20
 executor: codex
 claimed_at: 2026-11-03T10:19:32Z
@@ -94,9 +94,9 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Update only the new-command identity construction and claim binding.
-- [ ] Update affected fixtures with the persisted field and retain historical replay fixtures.
-- [ ] Test same request key across two Shopify Shops and the producer-side shape expected by Background; leave cross-platform runtime exercise to ARCH-055-SYSTEM-TEST-001.
+- [x] Update only the new-command identity construction and claim binding.
+- [x] Update affected fixtures with the persisted field and retain historical replay fixtures.
+- [x] Test same request key across two Shopify Shops and the producer-side shape expected by Background; leave cross-platform runtime exercise to ARCH-055-SYSTEM-TEST-001.
 
 ## Interfaces / Contracts
 
@@ -114,12 +114,12 @@ The public API remains unchanged except documentation corrections explicitly aut
 
 ## Acceptance Criteria
 
-- [ ] Every new Shopify template command and its claimed attempt share the generated internal key.
-- [ ] Public retries retain their original command and request-key identity.
-- [ ] HUMAN_TEXT and all existing window/entitlement/template behaviour remain unchanged.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
-- [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
+- [x] Every new Shopify template command and its claimed attempt share the generated internal key.
+- [x] Public retries retain their original command and request-key identity.
+- [x] HUMAN_TEXT and all existing window/entitlement/template behaviour remain unchanged.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
 
@@ -136,11 +136,11 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npx vitest run tests/unit/arch040-shopify-command.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts`
-- [ ] `npm run typecheck`
-- [ ] `git diff --check`
-- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
-- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+- [x] `npx vitest run tests/unit/arch040-shopify-command.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts`
+- [x] `npm run typecheck`
+- [x] `git diff --check`
+- [x] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
+- [x] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition
 
@@ -156,39 +156,84 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Attempt 1 implementation is committed and all required executable checks pass. **Blocked on explicit publication authorization**: automatic approval review rejected pushing private implementation commit `9e3f0af51d307b82cb9b30b020c0aa3472db15e4` to the verified existing origin `https://github.com/kodjobaah/moda-interact.git`, branch `task/ARCH-055-SHOPIFY-001`, because the exact payload/destination lacks explicit approval. No push workaround was attempted. The parent report is local as well. This task has not been submitted for architect review or accepted; Attempt 1/Codex claim is preserved.
 
 ### Files Changed
 
-None.
+- `app/services/recoveries/recovery-human-commands.server.ts`
+- `tests/unit/arch040-shopify-command.test.ts`
+- `tests/fixtures/arch047-shopify-follow-up.ts`
+
+The authoritative sender suite is unchanged and was run as required. No new file, schema/migration, dependency, consumer, UI, locale, public schema, other implementation repository, parent gitlink or shared index/frontier was edited.
 
 ### Work Completed
 
-None. Task definition only.
+- Allocates one Node `randomUUID()` only after exact/conflicting replay resolution for a new command. Template `command.id`, `command.followUpClaimKey` and the sequence-two `attempt.initiationKey` are identical.
+- HUMAN_TEXT has an explicit generated ID and SQL-null `followUpClaimKey`. Its template-parameter SQL-null sentinel remains `Prisma.DbNull`.
+- Public `shopId/idempotencyKey` uniqueness and original payload hash are unchanged. Exact retries reuse their original command; conflicting payloads retain idempotency_conflict. Historical templates with the backfilled public retry key are returned without allocation, claim or rewrite.
+- Command create selects only id/state/kind; replay/status selection and explicit public DTOs exclude the private claim field. Existing recovery, service-window, entitlement, restriction, due-time, template/publication/WABA and control-revision checks and Serializable transaction are retained.
+- Fixture creates echo the supplied ID/kind instead of returning a fabricated fixed ID or HUMAN_TEXT kind for every insert. New tests cover cross-Shop identity, current/historical template replay, conflicting reuse, text null claims and original insertion-error propagation after the claim.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+Executed from the canonical implementation worktree using the workspace Node bootstrap:
+
+| Command | Observed outcome |
+|---|---|
+| `npm ci --ignore-scripts` | Successful locked install in the new worktree; no manifest/lock change. |
+| `npm run prisma:generate` | Exit 0; generated Prisma Client **6.19.3** from the recorded Database schema. |
+| `npx --no-install vitest run tests/unit/arch040-shopify-command.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts` | Exit 0; **2 files, 44 tests passed**, Vitest 4.1.11, no failures. |
+| `npm run typecheck` | Exit 0; React Router type generation and TypeScript compilation. |
+| `npm run lint` | Exit 0; no baseline exemption required. |
+| `git -c core.fsmonitor=false diff --check` | Exit 0, also checked staged changes before commit. |
+
+Node **24.19.0**, npm **11.17.0**. A read-only Git diff initially reported an fsmonitor IPC warning; subsequent Git checks used a command-local core.fsmonitor=false override, without changing repository configuration. No workspace doctor or unrelated baseline investigation was necessary.
+
+**Regression matrix**
+- **K01 — pass (producer unit boundary):** Two distinct Shopify Shop/conversation/recovery fixtures submit the same public retry key and get different valid UUIDs. Each insert retains its Shop/public key/hash; its claim and persisted internal field equal its own command ID. Exact same-Shop replay returns the original response and allocates no UUID/claim/insert; a changed payload rejects. Historical template replay retains the original ID/state/backfilled key, performs no claim/insert and returns no private field.
+- **K02 — pass (producer transaction/error boundary):** An injected original Prisma P2002 error from command insertion propagates by exact object identity after the sequence-two update. The claim and command insert execute within one Serializable callback, with claim invocation preceding insertion. HUMAN_TEXT succeeds with a null claim key and no sequence-two update. These assertions establish producer transaction placement/rejection, not physical PostgreSQL rollback or constraint behavior.
+
+**Before/after write-shape evidence and limits**
+
+| Branch | Starting producer | Candidate producer |
+|---|---|---|
+| New template | Database-default command ID; omitted/new-row-null followUpClaimKey; attempt initiationKey=public retry key | Explicit generated command ID; followUpClaimKey=same ID; initiationKey=same ID |
+| New text | Database-default command ID; null private claim by default; no sequence-two claim | Explicit generated command ID; explicit null private claim; no sequence-two claim |
+| Exact replay | Original command/public key and response; no new insert/claim | Same; UUID spy also confirms no ID allocation |
+
+No query removal/batching or optional optimisation is selected by this task. Tests observe one logical command insert and one conditional claim update for the valid existing-PENDING template fixture; replay observes no new writes. These are **mock client invocations**, not emitted SQL or observed affected database rows. No SQL/bytes/latency/physical rollback measurement is claimed. The task's specific Test Registration assigns real cross-platform PostgreSQL/Background proof to terminal **ARCH-055-SYSTEM-TEST-001**, explicitly excluding an invented implementation prerequisite here. The public select/DTO shape is asserted separately. No provider, Redis or R2 I/O was introduced or executed; unit tests use deterministic mocked boundaries.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+Prepared launcher packet is the authoritative startup evidence:
+
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-SHOPIFY-001`; `task/ARCH-055-SHOPIFY-001`, newly created.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-SHOPIFY-001`; same task branch, newly created. Starting SHA `a70cecad638fa634f14262978a6d0f3c2cb11e62`.
+- Parent task fast-forward not-needed; origin/main already-current at prepared HEAD `53aecb45926ca3e33a56a0532bf6e618a55642fc`. Implementation task fast-forward not-needed; origin/main already-current.
+- Dependency gate passed: ARCH-055-BACKGROUND-001 Complete. Attempt 1, executor codex, claimed `2026-11-03T10:19:32Z`. Launcher claim commit `8d2a0e24789010c67d0688c90a8cf3f1d6d54137` was committed/pushed. No second claim or startup synchronization.
+- Recursive submodule sync/update passed; recorded Database pin `8e74634ff92be9900f693c0c449ffce888e7d617` ready. followUpClaimKey exists in its schema and generated client. No submodule pointer/schema/migration change.
+- Shared workspace/source checkout switched or mutated for task work: no. Another task worktree reused: no.
+- Implementation `9e3f0af51d307b82cb9b30b020c0aa3472db15e4` contains exactly the three listed files, with clean worktree. Its push was rejected before execution by automatic approval review, pending explicit authorization for `https://github.com/kodjobaah/moda-interact.git` / `task/ARCH-055-SHOPIFY-001`.
+- Parent writes are limited to this current task file; Architect Review is preserved verbatim. No main push/merge, force-push, index/frontier edit, parent gitlink or downstream promotion.
+- No disposable database/container, live provider connection or persistent runtime resource was created by this task. Prisma generation and unit workers completed normally; no container cleanup was needed.
+- No remote review submission is claimed. On publication authorization, push implementation/report on their mirrored task branches, then transition to review and return for moda_architect review. Do not self-accept.
 
 ### Deviations
 
-None authorised.
+None in implementation scope or behavior. Actual SQL/physical rollback proof remains with the explicitly assigned terminal validation rather than being inferred from mocks. Publication is blocked by automatic approval review.
 
 ### Assumptions
 
-The uploaded source snapshot is the design baseline, not proof of current remote state. Reconcile only relevant drift on the real launcher baseline; return contract-changing drift to the architect.
+The prepared dependency gate, pinned Database/client and ARCH-055 ADR-02 contract are authoritative. Unit tests establish producer arguments/control flow; they do not prove cross-platform database constraints or Background execution.
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+Explicit authorization to publish the private implementation and current task report to their existing GitHub repositories is outstanding. Preserve Attempt 1 and its claim while resolving publication; no new execution attempt, acceptance or enabled task is authorized by these test results.
 
 ### Architectural Concerns
 
-Report ownership, schema, contract, external dependency, new index/infrastructure or transaction-boundary gaps here. Do not expand scope silently.
+No new cross-repository/schema/Shared/provider/UI contract gap found. Real cross-platform dispatch and migrated rollback remain terminal system-test responsibility under the task's existing contract.
 
 ## Architect Review
 
