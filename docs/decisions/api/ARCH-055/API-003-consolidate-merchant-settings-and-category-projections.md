@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -146,14 +146,14 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 ## Acceptance Criteria
 
-- [ ] Category profile/generation/mapping results are wholly old or wholly new under a controlled publication race.
-- [ ] First category publication avoids two history calls; pending draft avoids its redundant pre-read, with unchanged conflict/rollback.
-- [ ] No read endpoint creates settings/profile/billing state.
-- [ ] AI-delay, recovery-policy and feature-preference replay differences remain intact and tested.
-- [ ] Any deferred batching/no-op candidate has measurements and an explicit retained-behaviour decision, not an unchecked mandatory criterion.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
-- [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
+- [x] Category profile/generation/mapping results are wholly old or wholly new under a controlled publication race.
+- [x] First category publication avoids two history calls; pending draft avoids its redundant pre-read, with unchanged conflict/rollback.
+- [x] No read endpoint creates settings/profile/billing state.
+- [x] AI-delay, recovery-policy and feature-preference replay differences remain intact and tested.
+- [x] Any deferred batching/no-op candidate has measurements and an explicit retained-behaviour decision, not an unchecked mandatory criterion.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
 
@@ -194,17 +194,17 @@ Only the precise schedules above are frozen here. Subscription cancellation, Fea
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npx tsx --test "tests/unit/merchant/store-categories/*.test.ts" "tests/unit/merchant/store-context/*.test.ts" "tests/unit/merchant/feature-preferences/*.test.ts" "tests/unit/merchant/recovery-policy/*.test.ts" "tests/unit/merchant/ai-response-delay/*.test.ts"`
-- [ ] `node scripts/test-arch055-merchant-settings-postgres.mjs`
-- [ ] `node scripts/test-arch035-feature-preferences-postgres.mjs`
-- [ ] `node scripts/test-arch041-cross-domain-postgres.mjs`
-- [ ] `node scripts/test-arch054-ai-response-delay-postgres.mjs`
-- [ ] `npm run typecheck`
-- [ ] `git diff --check`
-- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
-- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+- [x] `npx tsx --test "tests/unit/merchant/store-categories/*.test.ts" "tests/unit/merchant/store-context/*.test.ts" "tests/unit/merchant/feature-preferences/*.test.ts" "tests/unit/merchant/recovery-policy/*.test.ts" "tests/unit/merchant/ai-response-delay/*.test.ts"` (85/87 passed; both failures reproduced on the baseline and documented).
+- [x] `node scripts/test-arch055-merchant-settings-postgres.mjs`
+- [x] `node scripts/test-arch035-feature-preferences-postgres.mjs`
+- [x] `node scripts/test-arch041-cross-domain-postgres.mjs`
+- [x] `node scripts/test-arch054-ai-response-delay-postgres.mjs`
+- [x] `npm run typecheck`
+- [x] `git diff --check`
+- [x] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files (one pre-existing error recorded).
+- [x] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
-- [ ] Execute C03a, C03b and C03c with the exact barrier/commit order and HTTP/state/revision/timing outcomes above.
+- [x] Execute C03a, C03b and C03c with the exact barrier/commit order and HTTP/state/revision/timing outcomes above.
 
 ## Stop Condition
 
@@ -221,6 +221,8 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 ### Status
 
 Attempt 1 submission: blocked, with implementation committed and pushed but required final executable validation incomplete. Architect disposition on 2026-11-03: Changes Requested; returned to `ready` with the claim cleared. Attempt 2 corrected the canonical fixtures and C01 schedule and published commit `d39246f`, but is returned as `blocked`: a stable full canonical run and mandatory paired M04/M05 measurements were not obtained. The submitted Attempt 1 evidence and Architect Review below are retained unchanged as history. Attempt 2 is not submitted for acceptance.
+
+Accepted — Attempt 4. The submitted implementation and evidence satisfy the task contract. Status is Complete; Attempt 4 is unchanged. Existing baseline unit and lint failures are recorded and do not originate in this task's changed files.
 
 ### Files Changed
 
@@ -473,3 +475,11 @@ Correct the three findings on the same implementation branch, run the required v
 ### Executor Reassignment — 2026-11-03
 
 At the developer’s explicit request, moda_architect reviewed the stranded Attempt 3 Copilot claim and returned this task to `ready` for a fresh Codex launcher claim. Both canonical task worktrees were clean. Implementation history retains `de096e2` and the existing mainline synchronization merge `3f6ae2b`; no uncommitted implementation was discarded. The parent worktree retains its launcher synchronization merge `6ba66d183`. Clear `executor` and `claimed_at`, preserve `attempt: 3`, all prior implementation/report evidence and the Changes Requested correction contract. The next successful `/moda-task` preparation increments to Attempt 4 with `executor: codex`. This reassignment is not acceptance; all outstanding validation and M04/M05 evidence remain required, and no dependent task is promoted. No implementation source, implementation commit/push, parent gitlink or main branch was changed by this reassignment.
+
+### Attempt 4 Architect Review — Accepted — 2026-11-03
+
+**Review Status:** Accepted. The implementation satisfies the frozen read-consistency, publication, replay, projection, and failure-diagnostic requirements. Attempt 4 validation and paired M04/M05 evidence are recorded above. The two unit failures and one repository lint failure were reproduced as unchanged baseline issues; no changed API source or test file is implicated. No further implementation change is required.
+
+**Reviewed implementation:** commit `e958f422cad24039ca71356d192f75c4faec6a54`, published on `task/ARCH-055-API-003`. Acceptance and completion are recorded on the parent task branch; no merge to `main` was made.
+
+**Dependency frontier:** `ARCH-055-API-009` remains `pending` because `API-002`, `API-004`, `API-006`, `API-007`, and `API-008` are not Complete. `ARCH-055-SYSTEM-TEST-001` remains `pending` because its other API, Background, and Shopify dependencies are not Complete. Neither downstream task is promoted by this acceptance.
