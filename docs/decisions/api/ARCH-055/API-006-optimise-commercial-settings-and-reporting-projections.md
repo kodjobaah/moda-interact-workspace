@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: codex
 claimed_at: 2026-11-03T11:00:45Z
@@ -161,7 +161,7 @@ None. The source baseline is context, not a fabricated dependency on historical 
 - [x] Coupon mode-only change touches zero coupon rows; one-of-50 replacement touches two, with full identity validation retained.
 - [x] One aggregate supplies count and sum; historical-period and cursor validation remain correct.
 - [x] Settings remain available during coupon sync/outage; whole-catalogue locale fallback is unchanged.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication. Attempt 4 retains codes and simple cause messages, but the review below identifies remaining loss of ordinary Prisma-formatted failure details.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication. Attempt 5 retains safe Prisma-formatted failure reasons and codes while excluding invocation context; both real Shared-sink route regressions pass.
 - [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
@@ -501,6 +501,38 @@ The retained measurement artifact `evidence/API-006-attempt-3-commercial.jsonl` 
 - Final implementation `6757372ddc2b7cae7ab3e9714546ea309a53ff9a` is pushed to `origin/task/ARCH-055-API-006`; implementation worktree is clean. The containing parent report commit publishes only this task document, including the architect-authored amendment. No parent implementation gitlink, main merge/push, force push or downstream promotion.
 
 Await architect review. API-009 and SYSTEM-TEST-001 remain pending; this executor does not mark API-006 Complete.
+
+## Completion Report — Attempt 5
+
+### Correction checklist and bounded implementation
+
+**Attempt 4 P2 — implemented.** In `src/merchant/promotions/routes.ts` and `src/merchant/discount-offers/routes.ts`, the Prisma invocation redaction now retains the exact unindented final database-reason line for P2003 foreign-key, P2002 unique-constraint and P2034 write-conflict/deadlock errors. A recognized header and completed renderer boundary are required: no context, numbered source context, or a completed argument closure followed by a blank separator. Invocation headers, source locations, numbered/arrow code frames and rendered arguments are removed. The retained line still passes through the existing sensitive-span filters before Shared truncation. No guessed explanation replaces the source text; codes still come from the original exception. Unknown/incomplete invocation renderings remain `[REDACTED]` with their actual code, rather than exposing potentially unsafe context. This narrowly handles the known database failures at these routes; it is not a generic Prisma formatter/parser or recursive error serializer.
+
+Both existing route test files now exercise actual handlers through the real Shared sink for GET and PUT. Eight fixtures per route cover a secret/customer-bearing pretty argument block longer than Shared's string limit, numbered source context immediately followed by the original reason, minimal formatting, CRLF unique-constraint formatting, source-context foreign-key formatting, combined source/arguments formatting ending in `})`, an unfinished argument block ending in a misleading reason line, and an incomplete invocation without a safe suffix. Misleading reason text inside a quoted argument/source line is excluded. Tests retain the safe source line/code, reject invocation/customer values, raw metadata/query/payload/stack, preserve original exception/cause identity, and assert unchanged public 409 bodies and cache headers. Existing simple-cause, privacy, truncation and direct unwrapped-conflict regressions remain in place.
+
+### Actual validation
+
+- Before the correction, the new route tests reproduced the issue: **12 passed, 2 failed** (both new multiline cases), exit 1; failure logs contained only `[REDACTED]` instead of the safe foreign-key reason.
+- Final affected route command: **14 passed, 0 failed, 0 skipped**, exit 0.
+- Required five-directory focused matrix: **110 passed, 0 failed, 0 skipped**, exit 0 (108 previous tests plus the two parameterized multiline cases).
+- Changed-file ESLint on both routes and both route test files with `--max-warnings=0`: exit 0.
+- Final `npm run typecheck`: passed, explicitly confirmed exit 0 on the final committed source. A superseded intermediate typecheck was explicitly stopped (exit 143) after the last renderer hardening; that interrupted run is not reported as a pass. The final-source run is tracked separately by its confirmed command exit.
+- Working/staged and final implementation commit diff checks: passed.
+- Commands used the repository bootstrap, Node 24.19.0/npm 11.17.0 and the canonical regenerated Prisma 6.19.3 client. Local validation logs use `/tmp/arch055-api006-*-attempt5.log`; no new evidence path or benchmark framework was introduced.
+
+### Retained evidence and limits
+
+Attempt 4's consumer pin remains `8e74634ff92be9900f693c0c449ffce888e7d617`, as prepared; no gitlink/schema/migration changes were authored in Attempt 5. The retained commercial JSONL remains SHA-256 `c790ad66f5f911223c1af1bf1fa36d2508ddd24c091cceb87a7d926df46b2b63`. Prior M11–M14/F01–F05 measurements, their limits and broad unit/lint failure classifications remain preserved. No new PostgreSQL, commercial measurement, full-unit or full-lint execution/pass is claimed. The latest review explicitly permits retaining that unaffected evidence for this route-diagnostic correction.
+
+### Preparation, assistance and publication
+
+- Deterministic launcher claimed Codex Attempt 5 at `2026-11-03T11:00:45Z`, pushed claim `a0eec3f6511d2eab43a9d22465662fa7bcb38a1b`; dependency gate passed with no explicit dependencies. Prepared parent head `c54169532d9ff3a2d067f4d64ec91492a1761ee3`; implementation head `6757372ddc2b7cae7ab3e9714546ea309a53ff9a`.
+- Canonical root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; dedicated parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-006`; dedicated implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-006`; both branches `task/ARCH-055-API-006`.
+- Both physical worktrees were reused. Both remote task branches needed no fast-forward; parent origin/main incorporation passed (`yes`), implementation was already current. Recursive submodule sync/update and recorded Database pin verification passed. Shared/default checkouts were not switched or used for implementation; no other task worktree was reused.
+- The user-requested `moda_architect` assistance advised the narrow Prisma rendering boundary, safe reason projection and regression matrix; no implementation edits, lifecycle decisions or acceptance were delegated.
+- Implementation `c78b6e5b137d04b1b56aedf853c654ebd9c46b23` is pushed to `origin/task/ARCH-055-API-006`; implementation worktree is clean. The containing parent report commit publishes only this task document. No parent implementation gitlink, main merge/push, force push, other task edits or downstream promotion.
+
+Ready for Review. Required final validation passed. This executor does not accept API-006 or start API-009/SYSTEM-TEST-001; both enabled tasks remain pending.
 
 ## Architect Review — Attempt 1
 
