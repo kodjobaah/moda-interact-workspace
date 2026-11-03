@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 15
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: '2026-11-02'
+updated: 2026-11-03
 ---
 
 # ARCH-055-API-001: Harden installation and REST-read authorisation lifecycle
@@ -309,3 +309,8 @@ To be assessed against ARCH-055 and this task's frozen contract.
 ### Follow-up
 
 Only the authorised review may accept this task and promote dependants.
+
+
+## Dependency readiness — 3 November 2026
+
+ARCH-055-DATABASE-001 is Accepted and Complete at Attempt 2. The accepted Database pin is `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; adopt it within this task's authorized consumer scope. The sole prerequisite is satisfied: Ready, Attempt 0, unclaimed. Prepare through the canonical launcher; no implementation, deployment or production migration is implied. Follow the Database task's coordinated migration/consumer rollout handoff.
