@@ -195,7 +195,6 @@ Stop and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-<<<<<<< HEAD
 Implementation complete; returned to `moda_architect` for review.
 
 ### Files Changed
@@ -476,22 +475,3 @@ The schema/migration findings accepted in Attempt 1 therefore remain valid: the 
 Because `completion_mode: automatic`, the task is complete. `executor` and `claimed_at` are cleared while `attempt: 3` is preserved.
 
 The parent handoff commit is not embedded into this task file because a file cannot durably contain the hash of the commit that is created from that same file without changing the hash again. The submitted handoff identifies parent report commit `3515ff0`; that external handoff evidence is sufficient and is not an acceptance blocker.
-
-=======
-Not started.
-
-### Files Changed
-Populate during implementation.
-
-### Work Completed
-Populate during implementation.
-
-### Validation Results
-Populate during implementation.
-
-### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
-
-### Architect Review
-Pending.
->>>>>>> 36fcd0c (chore(workspace): tasks for ARCH-010)

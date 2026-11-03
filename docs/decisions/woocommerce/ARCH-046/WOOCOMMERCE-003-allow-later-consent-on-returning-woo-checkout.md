@@ -288,3 +288,7 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Definition reconciliation — 2026-11-02
+
+The active implementation includes ModaApiClient::wooConsentStatus and CheckoutConsentCapture returning-shopper proof/withdrawal handling. Uncommitted Blocks-status and WordPress-harness changes remain in the dedicated implementation worktree. Preserve its active developer claim. Required real Classic/Blocks behavior and API-006 contract validation must be submitted by the owner; code presence does not establish completion.

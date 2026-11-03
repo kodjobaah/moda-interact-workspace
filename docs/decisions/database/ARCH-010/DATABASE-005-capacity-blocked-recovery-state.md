@@ -126,7 +126,6 @@ STOP and return to `moda_architect` if:
 ## Completion Report
 
 ### Status
-<<<<<<< HEAD
 Attempt 2 complete; returned to `moda_architect` for review.
 
 ### Files Changed
@@ -292,22 +291,3 @@ Architect re-review verified:
 Because `completion_mode: automatic`, the task is complete. `executor` and `claimed_at` are cleared while `attempt: 2` is preserved.
 
 `ARCH-010-BACKGROUND-009` is not promoted solely by this acceptance because its task contract has additional dependencies besides DATABASE-005. Reconcile its readiness against the current canonical parent workspace after the remaining prerequisites complete.
-
-=======
-Not started.
-
-### Files Changed
-Populate during implementation.
-
-### Work Completed
-Populate during implementation.
-
-### Validation Results
-Populate during implementation.
-
-### Git / VCS
-Populate canonical isolated worktree/branch/commit/push evidence.
-
-### Architect Review
-Pending.
->>>>>>> 36fcd0c (chore(workspace): tasks for ARCH-010)

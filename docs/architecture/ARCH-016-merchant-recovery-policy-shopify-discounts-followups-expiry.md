@@ -522,13 +522,23 @@ Extend the existing singleton `BackgroundRuntimeConfig`:
 checkoutRecoveryLifetimeDays Int @default(21)
 ```
 
-Allowed range:
+Allowed values (2026-10-31 administrator-lifetime-policy amendment):
 
 ```text
-1..90 days
+Non-negative whole-number days: 0, 1, 2, ..., with no business-policy maximum.
+Existing PostgreSQL INTEGER / Prisma Int storage representation remains unchanged.
+Default remains 21 days.
 ```
 
-This is an `OPERATIONAL` runtime control and uses the existing optimistic version + audit reason mechanism.
+The old `1..90` business restriction is superseded by `ARCH-016-DATABASE-002`,
+`ARCH-016-BACKGROUND-005`, and `ARCH-016-ADMIN-003`. The database task removes
+its old `BETWEEN 1 AND 90` constraint without replacing it with another policy
+constraint. Admin rejects negative/fractional inputs and audits approved updates;
+Background rejects invalid persisted config. `0` is explicitly valid and means
+immediate inactivity expiry: active recoveries at or before the current activity
+cutoff expire at the next sweep. This setting may prevent recovery outreach.
+
+This remains an `OPERATIONAL` runtime control with existing optimistic version and audit-reason semantics.
 
 Expiry calculation uses the current runtime value:
 
@@ -665,6 +675,9 @@ Parallelism is allowed where dependencies permit. Do not serialize tasks merely 
 | ARCH-016-BACKGROUND-002 | moda-interact-background | Expire stale recovery generations and restart after later checkout activity. |
 | ARCH-016-BACKGROUND-003 | moda-interact-background | Implement chargeable recovery outreach attempts and one no-response follow-up. |
 | ARCH-016-BACKGROUND-004 | moda-interact-background | Apply effective recovery-policy delay, including active Admin overrides, to pending-candidate scheduling and activity rescheduling. |
+| ARCH-016-DATABASE-002 | moda-interact-database | Remove the fixed 1–90 recovery-lifetime CHECK by forward-only migration; preserve the 21-day default. |
+| ARCH-016-BACKGROUND-005 | moda-interact-background | Validate non-negative whole-day lifetimes with no business maximum; make the expiry calculation safe for zero and large integers. |
+| ARCH-016-ADMIN-003 | moda-interact-admin | Allow administrator-entered non-negative integer days, with no max in server validation or UI, preserving audit/version gates. |
 | ARCH-016-SYSTEM-TEST-001 | moda-interact-system-test | Integrated validation after implementation and developer manual testing. |
 
 ## Post-review update — SHARED-001 Attempt 1 Accepted
@@ -1185,3 +1198,30 @@ monotonic activity semantics remain unchanged.
 All ARCH-016 implementation tasks are now architect-accepted Complete in this snapshot.
 `ARCH-016-SYSTEM-TEST-001` remains Pending and is not started automatically; the existing
 developer manual-testing checkpoint remains before the terminal integrated test phase.
+
+
+## 2026-10-31 architectural amendment — administrator-controlled unbounded lifetime
+
+The historical ARCH-016 `1..90` recovery lifetime range is superseded. **No business upper limit** is imposed; only non-negative whole numbers are accepted through Admin and Background. The retained SQL `INTEGER` field limits representable values as a storage property, not as a 90-day policy. Default `21` remains unchanged. Zero means immediate inactivity expiry and can suppress recovery eligibility/outreach. No negative or fractional values are allowed in the Admin write path; corrupt/negative persisted values must fail closed at Background startup/refresh. No historical migration or completed task is rewritten.
+
+Execution dependencies for the new follow-up work:
+
+```text
+ARCH-016-DATABASE-001 (Complete)
+    -> ARCH-016-DATABASE-002 (Complete, new forward migration)
+         -> ARCH-016-BACKGROUND-005 (Complete, runtime + expiry safety)
+              -> ARCH-016-ADMIN-003 (Complete, audited UI write)
+All three -> existing terminal ARCH-016-SYSTEM-TEST-001
+```
+
+No new Shared, API, Shopify, WooCommerce or Gateway task is required to remove the 90-day business ceiling. ARCH-053's separate checkout-link lifetime consistency work must consume this same persisted field, not independently invent a 90-day maximum. All existing ARCH-016 task acceptance records remain historical.
+
+## Post-review update — ADMIN-003 Attempt 2 Accepted
+
+`ARCH-016-ADMIN-003` Attempt 2 is architect-accepted **Complete**. The audited
+Admin action's successful persistence and audit record, along with rejection
+without mutation for unauthorized, stale-version and negative-value cases, are
+covered by behavioral tests. The task report records the focused validation
+and the Attempt 1-only baseline failures. `ARCH-016-SYSTEM-TEST-001` remains
+Pending and is not started automatically; its dependency and developer
+manual-testing gates still apply.

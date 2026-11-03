@@ -848,8 +848,9 @@ Recommended implementation order is encoded by task dependencies. Repository age
 | ARCH-007-BACKGROUND-007 | moda_background | Complete | BACKGROUND-003, BACKGROUND-006 |
 | ARCH-007-BACKGROUND-008 | moda_background | Pending | BACKGROUND-005, BACKGROUND-007, BACKGROUND-009, SHOPIFY-001 |
 | ARCH-007-BACKGROUND-009 | moda_background | Pending | DATABASE-005, SHARED-006, BACKGROUND-007 |
-| ARCH-007-BACKGROUND-010 | moda_background | Pending | DATABASE-006, BACKGROUND-004 |
-| ARCH-007-BACKGROUND-011 | moda_background | Pending | BACKGROUND-010 |
+| ARCH-007-BACKGROUND-010 | moda_background | Complete | DATABASE-006, BACKGROUND-004 |
+| ARCH-007-BACKGROUND-011 | moda_background | Complete | BACKGROUND-010 |
+| ARCH-007-BACKGROUND-012 | moda_background | Ready | BACKGROUND-010, BACKGROUND-011 |
 | ARCH-007-ADMIN-001 | moda_admin | **Ready** | SHARED-002, DATABASE-003 |
 | ARCH-007-ADMIN-002 | moda_admin | Pending | ADMIN-001 |
 | ARCH-007-ADMIN-003 | moda_admin | Pending | ADMIN-002, BACKGROUND-007, SHOPIFY-001 |
@@ -860,7 +861,7 @@ Recommended implementation order is encoded by task dependencies. Repository age
 | ARCH-007-SYSTEM-TEST-002 | moda_system_test | Pending / manual-gated | SHOPIFY-002, BACKGROUND-008, ADMIN-004, GATEWAY-001 |
 | ARCH-007-SYSTEM-TEST-003 | moda_system_test | Pending / manual-gated | SHOPIFY-003, MESSAGING-001, BACKGROUND-005, BACKGROUND-008, ADMIN-004, GATEWAY-001 |
 | ARCH-007-SYSTEM-TEST-004 | moda_system_test | Pending / manual-gated | SHOPIFY-004, BACKGROUND-009, BACKGROUND-008, ADMIN-005 |
-| ARCH-007-SYSTEM-TEST-005 | moda_system_test | Pending / manual-gated | BACKGROUND-010, BACKGROUND-004, BACKGROUND-011 |
+| ARCH-007-SYSTEM-TEST-005 | moda_system_test | Pending / manual-gated | BACKGROUND-010, BACKGROUND-004, BACKGROUND-011, BACKGROUND-012 |
 
 Individual task YAML is authoritative for execution state. System tests are terminal/manual-gated and must never block implementation/publication/infrastructure work.
 
@@ -903,6 +904,7 @@ DEPENDENCY GATED
 
   BACKGROUND-010
     -> BACKGROUND-011 inbound abuse admission
+    -> BACKGROUND-012 settled-turn scheduling correction
     -> SYSTEM-TEST-005 (terminal/manual-gated)
 
   ADMIN-005 + SHOPIFY-002 + DATABASE-005 + SHARED-006
@@ -914,6 +916,8 @@ SYSTEM TESTS
 
 Current architect-accepted/published Shared release is `@modainteract/moda-interact-shared@0.8.0`.
 The SHOPIFY-003 correction deliberately restores its previously accepted consumer baseline to 0.7.4 rather than opportunistically consuming the pack-contract release.
+
+ARCH-050-BACKGROUND-001 independently reproduced the existing ARCH-007-BACKGROUND-010 scheduling integration timeout on 2026-10-26. ARCH-007-BACKGROUND-012 owns the bounded Background diagnosis/correction; SYSTEM-TEST-005 remains terminal/manual-gated until B012 is complete.
 
 ## Open Questions
 

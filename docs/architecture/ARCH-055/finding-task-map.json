@@ -1,0 +1,986 @@
+[
+  {
+    "finding": "E01-F01",
+    "heading": "E01-F01 — Duplicate Shop read within reconnect transaction",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E01-F02",
+    "heading": "E01-F02 — Installation read after guarded credential update",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E01-F03",
+    "heading": "E01-F03 — Eager feature graph on operational-plan reuse",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E01-F04",
+    "heading": "E01-F04 — Original handled Prisma failures are lost",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E01-F05",
+    "heading": "E01-F05 — Full first-activation acceptance needs migrated-schema coverage",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E03-F01",
+    "heading": "E03-F01 — Diagnostic classification loses the actual failing dependency",
+    "tasks": [
+      "ARCH-055-API-002"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E04-F01",
+    "heading": "E04-F01 — Duplicate acknowledgements wait for an unnecessary recipient lock",
+    "tasks": [
+      "ARCH-055-API-002"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E04-F02",
+    "heading": "E04-F02 — Handled conflict wrappers discard original Prisma errors",
+    "tasks": [
+      "ARCH-055-API-002"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E05-F01",
+    "heading": "E05-F01 — Read-only status uses the mutation's recipient locking path",
+    "tasks": [
+      "ARCH-055-API-002"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E05-F02",
+    "heading": "E05-F02 — Installation gate is a possible consolidation, not a useless recheck",
+    "tasks": [
+      "ARCH-055-API-002"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E06-F01",
+    "heading": "E06-F01 — Original handled conflicts are lost here too",
+    "tasks": [
+      "ARCH-055-API-002"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E07-F01",
+    "heading": "E07-F01 — Create result discarded before an immediate reread",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E08-F01",
+    "heading": "E08-F01 — Dedicated PostgreSQL suite uses a reduced schema",
+    "tasks": [
+      "ARCH-055-API-002"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E08-F02",
+    "heading": "E08-F02 — Safe redaction also removes diagnostic codes",
+    "tasks": [
+      "ARCH-055-API-002"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E08-F03",
+    "heading": "E08-F03 — Two duplicate index pairs surfaced in this read path",
+    "tasks": [
+      "ARCH-055-API-002"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E09-F01",
+    "heading": "E09-F01 — Every insert error becomes a misleading 409",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E09-F02",
+    "heading": "E09-F02 — Trigger revalidation does not cover current Shop status",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E10-F01",
+    "heading": "E10-F01 — Latest-attempt access pattern has no matching composite index",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E11-F01",
+    "heading": "E11-F01 — Stale pending attempts can abort revocation after reconnect",
+    "tasks": [
+      "ARCH-055-API-001",
+      "ARCH-055-DATABASE-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E11-F02",
+    "heading": "E11-F02 — Authenticated credential version is not revalidated inside revoke",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E11-F03",
+    "heading": "E11-F03 — Expiry while waiting is a cancellation edge case",
+    "tasks": [
+      "ARCH-055-API-001",
+      "ARCH-055-DATABASE-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E12-F01",
+    "heading": "E12-F01 — Concurrent duplicate acknowledgement can differ from sequential replay",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E12-F02",
+    "heading": "E12-F02 — Shop suspension during provider verification is not checked at commit",
+    "tasks": [
+      "ARCH-055-API-001",
+      "ARCH-055-DATABASE-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E12-F03",
+    "heading": "E12-F03 — The callback discards provider/database causes and conflates transaction failures",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E13-F01",
+    "heading": "E13-F01 — Reject obviously malformed locale proofs before loading secret configuration",
+    "tasks": [
+      "ARCH-055-API-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E15-F01",
+    "heading": "E15-F01 — Identical context PUTs still issue a matching UPDATE",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E16-F01",
+    "heading": "E16-F01 — Profile and active mapping provenance can be assembled from different commits",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E16-F02",
+    "heading": "E16-F02 — Separate Shop and installation rechecks can be consolidated",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E16-F03",
+    "heading": "E16-F03 — Full prompt text is fetched for a boolean eligibility check",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E17-F01",
+    "heading": "E17-F01 — Fresh lineage still performs two empty revision-history queries",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E17-F02",
+    "heading": "E17-F02 — Referenced draft read can be folded into the conditional publication",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E17-F03",
+    "heading": "E17-F03 — Dedicated category integration runner omits migration-only safeguards",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E18-F01",
+    "heading": "E18-F01 — Full-row include graph retrieves unused fields",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E18-F02",
+    "heading": "E18-F02 — Consolidate the two read-only identity queries",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E19-F01",
+    "heading": "E19-F01 — Sequential per-feature writes produce linear query work",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E19-F02",
+    "heading": "E19-F02 — The second complete load is not safely deletable without an entitlement-consistency decision",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E19-F03",
+    "heading": "E19-F03 — Timing fields overwrite the initial load on changed PUTs",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E20-F01",
+    "heading": "E20-F01 — Narrow policy/override projections and optionally combine identity reads",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E21-F01",
+    "heading": "E21-F01 — Handled conflict wrapping loses the original Prisma error",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "RETAIN_AND_REGRESS"
+  },
+  {
+    "finding": "E22-F01",
+    "heading": "E22-F01 — Full settings record fetched for two response fields",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E22-F02",
+    "heading": "E22-F02 — Consolidate two read-only identity queries without removing checks",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E23-F01",
+    "heading": "E23-F01 — Handled Prisma conflict wrapper drops the original cause",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E23-F02",
+    "heading": "E23-F02 — Dedicated migrated suite is not called by the aggregate integration script",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E24-F01",
+    "heading": "E24-F01 — Zero count still followed by page fetch",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E24-F02",
+    "heading": "E24-F02 — Identity-query consolidation is possible; exact result costs still need measurement",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E25-F01",
+    "heading": "E25-F01 — Optional shared identity consolidation, not removal of evidence reads",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "RETAIN_AND_REGRESS"
+  },
+  {
+    "finding": "E26-F01",
+    "heading": "E26-F01 — Unused lookahead and exact counts for Boolean navigation",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E26-F02",
+    "heading": "E26-F02 — Summary-only data loaded for every message page",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E26-F03",
+    "heading": "E26-F03 — Pagination acceptance needs real multi-page PostgreSQL coverage",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E27-F01",
+    "heading": "E27-F01 — Unused sixth row plus two exact navigation counts",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E27-F02",
+    "heading": "E27-F02 — Shared ownership loader fetches summary-only data",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E28-F01",
+    "heading": "E28-F01 — Four narrow reads can be consolidated without adding write locks",
+    "tasks": [
+      "ARCH-055-API-003"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E29-F01",
+    "heading": "E29-F01 — Shop-scoped idempotency copied into a globally unique claim key",
+    "tasks": [
+      "ARCH-055-API-004",
+      "ARCH-055-DATABASE-001",
+      "ARCH-055-BACKGROUND-001",
+      "ARCH-055-SHOPIFY-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E29-F02",
+    "heading": "E29-F02 — Sequence-two claim can return its identifier instead of a separate read",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E29-F03",
+    "heading": "E29-F03 — Replay and create fetch complete command bodies/state unnecessarily",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E29-F04",
+    "heading": "E29-F04 — Handled failures lose original Prisma evidence",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E30-F01",
+    "heading": "E30-F01 — HUMAN_TEXT digest targets original intent, not prepared moderated content",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E30-F02",
+    "heading": "E30-F02 — Body/template columns selected but unused by mapper",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E30-F03",
+    "heading": "E30-F03 — Read helper still share-locks installation",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E31-F01",
+    "heading": "E31-F01 — Configuration read escapes the open transaction",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E31-F02",
+    "heading": "E31-F02 — All sender failures become empty catalogue results",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E31-F03",
+    "heading": "E31-F03 — Installation read lock shared with status",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E32-F01",
+    "heading": "E32-F01 — Handled persistence conflicts lose their original causes",
+    "tasks": [
+      "ARCH-055-API-004"
+    ],
+    "endpoint_disposition": "RETAIN_AND_REGRESS"
+  },
+  {
+    "finding": "E33-F01",
+    "heading": "E33-F01 — ACTIVE generation aggregate is unnecessary under the canonical index",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E33-F02",
+    "heading": "E33-F02 — Read exceptions are reclassified without their original error",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E34-F01",
+    "heading": "E34-F01 — Lock results discard identity fields, then reread both rows",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E34-F02",
+    "heading": "E34-F02 — Writer reads merchant activation preference but does not use it",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E34-F03",
+    "heading": "E34-F03 — All-source revision retrieval should be narrowed by operation, not blindly removed",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "C08-F01",
+    "heading": "Cross-cutting command/response finding — C08-F01",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E35-F01",
+    "heading": "E35-F01 — Generation is checked before, but not on, the actual source write",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E36-F01",
+    "heading": "E36-F01 — DELETE shares the cross-writer generation gap",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E36-F02",
+    "heading": "E36-F02 — Compaction updates every survivor twice, even unchanged rows",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E37-F01",
+    "heading": "E37-F01 — Put expected generation in the mutation predicate",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E37-F02",
+    "heading": "E37-F02 — Reuse the common web-command savings without removing admission evidence",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E38-F01",
+    "heading": "E38-F01 — Two writes per source, including stationary sources",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E38-F02",
+    "heading": "E38-F02 — Ordering loads unused source and revision data",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E39-F01",
+    "heading": "E39-F01 — purposeKey is not bound to the immutable retry metadata",
+    "tasks": [
+      "ARCH-055-API-005",
+      "ARCH-055-DATABASE-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E39-F02",
+    "heading": "E39-F02 — Live-intent count needs representative plan evidence, not deletion",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E40-F01",
+    "heading": "E40-F01 — Finalisation can overwrite cleanup's tombstone",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E40-F02",
+    "heading": "E40-F02 — AVAILABLE replay is not tied to the original intake revision",
+    "tasks": [
+      "ARCH-055-API-005",
+      "ARCH-055-DATABASE-001"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E40-F03",
+    "heading": "E40-F03 — Re-read MIME policy is not enforced in the commit phase",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E40-F04",
+    "heading": "E40-F04 — Replacement generation should be guarded, not silently strengthened at the HTTP layer",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E41-F01",
+    "heading": "E41-F01 — Existing-source eligibility reads every source, then rereads the target",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E41-F02",
+    "heading": "E41-F02 — Identical metadata still writes",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E42-F01",
+    "heading": "E42-F01 — Reuse the bounded existing-source eligibility optimisation",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E42-F02",
+    "heading": "E42-F02 — The OpenAPI response list omits the implemented concurrency conflict",
+    "tasks": [
+      "ARCH-055-API-005"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E43-F01",
+    "heading": "E43-F01 — Skip page fetches whose exact count is zero",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E43-F02",
+    "heading": "E43-F02 — Read-only Shop/installation consolidation is optional",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E44-F01",
+    "heading": "E44-F01 — Reuse returned writes instead of a separate final selection lookup, only if emitted SQL improves",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E44-F02",
+    "heading": "E44-F02 — Exhausted retries erase the original Prisma diagnostic",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E45-F01",
+    "heading": "E45-F01 — Fixed 100-row batches over-fetch clean small pages; smaller batches trade payload for more calls",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E45-F02",
+    "heading": "E45-F02 — The comment's 5,000-coupon bound is not a universal capacity limit",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E45-F03",
+    "heading": "E45-F03 — Catalogue metadata can use a narrow projection",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E46-F01",
+    "heading": "E46-F01 — Three metadata projections are wider than necessary",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E46-F02",
+    "heading": "E46-F02 — Optional identity consolidation; no evidence to remove domain reads",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E47-F01",
+    "heading": "E47-F01 — Avoid clear-and-reset writes for retained selections",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E47-F02",
+    "heading": "E47-F02 — Reuse settings result and already-locked onboarding state",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E47-F03",
+    "heading": "E47-F03 — Handled constraint/serialization failures lose the original cause",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E48-F01",
+    "heading": "E48-F01 — Combine count and sum into one aggregate",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E48-F02",
+    "heading": "E48-F02 — Avoid rereading period data and irrelevant current periods",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E48-F03",
+    "heading": "E48-F03 — v2 duplicates evidence loading, but the predicates differ",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E49-F01",
+    "heading": "E49-F01 — Page and counts are not one snapshot despite the transaction",
+    "tasks": [
+      "ARCH-055-API-008"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E49-F02",
+    "heading": "E49-F02 — Translation LATERAL latest-row search is unnecessary under uniqueness",
+    "tasks": [
+      "ARCH-055-API-008"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E50-F01",
+    "heading": "E50-F01 — Thread upsert and thread bookkeeping update can be combined",
+    "tasks": [
+      "ARCH-055-API-008"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E50-F02",
+    "heading": "E50-F02 — Queue error-event listener discards the original error",
+    "tasks": [
+      "ARCH-055-API-008"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E51-F01",
+    "heading": "E51-F01 — The loser reread is necessary; update-first is a trade-off",
+    "tasks": [
+      "ARCH-055-API-008"
+    ],
+    "endpoint_disposition": "RETAIN_AND_REGRESS"
+  },
+  {
+    "finding": "E52-F01",
+    "heading": "E52-F01 — Reuse a proven identical pending catalogue target",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E53-F01",
+    "heading": "E53-F01 — Fetch only candidate-locale translations",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "C12-F01",
+    "heading": "C12-F01 — Commit-time installation generation is not revalidated",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "C12-F02",
+    "heading": "C12-F02 — Reuse the locked Shop result; do not remove Subscription coordination",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "C12-F03",
+    "heading": "C12-F03 — Full operation history is loaded to answer a blocking predicate",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "C12-F04",
+    "heading": "C12-F04 — Successful CAS outcome can return the updated row",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "C12-F05",
+    "heading": "C12-F05 — Provider and handled persistence errors lose original diagnostics",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "C12-F06",
+    "heading": "C12-F06 — Provider configuration remains a prerequisite even for replay",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E54-F01",
+    "heading": "E54-F01 — Eager feature graph on a warm materialisation path",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E57-F01",
+    "heading": "E57-F01 — Skip the page query when the same-snapshot count is zero",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E57-F02",
+    "heading": "E57-F02 — Migrated-schema read coverage is not established by the dedicated suite",
+    "tasks": [
+      "ARCH-055-API-006"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E58-F01",
+    "heading": "E58-F01 — Installed-credential generation is not rechecked inside admission",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E58-F02",
+    "heading": "E58-F02 — Reuse the locked Shop projection",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E58-F03",
+    "heading": "E58-F03 — Return the successful guarded outcome update; keep the loser reread",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E58-F04",
+    "heading": "E58-F04 — Narrow purchase-create output and retain original errors",
+    "tasks": [
+      "ARCH-055-API-007"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  },
+  {
+    "finding": "E61-F01",
+    "heading": "E61-F01 — The response deadline does not bound outstanding probe work",
+    "tasks": [
+      "ARCH-055-API-009"
+    ],
+    "endpoint_disposition": "CORRECT_AND_OR_OPTIMISE"
+  }
+]

@@ -1857,3 +1857,41 @@ current Render plan is claimed capacity-proven.
 
 COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 are promoted Ready; none is
 automatically claimed or launched.
+
+## ARCH-049 dependency-frontier update — 2026-11-01
+
+`ARCH-049-WOOCOMMERCE-002` is architect-accepted and explicitly developer-
+completed at Attempt 1. Its implementation branch is published at
+`44c39ee927606c5b9caef135fb8f4f3d271d62c6`; the parent completion record is
+published at `a7f2a940a`. All declared dependencies of
+`ARCH-049-SYSTEM-TEST-001` are now Complete. The system-test task is `Ready`,
+Attempt 0, with no claim. It remains terminal/manual-gated and requires explicit
+developer invocation before execution; this frontier update does not launch it.
+
+## ARCH-052-BACKGROUND-018 Attempt 4 architect acceptance — 2026-11-01
+
+`ARCH-052-BACKGROUND-018` is Complete / Accepted at Attempt 4. The review confirmed the distinction between caller cancellation and the service-owned optional-source deadline, and between an unavailable F2 fence and an available changed fence. The task report records the worktree and start-of-attempt synchronization evidence reconstructed from task worktree registrations, commit ancestry and remote-ref reflogs.
+
+`ARCH-052-SYSTEM-TEST-001` and `ARCH-052-SYSTEM-TEST-002` remain Pending; `ARCH-052-BACKGROUND-017` is still in review, so neither system-test dependant is Ready.
+
+
+## Current reconciliation — 2 November 2026
+
+ARCH-036 through ARCH-054 were reconciled against current implementation and task-branch evidence. This dated reconciliation supersedes older status snapshots for those tasks; it does not certify unrun scenarios or override developer-controlled completion.
+
+See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.
+
+
+### ARCH-036 implementation readiness — 2 November 2026
+
+The developer authorized lifting COMMERCE-001’s prior session deferral for its corrected cached evaluator/local-preview scope. ADMIN-001 and COMMERCE-001 are Ready, unclaimed at Attempt 0, with developer-controlled completion. Their Background prerequisite is Complete. No downstream task is started or completed by this amendment.
+
+
+### ARCH-054-BACKGROUND-002 review — 2 November 2026
+
+Attempt 1 Changes Requested; Ready with executor/claimed_at cleared. Original inbound version is not yet enforced in the locked final send permit, and the reported four integration cases do not cover recovery delay/control execution. 100 selected unit tests passed; one adversarial race regression failed. BACKGROUND-003 remains Pending. See the canonical task Architect Review for correction scope and evidence.
+
+
+### ARCH-054-BACKGROUND-002 accepted — 2 November 2026
+
+Attempt 2 accepted on implementation `64d1be0`; task Complete with claim cleared. Independent review passed 129 unit tests and 11 disposable PostgreSQL/Redis integration tests. Both Attempt 1 findings are resolved. BACKGROUND-003 promoted to Ready, Attempt 0 and unclaimed. ARCH-054 system tasks remain Pending; no downstream work was executed. This supersedes the earlier Changes Requested snapshot.

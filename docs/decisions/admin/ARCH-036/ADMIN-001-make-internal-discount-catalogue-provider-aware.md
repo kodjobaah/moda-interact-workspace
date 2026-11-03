@@ -9,15 +9,15 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 60
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: ["ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
-updated: 2026-10-14
+updated: 2026-11-02
 ---
 
 # ARCH-036-ADMIN-001 — Show provider-aware discount provenance in Moda Admin
@@ -27,7 +27,7 @@ updated: 2026-10-14
 - Architecture ID: `ARCH-036`.
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`.
-- Portable canonical task definition; **defined but not materialised**. No Git branch, worktree, commit or push has been made.
+- Canonical parent task definition is published on `task/ARCH-036-ADMIN-001`. Attempt 1 is accepted and explicitly developer-completed; both task branches are published.
 
 ## Objective
 
@@ -36,7 +36,7 @@ Make Admin discount catalogue and recovery policy presentation provider-aware wi
 ## Context
 
 
-The existing Admin console reads discount rows and ShopSettings/override FK. BACKGROUND-001 adds **Woo rows only** into the same table. For Woo, `providerStatus` is provider lifecycle and `isAvailable` is merchant selection; for Shopify, `isAvailable` retains its existing provider-availability meaning. Background owns Woo provider synchronisation; API-002 owns Woo merchant checkbox changes. Admin must not conflate these platform-specific meanings.
+The existing Admin console reads discount rows and ShopSettings/override FK. BACKGROUND-001 adds **Woo rows only** into the same table. For Woo, `providerStatus` is provider lifecycle and `isAvailable` is merchant selection; for Shopify, accepted ARCH-052-BACKGROUND-009 also makes `isAvailable` merchant selection; provider availability is represented separately. Background owns Woo provider synchronisation; API-002 owns Woo merchant checkbox changes. Admin must keep merchant selection and provider validity distinct on both platforms.
 
 ## Scope
 
@@ -51,17 +51,17 @@ Update internal list/filter/badges and recovery override presentation for **Woo*
 
 ## Requirements
 
-- For Woo, never interpret `isAvailable=false` as deleted/provider unavailable; show unselected ACTIVE coupons as provider-valid. For Shopify, preserve the existing meaning: `isAvailable` is provider availability, not the merchant checkbox.
-- Only ACTIVE/current/in-date/fixedSelectable discounts can appear as eligible provider choices. Explicitly distinguish current expired, removed, unsupported and revoked/stale catalogue.
+- For Woo, never interpret `isAvailable=false` as deleted/provider unavailable; show unselected ACTIVE coupons as provider-valid. For Shopify, preserve the accepted ARCH-052-BACKGROUND-009 meaning: `isAvailable` is merchant selection; use provider status/current-catalogue/liveness fields for provider validity.
+- Only ACTIVE/current/in-date/fixedSelectable rows can appear as assignable Admin choices. These predicates establish catalogue/code usability, not checkout eligibility or guaranteed redemption. Display expired, removed, unselectable and revoked/stale rows distinctly; missing optional provider facts must not be invented or labelled checkout-valid.
 - Admin override FIXED retains one **real same-Shop discount FK** and is independent of Woo merchant checkbox selections; use valid provider/catalogue predicates rather than requiring a Woo checkbox to be checked. Preserve Shopify override behaviour, audit and authorization without inventing multi-coupon override storage or placing Woo namespace in an FK.
 - No SQL/schema changes, historical row deletions, security/role expansion or cross-tenant catalogue leakage.
 
 ## Work Items
 
-- [ ] Separate Woo provider status, selectable and merchant-selected labels; retain existing Shopify availability/selection UI semantics.
-- [ ] Preserve Admin single-FK override and audit semantics.
-- [ ] Add provider-aware Shop, empty/error and inactive coupon fixtures.
-- [ ] Test merchant/Admin isolation and Shopify regression.
+- [x] Update `src/lib/admin/data.ts` catalogue queries and `src/components/admin/tenant-recovery-settings.tsx` presentation so Woo catalogue validity, assignability and merchant selection are separate; preserve existing Shopify behavior.
+- [x] Preserve Admin single-FK override and audit semantics.
+- [x] Add provider-aware Shop, empty/error and inactive coupon fixtures.
+- [x] Test merchant/Admin isolation and Shopify regression.
 
 ## Interfaces / Contracts
 
@@ -78,15 +78,16 @@ Existing Prisma discount/policy rows and shop/role authorisation. No API-001 rea
 
 ## Acceptance Criteria
 
-- [ ] Admin shows ACTIVE unselected coupons distinctly from removed/expired coupons.
-- [ ] Admin cannot assign foreign-Shop or invalid coupon FK.
-- [ ] Existing Shopify Admin override and audit work **without changing Shopify behaviour**; Woo FIXED override can choose a valid same-Shop coupon independently of the merchant checkbox flags.
-- [ ] No database change.
+- [x] Admin shows ACTIVE unselected coupons distinctly from removed/expired coupons.
+- [x] Both list reads and override writes enforce the target Shop/provider; stale, removed, expired, unselectable and foreign-Shop IDs are rejected on the server, including rows invalidated after the list was loaded.
+- [x] Existing Shopify Admin override and audit work **without changing Shopify behaviour**; Woo FIXED override can choose a valid same-Shop coupon independently of the merchant checkbox flags.
+- [x] No database change.
 
 ## Validation
 
-- [ ] Focused Admin tests and Shopify/Woo fixtures.
-- [ ] Role/tenant constraints, lint, typecheck/build and `git diff --check`.
+- [x] Focused Admin read/write tests for ACTIVE checked and unchecked Woo rows, stale catalogue, expiry, removed/unselectable rows, foreign-Shop IDs and a stale-choice write; prove unchecked valid Woo coupons remain assignable by Admin while existing Shopify predicates remain unchanged.
+- [x] Verify desktop/narrow layouts, provider/selection labels and existing override actor/reason/audit/expiry behavior; no merchant checkbox-write endpoint or new permissions.
+- [x] Role/tenant constraints, lint, typecheck/build and `git diff --check`.
 
 ## Stop Condition
 
@@ -102,58 +103,167 @@ For developer execution, use the canonical `/moda_developer_create ARCH-036-ADMI
 
 ### Status
 
-Not Started.
+Complete — Attempt 1, 2 November 2026. Architect Review Accepted; explicit developer completion decision recorded below. Claim cleared, attempt unchanged, execution/completion modes remain developer-owned.
 
-### Files Changed
+### Work Completed and Files Changed
 
-None.
-
-### Work Completed
-
-None.
+- `discount-eligibility.ts`, `discount-catalogue.ts`, `data.ts` and `types.ts`: same-Shop/provider/current-generation/date validation, provider validity separate from selection, and shared catalogue read behavior.
+- `recovery-policy-override.ts` and `app/actions/tenant.ts`: extracted real authorization and serializable override transaction; valid unchecked Woo and Shopify choices retain real same-Shop FKs, actor/reason/expiry and atomic audit behavior.
+- `tenant-recovery-settings.tsx`, `tenant-row.tsx` and `tenant-table.tsx`: provider/selection/eligibility labels and bounded responsive table layout.
+- Two unit suites, two security/UI contract files, disposable PostgreSQL suite/runner and package script cover the changed behavior.
+- Material assistance: developer-requested moda_admin implementation and review corrections. Ownership remained developer-controlled. No schema, merchant checkbox-write endpoint or permission expansion.
 
 ### Validation Results
 
-Not run; task not claimed.
+- Independently verified 9/9 behavioral unit tests and 5/5 source-inspection security/UI contracts.
+- Independently verified disposable PostgreSQL suite: 5/5 (four behavioral cases plus viewport fixture seed), including real failed-upsert audit rollback, inactive/non-SUPER_ADMIN denial, shop-scoped reads and unchecked Shopify assignment. Runner completed its cleanup path. [Retained output](evidence/ADMIN-001-local-validation-postgres.md).
+- Final publication check: TypeScript `tsc --noEmit` passed; changed-file ESLint completed with zero errors and five ignored-test-file warnings. Those ignored files are not claimed lint-validated.
+- `git diff --check` passed. Production build previously reported passing by executor with optional BullMQ warnings; not repeated during publication.
+- Developer-reported browser measurements: desktop viewport/document 1440/1440px; phone viewport/document 390/390px; discount table 672px inside a 251px local scroll area. No page-level horizontal overflow reported. Inline screenshots were not saved in the repository and were not independently inspected by this reviewer. Recorded measurements are accepted as developer validation evidence.
 
-### Deviations
+### Remaining Limits / Deviations
 
-None.
+No task-blocking findings remain. Validation provenance above is explicit: database/unit checks are independent; browser measurements and earlier build are executor-reported. No provider redemption guarantee or cross-service behavior change is introduced. System certification remains a separate manual task.
 
-### Assumptions
+### Git / VCS and Physical Isolation
 
-The implementation executor will verify local checkout, dependencies and available toolchain at claim time.
-
-### Unresolved Issues
-
-None recorded by an implementation executor.
-
-### Architectural Concerns
-
-Report schema, cross-service or provider-proof deviations to `moda_architect` instead of silently expanding scope.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-ADMIN-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-ADMIN-001`.
+- Both branches: `task/ARCH-036-ADMIN-001`, canonical route revalidated.
+- Start-of-attempt parent mainline incorporation: `7677963b8`; developer claim: `5abef60ae`. Implementation baseline: `420b86aa90ca9dbb13f4c1af796ee7b60d38d05f`. No new attempt or mainline merge during completion.
+- Implementation commit: `3267cef1760af15d80c0ea36bd5ee29d01131205`, pushed to the matching remote task branch.
+- Parent prior durable review/evidence: `4ff87cce2`, viewport clarification `af1f60abf`. This completion report is identified by its containing parent completion commit and published on the same task branch.
+- Shared checkouts not switched or used for task edits; no other task worktree reused. No parent submodule gitlink staged. Neither branch merged into main.
+- Reviewed 16-file fingerprint unchanged at publication: `d502430f07b08c9d6bdc11ce56f82c1d46ea5e44d2f080646bdf85d8f8896f55`.
 
 ## Architect Review
 
-### Review Status
+**Accepted — Attempt 1.** The published implementation matches the previously reviewed working-tree correction. Prior provider identity and validation findings are resolved; review history below is retained as provenance and superseded by this acceptance.
 
-Pending.
+### Developer Self-Review Accepted and Explicit Completion Decision
 
-### Review Notes
+The developer explicitly invoked `/moda_developer_update ARCH-036-ADMIN-001 complete Architect Review Accepted`. Reconciliation confirms the required work, validation and reviewed implementation are durable and published. Record the explicit decision: **Complete**, Attempt 1 unchanged, executor and claimed_at cleared.
 
-Portable definition only, not implementation acceptance.
+### Dependency Frontier
 
-### Reviewed Files
+ARCH-036-BACKGROUND-001 (Attempt 3), API-002 (Attempt 2) and WOOCOMMERCE-003 (Attempt 1) are Complete. With this acceptance all four explicit prerequisites for ARCH-036-SYSTEM-TEST-001 are Complete: it becomes dependency-ready at Attempt 0, unclaimed, with explicit manual launch still required. No system tests are executed or certified by this update. SYSTEM-TEST-002 remains superseded.
 
-Current 12 October 2026 source snapshot used to define ownership; implementation not yet reviewed.
+## Definition reconciliation — 2026-11-02
 
-### Validation Reviewed
+Admin main 420b86a still filters running/selectable discounts using isAvailable:true in src/lib/admin/data.ts (around lines 342–370), and tenant-recovery-settings.tsx presents Shopify-specific catalogue/override labels. Provider-aware Woo display and checkbox-independent Woo override choices remain unimplemented. Apply the corrected Shopify selection semantics above and run the required tenant/override/regression tests.
 
-None from this task.
+## Implementation readiness — 2026-11-02
 
-### Architecture Conformance
+Ready, Attempt 0, unclaimed. The accepted Background prerequisite is complete. Implement only Admin queries, UI and server-side override validation; neither Commerce work nor new provider fetching is a prerequisite. Keep developer-controlled completion: submit for architect acceptance, then await the explicit developer completion decision.
 
-To be determined after implementation inspection.
+
+## Architect local implementation review — Attempt 1, 2 November 2026
+
+### Decision and lifecycle
+
+**Changes requested on the local working-tree implementation; no architect acceptance.** The developer requested review before formal submission. Preserve `status: in_progress`, `executor: developer`, the original claim timestamp, Attempt 1 and developer-controlled completion. Do not mark this task Complete, clear its active claim, or promote ARCH-036-SYSTEM-TEST-001. The earlier Completion Report placeholders still await developer reconciliation through `/moda_developer_update ARCH-036-ADMIN-001`.
+
+Reviewed the eight changed/untracked files in the canonical implementation worktree, based on implementation HEAD `420b86aa90ca9dbb13f4c1af796ee7b60d38d05f`. These implementation changes are uncommitted and unpublished; this review does not publish them. The parent review note is separately published on the task branch.
+
+### Findings
+
+1. **P2 — enforce provider identity on the Shopify path too.** `src/lib/admin/discount-eligibility.ts:44` returns `discount.isAvailable` for Shopify after shared catalogue checks, before validating provider identity. A same-Shop ACTIVE/current row with `shopifyDiscountNodeId: "woo:coupon:27"`, `providerType: "WooCoupon:percent"`, `isAvailable: true` and `fixedSelectable: true` returns assignable for a SHOPIFY Shop. The database schema does not enforce provider identity against the Shop platform. Both the list and override writer use this helper, so such a wrong-provider row can be displayed/assigned despite the task's explicit target-provider requirement. Validate the existing Shopify identity/type shape without changing the existing merchant-selection predicate; add wrong-provider tests in both directions. The observed input does not demonstrate cross-tenant access: same-Shop filtering is already present.
+2. **P2 — execute the required read/write security cases.** The five focused checks in `tests/security/admin-tenant-recovery-policy.test.mjs` and `admin-shopify-discount-sync.test.mjs` use source-string assertions. The four added unit tests execute only the eligibility helper. No changed test actually runs the catalogue read or `upsertTenantRecoveryPolicyOverrideAction` against a controlled transaction to prove unchecked Woo assignment, foreign-Shop/wrong-provider rejection, invalidation between listing and submit, role denial, and atomic audit/override rollback. Add behavioral coverage at the real action/service boundary (with a suitable isolated database fixture for transaction behavior) and verify the existing Shopify path. A regex matching `Serializable` or an audit call is not evidence that those behaviors hold.
+
+### Validation and positive findings
+
+- Independently ran `node --conditions=import --import tsx --test tests/unit/arch036-admin-discount-eligibility.test.ts tests/security/admin-tenant-recovery-policy.test.mjs tests/security/admin-shopify-discount-sync.test.mjs`: **9/9 passed** (4 helper tests and 5 source-inspection tests), Node 24.19.0.
+- Independently imported the actual eligibility helper with the Shopify/Woo identity-mismatch fixture described above: returned `{ "wrongProviderAssignable": true }`. No source changes were needed for reproduction.
+- `git diff --check` passed.
+- Inspected same-Shop queries, current-generation/unavailable/expiry predicates, Woo checkbox-independent assignment, SUPER_ADMIN checks, existing reason/actor/expiry fields, audit and override in one serializable transaction, and provider-separated display. These are the appropriate implementation direction. No schema changes found.
+- Executor-reported TypeScript, changed-file ESLint and production build passes are recorded as supplied evidence, not independently rerun. Existing BullMQ build warnings and repository-wide lint failure in `use-shop-brand-media-role.ts` remain reported baseline limitations.
+- Required desktop/narrow-screen verification was not supplied or performed in this review; record it with the final developer submission.
 
 ### Follow-up
 
-Await canonical materialisation, execution and review.
+Fix the provider guard and add behavioral read/write coverage. Correct the new Shopify label/test wording that calls `isAvailable` provider availability: accepted ARCH-052 makes it merchant selection, although this task preserves Shopify's existing filter behavior. Complete the required desktop/narrow UI checks. Reconcile the Completion Report and publish the implementation through the developer workflow before requesting final acceptance; an explicit developer completion decision remains required after acceptance. No implementation edits or commits were made by the architect.
+
+Reviewed working-tree fingerprint (SHA-256 of the ordered eight relative paths and file bytes, NUL-separated): `edaad7bfef545031d882bd0a4e9f256dd6734dcfae97a5f7421be3de761f6932`.
+
+
+## Architect local correction review — Attempt 1, 2 November 2026
+
+### Decision
+
+**Changes requested: remaining validation gaps; no final architect acceptance.** The earlier Shopify/Woo identity regression is fixed. Keep the developer-owned `in_progress` claim and Attempt 1 unchanged. Implementation remains uncommitted; no downstream promotion or implementation publication is performed by this review.
+
+### Verified correction
+
+Shopify now rejects Woo IDs/types and no longer treats merchant selection as provider validity. Woo selection remains independent of assignment. Both list and write paths share eligibility checks. The server action calls the extracted override service and retains its SUPER_ADMIN guard, actor/reason/expiry handling and serializable transaction. The table presents merchant selection separately on both platforms. No schema changes were found.
+
+### Remaining findings
+
+1. **P2 — complete the requested behavioral security/transaction evidence.** The new service tests are useful and execute real service logic, but `tests/unit/arch036-admin-recovery-policy-override.test.ts:60–120` implements rollback itself by cloning state and committing only after the callback resolves. It cannot demonstrate PostgreSQL audit/override atomicity. Every service invocation supplies `authorize: async () => "admin-1"` (line 140), so actual role rejection remains covered only by source-string assertions. No new behavioral test invokes the catalogue read, and the successful Shopify case remains a helper test rather than an override service/action regression. Complete the prior review's isolated database transaction check, exercise real authorization denial with no writes, and add behavioral catalogue/read and successful Shopify override coverage. Record test-double evidence separately from database evidence; do not claim the former certifies database rollback.
+2. **P2 — required visual validation remains outstanding.** The task explicitly requires desktop/narrow layout and label verification. Missing local AUTH_URL/database configuration explains the absent check but does not satisfy it. Use an isolated configured test app or a representative rendered fixture exercising the actual component and styles, with active selected/unselected, inactive/stale, empty/error and override states. Record screenshots/results for desktop and narrow widths before acceptance. Do not use persistent merchant data.
+
+### Independent validation and limits
+
+Ran under Node 24.19.0:
+`node --conditions=import --import tsx --test tests/unit/arch036-admin-discount-eligibility.test.ts tests/unit/arch036-admin-recovery-policy-override.test.ts tests/security/admin-tenant-recovery-policy.test.mjs tests/security/admin-shopify-discount-sync.test.mjs`.
+
+**14/14 passed:** 4 eligibility helper cases, 5 override service cases using transaction doubles, and 5 source-inspection security/UI cases. `git diff --check` passed. Executor-reported TypeScript, changed-file ESLint and production build passes were not independently rerun; optional BullMQ warnings remain reported. No visual verification was performed in this review.
+
+The ten reviewed implementation files remain local and unchanged by the reviewer. Reconcile the stale Completion Report placeholders and publish through the developer workflow after required validation is complete. ARCH-036-SYSTEM-TEST-001 remains unpromoted. Historical findings and evidence are preserved above.
+
+Reviewed working-tree fingerprint (SHA-256 of the ordered ten paths listed in this review's inspection and file bytes, NUL-separated): `b4579a46f0c8b4a5d3eff3cd7b9b8f4fe24e6835f5ff14c3829f73ccb87e0cb2`.
+
+
+## Architect local validation recheck — Attempt 1, 2 November 2026
+
+### Outcome
+
+**No new blocking implementation findings in the inspected working-tree correction.** The prior transaction/authorization/read-validation gap is independently resolved. The developer reports completing the previously missing 1440px and 390px checks and correcting the discovered expanded-table overflow. That visual result is executor-reported, not independently reproduced: screenshot paths were requested but were not available in the inspected task evidence at this review. Preserve that distinction in final submission; retain viewport artifacts with the final report.
+
+This is local correction review, not acceptance of a published revision or task completion. Preserve developer-owned `in_progress`, original claim and Attempt 1. No downstream task is promoted; implementation remains uncommitted. Earlier review findings are preserved as history.
+
+### Verified behavior
+
+- The real server action delegates transaction authorization to `authorizeTenantRecoveryPolicyOverride`; the integration suite uses this same helper and rejects persisted ADMIN and inactive SUPER_ADMIN records without audit or override writes.
+- `getTenantDetail` uses the extracted `readAdminDiscountCatalogue`; real PostgreSQL tests verify same-Shop reads, wrong-provider non-assignability, stale/error catalogue behavior and selection-independent Shopify eligibility.
+- A real unchecked Shopify FK and audit persist successfully. A PostgreSQL trigger forces the override write to fail after audit insertion, proving rollback of both writes through the actual service transaction.
+- Narrow-layout corrections constrain the parent table with fixed columns, allow tenant identity text to wrap, and retain local horizontal scrolling for the discount table. No new application authorization or schema changes were introduced by these corrections.
+
+### Independent validation
+
+- Disposable PostgreSQL runner: **5/5 passed**, comprising four behavioral integration cases plus the viewport-fixture seed case. Ran `node scripts/test-arch036-admin-recovery-policy-postgres.mjs` under Node 24.19.0; migrations succeeded, runner exited successfully after its cleanup path. No persistent database was used.
+- Behavioral helper/service tests: **9/9 passed**; source-inspection security/UI contracts: **5/5 passed**. These are distinct from live visual verification.
+- `git diff --check`: passed.
+- Current lint/typecheck/build were not rerun by the reviewer; earlier executor-reported results and BullMQ warning remain historical evidence, not newly verified results for every added file.
+
+### Publication boundary
+
+Reconcile the Completion Report, retain final validation/viewport evidence and publish through `/moda_developer_update ARCH-036-ADMIN-001` before final acceptance of a submitted revision. Developer-controlled completion still requires an explicit completion decision. This review changes only parent documentation and evidence, not implementation or lifecycle metadata.
+
+Implementation base: `420b86aa90ca9dbb13f4c1af796ee7b60d38d05f`. Reviewed files (sorted):
+
+- `package.json`
+- `scripts/test-arch036-admin-recovery-policy-postgres.mjs`
+- `src/app/actions/tenant.ts`
+- `src/components/admin/tenant-recovery-settings.tsx`
+- `src/components/admin/tenant-row.tsx`
+- `src/components/admin/tenant-table.tsx`
+- `src/lib/admin/data.ts`
+- `src/lib/admin/discount-catalogue.ts`
+- `src/lib/admin/discount-eligibility.ts`
+- `src/lib/admin/recovery-policy-override.ts`
+- `src/lib/admin/types.ts`
+- `tests/integration/arch036-admin-recovery-policy.postgres.test.ts`
+- `tests/security/admin-shopify-discount-sync.test.mjs`
+- `tests/security/admin-tenant-recovery-policy.test.mjs`
+- `tests/unit/arch036-admin-discount-eligibility.test.ts`
+- `tests/unit/arch036-admin-recovery-policy-override.test.ts`
+
+SHA-256 of the ordered paths and file bytes, NUL-separated: `d502430f07b08c9d6bdc11ce56f82c1d46ea5e44d2f080646bdf85d8f8896f55`.
+
+Independent PostgreSQL output: [review log](evidence/ADMIN-001-local-validation-postgres.md).
+
+
+### Viewport evidence clarification — 2 November 2026
+
+The developer clarified that screenshots were returned as inline browser-tool images in the implementation conversation and were not saved to repository files. Recorded measurements: at 1440px viewport width, document width was 1440px; at 390px viewport width, document width was 390px. The discount table measured 672px within its own 251px horizontal scroll area. These measurements support the reported absence of page-level horizontal overflow and containment of table scrolling. They are developer-reported conversation evidence, not screenshots independently inspected by this reviewer. No repository screenshot path exists; none is claimed. This clarification supplements the local review without changing its publication boundary, task lifecycle, or downstream eligibility.

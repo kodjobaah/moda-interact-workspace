@@ -1033,3 +1033,16 @@ Proposed, iterative architecture. WOO-001/WOO-002/WOO-003, DATABASE-001/DATABASE
 Agreed and fully decomposed on 2026-10-07. Ready frontier: DATABASE-001 and SHARED-001. The architecture uses explicit provider-message status transitions, exact recovery lineage for compensation, Shop-scoped recipient suppression with an Admin-configurable seven-day default, synchronous/asynchronous policy parity, zero-billing missing-recipient handling, split purchased-credit compensation, and merchant notification only after durable correction. System validation is terminal after all implementation dependencies.
 
 [Architecture](ARCH-028-whatsapp-delivery-failure-convergence.md)
+
+
+## ARCH-052 — Checkout-personalised outreach, direct MCP provider reads and AI alternative promos
+
+Proposed, pre-production and **29 portable, defined-but-not-materialised tasks**; no new database tables, columns, migrations, image persistence, or legacy backfill. Both Shopify and Woo use `ShopifyDiscount.isAvailable` as merchant selection; runtime image read with safe fallback.
+
+[Architecture](ARCH-052-checkout-personalised-initial-whatsapp-outreach.md)
+
+## ARCH-048 — WooCommerce recurring abandonment generations (2026-10-29)
+
+The 2026-10-29 checkout-lifecycle amendment replaces the earlier one-recovery-per-checkout rule. Background tasks `001`–`011` are Complete. The terminal `SYSTEM-TEST-001` remains Pending and depends on returning-consent task `ARCH-046-WOOCOMMERCE-003` (Ready). Raw exception logging in BG010 and BG011 is accepted for non-live testing only and must be bounded before live activation. No live WooCommerce outbound activation is authorised.
+
+[Architecture](ARCH-048-woocommerce-checkout-recovery-pipeline.md) · [Background task index](../decisions/background/ARCH-048/_index.md) · [System-test task index](../decisions/system-test/ARCH-048/_index.md)

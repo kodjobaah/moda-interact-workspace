@@ -4,7 +4,7 @@ title: Database-managed platform configuration (simplified)
 status: agreed
 coordinator: moda_architect
 created: 2026-10-17
-updated: 2026-10-17
+updated: 2026-10-28
 ---
 
 # ARCH-043: Database-managed platform configuration (simplified)
@@ -12,6 +12,16 @@ updated: 2026-10-17
 ## Status
 
 **Agreed in principle by developer, 17 October 2026; portable task definitions, not materialised.** This supersedes the earlier nine-model/multi-policy/credential proposal. No application implementation or Git branch is included. `ARCH-042` is reserved for possible WooCommerce promotions work. No `docs/decisions/**/_index.md` or `docs/architecture/_index.md` edits during this architecture session.
+
+### 28 October 2026 — Messaging-only `messaging.meta` runtime consumer (controlling decision)
+
+The developer now **authorises one new Messaging repository task**: `ARCH-043-MESSAGING-001`, with canonical definition at `docs/decisions/messaging/ARCH-043/MESSAGING-001-database-backed-meta-webhook-credentials.md`. This **supersedes earlier 17 October prohibitions** on the Messaging runtime `messaging.meta` integration, but **only for this exact purpose**. All earlier comments stating “no Messaging integration/cutover” are historical and no longer controlling for `messaging.meta` once the new task is implemented. The existing Admin writer and Database table remain unchanged. The task was initially defined portably, then materialised and executed in its canonical task worktrees. Its current lifecycle state is recorded in the individual task YAML; Attempt 2 passed the guarded PostgreSQL and query-timeout validation and was architect-accepted Complete.
+
+**Agreed scope:** one purpose-bound server-only PostgreSQL reader inside `moda-interact-messaging`, strict local v1 envelope/AAD parsing and `{appSecret,verifyToken}` validation, only the existing published ARCH-039 Shared cryptography/logger, `GET /webhook/whatsapp` token verification and `POST /webhook/whatsapp` HMAC authentication, no old Meta environment-secret fallback or per-request credential caching. Implementation may add `pg` to Messaging and tests; no Prisma/schema checkout. **Do not define any new Shared primitive, package version, publication task or change to Background/Admin/API/Database or Gateway code as part of this task.**
+
+**Deployment boundary:** the existing Render test Messaging service lacks `DATABASE_URL` and configuration-unseal keyring wiring. The Messaging task must document the required secure inputs (`DATABASE_URL`, `MODA_CONFIG_UNSEAL_KEY`, `MODA_CONFIG_UNSEAL_ACTIVE_KEY_ID`, `DEPLOYMENT_ENVIRONMENT_NAME=test`) without modifying the Gateway repository. Live cutover remains contingent on deployment-owner provisioning and end-to-end verification; merely adding the Messaging reader does not prove the hosted callback can authenticate. No retroactive claim of Gateway completion or live cutover is made.
+
+**Dependencies:** only existing, complete-in-snapshot `ARCH-043-DATABASE-001` and `ARCH-043-ADMIN-002`. No new Shared or Background prerequisite. Existing terminal system-test tasks remain unchanged; a new dependency or production-rollout gate must be deliberately authorised separately, not inferred from this definition.
 
 ## Problem
 
@@ -241,3 +251,10 @@ Add `woocommerce.auth` as a sealed platform-owned `{consumerKey,consumerSecret}`
 DATABASE-001 originally introduced two key-specific secret CHECK allowlists. The developer reports having authored a forward migration to remove those restrictions; this migration must be verified and applied before enabling writes to the three additional purposes. No `ARCH-043-DATABASE-002` task will be created. Database generic integrity, uniqueness and append-only audit remain required. Secret purpose allowlisting, sealed-value validation and redacted audit enforcement are now owned by authorised server-side writers/readers; prohibit untrusted direct SQL writes and document the reduced database-level defence in depth. `ARCH-043-ADMIN-002` owns the Admin secret writer **and** its Auth.js DB-backed cutover; Commerce's equivalent is within COMMERCE-001/002. Complete system tests only after the consumers' actual source changes, validation and approved rollout. No `_index.md` change in this decision patch.
 
 Admin Auth.js bootstrap and DB-only cutover remain inside `ARCH-043-ADMIN-002`; no additional Admin authentication cutover task is created.
+
+
+## Current reconciliation — 2 November 2026
+
+The current task inventory and canonical 001 cutover/certification definitions govern remaining work. Accepted messaging.meta direct database reads supersede the historical Messaging exclusion for that purpose only. No private resolver route is introduced.
+
+See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.

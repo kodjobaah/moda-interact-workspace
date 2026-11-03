@@ -17,6 +17,7 @@ attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
   - ARCH-046-API-001
+  - ARCH-046-API-006
   - ARCH-046-WOOCOMMERCE-001
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-WOOCOMMERCE-003
@@ -26,7 +27,7 @@ depends_on:
   - ARCH-046-WOOCOMMERCE-007
 enables: []
 created: 2026-10-20
-updated: 2026-11-01
+updated: 2026-11-02
 ---
 
 # Certify Woo pre-submission WhatsApp consent capture on LocalWP
@@ -179,3 +180,7 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Definition reconciliation — 2026-11-02
+
+Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Incomplete prerequisites: ARCH-046-API-006: ready, ARCH-046-WOOCOMMERCE-003: in_progress. Status pending does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.
