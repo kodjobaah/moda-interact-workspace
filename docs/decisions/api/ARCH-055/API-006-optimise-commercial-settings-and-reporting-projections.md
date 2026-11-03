@@ -273,6 +273,16 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 - Eight full `npm test` failures and the untouched support-route lint error remain unclassified against the prepared SHA.
 - Aggregate runner registration detects a missing AI-response-delay integration suite owned by later API-009 work; no out-of-scope runner change was made.
 
+### Attempt 2 Progress — Blocked
+
+- Launcher prepared Attempt 2 on the existing mirrored task branches. The implementation candidate began at `8c8558ae44315ccb4564169aad94e454c3074ec7`; the task-start comparison baseline `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0` is present in the implementation repository.
+- The repository-owned Node bootstrap resolved the declared toolchain successfully: Node `v24.19.0`, npm `11.17.0` (the initially observed `v24.21.0`/`11.19.0` shell was corrected before the latest validation attempt).
+- Added a nonempty five-purchase case to `tests/integration/billing/purchase-history/arch055-history.postgres.test.ts`, complementing its empty-history query-shape case. The migrated billing runner passed both purchase-history cases. A separate complete runner invocation passed 21/21 suites; a later declared-toolchain invocation passed the two purchase-history cases but had one unrelated existing billing-command test timeout (`Free top-up commits exact purchase...`, Prisma transaction not found/closed).
+- Added the M13 30-closed-period / 31-signed-events fixture and v1/v2 assertions to `tests/integration/merchant/usage-history/arch055-query-shapes.postgres.test.ts`. Editor diagnostics report no errors, but the migrated PostgreSQL suite has not executed in this attempt; the terminal stopped returning command output, and the workspace test adapter does not discover Node `node:test` files.
+- No M11-M14 two-warm-up/five-sample baseline/candidate measurements or complete F01-F05 matrix results are claimed. M11's new nonempty purchase path is exercised, but independent promotion emptiness combinations, M12's 51-coupon row-assignment profiles, the migrated M13 run, and M14's full locale/handle/catalogue-state profiles remain unverified.
+- Attempted to run the full baseline suite from a temporary `git archive` of the task-start SHA. The first run stopped before tests because the API archive omits its Database submodule (`database/prisma/schema.prisma` not found). A retry linked the launcher-pinned Database checkout, but the terminal returned no execution output, so baseline classification of the eight reported failures remains incomplete. No failure is represented as proven baseline.
+- The current task report remains blocked and this progress update is local only. No commit or push was attempted after the previous automatic-review rejection of report publication; the eight-suite baseline classification, full F01-F05 evidence, M11-M14 comparative samples, and final review readiness remain outstanding.
+
 ### Architectural Concerns
 
 No schema, transaction-boundary, public contract or ownership change was required. The documented evidence gap and unrelated broad-suite failures require architect disposition before acceptance.
