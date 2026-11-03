@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 15
-executor: codex
-claimed_at: 2026-11-03T05:12:45Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-055-DATABASE-001
@@ -32,7 +32,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised on the canonical parent and implementation task worktrees. Attempt 1 was submitted for architect review and is returned to `ready` with the claim cleared; attempt remains 1.
+**Definition state:** materialised on the canonical parent and implementation task worktrees. Attempt 1 was returned to `ready` after Changes Requested; Attempt 2 has completed and is submitted for architect review.
 
 ## Objective
 
@@ -117,6 +117,7 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 - [x] Search the entire Background human-follow-up path for remaining comparisons/passes of idempotencyKey as initiationKey and account for every match.
 - [x] Add two-Shop identical-public-key, historical-key, replay/restart and cancelled-owner-versus-reclaimed-attempt cases.
 - [x] Retest provider uncertainty, permit acquisition, moderation denial, provisional-credit release and recovery after a crash between cancellation/release phases.
+- [x] Preserve the original typed missing-key integrity error message/cause in private Shared-logger diagnostics and assert redaction of owner-key values.
 
 ## Interfaces / Contracts
 
@@ -161,7 +162,8 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
 - [x] `npm run prisma:generate` — passed using Prisma Client 6.19.3 from the accepted nested Database pin.
-- [x] `npm run test:arch040-recovery-conversation` — 126 tests passed across 13 files.
+- [x] `npm run test:arch040-recovery-conversation` — 128 tests passed across 13 files on Attempt 2.
+- [x] Focused integrity diagnostic suites (`arch055-claim-key.test.ts`, `follow-up-claim-cancellation.test.ts`, `human-synchronous-rejection.test.ts`) — 33 tests passed.
 - [x] `npm run test:arch040-background-runtime:postgres` — 13 tests passed across 3 files on disposable PostgreSQL 17 + pgvector and Redis.
 - [x] `npm run test:arch040-moderation:postgres` — 10 tests passed on disposable PostgreSQL 17 + pgvector and Redis.
 - [x] `npm run build` — passed (includes Prisma generation and TypeScript compilation).
@@ -183,7 +185,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Changes Requested — Architect Review Attempt 1, 2026-11-03. The implementation consumes the accepted `ARCH-055-DATABASE-001` pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no Database schema or migration was changed. The task returns to `ready`; claim cleared and attempt unchanged.
+Submitted for architect review — Attempt 2, 2026-11-03. The Attempt 1 diagnostic finding is addressed. This implementation consumes the accepted `ARCH-055-DATABASE-001` pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no Database schema or migration was changed. Task status is `review`; executor and claim are cleared. Acceptance and downstream promotion remain pending.
 
 ### Files Changed
 
@@ -191,7 +193,7 @@ Changes Requested — Architect Review Attempt 1, 2026-11-03. The implementation
 
 ### Work Completed
 
-Updated command reads retain `followUpClaimKey`; human sequence-two claim lookup, outbound admission, cancellation owner matching, reset CAS, and cancelled-claim repair use this stored key. `idempotencyKey` remains the public replay identity. Missing/blank template keys emit a bounded Shared-logger integrity event, durably cancel the command, and leave the attempt/credit held for repair. HUMAN_TEXT and automated claim identities are unchanged.
+Updated command reads retain `followUpClaimKey`; human sequence-two claim lookup, outbound admission, cancellation owner matching, reset CAS, and cancelled-claim repair use this stored key. `idempotencyKey` remains the public replay identity. Missing/blank template keys emit a bounded Shared-logger integrity event, durably cancel the command, and leave the attempt/credit held for repair. For the Attempt 1 correction, the dispatcher now forwards the caught typed integrity error to cancellation; cancellation and outbound-fence logs include the actual error message and Error object/cause with safe identifiers, while tests confirm the private owner key is excluded. HUMAN_TEXT and automated claim identities are unchanged.
 
 ### Validation Results
 
@@ -201,11 +203,11 @@ SQL and row evidence: the locked outbound projection now reads `followUpClaimKey
 
 No query-count/latency optimization was in scope; existing query and billing behavior was retained. No MEASURE-FIRST experiment was introduced or deferred.
 
-All listed unit, integration, build, lint and diff checks passed. Initial attempts to start the test containers encountered a broken/slow Colima state; after the daemon recovered, the final runs above passed. The shared test runner performed disposable database/Redis cleanup. The one-off uniquely named PostgreSQL probe was removed. Other pre-existing Colima containers were left untouched.
+Attempt 2 validation passed: the focused integrity diagnostic suites passed 33 tests; `npm run test:arch040-recovery-conversation` passed 128 tests across 13 files; Background PostgreSQL/Redis integration passed 13 tests across 3 files; moderation PostgreSQL/Redis integration passed 10 tests; `npm run build`, `npm run lint` and `git diff --check` passed. Initial attempts to start the test containers encountered a broken/slow Colima state; after the daemon recovered, the final runs above passed. The shared test runner performed disposable database/Redis cleanup. The one-off uniquely named PostgreSQL probe was removed. Other pre-existing Colima containers were left untouched.
 
 ### Worktree and Git Evidence
 
-Launcher preparation created both task worktrees and branches. The launcher stalled before persisting its execution claim; the exact task claim was then committed and pushed as `5c2614875`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-BACKGROUND-001`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-BACKGROUND-001`. Implementation branch: `task/ARCH-055-BACKGROUND-001`; implementation commits `46aa08c7a8fcb498a79d6b87f39e597d4c88a081` and `86747ce` are pushed to `origin/task/ARCH-055-BACKGROUND-001` (head `86747ce`). The nested Database checkout is at accepted pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; its gitlink update is included in the implementation commit. The task report commit `6b861c6597ad03d407074a169663c5002b20dd36` is pushed to `origin/task/ARCH-055-BACKGROUND-001` in the workspace repository.
+Launcher preparation created both task worktrees and branches. Attempt 1 review overlay was committed and pushed as `f5df0298`; the Attempt 2 claim is `984f550df8698ab855f82e43e180ea6e4261bba`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-BACKGROUND-001`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-BACKGROUND-001`. Both use branch `task/ARCH-055-BACKGROUND-001`. Implementation commits `46aa08c7a8fcb498a79d6b87f39e597d4c88a081`, `86747ce` and Attempt 2 correction `311055d` are pushed to `origin/task/ARCH-055-BACKGROUND-001` (head `311055d`). The nested Database checkout remains at accepted pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no new gitlink change was made. The parent task report is updated for Attempt 2 and will be pushed in its own task branch commit.
 
 ### Deviations
 
@@ -213,15 +215,15 @@ No scope deviation. The test runner's installed Shared testing helper had its lo
 
 ### Assumptions
 
-Launcher evidence confirms the task is materialised in the canonical parent and implementation worktrees. The former portable-definition note has been reconciled; Attempt 1 remains unchanged.
+Launcher evidence confirms the task is materialised in the canonical parent and implementation worktrees. The former portable-definition note has been reconciled; Attempt 1 review history is preserved, and Attempt 2 is submitted for review.
 
 ### Unresolved Issues
 
-The missing-key integrity event does not include the caught typed error message/cause; see Architect Review — Attempt 1. Other implementation and race evidence is accepted as reported.
+No known implementation or validation gaps remain from the developer's Attempt 2 self-review. Architect acceptance and downstream promotion are pending.
 
 ### Architectural Concerns
 
-No architectural contract, schema, provider, or transaction-boundary gap found. The task is submitted for review; downstream tasks remain gated until architect acceptance.
+No architectural contract, schema, provider, or transaction-boundary change was introduced. The task is submitted for review; downstream tasks remain gated until architect acceptance.
 
 ## Architect Review — Attempt 1
 
