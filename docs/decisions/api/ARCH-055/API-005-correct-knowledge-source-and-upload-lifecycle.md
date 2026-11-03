@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-055-DATABASE-001
@@ -31,7 +31,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised. Attempt 2 implementation and required database validation are complete and submitted for architect review. Architect acceptance remains pending.
+**Definition state:** materialised. Attempt 2 was accepted by the architect on 3 November 2026. The task is Complete; downstream readiness remains governed by the full dependency graph.
 
 ## Objective
 
@@ -193,11 +193,11 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Review — Attempt 2. The required PostgreSQL suites and Merchant Knowledge unit suite pass; typecheck passes. Repository-wide lint retains one error in an untouched file, while targeted lint and diff checks pass. Architect acceptance and downstream promotion remain pending.
+Accepted — Attempt 2. Architect review found the implementation and required PostgreSQL evidence conform to this task's frozen contract. The required PostgreSQL suites, Merchant Knowledge unit suite, typecheck, targeted lint and diff checks pass. Repository-wide lint retains one error in an untouched file. No downstream task became eligible from this acceptance alone.
 
 ### Files Changed
 
-Implementation branch commits `e9b16c0` and `674341e` (Attempt 1, published as `origin/task/ARCH-055-API-005`); Attempt 2 changes are pending publication. Accepted Database pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+Implementation branch commits `e9b16c0` and `674341e` (Attempt 1), followed by Attempt 2 commit `505cf07d88aa7cbe29027b5058150e2fa49c8503`; all are published on `origin/task/ARCH-055-API-005`. The implementation worktree was clean and its local task branch matched the remote at review. Accepted Database pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
 
 - Source: `src/merchant/merchant-knowledge/{commands.contract.ts,commands.routes.ts,commands.service.ts,diagnostics.ts,read.service.ts,routes.ts,upload.routes.ts,upload.service.ts}`
 - Contract and harnesses: `openapi/merchant-knowledge-v1.yaml`, `scripts/test-arch035-knowledge-upload-postgres.mjs`, `scripts/test-arch035-merchant-knowledge-postgres.mjs`
@@ -213,11 +213,11 @@ Attempt 2: `npm run test:arch035-merchant-knowledge:postgres` passed 4/4; `npm r
 
 ### Worktree and Git Evidence
 
-Launcher packet: Attempt 2, claim commit `887524e78`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-005`, branch `task/ARCH-055-API-005`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-005`, branch `task/ARCH-055-API-005`. Launcher synchronization completed before claim: parent task branch clean at its claim commit, implementation branch clean at `674341e`, both tracking the task branch; accepted nested Database pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Attempt 2 implementation changes are committed and pushed on `origin/task/ARCH-055-API-005`; this parent report is committed and pushed on the task branch. No parent workspace gitlink is staged.
+Launcher packet: Attempt 2, claim commit `887524e78`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-005`, branch `task/ARCH-055-API-005`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-005`, branch `task/ARCH-055-API-005`. Launcher synchronization completed before claim: parent task branch clean at its claim commit, implementation branch clean at `674341e`, both tracking the task branch; accepted nested Database pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Attempt 2 implementation commit `505cf07d88aa7cbe29027b5058150e2fa49c8503` is pushed and matches its remote. The parent task branch was clean and matched its remote at report review (`b6720eea3`); this acceptance/report update is being published on the same parent task branch. No parent workspace gitlink is staged.
 
 ### Deviations
 
-No scope deviation. Validation was limited by the missing Docker executable and a non-completing repository TypeScript check; neither was waived.
+No scope deviation. An initial restricted unit-test run could not bind loopback for HTTP-server tests; the completed run used local loopback access and passed. The temporary ignored Docker executable link was removed after the migration-backed PostgreSQL suites completed and their disposable containers were cleaned up. Repository-wide lint has the separately recorded existing error in untouched `src/merchant/support/routes.ts:75`; targeted lint passed.
 
 ### Assumptions
 
@@ -225,7 +225,7 @@ The task implementation was based on the launcher-synchronized branch and accept
 
 ### Unresolved Issues
 
-Repository-wide lint has one pre-existing error in untouched `src/merchant/support/routes.ts:75`; targeted lint passes. Architect review and acceptance remain pending. No downstream task was advanced.
+Repository-wide lint has one pre-existing error in untouched `src/merchant/support/routes.ts:75`; targeted lint passes. No implementation or validation issue remains within this task. API-009 and SYSTEM-TEST-001 remain pending because their other explicit prerequisites are incomplete; no downstream task was advanced.
 
 ### Architectural Concerns
 
@@ -235,29 +235,29 @@ Report ownership, schema, contract, external dependency, new index/infrastructur
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 2. Task status is Complete; attempt number remains 2.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+The implementation satisfies the generation compare-and-set, upload intent purpose binding, cleanup/finalisation locking, post-lock expiry/MIME/metadata revalidation, original-intake replay, bounded eligibility, changed-only ordering, direct ACTIVE projection and post-commit error-reporting requirements. The reported Attempt 2 PostgreSQL barriers cover the required interleavings on migrated PostgreSQL; code inspection found no remaining contract gap. The stale Attempt 2 publication/validation wording identified during review is reconciled in this report.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+`src/merchant/merchant-knowledge/commands.service.ts`, `read.service.ts`, `upload.service.ts`; `openapi/merchant-knowledge-v1.yaml`; the three `arch055-*.postgres.test.ts` suites and their harness registrations; focused Merchant Knowledge unit tests.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Reviewed the submitted evidence: merchant-knowledge PostgreSQL suite 4/4, upload PostgreSQL suite 2/2, Merchant Knowledge unit tests 41/41, typecheck, targeted ESLint and `git diff --check` passed. Repository-wide lint retains the documented existing `no-empty` error at untouched `src/merchant/support/routes.ts:75`. These commands were not rerun during architect review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+Accepted against ARCH-055 revision 3 and this task's definition revision 2. No schema or migration changes were made in the API repository; the accepted Database pin is recorded. No production deployment or live-provider validation is claimed.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+No dependant is promoted: API-009 still requires API-001/002/003/004/006/007/008 to complete, and SYSTEM-TEST-001 requires its complete cross-service implementation set. Recalculate those frontiers after later prerequisite acceptances.
 
 
 ## Dependency readiness — 3 November 2026
 
-ARCH-055-DATABASE-001 is Accepted and Complete at Attempt 2. The accepted Database pin is `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; adopt it within this task's authorized consumer scope. The sole prerequisite is satisfied: Ready, Attempt 0, unclaimed. Prepare through the canonical launcher; no implementation, deployment or production migration is implied. Follow the Database task's coordinated migration/consumer rollout handoff.
+ARCH-055-DATABASE-001 is Accepted and Complete at Attempt 2 with pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; API-005 consumed that pin within its authorized scope. API-005 is Complete at Attempt 2. API-009 remains Pending because API-001, API-002, API-003, API-004, API-006, API-007 and API-008 are not all Complete. SYSTEM-TEST-001 remains Pending on the remaining implementation dependencies. Acceptance does not imply deployment, production migration or integrated system-test completion.

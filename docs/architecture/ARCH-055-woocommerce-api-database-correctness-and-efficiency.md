@@ -4,7 +4,7 @@ title: WooCommerce hosted API database correctness and efficiency
 status: proposed
 coordinator: moda_architect
 created: 2026-11-02
-updated: 2026-11-02
+updated: 2026-11-03
 ---
 
 # ARCH-055: WooCommerce hosted API database correctness and efficiency
@@ -180,7 +180,7 @@ No new service, queue, provider integration, public route, Render topology, secr
 | `ARCH-055-API-002` | moda_api | Streamline consent and recovery ingress without weakening STOP | ready | — |
 | `ARCH-055-API-003` | moda_api | Consolidate merchant settings and category projections | ready | — |
 | `ARCH-055-API-004` | moda_api | Correct recovery inbox and human-send persistence | pending | `ARCH-055-BACKGROUND-001` |
-| `ARCH-055-API-005` | moda_api | Correct knowledge-source and upload lifecycle | pending | `ARCH-055-DATABASE-001` |
+| `ARCH-055-API-005` | moda_api | Correct knowledge-source and upload lifecycle | complete | `ARCH-055-DATABASE-001` |
 | `ARCH-055-API-006` | moda_api | Optimise commercial settings and reporting projections | ready | — |
 | `ARCH-055-API-007` | moda_api | Harden durable billing-command admission | pending | `ARCH-055-API-001` |
 | `ARCH-055-API-008` | moda_api | Consolidate Support-inbox persistence | ready | — |
@@ -234,4 +234,4 @@ The existing API before/after evidence requirement now uses the fixed protocol/p
 
 ## Current execution frontier — 3 November 2026
 
-DATABASE-001 is Accepted and Complete at Attempt 2 (`5907b4572ea9efc2a24c07e4c3bd3e107db4260b`). BACKGROUND-001, API-001 and API-005 are now Ready, Attempt 0, unclaimed; SYSTEM-TEST-001 remains Pending on the remaining implementation work. This supersedes their initial-state table entries without changing unrelated task statuses. Database acceptance includes the two narrowly authorized ARCH-040 validator compatibility amendments. Initial definition manifests remain historical; individual canonical task records are authoritative. No production rollout or architecture-wide completion is claimed.
+DATABASE-001 is Accepted and Complete at Attempt 2 (`5907b4572ea9efc2a24c07e4c3bd3e107db4260b`). BACKGROUND-001 and API-001 remain Ready, Attempt 0, unclaimed. API-005 is Accepted and Complete at Attempt 2. API-009 remains Pending because API-001/002/003/004/006/007/008 are not all Complete; SYSTEM-TEST-001 remains Pending on the remaining implementation work. This supersedes initial-state table entries only where stated and does not change unrelated task statuses. Database acceptance includes the two narrowly authorized ARCH-040 validator compatibility amendments. Initial definition manifests remain historical; individual canonical task records are authoritative. No production rollout or architecture-wide completion is claimed.
