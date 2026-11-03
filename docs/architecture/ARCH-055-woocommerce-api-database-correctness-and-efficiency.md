@@ -235,3 +235,7 @@ The existing API before/after evidence requirement now uses the fixed protocol/p
 ## Current execution frontier — 3 November 2026
 
 DATABASE-001 is Accepted and Complete at Attempt 2 (`5907b4572ea9efc2a24c07e4c3bd3e107db4260b`). BACKGROUND-001, API-001 and API-005 are now Ready, Attempt 0, unclaimed; SYSTEM-TEST-001 remains Pending on the remaining implementation work. This supersedes their initial-state table entries without changing unrelated task statuses. Database acceptance includes the two narrowly authorized ARCH-040 validator compatibility amendments. Initial definition manifests remain historical; individual canonical task records are authoritative. No production rollout or architecture-wide completion is claimed.
+
+### Background consumer acceptance — 3 November 2026
+
+BACKGROUND-001 is Accepted and Complete at Attempt 2 (`311055da5f44461dc8c53e0c2f908b20c8382164`), superseding its earlier Ready frontier entry. Its direct producer dependants SHOPIFY-001 and API-004 are now Ready, Attempt 0, unclaimed. SYSTEM-TEST-001 remains Pending on the remaining implementation prerequisites. The diagnostic correction preserves persisted claim ownership and fail-closed credit behavior. Other task statuses are unchanged by this decision; no main integration, deployment or architecture-wide completion is claimed.

@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 15
 executor: null
 claimed_at: null
@@ -32,7 +32,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised on the canonical parent and implementation task worktrees. Attempt 1 was returned to `ready` after Changes Requested; Attempt 2 has completed and is submitted for architect review.
+**Definition state:** materialised on the canonical parent and implementation task worktrees. Attempt 1 was returned to `ready` after Changes Requested; Attempt 2 is Accepted and Complete after architect review on 2026-11-03.
 
 ## Objective
 
@@ -185,7 +185,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Submitted for architect review — Attempt 2, 2026-11-03. The Attempt 1 diagnostic finding is addressed. This implementation consumes the accepted `ARCH-055-DATABASE-001` pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no Database schema or migration was changed. Task status is `review`; executor and claim are cleared. Acceptance and downstream promotion remain pending.
+Accepted and Complete — Attempt 2, 2026-11-03. The Attempt 1 diagnostic finding is addressed. This implementation consumes the accepted `ARCH-055-DATABASE-001` pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no Database schema or migration was changed. Task status is `complete`; executor and claim remain cleared. SHOPIFY-001 and API-004 are promoted to Ready; SYSTEM-TEST-001 remains Pending on its other prerequisites.
 
 ### Files Changed
 
@@ -207,7 +207,7 @@ Attempt 2 validation passed: the focused integrity diagnostic suites passed 33 t
 
 ### Worktree and Git Evidence
 
-Launcher preparation created both task worktrees and branches. Attempt 1 review overlay was committed and pushed as `f5df0298`; the Attempt 2 claim is `984f550df8698ab855f82e43e180ea6e4261bba`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-BACKGROUND-001`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-BACKGROUND-001`. Both use branch `task/ARCH-055-BACKGROUND-001`. Implementation commits `46aa08c7a8fcb498a79d6b87f39e597d4c88a081`, `86747ce` and Attempt 2 correction `311055d` are pushed to `origin/task/ARCH-055-BACKGROUND-001` (head `311055d`). The nested Database checkout remains at accepted pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no new gitlink change was made. The parent task report is updated for Attempt 2 and will be pushed in its own task branch commit.
+Launcher preparation created both task worktrees and branches. Attempt 1 review overlay was committed and pushed as `f5df0298`; the Attempt 2 claim is `984f550df8698ab855f82e43e180ea6e4261bba`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-BACKGROUND-001`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-BACKGROUND-001`. Both use branch `task/ARCH-055-BACKGROUND-001`. Implementation commits `46aa08c7a8fcb498a79d6b87f39e597d4c88a081`, `86747ce` and Attempt 2 correction `311055d` are pushed to `origin/task/ARCH-055-BACKGROUND-001` (head `311055d`). The nested Database checkout remains at accepted pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no new gitlink change was made. The submitted Attempt 2 parent report was published as `b117a947c4f6c6fa8a76c5da439d05b552bd14a9`; the architect acceptance overlay follows on the same branch.
 
 ### Deviations
 
@@ -219,11 +219,11 @@ Launcher evidence confirms the task is materialised in the canonical parent and 
 
 ### Unresolved Issues
 
-No known implementation or validation gaps remain from the developer's Attempt 2 self-review. Architect acceptance and downstream promotion are pending.
+No blocking findings remain after Attempt 2 architect review. Both producer implementations and terminal system validation remain separate tasks.
 
 ### Architectural Concerns
 
-No architectural contract, schema, provider, or transaction-boundary change was introduced. The task is submitted for review; downstream tasks remain gated until architect acceptance.
+No architectural contract, schema, provider, or transaction-boundary change was introduced. Consumer acceptance enables the producer tasks; it does not authorize deployment of an incomplete producer/consumer rollout.
 
 ## Architect Review — Attempt 1
 
@@ -256,3 +256,30 @@ The persisted key is used independently of the public idempotency key in dispatc
 ### Follow-up
 
 Keep the same mirrored task branches and Attempt 1. Log/forward the original typed integrity error and add the structured-log regression, rerun the focused affected checks, update the Completion Report, and resubmit. `ARCH-055-SHOPIFY-001`, `ARCH-055-API-004` and `ARCH-055-SYSTEM-TEST-001` remain gated; no dependent status is changed by this review. No implementation source was changed by the architect review.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+**Accepted — 2026-11-03.** Implementation `311055da5f44461dc8c53e0c2f908b20c8382164`. Automatic-completion task moves to `complete`, retaining Attempt 2 and null executor/claim. Attempt 1 review remains historical above.
+
+### Review Notes
+
+The Attempt 1 P2 finding is resolved. The dispatcher forwards the original `FollowUpClaimKeyIntegrityError` through terminal cancellation. Cancellation logs that same Error object with its message and cause; direct cancellation and outbound fencing construct the typed integrity error when no originating error exists. The fields use the existing Shared logger and contain safe command/shop identifiers without the persisted owner key or attempt contents. ErrorOptions preserves the originating cause. No release, provider-admission or billing policy was relaxed.
+
+The regression suite verifies original-error forwarding, original cause identity, bounded diagnostic message/type, private owner-key omission and held attempt/credit behavior. The outbound test's negative-string assertion alone is not a standalone redaction proof; code inspection and the cancellation test's populated private owner fixture establish omission. Shared remains responsible for serialization/redaction rather than these services introducing another logger.
+
+### Reviewed Files and Evidence
+
+Reviewed all seven files changed by `86747ce..311055d`, including the four runtime modules and three unit suites. Rechecked stored-key call sites across command load, dispatcher claim/restart, cancellation/repair/CAS and outbound fences. The accepted Database pin is unchanged at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Both dedicated worktrees were clean, and their published task refs matched implementation `311055da5f44461dc8c53e0c2f908b20c8382164` and parent report `b117a947c4f6c6fa8a76c5da439d05b552bd14a9` before this review overlay.
+
+### Validation Reviewed
+
+- Independently reran `npm run test:arch040-recovery-conversation` on Node 24.19.0: **128 tests passed across 13 files**, exit 0, including the affected diagnostic regressions.
+- Independently checked `git diff --check 86747ce..HEAD`: passed.
+- Reviewed the submitted Attempt 2 results: 33 focused tests, 13 Background PostgreSQL/Redis integration tests, 10 moderation integration tests, Prisma generation, build and lint passed. Those integration/build/lint runs were not repeated by the architect; the reported temporary installed-helper startup-timeout adjustment affects test infrastructure only and is not a source/dependency change or production validation claim.
+- Earlier persisted-key, historical-key, cross-Shop and cancelled-owner/reclaimed-attempt evidence remains applicable; this correction changes diagnostic propagation, not ownership predicates or transaction ordering.
+
+### Architecture Conformance and Follow-up
+
+The original diagnostic is retained while malformed keys continue to fail closed and hold claims/credits. No blocking findings remain. `ARCH-055-SHOPIFY-001` and `ARCH-055-API-004` each depend only on this task and are promoted from Pending to Ready, Attempt 0, unclaimed. `ARCH-055-SYSTEM-TEST-001` remains Pending because its remaining producer/API prerequisites are incomplete. No implementation source, implementation commit, parent gitlink, main branch or deployed environment was changed by this review. Consumer acceptance does not waive the coordinated Database/consumer/producer rollout contract.
