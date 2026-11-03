@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-055-DATABASE-001
 enables:
@@ -31,7 +31,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
+**Definition state:** materialised. Attempt 2 was accepted by the architect on 3 November 2026. The task is Complete; downstream readiness remains governed by the full dependency graph.
 
 ## Objective
 
@@ -118,12 +118,12 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Implement conditional web mutations and Background-writer barrier regressions.
-- [ ] Use Database purpose/original-intake contracts in intent/finalisation/replay.
-- [ ] Test both cleanup/finalisation orders, expiry during waiting, changed MIME/purpose, replacement races and rollback.
-- [ ] Reduce common helper reads, ACTIVE lookup, existing-upload eligibility and identical metadata writes.
-- [ ] Optimise changed-only compaction/order with real constraints, then measure rows modified and lock duration.
-- [ ] Add post-commit response-failure tests and reprocess OpenAPI conflict semantics.
+- [x] Implement conditional web mutations and add a Background-generation barrier regression covering metadata PATCH, URL PATCH, refresh and DELETE.
+- [x] Use the accepted Database purpose/original-intake contracts in intent/finalisation/replay; add purpose-change, unbound-pending and post-reprocess replay assertions.
+- [x] Execute the full migration-backed lifecycle matrix. The merchant-knowledge and upload PostgreSQL harnesses pass on PostgreSQL 17 + pgvector; cleanup/finalisation order, expiry during lock wait, MIME changes during R2 verification, source-replacement generation races, rollback and original replay all execute.
+- [x] Reduce writer entitlement rereads, use direct ACTIVE revision lookup, bound existing-upload eligibility and skip identical metadata writes.
+- [x] Measure changed-only compaction against PostgreSQL: adjacent swap emits four source UPDATE statements (stage and final for two changed rows), tail deletion emits zero source UPDATE statements, and unaffected source timestamps remain unchanged. Identical upload metadata emits zero source UPDATE statements and preserves `updatedAt`.
+- [x] Add post-commit projection failure tests and document reprocess 409/sequential append semantics in OpenAPI.
 
 ## Interfaces / Contracts
 
@@ -142,15 +142,15 @@ The public API remains unchanged except documentation corrections explicitly aut
 
 ## Acceptance Criteria
 
-- [ ] A stale generation cannot mutate/delete newer Background source state.
-- [ ] No finaliser can change a cleanup tombstone to AVAILABLE or attach an intake to a deleted object.
-- [ ] Finalisation replay always returns original intake identity after later reprocessing.
-- [ ] Purpose changes under one request key conflict; immutable object identity and signed URL redaction remain intact.
-- [ ] 100-source adjacent reorder changes four staged/final rows instead of 200, and deleting an already-last row performs no survivor writes, subject to verified constraints.
-- [ ] Knowledge GET remains best-effort and read-only; metadata-only and ingestion operations retain their different contracts.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
-- [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
+- [x] A stale generation cannot mutate/delete newer Background source state.
+- [x] No finaliser can change a cleanup tombstone to AVAILABLE or attach an intake to a deleted object.
+- [x] Finalisation replay always returns original intake identity after later reprocessing.
+- [x] Purpose changes under one request key conflict; immutable object identity and signed URL redaction remain intact.
+- [x] 100-source adjacent reorder changes four staged/final rows instead of 200, and deleting an already-last row performs no survivor writes, subject to verified constraints.
+- [x] Knowledge GET remains best-effort and read-only; metadata-only and ingestion operations retain their different contracts.
+- [x] Original diagnostic causes survive with redaction; the route regression verifies the committed outcome and redacted cause through the Shared logger.
+- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
 
@@ -171,13 +171,13 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npm run test:arch035-merchant-knowledge:postgres`
-- [ ] `npm run test:arch035-knowledge-upload:postgres`
-- [ ] `npx tsx --test "tests/unit/merchant/merchant-knowledge/*.test.ts"`
-- [ ] `npm run typecheck`
-- [ ] `git diff --check`
-- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
-- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+- [x] `npm run test:arch035-merchant-knowledge:postgres` — 4 passed, 0 failed. Harness applied all 71 migrations, including the three ARCH-055 migrations, and removed its disposable container.
+- [x] `npm run test:arch035-knowledge-upload:postgres` — 2 passed, 0 failed. Harness applied all 71 migrations, including the three ARCH-055 migrations, and removed its disposable container. Test files run serially because they temporarily change shared catalogue metadata.
+- [x] `node --import tsx --test "tests/unit/merchant/merchant-knowledge/*.test.ts"` — 41 passed, 0 failed. The initial restricted run could not bind loopback for HTTP-server tests; the completed run used local loopback access.
+- [x] `npm run typecheck` — Prisma Client generated; TypeScript completed without errors after correcting the integration harness's unsupported Prisma transaction-options type.
+- [x] `git diff --check` — passed.
+- [x] `npm run lint` — executed; repository lint reports one error in untouched `src/merchant/support/routes.ts:75` (`no-empty`). Targeted ESLint on all changed implementation, test and harness files passed.
+- [x] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results — PostgreSQL tests measured four UPDATE statements for adjacent swap, zero for tail deletion, zero for identical metadata, and preserved unaffected timestamps. The previous algorithm traversed/staged all 100 rows twice (200 row updates by code-path analysis); the current assertion confirms two changed rows receive stage/final writes. Barrier tests passed cleanup/finaliser winner cases, expiry and MIME revalidation, Background generation CAS and rollback. Both harnesses reported passing runs and the Docker filter found no remaining disposable containers.
 
 ## Stop Condition
 
@@ -193,35 +193,39 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Accepted — Attempt 2. Architect review found the implementation and required PostgreSQL evidence conform to this task's frozen contract. The required PostgreSQL suites, Merchant Knowledge unit suite, typecheck, targeted lint and diff checks pass. Repository-wide lint retains one error in an untouched file. No downstream task became eligible from this acceptance alone.
 
 ### Files Changed
 
-None.
+Implementation branch commits `e9b16c0` and `674341e` (Attempt 1), followed by Attempt 2 commit `505cf07d88aa7cbe29027b5058150e2fa49c8503`; all are published on `origin/task/ARCH-055-API-005`. The implementation worktree was clean and its local task branch matched the remote at review. Accepted Database pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+
+- Source: `src/merchant/merchant-knowledge/{commands.contract.ts,commands.routes.ts,commands.service.ts,diagnostics.ts,read.service.ts,routes.ts,upload.routes.ts,upload.service.ts}`
+- Contract and harnesses: `openapi/merchant-knowledge-v1.yaml`, `scripts/test-arch035-knowledge-upload-postgres.mjs`, `scripts/test-arch035-merchant-knowledge-postgres.mjs`
+- Tests: `tests/integration/merchant/merchant-knowledge/{arch055-generation-races.postgres.test.ts,arch055-ordering.postgres.test.ts,arch055-upload-lifecycle.postgres.test.ts,upload.postgres.test.ts}` and `tests/unit/merchant/merchant-knowledge/{commands.test.ts,upload-reprocess.test.ts,upload-timing.test.ts}`
 
 ### Work Completed
 
-None. Task definition only.
+Implemented the web generation compare-and-set mutations and compact-only changed ordering writes; removed the web writer preference reread; changed the ACTIVE revision projection to one direct query; bounded upload-source eligibility and reused all source positions for new allocations; added purpose binding, final asset/source locks, post-lock metadata/MIME/expiry checks, original-intake replay, and safe post-commit exception classification. Added the three required ARCH-055 PostgreSQL test files and registered them in both migration harnesses. Added bounded/redacted exception fields through the Shared logger routes, retaining error name, message, code and cause. Updated the reprocess OpenAPI description and existing upload regression coverage.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+Attempt 2: `npm run test:arch035-merchant-knowledge:postgres` passed 4/4; `npm run test:arch035-knowledge-upload:postgres` passed 2/2; both harnesses applied 71 migrations, including the ARCH-055 migrations, and removed their disposable containers. The integration tests verified the generation and upload concurrency barriers, rollback, replay, stale expiry/MIME, source replacement, compact ordering query counts and metadata no-op. Ordering measured four source UPDATE statements for the adjacent swap, zero for tail deletion, and unchanged timestamps on unaffected rows. Metadata no-op emitted zero source UPDATE statements and preserved `updatedAt`. The former two-pass compaction would issue 200 source updates for 100 rows based on its code path; this baseline figure is code-derived, while the new behavior is measured by PostgreSQL query events. The 41 Merchant Knowledge unit tests passed. `npm run typecheck` passed after Prisma Client generation and a test-harness type correction. Targeted ESLint on all changed implementation/test/harness files and `git diff --check` passed. Repository-wide `npm run lint` still reports one `no-empty` error at untouched `src/merchant/support/routes.ts:75`; it was not altered. The unit suite's restricted first run failed only where tests attempted to bind loopback; the completed run used local loopback access. The temporary ignored Docker executable link was removed, and Docker showed no remaining task test containers.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+Launcher packet: Attempt 2, claim commit `887524e78`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-005`, branch `task/ARCH-055-API-005`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-005`, branch `task/ARCH-055-API-005`. Launcher synchronization completed before claim: parent task branch clean at its claim commit, implementation branch clean at `674341e`, both tracking the task branch; accepted nested Database pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Attempt 2 implementation commit `505cf07d88aa7cbe29027b5058150e2fa49c8503` is pushed and matches its remote. The parent task branch was clean and matched its remote at report review (`b6720eea3`). Architect acceptance and dependency-frontier reconciliation are committed on the parent task branch as `b38ebd86f`. No parent workspace gitlink is staged.
 
 ### Deviations
 
-None authorised.
+No scope deviation. An initial restricted unit-test run could not bind loopback for HTTP-server tests; the completed run used local loopback access and passed. The temporary ignored Docker executable link was removed after the migration-backed PostgreSQL suites completed and their disposable containers were cleaned up. Repository-wide lint has the separately recorded existing error in untouched `src/merchant/support/routes.ts:75`; targeted lint passed.
 
 ### Assumptions
 
-The uploaded source snapshot is the design baseline, not proof of current remote state. Reconcile only relevant drift on the real launcher baseline; return contract-changing drift to the architect.
+The task implementation was based on the launcher-synchronized branch and accepted Database pin. PostgreSQL behavior is intentionally not inferred from unit tests or static inspection.
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+Repository-wide lint has one pre-existing error in untouched `src/merchant/support/routes.ts:75`; targeted lint passes. No implementation or validation issue remains within this task. API-009 and SYSTEM-TEST-001 remain pending because their other explicit prerequisites are incomplete; no downstream task was advanced.
 
 ### Architectural Concerns
 
@@ -231,29 +235,29 @@ Report ownership, schema, contract, external dependency, new index/infrastructur
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 2. Task status is Complete; attempt number remains 2.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+The implementation satisfies the generation compare-and-set, upload intent purpose binding, cleanup/finalisation locking, post-lock expiry/MIME/metadata revalidation, original-intake replay, bounded eligibility, changed-only ordering, direct ACTIVE projection and post-commit error-reporting requirements. The reported Attempt 2 PostgreSQL barriers cover the required interleavings on migrated PostgreSQL; code inspection found no remaining contract gap. The stale Attempt 2 publication/validation wording identified during review is reconciled in this report.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+`src/merchant/merchant-knowledge/commands.service.ts`, `read.service.ts`, `upload.service.ts`; `openapi/merchant-knowledge-v1.yaml`; the three `arch055-*.postgres.test.ts` suites and their harness registrations; focused Merchant Knowledge unit tests.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Reviewed the submitted evidence: merchant-knowledge PostgreSQL suite 4/4, upload PostgreSQL suite 2/2, Merchant Knowledge unit tests 41/41, typecheck, targeted ESLint and `git diff --check` passed. Repository-wide lint retains the documented existing `no-empty` error at untouched `src/merchant/support/routes.ts:75`. These commands were not rerun during architect review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+Accepted against ARCH-055 revision 3 and this task's definition revision 2. No schema or migration changes were made in the API repository; the accepted Database pin is recorded. No production deployment or live-provider validation is claimed.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+No dependant is promoted: API-009 still requires API-001/002/003/004/006/007/008 to complete, and SYSTEM-TEST-001 requires its complete cross-service implementation set. Recalculate those frontiers after later prerequisite acceptances.
 
 
 ## Dependency readiness — 3 November 2026
 
-ARCH-055-DATABASE-001 is Accepted and Complete at Attempt 2. The accepted Database pin is `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; adopt it within this task's authorized consumer scope. The sole prerequisite is satisfied: Ready, Attempt 0, unclaimed. Prepare through the canonical launcher; no implementation, deployment or production migration is implied. Follow the Database task's coordinated migration/consumer rollout handoff.
+ARCH-055-DATABASE-001 is Accepted and Complete at Attempt 2 with pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; API-005 consumed that pin within its authorized scope. API-005 is Complete at Attempt 2. API-009 remains Pending because API-001, API-002, API-003, API-004, API-006, API-007 and API-008 are not all Complete. SYSTEM-TEST-001 remains Pending on the remaining implementation dependencies. Acceptance does not imply deployment, production migration or integrated system-test completion.
