@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: codex
-claimed_at: 2026-11-03T02:04:46Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -171,7 +171,9 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Attempt 1 implementation was reviewed and returned to `ready` for the query-plan evidence correction below. Attempt remains 1; execution claim is cleared. No implementation source change is requested.
+Attempt 2 completed the evidence-only query-plan correction requested by architect review. The task is submitted for review with the execution claim cleared; implementation source is unchanged from Attempt 1.
+
+**Architect review correction disposition — implemented:** Added same-fixture baseline/candidate first-page and empty-page plan evidence below. No implementation or test file changes are included in Attempt 2. Focused PostgreSQL validation passed 2/2 after plan capture.
 
 ### Files Changed
 
@@ -198,9 +200,18 @@ H01 forces a commit between the returned Support data statement and response map
 
 **Environment and fixture:** Node `24.19.0`; Prisma `6.19.3`; `pgvector/pgvector:pg17` (PostgreSQL `17.11`); canonical 68-migration schema from Database pin `7c377282aa5819b3008b7d7f3018f44f4161523e`. The test uses one thread with 105 visible messages, fixed `2026-11-02T12:00:00.000Z` fixture timestamps, current-language AVAILABLE translations, 21 pre-read rows and 84 unread. It also tests an empty page, translated and untranslated compose, replay, H01–H05, and cleans its Shops; the runner removed the disposable database container.
 
-**Candidate validation:** `npm run test:arch035-woo-support:unit` passed 15/15; `npm run test:arch035-woo-support:postgres` passed 2/2 (M16 and existing Support integration) on the final candidate; `npm run test:arch046-woo-selection:unit` passed 3/3; `npm run typecheck` completed without diagnostics; `git diff --check` passed. `npm run lint` reports only the pre-existing empty block at unchanged `src/merchant/support/routes.ts:75`.
+**Candidate validation:** `npm run test:arch035-woo-support:unit` passed 15/15; `npm run test:arch035-woo-support:postgres` passed 2/2 (M16 and existing Support integration) on the final candidate in Attempt 1 and passed 2/2 again in Attempt 2 while capturing plans; `npm run test:arch046-woo-selection:unit` passed 3/3; `npm run typecheck` completed without diagnostics; `git diff --check` passed. `npm run lint` reports only the pre-existing empty block at unchanged `src/merchant/support/routes.ts:75`. Attempt 2 made no committed source or test changes; temporary plan-capture instrumentation was removed after collection.
 
-**M16 comparison protocol:** Baseline source is task-start SHA `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`; candidate source commit is `0b208f9` (the final repair-eligibility test assertion is in `28c9c52`). Each profile used the same disposable canonical migrations and fixture, two discarded warmups, then five measured service calls with the fixture reset outside the timing window. Client-call counts include the existing principal checks and transaction control. SQL event durations are summed per sample and are distinct from service elapsed time. Result rows and persisted thread/message state were verified after the measured boundary. Queue dispatch was a deterministic in-process port; network bytes, pool wait, trigger-internal work and execution plans were not measured. Five samples are descriptive only, and the noisy timings do not support a production latency claim.
+**M16 comparison protocol:** Baseline source is task-start SHA `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`; candidate source commit is `0b208f9` (the final repair-eligibility test assertion is in `28c9c52`). Each profile used the same disposable canonical migrations and fixture, two discarded warmups, then five measured service calls with the fixture reset outside the timing window. Client-call counts include the existing principal checks and transaction control. SQL event durations are summed per sample and are distinct from service elapsed time. Result rows and persisted thread/message state were verified after the measured boundary. Queue dispatch was a deterministic in-process port; network bytes, pool wait and trigger-internal work were not measured. Five samples are descriptive only, and the noisy timings do not support a production latency claim.
+
+**Attempt 2 query-plan comparison:** Captured actual baseline page and count SQL and the emitted candidate statement with `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` on the same disposable PostgreSQL `17.11` + pgvector database and unchanged M16 fixture (105 visible messages, 105 AVAILABLE translations, 21 already read, 84 unread). After fixture insertion, `ANALYZE` refreshed statistics on `MerchantSupportMessage`, `MerchantSupportThread`, `MerchantMessageTranslation` and `CheckoutRecovery` before any measured plan. Baseline first-page and empty-page each execute the page SELECT plus count SELECT; candidate executes one statement in each profile. The temporary diagnostic instrumentation was removed after capture; no source/test change is part of Attempt 2.
+
+| Profile | Baseline emitted plan | Candidate emitted plan | Shared buffers and actual rows |
+|---|---|---|---|
+| First page (50) | Page: `Limit -> Sort -> Nested Loop`, 105 visible message rows; the lateral AVAILABLE-translation subplan scanned 105 translation rows once for each of 105 messages. Separate count: `Aggregate` over 105 messages. | One statement with the materialized scoped CTE, aggregate/page branches, and direct `(messageId,targetLanguageTag)` AVAILABLE join. The page branch returned 50 rows and the aggregate branch one row. | Baseline page+count: 323 shared hits, 0 reads, 0 temp blocks. Candidate: 8 shared hits, 0 reads, 0 temp blocks. |
+| Empty page (offset 150) | Page still sorted/scanned 105 visible messages and ran the lateral translation subplan 105 times, then returned 0 rows. Separate count returned one row. | One statement scanned the scoped set for its aggregate and page branch; the page returned 0 rows, translation access ran 0 loops, and the outer aggregate returned one row, mapped to an empty item list. | Baseline page+count: 323 shared hits, 0 reads, 0 temp blocks. Candidate: 4 shared hits, 0 reads, 0 temp blocks. |
+
+The fixture is intentionally small: PostgreSQL selected sequential scans for the tiny relations, so these results do not establish production index selection or scaling. Actual `EXPLAIN ANALYZE` elapsed times varied substantially between sequential statements; they are not used to claim a latency improvement. The existing unique `(messageId,targetLanguageTag)` index remains unchanged, no index was added, and this evidence does not authorize source changes.
 
 | M16 profile | Baseline: five service ms / five SQL-event ms; client calls | Candidate: five service ms / five SQL-event ms; client calls | Rows / state evidence |
 |---|---|---|---|
@@ -212,11 +223,11 @@ H01 forces a commit between the returned Support data statement and response map
 
 Each service operation used one Read Committed transaction (BEGIN, isolation SET, COMMIT); no rollback occurred in measured profiles. Candidate SQL evidence is emitted by the named integration test as `ARCH055_M16_EVIDENCE`; the persisted checks above verify one thread version increment and one message/translation per new compose. The fixed correctness scenarios separately verify rollback and the two-reader winner schedule.
 
-The task-start M16 comparison passed. The full baseline runner also ran the existing Support test, which failed only at the newly added redaction assertion because baseline code logged `redis://secret` verbatim; the candidate run passes that assertion. No baseline failure is represented as a candidate validation pass. Actual query plans were not collected, so no planner improvement is claimed.
+The task-start M16 comparison passed. The full baseline runner also ran the existing Support test, which failed only at the newly added redaction assertion because baseline code logged `redis://secret` verbatim; the candidate run passes that assertion. No baseline failure is represented as a candidate validation pass. Attempt 2 completes the requested emitted-plan measurement; no planner/latency improvement claim is made beyond the fixture-specific buffer and plan observations above.
 
 ### Worktree and Git Evidence
 
-Canonical launcher packet: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-008`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-008`; both use `task/ARCH-055-API-008`. Parent report branch was prepared at `9a6d634bc96f18568b786b5cb39196983a96f57c`; implementation task-start SHA was `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`. Candidate implementation commit `0b208f9` and final repair-eligibility assertion `28c9c52` were pushed to `origin/task/ARCH-055-API-008`. Database submodule remained at `7c377282aa5819b3008b7d7f3018f44f4161523e`; no schema, migration or submodule change was made. This task report is submitted on its matching parent task branch.
+Attempt 2 canonical launcher packet: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-008`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-008`; both use `task/ARCH-055-API-008`. The parent branch was current at review commit `cca669ef6`; the launcher claim was committed/pushed as `a80e4670`. The implementation branch remained at `28c9c522`, already current with `origin/main`; no implementation changes were made in Attempt 2. The launcher passed recursive submodule sync/update and confirmed Database pin `7c377282aa5819b3008b7d7f3018f44f4161523e`. The disposable PostgreSQL container was removed by the runner. This task report is submitted on its matching parent task branch.
 
 ### Deviations
 
