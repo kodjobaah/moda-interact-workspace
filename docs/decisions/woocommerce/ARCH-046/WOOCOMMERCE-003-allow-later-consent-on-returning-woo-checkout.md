@@ -292,3 +292,13 @@ None.
 ## Definition reconciliation — 2026-11-02
 
 The active implementation includes ModaApiClient::wooConsentStatus and CheckoutConsentCapture returning-shopper proof/withdrawal handling. Uncommitted Blocks-status and WordPress-harness changes remain in the dedicated implementation worktree. Preserve its active developer claim. Required real Classic/Blocks behavior and API-006 contract validation must be submitted by the owner; code presence does not establish completion.
+
+## Attempt 2 progress
+
+Developer-authorized assistance resumed the existing claim. The canonical WooCommerce worktree had disappeared with its uncommitted edits. It was restored from task branch commit `56cb6ac`, and the functional corrections were reconstructed and published as `df20fd6` on `task/ARCH-046-WOOCOMMERCE-003`.
+
+Blocks diagnostics expose only fixed event codes and bounded metadata. Shared PHP checkout test predicates eliminate discovery-order conflicts. Translation tests derive coverage from the current source catalogues.
+
+The reconstructed checkout passed 73 consent PHP tests (474 assertions). The Node suite passed 127 of 128 tests. The existing shop-brand fixture still supplies six fractional timestamp digits where its validator expects three, as previously reproduced on main. The earlier formatting pass and build results were for the lost checkout and were not reproduced in this run.
+
+Attempt 2 remains in progress under the existing developer claim. The earlier managed WordPress and Chromium run stopped before checkout tests because of Docker image and metadata I/O errors. LocalWP smoke and real Woo/API/DB proof and STOP integration remain outstanding. API-006 is still awaiting acceptance in the workspace record.
