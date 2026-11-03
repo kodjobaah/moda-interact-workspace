@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -285,7 +285,7 @@ None identified. Optional changed-row batching, store-context no-op suppression 
 - `get_errors` reported no editor diagnostics in the five changed integration files. This is not a substitute for `npm run typecheck`. No attributable Attempt 2 full typecheck, unit matrix, lint, final `git diff --check`, feature-preferences PostgreSQL, cross-domain PostgreSQL, or AI-delay PostgreSQL result was captured. C03a/b/c were not rerun in Attempt 2.
 - The C01 test passed in a canonical-run attempt after changing the order to pause the RepeatableRead reader before publication B, commit B through the writer, release the read, and assert old A plus fresh B. Writer SQL counting now excludes by-ID lineage validation and the independent reader connection. The test's `finally` releases and awaits the reader.
 - **M04/M05 paired measurement evidence remains outstanding.** The measurement baseline is `e20ceccafeade2c53bdb5ec5942b65a9ccffcc43`; the current corrected candidate is commit `de096e2`. No baseline/candidate two-warm-up plus five-restored-sample set was captured for any mandatory variant, and there are no recorded raw SQL/transaction/row/timing/retry/external-port tables. Do not infer metrics from test assertions or partial suite durations.
-- The terminal became unresponsive during a bounded rerun attempt; after it recovered, a rerun exposed the exact 5-second C01 transaction timeout above. The test-only timeout correction is committed and pushed but remains unvalidated. Required paired measurements and remaining validations are outstanding. The task is left `blocked`, with executor and claim cleared for architect direction. No downstream task was started, no Architect Review text was changed, and no main merge or gitlink update occurred.
+- The terminal became unresponsive during a bounded rerun attempt; after it recovered, a rerun exposed the exact 5-second C01 transaction timeout above. The test-only timeout correction is committed and pushed but remains unvalidated. Required paired measurements and remaining validations are outstanding. The architect reviewed this Attempt 2 evidence on 2026-11-03 and returned the task to `ready`, with executor and claim cleared for Attempt 3. This is not acceptance; no downstream task was started, no main merge or gitlink update occurred.
 
 ## Architect Review
 
@@ -317,3 +317,7 @@ Source inspection supports the chosen read-only RepeatableRead category boundary
 ### Follow-up
 
 Correct the three findings on the same implementation branch, run the required validation and attach observed evidence to this report before resubmission. Keep historical submission limitations distinguishable from new results. `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` remain `pending`; API-003 is not complete, so no downstream promotion is justified. No implementation changes, implementation commits/pushes, gitlink changes or main merges were made during this review.
+
+### Attempt 2 Disposition — 2026-11-03
+
+**Changes Requested — Attempt 2.** Return to `ready` for Attempt 3; preserve Attempt 1 and Attempt 2 evidence, and clear `executor`/`claimed_at`. This is not acceptance. The fixture corrections and reordered C01 race remain in scope, but the latest recorded canonical run is 6/8: C01 exceeded Prisma's default interactive-transaction timeout and the subsequent category-read test lost its database connection during runner teardown. The test-only 30-second timeout correction (`de096e2`) has not been validated. Required paired M04/M05 evidence and the remaining task validation matrix are still outstanding. Do not mark the task Complete, promote downstream tasks, change the Architect Review history above for Attempt 1, merge to main, or update a gitlink. The next executor must obtain a fresh launcher claim and complete the remaining evidence before resubmission.
