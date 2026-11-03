@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-11-03T10:32:27Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-055-BACKGROUND-001
@@ -31,7 +31,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised in the canonical dedicated parent and implementation worktrees. Attempt 1 was submitted and reviewed on 2026-11-03; Changes Requested returns it to Ready with claim cleared. Attempt 1 is preserved; the next launcher claim owns Attempt 2.
+**Definition state:** materialised in the canonical dedicated parent and implementation worktrees. Attempt 1 was reviewed on 2026-11-03 and returned for changes. Attempt 2 added the requested test and measurement harness updates but could not complete PostgreSQL validation because the local container runtime cannot read its PostgreSQL image blob. Attempt 1 review text is preserved; this report is returned to the architect without marking the task complete.
 
 ## Objective
 
@@ -307,3 +307,35 @@ Complete both findings in the same task worktree/branch, reconcile the Validatio
 ### Dependency promotion — 2026-11-03
 
 ARCH-055-BACKGROUND-001 is Accepted and Complete at Attempt 2 (`311055da5f44461dc8c53e0c2f908b20c8382164`). This task is now Ready, Attempt 0, unclaimed. Its dependency edge and implementation scope are unchanged; the launcher owns preparation and the first execution claim.
+
+## Attempt 2 Addendum — 2026-11-03
+
+### Status
+
+Attempt 2 is returned for architect review with the requested test cases and measurement instrumentation authored, but required migrated PostgreSQL execution and paired M06/M07 samples are blocked by the local Docker/containerd content-store failure. This is not an acceptance claim. Task status is `review`, executor and claim are cleared, attempt remains 2, and no downstream task is enabled.
+
+### Changes Authored
+
+- D02: added a real-database guard rejection for an assessment using the original HUMAN_TEXT digest after a different prepared body is persisted; asserts status remains pending. Added the matching prepared-body ALLOW completion and `moderation_allowed` assertion. Canonical migration guards remain enabled.
+- D03: added a transaction-local rename of `public.PlatformConfiguration`, then asserts the production transaction-bound catalogue path propagates Prisma `P2021`; the failed transaction rolls back the rename. This assertion has not executed.
+- M07: expanded the existing authorized sampler to text admission, due-template admission with real sealed configuration, matching replay, and prepared-status reads. It captures two warm-ups/five samples, delegate/raw logical calls, emitted normalized SQL and durations, transaction controls/durations, sender factory/reader invocations, actual configuration-table SQL reads, operation outcomes, and persisted-state snapshots. Added `ARCH055_SOURCE_ROOT` selection for task-start admission/status/configuration modules so baseline and candidate use the same test fixture and sampler. The candidate/baseline branches have not executed against PostgreSQL.
+- M06: replaced hardcoded call/affected-row/external-call claims with per-sample delegate counts, normalized SQL/timings, transaction controls/durations, returned item IDs/cursors, and before/after persisted message/recovery snapshots. Added the same task-start source selection for the fixed M06 profiles. The expanded sampler has not run; Attempt 1's timing values remain historical and do not satisfy the missing raw evidence.
+
+No production source, schema, migration, public DTO, Shared API, or Database pin was changed in Attempt 2.
+
+### Attempt 2 Validation
+
+- `npm run typecheck` — PASS after the final M06/M07 instrumentation changes; Prisma Client 6.19.3 generated successfully.
+- `npx --no-install tsx --test "tests/unit/merchant/conversations/**/*.test.ts" "tests/unit/merchant/recoveries/**/*.test.ts` — PASS, 64/64.
+- Focused ESLint on the three modified PostgreSQL test files — PASS.
+- `git diff --check` — PASS.
+- `npm run test:arch040-human-send:postgres` — BLOCKED before test execution while starting disposable PostgreSQL. The runner suppresses the underlying Docker error and reported failure during startup. A narrowly scoped Docker probe exposed the cause: containerd could not open content blob `sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8` and returned `input/output error`. The runner reached no PostgreSQL listener or test assertions. Host disk had 1.4 GiB available at the time; `docker info` responded, but the PostgreSQL image content remained unreadable. No prune or broad cleanup was run; the previously observed dead test container was left untouched.
+- M06/M07 paired PostgreSQL measurements, D02 ALLOW/wrong-digest execution, D03 database-read failure execution, and the remaining required PostgreSQL matrix are **not verified**. Do not treat Attempt 1's independently passing 64 unit/6 PostgreSQL tests as validation of Attempt 2 additions.
+
+### Remaining Blocker
+
+Recover Docker/containerd image-content health, then rerun the canonical disposable PostgreSQL runner. The same runner should execute M06/M07 once with `ARCH055_MEASURE_VERSION=baseline ARCH055_SOURCE_ROOT=/tmp/arch055-api004-baseline` and once with `ARCH055_MEASURE_VERSION=candidate`, followed by the focused D02/D03 and full required validation matrix. Record the raw output and only then reconcile the mandatory evidence checkbox. No production workaround or shared Docker cleanup is authorized by this report.
+
+### Attempt 2 Worktree
+
+Implementation changes are limited to the three authorized API-004 integration test files in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-004`. Attempt 2 implementation commit `97e797e` is pushed to `origin/task/ARCH-055-API-004`; the accepted nested Database pin remains `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. The report is being committed separately on the dedicated parent task branch. The task is not complete and no main branch was changed.
