@@ -183,7 +183,7 @@ No new service, queue, provider integration, public route, Render topology, secr
 | `ARCH-055-API-005` | moda_api | Correct knowledge-source and upload lifecycle | pending | `ARCH-055-DATABASE-001` |
 | `ARCH-055-API-006` | moda_api | Optimise commercial settings and reporting projections | ready | — |
 | `ARCH-055-API-007` | moda_api | Harden durable billing-command admission | pending | `ARCH-055-API-001` |
-| `ARCH-055-API-008` | moda_api | Consolidate Support-inbox persistence | ready | — |
+| `ARCH-055-API-008` | moda_api | Consolidate Support-inbox persistence | complete | — |
 | `ARCH-055-API-009` | moda_api | Bound readiness and reconcile API validation entrypoints | pending | `ARCH-055-API-001`, `ARCH-055-API-002`, `ARCH-055-API-003`, `ARCH-055-API-004`, `ARCH-055-API-005`, `ARCH-055-API-006`, `ARCH-055-API-007`, `ARCH-055-API-008` |
 | `ARCH-055-SYSTEM-TEST-001` | moda_system_test | Validate the accepted database corrections end to end | pending | `ARCH-055-DATABASE-001`, `ARCH-055-BACKGROUND-001`, `ARCH-055-SHOPIFY-001`, `ARCH-055-API-001`, `ARCH-055-API-002`, `ARCH-055-API-003`, `ARCH-055-API-004`, `ARCH-055-API-005`, `ARCH-055-API-006`, `ARCH-055-API-007`, `ARCH-055-API-008`, `ARCH-055-API-009` |
 
