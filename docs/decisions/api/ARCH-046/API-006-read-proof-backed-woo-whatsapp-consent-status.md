@@ -263,3 +263,10 @@ Materialise and execute this developer-owned task when ready; verify actual WOO-
 ## Developer Self-Review — Changes Requested (Attempt 1 follow-up, 2026-11-03)
 
 Reviewed published implementation `369a3e243a480a87085c47c220ab26d45709cca3` against the existing task and prior correction list. The executable PHP compatibility gap is resolved. Timing/no-write instrumentation is present but its execution is blocked by Docker storage errors. The named PostgreSQL scenario gaps and customer-identifier diagnostic coverage remain outstanding as detailed in the current Completion Report. Preserve the historical review above; no new claim or attempt was created. Review outcome: Changes Requested, `ready`, null claim, Attempt 1.
+
+
+## Definition reconciliation — 2026-11-02 (historical)
+
+The canonical task report is Ready following Attempt 1 self-review; the next claim starts Attempt 2, not an unstarted Attempt 0. Implementation 53df5aa adds src/woocommerce/consent-status/{routes,service,contract}.ts; additional uncommitted PHP compatibility fixtures, timing assertions and diagnostic redaction changes are present. Preserve the developer self-review correction contract and existing claim/attempt metadata. Those active edits are not accepted or published by this reconciliation.
+
+This historical note describes the 2 November state; the 3 November follow-up above records subsequent publication and validation accurately. It does not reset the current developer ownership, Ready status or Attempt 1.

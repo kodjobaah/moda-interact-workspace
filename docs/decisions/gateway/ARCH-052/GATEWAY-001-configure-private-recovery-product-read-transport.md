@@ -20,7 +20,7 @@ enables:
 - ARCH-052-SYSTEM-TEST-001
 - ARCH-052-SYSTEM-TEST-002
 created: '2026-10-29'
-updated: '2026-10-31'
+updated: 2026-11-02
 ---
 
 # ARCH-052-GATEWAY-001: Configure private Shopify proof and direct MCP WooCommerce REST access
@@ -166,3 +166,7 @@ To be determined after implementation review.
 ### Follow-up
 
 Materialise with the canonical task launcher after the planning patch is integrated and dependencies become Complete.
+
+## Definition reconciliation — 2026-11-02
+
+Gateway ac092dc already defines private MCP services in both Render Blueprints and attaches the per-environment commerce credential keyring. MCP connections/woocommerce/direct-product-reader.ts consumes COMMERCE_CONNECTION_KEYS_JSON and performs provider reads directly. Narrow remaining work to verifying the existing wiring, private/public route boundaries and actual required environment inputs with the repository validators/smoke fixtures; change configuration only if those checks expose a gap. No proof service or API proxy is required; no validation-only completion is asserted here.

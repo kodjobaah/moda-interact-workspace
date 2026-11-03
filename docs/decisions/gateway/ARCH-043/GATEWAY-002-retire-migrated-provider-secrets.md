@@ -9,18 +9,22 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 75
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-043-ADMIN-007", "ARCH-043-ADMIN-008", "ARCH-043-ADMIN-009", "ARCH-043-ADMIN-010", "ARCH-043-BACKGROUND-005", "ARCH-043-BACKGROUND-006", "ARCH-043-BACKGROUND-007", "ARCH-043-API-002", "ARCH-043-API-003"]
-enables: ["ARCH-043-SYSTEM-TEST-002"]
+depends_on: []
+enables: []
 created: 2026-10-17
-updated: 2026-10-17
+updated: 2026-11-02
 ---
 
 # Retire superseded provider secret wiring after database cutover
+
+> **Superseded on 2026-11-02 — do not claim or execute.** Current owner: `ARCH-043-GATEWAY-001`. The controlling ARCH-043 inventory consolidates policy and credential deployment/certification into its canonical 001 task. The retired per-purpose consumer IDs in this draft must not be resurrected.
+> Original sections below remain historical provenance; their work items and dependency list are not operative.
+
 
 ## Architecture
 

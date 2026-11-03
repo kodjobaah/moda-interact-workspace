@@ -313,8 +313,8 @@ Individual task YAML is authoritative within the exported snapshot. SHARED-011, 
 | [ARCH-052-BACKGROUND-010](../decisions/background/ARCH-052/BACKGROUND-010-implement-langgraph-initial-outreach-offer-agent.md) | `moda_background` | Complete | `ARCH-052-SHARED-012`, `ARCH-052-MCP-002`, `ARCH-052-COMMERCE-007`, `ARCH-052-SHARED-010`, `ARCH-052-SHARED-014`, `ARCH-052-BACKGROUND-016` |
 | [ARCH-052-BACKGROUND-011](../decisions/background/ARCH-052/BACKGROUND-011-enrich-shopify-discount-catalogue-condition-facts.md) | `moda_background` | Complete | `ARCH-052-BACKGROUND-009`, `ARCH-052-SHARED-010` |
 | [ARCH-052-BACKGROUND-016](../decisions/background/ARCH-052/BACKGROUND-016-reconcile-current-product-prices-before-outreach.md) | `moda_background` | Ready | `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-005` |
-| [ARCH-052-BACKGROUND-017](../decisions/background/ARCH-052/BACKGROUND-017-enforce-initial-checkout-items-at-send.md) | `moda_background` | Ready | `ARCH-052-ADMIN-004` (complete), `ARCH-052-BACKGROUND-008`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-005` |
-| [ARCH-052-BACKGROUND-018](../decisions/background/ARCH-052/BACKGROUND-018-guarantee-initial-no-offer-text-after-enrichment-failure.md) | `moda_background` | Complete | `ARCH-052-BACKGROUND-008`, `ARCH-052-ADMIN-004` (complete), `ARCH-052-BACKGROUND-005` |
+| [ARCH-052-BACKGROUND-017](../decisions/background/ARCH-052/BACKGROUND-017-enforce-initial-checkout-items-at-send.md) | `moda_background` | Complete | `ARCH-052-ADMIN-004`, `ARCH-052-BACKGROUND-008`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-005` |
+| [ARCH-052-BACKGROUND-018](../decisions/background/ARCH-052/BACKGROUND-018-guarantee-initial-no-offer-text-after-enrichment-failure.md) | `moda_background` | Ready | `ARCH-052-BACKGROUND-008`, `ARCH-052-ADMIN-004` (complete), `ARCH-052-BACKGROUND-005` |
 | [ARCH-052-BACKGROUND-012](../decisions/background/ARCH-052/BACKGROUND-012-upload-trusted-meta-image-template-sample.md) | `moda_background` | Ready | `ARCH-052-ADMIN-002`, `ARCH-047-BACKGROUND-003` |
 | [ARCH-052-COMMERCE-001](../decisions/commerce/ARCH-052/COMMERCE-001-verify-shopify-discount-against-current-checkout.md) | `moda_commerce` | Superseded | — |
 | [ARCH-052-COMMERCE-002](../decisions/commerce/ARCH-052/COMMERCE-002-read-authoritative-shopify-checkout-product-image.md) | `moda_commerce` | Superseded | — |
@@ -355,7 +355,7 @@ Individual task YAML is authoritative within the exported snapshot. SHARED-011, 
 | [ARCH-052-SYSTEM-TEST-001](../decisions/system-test/ARCH-052/SYSTEM-TEST-001-certify-shopify-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-BACKGROUND-013`, `ARCH-052-ADMIN-003`, `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-008`, `ARCH-052-SHOPIFY-001`, `ARCH-052-BACKGROUND-009`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-GATEWAY-001`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-012`, `ARCH-052-BACKGROUND-011`, `ARCH-052-SHARED-014`, `ARCH-052-BACKGROUND-015` |
 | [ARCH-052-SYSTEM-TEST-003](../decisions/system-test/ARCH-052/SYSTEM-TEST-003-certify-shared-sender-contextual-replies.md) | `moda_system_test` | Ready | `ARCH-052-BACKGROUND-015`, `ARCH-052-BACKGROUND-008`, `ARCH-052-ADMIN-003`, `ARCH-012-MESSAGING-001`, `ARCH-040-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
 | [ARCH-052-SYSTEM-TEST-002](../decisions/system-test/ARCH-052/SYSTEM-TEST-002-certify-woocommerce-initial-outreach-modes.md) | `moda_system_test` | Pending | `ARCH-052-ADMIN-003`, `ARCH-052-BACKGROUND-014`, `ARCH-052-SHARED-012`, `ARCH-052-BACKGROUND-008`, `ARCH-052-GATEWAY-001`, `ARCH-052-ADMIN-001`, `ARCH-052-ADMIN-002`, `ARCH-052-SHARED-003`, `ARCH-052-MCP-001`, `ARCH-052-MCP-002`, `ARCH-052-MCP-003`, `ARCH-052-COMMERCE-006`, `ARCH-052-COMMERCE-007`, `ARCH-052-BACKGROUND-010`, `ARCH-052-SHARED-010`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-012`, `ARCH-052-SHARED-014`, `ARCH-052-MCP-006`, `ARCH-052-BACKGROUND-015` |
-| [ARCH-052-SYSTEM-TEST-004](../decisions/system-test/ARCH-052/SYSTEM-TEST-004-certify-mandatory-initial-checkout-items.md) | `moda_system_test` | Pending | `ARCH-052-ADMIN-004`, `ARCH-052-BACKGROUND-017`, `ARCH-052-BACKGROUND-008`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-005` |
+| [ARCH-052-SYSTEM-TEST-004](../decisions/system-test/ARCH-052/SYSTEM-TEST-004-certify-mandatory-initial-checkout-items.md) | `moda_system_test` | Ready | `ARCH-052-ADMIN-004`, `ARCH-052-BACKGROUND-017`, `ARCH-052-BACKGROUND-008`, `ARCH-052-BACKGROUND-007`, `ARCH-052-BACKGROUND-005` |
 | [ARCH-052-WOOCOMMERCE-001](../decisions/woocommerce/ARCH-052/WOOCOMMERCE-001-expose-read-only-native-coupon-verification.md) | `moda_woocommerce` | Superseded | — |
 | [ARCH-052-WOOCOMMERCE-002](../decisions/woocommerce/ARCH-052/WOOCOMMERCE-002-create-secure-customer-initiated-checkout-resume.md) | `moda_woocommerce` | Superseded | — |
 
@@ -400,3 +400,10 @@ None delegated to implementation agents. Unknown provider-specific customer rest
 - 2026-10-29 **Attempt 6**: Removed frozen merchant-policy and duplicate sent-offer snapshot; superseded SHARED-001/004, BACKGROUND-001/006 and redundant API-001; consolidated Woo restore-link adapter into BACKGROUND-008; retained current-settings MCP policy and existing generic tool envelope/confirmed outbound message receipt.
 
 - 2026-10-31: Required logging the actual provider/SDK errors with bounded sensitive-data redaction across outreach/model/MCP/Shopify/Meta boundaries; added MCP-006 for the accepted Woo reader. Internal reason codes remain separate.
+
+
+## Current reconciliation — 2 November 2026
+
+BACKGROUND-013 Attempt 2 is accepted, BACKGROUND-017 accepted completion is reconciled, and SYSTEM-TEST-004 is Ready for manual execution. Gateway transport verification and terminal scenario certification remain outstanding.
+
+See [the task-by-task reconciliation](ARCH-036-054-task-reconciliation-2026-11-02.md) for current lifecycle, prerequisites, source revisions and remaining validation.

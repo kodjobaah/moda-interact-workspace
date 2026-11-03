@@ -30,9 +30,10 @@ depends_on:
 - ARCH-043-ADMIN-004
 - ARCH-043-API-004
 - ARCH-043-GATEWAY-001
+- ARCH-043-MESSAGING-001
 enables: []
 created: '2026-10-17'
-updated: '2026-10-17'
+updated: 2026-11-02
 ---
 
 # Certify runtime policy configuration across services
@@ -96,19 +97,22 @@ Terminal certification additionally covers `woocommerce.billing`, `shopify.partn
 
 ## Dependencies
 
-- `ARCH-043-DATABASE-001`
-- `ARCH-043-ADMIN-001`
-- `ARCH-043-ADMIN-002`
-- `ARCH-043-BACKGROUND-001`
-- `ARCH-043-BACKGROUND-002`
-- `ARCH-043-API-001`
-- `ARCH-043-API-002`
-- `ARCH-043-COMMERCE-001`
-- `ARCH-043-COMMERCE-002`
-- `ARCH-043-SHOPIFY-001`
-- `ARCH-043-SHOPIFY-002`
-- `ARCH-043-MCP-001`
-- `ARCH-043-GATEWAY-001`
+- ARCH-043-DATABASE-001
+- ARCH-043-ADMIN-001
+- ARCH-043-ADMIN-002
+- ARCH-043-BACKGROUND-001
+- ARCH-043-BACKGROUND-002
+- ARCH-043-API-001
+- ARCH-043-API-002
+- ARCH-043-COMMERCE-001
+- ARCH-043-COMMERCE-002
+- ARCH-043-SHOPIFY-001
+- ARCH-043-SHOPIFY-002
+- ARCH-043-MCP-001
+- ARCH-043-ADMIN-004
+- ARCH-043-API-004
+- ARCH-043-GATEWAY-001
+- ARCH-043-MESSAGING-001
 
 ## Enables
 
@@ -211,3 +215,11 @@ None
 ## 17 October 2026 ARCH-043 extension (architect-owned amendment)
 
 Add integrated coverage for Admin/Commerce auth cold-start/login/rotation, Commerce bootstrap admin selector, full six-field R2 cutover, and SQL sealed/redacted protections for the three new keys. WooCommerce global key storage is not a substitute for per-shop grants and must not be called as such.
+
+## Controlling consolidation — 2026-11-02
+
+This canonical task includes the former SYSTEM-TEST-002 encrypted-credential certification: current database credentials work across actual consumers; tampered, foreign, revoked and missing required records fail closed; unsupported legacy environment values cannot override configured database authority; no plaintext secrets leak through HTTP, logs, queues or browser output. Preserve only explicitly accepted absent-record authentication fallbacks and required infrastructure roots. Include the accepted Messaging `messaging.meta` direct database reader. The duplicate non-secret-only definition is retired from discovery. No implementation task depends on this terminal certification.
+
+## Definition reconciliation — 2026-11-02
+
+Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Incomplete prerequisites: ARCH-043-GATEWAY-001: ready. Status pending does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.

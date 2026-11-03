@@ -4,7 +4,7 @@ title: Merchant-configurable delayed AI replies with immediate human handover
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-31
-updated: 2026-11-01
+updated: 2026-11-02
 ---
 
 # ARCH-054: Merchant-configurable delayed AI replies with immediate human handover
@@ -150,15 +150,15 @@ Database migration → Shared implementation acceptance → Shared publication �
 | ARCH-054-DATABASE-001 | moda_database | Complete | — |
 | ARCH-054-SHARED-001 | moda_shared | Complete | — |
 | ARCH-054-SHARED-002 | moda_shared | Complete | SHARED-001 |
-| ARCH-054-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
-| ARCH-054-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001, API-002, SHOPIFY-002 |
-| ARCH-054-BACKGROUND-003 | moda_background | Pending | BACKGROUND-002 |
+| ARCH-054-BACKGROUND-001 | moda_background | Complete | DATABASE-001 |
+| ARCH-054-BACKGROUND-002 | moda_background | Complete | BACKGROUND-001, API-002, SHOPIFY-002 |
+| ARCH-054-BACKGROUND-003 | moda_background | Complete | BACKGROUND-002 |
 | ARCH-054-API-001 | moda_api | Complete | DATABASE-001, SHARED-002 |
 | ARCH-054-API-002 | moda_api | Complete | DATABASE-001 |
 | ARCH-054-SHOPIFY-001 | moda_app | Complete | DATABASE-001, SHARED-002 |
 | ARCH-054-SHOPIFY-002 | moda_app | Complete | DATABASE-001 |
 | ARCH-054-WOOCOMMERCE-001 | moda_woocommerce | Complete | API-001 |
-| ARCH-054-SYSTEM-TEST-001 | moda_system_test | Pending | all implementation/release tasks |
+| ARCH-054-SYSTEM-TEST-001 | moda_system_test | Ready | all implementation/release tasks |
 | ARCH-054-SYSTEM-TEST-002 | moda_system_test | Pending | SYSTEM-TEST-001, BACKGROUND-003 |
 
 ## Open questions
@@ -170,3 +170,19 @@ None blocking task definition. Whether to add optional merchant notifications fo
 - 2026-10-31: Initial ARCH-054 definition, split from ARCH-040/ARCH-052; integer 0–30 merchant delay, zero additional delay for human replies, persisted deadline and takeover fencing.
 - 2026-11-01: Accepted ARCH-054-SHOPIFY-002 at Attempt 2 after the disposable PostgreSQL transaction suite passed all three required cases. BACKGROUND-002 remains Pending because BACKGROUND-001 is Ready, not Complete; no downstream task became newly eligible.
 - 2026-11-01: Accepted ARCH-054-WOOCOMMERCE-001 at Attempt 1 after reviewing the protected Woo REST proxy, settings UI and submitted validation. No downstream task became newly eligible.
+- 2026-11-02: Accepted ARCH-054-BACKGROUND-001 at Attempt 1 after reviewing the text/audio transaction capture, branch/worktree evidence, and successful four-test PostgreSQL integration run. BACKGROUND-002 is Ready; no implementation was started.
+
+
+### 2 November 2026 — BACKGROUND-002 Attempt 1 review
+
+Changes Requested on implementation `35772c5`: retain the frozen deadline/control-revision implementation, close the final current-inbound-version dispatch-admission race, and add recovery-specific PostgreSQL/Redis validation of delay and audited takeover/dispatch races. Independent selected unit run passed 100 tests; an adversarial before-provider ownership-await regression reproduced stale send admission. BACKGROUND-002 returns to Ready with claim cleared, Attempt 1 preserved; BACKGROUND-003 and terminal system tests remain Pending.
+
+
+### 2 November 2026 — BACKGROUND-002 Attempt 2 accepted
+
+Accepted `64d1be0`: original inbound version now reaches both locked final send fences, resolving the stale-dispatch race. Independent validation passed 129 focused unit tests and 11 disposable PostgreSQL/Redis integration tests, including recovery delay and both admission race orderings. BACKGROUND-002 is Complete; BACKGROUND-003 is Ready, unclaimed at Attempt 0. Both terminal system tasks remain Pending; ARCH-054 is not yet implemented end to end.
+
+
+## BACKGROUND-003 acceptance — 2 November 2026
+
+Accepted Attempt 2 (`8d120af`): bounded repair now retries retained failed jobs only when due, preserves active jobs and frozen state, and handles concurrent replicas. Independent verification passed 7 focused unit tests and 5 disposable integration tests. BACKGROUND-003 is Complete. SYSTEM-TEST-001 is Ready for explicit manual launch; SYSTEM-TEST-002 remains Pending on that certification. This supersedes prior readiness notes; end-to-end architecture certification remains outstanding.

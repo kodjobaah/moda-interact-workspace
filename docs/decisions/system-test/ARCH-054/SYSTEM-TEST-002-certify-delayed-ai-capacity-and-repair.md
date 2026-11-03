@@ -19,7 +19,7 @@ depends_on:
   - ARCH-054-BACKGROUND-003
 enables: []
 created: 2026-10-31
-updated: 2026-10-31
+updated: 2026-11-02
 ---
 
 
@@ -156,3 +156,17 @@ Pending
 ### Follow-up
 
 None
+
+## Definition reconciliation — 2026-11-02
+
+Inspected system-test main 41d7583: catalogue/scenarios.json has 169 scenarios and existing src/harness recovery, messaging, language and platform-configuration fixtures. Existing generic harness coverage is reusable, but this task has no accepted scenario-by-scenario execution report for its architecture acceptance matrix. Implement/extend the required scenarios and record real runtime, provider-emulator/browser/database evidence as defined above. Incomplete prerequisites: ARCH-054-SYSTEM-TEST-001: pending, ARCH-054-BACKGROUND-003: ready. Status pending does not certify a test pass. This terminal task remains manually invoked; this reconciliation does not claim or launch it.
+
+
+## Dependency reconciliation — 2 November 2026
+
+BACKGROUND-002 is Complete after Attempt 2 architect acceptance. BACKGROUND-003 is Ready but unfinished; this system task remains Pending. No execution or certification is implied.
+
+
+## Dependency reconciliation — 2 November 2026
+
+BACKGROUND-003 is Accepted and Complete at Attempt 2. SYSTEM-TEST-001 is dependency-ready but not Complete; this task remains Pending, Attempt 0, unclaimed. Manual launch/certification gates are unchanged.
