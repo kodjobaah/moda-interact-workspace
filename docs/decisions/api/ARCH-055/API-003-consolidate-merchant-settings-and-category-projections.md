@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-11-03T06:09:52Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on: []
 enables:
@@ -290,7 +290,7 @@ None identified. Optional changed-row batching, store-context no-op suppression 
 
 ### Attempt 4 correction and validation evidence — 2026-11-03
 
-**Disposition:** implementation and required evidence are ready for review publication. API commit `e958f422cad24039ca71356d192f75c4faec6a54` is committed locally; automatic approval review rejected its push to `https://github.com/kodjobaah/moda-interact-api.git` pending explicit destination/payload authorization. Keep `status: in_progress` until the implementation and this report are pushed; this is not an acceptance or a new claim. Prior submissions/reviews above and below remain historical.
+**Disposition:** Attempt 4 implementation `e958f422cad24039ca71356d192f75c4faec6a54` and report `cf6e080e2f7571da8dfadc0d4d32a87e5d0742dc` are pushed to their matching task branches. The task is submitted for architect review; this is not an acceptance or completion decision. Prior submissions/reviews above and below remain historical.
 
 **Correction checklist**
 1. **Implemented — canonical fixtures/cleanup.** Revalidated the previously published slug/key, pending-draft, revocation and immutable-evidence teardown fixes on the accepted Database pin. Removed the now-unused teardown variables in bootstrap/category fixtures. Canonical settings runner: 8/8 before measurement additions; final paired runs: 9/9 each, including all original eight cases plus measurement coverage.
