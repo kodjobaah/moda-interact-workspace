@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
-executor: codex
-claimed_at: 2026-11-03T11:00:45Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on: []
 enables:
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised in the canonical dedicated task worktrees. Attempt 4 was submitted and reviewed on 2026-11-03; Changes Requested returns it to Ready with claim cleared and Attempt 4 preserved. Only the normal launcher may claim Attempt 5.
+**Definition state:** materialised in the canonical dedicated worktrees. Attempt 5 is Accepted and Complete after architect review on 2026-11-03; executor and claim are cleared. Prior attempts and evidence remain historical below.
 
 ## Objective
 
@@ -669,3 +669,30 @@ Independent reproduction constructed a `PrismaClientKnownRequestError` with a no
 ### Follow-up
 
 Apply the bounded message-preservation correction in the existing two routes and tests, run affected/focused regressions, typecheck, changed-file lint and diff checks, and resubmit with actual results. Preserve historical reports and commercial evidence. API-009 and SYSTEM-TEST-001 remain Pending because API-006 is not Complete. The next launcher claim owns Attempt 5. No implementation edits/commits/pushes, parent gitlink changes, deployment or main merge were made by this review.
+
+
+## Architect Review — Attempt 5, 3 November 2026
+
+### Review Status
+
+**Accepted.** Implementation `c78b6e5b137d04b1b56aedf853c654ebd9c46b23`, submitted parent `1ca913bb7127ffce809b01524cb9d1d5493f3135`. Automatic-completion task moves to Complete, preserving Attempt 5 and clearing executor/claimed_at. No blocking findings remain.
+
+### Findings Resolved
+
+The remaining Attempt 4 P2 is resolved in both route boundaries. For the handled P2002/P2003/P2034 Prisma formats, the final safe source reason is retained only after a recognized invocation/header and completed rendering boundary. Invocation arguments, code/source context, arbitrary metadata and stacks remain excluded; the retained reason passes through the existing sensitive-span filters before Shared bounds. Original exception/cause identity and the source database code are preserved, with unchanged public response/status/cache behavior. Unknown or incomplete invocation layouts remain redacted with their code; this explicit privacy fallback does not invent a database explanation.
+
+Inspected both route changes and real Shared-sink GET/PUT regressions covering argument blocks beyond the string bound, source frames, minimal/CRLF formats, combined source/arguments and misleading or incomplete renderings. The tests verify retained safe reasons and exclusion of private/customer/invocation values. The code remains scoped to this diagnostic correction; no commercial service method or query behavior changed in Attempt 5.
+
+The earlier M11–M14/F01–F05 evidence and baseline classifications remain accepted supporting evidence from the previous reviews. Independently reconfirmed the unchanged artifact SHA-256 `c790ad66f5f911223c1af1bf1fa36d2508ddd24c091cceb87a7d926df46b2b63`. No repeated commercial measurements are required for this diagnostic-only correction or the already-approved content-identical integrated Database pin.
+
+### Validation Reviewed
+
+- Independently reran the required five-directory focused unit matrix with Node 24.19.0: **110 passed, 0 failed, 0 skipped**, exit 0, including both new parameterized multiline Prisma regressions.
+- Independently checked `git diff --check 6757372..HEAD`: passed.
+- Reviewed reported final-source typecheck and changed-file ESLint passes. These were not independently rerun; no new full-suite/full-lint or PostgreSQL execution is claimed here.
+- Previously recorded broader baseline/main failures remain explicit limitations, not a claimed full-suite pass. This review establishes no new task-owned failure.
+- Both dedicated task worktrees were clean and their published task refs matched the reviewed implementation and submitted parent heads before this overlay. The accepted integrated Database pin is retained; no schema or migration change was authored by this attempt.
+
+### Architecture Conformance and Dependencies
+
+All prior blocking findings are closed. Commercial accounting, public contracts, snapshot/cursor semantics and optional retain/defer decisions remain as previously reviewed. API-009 still has incomplete API-004 and API-007 prerequisites in the canonical task records; it stays Pending. SYSTEM-TEST-001 likewise stays Pending on remaining implementation prerequisites. Acceptance of API-006 satisfies its dependency edges but does not claim either dependent ready or the architecture implemented. No implementation source/commit/push, parent implementation gitlink, main merge or deployed environment was changed by this review.
