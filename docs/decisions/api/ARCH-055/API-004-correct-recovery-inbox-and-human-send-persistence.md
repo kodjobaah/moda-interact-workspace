@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-11-03T05:55:07Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-055-BACKGROUND-001
@@ -31,7 +31,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
+**Definition state:** materialised in the canonical dedicated parent and implementation worktrees. Attempt 1 was submitted and reviewed on 2026-11-03; Changes Requested returns it to Ready with claim cleared. Attempt 1 is preserved; the next launcher claim owns Attempt 2.
 
 ## Objective
 
@@ -160,7 +160,7 @@ Construct this factory in composition with the existing environment/unsealEnviro
 - [x] First/latest message pages avoid two navigation counts; first related pages avoid two counts; the remaining navigation query is bounded existence.
 - [x] No history/query optimisation weakens final admission or evidence ownership.
 - [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence. See Attempt 1 review gaps in M06/M07 and D02/D03.
 - [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
@@ -205,7 +205,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Ready for Architect Review. The task remains at `review`; it is not marked complete.
+Attempt 1 was submitted for Architect Review, but its YAML incorrectly remained `in_progress` with an active claim. The architect review below returns Changes Requested and reconciles the task to `ready`, with claim cleared. It is not complete.
 
 ### Files Changed
 
@@ -272,31 +272,37 @@ Full lint has the unrelated existing support-route `no-empty` error described ab
 
 Report ownership, schema, contract, external dependency, new index/infrastructure or transaction-boundary gaps here. Do not expand scope silently.
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending.
+**Changes Requested — 2026-11-03.** Reviewed implementation `6c7b173ee612c2cee025857518874926a71f5060` and submitted parent `74ad4a11b5eb05ba102ebc4d964b322dc48408ee`. Return to Ready, preserve Attempt 1, and clear executor/claimed_at. Not accepted; no downstream promotion.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+1. **[P2] Complete the fixed M06/M07 comparison rather than substituting a catalogue-only probe.** The required M07 profile in `docs/architecture/ARCH-055/task-definition-contract.md:72` includes new text admission, due-template admission with production configuration, matching replay, and prepared-content status. The sampler at `arch055-transaction-config.postgres.test.ts:66–90` invokes only `readEligibleFollowUpChoices` inside a transaction. This is useful constrained-pool correctness evidence, but does not measure the required command/status operations or their persisted changes. M06/M07 emit `clientCalls=1 affectedRows=0 externalCalls=0` as constants; one service invocation is not a measured logical database-call count. The retained report lacks the per-execution normalized SQL/control, logical DB calls, transaction duration/retry, verified affected-row/no-op and provenance detail required by the fixed protocol. Keep the useful existing observations, but complete the named profiles using the task-start SHA and matching restored fixtures, two warm-ups/five recorded samples per variant/version. Distinguish service invocations from DB calls, retain actual normalized statement shapes/control counts, verify rows from results/snapshots, and explicitly mark unobserved quantities rather than guessing zeros. Preserve the constrained-pool baseline failure as a failure, not comparable successful latency. Use the existing authorized tests/report; no schema or production benchmark expansion is needed.
+
+2. **[P2] Exercise the remaining explicit D02/D03 outcomes.** `arch055-claims-and-prepared-status.postgres.test.ts:145–184` covers missing preparation and matching BLOCK with differing original/prepared bodies. The existing migrated message suite also covers matching BLOCK; the only `moderation_allowed` occurrence in the focused unit family is a mocked route response. Add real status-service coverage for matching prepared ALLOW and rejected/nonmatching original-body or unrelated digest evidence, preserving tenant/input-kind guards. If canonical guards prohibit creating a wrong-digest assessment, assert that rejection and the resulting pending status without disabling guards. The configuration test covers successful one-connection reading and UNSEAL_FAILED, but not the D03 database-read failure through the transaction-bound configuration/catalogue path. Add an attributable database failure assertion proving it propagates rather than becoming empty choices. Do not mark the full regression matrix satisfied solely from the existing six passing suites.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+Inspected `fb39e983c561a7219945e8cdb216c3f201e8aab4..6c7b173ee612c2cee025857518874926a71f5060`: command admission/status, configuration composition/factory, catalogue reader, merchant composition, control cause preservation, recovery navigation/ownership/list changes and their tests/runner registration. Inspected the fixed protocol, D01–D05 criteria, measurement loops and submitted report. Later main changes were not treated as task deletions.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+- Independently reran required conversation/recovery unit matrix on Node 24.19.0: **64 passed, 0 failed**.
+- Independently reran `npm run test:arch040-human-send:postgres`: **6 passed, 0 failed**, canonical migrations applied, runner exit 0 and cleanup completed. This exercised claim isolation/replay, prepared BLOCK, rollback, one-connection configuration and unseal failure.
+- Independently checked `git diff --check fb39e98..HEAD`: passed.
+- Reviewed submitted control 2/2, cross-domain 4/4, platform configuration 5/5, typecheck and changed-file lint results; these were not independently rerun. Full lint's reported existing Support no-empty error remains an explicit limitation, not a pass.
+- Implementation and parent heads matched their remote task refs before this review. The dedicated worktrees were clean; nested Database remains accepted `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+Source inspection supports the chosen command-scoped claim identity, prepared-body digest, transaction-bound existing configuration reader, unchanged replay/text configuration bypass, bounded lookahead/opposite-direction navigation, retained ownership predicates, same-snapshot zero-list short circuit and preserved control error cause. No runtime regression was established in the independent checks. Acceptance is withheld for the explicit evidence/test gaps, not for a speculative change to these production choices.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Complete both findings in the same task worktree/branch, reconcile the Validation checkboxes with actual evidence and resubmit. No implementation source, gitlink, deployment or main branch was changed by this review. `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` remain Pending because API-004 is not Complete. The next launcher claim owns Attempt 2. Historical dependency promotion below describes the pre-execution state, not the current attempt.
 
 ### Dependency promotion — 2026-11-03
 
