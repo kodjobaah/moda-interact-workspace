@@ -196,7 +196,7 @@ API-007 changes `POST /v1/woocommerce/whatsapp-consent` to `woo.whatsapp-consent
 - [ ] Verify golden outgoing payloads/ACK for GRANT, REVOKE, duplicate, terminal conflict, retry and phone/session/installation changes using the *actual* API-007 v2 contract. Run a proof-status integration test against the real architect-accepted API-006 contract before marking the task complete; isolated mocks alone cannot certify the absent hosted endpoint.
 - [ ] PHPUnit and JavaScript tests assert that initial checked state requires proof-backed `CONFIRMED_GRANTED`; deliberate GRANT keeps the UI checked even when write fails while durable permission remains unchanged, and deliberate REVOKE keeps the UI unchecked even when write fails while the stored grant remains. The input stays enabled during remote requests, rapid toggles are ordered without lost choices, and no checkout-related GRANT occurs from a prechecked verified field. An explicit verified user uncheck emits a single protected `REVOKE` and does not require a second confirmation dialog. Assert no error/status/notice DOM or ARIA alert is produced when any request rejects, times out or has malformed response; checkout remains submit-safe.
 - [ ] Real disposable WordPress Classic/Blocks HTTP integration: live status/GRANT/REVOKE via the actual checkout transport and controlled hosted fixture; verify consumer-visible HTML remains safe when the hosted fixture is unavailable or slow, without consent-caused checkout activity. Keep a separate opt-in Chromium hydration test for checked/unchecked state, no visible errors, and successful normal checkout; fixture-based success must not be represented as real API-006 integration.
-- [ ] LocalWP Classic and Blocks smoke checks for rendering/phone-before-or-after-opt-in/guest/registered/proven returning/withdrawal/STOP/outage; system-test ownership remains separate for full certification.
+- [x] LocalWP smoke testing against the real API-006 service. The developer confirmed manual testing and was satisfied with the results. Individual cases were not enumerated. System-test ownership remains separate for full certification.
 - [ ] `git diff --check`, strict task-scope diff review; no edits to `docs/decisions/**/_index.md` or to another owning repository.
 
 ## Stop Condition
@@ -317,8 +317,10 @@ The build and full `node tests/integration/run-wordpress.mjs --consent-browser` 
 
 A reused database produced a shop-brand disposition mismatch. That case passed on the fresh database. A separate guest order failure was traced to a completed ORDER_PLACED row in scheduler history. The disposable checkout scenario now suspends automatic cron and async scheduler dispatch while it asserts and manually delivers pending jobs, then removes its test plugin. This test-only correction is published as `8ede5ab`.
 
-## Developer manual smoke testing
+## Developer acceptance evidence and STOP scope clarification
 
-The developer reported completing the manual smoke testing requested after the full integration run. This records developer-reported evidence. The exact scenarios and environment were not supplied.
+The developer confirmed manually testing the WooCommerce consent functionality in LocalWP against the real API-006 service and was satisfied with the results. This supersedes the earlier outstanding LocalWP and real API-006 manual verification notes. API-006 is now complete in its task record.
 
-Hosted API-006 proof and STOP verification remain outstanding. Attempt 2 remains in progress.
+Inbound WhatsApp STOP processing and suppression verification belong to Background. API-006 owns the authoritative status decision, including how suppression affects that result. WOOCOMMERCE-003 binds shopper proof and consumes the API response. It initializes the checkbox as checked only on CONFIRMED_GRANTED and falls back to unchecked on UNVERIFIED. The WooCommerce manual smoke test does not require sending a WhatsApp STOP or verifying Background execution. This clarification supersedes earlier references to standalone STOP verification as a WooCommerce task gate.
+
+Attempt 2 remains in progress pending developer review.
