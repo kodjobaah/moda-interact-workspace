@@ -122,11 +122,11 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Adopt the accepted persisted claim-key contract and update human send fixtures.
-- [ ] Fix prepared-content moderation status and corresponding migrated regressions.
-- [ ] Bind sender configuration to the transaction and test root-client nonuse plus configuration failures.
-- [ ] Replace page-navigation counts and narrow page-only projections; preserve summary evidence.
-- [ ] Exercise control, human send, same-Shop replay, two-Shop identical keys, cancellation/reclaim, unknown send and moderation outcomes.
+- [x] Adopt the accepted persisted claim-key contract and update human send fixtures.
+- [x] Fix prepared-content moderation status and corresponding migrated regressions.
+- [x] Bind sender configuration to the transaction and test root-client nonuse plus configuration failures.
+- [x] Replace page-navigation counts and narrow page-only projections; preserve summary evidence.
+- [x] Exercise control, human send, same-Shop replay, two-Shop identical keys, cancellation/reclaim, unknown send and moderation outcomes.
 
 ## Interfaces / Contracts
 
@@ -154,14 +154,14 @@ Construct this factory in composition with the existing environment/unsealEnviro
 
 ## Acceptance Criteria
 
-- [ ] Both producers and Background agree on the persisted key; a Woo API public key collision across Shops cannot contend on the global claim key.
-- [ ] Prepared-content assessments appear correctly and unrelated/missing assessments never become approval.
-- [ ] No root Prisma configuration query is awaited from inside the follow-up transaction.
-- [ ] First/latest message pages avoid two navigation counts; first related pages avoid two counts; the remaining navigation query is bounded existence.
-- [ ] No history/query optimisation weakens final admission or evidence ownership.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
-- [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
+- [x] Both producers and Background agree on the persisted key; a Woo API public key collision across Shops cannot contend on the global claim key.
+- [x] Prepared-content assessments appear correctly and unrelated/missing assessments never become approval.
+- [x] No root Prisma configuration query is awaited from inside the follow-up transaction.
+- [x] First/latest message pages avoid two navigation counts; first related pages avoid two counts; the remaining navigation query is bounded existence.
+- [x] No history/query optimisation weakens final admission or evidence ownership.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
 
@@ -205,23 +205,56 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Ready for Architect Review. The task remains at `review`; it is not marked complete.
 
 ### Files Changed
 
-None.
+Implementation changes are confined to the API-004 worktree. Production changes cover merchant composition, conversation admission/status/configuration, recovery pagination/list projections, and conversation-control error translation. Regression changes update the canonical PostgreSQL runners, existing conversation fixtures/tests, and recovery unit tests. New tests are `tests/integration/merchant/conversations/arch055-claims-and-prepared-status.postgres.test.ts`, `tests/integration/merchant/conversations/arch055-transaction-config.postgres.test.ts`, `tests/integration/merchant/recoveries/detail/arch055-pagination.postgres.test.ts`, and `tests/integration/merchant/recoveries/arch055-list.postgres.test.ts`. No Prisma schema, migration, public DTO, Shared API, or index was added.
 
 ### Work Completed
 
-None. Task definition only.
+Template command IDs are preallocated after replay/admission checks and persisted as the internal follow-up claim and sequence-two initiation identity; HUMAN_TEXT retains a null claim. Same-Shop replay returns the prior command, while two Shops can reuse the same public idempotency key without sharing the global claim. HUMAN_TEXT moderation status now matches only the persisted prepared-body digest; absent preparation stays pending. Transaction-bound sender configuration reuses the existing reader/keyring/unseal path, propagates configuration failures, and is not invoked for text or replay.
+
+Recovery message and related pages now use lookahead plus one bounded opposite-direction existence query on cursor navigation; first/latest/first-related pages avoid the former full history counts. Page-only ownership selects are narrow while summary evidence remains unchanged. Zero-result recovery lists skip only the page query after the same-snapshot exact count. Handled Prisma conversation-control conflicts retain the original cause. Migrated tests cover tied timestamps, deleted cursor boundaries, foreign conversation/customer IDs, prepared content, two-Shop claims, replay, configuration failure, and atomic rollback of both the claim attempt and command.
+
+#### M06: recovery history/list workload
+
+Task-start source was checked out at `fb39e983c561a7219945e8cdb216c3f201e8aab4` in a temporary detached worktree. Its empty `database` submodule was exposed as a symlink to the accepted API-004 Database checkout at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; dependencies were the locked API worktree install. Both versions ran against disposable PostgreSQL 17 + pgvector with the same canonical migrations and fixed test IDs: 105 messages tied every three rows, 12 same-customer recoveries including current, page sizes 50/5, and a zero-match list. Each operation had two warm-ups and five timed samples; each sample was one service call, zero affected rows and zero external calls. Returned rows were identical: 50/50/50/50, 5/5/5, and 0.
+
+| Profile | Rows | Baseline SQL calls | Candidate SQL calls | Baseline elapsed ms (five samples) | Candidate elapsed ms (five samples) |
+|---|---:|---:|---:|---|---|
+| messages.first | 50 | 13 | 10 | 24.77, 25.46, 24.04, 26.39, 24.57 | 16.40, 17.21, 17.20, 16.82, 17.35 |
+| messages.latest | 50 | 13 | 10 | 20.68, 21.92, 22.60, 23.81, 25.95 | 17.82, 17.60, 16.88, 16.85, 17.01 |
+| messages.next | 50 | 13 | 11 | 21.02, 23.07, 22.13, 22.25, 23.29 | 20.40, 18.91, 17.98, 19.06, 18.61 |
+| messages.previous | 50 | 13 | 11 | 22.77, 24.70, 23.01, 21.95, 22.76 | 22.86, 26.82, 24.65, 19.67, 18.47 |
+| related.first | 5 | 12 | 9 | 19.26, 20.13, 19.24, 19.88, 18.37 | 13.20, 13.96, 14.53, 13.54, 13.89 |
+| related.next | 5 | 12 | 10 | 19.06, 21.22, 20.79, 19.32, 19.76 | 17.07, 17.25, 17.06, 16.19, 16.67 |
+| related.previous | 5 | 12 | 10 | 19.31, 19.82, 19.91, 18.94, 20.14 | 16.16, 17.00, 16.46, 17.81, 17.21 |
+| list.zero | 0 | 7 | 6 | 14.28, 13.37, 12.86, 14.33, 12.04 | 9.79, 9.74, 9.82, 9.16, 11.11 |
+
+Baseline message shapes included the recovery-attempt expansion and two `ConversationMessage` counts; candidate page shapes omit that expansion and those counts, with one `ConversationMessage` existence query only for cursor navigation. Baseline related shapes included recovery-attempt expansion and two `CheckoutRecovery` counts; candidate first has neither count, while cursor navigation has one bounded `CheckoutRecovery` existence query. Zero-list changed from `CheckoutRecovery:count + select` to count only. Prisma query-event durations were captured per statement at integer-millisecond resolution (observed 0–2 ms); that resolution and separate disposable runs make the operation timings indicative workload evidence, not a latency guarantee or threshold.
+
+#### M07: sender configuration under a constrained pool
+
+The baseline probe used the task-start `createApiPlatformConfigurationReader` with a real sealed configuration, the same published-template fixture, and `connection_limit=1`, `pool_timeout=2`. After two warm-ups, all five runs returned zero choices in 2014.81, 2013.83, 2015.27, 2008.38, and 2012.09 ms; each emitted only transaction begin/commit (two SQL calls, event durations 1/1, 1/1, 2/1, 2/1, and 1/1 ms), because the root reader could not acquire the transaction’s sole connection and the old catalogue path mapped the reader error to empty choices.
+
+The candidate used the production transaction-bound factory and same pool/fixture. It returned one eligible choice in all five samples: 6.31, 7.62, 6.55, 5.90, 7.12 ms (min/median/max 5.90/6.55/7.62). Each call emitted four SQL statements in order: transaction begin, `PlatformConfiguration` select, `WhatsAppTemplateVariant` select, transaction commit; per-call event durations in ms were `0,1,1,0`; `0,1,1,1`; `1,1,1,1`; `0,1,1,0`; `0,2,1,0`. There were no writes or external calls. This is a correctness comparison: baseline did not produce the eligible choice, so its elapsed time is not a comparable successful-operation latency.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+- `npm run test:arch040-human-send:postgres` — PASS, 6/6; includes two-Shop identical public keys, same-Shop replay, HUMAN_TEXT no-configuration path, prepared-body moderation, D05 rollback, and real transaction-bound sealed configuration. Disposable PostgreSQL and canonical migrations; candidate M07 sampler also passed.
+- `npm run test:arch040-conversation-control:postgres` — PASS, 2/2; conflict cause retained and existing PostgreSQL control suite passed.
+- `node scripts/test-arch041-cross-domain-postgres.mjs` — PASS, 4/4; zero-list and M06 tied-timestamp, deleted-boundary, and foreign-ID assertions passed.
+- `npm run test:arch043-platform-configuration:postgres` — PASS, 5/5; disposable PostgreSQL cleanup passed.
+- `npx --no-install tsx --test "tests/unit/merchant/conversations/**/*.test.ts" "tests/unit/merchant/recoveries/**/*.test.ts"` — PASS, 64/64.
+- `npm run typecheck` — PASS after the final M07 sample event type correction; Prisma Client 6.19.3 generated from the accepted schema.
+- `git diff --check` — PASS.
+- Changed-file ESLint — PASS for the two task-owned M06/M07 integration tests. `npm run lint` was run and remains blocked only by the unrelated existing `src/merchant/support/routes.ts:75:17` `no-empty` error; no unrelated file was changed.
+- All four PostgreSQL runners used disposable PostgreSQL 17 + pgvector and applied the canonical migration chain, including the three accepted ARCH-055 migrations. Fixture cleanup and container cleanup completed. The temporary baseline-only M06/M07 probes were outside the implementation branch and are not source changes.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+Launcher-prepared task packet was used; no second claim or task setup was performed. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-004`, branch `task/ARCH-055-API-004`, starting SHA `fb39e983c561a7219945e8cdb216c3f201e8aab4`, accepted nested Database pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Implementation commits: `dbac79f39a9e4ea0b8799dd35b95d1d675b43408` (claims/configuration/control) and `6c7b173ee612c2cee025857518874926a71f5060` (bounded recovery queries). Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-004`, branch `task/ARCH-055-API-004`, initially at launcher claim commit `e7e05a2cea5e7b28a1d1292853de632dd943bab9`. The implementation branch inherited `origin/main` as its upstream; publication will use the explicit `origin task/ARCH-055-API-004` ref and will not push `main`. The implementation commits are created; publication and the report commit are pending. The task remains for review, not complete.
 
 ### Deviations
 
@@ -233,7 +266,7 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+Full lint has the unrelated existing support-route `no-empty` error described above. No required task validation is otherwise unresolved. Architect review and task-branch publication remain to be completed.
 
 ### Architectural Concerns
 
