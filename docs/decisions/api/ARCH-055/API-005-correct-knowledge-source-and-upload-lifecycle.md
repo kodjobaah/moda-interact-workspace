@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 20
-executor: codex
-claimed_at: 2026-11-03T02:56:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-055-DATABASE-001
@@ -31,7 +31,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
+**Definition state:** materialised. Attempt 1 implementation is committed and pushed on the task branch. Required PostgreSQL validation could not start because Docker is unavailable, so the task is returned to `ready` without acceptance; the attempt is preserved.
 
 ## Objective
 
@@ -118,12 +118,12 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Implement conditional web mutations and Background-writer barrier regressions.
-- [ ] Use Database purpose/original-intake contracts in intent/finalisation/replay.
-- [ ] Test both cleanup/finalisation orders, expiry during waiting, changed MIME/purpose, replacement races and rollback.
-- [ ] Reduce common helper reads, ACTIVE lookup, existing-upload eligibility and identical metadata writes.
-- [ ] Optimise changed-only compaction/order with real constraints, then measure rows modified and lock duration.
-- [ ] Add post-commit response-failure tests and reprocess OpenAPI conflict semantics.
+- [x] Implement conditional web mutations and add a Background-generation barrier regression covering metadata PATCH, URL PATCH, refresh and DELETE.
+- [x] Use the accepted Database purpose/original-intake contracts in intent/finalisation/replay; add purpose-change, unbound-pending and post-reprocess replay assertions.
+- [ ] Execute the full migration-backed lifecycle matrix. Cleanup/finalisation order, expiry during lock wait, MIME changes during R2 verification, source-replacement generation races, rollback and original replay now have test code; Docker absence prevented execution.
+- [x] Reduce writer entitlement rereads, use direct ACTIVE revision lookup, bound existing-upload eligibility and skip identical metadata writes.
+- [ ] Measure changed-only compaction against PostgreSQL: assertions for four swap updates, zero tail-delete updates and unchanged timestamps are present, but Docker absence prevented measurement.
+- [x] Add post-commit projection failure tests and document reprocess 409/sequential append semantics in OpenAPI.
 
 ## Interfaces / Contracts
 
@@ -148,7 +148,7 @@ The public API remains unchanged except documentation corrections explicitly aut
 - [ ] Purpose changes under one request key conflict; immutable object identity and signed URL redaction remain intact.
 - [ ] 100-source adjacent reorder changes four staged/final rows instead of 200, and deleting an already-last row performs no survivor writes, subject to verified constraints.
 - [ ] Knowledge GET remains best-effort and read-only; metadata-only and ingestion operations retain their different contracts.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] Original diagnostic causes survive with redaction; the route regression verifies the committed outcome and redacted cause through the Shared logger.
 - [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
@@ -171,13 +171,13 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npm run test:arch035-merchant-knowledge:postgres`
-- [ ] `npm run test:arch035-knowledge-upload:postgres`
-- [ ] `npx tsx --test "tests/unit/merchant/merchant-knowledge/*.test.ts"`
-- [ ] `npm run typecheck`
-- [ ] `git diff --check`
-- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
-- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+- [ ] `npm run test:arch035-merchant-knowledge:postgres` — stopped before container creation: `docker` executable is unavailable.
+- [ ] `npm run test:arch035-knowledge-upload:postgres` — stopped before container creation: `docker` executable is unavailable.
+- [x] `npx tsx --test "tests/unit/merchant/merchant-knowledge/*.test.ts"` — 41 passed, 0 failed.
+- [ ] `npm run typecheck` — Prisma Client generation succeeded with the permitted cache access; the TypeScript check did not finish after several minutes and was interrupted. No pass is claimed.
+- [x] `git diff --check` — passed.
+- [ ] `npm run lint` — repository lint reports one error in untouched `src/merchant/support/routes.ts:75` (`no-empty`). Targeted lint on every changed TypeScript file passed.
+- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results — test instrumentation and assertions are present, but no PostgreSQL instance was available; actual SQL/row results and lock timing remain unmeasured.
 
 ## Stop Condition
 
@@ -193,35 +193,39 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Ready — Attempt 1 preserved. Implementation is published for review, but the required PostgreSQL suites and complete typecheck remain unverified. No architect acceptance is recorded.
 
 ### Files Changed
 
-None.
+Implementation branch commits `e9b16c0` and `674341e` (published as `origin/task/ARCH-055-API-005`); accepted Database pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+
+- Source: `src/merchant/merchant-knowledge/{commands.contract.ts,commands.routes.ts,commands.service.ts,diagnostics.ts,read.service.ts,routes.ts,upload.routes.ts,upload.service.ts}`
+- Contract and harnesses: `openapi/merchant-knowledge-v1.yaml`, `scripts/test-arch035-knowledge-upload-postgres.mjs`, `scripts/test-arch035-merchant-knowledge-postgres.mjs`
+- Tests: `tests/integration/merchant/merchant-knowledge/{arch055-generation-races.postgres.test.ts,arch055-ordering.postgres.test.ts,arch055-upload-lifecycle.postgres.test.ts,upload.postgres.test.ts}` and `tests/unit/merchant/merchant-knowledge/{commands.test.ts,upload-reprocess.test.ts,upload-timing.test.ts}`
 
 ### Work Completed
 
-None. Task definition only.
+Implemented the web generation compare-and-set mutations and compact-only changed ordering writes; removed the web writer preference reread; changed the ACTIVE revision projection to one direct query; bounded upload-source eligibility and reused all source positions for new allocations; added purpose binding, final asset/source locks, post-lock metadata/MIME/expiry checks, original-intake replay, and safe post-commit exception classification. Added the three required ARCH-055 PostgreSQL test files and registered them in both migration harnesses. Added bounded/redacted exception fields through the Shared logger routes, retaining error name, message, code and cause. Updated the reprocess OpenAPI description and existing upload regression coverage.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+The 41 Merchant Knowledge unit tests passed. Targeted ESLint on all changed TypeScript files and `git diff --check` passed. Repository-wide ESLint reports only the existing untouched `src/merchant/support/routes.ts:75` empty block. Both PostgreSQL harnesses were invoked and stopped at `starting disposable PostgreSQL`; `docker info` returned `command not found: docker`. No container, migration, SQL, row-count, lock-wait or concurrency result was produced. The full typecheck generated Prisma Client successfully but the subsequent TypeScript compiler did not complete after several minutes; it was interrupted and is not recorded as passing. The new integration assertions remain unchecked until they execute against PostgreSQL 17 + pgvector.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+Launcher packet: Attempt 1, claim commit `e1b6074abd84502750b1a08c865171585c3ac311`, parent start `c09c5ddf68ebb1bf3f007bbcfccff38812754dc8`, implementation start `0156090e8d4e68ce5c593763206951aa44805587`; both were synchronized to `origin/main` before work. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-005`, branch `task/ARCH-055-API-005`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-005`, branch `task/ARCH-055-API-005`. API commits `e9b16c0` and `674341e` are pushed to `origin/task/ARCH-055-API-005`. The nested Database pin is accepted commit `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. The parent task report update is local pending its own commit/push. No parent workspace gitlink was staged.
 
 ### Deviations
 
-None authorised.
+No scope deviation. Validation was limited by the missing Docker executable and a non-completing repository TypeScript check; neither was waived.
 
 ### Assumptions
 
-The uploaded source snapshot is the design baseline, not proof of current remote state. Reconcile only relevant drift on the real launcher baseline; return contract-changing drift to the architect.
+The task implementation was based on the launcher-synchronized branch and accepted Database pin. PostgreSQL behavior is intentionally not inferred from unit tests or static inspection.
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+The required migration-backed integration results, full typecheck, real SQL/update-count evidence, lock timing and resource-cleanup evidence remain outstanding. The implementation branch is reviewable; do not accept the task until these validations run and the remaining checks are reconciled.
 
 ### Architectural Concerns
 
