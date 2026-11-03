@@ -310,3 +310,11 @@ The disposable WordPress and MariaDB environment now starts successfully. The re
 `MODA_CHECKOUT_TEST_DISPOSABLE=1 WP_ENV_PORT=8890 npm run test:integration:consent:browser` passed on WooCommerce 11.1.2 with real WordPress HTTP and Chromium. The browser asserted exactly one GRANT and one REVOKE against the controlled HTTPS fixture. Browser test corrections are published as `282ee8a`. The full runner was not rerun after the build.
 
 Attempt 2 remains in progress. The fixture simulates the hosted read. API-006 is in progress and its acceptance and real hosted proof/STOP integration remain outstanding, along with LocalWP smoke evidence.
+
+## Full WordPress integration rerun
+
+The build and full `node tests/integration/run-wordpress.mjs --consent-browser` run passed with exit code 0 on an isolated, freshly provisioned WordPress and MariaDB project. The full run covered shop-brand publication, Classic and Blocks guest/customer checkout and order lifecycle, checkout restoration browser cases, and WordPress/Chromium consent against the controlled HTTPS fixture. The test environment stopped successfully.
+
+A reused database produced a shop-brand disposition mismatch. That case passed on the fresh database. A separate guest order failure was traced to a completed ORDER_PLACED row in scheduler history. The disposable checkout scenario now suspends automatic cron and async scheduler dispatch while it asserts and manually delivers pending jobs, then removes its test plugin. This test-only correction is published as `8ede5ab`.
+
+Hosted API-006 proof/STOP integration and LocalWP smoke remain outstanding. Attempt 2 remains in progress.
