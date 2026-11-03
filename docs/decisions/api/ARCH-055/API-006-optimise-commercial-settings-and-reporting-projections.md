@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: codex
 claimed_at: 2026-11-03T10:18:24Z
@@ -62,6 +62,7 @@ One owning repository: `moda-interact-api`. Paths below are relative to that rep
 - `scripts/test-arch036-discount-offers-postgres.mjs`
 - `scripts/test-arch035-usage-history-postgres.mjs`
 - `scripts/test-arch041-billing-postgres.mjs [presentation/history registration only]`
+- `database [consumer gitlink only; Attempt 4 accepted/integrated pin reconciliation below; no nested schema/migration edits]`
 
 ### Exact edit map — definition revision 2
 
@@ -160,7 +161,7 @@ None. The source baseline is context, not a fabricated dependency on historical 
 - [x] Coupon mode-only change touches zero coupon rows; one-of-50 replacement touches two, with full identity validation retained.
 - [x] One aggregate supplies count and sum; historical-period and cursor validation remain correct.
 - [x] Settings remain available during coupon sync/outage; whole-catalogue locale fallback is unchanged.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication. Attempt 3 review found original cause/code loss in the two route diagnostic helpers.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication. Attempt 4 corrects the two route helpers; real Shared-sink safe-cause/code and privacy regressions pass.
 - [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
@@ -467,6 +468,40 @@ Both full lint runs fail only at unchanged `src/merchant/support/routes.ts:75:17
 
 Broad unit/lint baseline/main failures remain as classified; live provider certification and production capacity are not claimed. No task-owned required correctness or paired-measurement work remains knowingly incomplete. Await architect review; do not start API-009 or SYSTEM-TEST-001.
 
+## Completion Report — Attempt 4
+
+### Correction and review status
+
+The Attempt 3 P2 is implemented in both route boundaries. The original wrapper and its immediate database Error cause pass through Shared sanitization as explicit `error`/`errorCause` fields; a validated Prisma/SQLSTATE code is retained as `databaseCode`. Shared owns serialization and bounds. Boundary redaction removes connection URLs, credentials, bearer values, customer contact details and unsafe Prisma invocation/query context before truncation. Raw stacks, metadata, query arguments and customer payloads are not projected. Exceptions are not mutated. This is an explicit immediate database-cause projection, not arbitrary-depth cause traversal or a new generic logging framework.
+
+The direct discount-offers P2002/P2034 conflict branch now emits one safe diagnostic as well. HTTP status, public error body and private/no-store behavior remain unchanged. Changes are confined to the two route files, their two unit-test files and the architect-authorized API consumer `database` gitlink.
+
+### Validation
+
+- Real Shared-sink route regressions: **12/12 passed**. Wrapped safe original P2034/P2003 messages and codes survive GET/PUT; secret-bearing text, arbitrary metadata and truncation-boundary secrets are absent; original exceptions and public responses remain unchanged. Direct unwrapped conflict logging is covered.
+- Required five-directory focused unit command: **108/108 passed**, no skips (103 prior tests plus five new cases).
+- Final `npm run typecheck`: passed, explicitly confirmed exit 0 after regenerating the canonical client on the authorized integrated pin.
+- Changed-file ESLint with `--max-warnings=0`: passed for both routes and both test files. Working and staged diff checks passed.
+- No new full-suite/full-lint pass is claimed. Attempt 3's explicit baseline/main failure classification remains historical and preserved. The unchanged PostgreSQL correctness and commercial measurements were not rerun, as allowed by the Attempt 3 review and Attempt 4 pin amendment.
+
+### Accepted consumer-pin reconciliation and retained evidence
+
+Preparation restored the recorded Database `7c377282aa5819b3008b7d7f3018f44f4161523e`. Initial typecheck then reported 13 missing `intentPurposeKey` diagnostics in synchronized API-005 knowledge-upload source/tests. The architect authorized this task's consumer-only pin correction to integrated Database `8e74634ff92be9900f693c0c449ffce888e7d617` (PR #68). It has exactly the same Git tree `9a91d956274810aeedd168c83b72c50f6d7f29f8` as the accepted measurement version `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; their diff is empty. Canonical Prisma Client 6.19.3 was regenerated on Node 24.19.0/npm 11.17.0. No Database schema/migration files or other owner's source were edited, and no validation waiver was used.
+
+An attempted isolated prepared-baseline reproduction did not execute because temporary-file creation hit a full disk; it is not reported as a passed comparison or reproduced baseline. Only this task's redundant temporary raw measurement logs were removed after verifying their durable artifact. No global cleanup or unrelated container removal was performed.
+
+The retained measurement artifact `evidence/API-006-attempt-3-commercial.jsonl` remains unchanged: SHA-256 `c790ad66f5f911223c1af1bf1fa36d2508ddd24c091cceb87a7d926df46b2b63`, 406 samples, 58 summaries and four plans. Attempt 3's protocol, measurement limits, F01–F05 results and broad-failure classifications remain preserved above. Route diagnostic changes do not alter the measured service-method boundaries; the final database pin has identical accepted schema/migration contents.
+
+### Preparation, assistance and publication
+
+- Canonical launcher claimed Codex Attempt 4 at `2026-11-03T10:18:24Z`; claim `fc66a1d9b9ff7c95b670676b6601f35f5ec00ead` was pushed. Dependency checks passed. Prepared implementation HEAD `fe7658a12f8780ebea89cfaa30b738aa107126f9`; parent pre-claim HEAD `93546f14a09db5afb40a30d88d79c25e351d577a`.
+- Both canonical dedicated worktrees were reused; remote task branches needed no fast-forward and origin/main was already current. Recursive submodule sync/update passed. The prepared pin and final authorized pin are distinguished above.
+- The user-requested `moda_architect` assistance established squash-equivalent Database tree evidence, authored the narrow consumer-pin scope amendment below and reviewed the diagnostic approach. It did not grant acceptance or waive checks.
+- Mirrored branch `task/ARCH-055-API-006`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-006`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-006`.
+- Final implementation `6757372ddc2b7cae7ab3e9714546ea309a53ff9a` is pushed to `origin/task/ARCH-055-API-006`; implementation worktree is clean. The containing parent report commit publishes only this task document, including the architect-authored amendment. No parent implementation gitlink, main merge/push, force push or downstream promotion.
+
+Await architect review. API-009 and SYSTEM-TEST-001 remain pending; this executor does not mark API-006 Complete.
+
 ## Architect Review — Attempt 1
 
 ### Review Status
@@ -558,3 +593,20 @@ Independent reproduction invoked both actual route handlers with a wrapped datab
 ### Follow-up
 
 Correct the two diagnostic helpers and add meaningful safe-cause/code/redaction regressions on the same branch. Rerun affected route/focused tests, typecheck, changed-file lint and diff checks; update the report with actual results. Preserve the passing commercial evidence and historical baseline classifications, revisiting only evidence invalidated by subsequent code changes. `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` remain Pending because API-006 is not Complete. The next launcher claim owns Attempt 4.
+
+
+## Architect Review — Accepted Database consumer-pin reconciliation, Attempt 4, 3 November 2026
+
+### Disposition
+
+The prepared Attempt 4 packet correctly materialised its recorded Database gitlink `7c377282aa5819b3008b7d7f3018f44f4161523e`. Subsequent typecheck exposes the missing `intentPurposeKey` contract in synchronized API-005 knowledge code/tests; that older pin omits the accepted ARCH-055 persistence changes. This is synchronization/dependency drift, not authorization to edit API-005 source or a consumer's schema copy.
+
+The current DATABASE-001 task is Complete and its Accepted decision explicitly names `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Database `origin/main` commit `8e74634ff92be9900f693c0c449ffce888e7d617` is the developer's squash integration of that task (PR #68). Read-only comparison establishes identical Git trees for both commits: `9a91d956274810aeedd168c83b72c50f6d7f29f8`; `git diff 5907b4572ea9efc2a24c07e4c3bd3e107db4260b..8e74634ff92be9900f693c0c449ffce888e7d617` is empty. The accepted feature commit not being an ancestor of main is explained by squash integration; it does not mean its contract is unintegrated.
+
+### Narrow consumer authority
+
+Under this task's existing Common execution contract and DATABASE-001's accepted consumer-pin handoff, the API repository owner may update only its own `database` gitlink on `task/ARCH-055-API-006` to integrated commit `8e74634ff92be9900f693c0c449ffce888e7d617`. This is the content-identical integrated form of the previously reviewed `5907b45` pin, not a new schema choice. Do not edit nested Prisma/schema/migration files, change Database branches, stage the parent workspace's implementation gitlink, merge/push main, or repair unrelated API source.
+
+Record the prepared `7c37728` pin separately from the post-reconciliation `8e74634` pin, exact tree-equivalence evidence, regenerated canonical client and actual typecheck/affected validation results in the Completion Report. Keep any baseline comparison results obtained before adoption explicit; do not describe an unavailable check as passed. The commercial measurement artifact remains historical evidence against the identical accepted schema/migration tree; this gitlink correction and diagnostic-only rework do not themselves require rerunning unaffected commercial profiles.
+
+The complete Attempt 3 diagnostic Changes Requested contract remains mandatory. This amendment grants no test waiver, acceptance, claim change or downstream promotion. A failed check after alignment must still be investigated and reported on its actual evidence.
