@@ -302,3 +302,11 @@ Blocks diagnostics expose only fixed event codes and bounded metadata. Shared PH
 The reconstructed checkout passed 73 consent PHP tests (474 assertions). The Node suite passed 127 of 128 tests. The existing shop-brand fixture still supplies six fractional timestamp digits where its validator expects three, as previously reproduced on main. The earlier formatting pass and build results were for the lost checkout and were not reproduced in this run.
 
 Attempt 2 remains in progress under the existing developer claim. The earlier managed WordPress and Chromium run stopped before checkout tests because of Docker image and metadata I/O errors. LocalWP smoke and real Woo/API/DB proof and STOP integration remain outstanding. API-006 is still awaiting acceptance in the workspace record.
+
+## Docker repair validation
+
+The disposable WordPress and MariaDB environment now starts successfully. The restored WooCommerce checkout built successfully with three webpack performance warnings. The initial full runner timed out in the checkout restoration browser scenario before consent. A focused retry identified an unbuilt checkout script dependency and a browser fixture whose UK phone was paired with a different billing country. The test now sets a GB contact and waits for the actual Woo Store API acknowledgement, including batched responses, before checking hosted fixture event counts.
+
+`MODA_CHECKOUT_TEST_DISPOSABLE=1 WP_ENV_PORT=8890 npm run test:integration:consent:browser` passed on WooCommerce 11.1.2 with real WordPress HTTP and Chromium. The browser asserted exactly one GRANT and one REVOKE against the controlled HTTPS fixture. Browser test corrections are published as `282ee8a`. The full runner was not rerun after the build.
+
+Attempt 2 remains in progress. The fixture simulates the hosted read. API-006 is in progress and its acceptance and real hosted proof/STOP integration remain outstanding, along with LocalWP smoke evidence.
