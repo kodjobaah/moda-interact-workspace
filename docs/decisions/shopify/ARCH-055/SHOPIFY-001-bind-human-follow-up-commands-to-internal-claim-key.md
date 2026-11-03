@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: '2026-11-02'
+updated: '2026-11-03'
 ---
 
 # ARCH-055-SHOPIFY-001: Keep the Shopify producer compatible with shared follow-up dispatch
@@ -215,3 +215,7 @@ To be assessed against ARCH-055 and this task's frozen contract.
 ### Follow-up
 
 Only the authorised review may accept this task and promote dependants.
+
+### Dependency promotion — 2026-11-03
+
+ARCH-055-BACKGROUND-001 is Accepted and Complete at Attempt 2 (`311055da5f44461dc8c53e0c2f908b20c8382164`). This task is now Ready, Attempt 0, unclaimed. Its dependency edge and implementation scope are unchanged; the launcher owns preparation and the first execution claim.
