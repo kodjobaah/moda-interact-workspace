@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 15
 executor: copilot
 claimed_at: 2026-11-03T03:34:54Z
@@ -135,11 +135,11 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Implement the transaction-only current-principal helper and integration tests.
-- [ ] Correct revoke/callback schedules and original-error boundaries before optional query changes.
-- [ ] Consolidate reconnect and brand create-result reads with full rollback/replay tests.
-- [ ] Use migrated installation/authorisation fixtures; test overlap callbacks, old pending attempt + reconnect + new grant + revoke, stale authenticated revoke, expiry while waiting, suspension during verification, and post-revoke replay.
-- [ ] Measure warm/cold connection paths and report latest-attempt query plans without speculative index DDL.
+- [x] Implement the transaction-only current-principal helper and integration tests.
+- [x] Correct revoke/callback schedules and original-error boundaries before optional query changes.
+- [x] Consolidate reconnect and brand create-result reads with full rollback/replay tests.
+- [x] Use migrated installation/authorisation fixtures; test overlap callbacks, old pending attempt + reconnect + new grant + revoke, stale authenticated revoke, expiry while waiting, suspension during verification, and post-revoke replay.
+- [x] Measure warm/cold connection paths and report latest-attempt query plans without speculative index DDL.
 
 ## Interfaces / Contracts
 
@@ -196,14 +196,14 @@ Extend `tests/unit/woocommerce/rest-read/authorization.routes.test.ts` for exact
 
 ## Acceptance Criteria
 
-- [ ] Stale authenticated mutations cannot operate on a newer installed generation.
-- [ ] Current-generation revocation succeeds despite unusable old pending attempts and expiry during waiting; all writes still roll back together on genuine failure.
-- [ ] Matching concurrent successful callbacks acknowledge the same durable outcome without reactivation or duplicate grant.
-- [ ] Reconnect preserves subscription, lifetime balances and observed-version concurrency.
-- [ ] Baseline 5-call active reconnect -> 3 and 7-call first-brand -> 6 are verified as client-call targets, or an explicitly justified extra correctness check is reported separately from SQL counts.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
-- [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
+- [x] Stale authenticated mutations cannot operate on a newer installed generation.
+- [x] Current-generation revocation succeeds despite unusable old pending attempts and expiry during waiting; all writes still roll back together on genuine failure.
+- [x] Matching concurrent successful callbacks acknowledge the same durable outcome without reactivation or duplicate grant.
+- [x] Reconnect preserves subscription, lifetime balances and observed-version concurrency.
+- [x] Baseline 5-call active reconnect -> 3 and 7-call first-brand -> 6 are verified as client-call targets, separately from SQL counts.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
 
@@ -223,18 +223,18 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npm run prisma:generate`
-- [ ] `npx tsx --test "tests/unit/woocommerce/installation/*.test.ts" "tests/unit/woocommerce/rest-read/*.test.ts" "tests/unit/woocommerce/shop-brand/*.test.ts"`
-- [ ] `node scripts/test-arch055-installation-postgres.mjs`
-- [ ] `node scripts/test-woocommerce-rest-read-authorization-postgres.mjs`
-- [ ] `node scripts/test-arch049-shop-brand-postgres.mjs`
-- [ ] `npx tsx --test tests/unit/auth/woo-installation/current-mutation-principal.test.ts`
-- [ ] `npm run typecheck`
-- [ ] `git diff --check`
-- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
-- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+- [x] `npm run prisma:generate`
+- [x] `npx tsx --test "tests/unit/woocommerce/installation/*.test.ts" "tests/unit/woocommerce/rest-read/*.test.ts" "tests/unit/woocommerce/shop-brand/*.test.ts"` (102 passed)
+- [x] `node scripts/test-arch055-installation-postgres.mjs` (17 passed)
+- [x] `node scripts/test-woocommerce-rest-read-authorization-postgres.mjs` (9 passed)
+- [x] `node scripts/test-arch049-shop-brand-postgres.mjs` (4 passed)
+- [x] `npx tsx --test tests/unit/auth/woo-installation/current-mutation-principal.test.ts` (3 passed)
+- [x] `npm run typecheck`
+- [x] `git diff --check`
+- [x] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files. (One existing `src/merchant/support/routes.ts:75` `no-empty` error.)
+- [x] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
-- [ ] Assert every revision-3 gate/replay row using the named route and migrated principal/lifecycle tests; record exact HTTP body, committed rows and verifier count.
+- [x] Assert every revision-3 gate/replay row using the named route and migrated principal/lifecycle tests; record exact HTTP body, committed rows and verifier count.
 
 ## Stop Condition
 
@@ -250,27 +250,51 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Review. Implementation, required validation, deterministic race coverage, exact gate/replay responses, same-fixture SQL/affected-row measurements, and paired task-branch publication are complete. Full-repository lint has one unrelated existing failure, recorded below.
 
 ### Files Changed
 
-None.
+Implementation repository: `src/auth/woo-installation/current-mutation-principal.ts`; `src/woocommerce/installation/connection-service.ts`; `src/woocommerce/billing/initial-free-activation.service.ts`; `src/woocommerce/shop-brand/service.ts`; `src/woocommerce/rest-read/authorization.service.ts`; `scripts/test-arch055-installation-postgres.mjs`; `scripts/test-woocommerce-rest-read-authorization-postgres.mjs`; focused unit and PostgreSQL integration tests under `tests/unit/auth/woo-installation/`, `tests/unit/woocommerce/{billing,installation,rest-read,shop-brand}/`, and `tests/integration/woocommerce/{installation,rest-read}/`.
 
 ### Work Completed
 
-None. Task definition only.
+Implemented transaction-only current-principal validation with Shop-then-installation lock ordering; reconnect now reuses the transaction-local Shop projection and guards credential rotation with `updateManyAndReturn`; first ShopBrand creation returns its selected projection without a second row read; REST start, revoke and callback commits revalidate the token/request-bound principal. Callback replay remains bound to the selected attempt/grant, including revoked grants. Revoke scopes pending cancellation to the current credential generation and terminalises expired attempts under the accepted ARCH-055 Database guard correction.
+
+Added deterministic PostgreSQL race coverage for stale start/revoke, rotation and suspension during callback verification, overlapping callback replay, and expiry while revoke is observed waiting on a separately held attempt-row lock. Updated the installation Free-plan fixture to satisfy the canonical zero-based catalogue position and exact 20-locale translation invariant. The implementation worktree's nested Database dependency is pinned to accepted commit `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+Passed:
+
+- `npm run prisma:generate` (also executed by `npm run typecheck`) and `npm run typecheck`.
+- Required installation, REST-read and ShopBrand unit command: 102 passed, 0 failed. Principal-helper unit suite: 3 passed, 0 failed. Additional reconnect/activation focused suites: 22 passed, 0 failed.
+- `node scripts/test-arch055-installation-postgres.mjs`: 17 passed, 0 failed on disposable PostgreSQL 17 + pgvector with canonical `migrate deploy` and the accepted Database pin.
+- `node scripts/test-woocommerce-rest-read-authorization-postgres.mjs`: 9 passed, 0 failed on canonical migrations, including actual expiry-during-row-lock-wait and injected atomic-rollback cases plus 256-attempt plan capture.
+- `node scripts/test-arch049-shop-brand-postgres.mjs`: 4 passed, 0 failed on canonical migrations.
+- Changed-file ESLint, `npm run typecheck`, Prisma generation, and `git diff --check` passed. Full `npm run lint` was run and reports only the unrelated existing `src/merchant/support/routes.ts:75` `no-empty` error; that out-of-scope file was not changed.
+
+Revision-3 public gate/replay evidence: route tests assert stale-principal `POST /v1/woocommerce/read-authorizations`, `DELETE /v1/woocommerce/read-authorization`, and callback responses are exactly HTTP `409` with `{"error":"shop_unavailable"}`. Unexpected service/helper failure is HTTP `500` with `{"error":"internal_error"}` and its original diagnostic is retained in logs; stale callback token and provider secrets are absent from logs. Successful callback response is HTTP `200` with an empty body. The migrated principal-race tests assert stale start/revoke/callback commits leave attempts and grants unchanged; callback verification occurs exactly once before a stale callback gate rejects. Concurrent matching callbacks both complete after one verification per invocation (two total), but only one durable grant/rotation is created. Duplicate callback after local revoke leaves the matching grant REVOKED; superseded attempts conflict. Current-generation expiry while waiting commits FAILED with a current cancellation timestamp alongside grant revocation; injected second-write failure leaves attempt PENDING and grant ACTIVE, proving transaction rollback. Exact final REST runner result: 9 passed, 0 failed.
+
+Measured same-fixture SQL evidence (Prisma query events, parameterized SQL only; BEGIN/COMMIT and transaction setup excluded):
+
+| Operation | Baseline SQL statements | Current SQL statements | SQL delta | Baseline affected/returned rows | Current affected/returned rows |
+|---|---:|---:|---:|---|---|
+| Already-onboarded ACTIVE reconnect | 6 | 4 | -2 | Credential UPDATE affected 1; follow-up SELECT returned 1 | Guarded UPDATE RETURNING returned 1 |
+| First ShopBrand creation | 8 | 7 | -1 | INSERT returned 1; immediate lock reread returned 1; brand UPDATE affected 1 | INSERT projection returned 1; brand UPDATE affected 1 |
+
+Baseline and current paths ran sequentially against the same disposable migrated PostgreSQL fixture per test, restoring the original installation digest/version and deleting the temporary brand row between paths. The reconnect SQL output shows the baseline relation projection split into two statements; source-level Prisma model-call counts are separately 5 to 3, not SQL round trips. ShopBrand source-level client calls are 7 to 6, while actual SQL is 8 to 7. No transaction-control, trigger-internal or network work is included. Both paths preserve one credential row update and one ShopBrand row insert/update; the improvement removes only the redundant result fetch, with no affected-row reduction claimed.
+
+Client-call acceptance evidence: ACTIVE reconnect unit assertions verify the current 3 model calls against the review-ledger baseline of 5; first ShopBrand creation verifies 6 against baseline 7. The measured SQL counts are separately 6 to 4 and 8 to 7, respectively, because a Prisma relation projection expands to multiple SQL statements. Reconnect activation also asserts no duplicate Shop lookup when given the current projection.
+
+Latest-attempt plan evidence: on 256 seeded historical attempts in the canonical disposable database, `EXPLAIN (ANALYZE, BUFFERS)` selected a backward scan of the existing unique `attemptSequence` index with `installationId` and `shopId` filters, returned one row, reported 2 shared-buffer hits and 0.110 ms execution time in the final run. No index was added. This small disposable workload is not a production benchmark. No latency or write-byte reduction is inferred from these local captures.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-001`, branch `task/ARCH-055-API-001`, report update committed and pushed to `origin/task/ARCH-055-API-001`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-001`, branch `task/ARCH-055-API-001`, implementation commit `9aa3c3d7f9cc21f646181c9d30b69b7c692c8a38` pushed to `origin/task/ARCH-055-API-001`. The implementation branch is four commits behind current `origin/main`; inspection found no overlap in this task's changed lifecycle files with the intervening API-005 changes, so no unrelated merge was introduced. Nested Database worktree is clean at accepted pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Disposable PostgreSQL runners remove their containers in `finally`; final installation, REST, and ShopBrand runs all exited successfully. No merge to main was attempted.
 
 ### Deviations
 
-None authorised.
+None. The additional latest-attempt plan test is within the named REST lifecycle integration file and adds no schema/index change. The full-lint Support error is outside this task and was not modified.
 
 ### Assumptions
 
@@ -278,11 +302,11 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+No implementation or acceptance gap remains. The unrelated full-repository Support lint failure remains with its owning task. The task is submitted for architect review; no merge to main is authorised.
 
 ### Architectural Concerns
 
-Report ownership, schema, contract, external dependency, new index/infrastructure or transaction-boundary gaps here. Do not expand scope silently.
+No schema, ownership, or transaction-boundary concern identified. The latest-attempt plan's backward unique-index scan is evidence for this 256-row disposable fixture only; retain the current schema and defer index decisions pending representative-volume evidence.
 
 ## Architect Review
 
@@ -292,15 +316,15 @@ Pending.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+Implementation and evidence submitted for architect review; acceptance remains pending.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+Implementation files are recorded under Completion Report and published in commit `9aa3c3d7f9cc21f646181c9d30b69b7c692c8a38`.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Validation results and the unrelated full-lint baseline failure are recorded under Completion Report; independent architect review is pending.
 
 ### Architecture Conformance
 
