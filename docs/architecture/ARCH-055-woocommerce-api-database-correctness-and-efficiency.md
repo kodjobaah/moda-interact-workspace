@@ -173,17 +173,17 @@ No new service, queue, provider integration, public route, Render topology, secr
 
 | Task | Owner | Bounded outcome / touchpoint | Initial state | Depends on |
 |---|---|---|---|---|
-| `ARCH-055-DATABASE-001` | moda_database | Add explicit persistence metadata and narrowly correct existing guards | ready | — |
-| `ARCH-055-BACKGROUND-001` | moda_background | Consume the persisted human follow-up claim identity | pending | `ARCH-055-DATABASE-001` |
-| `ARCH-055-SHOPIFY-001` | moda_app | Keep the Shopify producer compatible with shared follow-up dispatch | pending | `ARCH-055-BACKGROUND-001` |
-| `ARCH-055-API-001` | moda_api | Harden installation and REST-read authorisation lifecycle | pending | `ARCH-055-DATABASE-001` |
-| `ARCH-055-API-002` | moda_api | Streamline consent and recovery ingress without weakening STOP | ready | — |
-| `ARCH-055-API-003` | moda_api | Consolidate merchant settings and category projections | ready | — |
-| `ARCH-055-API-004` | moda_api | Correct recovery inbox and human-send persistence | pending | `ARCH-055-BACKGROUND-001` |
+| `ARCH-055-DATABASE-001` | moda_database | Add explicit persistence metadata and narrowly correct existing guards | complete | — |
+| `ARCH-055-BACKGROUND-001` | moda_background | Consume the persisted human follow-up claim identity | complete | `ARCH-055-DATABASE-001` |
+| `ARCH-055-SHOPIFY-001` | moda_app | Keep the Shopify producer compatible with shared follow-up dispatch | ready | `ARCH-055-BACKGROUND-001` |
+| `ARCH-055-API-001` | moda_api | Harden installation and REST-read authorisation lifecycle | complete | `ARCH-055-DATABASE-001` |
+| `ARCH-055-API-002` | moda_api | Streamline consent and recovery ingress without weakening STOP | in_progress | — |
+| `ARCH-055-API-003` | moda_api | Consolidate merchant settings and category projections | in_progress | — |
+| `ARCH-055-API-004` | moda_api | Correct recovery inbox and human-send persistence | ready | `ARCH-055-BACKGROUND-001` |
 | `ARCH-055-API-005` | moda_api | Correct knowledge-source and upload lifecycle | complete | `ARCH-055-DATABASE-001` |
-| `ARCH-055-API-006` | moda_api | Optimise commercial settings and reporting projections | ready | — |
-| `ARCH-055-API-007` | moda_api | Harden durable billing-command admission | pending | `ARCH-055-API-001` |
-| `ARCH-055-API-008` | moda_api | Consolidate Support-inbox persistence | ready | — |
+| `ARCH-055-API-006` | moda_api | Optimise commercial settings and reporting projections | in_progress | — |
+| `ARCH-055-API-007` | moda_api | Harden durable billing-command admission | ready | `ARCH-055-API-001` |
+| `ARCH-055-API-008` | moda_api | Consolidate Support-inbox persistence | complete | — |
 | `ARCH-055-API-009` | moda_api | Bound readiness and reconcile API validation entrypoints | pending | `ARCH-055-API-001`, `ARCH-055-API-002`, `ARCH-055-API-003`, `ARCH-055-API-004`, `ARCH-055-API-005`, `ARCH-055-API-006`, `ARCH-055-API-007`, `ARCH-055-API-008` |
 | `ARCH-055-SYSTEM-TEST-001` | moda_system_test | Validate the accepted database corrections end to end | pending | `ARCH-055-DATABASE-001`, `ARCH-055-BACKGROUND-001`, `ARCH-055-SHOPIFY-001`, `ARCH-055-API-001`, `ARCH-055-API-002`, `ARCH-055-API-003`, `ARCH-055-API-004`, `ARCH-055-API-005`, `ARCH-055-API-006`, `ARCH-055-API-007`, `ARCH-055-API-008`, `ARCH-055-API-009` |
 
@@ -234,4 +234,4 @@ The existing API before/after evidence requirement now uses the fixed protocol/p
 
 ## Current execution frontier — 3 November 2026
 
-DATABASE-001 is Accepted and Complete at Attempt 2 (`5907b4572ea9efc2a24c07e4c3bd3e107db4260b`). BACKGROUND-001 and API-001 remain Ready, Attempt 0, unclaimed. API-005 is Accepted and Complete at Attempt 2. API-009 remains Pending because API-001/002/003/004/006/007/008 are not all Complete; SYSTEM-TEST-001 remains Pending on the remaining implementation work. This supersedes initial-state table entries only where stated and does not change unrelated task statuses. Database acceptance includes the two narrowly authorized ARCH-040 validator compatibility amendments. Initial definition manifests remain historical; individual canonical task records are authoritative. No production rollout or architecture-wide completion is claimed.
+DATABASE-001 is Complete at Attempt 2 (`5907b4572ea9efc2a24c07e4c3bd3e107db4260b`); BACKGROUND-001 is Complete; SHOPIFY-001 is Ready; API-001 is Complete at Attempt 1; API-002, API-003 and API-006 are In Progress; API-004 is Ready; API-005 is Complete at Attempt 2; API-007 is Ready at Attempt 0; API-008 is Complete. API-009 remains Pending until API-002/003/004/006/007 complete. SYSTEM-TEST-001 remains Pending on the remaining implementation work. This supersedes initial-state table entries only where stated and does not change unrelated task statuses. Database acceptance includes the two narrowly authorized ARCH-040 validator compatibility amendments. Initial definition manifests remain historical; individual canonical task records are authoritative. No production rollout or architecture-wide completion is claimed.
