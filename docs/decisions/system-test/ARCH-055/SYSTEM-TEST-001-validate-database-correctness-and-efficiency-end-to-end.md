@@ -282,3 +282,8 @@ To be assessed against ARCH-055 and this task's frozen contract.
 ### Follow-up
 
 Only the authorised review may accept this task and promote dependants.
+
+
+## Dependency reconciliation — 3 November 2026
+
+DATABASE-001 is Accepted and Complete at Attempt 2. Other required implementation tasks are not all Complete, so this task remains Pending and manually gated. No end-to-end certification is claimed.

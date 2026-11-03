@@ -9,17 +9,17 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-11-03T02:17:00Z
+attempt: 2
 depends_on: []
 enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: '2026-11-02'
+updated: 2026-11-03
 ---
 
 # ARCH-055-API-006: Optimise commercial settings and reporting projections
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `ready` solely from the dependency graph below.
+**Definition state:** materialised. Attempt 1 was claimed through the canonical launcher and is returned to `ready` after architect review; its attempt number remains 1.
 
 ## Objective
 
@@ -125,11 +125,11 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Implement empty-page short circuits and projection narrowing.
-- [ ] Persist coupon selection differences and reuse settings/locked fields with all selection regressions.
-- [ ] Combine usage aggregates and reuse period projections.
-- [ ] Narrow plan locale relations and apply guarded pending-plan reuse.
-- [ ] Add dedicated migrated purchase-history tests and before/after SQL/row metrics.
+- [x] Implement empty-page short circuits and projection narrowing.
+- [x] Persist coupon selection differences and reuse settings/locked fields with migrated Save/read regressions.
+- [x] Combine usage aggregates and reuse period projections.
+- [x] Narrow plan locale relations and apply guarded pending-plan reuse.
+- [ ] Add dedicated migrated purchase-history tests and complete before/after SQL/row metrics.
 - [ ] Record measurements and retain-or-change decisions for batching, upsert result reuse and attribution evidence.
 
 ## Interfaces / Contracts
@@ -149,12 +149,12 @@ None. The source baseline is context, not a fabricated dependency on historical 
 
 ## Acceptance Criteria
 
-- [ ] No accounting balances, reservation semantics, correction quantities or public versioned schemas change.
+- [x] No accounting balances, reservation semantics, correction quantities or public versioned schemas change.
 - [ ] Same-snapshot zero-count branches issue no page lookup.
 - [ ] Coupon mode-only change touches zero coupon rows; one-of-50 replacement touches two, with full identity validation retained.
-- [ ] One aggregate supplies count and sum; historical-period and cursor validation remain correct.
-- [ ] Settings remain available during coupon sync/outage; whole-catalogue locale fallback is unchanged.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] One aggregate supplies count and sum; historical-period and cursor validation remain correct.
+- [x] Settings remain available during coupon sync/outage; whole-catalogue locale fallback is unchanged.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
 - [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
@@ -176,13 +176,13 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npm run test:arch035-promotions:postgres`
-- [ ] `npm run test:arch036-discount-offers:postgres`
-- [ ] `npm run test:arch035-usage-history:postgres`
-- [ ] `node scripts/test-arch041-billing-postgres.mjs`
-- [ ] `npx tsx --test "tests/unit/merchant/promotions/*.test.ts" "tests/unit/merchant/discount-offers/*.test.ts" "tests/unit/merchant/usage-history/*.test.ts" "tests/unit/billing/presentation/*.test.ts" "tests/unit/billing/purchase-history/*.test.ts"`
-- [ ] `npm run typecheck`
-- [ ] `git diff --check`
+- [x] `npm run test:arch035-promotions:postgres` (equivalent direct runner passed; npm alias not invoked)
+- [x] `npm run test:arch036-discount-offers:postgres` (equivalent direct runner passed; npm alias not invoked)
+- [x] `npm run test:arch035-usage-history:postgres`
+- [x] `node scripts/test-arch041-billing-postgres.mjs`
+- [x] `npx --no-install tsx --test "tests/unit/merchant/promotions/*.test.ts" "tests/unit/merchant/discount-offers/*.test.ts" "tests/unit/merchant/usage-history/*.test.ts" "tests/unit/billing/presentation/*.test.ts" "tests/unit/billing/purchase-history/*.test.ts"`
+- [x] `npm run typecheck`
+- [x] `git diff --check`
 - [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
@@ -200,27 +200,68 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Changes Requested — Architect Review Attempt 1, 2026-11-03. The required baseline/candidate measurement protocol and validation-baseline classification remain incomplete; the task is returned to `ready` with the claim cleared.
 
 ### Files Changed
 
-None.
+- `src/merchant/promotions/read.ts`
+- `src/merchant/promotions/contract.ts`
+- `src/merchant/promotions/routes.ts`
+- `src/merchant/promotions/service.ts`
+- `src/merchant/discount-offers/contract.ts`
+- `src/merchant/discount-offers/routes.ts`
+- `src/merchant/discount-offers/service.ts`
+- `src/merchant/usage-history/history.service.ts`
+- `src/merchant/usage-history/periods.ts`
+- `src/billing/presentation/billing-read.service.ts`
+- `src/billing/presentation/billing-snapshot.reader.ts`
+- `src/billing/presentation/plan-catalogue-read.service.ts`
+- `src/billing/purchase-history/service.ts`
+- `tests/unit/billing/presentation/billing-projection.test.ts`
+- `tests/unit/merchant/discount-offers/routes.test.ts`
+- `tests/unit/merchant/usage-history/history.service.test.ts`
+- `tests/integration/billing/purchase-history/arch055-history.postgres.test.ts`
+- `tests/integration/merchant/usage-history/arch055-query-shapes.postgres.test.ts`
+- `scripts/test-arch035-usage-history-postgres.mjs`
+- `scripts/test-arch041-billing-postgres.mjs`
 
 ### Work Completed
 
-None. Task definition only.
+- Promotion and purchase-history page queries are skipped only when their same-snapshot counts are zero. Promotion selection remains independent of page contents.
+- Discount Save validates the submitted IDs, updates only removed/added coupon flags with exact count checks, and reuses the locked Shop onboarding state and settings write result. Read projections are narrowed while saved settings remain independent of catalogue readiness.
+- Usage history combines count and signed sum in one aggregate, omits the linked-current-period lookup for historical views, and reuses loaded period rows while retaining cursor-anchor and off-page explicit-period checks.
+- Billing overview reuses a pending catalogue row only for an exact handle match. Catalogue translations are fetched only for requested/base/default candidates while whole-catalogue locale completeness remains enforced.
+- Promotion retry errors preserve their Prisma cause. Promotion and discount-offer route diagnostics redact sensitive terms and database connection URLs before emission; focused redaction tests pass.
+- Added the two exact task-authorized migrated PostgreSQL suites and appended them to the existing billing and usage runners without replacing other registrations.
+- Evidence-only alternatives remain unchanged: smaller-first coupon batching, promotion native-upsert/write-result reuse, and v2 attribution evidence consolidation.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+- `node scripts/test-arch035-promotions-postgres.mjs`: PASS, 1 suite. Disposable PostgreSQL 17 + pgvector, canonical migrations deployed; runner cleanup completed.
+- `node scripts/test-arch036-discount-offers-postgres.mjs`: PASS, 7 suites, including concurrent last-writer Save, Background overlap, unavailable catalogue and failed authorization cases. Disposable migrated database cleaned up.
+- `npm run test:arch035-usage-history:postgres`: PASS, query-shape suite 1/1 and existing API-022 suites 2/2 on migrated PostgreSQL 17 + pgvector. The SQL assertion observed one aggregate SELECT containing COUNT and SUM, no count-only UsageEvent SELECT, and result total/quantity of 1/2. Runner cleanup completed.
+- `node scripts/test-arch041-billing-postgres.mjs`: PASS, 20 suites including `arch055-history.postgres.test.ts`. Empty purchase history returned total 0 and no purchases; captured SQL contained one RecoveryCreditPurchase COUNT SELECT and no page SELECT. Runner cleanup completed.
+- Focused task unit command (`npx --no-install tsx --test` over promotions, discount-offers, usage-history, billing presentation and purchase-history): PASS, 103/103.
+- `npm run typecheck`: PASS.
+- ESLint over all task-changed source, tests and runner files: PASS, zero warnings.
+- `git diff --check`: PASS.
+- `npm test`: FAIL, 650 passed and 8 failed in untouched billing-command routes, composition/runner registration, merchant-knowledge routes and store-context routes. The runner-registration failure also reports the separate `merchant/ai-response-delay/service.postgres.test.ts` suite is absent from the aggregate chain; that suite is outside this task's runner ownership. These failures have not been compared against the task-start commit and are not represented as proven baseline failures.
+- `npm run lint`: FAIL only at untouched `src/merchant/support/routes.ts:75` (`no-empty`).
+- The mandatory two-warm-up/five-recorded-sample comparison against task-start SHA `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0` has not been run. No raw baseline/candidate samples, elapsed-time summaries, complete per-profile client-call/transaction/row evidence, refund-history overflow profile, or 30-period/31-event usage profile is claimed. The two passing SQL-shape tests provide candidate correctness evidence only, not the required comparative protocol. This gap blocks acceptance.
+- Runtime observed: Node `v24.21.0`, npm `11.19.0`; repository declarations are Node `24.19.0`, npm `11.17.0`.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+- Launcher-prepared physical worktrees: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-006`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-006`.
+- Both branches are `task/ARCH-055-API-006`. Shared workspace and shared implementation checkout were not switched or used for implementation.
+- Implementation start HEAD was the prepared SHA `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`; parent claim commit is `02de2a9d3d93246c1610b7db8fbb07e06dcf050c` and was already pushed by preparation.
+- Nested Database pin: `7c377282aa5819b3008b7d7f3018f44f4161523e` (`heads/main`). Recursive submodule sync/update passed during launcher preparation.
+- Implementation candidate commit `8c8558ae44315ccb4564169aad94e454c3074ec7` is published on `origin/task/ARCH-055-API-006`. This completion-report commit publishes the parent report on its existing task branch. No parent submodule gitlink was staged.
 
 ### Deviations
 
-None authorised.
+- The two new suite filenames and runner references follow the exact revision-2 deliverable paths. No schema, migration, public DTO, index, shared rollup or unrelated runner registration was changed.
+- Review is requested with the comparative evidence gap explicitly blocking acceptance; no measurement values were inferred from correctness runs.
 
 ### Assumptions
 
@@ -228,34 +269,41 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+- Required baseline/candidate protocol: run the fixed profiles M11-M14 with two discarded warm-ups and five restored recorded samples per version, capturing the specified client calls, normalized SQL, transaction statements, row counts, timings, retries and external calls. Complete F01-F05 assertions and the larger M13 fixture as part of those suites.
+- Eight full `npm test` failures and the untouched support-route lint error remain unclassified against the prepared SHA.
+- Aggregate runner registration detects a missing AI-response-delay integration suite owned by later API-009 work; no out-of-scope runner change was made.
 
 ### Architectural Concerns
 
-Report ownership, schema, contract, external dependency, new index/infrastructure or transaction-boundary gaps here. Do not expand scope silently.
+No schema, transaction-boundary, public contract or ownership change was required. The documented evidence gap and unrelated broad-suite failures require architect disposition before acceptance.
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending.
+Changes Requested — 2026-11-03. Attempt 1 remains unchanged; task returned to `ready`, with `executor` and `claimed_at` cleared. No acceptance or downstream promotion.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+1. **[P1] Complete the mandatory comparative evidence protocol.** The task's fixed M11–M14 profiles require two discarded warm-ups and five restored recorded samples per version against the prepared baseline `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`, with matching disposable PostgreSQL 17 + pgvector fixtures. The report explicitly says these samples and the required per-profile SQL/client-call/transaction/affected-row/timing evidence were not collected. The passing query-shape and correctness tests do not establish the required before/after evidence. Required F01–F05 outcomes are also left unchecked; the named 30-period/31-event usage profile and refund-history overflow/concurrent-refund profile are not evidenced. Record the fixed-protocol results and retain/defer decisions for M11–M14 and the evidence-only alternatives, or return a concrete baseline incompatibility with the failed command and evidence. Do not infer performance from target counts or mock call counts.
+
+2. **[P2] Classify broad validation failures against the task-start baseline and declared toolchain.** The full `npm test` run has eight failures that were not compared with the prepared start SHA, and `npm run lint` fails at an untouched support route. The recorded runtime is Node 24.21.0/npm 11.19.0 while the repository declares Node 24.19.0/npm 11.17.0, despite the task's instruction to use the declared toolchain. Establish which failures are baseline versus candidate regressions, and rerun required checks using the repository toolchain (or record a specific toolchain blocker) before acceptance.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+- Task definition revision 2, its unchecked Work Items, Acceptance Criteria and Validation items.
+- Attempt 1 Completion Report and declared fixed protocol in `docs/architecture/ARCH-055/task-definition-contract.md`.
+- Implementation branch `task/ARCH-055-API-006` at `8c8558ae44315ccb4564169aad94e454c3074ec7`, relative to prepared start `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`; changed paths and SQL-shape regression coverage were inspected.
+- Canonical parent and implementation worktree status and task-branch publication state.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+The report records the focused migrated PostgreSQL suites, 103 focused unit tests, typecheck, and diff check passing. It also records the eight full-suite failures, the support-route lint error, missing comparative samples, and runtime-version mismatch. No tests or measurements were rerun during this architect review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+The source changes are within the revision-2 edit map, and the implementation branch is pushed and clean. Acceptance remains blocked by the mandatory comparative evidence and unresolved validation classification. The unchanged baseline behavior for evidence-only options is not enough by itself; the task requires measured retain/defer decisions.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Keep the same task branch and Attempt 1. Complete M11–M14 with the fixed baseline/candidate procedure and F01–F05 regression outcomes, record raw samples and measured SQL/calls/rows/timings, classify broad validation failures against the task-start baseline using the declared runtime, and reconcile the unchecked task criteria. Do not begin API-009 or SYSTEM-TEST-001. Both remain Pending because API-006 is not Complete. No implementation source was changed by this review.
