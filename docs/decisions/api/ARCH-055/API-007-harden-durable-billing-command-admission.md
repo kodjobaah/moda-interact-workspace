@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 25
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: '2026-11-02'
+updated: '2026-11-03'
 ---
 
 # ARCH-055-API-007: Harden durable billing-command admission
@@ -31,7 +31,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 3. Small acceptance clarification over revision 2; execution metadata, dependencies and migration scope are unchanged.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
+**Definition state:** materialised. ARCH-055-API-001 is Accepted and Complete at Attempt 1, so this task is Ready at Attempt 0 and unclaimed. This status change does not claim implementation or begin the task.
 
 ## Objective
 
@@ -267,3 +267,7 @@ To be assessed against ARCH-055 and this task's frozen contract.
 ### Follow-up
 
 Only the authorised review may accept this task and promote dependants.
+
+## Dependency readiness — 3 November 2026
+
+ARCH-055-API-001 is Accepted and Complete at Attempt 1. It is this task's sole prerequisite. ARCH-055-API-007 is Ready at Attempt 0 with no executor or claim; the normal task launcher may claim it when execution is requested. No implementation, deployment, or production migration is implied.
