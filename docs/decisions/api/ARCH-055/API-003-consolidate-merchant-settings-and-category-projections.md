@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 30
-executor: copilot
-claimed_at: 2026-11-03T02:22:54Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -220,7 +220,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Attempt 1 submission: blocked, with implementation committed and pushed but required final executable validation incomplete. Architect disposition on 2026-11-03: Changes Requested; returned to `ready` with the claim cleared. The submitted evidence below is retained as history; the Architect Review records independently observed results.
+Attempt 1 submission: blocked, with implementation committed and pushed but required final executable validation incomplete. Architect disposition on 2026-11-03: Changes Requested; returned to `ready` with the claim cleared. Attempt 2 corrected the canonical fixtures and C01 schedule and published commit `d39246f`, but is returned as `blocked`: a stable full canonical run and mandatory paired M04/M05 measurements were not obtained. The submitted Attempt 1 evidence and Architect Review below are retained unchanged as history. Attempt 2 is not submitted for acceptance.
 
 ### Files Changed
 
@@ -276,6 +276,16 @@ Prepared launcher state and the stated accepted Database pin are authoritative. 
 ### Architectural Concerns
 
 None identified. Optional changed-row batching, store-context no-op suppression and prompt-text narrowing remain evidence-only/retained as required by the task.
+
+### Attempt 2 Correction Evidence — 2026-11-03
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-003`; parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-003`; both use `task/ARCH-055-API-003`. Attempt 2 launcher claim commit: `df4320abd9d998e44e6a4c6274de42f644b75839`. Task-start implementation SHA: `e20ceccafeade2c53bdb5ec5942b65a9ccffcc43`. Nested Database pin: `7c377282aa5819b3008b7d7f3018f44f4161523e`.
+- Commit `d39246f` (`fix(api): correct canonical ARCH-055 fixtures and read race`) was created and pushed. It corrects slug/key prefixes, the active-category timestamp field and pending draft tuple, uses a valid revoked installation status/timestamp pair, leaves trigger-protected immutable category/template/revision rows to disposable database teardown, isolates C01 reader SQL, and awaits the gated reader during teardown. No migration or schema edit was made.
+- Canonical command `node scripts/test-arch055-merchant-settings-postgres.mjs` applied all 68 migrations on repeated runs. During correction, one recorded run passed 7/8 tests; bootstrap, C01, category catalogue read, store-context and all three category-selection tests passed. The one failure was the bootstrap fixture's missing `pendingPromptRevisionId`, corrected in `d39246f`. A later rerun passed bootstrap and the category-selection tests but lost connectivity to its mapped PostgreSQL port (`127.0.0.1:32838`) during subsequent suites; the process produced connection failures. Earlier intermediate runs were 2/8 and 5/8 while fixture corrections were still in progress. Therefore there is no clean final canonical-suite pass or verified final runner cleanup result.
+- `get_errors` reported no editor diagnostics in the five changed integration files. This is not a substitute for `npm run typecheck`. No attributable Attempt 2 full typecheck, unit matrix, lint, final `git diff --check`, feature-preferences PostgreSQL, cross-domain PostgreSQL, or AI-delay PostgreSQL result was captured. C03a/b/c were not rerun in Attempt 2.
+- The C01 test passed in a canonical-run attempt after changing the order to pause the RepeatableRead reader before publication B, commit B through the writer, release the read, and assert old A plus fresh B. Writer SQL counting now excludes by-ID lineage validation and the independent reader connection. The test's `finally` releases and awaits the reader.
+- **M04/M05 paired measurement evidence remains outstanding.** The measurement baseline is `e20ceccafeade2c53bdb5ec5942b65a9ccffcc43`; the corrected candidate is commit `d39246f`. No baseline/candidate two-warm-up plus five-restored-sample set was captured for any mandatory variant, and there are no recorded raw SQL/transaction/row/timing/retry/external-port tables. Do not infer metrics from test assertions or partial suite durations.
+- The terminal became unresponsive during the last bounded rerun attempt; simple shell commands timed out. This prevented completion of the required comparison and validation. The task is left `blocked`, with executor and claim cleared for architect direction. No downstream task was started, no Architect Review text was changed, and no main merge or gitlink update occurred.
 
 ## Architect Review
 
