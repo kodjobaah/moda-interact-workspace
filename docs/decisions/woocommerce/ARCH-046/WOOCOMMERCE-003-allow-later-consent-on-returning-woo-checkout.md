@@ -317,4 +317,8 @@ The build and full `node tests/integration/run-wordpress.mjs --consent-browser` 
 
 A reused database produced a shop-brand disposition mismatch. That case passed on the fresh database. A separate guest order failure was traced to a completed ORDER_PLACED row in scheduler history. The disposable checkout scenario now suspends automatic cron and async scheduler dispatch while it asserts and manually delivers pending jobs, then removes its test plugin. This test-only correction is published as `8ede5ab`.
 
-Hosted API-006 proof/STOP integration and LocalWP smoke remain outstanding. Attempt 2 remains in progress.
+## Developer manual smoke testing
+
+The developer reported completing the manual smoke testing requested after the full integration run. This records developer-reported evidence. The exact scenarios and environment were not supplied.
+
+Hosted API-006 proof and STOP verification remain outstanding. Attempt 2 remains in progress.
