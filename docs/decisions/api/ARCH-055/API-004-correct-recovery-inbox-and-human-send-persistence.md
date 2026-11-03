@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: blocked
 priority: 20
 executor: null
 claimed_at: null
@@ -266,7 +266,7 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 ### Unresolved Issues
 
-Full lint has the unrelated existing support-route `no-empty` error described above. No required task validation is otherwise unresolved. Architect review and task-branch publication remain to be completed.
+Attempt 2's required PostgreSQL validation and paired M06/M07 measurements remain unverified because the canonical runner could not start its disposable container. The containerd image-content error must be cleared before validation can be completed. The implementation and report are published; no code correction is identified by this review. The unrelated Support lint error remains documented.
 
 ### Architectural Concerns
 
@@ -338,4 +338,25 @@ Recover Docker/containerd image-content health, then rerun the canonical disposa
 
 ### Attempt 2 Worktree
 
-Implementation changes are limited to the three authorized API-004 integration test files in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-004`. Attempt 2 implementation commit `97e797e` is pushed to `origin/task/ARCH-055-API-004`; the accepted nested Database pin remains `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. The report is being committed separately on the dedicated parent task branch. The task is not complete and no main branch was changed.
+Implementation changes are limited to the three authorized API-004 integration test files in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-004`. Attempt 2 implementation commit `97e797e` is pushed to `origin/task/ARCH-055-API-004`; the accepted nested Database pin remains `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. The parent task report is published. Attempt 2 is blocked until PostgreSQL validation can run; Attempt 3 requires a fresh launcher claim after the environment is repaired. No main branch was changed.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+**Changes Requested — Attempt 2.** Return to `blocked`; preserve Attempt 2 and clear `executor`/`claimed_at` until the required PostgreSQL validation can run. This is not acceptance. Do not promote dependants.
+
+### Review Notes
+
+1. **P2 — Complete required PostgreSQL validation.** The canonical human-send PostgreSQL runner failed before test execution because containerd could not read image blob `sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8` (`input/output error`). The D02 wrong-digest/ALLOW assertions, D03 database-read failure assertion, and required PostgreSQL regression matrix are therefore unverified. Attempt 1 results do not validate these Attempt 2 additions.
+2. **P2 — Capture the required paired M06/M07 evidence.** The expanded samplers record the required observations, but neither baseline nor candidate Attempt 2 runs completed. The prior Attempt 1 measurements do not cover the expanded profiles and harness. After the container issue is resolved, run the canonical runner against task-start and candidate source with the prescribed two warmups and five recorded samples per profile; record the raw evidence and outcomes.
+
+No production source change is present in Attempt 2, and code inspection found no new implementation finding. The blocker is validation evidence, not an inferred Docker fix. Do not prune Docker resources or change the test contract to bypass the failed runner.
+
+### Validation Reviewed
+
+Attempt 2 typecheck, 64/64 focused unit tests, focused ESLint, and `git diff --check` passed. PostgreSQL tests and M06/M07 paired measurements did not execute. Repository-wide lint retains the previously documented unrelated Support `no-empty` failure. Tests were not rerun during this review.
+
+### Follow-up
+
+After Docker/containerd can read the canonical image, the developer/architect should return the task to `ready`; then a fresh launcher claim can rerun the required PostgreSQL suite, D02/D03 assertions, and paired M06/M07 baseline/candidate measurements. Reconcile the checkboxes with observed results before resubmission. `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` remain pending.
