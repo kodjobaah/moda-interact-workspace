@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 35
-executor: copilot
-claimed_at: 2026-11-03T02:17:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised. Attempt 1 was claimed through the canonical launcher and is returned to `ready` after architect review; its attempt number remains 1.
+**Definition state:** materialised. Attempt 2 was interrupted and has been reconciled by the architect to `ready`; its attempt number remains 2 until the normal launcher durably claims the next attempt.
 
 ## Objective
 
@@ -317,3 +317,24 @@ The source changes are within the revision-2 edit map, and the implementation br
 ### Follow-up
 
 Keep the same task branch and Attempt 1. Complete M11–M14 with the fixed baseline/candidate procedure and F01–F05 regression outcomes, record raw samples and measured SQL/calls/rows/timings, classify broad validation failures against the task-start baseline using the declared runtime, and reconcile the unchecked task criteria. Do not begin API-009 or SYSTEM-TEST-001. Both remain Pending because API-006 is not Complete. No implementation source was changed by this review.
+
+
+## Architect Review — Recovery of Attempt 2, 3 November 2026
+
+### Review Status
+
+Changes Requested. Attempt 2 is not accepted. Return the same task to Ready, clear executor/claimed_at, and preserve `attempt: 2`; only the normal prepared launcher may claim Attempt 3. No acceptance or downstream promotion.
+
+### Recovery evidence
+
+The developer explicitly requested architect reconciliation of the existing Copilot claim after the normal launcher returned `TASK_NOT_READY`. The durable Attempt 2 progress report states that terminal execution stopped returning output, Node test discovery through the alternate adapter was unavailable, and comparative measurements/baseline classification remained unfinished. This is an interrupted-attempt handoff, not successful completion. The report was preserved in parent commit `a0cba30ae10fbf06da2f7f315fc5307cb63f06d0`; no evidence of ongoing implementation was established by this recovery.
+
+Route-only launcher output confirms canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-006`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-006`, matching `task/ARCH-055-API-006` branches, agent execution and automatic architect completion. Route-only is topology evidence, not a prepared packet or claim.
+
+Implementation HEAD `8c8558ae44315ccb4564169aad94e454c3074ec7` matches its remote task branch. Two uncommitted task-owned test changes were inspected: `tests/integration/billing/purchase-history/arch055-history.postgres.test.ts` adds the nonempty five-purchase case and fixture cleanup; `tests/integration/merchant/usage-history/arch055-query-shapes.postgres.test.ts` adds the 30-closed-period/31-signed-events M13 fixture and v1/v2 assertions. Both are exact authorized paths. Preserve and publish those changes through the repository owner before normal preparation; do not discard them or infer that unexecuted assertions pass. The nested Database checkout has no local modifications or gitlink difference. This recovery makes no implementation edits and performs no runtime validation.
+
+### Mandatory correction contract
+
+The complete Attempt 1 Review Notes remain authoritative. Finish M11–M14 with the fixed two-warm-up/five-recorded-samples-per-version procedure against `fa2a857ed2ccfd629a7c9f2749ce4a38cc143ff0`, retain actual raw SQL/client-call/transaction/row/timing evidence and descriptive summaries, complete F01–F05 including refund overflow/concurrent-refund and large signed-history cases, and record measured retain/defer decisions for evidence-only alternatives. Classify the broad-suite failures against that baseline using the declared Node/npm toolchain; record actual infrastructure or compatibility failures without inventing values or silently weakening gates.
+
+The stranded tests are incomplete supporting work, not a replacement for those required measurements. Reconcile unchecked Work Items, Acceptance Criteria and Validation only from actual results. Keep the existing task branches, scope and contracts; do not change migrations, add discretionary optimisations or start API-009/SYSTEM-TEST-001. Parent task recovery publication is mechanically delegated for this current-task-only overlay; implementation checkpoint publication remains with the repository owner.
