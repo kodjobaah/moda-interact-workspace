@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 15
 executor: null
 claimed_at: null
@@ -32,7 +32,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
+**Definition state:** materialised on the canonical parent and implementation task worktrees. Attempt 1 was submitted for architect review and is returned to `ready` with the claim cleared; attempt remains 1.
 
 ## Objective
 
@@ -183,7 +183,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Submitted for architect review at Attempt 1. The implementation consumes the accepted `ARCH-055-DATABASE-001` pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no Database schema or migration was changed.
+Changes Requested — Architect Review Attempt 1, 2026-11-03. The implementation consumes the accepted `ARCH-055-DATABASE-001` pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no Database schema or migration was changed. The task returns to `ready`; claim cleared and attempt unchanged.
 
 ### Files Changed
 
@@ -213,43 +213,44 @@ No scope deviation. The test runner's installed Shared testing helper had its lo
 
 ### Assumptions
 
-The launcher's Definition State paragraph still says the task is unmaterialised; it was not changed because implementation execution authority is confined to task metadata, Work Items, Acceptance Criteria, Validation and this Completion Report. The actual launcher-created worktrees and branch evidence above are authoritative for this execution. Attempt remains 1.
+Launcher evidence confirms the task is materialised in the canonical parent and implementation worktrees. The former portable-definition note has been reconciled; Attempt 1 remains unchanged.
 
 ### Unresolved Issues
 
-None. Architect acceptance remains pending.
+The missing-key integrity event does not include the caught typed error message/cause; see Architect Review — Attempt 1. Other implementation and race evidence is accepted as reported.
 
 ### Architectural Concerns
 
 No architectural contract, schema, provider, or transaction-boundary gap found. The task is submitted for review; downstream tasks remain gated until architect acceptance.
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending.
+Changes Requested — 2026-11-03. Task returned to `ready`; `executor` and `claimed_at` are null. Attempt 1 is preserved. No acceptance or downstream promotion.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+1. **[P2] Preserve the actual integrity error in private diagnostics.** `HumanCommandDispatcherService.processClaim()` catches `FollowUpClaimKeyIntegrityError` from `loadClaimedCommand()` and calls `rejectTerminal()` without logging or forwarding that error. The cancellation and outbound-fence paths emit `errorType` and `reasonCode`, but omit the error message/cause. This loses the actionable diagnostic for a malformed or missing persisted claim key despite Requirement 6 and the criterion that original diagnostic causes survive. Pass the original typed error to the existing Shared logger with safe identifiers and the bounded message; do not include the missing key value or alter fail-closed cancellation/credit-hold behavior. Add a regression asserting the emitted structured log contains the actual error type and message and excludes unsafe values.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+- `src/services/recovery-conversation/merchant-send-command.service.ts`
+- `src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `src/services/recovery-conversation/follow-up-claim-cancellation.service.ts`
+- `tests/unit/services/recovery-conversation/arch055-claim-key.test.ts`
+- `tests/integration/arch055-follow-up-identity.integration.test.ts`
+- Attempt 1 Completion Report, launcher worktree evidence, and accepted Database pin.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Reviewed the reported 126 unit tests, 13 Background PostgreSQL/Redis integration tests, 10 moderation integration tests, build, lint and diff checks. The barrier test uses PostgreSQL lock-wait observations and verifies a resumed old worker leaves the new persisted owner unchanged. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+The persisted key is used independently of the public idempotency key in dispatch, cancellation, repair and outbound fencing. Historical-key handling, same-public-key cross-Shop isolation, held-credit behavior for malformed keys, and the old-worker/reclaimed-owner race are supported by the submitted tests. Acceptance remains blocked by the missing original integrity-error diagnostic detail. The portable-definition paragraph has been corrected to reflect launcher materialisation.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
-
-
-## Dependency readiness — 3 November 2026
-
-ARCH-055-DATABASE-001 is Accepted and Complete at Attempt 2. The accepted Database pin is `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; adopt it within this task's authorized consumer scope. The sole prerequisite is satisfied: Ready, Attempt 0, unclaimed. Prepare through the canonical launcher; no implementation, deployment or production migration is implied. Follow the Database task's coordinated migration/consumer rollout handoff.
+Keep the same mirrored task branches and Attempt 1. Log/forward the original typed integrity error and add the structured-log regression, rerun the focused affected checks, update the Completion Report, and resubmit. `ARCH-055-SHOPIFY-001`, `ARCH-055-API-004` and `ARCH-055-SYSTEM-TEST-001` remain gated; no dependent status is changed by this review. No implementation source was changed by the architect review.
