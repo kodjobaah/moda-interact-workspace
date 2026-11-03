@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
-executor: codex
-claimed_at: 2026-11-03T06:39:18Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-055-API-001
@@ -31,7 +31,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 3. Small acceptance clarification over revision 2; execution metadata, dependencies and migration scope are unchanged.
 
-**Definition state:** materialised. ARCH-055-API-001 is Accepted and Complete at Attempt 1, so this task is Ready at Attempt 0 and unclaimed. This status change does not claim implementation or begin the task.
+**Definition state:** materialised. ARCH-055-API-001 is Accepted and Complete at Attempt 1. The task was claimed for Attempt 1; it is now submitted for review with its claim cleared.
 
 ## Objective
 
@@ -208,7 +208,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Attempt 1 implementation and validation complete; review publication is blocked by automatic approval review. Implementation commit `4935da58d5206da3de6fb814038b1a4af05621f7` is local and clean. Its push to the verified existing `https://github.com/kodjobaah/moda-interact-api.git`, branch `task/ARCH-055-API-007`, was rejected because explicit authorization for that private payload/destination is required. Keep `status: in_progress` and the existing Codex claim until implementation/report publication is authorized and completed. This is not architect acceptance or a new attempt.
+Attempt 1 implementation and validation are complete. The initial push was blocked pending explicit authorization; after authorization, implementation commit `4935da58d5206da3de6fb814038b1a4af05621f7` and report commit `8be24fe0af1700ad0c5025830815b04f71e55d1b` were pushed to their matching task branches. The claim is cleared and the task is submitted for architect review. This is not architect acceptance or a new attempt.
 
 ### Files Changed
 
@@ -401,9 +401,9 @@ SQL IDs resolve through sqlShapes; call IDs through callShapes (method, logical 
 - Dependency gate passed (API-001 Complete). Attempt 1/codex claimed 2026-11-03T06:39:18Z; launcher claim `abe3bc4aa8b6552d7b46dc4b1e77cf3c9b8020de` committed/pushed. No repeated claim/startup.
 - Parent remote-task fast-forward not-needed, origin/main incorporated yes (prepared HEAD `7eee68f154ec2221abd51981f328e9d76b0b313a`); implementation fast-forward not-needed, origin/main already-current at starting SHA above.
 - Recursive submodule sync/update passed; Database exactly `5907b4572ea9efc2a24c07e4c3bd3e107db4260b` ready. No schema/gitlink change.
-- Implementation `4935da58d5206da3de6fb814038b1a4af05621f7` is committed and clean. Automatic review rejected its push to verified `https://github.com/kodjobaah/moda-interact-api.git` / `task/ARCH-055-API-007` pending explicit private-payload/destination approval; no workaround attempted.
+- Implementation `4935da58d5206da3de6fb814038b1a4af05621f7` and initial parent report `8be24fe0af1700ad0c5025830815b04f71e55d1b` are published on their matching `task/ARCH-055-API-007` branches. Both task worktrees were clean before the review-state report update.
 - Final paired/ordinary billing containers `moda-api-arch041-billing-d26740d072e84b8881f233ec9df2593a`, `moda-api-arch041-billing-5cb6a6977c504688b878a0548f1bb8bb` and `moda-api-arch041-billing-a6d7bef11a354b7b874db4fda19b02c9` were checked against Docker inventory: none remains. Cross-domain exit 0 includes its finally cleanup. No other task container was stopped/removed.
-- No main merge/push, force-push, parent gitlink, package aggregate wiring, index/frontier or Architect Review edit. Parent report remains local until publication; no remote review submission claimed.
+- No main merge/push, force-push, parent gitlink, package aggregate wiring, index/frontier or downstream task status edit. This task is submitted for architect review; acceptance is not claimed.
 
 ### Deviations
 
@@ -415,7 +415,7 @@ Prepared packet and accepted Database/helper contracts are authoritative. Dispos
 
 ### Unresolved Issues
 
-Explicit approval to publish the private implementation and parent report to their existing mirrored task branches remains outstanding. After successful publication, transition to review and return to moda_architect. Do not self-accept/start enabled tasks/update main. The unchanged Support lint failure is separately verified above.
+No implementation or validation issue remains within this task. Repository-wide lint retains the separately verified unchanged Support `no-empty` failure. Architect acceptance is pending; do not start enabled tasks, update the parent gitlink, or merge to `main`.
 
 ### Architectural Concerns
 
@@ -425,28 +425,34 @@ No new cross-repository, schema, infrastructure, Shared primitive or policy gap 
 
 ### Review Status
 
-Pending.
+Pending architect acceptance. The task and implementation are published, and Attempt 1 remains unchanged.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+The local implementation diff was reviewed against the frozen edit map. No blocking code finding was identified. Formal architect acceptance has not been recorded in this submission step.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+- `src/billing/commands/recurring-intent.ts`
+- `src/billing/commands/recovery-credit-intent.ts`
+- `src/billing/commands/recurring-outcome.ts`
+- `src/billing/commands/recovery-credit-outcome.ts`
+- `src/woocommerce/billing/woo-billing-client.ts`
+- `src/woocommerce/billing/initial-free-activation.service.ts`
+- `tests/integration/billing/commands/arch055-installation-admission.postgres.test.ts`
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Reviewed the report's 123/123 unit tests, 24 passing billing PostgreSQL tests, paired 80-sample baseline and candidate runs (160 samples total), typecheck and focused lint. The repository-wide lint failure is the unchanged Support `no-empty` baseline issue. Validation was not rerun during this review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+The changed production paths and the exact new regression file match the task edit map. Provider calls remain outside admission transactions; no schema or public API changes were introduced.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Await architect acceptance. API-009 and SYSTEM-TEST-001 remain pending because their other prerequisites are incomplete; no downstream task is promoted by this submission.
 
 ## Dependency readiness — 3 November 2026
 
-ARCH-055-API-001 is Accepted and Complete at Attempt 1. It is this task's sole prerequisite. ARCH-055-API-007 is Ready at Attempt 0 with no executor or claim; the normal task launcher may claim it when execution is requested. No implementation, deployment, or production migration is implied.
+ARCH-055-API-001 is Accepted and Complete at Attempt 1. ARCH-055-API-007 Attempt 1 is in review with executor and claim cleared. ARCH-055-API-009 and ARCH-055-SYSTEM-TEST-001 remain pending because other explicit dependencies are incomplete. No main merge, deployment, or production migration is implied.
