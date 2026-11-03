@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 3
+executor: codex
+claimed_at: 2026-11-03T10:18:24Z
+attempt: 4
 depends_on: []
 enables:
 - ARCH-055-API-009
