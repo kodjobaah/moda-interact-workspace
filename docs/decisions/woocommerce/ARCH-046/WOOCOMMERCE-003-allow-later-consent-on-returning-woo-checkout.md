@@ -336,3 +336,13 @@ PHP lint and 73 focused PHP tests passed on the reviewed checkout. The earlier p
 Required correction: restore the JavaScript formatting and lint corrections on the actual task branch. Lint of the 20 changed JS/MJS files reports 1,026 errors, including checkout clients, browser and runner fixtures. Run the declared lint command, establish zero task-file errors, and distinguish any remaining baseline diagnostics with a comparison. Rerun the affected consent and integration checks after corrections and publish the reviewed implementation. The lost checkout's lint result does not apply to this commit. Compound validation criteria remain open where evidence is incomplete.
 
 Status is ready with the claim cleared and Attempt 2 preserved. A new developer claim starts the next attempt.
+
+## Attempt 3 lint corrections and validation
+
+The developer launcher prepared Attempt 3 on the canonical parent and WooCommerce task worktrees under the existing developer execution and completion modes. The prior claim and review history are preserved. The developer authorized implementation assistance. The WooCommerce fixes are published at `52749f4`.
+
+Restored the repository formatter output in task JavaScript and resolved the remaining findings by ordering helper declarations before use, avoiding shadowed identifiers, and replacing nested conditionals. The scoped lint run for all changed JS/MJS files reports zero findings. The declared repository-wide lint command still reports 261 errors in 18 files. Every reported file is outside the task diff and byte-identical to `origin/main` at `2834f03`.
+
+All 79 focused consent, fixture, environment and translation tests passed. The production build passed with three webpack performance warnings. The full managed WordPress and Chromium run passed with exit code 0 and stopped the disposable environment. This rerun covered shop-brand, Classic and Blocks checkout, order lifecycle, restoration and consent against the controlled HTTPS fixture. The developer's successful LocalWP smoke against completed API-006 remains the separate real-service evidence. The STOP ownership clarification still applies.
+
+The Attempt 2 lint correction is implemented and verified. Attempt 3 remains in progress pending developer reconciliation.
