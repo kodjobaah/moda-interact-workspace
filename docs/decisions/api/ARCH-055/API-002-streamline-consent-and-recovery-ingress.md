@@ -351,7 +351,7 @@ Task branch: `task/ARCH-055-API-002` in both repositories.
 - Prepared dependency gate passed; reused correct dedicated worktrees; both remote task branches required no fast-forward and both already incorporated origin/main. Recursive submodule sync/update passed and recorded Database pin above was ready.
 - Durable Codex Attempt 3 claim: `45cc5e9457b3f81da9db0e7141bbde028b50d1f3`, pushed. Shared workspace/implementation checkout was not switched for task work; no other task worktree reused.
 - Final implementation commit: `7d0aa37d821ac6187e8c8587c02f8c10fb3cd3e5`, pushed to `origin/task/ARCH-055-API-002`; worktree clean.
-- Attempt 3 parent submission consists only of this task file and the architect-authorized evidence artifact; submission commit `44916e6deb134bb56814aead1aee343a9ce3f2d9` is pushed to `origin/task/ARCH-055-API-002`. The architect acceptance record is being added on the same parent task branch; claim/recovery provenance is above. No implementation submodule gitlink is staged.
+- Attempt 3 parent submission consists only of this task file and the architect-authorized evidence artifact; submission commit `44916e6deb134bb56814aead1aee343a9ce3f2d9` is pushed to `origin/task/ARCH-055-API-002`. Architect acceptance and architecture-frontier reconciliation are committed as `0a813282d` on the same parent task branch; claim/recovery provenance is above. No implementation submodule gitlink is staged.
 - Successful disposable PostgreSQL/Redis runners exited after cleanup; the baseline temporary archive and comparison databases/container were removed by runner finally blocks. Unrelated pre-existing containers were left untouched.
 - No force push, implementation/workspace main merge or main push. No enabled task started or promoted.
 
