@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised and claimed for Attempt 1 by the canonical task launcher. Implementation is submitted for architect review; acceptance remains pending.
+**Definition state:** materialised. Attempt 1 has completed implementation and was returned to Ready by architect review for the required query-plan evidence; the attempt remains 1 and the claim is cleared.
 
 ## Objective
 
@@ -171,7 +171,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Submitted for architect review. Attempt 1 remains in effect; task status is `review` and the execution claim is cleared.
+Attempt 1 implementation was reviewed and returned to `ready` for the query-plan evidence correction below. Attempt remains 1; execution claim is cleared. No implementation source change is requested.
 
 ### Files Changed
 
@@ -238,24 +238,35 @@ Report ownership, schema, contract, external dependency, new index/infrastructur
 
 ### Review Status
 
-Pending.
+Changes Requested.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+The implementation and reported correctness evidence conform to the selected persistence, replay, mark-read, queue-repair, tenant, and logging requirements. However, Requirement 2 explicitly requires measuring the emitted query plan. The Completion Report says actual query plans were not collected, leaving this mandatory evidence incomplete.
+
+1. **P2 — Capture the emitted query plan.** Using the same canonical PostgreSQL 17 + pgvector fixture and the actual baseline and candidate page SQL, record comparable `EXPLAIN (ANALYZE, BUFFERS)` output for the first-page and empty-page profiles. Keep fixture state and relevant planner settings fixed, redact no SQL parameters because the test fixture is synthetic, and document plan shape, actual rows, buffer activity, and limitations. Do not add an index or change source based on the plan without an explicit scope amendment. If empty-page plan capture is not applicable to the emitted statement shape, document the exact reason and retain an explicit plan comparison for the non-empty page. This is validation/evidence-only; no implementation source change is requested unless the plan exposes a correctness defect that must be returned to the architect.
+
+The claimed validations and task branches were inspected; tests were not rerun during this review.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+- `src/merchant/support/read.service.ts`
+- `src/merchant/support/commands.service.ts`
+- `src/merchant/support/translation-queue.ts`
+- `src/index.ts`
+- `tests/unit/merchant/support/translation-queue.test.ts`
+- `tests/integration/merchant/support/arch055-snapshot-and-thread.postgres.test.ts`
+- `tests/integration/merchant/support/service.postgres.test.ts`
+- `scripts/test-arch035-woo-support-postgres.mjs`
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Inspected the Completion Report's final candidate results: Support unit 15/15, PostgreSQL integration 2/2 with canonical 68 migrations, Woo selection unit 3/3, typecheck and diff check passed. Lint retains the reported unchanged `routes.ts:75` `no-empty` baseline issue. M16 client-call and row evidence was reviewed; execution plans were not collected, as the report states. No checks were rerun during architect review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+The source changes remain within ARCH-055-API-008's API ownership and frozen contracts. The one-line `src/index.ts` logger injection is a necessary construction-site edit for the named dispatcher change and is disclosed. No schema, migration, public contract, dependency, or unrelated source changes were found in the submitted diff. Correctness and queue-repair behavior are supported by the reported test matrix. Review remains unaccepted only because the mandatory emitted-plan measurement is absent.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Task returned to `ready` at Attempt 1 with `executor` and `claimed_at` cleared. Dependants remain gated and unchanged. Resubmit after adding the requested plan evidence to Validation/Completion Report and pushing the task record.
