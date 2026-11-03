@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-11-03T15:58:46Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-046-API-007
@@ -141,17 +141,17 @@ No implementation task depends on a system-test task. Do not reopen API-007 or s
 
 - [ ] A real API-007 v2 GRANT acknowledged by Woo produces a server-held proof that API-006 returns `CONFIRMED_GRANTED` for the same installed merchant/shop/current canonical phone, with **no additional consent write** on page hydration.
 - [x] Same-shop wrong-event/phone and cross-shop same-phone probes return `UNVERIFIED`; no caller-supplied customer or installation fields are accepted. Missing evidence is tested as `UNVERIFIED` at the service/unit boundary.
-- [ ] REVOKE, stale evidence and credential rotation are covered, but same-shop alternate installation, ended-phone and explicit account/customer mismatch integration cases remain untested.
-- [x] Unauthorized/revoked installation, malformed HTTP/body/version and a database failure are covered by route/unit tests; REVOKE followed by an old proof returns `UNVERIFIED`. The DB-failure case is a mocked route failure, not a disposable PostgreSQL outage.
+- [x] PostgreSQL covers REVOKE, stale revisions, rotation, ended phones and customer mismatch. Canonical uniqueness rejects a second same-shop installation and the joined read rejects an inconsistent installation principal.
+- [x] Unauthorized/revoked installation, malformed HTTP/body/version and a database failure are covered by route/unit tests; REVOKE followed by an old proof returns `UNVERIFIED`. Attempt 2 also exercises an injected PostgreSQL statement failure and recovery through the composed route.
 - [x] Exact HTTP 200 body and `no-store` have composed-route coverage; the actual Woo PHP client compatibility fixture passed all four response cases on 2026-11-03.
 - [ ] Unit SQL inspection excludes subscription/feature queries and the integration checks no recovery rows for the covered flow; no complete assertion yet proves there are no writes, enqueued jobs, sends or billing/credit effects for every status probe.
-- [ ] The route now tests proof/event, shop and installation redaction in provider diagnostics; customer/account identifiers in message, stack and cause remain unproven.
+- [x] Real Shared-sink regression verifies customer and account identifier redaction while retaining safe error evidence.
 - [ ] Current unit, PHP contract, typecheck and build checks pass. Full lint retains the unrelated `no-empty` error; the current PostgreSQL rerun is environment-blocked, and the full scenario matrix and measured timing remain outstanding.
 
 ## Validation
 
 - [x] Run the actual declared API unit command (`npm run test:arch046-woo-consent:unit`) plus the new focused status tests; if needed add one `test:arch046-woo-consent-status:unit` script using `tsx --test`.
-- [ ] Run disposable PostgreSQL integration (`npm run test:arch046-woo-consent:postgres` plus dedicated status scenarios/runner) with real v2 GRANT + status + REVOKE and cross-tenant/installation checks. No mock-only acceptance.
+- [x] Run disposable PostgreSQL integration (`npm run test:arch046-woo-consent:postgres` plus dedicated status scenarios/runner) with real v2 GRANT + status + REVOKE and cross-tenant/installation checks. No mock-only acceptance.
 - [ ] Exercise the **real HTTP route** through `createWooRoutes` / `composeApiRoutes` and a signed-in installation, including exact response accepted by the Woo PHP client; validate real start-up routing instead of testing only the service function.
 - [x] `npm run typecheck`, `npm run lint`, `npm run build` (scripts exist in the inspected API `package.json`; document unrelated known baseline failures by their baseline IDs, never ignore regressions).
 - [ ] Verify OpenAPI example and current Woo client schema agreement, `git diff --check`, source-scope diff and no `_index.md`, schema or unrelated runtime changes.
@@ -278,3 +278,15 @@ Restored diagnostic redaction and regression coverage in the recreated implement
 Validation passed: 13 status unit tests, 14 active PostgreSQL tests (one opt-in benchmark skipped), typecheck, focused ESLint, and diff checks. Seven warm status probes used three statements each, including one joined evidence query. Local HTTP p50/p95 were 19.91/44.10 ms and joined SQL p50/p95 were 5/20 ms. The measured probes preserved evidence, phone, and recovery state. This run did not independently snapshot every send or billing table.
 
 Implementation and this evidence are local changes for developer reconciliation. Attempt 2 remains in progress.
+
+
+## Developer Self-Review — Changes Requested (Attempt 2, 2026-11-03)
+
+Reviewed published API commit `f78df70` and validation record `3869f9252`. Both task worktrees were clean before this review. The disposable PostgreSQL runner passed 14 active tests, with one opt-in benchmark skipped. The 13 status unit tests, typecheck and focused lint passed. The composed route now exercises the previously missing database scenarios and records seven warm samples with one joined evidence query each.
+
+Two acceptance gaps remain:
+
+1. Exercise the acknowledged GRANT through the Woo server-held proof and returning-checkout hydration path, then verify that hydration issues no additional consent write. The composed API test and PHP response contract fixture cover their respective boundaries separately.
+2. Extend the no-side-effect regression beyond evidence, phone and recovery state to cover enqueue, send and billing/credit effects across the status outcomes. Record the resulting assertions and run the disposable suite.
+
+Status returns to Ready with Attempt 2 preserved and the developer claim cleared. Developer completion remains pending.
