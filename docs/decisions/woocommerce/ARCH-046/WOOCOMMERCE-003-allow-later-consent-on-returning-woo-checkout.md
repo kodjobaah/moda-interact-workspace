@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-10-23T13:39:33Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-046-WOOCOMMERCE-002
@@ -20,7 +20,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-11-01
+updated: 2026-11-03
 ---
 
 # Complete returning Woo consent, v2 publishing and verified checkout status
@@ -221,35 +221,47 @@ Do not blindly implement an API-006 lookup from an invented endpoint/response sc
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-23T13:39:33Z. Attempt 0 review history is preserved below.
+2026-11-03: Attempt 1 developer self-review requests changes. Status is `ready`; the developer claim is released and attempt remains 1. This supersedes the earlier definition-only completion snapshot, which recorded no runtime implementation or validation. No completion or architect acceptance is asserted.
 
-### Files Changed
+### Implementation and Publication
 
-None — no runtime implementation in this documentation patch.
+Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-WOOCOMMERCE-003`. Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-WOOCOMMERCE-003`. Both use `task/ARCH-046-WOOCOMMERCE-003`; both were clean before review. Fetch verified parent HEAD/origin at `b45742c71880cdc9f53de002409e6f6edd92668d` and implementation HEAD/origin at `fcfcea52da68d64da70ff6193534c70ab5abfe47`. No main merge or parent submodule-pointer change was performed. Start-of-attempt synchronization evidence was not established retrospectively. No material assigned-agent implementation assistance was established by this review.
 
-### Work Completed
-
-None.
+The implementation diff against fetched implementation `origin/main` contains 19 files: native Classic/Blocks consent scripts; capture, local installation eligibility and Store API handling; consent PHP/client tests; controlled fixture/WordPress runner/status helpers; and integration documentation. Current source also includes the v2 publisher, ACK proof storage, proof-status reader and safe PHP diagnostics. These pre-existing supporting files were inspected rather than inferred from commit titles. Runtime behavior includes local installation-only presentation/capture eligibility, exact v2 decision publishing, local checkbox choice retention during failures, ordered deliberate actions and neutral proof-backed status hydration. This is implemented behavior, not full acceptance evidence.
 
 ### Validation Results
 
-Not run by a repository agent; no developer worktree/remote access is available from this snapshot.
+Fresh checks on the published implementation, PHP 8.5.11 / Node 24.19.0:
 
-### Deviations
+- Locked Composer dependencies installed successfully; no manifest or lock changes.
+- `composer lint`: FAIL; references missing `tests/integration/checkout-consent-saved-block-variant.php` in composer.json:98.
+- `vendor/bin/phpunit --filter Consent tests`: FAIL, 73 tests / 471 assertions / one failure, `CheckoutConsentPresentationTest::test_request_scoped_local_decision_is_shared_without_blocking_checkout` at line 55. The presentation file alone passes all three tests / ten assertions; the combined suite has conflicting `is_checkout()` fixtures using `arch053_checkout_page` versus `arch046_checkout_page`. The isolated run also warned that its result cache was not writable; it does not replace the failing combined run.
+- Focused Classic/native Blocks client and consent API fixture Node tests: PASS, 35/35. These are controlled fixtures, not hosted API integration.
+- `npm run test:i18n`: FAIL, 29 passed / seven failed; catalogue/source expectations still assume 564 keys while current compilation contains 568.
+- `npm run lint:js`: FAIL, 625 errors across repository files, including task-owned consent/integration files. This review does not attribute all repository lint debt to this task.
+- `npm run build`: PASS, including strict `i18n:verify:20` (568 messages; 19/19 translation packs). Webpack reports three bundle-size/performance warnings.
+- Implementation `git diff --check`: PASS. Source worktree remained clean after verification. No changes to another owning repository or domain indexes were made.
+- Disposable WordPress HTTP, Chromium hydration, LocalWP smoke and actual hosted API-006 proof/STOP integration were not run or established by this review. Existing controlled-fixture documentation explicitly does not certify the real hosted endpoint. Required checklist items remain unchecked where evidence is incomplete.
 
-None.
+### Dependencies, Deviations and Unresolved Issues
 
-### Assumptions
+Fetched workspace `origin/main` records API-007 complete (Attempt 2), but API-006 remains `ready` following Attempt 1 Changes Requested. API-006 source now exists; claiming the endpoint is absent would be inaccurate. Its remaining acceptance gaps include PostgreSQL scenarios, executable Woo PHP contract compatibility, measured timing and full no-side-effect evidence. This task explicitly requires architect-accepted real API-006 verification before Ready for Review or Complete; matching mocks cannot satisfy it.
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
+Blocks optional browser diagnostics currently include arbitrary provider error `originalMessage`, name and code (`assets/js/checkout-consent-blocks-status.js:118-136`). Regex redaction does not enforce the task's fixed non-sensitive codes-only rule: for example `proof=private-capability` remains unchanged. A focused test explicitly expects the original HTTP failure message. This is a contract deviation requiring correction or an explicit architecture amendment, not approval inferred from debug opt-in.
 
-### Unresolved Issues
+## Developer Self-Review - Changes Requested
 
-None recorded at definition time; raise actual missing cross-repository contract/rollout dependencies to moda_architect before scope drift.
+2026-11-03, Attempt 1. The implementation and passing fixture/build checks do not meet all required validation and integration gates. Preserve the existing Architect Review below; no architect acceptance decision was made here.
 
-### Architectural Concerns
+Required, testable corrections for the next claimed attempt:
 
-None recorded beyond explicit context and gates.
+1. Repair the declared PHP lint command's missing-file reference and isolate/shared-normalize the checkout test fixtures so `composer lint` and `vendor/bin/phpunit --filter Consent tests` pass together without test-order dependence.
+2. Reconcile translation key expectations/catalogues with the actual source keys and rerun `test:i18n`, strict translation verification and build. Resolve task-owned JS lint failures; document any independently established baseline lint debt rather than treating this failed command as passing.
+3. Restrict browser debug diagnostics to fixed non-sensitive codes and bounded approved scalar fields. Remove arbitrary SDK error text/name/code payloads and add coverage proving proof, credentials, contacts and arbitrary error messages cannot appear. Alternatively obtain an explicit task amendment before accepting different behavior.
+4. After API-006 is accepted by its owner, execute and record authenticated Woo PHP integration against the real API-006/API-007 contracts, including current grant, stale/missing proof, STOP, withdrawal and unavailable status. Keep fixture evidence distinct. Do not implement API-006 or create a substitute Woo task here.
+5. Supply the required disposable WordPress Classic/Blocks HTTP, browser hydration and LocalWP smoke evidence for native checked/unchecked state, rapid/failing choices, guest/account/contact changes, phone-before/after choice, withdrawal and checkout continuity. Resolve any observed failures before requesting another review.
+
+Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Review performs no runtime fixes and creates no Attempt 2. The next `/moda_developer_create ARCH-046-WOOCOMMERCE-003` claim increments once. Completion remains developer-controlled and requires a passing review plus explicit completion decision.
 
 ## Architect Review
 
