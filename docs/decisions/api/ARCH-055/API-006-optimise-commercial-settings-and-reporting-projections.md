@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
-executor: codex
-claimed_at: 2026-11-03T06:32:09Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
@@ -30,7 +30,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised. Attempt 2 was interrupted and has been reconciled by the architect to `ready`; its attempt number remains 2 until the normal launcher durably claims the next attempt.
+**Definition state:** materialised in the canonical dedicated task worktrees. Attempt 3 was submitted and reviewed on 2026-11-03; Changes Requested returns it to `ready` with claim cleared and Attempt 3 preserved. The next attempt must be claimed by the normal launcher.
 
 ## Objective
 
@@ -160,7 +160,7 @@ None. The source baseline is context, not a fabricated dependency on historical 
 - [x] Coupon mode-only change touches zero coupon rows; one-of-50 replacement touches two, with full identity validation retained.
 - [x] One aggregate supplies count and sum; historical-period and cursor validation remain correct.
 - [x] Settings remain available during coupon sync/outage; whole-catalogue locale fallback is unchanged.
-- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication. Attempt 3 review found original cause/code loss in the two route diagnostic helpers.
 - [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
@@ -528,3 +528,33 @@ Authorize the single parent task-owned JSONL artifact named in Scope for durable
 ### Opt-in orchestration clarification — Attempt 3
 
 The fixed M11–M14 evidence protocol may be orchestrated centrally by the existing billing runner only through the explicit opt-in exception now named in Scope. Keeping the cases in the exact existing authorized test file avoids adding a standalone benchmark framework or scattered duplicated orchestration. The opt-in may exercise only this task's named commercial services and profiles; it does not expand production ownership or alter the default billing-command suite list/path checks. No measurements are waived, no baseline history is rewritten, and actual baseline incompatibility must be reported rather than inferred. The authorized parent evidence filename is `API-006-attempt-3-commercial.jsonl`. No claim, acceptance or dependency state changes are made by this clarification.
+
+
+## Architect Review — Attempt 3, 3 November 2026
+
+### Review Status
+
+**Changes Requested.** Implementation `19a97ea4f3c3ce729042eacd486bd01d493f2df9`, submitted parent `a8595845c7b3bd9a4bec27c1539865dc515ea1b4`. Return to `ready`, clear executor/claimed_at and preserve Attempt 3. No acceptance or downstream promotion.
+
+### Review Finding
+
+1. **[P2] Preserve original error causes and database codes through both route loggers.** `src/merchant/promotions/routes.ts:21–26` and `src/merchant/discount-offers/routes.ts:10–15` replace every Error with a plain `{ name, message }` object before passing it to Shared. This drops its cause, Prisma code and other safe originating details. Consequently the newly cause-preserving service wrappers still log only `promotion_revision_conflict` or `offers_conflict`, losing the actual database failure. This violates Requirement 9 and the explicit original-diagnostic acceptance criterion. The helpers were introduced by this task, so this is not a synchronized-main baseline failure. Preserve the original Error/cause through the approved Shared logger's bounded sanitization path, keeping secrets/URLs/customer contents out of logs and leaving public responses unchanged. Do not duplicate a generic error serializer or solve the issue by discarding the cause. Add route-level regressions for a wrapped Prisma-like error with a safe original message/code and for secret-bearing details; verify emitted private diagnostics retain the safe evidence and public responses remain bounded.
+
+Independent reproduction invoked both actual route handlers with a wrapped database Error and capturing logger. Promotions returned HTTP 409 with a log containing only reason/message `promotion_revision_conflict`; discount settings returned HTTP 409 with only `offers_conflict`. Neither retained the injected safe original message or original `P2034`/`P2003` code. The service wrappers themselves already retain `cause`; the loss occurs at the changed route boundary.
+
+### Previous Findings and Evidence Reviewed
+
+- The Attempt 1 comparative-evidence gap is addressed by the retained artifact and authorized opt-in orchestration. Independently parsed all **468 JSONL records: 406 samples, 58 summaries and four plan probes**. All 58 version/profile groups contain exactly two warm-ups and five recorded samples; SQL-shape totals, logical-call totals and every min/median/max summary reconcile to the raw records. SHA-256 matches `c790ad66f5f911223c1af1bf1fa36d2508ddd24c091cceb87a7d926df46b2b63`.
+- Reviewed identical copied instrumentation, isolated baseline archive and cloned canonical databases, fixture setup outside measurement windows, explicit measurement limits, M11–M14 assertions and retained/deferred options. The refund test uses a separate mutator connection and a read barrier; large signed usage fixtures and empty/nonempty history coverage address the previous F01–F05 evidence gaps. These recorded runs were not independently repeated in this review. Retain the artifact; the diagnostic correction does not require discarding or rerunning unaffected commercial measurements.
+- The report now classifies full-suite baseline versus candidate/main failures using Node 24.19.0/npm 11.17.0. Independently confirmed the cited REST-read authorization source, platform-configuration test and Support route are unchanged from the available origin/main, and billing-command source/tests are unchanged from the prepared baseline. The reported full baseline/candidate runs were reviewed, not independently repeated. Their failures remain explicit; no full-suite or full-lint pass is claimed.
+
+### Independent Validation and Scope
+
+- Required focused five-domain unit matrix: **103 passed, 0 failed**, using Node 24.19.0.
+- `git diff --check origin/main..HEAD`: passed.
+- Both task worktrees were clean and local heads matched their published task refs before this overlay. Database pin remains accepted `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+- Inspected Attempt 3 runner/test changes, final task-owned source differences and the previous review. Main synchronization changes were distinguished from API-006 changes. No implementation source or evidence artifact was edited by this review; no implementation commit/push, parent gitlink update or main merge occurred.
+
+### Follow-up
+
+Correct the two diagnostic helpers and add meaningful safe-cause/code/redaction regressions on the same branch. Rerun affected route/focused tests, typecheck, changed-file lint and diff checks; update the report with actual results. Preserve the passing commercial evidence and historical baseline classifications, revisiting only evidence invalidated by subsequent code changes. `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` remain Pending because API-006 is not Complete. The next launcher claim owns Attempt 4.
