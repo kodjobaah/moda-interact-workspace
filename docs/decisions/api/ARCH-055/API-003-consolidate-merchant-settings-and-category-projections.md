@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-11-03T04:33:31Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
@@ -321,3 +321,7 @@ Correct the three findings on the same implementation branch, run the required v
 ### Attempt 2 Disposition — 2026-11-03
 
 **Changes Requested — Attempt 2.** Return to `ready` for Attempt 3; preserve Attempt 1 and Attempt 2 evidence, and clear `executor`/`claimed_at`. This is not acceptance. The fixture corrections and reordered C01 race remain in scope, but the latest recorded canonical run is 6/8: C01 exceeded Prisma's default interactive-transaction timeout and the subsequent category-read test lost its database connection during runner teardown. The test-only 30-second timeout correction (`de096e2`) has not been validated. Required paired M04/M05 evidence and the remaining task validation matrix are still outstanding. Do not mark the task Complete, promote downstream tasks, change the Architect Review history above for Attempt 1, merge to main, or update a gitlink. The next executor must obtain a fresh launcher claim and complete the remaining evidence before resubmission.
+
+### Executor Reassignment — 2026-11-03
+
+At the developer’s explicit request, moda_architect reviewed the stranded Attempt 3 Copilot claim and returned this task to `ready` for a fresh Codex launcher claim. Both canonical task worktrees were clean. Implementation history retains `de096e2` and the existing mainline synchronization merge `3f6ae2b`; no uncommitted implementation was discarded. The parent worktree retains its launcher synchronization merge `6ba66d183`. Clear `executor` and `claimed_at`, preserve `attempt: 3`, all prior implementation/report evidence and the Changes Requested correction contract. The next successful `/moda-task` preparation increments to Attempt 4 with `executor: codex`. This reassignment is not acceptance; all outstanding validation and M04/M05 evidence remain required, and no dependent task is promoted. No implementation source, implementation commit/push, parent gitlink or main branch was changed by this reassignment.
