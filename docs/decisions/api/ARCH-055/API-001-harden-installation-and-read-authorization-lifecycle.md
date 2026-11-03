@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 15
-executor: copilot
-claimed_at: 2026-11-03T03:34:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-055-DATABASE-001
@@ -32,7 +32,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 3. Small acceptance clarification over revision 2; execution metadata, dependencies and migration scope are unchanged.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
+**Definition state:** materialised. Attempt 1 was accepted by the architect on 3 November 2026. The task is Complete; API-007 is Ready at Attempt 0 and unclaimed, while API-009 and SYSTEM-TEST-001 remain gated by other prerequisites.
 
 ## Objective
 
@@ -250,7 +250,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Review. Implementation, required validation, deterministic race coverage, exact gate/replay responses, same-fixture SQL/affected-row measurements, and paired task-branch publication are complete. Full-repository lint has one unrelated existing failure, recorded below.
+Accepted — Attempt 1. Architect review found the implementation and required PostgreSQL evidence conform to this task's frozen contract. Required unit and PostgreSQL suites, Prisma generation, typecheck, changed-file lint, and diff checks pass. Repository-wide lint retains one unrelated existing error in untouched `src/merchant/support/routes.ts:75`. API-007 is promoted to Ready because API-001 was its only prerequisite; API-009 and SYSTEM-TEST-001 remain gated on other prerequisites.
 
 ### Files Changed
 
@@ -290,7 +290,7 @@ Latest-attempt plan evidence: on 256 seeded historical attempts in the canonical
 
 ### Worktree and Git Evidence
 
-Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-001`, branch `task/ARCH-055-API-001`, report update committed and pushed to `origin/task/ARCH-055-API-001`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-001`, branch `task/ARCH-055-API-001`, implementation commit `9aa3c3d7f9cc21f646181c9d30b69b7c692c8a38` pushed to `origin/task/ARCH-055-API-001`. The implementation branch is four commits behind current `origin/main`; inspection found no overlap in this task's changed lifecycle files with the intervening API-005 changes, so no unrelated merge was introduced. Nested Database worktree is clean at accepted pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Disposable PostgreSQL runners remove their containers in `finally`; final installation, REST, and ShopBrand runs all exited successfully. No merge to main was attempted.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-001`, branch `task/ARCH-055-API-001`. The report submission commit was `0adb22a31`; the architect acceptance update is being committed on this branch. Before acceptance, the parent task branch incorporated `origin/main` through merge commit `57d498b1a`, including the intervening Background-001 and API-005 task updates. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-001`, branch `task/ARCH-055-API-001`, implementation commit `9aa3c3d7f9cc21f646181c9d30b69b7c692c8a38` pushed to `origin/task/ARCH-055-API-001`. At review, the implementation branch was four commits behind current `origin/main`; the intervening API-005 merge changed no files overlapping this task's lifecycle edits, so no unrelated merge was introduced. Nested Database worktree is clean at accepted pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Disposable PostgreSQL runners remove their containers in `finally`; final installation, REST, and ShopBrand runs all exited successfully. No merge to main was attempted.
 
 ### Deviations
 
@@ -312,29 +312,29 @@ No schema, ownership, or transaction-boundary concern identified. The latest-att
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1. Task status is Complete; attempt number remains 1.
 
 ### Review Notes
 
-Implementation and evidence submitted for architect review; acceptance remains pending.
+The implementation uses the transaction-only Shop-then-installation principal lock, preserves the existing Free/paid lifecycle boundaries, guards reconnect by the observed credential version, cancels only current-generation pending attempts, and acknowledges only a matching durable callback/grant outcome. It preserves provider verification outside transactions and original error causes. ShopBrand uses its create projection and retains newer observation timestamps. No material deviation from the selected architecture was found.
 
 ### Reviewed Files
 
-Implementation files are recorded under Completion Report and published in commit `9aa3c3d7f9cc21f646181c9d30b69b7c692c8a38`.
+`src/auth/woo-installation/current-mutation-principal.ts`; `src/woocommerce/installation/connection-service.ts`; `src/woocommerce/billing/initial-free-activation.service.ts`; `src/woocommerce/shop-brand/service.ts`; `src/woocommerce/rest-read/authorization.service.ts`; the new installation runner; and the named unit/PostgreSQL race suites and runner registrations.
 
 ### Validation Reviewed
 
-Validation results and the unrelated full-lint baseline failure are recorded under Completion Report; independent architect review is pending.
+Reviewed submitted results: 102 required unit tests, 3 principal-helper tests, PostgreSQL suites 17/17, 9/9 and 4/4, Prisma generation, typecheck and changed-file lint passed. Same-fixture SQL counts fell from 6 to 4 for reconnect and 8 to 7 for first ShopBrand creation, with rows preserved. Repository-wide lint reports one existing error at untouched `src/merchant/support/routes.ts:75`. These commands were not rerun during architect review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+Accepted against ARCH-055 revision 3 and this task's definition revision 3. No schema/migration changes or speculative indexes were added. The accepted Database pin is recorded. No deployment or live-provider certification is implied.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+ARCH-055-API-007 is Ready at Attempt 0, unclaimed, because API-001 was its only prerequisite. API-009 remains Pending on API-002/003/004/005/006/007/008; SYSTEM-TEST-001 remains Pending on its remaining implementation prerequisites. No other downstream task is promoted.
 
 
 ## Dependency readiness — 3 November 2026
 
-ARCH-055-DATABASE-001 is Accepted and Complete at Attempt 2. The accepted Database pin is `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; adopt it within this task's authorized consumer scope. The sole prerequisite is satisfied: Ready, Attempt 0, unclaimed. Prepare through the canonical launcher; no implementation, deployment or production migration is implied. Follow the Database task's coordinated migration/consumer rollout handoff.
+ARCH-055-DATABASE-001 is Accepted and Complete at Attempt 2 with pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; API-001 consumed that pin within its authorized scope. API-001 is Complete at Attempt 1. API-007 is Ready at Attempt 0, unclaimed. API-009 remains Pending on API-002/003/004/005/006/007/008, and SYSTEM-TEST-001 remains Pending on the remaining cross-service implementation dependencies. Acceptance does not imply deployment, production migration or integrated system-test completion.
