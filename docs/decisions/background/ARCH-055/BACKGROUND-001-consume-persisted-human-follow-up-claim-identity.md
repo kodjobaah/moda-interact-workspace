@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 15
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-055-DATABASE-001
 enables:
@@ -32,7 +32,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
+**Definition state:** materialised on the canonical parent and implementation task worktrees. Attempt 1 was returned to `ready` after Changes Requested; Attempt 2 is Accepted and Complete after architect review on 2026-11-03.
 
 ## Objective
 
@@ -113,10 +113,11 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Update the command projection and all enumerated human claim-key call sites.
-- [ ] Search the entire Background human-follow-up path for remaining comparisons/passes of idempotencyKey as initiationKey and account for every match.
-- [ ] Add two-Shop identical-public-key, historical-key, replay/restart and cancelled-owner-versus-reclaimed-attempt cases.
-- [ ] Retest provider uncertainty, permit acquisition, moderation denial, provisional-credit release and recovery after a crash between cancellation/release phases.
+- [x] Update the command projection and all enumerated human claim-key call sites.
+- [x] Search the entire Background human-follow-up path for remaining comparisons/passes of idempotencyKey as initiationKey and account for every match.
+- [x] Add two-Shop identical-public-key, historical-key, replay/restart and cancelled-owner-versus-reclaimed-attempt cases.
+- [x] Retest provider uncertainty, permit acquisition, moderation denial, provisional-credit release and recovery after a crash between cancellation/release phases.
+- [x] Preserve the original typed missing-key integrity error message/cause in private Shared-logger diagnostics and assert redaction of owner-key values.
 
 ## Interfaces / Contracts
 
@@ -136,13 +137,13 @@ The public API remains unchanged except documentation corrections explicitly aut
 
 ## Acceptance Criteria
 
-- [ ] New and migrated historical commands use the persisted ownership key consistently in every human dispatch/release path.
-- [ ] No change to one-initial-plus-one-follow-up limits, billing outcomes, prepared-content bytes or automated follow-up identity.
-- [ ] A malformed template command cannot dispatch or release another command's claim.
-- [ ] All required focused real-database races pass with the accepted Database pin.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
-- [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
+- [x] New and migrated historical commands use the persisted ownership key consistently in every human dispatch/release path.
+- [x] No change to one-initial-plus-one-follow-up limits, billing outcomes, prepared-content bytes or automated follow-up identity.
+- [x] A malformed template command cannot dispatch or release another command's claim.
+- [x] All required focused real-database races pass with the accepted Database pin.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
 
@@ -160,14 +161,15 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npm run prisma:generate`
-- [ ] `npm run test:arch040-recovery-conversation`
-- [ ] `npm run test:arch040-background-runtime:postgres`
-- [ ] `npm run test:arch040-moderation:postgres`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
-- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+- [x] `npm run prisma:generate` — passed using Prisma Client 6.19.3 from the accepted nested Database pin.
+- [x] `npm run test:arch040-recovery-conversation` — 128 tests passed across 13 files on Attempt 2.
+- [x] Focused integrity diagnostic suites (`arch055-claim-key.test.ts`, `follow-up-claim-cancellation.test.ts`, `human-synchronous-rejection.test.ts`) — 33 tests passed.
+- [x] `npm run test:arch040-background-runtime:postgres` — 13 tests passed across 3 files on disposable PostgreSQL 17 + pgvector and Redis.
+- [x] `npm run test:arch040-moderation:postgres` — 10 tests passed on disposable PostgreSQL 17 + pgvector and Redis.
+- [x] `npm run build` — passed (includes Prisma generation and TypeScript compilation).
+- [x] `git diff --check` — passed.
+- [x] `npm run lint` — passed.
+- [x] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition
 
@@ -183,67 +185,101 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Accepted and Complete — Attempt 2, 2026-11-03. The Attempt 1 diagnostic finding is addressed. This implementation consumes the accepted `ARCH-055-DATABASE-001` pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no Database schema or migration was changed. Task status is `complete`; executor and claim remain cleared. SHOPIFY-001 and API-004 are promoted to Ready; SYSTEM-TEST-001 remains Pending on its other prerequisites.
 
 ### Files Changed
 
-None.
+`src/services/recovery-conversation/merchant-send-command.service.ts`, `human-command-dispatcher.service.ts`, `outbound-send-fence.service.ts`, `follow-up-claim-cancellation.service.ts`; `tests/unit/services/recovery-conversation/` focused command and cancellation coverage; `tests/integration/fixtures/recovery-human-dispatch.fixture.ts`; new `tests/unit/services/recovery-conversation/arch055-claim-key.test.ts` and `tests/integration/arch055-follow-up-identity.integration.test.ts`; `package.json` integration-suite registration. The implementation commit also advances the nested Database gitlink to its accepted pin.
 
 ### Work Completed
 
-None. Task definition only.
+Updated command reads retain `followUpClaimKey`; human sequence-two claim lookup, outbound admission, cancellation owner matching, reset CAS, and cancelled-claim repair use this stored key. `idempotencyKey` remains the public replay identity. Missing/blank template keys emit a bounded Shared-logger integrity event, durably cancel the command, and leave the attempt/credit held for repair. For the Attempt 1 correction, the dispatcher now forwards the caught typed integrity error to cancellation; cancellation and outbound-fence logs include the actual error message and Error object/cause with safe identifiers, while tests confirm the private owner key is excluded. HUMAN_TEXT and automated claim identities are unchanged.
 
 ### Validation Results
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+Validation was run from `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-BACKGROUND-001` on Node 24.19.0 with Prisma 6.19.3. The disposable integration runner applied canonical migrations, including `20261102121000_arch055_human_follow_up_claim_identity`, against PG17 + pgvector and Redis.
+
+SQL and row evidence: the locked outbound projection now reads `followUpClaimKey`, and the attempt owner comparison uses that value. Cancellation repair joins `attempt.initiationKey=cmd.followUpClaimKey` and excludes null/blank keys. The reset CAS binds the persisted key; the historical-key integration case returns `released` only after the owner reset affects exactly one row. The old-owner-versus-reclaim test held a Shop lock, observed two PostgreSQL lock waiters via `pg_stat_activity`, then released the blocker; cancellation released the old owner, the next claim won the same attempt, and the resumed old worker left the new key unchanged. Two Shops with the same public idempotency key retained independent persisted owners. A null-key command ended `CANCELLED` with its attempt key and usage rows unchanged and no provider request.
+
+No query-count/latency optimization was in scope; existing query and billing behavior was retained. No MEASURE-FIRST experiment was introduced or deferred.
+
+Attempt 2 validation passed: the focused integrity diagnostic suites passed 33 tests; `npm run test:arch040-recovery-conversation` passed 128 tests across 13 files; Background PostgreSQL/Redis integration passed 13 tests across 3 files; moderation PostgreSQL/Redis integration passed 10 tests; `npm run build`, `npm run lint` and `git diff --check` passed. Initial attempts to start the test containers encountered a broken/slow Colima state; after the daemon recovered, the final runs above passed. The shared test runner performed disposable database/Redis cleanup. The one-off uniquely named PostgreSQL probe was removed. Other pre-existing Colima containers were left untouched.
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+Launcher preparation created both task worktrees and branches. Attempt 1 review overlay was committed and pushed as `f5df0298`; the Attempt 2 claim is `984f550df8698ab855f82e43e180ea6e4261bba`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-BACKGROUND-001`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-BACKGROUND-001`. Both use branch `task/ARCH-055-BACKGROUND-001`. Implementation commits `46aa08c7a8fcb498a79d6b87f39e597d4c88a081`, `86747ce` and Attempt 2 correction `311055d` are pushed to `origin/task/ARCH-055-BACKGROUND-001` (head `311055d`). The nested Database checkout remains at accepted pin `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; no new gitlink change was made. The submitted Attempt 2 parent report was published as `b117a947c4f6c6fa8a76c5da439d05b552bd14a9`; the architect acceptance overlay follows on the same branch.
 
 ### Deviations
 
-None authorised.
+No scope deviation. The test runner's installed Shared testing helper had its local Docker/readiness timeout temporarily increased to accommodate Colima startup latency; no dependency or source file was changed for this adjustment. A temporary probe container used to diagnose Docker startup was removed.
 
 ### Assumptions
 
-The uploaded source snapshot is the design baseline, not proof of current remote state. Reconcile only relevant drift on the real launcher baseline; return contract-changing drift to the architect.
+Launcher evidence confirms the task is materialised in the canonical parent and implementation worktrees. The former portable-definition note has been reconciled; Attempt 1 review history is preserved, and Attempt 2 is submitted for review.
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+No blocking findings remain after Attempt 2 architect review. Both producer implementations and terminal system validation remain separate tasks.
 
 ### Architectural Concerns
 
-Report ownership, schema, contract, external dependency, new index/infrastructure or transaction-boundary gaps here. Do not expand scope silently.
+No architectural contract, schema, provider, or transaction-boundary change was introduced. Consumer acceptance enables the producer tasks; it does not authorize deployment of an incomplete producer/consumer rollout.
 
-## Architect Review
+## Architect Review — Attempt 1
 
 ### Review Status
 
-Pending.
+Changes Requested — 2026-11-03. Task returned to `ready`; `executor` and `claimed_at` are null. Attempt 1 is preserved. No acceptance or downstream promotion.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+1. **[P2] Preserve the actual integrity error in private diagnostics.** `HumanCommandDispatcherService.processClaim()` catches `FollowUpClaimKeyIntegrityError` from `loadClaimedCommand()` and calls `rejectTerminal()` without logging or forwarding that error. The cancellation and outbound-fence paths emit `errorType` and `reasonCode`, but omit the error message/cause. This loses the actionable diagnostic for a malformed or missing persisted claim key despite Requirement 6 and the criterion that original diagnostic causes survive. Pass the original typed error to the existing Shared logger with safe identifiers and the bounded message; do not include the missing key value or alter fail-closed cancellation/credit-hold behavior. Add a regression asserting the emitted structured log contains the actual error type and message and excludes unsafe values.
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+- `src/services/recovery-conversation/merchant-send-command.service.ts`
+- `src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `src/services/recovery-conversation/follow-up-claim-cancellation.service.ts`
+- `tests/unit/services/recovery-conversation/arch055-claim-key.test.ts`
+- `tests/integration/arch055-follow-up-identity.integration.test.ts`
+- Attempt 1 Completion Report, launcher worktree evidence, and accepted Database pin.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Reviewed the reported 126 unit tests, 13 Background PostgreSQL/Redis integration tests, 10 moderation integration tests, build, lint and diff checks. The barrier test uses PostgreSQL lock-wait observations and verifies a resumed old worker leaves the new persisted owner unchanged. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+The persisted key is used independently of the public idempotency key in dispatch, cancellation, repair and outbound fencing. Historical-key handling, same-public-key cross-Shop isolation, held-credit behavior for malformed keys, and the old-worker/reclaimed-owner race are supported by the submitted tests. Acceptance remains blocked by the missing original integrity-error diagnostic detail. The portable-definition paragraph has been corrected to reflect launcher materialisation.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Keep the same mirrored task branches and Attempt 1. Log/forward the original typed integrity error and add the structured-log regression, rerun the focused affected checks, update the Completion Report, and resubmit. `ARCH-055-SHOPIFY-001`, `ARCH-055-API-004` and `ARCH-055-SYSTEM-TEST-001` remain gated; no dependent status is changed by this review. No implementation source was changed by the architect review.
 
+## Architect Review — Attempt 2
 
-## Dependency readiness — 3 November 2026
+### Review Status
 
-ARCH-055-DATABASE-001 is Accepted and Complete at Attempt 2. The accepted Database pin is `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`; adopt it within this task's authorized consumer scope. The sole prerequisite is satisfied: Ready, Attempt 0, unclaimed. Prepare through the canonical launcher; no implementation, deployment or production migration is implied. Follow the Database task's coordinated migration/consumer rollout handoff.
+**Accepted — 2026-11-03.** Implementation `311055da5f44461dc8c53e0c2f908b20c8382164`. Automatic-completion task moves to `complete`, retaining Attempt 2 and null executor/claim. Attempt 1 review remains historical above.
+
+### Review Notes
+
+The Attempt 1 P2 finding is resolved. The dispatcher forwards the original `FollowUpClaimKeyIntegrityError` through terminal cancellation. Cancellation logs that same Error object with its message and cause; direct cancellation and outbound fencing construct the typed integrity error when no originating error exists. The fields use the existing Shared logger and contain safe command/shop identifiers without the persisted owner key or attempt contents. ErrorOptions preserves the originating cause. No release, provider-admission or billing policy was relaxed.
+
+The regression suite verifies original-error forwarding, original cause identity, bounded diagnostic message/type, private owner-key omission and held attempt/credit behavior. The outbound test's negative-string assertion alone is not a standalone redaction proof; code inspection and the cancellation test's populated private owner fixture establish omission. Shared remains responsible for serialization/redaction rather than these services introducing another logger.
+
+### Reviewed Files and Evidence
+
+Reviewed all seven files changed by `86747ce..311055d`, including the four runtime modules and three unit suites. Rechecked stored-key call sites across command load, dispatcher claim/restart, cancellation/repair/CAS and outbound fences. The accepted Database pin is unchanged at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Both dedicated worktrees were clean, and their published task refs matched implementation `311055da5f44461dc8c53e0c2f908b20c8382164` and parent report `b117a947c4f6c6fa8a76c5da439d05b552bd14a9` before this review overlay.
+
+### Validation Reviewed
+
+- Independently reran `npm run test:arch040-recovery-conversation` on Node 24.19.0: **128 tests passed across 13 files**, exit 0, including the affected diagnostic regressions.
+- Independently checked `git diff --check 86747ce..HEAD`: passed.
+- Reviewed the submitted Attempt 2 results: 33 focused tests, 13 Background PostgreSQL/Redis integration tests, 10 moderation integration tests, Prisma generation, build and lint passed. Those integration/build/lint runs were not repeated by the architect; the reported temporary installed-helper startup-timeout adjustment affects test infrastructure only and is not a source/dependency change or production validation claim.
+- Earlier persisted-key, historical-key, cross-Shop and cancelled-owner/reclaimed-attempt evidence remains applicable; this correction changes diagnostic propagation, not ownership predicates or transaction ordering.
+
+### Architecture Conformance and Follow-up
+
+The original diagnostic is retained while malformed keys continue to fail closed and hold claims/credits. No blocking findings remain. `ARCH-055-SHOPIFY-001` and `ARCH-055-API-004` each depend only on this task and are promoted from Pending to Ready, Attempt 0, unclaimed. `ARCH-055-SYSTEM-TEST-001` remains Pending because its remaining producer/API prerequisites are incomplete. No implementation source, implementation commit, parent gitlink, main branch or deployed environment was changed by this review. Consumer acceptance does not waive the coordinated Database/consumer/producer rollout contract.
