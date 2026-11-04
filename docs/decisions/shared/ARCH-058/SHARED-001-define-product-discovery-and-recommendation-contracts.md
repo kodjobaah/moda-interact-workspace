@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: codex
-claimed_at: 2026-11-04T05:03:01Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -145,6 +145,12 @@ Set status to review and provide the completion report and actual task-branch/wo
 ## Implementation Notes
 
 Use semantic module/test/event names. Retain existing Shared logger/diagnostic structures and original caught errors; do not introduce a generic logger or silently swallow provider-shaped fixtures. Other repositories consume a released package after SHARED-002, never a relative import or unrecorded local link.
+
+## Developer Override — Revised Definition Rework
+
+The developer explicitly requested revalidation of the existing implementation against the expanded task definition and implementation of its missing items. Reopen through the developer-update workflow for that requested work. Previous Attempt 1 remains historical and was awaiting architect review; no accepted attempt or acceptance decision is asserted or removed.
+
+Transition: review → ready; executor/claimed_at cleared; attempt remains 1. Execution remains agent-owned with automatic review submission. The next deterministic launcher claim owns Attempt 2. The prior review state was not Complete, so this transition creates no new downstream completion dependency regression or promotion. Downstream task states are preserved.
 
 ## Completion Report
 
