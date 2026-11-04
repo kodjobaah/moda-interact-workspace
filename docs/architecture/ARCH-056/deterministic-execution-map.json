@@ -504,7 +504,7 @@
       "assigned_agent": "moda_background",
       "domain": "background",
       "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-002-settle-confirmed-initial-outreach-credit.md",
-      "status": "ready",
+      "status": "complete",
       "fixture_correction_scope": {
         "date": "2026-11-04",
         "reason": "Attempt 2 required matrix has twelve fixture/schema failures before owner concurrency and rollover assertions",
@@ -637,7 +637,7 @@
       "domain": "background",
       "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-003-resume-owned-initial-template-admission.md",
       "definition_revision": 3,
-      "status": "ready",
+      "status": "complete",
       "path_base": "implementation repository root unless explicitly workspace-qualified",
       "validation_executed_by_architect": false
     },
@@ -769,7 +769,7 @@
       "domain": "background",
       "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md",
       "definition_revision": 3,
-      "status": "pending",
+      "status": "ready",
       "path_base": "implementation repository root unless explicitly workspace-qualified",
       "validation_executed_by_architect": false
     },
