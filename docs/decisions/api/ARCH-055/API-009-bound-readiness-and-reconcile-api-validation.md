@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 60
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-04T00:21:26Z
+attempt: 1
 depends_on:
 - ARCH-055-API-001
 - ARCH-055-API-002
@@ -26,7 +26,7 @@ depends_on:
 enables:
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: '2026-11-04'
+updated: 2026-11-04
 ---
 
 # ARCH-055-API-009: Bound readiness and reconcile API validation entrypoints
