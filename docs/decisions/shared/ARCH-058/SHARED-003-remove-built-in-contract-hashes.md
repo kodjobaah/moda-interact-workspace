@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
-executor: copilot
-claimed_at: 2026-11-04T19:44:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-058-SHARED-002
@@ -251,24 +251,36 @@ None.
 
 ### Review Status
 
-Pending
+**Changes Requested — Attempt 1, 2026-11-04.** No blocking code finding was identified, but required execution provenance is missing from the Completion Report. Status returns to ready; executor/claim are cleared and Attempt remains 1. No acceptance or downstream promotion is recorded.
 
 ### Review Notes
 
-Not reviewed.
+**[P2] Record required execution provenance before acceptance.** The Completion Report lists changes and validation but omits canonical parent/implementation worktree paths, start/final commits, start-of-attempt remote-task synchronization and origin/main incorporation results, and implementation/parent branch publication evidence. `docs/agent-worktree-isolation-policy.md` requires these facts and explicitly treats missing or contradictory evidence as workflow non-conformance. Current clean branches and passing tests alone do not prove historical execution isolation.
+
+Reconcile the report with the original launcher preparation packet and actual Git history. Record the exact task branch/worktree pair, claim and source identities, synchronization outcomes, pushed implementation/parent commits and relevant toolchain provenance. Distinguish observed facts from unavailable historical evidence; do not invent a preparation receipt. No code churn or repeat dependency installation is requested solely to add this documentation. If execution isolation cannot be established, apply the policy's canonical-worktree validation remediation and record it truthfully.
 
 ### Reviewed Files
 
-None.
+Implementation `59ea61f34197d64180e46680ac6d552b5e989a36`, matching its remote task ref, and its nine-file delta against origin/main: README, clean-process entrypoint verifier, built-in definitions/descriptors, manifest schemas/selection, runner policy and focused tests. Parent submission `19803b455337c913f822998a16b295191208af30` and the task's revision-10 normative hash-reconciliation decision were reviewed.
+
+Review used the canonical parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-SHARED-003` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-SHARED-003`, both on `task/ARCH-058-SHARED-003`. Both were clean before this review overlay. These are independently observed review locations, not a substitute for the missing implementation preparation evidence.
 
 ### Validation Reviewed
 
-None.
+Independently ran from the canonical implementation checkout with Node 24.19.0 via the workspace bootstrap:
+
+- `npm run test:product-discovery-contracts`: **76 passed, zero failed, one skipped**. The skipped case is the actual Commerce projector/publication integration case; it is not counted as passed. Log: `/tmp/arch058-shared003-review-tests.log`.
+- `npm run typecheck`: passed. Log: `/tmp/arch058-shared003-review-types.log`.
+- `npm run build`: passed, including declarations. Log: `/tmp/arch058-shared003-review-build.log`.
+- `npm run validate:commerce-entrypoints`: passed; clean-process Commerce/runner imports, schema and scripted runner checks confirm absence of the removed helper. Log: `/tmp/arch058-shared003-review-entrypoints.log`.
+- Required five-file production grep: no removed hash field/helper matches. Implementation whitespace check passed and checkout remained clean.
+
+Reviewed the reported locked install and package dry-run results; these were not independently rerun. No package publication occurred during review.
 
 ### Architecture Conformance
 
-Not assessed.
+Hash fields/constants and the public payload helper are removed without a replacement identity digest. Strict schemas reject legacy hash-bearing objects, while canonical descriptor equality and name/version authorization remain. Names, descriptions, input contracts, intermediate definition version 1.0.0 and runner 1.1.0 remain unchanged; package metadata/dependencies and unrelated hashes are untouched. No blocking implementation defect was identified in scope. Acceptance remains gated on the provenance correction above. Later semantics/version/publication and durable-row conversion remain with their declared owners.
 
 ### Follow-up
 
-None.
+Correct the Completion Report, publish the same mirrored task branches as needed and return for review. Preserve Attempt 1 history; any normal next claim increments the attempt once. Do not start SHARED-004/006, convert Database grants, publish a package or promote downstream work as part of this review. The developer explicitly authorized committing and pushing this review on the parent task branch. No implementation, gitlink or main-branch change is included.
