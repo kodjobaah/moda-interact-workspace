@@ -17,7 +17,6 @@ attempt: 2
 depends_on:
 - ARCH-055-DATABASE-001
 - ARCH-055-API-005
-- ARCH-056-API-002
 enables:
 - ARCH-056-SYSTEM-TEST-001
 created: '2026-11-03'
@@ -30,7 +29,7 @@ updated: 2026-11-04
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 3. **Materialised; routed and awaiting ARCH-056-API-002.** Attempt 1 was submitted for architect review and returned for changes on 2026-11-04. Attempt 2 published the existing zero-diff implementation task ref; its focused upload PostgreSQL failure remains unresolved and is routed to API-002. This task is pending with no active claim; attempt remains 2.
+Definition revision: 4. **Materialised; Ready for the next API-001 attempt.** Attempt 1 was submitted for architect review and returned for changes on 2026-11-04. Attempt 2 published the existing zero-diff implementation task ref. The focused upload PostgreSQL failure remains recorded as a failure; the architect's narrow non-blocking exception is documented in Architect Review. Attempt 2 is preserved and there is no active claim.
 
 ## Objective
 
@@ -76,7 +75,7 @@ No API endpoint/DTO/auth/upload/readiness behavior change, new schema/migration,
 - [x] Inspect recorded gitlink, working dependency HEAD, clean state and accepted merged Database history.
 - [x] Rematerialize a correct recorded dependency, or advance only the API-owned gitlink to the verified accepted merged contract.
 - [x] Verify the two fields, three migration files and unchanged common migration bytes.
-- [x] Run normal client generation through the existing typecheck/build path and the focused migration-backed API suites below.
+- [ ] Rerun normal client generation through the existing typecheck/build path and the focused migration-backed API suites below; apply only the documented ARCH-035 exception.
 - [x] Report real provenance, exact commands/results and the committed diff or justified zero-diff outcome.
 
 ## Interfaces / Contracts
@@ -89,7 +88,6 @@ At the reviewed baseline the canonical schema SHA-256 is `5c68e467f392cafe2e6b5b
 
 - `ARCH-055-DATABASE-001` — Complete and accepted persistence contract.
 - `ARCH-055-API-005` — Complete and accepted purpose/intake consumer.
-- `ARCH-056-API-002` — Diagnose and correct the focused knowledge-upload PostgreSQL failure before this task reruns its full required three-suite matrix.
 
 `ARCH-055-API-004`, `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` retain their existing scopes/statuses. They are not synthetic gates for this narrow dependency correction. A failure inside their unrelated unfinished behavior must be reported accurately, not fixed opportunistically here or hidden as a successful validation.
 
@@ -101,7 +99,7 @@ At the reviewed baseline the canonical schema SHA-256 is `5c68e467f392cafe2e6b5b
 
 - [x] Recorded and working Database revisions have a verified accepted relationship and provide the exact required contract.
 - [x] Normal `npm run typecheck` and `npm run build` succeed without an out-of-band generated client.
-- [ ] The three focused migration-backed API commands below pass against the synchronized dependency; no test-only canonical override masks the nested client path.
+- [ ] The ARCH-026 and ARCH-040 focused migration-backed API suites pass against the synchronized dependency, with no test-only canonical override masking the nested client path. The ARCH-035 upload suite is rerun and its exact result recorded. Its previously observed result (1 passed, 1 failed with Prisma `Transaction not found` in the upload service) is a non-blocking exception for API-001 only if the rerun reproduces that same failure signature; it remains a failure, not a pass, and does not establish upload behavior as correct. Any different or additional failure blocks acceptance.
 - [x] Existing fields, migration bytes, public retry identities and historical keys are preserved.
 - [x] Only the API `database` gitlink changed, or a zero-diff rematerialization result is truthfully demonstrated.
 - [x] Real task/worktree/branch/submodule evidence and disposable-resource cleanup are recorded; deployment is not claimed.
@@ -142,7 +140,7 @@ git diff --check
 - [ ] Record recorded/working nested revision, schema hash, missing/changed migration comparison, generated Prisma version, real parent/implementation HEADs and container cleanup.
 - [ ] Use disposable PostgreSQL 17 + pgvector through the existing runners; no live database, `db push`, destructive schema reset or ad hoc schema source.
 
-These are validation obligations, not results already obtained by the architect. Historical accepted tests do not prove this checkout passes.
+These are validation obligations, not results already obtained by the architect. Historical accepted tests do not prove this checkout passes. The ARCH-035 suite must be rerun; only the exact previously recorded failure signature may use the architect-approved API-001 exception. A skipped run, different failure or additional failure does not qualify.
 
 ## Implementation Notes
 
@@ -150,7 +148,7 @@ Follow the common execution/logging/evidence contract in the parent architecture
 
 ### Stop Condition
 
-Stop and report before changing scope if accepted dependency provenance is unavailable, the real checkout has unexplained schema drift, normal validation exposes unrelated source defects, or a fix would require another repository/schema/task. Do not substitute an arbitrary current Database revision or weaken a gate. Once scoped acceptance and validation pass, complete this task's report, publish the normal mirrored task evidence, set `status: review`, return to `moda_architect` and stop. Do not execute the enabled system task.
+Stop and report before changing scope if accepted dependency provenance is unavailable, the real checkout has unexplained schema drift, validation exposes a failure outside the architect-approved exact ARCH-035 exception, or a fix would require another repository/schema/task. Do not substitute an arbitrary current Database revision or weaken any other gate. Once scoped acceptance and validation pass, complete this task's report, publish the normal mirrored task evidence, set `status: review`, return to `moda_architect` and stop. Do not execute the enabled system task.
 
 ## Completion Report
 
@@ -245,3 +243,9 @@ The implementation branch finding is resolved without a source commit: `moda-int
 `ARCH-056-API-002` is the bounded API-owned diagnosis/correction task for the failing upload suite. API-001 now depends on API-002 and is `pending`; its Copilot claim is cleared, and attempt 2 is preserved. After API-002 is accepted, API-001 must rerun the three required PostgreSQL suites and satisfy every existing criterion before acceptance. No ARCH-056 system-test task is created or made Ready by this disposition.
 
 This routing supersedes only the earlier Follow-up instruction to address both findings within API-001's task branch: the implementation-ref publication finding is resolved, and the upload source/test diagnosis and correction belongs to API-002. The earlier review notes remain as historical review evidence.
+
+### Architect Review — Scope and Validation Amendment (2026-11-04)
+
+**Disposition:** API-001 is Ready for its next normal attempt. Preserve Attempt 2 and all prior review evidence; there is no active claim. The current task dependency list is limited to `ARCH-055-DATABASE-001` and `ARCH-055-API-005`. The prior API-002 dependency/routing remains historical evidence and is superseded as a gate for API-001. This amendment does not create or authorize launching API-002.
+
+The ARCH-035 upload PostgreSQL suite must still be rerun and its exact result recorded. The previously observed result (1 passed, 1 failed with Prisma `Transaction not found` in the upload service) may be a non-blocking exception for API-001 only if the rerun reproduces that same failure signature. Record it as **failed, non-blocking exception for API-001**, never as passed; it does not establish upload behavior as correct. A skipped run, different failure or additional failure blocks acceptance. All other acceptance criteria remain unchanged.
