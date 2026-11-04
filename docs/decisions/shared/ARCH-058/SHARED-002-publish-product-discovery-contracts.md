@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -150,3 +150,8 @@ Not reviewed; task definition only.
 ### Review Notes
 
 Await publication evidence after SHARED-001 acceptance.
+
+
+## Architect Dependency Handoff (2026-11-04)
+
+SHARED-001 Attempt 2 is accepted and complete at implementation `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`. Its expanded browse, shipping and answer-presentation contract and original built-in/grant changes passed independent review. This publication task is ready, unclaimed and unexecuted. Use that accepted source and retain the existing registry/version/source checks before publishing 4.0.0; source acceptance alone is not registry publication. Do not advance consumer prerequisites until this task completes.
