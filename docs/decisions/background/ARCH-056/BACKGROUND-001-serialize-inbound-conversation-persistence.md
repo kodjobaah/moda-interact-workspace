@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-11-04T00:34:05Z
@@ -28,7 +28,7 @@ updated: 2026-11-04
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 2. **Defined but not materialised.** Ready is based on the completed prerequisite in the reviewed snapshot; the real launcher rechecks before execution. No implementation or task claim has occurred.
+Definition revision: 2. Materialised on the canonical parent task branch. Attempt 1 was prepared by the launcher after rechecking the `ARCH-054-BACKGROUND-001` dependency; the durable parent claim is `85f053e04d1913dd35489e12e8fd4a851586c984`. Implementation is submitted for architect review at `a918c85` on the mirrored Background task branch. No merge or architect acceptance has occurred.
 
 ## Objective
 
@@ -74,13 +74,13 @@ No language-policy/read consolidation, markSent/final-send changes, stronger Sho
 
 ## Work Items
 
-- [ ] Reorder the existing helper call in the named transaction without changing its semantics or boundary.
-- [ ] Update focused unit expectations and the existing rollback fixture.
-- [ ] Add deterministic real-service concurrency and duplicate/error rollback tests using the named test-only helpers.
-- [ ] Verify preserved control/audio/pending behavior and original-error propagation.
-- [ ] Verify the actual installed Shared logger emits the original safe message and accurate failure stage; use its real capture sink, not only a mocked logger method.
-- [ ] Correct the existing worker failure/error projections and prove that their emitted records retain the safe original message without reintroducing removed sensitive text.
-- [ ] Record the lock schedule and row outcomes, successful-path call comparison and increased rolled-back duplicate work.
+- [x] Reorder the existing helper call in the named transaction without changing its semantics or boundary.
+- [x] Update focused unit expectations and the existing rollback fixture.
+- [x] Add deterministic real-service concurrency and duplicate/error rollback tests using the named test-only helpers.
+- [x] Verify preserved control/audio/pending behavior and original-error propagation.
+- [x] Verify the actual installed Shared logger emits the original safe message and accurate failure stage; use its real capture sink, not only a mocked logger method.
+- [x] Correct the existing worker failure/error projections and prove that their emitted records retain the safe original message without reintroducing removed sensitive text.
+- [x] Record the lock schedule and row outcomes, successful-path call comparison and increased rolled-back duplicate work.
 
 ## Interfaces / Contracts
 
@@ -100,15 +100,15 @@ No dependency on ARCH-056 billing/outbound/recovery tasks: their production file
 
 ## Acceptance Criteria
 
-- [ ] Two distinct same-conversation messages both commit once, with sequential version increments and one frozen pending anchor.
-- [ ] The second receive blocks before its child INSERT while the first holds the parent lock.
-- [ ] A raced duplicate leaves one message and one committed version/pending update; every losing helper mutation rolls back.
-- [ ] Injected failure after helper mutation and before/during INSERT leaves no message or partial pending/version/clock state.
-- [ ] Old-turn completion, HUMAN transition and audio/text overlap preserve the accepted current-state/version/deadline rules.
-- [ ] Existing duplicate ownership validation and post-commit engagement/queue retry remain correct.
-- [ ] No provider/Redis operation or additional production locking mechanism is introduced.
-- [ ] Real PostgreSQL evidence, original error assertions and cleanup are recorded; a unit mock or unforced Promise.all is not the concurrency proof.
-- [ ] Actual emitted error JSON retains the harmless injected original message, Conversation/stage and supplied Prisma code; redaction and a throwing log sink preserve the original business exception and rollback/post-commit semantics.
+- [x] Two distinct same-conversation messages both commit once, with sequential version increments and one frozen pending anchor.
+- [x] The second receive blocks before its child INSERT while the first holds the parent lock.
+- [x] A raced duplicate leaves one message and one committed version/pending update; every losing helper mutation rolls back.
+- [x] Injected failure after helper mutation and before/during INSERT leaves no message or partial pending/version/clock state.
+- [x] Old-turn completion, HUMAN transition and audio/text overlap preserve the accepted current-state/version/deadline rules.
+- [x] Existing duplicate ownership validation and post-commit engagement/queue retry remain correct.
+- [x] No provider/Redis operation or additional production locking mechanism is introduced.
+- [x] Real PostgreSQL evidence, original error assertions and cleanup are recorded; a unit mock or unforced Promise.all is not the concurrency proof.
+- [x] Actual emitted error JSON retains the harmless injected original message, Conversation/stage and supplied Prisma code; redaction and a throwing log sink preserve the original business exception and rollback/post-commit semantics.
 
 ## Validation
 
@@ -137,9 +137,9 @@ npx --no-install eslint src/services/conversation.service.ts src/workers/whatsap
 git diff --check
 ```
 
-- [ ] Execute the commands and retain actual results; missing infrastructure or skipped required tests leave validation incomplete.
-- [ ] Record transaction/session/barrier evidence, affected rows and state before/after rollback, with secret/SQL-parameter redaction.
-- [ ] Record test container identities and complete cleanup, plus prepared worktree/branch/submodule provenance.
+- [x] Execute the commands and retain actual results; missing infrastructure or skipped required tests leave validation incomplete.
+- [x] Record transaction/session/barrier evidence, affected rows and state before/after rollback, with secret/SQL-parameter redaction.
+- [x] Record test container identities and complete cleanup, plus prepared worktree/branch/submodule provenance.
 
 ## Implementation Notes
 
@@ -151,39 +151,64 @@ If the named transaction has materially changed, a dependency is not accepted, o
 
 ## Completion Report
 
-This section belongs to the implementing repository agent. No implementation is recorded by this definition.
+Implementation submission by `moda_background` (`copilot`), Attempt 1. This report is owned by the implementing repository agent; the Architect Review section below remains architect-owned and unchanged.
 
 ### Status
 
-Not Started
+Review. Implementation branch commit `a918c85` is pushed to `origin/task/ARCH-056-BACKGROUND-001`. Parent report branch is being submitted separately. No merge or architect acceptance has occurred.
 
 ### Files Changed
 
-Pending implementation.
+Implementation repository files (nine task-owned paths):
+
+- `src/services/conversation.service.ts`
+- `src/workers/whatsapp.worker.ts`
+- `tests/unit/services/conversation.service.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
+- `tests/integration/conversation-turn-scheduling.integration.test.ts`
+- `tests/integration/arch056-inbound-lock-order.integration.test.ts` (created, 215 lines)
+- `tests/integration/arch056-inbound-rollback.integration.test.ts` (created, 198 lines)
+- `tests/integration/helpers/arch056-inbound-fixtures.ts` (created, 82 lines)
+- `tests/integration/helpers/arch056-inbound-barriers.ts` (created, 134 lines)
 
 ### Work Completed
 
-Pending implementation.
+- Moved the existing `recordProcessableInbound` call to precede inbound `ConversationMessage.create` within the same Prisma transaction. Message creation, language persistence and monotonic clocks remain in that transaction; engagement remains post-commit. No production schema, queue, retry or lock-mode change was made.
+- Added a local bounded stage (`atomic-receive` / `post-commit-engagement`) and safe original-error projection in `ConversationService`. Service logs retain safe source name/message, Conversation/provider identity where available, and actual Prisma code/client version; the original thrown object is preserved.
+- Corrected the worker failed/error callback projections so raw outer errors cannot overwrite redacted fields. Existing event names, job context, routing and retry behavior remain unchanged. Unit tests capture JSON records from the installed Shared logger and cover source wording, supplied metadata, sensitive spans, and throwing sinks.
+- Added real PostgreSQL barriers and observed `pg_stat_activity` lock waits. Two distinct receives serialize before the second child insert and commit versions 1/2 with one deadline. A raced duplicate with both early reads forced to miss leaves one message/version; the losing helper mutation rolls back on P2002 and the retry returns the committed duplicate. An injected post-helper failure leaves no message, version, pending snapshot or clock update and emits the same original error.
+- Added forced old-turn completion after the receive pre-read, both HUMAN transition lock-winner orders with the required audit event, and real audio-completion/text-receive overlap. Assertions cover the current locked state, HUMAN clearing/watermark behavior, blocked child insert, sequential versions and frozen deadline. Existing mid-turn settings coverage confirms a later setting change does not alter the first committed deadline/revision.
+- Successful distinct-message call-site comparison: no database operation was added; the existing locked helper work was reordered before the child insert. On the raced duplicate/error path, the losing transaction now performs the helper update (and applicable pending-setting read) before the unique insert failure; those writes are transactionally rolled back. This path-specific increase is expected and verified rather than presented as a universal zero-delta claim.
+- Test-only transaction interception delegates to real Prisma. Waits are bounded and barriers release in `finally`; the test wrapper uses a 30-second interactive-transaction ceiling and individual barriers/lock observations are bounded at 10 seconds. New integration modules comply with the 300-line limit.
 
 ### Validation Results
 
-Not run. Record exact commands, exit results, failures, warnings, source/build/schema provenance, scenario evidence and cleanup; do not copy planned checks as completed results.
+- `npx --no-install vitest run tests/unit/services/conversation.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts` — passed, 4 files / 80 tests.
+- `node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/arch056-inbound-lock-order.integration.test.ts tests/integration/arch056-inbound-rollback.integration.test.ts` — passed, 3 files / 10 tests against the disposable PostgreSQL 17 + pgvector and Redis runner using canonical migrations. The final instrumented run passed; a prior run had one transient failure in the existing quiet-window coalescing assertion (`[1, 3]` observed instead of `[3]`), which passed in isolation and in subsequent full runs. No test was skipped in the integration runner.
+- `npm run build` — passed; Prisma Client 6.19.3 generated from `database/prisma/schema.prisma`, then TypeScript compilation completed successfully.
+- `npx --no-install eslint src/services/conversation.service.ts src/workers/whatsapp.worker.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation.service.test.ts tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/arch056-inbound-lock-order.integration.test.ts tests/integration/arch056-inbound-rollback.integration.test.ts tests/integration/helpers/arch056-inbound-fixtures.ts tests/integration/helpers/arch056-inbound-barriers.ts` — passed.
+- `git diff --check` — passed. New integration module line counts: 215, 198, 82 and 134.
+- PostgreSQL evidence: distinct receive B was observed waiting on a PostgreSQL lock while A held the Conversation parent; B had not reached its child insert. After release both rows committed once at versions 1 and 2, sharing one frozen pending anchor. Duplicate race: both early reads missed; one insert committed, the other failed P2002 after helper work; one row/version remained and retry returned duplicate. Injected failure: zero message rows and all pending/version/clock fields remained at their pre-transaction values. Old completion, HUMAN-first/receive-first and audio-first/text-first schedules all passed with bounded barriers and final row/state assertions.
+- Disposable infrastructure identities observed via Docker events during the final passing integration run: PostgreSQL `pgvector/pgvector:pg17`, container `moda-test-postgres-994ad8bf9c4e40a8aa7bccbc8397db77` (ID `4972b1b31f14680937076d278d0eff1e725c57fd714c5b68735070bef6ff4f96`) and Redis `redis:7.4.2-alpine`, container `moda-test-redis-59026bf51bc94e02b61c0e80396faa55` (ID `b22028eae97e1fa0b18f4ed4051fae5c9b1b1fb294964efd9f39f276810243c`); PostgreSQL `moda-test-postgres-5124b2fdda9344169669999c91afb5c0` (ID `8fc6887a9715fd168fcaf8841a9a1e8574d1096582dea613f9118578c79a6614`) and Redis `moda-test-redis-d15c2899d25440639910a5fc464c5333` (ID `ee732c126250c6fcd8724e411be948362a0da9bf3e647b9f64e4768d7858df08`). The disposable runner emitted kill/die/destroy events for all four; a subsequent `docker ps -a` showed no test containers. Pre-existing unrelated MariaDB and Portainer containers remained untouched.
+- Runtime provenance: macOS, Node.js 24.21.0, lockfile-pinned npm dependencies, Prisma 6.19.3, Vitest 4.1.11. `npm ci` emitted an existing audit summary of 40 advisories (27 moderate, 13 high); dependency remediation was outside scope and no manifest/lockfile was changed.
+- Prepared execution provenance: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-001`, branch `task/ARCH-056-BACKGROUND-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-001`, same branch. Launcher claim commit `85f053e04d1913dd35489e12e8fd4a851586c984` was pushed before implementation. Recursive `database` submodule was initialized at the recorded commit `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Shared workspace/default implementation checkouts were not switched for task work; no other task worktree was reused.
+- Implementation commit `a918c85` was pushed explicitly to `origin/task/ARCH-056-BACKGROUND-001`. The local branch initially tracked `origin/main`; the default GitKraken push refused the mismatched upstream and no main ref was updated. The task branch was pushed by explicit same-name refspec.
 
 ### Deviations
 
-None at definition time. Record actual deviations and their architect disposition before review.
+No production-scope or contract deviation. The real PostgreSQL HUMAN transition coverage and old-turn race were added to the existing scheduling integration module to keep each newly created integration module under 300 lines. The test-only transaction wrapper gives barrier-driven schedules a bounded 30-second interactive transaction timeout; production transaction configuration is unchanged. The one transient quiet-window test failure is disclosed above and passed on isolation and repeated full runs.
 
 ### Assumptions
 
-The reviewed snapshot and accepted prerequisite contracts are the definition baseline. Recheck the real current checkout and task state at launch.
+The launcher rechecked task identity and the completed `ARCH-054-BACKGROUND-001` dependency before claiming Attempt 1. Canonical migration and Prisma schema were used by the disposable integration runner. No provider or Redis I/O was introduced inside the inbound message transaction.
 
 ### Unresolved Issues
 
-Pending implementation evidence. Preserve the task's explicit held/deferred and blocked-policy boundaries.
+No known implementation blocker. The existing quiet-window coalescing integration showed one transient timing-sensitive failure before passing in isolation and on subsequent full runs; architect review may decide whether that test’s timing assumption merits separate follow-up. Existing npm audit advisories were not remediated because dependency upgrades are out of scope.
 
 ### Architectural Concerns
 
-Return changes to ownership, contracts, schema, transaction boundaries, durable-state semantics, queue behavior, security or another repository to moda_architect before expanding scope.
+None identified. The existing helper and lock mode are reused; transaction ownership, public interfaces, schema and queue behavior are unchanged. Awaiting `moda_architect` review; this report does not self-accept the task.
 
 ## Architect Review
 
