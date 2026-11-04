@@ -1,6 +1,6 @@
 {
   "architecture_id": "ARCH-056",
-  "definition_revision": 2,
+  "definition_revision": 3,
   "date": "2026-11-04",
   "archive": {
     "name": "moda-interact-workspace(20261103-212722).zip",
@@ -127,6 +127,12 @@
   },
   "source_entries": [
     {
+      "path": ".codex/agents/moda_system_test.toml",
+      "kind": "file",
+      "bytes": 35557,
+      "sha256": "7ff3b017df9ea243e023bcda24f907e657079f7dfeab3097621d0e36cd6928a6"
+    },
+    {
       "path": "docs/agent-vcs-ownership-policy.md",
       "kind": "file",
       "bytes": 22914,
@@ -217,6 +223,18 @@
       "sha256": "a493e35be12a34f150a24a1462b51c4756e76ce47e2117f482d220b320575677"
     },
     {
+      "path": "docs/decisions/system-test/ARCH-002/SYSTEM-TEST-010-reconcile-production-readiness-validator-with-haproxy.md",
+      "kind": "file",
+      "bytes": 1930,
+      "sha256": "cebb0718300b828b8af5d4aeb2269076855e3bcbaf293c6ffb144a4e13418019"
+    },
+    {
+      "path": "docs/decisions/system-test/ARCH-028/SYSTEM-TEST-001-validate-whatsapp-delivery-compensation-and-suppression.md",
+      "kind": "file",
+      "bytes": 8283,
+      "sha256": "9162154f4b099e33f210990fccbb1f489e9dc2bd6e1290f71fbe6c3293458e24"
+    },
+    {
       "path": "docs/developer-task-workflow.md",
       "kind": "file",
       "bytes": 22758,
@@ -233,6 +251,18 @@
       "kind": "file",
       "bytes": 10722,
       "sha256": "343d51d289b08bb46200aaa702498d04a2fee7d774ae7e1cd1850eba14430f59"
+    },
+    {
+      "path": "docs/validation-command-naming.md",
+      "kind": "file",
+      "bytes": 3639,
+      "sha256": "3c1bfaabb14ed12c9e87f041449158f716db3f53525d9586e442c57d66452e48"
+    },
+    {
+      "path": "docs/validation-migrations/render-test-validator-naming.md",
+      "kind": "file",
+      "bytes": 3340,
+      "sha256": "9d53db33979a80f533ef03baad194f7ae3f76832117aa0c803d773c1984f08e8"
     },
     {
       "path": "moda-interact",
@@ -1003,6 +1033,12 @@
       "sha256": "2d7bdc79991f7cf1a96e52c15f516e7bb27a0f3ab405a553325427c4eea832a8"
     },
     {
+      "path": "moda-interact-system-test/README.md",
+      "kind": "file",
+      "bytes": 21410,
+      "sha256": "a7b96cf3b32c8beb529a733cd25c6004852d869ce6645e1245bb1ee6fa0da287"
+    },
+    {
       "path": "moda-interact-system-test/catalogue/historical-system-test-map.json",
       "kind": "file",
       "bytes": 21676,
@@ -1013,6 +1049,18 @@
       "kind": "file",
       "bytes": 254658,
       "sha256": "42ff39fb1fa654fad75a4d116fe3947359d33fdfaf21439d7f0e8a3d83f1fb3c"
+    },
+    {
+      "path": "moda-interact-system-test/docs/ARCH-028-COMPENSATION-SMOKE.md",
+      "kind": "file",
+      "bytes": 2704,
+      "sha256": "6b7b92968b0cc0002dd4bc545686b2bb894912d841fd66c2b161e6b2ca0cf526"
+    },
+    {
+      "path": "moda-interact-system-test/docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md",
+      "kind": "file",
+      "bytes": 4844,
+      "sha256": "573e68fbee74c176805a102b8a30aa1196219d59426c34f53d7402de614a8589"
     },
     {
       "path": "moda-interact-system-test/docs/SHOPIFY-COVERAGE-MATRIX.md",
@@ -1027,10 +1075,64 @@
       "sha256": "ed2e3961c953cdfdc1829d888293dfbc7d3ee6d23db4e4db3c383808ec4f8eab"
     },
     {
+      "path": "moda-interact-system-test/scripts/developer-validation.sh",
+      "kind": "file",
+      "bytes": 4143,
+      "sha256": "f7375b7ea72eb69a5f13abcd42178c2b379410bc742bfb16e511af170c4910b1"
+    },
+    {
+      "path": "moda-interact-system-test/scripts/run-arch002-observability.js",
+      "kind": "file",
+      "bytes": 9381,
+      "sha256": "df3a1afd09afe49d535df8c0afdb85fcdb755db36d82960e8c37659a04f02a4d"
+    },
+    {
+      "path": "moda-interact-system-test/scripts/run-arch002-production-readiness.js",
+      "kind": "file",
+      "bytes": 835,
+      "sha256": "bd15bb2a5581e6fdd3a82738a97af949e5e23aa0acd29c9b720f05e7b5e5105e"
+    },
+    {
+      "path": "moda-interact-system-test/scripts/run-arch002-render-test-topology.js",
+      "kind": "file",
+      "bytes": 159,
+      "sha256": "fc5fd043b7e201f2c0329fb9dcc71e300fbfe8b03d1615375150ef6238014e27"
+    },
+    {
+      "path": "moda-interact-system-test/scripts/run-arch028-compensation-smoke.js",
+      "kind": "file",
+      "bytes": 3199,
+      "sha256": "1cc6ecd837f43f66b8600e80b64d20dc06a5d5df3dccfbf5b59037bd0913b9fb"
+    },
+    {
+      "path": "moda-interact-system-test/scripts/run-credit-source-compensation.js",
+      "kind": "file",
+      "bytes": 2001,
+      "sha256": "4c23bbf49b4fa50445c9caa71ff41e17c72647919a7056d8c6ed05e72d0baddf"
+    },
+    {
       "path": "moda-interact-system-test/scripts/run-system-tests.js",
       "kind": "file",
       "bytes": 8103,
       "sha256": "f4b8261903fdd8244361d4bc5451736da81bfc590ae61cdbef50e7261bb442bb"
+    },
+    {
+      "path": "moda-interact-system-test/scripts/system-test-006-developer-validation.sh",
+      "kind": "file",
+      "bytes": 176,
+      "sha256": "a3b6564c4af0483197297b9ac49db59fe76e3b239bec676d72a92768c12091c9"
+    },
+    {
+      "path": "moda-interact-system-test/scripts/validate-render-deployment.js",
+      "kind": "file",
+      "bytes": 5708,
+      "sha256": "45366aaaac41b39947b36507163cd72b74aa29e68f5b161b8614fef2ef5bd6ba"
+    },
+    {
+      "path": "moda-interact-system-test/scripts/validate-render-test.sh",
+      "kind": "file",
+      "bytes": 3082,
+      "sha256": "d73af5470469d261254daad68b6a96034a9b51953b2e6683ccc1c3cc4652c4b1"
     },
     {
       "path": "moda-interact-system-test/scripts/validate-scenario-catalogue.js",
@@ -1055,6 +1157,12 @@
       "kind": "file",
       "bytes": 6402,
       "sha256": "e0f0e56554cf2c568b1e9557b1b672ee6289dc68688095da42c2532bdb3886a1"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/billing-executors.js",
+      "kind": "file",
+      "bytes": 7551,
+      "sha256": "f5bb6bb9f36fe06c15bde1d0debc48fdd660ed344588e003913dfceca08e9eaf"
     },
     {
       "path": "moda-interact-system-test/src/harness/cleanup.js",
@@ -1105,16 +1213,40 @@
       "sha256": "9841cc0fb603b2bf502713dcb97a74c18a9ba2f42dad1ddc7b2dd9a325375cdd"
     },
     {
+      "path": "moda-interact-system-test/src/harness/language/model-fixture.js",
+      "kind": "file",
+      "bytes": 13818,
+      "sha256": "6b7dc224504503f809d0666c0bbd424a93451b2b0b104d7db17c1062b204f35e"
+    },
+    {
       "path": "moda-interact-system-test/src/harness/messaging/index.js",
       "kind": "file",
       "bytes": 1612,
       "sha256": "e9ab042cfffe19d027bd6dcce07b2234a07cee3a01025cb702cfb18fd2be5c38"
     },
     {
+      "path": "moda-interact-system-test/src/harness/messaging/provider-status-observation.js",
+      "kind": "file",
+      "bytes": 11195,
+      "sha256": "34656cabb2ca2ddbbda08f7f6c96b5df32a0132be3da36b3555028e48c3f46a2"
+    },
+    {
       "path": "moda-interact-system-test/src/harness/messaging/recovery-fixtures.js",
       "kind": "file",
       "bytes": 5696,
       "sha256": "7c44369ced1f57525aa6e55e549f8a2e708fd7afc4bf6c66dfa912596dd2e207"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/messaging/terminal-recipient-merchant-ui.js",
+      "kind": "file",
+      "bytes": 6087,
+      "sha256": "17f5ad5863365c725d7c43edf2638ccf551a246d60b36d481e8d8502d82cfad3"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/messaging/terminal-recipient-observation.js",
+      "kind": "file",
+      "bytes": 7175,
+      "sha256": "b96092d78730afc0c9a1e263a7ab7d2db819bdd266734ef27729df4853bd4194"
     },
     {
       "path": "moda-interact-system-test/src/harness/processes.js",
@@ -1135,10 +1267,76 @@
       "sha256": "c602822d6d915abb9dec9dda8109fed16d1d34892438a733a5c1efb61e131dd8"
     },
     {
+      "path": "moda-interact-system-test/src/harness/recovery/arch028-credit-source-checkout-diagnostics.js",
+      "kind": "file",
+      "bytes": 6115,
+      "sha256": "0684824d0c9639d3436b97f7fc52859490ee6e60f10e831ef57cabf2fe461f7f"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/arch028-credit-source-diagnostics.js",
+      "kind": "file",
+      "bytes": 3908,
+      "sha256": "f1efb4dab0b3f64cd1a5fcecdecbba63fde6fbb9b0f6055eaeff6d92725211ef"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/arch028-credit-source-fixtures.js",
+      "kind": "file",
+      "bytes": 6899,
+      "sha256": "069178dcaaa217086a382a57d0cd3689b0fcfc8bac13167b158fe2e9476e57dd"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/arch028-credit-source-ingress-diagnostics.js",
+      "kind": "file",
+      "bytes": 3584,
+      "sha256": "813c790197a2b7c3c52d8d57cade37be1e8e2cbbe9e7a43648a977405f0a8011"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
+      "kind": "file",
+      "bytes": 4227,
+      "sha256": "d2d4278239d42ab0605b031051921d34cd4505416fc1b514b2757e1cbdd041e6"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/arch028-credit-source-observation.js",
+      "kind": "file",
+      "bytes": 14802,
+      "sha256": "739b70347cbe91c118aa97ceb201e67153008eeb836c2eb0696c7e3d654356c7"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/arch028-credit-source-receipt-diagnostics.js",
+      "kind": "file",
+      "bytes": 3114,
+      "sha256": "2dde8cb81ea347484ad83de89b8d95e91705b3df08954baf756d195bfbd2c0bd"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/arch028-credit-source-scenario.js",
+      "kind": "file",
+      "bytes": 6745,
+      "sha256": "2025c6315104106687a90ebbbede9819b33353a049689e201ac353a243fffc60"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/arch028-purchased-source-fixture.js",
+      "kind": "file",
+      "bytes": 5695,
+      "sha256": "c8ff172c347fe08c261d5cd7fe6ca149f5dc612f58e62d4bf002c6bebaa0c1ac"
+    },
+    {
       "path": "moda-interact-system-test/src/harness/recovery/candidate-store.js",
       "kind": "file",
       "bytes": 4477,
       "sha256": "f4eacb5fbcf53380bbc96ff1ea3279df18499172e0bffe1201e4627c5537fc93"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/constants.js",
+      "kind": "file",
+      "bytes": 1647,
+      "sha256": "f9d698ab844f9fae822de74b500388c20daa75f2e8bfd1dac533af477eb4cb4e"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/recovery/index.js",
+      "kind": "file",
+      "bytes": 2900,
+      "sha256": "1bc6b620ddc7a53127cdfa7251b4d5eb0c4e9d88a1e5bfd5349ce91da89bc513"
     },
     {
       "path": "moda-interact-system-test/src/harness/recovery/outreach-fixtures.js",
@@ -1189,6 +1387,30 @@
       "sha256": "2fb5ecbee88cebea9bd2dd7d14da3ed70295027271b84513c5dca7ecbf50a261"
     },
     {
+      "path": "moda-interact-system-test/src/merchant-scenario.js",
+      "kind": "file",
+      "bytes": 66851,
+      "sha256": "296440589bab2d95286e72b6a59c9be5b5ab023cf5d6e22d24c79b01cc953a14"
+    },
+    {
+      "path": "moda-interact-system-test/src/observability-validation.js",
+      "kind": "file",
+      "bytes": 2189,
+      "sha256": "72aa072306d4deec7c80541af4d03929d40823bc41282d8a72984061ecab6bf0"
+    },
+    {
+      "path": "moda-interact-system-test/src/render-blueprint-validation.js",
+      "kind": "file",
+      "bytes": 17537,
+      "sha256": "7876ea66de7054e9d83a80b3e8e03ac94f39df75fefb102f1431e840bad2c784"
+    },
+    {
+      "path": "moda-interact-system-test/src/render-test-topology.js",
+      "kind": "file",
+      "bytes": 6326,
+      "sha256": "14a38ce155f32fd7b8ecad3735a1e8242ae428fca7c6f4ca4e33e3a11208b1d0"
+    },
+    {
       "path": "moda-interact-system-test/src/scenario-catalogue.js",
       "kind": "file",
       "bytes": 17346,
@@ -1207,13 +1429,222 @@
       "sha256": "84bdfcfb23184de2f5068dd13000230b0239d5c81a82d4026a9d9da9260c206f"
     },
     {
+      "path": "moda-interact-system-test/test/harness/approved-template-fixtures.test.js",
+      "kind": "file",
+      "bytes": 4040,
+      "sha256": "8e46a74f9de527ae4295dc9a1f41a628b747f270b23e9e3f56a15e7ac88c425b"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-compensation-smoke.test.js",
+      "kind": "file",
+      "bytes": 2867,
+      "sha256": "fdca85372cc7e814e5ccf87db1254e85bd2248f5883d9d3601a60b8f6904bf37"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+      "kind": "file",
+      "bytes": 7453,
+      "sha256": "b5f80fcd52f7dfcd619b8e241023b33a4b6f414c36bda2f42e365aa1e723e3d8"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+      "kind": "file",
+      "bytes": 6749,
+      "sha256": "7bd637da0381ff5414ee411f853871e81c97348b5f1f8cad724ef74c2dbb65de"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+      "kind": "file",
+      "bytes": 6001,
+      "sha256": "431ffc01c77634b79982f55ffbf9f410b8aeb30e792e466d80b5041bfabda2a1"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-credit-sources.test.js",
+      "kind": "file",
+      "bytes": 16908,
+      "sha256": "eb4c5f244a3a495fe9c03bb1ebcbe6b54629a68f2c2f48cc716ec2c6a4d98c28"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-follow-up-diagnostics.test.js",
+      "kind": "file",
+      "bytes": 5382,
+      "sha256": "01b2e43fee2eb56e933cae4a01efeb2cc3c8b62c853b5fc883fe32675af82d3d"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-initial-outreach-diagnostics.test.js",
+      "kind": "file",
+      "bytes": 7463,
+      "sha256": "2363787a6d0cc172dcc215a842e105cffec0d1c1aeb55916c0c97e00298474f9"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-purchased-source-fixture.test.js",
+      "kind": "file",
+      "bytes": 6309,
+      "sha256": "35332d011d2fc1e87720eba1c570bb5a0cf2bcde06465441fb221978b99b410e"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+      "kind": "file",
+      "bytes": 8791,
+      "sha256": "6258c1428b0ba304d4bd721f80734fa88f38332ec45b4b0e1a56ecb031858277"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/arch028-terminal-recipient-observation.test.js",
+      "kind": "file",
+      "bytes": 8375,
+      "sha256": "18a54adf3ddfd77888fe1d9d2e36da545499b6eb53146d71d15c94a928fc41fe"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/billing-executors.test.js",
+      "kind": "file",
+      "bytes": 8398,
+      "sha256": "becdc6b4286abee1b7ebea94fc1014294e5eb64176d4cec2c978b140b5ad927a"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/language-model-fixture.test.js",
+      "kind": "file",
+      "bytes": 10952,
+      "sha256": "21e010ff2e3d59360da250ecba4e5ff97f3efca205d0c4efe8dd3033b769465a"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/language-provider-runtime-setup.test.js",
+      "kind": "file",
+      "bytes": 4147,
+      "sha256": "4d024ed16b29e2e25b5f135050748910d24c65f6f84794b766b280681aa62d63"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/language-recovery-provider-setup.test.js",
+      "kind": "file",
+      "bytes": 3102,
+      "sha256": "aff743a3a1ad63c0fecbb093c3e1d3c59cdd53b3006a7df055fe35a25a0c0096"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/language-recovery-runtime-wiring.test.js",
+      "kind": "file",
+      "bytes": 3718,
+      "sha256": "3d0ff1fdb0909fe2a1d27a15318c60d598c5d57bed1b9481b8ea18445ae6820c"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/platform-configuration-fixture.test.js",
+      "kind": "file",
+      "bytes": 9953,
+      "sha256": "3998142694fa98fc7788e5c1fe86e177cb3712412aab6b3223b4a63a98525d35"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/recovery-executors.test.js",
+      "kind": "file",
+      "bytes": 9221,
+      "sha256": "84f01400486029db9a9a4be7f00a2456fb848c3896d4dc8d625af41f3b319321"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/selection.test.js",
+      "kind": "file",
+      "bytes": 4228,
+      "sha256": "f548377820d98bd54e34d12fe6d713659aefce8e6aecac28b135d108edb1a350"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/source-structure.test.js",
+      "kind": "file",
+      "bytes": 1250,
+      "sha256": "90c2e5d41a6a0b57dfe0590d5b4013c00ad84e1b50ec97c7ef4bf0096073511e"
+    },
+    {
+      "path": "moda-interact-system-test/test/merchant-scenario.test.js",
+      "kind": "file",
+      "bytes": 5383,
+      "sha256": "cdc7f062ee162b3909188d828455bad11f99cfdff34ddbb48395a8bcf7525606"
+    },
+    {
+      "path": "moda-interact-system-test/test/observability-validation.test.js",
+      "kind": "file",
+      "bytes": 2230,
+      "sha256": "79fcbdd1fe46f122967a47fc34c3acfdb3b895b5d2360a76ab94705a05cf3cd1"
+    },
+    {
+      "path": "moda-interact-system-test/test/render-blueprint-validation.test.js",
+      "kind": "file",
+      "bytes": 11761,
+      "sha256": "470e9588f06f2d47a47b60e9630bb57f192433f7014ad595dbb4f68b8146e676"
+    },
+    {
+      "path": "moda-interact-system-test/test/render-test-topology.test.js",
+      "kind": "file",
+      "bytes": 6108,
+      "sha256": "bd976c5401c8951e17a480ee248bb515574d76b85a0c71e0dcccfc87268f470b"
+    },
+    {
+      "path": "moda-interact-system-test/test/scenario-catalogue.test.js",
+      "kind": "file",
+      "bytes": 12224,
+      "sha256": "e1413f966b498f1aa0dcfbb6551bbb1f843808592d33c8431dbb606bf9b2b996"
+    },
+    {
       "path": "scripts/start-agent-task.py",
       "kind": "file",
       "bytes": 51182,
       "sha256": "577917abea6db7cff7e257ecde53a61bf0d15c020a2184620c9a73731e008630"
     }
   ],
-  "new_read_dependencies": [],
+  "new_read_dependencies": [
+    {
+      "path": "moda-interact-system-test/docs/BACKGROUND-PERSISTENCE-VALIDATION.md",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/background-persistence/contracts.js",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/background-persistence/evidence.js",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/background-persistence/executors.js",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/background-persistence/runtime.js",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/background-persistence-contracts.test.js",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/background-persistence-fault-controls.test.js",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/background-persistence-provenance.test.js",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/background-persistence-registration.test.js",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    },
+    {
+      "path": "moda-interact-system-test/test/harness/background-persistence-results.test.js",
+      "producer": "ARCH-056-SYSTEM-TEST-001"
+    }
+  ],
+  "definition_read_dependencies": [
+    {
+      "path": "docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md",
+      "source": "current definition package; not original archive evidence"
+    },
+    {
+      "path": "docs/architecture/ARCH-056/deterministic-execution-map.json",
+      "source": "current definition package; not original archive evidence"
+    },
+    {
+      "path": "docs/architecture/ARCH-056/test-naming-map.json",
+      "source": "current definition package; not original archive evidence"
+    },
+    {
+      "path": "docs/decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md",
+      "source": "current definition package; not original archive evidence"
+    }
+  ],
   "logging_source_audit": {
     "status": "passed",
     "probe": "Read-only import of uploaded sibling Shared sanitizer; synthetic fixtures only",

@@ -20,7 +20,8 @@ depends_on:
 - ARCH-056-BACKGROUND-002
 - ARCH-056-BACKGROUND-003
 - ARCH-056-BACKGROUND-004
-enables: []
+enables:
+- ARCH-056-SYSTEM-TEST-002
 created: '2026-11-03'
 updated: '2026-11-04'
 ---
@@ -31,7 +32,7 @@ updated: '2026-11-04'
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 2. **Defined but not materialised.** This is a terminal task. All five named implementation prerequisites must be Complete and architect-accepted before it is claimed. No execution, acceptance, task branch, worktree, commit or push is asserted by this definition.
+Definition revision: 3. **Defined but not materialised.** This is the integrated behavior validation task; the final naming cleanup task follows its acceptance. All five named implementation prerequisites must be Complete and architect-accepted before it is claimed. No execution, acceptance, task branch, worktree, commit or push is asserted by this definition.
 
 ## Objective
 
@@ -54,44 +55,46 @@ One owning repository: `moda-interact-system-test`. Paths below are relative to 
 | `catalogue/scenarios.json` | Register exactly the nine rows below, with the complete required metadata, declared evidence class and `sourceRequirements: ["ARCH-056-SYSTEM-TEST-001"]`. |
 | `catalogue/historical-system-test-map.json` | Add the symmetric mapping for this task to exactly those nine IDs. `sourceFile` is `docs/decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md`; record definition-baseline `historicalStatus: "pending"`, not a fabricated acceptance. |
 | `docs/SHOPIFY-COVERAGE-MATRIX.md` | Regenerate through `npm run validate:catalogue -- --write`. Do not hand-edit generated rows. |
-| `src/harness/selection.js:SUITES` | Add `arch056: scenario => scenario.sourceRequirements.includes("ARCH-056-SYSTEM-TEST-001")`. Do not filter by implementation status or available executor. |
-| `src/harness/cli.js:usage` | Add `arch056` to the existing suite help text only. Existing argument parsing remains unchanged. |
-| `scripts/run-system-tests.js:createDefaultExecutors` | Require and merge `createArch056Executors` through the existing duplicate-registration guard. No executor registration belongs in generic `runner.js`. |
-| `scripts/run-system-tests.js:createDefaultProvenanceProvider` | Include API with its `database` submodule and canonical Database for every selected ARCH-056 scenario; preserve existing selected-service descriptors and avoid duplicate names. Capture Background, Shopify and Messaging when executed. |
-| `scripts/run-system-tests.js:main` | For `--suite arch056`, validate the complete nine-row plan and final result set using the new contract helper. Preserve ordinary evidence writing and nonzero failure exit. Attach the scoped case/provenance/logging artifacts through the existing artifact facility. Do not create a parallel runner or modify unrelated suite behavior. |
-| `package.json:scripts` | Add only `system:arch056:plan = node scripts/run-system-tests.js --suite arch056 --list` and `system:arch056 = node scripts/run-system-tests.js --suite arch056 --execute`. Existing `test:harness` already includes the new tests. |
+| `src/harness/selection.js:SUITES` | Import the frozen `BACKGROUND_PERSISTENCE_SCENARIO_IDS` from the new contracts module and add `"background-persistence": scenario => BACKGROUND_PERSISTENCE_SCENARIO_IDS.includes(scenario.id)`. Do not select by governance source requirements, implementation status or available executor. |
+| `src/harness/cli.js:usage` | Add `background-persistence` to the existing suite help text only. Existing argument parsing remains unchanged. |
+| `scripts/run-system-tests.js:createDefaultExecutors` | Require and merge `createBackgroundPersistenceExecutors` through the existing duplicate-registration guard. No executor registration belongs in generic `runner.js`. |
+| `scripts/run-system-tests.js:createDefaultProvenanceProvider` | Include API with its `database` submodule and canonical Database for every selected ID in `BACKGROUND_PERSISTENCE_SCENARIO_IDS`; preserve existing selected-service descriptors and avoid duplicate names. Capture Background, Shopify and Messaging when executed. |
+| `scripts/run-system-tests.js:main` | For `--suite background-persistence`, validate the complete nine-row plan and final result set using the new contract helper. Preserve ordinary evidence writing and nonzero failure exit. Attach the scoped case/provenance/logging artifacts through the existing artifact facility. Do not create a parallel runner or modify unrelated suite behavior. |
+| `package.json:scripts` | Add only `system:background-persistence:plan = node scripts/run-system-tests.js --suite background-persistence --list` and `system:background-persistence = node scripts/run-system-tests.js --suite background-persistence --execute`. Existing `test:harness` already includes the new tests. |
 
 ### Exact new files
 
 | New path | Responsibility |
 |---|---|
-| `src/harness/arch056/contracts.js` | Frozen scenario IDs, evidence classes, layers, required case IDs and per-case logging assertions, source requirement and plan/result completeness checks. |
-| `src/harness/arch056/executors.js` | Nine executor registrations and mandatory business/logging/cleanup case-completion enforcement. |
-| `src/harness/arch056/runtime.js` | Compose existing data-plane/runtime/provider/image factories at verified revisions; capture the actual worker stdout/stderr and installed Shared identity. |
-| `src/harness/arch056/integration-driver.js` | Harness-owned direct-service driver for INTEGRATION rows only; load accepted modules, delegate real Prisma and use the consumed Shared factory for real sink capture. |
-| `src/harness/arch056/fixtures.js` | Run-scoped tenants, recoveries, attempts, messages and mandatory template/consent state. |
-| `src/harness/arch056/billing-fixtures.js` | Exact valid source-kind/status/period/counter/positive-event fixtures. |
-| `src/harness/arch056/fault-controls.js` | Bounded disposable-DB barriers/faults, external provider/queue controls, harmless diagnostic markers, private synthetic sensitive sentinels and real Shared throwing-sink control. |
-| `src/harness/arch056/observations.js` | Tenant-scoped durable state, queue/provider counts, lock/SQL observations and bounded actual JSON log capture before harness redaction. |
-| `src/harness/arch056/assertions.js` | Identity, no-extra-effect, ledger/replay and raw-record message/stage/correlation/privacy/component assertions; deduplicate repeated buffer observations. |
-| `src/harness/arch056/evidence.js` | Redacted case-result, execution/package provenance and logging-assertion sidecars within the existing run evidence directory. |
-| `src/harness/arch056/queue-repair.js` | Retry the retained failed candidate through its original queue identity/data and the real worker. |
-| `src/harness/arch056/dependency-scenario.js` | Dependency/source/build contract row and actual installed Shared package/entrypoint evidence. |
-| `src/harness/arch056/ingress-scenario.js` | Real transaction ordering, duplicate and post-helper rollback row. |
-| `src/harness/arch056/candidate-scenario.js` | Signed checkout and real candidate retry row. |
-| `src/harness/arch056/admission-scenario.js` | Same-message delivery/cleanup/receipt races row. |
-| `src/harness/arch056/uncertainty-scenario.js` | Real provider admission and unknown-outcome containment row. |
-| `src/harness/arch056/settlement-scenario.js` | Exact positive/held billing and meter-read row. |
-| `src/harness/arch056/lock-order-cases.js` | Settlement/compensation/final-permit contention cases for the settlement row. |
-| `src/harness/arch056/finalization-scenario.js` | Actual initial finalization and follow-up replay row. |
-| `src/harness/arch056/woo-scenario.js` | Normal disabled composition and confirmed-before-gate row. |
-| `src/harness/arch056/repair-scenario.js` | Finite exhaustion and explicit retained-job repair row. |
-| `test/harness/arch056-contracts.test.js` | Exact IDs/classes/cases/required logging assertions and rejection of incomplete or incorrect evidence. |
-| `test/harness/arch056-registration.test.js` | Catalogue/map/selector/executor symmetry and unchanged unrelated selection. |
-| `test/harness/arch056-provenance.test.js` | API/nested Database and consumed Shared inclusion; reject source/image/package resolution mismatches. |
-| `test/harness/arch056-fault-controls.test.js` | Bounded barriers, failure propagation, sensitive sentinel isolation, real sink controls and cleanup. |
-| `test/harness/arch056-results.test.js` | Missing/duplicate/blocked/not-run cases or logging assertions cannot become PASS; safe evidence survives failure. |
-| `docs/ARCH056-VALIDATION.md` | Commands, exact scenario/case/logging map, fixture boundaries, three sidecars, actual package capture and replay/cleanup instructions. |
+| `src/harness/background-persistence/contracts.js` | Dependency-free frozen `BACKGROUND_PERSISTENCE_SCENARIO_IDS`, evidence classes, layers, required case IDs and per-case logging assertions; original source-requirement inclusion, symmetric provenance and plan/result completeness checks. |
+| `src/harness/background-persistence/executors.js` | Nine executor registrations and mandatory business/logging/cleanup case-completion enforcement. |
+| `src/harness/background-persistence/runtime.js` | Compose existing data-plane/runtime/provider/image factories at verified revisions; capture the actual worker stdout/stderr and installed Shared identity. |
+| `src/harness/background-persistence/integration-driver.js` | Harness-owned direct-service driver for INTEGRATION rows only; load accepted modules, delegate real Prisma and use the consumed Shared factory for real sink capture. |
+| `src/harness/background-persistence/fixtures.js` | Run-scoped tenants, recoveries, attempts, messages and mandatory template/consent state. |
+| `src/harness/background-persistence/billing-fixtures.js` | Exact valid source-kind/status/period/counter/positive-event fixtures. |
+| `src/harness/background-persistence/fault-controls.js` | Bounded disposable-DB barriers/faults, external provider/queue controls, harmless diagnostic markers, private synthetic sensitive sentinels and real Shared throwing-sink control. |
+| `src/harness/background-persistence/observations.js` | Tenant-scoped durable state, queue/provider counts, lock/SQL observations and bounded actual JSON log capture before harness redaction. |
+| `src/harness/background-persistence/assertions.js` | Identity, no-extra-effect, ledger/replay and raw-record message/stage/correlation/privacy/component assertions; deduplicate repeated buffer observations. |
+| `src/harness/background-persistence/evidence.js` | Redacted case-result, execution/package provenance and logging-assertion sidecars within the existing run evidence directory. |
+| `src/harness/background-persistence/queue-repair.js` | Retry the retained failed candidate through its original queue identity/data and the real worker. |
+| `src/harness/background-persistence/dependency-scenario.js` | Dependency/source/build contract row and actual installed Shared package/entrypoint evidence. |
+| `src/harness/background-persistence/ingress-scenario.js` | Real transaction ordering, duplicate and post-helper rollback row. |
+| `src/harness/background-persistence/candidate-scenario.js` | Signed checkout and real candidate retry row. |
+| `src/harness/background-persistence/admission-scenario.js` | Same-message delivery/cleanup/receipt races row. |
+| `src/harness/background-persistence/uncertainty-scenario.js` | Real provider admission and unknown-outcome containment row. |
+| `src/harness/background-persistence/settlement-scenario.js` | Exact positive/held billing and meter-read row. |
+| `src/harness/background-persistence/lock-order-cases.js` | Settlement/compensation/final-permit contention cases for the settlement row. |
+| `src/harness/background-persistence/finalization-scenario.js` | Actual initial finalization and follow-up replay row. |
+| `src/harness/background-persistence/woo-scenario.js` | Normal disabled composition and confirmed-before-gate row. |
+| `src/harness/background-persistence/repair-scenario.js` | Finite exhaustion and explicit retained-job repair row. |
+| `test/harness/background-persistence-contracts.test.js` | Exact IDs/classes/cases/required logging assertions and rejection of incomplete or incorrect evidence. |
+| `test/harness/background-persistence-registration.test.js` | Catalogue/map/selector/executor symmetry and unchanged unrelated selection. |
+| `test/harness/background-persistence-provenance.test.js` | API/nested Database and consumed Shared inclusion; reject source/image/package resolution mismatches. |
+| `test/harness/background-persistence-fault-controls.test.js` | Bounded barriers, failure propagation, sensitive sentinel isolation, real sink controls and cleanup. |
+| `test/harness/background-persistence-results.test.js` | Missing/duplicate/blocked/not-run cases or logging assertions cannot become PASS; safe evidence survives failure. |
+| `docs/BACKGROUND-PERSISTENCE-VALIDATION.md` | Commands, exact scenario/case/logging map, fixture boundaries, three sidecars, actual package capture and replay/cleanup instructions. |
+
+Use `background-persistence`, `BackgroundPersistence` and `BACKGROUND_PERSISTENCE` for new test-owned directories, filenames, suite/command/artifact names, fixtures and symbols. Keep architecture/task IDs only as governance provenance; no old executable alias is introduced. The frozen contracts module must not import selection, executors or the runner and create a dependency cycle.
 
 Every new JavaScript source/test file is below 300 lines. Split responsibilities across this exact list; do not hide a monolith in generated strings. Existing helpers are reusable read-only dependencies. Any additional path or upstream change requires an architect scope amendment.
 
@@ -135,19 +138,19 @@ The logging evidence ends at the actual Shared sink and emitted stdout/stderr re
 
 ### Nine fixed scenarios
 
-`contracts.js` freezes the following exact list. Every row uses `automation: "automated"`, `liveAuthorizationRequired: false`, `requiredFor: []`, the stated class for both `evidenceClass` and `requiredEvidenceClass`, and the task source requirement. This suite establishes selected ARCH-056 evidence, not a global release or capacity gate. `status: "implemented"` requires a registered executable implementation; a missing prerequisite remains a runtime BLOCKED result.
+`contracts.js` exports `BACKGROUND_PERSISTENCE_SCENARIO_IDS` as the frozen, dependency-free list below and freezes each row's case and evidence contract. Every row uses `automation: "automated"`, `liveAuthorizationRequired: false`, `requiredFor: []`, the stated class for both `evidenceClass` and `requiredEvidenceClass`, and the task source requirement. This suite establishes selected ARCH-056 evidence, not a global release or capacity gate. `status: "implemented"` requires a registered executable implementation; a missing prerequisite remains a runtime BLOCKED result.
 
 | Scenario ID | Domain / layer / class | Providers | Required case IDs |
 |---|---|---|---|
-| `REPOSITORY-ARCH056-DEPENDENCY-001` | REPOSITORY / L1 / CONTRACT | shared | D1, D2 |
-| `MESSAGING-ARCH056-INGRESS-001` | MESSAGING / L2 / INTEGRATION | shared, shopify, woocommerce | I1, I2, I3 |
-| `RECOVERY-ARCH056-CANDIDATE-001` | RECOVERY / L3 / BLACK_BOX | shopify | C1, C2, C3 |
-| `RECOVERY-ARCH056-ADMISSION-001` | RECOVERY / L2 / INTEGRATION | shopify, woocommerce | A1, A2, A3, A4 |
-| `RECOVERY-ARCH056-UNCERTAINTY-001` | RECOVERY / L3 / BLACK_BOX | shopify | U1, U2, U3 |
-| `BILLING-ARCH056-SETTLEMENT-001` | BILLING / L2 / INTEGRATION | shopify, woocommerce | B1, B2, B3, B4, B5, B6 |
-| `RECOVERY-ARCH056-FINALIZATION-001` | RECOVERY / L3 / BLACK_BOX | shopify | F1, F2, F3, F4 |
-| `RECOVERY-ARCH056-WOO-001` | RECOVERY / L2 / INTEGRATION | woocommerce | W1, W2 |
-| `RECOVERY-ARCH056-REPAIR-001` | RECOVERY / L3 / BLACK_BOX | shopify | R1, R2, R3 |
+| `REPOSITORY-BACKGROUND-DEPENDENCY-001` | REPOSITORY / L1 / CONTRACT | shared | D1, D2 |
+| `MESSAGING-INBOUND-PERSISTENCE-001` | MESSAGING / L2 / INTEGRATION | shared, shopify, woocommerce | I1, I2, I3 |
+| `RECOVERY-CANDIDATE-PROGRESS-001` | RECOVERY / L3 / BLACK_BOX | shopify | C1, C2, C3 |
+| `RECOVERY-INITIAL-ADMISSION-001` | RECOVERY / L2 / INTEGRATION | shopify, woocommerce | A1, A2, A3, A4 |
+| `RECOVERY-INITIAL-UNCERTAINTY-001` | RECOVERY / L3 / BLACK_BOX | shopify | U1, U2, U3 |
+| `BILLING-INITIAL-OUTREACH-SETTLEMENT-001` | BILLING / L2 / INTEGRATION | shopify, woocommerce | B1, B2, B3, B4, B5, B6 |
+| `RECOVERY-INITIAL-FINALIZATION-001` | RECOVERY / L3 / BLACK_BOX | shopify | F1, F2, F3, F4 |
+| `RECOVERY-WOO-INITIAL-GATE-001` | RECOVERY / L2 / INTEGRATION | woocommerce | W1, W2 |
+| `RECOVERY-FAILED-CANDIDATE-REPAIR-001` | RECOVERY / L3 / BLACK_BOX | shopify | R1, R2, R3 |
 
 #### D — Dependency coherence and executed revisions
 
@@ -230,11 +233,11 @@ All other case IDs remain in the complete case ledger with their existing busine
 
 ### Complete, truthful result enforcement
 
-`contracts.js` holds exactly nine IDs and all case IDs above. The suite predicate selects by source requirement; contract checks reject a missing/extra/duplicate row, wrong domain prefix/class/layer, asymmetric historical mapping or absent executor. `--suite arch056` with narrowing selectors cannot masquerade as the complete plan. Targeted debugging may use `--scenario` alone but does not satisfy this task.
+`contracts.js` holds exactly nine IDs and all case IDs above. The suite predicate selects by membership in `BACKGROUND_PERSISTENCE_SCENARIO_IDS`; governance source requirements do not determine selection. Contract checks reject a missing/extra/duplicate row, wrong domain prefix/class/layer, missing original source requirement, asymmetric historical mapping or absent executor. Initial rows contain `sourceRequirements: ["ARCH-056-SYSTEM-TEST-001"]`; require that entry by inclusion, not an exclusive singleton. Later architect-approved requirements with valid symmetric historical mappings are allowed, including `ARCH-056-SYSTEM-TEST-002` after the naming migration. Its provenance attachment must not change suite membership, evidence classes, case IDs or logging assertions. `--suite background-persistence` with narrowing selectors cannot masquerade as the complete plan. Targeted debugging may use `--scenario` alone but does not satisfy this task.
 
 Each executor records every required case outcome and explicitly returns PASS only after every required business, logging and cleanup assertion passes. `contracts.js` also freezes the required logging assertions by existing case ID. Missing emission, a generic replacement, wrong stage/origin, a missing aggregate component, a secret hidden only by final evidence redaction, truncated capture, wrong-package/mocked capture or an unexecuted required logging assertion prevents PASS. Wrap the nine executors so an omitted case, unexecuted subcase, undefined result or swallowed fault cannot exploit the generic runner's default PASS normalization. Infrastructure/setup unavailability returns the existing `ScenarioBlockedError`; violated behavior returns `ScenarioFailureError`, with original redacted cause evidence. BLOCKED, FAIL, NOT_RUN and NOT_APPLICABLE all prevent this task's acceptance. Do not map a business held outcome to a harness failure when held is the required behavior; assert the durable/job result and pass that case only when the hold is correct.
 
-Preserve the normal run JSON, summary and command evidence for failures. Write `arch056-cases.json`, `arch056-execution-provenance.json` and `arch056-logging.json` as redacted artifacts in the same existing run directory. Include run/scenario/case IDs, observed failure boundary, real entry route, fixture IDs, before/after durable state summaries, provider/request and credit-effect counts, barrier schedules, exact image/dependency/consumed-Shared identities and cleanup result. Record actual results, never prefilled PASS. A suite completeness failure must produce a nonzero exit and clearly failed/blocked evidence, not a successful summary beside a hidden missing-case warning. Do not alter generic runner/result schemas or other suites to implement this scoped guard.
+Preserve the normal run JSON, summary and command evidence for failures. Write `background-persistence-cases.json`, `background-persistence-execution-provenance.json` and `background-persistence-logging.json` as redacted artifacts in the same existing run directory. Include run/scenario/case IDs, observed failure boundary, real entry route, fixture IDs, before/after durable state summaries, provider/request and credit-effect counts, barrier schedules, exact image/dependency/consumed-Shared identities and cleanup result. Record actual results, never prefilled PASS. A suite completeness failure must produce a nonzero exit and clearly failed/blocked evidence, not a successful summary beside a hidden missing-case warning. Do not alter generic runner/result schemas or other suites to implement this scoped guard.
 
 The logging sidecar records run/scenario/case ID, assertion ID, actual result, boundary/event, capture mode (`shared-sink-json` or `runtime-json`), environment, service identity, installed package provenance reference, safe correlation IDs, original-safe-message/paired-component presence, stage/origin correctness, sensitive-sentinel absence, bounds/flag checks, source-emission count and any buffer truncation. Persist only the selected safe parsed records/fields and truthful results. Never retain a raw Error object expecting the generic evidence redactor to preserve its message; it does not. Keep raw captures and sensitive fixture values in bounded temporary memory, assert them before harness redaction, and omit them from artifacts/progress output/failure diffs. On a privacy failure retain a safe failing assertion identifier, not the leaked sentinel. The existing evidence writer still applies its normal secondary redaction before persistence.
 
@@ -271,12 +274,12 @@ These are the only task dependencies. Do not add blanket ARCH-055-API-009 or oth
 
 ## Enables
 
-None. Architectural review of this terminal evidence follows; no implementation task depends on its completion.
+- `ARCH-056-SYSTEM-TEST-002` — final System-Test naming migration and existing-validator guard, after this task is accepted. This task does not begin that work or change its pending status.
 
 ## Acceptance Criteria
 
 - [ ] All five upstream tasks are accepted/Complete and actual executed revisions match the recorded evidence.
-- [ ] The existing CLI plan contains exactly nine expected rows, registered executors and the frozen evidence classes/case sets.
+- [ ] The semantic `background-persistence` CLI plan selects exactly nine expected IDs independently of governance metadata, with registered executors and the frozen evidence classes/case sets. Later valid symmetric source-requirement additions preserve the same selection.
 - [ ] Actual ingress serialization/rollback, candidate re-entry, same-message/cleanup/receipt races and both provider-uncertainty boundaries pass with deterministic observations.
 - [ ] Exact source settlement/holds, concurrent accounting/final-fence cases and the selected paid read budget pass without unknown-outcome policy changes.
 - [ ] Support/status/stored-null due-date/queue replay, Woo disabled/confirmed-before-gate behavior and finite failed-job repair pass through their declared boundaries.
@@ -288,15 +291,15 @@ None. Architectural review of this terminal evidence follows; no implementation 
 
 ## Validation
 
-Use the existing workspace Node bootstrap and locked repository dependencies. Run from the launcher-resolved implementation worktree. The two `system:arch056` scripts are new deliverables, not baseline commands.
+Use the existing workspace Node bootstrap and locked repository dependencies. Run from the launcher-resolved implementation worktree. The two `system:background-persistence` scripts are new deliverables, not baseline commands.
 
 ```bash
 npm run validate:catalogue -- --write
 npm run validate:catalogue
 npm run lint
 npm run test:harness
-npm run system:arch056:plan -- --json
-npm run system:arch056 -- --json
+npm run system:background-persistence:plan -- --json
+npm run system:background-persistence -- --json
 git diff --check
 ```
 
@@ -308,7 +311,7 @@ Report command exit/result, exact scenario/case/logging assertion outcomes, requ
 
 ## Implementation Notes
 
-Follow the parent architecture's common worktree, logging and evidence requirements. Existing tooling can return BLOCKED when required containers, builds or migrations are unavailable; preserve that distinction from a failed business invariant. New fixtures/control code belongs exclusively to System-Test. No execution result is supplied by this definition.
+Follow the parent architecture's common worktree, logging and evidence requirements. Existing tooling can return BLOCKED when required containers, builds or migrations are unavailable; preserve that distinction from a failed business invariant. New fixtures/control code belongs exclusively to System-Test. The final naming task follows acceptance and reruns the same nine scenarios, 30 cases and 39 logging assertions. No execution result is supplied by this definition.
 
 ### Stop Condition
 

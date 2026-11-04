@@ -11,11 +11,11 @@ updated: '2026-11-04'
 
 ## Status
 
-**Definition revision 2; six tasks defined but not materialised.** The user requested tasks grouped around the database touchpoints in the updated assessment, then explicitly asked that errors retain their actual messages for debugging before production. Revision 2 strengthens logging ownership and tests of the emitted records. It supersedes the unapplied attempt-1 definition package. This package defines five implementation tasks and one terminal system-test task. It contains no application implementation, migration, task claim, review acceptance or production rollout.
+**Definition revision 3; seven tasks defined but not materialised.** The user requested tasks grouped around database touchpoints, original error messages for preproduction diagnostics, and a final task replacing architecture-based test names with behaviour-based names. Revision 3 retains the revision-2 logging contract, gives the newly planned test code semantic names, and adds SYSTEM-TEST-002 for the remaining System-Test naming migration and coverage-preserving validation. The package defines five implementation tasks and two sequential system-test tasks. It contains no application implementation, migration, task claim, review acceptance or production rollout.
 
 `ARCH-056` is unused in the supplied original snapshot. The real launcher must check for a conflicting live allocation before materialising it. The snapshot has no usable Git history with which to prove current remote branches, gitlinks or accepted merge ancestry. No such state is asserted here.
 
-Four definitions are `ready` because their named existing prerequisites are Complete in the snapshot; Background continuation and terminal validation are `pending` on the new interfaces. These are normal task statuses, not a claim that any task worktree exists. All definitions are unclaimed, attempt 0, agent-executed and subject to architect review.
+Four definitions are `ready` because their named existing prerequisites are Complete in the snapshot; Background continuation and both system-test tasks are `pending`. These are normal task statuses, not a claim that any task worktree exists. All definitions are unclaimed, attempt 0, agent-executed and subject to architect review.
 
 ## Problem
 
@@ -31,6 +31,7 @@ Initial recovery also spans several owners. Fixing only the no-offer fallback wo
 4. Resume a proved existing, unpermitted initial template using the same message and usage identity, with fresh final admission and transactional cleanup.
 5. Let the actual initial-recovery entry routes continue safe durable progress without a second provider request or replacement charge.
 6. Validate these boundaries through the existing migrated service/system-test infrastructure with recorded revisions and honest evidence classes.
+7. Name executable test files, helpers, scenarios, suites and commands for the behaviour they verify, preserving architecture IDs in governance and explicit traceability metadata.
 
 ## Non-Goals
 
@@ -108,6 +109,7 @@ Business blocking, retryable technical failure, provider uncertainty, lineage co
 | [ARCH-056-BACKGROUND-003](../decisions/background/ARCH-056/BACKGROUND-003-resume-owned-initial-template-admission.md) | Background; outbound admission, final fence, cleanup and receipt | Ready | None |
 | [ARCH-056-BACKGROUND-004](../decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md) | Background; candidate, orchestration, fallback and finalisation | Pending | BACKGROUND-002, BACKGROUND-003 |
 | [ARCH-056-SYSTEM-TEST-001](../decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md) | System-test; existing catalogue/runner and scoped scenarios | Pending | All five implementation tasks |
+| [ARCH-056-SYSTEM-TEST-002](../decisions/system-test/ARCH-056/SYSTEM-TEST-002-replace-architecture-based-test-names.md) | System-test; final semantic test naming and coverage preservation | Pending | SYSTEM-TEST-001 |
 
 ```mermaid
 flowchart TD
@@ -118,9 +120,22 @@ flowchart TD
     B --> S
     O --> S
     R --> S
+    S --> N["Test naming cleanup"]
 ```
 
 Existing accepted prerequisites are named in each canonical task. Terminal system tests never become dependencies of implementation. BACKGROUND-002 and BACKGROUND-003 have distinct production writers and fixed interfaces; BACKGROUND-004 consumes both. Shared context/read-only files do not grant write ownership. A newly discovered need to cross an allowlist or edit another owner is returned to the architect before mutation.
+
+### Decision 6 — Semantic test names and one final cleanup owner
+
+Architecture and task IDs remain in documentation paths, task frontmatter, `sourceRequirements`, historical traceability records and evidence provenance. They must not determine new executable test/module names, exported test helpers, permanent scenario IDs, suite selectors, npm script keys or newly generated evidence filenames. The existing System-Test catalogue already describes this separation; the task definitions now follow it.
+
+BACKGROUND-001 and BACKGROUND-002 create their eight planned integration-test/helper files under semantic names from the outset. SYSTEM-TEST-001 creates `src/harness/background-persistence/`, the `background-persistence` suite, semantic permanent IDs, descriptive scripts and evidence sidecars. Its suite membership is the fixed set of nine semantic scenario IDs, independent of architecture metadata and status; missing or unimplemented rows still fail completeness. The three semantic sidecars are `background-persistence-cases.json`, `background-persistence-execution-provenance.json` and `background-persistence-logging.json`.
+
+SYSTEM-TEST-002 is the final task. After the integrated pass is accepted, it migrates the selected pre-existing System-Test helper/test/script/symbol/scenario names, updates every declared consumer, enforces the permanent naming rule through the existing validators and reruns the required coverage. It preserves all nine new scenarios, thirty case IDs and thirty-nine logging assertions. Renaming does not retire scenarios, weaken evidence classes, create duplicate executors or grant old results a new PASS.
+
+The exact mappings and exclusions are in [test-naming-map.json](ARCH-056/test-naming-map.json) and the final task. System-Test owns only its repository. Older architecture-named Background/API/other-repository files remain explicit later owner work; this package corrects the eight new Background names without transferring the existing repositories' test ownership. Preserve production dispatch/idempotency keys, canonical external identifiers, the established Render test environment-variable contract, migration names, frozen vectors and archived evidence. Some values contain historical architecture references but are tested contracts, not executable naming choices.
+
+Shared System-Test reference files have sequential writers: SYSTEM-TEST-001 first, SYSTEM-TEST-002 after acceptance. Other open tasks with overlapping files are checked at launch; coordinate an active writer and hand off semantic paths before accepting cleanup. No unrelated task is silently reopened, completed or given a new behavioural dependency.
 
 ## Data Model and Contracts
 
