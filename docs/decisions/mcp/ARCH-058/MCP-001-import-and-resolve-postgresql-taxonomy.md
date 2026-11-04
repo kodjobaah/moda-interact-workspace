@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-04T07:38:22Z
+attempt: 1
 depends_on:
 - ARCH-058-DATABASE-001
 - ARCH-058-SHARED-002
@@ -21,7 +21,7 @@ enables:
 - ARCH-058-MCP-002
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: '2026-11-04'
+updated: 2026-11-04
 ---
 
 # ARCH-058-MCP-001: Import and resolve a versioned PostgreSQL reference taxonomy
