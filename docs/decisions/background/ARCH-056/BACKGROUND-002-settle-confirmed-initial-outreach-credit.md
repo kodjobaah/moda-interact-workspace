@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: copilot
 claimed_at: 2026-11-04T04:33:03Z
@@ -407,7 +407,7 @@ This section belongs to the implementing repository agent. No implementation is 
 
 ### Status
 
-Attempt 4's scoped implementation and validation are complete under the launcher claim. The orphan-message fix, attempt-linked command evidence check, five authorized fixture corrections, architect-approved ARCH-028 fixture isolation, and required final-permit/settlement interaction tests are present on the implementation branch. The exact required PostgreSQL matrix passes all 69 tests in its declared order. Acceptance and downstream promotion have not been claimed; the task is in review.
+Attempt 4's scoped implementation and validation are complete under the launcher claim. The orphan-message fix, attempt-linked command evidence check, five authorized fixture corrections, architect-approved ARCH-028 fixture isolation, and required final-permit/settlement interaction tests are present on the implementation branch. The exact required PostgreSQL matrix passes all 69 tests in its declared order. The architect accepted Attempt 4 and the task is complete; no enabled task was executed or claimed in this run.
 
 ### Attempt 1 Files Changed
 
@@ -630,7 +630,7 @@ Attempt 4 validation on the implementation worktree:
 
 Scheduling and parallel diagnostic: `vitest.config.ts` sets `fileParallelism: false` when `MODA_DISPOSABLE_INTEGRATION=1`; the passing declared integration command is therefore serial across files. The architect's separate explicit `--fileParallelism=true` diagnostic from Attempt 3 produced 62 passed and 5 failed tests in three files, with P2034 conflicts/deadlocks; its root cause was not established. That override is not the declared validation command, and no parallel-pass or broader retry-policy claim is made.
 
-Implementation changes and this report are being prepared for task review. No acceptance beyond the evidence above is claimed; ARCH-056-BACKGROUND-004 and ARCH-056-SYSTEM-TEST-001 remain gated pending architect disposition.
+The implementation and parent report are published on their task branches. The architect accepted Attempt 4 in the review record below. No enabled task was executed or claimed in this run.
 
 ## Architect Review
 
@@ -752,3 +752,32 @@ Add the missing cases in BG002-owned integration modules, using independent clie
 ### Disposition and handoff
 
 Changes Requested for the outstanding required interaction evidence, not for a newly demonstrated production defect. Correct the scheduling description in the completion report and retain the diagnostic result. Return to `ready`, clear executor/claimed_at, preserve Attempt 3; the next normal claim creates Attempt 4. Implementation corrections remain uncommitted/unpushed; publication is still required before durable completion. BG004 and SYSTEM-TEST-001 remain gated. This review changes only the parent task record, is local and uncommitted, and neither publishes implementation nor merges any branch.
+
+## Architect Re-review — Accepted (Attempt 4, 2026-11-04)
+
+### Review Status
+
+Accepted — Attempt 4. `completion_mode: automatic`; task status is `complete`.
+
+### Review Notes
+
+- The requested final-permit/settlement evidence is now covered in the BG002-owned PostgreSQL race suite using the real outbound fence and `InitialOutreachCreditService` on independent clients. Permit-first leaves the message PENDING, settlement returns `held/message-not-confirmed`, accounting remains unchanged, and no provider call occurs. Confirmed-settlement-first records the durable send and exact credit once; a later fence/resume does not make another provider call.
+- The tests represent ordered winner cases and make no claim of barrier-proven simultaneous overlap. No blocking findings remain; scope and ownership are respected, with no production or BG003-owned changes in Attempt 4.
+
+### Reviewed Files
+
+- `tests/integration/arch056-initial-outreach-credit-races.integration.test.ts`
+- Attempt 4 Completion Report and the task's declared acceptance/validation contract
+
+### Validation Reviewed
+
+- Focused BG002 race integration suite independently rerun: **4/4 passed**.
+- The Attempt 4 report records the full required PostgreSQL/Redis matrix at **69/69 passed with no skips**, required units at **272/272**, plus build, scoped ESLint and `git diff --check` passing. Those broader checks were reviewed from the report, not rerun during this review-only re-review.
+
+### Architecture Conformance
+
+The outstanding Attempt 3 interaction-evidence request is satisfied. The implementation and evidence remain within BG002's approved scope; the ordered outcome assertions preserve the documented settlement and permit boundaries. No new architecture or policy claim is introduced.
+
+### Follow-up
+
+No correction is requested. This task is accepted and complete. BG004 and SYSTEM-TEST-001 were not executed, claimed, or edited. This architect disposition changes no implementation code and does not commit, push, merge, or otherwise publish the parent task branch; publication remains the developer's responsibility.
