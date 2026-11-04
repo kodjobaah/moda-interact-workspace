@@ -75,6 +75,10 @@ The user confirmed on 4 November 2026 that the application has not gone live and
 
 The change is confined to Shopify-owned builders. API's similarly spelled namespaces belong to guarded WooCommerce command paths and already use different recurring fingerprint framing; they are not a shared Shopify digest contract. This package does not claim a workspace-wide runtime naming cleanup.
 
+## Current review handoff
+
+On 2026-11-04, ARCH-057-SHOPIFY-002 Attempt 3 was accepted and marked complete with its claim cleared. All three prior findings are resolved. Independent validation passed 395 unit tests, the isolated 2-test PostgreSQL suite, typecheck, build and changed-file lint. The review preserves an initial milestone-transaction timeout and teardown error before the unchanged isolated rerun passed; its root cause is not claimed as proven. SHOPIFY-003 is ready and unclaimed; SHOPIFY-004 and SHOPIFY-011 remain pending on additional prerequisites. See the [task review](../decisions/shopify/ARCH-057/SHOPIFY-002-stabilise-subscription-activation-and-provider-evidence.md#architect-review) for evidence and historical findings. The table below records initial task states, not current lifecycle status.
+
 ## Task map
 
 | Task | Touchpoint | Initial state | Prerequisite |
