@@ -310,13 +310,13 @@ BG002 does not migrate orchestration files. BG004 must not duplicate billing sou
 - [ ] Every held/error outcome preserves ledger state or rolls back all changes; failures retain their original diagnostics.
 - [ ] Confirmed settlement, provider failure/131026 compensation, final permit and shared-counter races obey the documented lock order and positive accounting invariants.
 - [ ] BS-04's duplicate Shopify meter read is removed without report/provider changes; BS-05 and Blocked BG013 remain accurately bounded.
-- [ ] No edits escape the declared ownership allowlist or change schema, provider, queue, Support or recovery-status behavior directly.
+- [x] No edits escape the declared ownership allowlist or change schema, provider, queue, Support or recovery-status behavior directly.
 
 - [ ] Every selected material technical failure and exception-derived hold has its original safe direct message in an actual emitted Shared record at the declared service owner, with precise stage and available original identities.
-- [ ] Final retry failure rethrows the same exception, logs the actual retry state, and cannot emit false successful status application; after-commit failures identify which state already committed.
-- [ ] Known cause and allowlisted Prisma/SQLSTATE diagnostics are emitted explicitly when present; missing data produces no invented provider/database facts. Stack/cause-graph completeness is not claimed from Shared's direct Error serializer.
+- [x] Final retry failure rethrows the same exception, logs the actual retry state, and cannot emit false successful status application; after-commit failures identify which state already committed.
+- [x] Known cause and allowlisted Prisma/SQLSTATE diagnostics are emitted explicitly when present; missing data produces no invented provider/database facts. Stack/cause-graph completeness is not claimed from Shared's direct Error serializer.
 - [ ] Captured emitted records pass the common sensitive-data/redaction/truncation assertions. Logging sink failure leaves accounting, holds, retries and original thrown exceptions unchanged.
-- [ ] Source-owned detailed diagnostics and downstream stage context follow the owner table; tests do not rely on an unrelated worker callback to compensate for a missing direct-service diagnostic.
+- [x] Source-owned detailed diagnostics and downstream stage context follow the owner table; tests do not rely on an unrelated worker callback to compensate for a missing direct-service diagnostic.
 
 ## Validation
 
@@ -393,9 +393,9 @@ This section belongs to the implementing repository agent. No implementation is 
 
 ### Status
 
-Attempt 1 was submitted for Architect review and returned Changes Requested. The required PostgreSQL matrix is still incomplete, and emitted-diagnostic and rollback scenarios remain unproved.
+Attempt 2 is in progress on the same mirrored task branches. The retained-source PostgreSQL cases and additional emitted-log/rollback evidence now pass. The full required integration matrix remains blocked by 12 failures in read-only legacy fixtures and one separate read-only human-status failure; no acceptance claim is made.
 
-### Files Changed
+### Attempt 1 Files Changed
 
 Implementation repository: `moda-interact-background`; task branch `task/ARCH-056-BACKGROUND-002`; commit `00cfac4` (`Implement exact initial outreach credit settlement`), pushed to origin.
 
@@ -427,13 +427,29 @@ Implementation repository: `moda-interact-background`; task branch `task/ARCH-05
 - `tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts`
 - `tests/unit/services/whatsapp-provider-status.service.test.ts`
 
-### Work Completed
+### Files Changed
+
+Attempt 2 modifies only these implementation-owned files:
+
+- `src/services/recovery-billing/initial-outreach-credit.service.ts`
+- `tests/integration/arch056-initial-outreach-credit.integration.test.ts`
+- `tests/integration/arch056-initial-outreach-credit-races.integration.test.ts`
+- `tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts`
+- `tests/unit/services/whatsapp-provider-status.service.test.ts`
+
+### Attempt 1 Work Completed
 
 Implemented the billing facade/types, exact message/attempt/source evidence, same-transaction source-owner wrappers, confirmed settlement, read-only retained-source revalidation, legacy commit outcome guard, paid-meter read reuse, and bounded retry/hold/failure diagnostics. Extracted the existing exact-source lookup and applied Shop `FOR KEY SHARE` before message `FOR UPDATE` in settlement, compensation, and provider-status paths. Provider-status `applied` is emitted after successful transaction completion; post-commit failures carry committed-state context.
 
-Added owner unit coverage, Shared logger sink tests for direct errors, allowlisted Prisma metadata, retry exhaustion, exception-derived lineage holds, sink failure isolation, and a conversation-ID lineage regression. Added PostgreSQL cases for all four source commits/replays, two distinct messages sharing a counter, and the Shop-parent FK wait. Additional retained-source, `AMBIGUOUS`/`RELEASED`, and stale paid-period cases are now in the integration files but have not yet been executed.
+Added owner unit coverage, initial Shared logger sink tests, and PostgreSQL cases for the source commits/replays, shared-counter race and Shop-parent FK wait.
 
-### Validation Results
+### Work Completed
+
+Corrected the retained pre-permit PostgreSQL fixture to clear both message and attempt `sentAt`. Added actual Shared-sink assertions for direct errors, one-level known cause, allowlisted Prisma metadata and SQLSTATE, pure holds without fabricated upstream fields, retry exhaustion, secret redaction, truncation, and sink failure. Added status transaction versus post-commit log assertions, including compensation, reachability and notification stages.
+
+Added three disposable-PostgreSQL rollback scenarios: unique-event conflict after owner counter mutation, injected owner exception after positive-event insertion with identity preservation, and failed final positive verification. Added an integration flow through the real compensation owner and provider-status service; it proves source-owner rollback and correlates the detailed owner record with the status caller's context-only record by provider message ID.
+
+### Attempt 1 Validation Results
 
 Launcher evidence:
 
@@ -486,21 +502,49 @@ npm run test:integration -- tests/integration/arch056-initial-outreach-credit.in
 
 Expected success condition: all task-owned ARCH-056 and affected lock-order tests pass; the pre-existing owner fixture/schema drift must be resolved or dispositioned before claiming the full matrix passed. The new four-source revalidation, eight ambiguity/release holds, and stale paid-period integration cases require execution against the disposable database.
 
-### Deviations
+### Attempt 1 Deviations
 
 The new coordinator is 235 physical lines: above the 200-line target but below the hard 300-line ceiling. No unowned production module was introduced to split it. The exact full PostgreSQL matrix is deferred to developer validation; the legacy owner concurrency fixtures currently fail before exercising production behavior. The full unit suite also has seven unrelated failures listed above. Emitted-record coverage is not yet complete for all specified cause/redaction, mutation-then-rollback, and selected after-commit failure scenarios.
 
-### Assumptions
+### Attempt 1 Assumptions
 
 The prepared launcher packet is the source for physical worktree, synchronization, claim and recursive-submodule evidence. The installed Shared package version was confirmed from the implementation worktree, not a sibling checkout.
 
-### Unresolved Issues
+### Attempt 1 Unresolved Issues
 
 Developer execution of the full integration command remains required. Resolve/disposition the four stale owner concurrency fixture failures. Add or complete actual Shared-sink assertions for known causes, redaction/truncation, typed period/policy holds, rollback after owner mutation/event insertion, selected after-commit failures, and compensation/status diagnostic correlation. The latest added retained-source and state-hold PostgreSQL cases are typechecked but unexecuted. Do not claim BG-013, BS-05, historical source selection, or uncertain-send settlement is resolved.
 
 ### Architectural Concerns
 
 No schema, package/dependency, Shared publication, cross-repository, provider, queue, Support or recovery-status policy change was made. The remaining items are evidence/validation gaps; no enabled task was started.
+
+### Validation Results
+
+- `npm run build` — passed; Prisma Client 6.19.3 generated and TypeScript build completed.
+- Required unit matrix — passed, 16 files and 270 tests.
+- Exact task-scoped ESLint set — passed.
+- `git diff --check` — passed.
+- Shared runtime resolution — `npm ls @modainteract/moda-interact-shared --depth=0` reports `@modainteract/moda-interact-shared@3.0.0`.
+- Focused final PostgreSQL rerun of the settlement and race files — 2 files, 23 tests passed. The full matrix also passed the ARCH-056 settlement file (21 tests), parent-FK file (1 test), and ARCH-028 compensation file (28 tests).
+- Full required PostgreSQL matrix — 10 files, 52 tests passed and 13 failed. Twelve failures across five read-only owner-concurrency/rollover files occur at `BillingPlan.create` because their fixtures pass removed `defaultOutboundSoftLimit` and `defaultOutboundHardLimit` fields. The remaining failure in `recovery-human-provider-status.integration.test.ts` passes a null `outboundMessageId` to `findUniqueOrThrow`. No test cleanup failure was reported.
+
+The architect disposition is to leave all six failing files unchanged: `free-recovery-reservation.concurrency.integration.test.ts`, `paid-included-recovery-reservation.concurrency.integration.test.ts`, `promotional-recovery-reservation.concurrency.integration.test.ts`, `purchased-recovery-reservation.concurrency.integration.test.ts`, `same-plan-billing-period-rollover.concurrency.integration.test.ts`, and `recovery-human-provider-status.integration.test.ts`. They are read-only dependencies under the current BG002 execution map. Repair requires an explicit allowlist expansion or a separate fixture-correction task; do not add the retired fields to the schema.
+
+### Deviations
+
+All edits remain within the implementation-owned paths. The complete validation gate is not satisfied because the required PostgreSQL command includes the six read-only failures above. Acceptance checklist items remain unchecked; the passing targeted evidence is not a substitute for the full matrix.
+
+### Assumptions
+
+Attempt 2 uses the launcher-resolved implementation worktree and task claim recorded in the task metadata. Runtime logging assertions use the installed Shared package version 3.0.0.
+
+### Unresolved Issues
+
+The full integration matrix requires an architect-approved scope change or separate task for the six read-only failures. Until then, do not claim the full matrix passed, set this task to review/complete, or unblock `ARCH-056-BACKGROUND-004` and `ARCH-056-SYSTEM-TEST-001`. Preserve the existing BS-05, ARCH-028-BACKGROUND-013 and uncertain-send policy boundaries.
+
+### Attempt 2 Architectural Concerns
+
+No schema, package/dependency, Shared publication, cross-repository, provider, queue, Support or recovery-status policy changes were made. The only production edit adds explicit one-level cause context to the BG002-owned settlement/revalidation diagnostics.
 
 ## Architect Review
 
