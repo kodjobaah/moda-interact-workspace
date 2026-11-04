@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
 - ARCH-055-API-009
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: 2026-11-03
+updated: 2026-11-04
 ---
 
 # ARCH-055-API-004: Correct recovery inbox and human-send persistence
@@ -31,7 +31,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** materialised in the canonical dedicated parent and implementation worktrees. Attempt 1 was reviewed on 2026-11-03 and returned for changes. Attempt 2 added the requested test and measurement harness updates but could not complete PostgreSQL validation because the local container runtime cannot read its PostgreSQL image blob. Attempt 1 review text is preserved; this report is returned to the architect without marking the task complete.
+**Definition state:** materialised in the canonical dedicated parent and implementation worktrees. Attempt 1 was returned for changes, and Attempt 2 was blocked on PostgreSQL validation. Attempt 3 completed the requested migrated tests and paired measurements; the architect accepted Attempt 3 on 2026-11-04. Earlier review records remain preserved.
 
 ## Objective
 
@@ -266,7 +266,7 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 ### Unresolved Issues
 
-Attempt 2's required PostgreSQL validation and paired M06/M07 measurements remain unverified because the canonical runner could not start its disposable container. The containerd image-content error must be cleared before validation can be completed. The implementation and report are published; no code correction is identified by this review. The unrelated Support lint error remains documented.
+**Historical Attempt 2 blocker; resolved in Attempt 3 below.** The required PostgreSQL validation and paired M06/M07 measurements were not verified in Attempt 2 because the canonical runner could not start its disposable container. Attempt 3 records the completed validation. The unrelated Support lint error remains documented.
 
 ### Architectural Concerns
 
@@ -430,4 +430,20 @@ After Docker/containerd can read the canonical image, the developer/architect sh
 
 The previously unreadable pgvector PostgreSQL image (`sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8`) now starts a disposable container and reports PostgreSQL 17.11. ARCH-055-BACKGROUND-001 remains Complete. API-004 returns to Ready with Attempt 2 preserved and both claim fields null. The next launcher invocation may claim Attempt 3.
 
-The Attempt 2 Changes Requested contract remains in force. Required migrated PostgreSQL regressions and paired M06/M07 baseline/candidate measurements still need execution and review. Downstream eligibility continues to depend on acceptance and completion.
+The Attempt 2 Changes Requested contract remains historical. Attempt 3 completed its required migrated PostgreSQL regressions and paired M06/M07 baseline/candidate measurements, which were then reviewed and accepted.
+
+## Architect Review — Attempt 3
+
+### Review Status
+
+**Accepted — 2026-11-04.** Attempt 3 is Complete. The executor and claim remain cleared.
+
+### Review Notes
+
+Attempt 3 closes both prior review findings. The canonical PostgreSQL suites passed, including the D02 wrong-digest rejection/prepared-body ALLOW assertions and D03 database-read failure assertion with the production `DATABASE_UNAVAILABLE` wrapper and original Prisma `P2021` cause. M06/M07 baseline and candidate runs record the required fixtures, two warmups and five samples per profile, SQL shapes/calls, transaction details, outcomes and persisted-state evidence. The due-template baseline failed under the one-connection configuration while the candidate succeeded; those baseline failure durations are correctly excluded from any successful-operation latency claim. No blocking code, contract or validation finding remains.
+
+The implementation task ref is `1f8d0cca8386705e496b65210cd08de8fbcb1b4d`; the parent task report ref is `37aa29ca18110147617960df154809837ba9b2b7`. Both were published on their matching task branches and were clean at review. Validation was not rerun during this review.
+
+### Dependency Reconciliation
+
+API-001 through API-008 are Complete after this acceptance. API-009 becomes eligible for promotion to Ready once this accepted task record is integrated into the canonical parent dependency snapshot. SYSTEM-TEST-001 remains Pending until API-009 is complete. No implementation task was claimed, and no main merge or deployment is implied.
