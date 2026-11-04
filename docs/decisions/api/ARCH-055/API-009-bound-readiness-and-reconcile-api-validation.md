@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -35,9 +35,9 @@ updated: 2026-11-04
 
 Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md`. Coordinator: `moda_architect`.
 
-**Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
+**Definition revision:** 3. Adds a server-side PostgreSQL execution bound to readiness; it supersedes revision 2 for the unresolved readiness timeout requirement. API-008 remains complete and unchanged.
 
-**Definition state:** materialised in the canonical parent task worktree and branch. All eight explicit API dependencies are Complete, including API-004 at Attempt 3. The task is Ready at Attempt 0 with no executor or claim; no implementation worktree has been created.
+**Definition state:** materialised in the canonical parent task worktree and branch. Attempt 1 was prepared after all eight explicit API dependencies were Complete. Implementation is submitted on the API task branch; architect review returned Changes Requested. The task is Ready with the claim cleared.
 
 ## Objective
 
@@ -82,9 +82,9 @@ Paths are relative to the owning implementation repository. These steps are mand
 
 | File / symbol touchpoint | Deterministic edit |
 |---|---|
-| `src/database.ts` | CREATE one dedicated readiness-only PrismaClient per process in addition to existing business client. Derive its URL without logging it; preserve all existing non-timeout/security arguments and override connection_limit=1, pool_timeout=1, connect_timeout=1, socket_timeout=1. No extra driver package. probe uses only parameter-free SELECT1. Disconnect both clients only on normal shutdown; never disconnect business client on readiness timeout. |
+| `src/database.ts` | CREATE one dedicated readiness-only PrismaClient per process in addition to existing business client. Derive its URL without logging it; preserve all existing non-timeout/security arguments and override connection_limit=1, pool_timeout=1, connect_timeout=1, socket_timeout=1. Preserve any existing PostgreSQL `options` value and append the server-side per-session `statement_timeout=500ms` startup setting through Prisma's supported `options` URL argument. The server statement timeout must precede the 1-second socket timeout so server work is canceled before the client abandons the query. No extra driver package or global PostgreSQL setting. probe uses only parameter-free SELECT1. Disconnect both clients only on normal shutdown; never disconnect business client on readiness timeout. |
 | `src/readiness-probe.ts; src/server.ts` | CREATE single-flight adapter around that one delegate. inFlight cleared only by actual delegate settlement, never observer HTTP timeout. Concurrent requests await same promise; new request after settlement starts fresh probe, not cached success. Existing 2000ms observer deadline and liveness response unchanged. |
-| `scripts/test-arch055-readiness-postgres.mjs; tests/integration/http/arch055-readiness.postgres.test.ts` | CREATE canonical disposable PG runner and real HTTP failure/recovery suite. Test dedicated pool/query bounds (blocking injected query only in test adapter), network/connect failure, at most1 physical connection/probe, and no business-client shutdown. |
+| `scripts/test-arch055-readiness-postgres.mjs; tests/integration/http/arch055-readiness.postgres.test.ts` | CREATE canonical disposable PG runner and real HTTP failure/recovery suite. Assert the dedicated session's statement_timeout, then execute a real long query and prove PostgreSQL cancels it before the Prisma promise settles; verify no active orphan query remains before the next probe. Also test dedicated pool/query bounds, network/connect failure, at most1 physical connection/probe, recovery, and no business-client shutdown. |
 | `scripts/test-woocommerce-installation-postgres.mjs; package.json` | AFTER API-001..008 acceptance, replace old db-push orchestration with calls to the accepted installation/settings canonical runners; preserve all previous suites. Append AI-delay and ARCH-055 readiness runners to test:integration exactly once, plus explicit script keys below. |
 
 **Exact new implementation/test paths (not baseline files claimed to exist):**
@@ -132,14 +132,15 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [x] Implement bounded underlying readiness work and deterministic unit tests.
+- [ ] Bound actual PostgreSQL execution server-side before the client socket timeout; prove cancellation with the pinned Prisma runtime and deterministic tests.
+- [x] Implement bounded HTTP observer/single-flight behavior and deterministic unit tests.
 - [x] Create the focused migrated PostgreSQL/HTTP runner using disposable pg17+pgvector.
 - [x] Register all accepted focused runners and the previously omitted AI-delay suite in aggregate integration.
 - [x] Run API typecheck/build/full integration and classify any unchanged documented baseline failures without weakening new acceptance.
 
 ## Interfaces / Contracts
 
-Existing readiness HTTP contract is unchanged. Any introduced probe option must be internal/server-controlled, tested against the pinned runtime and listed in the completion report; no deployed pool limit or timeout is assumed from the static review.
+Existing readiness HTTP contract is unchanged. The dedicated readiness URL must preserve its existing `options` value and append the internal server-controlled PostgreSQL `statement_timeout=500ms` using Prisma's supported `options` URL argument. Retain connection_limit=1, pool_timeout=1, connect_timeout=1 and socket_timeout=1 (seconds). Test that PostgreSQL actually applies the setting and cancels an overlong statement before the socket timeout; do not infer backend cancellation from a rejected Prisma promise. If the accepted connection topology drops or ignores the startup option, stop with the observed evidence and requested infrastructure requirement. No global PostgreSQL setting or business-client URL change is authorized.
 
 The public API remains unchanged except documentation corrections explicitly authorised here. Database changes are consumed only after ARCH-055-DATABASE-001 acceptance/integration. Existing published Shared package exports remain authoritative; do not import sibling source.
 
@@ -169,21 +170,21 @@ No constructor-side query or timer. Preserve original rejection cause. Observer 
 ## Acceptance Criteria
 
 - [x] Twenty or more concurrent timed-out health requests do not leave twenty independent probes outstanding; per-process outstanding probe count stays <=1.
-- [x] Probe acquisition/execution has a documented measured finite bound, and successful readiness resumes after database recovery without restarting/disconnecting the business client.
+- [ ] Probe acquisition and server-side execution each have documented measured finite bounds; an overlong statement is canceled before client socket timeout, and readiness resumes without restarting/disconnecting the business client.
 - [x] Liveness remains available during DB failure and performs zero probes.
 - [x] Aggregate integration includes all accepted functional suites and canonical migration coverage; no silent skips or reduced-schema substitution.
 - [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
 - [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
-### Required regression matrix — definition revision 2
+### Required regression matrix — definition revision 3
 
 Tests extend the named existing suites and the exact new files listed in Scope. Every row must have an assertion and a recorded outcome. Use two independent connections and explicit barriers for interleavings; a sleep or mocked call count is not proof of locking.
 
 | Case | Fixture / operation | Required result |
 |---|---|---|
 | I01 | 20+concurrent readiness requests with held delegate | One underlying probe; all observer deadlines bounded; no early guard clear or old-success cache. |
-| I02 | Actual dedicated pool held or test query pg_sleep>timeout; connection failure then restoration | Underlying failure settles within asserted5s safety ceiling; next request recovers, business client unaffected. 5s is acceptance ceiling, not configured SQL timeout. |
+| I02 | Actual dedicated pool held; test query `pg_sleep(8)`; connection failure then restoration | Pool acquisition settles within the configured pool timeout. PostgreSQL applies `statement_timeout=500ms`, cancels the long query, and the server-side active query is gone before the client promise rejects at `socket_timeout=1s`. A subsequent real readiness probe succeeds; the business client remains unaffected. No accumulation of orphan backend queries. |
 | I03 | Database outage with /health/live | Immediate200 and no DB/config/provider/queue call. |
 | I04 | Shutdown after success, outage and in-flight deadline | Both clients cleaned once, no leaked resources/secret logs. |
 | I05 | Run aggregate suite on current accepted migration pin | Every retained suite and new registration included; no db-push/reduced schema substitutes. |
@@ -195,7 +196,7 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
 - [x] `npx tsx --test tests/unit/http/server.test.ts tests/unit/http/arch055-readiness-single-flight.test.ts`
-- [x] `node scripts/test-arch055-readiness-postgres.mjs`
+- [ ] `node scripts/test-arch055-readiness-postgres.mjs` — must prove PostgreSQL-side cancellation and no orphan query with Prisma 6.19.3.
 - [x] `npm run typecheck`
 - [x] `npm run build`
 - [x] `npm run test:integration`
@@ -274,7 +275,7 @@ Local elapsed times are descriptive.
 
 ## Attempt 1 validation resolution — 2026-11-04
 
-Ready for architect review. The final serial `npm run test:integration` on the unchanged published API commit `301165eb5dd969cde1338d5b363aee963d7e08ea` exited 0. The API worktree was clean. This supersedes the blocked validation status above and preserves the Attempt 1 history and implementation.
+Submitted for architect review. The final serial `npm run test:integration` on API commit `301165eb5dd969cde1338d5b363aee963d7e08ea` exited 0. This supersedes the earlier aggregate-integration failures and preserves their history.
 
 - The command reached the end of all retained suites, including canonical installation/settings, REST-read authorization, discount offers, cross-domain recovery, billing, Woo consent, Redis/BullMQ, restore, AI-delay and readiness. It recorded 120 Node test passes, zero failures and four explicit opt-in measurement skips (M04/M05, M15, M11–M14 and M03). The separate platform-configuration runner passed 5/5.
 - Before the successful aggregate, one retry passed REST-read and discount offers, then stopped at feature-preferences migration deployment. A temporary copy of that runner with a TCP startup check passed 2/2. The final aggregate passed the original tracked runner, so no fixture or timeout change was needed. The temporary copy was removed. The startup experiment does not establish a single cause for all earlier intermittent failures.
@@ -291,27 +292,39 @@ Ready for architect review. The final serial `npm run test:integration` on the u
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1 (2026-11-04). Return the task to `ready`; no claim was active. Do not promote downstream work.
 
 ### Review Notes
 
-Definition issued; implementation has not been reviewed or accepted.
+The implementation and final aggregate validation were reviewed. One acceptance issue remains: `socket_timeout=1` settles the Prisma client promise, but the test report confirms PostgreSQL continues executing the timed-out statement for about 8.5 seconds. `createSingleFlightReadinessProbe` clears its in-flight guard when the client promise settles, so a later request can start another probe while the prior backend statement is still active. The task and ADR-08 require a finite bound on underlying acquisition/execution and one unresolved underlying probe; the current test waits for backend completion before checking recovery and does not prove a server-side execution bound or cancellation.
+
+Architect amendment for Attempt 2: extend the same API-009 readiness scope with PostgreSQL per-session `statement_timeout=500ms`, passed in the dedicated Prisma 6 connection URL through `options`; preserve/append to existing `options`, all TLS parameters, and the separate business URL. The PostgreSQL server-side timeout must win before the 1-second `socket_timeout`. The real migration-backed test must verify `SHOW statement_timeout`, execute a long-running query, observe PostgreSQL cancel it (SQLSTATE 57014 or equivalent actual driver evidence), confirm the server no longer reports the test query active before the Prisma promise settles, and then prove a fresh readiness probe succeeds. Test connection topology limitations explicitly. If server cancellation is not observed, stop and return measured evidence plus the required infrastructure change; never state that a client socket timeout alone bounds database work. Keep the 2,000 ms HTTP deadline and existing single-flight behavior. This amendment is confined to API-009 and does not reopen API-008.
+
+This amendment follows Prisma ORM v6's documented PostgreSQL `options` connection URL argument and PostgreSQL 17's per-session `statement_timeout` behavior. These references justify testing the selected mechanism; they do not replace the required runtime and connection-topology proof: [Prisma ORM v6 PostgreSQL connector](https://www.prisma.io/docs/orm/v6/overview/databases/postgresql), [PostgreSQL 17 client connection defaults](https://www.postgresql.org/docs/17/runtime-config-client.html#GUC-STATEMENT-TIMEOUT).
 
 ### Reviewed Files
 
-No implementation submitted for this task.
+- `src/database.ts`
+- `src/readiness-probe.ts`
+- `src/server.ts`
+- `tests/unit/http/server.test.ts`
+- `tests/unit/http/arch055-readiness-single-flight.test.ts`
+- `tests/integration/http/arch055-readiness.postgres.test.ts`
+- `scripts/test-arch055-readiness-postgres.mjs`
+- `scripts/test-woocommerce-installation-postgres.mjs`
+- `package.json`
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Reviewed the reported typecheck/build, focused unit tests, standalone readiness diagnostic, targeted lint, diff check, and final aggregate integration result (120 Node tests passed; four opt-in measurement skips), plus 5/5 platform-configuration tests. These results were reported by the implementer and not rerun during review. The integration aggregate passed, but it does not resolve the backend-execution-bound finding above.
 
 ### Architecture Conformance
 
-To be assessed against ARCH-055 and this task's frozen contract.
+The dedicated client, single-flight observer behavior, response contract, test registration and business-client isolation conform to the original API-009 scope. ADR-08's finite backend-execution bound is not yet demonstrated because the server continues work after the client socket timeout. The revision-3 amendment assigns the bounded server-side setting and proof to this same task; API-008 remains unchanged.
 
 ### Follow-up
 
-Only the authorised review may accept this task and promote dependants.
+Continue on the same mirrored task branches at Attempt 2 using definition revision 3. `ARCH-055-SYSTEM-TEST-001` remains gated pending acceptance of its implementation dependencies.
 
 ### Mechanism source (not application validation)
 
@@ -319,4 +332,16 @@ Prisma ORM6 PostgreSQL connector documentation, checked2 November2026: `https://
 
 ## Dependency Promotion — 2026-11-04
 
-ARCH-055-API-001 through API-008 are Complete. In particular, API-004 is Accepted and Complete at Attempt 3. API-009 is promoted from Pending to Ready at Attempt 0 with executor and claim cleared. This promotion does not start implementation or create an implementation worktree. ARCH-055-SYSTEM-TEST-001 remains Pending until API-009 is Complete.
+ARCH-055-API-001 through API-008 are Complete. In particular, API-004 is Accepted and Complete at Attempt 3. API-009 was promoted to Ready at Attempt 0, then claimed for Attempt 1. This review returns it to Ready with the claim cleared. ARCH-055-SYSTEM-TEST-001 remains Pending until API-009 is Complete.
+
+## Execution-bound investigation before Attempt 2
+
+A disposable PostgreSQL 17.11 diagnostic used the pinned Prisma 6.19.3 client, the four existing one-second URL options, and a test-only startup option `options=-c statement_timeout=750`. This isolated the execution mechanism without changing the implementation or running domain migrations. The experiment verified the effective timeout with `current_setting('statement_timeout')`.
+
+- With the connection intact, PostgreSQL cancelled `SELECT 1 FROM pg_sleep(8)` in 763.16 ms. Prisma retained SQLSTATE `57014`. A separate connection observed the original backend idle at rejection. A fresh `SELECT 1` succeeded.
+- A loopback proxy cut the client transport only after a separate observer saw the same injected statement active on PostgreSQL. The proxy kept the server half open to model lost delivery of completion. Prisma rejected with `P1017` while the old backend was active. A fresh query on the same one-connection Prisma client used a different backend and completed while the old one was still active.
+- The startup deadline is a server execution bound on the tested direct PostgreSQL connection. It does not make an ambiguous transport rejection proof that the original statement has ended. Clearing the single-flight guard on that rejection remains unsafe under the current ADR. Deployment pooler handling of startup options was outside this diagnostic.
+
+Architect decision requested: authorize a readiness-specific server deadline and a mechanism that retains the guard after ambiguous transport failure until PostgreSQL confirms cancellation or termination of the original session. That mechanism needs an approved connection and authorization contract, including behavior when confirmation is unavailable. An alternative ADR would need to explicitly permit bounded overlap after transport loss.
+
+The disposable container, proxy, clients and temporary experiment script were cleaned up. This is investigation evidence only. Attempt 1 remains Ready with the claim cleared. The Changes Requested review and production code are unchanged.
