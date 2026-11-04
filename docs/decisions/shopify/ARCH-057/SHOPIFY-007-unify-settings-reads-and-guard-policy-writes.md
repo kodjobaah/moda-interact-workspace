@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T20:07:53Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -120,12 +120,12 @@ Use the mandatory Shared error contract, actual original safe error/code/cause a
 
 ## Work Items
 
-- [ ] Add the minimal mutation guard and settings read context/selector contracts.
-- [ ] Wire the settings page/save/category route with actual framework context and existing DTOs.
-- [ ] Move complete no-op checks before writes and implement nonempty selection deltas plus monotonic revision.
-- [ ] Enforce ACTIVE under the existing category lock and preserve onboarding/activation semantics.
-- [ ] Complete original-error diagnostics for settings/category operational branches.
-- [ ] Implement/register/run focused unit/UI and real PostgreSQL cases; publish accurate count/row/log evidence in the report.
+- [x] Add the minimal mutation guard and settings read context/selector contracts.
+- [x] Wire the settings page/save/category route with actual framework context and existing DTOs.
+- [x] Move complete no-op checks before writes and implement nonempty selection deltas plus monotonic revision.
+- [x] Enforce ACTIVE under the existing category lock and preserve onboarding/activation semantics.
+- [x] Complete original-error diagnostics for settings/category operational branches.
+- [x] Implement/register/run focused unit/UI and real PostgreSQL cases; publish accurate count/row/log evidence in the report.
 
 ## Interfaces / Contracts
 
@@ -186,22 +186,22 @@ Add exact package scripts:
 
 ## Acceptance Criteria
 
-- [ ] For an established tenant with valid prerequisites the mutation guard performs no settings read; authenticated missing-prerequisite repair and the old surface/lifecycle policy remain intact.
-- [ ] The page reuses scalar Subscription/ShopSettings, one plan/features read and one preference list; pure feature revision/output remains identical for the same facts.
-- [ ] Identical policy saves issue no UPDATEs and leave timestamps unchanged; settings-only changes do not touch discounts; only added/removed selections change.
-- [ ] Real concurrent policy writers using one revision have one changed-state winner, and provider synchronization does not overwrite merchant availability selections.
-- [ ] Category writes require ACTIVE under the Shop lock, with no partial state if lifecycle changes first; the selected first-writer order is proven on PG17.
-- [ ] Existing initial/active category publication, pinned provenance, config preservation, stale-generation handling and onboarding ordering remain intact.
-- [ ] Every operational failure in the matrix emits safe original error/code/cause through Shared; business-denial behavior and localization remain unchanged.
+- [x] For an established tenant with valid prerequisites the mutation guard performs no settings read; authenticated missing-prerequisite repair and the old surface/lifecycle policy remain intact.
+- [x] The page reuses scalar Subscription/ShopSettings, one plan/features read and one preference list; pure feature revision/output remains identical for the same facts.
+- [x] Identical policy saves issue no UPDATEs and leave timestamps unchanged; settings-only changes do not touch discounts; only added/removed selections change.
+- [x] Real concurrent policy writers using one revision have one changed-state winner, and provider synchronization does not overwrite merchant availability selections.
+- [x] Category writes require ACTIVE under the Shop lock, with no partial state if lifecycle changes first; the selected first-writer order is proven on PG17.
+- [x] Existing initial/active category publication, pinned provenance, config preservation, stale-generation handling and onboarding ordering remain intact.
+- [x] Every operational failure in the matrix emits safe original error/code/cause through Shared; business-denial behavior and localization remain unchanged.
 
 ## Validation
 
-- [ ] `npm run test:merchant-settings:unit` — named cases for cached getter reuse, null settings, inactive/absent plan, pure revision parity, transaction freshness, true no-op, added/removed/retained IDs, changed same-millisecond revision, lifecycle denial and log ownership.
-- [ ] `npm run test:merchant-settings:postgres` — all suites use task-owned `pgvector/pgvector:pg17` with canonical forward migrations. New cases use distinct clients and explicit lock barriers, not sleeps/mocks, for two stale policy writers and both category/lifecycle lock orders. Assert physical rows/timestamps and no partial prompt/profile/configuration writes. Existing source-sync fixture must still prove actual selection ownership after the changed update shape. Skips block acceptance.
-- [ ] `npm test -- tests/unit/recovery-settings-discounts.test.tsx tests/unit/recovery-settings-submit-guard.test.tsx tests/unit/ai-response-delay-settings.test.tsx tests/unit/recovery-settings-i18n.test.ts tests/unit/onboarding-store-category.test.jsx tests/unit/store-category-activation.test.ts` — preserve UI, locale and deliberate activation/milestone behavior.
-- [ ] `npm run typecheck` and `npm run build`.
-- [ ] `npx --no-install eslint app/services/feature-preferences app/services/recovery-policy/recovery-policy.server.ts app/services/store-profile/store-category-selection.server.ts app/routes/app/recovery-settings/route.tsx app/routes/app/settings-save/route.ts app/routes/app/store-profile/category/route.ts app/components/settings/StoreProfileSection.tsx tests/unit/settings-read-context.test.ts tests/unit/merchant-settings-observability.test.ts tests/unit/recovery-policy-save.test.ts tests/unit/recovery-policy-snapshot.test.ts tests/unit/settings-save-recovery-route.test.ts tests/unit/merchant-settings-action.test.ts tests/unit/ai-response-delay-loader.test.ts tests/unit/store-category-selection.test.ts tests/integration/merchant-settings-writes.postgres.test.ts tests/integration/store-category-lifecycle.postgres.test.ts tests/integration/shopify-recovery-discounts.postgres.integration.test.ts tests/integration/store-category-selection.postgres.integration.test.ts tests/integration/merchant-feature-preferences.test.ts tests/helpers/merchant-settings-postgres.ts`.
-- [ ] `git diff --check`; same-fixture before/after call/SQL/affected-row evidence and actual Shared JSON/cause/redaction/sink evidence; exact installed versions, canonical pins and task-owned cleanup.
+- [x] `npm run test:merchant-settings:unit` — named cases for cached getter reuse, null settings, inactive/absent plan, pure revision parity, transaction freshness, true no-op, added/removed/retained IDs, changed same-millisecond revision, lifecycle denial and log ownership.
+- [x] `npm run test:merchant-settings:postgres` — all suites use task-owned `pgvector/pgvector:pg17` with canonical forward migrations. New cases use distinct clients and explicit lock barriers, not sleeps/mocks, for two stale policy writers and both category/lifecycle lock orders. Assert physical rows/timestamps and no partial prompt/profile/configuration writes. Existing source-sync fixture must still prove actual selection ownership after the changed update shape. Skips block acceptance.
+- [x] `npm test -- tests/unit/recovery-settings-discounts.test.tsx tests/unit/recovery-settings-submit-guard.test.tsx tests/unit/ai-response-delay-settings.test.tsx tests/unit/recovery-settings-i18n.test.ts tests/unit/onboarding-store-category.test.jsx tests/unit/store-category-activation.test.ts` — preserve UI, locale and deliberate activation/milestone behavior.
+- [x] `npm run typecheck` and `npm run build`.
+- [x] `npx --no-install eslint app/services/feature-preferences app/services/recovery-policy/recovery-policy.server.ts app/services/store-profile/store-category-selection.server.ts app/routes/app/recovery-settings/route.tsx app/routes/app/settings-save/route.ts app/routes/app/store-profile/category/route.ts app/components/settings/StoreProfileSection.tsx tests/unit/settings-read-context.test.ts tests/unit/merchant-settings-observability.test.ts tests/unit/recovery-policy-save.test.ts tests/unit/recovery-policy-snapshot.test.ts tests/unit/settings-save-recovery-route.test.ts tests/unit/merchant-settings-action.test.ts tests/unit/ai-response-delay-loader.test.ts tests/unit/store-category-selection.test.ts tests/integration/merchant-settings-writes.postgres.test.ts tests/integration/store-category-lifecycle.postgres.test.ts tests/integration/shopify-recovery-discounts.postgres.integration.test.ts tests/integration/store-category-selection.postgres.integration.test.ts tests/integration/merchant-feature-preferences.test.ts tests/helpers/merchant-settings-postgres.ts`.
+- [x] `git diff --check`; same-fixture before/after call/SQL/affected-row evidence and actual Shared JSON/cause/redaction/sink evidence; exact installed versions, canonical pins and task-owned cleanup.
 
 ## Stop Condition
 
@@ -215,35 +215,96 @@ A request read context is not a transaction snapshot. Preserve the existing fres
 
 ### Status
 
-Not Started. Defined but not materialised; no execution claim.
+Attempt 1 submitted for architect review on 2026-11-04. Implementation committed and pushed as `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e` on `task/ARCH-057-SHOPIFY-007`. All required gates passed. No architect decision is made by this report.
 
 ### Files Changed
 
-None. Definition only.
+25 implementation files, including the seven declared new files; all new files are below 300 lines (29–81 lines). Source changes stay within the settings/access, policy, category selection and typed result paths in Scope. Registered both exact scripts. Updated the existing request-context router fixture for the new feature projection and verified its settings/recovery GET regression cases. No Database, Shared, locale, knowledge implementation, onboarding callback or activation source changed.
 
 ### Work Completed
 
-None.
+- R1: Both settings access methods use one private authorization path. Mutation access does not read settings for a valid established tenant; ACTIVE/TRIALING filtering and request-context bootstrap remain intact. Settings-specific read facts use memoized scalar getters, one ordered plan/features read and one ordered preference list. The pure selector retains revision input order and output semantics. Fresh transactional feature reads, early denial, no-change and stale-revision behavior remain intact. The page passes framework context, supplies settings to policy loading (including explicit null), and reuses the same row for AI delay. No server context is serialized.
+- R2: Revision and same-Shop ownership checks precede the no-op decision. Identical saves issue no UPDATE; settings-only changes leave discounts untouched. Only nonempty removed/added sets are updated with their previous availability predicates and checked counts. Retained and dormant selections are preserved. Settings update once with a strictly increasing millisecond revision. Existing provider synchronization ownership remains verified.
+- R3: Category selection checks ACTIVE under its existing Shop FOR UPDATE lock before publication writes. Missing/inactive rows produce SHOP_UNAVAILABLE and route HTTP403; existing 409/400 mappings remain unchanged. Prompt preparation, current template/mapping checks, generation CAS, initial DRAFT, active immediate publication and configuration/provenance behavior are preserved.
+- R4: The new thin settings adapter reuses the existing safe boundary diagnostic helper and real Shared logger with resolveDeploymentEnvironmentName. Read composition, every save intent and category failures preserve safe original message, database code and cause. Scalar-context failures remain with their original owner. Rendering errors are diagnosed before typed wrapping and retain their actual cause. Business denials do not fabricate operational errors.
+
+### Physical Worktree and Provenance Evidence
+
+Launcher-prepared topology; no repeated preparation or claim:
+
+```text
+canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-007
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-007
+both branches: task/ARCH-057-SHOPIFY-007
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+parent remote task fast-forward: not-needed
+parent origin/main incorporation: already-current
+implementation remote task fast-forward: not-needed
+implementation origin/main incorporation: already-current
+parent prepared start: 2be472de3a91d2ba8f35aa21f13f1d886b92594f
+implementation start: 042ab0f7c762767ae9597d21a3a7ea318a8e2514
+claim: 7496bb3790667aab31714a1d07069af0a5dde0e9
+claim pushed: yes; Attempt 1, codex, 2026-11-04T20:07:53Z
+implementation end: e1533e4658e7e69eeb33e7efd6516211f0bcbe2e
+recursive submodule sync/update/init/verification: passed by launcher
+Database recorded/working pin, unchanged: 8e74634ff92be9900f693c0c449ffce888e7d617
+```
+
+Installed locked versions: Node 24.19.0, npm 11.17.0, Shared 3.1.0, Prisma/client 6.19.3, React Router 7.18.2, Shopify React Router SDK 1.2.1, Zod 4.5.4 and Vitest 4.1.11. Used workspace Node bootstrap, npm ci and pinned-schema Prisma generation; no dependency/version or schema upgrade.
 
 ### Validation Results
 
-Not run. Record exact commands/cases, prepared worktree evidence, source/Database/Shared/router pins, actual SQL/affected rows/revision winners, emitted diagnostic markers/causes and cleanup. State skipped/blocked checks explicitly.
+| Gate | Final result |
+|---|---|
+| `npm run test:merchant-settings:unit` | 9 files, 106 passed, zero failed/skipped |
+| `npm run test:merchant-settings:postgres -- --maxWorkers=1 --no-file-parallelism --testTimeout=30000 --hookTimeout=60000` | 5 files, 23 passed, zero failed/skipped |
+| Exact six-suite UI/onboarding command in Validation | 6 files, 29 passed, zero failed/skipped |
+| `npm run test:merchant-request:router` | 9 passed, zero failed/skipped; actual settings/recovery route chains retain one authentication and Shop resolution per GET |
+| `npm run typecheck` | Passed |
+| Exact focused eslint command in Validation | Passed, no diagnostics |
+| `npm run build` | Passed; existing large-chunk advisory only |
+| `git diff --check` and staged equivalent | Passed |
+| Temporary same-fixture before/after evidence harness | 2 passed; temporary baseline source and harness removed before final validation/commit |
+
+PostgreSQL uses task-owned pgvector/pgvector:pg17 and canonical forward migrations, never db push. Distinct connections plus explicit barriers and pg_stat_activity lock-wait observation establish the one stale-policy-writer winner and both category/lifecycle lock orders without sleeps. Tests assert physical selections, timestamps, prompt/profile/configuration state, and rollback on both count mismatch and a genuine P2010 database error after profile/lineage writes.
+
+Initial environment attempts could not discover Docker and then used an invalid host-side socket mount. The successful runs set DOCKER_HOST from `docker context inspect` and TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock, only in the test process. An initial parallel run exposed a fixture slug constraint and contention-related transaction/test deadlines; fixed the slug and ran files sequentially with larger test deadlines, leaving production transaction limits unchanged. These initial failures/skips are superseded by the final fully enabled 23/23 run, not counted as passes. All task-owned PostgreSQL and Ryuk containers were removed; the two pre-existing PostgreSQL containers and Portainer were left untouched.
+
+### Same-Fixture Call, SQL and Affected-Row Evidence
+
+Comparison used the task start source above for the old policy implementation, the same migrated disposable database/Shop/discount fixture, and exact restoration of initial settings/discount timestamps before each branch. Counts include transaction controls separately and zero provider calls throughout.
+
+| Branch | Before | After |
+|---|---|---|
+| Identical save | 2 discount updateMany calls; 2 discount UPDATE SQL; 2 affected discount rows across those statements; 0 settings UPDATE; 8 total SQL including BEGIN/COMMIT; retained timestamp changed | 0 discount/settings UPDATE calls or SQL; 0 affected rows; 6 total SQL including BEGIN/COMMIT; all timestamps unchanged |
+| Settings-only save | 2 discount updateMany plus 1 settings update; affected discount rows 2, settings rows 1; 9 SQL including BEGIN/COMMIT | 0 discount updates, 1 settings update; affected discount rows 0, settings rows 1; 7 SQL including BEGIN/COMMIT; retained discount timestamp unchanged |
+| Settings read composition, same active plan facts | Subscription.findUnique 2, ShopSettings.findUnique 2, preference list 1, override 1, catalogue 1; 10 SELECT SQL | Subscription.findUnique 1, ShopSettings.findUnique 1, BillingPlan.findUnique 1, preference list 1, override 1, catalogue 1; 7 SELECT SQL; feature output/revision identical |
+| Selection delta | Broad deselect/reselect shape | One removed ID becomes false; one added ID becomes true; retained expired selection and timestamp unchanged; exactly 2 bounded discount UPDATEs and one settings revision update |
+
+The read comparison includes request scalar acquisition and settings composition, excludes unchanged knowledge reads assigned to SHOPIFY-008, and uses no provider refresh. These are fixture-level call/row observations, not capacity or latency claims. Temporary local evidence: `/tmp/shopify007-sql-evidence.json`, `/tmp/shopify007-read-evidence.json`, `/tmp/shopify007-before-after.log`. The durable results are recorded above.
+
+### Actual Shared Diagnostic Evidence
+
+`merchant-settings-observability.test.ts` captures real Shared sink records, not mocked logger calls. The emitted JSON retains the multiline `constraint failure marker`, actual P2021 and `original-cause`, with database origin and redactionApplied=true; credential, email and connection-URL sentinels are absent from raw captured JSON. Read-group injections cover plan, preferences, override and catalogue; scalar failures generate no duplicate settings diagnostic. All three save intents retain original rejection and diagnostics. Category rendering retains original cause before CATEGORY_UNAVAILABLE wrapping, never emitting the template sentinel. Category database failure retains the original code; SHOP_UNAVAILABLE/CONFLICT/CATEGORY_UNAVAILABLE keep 403/409/400 and emit no invented failure. The same failures with a genuinely throwing Shared sink preserve their original rejection/public outcome; real PostgreSQL tests separately verify rollback and revision winners.
 
 ### Deviations
 
-None.
+No architecture or ownership deviation. The existing router regression fixture required a focused adaptation to the new settings selector. PostgreSQL validation adds runner-only serialization/timeouts for the local host; exact registered package scripts remain as specified. New helper/suites remain below the 300-line limit. Temporary baseline comparison files were not published as production code.
 
 ### Assumptions
 
-The accepted SHOPIFY-001 context and actual integrated source are verified by the launcher before execution.
+Launcher dependency gate proves SHOPIFY-001 Complete. No new context contract, schema, persisted revision format, provider or queue contract is introduced. Remaining knowledge duplication belongs to SHOPIFY-008.
 
 ### Unresolved Issues
 
-Implementation and required evidence remain outstanding.
+None identified within this task's bounded scope. Architect review remains pending.
 
 ### Architectural Concerns
 
-Return changes to task ownership, schema, persisted revision semantics, queue/provider contracts or onboarding policy to the architect.
+No new concerns identified. Downstream task states and parent implementation gitlinks were not changed. Neither task branch was merged to main.
 
 ## Architect Review
 
