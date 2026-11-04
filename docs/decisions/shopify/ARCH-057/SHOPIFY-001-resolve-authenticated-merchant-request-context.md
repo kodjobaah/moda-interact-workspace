@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: codex
-claimed_at: 2026-11-04T03:39:50Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -34,7 +34,7 @@ updated: 2026-11-04
 
 Architecture ID: `ARCH-057`. Document: `docs/architecture/ARCH-057-shopify-application-database-correctness-and-simplicity.md`. Coordinator: `moda_architect`.
 
-Mandatory execution/logging contract: `docs/architecture/ARCH-057/task-contract.md`. **Defined but not materialised.**
+Mandatory execution/logging contract: `docs/architecture/ARCH-057/task-contract.md`. Materialised through the canonical launcher-resolved parent and implementation worktrees recorded below.
 
 ## Objective
 
@@ -406,7 +406,7 @@ Request contexts belong to framework requests/navigations, as verified against t
 
 ### Unresolved Issues
 
-None in this bounded submission. Architect review is pending. Downstream task states are unchanged.
+The framework context is not threaded from production route handlers into the two access helpers. As a result, settings and recovery loaders/actions use each helper's isolated fallback provider and bypass the context installed by the app middleware. This causes duplicate authentication and local Shop resolution on those routes, contrary to requirement 9. Downstream task states remain unchanged pending correction and acceptance.
 
 ### Architectural Concerns
 
@@ -416,24 +416,29 @@ No schema, dependency version, router flag/origin-policy, queue, billing identit
 
 ### Review Status
 
-Pending.
+Changes Requested.
 
 ### Review Notes
 
-Task definition only; no implementation accepted.
+Attempt 1 does not satisfy requirement 9. `settingsAccess(request, context?)` and `requireRecoveryHistory(request, context?)` have isolated-provider defaults, but production handlers call them with only `request`. These callers therefore do not share the GET/HEAD promise installed by `merchantPageContextMiddleware` and perform another Shopify authentication and local Shop lookup. The request-scoped context's core reuse guarantee is consequently absent from the settings and recovery routes.
 
 ### Reviewed Files
 
-Definition and current snapshot touchpoints only.
+- `app/services/shop/merchant-request-context.server.ts`
+- `app/services/feature-preferences/access.server.ts`
+- `app/routes/app/recoveries/access.server.ts`
+- Production call sites of `settingsAccess` and `requireRecoveryHistory`, including recovery settings, recovery list/detail loaders, recovery section loader, and recovery command handlers.
+- `tests/integration/merchant-request-context-router.test.ts`
+- This task's Completion Report and validation evidence.
 
 ### Validation Reviewed
 
-Definition checks only. Implementation evidence is outstanding.
+Reviewed the reported passing validation: 92 focused unit tests, 7 router integration tests, 7 PostgreSQL tests, 117 authorized existing consumer tests, typecheck, build, focused ESLint and `git diff --check`. No tests were rerun during this review. Existing router coverage demonstrates sharing for the migrated app layout/home path but does not establish context threading through the production access-helper callers listed above.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+The implementation follows the authenticated identity, lazy scalar reads, explicit page refresh, and server-only context contracts. It does not fully conform to task requirement 9 because production handlers fail to pass their actual framework context to the access helpers.
 
 ### Follow-up
 
-Return the completed task for architect review; do not start enabled tasks.
+For Attempt 2, update each production `settingsAccess` and `requireRecoveryHistory` call chain to pass the actual `context` supplied by React Router. Thread it through any intermediate loader/action helper rather than constructing a provider. Keep the isolated default only for direct test/helper callers. Add or extend actual-router integration coverage to exercise at least one settings route and one recovery route through the app middleware, asserting one authentication and one local Shop resolution per GET. Then rerun the task's required focused validation and update the Completion Report. Keep downstream tasks pending until acceptance.
