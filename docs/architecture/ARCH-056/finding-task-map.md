@@ -2,7 +2,7 @@
 
 ## Meaning of this register
 
-This register covers all **37 finding references** from the updated wider database assessment, including the three focused follow-up findings U1/U2/U3. It prevents the six-task package from being mistaken for closure of the whole review.
+This register covers all **37 finding references** from the updated wider database assessment, including the three focused follow-up findings U1/U2/U3. It prevents the seven-task package from being mistaken for closure of the whole review.
 
 **Selected** means the correction is included in an implementation task; it does not mean implemented or accepted. **Partial** identifies the bounded selected behavior and explicitly retains the remaining concern. **Preserved** means the updated snapshot already addresses the original concern and the new task must keep it correct. **Deferred** means no implementation is assigned in this package. Task status and runtime proof are separate from these dispositions.
 
@@ -93,3 +93,9 @@ Individual task frontmatter and latest review are authoritative. Earlier paragra
 Deferred work can be defined later without reopening completed historical tasks. Before assigning it, inspect the accepted ARCH-056 result and give each shared production file one active writer. In particular, sequence C1/C2/C5/O3/O7 against the checkout/materializer/fallback owner; MSG-02/03/04/06/09 against outbound/status changes; and BS-05/blocked uncertainty work against the billing/compensation owner.
 
 Index, cursor, polling and batching proposals still require workload, plan or cardinality evidence where the review called for it. A direct-call count is not a production latency measurement. No deferred finding receives acceptance merely because its file appears in a selected task's read-only context or validation.
+
+## User-requested test naming follow-up
+
+Definition revision 3 adds SYSTEM-TEST-002 as the final task after SYSTEM-TEST-001. It is a naming and coverage-preservation requirement, not an additional database finding or closure of a deferred finding. The eight newly planned Background test/helper paths and the new System-Test harness/scenario/suite/command/evidence names are semantic from their producer definitions. The final owner migrates the selected older names within System-Test and enforces the naming boundary while retaining the complete integrated and logging evidence.
+
+Existing architecture-named tests in Background, API and other application repositories remain with those repository owners. Retaining an existing regression path here does not authorise System-Test to rename another repository's files. The exact selected/deferred mappings and immutable-contract exclusions are recorded in `test-naming-map.json`; governance and historical provenance continue to use architecture/task IDs.

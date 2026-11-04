@@ -29,7 +29,7 @@ updated: '2026-11-04'
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 2. **Defined but not materialised.** No real task branch, worktree, claim, commit or push is asserted. The task is Ready because the two explicit prerequisite task files are Complete in the supplied snapshot; the launcher must recheck their current canonical status before execution.
+Definition revision: 3. **Defined but not materialised.** No real task branch, worktree, claim, commit or push is asserted. The task is Ready because the two explicit prerequisite task files are Complete in the supplied snapshot; the launcher must recheck their current canonical status before execution.
 
 ## Objective
 

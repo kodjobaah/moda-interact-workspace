@@ -1,6 +1,6 @@
 {
   "architecture_id": "ARCH-056",
-  "definition_revision": 2,
+  "definition_revision": 3,
   "date": "2026-11-04",
   "definition_state": "defined-but-not-materialised",
   "parent_architecture": "docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md",
@@ -51,7 +51,7 @@
       "assigned_agent": "moda_api",
       "domain": "api",
       "task_file": "docs/decisions/api/ARCH-056/API-001-align-accepted-database-dependency.md",
-      "definition_revision": 2,
+      "definition_revision": 3,
       "status": "ready",
       "path_base": "implementation repository root unless explicitly workspace-qualified",
       "validation_executed_by_architect": false
@@ -69,10 +69,10 @@
         "tests/integration/conversation-turn-scheduling.integration.test.ts"
       ],
       "tests_create": [
-        "tests/integration/arch056-inbound-lock-order.integration.test.ts",
-        "tests/integration/arch056-inbound-rollback.integration.test.ts",
-        "tests/integration/helpers/arch056-inbound-fixtures.ts",
-        "tests/integration/helpers/arch056-inbound-barriers.ts"
+        "tests/integration/inbound-conversation-lock-order.integration.test.ts",
+        "tests/integration/inbound-conversation-rollback.integration.test.ts",
+        "tests/integration/helpers/inbound-conversation-fixtures.ts",
+        "tests/integration/helpers/inbound-conversation-barriers.ts"
       ],
       "read_only_dependencies": [
         "package.json",
@@ -94,9 +94,9 @@
       ],
       "validation_commands": [
         "npx --no-install vitest run tests/unit/services/conversation.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts",
-        "node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/arch056-inbound-lock-order.integration.test.ts tests/integration/arch056-inbound-rollback.integration.test.ts",
+        "node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/inbound-conversation-lock-order.integration.test.ts tests/integration/inbound-conversation-rollback.integration.test.ts",
         "npm run build",
-        "npx --no-install eslint src/services/conversation.service.ts src/workers/whatsapp.worker.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation.service.test.ts tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/arch056-inbound-lock-order.integration.test.ts tests/integration/arch056-inbound-rollback.integration.test.ts tests/integration/helpers/arch056-inbound-fixtures.ts tests/integration/helpers/arch056-inbound-barriers.ts",
+        "npx --no-install eslint src/services/conversation.service.ts src/workers/whatsapp.worker.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation.service.test.ts tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/inbound-conversation-lock-order.integration.test.ts tests/integration/inbound-conversation-rollback.integration.test.ts tests/integration/helpers/inbound-conversation-fixtures.ts tests/integration/helpers/inbound-conversation-barriers.ts",
         "git diff --check"
       ],
       "operation_constraints": {
@@ -125,7 +125,7 @@
       "assigned_agent": "moda_background",
       "domain": "background",
       "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-001-serialize-inbound-conversation-persistence.md",
-      "definition_revision": 2,
+      "definition_revision": 3,
       "status": "ready",
       "path_base": "implementation repository root unless explicitly workspace-qualified",
       "validation_executed_by_architect": false
@@ -134,7 +134,7 @@
       "task_id": "ARCH-056-BACKGROUND-002",
       "repository": "moda-interact-background",
       "path_base": "implementation repository root unless explicitly workspace-qualified",
-      "definition_revision": 2,
+      "definition_revision": 3,
       "production_modify": [
         "src/services/recovery-billing.service.ts",
         "src/services/recovery-billing/recovery-billing.types.ts",
@@ -166,10 +166,10 @@
         "tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts",
         "tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts",
         "tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts",
-        "tests/integration/arch056-initial-outreach-credit.integration.test.ts",
-        "tests/integration/arch056-initial-outreach-credit-races.integration.test.ts",
-        "tests/integration/fixtures/arch056-initial-outreach-credit.fixture.ts",
-        "tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts"
+        "tests/integration/initial-outreach-credit.integration.test.ts",
+        "tests/integration/initial-outreach-credit-races.integration.test.ts",
+        "tests/integration/fixtures/initial-outreach-credit.fixture.ts",
+        "tests/integration/initial-outreach-parent-fk.integration.test.ts"
       ],
       "read_only_dependencies": [
         "package.json",
@@ -217,8 +217,8 @@
       "validation_commands": [
         "npm run build",
         "npm run test -- tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/recovery-reservation/reservation-lifecycle.test.ts",
-        "npm run test:integration -- tests/integration/arch056-initial-outreach-credit.integration.test.ts tests/integration/arch056-initial-outreach-credit-races.integration.test.ts tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/recovery-human-provider-status.integration.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts",
-        "npx --no-install eslint src/services/recovery-billing.service.ts src/services/recovery-billing/recovery-billing.types.ts src/services/recovery-billing/recovery-reservation-lifecycle.service.ts src/services/recovery-billing/initial-outreach-credit.service.ts src/services/recovery-billing/initial-outreach-credit-evidence.ts src/services/recovery-delivery-compensation/lineage.ts src/services/recovery-delivery-compensation/reconcile.service.ts src/services/whatsapp-provider-status.service.ts src/services/free-recovery-reservation.service.ts src/services/purchased-recovery-reservation.service.ts src/services/promotional-recovery-reservation.service.ts src/services/paid-included-recovery-reservation.service.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts tests/unit/services/recovery-billing/recovery-billing.test-support.ts tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/arch056-initial-outreach-credit.integration.test.ts tests/integration/arch056-initial-outreach-credit-races.integration.test.ts tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts tests/integration/fixtures/arch056-initial-outreach-credit.fixture.ts",
+        "npm run test:integration -- tests/integration/initial-outreach-credit.integration.test.ts tests/integration/initial-outreach-credit-races.integration.test.ts tests/integration/initial-outreach-parent-fk.integration.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/recovery-human-provider-status.integration.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts",
+        "npx --no-install eslint src/services/recovery-billing.service.ts src/services/recovery-billing/recovery-billing.types.ts src/services/recovery-billing/recovery-reservation-lifecycle.service.ts src/services/recovery-billing/initial-outreach-credit.service.ts src/services/recovery-billing/initial-outreach-credit-evidence.ts src/services/recovery-delivery-compensation/lineage.ts src/services/recovery-delivery-compensation/reconcile.service.ts src/services/whatsapp-provider-status.service.ts src/services/free-recovery-reservation.service.ts src/services/purchased-recovery-reservation.service.ts src/services/promotional-recovery-reservation.service.ts src/services/paid-included-recovery-reservation.service.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts tests/unit/services/recovery-billing/recovery-billing.test-support.ts tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/initial-outreach-credit.integration.test.ts tests/integration/initial-outreach-credit-races.integration.test.ts tests/integration/initial-outreach-parent-fk.integration.test.ts tests/integration/fixtures/initial-outreach-credit.fixture.ts",
         "git diff --check"
       ],
       "exported_contract_symbols": [
@@ -329,7 +329,7 @@
       },
       "validation_executed_by_architect": false,
       "logging_contract": {
-        "definition_revision": 2,
+        "definition_revision": 3,
         "common_contract": "docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md#mandatory-logging-acceptance-contract--revision-2",
         "shared_package": "@modainteract/moda-interact-shared/logging",
         "installed_version_and_resolution_required": true,
@@ -466,7 +466,7 @@
             ]
           },
           {
-            "path": "tests/integration/arch056-initial-outreach-credit-races.integration.test.ts",
+            "path": "tests/integration/initial-outreach-credit-races.integration.test.ts",
             "assertions": [
               "actual compensation and actual status-caller correlated records",
               "detailed source event versus context-only downstream event",
@@ -624,7 +624,7 @@
       "assigned_agent": "moda_background",
       "domain": "background",
       "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-003-resume-owned-initial-template-admission.md",
-      "definition_revision": 2,
+      "definition_revision": 3,
       "status": "ready",
       "path_base": "implementation repository root unless explicitly workspace-qualified",
       "validation_executed_by_architect": false
@@ -756,7 +756,7 @@
       "assigned_agent": "moda_background",
       "domain": "background",
       "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md",
-      "definition_revision": 2,
+      "definition_revision": 3,
       "status": "pending",
       "path_base": "implementation repository root unless explicitly workspace-qualified",
       "validation_executed_by_architect": false
@@ -772,7 +772,9 @@
         "ARCH-056-BACKGROUND-003",
         "ARCH-056-BACKGROUND-004"
       ],
-      "enables": [],
+      "enables": [
+        "ARCH-056-SYSTEM-TEST-002"
+      ],
       "production_modify": [
         "catalogue/scenarios.json",
         "catalogue/historical-system-test-map.json",
@@ -783,36 +785,36 @@
         "package.json"
       ],
       "production_create": [
-        "src/harness/arch056/contracts.js",
-        "src/harness/arch056/executors.js",
-        "src/harness/arch056/runtime.js",
-        "src/harness/arch056/integration-driver.js",
-        "src/harness/arch056/fixtures.js",
-        "src/harness/arch056/billing-fixtures.js",
-        "src/harness/arch056/fault-controls.js",
-        "src/harness/arch056/observations.js",
-        "src/harness/arch056/assertions.js",
-        "src/harness/arch056/evidence.js",
-        "src/harness/arch056/queue-repair.js",
-        "src/harness/arch056/dependency-scenario.js",
-        "src/harness/arch056/ingress-scenario.js",
-        "src/harness/arch056/candidate-scenario.js",
-        "src/harness/arch056/admission-scenario.js",
-        "src/harness/arch056/uncertainty-scenario.js",
-        "src/harness/arch056/settlement-scenario.js",
-        "src/harness/arch056/lock-order-cases.js",
-        "src/harness/arch056/finalization-scenario.js",
-        "src/harness/arch056/woo-scenario.js",
-        "src/harness/arch056/repair-scenario.js",
-        "docs/ARCH056-VALIDATION.md"
+        "src/harness/background-persistence/contracts.js",
+        "src/harness/background-persistence/executors.js",
+        "src/harness/background-persistence/runtime.js",
+        "src/harness/background-persistence/integration-driver.js",
+        "src/harness/background-persistence/fixtures.js",
+        "src/harness/background-persistence/billing-fixtures.js",
+        "src/harness/background-persistence/fault-controls.js",
+        "src/harness/background-persistence/observations.js",
+        "src/harness/background-persistence/assertions.js",
+        "src/harness/background-persistence/evidence.js",
+        "src/harness/background-persistence/queue-repair.js",
+        "src/harness/background-persistence/dependency-scenario.js",
+        "src/harness/background-persistence/ingress-scenario.js",
+        "src/harness/background-persistence/candidate-scenario.js",
+        "src/harness/background-persistence/admission-scenario.js",
+        "src/harness/background-persistence/uncertainty-scenario.js",
+        "src/harness/background-persistence/settlement-scenario.js",
+        "src/harness/background-persistence/lock-order-cases.js",
+        "src/harness/background-persistence/finalization-scenario.js",
+        "src/harness/background-persistence/woo-scenario.js",
+        "src/harness/background-persistence/repair-scenario.js",
+        "docs/BACKGROUND-PERSISTENCE-VALIDATION.md"
       ],
       "tests_modify": [],
       "tests_create": [
-        "test/harness/arch056-contracts.test.js",
-        "test/harness/arch056-registration.test.js",
-        "test/harness/arch056-provenance.test.js",
-        "test/harness/arch056-fault-controls.test.js",
-        "test/harness/arch056-results.test.js"
+        "test/harness/background-persistence-contracts.test.js",
+        "test/harness/background-persistence-registration.test.js",
+        "test/harness/background-persistence-provenance.test.js",
+        "test/harness/background-persistence-fault-controls.test.js",
+        "test/harness/background-persistence-results.test.js"
       ],
       "exact_modify_operations": [
         {
@@ -829,11 +831,11 @@
         },
         {
           "path": "src/harness/selection.js",
-          "operation": "add_arch056_source_requirement_predicate"
+          "operation": "add_background_persistence_id_membership_predicate"
         },
         {
           "path": "src/harness/cli.js",
-          "operation": "add_arch056_help_text_only"
+          "operation": "add_background_persistence_help_text_only"
         },
         {
           "path": "scripts/run-system-tests.js",
@@ -841,116 +843,116 @@
         },
         {
           "path": "package.json",
-          "operation": "add_only_two_arch056_scripts"
+          "operation": "add_only_two_background_persistence_scripts"
         }
       ],
       "exact_new_file_responsibilities": [
         {
-          "path": "src/harness/arch056/contracts.js",
-          "responsibility": "Frozen scenario IDs, evidence classes, layers, required case IDs and per-case logging assertions, source requirement and plan/result completeness checks."
+          "path": "src/harness/background-persistence/contracts.js",
+          "responsibility": "Dependency-free frozen `BACKGROUND_PERSISTENCE_SCENARIO_IDS`, evidence classes, layers, required case IDs and per-case logging assertions; original source-requirement inclusion, symmetric provenance and plan/result completeness checks."
         },
         {
-          "path": "src/harness/arch056/executors.js",
+          "path": "src/harness/background-persistence/executors.js",
           "responsibility": "Nine executor registrations and mandatory business/logging/cleanup case-completion enforcement."
         },
         {
-          "path": "src/harness/arch056/runtime.js",
+          "path": "src/harness/background-persistence/runtime.js",
           "responsibility": "Compose existing data-plane/runtime/provider/image factories at verified revisions; capture the actual worker stdout/stderr and installed Shared identity."
         },
         {
-          "path": "src/harness/arch056/integration-driver.js",
+          "path": "src/harness/background-persistence/integration-driver.js",
           "responsibility": "Harness-owned direct-service driver for INTEGRATION rows only; load accepted modules, delegate real Prisma and use the consumed Shared factory for real sink capture."
         },
         {
-          "path": "src/harness/arch056/fixtures.js",
+          "path": "src/harness/background-persistence/fixtures.js",
           "responsibility": "Run-scoped tenants, recoveries, attempts, messages and mandatory template/consent state."
         },
         {
-          "path": "src/harness/arch056/billing-fixtures.js",
+          "path": "src/harness/background-persistence/billing-fixtures.js",
           "responsibility": "Exact valid source-kind/status/period/counter/positive-event fixtures."
         },
         {
-          "path": "src/harness/arch056/fault-controls.js",
+          "path": "src/harness/background-persistence/fault-controls.js",
           "responsibility": "Bounded disposable-DB barriers/faults, external provider/queue controls, harmless diagnostic markers, private synthetic sensitive sentinels and real Shared throwing-sink control."
         },
         {
-          "path": "src/harness/arch056/observations.js",
+          "path": "src/harness/background-persistence/observations.js",
           "responsibility": "Tenant-scoped durable state, queue/provider counts, lock/SQL observations and bounded actual JSON log capture before harness redaction."
         },
         {
-          "path": "src/harness/arch056/assertions.js",
+          "path": "src/harness/background-persistence/assertions.js",
           "responsibility": "Identity, no-extra-effect, ledger/replay and raw-record message/stage/correlation/privacy/component assertions; deduplicate repeated buffer observations."
         },
         {
-          "path": "src/harness/arch056/evidence.js",
+          "path": "src/harness/background-persistence/evidence.js",
           "responsibility": "Redacted case-result, execution/package provenance and logging-assertion sidecars within the existing run evidence directory."
         },
         {
-          "path": "src/harness/arch056/queue-repair.js",
+          "path": "src/harness/background-persistence/queue-repair.js",
           "responsibility": "Retry the retained failed candidate through its original queue identity/data and the real worker."
         },
         {
-          "path": "src/harness/arch056/dependency-scenario.js",
+          "path": "src/harness/background-persistence/dependency-scenario.js",
           "responsibility": "Dependency/source/build contract row and actual installed Shared package/entrypoint evidence."
         },
         {
-          "path": "src/harness/arch056/ingress-scenario.js",
+          "path": "src/harness/background-persistence/ingress-scenario.js",
           "responsibility": "Real transaction ordering, duplicate and post-helper rollback row."
         },
         {
-          "path": "src/harness/arch056/candidate-scenario.js",
+          "path": "src/harness/background-persistence/candidate-scenario.js",
           "responsibility": "Signed checkout and real candidate retry row."
         },
         {
-          "path": "src/harness/arch056/admission-scenario.js",
+          "path": "src/harness/background-persistence/admission-scenario.js",
           "responsibility": "Same-message delivery/cleanup/receipt races row."
         },
         {
-          "path": "src/harness/arch056/uncertainty-scenario.js",
+          "path": "src/harness/background-persistence/uncertainty-scenario.js",
           "responsibility": "Real provider admission and unknown-outcome containment row."
         },
         {
-          "path": "src/harness/arch056/settlement-scenario.js",
+          "path": "src/harness/background-persistence/settlement-scenario.js",
           "responsibility": "Exact positive/held billing and meter-read row."
         },
         {
-          "path": "src/harness/arch056/lock-order-cases.js",
+          "path": "src/harness/background-persistence/lock-order-cases.js",
           "responsibility": "Settlement/compensation/final-permit contention cases for the settlement row."
         },
         {
-          "path": "src/harness/arch056/finalization-scenario.js",
+          "path": "src/harness/background-persistence/finalization-scenario.js",
           "responsibility": "Actual initial finalization and follow-up replay row."
         },
         {
-          "path": "src/harness/arch056/woo-scenario.js",
+          "path": "src/harness/background-persistence/woo-scenario.js",
           "responsibility": "Normal disabled composition and confirmed-before-gate row."
         },
         {
-          "path": "src/harness/arch056/repair-scenario.js",
+          "path": "src/harness/background-persistence/repair-scenario.js",
           "responsibility": "Finite exhaustion and explicit retained-job repair row."
         },
         {
-          "path": "test/harness/arch056-contracts.test.js",
+          "path": "test/harness/background-persistence-contracts.test.js",
           "responsibility": "Exact IDs/classes/cases/required logging assertions and rejection of incomplete or incorrect evidence."
         },
         {
-          "path": "test/harness/arch056-registration.test.js",
+          "path": "test/harness/background-persistence-registration.test.js",
           "responsibility": "Catalogue/map/selector/executor symmetry and unchanged unrelated selection."
         },
         {
-          "path": "test/harness/arch056-provenance.test.js",
+          "path": "test/harness/background-persistence-provenance.test.js",
           "responsibility": "API/nested Database and consumed Shared inclusion; reject source/image/package resolution mismatches."
         },
         {
-          "path": "test/harness/arch056-fault-controls.test.js",
+          "path": "test/harness/background-persistence-fault-controls.test.js",
           "responsibility": "Bounded barriers, failure propagation, sensitive sentinel isolation, real sink controls and cleanup."
         },
         {
-          "path": "test/harness/arch056-results.test.js",
+          "path": "test/harness/background-persistence-results.test.js",
           "responsibility": "Missing/duplicate/blocked/not-run cases or logging assertions cannot become PASS; safe evidence survives failure."
         },
         {
-          "path": "docs/ARCH056-VALIDATION.md",
+          "path": "docs/BACKGROUND-PERSISTENCE-VALIDATION.md",
           "responsibility": "Commands, exact scenario/case/logging map, fixture boundaries, three sidecars, actual package capture and replay/cleanup instructions."
         }
       ],
@@ -998,14 +1000,14 @@
         "workspace:docs/observability/shared-logging.md"
       ],
       "new_script_entries": {
-        "system:arch056:plan": "node scripts/run-system-tests.js --suite arch056 --list",
-        "system:arch056": "node scripts/run-system-tests.js --suite arch056 --execute"
+        "system:background-persistence:plan": "node scripts/run-system-tests.js --suite background-persistence --list",
+        "system:background-persistence": "node scripts/run-system-tests.js --suite background-persistence --execute"
       },
       "suite_contract": {
-        "name": "arch056",
+        "name": "background-persistence",
         "source_requirement": "ARCH-056-SYSTEM-TEST-001",
         "expected_scenario_count": 9,
-        "selection_predicate": "scenario => scenario.sourceRequirements.includes(\"ARCH-056-SYSTEM-TEST-001\")",
+        "selection_predicate": "scenario => BACKGROUND_PERSISTENCE_SCENARIO_IDS.includes(scenario.id)",
         "selection_status_filter_allowed": false,
         "narrowed_suite_counts_as_acceptance": false,
         "must_reject": [
@@ -1013,6 +1015,7 @@
           "duplicate-scenario",
           "wrong-domain-prefix",
           "wrong-evidence-class-or-layer",
+          "missing-original-source-requirement",
           "asymmetric-source-map",
           "missing-executor",
           "missing-case",
@@ -1031,7 +1034,7 @@
         ],
         "scenarios": [
           {
-            "id": "REPOSITORY-ARCH056-DEPENDENCY-001",
+            "id": "REPOSITORY-BACKGROUND-DEPENDENCY-001",
             "domain": "REPOSITORY",
             "layer": "L1",
             "evidenceClass": "CONTRACT",
@@ -1049,10 +1052,10 @@
               "D1",
               "D2"
             ],
-            "implementation_module": "src/harness/arch056/dependency-scenario.js"
+            "implementation_module": "src/harness/background-persistence/dependency-scenario.js"
           },
           {
-            "id": "MESSAGING-ARCH056-INGRESS-001",
+            "id": "MESSAGING-INBOUND-PERSISTENCE-001",
             "domain": "MESSAGING",
             "layer": "L2",
             "evidenceClass": "INTEGRATION",
@@ -1073,10 +1076,10 @@
               "I2",
               "I3"
             ],
-            "implementation_module": "src/harness/arch056/ingress-scenario.js"
+            "implementation_module": "src/harness/background-persistence/ingress-scenario.js"
           },
           {
-            "id": "RECOVERY-ARCH056-CANDIDATE-001",
+            "id": "RECOVERY-CANDIDATE-PROGRESS-001",
             "domain": "RECOVERY",
             "layer": "L3",
             "evidenceClass": "BLACK_BOX",
@@ -1095,10 +1098,10 @@
               "C2",
               "C3"
             ],
-            "implementation_module": "src/harness/arch056/candidate-scenario.js"
+            "implementation_module": "src/harness/background-persistence/candidate-scenario.js"
           },
           {
-            "id": "RECOVERY-ARCH056-ADMISSION-001",
+            "id": "RECOVERY-INITIAL-ADMISSION-001",
             "domain": "RECOVERY",
             "layer": "L2",
             "evidenceClass": "INTEGRATION",
@@ -1119,10 +1122,10 @@
               "A3",
               "A4"
             ],
-            "implementation_module": "src/harness/arch056/admission-scenario.js"
+            "implementation_module": "src/harness/background-persistence/admission-scenario.js"
           },
           {
-            "id": "RECOVERY-ARCH056-UNCERTAINTY-001",
+            "id": "RECOVERY-INITIAL-UNCERTAINTY-001",
             "domain": "RECOVERY",
             "layer": "L3",
             "evidenceClass": "BLACK_BOX",
@@ -1141,10 +1144,10 @@
               "U2",
               "U3"
             ],
-            "implementation_module": "src/harness/arch056/uncertainty-scenario.js"
+            "implementation_module": "src/harness/background-persistence/uncertainty-scenario.js"
           },
           {
-            "id": "BILLING-ARCH056-SETTLEMENT-001",
+            "id": "BILLING-INITIAL-OUTREACH-SETTLEMENT-001",
             "domain": "BILLING",
             "layer": "L2",
             "evidenceClass": "INTEGRATION",
@@ -1167,10 +1170,10 @@
               "B5",
               "B6"
             ],
-            "implementation_module": "src/harness/arch056/settlement-scenario.js"
+            "implementation_module": "src/harness/background-persistence/settlement-scenario.js"
           },
           {
-            "id": "RECOVERY-ARCH056-FINALIZATION-001",
+            "id": "RECOVERY-INITIAL-FINALIZATION-001",
             "domain": "RECOVERY",
             "layer": "L3",
             "evidenceClass": "BLACK_BOX",
@@ -1190,10 +1193,10 @@
               "F3",
               "F4"
             ],
-            "implementation_module": "src/harness/arch056/finalization-scenario.js"
+            "implementation_module": "src/harness/background-persistence/finalization-scenario.js"
           },
           {
-            "id": "RECOVERY-ARCH056-WOO-001",
+            "id": "RECOVERY-WOO-INITIAL-GATE-001",
             "domain": "RECOVERY",
             "layer": "L2",
             "evidenceClass": "INTEGRATION",
@@ -1211,10 +1214,10 @@
               "W1",
               "W2"
             ],
-            "implementation_module": "src/harness/arch056/woo-scenario.js"
+            "implementation_module": "src/harness/background-persistence/woo-scenario.js"
           },
           {
-            "id": "RECOVERY-ARCH056-REPAIR-001",
+            "id": "RECOVERY-FAILED-CANDIDATE-REPAIR-001",
             "domain": "RECOVERY",
             "layer": "L3",
             "evidenceClass": "BLACK_BOX",
@@ -1233,9 +1236,21 @@
               "R2",
               "R3"
             ],
-            "implementation_module": "src/harness/arch056/repair-scenario.js"
+            "implementation_module": "src/harness/background-persistence/repair-scenario.js"
           }
-        ]
+        ],
+        "scenario_ids_export": {
+          "name": "BACKGROUND_PERSISTENCE_SCENARIO_IDS",
+          "path": "src/harness/background-persistence/contracts.js",
+          "frozen": true,
+          "dependency_free": true,
+          "may_import_selection_executors_or_runner": false
+        },
+        "selection_uses_governance_source_requirements": false,
+        "original_source_requirement_required_by_inclusion": true,
+        "exclusive_source_requirement_singleton_required": false,
+        "later_approved_symmetric_source_requirements_allowed": true,
+        "later_naming_task_source_requirement": "ARCH-056-SYSTEM-TEST-002"
       },
       "frozen_interfaces_under_test": {
         "billing_settlement": "settleConfirmedInitialOutreach({shopId,recoveryId,outreachAttemptId,outboundMessageId}) -> settled(committed|already-committed, exact source evidence) | held(reason)",
@@ -1301,7 +1316,7 @@
             "database"
           ]
         },
-        "include_canonical_database_for_any_arch056_selection": true,
+        "include_canonical_database_for_background_persistence_selection": true,
         "capture_all_executed_services": true,
         "background_image_factory": "existing ProductionBackgroundImage with verified accepted full SHA passed as ref",
         "require_image_returned_revision_and_label_match": true,
@@ -1366,9 +1381,9 @@
           "normal command/provenance evidence"
         ],
         "new_sidecars": [
-          "arch056-cases.json",
-          "arch056-execution-provenance.json",
-          "arch056-logging.json"
+          "background-persistence-cases.json",
+          "background-persistence-execution-provenance.json",
+          "background-persistence-logging.json"
         ],
         "destination": "existing per-run evidence directory",
         "redaction_required": true,
@@ -1404,8 +1419,8 @@
         "npm run validate:catalogue",
         "npm run lint",
         "npm run test:harness",
-        "npm run system:arch056:plan -- --json",
-        "npm run system:arch056 -- --json",
+        "npm run system:background-persistence:plan -- --json",
+        "npm run system:background-persistence -- --json",
         "git diff --check"
       ],
       "scenario_owned_validation_commands": [
@@ -1416,7 +1431,7 @@
             "run",
             "typecheck"
           ],
-          "scenario_id": "REPOSITORY-ARCH056-DEPENDENCY-001"
+          "scenario_id": "REPOSITORY-BACKGROUND-DEPENDENCY-001"
         },
         {
           "cwd": "moda-interact-api",
@@ -1425,7 +1440,7 @@
             "run",
             "build"
           ],
-          "scenario_id": "REPOSITORY-ARCH056-DEPENDENCY-001"
+          "scenario_id": "REPOSITORY-BACKGROUND-DEPENDENCY-001"
         }
       ],
       "preserved_existing_scenarios": [
@@ -1579,10 +1594,1438 @@
       "assigned_agent": "moda_system_test",
       "domain": "system-test",
       "task_file": "docs/decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md",
-      "definition_revision": 2,
+      "definition_revision": 3,
       "status": "pending",
       "path_base": "implementation repository root unless explicitly workspace-qualified",
       "validation_executed_by_architect": false
+    },
+    {
+      "format_version": 1,
+      "definition_revision": 3,
+      "task_id": "ARCH-056-SYSTEM-TEST-002",
+      "title": "Replace architecture-based test names",
+      "task_file": "docs/decisions/system-test/ARCH-056/SYSTEM-TEST-002-replace-architecture-based-test-names.md",
+      "task_body": "test-naming-cleanup.md",
+      "repository": "moda-interact-system-test",
+      "domain": "system-test",
+      "assigned_agent": "moda_system_test",
+      "status": "pending",
+      "execution_mode": "agent",
+      "completion_mode": "automatic",
+      "executor": null,
+      "claimed_at": null,
+      "attempt": 0,
+      "production_modify": [
+        "README.md",
+        "catalogue/historical-system-test-map.json",
+        "catalogue/scenarios.json",
+        "docs/ARCH-028-COMPENSATION-SMOKE.md",
+        "docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md",
+        "docs/SHOPIFY-COVERAGE-MATRIX.md",
+        "package.json",
+        "scripts/run-credit-source-compensation.js",
+        "scripts/validate-render-deployment.js",
+        "scripts/validate-source-structure.js",
+        "src/harness/messaging/terminal-recipient-merchant-ui.js",
+        "src/harness/recovery/constants.js",
+        "src/harness/recovery/index.js",
+        "src/merchant-scenario.js",
+        "src/render-test-topology.js",
+        "src/scenario-catalogue.js"
+      ],
+      "production_create": [
+        "docs/TEST-NAMING.md"
+      ],
+      "tests_modify": [
+        "test/harness/approved-template-fixtures.test.js",
+        "test/harness/language-provider-runtime-setup.test.js",
+        "test/harness/language-recovery-provider-setup.test.js",
+        "test/harness/language-recovery-runtime-wiring.test.js",
+        "test/harness/platform-configuration-fixture.test.js",
+        "test/harness/recovery-executors.test.js",
+        "test/harness/selection.test.js",
+        "test/harness/source-structure.test.js",
+        "test/scenario-catalogue.test.js",
+        "test/render-test-topology.test.js"
+      ],
+      "tests_create": [],
+      "production_renames": [
+        {
+          "from": "src/harness/recovery/arch028-credit-source-checkout-diagnostics.js",
+          "to": "src/harness/recovery/credit-source-checkout-diagnostics.js"
+        },
+        {
+          "from": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+          "to": "src/harness/recovery/credit-source-diagnostics.js"
+        },
+        {
+          "from": "src/harness/recovery/arch028-credit-source-fixtures.js",
+          "to": "src/harness/recovery/credit-source-fixtures.js"
+        },
+        {
+          "from": "src/harness/recovery/arch028-credit-source-ingress-diagnostics.js",
+          "to": "src/harness/recovery/credit-source-ingress-diagnostics.js"
+        },
+        {
+          "from": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
+          "to": "src/harness/recovery/credit-source-initial-diagnostics.js"
+        },
+        {
+          "from": "src/harness/recovery/arch028-credit-source-observation.js",
+          "to": "src/harness/recovery/credit-source-observation.js"
+        },
+        {
+          "from": "src/harness/recovery/arch028-credit-source-receipt-diagnostics.js",
+          "to": "src/harness/recovery/credit-source-receipt-diagnostics.js"
+        },
+        {
+          "from": "src/harness/recovery/arch028-credit-source-scenario.js",
+          "to": "src/harness/recovery/credit-source-scenario.js"
+        },
+        {
+          "from": "src/harness/recovery/arch028-purchased-source-fixture.js",
+          "to": "src/harness/recovery/purchased-source-fixture.js"
+        },
+        {
+          "from": "scripts/run-arch002-observability.js",
+          "to": "scripts/run-integrated-observability.js"
+        },
+        {
+          "from": "scripts/run-arch002-production-readiness.js",
+          "to": "scripts/run-production-readiness.js"
+        },
+        {
+          "from": "scripts/run-arch002-render-test-topology.js",
+          "to": "scripts/deprecated-render-test-topology.js"
+        },
+        {
+          "from": "scripts/run-arch028-compensation-smoke.js",
+          "to": "scripts/run-terminal-recipient-compensation-smoke.js"
+        },
+        {
+          "from": "scripts/system-test-006-developer-validation.sh",
+          "to": "scripts/deprecated-render-test-validation.sh"
+        }
+      ],
+      "tests_renames": [
+        {
+          "from": "test/harness/arch028-compensation-smoke.test.js",
+          "to": "test/harness/terminal-recipient-compensation-smoke.test.js"
+        },
+        {
+          "from": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+          "to": "test/harness/credit-source-checkout-diagnostics.test.js"
+        },
+        {
+          "from": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+          "to": "test/harness/credit-source-ingress-diagnostics.test.js"
+        },
+        {
+          "from": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+          "to": "test/harness/credit-source-receipt-diagnostics.test.js"
+        },
+        {
+          "from": "test/harness/arch028-credit-sources.test.js",
+          "to": "test/harness/credit-sources.test.js"
+        },
+        {
+          "from": "test/harness/arch028-follow-up-diagnostics.test.js",
+          "to": "test/harness/follow-up-diagnostics.test.js"
+        },
+        {
+          "from": "test/harness/arch028-initial-outreach-diagnostics.test.js",
+          "to": "test/harness/initial-outreach-diagnostics.test.js"
+        },
+        {
+          "from": "test/harness/arch028-purchased-source-fixture.test.js",
+          "to": "test/harness/purchased-source-fixture.test.js"
+        },
+        {
+          "from": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+          "to": "test/harness/terminal-recipient-merchant-ui.test.js"
+        },
+        {
+          "from": "test/harness/arch028-terminal-recipient-observation.test.js",
+          "to": "test/harness/terminal-recipient-observation.test.js"
+        }
+      ],
+      "read_only_dependencies": [
+        "src/harness/selection.js",
+        "scripts/run-system-tests.js",
+        "src/harness/background-persistence/contracts.js",
+        "src/harness/background-persistence/executors.js",
+        "src/harness/background-persistence/runtime.js",
+        "src/harness/background-persistence/evidence.js",
+        "src/harness/background-production-image.js",
+        "src/harness/recovery/runtime.js",
+        "src/harness/messaging/provider-status-observation.js",
+        "src/harness/messaging/terminal-recipient-observation.js",
+        "src/harness/language/model-fixture.js",
+        "src/harness/billing-executors.js",
+        "src/observability-validation.js",
+        "src/render-blueprint-validation.js",
+        "scripts/validate-render-test.sh",
+        "scripts/developer-validation.sh",
+        "test/observability-validation.test.js",
+        "test/render-blueprint-validation.test.js",
+        "test/merchant-scenario.test.js",
+        "test/harness/language-model-fixture.test.js",
+        "test/harness/billing-executors.test.js",
+        "test/harness/background-persistence-contracts.test.js",
+        "test/harness/background-persistence-registration.test.js",
+        "test/harness/background-persistence-provenance.test.js",
+        "test/harness/background-persistence-fault-controls.test.js",
+        "test/harness/background-persistence-results.test.js",
+        "docs/BACKGROUND-PERSISTENCE-VALIDATION.md"
+      ],
+      "workspace_read_only_dependencies": [
+        "docs/validation-command-naming.md",
+        "docs/validation-migrations/render-test-validator-naming.md",
+        "docs/agent-worktree-isolation-policy.md",
+        "docs/agent-vcs-ownership-policy.md",
+        "docs/developer-task-workflow.md",
+        "docs/task-definition-materialization.md",
+        ".codex/agents/moda_system_test.toml",
+        "docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md",
+        "docs/architecture/ARCH-056/test-naming-map.json",
+        "docs/architecture/ARCH-056/deterministic-execution-map.json",
+        "docs/decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md",
+        "docs/decisions/system-test/ARCH-002/SYSTEM-TEST-010-reconcile-production-readiness-validator-with-haproxy.md",
+        "docs/decisions/system-test/ARCH-028/SYSTEM-TEST-001-validate-whatsapp-delivery-compensation-and-suppression.md"
+      ],
+      "depends_on": [
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "enables": [],
+      "new_script_entries": {
+        "validate:integrated-observability": "node scripts/run-integrated-observability.js",
+        "validate:production-readiness": "node scripts/run-production-readiness.js"
+      },
+      "script_renames": [
+        {
+          "from": "validate:arch002-observability",
+          "to": "validate:integrated-observability",
+          "old_command": "node scripts/run-arch002-observability.js",
+          "new_command": "node scripts/run-integrated-observability.js"
+        },
+        {
+          "from": "validate:arch002-production-readiness",
+          "to": "validate:production-readiness",
+          "old_command": "node scripts/run-arch002-production-readiness.js",
+          "new_command": "node scripts/run-production-readiness.js"
+        }
+      ],
+      "validation_commands": [
+        "npm run validate:catalogue -- --write",
+        "npm run validate:catalogue",
+        "node --test test/scenario-catalogue.test.js test/render-test-topology.test.js test/observability-validation.test.js test/merchant-scenario.test.js",
+        "npm run typecheck",
+        "npm run lint",
+        "npm run test:harness",
+        "npm run system:background-persistence:plan -- --json",
+        "npm run system:background-persistence -- --json",
+        "MODA_SYSTEM_TEST_BACKGROUND_REF=\"${MODA_SYSTEM_TEST_BACKGROUND_REF:?set the accepted full Background SHA}\" MODA_BACKGROUND_IMAGE= node scripts/run-credit-source-compensation.js --workspace-root \"$MODA_WORKSPACE_ROOT\"",
+        "git diff --check"
+      ],
+      "exported_new_methods": [
+        "capabilityNamingViolations"
+      ],
+      "symbol_renames": [
+        {
+          "from": "seedArch028CreditSource",
+          "to": "seedCreditSource"
+        },
+        {
+          "from": "seedArch028PurchasedSource",
+          "to": "seedPurchasedSource"
+        },
+        {
+          "from": "readArch028CreditSourceState",
+          "to": "readCreditSourceState"
+        },
+        {
+          "from": "assertArch028InitialCredit",
+          "to": "assertInitialCredit"
+        },
+        {
+          "from": "assertArch028CompensatedCredit",
+          "to": "assertCompensatedCredit"
+        },
+        {
+          "from": "assertArch028CreditReplay",
+          "to": "assertCreditReplay"
+        },
+        {
+          "from": "waitForArch028CreditState",
+          "to": "waitForCreditState"
+        },
+        {
+          "from": "failedArch028InitialCreditChecks",
+          "to": "failedInitialCreditChecks"
+        },
+        {
+          "from": "reportArch028CreditSourceFailure",
+          "to": "reportCreditSourceFailure"
+        },
+        {
+          "from": "runArch028CreditSourceScenario",
+          "to": "runCreditSourceScenario"
+        },
+        {
+          "from": "registerArch028CreditSourceScenarios",
+          "to": "registerCreditSourceScenarios"
+        }
+      ],
+      "scenario_renames": [
+        {
+          "from": "RECOVERY-ARCH028-PAID-001",
+          "to": "RECOVERY-PAID-CREDIT-COMPENSATION-001"
+        },
+        {
+          "from": "RECOVERY-ARCH028-PROMO-001",
+          "to": "RECOVERY-PROMOTIONAL-CREDIT-COMPENSATION-001"
+        },
+        {
+          "from": "RECOVERY-ARCH028-PURCHASED-001",
+          "to": "RECOVERY-PURCHASED-CREDIT-COMPENSATION-001"
+        }
+      ],
+      "literal_replacements": [
+        {
+          "from": "arch028-paid-period",
+          "to": "credit-source-paid-period",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                42
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-paid-counter",
+          "to": "credit-source-paid-counter",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                43
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-admin",
+          "to": "credit-source-admin",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                83
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-campaign",
+          "to": "credit-source-campaign",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                84
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-grant",
+          "to": "credit-source-grant",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                85
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-promo-selection",
+          "to": "credit-source-promo-selection",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                107
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-purchased-period",
+          "to": "credit-source-purchased-period",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                23
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-purchased-included-counter",
+          "to": "credit-source-purchased-included-counter",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                24
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-purchased-counter",
+          "to": "credit-source-purchased-counter",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                25
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-purchased-lot",
+          "to": "credit-source-purchased-lot",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                26
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-purchased-issuance",
+          "to": "credit-source-purchased-issuance",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                27
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-purchased-provider-subscription",
+          "to": "credit-source-purchased-provider-subscription",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                28
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028_test_recovery_usage",
+          "to": "system_test_recovery_usage",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                47
+              ]
+            },
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                5
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028_test_pack_usage",
+          "to": "system_test_credit_pack_usage",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                6
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-purchase-issuance:",
+          "to": "credit-source-purchase-issuance:",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                85
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-disposable-shopify-purchase",
+          "to": "disposable-shopify-credit-purchase",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                89
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-system-test:",
+          "to": "credit-source-system-test:",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                107
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-${kind}",
+          "to": "credit-source-${kind}",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+              "lines": [
+                42
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-${context.runId.toLowerCase()",
+          "to": "credit-source-${context.runId.toLowerCase()",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                89
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 paid system test",
+          "to": "Paid credit source system test",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                55
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 purchased system test",
+          "to": "Purchased credit source system test",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                44
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 synthetic active promotional source",
+          "to": "Synthetic active promotional credit source",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                95
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028-test",
+          "to": "credit-source-test",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "test/harness/arch028-credit-sources.test.js",
+              "lines": [
+                193
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "system-test-arch028",
+          "to": "terminal-recipient-system-test",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "test/harness/approved-template-fixtures.test.js",
+              "lines": [
+                9
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch002-system-test-006-delivery",
+          "to": "render-deployment-probe-delivery",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "src/render-test-topology.js",
+              "lines": [
+                104
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch002-system-test-006-challenge",
+          "to": "render-deployment-probe-challenge",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "scripts/validate-render-deployment.js",
+              "lines": [
+                97
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch002-system-test-006",
+          "to": "render-deployment-probe",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "scripts/validate-render-deployment.js",
+              "lines": [
+                71,
+                82,
+                97
+              ]
+            },
+            {
+              "path": "src/render-test-topology.js",
+              "lines": [
+                104
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "background:production-arch043",
+          "to": "background:production-configuration-fixture",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "test/harness/language-recovery-runtime-wiring.test.js",
+              "lines": [
+                8
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch043-moderation-test",
+          "to": "moderation-configuration-test",
+          "category": "fixture",
+          "references": [
+            {
+              "path": "test/harness/language-provider-runtime-setup.test.js",
+              "lines": [
+                60
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch028.credit_source.",
+          "to": "recovery.credit_source.",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+              "lines": [
+                103,
+                118
+              ]
+            },
+            {
+              "path": "test/harness/arch028-credit-sources.test.js",
+              "lines": [
+                163
+              ]
+            },
+            {
+              "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+              "lines": [
+                121
+              ]
+            },
+            {
+              "path": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+              "lines": [
+                103,
+                109
+              ]
+            },
+            {
+              "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+              "lines": [
+                61,
+                87,
+                96,
+                111
+              ]
+            },
+            {
+              "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+              "lines": [
+                82
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "[ARCH-028 smoke]",
+          "to": "[terminal-recipient compensation smoke]",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "scripts/run-arch028-compensation-smoke.js",
+              "lines": [
+                45,
+                49,
+                54,
+                58,
+                62
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 smoke executes",
+          "to": "terminal-recipient compensation smoke executes",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-compensation-smoke.test.js",
+              "lines": [
+                7
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 smoke propagates",
+          "to": "terminal-recipient compensation smoke propagates",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-compensation-smoke.test.js",
+              "lines": [
+                15
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 smoke refuses",
+          "to": "terminal-recipient compensation smoke refuses",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-compensation-smoke.test.js",
+              "lines": [
+                25
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 smoke requires",
+          "to": "terminal-recipient compensation smoke requires",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-compensation-smoke.test.js",
+              "lines": [
+                40
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 smoke fails",
+          "to": "terminal-recipient compensation smoke fails",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-compensation-smoke.test.js",
+              "lines": [
+                48
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 credit source must be a known kind and an owned Shop",
+          "to": "Credit source fixture requires a known kind and an owned Shop",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                18
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 requires one active source Shop subscription",
+          "to": "Credit source fixture requires one active source Shop subscription",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+              "lines": [
+                30
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 purchased fixture requires a complete Shopify subscription",
+          "to": "Purchased credit fixture requires a complete Shopify subscription",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+              "lines": [
+                20
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 credit scenario requires its source kind, workspace and task worktree",
+          "to": "Credit source scenario requires its source kind, workspace and task worktree",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+              "lines": [
+                29
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 must make one exact, source-owned negative usage correction and undo outbound hard-limit usage",
+          "to": "Compensation must make one exact, source-owned negative usage correction and undo outbound hard-limit usage",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-observation.js",
+              "lines": [
+                178
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 ${input.source.kind} ${expected} credit settlement",
+          "to": "Credit source ${input.source.kind} ${expected} settlement",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "src/harness/recovery/arch028-credit-source-observation.js",
+              "lines": [
+                226
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "Shopify merchant Support page must render exactly one ARCH-028 SYSTEM notice",
+          "to": "Shopify merchant Support page must render exactly one terminal-recipient compensation SYSTEM notice",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "src/harness/messaging/terminal-recipient-merchant-ui.js",
+              "lines": [
+                56
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 compensation notice remains distinct from optional ARCH-050 initial-send SYSTEM alerts",
+          "to": "Terminal-recipient compensation notice remains distinct from optional initial-send SYSTEM alerts",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+              "lines": [
+                29
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-028 SYSTEM|restored-spendable",
+          "to": "terminal-recipient compensation SYSTEM|restored-spendable",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+              "lines": [
+                106
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "exactly one ARCH-028 SYSTEM",
+          "to": "exactly one terminal-recipient compensation SYSTEM",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+              "lines": [
+                132,
+                151
+              ]
+            },
+            {
+              "path": "src/harness/messaging/terminal-recipient-merchant-ui.js",
+              "lines": [
+                56
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "credit-source smoke runner executes isolated cases, stops on failure and never certifies ARCH-028",
+          "to": "credit-source smoke runner executes isolated cases, stops on failure and does not claim terminal certification",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/arch028-credit-sources.test.js",
+              "lines": [
+                249
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "recovery setup provisions three required ARCH-043 records before starting moderation",
+          "to": "recovery setup provisions three required platform configuration records before starting moderation",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/language-recovery-provider-setup.test.js",
+              "lines": [
+                50
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-043 language preflight requires",
+          "to": "Language configuration preflight requires",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/platform-configuration-fixture.test.js",
+              "lines": [
+                128
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-043 Shopify OAuth preflight allows",
+          "to": "Shopify OAuth configuration preflight allows",
+          "category": "description_or_diagnostic",
+          "references": [
+            {
+              "path": "test/harness/platform-configuration-fixture.test.js",
+              "lines": [
+                159
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "no ARCH-017 promotion.",
+          "to": "no synthetic promotion.",
+          "category": "manual_fixture_label",
+          "references": [
+            {
+              "path": "src/merchant-scenario.js",
+              "lines": [
+                37
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-017 ${promotion.scope} manual scenario",
+          "to": "Manual merchant ${promotion.scope} scenario",
+          "category": "manual_fixture_label",
+          "references": [
+            {
+              "path": "src/merchant-scenario.js",
+              "lines": [
+                1480
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-017 manual merchant UI scenario fixture.",
+          "to": "Manual merchant UI scenario fixture.",
+          "category": "manual_fixture_label",
+          "references": [
+            {
+              "path": "src/merchant-scenario.js",
+              "lines": [
+                1488
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH-017 ${promotion.scope} promotion (${locale})",
+          "to": "Manual merchant ${promotion.scope} promotion (${locale})",
+          "category": "manual_fixture_label",
+          "references": [
+            {
+              "path": "src/merchant-scenario.js",
+              "lines": [
+                1505
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "arch017-unmapped-plan",
+          "to": "manual-merchant-unmapped-plan",
+          "category": "manual_fixture_label",
+          "references": [
+            {
+              "path": "src/merchant-scenario.js",
+              "lines": [
+                1659
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        },
+        {
+          "from": "ARCH017_MANUAL_SCENARIO",
+          "to": "MANUAL_MERCHANT_SCENARIO",
+          "category": "manual_fixture_label",
+          "references": [
+            {
+              "path": "src/merchant-scenario.js",
+              "lines": [
+                1684
+              ]
+            }
+          ],
+          "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+        }
+      ],
+      "protected_values": [
+        {
+          "literal": "ARCH-056-SYSTEM-TEST-001 / ARCH-056-SYSTEM-TEST-002 and other valid task IDs",
+          "kind": "governance",
+          "where": "sourceRequirements, historical map sourceTask/sourceFile, task/worktree routes, historical reports and explanatory provenance",
+          "rule": "Preserve; do not use as runtime suite/executor/scenario/file names."
+        },
+        {
+          "literal": "ARCH002_TEST_*",
+          "kind": "existing_input_contract",
+          "where": [
+            "src/render-test-topology.js",
+            "scripts/validate-render-test.sh",
+            "test/render-test-topology.test.js"
+          ],
+          "source": "workspace docs/validation-migrations/render-test-validator-naming.md, Current host matrix",
+          "rule": "Explicit existing architect policy keeps current input names; no environment-variable contract migration is selected."
+        },
+        {
+          "literal": "arch024-platform-model-availability",
+          "kind": "canonical_seeded_database_identity",
+          "where": [
+            "src/harness/language/model-fixture.js",
+            "test/harness/language-model-fixture.test.js"
+          ],
+          "source": "moda-interact-database/prisma/migrations/20260930120000_arch024_model_availability_openrouter/migration.sql:38,48",
+          "rule": "Preserve canonical seed/default reference; do not insert a replacement availability identity."
+        },
+        {
+          "literal": "ARCH028_RECOVERY_DELIVERY_FAILED",
+          "kind": "application_support_system_code",
+          "where": [
+            "src/harness/recovery/arch028-credit-source-observation.js",
+            "src/harness/messaging/terminal-recipient-observation.js"
+          ],
+          "rule": "Preserve literal and assertions; renaming test names must not change production notice identity."
+        },
+        {
+          "literal": "arch028-undelivered:${reservationId}",
+          "kind": "application_usage_idempotency_contract",
+          "where": [
+            "src/harness/recovery/arch028-credit-source-observation.js",
+            "src/harness/messaging/provider-status-observation.js",
+            "test/harness/arch028-credit-sources.test.js",
+            "test/harness/messaging-provider-status.test.js"
+          ],
+          "rule": "Preserve exact original negative correction identity."
+        },
+        {
+          "literal": "arch028-recovery-delivery-failed:v1:<64hex>",
+          "kind": "application_support_notice_identity",
+          "where": [
+            "src/harness/recovery/arch028-credit-source-observation.js",
+            "src/harness/messaging/terminal-recipient-observation.js",
+            "test/harness/arch028-credit-sources.test.js",
+            "test/harness/arch028-terminal-recipient-observation.test.js"
+          ],
+          "rule": "Preserve version, prefix and hash contract."
+        },
+        {
+          "literal": "scripts/validate-arch017-ai-conversations-required.mjs",
+          "kind": "external_repository_executable",
+          "where": [
+            "src/harness/billing-executors.js",
+            "test/harness/billing-executors.test.js",
+            "docs/BILLING.md"
+          ],
+          "rule": "Read-only Database-owned command path; no System-Test-owned alias or external rename."
+        },
+        {
+          "literal": "arch017:${shopId}",
+          "kind": "existing_cross_version_advisory_lock_key",
+          "where": [
+            "src/merchant-scenario.js:991",
+            "src/merchant-scenario.js:1553"
+          ],
+          "rule": "Preserve shared apply/restore mutual exclusion; this is a coordination compatibility value, not a test name."
+        },
+        {
+          "literal": "overall ARCH-028 remains OPEN / terminal ARCH-028-SYSTEM-TEST-001 is NOT CERTIFIED",
+          "kind": "truthful_governance_warning",
+          "where": [
+            "scripts/run-credit-source-compensation.js",
+            "scripts/run-arch028-compensation-smoke.js",
+            "test/harness/arch028-credit-sources.test.js"
+          ],
+          "rule": "Preserve the unfinished-governance disclaimer. The runtime progress prefix/test title becomes semantic."
+        },
+        {
+          "literal": "ARCH-028-SYSTEM-TEST-001 worktree fixture",
+          "kind": "launcher_governance_route_fixture",
+          "where": [
+            "test/harness/run-system-tests-script.test.js:92"
+          ],
+          "rule": "Preserve route-format coverage; it is an input fixture of the real task launcher, not the executable test name."
+        },
+        {
+          "literal": "all previously recorded scenario IDs, filenames, commands, run IDs and report paths",
+          "kind": "immutable_historical_evidence",
+          "where": [
+            "docs/evidence/",
+            ".validation/system-test/",
+            "existing root arch028*.log and evidence .txt files",
+            "governance Completion Reports"
+          ],
+          "rule": "Do not rename/rewrite artifacts or retroactively mark accepted evidence as executed under the new names. Provide current old-to-new mapping in existing governance/operator docs."
+        }
+      ],
+      "scope_limits": {
+        "src/merchant-scenario.js": "Only exact mapped test-owned labels; preserve all mutation logic and arch017 advisory lock compatibility key.",
+        "src/render-test-topology.js": "Exact diagnostic-label changes only; preserve ARCH002_TEST_* inputs and provider/request behavior.",
+        "scripts/validate-render-deployment.js": "Exact diagnostic-label changes only; no live validation or request/credential/input change.",
+        "scripts/validate-source-structure.js": "Bounded executable path/suite/npm naming guard through existing entry; preserve existing 300/120 line roots and API.",
+        "src/scenario-catalogue.js": "Naming and symmetric provenance validation only; preserve catalogue/evidence semantics.",
+        "test/render-test-topology.test.js": "Local tombstone stderr/exit64 tests plus existing topology/input compatibility coverage; no live calls."
+      },
+      "coverage_preservation": {
+        "predecessor_scenario_ids": [
+          "REPOSITORY-BACKGROUND-DEPENDENCY-001",
+          "MESSAGING-INBOUND-PERSISTENCE-001",
+          "RECOVERY-CANDIDATE-PROGRESS-001",
+          "RECOVERY-INITIAL-ADMISSION-001",
+          "RECOVERY-INITIAL-UNCERTAINTY-001",
+          "BILLING-INITIAL-OUTREACH-SETTLEMENT-001",
+          "RECOVERY-INITIAL-FINALIZATION-001",
+          "RECOVERY-WOO-INITIAL-GATE-001",
+          "RECOVERY-FAILED-CANDIDATE-REPAIR-001"
+        ],
+        "scenario_count": 9,
+        "case_count": 30,
+        "logging_case_count": 16,
+        "logging_assertion_count": 39,
+        "full_suite_pass_required_after_rename": true,
+        "exact_background_sha_required": true,
+        "three_renamed_credit_source_cases_must_pass": [
+          "RECOVERY-PAID-CREDIT-COMPENSATION-001",
+          "RECOVERY-PROMOTIONAL-CREDIT-COMPENSATION-001",
+          "RECOVERY-PURCHASED-CREDIT-COMPENSATION-001"
+        ],
+        "no_scenario_or_executor_added_removed": true,
+        "observed_baseline": {
+          "scenario_count": 172,
+          "implemented": 69,
+          "planned": 103,
+          "implemented_classes": {
+            "CONTRACT": 23,
+            "INTEGRATION": 22,
+            "BLACK_BOX": 24
+          },
+          "historical_map_rows": 50
+        },
+        "expected_after_with_no_approved_intervening_changes": {
+          "scenario_count": 181,
+          "implemented": 78,
+          "planned": 103,
+          "implemented_classes": {
+            "CONTRACT": 24,
+            "INTEGRATION": 26,
+            "BLACK_BOX": 28
+          },
+          "historical_map_rows": 52
+        },
+        "require_exact_accepted_predecessor_membership": true,
+        "narrowed_or_blocked_suite_is_acceptance": false
+      },
+      "provenance_addition": {
+        "source_requirement": "ARCH-056-SYSTEM-TEST-002",
+        "scenario_ids": [
+          "RECOVERY-PAID-CREDIT-COMPENSATION-001",
+          "RECOVERY-PROMOTIONAL-CREDIT-COMPENSATION-001",
+          "RECOVERY-PURCHASED-CREDIT-COMPENSATION-001",
+          "REPOSITORY-BACKGROUND-DEPENDENCY-001",
+          "MESSAGING-INBOUND-PERSISTENCE-001",
+          "RECOVERY-CANDIDATE-PROGRESS-001",
+          "RECOVERY-INITIAL-ADMISSION-001",
+          "RECOVERY-INITIAL-UNCERTAINTY-001",
+          "BILLING-INITIAL-OUTREACH-SETTLEMENT-001",
+          "RECOVERY-INITIAL-FINALIZATION-001",
+          "RECOVERY-WOO-INITIAL-GATE-001",
+          "RECOVERY-FAILED-CANDIDATE-REPAIR-001"
+        ],
+        "historical_row_count_added": 1,
+        "historical_status": "pending",
+        "source_file": "docs/decisions/system-test/ARCH-056/SYSTEM-TEST-002-replace-architecture-based-test-names.md",
+        "preserve_existing_members_and_statuses": true,
+        "suite_selection_may_use_source_requirement": false
+      },
+      "guard": {
+        "modify": [
+          "src/scenario-catalogue.js",
+          "scripts/validate-source-structure.js"
+        ],
+        "tests": [
+          "test/scenario-catalogue.test.js",
+          "test/harness/source-structure.test.js"
+        ],
+        "scenario_fields": [
+          "id",
+          "name",
+          "title"
+        ],
+        "check_implementation_owned_paths": true,
+        "source_structure_name_roots": [
+          "src",
+          "test",
+          "scripts"
+        ],
+        "name_only_file_extensions": [
+          ".js",
+          ".mjs",
+          ".cjs",
+          ".sh",
+          ".ts",
+          ".tsx",
+          ".json",
+          ".yaml",
+          ".yml",
+          ".sql"
+        ],
+        "check_suite_keys": true,
+        "check_npm_script_keys": true,
+        "reject_patterns": [
+          "architecture token ARCH followed by optional hyphen/underscore and three digits, case-insensitive",
+          "task-specific SYSTEM-TEST-NNN executable basename"
+        ],
+        "full_text_architecture_scan": false,
+        "new_parser_framework": false,
+        "preserve_line_limit_roots": [
+          "src/harness",
+          "test/harness"
+        ],
+        "preserve_limits": {
+          "source_test_max": 300,
+          "domain_index_max": 120
+        },
+        "negative_fixtures": "Reject architecture-named path/scenario name/ID/suite/npm key and task-specific tombstone name; accept semantic names while sourceRequirements/sourceTask/sourceFile and exact external wire/seed/coordination literals remain unchanged.",
+        "local_ci_entry": "Existing lint/validate:structure and validate:catalogue commands; no new framework.",
+        "name_scan_excludes": [
+          "docs/**/*.md",
+          "docs/evidence/**",
+          ".validation/**",
+          "historical root evidence/log files"
+        ]
+      },
+      "ownership_preflight": [
+        {
+          "task": "ARCH-002-SYSTEM-TEST-010",
+          "file": "workspace docs/decisions/system-test/ARCH-002/SYSTEM-TEST-010-reconcile-production-readiness-validator-with-haproxy.md",
+          "snapshot_status": "ready",
+          "attempt": 0,
+          "concern": "Readiness/HAProxy validator and render-blueprint tests; coordinate semantic path handoff, do not implement its unfinished behavior."
+        },
+        {
+          "task": "ARCH-028-SYSTEM-TEST-001",
+          "file": "workspace docs/decisions/system-test/ARCH-028/SYSTEM-TEST-001-validate-whatsapp-delivery-compensation-and-suppression.md",
+          "snapshot_status": "ready",
+          "attempt": 0,
+          "concern": "Existing helper presence is incremental code, not terminal task acceptance. Coordinate same-file writer and references; keep financial uncertainty policy blocked."
+        }
+      ],
+      "active_writer_rule": "Reject in_progress/review overlapping writer before mutation; Ready alone is not an unrelated behavioral dependency.",
+      "architect_open_owner_reference_reconciliation_required_before_acceptance": true,
+      "tombstones": {
+        "renames": [
+          {
+            "from": "scripts/run-arch002-render-test-topology.js",
+            "to": "scripts/deprecated-render-test-topology.js",
+            "kind": "tombstone",
+            "preserve": "Exact stderr and exit64; rename only.",
+            "references": [],
+            "source_sha256": "fc5fd043b7e201f2c0329fb9dcc71e300fbfe8b03d1615375150ef6238014e27"
+          },
+          {
+            "from": "scripts/system-test-006-developer-validation.sh",
+            "to": "scripts/deprecated-render-test-validation.sh",
+            "kind": "tombstone",
+            "preserve": "Exact stderr and exit64, including governance TASK_ID in replacement command; rename only.",
+            "references": [],
+            "source_sha256": "a3b6564c4af0483197297b9ac49db59fe76e3b239bec676d72a92768c12091c9"
+          }
+        ],
+        "preserve_stderr_bytes": true,
+        "preserve_exit_code": 64,
+        "preserve_file_mode": true,
+        "invoke_advised_live_command": false
+      },
+      "validation_executed_by_architect": false,
+      "id": "ARCH-056-SYSTEM-TEST-002",
+      "role": "SYSTEM-TEST-002",
+      "path_base": "implementation repository root unless explicitly workspace-qualified"
     }
   ],
   "coverage": [
@@ -1886,6 +3329,1346 @@
       "existing atomic attempt/Support thread and notice writes"
     ]
   },
+  "test_naming_contract": {
+    "definition_revision": 3,
+    "final_task": "ARCH-056-SYSTEM-TEST-002",
+    "mapping_file": "docs/architecture/ARCH-056/test-naming-map.json",
+    "semantic_suite": "background-persistence",
+    "selection": "fixed semantic scenario-ID membership; architecture provenance is not a selector",
+    "preserve": [
+      "nine scenarios",
+      "thirty case IDs",
+      "thirty-nine logging assertions",
+      "evidence classes",
+      "production wire/storage identities",
+      "governance traceability",
+      "historical evidence"
+    ],
+    "all_repository_legacy_naming_claim": false,
+    "required_status": "defined-not-executed"
+  },
+  "path_ownership": {
+    "moda-interact-api/database": [
+      {
+        "task": "ARCH-056-API-001",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/conversation.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-001",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/workers/whatsapp.worker.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-001",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/conversation.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-001",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/workers/whatsapp.worker.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-001",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/integration/conversation-turn-scheduling.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-001",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/integration/inbound-conversation-lock-order.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-001",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/inbound-conversation-rollback.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-001",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/helpers/inbound-conversation-fixtures.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-001",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/helpers/inbound-conversation-barriers.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-001",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-billing.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-billing/recovery-billing.types.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-billing/recovery-reservation-lifecycle.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-delivery-compensation/lineage.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/free-recovery-reservation.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/purchased-recovery-reservation.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/promotional-recovery-reservation.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/paid-included-recovery-reservation.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-delivery-compensation/reconcile.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/whatsapp-provider-status.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-billing/initial-outreach-credit.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-billing/initial-outreach-credit-evidence.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/recovery-billing.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/recovery-billing/recovery-billing.test-support.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/free-recovery-reservation.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/purchased-recovery-reservation.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/promotional-recovery-reservation.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/paid-included-recovery-reservation.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/whatsapp-provider-status.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/integration/arch028-recovery-delivery-compensation.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/initial-outreach-credit.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/initial-outreach-credit-races.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/fixtures/initial-outreach-credit.fixture.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/initial-outreach-parent-fk.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/src/services/outbound-whatsapp-admission.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/outbound-whatsapp-admission/outbound-whatsapp-admission.types.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/outbound-whatsapp-admission/outbound-admission-reservation.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/outbound-whatsapp-admission/failed-outreach-admission.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/woocommerce-recovery/woo-initial-send-fence.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/whatsapp.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/outbound-whatsapp-admission.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/outbound-whatsapp-admission/outbound-admission-reservation.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/outbound-whatsapp-admission/outbound-provider-failure.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/outbound-whatsapp-admission/failed-outreach-admission.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/outbound-whatsapp-admission/outbound-admission.test-support.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/woocommerce-recovery/woo-guarded-initial-sender.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/whatsapp.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/outbound-whatsapp-admission/initial-outreach-admission.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/recovery-conversation/initial-outreach-permit.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/initial-outreach-admission-resume.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/initial-outreach-admission-races.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/fixtures/initial-outreach-admission.fixture.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-003",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/src/services/checkout-recovery.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/checkout-recovery/recovery-materialization.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/checkout-recovery/recovery-initiation.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/checkout-recovery/recovery-outreach-finalization.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/checkout-recovery/recovery-initial-outreach-support-notice.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/workers/pending-recovery-candidate.worker.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/recovery-template-integration/initial-no-offer-fallback.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/woocommerce-recovery/woo-recovery-outreach.service.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/workers/pending-recovery-candidate.worker.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/integration/recovery-initial-outreach-support-notice.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/checkout-recovery/initial-outreach-progress.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/unit/services/woocommerce-recovery/woo-confirmed-initial-settlement.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/initial-outreach-progress.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/initial-outreach-progress-worker.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-background/tests/integration/fixtures/initial-outreach-progress.fixture.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-004",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-system-test/catalogue/scenarios.json": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_modify"
+      },
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/catalogue/historical-system-test-map.json": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_modify"
+      },
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/docs/SHOPIFY-COVERAGE-MATRIX.md": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_modify"
+      },
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/src/harness/selection.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/src/harness/cli.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/scripts/run-system-tests.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/package.json": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_modify"
+      },
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/contracts.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/executors.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/runtime.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/integration-driver.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/fixtures.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/billing-fixtures.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/fault-controls.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/observations.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/assertions.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/evidence.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/queue-repair.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/dependency-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/ingress-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/candidate-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/admission-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/uncertainty-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/settlement-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/lock-order-cases.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/finalization-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/woo-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/src/harness/background-persistence/repair-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/docs/BACKGROUND-PERSISTENCE-VALIDATION.md": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/test/harness/background-persistence-contracts.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-system-test/test/harness/background-persistence-registration.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-system-test/test/harness/background-persistence-provenance.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-system-test/test/harness/background-persistence-fault-controls.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-system-test/test/harness/background-persistence-results.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-001",
+        "operation": "tests_create"
+      }
+    ],
+    "moda-interact-system-test/README.md": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/docs/ARCH-028-COMPENSATION-SMOKE.md": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/scripts/run-credit-source-compensation.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/scripts/validate-render-deployment.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/scripts/validate-source-structure.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/src/harness/messaging/terminal-recipient-merchant-ui.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/constants.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/index.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/src/merchant-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/src/render-test-topology.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/src/scenario-catalogue.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_modify"
+      }
+    ],
+    "moda-interact-system-test/docs/TEST-NAMING.md": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_create"
+      }
+    ],
+    "moda-interact-system-test/test/harness/approved-template-fixtures.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/test/harness/language-provider-runtime-setup.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/test/harness/language-recovery-provider-setup.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/test/harness/language-recovery-runtime-wiring.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/test/harness/platform-configuration-fixture.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/test/harness/recovery-executors.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/test/harness/selection.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/test/harness/source-structure.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/test/scenario-catalogue.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/test/render-test-topology.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/arch028-credit-source-checkout-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/credit-source-checkout-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/arch028-credit-source-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/credit-source-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/arch028-credit-source-fixtures.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/credit-source-fixtures.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/arch028-credit-source-ingress-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/credit-source-ingress-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/arch028-credit-source-initial-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/credit-source-initial-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/arch028-credit-source-observation.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/credit-source-observation.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/arch028-credit-source-receipt-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/credit-source-receipt-diagnostics.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/arch028-credit-source-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/credit-source-scenario.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/arch028-purchased-source-fixture.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/src/harness/recovery/purchased-source-fixture.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/scripts/run-arch002-observability.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/scripts/run-integrated-observability.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/scripts/run-arch002-production-readiness.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/scripts/run-production-readiness.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/scripts/run-arch002-render-test-topology.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/scripts/deprecated-render-test-topology.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/scripts/run-arch028-compensation-smoke.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/scripts/run-terminal-recipient-compensation-smoke.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/scripts/system-test-006-developer-validation.sh": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_from"
+      }
+    ],
+    "moda-interact-system-test/scripts/deprecated-render-test-validation.sh": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "production_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-compensation-smoke.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/terminal-recipient-compensation-smoke.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-credit-source-checkout-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/credit-source-checkout-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-credit-source-ingress-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/credit-source-ingress-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-credit-source-receipt-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/credit-source-receipt-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-credit-sources.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/credit-sources.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-follow-up-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/follow-up-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-initial-outreach-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/initial-outreach-diagnostics.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-purchased-source-fixture.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/purchased-source-fixture.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-terminal-recipient-merchant-ui.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/terminal-recipient-merchant-ui.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-system-test/test/harness/arch028-terminal-recipient-observation.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_from"
+      }
+    ],
+    "moda-interact-system-test/test/harness/terminal-recipient-observation.test.js": [
+      {
+        "task": "ARCH-056-SYSTEM-TEST-002",
+        "operation": "tests_renames_to"
+      }
+    ]
+  },
+  "rename_operations": [
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "src/harness/recovery/arch028-credit-source-checkout-diagnostics.js",
+      "to": "src/harness/recovery/credit-source-checkout-diagnostics.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+      "to": "src/harness/recovery/credit-source-diagnostics.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "src/harness/recovery/arch028-credit-source-fixtures.js",
+      "to": "src/harness/recovery/credit-source-fixtures.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "src/harness/recovery/arch028-credit-source-ingress-diagnostics.js",
+      "to": "src/harness/recovery/credit-source-ingress-diagnostics.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
+      "to": "src/harness/recovery/credit-source-initial-diagnostics.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "src/harness/recovery/arch028-credit-source-observation.js",
+      "to": "src/harness/recovery/credit-source-observation.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "src/harness/recovery/arch028-credit-source-receipt-diagnostics.js",
+      "to": "src/harness/recovery/credit-source-receipt-diagnostics.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "src/harness/recovery/arch028-credit-source-scenario.js",
+      "to": "src/harness/recovery/credit-source-scenario.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "src/harness/recovery/arch028-purchased-source-fixture.js",
+      "to": "src/harness/recovery/purchased-source-fixture.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "scripts/run-arch002-observability.js",
+      "to": "scripts/run-integrated-observability.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "scripts/run-arch002-production-readiness.js",
+      "to": "scripts/run-production-readiness.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "scripts/run-arch002-render-test-topology.js",
+      "to": "scripts/deprecated-render-test-topology.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "scripts/run-arch028-compensation-smoke.js",
+      "to": "scripts/run-terminal-recipient-compensation-smoke.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "scripts/system-test-006-developer-validation.sh",
+      "to": "scripts/deprecated-render-test-validation.sh"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-compensation-smoke.test.js",
+      "to": "test/harness/terminal-recipient-compensation-smoke.test.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+      "to": "test/harness/credit-source-checkout-diagnostics.test.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+      "to": "test/harness/credit-source-ingress-diagnostics.test.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+      "to": "test/harness/credit-source-receipt-diagnostics.test.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-credit-sources.test.js",
+      "to": "test/harness/credit-sources.test.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-follow-up-diagnostics.test.js",
+      "to": "test/harness/follow-up-diagnostics.test.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-initial-outreach-diagnostics.test.js",
+      "to": "test/harness/initial-outreach-diagnostics.test.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-purchased-source-fixture.test.js",
+      "to": "test/harness/purchased-source-fixture.test.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+      "to": "test/harness/terminal-recipient-merchant-ui.test.js"
+    },
+    {
+      "task": "ARCH-056-SYSTEM-TEST-002",
+      "repository": "moda-interact-system-test",
+      "from": "test/harness/arch028-terminal-recipient-observation.test.js",
+      "to": "test/harness/terminal-recipient-observation.test.js"
+    }
+  ],
   "logging_acceptance_contract": {
     "revision": 2,
     "scope": "Every added or changed failure path in the selected touchpoints; wider R3 remains partial/deferred.",
@@ -1906,7 +4689,7 @@
     "inspected_shared_sibling_version": "3.1.0",
     "automatic_stack_or_recursive_cause_emission": false,
     "moderation_privacy": "Keep existing bounded exceptionMessage preview only in test/development; preserve production-safe source diagnostics.",
-    "system_evidence_sidecar": "arch056-logging.json",
+    "system_evidence_sidecar": "background-persistence-logging.json",
     "runtime_acceptance_status": "required-not-executed"
   },
   "policy_boundary": {
