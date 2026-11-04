@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T16:19:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -28,7 +28,7 @@ updated: 2026-11-04
 
 Architecture ID: `ARCH-057`. Architecture document: `docs/architecture/ARCH-057-shopify-application-database-correctness-and-simplicity.md`. Coordinator: `moda_architect`.
 
-Read the mandatory `docs/architecture/ARCH-057/task-contract.md`, including its latest-snapshot provenance, materialisation, original-error logging and validation requirements. Materialised in the canonical task worktrees on `task/ARCH-057-SHOPIFY-005`; Attempt 1 was claimed by the launcher. The Completion Report records implementation and validation evidence; no architect acceptance is asserted.
+Read the mandatory `docs/architecture/ARCH-057/task-contract.md`, including its latest-snapshot provenance, materialisation, original-error logging and validation requirements. Materialised in the canonical task worktrees on `task/ARCH-057-SHOPIFY-005`; Attempt 1 was claimed by the launcher. The Completion Report records implementation and validation evidence; Attempt 1 was independently accepted on 2026-11-04.
 
 ## Objective
 
@@ -229,24 +229,34 @@ None identified requiring a schema or cross-repository amendment. Request reads 
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1, 2026-11-04. Completion mode is automatic: task is complete and the developer claim is cleared.
 
 ### Review Notes
 
-Portable definition only; no implementation acceptance.
+No actionable correctness or regression finding identified after independent source and test review. Badge and inbox reads meet the one/two SELECT budgets. The tenant-scoped batch statement locks eligible IDs in deterministic order, gates the entire update on eligibility, and preserves the first read timestamp. Request bounds and field/cardinality checks, legacy single-ID compatibility, mounted UI batching/cancellation, compose rollback/version increments, and postcommit queue failure isolation conform to the task.
+
+The existing request-context router test adjustment is accepted as a compatibility fixture update for the changed parent caller; it does not widen production behavior. No schema, policy, locale, provider operation, translation payload or deterministic queue identity change was introduced.
 
 ### Reviewed Files
 
-Definition and latest unchanged support touchpoints.
+Reviewed all 12 changed files in implementation commit `bc02d1095ed81daf601ca48d73e7958abdcb2768` against starting commit `de5650e73df91e4d52bbcb4131dd80d1c7a7d339`: support route and parent route, support service and observability adapter, package scripts, PostgreSQL helper/suite, request-context router fixture, and support service/route/observability/mounted UI unit suites. Reviewed the existing Shared diagnostic boundary and task/architecture contract as context. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-005`.
 
 ### Validation Reviewed
 
-Definition inspection only; implementation evidence is outstanding.
+Independent reruns passed:
+
+- Focused support unit/UI suite: 79 tests across five files, including real Shared output and throwing-sink checks.
+- Disposable migrated PostgreSQL 17 suite: all four tests executed; no skipped suite. Captured inbox evidence: two SELECTs, two transaction-control statements and four visible rows. Full suite emitted 106 SQL statements including fixtures. Covered tenant/visibility rejection, already-read no-op, lock overlap/first timestamps, rollback and concurrent compose versions. Only suite-owned resources were cleaned up.
+- Request-context router integration fixture: nine tests.
+- Typecheck, production build, required support lint scope and changed router fixture lint.
+- Implementation diff whitespace check and clean implementation worktree.
+
+Review logs are local `/tmp/arch057-shopify005-review-{units,postgres,typecheck,build,lint,required-lint,router}.log`. The production build retains its existing client chunk-size warning; it completed successfully. No live Shopify call was needed or made for this support database/UI review. Full platform certification remains owned by the terminal system-test task.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+Accepted within the bounded Shopify support lifecycle. Existing authentication, active subscription filtering, message visibility, translation rendering, transaction atomicity and durable compose success are preserved. Shared logging remains the serializer/sink owner; the support adapter adds semantic stage context without introducing a new logging implementation.
 
 ### Follow-up
 
-Return the completed task for architect review; do not start downstream work.
+SHOPIFY-011 remains pending on its other explicit prerequisites. No downstream task was started. Acceptance and lifecycle reconciliation are local review edits; they have not been committed or pushed.
