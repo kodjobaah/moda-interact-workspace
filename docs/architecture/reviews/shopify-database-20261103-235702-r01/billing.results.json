@@ -1,0 +1,93 @@
+{
+  "nodeVersion": "v24.22.1",
+  "methodology": "Executed unchanged TypeScript source after Node type stripping with mocked Prisma and HTTP ports. No PostgreSQL, installed SDK, real Shopify call, SQL statement count, latency, or throughput was measured.",
+  "sources": {
+    "app/services/billing/providers/shopify-billing.provider.ts": "394b1595323f63bf2abad04edb07ff2d698d7b8852dac16b7c003c46d886020f",
+    "app/services/billing/recovery-credit-purchase-management.service.ts": "3624e3804a66d12634a68ebd9ffa9bd83a20212cf4ce05f3092c245d86a06e8b"
+  },
+  "history_1": {
+    "resultCount": 1,
+    "counts": {
+      "db.purchase.count": 1,
+      "db.purchase.findMany": 1,
+      "outside-db.shop.findUnique": 1,
+      "outside-db.subscription.findUnique": 1,
+      "credentials.read": 1,
+      "provider.fetch": 1
+    }
+  },
+  "history_5": {
+    "resultCount": 5,
+    "counts": {
+      "db.purchase.count": 1,
+      "db.purchase.findMany": 1,
+      "outside-db.shop.findUnique": 5,
+      "outside-db.subscription.findUnique": 5,
+      "credentials.read": 5,
+      "provider.fetch": 5
+    }
+  },
+  "history_20": {
+    "resultCount": 20,
+    "counts": {
+      "db.purchase.count": 1,
+      "db.purchase.findMany": 1,
+      "outside-db.shop.findUnique": 20,
+      "outside-db.subscription.findUnique": 20,
+      "credentials.read": 20,
+      "provider.fetch": 20
+    }
+  },
+  "refund": {
+    "outcome": {
+      "purchaseId": "purchase-1",
+      "code": "REQUESTED",
+      "currentAmount": 5,
+      "reservedAmount": 0,
+      "availableAmount": 5
+    },
+    "operations": [
+      {
+        "name": "tx.purchase.findFirst",
+        "transactionOpen": true
+      },
+      {
+        "name": "outside-db.shop.findUnique",
+        "transactionOpen": true
+      },
+      {
+        "name": "outside-db.subscription.findUnique",
+        "transactionOpen": true
+      },
+      {
+        "name": "credentials.read",
+        "transactionOpen": true
+      },
+      {
+        "name": "provider.fetch",
+        "transactionOpen": true
+      },
+      {
+        "name": "tx.counter.findUnique",
+        "transactionOpen": true
+      },
+      {
+        "name": "tx.refund.create",
+        "transactionOpen": true
+      },
+      {
+        "name": "tx.purchase.updateMany",
+        "transactionOpen": true
+      },
+      {
+        "name": "tx.counter.updateMany",
+        "transactionOpen": true
+      }
+    ]
+  },
+  "malformedProviderResponse": {
+    "body": {},
+    "result": null
+  },
+  "assertions": "Passed: current-source N+1 counts, eligible fixture projections, outside-client/network work inside refund transaction, malformed response mapped to null."
+}

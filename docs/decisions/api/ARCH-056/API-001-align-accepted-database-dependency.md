@@ -1,0 +1,215 @@
+---
+id: ARCH-056-API-001
+architecture_id: ARCH-056
+title: Align the API Database dependency with accepted lifecycle contracts
+task_kind: implementation
+domain: api
+repository: moda-interact-api
+assigned_agent: moda_api
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: ready
+priority: 10
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+- ARCH-055-DATABASE-001
+- ARCH-055-API-005
+enables:
+- ARCH-056-SYSTEM-TEST-001
+created: '2026-11-03'
+updated: '2026-11-04'
+---
+
+# ARCH-056-API-001: Align the API Database dependency with accepted lifecycle contracts
+
+## Architecture
+
+Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
+
+Definition revision: 3. **Defined but not materialised.** No real task branch, worktree, claim, commit or push is asserted. The task is Ready because the two explicit prerequisite task files are Complete in the supplied snapshot; the launcher must recheck their current canonical status before execution.
+
+## Objective
+
+Make the API's recorded and materialized Database dependency supply the accepted schema and migrations consumed by the API's normal generated client.
+
+## Context
+
+U1 compares `moda-interact-workspace(20261103-212722).zip` with its canonical Database tree. API's nested schema lacks `MerchantConversationSendCommand.followUpClaimKey` and `MerchantKnowledgeUploadedAsset.intentPurposeKey`, and exactly three ARCH-055 migrations. The API's current source consumes both fields. Its `build` and `typecheck` scripts regenerate from `database/prisma/schema.prisma`. The ARCH-047 helper can select a separate migration source while the human-send harness still generates from the nested path; an override is not this task's correction.
+
+The ZIP cannot reveal whether the real recorded gitlink is old or only its exported materialization was stale. Resolve that distinction before any edit. Existing accepted task history remains intact; this task does not repeat ARCH-055-API-004's workflow changes or ARCH-055-API-009's readiness/aggregate-runner work.
+
+## Scope
+
+One repository: `moda-interact-api`. Paths below are relative to that implementation repository.
+
+| Path | Operation | Boundary |
+|---|---|---|
+| `database` | Verify/materialize; update this gitlink only if the recorded pin lacks the accepted contract | The only allowed committed implementation change |
+| `package.json` | Read only | Use the existing generation, build and focused test scripts; no script/dependency bump |
+| `database/prisma/schema.prisma` and `database/prisma/migrations/` | Read only through the verified dependency | Never edit a nested schema or historical migration |
+| `scripts/arch047-canonical-schema.mjs` | Read only | Existing predicate is not broadened into a new architecture validator |
+| `scripts/test-arch040-woo-human-send-postgres.mjs` | Read only | Verify normal client generation uses the synchronized dependency |
+| `src/merchant/conversations/messages/admission.service.ts` | Read only | Verify the accepted claim-key field compiles normally |
+| `src/merchant/merchant-knowledge/upload.service.ts` | Read only | Verify the accepted purpose field compiles normally |
+
+No new implementation or test file is required. Record evidence in this task's Completion Report. If the recorded dependency is already correct, accurate rematerialization and validation can produce a zero-diff implementation result; do not manufacture code churn or an implementation commit.
+
+## Out of Scope
+
+No API endpoint/DTO/auth/upload/readiness behavior change, new schema/migration, historical task reopening, arbitrary version upgrade, schema-copy workaround, generated-client commit, Shared publication, production rollout or edits to any `_index.md`. Do not advance the parent workspace gitlink to an unmerged API task commit.
+
+## Requirements
+
+1. Use the launcher-prepared API and matching parent task worktrees. The recorded pin, working dependency HEAD and actual schema/migration bytes must be recorded separately.
+2. Choose the accepted merged Database revision from real accessible task/Git evidence. Historical documents name accepted implementation `5907b4572ea9efc2a24c07e4c3bd3e107db4260b` and merged revision `8e74634ff92be9900f693c0c449ffce888e7d617` as tree-equivalent. Those are investigation anchors, not a command to pin an unverified SHA. Verify the relevant commit/tree and integration history in the real checkout.
+3. Require both nullable fields with the accepted native types: `followUpClaimKey String? @db.VarChar(255)` and `intentPurposeKey String? @db.VarChar(64)`. Preserve every other schema definition.
+4. Require these three existing forward migrations, unchanged: `20261102120000_arch055_rest_read_lifecycle`, `20261102121000_arch055_human_follow_up_claim_identity`, `20261102122000_arch055_upload_intake_identity`. Matching only the model fields is insufficient. All common pre-existing migration bytes remain unchanged.
+5. Preserve original public idempotency keys and historical stored claim keys. This task changes dependency coherence, not the producer/consumer contract. Existing pending uploads and the original-intake index retain ARCH-055's accepted behavior.
+6. Do not execute the coordinated deployment. Record that ARCH-055's migration/quiescence and compatible Background/both-producer rollout still govern release. This focused task does not establish architecture-wide ARCH-055 completion.
+
+## Work Items
+
+- [ ] Inspect recorded gitlink, working dependency HEAD, clean state and accepted merged Database history.
+- [ ] Rematerialize a correct recorded dependency, or advance only the API-owned gitlink to the verified accepted merged contract.
+- [ ] Verify the two fields, three migration files and unchanged common migration bytes.
+- [ ] Run normal client generation through the existing typecheck/build path and the focused migration-backed API suites below.
+- [ ] Report real provenance, exact commands/results and the committed diff or justified zero-diff outcome.
+
+## Interfaces / Contracts
+
+No new TypeScript/public/Shared interface. The consumed persistence contract is owned by `ARCH-055-DATABASE-001`; the accepted upload consumer is `ARCH-055-API-005`. Both normal commands must still invoke `prisma generate --schema database/prisma/schema.prisma`. Selecting a sibling schema through a test override is not a replacement.
+
+At the reviewed baseline the canonical schema SHA-256 is `5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052`; the stale API schema SHA-256 is `45df5e44bdc1e7e29495e391a1754477f0df362c667d648f4b6893b6541f5c0d`. These identify this review's bytes, not a permanent ban on later accepted migrations. If later accepted source is present, establish that lineage and contract explicitly; an unexplained divergence is a stop condition.
+
+## Dependencies
+
+- `ARCH-055-DATABASE-001` — Complete and accepted persistence contract.
+- `ARCH-055-API-005` — Complete and accepted purpose/intake consumer.
+
+`ARCH-055-API-004`, `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` retain their existing scopes/statuses. They are not synthetic gates for this narrow dependency correction. A failure inside their unrelated unfinished behavior must be reported accurately, not fixed opportunistically here or hidden as a successful validation.
+
+## Enables
+
+- `ARCH-056-SYSTEM-TEST-001`, after its other prerequisites are also Complete.
+
+## Acceptance Criteria
+
+- [ ] Recorded and working Database revisions have a verified accepted relationship and provide the exact required contract.
+- [ ] Normal `npm run typecheck` and `npm run build` succeed without an out-of-band generated client.
+- [ ] The three focused migration-backed API commands below pass against the synchronized dependency; no test-only canonical override masks the nested client path.
+- [ ] Existing fields, migration bytes, public retry identities and historical keys are preserved.
+- [ ] Only the API `database` gitlink changed, or a zero-diff rematerialization result is truthfully demonstrated.
+- [ ] Real task/worktree/branch/submodule evidence and disposable-resource cleanup are recorded; deployment is not claimed.
+
+## Validation
+
+From the launcher-resolved implementation worktree, inspect first:
+
+```bash
+git status --short
+git ls-tree HEAD -- database
+git submodule status -- database
+git -C database rev-parse HEAD
+git -C database status --short
+```
+
+If the recorded revision is correct but materialization is stale, use the existing workflow:
+
+```bash
+git submodule sync -- database
+git submodule update --init --recursive -- database
+```
+
+Those commands cannot choose a new pin when the recorded pin itself is old. The latter case requires the verified accepted revision, not a guessed literal supplied by this document.
+
+Required commands after the dependency is coherent and existing locked dependencies are available:
+
+```bash
+npm run typecheck
+npm run build
+npm run test:arch026-woo-rest-read:postgres
+npm run test:arch035-knowledge-upload:postgres
+npm run test:arch040-human-send:postgres
+git diff --check
+```
+
+- [ ] Inspect the exact command output and migration source; no skipped/no-test result counts as a pass.
+- [ ] Record recorded/working nested revision, schema hash, missing/changed migration comparison, generated Prisma version, real parent/implementation HEADs and container cleanup.
+- [ ] Use disposable PostgreSQL 17 + pgvector through the existing runners; no live database, `db push`, destructive schema reset or ad hoc schema source.
+
+These are validation obligations, not results already obtained by the architect. Historical accepted tests do not prove this checkout passes.
+
+## Implementation Notes
+
+Follow the common execution/logging/evidence contract in the parent architecture. This task needs no new runtime logger. Any runner/database failure must retain its original diagnostic and redacted safe context. The three migrations and their rollout semantics remain owned by ARCH-055; no accepted task or `_index.md` is modified by this definition.
+
+### Stop Condition
+
+Stop and report before changing scope if accepted dependency provenance is unavailable, the real checkout has unexplained schema drift, normal validation exposes unrelated source defects, or a fix would require another repository/schema/task. Do not substitute an arbitrary current Database revision or weaken a gate. Once scoped acceptance and validation pass, complete this task's report, publish the normal mirrored task evidence, set `status: review`, return to `moda_architect` and stop. Do not execute the enabled system task.
+
+## Completion Report
+
+This section belongs to the implementing repository agent. No implementation is recorded by this definition.
+
+### Status
+
+Not Started
+
+### Files Changed
+
+Pending implementation.
+
+### Work Completed
+
+Pending implementation.
+
+### Validation Results
+
+Not run. Record exact commands, exit results, failures, warnings, source/build/schema provenance, scenario evidence and cleanup; do not copy planned checks as completed results.
+
+### Deviations
+
+None at definition time. Record actual deviations and their architect disposition before review.
+
+### Assumptions
+
+The reviewed snapshot and accepted prerequisite contracts are the definition baseline. Recheck the real current checkout and task state at launch.
+
+### Unresolved Issues
+
+Pending implementation evidence. Preserve the task's explicit held/deferred and blocked-policy boundaries.
+
+### Architectural Concerns
+
+Return changes to ownership, contracts, schema, transaction boundaries, durable-state semantics, queue behavior, security or another repository to moda_architect before expanding scope.
+
+## Architect Review
+
+This section belongs only to moda_architect. Definition authoring is not implementation acceptance.
+
+### Review Status
+
+Pending
+
+### Review Notes
+
+Awaiting an implementation submission and its evidence.
+
+### Reviewed Files
+
+No implementation submitted.
+
+### Validation Reviewed
+
+No implementation validation submitted.
+
+### Architecture Conformance
+
+Pending review against the parent architecture, task allowlist, interface contracts, repository boundaries and failure requirements.
+
+### Follow-up
+
+Pending implementation review; no enabled task may be started by this task's executor.

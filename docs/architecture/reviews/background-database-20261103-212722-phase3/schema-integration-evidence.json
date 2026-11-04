@@ -1,0 +1,324 @@
+{
+  "audit_version": 1,
+  "workspace": "/workspace/scratch/3b275fb6a722/review-updated/moda-interact-workspace",
+  "scope": "read-only source/dependency audit and existing selector execution",
+  "source_compatibility": "API nested Database differs from canonical: schema bytes differ; 2 differing inspected ARCH-055 field definitions; 3 missing migration files; 0 extra migration files; 0 changed common migration files.",
+  "copies": {
+    "canonical": {
+      "path": "moda-interact-database/prisma/schema.prisma",
+      "schema_bytes": 191864,
+      "schema_sha256": "5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052",
+      "model_count": 130,
+      "schema_equals_canonical": true,
+      "migration_file_count": 72,
+      "sql_migration_count": 71,
+      "common_migration_files": 72,
+      "changed_common_migration_files": [],
+      "missing_migration_files": [],
+      "extra_migration_files": [],
+      "git_metadata_present": false
+    },
+    "api": {
+      "path": "moda-interact-api/database/prisma/schema.prisma",
+      "schema_bytes": 191707,
+      "schema_sha256": "45df5e44bdc1e7e29495e391a1754477f0df362c667d648f4b6893b6541f5c0d",
+      "model_count": 130,
+      "schema_equals_canonical": false,
+      "migration_file_count": 69,
+      "sql_migration_count": 68,
+      "common_migration_files": 69,
+      "changed_common_migration_files": [],
+      "missing_migration_files": [
+        "20261102120000_arch055_rest_read_lifecycle/migration.sql",
+        "20261102121000_arch055_human_follow_up_claim_identity/migration.sql",
+        "20261102122000_arch055_upload_intake_identity/migration.sql"
+      ],
+      "extra_migration_files": [],
+      "git_metadata_present": false
+    },
+    "background": {
+      "path": "moda-interact-background/database/prisma/schema.prisma",
+      "schema_bytes": 191864,
+      "schema_sha256": "5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052",
+      "model_count": 130,
+      "schema_equals_canonical": true,
+      "migration_file_count": 72,
+      "sql_migration_count": 71,
+      "common_migration_files": 72,
+      "changed_common_migration_files": [],
+      "missing_migration_files": [],
+      "extra_migration_files": [],
+      "git_metadata_present": false
+    },
+    "shopify": {
+      "path": "moda-interact/database/prisma/schema.prisma",
+      "schema_bytes": 191864,
+      "schema_sha256": "5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052",
+      "model_count": 130,
+      "schema_equals_canonical": true,
+      "migration_file_count": 72,
+      "sql_migration_count": 71,
+      "common_migration_files": 72,
+      "changed_common_migration_files": [],
+      "missing_migration_files": [],
+      "extra_migration_files": [],
+      "git_metadata_present": false
+    },
+    "admin": {
+      "path": "moda-interact-admin/database/prisma/schema.prisma",
+      "schema_bytes": 191864,
+      "schema_sha256": "5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052",
+      "model_count": 130,
+      "schema_equals_canonical": true,
+      "migration_file_count": 72,
+      "sql_migration_count": 71,
+      "common_migration_files": 72,
+      "changed_common_migration_files": [],
+      "missing_migration_files": [],
+      "extra_migration_files": [],
+      "git_metadata_present": false
+    }
+  },
+  "field_contracts": [
+    {
+      "model": "MerchantConversationSendCommand",
+      "field": "followUpClaimKey",
+      "canonical_definition": "followUpClaimKey                    String?                       @db.VarChar(255)",
+      "api_definition": null
+    },
+    {
+      "model": "MerchantKnowledgeUploadedAsset",
+      "field": "intentPurposeKey",
+      "canonical_definition": "intentPurposeKey String?                              @db.VarChar(64)",
+      "api_definition": null
+    }
+  ],
+  "canonical_minus_two_field_lines_equals_api_schema": true,
+  "schema_diff_api_to_canonical": "--- moda-interact-api/database/prisma/schema.prisma\n+++ moda-interact-database/prisma/schema.prisma\n@@ -598,6 +598,7 @@\n   conversationId                      String\n   conversation                        Conversation                  @relation(fields: [conversationId], references: [id], onDelete: Cascade)\n   idempotencyKey                      String                        @db.VarChar(128)\n+  followUpClaimKey                    String?                       @db.VarChar(255)\n   payloadSha256                       String                        @db.VarChar(64)\n   expectedControlRevision             Int\n   kind                                MerchantConversationSendKind\n@@ -4187,6 +4188,7 @@\n   id               String                               @id @default(cuid()) @db.Text\n   shopId           String                               @db.Text\n   dataFormatId     String                               @db.Text\n+  intentPurposeKey String?                              @db.VarChar(64)\n   status           MerchantKnowledgeUploadedAssetStatus @default(PENDING_UPLOAD)\n   objectKey        String                               @unique @db.Text\n   originalFileName String                               @db.VarChar(255)\n",
+  "arch055_migrations": [
+    {
+      "path": "20261102120000_arch055_rest_read_lifecycle/migration.sql",
+      "sha256": "c129466fdb53190b7f8ce6c2d3a04867c6bacbd55e334c5e0bceeb1b28e4e53b",
+      "bytes": 3465
+    },
+    {
+      "path": "20261102121000_arch055_human_follow_up_claim_identity/migration.sql",
+      "sha256": "e4689790fbba7f606803b2d0370a66ba8b4f57bb3cb0b67b154336f90c2d41fb",
+      "bytes": 1263
+    },
+    {
+      "path": "20261102122000_arch055_upload_intake_identity/migration.sql",
+      "sha256": "e9ce08d49576f84a4e1b95c39637c69e97f0f620b4fae608fadf2712fefb6a37",
+      "bytes": 975
+    }
+  ],
+  "packages": {
+    "moda-interact-api": {
+      "node_modules_present": false,
+      "git_metadata_present": false,
+      "prisma_client_dependency": "6.19.3",
+      "prisma_dev_dependency": "6.19.3",
+      "scripts": {
+        "build": "npm run prisma:generate && tsc -p tsconfig.build.json",
+        "typecheck": "npm run prisma:generate && tsc --noEmit -p tsconfig.json",
+        "prisma:generate": "prisma generate --schema database/prisma/schema.prisma",
+        "test:arch026-woo-rest-read:postgres": "node scripts/test-woocommerce-rest-read-authorization-postgres.mjs",
+        "test:arch035-knowledge-upload:postgres": "node scripts/test-arch035-knowledge-upload-postgres.mjs",
+        "test:arch040-human-send:postgres": "node scripts/test-arch040-woo-human-send-postgres.mjs"
+      }
+    },
+    "moda-interact-background": {
+      "node_modules_present": false,
+      "git_metadata_present": false,
+      "prisma_client_dependency": "^6.19.3",
+      "prisma_dev_dependency": "^6.19.3",
+      "scripts": {
+        "build": "npm run prisma:generate && tsc",
+        "prisma:generate": "prisma generate --schema database/prisma/schema.prisma",
+        "test:arch040-recovery-conversation": "vitest run tests/unit/services/recovery-conversation",
+        "test:arch040-background-runtime:postgres": "node scripts/test-integration.mjs tests/integration/recovery-human-dispatch.integration.test.ts tests/integration/recovery-follow-up-claim-races.integration.test.ts tests/integration/arch055-follow-up-identity.integration.test.ts"
+      }
+    },
+    "moda-interact": {
+      "node_modules_present": false,
+      "git_metadata_present": false,
+      "prisma_client_dependency": "^6.19.3",
+      "prisma_dev_dependency": "^6.19.3",
+      "scripts": {
+        "build": "npm run prisma:generate && react-router build",
+        "typecheck": "react-router typegen && tsc --noEmit",
+        "prisma:generate": "prisma generate --schema database/prisma/schema.prisma"
+      }
+    },
+    "moda-interact-database": {
+      "node_modules_present": false,
+      "git_metadata_present": false,
+      "prisma_client_dependency": "^6.19.3",
+      "prisma_dev_dependency": "^6.19.3",
+      "scripts": {
+        "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+        "test:arch055-database-contracts": "node scripts/validate-arch055-database-contracts.mjs",
+        "test:arch055-database-contracts:postgres:fresh": "node scripts/test-arch055-database-contracts-postgres.mjs --mode fresh",
+        "test:arch055-database-contracts:postgres:upgrade": "node scripts/test-arch055-database-contracts-postgres.mjs --mode upgrade"
+      }
+    }
+  },
+  "selector_probe": {
+    "executed": true,
+    "exit_code": 0,
+    "result": {
+      "defaultSelection": "/workspace/scratch/3b275fb6a722/review-updated/moda-interact-workspace/moda-interact-api/database/prisma/schema.prisma",
+      "explicitCanonicalSelection": "/workspace/scratch/3b275fb6a722/review-updated/moda-interact-workspace/moda-interact-database/prisma/schema.prisma",
+      "staleApiAcceptedAsArch047": true,
+      "commonLineageMatches": true
+    },
+    "stderr": "",
+    "scope": "Existing built-in-only schema selector; no app import, Prisma generation, or database call."
+  },
+  "field_source_references": [
+    {
+      "path": "moda-interact-api/src/merchant/conversations/messages/admission.service.ts",
+      "line": 188,
+      "text": "followUpClaimKey: input.kind === \"RECOVERY_FOLLOW_UP_TEMPLATE\" ? commandId : null,"
+    },
+    {
+      "path": "moda-interact-api/src/merchant/merchant-knowledge/upload.service.ts",
+      "line": 156,
+      "text": "existing.intentPurposeKey !== request.purposeKey ||"
+    },
+    {
+      "path": "moda-interact-api/src/merchant/merchant-knowledge/upload.service.ts",
+      "line": 170,
+      "text": "dataFormatId: pair.dataFormatId, intentPurposeKey: request.purposeKey, status: \"PENDING_UPLOAD\", objectKey,"
+    },
+    {
+      "path": "moda-interact-api/src/merchant/merchant-knowledge/upload.service.ts",
+      "line": 196,
+      "text": "intentPurposeKey: true,"
+    },
+    {
+      "path": "moda-interact-api/src/merchant/merchant-knowledge/upload.service.ts",
+      "line": 207,
+      "text": "if (asset.intentPurposeKey !== null && asset.intentPurposeKey !== request.purposeKey) throw conflict();"
+    },
+    {
+      "path": "moda-interact-api/src/merchant/merchant-knowledge/upload.service.ts",
+      "line": 211,
+      "text": "if (asset.intentPurposeKey !== request.purposeKey) throw conflict();"
+    },
+    {
+      "path": "moda-interact-api/src/merchant/merchant-knowledge/upload.service.ts",
+      "line": 244,
+      "text": "if (asset.intentPurposeKey !== null && asset.intentPurposeKey !== request.purposeKey) throw conflict();"
+    },
+    {
+      "path": "moda-interact-api/src/merchant/merchant-knowledge/upload.service.ts",
+      "line": 251,
+      "text": "if (asset.intentPurposeKey !== request.purposeKey) throw conflict();"
+    },
+    {
+      "path": "moda-interact/app/services/recoveries/recovery-human-commands.server.ts",
+      "line": 264,
+      "text": "followUpClaimKey: input.kind === \"RECOVERY_FOLLOW_UP_TEMPLATE\" ? commandId : null,"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/merchant-send-command.service.ts",
+      "line": 7,
+      "text": "id: string; idempotencyKey: string; followUpClaimKey: string | null; shopId: string; conversationId: string;"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/merchant-send-command.service.ts",
+      "line": 68,
+      "text": "(typeof command.followUpClaimKey !== \"string\" || !command.followUpClaimKey.trim())) {"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/human-command-dispatcher.service.ts",
+      "line": 510,
+      "text": "if (typeof command.followUpClaimKey !== \"string\" || !command.followUpClaimKey.trim()) {"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/human-command-dispatcher.service.ts",
+      "line": 513,
+      "text": "const followUpClaimKey = command.followUpClaimKey;"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/human-command-dispatcher.service.ts",
+      "line": 515,
+      "text": "initiator: \"merchant_post_window\", recoveryId, initiationKey: followUpClaimKey,"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/human-command-dispatcher.service.ts",
+      "line": 526,
+      "text": "AND \"outboundMessageId\" IS NULL AND \"status\"='PENDING'`, recoveryId, followUpClaimKey);"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts",
+      "line": 106,
+      "text": "followUpClaimKey: string | null;"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts",
+      "line": 114,
+      "text": "\"followUpClaimKey\", \"recoveryOutreachAttemptId\", \"providerDispatchKey\""
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts",
+      "line": 128,
+      "text": "if (typeof command.followUpClaimKey !== \"string\" || !command.followUpClaimKey.trim()) {"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts",
+      "line": 152,
+      "text": "attempt.initiationKey !== command.followUpClaimKey ||"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/follow-up-claim-cancellation.service.ts",
+      "line": 27,
+      "text": "state: string; followUpClaimKey: string | null; leaseToken: string | null; leaseValid: boolean;"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/follow-up-claim-cancellation.service.ts",
+      "line": 82,
+      "text": "AND attempt.\"initiatedBy\"='HUMAN' AND NULLIF(btrim(cmd.\"followUpClaimKey\"),'') IS NOT NULL"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/follow-up-claim-cancellation.service.ts",
+      "line": 83,
+      "text": "AND attempt.\"initiationKey\"=cmd.\"followUpClaimKey\""
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/follow-up-claim-cancellation.service.ts",
+      "line": 145,
+      "text": "\"followUpClaimKey\",\"leaseToken\",(\"leaseExpiresAt\">statement_timestamp()) AS \"leaseValid\","
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/follow-up-claim-cancellation.service.ts",
+      "line": 162,
+      "text": "const claimKeyValid = typeof command.followUpClaimKey === \"string\" && !!command.followUpClaimKey.trim();"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/follow-up-claim-cancellation.service.ts",
+      "line": 172,
+      "text": "attempt.initiatedBy === \"HUMAN\" && attempt.initiationKey === command.followUpClaimKey &&"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/follow-up-claim-cancellation.service.ts",
+      "line": 227,
+      "text": "attempt.id, context.recoveryId, command.followUpClaimKey);"
+    }
+  ],
+  "not_executed": [
+    "Prisma generation",
+    "TypeScript build/typecheck",
+    "application tests",
+    "PostgreSQL rehearsal",
+    "deployment",
+    "git submodule update",
+    "dependency installation"
+  ],
+  "limits": [
+    "No real Git pins or merge ancestry can be verified from this source-only export.",
+    "Schema/source mismatch is observed; actual compiler/runtime diagnostics were not produced.",
+    "Historical task validation reports are documentary evidence, not rerun results."
+  ]
+}
