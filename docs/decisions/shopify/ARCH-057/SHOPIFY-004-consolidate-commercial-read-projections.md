@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-11-04T14:57:32Z
@@ -175,14 +175,14 @@ Keep server diagnostics out of merchant JSON and locale text. No new visible key
 
 ## Work Items
 
-- [ ] Consume the accepted request context in the declared page entrypoints.
-- [ ] Implement one typed billing presentation collector and pure commercial/capacity/top-up projections.
-- [ ] Batch required counters/plans/catalogue and remove unused lifetime usage aggregation.
-- [ ] Reuse Home pricing facts and replace select's full-capacity read with scalar status.
-- [ ] Implement exact database-paged translated promotion offers and shared read context.
-- [ ] Preserve promotion mutation admission and repair its stale concurrency expectation.
-- [ ] Combine usage count/sum without changing bounds or source resolution.
-- [ ] Complete branch budgets, actual Shared failure assertions and the required promotion PostgreSQL evidence.
+- [x] Consume the accepted request context in the declared page entrypoints.
+- [x] Implement one typed billing presentation collector and pure commercial/capacity/top-up projections.
+- [x] Batch required counters/plans/catalogue and remove unused lifetime usage aggregation.
+- [x] Reuse Home pricing facts and replace select's full-capacity read with scalar status.
+- [x] Implement exact database-paged translated promotion offers and shared read context.
+- [x] Preserve promotion mutation admission and repair its stale concurrency expectation.
+- [x] Combine usage count/sum without changing bounds or source resolution.
+- [x] Complete branch budgets, actual Shared failure assertions and the required promotion PostgreSQL evidence.
 
 ## Interfaces / Contracts
 
@@ -236,27 +236,27 @@ All must be Complete and architect-accepted before claim. The explicit list reco
 
 ## Acceptance Criteria
 
-- [ ] Options uses eight repository data calls and one Partner request in the supplied-context healthy Paid fixture, with no repeated Shop/Subscription/counter/catalogue reads and no writes.
-- [ ] Local/live plan differences, pending selection, Free/Paid/TRIALING/FROZEN/NO_CONTRACT/post-contract/unmapped/transition/error states retain current DTO and entitlement behavior.
-- [ ] Select uses scalar FROZEN status with no capacity/catalogue/provider work; Home retains current and pending plan names from one plan batch, reuses matching pricing facts and keeps all early-return/legacy-link branches.
-- [ ] Promotion pages use five page-data calls, return at most six correctly translated offers, and have count/page predicates and stable ordering in agreement.
-- [ ] Promotion mutation policy and grant/accounting remain unchanged; real same-campaign concurrency yields one selection rather than artificially incrementing twice.
-- [ ] Usage uses one count/sum aggregate and retains its tenant, cursor, offset, page and source-query bounds.
-- [ ] Every named failure preserves actual safe Shared message/code/cause output; fallback and sink-failure behavior remain correct with no provider-body duplication or secret/PII leakage.
-- [ ] No schema, package, mutation freshness, locale/copy, hash identity, notification/privacy policy or cross-repository behavior changed.
+- [x] Options uses eight repository data calls and one Partner request in the supplied-context healthy Paid fixture, with no repeated Shop/Subscription/counter/catalogue reads and no writes.
+- [x] Local/live plan differences, pending selection, Free/Paid/TRIALING/FROZEN/NO_CONTRACT/post-contract/unmapped/transition/error states retain current DTO and entitlement behavior.
+- [x] Select uses scalar FROZEN status with no capacity/catalogue/provider work; Home retains current and pending plan names from one plan batch, reuses matching pricing facts and keeps all early-return/legacy-link branches.
+- [x] Promotion pages use five page-data calls, return at most six correctly translated offers, and have count/page predicates and stable ordering in agreement.
+- [x] Promotion mutation policy and grant/accounting remain unchanged; real same-campaign concurrency yields one selection rather than artificially incrementing twice.
+- [x] Usage uses one count/sum aggregate and retains its tenant, cursor, offset, page and source-query bounds.
+- [x] Every named failure preserves actual safe Shared message/code/cause output; fallback and sink-failure behavior remain correct with no provider-body duplication or secret/PII leakage.
+- [x] No schema, package, mutation freshness, locale/copy, hash identity, notification/privacy policy or cross-repository behavior changed.
 
 ## Validation
 
 Run from the prepared `moda-interact` implementation worktree under the mandatory contract.
 
-- [ ] `npm run prisma:generate`
-- [ ] `npm test -- tests/unit/services/billing/merchant-billing-presentation.test.ts tests/unit/commercial-read-budget.test.ts tests/unit/routes/billing-options-loader.test.ts tests/unit/services/billing/merchant-billing-read.service.test.ts tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts tests/unit/services/billing/subscription-read.service.test.ts tests/unit/services/billing/billing-plan-resolution.service.test.ts tests/unit/services/billing.service.test.ts tests/unit/home-route.test.ts tests/unit/billing-ui.test.ts tests/unit/merchant-pricing-usage-overview.test.jsx tests/unit/services/promotion.service.test.ts tests/unit/routes/promotion-route.test.ts tests/unit/usage-route.test.ts`
-- [ ] `npm test -- tests/unit/routes/billing-options-action.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts` — prerequisite mutation freshness and action ownership remain intact.
-- [ ] `MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/promotion-selection.concurrency.integration.test.ts`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
-- [ ] `npx --no-install eslint app/services/billing app/services/promotions/promotion.service.ts app/services/merchant-pricing/merchant-pricing.server.js app/services/usage/history.server.ts app/routes/app/billing/options/route.tsx app/routes/app/billing/select/route.jsx app/routes/app/home/route.jsx app/routes/app/promotions/route.tsx app/routes/app/usage/route.jsx tests/unit/services/billing/merchant-billing-presentation.test.ts tests/unit/commercial-read-budget.test.ts tests/unit/routes/billing-options-loader.test.ts tests/fixtures/commercial-read-context.ts tests/integration/promotion-selection.concurrency.integration.test.ts` and focused lint of changed existing tests.
-- [ ] `git diff --check`
+- [x] `npm run prisma:generate`
+- [x] `npm test -- tests/unit/services/billing/merchant-billing-presentation.test.ts tests/unit/commercial-read-budget.test.ts tests/unit/routes/billing-options-loader.test.ts tests/unit/services/billing/merchant-billing-read.service.test.ts tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts tests/unit/services/billing/subscription-read.service.test.ts tests/unit/services/billing/billing-plan-resolution.service.test.ts tests/unit/services/billing.service.test.ts tests/unit/home-route.test.ts tests/unit/billing-ui.test.ts tests/unit/merchant-pricing-usage-overview.test.jsx tests/unit/services/promotion.service.test.ts tests/unit/routes/promotion-route.test.ts tests/unit/usage-route.test.ts`
+- [x] `npm test -- tests/unit/routes/billing-options-action.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts` — prerequisite mutation freshness and action ownership remain intact.
+- [x] `MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/promotion-selection.concurrency.integration.test.ts`
+- [x] `npm run typecheck`
+- [x] `npm run build`
+- [x] `npx --no-install eslint app/services/billing app/services/promotions/promotion.service.ts app/services/merchant-pricing/merchant-pricing.server.js app/services/usage/history.server.ts app/routes/app/billing/options/route.tsx app/routes/app/billing/select/route.jsx app/routes/app/home/route.jsx app/routes/app/promotions/route.tsx app/routes/app/usage/route.jsx tests/unit/services/billing/merchant-billing-presentation.test.ts tests/unit/commercial-read-budget.test.ts tests/unit/routes/billing-options-loader.test.ts tests/fixtures/commercial-read-context.ts tests/integration/promotion-selection.concurrency.integration.test.ts` and focused lint of changed existing tests.
+- [x] `git diff --check`
 
 Budget tests execute the actual route/service composition with controlled Prisma/provider ports; they do not inspect source text alone. Fix fixture time and use identical before/after fixture branches. Record context acquisition separately, including whether the parent already seeded scalar rows. Count physical SQL only where collected, separately from method budgets and relation expansion; do not claim latency/capacity from these tests.
 
@@ -280,35 +280,100 @@ The method budgets are branch-specific upper bounds and preserve legitimate chec
 
 ### Status
 
-Not Started. Defined but not materialised.
+Ready for Review — Attempt 1. Implementation and required validation pass; submitted for `moda_architect` review, without an acceptance decision by this implementation agent. All named prerequisites passed the launcher gate. The existing Architect Review was Pending definition review, not Changes Requested.
 
 ### Files Changed
 
-None. Definition only.
+Implementation commits `2b2ad2b1c48cda45cffcc7dea39d3a96bbeba2c1` and `525194c9598c18f8f736b4d24752bfdf07228720`, committed and pushed to `origin/task/ARCH-057-SHOPIFY-004` in `moda-interact`. All 29 changed files are on the task allowlist. The second commit only adds the explicit SQL/control-statement breakdown to the already-passing integration evidence.
+
+- Billing: the new `merchant-billing-presentation.server.ts` collector; existing pure billing/capacity/subscription projections, typed inputs/results, bounded pricing batch reader, BillingService facade and shared pure top-up configuration derivation in `merchant-pricing.server.js`.
+- Named routes: options loader, select, Home, promotions and usage. The prerequisite-owned options action is byte-for-byte unchanged from the accepted start commit (checked independently of the loader diff).
+- Promotions/usage: the existing promotion service/page reader, selection failure ownership, existing usage-history aggregate and declared PostgreSQL integration test.
+- Tests: all five declared new source/test/fixture files; existing declared service, Home, billing UI, promotion route/service and usage tests. The unchanged standalone subscription-read and pricing/usage-render tests were also run.
+- New files remain below 300 lines (largest 178). No package, schema, migration, prerequisite context/provider-diagnostics implementation, locale, identity, hash preimage, Background, other task, architecture or parent gitlink change.
 
 ### Work Completed
 
-None.
+Every named route consumes the accepted merchant request context and retains independent active-Shop/surface authorization. Active-only Subscription guards remain filtered; full scalar projection status is used where required, including the select FROZEN check. The collector attaches current/pending operational plans by scalar foreign keys, reads the scoped current period/counter and validates related identities before projection. It does not reload Shop/Subscription, perform writes, cache results across requests or claim a transactionally atomic read snapshot.
+
+Options performs one provider observation and seven local data reads plus its one credential read: distinct operational-plan batch, period/included-counter, the two-counter batch, selected promotion, at-most-two-handle pricing batch, latest receipt and all unresolved purchases. The latter remains intentionally untruncated. Pure domain calculations preserve separate Free, paid-period, purchased and promotional balances, provider/local handle distinctions, quote/development-price display, lifecycle/transition/mapping states and current/pending choices. The unconsumed lifetime usage aggregate and internal `usageQuantity` were removed; a production-source search found no remaining consumer or superseded facade call.
+
+The internal typed presentation result also carries the route's existing `currentContract`, from the same plan batch. This preserves a successfully read plan name/durable shell when an independent capacity read fails, without an extra lookup or a new merchant JSON field. The public commercial/capacity/top-up DTOs otherwise retain their fields except the explicitly removed unused internal usage total.
+
+Home reuses already-loaded pricing facts and current/pending plan names, makes no provider call, retains observed-handle fallback and exact local pricing lookup when absent from the active catalogue, and returns nullable capacity independently of a successfully obtained summary. The composition is after onboarding/setup/legacy-link early returns; recovery overview/pending-recovery behavior remains covered. Select reads only scalar status after context acquisition.
+
+Promotion count/page share the exact translated/targeted active/time predicate, count first, clamp offers, then use take 6 with expiresAt/createdAt/ID ordering. Selection and bounded history reuse supplied scalar context; history still retains six grants and one latest reopen event. Existing selected-offer visibility, targeting, quantity accounting, grant reuse and expiry/reopen projections remain. Selection admission still rereads context/campaign/current selection inside its fresh Serializable transaction and rejects an unexpired selection, including the same campaign. The stale integration expectation was corrected rather than weakening the service.
+
+Usage now derives count and quantity from one aggregate with identical tenant/selected-period predicates. The four-method selected-period branch, 100-event cap, signed-integer offset validation, 26/25-period keyset page, cursor boundaries and single bounded three-source raw query are preserved.
+
+The original domain fixture matrices now prepare facts for the pure projections through test-only adapters. Production facade compatibility methods were removed, and new tests check they are absent. New real service/facade/route compositions, not these historical adapters or source-text assertions, establish the read budgets and failure behavior.
 
 ### Validation Results
 
-Not run. Record exact commands, branch fixtures/results, source/build/dependency provenance, context/domain/provider/SQL counts, actual Shared-log evidence and owned-container cleanup.
+Executed in the launcher-returned implementation worktree with the locked toolchain:
+
+- `npm run prisma:generate`: passed against the unchanged pinned Database schema; build also regenerated the client.
+- Exact fourteen-file focused command from Validation: **14 files, 429 tests passed**, no skips. Includes current/local/pending mismatch, missing/null cycle, inactive/missing plan, related-row identity, Free/Paid/trial/frozen/post-contract, missing counters, outage, transition, Home summary/fallback, translated targets/history, cursor/offset/100-row/source bounds and actual Shared output.
+- Exact prerequisite mutation command: **2 files, 19 tests passed**, no skips. Receipt replay, action ownership and two fresh provider/catalogue observations remain intact.
+- Exact `MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/promotion-selection.concurrency.integration.test.ts`: **3 tests passed**, no skips, canonical forward migrations on task-owned **pgvector/pgvector:pg17**. Its final rerun also records separate SQL/control counts.
+- `npm run typecheck`: passed.
+- `npm run build`: passed. Existing large client-chunk warning remains; no bundler/dependency configuration changed.
+- Exact declared scoped ESLint command, plus every changed existing test file: passed without errors or warnings. Final test-only SQL instrumentation and strengthened Home-budget assertions also passed focused lint.
+- `git diff --check`: passed for implementation and report.
+- Final focused budget rerun: **11/11 passed**, including the explicit Home no-Shop/Subscription-reread assertions.
+
+Real PostgreSQL evidence uses two separate Prisma connections and a barrier after each first transaction's real current-selection read, before either writes. Different-campaign and same-campaign races each leave exactly one accepted selection, one normal `ACTIVE_PROMOTION_ALREADY_SELECTED` result, one grant and `selectionCount=1`, with correct granted/reserved/committed quantities and matching selection FK. The same-campaign race also uses a real throwing Shared sink; a genuine retry diagnostic reaches it and the committed quantities/normal denial remain unchanged.
+
+The translation SQL fixture intersperses French-only rows, ties timestamps and includes GLOBAL/eligible PLAN/this SHOP targets plus a foreign-Shop target. Exactly **16** English-eligible offers appear on three pages as **6/6/4**, in stable ID order with no duplication; an oversized page clamps to the final four. Each page's **five repository data methods** expands to **7 actual SELECT statements**, **0 transaction-control statements**, with matching translated count/page results. The full integration fixture/races/assertions emitted **230 SQL statements**; that total includes setup, writes, retries and assertions and is not a per-page budget or throughput metric.
+
+Same-fixture method comparison, fixed at `2026-09-15T12:00:00Z`, executed against archived accepted start source and current source:
+
+| Operation/branch | Before data methods | After data methods | Context and provider qualification |
+|---|---:|---:|---|
+| Healthy Paid options | 16 | 8 | Both include one controlled provider credential read and one provider observation; scalar context acquisition is separately one call, so total after Shop resolution is 17 before and 9 after |
+| Paid Home capacity, pricing facts already available | 5 | 4 | No provider; new current/pending names are from one operational-plan batch and matching pricing facts avoid a duplicate read |
+| Frozen select | 5 | 0 | One scalar-context read separately in both cases; no provider |
+| Promotion page | 7 | 5 | Before includes three repeated context methods plus four page-data methods and materializes all 100 fixture offers; after uses supplied context and returns a bounded six-row page |
+| Selected usage | 5 | 4 | Both retain one separate bounded raw source query |
+
+The new no-period Free Home branch uses **3** local methods, empty usage **2** methods/no raw query, and promotion counts remain **5** page-data calls for 1/100/10,000 fixture offers. Actual route tests separately record a controlled preseeded context (one context call/one lazy scalar read, no extra scalar DB read). Parent/support reads, relation expansion and SDK internals are excluded from domain budgets. The controlled provider port exposes its credential read separately; no live Partner request was executed. Baseline comparison is ORM-method evidence, not physical SQL evidence or a latency/capacity claim.
+
+Actual Shared output is captured after serialization, not by mocking logger methods. Provider-source diagnostics are not repeated downstream. Plan/period/counter/selection/pricing/receipt failures preserve original safe message, actual supplied P2010 and available cause; shared failures have one owner even when two projections become unavailable. Internal top-up invariant failures retain internal classification; normal denied surfaces/cursors/promotion lock outcomes do not acquire fabricated provider exceptions. Usage data and raw-source failures preserve the existing `error: read` result. Selection retries emit warn/warn/error with original P2034/final cause and preserve the typed unavailable error's cause. Throwing-sink tests cover presentation fallbacks, usage fallbacks, selection retry exhaustion and the real concurrent committed selection.
+
+Representative fields from actual emitted Shared JSON:
+
+```json
+{"event":"shopify.billing.presentation_failed","data":{"operation":"read_commercial_presentation","stage":"read_period","origin":"database","shopId":"shop-1","error":{"name":"Error","message":"original DB marker [REDACTED] [REDACTED]"},"causeChain":[{"name":"Error","message":"original causal marker [REDACTED]"}],"databaseCode":"P2010","redactionApplied":true,"truncated":false}}
+{"level":"error","event":"shopify.promotions.selection_failed","data":{"operation":"select_promotion","stage":"selection_transaction","origin":"database","shopId":"shop-1","identities":{"campaignId":"campaign-1","attempt":"3"},"error":{"name":"PrismaClientKnownRequestError","message":"selection conflict 2"},"causeChain":[{"name":"Error","message":"actual conflict cause"}],"databaseCode":"P2034","redactionApplied":false,"truncated":false}}
+```
+
+Injected email/token/signed-URL sentinels are absent from raw captured records and merchant output. Logs do not include credentials, forms, provider payloads, online-user objects or new merchant-facing diagnostics. The official configured Partner 2026-10 active-subscription documentation was consulted with Shopify AI Toolkit; no provider operation/schema was added or modified.
+
+Evidence logs: `/tmp/arch057-shopify004-focused.log`, `...-budget-final.log`, `...-mutations.log`, `...-postgres.log`, `...-typecheck.log`, `...-build.log`, `...-eslint.log`, `...-before-methods.log`, `...-generate.log`. Archived-start comparison ran **4/4** measurement cases successfully; those cases are not added to the 429-test acceptance total. Initial fixture/source-assertion migrations and lint failures are retained in the earlier `...-unit-initial.log`, `...-unit-second.log` and `...-eslint-initial.log`; final gates pass. Existing `npm ci` allow-scripts notices for seven packages were recorded without changing approvals or dependencies.
+
+### Provenance and Isolation
+
+Launcher packet `/tmp/arch057-shopify004.json`: Attempt **1**, executor **codex**, claimed at **2026-11-04T14:57:32Z**, durable claim **`a8ee595264f32ddb1c686bc8f42ffa2bb0cfb8b7`**, pushed successfully. Dependencies SHOPIFY-001/002/003 were Complete and the gate passed; accepted SHOPIFY-003 source is included in the start branch.
+
+Canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-004`, start **`7e238cfe964c5cef51d381cf235ede2f582120a1`**; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-004`, start **`72adeebe28a9703276a4d2f86a31c991e3e2e2cd`**. Both worktrees were newly created for this task and both use `task/ARCH-057-SHOPIFY-004`. Both remote-task fast-forwards were `not-needed`; both origin/main integrations `already-current`. Recursive submodule sync/update passed. Database recorded and working pin **`8e74634ff92be9900f693c0c449ffce888e7d617`** is unchanged. No shared/default checkout was switched or mutated, no other task worktree reused, no merge to main and no parent implementation gitlink update.
+
+Node **24.19.0**, npm **11.17.0**, installed Shared **3.1.0**; locked install and existing declared test/generate/typecheck/build scripts were used. The baseline comparison used a temporary archive of the exact start commit and identical fixed-time fixtures, without editing a shared checkout or another task. All provider ports were synthetic. Testcontainers used the existing Colima endpoint and internal socket override; no host configuration or shared cleanup was performed. Every owned PostgreSQL fixture/client/container was cleaned up; final Docker inventory contains only the pre-existing developer containers.
 
 ### Deviations
 
-None.
+None to business policy, owned scope or architecture. The internal current-contract field described above preserves an existing route field across partial failure; no public DTO was added. Historical read fixtures were migrated to pure-projection preparation and supplemented by actual composition/budget tests. No required suite was skipped or substituted by mock SQL proof.
 
 ### Assumptions
 
-All three dependencies are integrated and architect-accepted before claim. No source-probe or unit timing is treated as a production performance measurement.
+Supplied request facts and separately queried rows are request-local observations, not an atomic database snapshot. Presentation is never accepted as mutation authority. Actual method counts, physical SQL and provider observations are recorded separately; no latency or capacity improvement is inferred from unit timings.
 
 ### Unresolved Issues
 
-Implementation and required validation remain outstanding. Notice durability, privacy/retention and Background category activation remain outside this outcome.
+None within the defined task scope. Acceptance remains with `moda_architect`; no downstream task was started. Deferred privacy/retention, notice durability and Background category activation remain unchanged.
 
 ### Architectural Concerns
 
-Return changed context, presentation, lifecycle, financial, schema, identity or ownership contracts to the architect.
+No schema, prerequisite context/DTO, Shared, financial-policy, identity or ownership amendment was required. The existing promotion uniqueness/translation contract supports exact bounded database pagination and the existing unexpired-selection policy passed real same-campaign concurrency.
 
 ## Architect Review
 
