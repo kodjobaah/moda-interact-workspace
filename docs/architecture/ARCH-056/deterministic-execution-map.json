@@ -1,0 +1,1918 @@
+{
+  "architecture_id": "ARCH-056",
+  "definition_revision": 2,
+  "date": "2026-11-04",
+  "definition_state": "defined-but-not-materialised",
+  "parent_architecture": "docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md",
+  "source_archive_sha256": "f8194947c3564a8f9ea8942d9462ec83716aecc17fc1626d7d846af68c044024",
+  "execution_mode": "agent",
+  "completion_mode": "automatic",
+  "path_rule": "All task-owned paths are relative to their implementation repository. Definitions are parent-workspace paths. No _index.md or existing task changes.",
+  "tasks": [
+    {
+      "title": "Align the API Database dependency with accepted lifecycle contracts",
+      "production_modify": [
+        "database"
+      ],
+      "production_create": [],
+      "tests_modify": [],
+      "tests_create": [],
+      "read_only_dependencies": [
+        "package.json",
+        "database/prisma/schema.prisma",
+        "database/prisma/migrations",
+        "scripts/arch047-canonical-schema.mjs",
+        "scripts/test-arch040-woo-human-send-postgres.mjs",
+        "src/merchant/conversations/messages/admission.service.ts",
+        "src/merchant/merchant-knowledge/upload.service.ts"
+      ],
+      "depends_on": [
+        "ARCH-055-DATABASE-001",
+        "ARCH-055-API-005"
+      ],
+      "enables": [
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "validation_commands": [
+        "npm run typecheck",
+        "npm run build",
+        "npm run test:arch026-woo-rest-read:postgres",
+        "npm run test:arch035-knowledge-upload:postgres",
+        "npm run test:arch040-human-send:postgres",
+        "git diff --check"
+      ],
+      "operation_constraints": {
+        "database": "Only the API-owned gitlink may be committed, if verified stale. Never edit nested contents. A correct recorded pin with rematerialization-only correction permits a justified zero-diff result."
+      },
+      "id": "ARCH-056-API-001",
+      "task_id": "ARCH-056-API-001",
+      "role": "API-001",
+      "repository": "moda-interact-api",
+      "assigned_agent": "moda_api",
+      "domain": "api",
+      "task_file": "docs/decisions/api/ARCH-056/API-001-align-accepted-database-dependency.md",
+      "definition_revision": 2,
+      "status": "ready",
+      "path_base": "implementation repository root unless explicitly workspace-qualified",
+      "validation_executed_by_architect": false
+    },
+    {
+      "title": "Serialize inbound persistence before the message foreign-key insert",
+      "production_modify": [
+        "src/services/conversation.service.ts",
+        "src/workers/whatsapp.worker.ts"
+      ],
+      "production_create": [],
+      "tests_modify": [
+        "tests/unit/services/conversation.service.test.ts",
+        "tests/unit/workers/whatsapp.worker.test.ts",
+        "tests/integration/conversation-turn-scheduling.integration.test.ts"
+      ],
+      "tests_create": [
+        "tests/integration/arch056-inbound-lock-order.integration.test.ts",
+        "tests/integration/arch056-inbound-rollback.integration.test.ts",
+        "tests/integration/helpers/arch056-inbound-fixtures.ts",
+        "tests/integration/helpers/arch056-inbound-barriers.ts"
+      ],
+      "read_only_dependencies": [
+        "package.json",
+        "database/prisma/schema.prisma",
+        "database/prisma/migrations",
+        "src/services/conversation-ai-delay/pending-turn-repository.ts",
+        "src/services/inbound-whatsapp-audio.service.ts",
+        "src/services/whatsapp-inbound-processing.service.ts",
+        "src/services/conversation-turn-processor.service.ts",
+        "scripts/test-integration.mjs",
+        "tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts",
+        "tests/unit/services/inbound-whatsapp-audio.service.test.ts"
+      ],
+      "depends_on": [
+        "ARCH-054-BACKGROUND-001"
+      ],
+      "enables": [
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "validation_commands": [
+        "npx --no-install vitest run tests/unit/services/conversation.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts",
+        "node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/arch056-inbound-lock-order.integration.test.ts tests/integration/arch056-inbound-rollback.integration.test.ts",
+        "npm run build",
+        "npx --no-install eslint src/services/conversation.service.ts src/workers/whatsapp.worker.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation.service.test.ts tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/arch056-inbound-lock-order.integration.test.ts tests/integration/arch056-inbound-rollback.integration.test.ts tests/integration/helpers/arch056-inbound-fixtures.ts tests/integration/helpers/arch056-inbound-barriers.ts",
+        "git diff --check"
+      ],
+      "operation_constraints": {
+        "src/workers/whatsapp.worker.ts": "Diagnostics only: existing failed/error listeners and boundedError projection. Preserve job routes, queue configuration, retries, telemetry and payloads."
+      },
+      "logging_acceptance": {
+        "source_event": "whatsapp.inbound.persistence_failed",
+        "worker_events": [
+          "whatsapp.job.failed",
+          "whatsapp.worker.error"
+        ],
+        "original_safe_message": true,
+        "stage_local_to_invocation": true,
+        "transaction_vs_post_commit_stage": true,
+        "actual_supplied_prisma_code_and_client_version": true,
+        "original_thrown_object_identity": true,
+        "installed_shared_capture_sink_and_serialized_records": true,
+        "no_raw_worker_field_overwrites_safe_projection": true,
+        "sink_failure_preserves_business_outcome": true,
+        "validation_status": "required-not-executed"
+      },
+      "id": "ARCH-056-BACKGROUND-001",
+      "task_id": "ARCH-056-BACKGROUND-001",
+      "role": "BACKGROUND-001",
+      "repository": "moda-interact-background",
+      "assigned_agent": "moda_background",
+      "domain": "background",
+      "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-001-serialize-inbound-conversation-persistence.md",
+      "definition_revision": 2,
+      "status": "ready",
+      "path_base": "implementation repository root unless explicitly workspace-qualified",
+      "validation_executed_by_architect": false
+    },
+    {
+      "task_id": "ARCH-056-BACKGROUND-002",
+      "repository": "moda-interact-background",
+      "path_base": "implementation repository root unless explicitly workspace-qualified",
+      "definition_revision": 2,
+      "production_modify": [
+        "src/services/recovery-billing.service.ts",
+        "src/services/recovery-billing/recovery-billing.types.ts",
+        "src/services/recovery-billing/recovery-reservation-lifecycle.service.ts",
+        "src/services/recovery-delivery-compensation/lineage.ts",
+        "src/services/free-recovery-reservation.service.ts",
+        "src/services/purchased-recovery-reservation.service.ts",
+        "src/services/promotional-recovery-reservation.service.ts",
+        "src/services/paid-included-recovery-reservation.service.ts",
+        "src/services/recovery-delivery-compensation/reconcile.service.ts",
+        "src/services/whatsapp-provider-status.service.ts"
+      ],
+      "production_create": [
+        "src/services/recovery-billing/initial-outreach-credit.service.ts",
+        "src/services/recovery-billing/initial-outreach-credit-evidence.ts"
+      ],
+      "tests_modify": [
+        "tests/unit/services/recovery-billing.service.test.ts",
+        "tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts",
+        "tests/unit/services/recovery-billing/recovery-billing.test-support.ts",
+        "tests/unit/services/free-recovery-reservation.service.test.ts",
+        "tests/unit/services/purchased-recovery-reservation.service.test.ts",
+        "tests/unit/services/promotional-recovery-reservation.service.test.ts",
+        "tests/unit/services/paid-included-recovery-reservation.service.test.ts",
+        "tests/unit/services/whatsapp-provider-status.service.test.ts",
+        "tests/integration/arch028-recovery-delivery-compensation.integration.test.ts"
+      ],
+      "tests_create": [
+        "tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts",
+        "tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts",
+        "tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts",
+        "tests/integration/arch056-initial-outreach-credit.integration.test.ts",
+        "tests/integration/arch056-initial-outreach-credit-races.integration.test.ts",
+        "tests/integration/fixtures/arch056-initial-outreach-credit.fixture.ts",
+        "tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts"
+      ],
+      "read_only_dependencies": [
+        "package.json",
+        "scripts/test-integration.mjs",
+        "database/prisma/schema.prisma",
+        "src/services/effective-billing-policy.service.ts",
+        "src/services/post-contract-recovery-policy.service.ts",
+        "src/services/recovery-reservation/reservation-lifecycle.ts",
+        "src/services/recovery-billing/recovery-capacity-admission.service.ts",
+        "src/services/recovery-billing/recovery-durable-credit-admission.service.ts",
+        "src/services/recovery-billing/usage-event-provider.ts",
+        "src/services/recovery-delivery-compensation/types.ts",
+        "src/services/recovery-delivery-compensation/automated-usage.ts",
+        "src/services/recovery-delivery-compensation/committed-usage.ts",
+        "src/services/checkout-recovery/recovery-initiation.service.ts",
+        "src/services/checkout-recovery/recovery-outreach-finalization.service.ts",
+        "src/services/recovery-conversation/outbound-send-fence.service.ts",
+        "src/services/woocommerce-recovery/woo-initial-send-fence.service.ts",
+        "src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts",
+        "tests/unit/services/recovery-reservation/reservation-lifecycle.test.ts",
+        "tests/integration/free-recovery-reservation.concurrency.integration.test.ts",
+        "tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts",
+        "tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts",
+        "tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts",
+        "tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts",
+        "src/services/recovery-conversation/recovery-conversation.sql.ts",
+        "src/services/whatsapp-provider-status-lifecycle.ts",
+        "tests/integration/recovery-human-provider-status.integration.test.ts"
+      ],
+      "workspace_read_only_dependencies": [
+        "docs/decisions/background/ARCH-028/BACKGROUND-004-compensate-terminally-undelivered-recovery-usage.md",
+        "docs/decisions/background/ARCH-028/BACKGROUND-009-compensate-purchased-recovery-credit-delivery-failure.md",
+        "docs/decisions/background/ARCH-028/BACKGROUND-013-settle-uncertain-whatsapp-recovery-sends.md",
+        "moda-interact-database/prisma/migrations/20260912000000_arch010_first_production_baseline/migration.sql"
+      ],
+      "depends_on": [
+        "ARCH-028-BACKGROUND-004",
+        "ARCH-028-BACKGROUND-009"
+      ],
+      "enables": [
+        "ARCH-056-BACKGROUND-004",
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "preserved_blocked_task": "ARCH-028-BACKGROUND-013",
+      "validation_commands": [
+        "npm run build",
+        "npm run test -- tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/recovery-reservation/reservation-lifecycle.test.ts",
+        "npm run test:integration -- tests/integration/arch056-initial-outreach-credit.integration.test.ts tests/integration/arch056-initial-outreach-credit-races.integration.test.ts tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/recovery-human-provider-status.integration.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts",
+        "npx --no-install eslint src/services/recovery-billing.service.ts src/services/recovery-billing/recovery-billing.types.ts src/services/recovery-billing/recovery-reservation-lifecycle.service.ts src/services/recovery-billing/initial-outreach-credit.service.ts src/services/recovery-billing/initial-outreach-credit-evidence.ts src/services/recovery-delivery-compensation/lineage.ts src/services/recovery-delivery-compensation/reconcile.service.ts src/services/whatsapp-provider-status.service.ts src/services/free-recovery-reservation.service.ts src/services/purchased-recovery-reservation.service.ts src/services/promotional-recovery-reservation.service.ts src/services/paid-included-recovery-reservation.service.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts tests/unit/services/recovery-billing/recovery-billing.test-support.ts tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/arch056-initial-outreach-credit.integration.test.ts tests/integration/arch056-initial-outreach-credit-races.integration.test.ts tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts tests/integration/fixtures/arch056-initial-outreach-credit.fixture.ts",
+        "git diff --check"
+      ],
+      "exported_contract_symbols": [
+        {
+          "path": "src/services/recovery-billing/recovery-billing.types.ts",
+          "symbols": [
+            "InitialOutreachCreditIdentity",
+            "ConfirmedInitialOutreachCreditInput",
+            "ExistingInitialOutreachCreditInput",
+            "ConfirmedInitialOutreachSettlement",
+            "ExistingInitialOutreachCredit"
+          ]
+        },
+        {
+          "path": "src/services/recovery-billing.service.ts",
+          "symbols": [
+            "RecoveryBillingService.settleConfirmedInitialOutreach",
+            "RecoveryBillingService.revalidateExistingInitialOutreach"
+          ],
+          "type_reexports": [
+            "InitialOutreachCreditIdentity",
+            "ConfirmedInitialOutreachCreditInput",
+            "ExistingInitialOutreachCreditInput",
+            "ConfirmedInitialOutreachSettlement",
+            "ExistingInitialOutreachCredit"
+          ]
+        },
+        {
+          "path": "src/services/recovery-billing/recovery-reservation-lifecycle.service.ts",
+          "symbols": [
+            "RecoveryCreditNotCommittedError"
+          ]
+        },
+        {
+          "path": "src/services/recovery-delivery-compensation/lineage.ts",
+          "symbols": [
+            "findExactRecoveryReservationSource"
+          ]
+        },
+        {
+          "path": "src/services/free-recovery-reservation.service.ts",
+          "symbols": [
+            "FreeRecoveryReservationService.commitInExistingTransaction"
+          ]
+        },
+        {
+          "path": "src/services/purchased-recovery-reservation.service.ts",
+          "symbols": [
+            "PurchasedRecoveryReservationService.commitInExistingTransaction"
+          ]
+        },
+        {
+          "path": "src/services/promotional-recovery-reservation.service.ts",
+          "symbols": [
+            "PromotionalRecoveryReservationService.commitInExistingTransaction",
+            "PromotionalRecoveryReservationService.isReservedSourceEligibleInExistingTransaction"
+          ]
+        },
+        {
+          "path": "src/services/paid-included-recovery-reservation.service.ts",
+          "symbols": [
+            "PaidIncludedRecoveryReservationService.commitInExistingTransaction",
+            "PaidIncludedRecoveryReservationError.reason"
+          ]
+        }
+      ],
+      "schema_task_required": false,
+      "runtime_caller_owner": "ARCH-056-BACKGROUND-004",
+      "final_permit_owner": "ARCH-056-BACKGROUND-003",
+      "lock_order": {
+        "confirmed_settlement": [
+          "read-only exact owned message/Shop pointer",
+          "Shop FOR KEY SHARE",
+          "ConversationMessage FOR UPDATE",
+          "reread unchanged tenant/message/Conversation identity",
+          "existing owner lot/grant/counter operations",
+          "existing reservation update"
+        ],
+        "compensation": [
+          "read-only exact owned message/Shop pointer",
+          "Shop FOR KEY SHARE",
+          "ConversationMessage FOR UPDATE",
+          "reread unchanged ownership",
+          "existing 131026 release/correction owner operations"
+        ],
+        "provider_status": [
+          "read-only exact provider-message/Shop pointer",
+          "Shop FOR KEY SHARE",
+          "authoritative message reread and identity comparison",
+          "existing status CAS, attempt/command convergence and delivered usage upsert",
+          "commit before compensation/reachability/notification"
+        ],
+        "final_permit": [
+          "Shop FOR UPDATE",
+          "Conversation",
+          "initial attempt",
+          "ConversationMessage FOR UPDATE",
+          "exact UsageReservation FOR SHARE",
+          "permit CAS"
+        ],
+        "forbidden": [
+          "message then a new/different Shop or Conversation UPDATE lock",
+          "message then first Shop FK key-share acquisition for new UsageEvent",
+          "reservation UPDATE lock before existing owner counter operations",
+          "reservation SHARE then message UPDATE"
+        ],
+        "scope": "Selected fence/receipt/settlement/provider-status/compensation interactions only; not every application writer"
+      },
+      "validation_executed_by_architect": false,
+      "logging_contract": {
+        "definition_revision": 2,
+        "common_contract": "docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md#mandatory-logging-acceptance-contract--revision-2",
+        "shared_package": "@modainteract/moda-interact-shared/logging",
+        "installed_version_and_resolution_required": true,
+        "actual_create_logger_sink_required": true,
+        "serialize_parse_record_required": true,
+        "original_message_field": "data.error.message",
+        "known_cause_field": "data.cause",
+        "database_diagnostic_field": "data.databaseError",
+        "database_allowlist": [
+          "code",
+          "clientVersion",
+          "meta.modelName",
+          "meta.target",
+          "meta.constraint",
+          "meta.field_name",
+          "meta.code"
+        ],
+        "metadata_values": "Actually supplied bounded schema identifiers/identifier arrays; meta.code must be an actual five-character SQLSTATE; omit unsupported or absent fields",
+        "context_ownership": "Local to one invocation and retry attempt, never shared mutable service/logger state",
+        "levels": {
+          "retry": "warn",
+          "held": "warn",
+          "final_failure": "error"
+        },
+        "owners": [
+          {
+            "path": "src/services/recovery-billing/initial-outreach-credit.service.ts",
+            "operations": [
+              "settleConfirmedInitialOutreach",
+              "revalidateExistingInitialOutreach"
+            ],
+            "events": {
+              "failed": "recovery.initial_outreach_credit.failed",
+              "held": "recovery.initial_outreach_credit.held",
+              "retry": "recovery.initial_outreach_credit.retry"
+            },
+            "stages": [
+              "identity",
+              "policy",
+              "source_lookup",
+              "source_commit",
+              "committed_usage_verification"
+            ]
+          },
+          {
+            "path": "src/services/recovery-billing/recovery-reservation-lifecycle.service.ts",
+            "operations": [
+              "commit"
+            ],
+            "events": {
+              "failed": "recovery.credit_commit.failed"
+            },
+            "boundary": "Legacy public successful-commit compatibility path; direct transaction-owner calls from the new coordinator do not duplicate this event"
+          },
+          {
+            "path": "src/services/recovery-delivery-compensation/reconcile.service.ts",
+            "operations": [
+              "withRetry",
+              "reconcile",
+              "reconcileMessage"
+            ],
+            "events": {
+              "failed": "recovery.delivery_compensation.failed",
+              "retry": "recovery.delivery_compensation.retry"
+            },
+            "stages": [
+              "identity",
+              "source_lookup",
+              "source_release",
+              "source_correction",
+              "outbound_usage_cleanup"
+            ]
+          },
+          {
+            "path": "src/services/whatsapp-provider-status.service.ts",
+            "operations": [
+              "status transaction",
+              "after-commit continuation"
+            ],
+            "events": {
+              "failed": "whatsapp.provider_status.failed",
+              "retry": "whatsapp.provider_status.retry",
+              "downstream_failed": "whatsapp.provider_status.downstream_failed",
+              "existing_committed_outcome": "whatsapp.provider_status.applied"
+            },
+            "stages": [
+              "status_transaction",
+              "compensation",
+              "failure_reachability",
+              "positive_reachability",
+              "merchant_notification"
+            ],
+            "compensation_failure": "Context-only status record with statusTransactionCommitted=true and sourceDiagnosticEvent=recovery.delivery_compensation.failed; compensation owns the original detailed error"
+          }
+        ],
+        "owned_test_assertions": [
+          {
+            "path": "tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts",
+            "assertions": [
+              "actual Shared sink original message",
+              "typed hold original diagnostic or no fabricated exception",
+              "known cause",
+              "database metadata allowlist",
+              "retry and exhaustion",
+              "common redaction/truncation",
+              "throwing sink preserves behavior"
+            ]
+          },
+          {
+            "path": "tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts",
+            "assertions": [
+              "nonpositive commit guard diagnostic",
+              "original owner exception identity",
+              "no new-coordinator duplicate log owner"
+            ]
+          },
+          {
+            "path": "tests/unit/services/whatsapp-provider-status.service.test.ts",
+            "assertions": [
+              "status transaction versus downstream stages",
+              "no applied event before successful commit",
+              "statusTransactionCommitted flag",
+              "actual emitted safe message",
+              "unchanged thrown exception",
+              "no fabricated provider fields"
+            ]
+          },
+          {
+            "path": "tests/integration/arch028-recovery-delivery-compensation.integration.test.ts",
+            "assertions": [
+              "real compensation failure and retry owner",
+              "actual Shared emitted message",
+              "original source and rollback"
+            ]
+          },
+          {
+            "path": "tests/integration/arch056-initial-outreach-credit-races.integration.test.ts",
+            "assertions": [
+              "actual compensation and actual status-caller correlated records",
+              "detailed source event versus context-only downstream event",
+              "status remains committed on later compensation failure"
+            ]
+          }
+        ],
+        "preserves": [
+          "original thrown object/message/stack/cause",
+          "existing ports and held/settled policy",
+          "existing transactions and lock order",
+          "existing retry limits",
+          "existing scripts and owned paths"
+        ],
+        "forbidden": [
+          "mock-logger-only proof",
+          "generic local sanitizer/logger/cause-graph serializer",
+          "Shared release/version bump",
+          "raw stack or SQL/meta/payload dump",
+          "invented provider/Prisma fields",
+          "false applied event from rolled-back transaction",
+          "blind detailed duplication at every caller"
+        ],
+        "deferred_baseline_findings": [
+          "Purchased reserve P2002 replacement with empty conflict",
+          "General empty internal conflict classes",
+          "Unselected Background logging paths"
+        ],
+        "worker_diagnostic_owner": "ARCH-056-BACKGROUND-001",
+        "validation_executed_by_architect": false
+      },
+      "title": "Reuse and settle the exact initial recovery credit",
+      "id": "ARCH-056-BACKGROUND-002",
+      "role": "BACKGROUND-002",
+      "assigned_agent": "moda_background",
+      "domain": "background",
+      "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-002-settle-confirmed-initial-outreach-credit.md",
+      "status": "ready"
+    },
+    {
+      "role": "BACKGROUND-003",
+      "title": "Resume and fence the existing initial-template admission",
+      "production_modify": [
+        "src/services/outbound-whatsapp-admission.service.ts",
+        "src/services/outbound-whatsapp-admission/outbound-whatsapp-admission.types.ts",
+        "src/services/outbound-whatsapp-admission/outbound-admission-reservation.service.ts",
+        "src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts",
+        "src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts",
+        "src/services/outbound-whatsapp-admission/failed-outreach-admission.ts",
+        "src/services/recovery-conversation/outbound-send-fence.service.ts",
+        "src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts",
+        "src/services/woocommerce-recovery/woo-initial-send-fence.service.ts",
+        "src/services/whatsapp.service.ts"
+      ],
+      "production_create": [],
+      "tests_modify": [
+        "tests/unit/services/outbound-whatsapp-admission.service.test.ts",
+        "tests/unit/services/outbound-whatsapp-admission/outbound-admission-reservation.service.test.ts",
+        "tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts",
+        "tests/unit/services/outbound-whatsapp-admission/outbound-provider-failure.service.test.ts",
+        "tests/unit/services/outbound-whatsapp-admission/failed-outreach-admission.test.ts",
+        "tests/unit/services/outbound-whatsapp-admission/outbound-admission.test-support.ts",
+        "tests/unit/services/woocommerce-recovery/woo-guarded-initial-sender.service.test.ts",
+        "tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts",
+        "tests/unit/services/whatsapp.service.test.ts"
+      ],
+      "tests_create": [
+        "tests/unit/services/outbound-whatsapp-admission/initial-outreach-admission.test.ts",
+        "tests/unit/services/recovery-conversation/initial-outreach-permit.test.ts",
+        "tests/integration/initial-outreach-admission-resume.integration.test.ts",
+        "tests/integration/initial-outreach-admission-races.integration.test.ts",
+        "tests/integration/fixtures/initial-outreach-admission.fixture.ts"
+      ],
+      "read_only_dependencies": [
+        "src/services/recovery-billing.service.ts",
+        "src/services/recovery-billing/recovery-billing.types.ts",
+        "src/services/recovery-conversation/recovery-conversation.sql.ts",
+        "src/services/recovery-conversation/recovery-runtime-eligibility.service.ts",
+        "src/services/recovery-delivery-compensation/lineage.ts",
+        "src/services/recovery-delivery-compensation/reconcile.service.ts",
+        "src/services/synchronous-recipient-failure.service.ts",
+        "src/services/synchronous-recipient-failure-evidence.service.ts",
+        "src/services/woocommerce-recovery/woo-recovery-outreach.service.ts",
+        "src/services/woocommerce-recovery/woo-recovery-composition.ts",
+        "database/prisma/schema.prisma",
+        "tests/integration/woo-initial-send-fence.integration.test.ts",
+        "tests/integration/woo-initial-send-fence-races.integration.test.ts",
+        "tests/integration/general-outbound-stop-fence.integration.test.ts",
+        "tests/integration/recovery-conversation.services.integration.test.ts",
+        "tests/integration/arch055-follow-up-identity.integration.test.ts",
+        "src/services/whatsapp-provider-status.service.ts",
+        "src/services/conversation-moderation/moderation-assessment.service.ts",
+        "src/services/conversation-moderation/moderation-failure-diagnostics.ts"
+      ],
+      "implementation_dependencies": [],
+      "enables": [
+        "ARCH-056-BACKGROUND-004",
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "exported_new_methods": [
+        "OutboundWhatsAppAdmissionService.inspectInitialOutreachAdmission",
+        "OutboundWhatsAppAdmissionService.resumeInitialTemplate",
+        "WooGuardedInitialSenderService.inspectInitialOutreachAdmission"
+      ],
+      "exported_new_types": [
+        "InitialOutreachAdmissionScope",
+        "InitialOutreachMessageEvidence",
+        "InitialOutreachAdmissionLookup",
+        "OutboundPreparationRetryError"
+      ],
+      "amended_contracts": [
+        "Optional initialOutreach context on existing initial template path; exact recoveryCreditSourceKey propagated through delivery",
+        "DispatchInput.initialOutreach for initial AUTOMATION/TEMPLATE only",
+        "Private markSent(messageId, conversationId, providerMessageId), with verified Conversation-before-message transaction",
+        "Canonical findExistingAdmission projection remains backward-compatible",
+        "OutboundPreparationRetryError is scoped to initial-template moderation retry only; unrelated general text/AGENT consumer behavior remains compatible",
+        "Revision-2 logging: safe original diagnostics and explicit fixed-role aggregate components, distinct provider_http/receipt_persistence, existing source Meta/moderation ownership, actual installed Shared sink tests; no public port change"
+      ],
+      "validation_commands": [
+        "npx --no-install vitest run tests/unit/services/outbound-whatsapp-admission.service.test.ts tests/unit/services/outbound-whatsapp-admission tests/unit/services/recovery-conversation/initial-outreach-permit.test.ts tests/unit/services/woocommerce-recovery/woo-guarded-initial-sender.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts tests/unit/services/whatsapp.service.test.ts",
+        "npm run test:integration -- tests/integration/initial-outreach-admission-resume.integration.test.ts tests/integration/initial-outreach-admission-races.integration.test.ts tests/integration/woo-initial-send-fence.integration.test.ts tests/integration/woo-initial-send-fence-races.integration.test.ts tests/integration/general-outbound-stop-fence.integration.test.ts tests/integration/recovery-conversation.services.integration.test.ts tests/integration/arch055-follow-up-identity.integration.test.ts",
+        "npm run build",
+        "npx --no-install eslint src/services/outbound-whatsapp-admission.service.ts src/services/outbound-whatsapp-admission/outbound-whatsapp-admission.types.ts src/services/outbound-whatsapp-admission/outbound-admission-reservation.service.ts src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts src/services/outbound-whatsapp-admission/failed-outreach-admission.ts src/services/recovery-conversation/outbound-send-fence.service.ts src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts src/services/woocommerce-recovery/woo-initial-send-fence.service.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-admission-reservation.service.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-provider-failure.service.test.ts tests/unit/services/outbound-whatsapp-admission/failed-outreach-admission.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-admission.test-support.ts tests/unit/services/woocommerce-recovery/woo-guarded-initial-sender.service.test.ts tests/unit/services/woocommerce-recovery/woo-initial-send-fence.service.test.ts tests/unit/services/outbound-whatsapp-admission/initial-outreach-admission.test.ts tests/unit/services/recovery-conversation/initial-outreach-permit.test.ts tests/integration/initial-outreach-admission-resume.integration.test.ts tests/integration/initial-outreach-admission-races.integration.test.ts tests/integration/fixtures/initial-outreach-admission.fixture.ts src/services/whatsapp.service.ts tests/unit/services/whatsapp.service.test.ts",
+        "git diff --check"
+      ],
+      "completed_dependencies": [
+        "ARCH-040-BACKGROUND-008",
+        "ARCH-046-BACKGROUND-004",
+        "ARCH-052-BACKGROUND-018"
+      ],
+      "scope_limits": {
+        "src/services/whatsapp.service.ts": "Diagnostic projection/emission and existing bounded helper corrections only: nested fbtrace_id identifier validation and array child redaction/truncation flags. Preserve request/provider/billing/dispatch/retry behavior; no wire or tracing contract change."
+      },
+      "logging_events": [
+        "whatsapp.meta.send.failed",
+        "outbound.template.preparation.failed",
+        "outbound.template.moderation.failed",
+        "recovery.initial_outreach.sql_permit.failed",
+        "woocommerce.recovery.initial.sql_permit.failed",
+        "outbound.initial.send.failed",
+        "outbound.initial.cleanup.failed",
+        "woocommerce.recovery.initial.permit.failed"
+      ],
+      "read_only_logging_events": [
+        "conversation.moderation.dependency_unavailable"
+      ],
+      "depends_on": [
+        "ARCH-040-BACKGROUND-008",
+        "ARCH-046-BACKGROUND-004",
+        "ARCH-052-BACKGROUND-018"
+      ],
+      "id": "ARCH-056-BACKGROUND-003",
+      "task_id": "ARCH-056-BACKGROUND-003",
+      "repository": "moda-interact-background",
+      "assigned_agent": "moda_background",
+      "domain": "background",
+      "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-003-resume-owned-initial-template-admission.md",
+      "definition_revision": 2,
+      "status": "ready",
+      "path_base": "implementation repository root unless explicitly workspace-qualified",
+      "validation_executed_by_architect": false
+    },
+    {
+      "role": "BACKGROUND-004",
+      "title": "Continue candidate and initial-recovery finalization from durable progress",
+      "production_modify": [
+        "src/services/checkout-recovery.service.ts",
+        "src/services/checkout-recovery/recovery-materialization.service.ts",
+        "src/services/checkout-recovery/recovery-initiation.service.ts",
+        "src/services/checkout-recovery/recovery-outreach-finalization.service.ts",
+        "src/services/checkout-recovery/recovery-initial-outreach-support-notice.service.ts",
+        "src/services/checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts",
+        "src/workers/pending-recovery-candidate.worker.ts",
+        "src/services/recovery-template-integration/automated-recovery-template.service.ts",
+        "src/services/recovery-template-integration/initial-no-offer-fallback.service.ts",
+        "src/services/woocommerce-recovery/woo-recovery-outreach.service.ts",
+        "src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts"
+      ],
+      "production_create": [],
+      "tests_modify": [
+        "tests/unit/workers/pending-recovery-candidate.worker.test.ts",
+        "tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts",
+        "tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts",
+        "tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts",
+        "tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts",
+        "tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts",
+        "tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts",
+        "tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts",
+        "tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts",
+        "tests/integration/recovery-initial-outreach-support-notice.integration.test.ts"
+      ],
+      "tests_create": [
+        "tests/unit/services/checkout-recovery/initial-outreach-progress.test.ts",
+        "tests/unit/services/woocommerce-recovery/woo-confirmed-initial-settlement.test.ts",
+        "tests/integration/initial-outreach-progress.integration.test.ts",
+        "tests/integration/initial-outreach-progress-worker.integration.test.ts",
+        "tests/integration/fixtures/initial-outreach-progress.fixture.ts"
+      ],
+      "read_only_dependencies": [
+        "src/services/recovery-billing.service.ts",
+        "src/services/recovery-billing/recovery-billing.types.ts",
+        "src/services/outbound-whatsapp-admission.service.ts",
+        "src/services/outbound-whatsapp-admission/outbound-whatsapp-admission.types.ts",
+        "src/services/recovery-outreach-attempt.service.ts",
+        "src/services/recovery-outreach-follow-up.service.ts",
+        "src/services/pending-recovery-candidate.service.ts",
+        "src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts",
+        "src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts",
+        "src/services/woocommerce-recovery/woo-resumed-outreach-settlement.adapter.ts",
+        "src/services/woocommerce-recovery/woo-recovery-composition.ts",
+        "database/prisma/schema.prisma",
+        "tests/unit/services/woocommerce-recovery/woo-recovery-composition.test.ts",
+        "tests/integration/arch055-follow-up-identity.integration.test.ts"
+      ],
+      "implementation_dependencies": [
+        "ARCH-056-BACKGROUND-002",
+        "ARCH-056-BACKGROUND-003"
+      ],
+      "enables": [
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "exported_new_methods": [
+        "RecoveryInitiationService.continueInitialOutreach",
+        "CheckoutRecoveryService.continueInitialOutreach",
+        "RecoveryOutreachFinalizationService.finalizeConfirmedInitialOutreach"
+      ],
+      "exported_new_types": [
+        "InitialOutreachProgress",
+        "InitialOutreachHeldError"
+      ],
+      "amended_contracts": [
+        "MaturedCandidateMaterializationResult adds recovery-reconciled and deferred-initial-outreach variants",
+        "Existing materializeMaturedCandidate options-object remains compatible",
+        "WooGuardedInitialSender adds inspectInitialOutreachAdmission",
+        "WooOutreachDependencies.finalize.confirmed removes fresh admission argument and returns finalized/held; never schedules sequence two",
+        "Existing initial Support writer adds only guarded legacy FAILED/PROVIDER_FAILURE confirmed-message transition",
+        "Revision-2 logging: optional degradation before conversion, original required-state error propagation, fixed-role compound failure fields and real worker listener/sink proof; no public port/dependency change"
+      ],
+      "required_billing_contracts": [
+        "RecoveryBillingService.revalidateExistingInitialOutreach / ExistingInitialOutreachCredit",
+        "RecoveryBillingService.settleConfirmedInitialOutreach / ConfirmedInitialOutreachSettlement"
+      ],
+      "explicit_failed_job_repair_entry": "Retry retained failed candidate using original job data through actual worker -> materializeMaturedCandidate(candidate,{jobId,...existingOptions}); confirmed-only known recovery can use continueInitialOutreach({shopId,recoveryId}). No new endpoint/scanner.",
+      "validation_commands": [
+        "npx --no-install vitest run tests/unit/workers/pending-recovery-candidate.worker.test.ts tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts tests/unit/services/checkout-recovery/initial-outreach-progress.test.ts tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts tests/unit/services/woocommerce-recovery/woo-confirmed-initial-settlement.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-composition.test.ts",
+        "npm run test:integration -- tests/integration/initial-outreach-progress.integration.test.ts tests/integration/initial-outreach-progress-worker.integration.test.ts tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts tests/integration/recovery-initial-outreach-support-notice.integration.test.ts tests/integration/arch055-follow-up-identity.integration.test.ts",
+        "npm run build",
+        "npx --no-install eslint src/services/checkout-recovery.service.ts src/services/checkout-recovery/recovery-materialization.service.ts src/services/checkout-recovery/recovery-initiation.service.ts src/services/checkout-recovery/recovery-outreach-finalization.service.ts src/services/checkout-recovery/recovery-initial-outreach-support-notice.service.ts src/services/checkout-recovery/recovery-initial-outreach-support-notice.contracts.ts src/workers/pending-recovery-candidate.worker.ts src/services/recovery-template-integration/automated-recovery-template.service.ts src/services/recovery-template-integration/initial-no-offer-fallback.service.ts src/services/woocommerce-recovery/woo-recovery-outreach.service.ts src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/checkout-recovery/recovery-outreach-finalization-notice.test.ts tests/unit/services/checkout-recovery/recovery-initial-outreach-support-notice.service.test.ts tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts tests/unit/services/recovery-template-integration/initial-no-offer-fallback.service.test.ts tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts tests/integration/recovery-initial-outreach-support-notice.integration.test.ts tests/unit/services/checkout-recovery/initial-outreach-progress.test.ts tests/unit/services/woocommerce-recovery/woo-confirmed-initial-settlement.test.ts tests/integration/initial-outreach-progress.integration.test.ts tests/integration/initial-outreach-progress-worker.integration.test.ts tests/integration/fixtures/initial-outreach-progress.fixture.ts",
+        "git diff --check"
+      ],
+      "completed_dependencies": [
+        "ARCH-028-BACKGROUND-012",
+        "ARCH-050-BACKGROUND-002",
+        "ARCH-050-BACKGROUND-003",
+        "ARCH-052-BACKGROUND-018",
+        "ARCH-053-BACKGROUND-005"
+      ],
+      "atomic_support_lock_requirement": "Shop FOR KEY SHARE before existing initial attempt FOR UPDATE; unchanged routing identity; actual first-thread and recovery-linked notice immediate-FK race coverage in existing task-owned integration suite.",
+      "logging_events": [
+        "recovery_template.initial_fallback.degraded",
+        "recovery_template.initial_fallback.failed",
+        "recovery_template.integration.failed",
+        "recovery.initial_outreach.progress.failed",
+        "recovery.initial_outreach.progress.held",
+        "recovery.initial_outreach.progress.blocked",
+        "recovery.initial_outreach_support_notice.shopify_finalization_failed",
+        "recovery.initial_outreach_support_notice.woocommerce_finalization_failed",
+        "recovery.initial_outreach_support_notice.failed",
+        "woocommerce.recovery.outreach.failed",
+        "recovery.pending_candidate.processing_cleanup_failed",
+        "recovery.pending_candidate.job_failed",
+        "recovery.pending_candidate.worker_error",
+        "woocommerce.recovery.job.failed"
+      ],
+      "depends_on": [
+        "ARCH-056-BACKGROUND-002",
+        "ARCH-056-BACKGROUND-003",
+        "ARCH-028-BACKGROUND-012",
+        "ARCH-050-BACKGROUND-002",
+        "ARCH-050-BACKGROUND-003",
+        "ARCH-052-BACKGROUND-018",
+        "ARCH-053-BACKGROUND-005"
+      ],
+      "id": "ARCH-056-BACKGROUND-004",
+      "task_id": "ARCH-056-BACKGROUND-004",
+      "repository": "moda-interact-background",
+      "assigned_agent": "moda_background",
+      "domain": "background",
+      "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md",
+      "definition_revision": 2,
+      "status": "pending",
+      "path_base": "implementation repository root unless explicitly workspace-qualified",
+      "validation_executed_by_architect": false
+    },
+    {
+      "role": "SYSTEM-TEST-001",
+      "id": "ARCH-056-SYSTEM-TEST-001",
+      "title": "Validate Background persistence and recovery progress at the selected boundaries",
+      "implementation_dependencies": [
+        "ARCH-056-API-001",
+        "ARCH-056-BACKGROUND-001",
+        "ARCH-056-BACKGROUND-002",
+        "ARCH-056-BACKGROUND-003",
+        "ARCH-056-BACKGROUND-004"
+      ],
+      "enables": [],
+      "production_modify": [
+        "catalogue/scenarios.json",
+        "catalogue/historical-system-test-map.json",
+        "docs/SHOPIFY-COVERAGE-MATRIX.md",
+        "src/harness/selection.js",
+        "src/harness/cli.js",
+        "scripts/run-system-tests.js",
+        "package.json"
+      ],
+      "production_create": [
+        "src/harness/arch056/contracts.js",
+        "src/harness/arch056/executors.js",
+        "src/harness/arch056/runtime.js",
+        "src/harness/arch056/integration-driver.js",
+        "src/harness/arch056/fixtures.js",
+        "src/harness/arch056/billing-fixtures.js",
+        "src/harness/arch056/fault-controls.js",
+        "src/harness/arch056/observations.js",
+        "src/harness/arch056/assertions.js",
+        "src/harness/arch056/evidence.js",
+        "src/harness/arch056/queue-repair.js",
+        "src/harness/arch056/dependency-scenario.js",
+        "src/harness/arch056/ingress-scenario.js",
+        "src/harness/arch056/candidate-scenario.js",
+        "src/harness/arch056/admission-scenario.js",
+        "src/harness/arch056/uncertainty-scenario.js",
+        "src/harness/arch056/settlement-scenario.js",
+        "src/harness/arch056/lock-order-cases.js",
+        "src/harness/arch056/finalization-scenario.js",
+        "src/harness/arch056/woo-scenario.js",
+        "src/harness/arch056/repair-scenario.js",
+        "docs/ARCH056-VALIDATION.md"
+      ],
+      "tests_modify": [],
+      "tests_create": [
+        "test/harness/arch056-contracts.test.js",
+        "test/harness/arch056-registration.test.js",
+        "test/harness/arch056-provenance.test.js",
+        "test/harness/arch056-fault-controls.test.js",
+        "test/harness/arch056-results.test.js"
+      ],
+      "exact_modify_operations": [
+        {
+          "path": "catalogue/scenarios.json",
+          "operation": "register_exact_nine_scenarios"
+        },
+        {
+          "path": "catalogue/historical-system-test-map.json",
+          "operation": "register_symmetric_task_mapping"
+        },
+        {
+          "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
+          "operation": "regenerate_via_existing_catalogue_script"
+        },
+        {
+          "path": "src/harness/selection.js",
+          "operation": "add_arch056_source_requirement_predicate"
+        },
+        {
+          "path": "src/harness/cli.js",
+          "operation": "add_arch056_help_text_only"
+        },
+        {
+          "path": "scripts/run-system-tests.js",
+          "operation": "register_executors_api_provenance_complete_plan_result_guard_artifacts"
+        },
+        {
+          "path": "package.json",
+          "operation": "add_only_two_arch056_scripts"
+        }
+      ],
+      "exact_new_file_responsibilities": [
+        {
+          "path": "src/harness/arch056/contracts.js",
+          "responsibility": "Frozen scenario IDs, evidence classes, layers, required case IDs and per-case logging assertions, source requirement and plan/result completeness checks."
+        },
+        {
+          "path": "src/harness/arch056/executors.js",
+          "responsibility": "Nine executor registrations and mandatory business/logging/cleanup case-completion enforcement."
+        },
+        {
+          "path": "src/harness/arch056/runtime.js",
+          "responsibility": "Compose existing data-plane/runtime/provider/image factories at verified revisions; capture the actual worker stdout/stderr and installed Shared identity."
+        },
+        {
+          "path": "src/harness/arch056/integration-driver.js",
+          "responsibility": "Harness-owned direct-service driver for INTEGRATION rows only; load accepted modules, delegate real Prisma and use the consumed Shared factory for real sink capture."
+        },
+        {
+          "path": "src/harness/arch056/fixtures.js",
+          "responsibility": "Run-scoped tenants, recoveries, attempts, messages and mandatory template/consent state."
+        },
+        {
+          "path": "src/harness/arch056/billing-fixtures.js",
+          "responsibility": "Exact valid source-kind/status/period/counter/positive-event fixtures."
+        },
+        {
+          "path": "src/harness/arch056/fault-controls.js",
+          "responsibility": "Bounded disposable-DB barriers/faults, external provider/queue controls, harmless diagnostic markers, private synthetic sensitive sentinels and real Shared throwing-sink control."
+        },
+        {
+          "path": "src/harness/arch056/observations.js",
+          "responsibility": "Tenant-scoped durable state, queue/provider counts, lock/SQL observations and bounded actual JSON log capture before harness redaction."
+        },
+        {
+          "path": "src/harness/arch056/assertions.js",
+          "responsibility": "Identity, no-extra-effect, ledger/replay and raw-record message/stage/correlation/privacy/component assertions; deduplicate repeated buffer observations."
+        },
+        {
+          "path": "src/harness/arch056/evidence.js",
+          "responsibility": "Redacted case-result, execution/package provenance and logging-assertion sidecars within the existing run evidence directory."
+        },
+        {
+          "path": "src/harness/arch056/queue-repair.js",
+          "responsibility": "Retry the retained failed candidate through its original queue identity/data and the real worker."
+        },
+        {
+          "path": "src/harness/arch056/dependency-scenario.js",
+          "responsibility": "Dependency/source/build contract row and actual installed Shared package/entrypoint evidence."
+        },
+        {
+          "path": "src/harness/arch056/ingress-scenario.js",
+          "responsibility": "Real transaction ordering, duplicate and post-helper rollback row."
+        },
+        {
+          "path": "src/harness/arch056/candidate-scenario.js",
+          "responsibility": "Signed checkout and real candidate retry row."
+        },
+        {
+          "path": "src/harness/arch056/admission-scenario.js",
+          "responsibility": "Same-message delivery/cleanup/receipt races row."
+        },
+        {
+          "path": "src/harness/arch056/uncertainty-scenario.js",
+          "responsibility": "Real provider admission and unknown-outcome containment row."
+        },
+        {
+          "path": "src/harness/arch056/settlement-scenario.js",
+          "responsibility": "Exact positive/held billing and meter-read row."
+        },
+        {
+          "path": "src/harness/arch056/lock-order-cases.js",
+          "responsibility": "Settlement/compensation/final-permit contention cases for the settlement row."
+        },
+        {
+          "path": "src/harness/arch056/finalization-scenario.js",
+          "responsibility": "Actual initial finalization and follow-up replay row."
+        },
+        {
+          "path": "src/harness/arch056/woo-scenario.js",
+          "responsibility": "Normal disabled composition and confirmed-before-gate row."
+        },
+        {
+          "path": "src/harness/arch056/repair-scenario.js",
+          "responsibility": "Finite exhaustion and explicit retained-job repair row."
+        },
+        {
+          "path": "test/harness/arch056-contracts.test.js",
+          "responsibility": "Exact IDs/classes/cases/required logging assertions and rejection of incomplete or incorrect evidence."
+        },
+        {
+          "path": "test/harness/arch056-registration.test.js",
+          "responsibility": "Catalogue/map/selector/executor symmetry and unchanged unrelated selection."
+        },
+        {
+          "path": "test/harness/arch056-provenance.test.js",
+          "responsibility": "API/nested Database and consumed Shared inclusion; reject source/image/package resolution mismatches."
+        },
+        {
+          "path": "test/harness/arch056-fault-controls.test.js",
+          "responsibility": "Bounded barriers, failure propagation, sensitive sentinel isolation, real sink controls and cleanup."
+        },
+        {
+          "path": "test/harness/arch056-results.test.js",
+          "responsibility": "Missing/duplicate/blocked/not-run cases or logging assertions cannot become PASS; safe evidence survives failure."
+        },
+        {
+          "path": "docs/ARCH056-VALIDATION.md",
+          "responsibility": "Commands, exact scenario/case/logging map, fixture boundaries, three sidecars, actual package capture and replay/cleanup instructions."
+        }
+      ],
+      "read_only_dependencies": [
+        "src/scenario-catalogue.js",
+        "src/scenario-result.js",
+        "src/harness/runner.js",
+        "src/harness/evidence.js",
+        "src/harness/evidence-classification.js",
+        "src/harness/execution-errors.js",
+        "src/harness/environment.js",
+        "src/harness/provenance.js",
+        "src/harness/redaction.js",
+        "src/harness/cleanup.js",
+        "src/harness/command-recorder.js",
+        "src/harness/data-plane.js",
+        "src/harness/background-production-image.js",
+        "src/harness/background-worker-container.js",
+        "src/harness/recovery/runtime.js",
+        "src/harness/recovery/outreach-runtime.js",
+        "src/harness/recovery/outreach-fixtures.js",
+        "src/harness/recovery/approved-template-fixtures.js",
+        "src/harness/recovery/candidate-store.js",
+        "src/harness/recovery/whatsapp-failure-proxy.js",
+        "src/harness/recovery/shopify-graphql-emulator.js",
+        "src/harness/messaging/index.js",
+        "src/harness/messaging/recovery-fixtures.js",
+        "src/whatsapp-emulator.js",
+        "scripts/validate-scenario-catalogue.js",
+        "scripts/validate-source-structure.js",
+        "src/harness/processes.js"
+      ],
+      "read_only_external_dependencies": [
+        "workspace:moda-interact-api/database",
+        "workspace:moda-interact-api/package.json",
+        "workspace:moda-interact-api/src/merchant/conversations/messages/admission.service.ts",
+        "workspace:moda-interact-api/src/merchant/merchant-knowledge/upload.service.ts",
+        "workspace:moda-interact-database/prisma/schema.prisma",
+        "workspace:moda-interact-database/prisma/migrations/",
+        "workspace:moda-interact-background/",
+        "workspace:moda-interact/",
+        "workspace:moda-interact-messaging/",
+        "workspace:moda-interact-background/package.json",
+        "workspace:moda-interact-background/package-lock.json",
+        "workspace:docs/observability/shared-logging.md"
+      ],
+      "new_script_entries": {
+        "system:arch056:plan": "node scripts/run-system-tests.js --suite arch056 --list",
+        "system:arch056": "node scripts/run-system-tests.js --suite arch056 --execute"
+      },
+      "suite_contract": {
+        "name": "arch056",
+        "source_requirement": "ARCH-056-SYSTEM-TEST-001",
+        "expected_scenario_count": 9,
+        "selection_predicate": "scenario => scenario.sourceRequirements.includes(\"ARCH-056-SYSTEM-TEST-001\")",
+        "selection_status_filter_allowed": false,
+        "narrowed_suite_counts_as_acceptance": false,
+        "must_reject": [
+          "missing-or-extra-scenario",
+          "duplicate-scenario",
+          "wrong-domain-prefix",
+          "wrong-evidence-class-or-layer",
+          "asymmetric-source-map",
+          "missing-executor",
+          "missing-case",
+          "implicit-executor-pass",
+          "BLOCKED",
+          "NOT_RUN",
+          "NOT_APPLICABLE",
+          "FAIL",
+          "revision-or-nested-dependency-mismatch",
+          "cleanup-failure",
+          "missing-required-logging-assertion",
+          "missing-or-incorrect-originating-diagnostic",
+          "mocked-or-wrong-package-log-capture",
+          "privacy-assertion-only-after-harness-redaction",
+          "required-log-evidence-lost-to-truncation"
+        ],
+        "scenarios": [
+          {
+            "id": "REPOSITORY-ARCH056-DEPENDENCY-001",
+            "domain": "REPOSITORY",
+            "layer": "L1",
+            "evidenceClass": "CONTRACT",
+            "requiredEvidenceClass": "CONTRACT",
+            "providers": [
+              "shared"
+            ],
+            "sourceRequirements": [
+              "ARCH-056-SYSTEM-TEST-001"
+            ],
+            "automation": "automated",
+            "liveAuthorizationRequired": false,
+            "requiredFor": [],
+            "required_case_ids": [
+              "D1",
+              "D2"
+            ],
+            "implementation_module": "src/harness/arch056/dependency-scenario.js"
+          },
+          {
+            "id": "MESSAGING-ARCH056-INGRESS-001",
+            "domain": "MESSAGING",
+            "layer": "L2",
+            "evidenceClass": "INTEGRATION",
+            "requiredEvidenceClass": "INTEGRATION",
+            "providers": [
+              "shared",
+              "shopify",
+              "woocommerce"
+            ],
+            "sourceRequirements": [
+              "ARCH-056-SYSTEM-TEST-001"
+            ],
+            "automation": "automated",
+            "liveAuthorizationRequired": false,
+            "requiredFor": [],
+            "required_case_ids": [
+              "I1",
+              "I2",
+              "I3"
+            ],
+            "implementation_module": "src/harness/arch056/ingress-scenario.js"
+          },
+          {
+            "id": "RECOVERY-ARCH056-CANDIDATE-001",
+            "domain": "RECOVERY",
+            "layer": "L3",
+            "evidenceClass": "BLACK_BOX",
+            "requiredEvidenceClass": "BLACK_BOX",
+            "providers": [
+              "shopify"
+            ],
+            "sourceRequirements": [
+              "ARCH-056-SYSTEM-TEST-001"
+            ],
+            "automation": "automated",
+            "liveAuthorizationRequired": false,
+            "requiredFor": [],
+            "required_case_ids": [
+              "C1",
+              "C2",
+              "C3"
+            ],
+            "implementation_module": "src/harness/arch056/candidate-scenario.js"
+          },
+          {
+            "id": "RECOVERY-ARCH056-ADMISSION-001",
+            "domain": "RECOVERY",
+            "layer": "L2",
+            "evidenceClass": "INTEGRATION",
+            "requiredEvidenceClass": "INTEGRATION",
+            "providers": [
+              "shopify",
+              "woocommerce"
+            ],
+            "sourceRequirements": [
+              "ARCH-056-SYSTEM-TEST-001"
+            ],
+            "automation": "automated",
+            "liveAuthorizationRequired": false,
+            "requiredFor": [],
+            "required_case_ids": [
+              "A1",
+              "A2",
+              "A3",
+              "A4"
+            ],
+            "implementation_module": "src/harness/arch056/admission-scenario.js"
+          },
+          {
+            "id": "RECOVERY-ARCH056-UNCERTAINTY-001",
+            "domain": "RECOVERY",
+            "layer": "L3",
+            "evidenceClass": "BLACK_BOX",
+            "requiredEvidenceClass": "BLACK_BOX",
+            "providers": [
+              "shopify"
+            ],
+            "sourceRequirements": [
+              "ARCH-056-SYSTEM-TEST-001"
+            ],
+            "automation": "automated",
+            "liveAuthorizationRequired": false,
+            "requiredFor": [],
+            "required_case_ids": [
+              "U1",
+              "U2",
+              "U3"
+            ],
+            "implementation_module": "src/harness/arch056/uncertainty-scenario.js"
+          },
+          {
+            "id": "BILLING-ARCH056-SETTLEMENT-001",
+            "domain": "BILLING",
+            "layer": "L2",
+            "evidenceClass": "INTEGRATION",
+            "requiredEvidenceClass": "INTEGRATION",
+            "providers": [
+              "shopify",
+              "woocommerce"
+            ],
+            "sourceRequirements": [
+              "ARCH-056-SYSTEM-TEST-001"
+            ],
+            "automation": "automated",
+            "liveAuthorizationRequired": false,
+            "requiredFor": [],
+            "required_case_ids": [
+              "B1",
+              "B2",
+              "B3",
+              "B4",
+              "B5",
+              "B6"
+            ],
+            "implementation_module": "src/harness/arch056/settlement-scenario.js"
+          },
+          {
+            "id": "RECOVERY-ARCH056-FINALIZATION-001",
+            "domain": "RECOVERY",
+            "layer": "L3",
+            "evidenceClass": "BLACK_BOX",
+            "requiredEvidenceClass": "BLACK_BOX",
+            "providers": [
+              "shopify"
+            ],
+            "sourceRequirements": [
+              "ARCH-056-SYSTEM-TEST-001"
+            ],
+            "automation": "automated",
+            "liveAuthorizationRequired": false,
+            "requiredFor": [],
+            "required_case_ids": [
+              "F1",
+              "F2",
+              "F3",
+              "F4"
+            ],
+            "implementation_module": "src/harness/arch056/finalization-scenario.js"
+          },
+          {
+            "id": "RECOVERY-ARCH056-WOO-001",
+            "domain": "RECOVERY",
+            "layer": "L2",
+            "evidenceClass": "INTEGRATION",
+            "requiredEvidenceClass": "INTEGRATION",
+            "providers": [
+              "woocommerce"
+            ],
+            "sourceRequirements": [
+              "ARCH-056-SYSTEM-TEST-001"
+            ],
+            "automation": "automated",
+            "liveAuthorizationRequired": false,
+            "requiredFor": [],
+            "required_case_ids": [
+              "W1",
+              "W2"
+            ],
+            "implementation_module": "src/harness/arch056/woo-scenario.js"
+          },
+          {
+            "id": "RECOVERY-ARCH056-REPAIR-001",
+            "domain": "RECOVERY",
+            "layer": "L3",
+            "evidenceClass": "BLACK_BOX",
+            "requiredEvidenceClass": "BLACK_BOX",
+            "providers": [
+              "shopify"
+            ],
+            "sourceRequirements": [
+              "ARCH-056-SYSTEM-TEST-001"
+            ],
+            "automation": "automated",
+            "liveAuthorizationRequired": false,
+            "requiredFor": [],
+            "required_case_ids": [
+              "R1",
+              "R2",
+              "R3"
+            ],
+            "implementation_module": "src/harness/arch056/repair-scenario.js"
+          }
+        ]
+      },
+      "frozen_interfaces_under_test": {
+        "billing_settlement": "settleConfirmedInitialOutreach({shopId,recoveryId,outreachAttemptId,outboundMessageId}) -> settled(committed|already-committed, exact source evidence) | held(reason)",
+        "billing_revalidation": "revalidateExistingInitialOutreach({shopId,recoveryId,outreachAttemptId,outboundMessageId:string|null}) -> admitted(original admission,reservationId) | absent | held(reason)",
+        "admission_lookup": "inspectInitialOutreachAdmission(scope) -> absent|prepared|confirmed|failed|held",
+        "template_resume": "resumeInitialTemplate(scope + messageId + recoveryCreditSourceKey + current template fields)",
+        "initial_progress": "continueInitialOutreach({shopId,recoveryId}) -> needs-preparation|reconciled|blocked|held",
+        "worker_hold": "InitialOutreachHeldError preserves noncompleted worker outcome",
+        "repair": "existing queue retry of retained failed original job; actual materializeMaturedCandidate(originalJob.data,{jobId:originalJob.id,...existing options})",
+        "materialization_outcomes": [
+          "recovery-reconciled",
+          "deferred-initial-outreach"
+        ],
+        "dispatch_revision_evidence": "Standalone providerDispatchControlRevision prevents prepared/cleanup classification; human-command linkage conflicts with AUTOMATION initial identity."
+      },
+      "lock_contract": {
+        "settlement_and_compensation": [
+          "exact owned pointer",
+          "owned Shop FOR KEY SHARE",
+          "message FOR UPDATE",
+          "authoritative unchanged-ownership reread",
+          "original ledger counter/reservation order"
+        ],
+        "shopify_initial_fence": [
+          "Shop FOR UPDATE",
+          "Conversation",
+          "initial attempt FOR UPDATE",
+          "message FOR UPDATE",
+          "exact UsageReservation FOR SHARE",
+          "permit CAS"
+        ],
+        "woo_initial_fence": "Retain its existing intervening Recovery/consent lock order; message lock precedes reservation SHARE.",
+        "receipt": [
+          "verified Conversation before message",
+          "atomic receipt and lastMessageAt"
+        ],
+        "require_real_immediate_fk_checks": true,
+        "status_handler_outer_transaction_observed": true,
+        "provider_status": [
+          "preliminary exact pointer",
+          "owned Shop FOR KEY SHARE",
+          "authoritative message reread and unchanged-ownership validation",
+          "existing status CAS and attempt/command/UsageEvent writes",
+          "downstream compensation after commit"
+        ],
+        "settlement_forbids_late_unacquired_parent_or_attempt_locks": true,
+        "status_retains_guarded_attempt_writes_under_early_shop_fence": true,
+        "fence_shop_update_holder_blocks_other_writer_before_message": true,
+        "shop_key_share_holder_blocks_fence_before_descendants": true,
+        "positive_negative_delivered_event_fk_inserts_required": true,
+        "atomic_initial_support_finalization": [
+          "routing-only exact ownership pointer",
+          "Shop FOR KEY SHARE",
+          "initial attempt FOR UPDATE",
+          "unchanged identity revalidation",
+          "actual first Support thread and recovery-linked notice inserts"
+        ]
+      },
+      "source_provenance": {
+        "add_repository_descriptor": {
+          "name": "moda-interact-api",
+          "submodules": [
+            "database"
+          ]
+        },
+        "include_canonical_database_for_any_arch056_selection": true,
+        "capture_all_executed_services": true,
+        "background_image_factory": "existing ProductionBackgroundImage with verified accepted full SHA passed as ref",
+        "require_image_returned_revision_and_label_match": true,
+        "require_image_nested_schema_and_migration_hashes": true,
+        "floating_main_or_opaque_reused_image_counts_as_acceptance": false,
+        "shared_logging": {
+          "consumer": "moda-interact-background",
+          "specifier": "@modainteract/moda-interact-shared/logging",
+          "declared_and_locked_version_at_definition": "3.0.0",
+          "sibling_source_version_explanatory_only": "3.1.0",
+          "require_actual_installed_version_entrypoint_and_artifact_hash": true,
+          "require_lock_identity_and_integrity": true,
+          "consumer_image_or_integration_runtime_resolution_required": true,
+          "sibling_source_or_mock_counts_as_runtime_proof": false,
+          "shared_upgrade_authorized": false
+        }
+      },
+      "runtime_constraints": {
+        "environment": "DISPOSABLE_LOCAL",
+        "postgres": "PostgreSQL 17 + pgvector through existing data plane",
+        "redis": "existing disposable Redis",
+        "providers": "local emulators only",
+        "maximum_new_javascript_lines_exclusive": 300,
+        "new_generic_runner": false,
+        "upstream_edits": false,
+        "black_box_requires_real_ingress_worker_http": true,
+        "direct_service_with_pg_is_integration": true,
+        "mocked_progress_or_billing_owner_can_pass": false,
+        "unknown_permit_billability_change": false,
+        "ordinary_woo_initial_send_enabled": false,
+        "recurring_repair_added": false,
+        "new_application_schema_or_migrations": false,
+        "production_capacity_claim": false,
+        "first_support_thread_race": "B5 additionally exercises actual first Support thread/notice immediate Shop and CheckoutRecovery FK inserts against a stale final fence in both Shop-lock winner orders, as direct-service INTEGRATION evidence; no pre-existing-thread-only or mocked-insert substitute.",
+        "logging_assertions_before_harness_redaction": true,
+        "logging_method_mocks_can_certify_emission": false,
+        "actual_shared_factory_required_for_injected_sink": true,
+        "black_box_logging_uses_actual_process_output": true,
+        "required_diagnostics_lost_to_log_truncation_can_pass": false,
+        "new_generic_logging_or_error_serialization_module": false,
+        "stack_preservation_claim": false,
+        "moderation_original_preview_environments": [
+          "test",
+          "development"
+        ],
+        "moderation_raw_preview_in_production": false,
+        "logging_sink_failure_changes_business_outcome": false,
+        "provider_success_receipt_db_failure_origin": "internal",
+        "provider_error_invented_for_internal_or_expected_hold": false,
+        "secret_sentinels_persisted_or_printed": false,
+        "moderation_production_adapter_check_in_integration_case": "A2",
+        "whatsapp_worker_log_capture_in_ingress_case": "I2",
+        "logging_evidence_boundary": "actual Shared sink and emitted stdout/stderr JSON",
+        "remote_collector_ingestion_searchability_retention_access_verified": false,
+        "remote_collector_access_configuration_deployment_authorized": false,
+        "collector_release_readiness_handoff": "Parent execution plan; deployment-specific checks when a collector is the production debugging route."
+      },
+      "artifact_contract": {
+        "existing": [
+          "run.json",
+          "summary.txt",
+          "normal command/provenance evidence"
+        ],
+        "new_sidecars": [
+          "arch056-cases.json",
+          "arch056-execution-provenance.json",
+          "arch056-logging.json"
+        ],
+        "destination": "existing per-run evidence directory",
+        "redaction_required": true,
+        "preserve_failed_and_blocked_results": true,
+        "prefilled_pass_allowed": false,
+        "logging_sidecar_has_required_assertion_results": true,
+        "persist_raw_secret_values_or_error_objects": false,
+        "raw_logging_checks_precede_secondary_redaction": true,
+        "logging_sidecar_required_fields": [
+          "runId",
+          "scenarioId",
+          "caseId",
+          "assertionId",
+          "result",
+          "boundary",
+          "event",
+          "captureMode",
+          "environment",
+          "serviceIdentity",
+          "packageProvenanceRef",
+          "safeCorrelation",
+          "originalMessagePresence",
+          "componentMessagePresence",
+          "stageOriginChecks",
+          "sensitiveSentinelAbsence",
+          "boundsFlagsChecks",
+          "sourceEmissionCount",
+          "captureTruncation"
+        ]
+      },
+      "validation_commands": [
+        "npm run validate:catalogue -- --write",
+        "npm run validate:catalogue",
+        "npm run lint",
+        "npm run test:harness",
+        "npm run system:arch056:plan -- --json",
+        "npm run system:arch056 -- --json",
+        "git diff --check"
+      ],
+      "scenario_owned_validation_commands": [
+        {
+          "cwd": "moda-interact-api",
+          "argv": [
+            "npm",
+            "run",
+            "typecheck"
+          ],
+          "scenario_id": "REPOSITORY-ARCH056-DEPENDENCY-001"
+        },
+        {
+          "cwd": "moda-interact-api",
+          "argv": [
+            "npm",
+            "run",
+            "build"
+          ],
+          "scenario_id": "REPOSITORY-ARCH056-DEPENDENCY-001"
+        }
+      ],
+      "preserved_existing_scenarios": [
+        "RECOVERY-PROVIDER-AMBIGUOUS-001",
+        "RECOVERY-PROVIDER-CRASH-001",
+        "RECOVERY-PROVIDER-UNKNOWN-ID-001",
+        "MESSAGING-STATUS-001"
+      ],
+      "coverage_boundaries": {
+        "selected": [
+          "U1",
+          "U2",
+          "U3",
+          "bounded-C3",
+          "BS-04"
+        ],
+        "partial": [
+          "initial-template-MSG-03",
+          "exact-positive-source-BS-05",
+          "verified-conversation-ID-and-receipt-order-MSG-09"
+        ],
+        "deferred": [
+          "O7",
+          "general-AI-MSG-02",
+          "general-AI-MSG-03",
+          "early-unmatched-provider-status-MSG-04",
+          "other-MSG-09-read-opportunities",
+          "whole-review-closure"
+        ],
+        "blocked_policy_preserved": "ARCH-028-BACKGROUND-013"
+      },
+      "logging_contract": {
+        "logger_call_shape": "level(event:string, fields?:Record<string,unknown>); error nested in fields",
+        "capture_modes": [
+          "shared-sink-json",
+          "runtime-json"
+        ],
+        "required_case_assertions": {
+          "D2": [
+            "consumed-package-provenance",
+            "real-factory-wire-contract"
+          ],
+          "I2": [
+            "original-ingress-message",
+            "correlation-and-stage",
+            "sink-failure-isolation",
+            "actual-whatsapp-worker-failure-record",
+            "post-commit-stage-with-committed-receive"
+          ],
+          "C2": [
+            "source-error-before-typed-retry",
+            "moderation-allowed-preview"
+          ],
+          "A2": [
+            "original-cleanup-message",
+            "paired-primary-reconciliation-errors",
+            "real-provider-diagnostics",
+            "trace-id-validation",
+            "nested-detail-flags",
+            "sensitive-sentinel-absence",
+            "moderation-production-privacy"
+          ],
+          "U1": [
+            "truthful-held-outcome",
+            "no-fabricated-provider-error"
+          ],
+          "U2": [
+            "real-sdk-message-and-available-cause",
+            "once-at-source-per-request",
+            "no-fabricated-response"
+          ],
+          "U3": [
+            "http-success-before-db-failure",
+            "original-internal-receipt-error",
+            "no-provider-rejection-relabel"
+          ],
+          "B3": [
+            "hold-versus-technical-error",
+            "original-settlement-message"
+          ],
+          "B5": [
+            "original-woo-permit-error"
+          ],
+          "F1": [
+            "original-finalization-boundary-error",
+            "confirmed-replay-stage"
+          ],
+          "F2": [
+            "original-status-boundary-error",
+            "confirmed-replay-stage"
+          ],
+          "F3": [
+            "original-follow-up-publication-error",
+            "persisted-identity-correlation"
+          ],
+          "W1": [
+            "disabled-gate-without-fabricated-provider-error"
+          ],
+          "W2": [
+            "confirmed-before-gate-or-truthful-lineage-hold"
+          ],
+          "R1": [
+            "finite-retry-original-diagnostics",
+            "paired-materialization-cleanup-errors"
+          ],
+          "R3": [
+            "retained-job-held-repair-correlation",
+            "no-invented-historical-provider-error"
+          ]
+        },
+        "required_emission_absent_or_incorrect_can_pass": false,
+        "evidence_redaction_only_counts_as_log_privacy_proof": false,
+        "entire_application_or_all_pii_coverage_claim": false,
+        "envelope_fields_required": [
+          "event",
+          "level",
+          "service.name",
+          "deployment.environment.name",
+          "data"
+        ],
+        "runtime_streams_observed": [
+          "stdout",
+          "stderr"
+        ],
+        "known_semantic_component_fields": [
+          "operationError",
+          "cleanupError",
+          "accepted-fixed-role-equivalents"
+        ],
+        "prisma_diagnostics_when_supplied": [
+          "code",
+          "clientVersion",
+          "explicit-safe-model-constraint-field-metadata"
+        ],
+        "context_must_be_invocation_local": true,
+        "final_success_before_durable_commit_allowed": false,
+        "moderation_production_check_case": "A2",
+        "ingress_worker_diagnostic_owner": "ARCH-056-BACKGROUND-001",
+        "meta_adapter_diagnostic_owner": "ARCH-056-BACKGROUND-003",
+        "remote_collector_ingestion_or_searchability_claim": false
+      },
+      "depends_on": [
+        "ARCH-056-API-001",
+        "ARCH-056-BACKGROUND-001",
+        "ARCH-056-BACKGROUND-002",
+        "ARCH-056-BACKGROUND-003",
+        "ARCH-056-BACKGROUND-004"
+      ],
+      "task_id": "ARCH-056-SYSTEM-TEST-001",
+      "repository": "moda-interact-system-test",
+      "assigned_agent": "moda_system_test",
+      "domain": "system-test",
+      "task_file": "docs/decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md",
+      "definition_revision": 2,
+      "status": "pending",
+      "path_base": "implementation repository root unless explicitly workspace-qualified",
+      "validation_executed_by_architect": false
+    }
+  ],
+  "coverage": [
+    {
+      "reference": "U1",
+      "disposition": "selected",
+      "owners": [
+        "ARCH-056-API-001",
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "boundary": "API `database` gitlink/materialisation and normal generated client. Require the two accepted fields and all three ARCH-055 migrations. Actual recorded Git provenance must be inspected; unfinished API endpoints/readiness remain separately owned."
+    },
+    {
+      "reference": "U2",
+      "disposition": "selected",
+      "owners": [
+        "ARCH-056-BACKGROUND-003",
+        "ARCH-056-BACKGROUND-004",
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "boundary": "`services/recovery-template-integration/initial-no-offer-fallback.service.ts`, canonical UsageEvent-to-message inspection and Shopify/Woo final fences. Remove the wrong usage-key/provider-key comparison and classify owned persisted progress before preparation."
+    },
+    {
+      "reference": "U3",
+      "disposition": "selected",
+      "owners": [
+        "ARCH-056-BACKGROUND-001",
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "boundary": "`services/conversation.service.ts` parent-first helper/message transaction. Preserve the accepted helper lock/current-state rules and prove FK concurrency/duplicate rollback with real services. The old language-resolution race is deferred. The receipt-order correction is a separate selected design decision below."
+    },
+    {
+      "reference": "R1",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`runtime/background-runtime-lease.ts`, `runtime/dynamic-leased-scheduler.ts`: false/rejected renewal, lease-loss propagation and takeover. Duplicate business effects were not established by the static finding."
+    },
+    {
+      "reference": "R2",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "Runtime configuration polling, concurrency reconciliation and pending-turn repair. Measure per-process workload before changing coordination; no global lease is selected merely to reduce reads."
+    },
+    {
+      "reference": "R3",
+      "disposition": "partial",
+      "owners": [
+        "ARCH-056-BACKGROUND-001",
+        "ARCH-056-BACKGROUND-002",
+        "ARCH-056-BACKGROUND-003",
+        "ARCH-056-BACKGROUND-004",
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "boundary": "Revision 2 requires actual safe original messages, stage/correlation and paired-failure evidence throughout the selected touchpoints, including the existing WhatsApp worker failure projection and two narrow Meta diagnostic-projection corrections. Verify emitted JSON through the installed Shared package and real worker output. Remaining configuration/readiness replacement sites in `services/platform-configuration/` and other unselected files remain deferred. No whole-application logging repair is claimed."
+    },
+    {
+      "reference": "C1",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/pending-recovery-candidate/checkout-order-guard.service.ts` and materializer exclusion: ten-second unrenewed Redis lease and GET/DEL release. Sequence later changes against BACKGROUND-004's materializer work."
+    },
+    {
+      "reference": "C2",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/checkout-recovery/checkout-event-orchestrator.service.ts`: guard basket writes against the observed source/activity version after external lookup."
+    },
+    {
+      "reference": "C3",
+      "disposition": "partial",
+      "owners": [
+        "ARCH-056-BACKGROUND-002",
+        "ARCH-056-BACKGROUND-003",
+        "ARCH-056-BACKGROUND-004",
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "boundary": "Real candidate/materializer/initiation/finalizer retry; same-message pre-permit continuation and exact-source confirmed completion. Unknown provider outcomes and unsupported historical/nonunique sources remain explicit holds. No universal eventual-completion claim after finite job exhaustion."
+    },
+    {
+      "reference": "C4",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/recovery-capacity-resume.service.ts`, `workers/recovery-capacity-resume.worker.ts`, `domain/recovery-capacity-resume.ts`: cursor/pass progress beyond an obstructed first page. Preserve per-shop eligibility."
+    },
+    {
+      "reference": "C5",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/checkout-recovery/order-recovery-correlation.service.ts`: exact observed-status CAS/history during concurrent completion. Existing terminal safety remains."
+    },
+    {
+      "reference": "O1",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/recovery-policy.service.ts`, pending-candidate and Woo checkout scheduling: purpose-specific delay reads while retaining override expiry and platform policy."
+    },
+    {
+      "reference": "O2",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/checkout-recovery/checkout-event-orchestrator.service.ts`: consider the single-update transaction only together with C2's write fencing."
+    },
+    {
+      "reference": "O3",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/checkout-recovery/latest-recovery.ts`: consumer-specific projections. A materializer using few fields does not justify narrowing every consumer."
+    },
+    {
+      "reference": "O4",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/woocommerce-recovery/woo-recovery-composition.ts` and preflight adapters: reduce repeated checks only with explicit freshness evidence. Ordinary production initial send remains disabled."
+    },
+    {
+      "reference": "O5",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "Database CheckoutRecovery generation indexes: inspect actual index catalog and plans before a new forward migration; preserve uniqueness and historical migrations."
+    },
+    {
+      "reference": "O6",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/checkout-recovery-expiry.service.ts`: any batching must retain exact transition CAS, history and attempt cancellation together."
+    },
+    {
+      "reference": "O7",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/recovery-template-integration/automated-recovery-template.service.ts` and fallback adjacent lifetime/recovery reads. Sharing BACKGROUND-004's file does not authorise an extra read-reuse optimisation; keep later fresh checks after external awaits."
+    },
+    {
+      "reference": "MSG-01",
+      "disposition": "preserved",
+      "owners": [
+        "ARCH-056-BACKGROUND-001"
+      ],
+      "boundary": "Accepted ARCH-054 pending-turn capture now chooses from current locked Conversation state. Regression-test it; do not reopen the old unlocked-snapshot finding or weaken its lock."
+    },
+    {
+      "reference": "MSG-02",
+      "disposition": "partial",
+      "owners": [
+        "ARCH-056-BACKGROUND-003"
+      ],
+      "boundary": "Initial-template technical moderation retry must preserve resumable state and propagate a technical outcome. General AI moderation-to-turn completion through `services/conversation-turn-processor.service.ts` remains deferred."
+    },
+    {
+      "reference": "MSG-03",
+      "disposition": "partial",
+      "owners": [
+        "ARCH-056-BACKGROUND-003"
+      ],
+      "boundary": "Selected initial-template inspection/resume and guarded cleanup retain one identity. General AI reply/reservation replay and terminal turn-completion semantics remain deferred."
+    },
+    {
+      "reference": "MSG-04",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "Durable early/unmatched provider status retention in `services/whatsapp-provider-status.service.ts` and ingress worker is not selected. BACKGROUND-002's locking-only change preserves current unknown-message behavior and does not create an inbox."
+    },
+    {
+      "reference": "MSG-05",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/recovery-routing.service.ts`: canonical indexed phone routing and cross-shop ambiguity. Returned LIMIT 2 is not a bound on scanned rows."
+    },
+    {
+      "reference": "MSG-06",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/outbound-whatsapp-admission/outbound-admission-reservation.service.ts`: all-message-ID usage aggregation inside SERIALIZABLE. Selected identity/resume work preserves existing quota logic."
+    },
+    {
+      "reference": "MSG-07",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/conversation-moderation/moderation-turn-gate.ts`, `commerce/history.ts`, `workers/whatsapp.worker.ts`: history/moderation bounds must preserve every pending fragment and watermark. BACKGROUND-001's diagnostic-only worker edit does not select this history/turn behavior."
+    },
+    {
+      "reference": "MSG-08",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/whatsapp-contact-opt-out/stop-writer.ts`: unresolved-phone scans and sorted Shop locks. Preserve merchant-specific quoted STOP and standalone global STOP semantics."
+    },
+    {
+      "reference": "MSG-09",
+      "disposition": "partial",
+      "owners": [
+        "ARCH-056-BACKGROUND-003"
+      ],
+      "boundary": "Carry the verified conversation ID into `markSent` and persist parent-before-message receipt/clock atomically. Other engagement, human-command and text Conversation rereads remain deferred. Later policy checks must remain fresh."
+    },
+    {
+      "reference": "MSG-10",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "Measure contention and polling across Shop/Conversation locks, human-command scans and bounded pending-turn repair. Selected lock-order correctness does not establish system-wide contention or capacity improvement."
+    },
+    {
+      "reference": "TEMPLATE-01",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/template-translation/repository.ts`: set-based publication must preserve atomic claim and publication; current explicit-call model is 5 + 2N, not measured SQL latency."
+    },
+    {
+      "reference": "TEMPLATE-02",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/meta-template-management/due-poller.ts`, repository and service: repeated GET discovery across replicas is distinct from CAS-protected mutation/POST. Measure before adding claims."
+    },
+    {
+      "reference": "BS-01",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/merchant-knowledge-reconciliation.service.ts`: retained ineligible prefixes need bounded pass/cursor progress."
+    },
+    {
+      "reference": "BS-02",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/merchant-knowledge-upload-cleanup.service.ts`: external deletion lacks durable acknowledgement. Separate lifecycle/schema design is needed if selected; preserve accepted ARCH-055 cleanup-winning locks."
+    },
+    {
+      "reference": "BS-03",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "Knowledge entitlement reconciliation/eligibility: share bounded pass context only while retaining transaction-current mutation checks."
+    },
+    {
+      "reference": "BS-04",
+      "disposition": "selected",
+      "owners": [
+        "ARCH-056-BACKGROUND-002"
+      ],
+      "boundary": "`services/paid-included-recovery-reservation.service.ts`: reuse the already validated same-transaction Shopify plan/meter handle and remove its duplicate lookup. This is mandatory narrow scope, with no generic cache or whole-flow performance claim."
+    },
+    {
+      "reference": "BS-05",
+      "disposition": "partial",
+      "owners": [
+        "ARCH-056-BACKGROUND-002",
+        "ARCH-056-BACKGROUND-004"
+      ],
+      "boundary": "Exact proved original source permits positive settlement; multiple candidates, released history, ambiguous outcome and unsupported old-period RESERVED credit stay held. Do not choose newest/current or infer a new uncertainty policy."
+    },
+    {
+      "reference": "BS-06",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "`services/billing-subscription-reconciliation/reconciliation-queue.service.ts`, `entrypoints/billing.ts`: global scan/future enqueue needs explicit cursor/horizon ownership."
+    },
+    {
+      "reference": "BS-07",
+      "disposition": "deferred",
+      "owners": [],
+      "boundary": "Translation batch assembly, Shopify/Woo availability catalogues and knowledge chunks are distinct later batching touchpoints. Preserve generation publication and per-merchant/chunk ownership."
+    }
+  ],
+  "lock_contract": {
+    "initial_final_fence": [
+      "Shop FOR UPDATE",
+      "Conversation FOR UPDATE",
+      "initial attempt FOR UPDATE",
+      "ConversationMessage FOR UPDATE",
+      "exact UsageReservation FOR SHARE",
+      "permit CAS"
+    ],
+    "woo_variation": "Retain its existing intervening Recovery/consent locks; move credit SHARE after message UPDATE. No additional owner counter/grant/lot locks.",
+    "confirmed_settlement_and_selected_compensation": [
+      "owned Shop FOR KEY SHARE",
+      "ConversationMessage FOR UPDATE",
+      "existing source-owner counter operation",
+      "reservation CAS and UsageEvent write"
+    ],
+    "implicit_fk_reason": "UsageEvent's immediate Shop FK can acquire KEY SHARE, so settlement/compensation must obtain it before message rather than introduce implicit message-to-Shop inversion.",
+    "receipt_persistence": [
+      "verified Conversation parent lock/update",
+      "owned ConversationMessage conditional receipt write"
+    ],
+    "partial_permit": "Non-null dispatch key, admittedAt, or controlRevision without confirmed outcome is non-resumable; no message restrictionRevision field exists.",
+    "command_conflict": "Any MerchantConversationSendCommand on an AUTOMATION message is a lineage conflict.",
+    "initial_cleanup_and_known_rejection": [
+      "owned Shop FOR UPDATE",
+      "initial attempt FOR UPDATE",
+      "ConversationMessage FOR UPDATE",
+      "guarded failed/link transition and exact usage cleanup"
+    ],
+    "provider_status_selected_path": [
+      "owned Shop FOR KEY SHARE",
+      "ConversationMessage CAS",
+      "existing attempt and usage operations"
+    ],
+    "prepared_message_evidence": "PENDING; providerMessageId, sentAt, deliveredAt, readAt, failedAt, providerDispatchKey, providerDispatchAdmittedAt and providerDispatchControlRevision all NULL; no merchant command for AUTOMATION.",
+    "atomic_initial_support_finalization": [
+      "routing-only exact Shop/recovery/attempt pointer",
+      "owned Shop FOR KEY SHARE",
+      "initial attempt FOR UPDATE",
+      "authoritative unchanged ownership reread",
+      "existing atomic attempt/Support thread and notice writes"
+    ]
+  },
+  "logging_acceptance_contract": {
+    "revision": 2,
+    "scope": "Every added or changed failure path in the selected touchpoints; wider R3 remains partial/deferred.",
+    "source_contract": "docs/observability/shared-logging.md",
+    "api_signature": "logger.error(eventName, fields)",
+    "required": [
+      "safe actual source name/message",
+      "stable event and truthful per-invocation stage",
+      "available opaque correlation identity",
+      "explicit supplied provider/SDK/Prisma fields",
+      "source diagnostic before fallback/hold conversion",
+      "separately emitted paired failures",
+      "real installed Shared sink and worker JSON assertions",
+      "privacy assertions before harness redaction",
+      "logging-failure isolation"
+    ],
+    "background_locked_shared_version": "3.0.0",
+    "inspected_shared_sibling_version": "3.1.0",
+    "automatic_stack_or_recursive_cause_emission": false,
+    "moderation_privacy": "Keep existing bounded exceptionMessage preview only in test/development; preserve production-safe source diagnostics.",
+    "system_evidence_sidecar": "arch056-logging.json",
+    "runtime_acceptance_status": "required-not-executed"
+  },
+  "policy_boundary": {
+    "task": "ARCH-028-BACKGROUND-013",
+    "state": "blocked-preserved",
+    "rule": "No automatic charge from permit/timeout/unknown outcome, AMBIGUOUS commit, released-source reactivation, current-period substitute, or guessed nonunique lineage."
+  },
+  "validation_obligations_not_results": true
+}

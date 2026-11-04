@@ -1,0 +1,195 @@
+{
+  "review_id": "BGDB-20261103-02",
+  "old_snapshot": {
+    "name": "moda-interact-workspace(20261102-112817).zip",
+    "size_bytes": 30689372,
+    "sha256": "ee42bb83ee441ba9018779e760967a5bf87edcbc429eecc58699f1419863861b"
+  },
+  "updated_snapshot": {
+    "name": "moda-interact-workspace(20261103-212722).zip",
+    "size_bytes": 31544382,
+    "sha256": "f8194947c3564a8f9ea8942d9462ec83716aecc17fc1626d7d846af68c044024"
+  },
+  "inventory_before": {
+    "source_files": 481,
+    "source_lines": 70139,
+    "worker_modules": 25,
+    "direct_client_call_sites": 1189,
+    "files_with_direct_client_calls": 198,
+    "direct_client_categories": {
+      "orm_read": 433,
+      "orm_write": 358,
+      "transaction_boundary": 162,
+      "raw_sql": 236
+    },
+    "direct_client_operations": {
+      "findUnique": 300,
+      "create": 46,
+      "findMany": 66,
+      "$transaction": 162,
+      "findFirst": 39,
+      "$queryRaw": 123,
+      "updateMany": 159,
+      "aggregate": 2,
+      "upsert": 27,
+      "update": 109,
+      "count": 10,
+      "createMany": 9,
+      "findUniqueOrThrow": 15,
+      "$executeRaw": 92,
+      "deleteMany": 8,
+      "$queryRawUnsafe": 20,
+      "groupBy": 1,
+      "$executeRawUnsafe": 1
+    },
+    "sql_wrapper_invocations": 59,
+    "files_with_sql_wrappers": 13,
+    "non_database_candidates_excluded": 109
+  },
+  "inventory_after": {
+    "source_files": 488,
+    "source_lines": 71324,
+    "worker_modules": 25,
+    "direct_client_call_sites": 1197,
+    "files_with_direct_client_calls": 201,
+    "direct_client_categories": {
+      "orm_read": 438,
+      "orm_write": 359,
+      "transaction_boundary": 162,
+      "raw_sql": 238
+    },
+    "direct_client_operations": {
+      "findUnique": 303,
+      "create": 47,
+      "findMany": 66,
+      "$transaction": 162,
+      "findFirst": 41,
+      "$queryRaw": 124,
+      "updateMany": 157,
+      "aggregate": 2,
+      "upsert": 27,
+      "update": 111,
+      "count": 10,
+      "createMany": 9,
+      "findUniqueOrThrow": 15,
+      "$queryRawUnsafe": 21,
+      "$executeRaw": 92,
+      "deleteMany": 8,
+      "groupBy": 1,
+      "$executeRawUnsafe": 1
+    },
+    "sql_wrapper_invocations": 59,
+    "files_with_sql_wrappers": 13,
+    "non_database_candidates_excluded": 109
+  },
+  "inventory_per_file_category_changes": [
+    {
+      "path": "moda-interact-background/src/services/conversation-ai-delay/pending-turn-repair.ts",
+      "before": {
+        "orm_read": 0,
+        "orm_write": 0,
+        "raw_sql": 0,
+        "transaction_boundary": 0
+      },
+      "after": {
+        "orm_read": 0,
+        "orm_write": 0,
+        "raw_sql": 1,
+        "transaction_boundary": 0
+      }
+    },
+    {
+      "path": "moda-interact-background/src/services/conversation-ai-delay/pending-turn-repository.ts",
+      "before": {
+        "orm_read": 0,
+        "orm_write": 0,
+        "raw_sql": 0,
+        "transaction_boundary": 0
+      },
+      "after": {
+        "orm_read": 1,
+        "orm_write": 2,
+        "raw_sql": 1,
+        "transaction_boundary": 0
+      }
+    },
+    {
+      "path": "moda-interact-background/src/services/inbound-whatsapp-audio.service.ts",
+      "before": {
+        "orm_read": 4,
+        "orm_write": 7,
+        "raw_sql": 2,
+        "transaction_boundary": 1
+      },
+      "after": {
+        "orm_read": 4,
+        "orm_write": 5,
+        "raw_sql": 2,
+        "transaction_boundary": 1
+      }
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-template-integration/initial-no-offer-fallback.service.ts",
+      "before": {
+        "orm_read": 0,
+        "orm_write": 0,
+        "raw_sql": 0,
+        "transaction_boundary": 0
+      },
+      "after": {
+        "orm_read": 4,
+        "orm_write": 1,
+        "raw_sql": 0,
+        "transaction_boundary": 0
+      }
+    }
+  ],
+  "schemas": {
+    "moda-interact-database": {
+      "size_bytes": 191864,
+      "sha256": "5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052"
+    },
+    "moda-interact-background": {
+      "size_bytes": 191864,
+      "sha256": "5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052"
+    },
+    "moda-interact-api": {
+      "size_bytes": 191707,
+      "sha256": "45df5e44bdc1e7e29495e391a1754477f0df362c667d648f4b6893b6541f5c0d"
+    },
+    "moda-interact-admin": {
+      "size_bytes": 191864,
+      "sha256": "5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052"
+    },
+    "moda-interact": {
+      "size_bytes": 191864,
+      "sha256": "5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052"
+    }
+  },
+  "migration_tree_regular_file_counts": {
+    "moda-interact-database": 72,
+    "moda-interact-background": 72,
+    "moda-interact-api": 69,
+    "moda-interact-admin": 72,
+    "moda-interact": 72
+  },
+  "migration_tree_equals_canonical": {
+    "moda-interact-database": true,
+    "moda-interact-background": true,
+    "moda-interact-api": false,
+    "moda-interact-admin": true,
+    "moda-interact": true
+  },
+  "all_previous_canonical_migration_files_unchanged": true,
+  "new_canonical_migration_files": [
+    "20261102120000_arch055_rest_read_lifecycle/migration.sql",
+    "20261102121000_arch055_human_follow_up_claim_identity/migration.sql",
+    "20261102122000_arch055_upload_intake_identity/migration.sql"
+  ],
+  "background_lockfile_unchanged": true,
+  "evidence_limitations": [
+    "No actual Git repository history, branch, remote or submodule pin verified.",
+    "No application build, test suite, provider, database or Redis executed.",
+    "Source call sites do not establish executed SQL counts or measured performance."
+  ]
+}
