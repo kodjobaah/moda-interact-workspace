@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
 - ARCH-040-BACKGROUND-008
 - ARCH-046-BACKGROUND-004
@@ -22,7 +22,7 @@ enables:
 - ARCH-056-BACKGROUND-004
 - ARCH-056-SYSTEM-TEST-001
 created: '2026-11-03'
-updated: '2026-11-04'
+updated: 2026-11-04
 ---
 
 # ARCH-056-BACKGROUND-003: Resume and fence the existing initial-template admission
@@ -186,19 +186,19 @@ The selected BG002 provider-status entry also acquires owned Shop FOR KEY SHARE 
 
 ## Work Items
 
-- [ ] Extend the existing canonical lookup and add the scoped initial evidence/result types, preserving legacy facade compatibility.
-- [ ] Implement same-message initial-template resume and carry original source/attempt context through both provider-specific delivery paths.
-- [ ] Add the exact initial credit/content/attempt proof to the existing Shopify fence and reorder Woo message-before-credit locking.
-- [ ] Make initial cleanup and known rejection lineage atomic, conditional and parent-ordered; preserve 131026 ownership and uncertainty.
-- [ ] Scope the new technical moderation retry exception to initial templates; distinguish HTTP errors from receipt persistence failures.
-- [ ] Make receipt persistence Conversation-before-message with per-call ownership predicates and one atomic receipt/timestamp unit.
-- [ ] Add focused unit/PostgreSQL proofs and run every listed preservation gate.
-- [ ] Report the final additive contract to BACKGROUND-004; keep deferred general-consumer and billing-policy findings explicit.
+- [x] Extend the existing canonical lookup and add the scoped initial evidence/result types, preserving legacy facade compatibility.
+- [x] Implement same-message initial-template resume and carry original source/attempt context through both provider-specific delivery paths.
+- [x] Add the exact initial credit/content/attempt proof to the existing Shopify fence and reorder Woo message-before-credit locking.
+- [x] Make initial cleanup and known rejection lineage atomic, conditional and parent-ordered; preserve 131026 ownership and uncertainty.
+- [x] Scope the new technical moderation retry exception to initial templates; distinguish HTTP errors from receipt persistence failures.
+- [x] Make receipt persistence Conversation-before-message with per-call ownership predicates and one atomic receipt/timestamp unit.
+- [x] Add focused unit/PostgreSQL proofs and run every listed preservation gate.
+- [x] Report the final additive contract to BACKGROUND-004; keep deferred general-consumer and billing-policy findings explicit.
 
-- [ ] Implement the declared initial-path diagnostic owners/stages and safe original-message/code fields, preserving existing source Meta/moderation diagnostics.
-- [ ] Emit both fixed-role original failures before selected cleanup/reconciliation aggregation; preserve exception identity and logging failure isolation.
-- [ ] Correct only the existing Meta diagnostic projection's nested trace validation and child-array transformation flags.
-- [ ] Replace synthetic-persistence and phone-retention expectations and verify actual installed Shared sink records, redaction, source metadata, correlation and business outcomes.
+- [x] Implement the declared initial-path diagnostic owners/stages and safe original-message/code fields, preserving existing source Meta/moderation diagnostics.
+- [x] Emit both fixed-role original failures before selected cleanup/reconciliation aggregation; preserve exception identity and logging failure isolation.
+- [x] Correct only the existing Meta diagnostic projection's nested trace validation and child-array transformation flags.
+- [x] Replace synthetic-persistence and phone-retention expectations and verify actual installed Shared sink records, redaction, source metadata, correlation and business outcomes.
 
 ## Interfaces / Contracts
 
@@ -352,39 +352,84 @@ Stop and report a blocking contract conflict if safe final admission requires ch
 
 ## Completion Report
 
-This section belongs to the implementing repository agent. No implementation is recorded by this definition.
+### Current review status
 
-### Status
+Accepted — Attempt 3, 2026-11-04. Attempt 3 corrects the sequence-two cleanup regression identified in Attempt 2 and adds a real PostgreSQL regression. The four unchanged HUMAN integration failures remain the previously authorized baseline exception. The task is Complete; BACKGROUND-004 and SYSTEM-TEST-001 remain gated by other dependencies.
 
-Not Started
+### Historical Attempt 1 status
 
-### Files Changed
+Blocked during Attempt 1. Implementation draft `32b80bf` is published on the Background task branch. The required PostgreSQL preservation gate has a contradictory read-only assertion. The task is not submitted for review.
 
-Pending implementation.
+### Files Changed and Work Completed
 
-### Work Completed
-
-Pending implementation.
+- Existing admission facade, types and reservation owner expose scoped initial evidence and same-message resume, with normal usage identity and ownership checks.
+- Existing Shopify and Woo permit owners check the original attempt, prepared message and exact credit. Woo retains its explicit fence. The credit read follows the prepared-message lock.
+- Existing delivery and failure owners distinguish moderation retry, provider HTTP and receipt persistence. Receipt writes acquire Conversation first. Guarded pre-permit cleanup and known initial rejection keep the attempt link in the transaction that removes usage.
+- Existing Meta diagnostic projection validates trace identifiers and propagates nested array transformation flags. Initial failure owners emit bounded source evidence through the installed Shared logger.
+- Added the five scoped test/fixture modules declared by the task. Updated only owned regression tests and source files. No schema, gitlink, queue contract or other task record changed.
 
 ### Validation Results
 
-Not run. Record exact commands, exit results, failures, warnings, source/build/schema provenance, scenario evidence and cleanup; do not copy planned checks as completed results.
+- The declared focused Vitest selection passed 135 tests across 11 files. The declared ESLint selection, production build and `git diff --check` passed.
+- Installed Shared version was 3.0.0. The logging import resolved through its `./dist/logging/index.js` export. Capture-sink tests cover stage and source evidence, provider versus receipt failure, paired errors, protected retry identity, and Meta nested flags.
+- The declared integration selection ran on disposable PostgreSQL/Redis and reported 31 passed and five failed across seven files. New real PostgreSQL cases passed for Woo same-message resume, inconsistent pending receipts, refusal lineage, cleanup versus permit, released credit and the competing receipt transaction. General STOP and follow-up preservation passed.
+- Four HUMAN-send failures in `recovery-conversation.services.integration.test.ts` reproduced using an untouched archive of `afac7c3766d92fb14beff669232c1b01c2ed0be0` and the prepared schema. They involve provider admission before takeover, definitive rejection settlement, UNKNOWN resolution, and rate denial.
+- The fifth failure is `tests/integration/woo-initial-send-fence-races.integration.test.ts:209–216`. This read-only required test explicitly requires `Error("PERSISTENCE_FAILURE")` and rejects the actual injected source message. The task's logging requirement explicitly prohibits that synthetic error and requires safe source wording. Production emits the bounded source diagnostic and preserves the original throw. The test remains untouched.
+- The database check constraint rejects a control-revision-only permit at write time. The defensive read classification is covered in unit tests. No constraint was disabled for integration testing.
 
-### Deviations
+### Worktree and synchronization evidence
 
-None at definition time. Record actual deviations and their architect disposition before review.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-003`, `task/ARCH-056-BACKGROUND-003`, origin/main incorporated, remote task fast-forward not needed. Durable claim `6c4d06f5cea3b67617863c21b33d836625424e33`.
+- Implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-003`, `task/ARCH-056-BACKGROUND-003`, origin/main already current at `afac7c3766d92fb14beff669232c1b01c2ed0be0`, remote task fast-forward not needed.
+- Recursive sync and initialization passed. Database gitlink `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Shared checkouts and other task worktrees were not used for implementation.
 
-### Assumptions
+### Unresolved Issues and Architect Handoff
 
-The reviewed snapshot and accepted prerequisite contracts are the definition baseline. Recheck the real current checkout and task state at launch.
+Authorize an update to the read-only Woo race-test logging assertion or assign that correction to its owner. Reconcile the four independently reproduced baseline failures with the mandatory preservation gate. The implementation remains a draft. Complete the remaining matrix evidence, including Shopify resume/provider concurrency, historical and paid candidate ambiguity, promotional owner invalidation, and the settlement contender's ledger insertion. Do not infer full coverage from the passing focused cases. BACKGROUND-004 and terminal system testing were not started.
 
-### Unresolved Issues
+### Attempt 2 — Submitted for architect review
 
-Pending implementation evidence. Preserve the task's explicit held/deferred and blocked-policy boundaries.
+- Updated only the authorized Woo race-test diagnostic assertion. It checks the supplied source marker, final-permit stage, scoped IDs and safe projection flags. The original exception identity, rollback and retry checks remain in place.
+- The Shopify resume test uses the public admission facade and real SQL fence with controlled consent and moderation prerequisites. A provider barrier holds the first worker after permit commit. The second worker observes the permit and returns duplicate. The test checks the original message, one usage event, one credit reservation and one provider call.
+- Added held legacy-attempt evidence, ambiguous historical paid credit and invalidated promotional selection cases. The paid and promotional cases suppress dispatch and preserve the credit records. The settlement race acquires Shop KEY SHARE, then the message and funding rows, and commits a recovery usage event. The losing fence does not create a permit.
+- Added installed Shared capture-sink tests for unexpected preparation and thrown moderation errors. The records retain independent source markers and scoped IDs, redact the injected phone, and preserve the thrown objects without a provider call or usage deletion. Shared resolved to version 3.0.0 through `./dist/logging/index.js`.
 
-### Architectural Concerns
+#### Validation
 
-Return changes to ownership, contracts, schema, transaction boundaries, durable-state semantics, queue behavior, security or another repository to moda_architect before expanding scope.
+- The exact focused Vitest command in Validation exited 0 with 137 passed in 11 files. The declared ESLint command, lint reruns for the final edited test files, `npm run build` and `git diff --check` exited 0.
+- The seven-file `npm run test:integration -- …` command in Validation exited 1 with 36 passed and 4 failed across 7 files. The isolated baseline command `npm run test:integration -- tests/integration/recovery-conversation.services.integration.test.ts` on untouched Background `afac7c3766d92fb14beff669232c1b01c2ed0be0` exited 1 with 7 passed and 4 failed. Both used the prepared Database schema at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`, the same installed dependencies and the repository's disposable PostgreSQL and Redis runner. The runner completed teardown.
+- The following tests in `recovery-conversation.services.integration.test.ts` had the same signature on baseline and candidate, `AssertionError: expected 'suppressed' to be 'admitted' // Object.is equality`.
+  - `provider admission commits before later takeover, then UNKNOWN is reconciliation-only`
+  - `verified definitive provider rejection settles one message and never permits retry`
+  - `UNKNOWN with verified definitive failure resolves to FAILED without a second send`
+  - `rate denial stops evaluation before final durable eligibility/billing admission`
+- All task-owned cases and the other required regression cases passed. The four matching failures meet the narrow baseline exception in Architect Review. The HUMAN test module and runtime remain untouched. No further task was started.
+
+#### Git and worktree evidence
+
+- Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-003`. Attempt 2 claim `8c4103867eafc05132cd45edccb4c826009d3334`.
+- Background worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-003`. Implementation commit `a68fe273bde3503605e64fb412143ac9dc1c563d` pushed to `origin/task/ARCH-056-BACKGROUND-003`.
+- Both worktrees use `task/ARCH-056-BACKGROUND-003`. Both were already current with `origin/main` at preparation, with no remote task fast-forward needed. Recursive submodule initialization passed. Only the task file is staged for the parent review commit on the same remote branch. No gitlink, shared checkout or other task worktree changed. Neither repository was merged to main.
+
+### Attempt 3 — Submitted for architect review
+
+- `failPrepared` resolves the canonical usage key to the stored attempt and verifies the recovery, sender, usage source and existing message association before selecting cleanup. Proven sequence-one INITIAL attempts retain their locked, atomic lineage path. Valid sequence-two follow-ups retain guarded generic cleanup. Unresolved or conflicting recovery identities keep their evidence.
+- PostgreSQL regressions exercise the public facade with a genuine sequence-two attempt. An unpermitted message becomes FAILED and only its exact outbound usage is removed. An existing permit, inconsistent receipt evidence and an unresolvable attempt key each preserve the message and usage. The original initial-outreach usage and sequence-two attempt row remain intact in every case.
+- BACKGROUND-004 handoff. Use `inspectInitialOutreachAdmission(scope)` and `resumeInitialTemplate` with the original message and exact credit source. Pass `initialOutreach` and `recoveryCreditSourceKey` on fresh Shopify initial delivery. Keep Woo on its explicit guarded sender. General AI consumer behavior, broader completion semantics and ARCH-028-BACKGROUND-013 uncertainty policy remain deferred. No downstream task was started.
+
+#### Validation
+
+- The exact focused Vitest selection in Validation passed 137 tests across 11 files. The declared ESLint command, production build and whitespace check exited 0.
+- The exact seven-file PostgreSQL/Redis selection in Validation exited 1 with 40 passed and four failed. The unchanged HUMAN integration module on untouched current Background main `eb6d7a6` exited 1 with seven passed and four failed using the same installed dependencies and Database gitlink `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Both used the disposable runner and completed teardown. An earlier baseline run also hit an expired Prisma transaction during the concurrent claim case. The repeat baseline completed that case successfully and reproduced only the four authorized failures.
+- The four failure names listed under Attempt 2 matched on current main and candidate, all with `AssertionError: expected 'suppressed' to be 'admitted' // Object.is equality`. The authorized exception is unchanged. All task-owned tests and the remaining regression cases passed.
+
+#### Git and worktree evidence
+
+- The canonical workspace is `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. The isolated parent is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-003`. The isolated Background worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-003`.
+- Both worktrees use `task/ARCH-056-BACKGROUND-003`. The launcher incorporated current `origin/main` in both worktrees, with no remote task fast-forward needed. Recursive sync and initialization passed at the recorded Database gitlink. The durable Attempt 3 claim was `8e8f79cae7b8066c70bcaf0c3af46ae24892def2`.
+- Implementation commit `d343450d2b7537db316f607cc418a0e2b42c5098` was pushed on the Background task branch. The parent review submission uses the same task branch and changes only this task file. Shared checkouts, other task worktrees and gitlinks were left intact.
 
 ## Architect Review
 
@@ -392,19 +437,25 @@ This section belongs only to moda_architect. Definition authoring is not impleme
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1, 2026-11-04.
 
 ### Review Notes
 
-Awaiting an implementation submission and its evidence.
+Reviewed the Attempt 1 blocker report and published implementation draft `32b80bf`. The following narrow scope and validation clarifications supersede the conflicting read-only instruction. Implementation acceptance remains pending.
+
+1. Edit only the contradictory persistence diagnostic assertion in `tests/integration/woo-initial-send-fence-races.integration.test.ts` and any strictly necessary local diagnostic assertion imports. Verify the supplied harmless source marker and actual safe diagnostic metadata where present. Keep original exception identity, rollback, no-send, contention and persistence assertions intact. Do not require a fabricated `PERSISTENCE_FAILURE` error message. The remainder of that integration module stays read-only.
+2. Retain and run `tests/integration/recovery-conversation.services.integration.test.ts`. The four HUMAN failures independently reproduced on untouched `afac7c3766d92fb14beff669232c1b01c2ed0be0` with prepared schema are the comparison baseline. Record exact test names and failure signatures for baseline and candidate with matching prerequisites, and the actual command results. The preservation gate can pass only when there are no new or materially changed failures and every task-owned case and other required regression passes. Report a nonzero integration exit as such. Keep HUMAN tests and runtime untouched. A mismatched or unreproduced failure remains a validation blocker.
+3. Finish the outstanding matrix in the Attempt 1 report, including Shopify resume/provider concurrency, historical and paid ambiguity, promotional ownership invalidation, and the settlement contender ledger insertion. Retain the real PostgreSQL barriers, row and provider call assertions, emitted-record logging checks, scoped lint/build and full declared integration selection.
+
+The blocker is resolved at the definition level. Release the Attempt 1 claim and return the same task to Ready for normal launcher preparation of Attempt 2. Preserve the published draft and the historical Attempt 1 report. Enabled work remains gated.
 
 ### Reviewed Files
 
-No implementation submitted.
+Attempt 1 report, task-owned implementation draft summary and the conflicting Woo race-test diagnostic contract.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Attempt 1 reported validation and isolated baseline comparison. Fresh required validation is pending Attempt 2.
 
 ### Architecture Conformance
 
@@ -413,3 +464,57 @@ Pending review against the parent architecture, task allowlist, interface contra
 ### Follow-up
 
 Pending implementation review; no enabled task may be started by this task's executor.
+
+## Architect Review — Changes Requested (Attempt 2, 2026-11-04)
+
+### Finding — P2: preserve sequence-two pre-permit cleanup
+
+`src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts:18–20` treats every `recovery-outreach:<attemptId>` usage key as an initial attempt and returns immediately if `lockInitial` fails. The existing sequence-two follow-up sender uses the same key format (`recovery-outreach-follow-up-processor.service.ts:177`), while `lockInitial` requires sequence one and trigger INITIAL. Therefore ordinary pre-provider suppression/moderation refusal of a sequence-two message silently skips cleanup. The message remains PENDING and its hard-limit UsageEvent remains present. A later replay sees duplicate/PENDING and cannot resume the unchanged follow-up flow, and the leaked usage consumes its message limit. This violates the explicit sequence-two preservation contract; it is not one of the four approved HUMAN baseline exceptions.
+
+Independently reproduced on disposable PostgreSQL with canonical migrations: create a valid new sequence-two NO_RESPONSE_FOLLOW_UP attempt, a PENDING AUTOMATION message with no permit/receipt, and its exact normal outbound UsageEvent; call the public facade's `failPrepared(messageId)`. Expected `{status: FAILED, usage: 0}`; observed `{status: PENDING, usage: 1}`. No production constraint was disabled. The temporary review test was removed from the implementation worktree afterward; its reproducer is retained at `/tmp/arch056-review-sequence-two.integration.test.ts` and output at `/tmp/arch056-bg003-review-sequence-two-retry.log` for local follow-up.
+
+### Required correction
+
+Resolve the owned attempt identity before selecting initial-only cleanup. Apply the new initial association/lock behavior only to proven sequence-one INITIAL attempts; preserve the existing guarded generic cleanup for valid sequence-two follow-ups, without allowing malformed/conflicting initial lineage to fall through unsafely. Add a durable regression in the already-owned test modules for a valid sequence-two pre-permit refusal, asserting FAILED message and removal of only its exact hard-limit usage, plus preservation of permitted/uncertain follow-up evidence. Rerun the declared preservation gates and reconcile Work Items/Completion Report before resubmission. Do not modify the read-only follow-up processor or broaden the HUMAN baseline exception.
+
+### Validation independently performed
+
+- Reviewed the full `afac7c3..a68fe27` task implementation diff and the Attempt 2 correction. The task uses the canonical dedicated parent and implementation worktrees; both were clean at review start. Remote implementation equals `a68fe273bde3503605e64fb412143ac9dc1c563d`, and remote parent report equals `5d1b3730ecb5b6af3ccd8615249d41eecccaa0d3`.
+- Exact required unit selection: 137 passed across 11 files.
+- Exact required seven-file PostgreSQL/Redis selection: 36 passed, four failed. All four failure names and `expected 'suppressed' to be 'admitted'` signatures match the previously authorized HUMAN baseline exception. This remains a nonzero exit, not a completely passing integration suite. The unchanged baseline archive was not rerun during this review.
+- Production build, all changed TypeScript-file ESLint, and `git diff --check afac7c3..HEAD` passed with Node 24.19.0.
+- The additional valid sequence-two database regression fails with the concrete state mismatch above. An earlier draft fixture attempted to mutate immutable attempt identity and was rejected by the database; the successful reproduction creates a new valid attempt instead. An intervening runner failed before tests on disposable Redis readiness; the retry reached the assertion and reproduced the defect.
+- No permanent implementation source or test changes were made by the reviewer. No implementation commit/push, merge, main update, or downstream promotion was performed.
+
+### Lifecycle
+
+`status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. The next normal launcher claim creates Attempt 3. Architect acceptance remains withheld. This review overlay is applied only to the matching parent task branch and published under the developer’s explicit commit/push instruction. No implementation branch or main branch is changed by this publication.
+
+## Architect Review — Accepted (Attempt 3, 2026-11-04)
+
+### Review Notes
+
+- Attempt 3 resolves the sequence-two pre-permit cleanup regression. `failPrepared` now resolves attempt identity before selecting the initial-only cleanup path. Proven sequence-one INITIAL messages use their locked lineage path; valid sequence-two follow-ups retain guarded generic cleanup; conflicting or uncertain evidence remains untouched.
+- The new PostgreSQL regression covers unpermitted, permitted, uncertain and conflicting sequence-two evidence. The unpermitted case fails the message and removes only its exact outbound usage. The other cases preserve message, usage and attempt state. This addresses the concrete Attempt 2 reproducer.
+- Shopify resume/provider concurrency and the prior source/credit/cleanup/receipt scenarios remain covered by the reported task-owned PostgreSQL tests. The report records all task-owned cases passing.
+- The implementation remains within the assigned production/test ownership. No general follow-up processor, HUMAN runtime, schema or Woo activation behavior was changed.
+
+### Reviewed Files
+
+- All 22 paths listed in the Attempt 3 implementation diff, including `src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts` and `tests/integration/initial-outreach-admission-races.integration.test.ts`.
+- The Attempt 1 and Attempt 2 review history and the Attempt 3 Completion Report.
+
+### Validation Reviewed
+
+- Focused Vitest selection: 137 passed across 11 files.
+- Build, declared ESLint selection and whitespace check: passed.
+- Declared seven-file PostgreSQL/Redis selection: 40 passed and 4 failed. The four failures were reproduced on untouched Background main with the same Database gitlink and have the same signatures as the narrow HUMAN baseline exception authorized in the prior Architect Review. This is recorded as a nonzero command result, not as a fully passing suite. The task-owned cases and the remaining regression cases passed.
+- These results were reported by the implementation agent and reviewed, not rerun by the architect.
+
+### Architecture Conformance
+
+Conforms to the task's locked outbound permit, exact-source, uncertainty, cleanup and receipt contracts. The Attempt 2 sequence-two regression is corrected without changing the read-only follow-up processor or broadening the HUMAN baseline exception.
+
+### Follow-up
+
+`ARCH-056-BACKGROUND-004` and `ARCH-056-SYSTEM-TEST-001` remain gated because other dependencies are incomplete. This acceptance does not start them or authorize a merge to `main`.

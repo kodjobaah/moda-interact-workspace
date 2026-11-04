@@ -1,0 +1,52 @@
+{
+  "latest_snapshot": "moda-interact-workspace(20261104-005051).zip",
+  "latest_snapshot_sha256": "a2c582c7aecb087b5c997d953bb1ab398f4e0d90d4fa79d555f8dd267b7233ee",
+  "review_snapshot": "moda-interact-workspace(20261103-235702).zip",
+  "review_source_baseline": "docs/architecture/reviews/shopify-database-20261103-235702-r01/source-baseline.json",
+  "verified_unchanged_review_source_hashes": 264,
+  "source_verification": "All original 264 hashes match latest snapshot; no new application tests or live measurements run.",
+  "canonical_nested_schema_identical": true,
+  "migration_directory_files": 72,
+  "locked_packages": {
+    "@modainteract/moda-interact-shared": "3.1.0",
+    "@prisma/client": "6.19.3",
+    "prisma": "6.19.3",
+    "react-router": "7.18.2",
+    "@react-router/dev": "7.18.2",
+    "@shopify/shopify-app-react-router": "1.2.1",
+    "@shopify/shopify-app-session-storage-prisma": "9.0.1",
+    "bullmq": "6.3.1",
+    "pg": "8.23.0",
+    "vitest": "4.1.11"
+  },
+  "latest_changed_and_added_task_input_sha256": {
+    "docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md": "19646403237c512ff82e28933eeb28111ca41951fbe796751d5b84843ff8a0fb",
+    "docs/decisions/api/ARCH-055/API-004-correct-recovery-inbox-and-human-send-persistence.md": "bfd2a8a69944e143981c4f4311030e12695c889a5b7f7a0fefd6459605773a28",
+    "docs/decisions/api/ARCH-055/API-009-bound-readiness-and-reconcile-api-validation.md": "202cf33dd71dff4f097fa30d647e986de19c0f722dc68b7bb21f94115f0c9bd7",
+    "moda-interact-api/tests/integration/merchant/conversations/arch055-transaction-config.postgres.test.ts": "1599231922c311c567b38e1c0313cc57de87373f48f903c64f22502dfac881e9",
+    "docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md": "0ff0ab9e01e48d3070ecfdfedabdf1ec280f297fd942aeb87e3c97092843e3c5",
+    "docs/architecture/ARCH-056/deterministic-execution-map.json": "e9e53ebba4a43008288dc5bdf19dfa08f3920edf943d83e8ff7484b5bc3b2e16",
+    "docs/architecture/ARCH-056/execution-plan.md": "fd04f3121e701daca56b5efa0287c1851a2bc6c69a620ed838d939de8b0b6ac4",
+    "docs/architecture/ARCH-056/finding-task-map.md": "4c1355560f50c880112bee3b7085badc18bc44ccce4744f52dc118bcb2e2e17f",
+    "docs/architecture/ARCH-056/source-baseline.json": "da19409a31f302bd05109743f142b7bb059313169d6337eea8987bf98a9b2a83",
+    "docs/decisions/api/ARCH-056/API-001-align-accepted-database-dependency.md": "8e859890fe08cd4c9e054ad5354ae8d3c0f41b2729083874456d6efa1023b6f5",
+    "docs/decisions/background/ARCH-056/BACKGROUND-001-serialize-inbound-conversation-persistence.md": "6e18e4e24ec0eac8e2d6946934f01f98d2ee4982f04dbb1717519227865814df",
+    "docs/decisions/background/ARCH-056/BACKGROUND-002-settle-confirmed-initial-outreach-credit.md": "34dcffa219ba47720c425bfc1cd3bf9441ab0d0fc329961b74baeecba70463a1",
+    "docs/decisions/background/ARCH-056/BACKGROUND-003-resume-owned-initial-template-admission.md": "0ba9b70538e8846f26130868f7f8b7a7edf54944ebb8f12d896bed38f0ad46c7",
+    "docs/decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md": "4793ca3c72a4c0950dcf322399819e93cce85bc0d6df46d6ae35fc9d528de569",
+    "docs/decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md": "b0f2a743629d0a347be734a7415b641fee879a5b5f5f7fe228a61af21c3fa93c"
+  },
+  "git_history_present": false,
+  "node_modules_present": false,
+  "tasks_defined_not_materialised": true,
+  "architect_role_file": "moda_architect(20261103-235630).toml",
+  "architect_role_sha256": "1b5548a98a9c899a9f44e442d86df2e2510b0827ecd2fa742a829b07d00dec3e",
+  "migration_sql_files": 71,
+  "rollout_context": {
+    "environment": "development; not live",
+    "authority": "explicit user clarification on 2026-11-04",
+    "legacy_shopify_billing_identity_preservation_required": false,
+    "canonical_namespace_change_owner": "ARCH-057-SHOPIFY-012",
+    "legacy_compatibility_or_backfill_required": false
+  }
+}
