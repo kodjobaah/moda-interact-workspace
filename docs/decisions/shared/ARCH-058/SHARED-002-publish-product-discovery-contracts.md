@@ -33,7 +33,7 @@ updated: 2026-11-04
 
 ## Objective
 
-Publish the exact architect-accepted Shared product-discovery contracts so MCP, Commerce and Background can install a verified immutable package. This is a release-only gate, separate from schema implementation and Commerce tool publication.
+Publish the exact architect-accepted Shared product-discovery, shipping-information and answer-presentation contracts so MCP, Commerce and Background can install a verified immutable package. This is a release-only gate, separate from schema implementation and Commerce tool publication.
 
 ## Context
 
@@ -54,7 +54,7 @@ No schema/runner implementation, rerunning the implementation test suite, consum
 
 This gate must not publish unreviewed source. The accepted commit and clean intended artifact are prerequisites, not a mutable local branch name. Inspect the existing release process; do not bypass registry access controls or print credentials. The publication command's required packaging/prepack build is allowed and must be recorded, but do not reopen implementation testing without evidence of a changed artifact.
 
-Verify the new public schemas/types/constants/helper named in SHARED-001, the updated dictionary/grant types, and runnerVersion1.1.0 through the existing commerce/runner exports. A successful publish command alone is not proof that consumers can retrieve the intended artifact.
+Verify the new public schemas/types/constants/helper named in SHARED-001, including CommerceShippingInformationInputSchema, CommerceShippingInformationSchema, CommerceResponseDispositionSchema and CommerceAnswerPresentationSelectionSchema, the updated dictionary/grant types, and runnerVersion1.1.0 through the existing commerce/runner exports. A successful publish command alone is not proof that consumers can retrieve the intended artifact.
 
 ## Work Items
 
@@ -105,7 +105,7 @@ Set status to review, provide the immutable publication receipt and actual workt
 
 ## Implementation Notes
 
-Keep package publication distinct from COMMERCE-001's environment tool publication. One makes schemas available to source consumers; the other creates/pins three authorized tools and their behavior in an environment.
+Keep package publication distinct from COMMERCE-001's environment tool publication. One makes schemas available to source consumers; the other creates/pins four authorized tools and their behavior in an environment.
 
 ## Completion Report
 
