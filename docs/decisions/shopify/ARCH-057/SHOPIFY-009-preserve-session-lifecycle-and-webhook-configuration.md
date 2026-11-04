@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 65
-executor: copilot
-claimed_at: 2026-11-04T22:49:27Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -35,7 +35,7 @@ Coordinator: `moda_architect`.
 
 Mandatory execution, diagnostic and naming contract: `docs/architecture/ARCH-057/task-contract.md`.
 
-**Attempt 1 reviewed; changes requested.** Work was performed on `task/ARCH-057-SHOPIFY-009` in the claimed Shopify app worktree. No app deployment, Shopify app version release, schema change, dependency change or cross-repository modification was made.
+**Attempt 2 architect-accepted and Complete.** Work was performed on `task/ARCH-057-SHOPIFY-009` in the claimed Shopify app worktree. No app deployment, Shopify app version release, schema change, dependency change or cross-repository modification was made.
 
 ## Objective
 
@@ -263,7 +263,7 @@ Official references for executor verification: [Shopify login behavior](https://
 
 ### Status
 
-Attempt 2 implementation complete; both architect-requested diagnostic corrections are committed on `task/ARCH-057-SHOPIFY-009` and are being resubmitted to `moda_architect`. The task was reclaimed through the canonical launcher as Copilot; see Git / VCS for the durable claim and synchronization evidence.
+Attempt 2 architect-accepted and Complete on 2026-11-04. Reviewed implementation `f0cf26877a9e3f7503c0f9a956b02ede3eff2571` is committed and pushed on the implementation task branch. The claim is cleared and attempt remains 2. This acceptance does not merge either branch to main or deploy a Shopify app version.
 
 ### Files Changed
 
@@ -344,7 +344,7 @@ Merged to workspace `main`: no.
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 — Changes Requested
 
 Changes requested on 2026-11-04. Attempt 1 is not accepted; returned to `ready` for the owning agent to reclaim. Executor and claim timestamp remain null; attempt remains 1.
 
@@ -374,3 +374,16 @@ The reviewed lifecycle implementation covers atomic transition-owned cleanup, du
 ### Follow-up
 
 The owning agent must reclaim this same task, correct both findings, add the emitted-record regression coverage, rerun relevant checks and update the completion report before resubmitting for architect review. ARCH-057-SHOPIFY-010 and ARCH-057-SHOPIFY-011 remain unpromoted by this review; this task does not satisfy their dependency until accepted.
+
+
+### Attempt 2 — Accepted
+
+Architect decision on 2026-11-04: accepted; task Complete. Reviewed source `f0cf26877a9e3f7503c0f9a956b02ede3eff2571` matches `origin/task/ARCH-057-SHOPIFY-009`; the implementation worktree is clean. Both Attempt 1 findings are resolved and no actionable findings remain.
+
+- Removed the competing lifecycle error serializer/redactor. The adapter reuses the established billing safe diagnostic boundary and Shared `sanitizeLogFields`; its remaining mapping supplies lifecycle event context and classification.
+- Queue/SDK error codes are emitted as `sourceCode`; explicitly database-owned failures retain `databaseCode`. The added real Shared emitted-record test proves the queue `ECONNREFUSED` distinction. Existing database/cause, privacy, SDK Response and throwing-sink assertions remain passing.
+- Independently reran `npm run test:shopify-lifecycle`: 10 files, 91 tests passed using workspace-selected Node v24.19.0. Local review log: `/tmp/shopify009-architect-attempt2-unit.log`.
+- Independently checked the correction diff and `git diff --check`: passed. Inspected the two-file correction, required main synchronization and installed diagnostic boundary. No production lifecycle or configuration behavior changed in the correction.
+- Reviewed submitted Attempt 2 typecheck/scoped lint and earlier build/config validation evidence. The previously inspected 12-test PostgreSQL evidence remains applicable; the architect did not rerun that suite. No deployment or remote subscription verification is implied.
+
+Completion clears executor/claimed_at without increasing attempt. SHOPIFY-010 is promoted to Ready, unclaimed, because its sole prerequisite is now Complete. SHOPIFY-011 remains Pending on the remaining prerequisites recorded in this branch, including SHOPIFY-010; SHOPIFY-012 and SYSTEM-TEST-001 remain Pending. No downstream implementation is started by this decision. The historical Attempt 1 findings and validation limits above remain part of the review record.

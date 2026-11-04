@@ -93,7 +93,7 @@ Current task YAML in this branch also records SHOPIFY-001, SHOPIFY-002 and SHOPI
 | ARCH-057-SHOPIFY-006 | Recovery readers and command context | Pending | 001 |
 | ARCH-057-SHOPIFY-007 | Merchant settings/category policy | Pending | 001 |
 | ARCH-057-SHOPIFY-008 | Knowledge lifecycle and UI refresh | Pending | 001, 007 |
-| ARCH-057-SHOPIFY-009 | Uninstall/reinstall and webhook configuration | Ready (changes requested) | 001 |
+| ARCH-057-SHOPIFY-009 | Uninstall/reinstall and webhook configuration | Pending | 001 |
 | ARCH-057-SHOPIFY-010 | Ingress and queue publication | Pending | 009 |
 | ARCH-057-SHOPIFY-011 | Remaining server diagnostic coverage | Pending | 001–010 |
 | ARCH-057-SHOPIFY-012 | Domain naming and canonical development billing identities | Pending | 011 |
@@ -131,3 +131,8 @@ This package adds only new ARCH-057-owned files. Every `_index.md`, earlier task
 ## Settings Task Acceptance (2026-11-04)
 
 ARCH-057-SHOPIFY-007 Attempt 1 is architect-accepted and Complete at `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e`. Its task records independent 135-test validation, reviewed 23-test PostgreSQL evidence and review limits. Earlier ready/pending snapshots for this task are historical. SHOPIFY-008 is now ready and unclaimed; SHOPIFY-011 remains pending on remaining prerequisites. No downstream execution, main merge or architecture completion is implied.
+
+
+## Session Lifecycle Task Acceptance (2026-11-04)
+
+ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete at `f0cf26877a9e3f7503c0f9a956b02ede3eff2571`. Both earlier diagnostic findings are resolved; independent focused validation passed 91 tests. Reviewed earlier PostgreSQL evidence covers 12 tests; it was not rerun for the logging correction. SHOPIFY-010 is now Ready and unclaimed. SHOPIFY-011 remains Pending on its other incomplete prerequisites in this branch; later tasks remain Pending. The task map above retains initial states; current task YAML and the execution plan govern the dependency frontier. No main merge, app deployment or architecture completion is implied.

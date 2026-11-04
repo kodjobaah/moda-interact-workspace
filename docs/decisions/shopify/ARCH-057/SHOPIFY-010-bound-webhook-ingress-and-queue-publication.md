@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -34,7 +34,7 @@ Coordinator: `moda_architect`.
 
 Mandatory execution, diagnostic and naming contract: `docs/architecture/ARCH-057/task-contract.md`.
 
-**Defined but not materialised.** This is the canonical portable definition for `docs/decisions/shopify/ARCH-057/SHOPIFY-010-bound-webhook-ingress-and-queue-publication.md`. Baseline: the latest supplied `moda-interact-workspace(20261104-005051).zip`. No implementation, branch, worktree, live subscription check or passing runtime test is asserted.
+**Materialised task definition; Ready and unclaimed.** ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete at implementation `f0cf26877a9e3f7503c0f9a956b02ede3eff2571`; its acceptance satisfies this task's sole prerequisite. Normal launcher preparation and claiming are required before execution. No implementation, deployment or passing runtime test is asserted for this task.
 
 ## Objective
 
