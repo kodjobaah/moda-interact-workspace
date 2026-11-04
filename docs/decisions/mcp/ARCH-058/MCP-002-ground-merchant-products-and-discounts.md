@@ -35,160 +35,275 @@ Architecture ID: `ARCH-058`. Parent: `docs/architecture/ARCH-058-commerce-agent-
 
 ## Objective
 
-Make the current merchant's actual provider products searchable by an exact typed category or by text, support an explicit bounded browse of its customer-visible catalogue, and make the existing canonical discount catalogue available to an authorized conversation. Preserve tenant boundaries, truthful pagination, exact product identity and current merchant discount policy. MCP returns product/condition facts; the existing Background host decides whether a proposed purchase supports a promotional claim.
+Extend the accepted MCP composition with exact category search, explicit catalogue browse and conversational use of the existing discount catalogue. Implement the concrete changes below; do not create a replacement taxonomy, discount reader, pricing engine, provider proxy or response pipeline.
 
 ## Context
 
-- `src/execution/policy/shopify-core.ts` currently uses `first: $first` in `SEARCH_DOCUMENT`; `src/connections/shopify/document.ts` admits only literal bounded `first` values. The real provider always applies that guard. Tests which stub the `adminGraphql` boundary do not demonstrate that the composed search can execute.
-- Product search currently requires text and has no typed category or browse argument. `src/execution/policy/shopify-core-executor.ts` also restricts argument mappings. Both the parser and executable mapping must agree with the new Shared contract.
-- The current Woo reader projects stock facts without product/variation publication status or catalogue visibility. A no-query browse cannot equate an authenticated administrative listing or `stock_status: instock` with a customer-visible catalogue. The browse branch needs explicit publication checks before returning candidates.
-- Shopify standard taxonomy, Shopify product type/collections, Woo native categories and Moda's broad store category are separate identities. A reference candidate from MCP-001 is not evidence that the merchant has a product.
-- `src/mcp/registration.ts` in the uploaded snapshot lists/validates discount built-ins but reaches an unavailable stub. `docs/decisions/mcp/ARCH-052/MCP-002-execute-published-discount-options-and-proof.md` records an accepted complete implementation of the canonical snapshot reader. Reconcile that source discrepancy before writing a second reader.
-- Current discount projection and policy reads are outreach-only, and current manifest grants describe published tools only. Shared-002 supplies the explicit built-in descriptor/grant branch. Discounts remain built-ins; product discovery remains published capabilities.
+This revision is grounded in `moda-interact-workspace(20261104-094947).zip`. Read the common [execution baseline](../../../architecture/ARCH-058/execution-baseline.json) and [implementation handoff](../../../architecture/ARCH-058/implementation-handoff.md). MCP-001 is under development according to the developer; its accepted implementation is the base for this task, not work to repeat here.
+
+The snapshot establishes these implementation gaps:
+
+- `shopify-core.ts:SEARCH_DOCUMENT` uses variable `first: $first`, rejected by `connections/shopify/document.ts`. Its `SearchInput.query` and provider composition are text-only.
+- Woo request keys are independently checked in `connections/resolver.ts`, `connections/woocommerce/provider.ts` and `direct-product-reader.ts`; changing only the port type cannot enable a category/browse request.
+- Woo list/exact mapping unconditionally requires `parent_id`, although native variation ownership is established by the verified parent endpoint. The search loop also advances some variation indexes only after validation, leaving filtered records able to repeat.
+- `runtime/execution-registry.ts:execute` drops `toolContext` when it constructs the fresh capability-reader context. `mcp/snapshot.ts` does not match built-in descriptors to the manifest and rejects every `mode: NONE` tool, including a retained identity whose execution has since been revoked.
+- The snapshot lacks the accepted `src/execution/discount-catalogue.ts` and still has the unavailable built-in stub. This is a concrete integration prerequisite, not authority to recreate the accepted catalogue.
 
 ## Scope
 
-In `moda-interact-mcp` only:
+Only `moda-interact-mcp` source, tests and its task report. Public input/output contracts are the already published Shared **4.0.0**, runner **1.1.0**. Product-search definition is **2.0.0**, operation `products.search` **1.0.0**. Exact product definition/operation remain **1.0.0**. Shipping implementation belongs to MCP-003.
 
-1. Extend `products.search` to the frozen nullable query, flat typed category and explicit browse input; preserve output contracts and ordinary exact-product reads.
-2. Fix the literal-page-size composition failure and implement provider-correct exact membership and browse publication checks with bounded resumable product/variant scans.
-3. Carry only trustworthy current price/currency/context facts and preserve actual provider identities and URLs.
-4. Reuse/reconcile the accepted canonical discount reader, extend its authorized conversation path and implement built-in manifest/list/call identity matching.
-5. Add tests through the actual composed provider/runtime boundaries, including structured original-error evidence.
+### Exact implementation map
+
+Paths in this table are relative to the MCP implementation worktree. Test fixtures must exercise these implementations, not alternative helpers that reproduce the intended answers.
+
+| Path | Required change |
+| --- | --- |
+| `src/execution/policy/shopify-core.ts` | Extend `SearchInput`; replace search document/filter composition; add the category document and provider parsers; implement the three bounded search branches below; correct optional Woo `parent_id` handling in search and exact get. Keep basket behavior and public product output unchanged. |
+| `src/execution/policy/product-search-cursor.ts` — new | Own only the signed version-2 search cursor, normalized filter fingerprint and strict provider progress parsing described below. Move the existing product-search cursor mechanics here; no other cursor protocol changes. |
+| `src/execution/reference-taxonomy/category-membership.ts` — new | Export `createPrismaProductCategoryReader` and the narrow `ProductCategoryReader` port below. Read the already accepted taxonomy tables by exact ID; no embedding/import/source download. |
+| `src/execution/policy/shopify-core-executor.ts` | Add `category`/`browse` only to `products.search` mappings; inject the category reader and trusted environment into its adapter. Keep the legacy `shopify.searchProducts` mapping text-only. Preserve actual output-schema validation and rendering. |
+| `src/connections/{ports,resolver,prisma-reader}.ts` | Add the exact private list fields and trusted cursor connection identity below; forward fields through the resolver and extend its strict key checks. Select Woo installation `id`/`credentialVersion` alongside the already selected fields; no extra connection query. |
+| `src/connections/woocommerce/{provider,direct-product-reader}.ts` | Extend `approvedRequest`, `validRequest` and `pathFor` together; add list status/visibility projection and fixed ordering; preserve accepted credential/transport/original-error work. |
+| `src/capabilities/{records,prisma-reader,manifest,resolve}.ts` | Carry trusted conversation/retained-grant projection, current discount policy and canonical built-ins; extend the existing consistent read and use Shared grant deduplication. Preserve MCP-001 required-feature selection. |
+| `src/execution/conversation-discount-context.ts` — new | Own the narrow domain context/lease/grant checks below. This is not generic header authentication and owns no token, conversation write or new table. |
+| Accepted `src/execution/{discount-tools,discount-catalogue}.ts` | Extend the existing authorization/projection/reader for conversation purpose. Preserve its catalogue query, condition mapping and cursor; add only the narrowly classified optional read failure branch. |
+| `src/mcp/{ports,snapshot,registration}.ts` | Carry canonical built-in identity separately from mutable permission, validate manifest/list equality, and invoke the accepted built-in dispatcher. Remove no generic request/size checks. |
+| `src/runtime/{ports,prisma,service-ports,execution-registry}.ts` | Wire the exact reader/context additions into production composition; forward `call.toolContext` into the fresh registry authorization read. Retain the accepted built-in execution port and call wrapper. |
+| Tests named in Validation | Add/extend focused fixtures and the existing disposable database harness. No new test framework or runtime dependency is required. |
 
 ## Out of Scope
 
-No Admin, Gateway, Commerce, Background or Database implementation; no new provider API proxy, stored product mirror, universal Shopify-to-Woo mapping, descendant expansion, native category-listing MCP tool, discount proof endpoint, eligibility engine, legacy `commerce_evaluate_discount` revival, coupon application, checkout creation or customer send. Do not reopen accepted ARCH-052 task records. No persistent publication or live store mutation is authorized by this task.
-
-Basic shipping reads belong to `ARCH-058-MCP-003` and its separate `commerce_get_shipping_information` / `shipping.getInformation` operation. Add no shipping fields to existing product output and change no get-product definition here. Browse adds no weather service, bestseller calculation or inferred product relevance.
+No Shared/Database changes or package publication; no edits to MCP-001, accepted ARCH-052 reports, Admin taxonomy or decision indexes. No new taxonomy source, native category-discovery endpoint, Shopify-to-Woo category translation, descendant expansion, product mirror, discount proof API, basket eligibility engine, coupon application, checkout/cart mutation, shipping fields in product results, tool publication, environment setup or customer send. Runtime filenames and symbols must not contain architecture task IDs.
 
 ## Requirements
 
-### Accepted source and contract gates
+### 1. Consume the known prerequisites once
 
-- Start by comparing the actual launcher checkout with the accepted ARCH-052 MCP-002 implementation/review and the accepted ARCH-052 MCP-003/MCP-006 provider/error work. Record the commit/source evidence and remaining integration delta. Reuse accepted code brought forward through the normal task base. If the accepted reader or diagnostic implementation cannot be located/reconciled, stop with that discrepancy for the architect rather than implementing a competing catalogue or rewriting historical completion state.
-- Consume the exact Shared package published by ARCH-058-SHARED-002, targeting `4.0.0` only while the recorded accepted baseline remains `3.1.0`. Use the architect-reconciled exact version if that baseline changed. No sibling-source import, copied wire validator or assumed local package version.
-- `commerce_search_products` definition version is `2.0.0`, executing `products.search` operation version `1.0.0`. `commerce_get_product` remains definition/operation `1.0.0` with unchanged definition content. The resolver remains MCP-001-owned. Do not repurpose `shopify.searchProducts` or widen its unrelated published definitions accidentally.
+The prepared MCP-001 result must already contain exact `@modainteract/moda-interact-shared@4.0.0`, its lockfile, the accepted Database revision `ded8f14a60182f6b1443640f012caf0089b8a44c` or an accepted descendant, and the taxonomy resolver/required-feature implementation. Use that prepared packet and the recorded SHARED-002 registry integrity; do not repeat release discovery, choose a version, redownload the taxonomy or downgrade an accepted descendant. A package/submodule mismatch is a concrete preparation failure with the observed value in the report.
 
-### Typed inputs and exact provider search
+Before modifying discount code, the prepared base must contain the accepted ARCH-052-MCP-002 catalogue implementation and tests: `src/execution/discount-catalogue.ts`, `tests/unit/execution/discount-catalogue.test.ts`, its real dispatcher wiring and the PostgreSQL scenario recorded in `tests/integration/prisma.integration.test.ts`. The accepted report identifies correction commit `89e9ad3` after `7cbceee89b2ae0115bd2b948418b4169b977ea8f`; the abbreviated correction is report provenance, not an invented full SHA. The accepted Woo error implementation is `1d18e6c866311d0a3238a919f335643ffbefd8c1` under ARCH-052-MCP-006. Preserve its diagnostic path. If either accepted implementation is absent, record the missing path/behavior and return an integration handoff to the developer/architect. Do not implement a competing reader/logger or check out an old task commit over MCP-001. The common handoff owns this integration prerequisite.
 
-- Use the frozen Shared input: optional/nullable query with parsed default null; optional flat `category` containing `system`, `id` and nullable `taxonomyVersion`; and `browse?: boolean` with parsed default false. Preserve maximum price, available-only, limit and cursor defaults/bounds. Update `src/execution/policy/shopify-core-executor.ts` argument allowlist/mapping and the service types to match.
-- With `browse: false`, require a non-null query or category. With `browse: true`, require normalized `query: null` and an absent category; retain the declared price/availability/limit/cursor filters. Reject mixed browse-plus-query/category requests, incompatible provider/system, invalid native IDs, wrong Shopify taxonomy versions and non-null Woo taxonomy versions. Do not implement business checks as Zod refinements or introduce `oneOf` into the published input subset. An invalid filter is never silently ignored.
-- For Shopify, validate the canonical taxonomy GID against the active pinned reference version, then derive the approved short token. Use the pinned Admin `products(query: ...)` `category_id` filter and verify each returned `Product.category.id` for exact equality. Build/escape query syntax in trusted code; the model does not provide raw GraphQL or provider filter grammar. Do not assume `productVariants` supports the product-category filter.
-- Correct the existing text-search document to a literal accepted `first` bound and keep every new product/variant connection at a literal bound accepted by the existing guard. Do not weaken or bypass `inspectShopifyReadQuery`, increase its connection budget, or remove the provider preflight to make a query pass. `availableForSale` is a valid field in the pinned Admin schema; its presence alone is not a defect.
-- Keep product and variant IDs as observed. The category branch must resume within products with more variants than one page, preserve its current product/variant position, and avoid duplicate/skipped results. Do not return only the first variant of every category product and pretend the search is complete.
-- For Woo, extend the existing native `products.list` port and direct reader's allowlisted query builder with a validated native category parameter. The provider may include descendant-category products; exact membership requires checking each product's actual `categories[].id` before projecting it. Do not send an undocumented `include_children` parameter. Preserve existing variation reads, credential/installation checks, transport hardening and all request/response/page budgets.
-- This increment adds no native Woo category-discovery endpoint. A caller may use a native ID observed in current-shop product data. The global resolver continues returning reference meaning; when no native Woo mapping is verified, the conversation uses an explicit text search. Never turn a Shopify GID, label or store category into a Woo ID by guessing.
-- Products without taxonomy assignments remain discoverable by supported text fields. Query plus category is the explicit conjunction; category-only and text-only are supported. Exact membership is the only category semantics; no descendant flag, multi-category OR or hidden broadening.
+### 2. Normalize the public search input before I/O
 
-### Explicit bounded catalogue browse
+Replace the old interface with `export type SearchInput = z.input<typeof CommerceToolInputs.commerce_search_products>`; use `z.output` for normalized internal input after parsing that Shared schema. Trim a non-null query; a whitespace-only query is `INVALID_INPUT`. Keep null as null, with no synthetic wildcard. Defaults remain query null, browse false, availableOnly true, limit 10 and cursor null; maximumPrice remains optional. Keep the exact flat Shared category object.
 
-- Execute browse only when the validated argument is true. Do not generate a search term, wildcard, category or weather-related query to manufacture a match. A later browse after an unsuccessful search is a separate explicit invocation; never drop a requested query/category inside the search call. Browse returns a bounded sample of observed products, with no bestseller or suitability ranking claim.
-- For Shopify, use the pinned provider's bounded variant/product read path without a customer text/category term. Add only trusted fixed publication filter syntax appropriate to that query (`product_status:active` for `productVariants`, or `status:active` for `products`). Project parent `Product.status` and `onlineStoreUrl`, and return a candidate only when status is exactly `ACTIVE` and its observed storefront URL is non-null and passes the existing current-shop/verified-primary-domain URL checks. A URL constructed from a handle does not satisfy this check. Do not assume a variant's stock flag proves parent publication.
-- For Woo, narrowly extend the private `WooCommerceProductReadRequest` list branches in `src/connections/ports.ts` so trusted composition can mark a catalogue browse. Validate that bounded flag in `src/connections/woocommerce/provider.ts` and `direct-product-reader.ts`; do not accept caller-supplied raw paths, status expressions or arbitrary query parameters. For browse product/variation lists, the allowlisted builder sets `status=publish` and omits `search`. Add `status` and `catalog_visibility` to the internal product projection, and `status` to the internal variation projection. Check returned product status is `publish` and visibility is exactly `visible` or `catalog` before reading/returning its variants. A returned variation must also have status `publish` and belong to that verified parent through the parent-scoped endpoint and identity checks below. Exclude draft/private/pending, hidden/search-only and unknown-publication candidates; a published variation cannot override an ineligible parent.
-- Keep a fixed provider ordering for browse and include its identity with the publication-filter semantics in the signed continuation. Apply the frozen `availableOnly` default true and existing price/context rules after publication checks. `availableOnly: false` may return a visible out-of-stock product with its actual availability value; it does not relax publication checks. Preserve Woo simple products' null variant IDs and all variant continuation state.
-- These narrow query/projection checks belong to `products.search` browse. Do not loosen global Shopify document guards, Woo transport/grant checks or unrelated authored operation permissions. Existing text/category semantics and exact product output remain intact. The host may describe returned entries as examples from the catalogue; neither provider ordering nor a broad user question establishes popularity, weather suitability or personal relevance.
+| Parsed request | Service action |
+| --- | --- |
+| browse false, query non-null, no category | Text branch. |
+| browse false, category present, query null or non-null | Exact category branch; a supplied query is an additional conjunction. |
+| browse true, query null, category absent | Explicit catalogue browse branch. |
+| No query/category with browse false; browse combined with query/category | `INVALID_INPUT`, zero provider calls. |
+| Wrong category system for the connection; invalid native ID; missing/mismatched Shopify version; non-null Woo version | `INVALID_INPUT`, zero provider calls. |
 
-### Pagination, price and product grounding
+Shopify category membership is verified by `ProductCategoryReader.read({environment, categoryId, taxonomyVersion, signal})`, returning `{generationId, categoryId, taxonomyVersion}` from this fixed parameterized read (use the existing generated Prisma tagged-SQL interface; never concatenate the values):
 
-- Version and sign the opaque cursor for the correct provider branch, current shop/connection, normalized query/category/version, `browse`, the applicable publication-filter/fixed-order semantics, price/availability semantics, market/currency context where actually established, expiry and product/variant progress. Reject tampering, expired state, cross-shop reuse and changes in any bound filter. A search cursor cannot be replayed in browse or vice versa, and a cursor issued under different publication semantics is invalid. A cursor is continuation state, not authorization.
-- Preserve current bounded provider-call and page budgets, including `MAX_SEARCH_VARIANTS`, `MAX_SEARCH_PAGES` and the Woo per-invocation provider-call ceiling. Do not enlarge them to fill a browse page. If scanning reaches a bound before exhaustion, return a truthful continuation even when the current page contains zero matches. Do not report all products were searched or no product exists because one bounded page was empty. Continue from the exact pending product/variant boundary, including after publication, stock, category or price filtering. An actually exhausted result has no continuation; a bounded unfinished scan retains its cursor and truthful `truncated` value.
-- For Woo variation list and exact retrieval, establish parent identity from the verified parent product and the authenticated parent-scoped `/wp-json/wc/v3/products/{productId}/variations` endpoint (with the requested variation ID for exact retrieval). Validate returned native variation IDs and exact-ID equality where requested. Native variation payloads need not contain `parent_id`: do not reject a valid endpoint-bound variation merely because it is absent. If `parent_id` is present, validate it and require exact equality with the verified parent; a malformed or mismatched value must never become product evidence. Correct the snapshot adapter's unconditional `parent_id` requirement where still present, while preserving tenant, installation, credential, private request-key and transport guards. An unchecked input parent ID or arbitrary URL is not parent authority.
-- Search/exact-read output shapes remain unchanged. Use current provider prices, native sale evidence, availability and shop-validated URLs. Preserve null Woo variant IDs for simple products; do not fabricate variant IDs or infer that a category guarantees availability.
-- Shopify's live `shop.currencyCode` supports a base-currency product price, not a customer-market price. Populate Woo currency only when the existing trusted current store context establishes the price denomination; otherwise retain null. Do not infer currency/market from recovery totals, locale, product text or model arguments. Market-pricing expansion is outside this increment.
-- An unknown or mismatched currency cannot establish that a user's monetary budget is met, and cannot support discount arithmetic. Do not claim a verified maximum-price match in that case. Keep unknown facts explicit and let the host use its grounded no-promotion branch or ask for needed context.
+```sql
+SELECT g."id" AS "generationId", g."taxonomyVersion", c."categoryId"
+FROM "commerce"."ReferenceTaxonomyGeneration" AS g
+LEFT JOIN "commerce"."ReferenceTaxonomyCategory" AS c
+  ON c."generationId" = g."id" AND c."categoryId" = $2
+WHERE g."environment" = $1::"commerce"."CommerceEnvironment"
+  AND g."source" = 'SHOPIFY_STANDARD_PRODUCT_TAXONOMY'
+  AND g."languageTag" = 'en' AND g."isActive" = true
+LIMIT 2;
+```
 
-### Canonical discount discovery and current policy
+Bind `$1` to `databaseEnvironment` of the trusted server environment and `$2` to the supplied category ID. English is the already pinned MCP-001 corpus; do not select another language/source here. Zero generation rows is outer `UNAVAILABLE`; more than one is a malformed database state and hard outer `UNAVAILABLE`; one row with the wrong version or a null categoryId is `INVALID_INPUT`. Select no vectors. Preserve original database errors. Text and browse make no taxonomy database/embedding call. Inject the reader through `runtime/prisma.ts` and `service-ports.ts`; do not import a sibling source tree or query from the agent.
 
-- Reuse the accepted PostgreSQL `ShopifyDiscount` catalogue/snapshot reader and condition mapping for both providers. Preserve the existing `commerce_get_discount_options` / `commerce_get_discount_details` inputs and normal success objects exactly. Options keep bounded signed keyset pagination; details preserve canonical identity, `providerDiscountId`, observed conditions and `PARTIAL`/`UNKNOWN` completeness.
-- Extend `src/capabilities/prisma-reader.ts`, `src/execution/discount-tools.ts`, `src/runtime/service-ports.ts` and `src/mcp/registration.ts` for the frozen trusted conversational context as well as existing outreach. The generic MCP parser keeps context opaque; only the registered adapter interprets its approved purpose. Never let model tool arguments set shop, purpose, policy or grant state.
-- Consume Shared's strict `CommerceConversationToolContextSchema`: `purpose: CONVERSATION`, `conversationId`, positive `inboundVersion`, and nullable `grantId`. Background supplies it under the existing opaque `toolContext` after validating its turn assertion: null grant during initial resolution, actual retained grant ID afterward. The domain reader verifies conversation ownership/current inbound version and applicable processing lease. With a grant ID, read the existing `commerceConversationGrant` and verify shop/conversation, expiry, runner and release relations before obtaining retained built-in identities from its stored JSON. Never accept hashes or a grant set supplied in context. Missing context remains an ordinary generic shop caller and receives neither conversational discount projection nor optional conversational degradation. Keep the outreach schema unchanged.
-- Re-read the current authenticated shop and merchant policy on every list/call. `NONE` exposes no discount permission. `FIXED` uses the current permitted selection and active override, respecting revocation and expiry. `AI_BEST_APPLICABLE` reads the permitted current catalogue independently of the selection checkbox while preserving status, dates, unavailability and condition uncertainty.
-- Details must use same-shop persisted snapshots, not Shopify/Woo per-offer HTTP, recovery/attempt reads or a model-provided coupon body. A foreign/revoked/unavailable offer is never returned as a permitted fact. Missing details remain null where the canonical contract allows; malformed/incomplete observations are not guessed into unrestricted conditions.
-- Preserve source-native target IDs, effective Woo zero-threshold/quota semantics, known threshold currency and all accepted ARCH-052 targeting/exclusion/customer/sale/usage/combination uncertainty rules. MCP does not receive a basket or return an applicability verdict. Background's existing finalization adapter owns exact proposed-purchase evaluation.
-- Only classified transient failures of an optional conversational lookup may return `status: OK` with the frozen `{outcome: UNAVAILABLE, reasonCode: TEMPORARY_UNAVAILABLE}` data. The normal success object is unchanged. Initial outreach retains its existing hard-failure behavior. Authorization changes, cancellation/stale invocation, malformed arguments/facts and unexpected exceptions remain outer errors; no empty-offers fallback, synthetic mode or legacy-success adapter.
+Require the verified category ID to have the canonical `gid://shopify/TaxonomyCategory/` prefix; use only its verified ASCII alphanumeric/hyphen suffix as the `category_id` token. Woo IDs use the existing positive decimal parser (`^[1-9][0-9]{0,14}$`, safe integer) and stay shop-scoped. No reference-to-native mapping is inferred.
 
-### Built-in identities, manifests and retained grants
+### 3. Fixed Shopify query paths and exact continuation
 
-- Use the exact Shared canonical discount descriptors and contract-hash payload helper. Descriptor version is `1.0.0`; the hash covers canonical name/version/description/input/output schema. MCP must verify the schemas and hashes against the installed approved Shared contract, not treat a self-asserted hash as authority.
-- Project the separate `builtInTools` manifest branch and matching `{kind: BUILT_IN, toolName, definitionVersion, contractHash}` grants. Keep published grants unchanged. Partition both branches deliberately in `src/capabilities/manifest.ts`, `src/mcp/ports.ts`, list/call validation and any shared runner projection.
-- Reject duplicate names, collisions with published tool names, unknown built-ins, missing/unexpected descriptors, hash/version drift and combined bounds above the frozen limit. Do not fabricate capability/tool/revision database IDs or grant everything appearing in `tools/list`.
-- Only a current-policy-permitted allowlisted built-in may enter a newly authorized conversation grant. For a retained grant, re-project its exact authorized descriptor identities without widening the set; current policy can remove availability/deny execution without rewriting the retained grant. A conversation originally granted under `NONE` cannot acquire tools from a later policy change. Follow the frozen trusted context and host transport contract; do not invent an unreviewed header or accept a model-supplied retained set.
-- Outreach's separate current context remains valid without fabricated conversation grants. Before execution, re-read current policy, shop/connection and appropriate retained identity. Existing current release, descriptor, deadline, provider budget and tenant checks remain decisive.
+Keep API `2026-07` and `inspectShopifyReadQuery` unchanged. Use literal connection bounds, fixed sort `ID`, `reverse: false`, and trusted GraphQL documents. `SEARCH_DOCUMENT` becomes `CommerceSearchProducts($query: String!, $after: String)` with `productVariants(first: 20, after: $after, query: $query, sortKey: ID, reverse: false)`. Remove `$first` and the `first` variable. Retain its existing variant/product field selections and add parent `status` to the search-only projection; do not alter exact-get document content merely to support browse.
 
-### Original failure evidence
+For text, escape backslash and double quote in the trimmed customer text and enclose it as one quoted Shopify search term. Do not interpolate raw search grammar. For browse, use exactly `product_status:ACTIVE`. Evaluate availability, maximum price and currency locally from observed fields; remove the current guessed `variants.price`/`available_for_sale` filter construction instead of relying on undocumented filter keys. The ordinary text branch retains its existing eligibility behavior; only browse additionally requires `product.status === ACTIVE` and an actual non-null storefront URL passing existing current-shop/verified-primary-domain HTTPS rules. Do not synthesize a URL from `handle`.
 
-Follow `docs/observability/shared-logging.md` and use Shared structured logging at the owning boundary. Preserve actual sanitized Shopify/Woo response messages/codes, status/request IDs or original SDK errors/causes, and distinguish the Moda reason. Keep actual Prisma/contract errors for database-only discount reads without inventing a provider response. Logger failure must not change the tool's behavior. Preserve accepted redaction and bounded body/field handling; do not expose error payloads, keys, coupon values, customer data or raw provider bodies to the model/customer.
+Add `CATEGORY_SEARCH_DOCUMENT` with this exact selection (reuse the existing `productFields` constant for identical fields when assembling the trusted string, adding status for the search-only parser); no fragments or caller-provided selections:
+
+```graphql
+query CommerceSearchProductsByCategory($query: String!, $after: String, $variantAfter: String) {
+  shop { currencyCode primaryDomain { url } }
+  products(first: 1, after: $after, query: $query, sortKey: ID, reverse: false) {
+    edges {
+      cursor
+      node {
+        id title handle vendor productType onlineStoreUrl status
+        category { id name }
+        collections(first: 20) { nodes { id } }
+        featuredImage { url }
+        variants(first: 20, after: $variantAfter, sortKey: ID, reverse: false) {
+          edges { cursor node { id price compareAtPrice availableForSale } }
+          pageInfo { hasNextPage endCursor }
+        }
+      }
+    }
+    pageInfo { hasNextPage endCursor }
+  }
+}
+```
+
+Its trusted search string is `category_id:<verified-short-token>`, followed by ` AND <quoted-text>` only when a query was supplied. Verify the returned `Product.category.id` equals the requested canonical GID. A different assigned category is consumed and excluded; it is not an automatic descendant match.
+
+Freeze category progress as `{productAfter, currentProductId, variantAfter}`. Start with three nulls. While a product has unconsumed variants, keep `productAfter` at the cursor **before** that product, retain its observed ID, and advance `variantAfter` only to the last consumed edge. The repeated `products(first: 1)` query must return that same retained product ID; a missing/replaced parent is retryable outer `UNAVAILABLE` with diagnostic `MCP_PRODUCT_CURSOR_STALE`, not exhaustion. Once all its variants are consumed, advance `productAfter` to that product edge and clear the other two fields. If no more parent exists, cursor is null. This uses one provider request per step and never requires storing product/variant arrays inside a cursor.
+
+Across both Shopify branches, retain `MAX_SEARCH_VARIANTS = 20` and `MAX_SEARCH_PAGES = 3`; at most three GraphQL reads occur in an invocation, even for a filtered/empty page. A caller limit below 20 stops **before** consuming unprocessed edges. Every scanned excluded edge advances progress. `hasNextPage: true` without a usable advancing cursor, oversized connection output or a malformed identity is outer `UNAVAILABLE`; never translate it into exhaustion. Existing per-call execution policy may impose a lower request/deadline limit and remains authoritative. The public result is `{products, cursor, truncated: cursor !== null}`.
+
+### 4. Exact Woo requests, visibility and resumable scans
+
+Add only these fields to the private `WooCommerceProductReadRequest` list branches:
+
+```typescript
+// Existing page/perPage/search/productId fields remain.
+products.list: categoryId?: number; catalogueBrowse?: true;
+products.variations.list: catalogueBrowse?: true;
+```
+
+Apply the identical allowed-key/value checks in `validWooProductRead`, `approvedRequest` and `validRequest`. `categoryId` is a positive safe native integer. `catalogueBrowse` is either absent or literal true; browse prohibits search/category on `products.list`. Unknown keys fail before transport. Exact retrieval branches do not gain these fields.
+
+In `pathFor`, add `category=<id>` for category reads. For all list branches set fixed `orderby=id&order=asc`; for browse also set `status=publish` and omit `search`. Add `status,catalog_visibility` to product list `_fields` and `status` to variation list `_fields`; preserve the existing identity, prices, stock, category, image, permalink and variation fields. Do not add `include_children`, arbitrary query parameters or raw URLs. Non-browse product outputs remain unchanged.
+
+For a category request, inspect the **full returned** categories array before the bounded public projection: a product matches only when one observed native ID equals the requested ID. A child-only membership does not match. For browse, require parent `status: publish` and `catalog_visibility: visible|catalog` before any variation read. A variation additionally requires `status: publish`. Draft/private/pending/hidden/search-only/unknown visibility is excluded regardless of stock. Apply availableOnly and price filtering afterward.
+
+For every `type: variable` parent, use its verified parent-scoped variation list; do not depend on the incidental `variations` ID array being populated and do not emit the parent as a simple purchasable variant. Native variation `parent_id` is optional: when absent, the authenticated `/products/{verifiedProductId}/variations` endpoint establishes parent authority; when present, validate it with the native ID parser and require equality. List/exact variation IDs must be valid, and an exact read must equal the requested variation ID. Malformed/conflicting relationship evidence is an outer error for search; exact get retains its existing `{product: null}` missing/mismatch outcome. Never coerce `"1e2"`, blank or an unsafe number into an ID.
+
+Keep product/variation page size 20, at most three newly fetched product pages and at most twelve total Woo provider reads per invocation, subject to the existing lower execution-policy ceiling. Freeze progress as the existing product page/index and variation page/index, plus retained parent ID and hashes of the ordered IDs on partially consumed pages. When a resumed page is re-read, changed page identities are `MCP_PRODUCT_CURSOR_STALE` / retryable outer `UNAVAILABLE`; do not silently skip/repeat records after a shifted catalogue. Advance a scanned index before filtering, so a bad or unpublished entry cannot trap the cursor. When the output limit/budget is reached, retain the exact next unconsumed position. Reset variation progress only after its parent is finished. A provider claim of more data beyond the existing maximum page 1000 is outer `UNAVAILABLE` with `MCP_PRODUCT_SEARCH_PAGE_LIMIT`, not false exhaustion or an unusable page-1001 cursor. Live catalogue changes do not create a snapshot/exhaustiveness guarantee.
+
+### 5. Cursor identity, prices and exact-product preservation
+
+Use existing HMAC-SHA256 mechanics and `COMMERCE_CURSOR_SECRET`, minimum 32 characters; no new secret or storage. The version-2 payload is strict `{version: 2, bindingHash, expiresAt, progress}`. `bindingHash` is SHA-256 of Shared `canonicalJson` over trusted environment, shop ID, provider, connection identity, branch, normalized query/category, verified taxonomy generation/version where applicable, browse, fixed order/visibility version, maximumPrice, availableOnly, limit, established market and currency. TTL stays 60,000 ms. Validate signature before parsing bounded progress, and reject all old-version/tampered/expired/cross-shop/cross-connection/cross-mode/filter-drift cursors as `INVALID_INPUT`. The final encoded cursor must fit Shared's **2048-character** bound; an oversized provider cursor is a hard result failure, never truncation or a dropped continuation.
+
+Expose required readonly `sourceIdentity: string` only on the private resolved connection. Construct it with Shared `canonicalJson`: Shopify `{platform: "SHOPIFY", shopDomain}` using the verified canonical domain; Woo `{platform: "WOOCOMMERCE", installationId, credentialVersion, canonicalSiteUrl}` using the verified existing installation (nonempty ID, positive safe-integer version and canonical origin). Read Woo values in the existing shop projections in `connections/prisma-reader.ts` and `capabilities/prisma-reader.ts`; do not add a query or put this identity in public product data. Reinstallation/credential-version changes therefore cannot reuse a prior connection's continuation.
+
+Preserve observed native IDs, native sale evidence and safe URLs. `availableOnly: true` accepts only `available === true`; false does not relax browse visibility. Numeric maximum-price comparison uses the existing decimal/BigInt logic only when price and its currency are known and compatible with any trusted price context; unknown/mismatched context cannot pass that filter. Shopify `shop.currencyCode` establishes base currency, not customer-market pricing. Woo runtime currency remains null unless its existing trusted provider/store context actually establishes denomination; do not copy recovery currency, locale or model text. A non-null unsupported market context remains unable to certify matching prices. No new currency or price-context public field is added.
+
+Keep product get/search output schemas and `commerce_get_product` definition unchanged. In particular, existing Shopify exact get with variantId null returns the observed first variant from its current document; this task does not redefine that behavior. Background must select/confirm an observed native Shopify variant, and must not treat a null selection as authorization for the first variant. Woo simple products retain null variant IDs. Shipping's product-only `VARIANT_REQUIRED` belongs solely to MCP-003.
+
+### 6. One domain authorization read for conversation discounts
+
+Keep `parseMcpRequestContext` opaque. In the domain reader, a context claiming `CONVERSATION` must parse `CommerceConversationToolContextSchema`; one claiming `INITIAL_RECOVERY_OUTREACH` must parse the unchanged outreach schema. Invalid claimed-purpose fields are hard `INVALID_INPUT`. An absent/unrelated opaque context remains the generic shop caller and receives no conversational discount privileges or soft-unavailable behavior.
+
+Extend `PrismaShopCapabilityTransaction` with `conversation.findUnique` and `commerceConversationGrant.findUnique`. Export `readConversationDiscountContext` from the new context module and invoke it inside the existing RepeatableRead transaction. It makes exactly these two reads for an approved CONVERSATION purpose; other purposes make neither:
+
+```typescript
+tx.conversation.findUnique({
+  where: {id: context.conversationId},
+  select: {id: true, shopId: true, checkoutRecovery: {select: {shopId: true}},
+    controlMode: true, inboundVersion: true, processingInboundVersion: true,
+    processingStartedAt: true}
+});
+tx.commerceConversationGrant.findUnique({
+  where: {conversationId: context.conversationId},
+  select: {id: true, shopId: true, conversationId: true, initialInboundVersion: true,
+    releaseId: true, selectedCapabilityKeys: true, grantedTools: true,
+    runnerVersion: true, createdAt: true, expiresAt: true}
+});
+```
+
+The conversation's direct/recovery ownership must resolve to the authenticated shop; if both ownership values exist they must agree. Require `controlMode === "AI"`, current inboundVersion and processingInboundVersion equal the positive context version and a non-null finite lease timestamp with `0 <= now - processingStartedAt < 120000`, matching the existing Background lease. This checks existing state; it creates no conversation/recovery or lease policy. Absent/wrong-shop conversation or human control is `McpRequestError(FORBIDDEN, 403, false)`; stale inbound/lease/cancellation is `McpRequestError(DEADLINE, 409, true)`.
+
+A null context grantId is allowed only before any retained grant exists. A non-null ID must match the stored grant, shop and conversation; its initialInboundVersion must not exceed the current turn, runnerVersion must equal the installed runner, expiresAt must be null/future and releaseId must equal the currently resolved immutable release. Project selected Date fields to ISO strings and parse the full row with installed `CommerceConversationGrantSchema`; derive retained built-in identities from this parsed storage only. Missing/mismatching/expired grants or null-ID bypass attempts are FORBIDDEN/403/false. Malformed stored JSON/timestamps, runner mismatch or release mismatch is INCOMPATIBLE_VERSION/503/false. Preserve current published-release/entitlement checks. Do not turn any of these failures into optional absence.
+
+Read current settings/active override and FIXED selection in that existing snapshot for either approved purpose; keep `resolveDiscountAuthorizationPolicy` semantics. Extend the accepted catalogue's call-time authorization path with the same domain helper and fresh current policy; list-time authorization alone is insufficient. `runtime/execution-registry.ts` must include opaque `call.toolContext` in its fresh reader context so published product calls also retain the approved conversation checks. Do not add a new header or model argument for this data.
+
+### 7. Canonical identities and a stable retained grant
+
+Use Shared `commerceDiscountBuiltInDescriptors`, `commerceBuiltInToolContractPayload`, `isTrustedCommerceBuiltInDescriptor`, `isTrustedCommerceBuiltInGrant`, `deduplicateTools` and `isBuiltInTool`. Verify the canonical hashes against the installed schemas in tests using Node SHA-256; do not generate a self-asserted descriptor or fabricated database ID.
+
+Extend `McpSystemTool` with the exact Shared built-in descriptor identity while keeping its current mode/allowedDiscountIds as **private mutable permission**, outside the manifest descriptor. Replace the outreach-only projection with `projectAuthorizedDiscountTools` in `discount-tools.ts`, using the already validated purpose/grant projection from the reader:
+
+| Context | Descriptor/list projection |
+| --- | --- |
+| Generic caller | No discount built-ins. |
+| Valid outreach; current mode NONE | No discount built-ins. |
+| Valid outreach; current mode FIXED or AI_BEST_APPLICABLE | The two canonical built-ins; existing outreach execution semantics. |
+| New conversation without a retained grant | The two canonical built-ins only when current mode permits discounts; otherwise none. |
+| Conversation with retained grant | Exactly its stored, canonical built-in set, including when the current mode is now NONE. Never widen that set. |
+
+Pass this descriptor set to `projectCommerceManifest` and build grants with Shared `deduplicateTools(capabilities, builtInTools)` instead of treating every grant as published. Keep feature snapshots, release hash, selected capability keys and published provenance unchanged. In `validateSnapshot`, require exact name/version/hash/description/input-schema correspondence between systemTools and manifest.builtInTools; reject duplicate names, collisions with published advertised/underlying names, unknown descriptors and a combined advertised list above 32. Replace the unconditional mode-NONE snapshot rejection with current-permission enforcement **at execution**. Listing a retained descriptor is identity continuity, not permission to execute it.
+
+`registration.ts` must call the existing accepted catalogue dispatcher with its existing deadline/cancellation/result-byte wrapper. Both structuredContent and text must serialize the same validated result; isError is true exactly for outer ERROR. Re-read current policy immediately before lookup. NONE denies execution; FIXED restricts current permitted selection/override; AI scans permitted catalogue independently of selection checkbox. A grant initially created under NONE cannot gain tools after a later mode change. The host skips discount calls under current NONE; do not mutate the stored grant to reflect current policy.
+
+### 8. Catalogue facts and optional operational failure
+
+Keep the accepted shop-scoped PostgreSQL `ShopifyDiscount` snapshot reader, authenticated keyset cursor, generation checks, exact offer identity and completeness mapping. Its normal options/details outputs, native target IDs, threshold currency, Woo zero threshold/quota rules, exclusions, usage/customer/sale restrictions and combination uncertainty remain unchanged. It makes zero Shopify/Woo HTTP calls and receives no basket. `details: null` remains distinct from an unavailable lookup.
+
+Only **after** conversation/lease/grant/current-policy authorization succeeds may a database catalogue-read failure become `OK` with `{outcome: UNAVAILABLE, reasonCode: TEMPORARY_UNAVAILABLE}`. Classify a genuine Prisma error/cause carrying `P1001`, `P1002`, `P1008`, `P1017` or `P2024` at the owning database read boundary; do not classify from error prose or merely outer `UNAVAILABLE`. Authorization/configuration reads, P1000, missing tables/columns, invalid SQL, result parsing, cursor/generation conflicts, unexpected errors and aborted/expired turns remain outer errors. Initial outreach retains its accepted hard-failure behavior for the same failures. No catch-to-empty-offers, fabricated NONE mode or broad retry loop is permitted.
+
+Use the accepted Shared structured logger boundary. Preserve the original sanitized Prisma/SDK/provider error and cause, safe provider status/request ID and separate Moda reason. Do not invent a provider error for a DB-only catalogue read, expose raw failures in tool output, or build another generic redactor/logger. Provider adapters remain responsible for their own source diagnostics.
 
 ## Work Items
 
-- [ ] Reconcile accepted ARCH-052 catalogue and provider diagnostic code with the actual implementation base; record only the remaining authorized delta.
-- [ ] Update the Shared dependency and typed search/category/browse mapping and service checks without changing unrelated tools.
-- [ ] Implement Shopify category-product/variant pagination, fix the literal query guard failure and preserve the real provider preflight.
-- [ ] Add Woo native category filtering with exact returned-category verification and explicit text fallback behavior.
-- [ ] Implement explicit browse through the existing provider composition with the frozen publication/visibility projections and checks, stock filtering and unchanged scan budgets.
-- [ ] Bind browse, publication/order and all other search semantics to cursors, and preserve current-shop product/price/currency/URL evidence.
-- [ ] Extend canonical discount execution and purpose-specific degradation without a second evaluator or catalogue.
-- [ ] Implement built-in manifest/list/call identity projection and retained-grant/current-policy checks.
-- [ ] Add focused composed-boundary tests, record validation, set status to `review` and return to the architect.
+- [ ] Verify the already accepted prepared source/artifact gates; report the specific accepted-source integration gap if still present.
+- [ ] Implement the exact input/category reader, literal Shopify documents, three search branches and version-2 cursor.
+- [ ] Update all three Woo guards/projections and optional parent-ID validation; preserve transport and ordinary product contracts.
+- [ ] Add the conversation domain read and forward its opaque context at the fresh registry read.
+- [ ] Project/execute canonical built-ins with retained identity and current policy; extend the existing catalogue only for conversation purpose/classified transient failures.
+- [ ] Run agent-owned checks, prepare the exact required developer database run, complete the report and submit for review.
 
 ## Interfaces / Contracts
 
-The frozen ARCH-058 contracts and the exact package accepted by SHARED-002 are normative. Public schemas remain Shared-owned; query interpretation, bounded pagination, authorization and provider mapping remain MCP-owned. Do not expand the schema subset or create an alternative product/discount envelope.
-
-Primary touchpoints: `src/execution/policy/{shopify-core,shopify-core-executor}.ts`, `src/connections/ports.ts`, `src/connections/shopify/{document,provider}.ts`, `src/connections/woocommerce/{direct-product-reader,provider}.ts`, `src/execution/discount-tools.ts`, `src/capabilities/{records,prisma-reader,manifest}.ts`, `src/mcp/{ports,registration}.ts`, `src/runtime/{prisma,service-ports}.ts`, and the existing accepted catalogue reader once reconciled. In particular, update the policy executor's `allowedKeys`/argument mapping; Shopify document response parsers and internal product projection; Woo `products.list`/`products.variations.list` private request validation and `pathFor` field/query projection; and cursor construction/validation together. No new shipping projection belongs in this task. Keep new helpers beside their owning implementation, with semantic product/discount names.
-
-Provider references for the frozen behavior: [Shopify Admin 2026-07 products](https://shopify.dev/docs/api/admin-graphql/2026-07/queries/products), [Shopify Admin product variants](https://shopify.dev/docs/api/admin-graphql/2026-07/queries/productVariants), [Shopify Admin Product fields](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/Product), [Shopify Admin taxonomy category](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/TaxonomyCategory), [Woo REST products](https://developer.woocommerce.com/docs/apis/rest-api/v3/products/), [Woo REST variations](https://developer.woocommerce.com/docs/apis/rest-api/v3/product-variations/), [Woo v3 controller](https://woocommerce.github.io/code-reference/files/woocommerce-includes-rest-api-controllers-version3-class-wc-rest-products-controller.html), and [WordPress taxonomy-query defaults](https://developer.wordpress.org/reference/classes/wp_tax_query/__construct/). These establish query semantics; they do not certify a successful live merchant call. Verify against the source-pinned schema and actual accepted provider adapter during implementation.
+Shared 4.0.0 and `docs/architecture/ARCH-058/contracts.md` sections 2.2–4.1 own the public interfaces. The private fields and algorithms above are now selected implementation decisions, not alternatives for the agent to redesign. Shopify's [pinned products filter](https://shopify.dev/docs/api/admin-graphql/2026-07/queries/products) uses `category_id` with a short taxonomy token; [Product variants](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/Product) supports bounded after/first/sortKey traversal. Use the existing pinned Admin schema artifact for schema validation, not a new schema/version download. [Woo products](https://developer.woocommerce.com/docs/apis/rest-api/v3/products/) and [variations](https://developer.woocommerce.com/docs/apis/rest-api/v3/product-variations/) define the native list/exact response shapes. Native payload fields are data, not new execution permission.
 
 ## Dependencies
 
-- `ARCH-058-MCP-001`: accepted reference lookup, required-feature selection and installed published Shared contracts. Its dependencies transitively provide the accepted Database and Shared artifacts.
+- `ARCH-058-MCP-001`: accepted resolver, required-feature eligibility, exact Shared 4.0.0 package and accepted Database pin. Do not start this task while MCP-001 is under development.
 
-The accepted ARCH-052 source reconciliation is a mandatory baseline check, not a request to redo those tasks. Background owns trusted conversational context production, retained grant persistence and final promotional validation; Commerce owns published product definitions.
+The known ARCH-052 source integration prerequisite in section 1 must be satisfied in the prepared base. It does not authorize reopening/reimplementing those completed tasks. No upstream task depends on terminal system testing.
 
 ## Enables
 
-- `ARCH-058-MCP-003`: extend the accepted provider composition with the separate basic shipping-information operation, without changing product output.
-- `ARCH-058-COMMERCE-001`: publish the four executable standard capabilities and approved response/behavior changes after its other declared prerequisites, including MCP-003, are accepted.
-- `ARCH-058-BACKGROUND-001`: use authorized product and discount observations in conversation finalization.
-- `ARCH-058-SYSTEM-TEST-001`: exercise the integrated provider, manifest and host flow.
+- `ARCH-058-MCP-003`: separate shipping operation on the accepted provider/authorization composition.
+- `ARCH-058-COMMERCE-001`: publication after its other declared dependencies complete.
+- `ARCH-058-BACKGROUND-001`: grounded conversation product/discount use.
+- `ARCH-058-SYSTEM-TEST-001`: real service-boundary validation after all prerequisites.
 
 ## Acceptance Criteria
 
-- [ ] A real adapter-to-provider preflight composition accepts the corrected pinned Shopify text, category and browse documents; an invalid/unbounded document remains rejected.
-- [ ] Category-only, text-only and combined searches obey exact membership; invalid/mismatched categories fail explicitly. Woo child-only products cannot satisfy an exact parent filter.
-- [ ] An explicit browse with query null/category absent succeeds; omitted/false browse with neither filter and browse combined with a query/category fail validation. No term/category is fabricated to execute browse.
-- [ ] Shopify browse excludes non-ACTIVE parents and missing/foreign/unverified storefront URLs. Woo browse includes only publish + visible/catalog parents and publish variations of those parents, regardless of stock; draft/private/pending/hidden/search-only and unknown-publication candidates never escape.
-- [ ] Default available-only browse excludes false/unknown availability; available-only false retains actual availability while preserving publication checks. Returned examples carry no invented bestseller, weather-suitability or relevance claim.
-- [ ] Category/browse products with multiple variant pages and pages containing only filtered-out items return truthful, resumable progress without fabricated/exhausted results. Empty unfinished pages retain a cursor; exhaustion is reported only when proved.
-- [ ] Cursor tampering, cross-mode replay, publication/order-policy changes, cross-shop/provider/filter/context changes and stale expiry fail closed; all provider work stays within existing budgets.
-- [ ] Native Woo variations without `parent_id` remain usable through a verified parent-scoped list/exact read; present malformed/mismatching parent IDs and unverified parent contexts are rejected as product evidence. No tenant or private-read guard is relaxed.
-- [ ] Search/get product result shapes and the get-product 1.0.0 definition remain unchanged; basic shipping remains MCP-003-owned.
-- [ ] Current-shop prices/availability/URLs/IDs remain source-backed; null currency/variant values remain null, and no unknown monetary context becomes a budget or saving claim.
-- [ ] Canonical discount options/details execute for authorized conversations and outreach, retain accepted condition uncertainty, and obey live NONE/FIXED/AI policy, revocation and overrides.
-- [ ] Retained built-in identity is exact and never widens; list/call/hash/name-collision/policy-change fixtures pass without fake database identities.
-- [ ] Optional operational unavailability is distinct from empty catalogue, missing details and hard errors; outreach and generic terminal-error behavior are preserved.
-- [ ] Logs retain distinct real source failures with safe redaction and no leakage into tool outputs. No provider proof call, legacy evaluator, persistent publication or customer send was introduced.
+- [ ] The actual provider/document guard accepts text/category/browse requests; guards and versioned public outputs remain intact.
+- [ ] Exact membership, publication visibility and stock/currency rules produce only qualified current-shop facts; invalid input causes zero provider I/O.
+- [ ] A product with 45 variants, caller limit 2, filtered middle pages and an empty unfinished page resumes without dropped/repeated records under static fixtures, within 3 Shopify/12 Woo request ceilings.
+- [ ] Old/tampered/cross-shop/cross-connection/filter-drift cursors are rejected; a shifted Woo page or retained Shopify parent is explicitly stale, not exhausted.
+- [ ] Every normal published execution retains toolContext at its fresh read; stale/wrong-shop/missing-grant/expired-lease calls cannot bypass the domain check.
+- [ ] Built-in list/manifest/grants match canonical Shared identities and remain stable after current mode changes; execution still honors current policy and never widens an initial grant.
+- [ ] Catalogue outputs preserve accepted facts and no-provider-call behavior; only the specified optional conversational DB failures use the new successful unavailable branch.
+- [ ] Original failures remain in redacted Shared logs and not in model/customer data. Required fast checks and the separately owned database evidence are accurately reported.
 
 ## Validation
 
-Run from the canonical launcher-provided MCP implementation worktree. Before the first Node command: `command -v node >/dev/null 2>&1 || source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"`.
+Use the launcher-provided implementation worktree/preparation evidence. Before the first Node command use `command -v node >/dev/null 2>&1 || source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"`. No source download, deployment URL or persistent database is needed.
 
-- [ ] Extend `tests/unit/execution/policy/shopify-core.test.ts`, `tests/unit/connections/shopify/provider.test.ts`, `tests/unit/connections/woocommerce/direct-product-reader.test.ts` and `tests/unit/connections/woocommerce/provider.test.ts`; add `tests/unit/execution/policy/product-search-composition.test.ts` exercising the real document guard and provider composition. Run `npm exec -- tsx --test tests/unit/execution/policy/shopify-core.test.ts tests/unit/execution/policy/product-search-composition.test.ts tests/unit/connections/shopify/provider.test.ts tests/unit/connections/woocommerce/direct-product-reader.test.ts tests/unit/connections/woocommerce/provider.test.ts`.
-- [ ] Include browse fixtures through those real boundaries: no-query/no-category success; false/default mode and mixed-argument rejection; exact internal status/visibility projection and allowlisted query parameters; active Shopify product with a verified URL versus draft/null/foreign URL; Woo publish visible/catalog parent versus draft/private/pending/hidden/search-only parent; published versus unpublished variations; true/false/unknown availability; and empty filtered pages followed by later matches. Assert the existing call/page/deadline bounds and continuation state at a mid-variant-page boundary. Reject search-to-browse/browse-to-search cursor replay, changed publication/order semantics and ordinary tenant/filter tampering. Include unsupported extra native request keys to prove the read guard was not broadened.
-- [ ] Add real native-shape Woo list/exact-read fixtures with `parent_id` absent, a valid matching optional parent ID, a mismatching/malformed present parent ID, an incorrect exact variation ID and an unverified/cross-shop parent context. Prove the already authenticated parent-scoped endpoint plus observed parent is the authority and that valid variable products are not discarded because an undocumented response field is absent. Keep the unchanged public product schema and private request/transport checks in these assertions.
-- [ ] Extend `tests/unit/execution/discount-tools.test.ts`, `tests/unit/capabilities/manifest.test.ts`, `tests/unit/capabilities/prisma-reader.test.ts`, `tests/unit/mcp/capability-invocation.test.ts` and `tests/unit/runtime/service-ports.test.ts`; run those exact files with `npm exec -- tsx --test`.
-- [ ] Reuse/extend the accepted catalogue PostgreSQL tests. If the reconciled source has none, add `tests/integration/discount-catalogue.integration.test.ts` to the existing owned disposable fixture and run `npm run test:integration:docker`. Cover two shops, multiple pages, revoked selections, unknown restrictions, threshold currencies, active overrides and the separate conversational/outreach failure policies.
-- [ ] Include real logger-sink assertions for distinct provider responses and SDK/Prisma errors, with deliberate credentials/PII sentinels proving redaction and no public-result leakage.
-- [ ] Run `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check`. Record exact accepted dependency versions and validation outcomes; distinguish fixture success from live-provider certification.
+**Agent-owned focused checks.** Add `tests/unit/execution/policy/{product-search-composition,product-search-cursor}.test.ts`, `tests/unit/execution/reference-taxonomy/category-membership.test.ts` and `tests/unit/execution/conversation-discount-context.test.ts`; extend the existing tests listed in these commands:
+
+```bash
+npm exec -- tsx --test tests/unit/execution/policy/shopify-core.test.ts tests/unit/execution/policy/product-search-composition.test.ts tests/unit/execution/policy/product-search-cursor.test.ts tests/unit/execution/reference-taxonomy/category-membership.test.ts tests/unit/connections/shopify/provider.test.ts tests/unit/connections/prisma-reader.test.ts tests/unit/connections/resolver.test.ts tests/unit/connections/woocommerce/direct-product-reader.test.ts tests/unit/connections/woocommerce/provider.test.ts
+npm exec -- tsx --test tests/unit/execution/conversation-discount-context.test.ts tests/unit/execution/discount-tools.test.ts tests/unit/execution/discount-catalogue.test.ts tests/unit/capabilities/manifest.test.ts tests/unit/capabilities/prisma-reader.test.ts tests/unit/mcp/capability-invocation.test.ts tests/unit/mcp/resources.test.ts tests/unit/mcp/structured-results.test.ts tests/unit/runtime/ports.test.ts tests/unit/runtime/prisma.test.ts tests/unit/runtime/service-ports.test.ts
+npm run typecheck
+npm run typecheck:integration
+npm run lint
+npm run build
+git diff --check
+```
+
+`product-search-composition.test.ts` must invoke the registered policy executor through the real connection resolver, provider and document guard with injected HTTP/session fixtures. Include query-grammar injection strings, literal query bounds, exact category plus query, default/mixed browse rejection, Shopify ACTIVE + verified URL versus draft/null/foreign URL, Woo publish/visible/catalog versus hidden/search-only/draft parents and unpublished variants, unknown/false stock, zero/unknown currency, category mismatch beyond the first 20 category entries, optional/mismatching parent_id, variable parent with an empty variation-ID list, mid-page limits, exhausted/unfinished empty pages and all bounded cursor states. Assert no extra API calls or forbidden request keys.
+
+Update the existing private-connection fixtures in `tests/fixtures/capabilities.ts` and the named connection/runtime tests with the real sourceIdentity inputs; do not bypass sourceIdentity validation in tests. The context/catalogue fixtures must exercise the real `createMcpService` list/resource/call route with the accepted dispatcher. Cover two shops, null context, malformed purpose, initial/retained grant, lease expiry, inbound version change or human takeover between list and call, code-hash drift, collisions, NONE→AI with an empty retained grant, AI→NONE with the unchanged retained descriptor set and denied call, FIXED revocation/override expiry, a classified catalogue timeout versus auth/configuration/parse failure, and the unchanged outreach response for the same failure. Use actual Shared logger sinks with credential/PII sentinels and original errors.
+
+**Required developer-owned PostgreSQL run.** Add `tests/integration/conversation-product-discovery.integration.test.ts` to the existing `scripts/test-postgres.mjs` wildcard harness, using `tests/helpers/disposable-postgres.ts` and the existing fixture helpers. Exercise the category exact join, migrated grant JSON guard, two-shop lease/grant authorization and current discount policy. Preserve and run the accepted catalogue scenario; do not replace it with mocks or another database runner.
+
+```bash
+npm run test:integration:docker
+```
+
+Ownership is explicit under `docs/agent-validation-execution-policy.md`: the implementation agent runs the fast/typecheck checks above and supplies this command for the developer's disposable run; it does not autonomously launch/wait on the long integration suite without a task-specific override after claim. The harness owns its local database URL and cleanup. Do not substitute an environment DATABASE_URL, `db push`, shared container, or external service. Record worktree/HEAD, database gitlink, exact command, task scenario results, overall exit status and owned-container cleanup. An unavailable/unrun database suite is `NOT_RUN / developer validation required`, never a pass. Submit review with that evidence pending; acceptance requires the actual required scenario results. Report unrelated existing failures separately without claiming the full suite passed.
 
 ## Stop Condition
 
-Stop if accepted ARCH-052 code or frozen cross-repository contracts cannot be reconciled, or a provider-semantic gap would require a new endpoint/schema beyond this task. Ask the architect to resolve that concrete gap. Once the scoped implementation and validation are complete, set status to `review`, finish the report and return to `moda_architect`. Do not mark complete, publish tools, deploy, send a customer message or start another task.
+Stop for the specifically missing accepted source/artifact gate, a contract/schema change outside this ownership, an unregistered provider field/query or a failed authorization invariant. Report the observed path/value and owning prerequisite; do not research a replacement feature or widen permissions. After scoped implementation and fast validation, set status to `review`, record the required developer database handoff/result accurately and return to the architect. Do not mark complete, publish, deploy, mutate a persistent environment or start another task.
 
 ## Implementation Notes
 
-The first increment intentionally uses exact single-category membership. Woo has a bounded text path when native mapping is unavailable. Explicit browse supplies a bounded sample for a broad commerce question without fabricating a query or claiming a complete assortment/popularity result. A taxonomy classification is a search aid; a merchant product read is assortment evidence; a canonical discount snapshot is condition evidence. Applicability and the final customer-facing recommendation remain in the existing Background host. Basic shipping is the separate MCP-003 read operation.
+This is an extension of the existing composition. Reference categories describe meaning; provider products establish the store's assortment; the existing catalogue describes discount conditions. Background remains the sole owner of applicability and customer prose. A bounded page with no match and a continuation is not evidence that the store has no matching product.
 
 ## Completion Report
 
@@ -214,11 +329,11 @@ None.
 
 ### Assumptions
 
-Accepted ARCH-052 reader/error work and the exact published Shared package will be reconciled in the developer checkout before extending them.
+Shared 4.0.0 and the accepted Database artifact are already recorded. The prepared MCP-001 base and the explicit accepted-source integration gates above must be present before this task runs.
 
 ### Unresolved Issues
 
-The uploaded snapshot's built-in discount stub differs from the accepted ARCH-052 completion record; this task requires source reconciliation, not a duplicate implementation.
+The 09:49:47 snapshot lacks the accepted catalogue/dispatcher and Woo diagnostic integration. The common implementation handoff records this specific preparation prerequisite; no replacement implementation is authorized.
 
 ### Architectural Concerns
 
