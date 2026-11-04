@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: codex
 claimed_at: 2026-11-04T10:41:30Z
@@ -163,7 +163,7 @@ This is a validation correction, not a financial or lifecycle policy change. It 
 - [x] Replace unbounded nested refunds with the two bounded summary reads.
 - [x] Move each new-refund provider preflight before its write transaction and use only transaction-local current state for admission.
 - [x] Retain replay, CAS, batch and reactivation behaviour; leave namespace replacement to SHOPIFY-012.
-- [ ] Complete actual Shared-output assertions, deterministic call budgets and both migrated PostgreSQL suites. The budgets and 14 database cases pass, including the amended zero-credit constraint proof; Admin malformed-response privacy needs the correction in Architect Review.
+- [x] Complete actual Shared-output assertions, deterministic call budgets and both migrated PostgreSQL suites. Attempt 2 corrects the Admin malformed-response privacy finding; 112 focused tests and all 14 database cases pass, including the amended zero-credit constraint proof.
 
 ## Interfaces / Contracts
 
@@ -213,7 +213,7 @@ Preserve `PurchaseHistoryPage`, `PurchaseHistoryItem`, `RefundOutcome`, `Reactiv
 - [x] Refund HTTP/credential/root-client context reads never execute while a write transaction is open.
 - [x] Refund/refund, refund/reservation and reactivation interleavings preserve one durable hold, nonnegative balances, versions and provider-action fences on real PostgreSQL.
 - [x] Purchase same-ID and same-offer races preserve one admissible durable request and atomic UsageEvent/Purchase/BillingOperation persistence.
-- [ ] Every named operational failure retains original safe Shared output and cause; provider text is not duplicated and secret/PII sentinels do not appear.
+- [x] Every named operational failure retains original safe Shared output and cause; provider text is not duplicated and secret/PII sentinels do not appear.
 - [x] No schema, dependency, public DTO, locale, pricing policy, hash preimage, identity or Background change occurred.
 
 ## Validation
@@ -252,9 +252,71 @@ Use pure matching to keep history and mutation predicates coherent without makin
 
 ### Status
 
-Blocked — implementation published; architect amendment required before review submission. No acceptance decision has been made. The existing `RecoveryCreditPurchase_lifecycle_amounts` constraint rejects `WITHDRAWN/currentAmount=0`, while the required PostgreSQL zero-credit reactivation case needs precisely that state. The existing `COMPLETED_NO_CREDITS` service branch remains unchanged and is covered by its existing unit regression; successful real-database execution is unavailable under the accepted schema.
+Ready for Review — Attempt 2. The single Attempt 1 Changes Requested finding is implemented and all required validation passes. The architect's zero-credit validation amendment resolves the previous scope blocker; it requires the existing real migrated constraint-rejection proof and unchanged defensive-branch unit regression, both retained. No architect acceptance decision has been made by this implementation agent.
 
 ### Files Changed
+
+Attempt 2 implementation: `fc978239097b364f43eea013525f38782ba1103b`, following Attempt 1 `fffbf30641544574b7de72c7829b85a9ea4fc0d4`, committed and pushed to `origin/task/ARCH-057-SHOPIFY-003` in `moda-interact`.
+
+- `app/routes/app/billing/recovery-credit-purchases/route.tsx`: native response-JSON parse failures use a fixed safe internal parse message and `INVALID_JSON_RESPONSE`. The original thrown object is still the propagated `cause`; the accepted diagnostic adapter receives a separate safe `diagnosticCause`. HTTP status/request ID and existing `MALFORMED_RESPONSE/internal` (HTTP 200) versus `HTTP/provider_response` (non-2xx) classification remain intact. SDK, transport and structured GraphQL source-error handling are unchanged. The prerequisite diagnostics module was not modified.
+- `tests/unit/routes/recovery-credit-purchases.test.ts`: four native-Response privacy regressions cover short full-body and long partial-body text at HTTP 200 and 503, capturing actual installed Shared JSON. Two additional native-parse cases verify throwing-Shared-sink isolation. The file remains 154 lines; no new file was added this attempt.
+
+All original implementation, public DTO, pricing/accounting, replay, two-observation admission, query budgets and transaction boundaries remain as recorded in the historical report below. No schema, dependency, locale, Background, identity/hash preimage or parent gitlink changed.
+
+### Changes Requested Checklist
+
+| Review correction | Disposition | Evidence |
+|---|---|---|
+| P2: exclude malformed Admin response text from both top-level diagnostic and cause chain | **Implemented** | The route supplies a fixed parse reason and safe `diagnosticCause`; four actual-route/native-parser/real-Shared cases fail before the correction and pass afterward. Body fragments are absent from the serialized records, with one owned diagnostic per failure. |
+| Keep the original SyntaxError object during propagation, safe HTTP correlation and truthful classification | **Implemented** | Tests observe the native `Response.json()` error, check `thrown.cause` by object identity, verify original parser messages contain the full/partial fixture marker, and assert safe status/request ID plus correct failure kind/origin. No mutation or history result is produced. |
+| Retain other SDK/transport failures and log-sink isolation | **Implemented** | Existing SDK/GraphQL/HTTP source-evidence tests pass unchanged; two additional malformed-response tests at HTTP 200/503 show a throwing real Shared sink preserves the original propagated parse cause and fail-closed outcome. |
+| Reconcile the Completion Report with the architect's zero-credit amendment | **Implemented** | The defensive service branch and its unit regression are unchanged. The migrated PG17 test rejects the illegal zero-credit WITHDRAWN state using the exact lifecycle constraint and asserts unchanged purchase/counter balances and versions. Successful database execution of `COMPLETED_NO_CREDITS` is not claimed. The previous blocker report is retained explicitly as historical evidence. |
+| Rerun required affected suites and gates | **Implemented** | Seven focused files: 112 tests passed. Both migrated PostgreSQL files: 14 tests passed. Prisma generation, typecheck, build, declared scoped lint plus changed existing tests, and whitespace checks passed. |
+
+### Validation Results
+
+Executed from the launcher-returned implementation worktree with the existing locked toolchain:
+
+- `npm run prisma:generate`: passed against the unchanged recorded Database schema.
+- Exact seven-file unit/route/render command in Validation: **7 files, 112 tests passed**, no skips (106 existing + 6 new regressions).
+- Exact `MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/recovery-credit-refunds.postgres.integration.test.ts tests/integration/recovery-credit-purchases.postgres.integration.test.ts`: **2 files, 14 tests passed**, no skips. Task-owned `pgvector/pgvector:pg17`, all accepted forward migrations through the unchanged helper, separate real connections/barriers and unchanged accounting/rollback assertions.
+- `npm run typecheck`: passed.
+- `npm run build`: passed, including Prisma regeneration. Existing client chunk-size warning remains; no build/dependency source changed.
+- Exact declared scoped ESLint command plus the three existing test files changed by the original implementation: passed.
+- `git diff --check`: passed.
+- Native-parser privacy reproduction before correction: **4/4 failed** on both short and long responses at both statuses. These intentional failures are comparison evidence, not an acceptance run. After correction all four pass in the complete focused suite; the six new cases also retain fail-closed outcomes and sink isolation.
+
+Representative actual Shared record fields after serialization:
+
+```json
+{"event":"shopify.billing.provider_failed","data":{"operation":"verify_refund_development_store","origin":"internal","failureKind":"MALFORMED_RESPONSE","provider":"shopify","error":{"name":"ShopifyBillingProviderError","message":"Shopify Admin development-store response JSON parsing failed."},"causeChain":[{"name":"SyntaxError","message":"Shopify Admin development-store response JSON parsing failed."}],"reasonCode":"INVALID_JSON_RESPONSE","httpStatus":200,"providerRequestId":"safe-parse-request","redactionApplied":false,"truncated":false}}
+```
+
+HTTP 503 preserves the same safe parse evidence with `origin: provider_response`, `failureKind: HTTP` and status 503. Raw native parser text is never selected for either diagnostic message; flags do not claim pattern redaction or truncation occurred. The actual original SyntaxError remains attached to the propagated error. Tests assert absence of both whole-body and partial-body fragments in the captured Shared records rather than relying on logger-method mocks or external artifact scrubbing.
+
+Method/SQL/provider measurements are unchanged: actual focused assertions remain six repository invocations/one Partner request for eligible 1/5/20-row pages; 3/0 noneligible, 2/0 empty, 7/1 clamped. The repeated PostgreSQL measurements emit **9 SELECTs, zero transaction-control statements and one synthetic provider read** at each 1/5/20-row size. Complete purchase/refund suites emitted **338/389 SQL statements**, including fixtures and assertions, respectively. Historical same-fixture baseline method/SQL comparisons below are retained; fewer ORM method calls are not represented as SQL/latency improvement.
+
+Local evidence: `/tmp/arch057-shopify003-attempt2-probes-before.log`, `...-units.log` (including safe real Shared JSON), `...-postgres.log`, `...-generate.log`, `...-eslint.log`, `...-typecheck.log`, `...-build.log`. Official configured Admin 2026-07 error-response documentation was consulted with Shopify AI Toolkit; the existing GraphQL operation is unchanged and its prior schema validation remains recorded below. No live Shopify operation was executed.
+
+### Provenance and Isolation
+
+Launcher packet `/tmp/arch057-shopify003-attempt2.json`: Attempt **2**, executor **codex**, claim **`6cd7ba2e999a62a7ad65ec24adda4fc324aa9c4b`**, claimed/pushed at `2026-11-04T10:41:30Z`; dependency gate passed. Two preceding GitHub server-error claim pushes were rolled back by the launcher before this successful claim; no failed claim was used to start implementation.
+
+Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-003`, start **`7ba125be79d0cc9cd35f32b77f45a38cbeb43076`**. Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-003`, start **`fffbf30641544574b7de72c7829b85a9ea4fc0d4`**. Both use `task/ARCH-057-SHOPIFY-003`, both correctly reused. Both remote-task fast-forwards `not-needed`; both origin/main integrations `already-current`. Recursive sync/update passed, Database recorded/working pin **`8e74634ff92be9900f693c0c449ffce888e7d617`** unchanged. No shared/default checkout switched or mutated, no other task worktree reused, no main merge or parent gitlink update.
+
+Node **24.19.0**, npm **11.17.0**, installed Shared **3.1.0**, existing locked dependencies retained. Existing Colima endpoint/socket override supplied to Testcontainers; no Docker host reconfiguration or shared cleanup. Both task-owned PostgreSQL fixtures cleaned up all their clients/containers; final inventory retains only the pre-existing developer containers.
+
+### Deviations and Unresolved Issues
+
+None for Attempt 2. The architect's amendment is applied exactly as written, without changing billing policy or schema. All required correction items and validation gates pass; acceptance remains with `moda_architect`. No downstream task was started. The original blocker and comparison evidence below are historical, resolved by the architect's validation amendment, and do not describe the current submission status.
+
+### Attempt 1 Completion Report (Historical)
+
+#### Status
+
+Blocked — implementation published; architect amendment required before review submission. No acceptance decision has been made. The existing `RecoveryCreditPurchase_lifecycle_amounts` constraint rejects `WITHDRAWN/currentAmount=0`, while the required PostgreSQL zero-credit reactivation case needs precisely that state. The existing `COMPLETED_NO_CREDITS` service branch remains unchanged and is covered by its existing unit regression; successful real-database execution is unavailable under the accepted schema.
+
+#### Files Changed
 
 Implementation commit `fffbf30641544574b7de72c7829b85a9ea4fc0d4`, pushed to `origin/task/ARCH-057-SHOPIFY-003` in `moda-interact`. All 15 changed files are on the task allowlist:
 
@@ -264,7 +326,7 @@ Implementation commit `fffbf30641544574b7de72c7829b85a9ea4fc0d4`, pushed to `ori
 - New tests: `tests/unit/recovery-credit-history-budget.test.ts`, `tests/unit/routes/recovery-credit-purchases.test.ts`, `tests/unit/routes/billing-options-action.test.ts`, both declared PostgreSQL integration files and both declared fixture files.
 - The purchase-hub test needed no edits; its unchanged rendering checks pass. Every new file is below 300 lines (largest 170).
 
-### Work Completed
+#### Work Completed
 
 Trusted request context is consumed independently by each handler, retaining active-Shop/surface authorization and the history active-only Subscription projection. The options action delegates receipt replay and admission directly, removing duplicate capacity/commercial reads. Actual-route tests replay a same-tenant receipt during provider/catalogue outage and deny foreign-Shop/provider receipts. New admission retains two provider lifecycle and two catalogue observations outside the Serializable transaction, final transaction-local Subscription validation and atomic UsageEvent/Purchase/BillingOperation persistence.
 
@@ -272,7 +334,7 @@ History uses one request-local typed observation and pure matcher, bounded lates
 
 Operational failures use Shared 3.1.0 and the accepted provider/domain diagnostic adapter. Original Prisma codes/messages/causes, read stages, safe IDs and bounded retry attempt survive actual JSON output. Provider source evidence is not re-extracted downstream. Admin SDK, HTTP, HTTP-200 GraphQL and malformed success/error-envelope cases fail closed. Real Shared throwing sinks preserve exceptions and authorization; a genuine PostgreSQL serialization retry succeeds with the throwing sink and retains exact committed quantities.
 
-### Validation Results
+#### Validation Results
 
 All listed executable commands passed on the published implementation; the task's separate required zero-credit success scenario remains unavailable and prevents review readiness.
 
@@ -314,19 +376,19 @@ Physical worktree isolation (launcher evidence): canonical root `/Users/kwadwoad
 
 Environment recovery: selected existing Colima Docker endpoint via `docker context inspect`, with `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`; no host reconfiguration or shared resource pruning. Earlier discovery/mount failures are superseded by the real passing runs. Each helper cleaned up only its own clients/containers, including archived-baseline measurement. Final Docker inventory retains only the pre-existing developer containers. No skipped acceptance suite is presented as passed.
 
-### Deviations
+#### Deviations
 
 The required successful real-PostgreSQL zero-credit completion cannot be produced legally. A dedicated real constraint-rejection assertion records that conflict without disabling constraints, editing schema or fabricating transaction results. Task remains blocked, not ready for review; the final Work Item is intentionally unchecked.
 
-### Assumptions
+#### Assumptions
 
 Synthetic provider ports model read-only lifecycle observations; no live charge/refund is authorized or executed. Existing identity generation and development-store pricing semantics remain unchanged. Actual SQL comparison explicitly excludes the provider credential query, whereas repository-method comparison includes its real configuration-reader invocation.
 
-### Unresolved Issues
+#### Unresolved Issues
 
 `moda_architect` must amend the zero-credit validation requirement to an attainable legal state/outcome, or coordinate a separately owned Database lifecycle-constraint change before successful execution of that branch can be required. This implementation does not choose either financial/lifecycle policy. No downstream task started.
 
-### Architectural Concerns
+#### Architectural Concerns
 
 Evidence: accepted Database migration `20260912000000_arch010_first_production_baseline/migration.sql` defines `RecoveryCreditPurchase_lifecycle_amounts`, requiring `currentAmount > 0` for WITHDRAWN (lines 1479–1484). Subsequent accepted migrations retain it. Management `reactivateRefund` checks WITHDRAWN before its zero-current branch, so no persisted row can reach `COMPLETED_NO_CREDITS` under these migrations. The real PostgreSQL rejection test names that exact constraint and verifies unchanged balances. Task Stop Condition requires an architect amendment when a schema/policy change is needed; no such change has been made here.
 
