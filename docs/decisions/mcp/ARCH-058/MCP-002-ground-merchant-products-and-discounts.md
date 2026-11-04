@@ -387,6 +387,74 @@ This is an extension of the existing composition. Reference categories describe 
 
 ## Completion Report
 
+### Current Status — Shared Contract Mismatch
+
+Attempt 1 remains `in_progress`, stopped at the explicit frozen-contract/prepared-artifact gate. The earlier Database mismatch is resolved at the accepted pin. **The implementation is not review-ready or complete.** No unfinished implementation changes are published; the only implementation task commit remains the authorized Database update `229ffe402a3ef36c420cff6a26746b05ca61cd3d`.
+
+### New Concrete Prerequisite Failure
+
+The task requires verifying canonical built-in hashes against the installed schemas with Node SHA-256. That assertion fails for **both** frozen Shared 4.0.0 discount descriptors. The independent fresh-process calculation uses only installed package exports:
+
+```js
+import { createHash } from 'node:crypto';
+import {
+  commerceDiscountBuiltInDescriptors,
+  commerceBuiltInToolContractPayload,
+} from '@modainteract/moda-interact-shared/commerce';
+for (const descriptor of commerceDiscountBuiltInDescriptors) {
+  const observed = createHash('sha256')
+    .update(commerceBuiltInToolContractPayload(descriptor)).digest('hex');
+  if (observed !== descriptor.contractHash) process.exitCode = 1;
+}
+```
+
+Observed proof (exit **1**, Node 24.19.0, exact installed/locked Shared 4.0.0, Zod 4.6.5):
+
+```json
+{
+  "sharedVersion": "4.0.0",
+  "node": "v24.19.0",
+  "results": [
+    {
+      "name": "commerce_get_discount_options",
+      "definitionVersion": "1.0.0",
+      "recorded": "a0a4a88c7920a25a31657a03761b6556419189aeab251261a58e2dfb83a3bdcb",
+      "observed": "6371003b0ade970987dabed9603d4efbfa8b653f801956252a86e5a3d7cca2b0",
+      "matches": false,
+      "trustedByInstalledShared": true
+    },
+    {
+      "name": "commerce_get_discount_details",
+      "definitionVersion": "1.0.0",
+      "recorded": "776f6bc6ac1800c75744c2ffa7357f07a32be2b61309b1d71abf0493a2de316f",
+      "observed": "62c8d17c53d8a99add784e7c9d7a1226aaafb9b297592fee45c0c107ad508d38",
+      "matches": false,
+      "trustedByInstalledShared": true
+    }
+  ]
+}
+```
+
+Shared's installed `isTrustedCommerceBuiltInDescriptor` returns true for these same constants because it compares them with the installed canonical descriptors; that does not resolve their payload hash mismatch. Shared declares Zod `^4.0.0`; this consumer's existing exact Zod 4.6.5 was not changed. The observed mismatch is recorded without asserting whether schema serialization or descriptor constants caused it. Shared package/lock integrity still matches the accepted receipt. No alternative version, replacement hash, modified output schema, dependency downgrade or trust bypass was selected.
+
+**Required owning reconciliation:** `moda_architect` / `moda_shared` must reconcile the frozen descriptor identities with the actual exported contract payloads and supply an accepted consumer artifact/version or explicit architecture decision. This task cannot change Shared constants or remove the mandated hash assertion. The task's Stop Condition explicitly requires stopping for a contract/schema change outside MCP ownership. No new task or dependency state is invented here.
+
+### Resumed Work and Observed Validation
+
+Under the existing codex Attempt 1 claim, continued the local MCP-owned draft with generic canonical built-in projection; the five-delegate capability reader; built-in execution policy/deadline/cancellation/result-size reuse; catalogue query-scoped unavailable classification; provider-specific category/browse/publication/availability/cursor changes; exact taxonomy membership; and relevant fixtures/tests. The accepted source schema artifact and Database pin remain unchanged. These edits are **unfinished, uncommitted, unvalidated as a complete task**, preserved only in the isolated implementation worktree.
+
+- Product-focused group: **71 tests reported, 69 passed, 2 failed**, zero skipped. Log `/tmp/mcp058-002-products.log`. The failures were in connection-projection fixture expectations and a guard test supplying undeclared variables; local corrections were made but the group has not been rerun. No final product-group pass is claimed.
+- Generic catalogue/capability/protocol/runtime group (including service tests): **73 tests, 72 passed, 1 failed**, zero skipped. Log `/tmp/mcp058-002-discounts.log`. The sole failure is the required canonical Shared descriptor hash assertion above. Passing cases include all three post-authorization transient data boundaries, every opaque context, genuine Prisma errors, hard authorization/transaction failures, after-rollback diagnostics, NONE/FIXED denials, and built-in cancellation/late-result/size/policy behavior. These are observed intermediate results, not acceptance evidence for the unfinished task.
+- Independent installed-package hash proof: **failed, exit 1**, both descriptors; `/tmp/mcp058-002-shared-hash-proof.json`.
+- An intermediate typecheck failed on then-unfinished fixture updates, now locally revised; no final typecheck, integration typecheck, lint or build pass is claimed.
+- Required new `tests/integration/shop-product-discovery.integration.test.ts` and existing integration fixture updates remain unfinished. Developer-owned `npm run test:integration:docker` remains **NOT RUN**. No Docker, database migration/import, live provider traffic, publication, deployment, customer send or main merge occurred.
+
+### VCS and Ownership Boundary
+
+Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`; both dedicated `task/ARCH-058-MCP-002`. The attempted `/moda-task --prepare` correctly returned `TASK_NOT_READY` because the durable existing claim was already `in_progress`; no new attempt or claim was created. The user requested resumption and work continued under claim `f4250e2e68a71626b36c456e901077fec656fb96`, Attempt 1. Database remains `ded8f14a60182f6b1443640f012caf0089b8a44c`. No shared checkout, other repository source, task index, architecture document, parent implementation gitlink or Architect Review was edited. Downstream tasks remain gated.
+
+## Prior Dependency Reconciliation Report (historical; Database blocker resolved)
+
 ### Current Status — Dependency Reconciled
 
 The developer explicitly authorized updating the submodule after the recorded prerequisite failure. The Database pin is now accepted **`ded8f14a60182f6b1443640f012caf0089b8a44c`**, published in implementation commit **`229ffe402a3ef36c420cff6a26746b05ca61cd3d`** on `task/ARCH-058-MCP-002`. Only the Database gitlink was staged in that commit; the unfinished implementation draft remains local, unstaged and uncommitted.
