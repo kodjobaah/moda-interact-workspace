@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-11-04T14:38:24Z
@@ -172,6 +172,39 @@ Stop before implementation if accepted dependencies, the approved source distrib
 The existing Admin workflow and merchant-knowledge runtime are compatibility boundaries. A valid global category describes meaning only. The current shop's provider-backed product read remains the evidence for whether it sells a hammer. The Commerce-owned setup command calls this importer as a child stage after Database migration; this task supplies that command surface, not the orchestrator.
 
 ## Completion Report
+
+### Status
+
+Attempt 3 ready for architect review. Corrected the P2 source-diagnostic privacy finding from the Attempt 2 review. Implementation `1dd5430b9d3108bf93bba86c1fb9233736f606d3` on `task/ARCH-058-MCP-001`; no architect acceptance or downstream promotion is claimed.
+
+### Mandatory Correction Checklist and Changed Files
+
+- [x] Sanitize/bound source diagnostic and explicit causes **before** Shared logging: `src/execution/reference-taxonomy/errors.ts::logFailure` now constructs a narrow safe diagnostic from actual source name/message, redacts private spans and invocation context, and limits messages to 1024 characters, names to 128, and explicit cause traversal to three levels. Cycles and unsafe non-Error objects cannot leak their arbitrary fields. `redactionApplied` and `truncated` explicitly describe transformations. Shared remains the only logger/serializer/sink runtime.
+- [x] Preserve source evidence and thrown exception: safe wording, actual database SQLSTATE/source code and provider status/request ID remain separate from the Moda reason. Realistic multiline Prisma timeout/missing-column examples retain the safe database reason after unsafe quoted values/invocation lines are removed. The original exception, original message and original cause identities are never mutated. No provider metadata is invented for database errors.
+- [x] Remove exact current query wording, including escaped variants: `src/execution/reference-taxonomy/service.ts` passes the parsed query only to the owning diagnostic sanitization boundary, never as a logging field. Errors and causes both use that private-text context.
+- [x] Add installed-Shared-logger assertions: `tests/unit/execution/reference-taxonomy/errors.test.ts` adds five tests covering synthetic email/token/query privacy, actual error/cause output, multiline Prisma diagnostics, non-Error causes, truncation/cycles, status/request-ID/code retention, original exception identity and sink/extraction failure isolation.
+
+### Validation Results
+
+Executed from `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-001` with the prescribed workspace Node bootstrap (Node 24.19.0 / npm 11.17 / Prisma 6.19.3):
+
+- **PASS: 50 focused tests, 0 failures/skips** using the task command: `npm exec -- tsx --test tests/unit/execution/reference-taxonomy/*.test.ts tests/unit/capabilities/resolve.test.ts tests/unit/capabilities/prisma-reader.test.ts tests/unit/runtime/service-ports.test.ts`. Subsequently strengthened unquoted diagnostic-field and quoted Prisma ERROR handling and ran the final broader selection below, which includes that focused set.
+- **PASS on final production code: 58 regression tests, 0 failures/skips:** `npm exec -- tsx --test tests/unit/execution/reference-taxonomy/*.test.ts tests/unit/capabilities/*.test.ts tests/unit/runtime/service-ports.test.ts tests/unit/runtime/prisma.test.ts`. The focused tests are a subset, not an additional 50 passes. Privacy assertions use only synthetic data and the actual installed Shared logger sink. Final log `/tmp/mcp058-attempt3-regressions-final.log`.
+- **PASS:** `npm run typecheck`, `npm run lint`, `npm run build`, `git diff --check`. Logs `/tmp/mcp058-attempt3-typecheck-final.log`, `/tmp/mcp058-attempt3-lint-final.log`, `/tmp/mcp058-attempt3-build-final.log`. A temporary lint failure for unnecessary test-string escapes was corrected; removing those escapes leaves the tested string value identical.
+- **Not rerun this attempt:** Docker integration, source download/import or live semantic/provider evaluation. The correction changes diagnostics and their unit coverage, with no SQL/activation/embedding/authorization behavior change. Attempt 2's recorded disposable PostgreSQL result (**25 passed, 0 failed, 1 opt-in live Shopify test skipped**) remains historical evidence, independently reviewed by the architect as addressing the earlier integration gate. No fresh PostgreSQL timing or run is claimed here.
+
+### Physical Worktree / Synchronization / VCS Evidence
+
+Launcher packet: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; reused parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-001` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-001`, both dedicated `task/ARCH-058-MCP-001`. Neither shared implementation checkout nor another task worktree was used for edits.
+
+Dependencies passed: DATABASE-001 and SHARED-002 Complete. Parent task fast-forward not needed; origin/main incorporated (`yes`); implementation task fast-forward not needed; origin/main already current. Recursive submodule sync/init/update/verification passed; Database remains `ded8f14a60182f6b1443640f012caf0089b8a44c`. Parent prepared head `c18f95cbf4ca208648bfc4d37cae283c46f7606c`; durable Attempt 3 claim `36b7b62441641cd8562934f155b3b9497e4d50f4` at `2026-11-04T14:38:24Z`; implementation start `30cdca4e62f768722388c1d94979a88ff24f7220`, final `1dd5430b9d3108bf93bba86c1fb9233736f606d3`. The implementation correction is limited to the three files above. Parent edits are limited to this task's status/report; all Architect Review text is preserved unchanged.
+
+### Remaining Issues and Boundaries
+
+The requested P2 correction is implemented and verified; architect review remains pending. The accepted Shared 4.0.0 package/lock, Database pin and approved taxonomy manifest are unchanged. No schema/public contract, generic logging runtime, conversation/grant/lease ownership, provider feature, deployment, persistent migration/import, Commerce publication or main merge was introduced. No billable embedding request was made. MCP-002 and SYSTEM-TEST-001 remain gated on acceptance.
+
+## Attempt 2 Completion Report (historical; superseded by Attempt 3 above)
+
 
 ### Status
 
