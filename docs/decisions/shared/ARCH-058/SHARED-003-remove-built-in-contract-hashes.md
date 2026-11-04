@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: copilot
 claimed_at: 2026-11-04T19:44:28Z
@@ -116,13 +116,13 @@ A directly related existing focused test may be changed only when it asserts the
 
 ## Work Items
 
-- [ ] Remove `contractHash` from the built-in grant and descriptor schemas/types.
-- [ ] Remove built-in hash constants and `commerceBuiltInToolContractPayload`.
-- [ ] Update trusted-descriptor/grant helpers and manifest/grant projection/equality logic.
-- [ ] Update runner built-in resolution to use canonical name/version identity without hashes.
-- [ ] Replace hash-specific focused tests with strict name/version/extra-field tests.
-- [ ] Update the clean-process Commerce entrypoint verifier and README contract inventory.
-- [ ] Run the required validation and record exact results.
+- [x] Remove `contractHash` from the built-in grant and descriptor schemas/types.
+- [x] Remove built-in hash constants and `commerceBuiltInToolContractPayload`.
+- [x] Update trusted-descriptor/grant helpers and manifest/grant projection/equality logic.
+- [x] Update runner built-in resolution to use canonical name/version identity without hashes.
+- [x] Replace hash-specific focused tests with strict name/version/extra-field tests.
+- [x] Update the clean-process Commerce entrypoint verifier and README contract inventory.
+- [x] Run the required validation and record exact results.
 
 ## Interfaces / Contracts
 
@@ -150,15 +150,15 @@ commerce_get_discount_details@1.0.0
 
 ## Acceptance Criteria
 
-- [ ] Neither built-in descriptor nor built-in grant schemas/types contain `contractHash`.
-- [ ] `commerceBuiltInToolContractPayload` is absent from source, generated declarations and the clean-process export check.
-- [ ] Both canonical built-ins retain their existing names, descriptions, input schemas and definition version `1.0.0`.
-- [ ] A corrected built-in grant with exactly three fields parses; the same object with `contractHash`, `toolId`, `capabilityKeys`, an unknown name or version `2.0.0` fails.
-- [ ] A corrected manifest and retained grant match when the built-in name/version pair matches and fail when either name/version differs.
-- [ ] Published-tool grant behavior and existing release/capability provenance behavior are unchanged.
-- [ ] Runner built-in authorization resolves only the corrected canonical descriptor and does not use a hash.
-- [ ] No Zod/package dependency change is present.
-- [ ] Unrelated hash fields/helpers remain unchanged.
+- [x] Neither built-in descriptor nor built-in grant schemas/types contain `contractHash`.
+- [x] `commerceBuiltInToolContractPayload` is absent from source, generated declarations and the clean-process export check.
+- [x] Both canonical built-ins retain their existing names, descriptions, input schemas and definition version `1.0.0`.
+- [x] A corrected built-in grant with exactly three fields parses; the same object with `contractHash`, `toolId`, `capabilityKeys`, an unknown name or version `2.0.0` fails.
+- [x] A corrected manifest and retained grant match when the built-in name/version pair matches and fail when either name/version differs.
+- [x] Published-tool grant behavior and existing release/capability provenance behavior are unchanged.
+- [x] Runner built-in authorization resolves only the corrected canonical descriptor and does not use a hash.
+- [x] No Zod/package dependency change is present.
+- [x] Unrelated hash fields/helpers remain unchanged.
 
 ## Validation
 
@@ -199,31 +199,49 @@ This is a deliberate pre-production breaking contract correction. Do not add com
 
 ### Status
 
-Not Started
+Ready for architect review
 
 ### Files Changed
 
-None.
+- `README.md`
+- `scripts/validate-commerce-entrypoints.mjs`
+- `src/commerce/built-in-tools.ts`
+- `src/commerce/definitions.ts`
+- `src/commerce/product-discovery-contracts.test.ts`
+- `src/commerce/runner/built-in-tools.test.ts`
+- `src/commerce/runner/tool-policy.ts`
+- `src/commerce/schemas.ts`
+- `src/commerce/selection.ts`
 
 ### Work Completed
 
-None.
+- Removed `contractHash` from the strict built-in grant and descriptor schemas and public types, deleted the hash constants/helper, and retained both canonical descriptors at version `1.0.0` with unchanged descriptions and input schemas.
+- Updated trusted grant checks, selection and manifest equality, and runner descriptor resolution to use the canonical descriptor with name/version identity.
+- Replaced hash assertions with strict-field and canonical-identity tests; updated the clean-process export verifier and README inventory.
 
 ### Validation Results
 
-Not run.
+- `npm ci --no-audit --no-fund` — passed; installed 211 locked packages.
+- `npm run test:product-discovery-contracts` — passed; 76 passed, 0 failed, 1 skipped.
+- `npm run typecheck` — passed.
+- `npm run build` — passed.
+- `npm run validate:commerce-entrypoints` — passed; clean-process exports and runner checks passed, including absence of the removed helper.
+- `npm pack --dry-run` — passed; package contains 131 files.
+- `git diff --check` — passed.
+- Required production grep for `contractHash` and `commerceBuiltInToolContractPayload` — no matches in the five specified contract/runtime files.
+- Generated Commerce declarations — confirmed the removed helper is absent.
 
 ### Deviations
 
-None.
+None. Package metadata and dependencies were not changed.
 
 ### Assumptions
 
-The accepted SHARED-002 4.0.0 receipt is historical evidence only; no corrected package has yet been published.
+The accepted SHARED-002 4.0.0 receipt remains historical evidence only; this task did not publish the corrected source.
 
 ### Unresolved Issues
 
-None beyond the declared dependent correction/publication tasks.
+None within this task. The coordinated semantics/version bump and publication remain with the declared dependent tasks.
 
 ### Architectural Concerns
 
