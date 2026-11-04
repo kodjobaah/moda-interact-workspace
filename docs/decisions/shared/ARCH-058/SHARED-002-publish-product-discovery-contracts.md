@@ -17,6 +17,7 @@ attempt: 1
 depends_on:
   - ARCH-058-SHARED-001
 enables:
+  - ARCH-058-SHARED-003
   - ARCH-058-MCP-001
   - ARCH-058-SYSTEM-TEST-001
 created: 2026-11-04
@@ -75,6 +76,7 @@ Verify the new public schemas/types/constants/helper named in SHARED-001, includ
 
 ## Enables
 
+- ARCH-058-SHARED-003
 - ARCH-058-MCP-001
 - ARCH-058-SYSTEM-TEST-001
 

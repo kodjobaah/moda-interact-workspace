@@ -28,11 +28,11 @@ updated: '2026-11-04'
 
 ## Architecture and execution state
 
-Definition revision: 8. MCP remains a generic shop-scoped tool provider/executor. Background owns conversation identity, retained grants, processing/control state and per-turn tool admission.
+Definition revision: 9. Exact dependency correction is specified by [Shared hash reconciliation](../../../architecture/ARCH-058/shared-hash-reconciliation.md). MCP remains a generic shop-scoped tool provider/executor. Background owns conversation identity, retained grants, processing/control state and per-turn tool admission.
 
 Architecture ID: `ARCH-058`. Read the parent architecture, `docs/architecture/ARCH-058/contracts.md`, `docs/architecture/ARCH-058/implementation-handoff.md` and `docs/architecture/ARCH-058/execution-baseline.json`. This is a pending task-definition amendment; it creates no execution claim, branch or worktree. Use the launcher's dedicated implementation worktree when its two declared dependencies are Complete. Preserve all task claims, review history and accepted upstream work.
 
-The fresh merged `moda-interact-workspace(20261104-125409).zip` supplies the current Commerce/Shared application source; `moda-interact-workspace-ARCH-058-MCP-001(2).zip` supplies the current MCP-001 implementation and latest task definitions. The latter records DATABASE-001, SHARED-001, SHARED-002 and SHOPIFY-001 as Complete. Use their exact archive/file identities in the common execution baseline; the merged archive's older task text does not supersede the latest task-worktree definitions. Shared **4.0.0 is published and accepted**; runner version is **1.1.0**. MCP-001 is at **Review, Attempt 2**, with reported implementation `30cdca4e62f768722388c1d94979a88ff24f7220`; its manifest, parser, CLI and receipt implementation are now present for source inspection. Its acceptance remains a prerequisite through MCP-002/MCP-003. Do not repeat publication discovery, select another Shared version, redo Database/Shopify implementation or obtain a new taxonomy release. Consume the accepted MCP-001 result and recorded source identity; this amendment does not accept it or authorize a different importer interface.
+The current MCP-002 upload retains the accepted DATABASE-001, SHARED-001/002, SHOPIFY-001 and MCP-001 Attempt 3 records. Shared 4.0.0 is the historical published artifact; SHARED-003/004 now own the exact serializer correction and immutable Shared **4.0.1** release. This task waits transitively through accepted MCP-002/MCP-003, then installs **Shared 4.0.1 and direct Zod 4.4.3** together. Runner remains **1.1.0** and both built-in versions/hashes remain unchanged. Fresh merged application source from the earlier review remains the source map below; consume later accepted source through normal preparation. No repeat taxonomy selection, Database/Shopify implementation or publication is authorized here.
 
 ## Objective
 
@@ -44,7 +44,7 @@ All editable runtime/test paths in this table are relative to `moda-interact-com
 
 | Path | Required change |
 |---|---|
-| `package.json`, `package-lock.json` | Pin `@modainteract/moda-interact-shared` exactly `4.0.0`; add direct runtime `semver` exactly `7.8.5` and development `@types/semver` exactly `7.8.0` (the accepted Shared versions); add only the setup script below. |
+| `package.json`, `package-lock.json` | Pin `@modainteract/moda-interact-shared` exactly `4.0.1` and direct `zod` exactly `4.4.3`; add direct runtime `semver` exactly `7.8.5` and development `@types/semver` exactly `7.8.0` (the accepted Shared versions); add only the setup script below. |
 | `src/commerce/bootstrap/system-product-tools.ts` | Extend the two existing registry/draft arrays to the four exact entries below. Keep the get-product draft unchanged. |
 | `src/commerce/tool-definition/contracts.ts:POLICY_OPERATIONS` | Add only `taxonomy.resolveCategories` and `shipping.getInformation`, version `1.0.0`; retain existing operations. |
 | `src/commerce/execution/policy-operation-authoring.ts` | Add the two Shared-backed registry rows. Extract the existing nested projector as `projectCommerceAuthoringSchema(validator, io)` for use by `createPolicyOperationAuthoringDescriptor` and the response fragment; apply the bounded enum normalization below once. Preserve policy-result union branches for the existing `src/commerce/execution/policy-result-schema.ts:policySchemaFromJson` metadata projection; enforce subset rejection only at the input/details validators below. |
@@ -107,19 +107,19 @@ try {
 NODE
 ```
 
-If the immutable fixture already exists from this attempt, verify its recorded provenance and full definitions instead of overwriting it or recapturing with Shared 4.0.0. Record its hash with the actual completion evidence. This is an implementation baseline capture, not a taxonomy download, package release or runtime importer.
+If the immutable fixture already exists from this attempt, verify its recorded provenance and full definitions instead of overwriting it or recapturing after any Shared upgrade (including 4.0.0 or 4.0.1). Record its hash with the actual completion evidence. This is an implementation baseline capture, not a taxonomy download, package release or runtime importer.
 
 Then upgrade from that captured original baseline, after the normal Node bootstrap if needed:
 
 ```sh
-npm install --save-exact @modainteract/moda-interact-shared@4.0.0 semver@7.8.5
+npm install --save-exact @modainteract/moda-interact-shared@4.0.1 zod@4.4.3 semver@7.8.5
 npm install --save-dev --save-exact @types/semver@7.8.0
 npm ls @modainteract/moda-interact-shared semver
 node --input-type=module -e "import {runnerVersion} from '@modainteract/moda-interact-shared/commerce/runner'; if (runnerVersion !== '1.1.0') throw new Error('RUNNER_VERSION_MISMATCH'); console.log(runnerVersion)"
 git -C database merge-base --is-ancestor ded8f14a60182f6b1443640f012caf0089b8a44c HEAD
 ```
 
-Verify the committed lock's root Shared pin and installed integrity against the immutable SHARED-002 receipt in the common baseline. Install from the existing registry configuration; do not run `npm publish`, inspect `latest`, use a sibling import or substitute a tarball. The Database ancestry check is a minimum accepted capability check; retain the exact compatible Database gitlink supplied by the accepted MCP dependency chain, including later accepted migrations. A missing commit/export or conflicting accepted tree is a concrete stop, not permission to choose another dependency.
+Verify the committed lock's root Shared pin and installed integrity against the accepted immutable SHARED-004 receipt for 4.0.1; the SHARED-002 4.0.0 receipt remains historical. Install from the existing registry configuration; do not run `npm publish`, inspect `latest`, use a sibling import or substitute a tarball. The Database ancestry check is a minimum accepted capability check; retain the exact compatible Database gitlink supplied by the accepted MCP dependency chain, including later accepted migrations. A missing commit/export or conflicting accepted tree is a concrete stop, not permission to choose another dependency.
 
 ### 2. Exact tool definitions and projections
 
@@ -179,7 +179,7 @@ Use responseDisposition STANDARD, OUT_OF_SCOPE_REDIRECT or SHIPPING_INFORMATION_
 The trusted Background host composes the complete controlled customer reply from verified facts and the selected identifiers, including product-only and store-only fallbacks. Model prose, empty details, an omitted selection or STANDARD cannot bypass that composition after product/discount observations, a product-bearing shipping observation or a host-controlled recommendation branch. Invalid or missing product selections, or skipped required same-turn permitted discount options or candidate-detail inspection, leave no product recommendation. Independently valid shipping facts and references retain their existing refresh and composition path; otherwise use the store-only response. Skipped inspection does not trigger post-final discovery or establish that no discounts exist. A policy-only null/null observation outside a controlled branch may retain the ordinary grounded answer path. Do not append additional promotional or shipping prose to the host's composed reply.
 ```
 
-Project `CommerceProductRecommendationSelectionSchema.extend(CommerceAnswerPresentationSelectionSchema.shape)` through `projectCommerceAuthoringSchema(..., 'output')`. All four owned properties are already optional in Shared 4.0.0; do not add new global defaults, required fields or structural business refinements. Merge only `productRecommendationVersion`, `productRecommendations`, `responseDisposition` and `shippingInformationSelection` into a clone of the base `detailsSchema`; preserve every unrelated property, required entry, ordering-sensitive array and existing bound. Validate the whole result through `CommerceResponseContractSchema`, the actual publication path and the response hash helper.
+Project `CommerceProductRecommendationSelectionSchema.extend(CommerceAnswerPresentationSelectionSchema.shape)` through `projectCommerceAuthoringSchema(..., 'output')`. All four owned properties are already optional in Shared 4.0.1; do not add new global defaults, required fields or structural business refinements. Merge only `productRecommendationVersion`, `productRecommendations`, `responseDisposition` and `shippingInformationSelection` into a clone of the base `detailsSchema`; preserve every unrelated property, required entry, ordering-sensitive array and existing bound. Validate the whole result through `CommerceResponseContractSchema`, the actual publication path and the response hash helper.
 
 Ownership rules are exact:
 
@@ -280,7 +280,13 @@ npm run commerce:setup-discovery -- --workspace-root="$MODA_WORKSPACE_ROOT" --en
 npm run commerce:setup-discovery -- --workspace-root="$MODA_WORKSPACE_ROOT" --environment=test --apply --source="$REFERENCE_TAXONOMY_SOURCE"
 ```
 
-`REFERENCE_TAXONOMY_SOURCE` is an operator-supplied path to the already verified accepted asset, not a URL or new manifest. Document the unconfigured-fresh partial outcome and rerun after the separate prerequisites are provisioned. Document that accepted compatible MCP and Background hosts must be deployed before persistent publication; retained conversation grants remain unchanged and use the agreed fresh-conversation pre-production transition. Shared 4.0.0's raw manifest/grant equality stays strict: changed release, selected capability set or built-in identities are incompatible until a fresh authorized conversation is used. New Background grants contain the canonical built-in pair even in NONE; host policy determines per-turn availability without rewriting that retained set. Task acceptance does not certify any deployment or merchant reauthorization.
+`REFERENCE_TAXONOMY_SOURCE` is an operator-supplied path to the already verified accepted asset, not a URL or new manifest. Document the unconfigured-fresh partial outcome and rerun after the separate prerequisites are provisioned. Document that accepted compatible MCP and Background hosts must be deployed before persistent publication; retained conversation grants remain unchanged and use the agreed fresh-conversation pre-production transition. Shared 4.0.1's raw manifest/grant equality stays strict: changed release, selected capability set or built-in identities are incompatible until a fresh authorized conversation is used. New Background grants contain the canonical built-in pair even in NONE; host policy determines per-turn availability without rewriting that retained set. Task acceptance does not certify any deployment or merchant reauthorization.
+
+## Shared serializer dependency gate (revision 9)
+
+After SHARED-004 is Complete and architect-accepted, use its exact 4.0.1 registry integrity. Pin this application's direct `zod` to exact **4.4.3** in the same package/lock update as Shared. Assert the version with `createRequire` anchored at the application and separately at the resolved Shared `/commerce` entrypoint. Both must resolve 4.4.3. Keep the actual Shared-schema composition/projector paths in the existing required typecheck and focused tests; do not cast away errors or replace those schemas. Recompute the two exported built-in hashes in a clean process and keep their existing 1.0.0 identities. Preserve other locked versions and existing dependency overrides; add no override or peer bypass to force this alignment. A private 4.4.3 copy under Shared with the application still using 4.6.5 is not an accepted consumer configuration.
+
+This exact alignment also changes this application's own Zod runtime from its observed 4.6.5 resolution. Run the already required focused parsing/projector tests and application typecheck under the new graph. Do not describe the dependency change as having no possible local-schema effects or bypass a resulting failure.
 
 ## Validation and acceptance
 

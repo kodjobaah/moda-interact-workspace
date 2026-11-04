@@ -1,21 +1,25 @@
-# ARCH-058: Current-worktree implementation handoff — Attempt 8
+# ARCH-058: Current-worktree implementation handoff — revision 9
 
-Reviewed on 4 November 2026 against the fresh merged source in `moda-interact-workspace(20261104-125409).zip` and active implementation/latest definitions in `moda-interact-workspace-ARCH-058-MCP-001(2).zip`. The former contains Attempt 6 documents; the latter contains Attempt 7 documents. Attempt 8 carries the latest definitions forward and checks their interfaces against current source. The [execution baseline](execution-baseline.json) records both archive identities and the explicit source origin for each inspected hash. [Contracts](contracts.md) remains the wire/behavior authority; each task specifies concrete edits in its owning repository.
+The current baseline is `moda-interact-workspace-ARCH-058-MCP-002.zip` (SHA-256 `49ec33bd730f6a1a54e96c8b29e0fcf170c48039b7c5d2c16a4b3e5dace70a9a`). The [execution baseline](execution-baseline.json) retains earlier source observations and immutable receipts with their source labels. [Contracts](contracts.md) and [Shared hash reconciliation](shared-hash-reconciliation.md) govern the exact correction. Earlier revision 8 source/instruction analysis remains valid except for superseded dependency/lifecycle statements.
 
-## Scope and current state
+## Current state and continuation
 
-This amendment corrects four pending definitions: MCP-002, COMMERCE-001, BACKGROUND-001 and SYSTEM-TEST-001. MCP-001 remains review/Attempt 2 and its definition/source/report are unchanged; MCP-003 was reviewed and needs no new correction. The four completed task files, every task's lifecycle/claim and Completion/Architect Review history, all decision indexes, Database migration, Shared schema and application source remain byte-identical to each input baseline. The default patch applies to the fresh task archive at Attempt 7. The `from-merged` alternative applies to the fresh full archive at Attempt 6 and also carries the missing Attempt 7 instruction rules. Each changes the same eight document paths to identical target bytes. Apply exactly one matching route; neither needs a previous patch.
-
-| Work | Observed state | Binding consequence |
+| Work | Current authoritative evidence | Required action |
 | --- | --- | --- |
-| DATABASE-001 | Complete; accepted implementation `ded8f14a60182f6b1443640f012caf0089b8a44c` | Consume its schema/migration through the normal Database submodule. Do not create a replacement taxonomy migration or rewrite the accepted one. |
-| SHARED-001 | Complete; accepted source `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139` | Shipping, browse, presentation, built-in grants and runner instructions already exist. Implement consumers against those actual exports. |
-| SHARED-002 | Complete; published `@modainteract/moda-interact-shared@4.0.0`, runner `1.1.0` | Pin the existing artifact and verify its lock entry against the recorded receipt. No version selection or republication. |
-| SHOPIFY-001 | Complete; accepted implementation `c3b580cec5acc46e5c53386dd94279ad97b02ee9` | Consume declared scope and existing installation lifecycle. The runtime still checks the actual session grant; a completed configuration task is not proof that every installation granted the scope. |
-| MCP-001 | Current uploaded task is review, Attempt 2; implementation `30cdca4e62f768722388c1d94979a88ff24f7220` is recorded in its report | Preserve the current definition, lifecycle, claim, code and report/review history. Acceptance remains a separate review outcome; do not restart preparation or importer work for this amendment. |
-| Remaining five tasks | Pending, Attempt 0 | Four definitions are amended; MCP-003 is verified unchanged. Dependencies, claims and execution modes remain unchanged. |
+| DATABASE-001 | Complete; accepted `ded8f14a60182f6b1443640f012caf0089b8a44c`; MCP-002 reports the resolved pin | Preserve schema, migration and pin/accepted descendants. No replacement migration or repeat dependency repair. |
+| SHARED-001/002 | Complete; historical accepted source and immutable 4.0.0 receipt remain | Preserve all public contracts and publication history. The source lock used Zod 4.4.3, but the published runtime range allowed confirmed 4.6.5 drift. |
+| SHARED-003 | New Ready definition, Attempt 0, unclaimed | Exact Zod 4.4.3 dependency and artifact regression; no public contract or package-version change during implementation. |
+| SHARED-004 | New Pending publication definition, Attempt 0, unclaimed | After source acceptance, publish/verify exact 4.0.1; record actual immutable receipt and return for acceptance. |
+| SHOPIFY-001 | Complete; accepted `c3b580cec5acc46e5c53386dd94279ad97b02ee9` | Preserve permission declaration; actual installation grant remains a runtime check. |
+| MCP-001 | Complete, Attempt 3; accepted `1dd5430b9d3108bf93bba86c1fb9233736f606d3` | Preserve accepted importer/resolver, source manifest and evidence. No reimplementation or release reselection. |
+| MCP-002 | In progress, Attempt 1; claim `f4250e2e68a71626b36c456e901077fec656fb96`; reported draft `4bffa87ed4af0fb40513ad75d38df49c51746360` | Hold resumption until accepted SHARED-004; then update only its package/lock pair to Shared 4.0.1 / Zod 4.4.3 and finish existing work/validation under the same claim. |
+| MCP-003 | Pending | Inherit the corrected accepted MCP-002 graph; shipping instructions otherwise unchanged. |
+| COMMERCE-001 / BACKGROUND-001 | Pending | Own their exact Shared 4.0.1 and direct Zod 4.4.3 package/lock alignment along with existing implementation work. |
+| SYSTEM-TEST-001 | Pending; eleven formal implementation/publication prerequisites | Verify accepted installed applications and the new receipt; no application dependency mutation or new scenario IDs. |
 
-The current MCP worktree already pins Shared 4.0.0 with the accepted lock integrity and contains the accepted Database taxonomy migration. Its report records Database `ded8f14a60182f6b1443640f012caf0089b8a44c`. Reuse matching prepared execution evidence; do not repin or rerun source discovery solely for this correction. The fresh merged snapshot confirms Commerce still consumes Shared 2.7.2 and Background 3.0.0. Their existing task-owned upgrades to 4.0.0 remain necessary. The merged MCP main snapshot consumes 2.8.1; active MCP task source/pins take precedence for MCP implementation review. Fresh Background includes later ARCH-056 initial-outreach changes; this review checks their preserved fallback interface rather than substituting the older source.
+The new Shared tasks are **defined but not materialised**. All existing task status/attempt/executor/claimed_at values and actual Completion/Architect Review evidence are preserved. The unexecuted MCP-003/Background report templates are updated only to name the corrected dependency pair. Adding an explicit dependency to the in-progress MCP task holds its continuation; it does not reset/reclaim the task. SHARED-002 receives only the reverse dependency edge. The patch changes no application source, parent/submodule gitlink, decision index, environment or registry.
+
+The MCP-002 archive already includes the pushed WIP as reported by its Completion Report. Preserve all 40 task-owned source/test changes. The 69/71 product group, 72/73 generic group, unfinished typecheck/lint/build and not-run integration are intermediate evidence. The Shared repair is necessary for continuation but does not accept that implementation. Use its existing dedicated parent and implementation worktrees, not a newly derived path from another task.
 
 ## Binding correction: MCP is a tool provider and executor
 
@@ -72,13 +76,11 @@ Use the exact existing provider schema artifact route named in MCP-002 when prep
 
 ## Fixed dependencies and bounded checks
 
-The exact Shared package is `@modainteract/moda-interact-shared@4.0.0`. Its recorded integrity is:
+The required corrected package is exact `@modainteract/moda-interact-shared@4.0.1`, after SHARED-004 is Complete and architect-accepted. Shared, MCP, Commerce and Background use exact direct/runtime `zod@4.4.3`. Check application-relative and Shared-relative resolution and both canonical SHA-256 values; retain other legitimate private transitive Zod copies without global overrides. The three consumers' own schema behavior also changes from their observed 4.6.5 graph, so their existing required typecheck and focused parsing/projector tests run under the corrected graph.
 
-```text
-sha512-Zv78WX/AsN1lZWyaMirO2Ml/rOZknSv0cnJnxYBuyc368kzDZzswauKRPSe8GSXFfjkk3cQnr3wi4n49d9HTzw==
-```
+The original Shared 4.0.0 receipt in SHARED-002 and `execution-baseline.json.sharedPublication` remains unchanged historical evidence. Never compare a 4.0.1 artifact against that old integrity. SHARED-004 records the actual new version, accepted source/release commits, registry integrity and downloaded artifact checks; no future hash or publication time is invented. The registry target was unoccupied at this review's read-only check, and the publication owner rechecks it immediately before publishing. A conflict returns for reconciliation, not an automatically selected version.
 
-The immutable publication receipt is in SHARED-002 and copied without alteration into `execution-baseline.json`. Consumer-owned package/lockfile upgrades install this exact version using their existing registry configuration. Check the installed/locked version and integrity once as part of that upgrade. Do not query `latest`, choose another version, use a sibling source path, or repeat SHARED-002's publication procedure. A different artifact is an explicit prerequisite mismatch.
+Each consumer installs only after the new receipt is accepted, using its ordinary registry/lockfile workflow. No `latest`, source symlink, unpublished tarball, npm override, descriptor substitution or hash-gate removal is permitted. MCP-002 continues the same existing claim; MCP-003 inherits its accepted graph. SystemTest checks the installed application packages and introduces no new dependency pin.
 
 When a task actually needs a Database gitlink change, preserve accepted later migrations. The prepared nested Database must contain the accepted commit and target migration; do not reset it to an older commit merely to reproduce the receipt. The bounded ancestry check is:
 
@@ -90,7 +92,7 @@ Run it in the launcher-supplied implementation worktree only when its task owns 
 
 The hashes in the baseline identify what this review inspected. They are not a rule that later accepted source must remain byte-identical. On a changed base, compare only the named touchpoints and contract surfaces affected by that change; preserve unrelated work and report a real conflict rather than restarting a broad architecture investigation.
 
-## Submitted MCP-001 evidence and taxonomy source
+## Historical revision 8 MCP-001 evidence and taxonomy source
 
 The current source contains `src/data/reference-taxonomy-manifest.json`, the `src/execution/reference-taxonomy/` implementation, CLI, focused tests and PostgreSQL integration suite. Its manifest records Shopify `2026-08`, English, SHA256 `afc8f21242527a209622302bd99e29efe8cc2521ae949104c2c0dc3f931e461a`, 14,606 categories and 183,429 compressed bytes. The full distribution is absent from the ZIP; verification/count evidence comes from the submitted manifest and report, not a new source download by this review. Admin's independent Redis pipeline remains untouched.
 
@@ -156,4 +158,4 @@ The completed Shared implementation exported `CommerceConversationToolContextSch
 
 ## Accepted MCP Taxonomy Handoff (2026-11-04)
 
-MCP-001 Attempt 3 is architect-accepted and Complete at `1dd5430b9d3108bf93bba86c1fb9233736f606d3`. This supersedes earlier acceptance-pending snapshots in this handoff. The task records independent 58-test validation and reviewed prior PostgreSQL/build evidence with their limits. MCP-002 is ready, unclaimed, and must consume the accepted manifest/importer/runtime baseline through normal launcher integration. SYSTEM-TEST-001 remains pending on remaining prerequisites. No persistent import, tool publication, deployment or main merge is implied.
+MCP-001 Attempt 3 is architect-accepted and Complete at `1dd5430b9d3108bf93bba86c1fb9233736f606d3`. This supersedes earlier acceptance-pending snapshots in this handoff. The task records independent 58-test validation and reviewed prior PostgreSQL/build evidence with their limits. MCP-002 subsequently entered its existing Attempt 1 claim and now has the revision 9 SHARED-004 continuation gate. Preserve its prepared source and draft under that claim. SYSTEM-TEST-001 remains pending on remaining prerequisites. No persistent import, tool publication, deployment or main merge is implied.
