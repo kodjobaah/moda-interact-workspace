@@ -396,3 +396,7 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Architect Dependency Gate — MCP-002 Attempt 2 (2026-11-04)
+
+MCP-002 remains in Review, not Complete or accepted, at implementation `b95c397d840568a5481c9332517e6ee3dc3713e1`. Its required developer-owned disposable PostgreSQL validation is NOT_RUN. This task remains Pending with its existing dependency list, attempt and claim unchanged; do not execute it until all explicit prerequisites are Complete and architect-accepted. Independent MCP-002 unit checks passed but do not replace the database acceptance gate.

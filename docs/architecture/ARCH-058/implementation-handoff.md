@@ -158,3 +158,7 @@ SHARED-003/004/005 now own the previously separate cleanup items: no-hash built-
 ## Accepted MCP Taxonomy Handoff (2026-11-04)
 
 MCP-001 Attempt 3 is architect-accepted and Complete at `1dd5430b9d3108bf93bba86c1fb9233736f606d3`. This supersedes earlier acceptance-pending snapshots in this handoff. The task records independent 58-test validation and reviewed prior PostgreSQL/build evidence with their limits. MCP-002 subsequently entered Attempt 1 and preserved its WIP source. Revision 10 blocks continuation on DATABASE-002 and SHARED-006; preserve the WIP branch and report while the correction tasks execute. SYSTEM-TEST-001 remains pending on remaining prerequisites. No persistent import, tool publication, deployment or main merge is implied.
+
+## MCP-002 review frontier — 2026-11-04
+
+MCP-002 Attempt 2 is submitted at `b95c397` with Shared 5.0.0 and the accepted Database correction. Architect review independently passed 118 focused unit tests and found no additional blocking code defect in inspected paths. Acceptance remains pending the task's explicitly developer-owned `npm run test:integration:docker` run, actual shop-product-discovery/persisted catalogue results, overall exit and cleanup evidence. Status remains Review, unclaimed; no new attempt is required solely for that validation. MCP-003, Commerce, Background and SYSTEM-TEST-001 remain Pending. This supersedes the earlier Ready/resume frontier and does not claim integrated compatibility or architecture completion.

@@ -626,27 +626,39 @@ None beyond the explicit source/contract and provider-semantic gates above.
 
 ### Review Status
 
-Pending.
+**Acceptance pending developer validation — Attempt 2, 2026-11-04.** Reviewed `b95c397d840568a5481c9332517e6ee3dc3713e1`. No additional blocking code defect was identified in inspected paths, but the mandatory PostgreSQL acceptance gate is unexecuted. Status remains `review`, executor/claim empty, Attempt 2 preserved. This is not acceptance and does not require a new implementation claim solely to run the developer-owned check.
 
-### Review Notes
+### Finding
 
-Not reviewed.
+**[P1] Required PostgreSQL evidence is missing.** The Attempt 2 report explicitly records `npm run test:integration:docker` as NOT_RUN. The real shop-product-discovery and persisted catalogue scenarios, aggregate exit status and owned-container cleanup must be recorded before acceptance. Unit/mock coverage and integration typechecking do not establish the required persisted behavior. This is a validation gap, not a reproduced production defect or a finding that the permitted review submission was improper.
 
-### Reviewed Files
+### Reviewed Source and Independent Validation
 
-None.
+Reviewed the corrected task requirements and Attempt 2 report, source/Shared/Database alignment, product search/cursor/category membership, built-in execution wrapper and relevant test coverage. The submission consumes Shared 5.0.0 and records an accepted DATABASE-002 descendant. Historical Attempt 1 reports remain preserved and are superseded by Attempt 2's current submission.
 
-### Validation Reviewed
+Independently executed with Node 24.19.0 from the dedicated implementation worktree:
 
-None.
+```bash
+node --import tsx --test tests/unit/execution/policy/*.test.ts tests/unit/execution/discount*.test.ts tests/unit/capabilities/*.test.ts tests/unit/mcp/*.test.ts
+```
 
-### Architecture Conformance
+**118 tests passed, zero failures/skips.** Local log `/tmp/arch058-mcp002-review-unit.log` is not a committed artifact. Implementation comparison whitespace check passed and the implementation checkout remained clean. This selection is not relabelled as either of the implementer's reported 76/75-test groups. No Docker, fresh build, lint or typecheck run is claimed by this review.
 
-Not assessed.
+### Required Developer Handoff
 
-### Follow-up
+From `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`, with the prescribed Node bootstrap:
 
-None.
+```bash
+npm run test:integration:docker
+```
+
+Pin implementation `b95c397d840568a5481c9332517e6ee3dc3713e1` and Database gitlink `bd2d09066a8eb178a56f48fbbf88df637c411059`. Use only the owned disposable harness; do not substitute a deployment DATABASE_URL. Record actual scenario results, overall exit status, errors/skips if any, and cleanup evidence in this task, then return for architect review. The existing task assigns this execution to the developer; this review does not silently transfer it to the repository agent. Do not fabricate a pass, weaken assertions or start enabled tasks. If the run reveals implementation failures, route them back to the owning task before acceptance.
+
+### Downstream and Publication
+
+MCP-003, COMMERCE-001, BACKGROUND-001 and SYSTEM-TEST-001 remain Pending. None is eligible through this unaccepted MCP-002 dependency. Their explicit dependency edges remain unchanged. Acceptance of the Shared release and Database correction does not substitute for MCP-002's validation.
+
+Parent review worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`, both matching task branches. The developer explicitly authorized task/downstream documentation updates, commit and push on 2026-11-04. No implementation source, schema, dependency, gitlink, main branch or downstream execution is changed.
 
 ## Architect Dependency Reconciliation (2026-11-04)
 
