@@ -34,7 +34,7 @@ Architecture document: `docs/architecture/ARCH-057-shopify-application-database-
 
 Coordinator: `moda_architect`.
 
-Mandatory execution, diagnostic, provenance and validation contract: `docs/architecture/ARCH-057/task-contract.md`. This is a **portable definition, defined but not materialised**. No execution claim, branches, worktrees, commits or implementation acceptance are asserted. Its named dependencies are not Complete, so the task is Pending.
+Mandatory execution, diagnostic, provenance and validation contract: `docs/architecture/ARCH-057/task-contract.md`. This task is materialised in its canonical parent and implementation worktrees on `task/ARCH-057-SHOPIFY-004`. All named prerequisites are Complete. Attempt 1 is published and awaiting architect acceptance; the Completion Report records the claim, implementation commits, worktree paths and validation evidence. Current lifecycle state is recorded in the task frontmatter; no implementation acceptance is asserted here.
 
 ## Objective
 
