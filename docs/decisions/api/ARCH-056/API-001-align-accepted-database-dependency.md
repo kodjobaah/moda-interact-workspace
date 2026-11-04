@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: copilot
-claimed_at: 2026-11-04T00:32:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-055-DATABASE-001
@@ -29,7 +29,7 @@ updated: 2026-11-04
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 2. **Defined but not materialised.** No real task branch, worktree, claim, commit or push is asserted. The task is Ready because the two explicit prerequisite task files are Complete in the supplied snapshot; the launcher must recheck their current canonical status before execution.
+Definition revision: 2. **Materialised and executed.** Attempt 1 was submitted for architect review and returned for changes on 2026-11-04. The claim is cleared; the attempt number remains 1.
 
 ## Objective
 
@@ -207,24 +207,29 @@ This section belongs only to moda_architect. Definition authoring is not impleme
 
 ### Review Status
 
-Pending
+**Changes Requested — 2026-11-04.** Return to Ready, preserve Attempt 1, and clear `executor`/`claimed_at`. Not accepted; no downstream promotion.
 
 ### Review Notes
 
-Awaiting an implementation submission and its evidence.
+1. **[P2] Resolve the required knowledge-upload validation failure.** `npm run test:arch035-knowledge-upload:postgres` failed with 1 pass and 1 failure (`Transaction not found` in the read-only `src/merchant/merchant-knowledge/upload.service.ts`). The acceptance criterion requires all three focused PostgreSQL commands to pass. The task's no-scope-expansion rule prevents fixing that source here. Before resubmission, obtain an explicit architect disposition for the failure or route the source defect to its owner and rerun the required suite. Keep the criterion unchecked until the gate is satisfied or formally amended; do not report this run as a pass.
+
+2. **[P2] Publish the implementation task branch.** The API worktree is a justified zero-diff at `2384bac6cea135d5571bd9f771f9431cfb0c7b45`, but its local `task/ARCH-056-API-001` branch tracks `origin/main`, and `git ls-remote` found no `origin/task/ARCH-056-API-001` ref. Publish the matching zero-diff task ref as required by the mirrored-branch workflow; do not manufacture an implementation commit.
+
+The task report also arrived in `review` with an active Copilot claim. This review clears that claim and returns the task to `ready` without incrementing Attempt 1.
 
 ### Reviewed Files
 
-No implementation submitted.
+- API implementation worktree at `2384bac6cea135d5571bd9f771f9431cfb0c7b45` (zero diff against `origin/main`); nested `database` gitlink and working HEAD are `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+- This task report and its recorded validation evidence.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Reviewed the submitted typecheck/build passes, REST-read 9/9, human-send 6/6 and diff check. The knowledge-upload suite failed 1/2 with `Transaction not found`; the required validation matrix is incomplete. Validation was not rerun during architect review.
 
 ### Architecture Conformance
 
-Pending review against the parent architecture, task allowlist, interface contracts, repository boundaries and failure requirements.
+The accepted Database pin supplies the required fields and migrations, and the API implementation is a justified zero-diff. No source-scope expansion is requested. Acceptance remains withheld for the failed required suite and unpublished implementation task branch.
 
 ### Follow-up
 
-Pending implementation review; no enabled task may be started by this task's executor.
+Address both review findings in the same task branch and resubmit. Do not start ARCH-056-SYSTEM-TEST-001. No schema or source change outside this task is authorized by this review.
