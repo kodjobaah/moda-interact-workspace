@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-11-04T04:57:56Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-056-BACKGROUND-002
@@ -404,32 +404,44 @@ Task status: review. Awaiting moda_architect review; no architect acceptance dec
 
 ## Architect Review
 
-This section belongs only to moda_architect. Definition authoring is not implementation acceptance.
-
 ### Review Status
 
-Pending
+**Changes Requested — Attempt 1, 2026-11-04.** Returned to `ready` with `executor` and `claimed_at` cleared. Attempt remains 1; this is not accepted or complete. The implementing agent's Completion Report above is retained as submitted evidence, not an architect acceptance decision.
 
 ### Review Notes
 
-Awaiting an implementation submission and its evidence.
+1. **[P2] Proven pre-permit neutral outreach cannot resume.** `src/services/recovery-template-integration/initial-no-offer-fallback.service.ts:143–152` maps every non-absent canonical outcome, including `prepared`, to `PROVIDER_OUTCOME_UNCERTAIN`. The initiation path correctly identifies a prepared message and retained credit, but then calls automated preparation before `resumeInitialTemplate`. With merchant mode NONE or another neutral fallback trigger, preparation throws the reason-only retry and never reaches the resume call. This strands the exact crash window this task must recover: message/usage durable, no permit. A temporary regression using the existing fallback fixture and a canonical `prepared` outcome failed (expected PREPARED, received RETRY); the submitted test currently asserts that incorrect RETRY. Permit current neutral preparation for a proven resumable message without weakening actual held/confirmed/failed classification, and prove the full worker path resumes the same message/usage/source with one eventual provider dispatch.
+
+2. **[P2] Technical preflight failures release retained credit and make retry unrecoverable.** In `src/services/checkout-recovery/recovery-initiation.service.ts`, the final consent-read exception catch around lines 532–545 and offer-validation exception catch around lines 570–578 call `releaseBeforeProvider` before rethrowing. These branches now also receive an existing reservation from `revalidateExistingInitialOutreach`. An outage is not an authoritative consent refusal or provider rejection. The next retry cannot reactivate that released source under BG002's contract and is held instead of resuming. A temporary regression supplied retained admitted credit, allowed the first two consent checks, then rejected the final read with a synthetic database outage: the original error was rethrown, but release was called once. Preserve resumable evidence on technical errors, classify durable progress before accounting mutations, and reserve release for the exact sanctioned refusal/rejection path. Cover both technical catches and retain the actual false-consent/refused-offer tests.
+
+3. **[P2] Shopify finalization diagnostics leak sensitive text and omit original cause/code.** `src/services/checkout-recovery/recovery-outreach-finalization.service.ts:218–224` sends the raw Error to Shared. An independent real Shared 3.0.0 capture with a synthetic phone, token, cause and P2034 code retained the phone and token in `error.message`, while dropping the cause and database code. The fallback/facade paths likewise pass raw Error values, and their tests primarily assert mocked logger calls. Use the approved existing domain diagnostic extraction, explicitly retain permitted original cause/code/clientVersion evidence, and preserve the original thrown object. Complete the required actual-Shared privacy, component-message and throwing-sink assertions at each task-owned boundary; do not introduce another generic serializer.
+
+4. **[P2] The mandatory interruption, lock-race and emitted-record matrix is incomplete.** The new actual-worker integration contains only one pre-seeded confirmed happy path with `attempts: 1`; it does not exercise bounded failures/exhaustion and explicit retry, interrupted preparation, message-before-permit resumption, permit uncertainty, or the requested compound/finalization failure records. The new progress integration contains only successful settlement/replay and an ambiguous-credit hold. The Support integration changed one expected error string; its eight existing cases do not force the two ordered finalizer/final-fence races with a first Support thread and real FK-backed notice insert. The worker unit harness still discards `.on(...)` listeners rather than retaining/invoking them. Implement the missing task-defined cases and map each required boundary to its executed assertion; passing the current 17 integration tests does not establish the full matrix. This finding identifies missing proof, not a reproduced production deadlock.
 
 ### Reviewed Files
 
-No implementation submitted.
+- Implementation `50a9b2ce63bdbe04dfb9ad67b7ee33d8d1cca3e2` and parent submission `720459fdc`, on the matching `task/ARCH-056-BACKGROUND-004` worktrees.
+- Candidate materialization/worker, initiation, neutral fallback/facade, confirmed Shopify/Woo finalization, atomic Support transition and their changed tests.
+- Read-only accepted BG002 credit revalidation and BG003 admission/resume contracts at their consumption boundaries.
+- The task's requirements, interfaces, mandatory failure/logging matrix, current Completion Report and downstream gate.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+- Independently ran the exact task-listed 11-file unit command: **198/198 passed**, no skips. This command includes the 2 Woo composition tests. Local log: `/tmp/arch056-bg004-review-units.log`. The implementer's broader 204-plus-2 selection is retained as reported; it is not relabelled as this command's count.
+- Three additional temporary regression probes **all failed**, reproducing findings 1–3. The diagnostic probe captured the installed Shared logger's serialized record; the other probes exercised the existing fallback/initiation fixtures. Probe log: `/tmp/arch056-bg004-review-probes.log`. All injected data was synthetic. The probes were removed and the original tests restored byte-for-byte; the implementation worktree is clean.
+- Installed runtime Shared is `@modainteract/moda-interact-shared@3.0.0`; review used Node 24.19.0 and existing locked dependencies.
+- Reviewed the submitted 17 passing serial PostgreSQL/Redis integration results, build and scoped lint. Those gates were not independently rerun because the reproduced blockers and missing required scenarios already prevent acceptance. No skipped integration is claimed as a review pass.
+- Parent documentation whitespace check passed. No implementation, dependency, database schema or gitlink change is retained by the review.
 
 ### Architecture Conformance
 
-Pending review against the parent architecture, task allowlist, interface contracts, repository boundaries and failure requirements.
+The implementation adds the intended early progress classification, exact billing settlement before Support, conditional recovery transition, and Shop KEY SHARE before attempt ownership. These positive changes do not overcome the resumability, diagnostic and verification defects above. All existing unchecked acceptance criteria remain unchecked pending corrected evidence. Do not weaken them to match the current suites.
 
 ### Follow-up
 
-Pending implementation review; no enabled task may be started by this task's executor.
+Address all four findings within the task's ownership, rerun the required suites and applicable gates, and provide a boundary-by-boundary evidence map. Preserve genuine 131026/refusal behavior, existing source identity, actual receipt sentAt, persisted null/non-null follow-up due dates, Woo's production gate/no-sequence-two rule, and original exception propagation. Do not edit BG002/BG003 production owners without a scoped architect amendment.
 
+`ARCH-056-SYSTEM-TEST-001` was checked and remains `pending`; no downstream task was promoted or executed. The developer explicitly authorized committing and pushing the review and architecture handoff on the parent task branch on 2026-11-04.
 
 ## Architect Dependency Reconciliation (2026-11-04)
 
