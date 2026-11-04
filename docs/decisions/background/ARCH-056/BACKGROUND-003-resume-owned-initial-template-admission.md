@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T00:49:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-040-BACKGROUND-008
@@ -390,19 +390,25 @@ This section belongs only to moda_architect. Definition authoring is not impleme
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1, 2026-11-04.
 
 ### Review Notes
 
-Awaiting an implementation submission and its evidence.
+Reviewed the Attempt 1 blocker report and published implementation draft `32b80bf`. The following narrow scope and validation clarifications supersede the conflicting read-only instruction. Implementation acceptance remains pending.
+
+1. Edit only the contradictory persistence diagnostic assertion in `tests/integration/woo-initial-send-fence-races.integration.test.ts` and any strictly necessary local diagnostic assertion imports. Verify the supplied harmless source marker and actual safe diagnostic metadata where present. Keep original exception identity, rollback, no-send, contention and persistence assertions intact. Do not require a fabricated `PERSISTENCE_FAILURE` error message. The remainder of that integration module stays read-only.
+2. Retain and run `tests/integration/recovery-conversation.services.integration.test.ts`. The four HUMAN failures independently reproduced on untouched `afac7c3766d92fb14beff669232c1b01c2ed0be0` with prepared schema are the comparison baseline. Record exact test names and failure signatures for baseline and candidate with matching prerequisites, and the actual command results. The preservation gate can pass only when there are no new or materially changed failures and every task-owned case and other required regression passes. Report a nonzero integration exit as such. Keep HUMAN tests and runtime untouched. A mismatched or unreproduced failure remains a validation blocker.
+3. Finish the outstanding matrix in the Attempt 1 report, including Shopify resume/provider concurrency, historical and paid ambiguity, promotional ownership invalidation, and the settlement contender ledger insertion. Retain the real PostgreSQL barriers, row and provider call assertions, emitted-record logging checks, scoped lint/build and full declared integration selection.
+
+The blocker is resolved at the definition level. Release the Attempt 1 claim and return the same task to Ready for normal launcher preparation of Attempt 2. Preserve the published draft and the historical Attempt 1 report. Enabled work remains gated.
 
 ### Reviewed Files
 
-No implementation submitted.
+Attempt 1 report, task-owned implementation draft summary and the conflicting Woo race-test diagnostic contract.
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Attempt 1 reported validation and isolated baseline comparison. Fresh required validation is pending Attempt 2.
 
 ### Architecture Conformance
 
