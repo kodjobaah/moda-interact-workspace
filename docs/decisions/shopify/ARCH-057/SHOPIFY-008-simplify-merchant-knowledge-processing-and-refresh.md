@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: codex
-claimed_at: 2026-11-04T20:55:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -286,27 +286,33 @@ None requiring a cross-repository amendment has been identified.
 
 ### Review Status
 
-Pending.
+**Accepted — Attempt 1, 2026-11-04.** Implementation `e41537919e2a639de4f036582555b79f29c521c6` satisfies the reviewed bounded task. No blocking findings identified. Task marked Complete under automatic completion mode; executor/claim cleared and Attempt 1 preserved.
 
-### Review Notes
+### Reviewed Source and Conformance
 
-Portable definition only; no implementation accepted.
+Reviewed the implementation diff, task requirements and Completion Report, with source inspection of the presentation read context, entitlement projection, ordering rewrite, upload/finalization behavior, error/HTTP mapping, R2 and queue diagnostic boundaries, and polling implementation and mounted-router tests.
 
-### Reviewed Files
+Presentation reuses supplied server settings facts while mutation paths retain fresh locked tenant/source/asset and entitlement checks. Global-feature fallback and management source visibility remain intact. Reorder performs no writes for an identical dense order and uses two checked SQL updates for changed order under the existing Shop lock. Upload removes the selected unused reads, separates genuine missing-object responses from operational unavailability, and retains durable pending work after postcommit queue failure. Diagnostics preserve safe source/cause/code evidence; public responses retain safe classifications. Polling uses a fixed episode deadline, current router state/visibility and overlap guard, without the redundant success effect; plain-fetch finalization retains its explicit refresh. No blocking defect was identified within this scope.
 
-Definition and latest unchanged knowledge/settings touchpoints.
+### Independent Validation and Limits
 
-### Validation Reviewed
+Executed in the dedicated implementation worktree using Node 24.19.0:
 
-Definition inspection only; actual implementation evidence outstanding.
+- `npm run test:merchant-knowledge:unit`: **81/81 tests passed**, 11 files, no skips.
+- `npm run test:merchant-knowledge:router`: **10/10 tests passed**, no skips, using the actual installed router and hooks. Includes action-managed refresh, fixed deadline/visibility, slow-loader overlap, unmount, later episode and plain-fetch finalization.
+- Implementation comparison whitespace check passed.
 
-### Architecture Conformance
+Local independent logs: `/tmp/arch057-shopify008-review-unit.log` and `/tmp/arch057-shopify008-review-router.log` (not committed artifacts).
 
-To be assessed after implementation.
+Reviewed submitted final evidence for **21 PostgreSQL tests across four files**, **7 URL/localization tests**, typecheck, build and scoped lint. These were not independently rerun by this review. The report preserves the initial PostgreSQL failures and their fixture corrections; acceptance relies on the reported final serial migrated PG17 run rather than relabeling earlier failures as passes. Recorded real SQL affected-row and lock-barrier evidence is distinct from repository method-count measurements; no production performance claim is inferred.
 
-### Follow-up
+### Isolation and Follow-up
 
-Return for architect review; do not execute enabled work.
+Reviewed prepared worktree/dependency/synchronization evidence in the report. Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-008`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-008`; both on `task/ARCH-057-SHOPIFY-008`. No implementation code, schema, dependency or gitlink is changed by this review.
+
+SHOPIFY-011 retains its remaining prerequisite gates and is not promoted or executed here. Integrated architecture validation remains with the terminal system-test task; ARCH-057 is not marked implemented.
+
+The developer explicitly authorized updating acceptance, committing and pushing on 2026-11-04. Only parent documentation is published; no task branch is merged into main.
 
 ## Architect Dependency Reconciliation (2026-11-04)
 
