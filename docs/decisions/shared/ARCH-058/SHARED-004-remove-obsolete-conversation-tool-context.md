@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 36
 executor: copilot
 claimed_at: 2026-11-04T20:31:13Z
@@ -79,11 +79,11 @@ If generated declarations are produced by the ordinary build, validate them but 
 
 ## Work Items
 
-- [ ] Remove the obsolete schema/type exports.
-- [ ] Remove their focused tests and clean-process export check.
-- [ ] Correct README contract ownership text.
-- [ ] Prove legitimate conversation/grant and outreach exports remain available.
-- [ ] Run the required validation.
+- [x] Remove the obsolete schema/type exports.
+- [x] Remove their focused tests and clean-process export check.
+- [x] Correct README contract ownership text.
+- [x] Prove legitimate conversation/grant and outreach exports remain available.
+- [x] Run the required validation.
 
 ## Interfaces / Contracts
 
@@ -114,11 +114,11 @@ CommerceOutreachToolContextSchema
 
 ## Acceptance Criteria
 
-- [ ] `CommerceConversationToolContextSchema` and `CommerceConversationToolContext` are absent from source/declarations/entrypoint inventory.
-- [ ] No replacement public contract sends conversation ID, grant ID, inbound version, lease or human-control state to MCP.
-- [ ] `CommerceAssertionSchema`, `CommerceConversationGrantSchema` and `CommerceOutreachToolContextSchema` retain their current shapes.
-- [ ] Product-discovery and runner focused tests pass.
-- [ ] No application repository is modified by this task.
+- [x] `CommerceConversationToolContextSchema` and `CommerceConversationToolContext` are absent from source/declarations/entrypoint inventory.
+- [x] No replacement public contract sends conversation ID, grant ID, inbound version, lease or human-control state to MCP.
+- [x] `CommerceAssertionSchema`, `CommerceConversationGrantSchema` and `CommerceOutreachToolContextSchema` retain their current shapes.
+- [x] Product-discovery and runner focused tests pass.
+- [x] No application repository is modified by this task.
 
 ## Validation
 
@@ -146,27 +146,61 @@ Do not confuse the removed conversation-specific contract with the existing opaq
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+ - `README.md`
+ - `scripts/validate-commerce-entrypoints.mjs`
+ - `src/commerce/product-discovery-contracts.test.ts`
+ - `src/commerce/schemas.ts`
 
 ### Work Completed
 
-None.
+ - Removed `CommerceConversationToolContextSchema` and its inferred type from the public Commerce schemas.
+ - Removed obsolete contract assertions while retaining recommendation tests; the clean-process verifier now rejects both removed runtime exports and generated declaration names.
+ - Confirmed the verifier still sees turn identity, resolve/execute assertions, assertion union, conversation grant and outreach context exports.
+ - Documented Background ownership of conversation/grant/turn state and the limited opaque MCP adapter-context boundary.
+ - Implementation commit: `2efd9cd` (`Remove obsolete Commerce conversation context`), pushed to `task/ARCH-058-SHARED-004`.
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-SHARED-004`
+  parent branch: `task/ARCH-058-SHARED-004`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-SHARED-004`
+  implementation branch: `task/ARCH-058-SHARED-004`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  status: ready; no recursive submodule entries
 
 ### Validation Results
 
-Not run.
+ - `npm ci --no-audit --no-fund`: passed.
+ - `npm run test:product-discovery-contracts`: passed; 76 passed, 1 skipped, 0 failed.
+ - `npm run typecheck`: passed.
+ - `npm run build`: passed; generated the Commerce package declarations.
+ - `npm run validate:commerce-entrypoints`: passed; clean-process runtime imports retain expected exports and neither removed name appears in the built `/commerce` declarations.
+ - `rg -n 'CommerceConversationToolContext' src/commerce --glob '!*.test.ts' || true`: no production-source matches.
+ - `git diff --check`: passed.
 
 ### Deviations
 
-None.
+The focused test command initially could not start because the prepared worktree had no installed dependencies; the required `npm ci` resolved this. The verifier checks the bundled `dist/commerce/index.d.ts` emitted by the repository build.
 
 ### Assumptions
 
-SHARED-003 will already have removed built-in hashes before this task starts.
+The launcher confirmed the sole dependency, SHARED-003, was complete at `59ea61f34197d64180e46680ac6d552b5e989a36`.
 
 ### Unresolved Issues
 
