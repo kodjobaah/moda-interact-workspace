@@ -1,0 +1,3248 @@
+{
+  "format_version": 1,
+  "date": "2026-11-04",
+  "repository": "moda-interact-system-test",
+  "status": "defined-not-executed",
+  "source_archive_sha256": "f8194947c3564a8f9ea8942d9462ec83716aecc17fc1626d7d846af68c044024",
+  "path_basis": "All implementation paths are relative to moda-interact-system-test; workspace paths identify read-only governance or another repository.",
+  "decision": "Seven-task package: semantic new producer definitions now; final SYSTEM-TEST-002 after SYSTEM-TEST-001 handles legacy System-Test naming plus existing-validator guards only.",
+  "planned_producer": {
+    "owner": "ARCH-056-SYSTEM-TEST-001",
+    "semantic_slug": "background-persistence",
+    "path_moves_in_definition": [
+      {
+        "from": "src/harness/arch056/contracts.js",
+        "to": "src/harness/background-persistence/contracts.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/executors.js",
+        "to": "src/harness/background-persistence/executors.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/runtime.js",
+        "to": "src/harness/background-persistence/runtime.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/integration-driver.js",
+        "to": "src/harness/background-persistence/integration-driver.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/fixtures.js",
+        "to": "src/harness/background-persistence/fixtures.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/billing-fixtures.js",
+        "to": "src/harness/background-persistence/billing-fixtures.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/fault-controls.js",
+        "to": "src/harness/background-persistence/fault-controls.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/observations.js",
+        "to": "src/harness/background-persistence/observations.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/assertions.js",
+        "to": "src/harness/background-persistence/assertions.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/evidence.js",
+        "to": "src/harness/background-persistence/evidence.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/queue-repair.js",
+        "to": "src/harness/background-persistence/queue-repair.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/dependency-scenario.js",
+        "to": "src/harness/background-persistence/dependency-scenario.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/ingress-scenario.js",
+        "to": "src/harness/background-persistence/ingress-scenario.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/candidate-scenario.js",
+        "to": "src/harness/background-persistence/candidate-scenario.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/admission-scenario.js",
+        "to": "src/harness/background-persistence/admission-scenario.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/uncertainty-scenario.js",
+        "to": "src/harness/background-persistence/uncertainty-scenario.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/settlement-scenario.js",
+        "to": "src/harness/background-persistence/settlement-scenario.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/lock-order-cases.js",
+        "to": "src/harness/background-persistence/lock-order-cases.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/finalization-scenario.js",
+        "to": "src/harness/background-persistence/finalization-scenario.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/woo-scenario.js",
+        "to": "src/harness/background-persistence/woo-scenario.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "src/harness/arch056/repair-scenario.js",
+        "to": "src/harness/background-persistence/repair-scenario.js",
+        "kind": "runtime",
+        "currently_materialised": false
+      },
+      {
+        "from": "docs/ARCH056-VALIDATION.md",
+        "to": "docs/BACKGROUND-PERSISTENCE-VALIDATION.md",
+        "kind": "documentation",
+        "currently_materialised": false
+      },
+      {
+        "from": "test/harness/arch056-contracts.test.js",
+        "to": "test/harness/background-persistence-contracts.test.js",
+        "kind": "test",
+        "currently_materialised": false
+      },
+      {
+        "from": "test/harness/arch056-registration.test.js",
+        "to": "test/harness/background-persistence-registration.test.js",
+        "kind": "test",
+        "currently_materialised": false
+      },
+      {
+        "from": "test/harness/arch056-provenance.test.js",
+        "to": "test/harness/background-persistence-provenance.test.js",
+        "kind": "test",
+        "currently_materialised": false
+      },
+      {
+        "from": "test/harness/arch056-fault-controls.test.js",
+        "to": "test/harness/background-persistence-fault-controls.test.js",
+        "kind": "test",
+        "currently_materialised": false
+      },
+      {
+        "from": "test/harness/arch056-results.test.js",
+        "to": "test/harness/background-persistence-results.test.js",
+        "kind": "test",
+        "currently_materialised": false
+      }
+    ],
+    "symbol_map": [
+      {
+        "from": "createArch056Executors",
+        "to": "createBackgroundPersistenceExecutors"
+      }
+    ],
+    "new_export": {
+      "name": "BACKGROUND_PERSISTENCE_SCENARIO_IDS",
+      "path": "src/harness/background-persistence/contracts.js",
+      "rule": "Dependency-free frozen ID list; contracts must not import selection.js and create a require cycle."
+    },
+    "suite": {
+      "from": "arch056",
+      "to": "background-persistence",
+      "old_predicate": "scenario => scenario.sourceRequirements.includes(\"ARCH-056-SYSTEM-TEST-001\")",
+      "new_predicate": "scenario => BACKGROUND_PERSISTENCE_SCENARIO_IDS.includes(scenario.id)",
+      "metadata_source_requirement": "ARCH-056-SYSTEM-TEST-001",
+      "status_filter_allowed": false
+    },
+    "npm_scripts": [
+      {
+        "from": "system:arch056:plan",
+        "to": "system:background-persistence:plan",
+        "command": "node scripts/run-system-tests.js --suite background-persistence --list"
+      },
+      {
+        "from": "system:arch056",
+        "to": "system:background-persistence",
+        "command": "node scripts/run-system-tests.js --suite background-persistence --execute"
+      }
+    ],
+    "sidecars": [
+      {
+        "from": "arch056-cases.json",
+        "to": "background-persistence-cases.json"
+      },
+      {
+        "from": "arch056-execution-provenance.json",
+        "to": "background-persistence-execution-provenance.json"
+      },
+      {
+        "from": "arch056-logging.json",
+        "to": "background-persistence-logging.json"
+      }
+    ],
+    "scenario_map": [
+      {
+        "from": "REPOSITORY-ARCH056-DEPENDENCY-001",
+        "to": "REPOSITORY-BACKGROUND-DEPENDENCY-001",
+        "domain": "REPOSITORY",
+        "layer": "L1",
+        "evidenceClass": "CONTRACT",
+        "requiredEvidenceClass": "CONTRACT",
+        "case_ids": [
+          "D1",
+          "D2"
+        ],
+        "logging_assertions": {
+          "D2": [
+            "consumed-package-provenance",
+            "real-factory-wire-contract"
+          ]
+        },
+        "implementation_module": "src/harness/background-persistence/dependency-scenario.js"
+      },
+      {
+        "from": "MESSAGING-ARCH056-INGRESS-001",
+        "to": "MESSAGING-INBOUND-PERSISTENCE-001",
+        "domain": "MESSAGING",
+        "layer": "L2",
+        "evidenceClass": "INTEGRATION",
+        "requiredEvidenceClass": "INTEGRATION",
+        "case_ids": [
+          "I1",
+          "I2",
+          "I3"
+        ],
+        "logging_assertions": {
+          "I2": [
+            "original-ingress-message",
+            "correlation-and-stage",
+            "sink-failure-isolation",
+            "actual-whatsapp-worker-failure-record",
+            "post-commit-stage-with-committed-receive"
+          ]
+        },
+        "implementation_module": "src/harness/background-persistence/ingress-scenario.js"
+      },
+      {
+        "from": "RECOVERY-ARCH056-CANDIDATE-001",
+        "to": "RECOVERY-CANDIDATE-PROGRESS-001",
+        "domain": "RECOVERY",
+        "layer": "L3",
+        "evidenceClass": "BLACK_BOX",
+        "requiredEvidenceClass": "BLACK_BOX",
+        "case_ids": [
+          "C1",
+          "C2",
+          "C3"
+        ],
+        "logging_assertions": {
+          "C2": [
+            "source-error-before-typed-retry",
+            "moderation-allowed-preview"
+          ]
+        },
+        "implementation_module": "src/harness/background-persistence/candidate-scenario.js"
+      },
+      {
+        "from": "RECOVERY-ARCH056-ADMISSION-001",
+        "to": "RECOVERY-INITIAL-ADMISSION-001",
+        "domain": "RECOVERY",
+        "layer": "L2",
+        "evidenceClass": "INTEGRATION",
+        "requiredEvidenceClass": "INTEGRATION",
+        "case_ids": [
+          "A1",
+          "A2",
+          "A3",
+          "A4"
+        ],
+        "logging_assertions": {
+          "A2": [
+            "original-cleanup-message",
+            "paired-primary-reconciliation-errors",
+            "real-provider-diagnostics",
+            "trace-id-validation",
+            "nested-detail-flags",
+            "sensitive-sentinel-absence",
+            "moderation-production-privacy"
+          ]
+        },
+        "implementation_module": "src/harness/background-persistence/admission-scenario.js"
+      },
+      {
+        "from": "RECOVERY-ARCH056-UNCERTAINTY-001",
+        "to": "RECOVERY-INITIAL-UNCERTAINTY-001",
+        "domain": "RECOVERY",
+        "layer": "L3",
+        "evidenceClass": "BLACK_BOX",
+        "requiredEvidenceClass": "BLACK_BOX",
+        "case_ids": [
+          "U1",
+          "U2",
+          "U3"
+        ],
+        "logging_assertions": {
+          "U1": [
+            "truthful-held-outcome",
+            "no-fabricated-provider-error"
+          ],
+          "U2": [
+            "real-sdk-message-and-available-cause",
+            "once-at-source-per-request",
+            "no-fabricated-response"
+          ],
+          "U3": [
+            "http-success-before-db-failure",
+            "original-internal-receipt-error",
+            "no-provider-rejection-relabel"
+          ]
+        },
+        "implementation_module": "src/harness/background-persistence/uncertainty-scenario.js"
+      },
+      {
+        "from": "BILLING-ARCH056-SETTLEMENT-001",
+        "to": "BILLING-INITIAL-OUTREACH-SETTLEMENT-001",
+        "domain": "BILLING",
+        "layer": "L2",
+        "evidenceClass": "INTEGRATION",
+        "requiredEvidenceClass": "INTEGRATION",
+        "case_ids": [
+          "B1",
+          "B2",
+          "B3",
+          "B4",
+          "B5",
+          "B6"
+        ],
+        "logging_assertions": {
+          "B3": [
+            "hold-versus-technical-error",
+            "original-settlement-message"
+          ],
+          "B5": [
+            "original-woo-permit-error"
+          ]
+        },
+        "implementation_module": "src/harness/background-persistence/settlement-scenario.js"
+      },
+      {
+        "from": "RECOVERY-ARCH056-FINALIZATION-001",
+        "to": "RECOVERY-INITIAL-FINALIZATION-001",
+        "domain": "RECOVERY",
+        "layer": "L3",
+        "evidenceClass": "BLACK_BOX",
+        "requiredEvidenceClass": "BLACK_BOX",
+        "case_ids": [
+          "F1",
+          "F2",
+          "F3",
+          "F4"
+        ],
+        "logging_assertions": {
+          "F1": [
+            "original-finalization-boundary-error",
+            "confirmed-replay-stage"
+          ],
+          "F2": [
+            "original-status-boundary-error",
+            "confirmed-replay-stage"
+          ],
+          "F3": [
+            "original-follow-up-publication-error",
+            "persisted-identity-correlation"
+          ]
+        },
+        "implementation_module": "src/harness/background-persistence/finalization-scenario.js"
+      },
+      {
+        "from": "RECOVERY-ARCH056-WOO-001",
+        "to": "RECOVERY-WOO-INITIAL-GATE-001",
+        "domain": "RECOVERY",
+        "layer": "L2",
+        "evidenceClass": "INTEGRATION",
+        "requiredEvidenceClass": "INTEGRATION",
+        "case_ids": [
+          "W1",
+          "W2"
+        ],
+        "logging_assertions": {
+          "W1": [
+            "disabled-gate-without-fabricated-provider-error"
+          ],
+          "W2": [
+            "confirmed-before-gate-or-truthful-lineage-hold"
+          ]
+        },
+        "implementation_module": "src/harness/background-persistence/woo-scenario.js"
+      },
+      {
+        "from": "RECOVERY-ARCH056-REPAIR-001",
+        "to": "RECOVERY-FAILED-CANDIDATE-REPAIR-001",
+        "domain": "RECOVERY",
+        "layer": "L3",
+        "evidenceClass": "BLACK_BOX",
+        "requiredEvidenceClass": "BLACK_BOX",
+        "case_ids": [
+          "R1",
+          "R2",
+          "R3"
+        ],
+        "logging_assertions": {
+          "R1": [
+            "finite-retry-original-diagnostics",
+            "paired-materialization-cleanup-errors"
+          ],
+          "R3": [
+            "retained-job-held-repair-correlation",
+            "no-invented-historical-provider-error"
+          ]
+        },
+        "implementation_module": "src/harness/background-persistence/repair-scenario.js"
+      }
+    ],
+    "governance_json_key_map": {
+      "include_canonical_database_for_any_arch056_selection": "include_canonical_database_for_background_persistence_selection",
+      "add_arch056_source_requirement_predicate": "add_background_persistence_id_membership_predicate",
+      "add_arch056_help_text_only": "add_background_persistence_help_text_only",
+      "add_only_two_arch056_scripts": "add_only_two_background_persistence_scripts"
+    },
+    "fixtures_and_symbols_not_yet_implemented": "No frozen concrete ARCH056 fixture values exist in the source snapshot. Use background-persistence / BackgroundPersistence / BACKGROUND_PERSISTENCE for new test-owned namespaces; do not invent or rename production keys.",
+    "enables": [
+      "ARCH-056-SYSTEM-TEST-002"
+    ],
+    "invariants": {
+      "scenario_count": 9,
+      "case_count": 30,
+      "logging_case_count": 16,
+      "logging_assertion_count": 39,
+      "evidence_classes_unchanged": true,
+      "lock_and_billing_contracts_unchanged": true,
+      "governance_ids_unchanged": true
+    },
+    "governance_traceability": {
+      "initial_source_requirements": [
+        "ARCH-056-SYSTEM-TEST-001"
+      ],
+      "requires_original_source_requirement": true,
+      "exclusive_singleton_required": false,
+      "later_approved_source_requirements_allowed_when_symmetric": true,
+      "suite_membership_uses_governance_field": false,
+      "final_cleanup_source_requirement": "ARCH-056-SYSTEM-TEST-002"
+    }
+  },
+  "legacy_final_task": {
+    "owner": "ARCH-056-SYSTEM-TEST-002",
+    "repository": "moda-interact-system-test",
+    "depends_on": [
+      "ARCH-056-SYSTEM-TEST-001"
+    ],
+    "status": "pending",
+    "renames": [
+      {
+        "from": "src/harness/recovery/arch028-credit-source-checkout-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-checkout-diagnostics.js",
+        "kind": "runtime",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+            "lines": [
+              10
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+            "lines": [
+              7
+            ]
+          }
+        ],
+        "source_sha256": "0684824d0c9639d3436b97f7fc52859490ee6e60f10e831ef57cabf2fe461f7f"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-diagnostics.js",
+        "kind": "runtime",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+            "lines": [
+              8
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              150,
+              268
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+            "lines": [
+              11
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+            "lines": [
+              8
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              15
+            ]
+          }
+        ],
+        "source_sha256": "f1efb4dab0b3f64cd1a5fcecdecbba63fde6fbb9b0f6055eaeff6d92725211ef"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-fixtures.js",
+        "to": "src/harness/recovery/credit-source-fixtures.js",
+        "kind": "runtime",
+        "references": [
+          {
+            "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
+            "lines": [
+              208,
+              209,
+              210
+            ]
+          },
+          {
+            "path": "scripts/run-credit-source-compensation.js",
+            "lines": [
+              9
+            ]
+          },
+          {
+            "path": "catalogue/scenarios.json",
+            "lines": [
+              3569,
+              3632,
+              3696
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              6
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              8
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
+            "lines": [
+              3
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-observation.js",
+            "lines": [
+              4
+            ]
+          }
+        ],
+        "source_sha256": "069178dcaaa217086a382a57d0cd3689b0fcfc8bac13167b158fe2e9476e57dd"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-ingress-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-ingress-diagnostics.js",
+        "kind": "runtime",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+            "lines": [
+              7
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+            "lines": [
+              6
+            ]
+          }
+        ],
+        "source_sha256": "813c790197a2b7c3c52d8d57cade37be1e8e2cbbe9e7a43648a977405f0a8011"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-initial-diagnostics.js",
+        "kind": "runtime",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              10
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+            "lines": [
+              4
+            ]
+          }
+        ],
+        "source_sha256": "d2d4278239d42ab0605b031051921d34cd4505416fc1b514b2757e1cbdd041e6"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-observation.js",
+        "to": "src/harness/recovery/credit-source-observation.js",
+        "kind": "runtime",
+        "references": [
+          {
+            "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
+            "lines": [
+              208,
+              209,
+              210
+            ]
+          },
+          {
+            "path": "catalogue/scenarios.json",
+            "lines": [
+              3570,
+              3633,
+              3698
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              8
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              11
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
+            "lines": [
+              6
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+            "lines": [
+              3
+            ]
+          }
+        ],
+        "source_sha256": "739b70347cbe91c118aa97ceb201e67153008eeb836c2eb0696c7e3d654356c7"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-receipt-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-receipt-diagnostics.js",
+        "kind": "runtime",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+            "lines": [
+              7
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-checkout-diagnostics.js",
+            "lines": [
+              5
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+            "lines": [
+              5
+            ]
+          }
+        ],
+        "source_sha256": "2dde8cb81ea347484ad83de89b8d95e91705b3df08954baf756d195bfbd2c0bd"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-scenario.js",
+        "to": "src/harness/recovery/credit-source-scenario.js",
+        "kind": "runtime",
+        "references": [
+          {
+            "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
+            "lines": [
+              208,
+              209,
+              210
+            ]
+          },
+          {
+            "path": "catalogue/scenarios.json",
+            "lines": [
+              3571,
+              3634,
+              3699
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              289
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+            "lines": [
+              132
+            ]
+          },
+          {
+            "path": "src/harness/recovery/index.js",
+            "lines": [
+              16
+            ]
+          }
+        ],
+        "source_sha256": "2025c6315104106687a90ebbbede9819b33353a049689e201ac353a243fffc60"
+      },
+      {
+        "from": "src/harness/recovery/arch028-purchased-source-fixture.js",
+        "to": "src/harness/recovery/purchased-source-fixture.js",
+        "kind": "runtime",
+        "references": [
+          {
+            "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
+            "lines": [
+              210
+            ]
+          },
+          {
+            "path": "catalogue/scenarios.json",
+            "lines": [
+              3697
+            ]
+          },
+          {
+            "path": "test/harness/arch028-purchased-source-fixture.test.js",
+            "lines": [
+              5
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              4
+            ]
+          }
+        ],
+        "source_sha256": "c8ff172c347fe08c261d5cd7fe6ca149f5dc612f58e62d4bf002c6bebaa0c1ac"
+      },
+      {
+        "from": "test/harness/arch028-compensation-smoke.test.js",
+        "to": "test/harness/terminal-recipient-compensation-smoke.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "fdca85372cc7e814e5ccf87db1254e85bd2248f5883d9d3601a60b8f6904bf37"
+      },
+      {
+        "from": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+        "to": "test/harness/credit-source-checkout-diagnostics.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "b5f80fcd52f7dfcd619b8e241023b33a4b6f414c36bda2f42e365aa1e723e3d8"
+      },
+      {
+        "from": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+        "to": "test/harness/credit-source-ingress-diagnostics.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "7bd637da0381ff5414ee411f853871e81c97348b5f1f8cad724ef74c2dbb65de"
+      },
+      {
+        "from": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+        "to": "test/harness/credit-source-receipt-diagnostics.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "431ffc01c77634b79982f55ffbf9f410b8aeb30e792e466d80b5041bfabda2a1"
+      },
+      {
+        "from": "test/harness/arch028-credit-sources.test.js",
+        "to": "test/harness/credit-sources.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "eb4c5f244a3a495fe9c03bb1ebcbe6b54629a68f2c2f48cc716ec2c6a4d98c28"
+      },
+      {
+        "from": "test/harness/arch028-follow-up-diagnostics.test.js",
+        "to": "test/harness/follow-up-diagnostics.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "01b2e43fee2eb56e933cae4a01efeb2cc3c8b62c853b5fc883fe32675af82d3d"
+      },
+      {
+        "from": "test/harness/arch028-initial-outreach-diagnostics.test.js",
+        "to": "test/harness/initial-outreach-diagnostics.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "2363787a6d0cc172dcc215a842e105cffec0d1c1aeb55916c0c97e00298474f9"
+      },
+      {
+        "from": "test/harness/arch028-purchased-source-fixture.test.js",
+        "to": "test/harness/purchased-source-fixture.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "35332d011d2fc1e87720eba1c570bb5a0cf2bcde06465441fb221978b99b410e"
+      },
+      {
+        "from": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+        "to": "test/harness/terminal-recipient-merchant-ui.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "6258c1428b0ba304d4bd721f80734fa88f38332ec45b4b0e1a56ecb031858277"
+      },
+      {
+        "from": "test/harness/arch028-terminal-recipient-observation.test.js",
+        "to": "test/harness/terminal-recipient-observation.test.js",
+        "kind": "test",
+        "references": [],
+        "source_sha256": "18a54adf3ddfd77888fe1d9d2e36da545499b6eb53146d71d15c94a928fc41fe"
+      },
+      {
+        "from": "scripts/run-arch002-observability.js",
+        "to": "scripts/run-integrated-observability.js",
+        "kind": "script",
+        "references": [
+          {
+            "path": "package.json",
+            "lines": [
+              16
+            ]
+          }
+        ],
+        "source_sha256": "df3a1afd09afe49d535df8c0afdb85fcdb755db36d82960e8c37659a04f02a4d"
+      },
+      {
+        "from": "scripts/run-arch002-production-readiness.js",
+        "to": "scripts/run-production-readiness.js",
+        "kind": "script",
+        "references": [
+          {
+            "path": "package.json",
+            "lines": [
+              17
+            ]
+          }
+        ],
+        "source_sha256": "bd15bb2a5581e6fdd3a82738a97af949e5e23aa0acd29c9b720f05e7b5e5105e"
+      },
+      {
+        "from": "scripts/run-arch002-render-test-topology.js",
+        "to": "scripts/deprecated-render-test-topology.js",
+        "kind": "tombstone",
+        "preserve": "Exact stderr and exit64; rename only.",
+        "references": [],
+        "source_sha256": "fc5fd043b7e201f2c0329fb9dcc71e300fbfe8b03d1615375150ef6238014e27"
+      },
+      {
+        "from": "scripts/run-arch028-compensation-smoke.js",
+        "to": "scripts/run-terminal-recipient-compensation-smoke.js",
+        "kind": "script",
+        "references": [
+          {
+            "path": "docs/ARCH-028-COMPENSATION-SMOKE.md",
+            "lines": [
+              6
+            ]
+          },
+          {
+            "path": "scripts/run-arch028-compensation-smoke.js",
+            "lines": [
+              72
+            ]
+          },
+          {
+            "path": "test/harness/arch028-compensation-smoke.test.js",
+            "lines": [
+              5
+            ]
+          }
+        ],
+        "source_sha256": "1cc6ecd837f43f66b8600e80b64d20dc06a5d5df3dccfbf5b59037bd0913b9fb"
+      },
+      {
+        "from": "scripts/system-test-006-developer-validation.sh",
+        "to": "scripts/deprecated-render-test-validation.sh",
+        "kind": "tombstone",
+        "preserve": "Exact stderr and exit64, including governance TASK_ID in replacement command; rename only.",
+        "references": [],
+        "source_sha256": "a3b6564c4af0483197297b9ac49db59fe76e3b239bec676d72a92768c12091c9"
+      }
+    ],
+    "production_renames": [
+      {
+        "from": "src/harness/recovery/arch028-credit-source-checkout-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-checkout-diagnostics.js"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-diagnostics.js"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-fixtures.js",
+        "to": "src/harness/recovery/credit-source-fixtures.js"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-ingress-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-ingress-diagnostics.js"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-initial-diagnostics.js"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-observation.js",
+        "to": "src/harness/recovery/credit-source-observation.js"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-receipt-diagnostics.js",
+        "to": "src/harness/recovery/credit-source-receipt-diagnostics.js"
+      },
+      {
+        "from": "src/harness/recovery/arch028-credit-source-scenario.js",
+        "to": "src/harness/recovery/credit-source-scenario.js"
+      },
+      {
+        "from": "src/harness/recovery/arch028-purchased-source-fixture.js",
+        "to": "src/harness/recovery/purchased-source-fixture.js"
+      },
+      {
+        "from": "scripts/run-arch002-observability.js",
+        "to": "scripts/run-integrated-observability.js"
+      },
+      {
+        "from": "scripts/run-arch002-production-readiness.js",
+        "to": "scripts/run-production-readiness.js"
+      },
+      {
+        "from": "scripts/run-arch002-render-test-topology.js",
+        "to": "scripts/deprecated-render-test-topology.js"
+      },
+      {
+        "from": "scripts/run-arch028-compensation-smoke.js",
+        "to": "scripts/run-terminal-recipient-compensation-smoke.js"
+      },
+      {
+        "from": "scripts/system-test-006-developer-validation.sh",
+        "to": "scripts/deprecated-render-test-validation.sh"
+      }
+    ],
+    "tests_renames": [
+      {
+        "from": "test/harness/arch028-compensation-smoke.test.js",
+        "to": "test/harness/terminal-recipient-compensation-smoke.test.js"
+      },
+      {
+        "from": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+        "to": "test/harness/credit-source-checkout-diagnostics.test.js"
+      },
+      {
+        "from": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+        "to": "test/harness/credit-source-ingress-diagnostics.test.js"
+      },
+      {
+        "from": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+        "to": "test/harness/credit-source-receipt-diagnostics.test.js"
+      },
+      {
+        "from": "test/harness/arch028-credit-sources.test.js",
+        "to": "test/harness/credit-sources.test.js"
+      },
+      {
+        "from": "test/harness/arch028-follow-up-diagnostics.test.js",
+        "to": "test/harness/follow-up-diagnostics.test.js"
+      },
+      {
+        "from": "test/harness/arch028-initial-outreach-diagnostics.test.js",
+        "to": "test/harness/initial-outreach-diagnostics.test.js"
+      },
+      {
+        "from": "test/harness/arch028-purchased-source-fixture.test.js",
+        "to": "test/harness/purchased-source-fixture.test.js"
+      },
+      {
+        "from": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+        "to": "test/harness/terminal-recipient-merchant-ui.test.js"
+      },
+      {
+        "from": "test/harness/arch028-terminal-recipient-observation.test.js",
+        "to": "test/harness/terminal-recipient-observation.test.js"
+      }
+    ],
+    "delete_paths": [],
+    "production_modify": [
+      "README.md",
+      "catalogue/historical-system-test-map.json",
+      "catalogue/scenarios.json",
+      "docs/ARCH-028-COMPENSATION-SMOKE.md",
+      "docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md",
+      "docs/SHOPIFY-COVERAGE-MATRIX.md",
+      "package.json",
+      "scripts/run-credit-source-compensation.js",
+      "scripts/validate-render-deployment.js",
+      "scripts/validate-source-structure.js",
+      "src/harness/messaging/terminal-recipient-merchant-ui.js",
+      "src/harness/recovery/constants.js",
+      "src/harness/recovery/index.js",
+      "src/merchant-scenario.js",
+      "src/render-test-topology.js",
+      "src/scenario-catalogue.js"
+    ],
+    "tests_modify": [
+      "test/harness/approved-template-fixtures.test.js",
+      "test/harness/language-provider-runtime-setup.test.js",
+      "test/harness/language-recovery-provider-setup.test.js",
+      "test/harness/language-recovery-runtime-wiring.test.js",
+      "test/harness/platform-configuration-fixture.test.js",
+      "test/harness/recovery-executors.test.js",
+      "test/harness/selection.test.js",
+      "test/harness/source-structure.test.js",
+      "test/scenario-catalogue.test.js",
+      "test/render-test-topology.test.js"
+    ],
+    "symbol_map": [
+      {
+        "from": "seedArch028CreditSource",
+        "to": "seedCreditSource",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              6,
+              193
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              8,
+              25
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              16,
+              138
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              12
+            ]
+          }
+        ]
+      },
+      {
+        "from": "seedArch028PurchasedSource",
+        "to": "seedPurchasedSource",
+        "references": [
+          {
+            "path": "test/harness/arch028-purchased-source-fixture.test.js",
+            "lines": [
+              5,
+              18,
+              45
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              4,
+              111
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              16,
+              112
+            ]
+          }
+        ]
+      },
+      {
+        "from": "readArch028CreditSourceState",
+        "to": "readCreditSourceState",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              10,
+              93
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-observation.js",
+            "lines": [
+              24,
+              227,
+              240
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+            "lines": [
+              3,
+              24
+            ]
+          }
+        ]
+      },
+      {
+        "from": "assertArch028InitialCredit",
+        "to": "assertInitialCredit",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              7,
+              85,
+              88,
+              111,
+              116
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              9,
+              59
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
+            "lines": [
+              12
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-observation.js",
+            "lines": [
+              124,
+              240
+            ]
+          }
+        ]
+      },
+      {
+        "from": "assertArch028CompensatedCredit",
+        "to": "assertCompensatedCredit",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              7,
+              86,
+              91,
+              94,
+              97,
+              112,
+              121
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              9,
+              86
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-observation.js",
+            "lines": [
+              159,
+              214,
+              241
+            ]
+          }
+        ]
+      },
+      {
+        "from": "assertArch028CreditReplay",
+        "to": "assertCreditReplay",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              8,
+              87,
+              100
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              10,
+              94
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-observation.js",
+            "lines": [
+              213,
+              241
+            ]
+          }
+        ]
+      },
+      {
+        "from": "waitForArch028CreditState",
+        "to": "waitForCreditState",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              10,
+              58,
+              85
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-observation.js",
+            "lines": [
+              225,
+              241
+            ]
+          }
+        ]
+      },
+      {
+        "from": "failedArch028InitialCreditChecks",
+        "to": "failedInitialCreditChecks",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              10,
+              113,
+              117,
+              129,
+              141
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-initial-diagnostics.js",
+            "lines": [
+              14,
+              82
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+            "lines": [
+              4,
+              65
+            ]
+          }
+        ]
+      },
+      {
+        "from": "reportArch028CreditSourceFailure",
+        "to": "reportCreditSourceFailure",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+            "lines": [
+              8,
+              95,
+              112
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              150,
+              154,
+              268,
+              270
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+            "lines": [
+              11,
+              119,
+              127
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+            "lines": [
+              8,
+              101,
+              107
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              15,
+              107
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+            "lines": [
+              22,
+              85
+            ]
+          }
+        ]
+      },
+      {
+        "from": "runArch028CreditSourceScenario",
+        "to": "runCreditSourceScenario",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              289,
+              292
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              22,
+              119,
+              125
+            ]
+          }
+        ]
+      },
+      {
+        "from": "registerArch028CreditSourceScenarios",
+        "to": "registerCreditSourceScenarios",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              117,
+              125
+            ]
+          },
+          {
+            "path": "src/harness/recovery/index.js",
+            "lines": [
+              16,
+              46
+            ]
+          }
+        ]
+      }
+    ],
+    "scenario_map": [
+      {
+        "from": "RECOVERY-ARCH028-PAID-001",
+        "to": "RECOVERY-PAID-CREDIT-COMPENSATION-001",
+        "references": [
+          {
+            "path": "docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md",
+            "lines": [
+              9,
+              32
+            ]
+          },
+          {
+            "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
+            "lines": [
+              208
+            ]
+          },
+          {
+            "path": "catalogue/scenarios.json",
+            "lines": [
+              3513
+            ]
+          },
+          {
+            "path": "test/harness/selection.test.js",
+            "lines": [
+              42
+            ]
+          },
+          {
+            "path": "test/harness/recovery-executors.test.js",
+            "lines": [
+              132
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              7
+            ]
+          },
+          {
+            "path": "src/harness/recovery/constants.js",
+            "lines": [
+              15
+            ]
+          }
+        ],
+        "preserve_fields": {
+          "name": "Paid-included credit terminal-recipient compensation",
+          "title": "Paid-included credit terminal-recipient compensation",
+          "domain": "RECOVERY",
+          "purpose": "Prove that a real Shopify recovery committed against paid included capacity is corrected exactly once by a signed Meta FAILED/131026 callback, without affecting another credit source.",
+          "sourceRequirements": [],
+          "layer": "L3",
+          "evidenceClass": "BLACK_BOX",
+          "requiredEvidenceClass": "BLACK_BOX",
+          "providers": [
+            "shared",
+            "shopify"
+          ],
+          "requiredFor": [
+            "shopify-release"
+          ],
+          "preconditions": [
+            "Disposable migrated PostgreSQL and Redis",
+            "Real local Shopify and Messaging ingress, production Background recovery, Shopify-event and Messaging workers",
+            "Synthetic Shopify consent and approved Marketing template bindings only; no live providers"
+          ],
+          "services": [
+            "moda-interact",
+            "moda-interact-messaging",
+            "moda-interact-background",
+            "moda-interact-database"
+          ],
+          "fixtures": [
+            "One active Shopify Shop with exactly one source-specific credit and zero lifetime-Free capacity",
+            "One genuine Shopify checkout / active opted-in synthetic recipient",
+            "One Meta-approved test template and local signed status webhook"
+          ],
+          "actions": [
+            "Create source entitlement/grant/lot without pre-inserting a UsageReservation or UsageEvent",
+            "POST signed Shopify checkout and wait for the production recovery worker to commit the chosen source",
+            "POST signed Meta FAILED/131026 for the exact provider message and wait for compensation and suppression",
+            "Replay FAILED and send stale SENT; assert financial, reachability and merchant notice idempotency"
+          ],
+          "assertions": [
+            "Initial COMMITTED reservation and original positive UsageEvent belong to the intended source, Shop and exact attempt",
+            "A single linked negative correction restores spendable entitlement and deletes the exact outbound automated hard-limit usage",
+            "No fallback to lifetime-Free and no changes to another source; Shop-scoped seven-day suppression and one post-correction merchant notice",
+            "Duplicate FAILED and stale SENT do not create another credit correction, notice or provider send"
+          ],
+          "evidence": [
+            "Production worker execution and provider-emulator acceptance of one template",
+            "Exact reservation/positive and negative UsageEvent IDs and source-owned counter/lot values",
+            "Shop-scoped recipient reachability and timestamp-ordered SYSTEM notice rows"
+          ],
+          "cleanup": [
+            "Stop local workers, ingresses and emulated providers",
+            "Dispose run-scoped PostgreSQL/Redis"
+          ],
+          "liveAuthorizationRequired": false,
+          "automation": "automated",
+          "status": "implemented"
+        },
+        "implementation_from": [
+          "src/harness/recovery/arch028-credit-source-fixtures.js",
+          "src/harness/recovery/arch028-credit-source-observation.js",
+          "src/harness/recovery/arch028-credit-source-scenario.js"
+        ],
+        "implementation_to": [
+          "src/harness/recovery/credit-source-fixtures.js",
+          "src/harness/recovery/credit-source-observation.js",
+          "src/harness/recovery/credit-source-scenario.js"
+        ]
+      },
+      {
+        "from": "RECOVERY-ARCH028-PROMO-001",
+        "to": "RECOVERY-PROMOTIONAL-CREDIT-COMPENSATION-001",
+        "references": [
+          {
+            "path": "docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md",
+            "lines": [
+              10,
+              38
+            ]
+          },
+          {
+            "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
+            "lines": [
+              209
+            ]
+          },
+          {
+            "path": "catalogue/scenarios.json",
+            "lines": [
+              3576
+            ]
+          },
+          {
+            "path": "test/harness/selection.test.js",
+            "lines": [
+              42
+            ]
+          },
+          {
+            "path": "test/harness/recovery-executors.test.js",
+            "lines": [
+              132
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              8
+            ]
+          },
+          {
+            "path": "src/harness/recovery/constants.js",
+            "lines": [
+              16
+            ]
+          }
+        ],
+        "preserve_fields": {
+          "name": "Promotional credit terminal-recipient compensation",
+          "title": "Promotional credit terminal-recipient compensation",
+          "domain": "RECOVERY",
+          "purpose": "Prove that a real Shopify recovery committed against promotional capacity is corrected exactly once by a signed Meta FAILED/131026 callback, without affecting another credit source.",
+          "sourceRequirements": [],
+          "layer": "L3",
+          "evidenceClass": "BLACK_BOX",
+          "requiredEvidenceClass": "BLACK_BOX",
+          "providers": [
+            "shared",
+            "shopify"
+          ],
+          "requiredFor": [
+            "shopify-release"
+          ],
+          "preconditions": [
+            "Disposable migrated PostgreSQL and Redis",
+            "Real local Shopify and Messaging ingress, production Background recovery, Shopify-event and Messaging workers",
+            "Synthetic Shopify consent and approved Marketing template bindings only; no live providers"
+          ],
+          "services": [
+            "moda-interact",
+            "moda-interact-messaging",
+            "moda-interact-background",
+            "moda-interact-database"
+          ],
+          "fixtures": [
+            "One active Shopify Shop with exactly one source-specific credit and zero lifetime-Free capacity",
+            "One genuine Shopify checkout / active opted-in synthetic recipient",
+            "One Meta-approved test template and local signed status webhook"
+          ],
+          "actions": [
+            "Create source entitlement/grant/lot without pre-inserting a UsageReservation or UsageEvent",
+            "POST signed Shopify checkout and wait for the production recovery worker to commit the chosen source",
+            "POST signed Meta FAILED/131026 for the exact provider message and wait for compensation and suppression",
+            "Replay FAILED and send stale SENT; assert financial, reachability and merchant notice idempotency"
+          ],
+          "assertions": [
+            "Initial COMMITTED reservation and original positive UsageEvent belong to the intended source, Shop and exact attempt",
+            "A single linked negative correction restores spendable entitlement and deletes the exact outbound automated hard-limit usage",
+            "No fallback to lifetime-Free and no changes to another source; Shop-scoped seven-day suppression and one post-correction merchant notice",
+            "Duplicate FAILED and stale SENT do not create another credit correction, notice or provider send"
+          ],
+          "evidence": [
+            "Production worker execution and provider-emulator acceptance of one template",
+            "Exact reservation/positive and negative UsageEvent IDs and source-owned counter/lot values",
+            "Shop-scoped recipient reachability and timestamp-ordered SYSTEM notice rows"
+          ],
+          "cleanup": [
+            "Stop local workers, ingresses and emulated providers",
+            "Dispose run-scoped PostgreSQL/Redis"
+          ],
+          "liveAuthorizationRequired": false,
+          "automation": "automated",
+          "status": "implemented"
+        },
+        "implementation_from": [
+          "src/harness/recovery/arch028-credit-source-fixtures.js",
+          "src/harness/recovery/arch028-credit-source-observation.js",
+          "src/harness/recovery/arch028-credit-source-scenario.js"
+        ],
+        "implementation_to": [
+          "src/harness/recovery/credit-source-fixtures.js",
+          "src/harness/recovery/credit-source-observation.js",
+          "src/harness/recovery/credit-source-scenario.js"
+        ]
+      },
+      {
+        "from": "RECOVERY-ARCH028-PURCHASED-001",
+        "to": "RECOVERY-PURCHASED-CREDIT-COMPENSATION-001",
+        "references": [
+          {
+            "path": "docs/ARCH-028-CREDIT-SOURCE-COMPENSATION.md",
+            "lines": [
+              11,
+              38
+            ]
+          },
+          {
+            "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
+            "lines": [
+              210
+            ]
+          },
+          {
+            "path": "catalogue/scenarios.json",
+            "lines": [
+              3639
+            ]
+          },
+          {
+            "path": "test/harness/selection.test.js",
+            "lines": [
+              42
+            ]
+          },
+          {
+            "path": "test/harness/recovery-executors.test.js",
+            "lines": [
+              132
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              9
+            ]
+          },
+          {
+            "path": "src/harness/recovery/constants.js",
+            "lines": [
+              17
+            ]
+          }
+        ],
+        "preserve_fields": {
+          "name": "Purchased credit terminal-recipient compensation",
+          "title": "Purchased credit terminal-recipient compensation",
+          "domain": "RECOVERY",
+          "purpose": "Prove that a real Shopify recovery committed against purchased capacity is corrected exactly once by a signed Meta FAILED/131026 callback, without affecting another credit source.",
+          "sourceRequirements": [],
+          "layer": "L3",
+          "evidenceClass": "BLACK_BOX",
+          "requiredEvidenceClass": "BLACK_BOX",
+          "providers": [
+            "shared",
+            "shopify"
+          ],
+          "requiredFor": [
+            "shopify-release"
+          ],
+          "preconditions": [
+            "Disposable migrated PostgreSQL and Redis",
+            "Real local Shopify and Messaging ingress, production Background recovery, Shopify-event and Messaging workers",
+            "Synthetic Shopify consent and approved Marketing template bindings only; no live providers"
+          ],
+          "services": [
+            "moda-interact",
+            "moda-interact-messaging",
+            "moda-interact-background",
+            "moda-interact-database"
+          ],
+          "fixtures": [
+            "One active Shopify Shop with exactly one purchased-credit lot, zero included capacity and zero lifetime-Free capacity",
+            "Synthetic Shopify pack-issuance UsageEvent with matched billing period, provider snapshots and immutable purchase receipt",
+            "One genuine Shopify checkout / active opted-in synthetic recipient",
+            "One Meta-approved test template and local signed status webhook"
+          ],
+          "actions": [
+            "Seed a fully attributed synthetic Shopify credit-pack issuance UsageEvent and ACTIVE purchase lot; never pre-insert a recovery UsageReservation or RECOVERY_CONVERSATION UsageEvent",
+            "POST signed Shopify checkout and wait for the production recovery worker to commit the chosen source",
+            "POST signed Meta FAILED/131026 for the exact provider message and wait for compensation and suppression",
+            "Replay FAILED and send stale SENT; assert financial, reachability and merchant notice idempotency"
+          ],
+          "assertions": [
+            "Initial COMMITTED reservation and original positive UsageEvent belong to the intended source, Shop and exact attempt",
+            "A single linked negative correction restores spendable entitlement and deletes the exact outbound automated hard-limit usage",
+            "No fallback to lifetime-Free and no changes to another source; Shop-scoped seven-day suppression and one post-correction merchant notice",
+            "Duplicate FAILED and stale SENT do not create another credit correction, notice or provider send"
+          ],
+          "evidence": [
+            "Production worker execution and provider-emulator acceptance of one template",
+            "Exact reservation/positive and negative UsageEvent IDs and source-owned counter/lot values",
+            "Shop-scoped recipient reachability and timestamp-ordered SYSTEM notice rows"
+          ],
+          "cleanup": [
+            "Stop local workers, ingresses and emulated providers",
+            "Dispose run-scoped PostgreSQL/Redis"
+          ],
+          "liveAuthorizationRequired": false,
+          "automation": "automated",
+          "status": "implemented"
+        },
+        "implementation_from": [
+          "src/harness/recovery/arch028-credit-source-fixtures.js",
+          "src/harness/recovery/arch028-purchased-source-fixture.js",
+          "src/harness/recovery/arch028-credit-source-observation.js",
+          "src/harness/recovery/arch028-credit-source-scenario.js"
+        ],
+        "implementation_to": [
+          "src/harness/recovery/credit-source-fixtures.js",
+          "src/harness/recovery/purchased-source-fixture.js",
+          "src/harness/recovery/credit-source-observation.js",
+          "src/harness/recovery/credit-source-scenario.js"
+        ]
+      }
+    ],
+    "literal_map": [
+      {
+        "from": "arch028-paid-period",
+        "to": "credit-source-paid-period",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              42
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-paid-counter",
+        "to": "credit-source-paid-counter",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              43
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-admin",
+        "to": "credit-source-admin",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              83
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-campaign",
+        "to": "credit-source-campaign",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              84
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-grant",
+        "to": "credit-source-grant",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              85
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-promo-selection",
+        "to": "credit-source-promo-selection",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              107
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-purchased-period",
+        "to": "credit-source-purchased-period",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              23
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-purchased-included-counter",
+        "to": "credit-source-purchased-included-counter",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              24
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-purchased-counter",
+        "to": "credit-source-purchased-counter",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              25
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-purchased-lot",
+        "to": "credit-source-purchased-lot",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              26
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-purchased-issuance",
+        "to": "credit-source-purchased-issuance",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              27
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-purchased-provider-subscription",
+        "to": "credit-source-purchased-provider-subscription",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              28
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028_test_recovery_usage",
+        "to": "system_test_recovery_usage",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              47
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              5
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028_test_pack_usage",
+        "to": "system_test_credit_pack_usage",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              6
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-purchase-issuance:",
+        "to": "credit-source-purchase-issuance:",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              85
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-disposable-shopify-purchase",
+        "to": "disposable-shopify-credit-purchase",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              89
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-system-test:",
+        "to": "credit-source-system-test:",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              107
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-${kind}",
+        "to": "credit-source-${kind}",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              42
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-${context.runId.toLowerCase()",
+        "to": "credit-source-${context.runId.toLowerCase()",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              89
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 paid system test",
+        "to": "Paid credit source system test",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              55
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 purchased system test",
+        "to": "Purchased credit source system test",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              44
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 synthetic active promotional source",
+        "to": "Synthetic active promotional credit source",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              95
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028-test",
+        "to": "credit-source-test",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              193
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "system-test-arch028",
+        "to": "terminal-recipient-system-test",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "test/harness/approved-template-fixtures.test.js",
+            "lines": [
+              9
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch002-system-test-006-delivery",
+        "to": "render-deployment-probe-delivery",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "src/render-test-topology.js",
+            "lines": [
+              104
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch002-system-test-006-challenge",
+        "to": "render-deployment-probe-challenge",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "scripts/validate-render-deployment.js",
+            "lines": [
+              97
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch002-system-test-006",
+        "to": "render-deployment-probe",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "scripts/validate-render-deployment.js",
+            "lines": [
+              71,
+              82,
+              97
+            ]
+          },
+          {
+            "path": "src/render-test-topology.js",
+            "lines": [
+              104
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "background:production-arch043",
+        "to": "background:production-configuration-fixture",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "test/harness/language-recovery-runtime-wiring.test.js",
+            "lines": [
+              8
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch043-moderation-test",
+        "to": "moderation-configuration-test",
+        "category": "fixture",
+        "references": [
+          {
+            "path": "test/harness/language-provider-runtime-setup.test.js",
+            "lines": [
+              60
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch028.credit_source.",
+        "to": "recovery.credit_source.",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-source-receipt-diagnostics.test.js",
+            "lines": [
+              103,
+              118
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              163
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-source-checkout-diagnostics.test.js",
+            "lines": [
+              121
+            ]
+          },
+          {
+            "path": "test/harness/arch028-credit-source-ingress-diagnostics.test.js",
+            "lines": [
+              103,
+              109
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              61,
+              87,
+              96,
+              111
+            ]
+          },
+          {
+            "path": "src/harness/recovery/arch028-credit-source-diagnostics.js",
+            "lines": [
+              82
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "[ARCH-028 smoke]",
+        "to": "[terminal-recipient compensation smoke]",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "scripts/run-arch028-compensation-smoke.js",
+            "lines": [
+              45,
+              49,
+              54,
+              58,
+              62
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 smoke executes",
+        "to": "terminal-recipient compensation smoke executes",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-compensation-smoke.test.js",
+            "lines": [
+              7
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 smoke propagates",
+        "to": "terminal-recipient compensation smoke propagates",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-compensation-smoke.test.js",
+            "lines": [
+              15
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 smoke refuses",
+        "to": "terminal-recipient compensation smoke refuses",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-compensation-smoke.test.js",
+            "lines": [
+              25
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 smoke requires",
+        "to": "terminal-recipient compensation smoke requires",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-compensation-smoke.test.js",
+            "lines": [
+              40
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 smoke fails",
+        "to": "terminal-recipient compensation smoke fails",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-compensation-smoke.test.js",
+            "lines": [
+              48
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 credit source must be a known kind and an owned Shop",
+        "to": "Credit source fixture requires a known kind and an owned Shop",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              18
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 requires one active source Shop subscription",
+        "to": "Credit source fixture requires one active source Shop subscription",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+            "lines": [
+              30
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 purchased fixture requires a complete Shopify subscription",
+        "to": "Purchased credit fixture requires a complete Shopify subscription",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-purchased-source-fixture.js",
+            "lines": [
+              20
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 credit scenario requires its source kind, workspace and task worktree",
+        "to": "Credit source scenario requires its source kind, workspace and task worktree",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-scenario.js",
+            "lines": [
+              29
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 must make one exact, source-owned negative usage correction and undo outbound hard-limit usage",
+        "to": "Compensation must make one exact, source-owned negative usage correction and undo outbound hard-limit usage",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-observation.js",
+            "lines": [
+              178
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 ${input.source.kind} ${expected} credit settlement",
+        "to": "Credit source ${input.source.kind} ${expected} settlement",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "src/harness/recovery/arch028-credit-source-observation.js",
+            "lines": [
+              226
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "Shopify merchant Support page must render exactly one ARCH-028 SYSTEM notice",
+        "to": "Shopify merchant Support page must render exactly one terminal-recipient compensation SYSTEM notice",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "src/harness/messaging/terminal-recipient-merchant-ui.js",
+            "lines": [
+              56
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 compensation notice remains distinct from optional ARCH-050 initial-send SYSTEM alerts",
+        "to": "Terminal-recipient compensation notice remains distinct from optional initial-send SYSTEM alerts",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+            "lines": [
+              29
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-028 SYSTEM|restored-spendable",
+        "to": "terminal-recipient compensation SYSTEM|restored-spendable",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+            "lines": [
+              106
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "exactly one ARCH-028 SYSTEM",
+        "to": "exactly one terminal-recipient compensation SYSTEM",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-terminal-recipient-merchant-ui.test.js",
+            "lines": [
+              132,
+              151
+            ]
+          },
+          {
+            "path": "src/harness/messaging/terminal-recipient-merchant-ui.js",
+            "lines": [
+              56
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "credit-source smoke runner executes isolated cases, stops on failure and never certifies ARCH-028",
+        "to": "credit-source smoke runner executes isolated cases, stops on failure and does not claim terminal certification",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/arch028-credit-sources.test.js",
+            "lines": [
+              249
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "recovery setup provisions three required ARCH-043 records before starting moderation",
+        "to": "recovery setup provisions three required platform configuration records before starting moderation",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/language-recovery-provider-setup.test.js",
+            "lines": [
+              50
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-043 language preflight requires",
+        "to": "Language configuration preflight requires",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/platform-configuration-fixture.test.js",
+            "lines": [
+              128
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-043 Shopify OAuth preflight allows",
+        "to": "Shopify OAuth configuration preflight allows",
+        "category": "description_or_diagnostic",
+        "references": [
+          {
+            "path": "test/harness/platform-configuration-fixture.test.js",
+            "lines": [
+              159
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "no ARCH-017 promotion.",
+        "to": "no synthetic promotion.",
+        "category": "manual_fixture_label",
+        "references": [
+          {
+            "path": "src/merchant-scenario.js",
+            "lines": [
+              37
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-017 ${promotion.scope} manual scenario",
+        "to": "Manual merchant ${promotion.scope} scenario",
+        "category": "manual_fixture_label",
+        "references": [
+          {
+            "path": "src/merchant-scenario.js",
+            "lines": [
+              1480
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-017 manual merchant UI scenario fixture.",
+        "to": "Manual merchant UI scenario fixture.",
+        "category": "manual_fixture_label",
+        "references": [
+          {
+            "path": "src/merchant-scenario.js",
+            "lines": [
+              1488
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH-017 ${promotion.scope} promotion (${locale})",
+        "to": "Manual merchant ${promotion.scope} promotion (${locale})",
+        "category": "manual_fixture_label",
+        "references": [
+          {
+            "path": "src/merchant-scenario.js",
+            "lines": [
+              1505
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "arch017-unmapped-plan",
+        "to": "manual-merchant-unmapped-plan",
+        "category": "manual_fixture_label",
+        "references": [
+          {
+            "path": "src/merchant-scenario.js",
+            "lines": [
+              1659
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      },
+      {
+        "from": "ARCH017_MANUAL_SCENARIO",
+        "to": "MANUAL_MERCHANT_SCENARIO",
+        "category": "manual_fixture_label",
+        "references": [
+          {
+            "path": "src/merchant-scenario.js",
+            "lines": [
+              1684
+            ]
+          }
+        ],
+        "constraint": "Purely harness-owned name/label; do not apply replacements to preserved keys or historical evidence."
+      }
+    ],
+    "npm_script_map": [
+      {
+        "from": "validate:arch002-observability",
+        "to": "validate:integrated-observability",
+        "old_command": "node scripts/run-arch002-observability.js",
+        "new_command": "node scripts/run-integrated-observability.js"
+      },
+      {
+        "from": "validate:arch002-production-readiness",
+        "to": "validate:production-readiness",
+        "old_command": "node scripts/run-arch002-production-readiness.js",
+        "new_command": "node scripts/run-production-readiness.js"
+      }
+    ],
+    "active_aliases_retaining_old_executable_names_allowed": false,
+    "tombstone_exit64_and_stderr_unchanged": true,
+    "source_requirements_note": "Append ARCH-056-SYSTEM-TEST-002 to exactly the three renamed legacy scenarios and the nine background-persistence scenarios; preserve existing provenance entries/statuses and add one symmetric historical row for the cleanup task. The producer contract requires its original ARCH-056-SYSTEM-TEST-001 membership but permits later valid symmetric provenance. This adds no scenario/executor and does not expand the nine-member semantic suite.",
+    "runtime_and_provider_behavior_changes_allowed": false,
+    "external_repository_edits_allowed": false,
+    "current_contract_exclusions": [
+      {
+        "literal": "ARCH-056-SYSTEM-TEST-001 / ARCH-056-SYSTEM-TEST-002 and other valid task IDs",
+        "kind": "governance",
+        "where": "sourceRequirements, historical map sourceTask/sourceFile, task/worktree routes, historical reports and explanatory provenance",
+        "rule": "Preserve; do not use as runtime suite/executor/scenario/file names."
+      },
+      {
+        "literal": "ARCH002_TEST_*",
+        "kind": "existing_input_contract",
+        "where": [
+          "src/render-test-topology.js",
+          "scripts/validate-render-test.sh",
+          "test/render-test-topology.test.js"
+        ],
+        "source": "workspace docs/validation-migrations/render-test-validator-naming.md, Current host matrix",
+        "rule": "Explicit existing architect policy keeps current input names; no environment-variable contract migration is selected."
+      },
+      {
+        "literal": "arch024-platform-model-availability",
+        "kind": "canonical_seeded_database_identity",
+        "where": [
+          "src/harness/language/model-fixture.js",
+          "test/harness/language-model-fixture.test.js"
+        ],
+        "source": "moda-interact-database/prisma/migrations/20260930120000_arch024_model_availability_openrouter/migration.sql:38,48",
+        "rule": "Preserve canonical seed/default reference; do not insert a replacement availability identity."
+      },
+      {
+        "literal": "ARCH028_RECOVERY_DELIVERY_FAILED",
+        "kind": "application_support_system_code",
+        "where": [
+          "src/harness/recovery/arch028-credit-source-observation.js",
+          "src/harness/messaging/terminal-recipient-observation.js"
+        ],
+        "rule": "Preserve literal and assertions; renaming test names must not change production notice identity."
+      },
+      {
+        "literal": "arch028-undelivered:${reservationId}",
+        "kind": "application_usage_idempotency_contract",
+        "where": [
+          "src/harness/recovery/arch028-credit-source-observation.js",
+          "src/harness/messaging/provider-status-observation.js",
+          "test/harness/arch028-credit-sources.test.js",
+          "test/harness/messaging-provider-status.test.js"
+        ],
+        "rule": "Preserve exact original negative correction identity."
+      },
+      {
+        "literal": "arch028-recovery-delivery-failed:v1:<64hex>",
+        "kind": "application_support_notice_identity",
+        "where": [
+          "src/harness/recovery/arch028-credit-source-observation.js",
+          "src/harness/messaging/terminal-recipient-observation.js",
+          "test/harness/arch028-credit-sources.test.js",
+          "test/harness/arch028-terminal-recipient-observation.test.js"
+        ],
+        "rule": "Preserve version, prefix and hash contract."
+      },
+      {
+        "literal": "scripts/validate-arch017-ai-conversations-required.mjs",
+        "kind": "external_repository_executable",
+        "where": [
+          "src/harness/billing-executors.js",
+          "test/harness/billing-executors.test.js",
+          "docs/BILLING.md"
+        ],
+        "rule": "Read-only Database-owned command path; no System-Test-owned alias or external rename."
+      },
+      {
+        "literal": "arch017:${shopId}",
+        "kind": "existing_cross_version_advisory_lock_key",
+        "where": [
+          "src/merchant-scenario.js:991",
+          "src/merchant-scenario.js:1553"
+        ],
+        "rule": "Preserve shared apply/restore mutual exclusion; this is a coordination compatibility value, not a test name."
+      },
+      {
+        "literal": "overall ARCH-028 remains OPEN / terminal ARCH-028-SYSTEM-TEST-001 is NOT CERTIFIED",
+        "kind": "truthful_governance_warning",
+        "where": [
+          "scripts/run-credit-source-compensation.js",
+          "scripts/run-arch028-compensation-smoke.js",
+          "test/harness/arch028-credit-sources.test.js"
+        ],
+        "rule": "Preserve the unfinished-governance disclaimer. The runtime progress prefix/test title becomes semantic."
+      },
+      {
+        "literal": "ARCH-028-SYSTEM-TEST-001 worktree fixture",
+        "kind": "launcher_governance_route_fixture",
+        "where": [
+          "test/harness/run-system-tests-script.test.js:92"
+        ],
+        "rule": "Preserve route-format coverage; it is an input fixture of the real task launcher, not the executable test name."
+      },
+      {
+        "literal": "all previously recorded scenario IDs, filenames, commands, run IDs and report paths",
+        "kind": "immutable_historical_evidence",
+        "where": [
+          "docs/evidence/",
+          ".validation/system-test/",
+          "existing root arch028*.log and evidence .txt files",
+          "governance Completion Reports"
+        ],
+        "rule": "Do not rename/rewrite artifacts or retroactively mark accepted evidence as executed under the new names. Provide current old-to-new mapping in existing governance/operator docs."
+      }
+    ],
+    "historical_root_artifacts_preserved": [
+      "arch028-paid-attempt23.log",
+      "arch028-promotional-compensation-attempt23.log",
+      "arch028-purchased-checkout-candidate-attempt25-r01.log",
+      "arch028-purchased-compensation-attempt24-prebuilt-r01.log",
+      "arch028-purchased-compensation-attempt23.log",
+      "arch028-shopify-worker-attempt25-evidence.txt",
+      "arch028-purchased-compensation-attempt24-r01.log"
+    ],
+    "guard": {
+      "modify": [
+        "src/scenario-catalogue.js",
+        "scripts/validate-source-structure.js"
+      ],
+      "tests": [
+        "test/scenario-catalogue.test.js",
+        "test/harness/source-structure.test.js"
+      ],
+      "scenario_fields": [
+        "id",
+        "name",
+        "title"
+      ],
+      "check_implementation_owned_paths": true,
+      "source_structure_name_roots": [
+        "src",
+        "test",
+        "scripts"
+      ],
+      "name_only_file_extensions": [
+        ".js",
+        ".mjs",
+        ".cjs",
+        ".sh",
+        ".ts",
+        ".tsx",
+        ".json",
+        ".yaml",
+        ".yml",
+        ".sql"
+      ],
+      "check_suite_keys": true,
+      "check_npm_script_keys": true,
+      "reject_patterns": [
+        "architecture token ARCH followed by optional hyphen/underscore and three digits, case-insensitive",
+        "task-specific SYSTEM-TEST-NNN executable basename"
+      ],
+      "full_text_architecture_scan": false,
+      "new_parser_framework": false,
+      "preserve_line_limit_roots": [
+        "src/harness",
+        "test/harness"
+      ],
+      "preserve_limits": {
+        "source_test_max": 300,
+        "domain_index_max": 120
+      },
+      "negative_fixtures": "Reject architecture-named path/scenario name/ID/suite/npm key and task-specific tombstone name; accept semantic names while sourceRequirements/sourceTask/sourceFile and exact external wire/seed/coordination literals remain unchanged.",
+      "local_ci_entry": "Existing lint/validate:structure and validate:catalogue commands; no new framework.",
+      "name_scan_excludes": [
+        "docs/**/*.md",
+        "docs/evidence/**",
+        ".validation/**",
+        "historical root evidence/log files"
+      ]
+    },
+    "ownership_preflight": [
+      {
+        "task": "ARCH-002-SYSTEM-TEST-010",
+        "file": "workspace docs/decisions/system-test/ARCH-002/SYSTEM-TEST-010-reconcile-production-readiness-validator-with-haproxy.md",
+        "snapshot_status": "ready",
+        "attempt": 0,
+        "concern": "Readiness/HAProxy validator and render-blueprint tests; coordinate semantic path handoff, do not implement its unfinished behavior."
+      },
+      {
+        "task": "ARCH-028-SYSTEM-TEST-001",
+        "file": "workspace docs/decisions/system-test/ARCH-028/SYSTEM-TEST-001-validate-whatsapp-delivery-compensation-and-suppression.md",
+        "snapshot_status": "ready",
+        "attempt": 0,
+        "concern": "Existing helper presence is incremental code, not terminal task acceptance. Coordinate same-file writer and references; keep financial uncertainty policy blocked."
+      }
+    ],
+    "preflight_rule": "Recheck actual task/branch state at execution. An active in_progress/review overlapping writer blocks the naming mutation until architect-coordinated ownership/reference handoff. Ready alone is not a dependency on unrelated unfinished behavior.",
+    "validation_obligations": [
+      "Existing catalogue generation/validation; exact before/after row coverage under the 3-ID bijection",
+      "Existing lint and harness tests including new bounded naming guard tests",
+      "Existing top-level catalogue and semantic observability/readiness unit tests for changed names; no deployed probes",
+      "Existing semantic background-persistence plan and full suite: exactly9 scenarios/30 cases/39 logging assertions at new accepted revisions",
+      "Run renamed credit-source compensation scenarios through the existing local runner, with original evidence classes and per-run resources; no mocked business owner",
+      "Verify both renamed tombstones retain exit64 and exact stderr without invoking their suggested live commands",
+      "Preserve previously emitted run/evidence files and record exact old-to-new mapping; no fake historical PASS"
+    ],
+    "do_not_run_without_live_authorization": [
+      "npm run validate:render:test",
+      "scripts/validate-render-test.sh",
+      "scripts/developer-validation.sh <TASK_ID> -- scripts/validate-render-test.sh"
+    ],
+    "metadata_changes": {
+      "source_requirement": "ARCH-056-SYSTEM-TEST-002",
+      "scenario_ids": [
+        "RECOVERY-PAID-CREDIT-COMPENSATION-001",
+        "RECOVERY-PROMOTIONAL-CREDIT-COMPENSATION-001",
+        "RECOVERY-PURCHASED-CREDIT-COMPENSATION-001",
+        "REPOSITORY-BACKGROUND-DEPENDENCY-001",
+        "MESSAGING-INBOUND-PERSISTENCE-001",
+        "RECOVERY-CANDIDATE-PROGRESS-001",
+        "RECOVERY-INITIAL-ADMISSION-001",
+        "RECOVERY-INITIAL-UNCERTAINTY-001",
+        "BILLING-INITIAL-OUTREACH-SETTLEMENT-001",
+        "RECOVERY-INITIAL-FINALIZATION-001",
+        "RECOVERY-WOO-INITIAL-GATE-001",
+        "RECOVERY-FAILED-CANDIDATE-REPAIR-001"
+      ],
+      "new_historical_row_count": 1,
+      "source_file_comes_from_final_task_definition": true,
+      "preserve_other_historical_rows_and_statuses": true,
+      "new_scenario_count": 0,
+      "new_executor_count": 0,
+      "expected_totals_if_no_approved_intervening_changes": {
+        "scenarios": 181,
+        "implemented": 78,
+        "planned": 103,
+        "implementedEvidence": {
+          "CONTRACT": 24,
+          "INTEGRATION": 26,
+          "BLACK_BOX": 28
+        },
+        "historicalRows": 52
+      },
+      "snapshot_note": "Counts are conditional on the supplied172-row baseline plus the9 accepted producer rows. Compare actual accepted baseline and exact bijection; do not force these numbers by deleting approved intervening coverage."
+    },
+    "production_create": [
+      "docs/TEST-NAMING.md"
+    ],
+    "tests_create": [],
+    "additional_owned_scope": {
+      "test/render-test-topology.test.js": "Local subprocess regression for both renamed tombstones: exact stderr, exit64 and no execution of suggested live commands; preserve existing input contract tests.",
+      "docs/TEST-NAMING.md": "Current semantic mapping, protected compatibility/governance values, commands, evidence limits and open-owner handoff."
+    }
+  },
+  "observed_baseline": {
+    "scenario_count": 172,
+    "status_counts": {
+      "implemented": 69,
+      "planned": 103
+    },
+    "implemented_classes": {
+      "CONTRACT": 23,
+      "INTEGRATION": 22,
+      "BLACK_BOX": 24
+    },
+    "legacy_architecture_scenario_count": 3,
+    "planned_arch056_files_present": 0,
+    "existing_legacy_path_count": 24,
+    "existing_legacy_category_counts": {
+      "runtime": 9,
+      "test": 10,
+      "script": 3,
+      "tombstone": 2
+    },
+    "catalogue_test_stale_summary": "test/scenario-catalogue.test.js currently expects163 total/54 implemented, while source catalogue has172/69; reconcile selected expected snapshots at accepted revision rather than weaken or delete assertions."
+  },
+  "evidence_sources": [
+    {
+      "path": "src/scenario-catalogue.js",
+      "lines": [
+        8,
+        9,
+        81,
+        87,
+        94,
+        145,
+        170,
+        309
+      ],
+      "finding": "Capability ID syntax/governance metadata separation; declared anti-architecture rule currently unenforced."
+    },
+    {
+      "path": "scripts/validate-source-structure.js",
+      "lines": [
+        6,
+        7,
+        8,
+        30,
+        45
+      ],
+      "finding": "Existing line-limit validator can add bounded path/suite/npm-name checks without a new framework or expanding line-limit scope."
+    },
+    {
+      "path": "test/scenario-catalogue.test.js",
+      "lines": [
+        16,
+        19,
+        20
+      ],
+      "finding": "Existing permanent-catalogue tests with stale recorded totals need controlled reconciliation."
+    },
+    {
+      "path": "src/harness/recovery/arch028-credit-source-fixtures.js",
+      "lines": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "finding": "Three existing architecture-labeled runtime scenario IDs."
+    },
+    {
+      "path": "src/render-test-topology.js",
+      "lines": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "finding": "Input field names are explicitly retained by an existing architect migration policy."
+    },
+    {
+      "path": "workspace docs/validation-migrations/render-test-validator-naming.md",
+      "finding": "Existing approved naming migration preserves current test-contract input names and live execution hard stop."
+    }
+  ],
+  "audit_validation": {
+    "maps_only_no_application_mutation": true,
+    "all_24_old_paths_exist": true,
+    "all_24_new_paths_collision_free": true,
+    "all_27_planned_old_and_new_paths_absent_in_snapshot": true,
+    "all_12_new_scenario_ids_collision_free": true,
+    "runtime_scenarios_executed": false
+  },
+  "architecture_id": "ARCH-056",
+  "definition_revision": 3,
+  "mapping_authority": "Canonical task scope and this exact mapping; no application rename performed by definition delivery.",
+  "background_producer_changes": {
+    "scope": "Eight newly planned paths only; existing Background source/test filenames stay with their own repository owner.",
+    "path_maps": [
+      {
+        "owner": "ARCH-056-BACKGROUND-001",
+        "from": "tests/integration/arch056-inbound-lock-order.integration.test.ts",
+        "to": "tests/integration/inbound-conversation-lock-order.integration.test.ts"
+      },
+      {
+        "owner": "ARCH-056-BACKGROUND-001",
+        "from": "tests/integration/arch056-inbound-rollback.integration.test.ts",
+        "to": "tests/integration/inbound-conversation-rollback.integration.test.ts"
+      },
+      {
+        "owner": "ARCH-056-BACKGROUND-001",
+        "from": "tests/integration/helpers/arch056-inbound-fixtures.ts",
+        "to": "tests/integration/helpers/inbound-conversation-fixtures.ts"
+      },
+      {
+        "owner": "ARCH-056-BACKGROUND-001",
+        "from": "tests/integration/helpers/arch056-inbound-barriers.ts",
+        "to": "tests/integration/helpers/inbound-conversation-barriers.ts"
+      },
+      {
+        "owner": "ARCH-056-BACKGROUND-002",
+        "from": "tests/integration/arch056-initial-outreach-credit.integration.test.ts",
+        "to": "tests/integration/initial-outreach-credit.integration.test.ts"
+      },
+      {
+        "owner": "ARCH-056-BACKGROUND-002",
+        "from": "tests/integration/arch056-initial-outreach-credit-races.integration.test.ts",
+        "to": "tests/integration/initial-outreach-credit-races.integration.test.ts"
+      },
+      {
+        "owner": "ARCH-056-BACKGROUND-002",
+        "from": "tests/integration/fixtures/arch056-initial-outreach-credit.fixture.ts",
+        "to": "tests/integration/fixtures/initial-outreach-credit.fixture.ts"
+      },
+      {
+        "owner": "ARCH-056-BACKGROUND-002",
+        "from": "tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts",
+        "to": "tests/integration/initial-outreach-parent-fk.integration.test.ts"
+      }
+    ],
+    "diagnostic_sentinel": {
+      "owner": "ARCH-056-BACKGROUND-001",
+      "from": "arch056-inbound-fixture-source-failure",
+      "to": "inbound-fixture-source-failure",
+      "references": [
+        {
+          "path": "docs/decisions/background/ARCH-056/BACKGROUND-001-serialize-inbound-conversation-persistence.md",
+          "lines": [
+            128
+          ]
+        }
+      ],
+      "reason": "Harmless test-only source-message marker should name the scenario, not the architecture; retain exact original-message assertions."
+    },
+    "deferred_existing_paths": [
+      {
+        "path": "tests/integration/arch028-recovery-delivery-compensation.integration.test.ts",
+        "current_owner": "ARCH-056-BACKGROUND-002",
+        "recommendation": "retain existing MODIFY path now",
+        "later_name": "tests/integration/recovery-delivery-compensation.integration.test.ts",
+        "reason": "Already-existing regression owner; adding a move is unnecessary to implement new credit/logging contract. Preserve current provenance/commands and defer with baseline Background cleanup."
+      },
+      {
+        "path": "tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts",
+        "current_owner": "ARCH-056-BACKGROUND-004",
+        "recommendation": "retain existing MODIFY path now",
+        "later_name": "tests/integration/shopify-initial-no-offer-dispatch.integration.test.ts",
+        "reason": "Already-existing dispatch regression owner; preserve current prerequisites and validation references. Defer rename with baseline Background cleanup."
+      }
+    ],
+    "wider_deferred_inventory_counts": {
+      "test_script_files_scanned": 496,
+      "architecture_named_baseline_paths": 50,
+      "extra_task_named_baseline_paths": 1,
+      "baseline_content_matching_files": 194,
+      "baseline_content_matching_lines": 502,
+      "baseline_content_architecture_occurrences": 538,
+      "architecture_named_npm_scripts": 22,
+      "planned_new_background_tests_and_helpers": 21,
+      "planned_architecture_named_paths_to_correct": 8,
+      "planned_semantic_test_paths_to_keep": 13,
+      "detected_suite_case_label_candidates": 139
+    },
+    "wider_deferred_file_names": [
+      {
+        "from": "scripts/arch007-b010-live-bullmq-repro.integration.test.ts",
+        "to": "scripts/live-conversation-turn-scheduling-repro.integration.test.ts"
+      },
+      {
+        "from": "scripts/record-arch040-missing-sender-incident.mjs",
+        "to": "scripts/record-missing-sender-incident.mjs"
+      },
+      {
+        "from": "scripts/run-arch007-b010-live-bullmq-repro.sh",
+        "to": "scripts/run-live-conversation-turn-scheduling-repro.sh"
+      },
+      {
+        "from": "scripts/run-arch024-production-model-disposable.mjs",
+        "to": "scripts/run-production-model-disposable.mjs"
+      },
+      {
+        "from": "scripts/test-arch038-live-budget-contract.mjs",
+        "to": "scripts/test-live-budget-contract.mjs"
+      },
+      {
+        "from": "scripts/test-arch038-live-budget-postgres.ts",
+        "to": "scripts/test-live-budget-postgres.ts"
+      },
+      {
+        "from": "scripts/validate-arch029-store-category-translation-publication.mjs",
+        "to": "scripts/validate-store-category-translation-publication.mjs"
+      },
+      {
+        "from": "scripts/validate-arch029-store-category-translation-runtime.mjs",
+        "to": "scripts/validate-store-category-translation-runtime.mjs"
+      },
+      {
+        "from": "tests/fixtures/arch036-api007-sealed-grant.json",
+        "to": "tests/fixtures/woo-rest-read-legacy-api-grant.json"
+      },
+      {
+        "from": "tests/fixtures/arch039-api002-sealed-grant.json",
+        "to": "tests/fixtures/woo-rest-read-shared-api-grant.json"
+      },
+      {
+        "from": "tests/fixtures/arch047-bg006-final-admission-freshness.fixture.ts",
+        "to": "tests/fixtures/final-admission-freshness.fixture.ts"
+      },
+      {
+        "from": "tests/fixtures/arch049-admin-media-header-projection.json",
+        "to": "tests/fixtures/admin-media-header-projection.json"
+      },
+      {
+        "from": "tests/fixtures/commerce/arch020-evidence-contract-fixtures.v1.json",
+        "to": "tests/fixtures/commerce/evidence-contract-fixtures.v1.json"
+      },
+      {
+        "from": "tests/integration/arch028-delivery-merchant-notification.integration.test.ts",
+        "to": "tests/integration/delivery-merchant-notification.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch028-recipient-reachability.integration.test.ts",
+        "to": "tests/integration/recipient-reachability.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch028-recovery-delivery-compensation.integration.test.ts",
+        "to": "tests/integration/recovery-delivery-compensation.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch043-support-translation-revocation.integration.test.ts",
+        "to": "tests/integration/support-translation-revocation.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-final-template-permit-races.integration.test.ts",
+        "to": "tests/integration/final-template-permit-races.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-final-template-status-admission.integration.test.ts",
+        "to": "tests/integration/final-template-status-admission.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-human-prepared-reclaim.integration.test.ts",
+        "to": "tests/integration/human-prepared-reclaim.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-human-prepared-send.integration.test.ts",
+        "to": "tests/integration/human-prepared-send.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-merchant-follow-up-failure-recovery.integration.test.ts",
+        "to": "tests/integration/merchant-follow-up-failure-recovery.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-merchant-follow-up-final-permit.integration.test.ts",
+        "to": "tests/integration/merchant-follow-up-final-permit.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-meta-messaging-startup.integration.test.ts",
+        "to": "tests/integration/meta-messaging-startup.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-meta-provider-failure.integration.test.ts",
+        "to": "tests/integration/meta-provider-failure.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-meta-template-management.integration.test.ts",
+        "to": "tests/integration/meta-template-management.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch047-recovery-template-preparation.integration.test.ts",
+        "to": "tests/integration/recovery-template-preparation.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch048-woo-initial-outreach.integration.test.ts",
+        "to": "tests/integration/woo-initial-outreach.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch049-ready-media.integration.test.ts",
+        "to": "tests/integration/ready-media.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch052-discount-source-fence.integration.test.ts",
+        "to": "tests/integration/discount-source-fence.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch052-initial-template-emulator.integration.test.ts",
+        "to": "tests/integration/initial-template-emulator.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch052-shopify-discount-selection.integration.test.ts",
+        "to": "tests/integration/shopify-discount-selection.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch052-shopify-initial-no-offer-dispatch.integration.test.ts",
+        "to": "tests/integration/shopify-initial-no-offer-dispatch.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch054-pending-turn-repair.integration.test.ts",
+        "to": "tests/integration/pending-turn-repair.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/arch055-follow-up-identity.integration.test.ts",
+        "to": "tests/integration/follow-up-identity.integration.test.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/aimock/arch040-background-002.json",
+        "to": "tests/integration/fixtures/aimock/recovery-conversation.json"
+      },
+      {
+        "from": "tests/integration/fixtures/arch040-ai-turn.fixture.ts",
+        "to": "tests/integration/fixtures/recovery-ai-turn.fixture.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/arch040-aimock.fixture.ts",
+        "to": "tests/integration/fixtures/recovery-aimock.fixture.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/arch040-allow-moderation.fixture.ts",
+        "to": "tests/integration/fixtures/allow-moderation.fixture.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/arch040-background-mocks.fixture.ts",
+        "to": "tests/integration/fixtures/recovery-background-mocks.fixture.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/arch040-moderation-aimock.fixture.ts",
+        "to": "tests/integration/fixtures/moderation-aimock.fixture.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/arch040-whatsapp-emulator.fixture.ts",
+        "to": "tests/integration/fixtures/whatsapp-emulator.fixture.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/arch040-window.fixture.ts",
+        "to": "tests/integration/fixtures/recovery-verified-window.fixture.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/arch047-final-template-permit.fixture.ts",
+        "to": "tests/integration/fixtures/final-template-permit.fixture.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/arch047-human-follow-up.fixture.ts",
+        "to": "tests/integration/fixtures/human-follow-up.fixture.ts"
+      },
+      {
+        "from": "tests/integration/fixtures/arch048-woo-outreach.fixture.ts",
+        "to": "tests/integration/fixtures/woo-outreach.fixture.ts"
+      },
+      {
+        "from": "tests/typecheck/tsconfig.arch048-bg006.json",
+        "to": "tests/typecheck/tsconfig.woocommerce-recovery-contracts.json"
+      },
+      {
+        "from": "tests/unit/runtime/arch047-meta-messaging-startup.test.ts",
+        "to": "tests/unit/runtime/meta-messaging-startup.test.ts"
+      },
+      {
+        "from": "tests/unit/services/meta-template-management/bg006-freshness-fixtures.test.ts",
+        "to": "tests/unit/services/meta-template-management/final-admission-freshness-fixtures.test.ts"
+      },
+      {
+        "from": "tests/unit/services/recovery-conversation/arch055-claim-key.test.ts",
+        "to": "tests/unit/services/recovery-conversation/follow-up-claim-key.test.ts"
+      },
+      {
+        "from": "tests/unit/services/recovery-template-preparation/arch049-frozen-image-binding.test.ts",
+        "to": "tests/unit/services/recovery-template-preparation/frozen-image-binding.test.ts"
+      }
+    ],
+    "deferred_inventory_grants_write_permission": false
+  },
+  "evidence_status": {
+    "source_inventory_and_collision_checks": "performed",
+    "application_naming_changes": "not performed",
+    "implementation_tests": "not run",
+    "previous_logging_contract": "preserved"
+  }
+}

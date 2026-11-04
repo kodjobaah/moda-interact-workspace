@@ -28,7 +28,7 @@ updated: '2026-11-04'
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 2. **Defined but not materialised.** Ready is based on the completed prerequisite in the reviewed snapshot; the real launcher rechecks before execution. No implementation or task claim has occurred.
+Definition revision: 3. **Defined but not materialised.** Ready is based on the completed prerequisite in the reviewed snapshot; the real launcher rechecks before execution. No implementation or task claim has occurred.
 
 ## Objective
 
@@ -49,10 +49,10 @@ One repository: `moda-interact-background`. Exact paths and operations:
 | `tests/unit/services/conversation.service.test.ts` | MODIFY | Assert transaction call order, rollback propagation and unchanged duplicate ownership behavior; capture actual Shared records for transaction/post-commit failure, redaction and sink isolation |
 | `tests/unit/workers/whatsapp.worker.test.ts` | MODIFY | Exercise existing callback records through the installed Shared logger; original safe message, code/context, redaction and sink failure |
 | `tests/integration/conversation-turn-scheduling.integration.test.ts` | MODIFY | Keep existing regression coverage; align the manually reconstructed rollback fixture with corrected ordering |
-| `tests/integration/arch056-inbound-lock-order.integration.test.ts` | CREATE | Real service/two-connection parent-first serialization and control/audio interleavings |
-| `tests/integration/arch056-inbound-rollback.integration.test.ts` | CREATE | Raced duplicate and injected post-helper failure atomicity |
-| `tests/integration/helpers/arch056-inbound-fixtures.ts` | CREATE | Minimal owned recovery/standalone fixtures and scoped cleanup using existing Prisma/schema |
-| `tests/integration/helpers/arch056-inbound-barriers.ts` | CREATE | Test-only transaction interception and observed lock/barrier coordination; no production hook |
+| `tests/integration/inbound-conversation-lock-order.integration.test.ts` | CREATE | Real service/two-connection parent-first serialization and control/audio interleavings |
+| `tests/integration/inbound-conversation-rollback.integration.test.ts` | CREATE | Raced duplicate and injected post-helper failure atomicity |
+| `tests/integration/helpers/inbound-conversation-fixtures.ts` | CREATE | Minimal owned recovery/standalone fixtures and scoped cleanup using existing Prisma/schema |
+| `tests/integration/helpers/inbound-conversation-barriers.ts` | CREATE | Test-only transaction interception and observed lock/barrier coordination; no production hook |
 
 Read-only dependencies include `src/services/conversation-ai-delay/pending-turn-repository.ts`, `src/services/inbound-whatsapp-audio.service.ts`, `src/services/whatsapp-inbound-processing.service.ts`, `src/services/conversation-turn-processor.service.ts`, the accepted Conversation FK/control migrations and `scripts/test-integration.mjs`. No helper lock-mode change or new production file is authorized.
 
@@ -125,15 +125,15 @@ Use actual canonical migrations on disposable PostgreSQL 17 + pgvector and the e
 | Mid-turn setting change | Change delay after first committed fragment | Existing deadline/revision unchanged, including future deadlines |
 | Post-commit engagement failure | Inject once after receive commit, then retry | No duplicate message/version; existing-message route can complete subsequent work |
 
-Extend the existing owned `tests/unit/services/conversation.service.test.ts`, `tests/unit/workers/whatsapp.worker.test.ts` and relevant new rollback fixture with real installed Shared `createLogger({serviceName: "moda-messaging-worker", environment: "test", sink})`. Use a distinct harmless message such as `arch056-inbound-fixture-source-failure`; serialize/parse the captured record and assert its original `data.error.message` or the worker's explicit `data.errorMessage`, event, service, stage/available job context, Conversation identity where known and actual injected Prisma code. The caller must receive the same error object. Cover both transaction failure and failure after commit, sink-throws isolation, and a sensitive-text fixture whose credential/PII portions are absent while safe source wording remains. Verify the worker has no second raw Error field that reintroduces the removed text. Do not inject secrets into a real provider or assert that a mock receiving an Error proves its final JSON fields.
+Extend the existing owned `tests/unit/services/conversation.service.test.ts`, `tests/unit/workers/whatsapp.worker.test.ts` and relevant new rollback fixture with real installed Shared `createLogger({serviceName: "moda-messaging-worker", environment: "test", sink})`. Use a distinct harmless message such as `inbound-fixture-source-failure`; serialize/parse the captured record and assert its original `data.error.message` or the worker's explicit `data.errorMessage`, event, service, stage/available job context, Conversation identity where known and actual injected Prisma code. The caller must receive the same error object. Cover both transaction failure and failure after commit, sink-throws isolation, and a sensitive-text fixture whose credential/PII portions are absent while safe source wording remains. Verify the worker has no second raw Error field that reintroduces the removed text. Do not inject secrets into a real provider or assert that a mock receiving an Error proves its final JSON fields.
 
 Required commands from the Background implementation worktree:
 
 ```bash
 npx --no-install vitest run tests/unit/services/conversation.service.test.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation-ai-delay/pending-turn-repository.test.ts tests/unit/services/inbound-whatsapp-audio.service.test.ts
-node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/arch056-inbound-lock-order.integration.test.ts tests/integration/arch056-inbound-rollback.integration.test.ts
+node scripts/test-integration.mjs tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/inbound-conversation-lock-order.integration.test.ts tests/integration/inbound-conversation-rollback.integration.test.ts
 npm run build
-npx --no-install eslint src/services/conversation.service.ts src/workers/whatsapp.worker.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation.service.test.ts tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/arch056-inbound-lock-order.integration.test.ts tests/integration/arch056-inbound-rollback.integration.test.ts tests/integration/helpers/arch056-inbound-fixtures.ts tests/integration/helpers/arch056-inbound-barriers.ts
+npx --no-install eslint src/services/conversation.service.ts src/workers/whatsapp.worker.ts tests/unit/workers/whatsapp.worker.test.ts tests/unit/services/conversation.service.test.ts tests/integration/conversation-turn-scheduling.integration.test.ts tests/integration/inbound-conversation-lock-order.integration.test.ts tests/integration/inbound-conversation-rollback.integration.test.ts tests/integration/helpers/inbound-conversation-fixtures.ts tests/integration/helpers/inbound-conversation-barriers.ts
 git diff --check
 ```
 
