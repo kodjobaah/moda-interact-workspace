@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T20:04:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -289,24 +289,24 @@ The scoped discarded-cause issue was returned to moda_architect and resolved und
 
 ### Review Status
 
-Pending.
+**Accepted — Attempt 1, 2026-11-04.** No blocking findings identified in implementation `99f00a1`. Task is `complete` under automatic completion mode; executor and claim cleared, Attempt 1 preserved. Acceptance relies on inspected source, independently executed focused tests, and the submitted PostgreSQL/build/typecheck/lint evidence with the limits below.
 
-### Review Notes
+### Reviewed Source and Conformance
 
-Portable definition only; no implementation accepted.
+Reviewed the task requirements and scope amendment; composed detail reader and narrow standalone ownership checks; loader/section routing; locked Shop reuse and current follow-up catalogue admission; command HTTP outcomes; configuration cause preservation; recovery diagnostics and their actual Shared output tests.
 
-### Reviewed Files
+The composed reader retains server-resolved identity and serializes only the existing detail DTO. Standalone readers retain tenant predicates and navigation validation. Command admission uses the current transaction's locked Shop, preserves subscription/restriction/window/publication checks and replay semantics, and does not use the advisory request Shop for mutations. Typed configuration failures preserve their original database cause; recovery diagnostics retain safe source wording/code/cause and isolate sink failures. No blocking defect was found within the reviewed scope.
 
-Definition and latest unchanged recovery touchpoints.
+### Independent Validation and Limits
 
-### Validation Reviewed
+- Executed `npm run test:recovery-readers:unit` from the dedicated implementation worktree using Node 24.19.0: **11 files passed, 288 tests passed, 1 optional database case skipped (289 total)**. The skip is not counted as a pass. Local log: `/tmp/arch057-shopify006-review-unit.log` (not a committed artifact).
+- Observed actual Shared JSON with original safe error/cause, redaction applied, and database code P2010; the focused suite covers source boundaries, conflict warning levels, configuration-cause propagation and throwing sinks.
+- Implementation comparison whitespace check passed.
+- Reviewed submitted evidence of **289/289 focused tests** with the optional cohort database enabled separately, **8 canonical PostgreSQL/query-plan tests**, **85 presentation regressions**, **8 configuration tests**, build, typecheck and scoped lint. These were not independently rerun except for the focused command above. PostgreSQL evidence includes same-fixture DTO equality and reduction from seven raw SELECTs/three full owner projections to five SELECTs/one full owner projection; no throughput claim is inferred.
+- Reviewed worktree/preparation evidence in the Completion Report. Parent review worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-006`; implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-006`, both on `task/ARCH-057-SHOPIFY-006`.
 
-Definition inspection only; implementation evidence outstanding.
+### Follow-up and Publication
 
-### Architecture Conformance
+No implementation correction required by this review. SHOPIFY-011 retains its other prerequisites and is not promoted or executed here. Integrated architecture validation remains with the terminal system-test task. This acceptance does not mark ARCH-057 implemented.
 
-To be assessed after implementation.
-
-### Follow-up
-
-Return for architect review; do not start enabled work.
+The developer authorized committing and pushing this review on 2026-11-04. Only parent documentation is published; no implementation code, database schema or gitlink is changed, and no task branch is merged into main.
