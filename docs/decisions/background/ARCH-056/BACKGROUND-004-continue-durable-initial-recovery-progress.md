@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-11-04T08:07:28Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-056-BACKGROUND-002
@@ -169,19 +169,19 @@ Keep ARCH-028-BACKGROUND-012's options-object API and missing-recipient checkout
 
 ## Work Items
 
-- [ ] Add the typed durable continuation entry to the existing initiation owner and wire it into the actual candidate path without changing the options-object API.
-- [ ] Route confirmed/linked/pending/absent/failed/uncertain evidence before new-send preparation; keep identity checks mandatory and keep new-send guards intact.
-- [ ] Consume BG002's exact-source retained-credit and confirmed-settlement results, and BG003's scoped same-message resume; never choose a fresh source on replay.
-- [ ] Correct fallback identity lookup and the outer required-state lifetime failure semantics while preserving optional-enrichment neutral fallback.
-- [ ] Remove exception-only provider-failure terminalization; preserve original technical errors and distinguish visible holds/business blocks.
-- [ ] Replay atomic Support, guarded legacy false-failure repair, recovery status and deterministic follow-up scheduling, preserving finalized null due dates.
-- [ ] Migrate the Woo outreach service and its real finalizer adapter without changing the production gate or introducing Woo follow-up.
-- [ ] Add actual-worker fault-boundary and service regression tests, run every command, and report the explicit bounded-retry/repair limit.
+- [x] Add the typed durable continuation entry to the existing initiation owner and wire it into the actual candidate path without changing the options-object API.
+- [x] Route confirmed/linked/pending/absent/failed/uncertain evidence before new-send preparation; keep identity checks mandatory and keep new-send guards intact.
+- [x] Consume BG002's exact-source retained-credit and confirmed-settlement results, and BG003's scoped same-message resume; never choose a fresh source on replay.
+- [x] Correct fallback identity lookup and the outer required-state lifetime failure semantics while preserving optional-enrichment neutral fallback.
+- [x] Remove exception-only provider-failure terminalization; preserve original technical errors and distinguish visible holds/business blocks.
+- [x] Replay atomic Support, guarded legacy false-failure repair, recovery status and deterministic follow-up scheduling, preserving finalized null due dates.
+- [x] Migrate the Woo outreach service and its real finalizer adapter without changing the production gate or introducing Woo follow-up.
+- [x] Add actual-worker fault-boundary and service regression tests, run every command, and report the explicit bounded-retry/repair limit.
 
-- [ ] Emit optional degradation before fallback conversion and preserve/log actual required-state exceptions through facade and worker reentry.
-- [ ] Replace Woo's generic-only failure diagnostic and emit both fixed-role errors at release/compensation aggregation.
-- [ ] Emit materializationError and cleanupError at their candidate aggregation site while retaining existing failure-reason/retry-marker behavior.
-- [ ] Add actual installed Shared sink assertions for progress, source-message retention, compound errors, finalization stages and real worker listeners; retain redaction and sink-failure semantics.
+- [x] Emit optional degradation before fallback conversion and preserve/log actual required-state exceptions through facade and worker reentry.
+- [x] Replace Woo's generic-only failure diagnostic and emit both fixed-role errors at release/compensation aggregation.
+- [x] Emit materializationError and cleanupError at their candidate aggregation site while retaining existing failure-reason/retry-marker behavior.
+- [x] Add actual installed Shared sink assertions for progress, source-message retention, compound errors, finalization stages and real worker listeners; retain redaction and sink-failure semantics.
 
 ## Interfaces / Contracts
 
@@ -261,22 +261,22 @@ Start from the accepted BG002/BG003 commits. Do not duplicate their billing reso
 
 ## Acceptance Criteria
 
-- [ ] The real candidate handler continues interrupted DETECTED progress in the same generation/attempt and never acknowledges a required-state exception through an ordinary no-op.
-- [ ] A pre-message retained credit is reused, a pre-permit message is resumed in place, and only proven source absence permits fresh admission.
-- [ ] Provider uncertainty and credit holds remain visible failed/held work with no retry HTTP, speculative refund, new debit, Support notice or success status.
-- [ ] Confirmed replay bypasses template/new-admission gates and uses only exact settled billing evidence before atomic Support/status/follow-up work.
-- [ ] Each selected billing/Support/status/queue interruption converges idempotently on explicit retry; finalized null/non-null due dates and actual message sentAt remain unchanged.
-- [ ] The historical FAILED/PROVIDER_FAILURE repair is confined to the exact specified confirmed and settled lineage; genuine failure, 131026, cancellation and sequence two are not reset.
-- [ ] Optional enrichment still allows approved neutral outreach while required-state outages fail with original error/cause.
-- [ ] Woo confirmed replay works before the production outbound gate; new/resumed provider work stays test-only and never schedules a Woo sequence two.
-- [ ] Bounded retry exhaustion retains visible failed work, and the documented explicit replay entry reaches the same handler; no generic scanner is claimed.
-- [ ] All listed worker/service, PostgreSQL/Redis, regression, build, lint and whitespace commands pass with real prerequisites; no skipped environment is reported as passed.
+- [x] The real candidate handler continues interrupted DETECTED progress in the same generation/attempt and never acknowledges a required-state exception through an ordinary no-op.
+- [x] A pre-message retained credit is reused, a pre-permit message is resumed in place, and only proven source absence permits fresh admission.
+- [x] Provider uncertainty and credit holds remain visible failed/held work with no retry HTTP, speculative refund, new debit, Support notice or success status.
+- [x] Confirmed replay bypasses template/new-admission gates and uses only exact settled billing evidence before atomic Support/status/follow-up work.
+- [x] Each selected billing/Support/status/queue interruption converges idempotently on explicit retry; finalized null/non-null due dates and actual message sentAt remain unchanged.
+- [x] The historical FAILED/PROVIDER_FAILURE repair is confined to the exact specified confirmed and settled lineage; genuine failure, 131026, cancellation and sequence two are not reset.
+- [x] Optional enrichment still allows approved neutral outreach while required-state outages fail with original error/cause.
+- [x] Woo confirmed replay works before the production outbound gate; new/resumed provider work stays test-only and never schedules a Woo sequence two.
+- [x] Bounded retry exhaustion retains visible failed work, and the documented explicit replay entry reaches the same handler; no generic scanner is claimed.
+- [x] All listed worker/service, PostgreSQL/Redis, regression, build, lint and whitespace commands pass with real prerequisites; no skipped environment is reported as passed.
 
-- [ ] A safe optional-source marker remains observable when neutral fallback succeeds; a required fallback error is logged and reaches the caller as the same actual exception, without an unrelated cause.
-- [ ] Woo unexpected-failure output retains safe original wording and stage/IDs, while sensitive text is excluded; wholesale useful-diagnostic omission is not accepted.
-- [ ] Materialization/cleanup and preflight/release or send/compensation pairs expose both source messages independently through actual Shared serialization and retain both original objects for propagation.
-- [ ] Progress holds/blocks and finalization failures emit truthful reasons/stages/messages and known correlation; no failed/held state is logged as sent or completed, and no upstream fields are fabricated.
-- [ ] Actual worker listeners and a throwing real Shared sink are tested; diagnostic delivery cannot change success, retry, original thrown identity, SQL outcome or compensation behavior.
+- [x] A safe optional-source marker remains observable when neutral fallback succeeds; a required fallback error is logged and reaches the caller as the same actual exception, without an unrelated cause.
+- [x] Woo unexpected-failure output retains safe original wording and stage/IDs, while sensitive text is excluded; wholesale useful-diagnostic omission is not accepted.
+- [x] Materialization/cleanup and preflight/release or send/compensation pairs expose both source messages independently through actual Shared serialization and retain both original objects for propagation.
+- [x] Progress holds/blocks and finalization failures emit truthful reasons/stages/messages and known correlation; no failed/held state is logged as sent or completed, and no upstream fields are fabricated.
+- [x] Actual worker listeners and a throwing real Shared sink are tested; diagnostic delivery cannot change success, retry, original thrown identity, SQL outcome or compensation behavior.
 
 ## Validation
 
@@ -444,3 +444,28 @@ Address all four findings within the task's ownership, rerun the required suites
 ## Architect Dependency Reconciliation (2026-11-04)
 
 Ready for normal launcher preparation: all declared prerequisites are complete (ARCH-056-BACKGROUND-002/003, ARCH-028-BACKGROUND-012, ARCH-050-BACKGROUND-002/003, ARCH-052-BACKGROUND-018 and ARCH-053-BACKGROUND-005). This promotion does not claim or execute the task; Attempt 0 and the empty executor claim remain unchanged. SYSTEM-TEST-001 still requires this task's completion.
+
+### Attempt 2 Acceptance and Dependency Reconciliation
+
+**Accepted — Attempt 2, 2026-11-04.** The four Attempt 1 findings are resolved within this task's ownership. The task is `complete` under automatic completion mode; the claim is cleared and Attempt remains 2. The implementing agent's report remains the attempt evidence, while this section records architect acceptance.
+
+### Findings Resolved
+
+1. A proven prepared, unpermitted message may proceed through the approved neutral template path and resume through the same BG003 message/usage/source. Confirmed, failed, ambiguous and held canonical states retain their prior classifications. The ARCH-052 PostgreSQL/Redis worker integration covers same-message resumption with one eventual provider dispatch and a separate permitted-but-unknown hold with no second provider request.
+2. Technical consent and offer-validation exceptions now propagate without releasing a retained reservation. Actual consent denial and offer refusal continue to release under their sanctioned paths. Focused unit regressions cover both technical failures and the denial behavior.
+3. Task-owned fallback, facade, finalization, Support and Woo diagnostics use bounded redacted projections that retain safe original messages, cause/code/clientVersion evidence where present, and preserve the same thrown object. Actual installed Shared output tests cover secrets/PII redaction, component errors, sink failure, and the real worker listeners.
+4. The required integration evidence is present: bounded queue exhaustion and explicit retry through the real worker; finalization replay at billing, Support, status and follow-up boundaries; both same-Shop finalizer/final-fence lock orders with first-thread/notice insertion; and actual worker pre-permit resume and permit uncertainty. The report maps these tests to the task requirements.
+
+### Reviewed Source and Validation
+
+- Implementation `0575c4e` is the clean head of `task/ARCH-056-BACKGROUND-004` and is published to `origin/task/ARCH-056-BACKGROUND-004`. Parent submission `ea7765ad8` is published on the matching parent task branch.
+- Reviewed the implementation diff from Attempt 1, the task-owned production changes, regression/integration tests, exact-source BG002/BG003 consumption boundaries, and the Attempt 2 report. The implementation worktree is clean and synchronized with its remote.
+- The Attempt 2 report records 206 focused unit tests; 26 PostgreSQL/Redis integration tests with no skips; build, changed-file lint and whitespace validation; plus additional Woo and Support diagnostic suites. I reviewed the evidence and relevant test sources; I did not rerun these suites during this review.
+- The Attempt 1 review and its independently reproduced findings remain preserved above. The mainline Database gitlink update is inherited synchronization; no Database-owned source or BG002/BG003 production file was changed by this implementation.
+- The parent task worktree had no uncommitted changes before this architect overlay. No implementation branch, schema or gitlink was modified by the architect.
+
+### Architecture Conformance and Downstream
+
+The implementation retains the established exact-source credit settlement, same-message outbound admission/fence, original receipt identity, atomic Support transition, finite retry policy, Woo production gate and no-Woo-follow-up boundary. The bounded retry exhaustion repair procedure remains an explicit replay of the retained failed candidate through the same handler; no general scanner or universal eventual-recovery claim is added.
+
+All five declared prerequisites for `ARCH-056-SYSTEM-TEST-001` are complete. That task is promoted from `pending` to `ready` at Attempt 0 with no claim. It is not launched or executed here. `ARCH-056-SYSTEM-TEST-002` remains pending on SYSTEM-TEST-001. The developer's 2026-11-04 authorization to publish architect review and architecture handoff overlays on this parent task branch applies to this acceptance update. No task branch was merged to `main`.
