@@ -29,7 +29,7 @@ updated: 2026-11-04
 
 Architecture ID: `ARCH-057`. Architecture document: `docs/architecture/ARCH-057-shopify-application-database-correctness-and-simplicity.md`. Coordinator: `moda_architect`.
 
-Mandatory execution/logging/validation contract: `docs/architecture/ARCH-057/task-contract.md`. **Defined but not materialised.** Canonical destination: `docs/decisions/shopify/ARCH-057/SHOPIFY-007-unify-settings-reads-and-guard-policy-writes.md`.
+Mandatory execution/logging/validation contract: `docs/architecture/ARCH-057/task-contract.md`. This task is materialised in its canonical parent and implementation worktrees on `task/ARCH-057-SHOPIFY-007`. Attempt 1 is published and awaiting architect acceptance. The Completion Report records the claim, implementation commit, worktree paths, synchronization and validation evidence. Current lifecycle state is recorded in the task frontmatter; no implementation acceptance is asserted here.
 
 ## Objective
 
