@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T11:13:25Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-058-DATABASE-001
@@ -370,3 +370,26 @@ Complete the authorized disposable integration validation, correct the report/wo
 ## Architect Dependency Handoff (2026-11-04)
 
 DATABASE-001 and SHARED-002 are accepted and complete. MCP-001 is ready, unclaimed, at Attempt 0. Consume exact published `@modainteract/moda-interact-shared@4.0.0` (release metadata commit `2489824bb879caa8c463fd857728078642dd1fd9`, accepted source `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`) and accepted Database `ded8f14a60182f6b1443640f012caf0089b8a44c` through the normal package/lockfile and submodule workflow. Registry integrity is recorded in SHARED-002. This promotion neither installs dependencies nor starts implementation.
+
+## Architect Review — Attempt 2, 2026-11-04
+
+**Changes Requested.** Returned to `ready`, with executor and claim cleared; Attempt remains 2. No acceptance or downstream promotion is recorded. Earlier reports and reviews are retained as historical evidence. This review supersedes the historical Attempt 0 handoff above for current lifecycle state.
+
+### Finding
+
+**[P2] Failure diagnostics expose unsanitized source text.** `src/execution/reference-taxonomy/errors.ts:22–35`, specifically lines 31–32, passes original source errors and causes directly into the Shared logger. The importer, runtime resolver and credential boundaries consume this helper, but it performs no source-text redaction before emission. The task requires sanitized bounded source wording and excludes secrets and customer query text. An independent probe using the actual installed Shared logger passed a synthetic database error through `logFailure`; the emitted JSON retained `synthetic@example.test`, `token=synthetic-review-secret` and synthetic query wording verbatim in `data.error.message`. Shared Error serialization does not supply that redaction. All probe data was synthetic; no production data or credentials were accessed.
+
+Bound and sanitize the source diagnostic and explicit cause before logging, retaining permitted source code/status/request-ID evidence and a distinct Moda reason. Preserve the original thrown exception. Add assertions against the actual installed Shared logger for privacy, cause handling and sink-failure isolation. Keep this correction within existing owners; do not introduce another generic logging runtime.
+
+### Independent Validation and Evidence
+
+- Reviewed implementation `30cdca4e62f768722388c1d94979a88ff24f7220`, the taxonomy importer/store/reader/adapter/CLI/credential boundaries, capability and runtime composition, test sources, and the authoritative Attempt 2 report in the dedicated parent task worktree.
+- Independently executed `node --import tsx --test tests/unit/execution/reference-taxonomy/*.test.ts tests/unit/capabilities/*.test.ts tests/unit/runtime/service-ports.test.ts tests/unit/runtime/prisma.test.ts` with Node 24.19.0 from the dedicated implementation worktree: **53 tests passed, zero failures/skips**. Local log: `/tmp/arch058-mcp001-review-units.log` (not a committed artifact).
+- Independently captured the installed Shared logger output for the synthetic diagnostic probe described above. No probe file or implementation edit was retained.
+- Reviewed Attempt 2's recorded disposable PostgreSQL result and existing local log `/tmp/mcp058-attempt2-integration-verified.log`: **25 passed, 0 failed, 1 opt-in live Shopify test skipped**, with successful harness cleanup. Docker was not rerun by this review. The previous missing-integration-evidence blocker is addressed.
+- Implementation comparison whitespace check passed; the implementation worktree was clean after review. This review does not claim a fresh build/typecheck/lint run.
+- Physical review paths: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-001`. Both use `task/ARCH-058-MCP-001`.
+
+### Follow-up and Publication
+
+Correct the diagnostic boundary, rerun focused checks and applicable validation, publish the same mirrored task branches, and return for architect review. MCP-002 and SYSTEM-TEST-001 remain gated on acceptance; neither is promoted or executed by this review. No implementation code, schema, dependency or gitlink is changed. The developer explicitly authorized committing and pushing this review on 2026-11-04.
