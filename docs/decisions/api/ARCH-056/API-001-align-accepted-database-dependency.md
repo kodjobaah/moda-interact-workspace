@@ -9,14 +9,15 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: pending
 priority: 10
-executor: copilot
-claimed_at: 2026-11-04T02:15:30Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-055-DATABASE-001
 - ARCH-055-API-005
+- ARCH-056-API-002
 enables:
 - ARCH-056-SYSTEM-TEST-001
 created: '2026-11-03'
@@ -29,7 +30,7 @@ updated: 2026-11-04
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 2. **Materialised and executed.** Attempt 1 was submitted for architect review and returned for changes on 2026-11-04. The claim is cleared; the attempt number remains 1.
+Definition revision: 3. **Materialised; routed and awaiting ARCH-056-API-002.** Attempt 1 was submitted for architect review and returned for changes on 2026-11-04. Attempt 2 published the existing zero-diff implementation task ref; its focused upload PostgreSQL failure remains unresolved and is routed to API-002. This task is pending with no active claim; attempt remains 2.
 
 ## Objective
 
@@ -88,6 +89,7 @@ At the reviewed baseline the canonical schema SHA-256 is `5c68e467f392cafe2e6b5b
 
 - `ARCH-055-DATABASE-001` — Complete and accepted persistence contract.
 - `ARCH-055-API-005` — Complete and accepted purpose/intake consumer.
+- `ARCH-056-API-002` — Diagnose and correct the focused knowledge-upload PostgreSQL failure before this task reruns its full required three-suite matrix.
 
 `ARCH-055-API-004`, `ARCH-055-API-009` and `ARCH-055-SYSTEM-TEST-001` retain their existing scopes/statuses. They are not synthetic gates for this narrow dependency correction. A failure inside their unrelated unfinished behavior must be reported accurately, not fixed opportunistically here or hidden as a successful validation.
 
@@ -233,3 +235,11 @@ The accepted Database pin supplies the required fields and migrations, and the A
 ### Follow-up
 
 Address both review findings in the same task branch and resubmit. Do not start ARCH-056-SYSTEM-TEST-001. No schema or source change outside this task is authorized by this review.
+
+### Review Disposition — Attempt 2 Routing (2026-11-04)
+
+The required `npm run test:arch035-knowledge-upload:postgres` failure is **not waived**. Its acceptance criterion remains unchecked. The submitted result remains 1 passed and 1 failed with Prisma `Transaction not found`; this architect routing did not rerun tests or assert a cause.
+
+The implementation branch finding is resolved without a source commit: `moda-interact-api` has the published `task/ARCH-056-API-001` ref at `2384bac6cea135d5571bd9f771f9431cfb0c7b45`, matching the reported clean zero-diff task commit. No implementation source or test work was performed in this routing step.
+
+`ARCH-056-API-002` is the bounded API-owned diagnosis/correction task for the failing upload suite. API-001 now depends on API-002 and is `pending`; its Copilot claim is cleared, and attempt 2 is preserved. After API-002 is accepted, API-001 must rerun the three required PostgreSQL suites and satisfy every existing criterion before acceptance. No ARCH-056 system-test task is created or made Ready by this disposition.
