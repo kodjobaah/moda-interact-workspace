@@ -93,7 +93,7 @@ Current task YAML in this branch also records SHOPIFY-001, SHOPIFY-002 and SHOPI
 | ARCH-057-SHOPIFY-006 | Recovery readers and command context | Pending | 001 |
 | ARCH-057-SHOPIFY-007 | Merchant settings/category policy | Pending | 001 |
 | ARCH-057-SHOPIFY-008 | Knowledge lifecycle and UI refresh | Pending | 001, 007 |
-| ARCH-057-SHOPIFY-009 | Uninstall/reinstall and webhook configuration | Pending | 001 |
+| ARCH-057-SHOPIFY-009 | Uninstall/reinstall and webhook configuration | Ready (changes requested) | 001 |
 | ARCH-057-SHOPIFY-010 | Ingress and queue publication | Pending | 009 |
 | ARCH-057-SHOPIFY-011 | Remaining server diagnostic coverage | Pending | 001–010 |
 | ARCH-057-SHOPIFY-012 | Domain naming and canonical development billing identities | Pending | 011 |

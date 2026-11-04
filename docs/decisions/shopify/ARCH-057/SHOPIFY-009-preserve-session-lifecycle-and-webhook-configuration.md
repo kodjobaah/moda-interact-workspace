@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 65
 executor: null
 claimed_at: null
@@ -35,7 +35,7 @@ Coordinator: `moda_architect`.
 
 Mandatory execution, diagnostic and naming contract: `docs/architecture/ARCH-057/task-contract.md`.
 
-**Attempt 1 implementation complete; returned for review.** Work was performed on `task/ARCH-057-SHOPIFY-009` in the claimed Shopify app worktree. No app deployment, Shopify app version release, schema change, dependency change or cross-repository modification was made.
+**Attempt 1 reviewed; changes requested.** Work was performed on `task/ARCH-057-SHOPIFY-009` in the claimed Shopify app worktree. No app deployment, Shopify app version release, schema change, dependency change or cross-repository modification was made.
 
 ## Objective
 
@@ -344,24 +344,31 @@ Merged to workspace `main`: no.
 
 ### Review Status
 
-Pending.
+Changes requested on 2026-11-04. Attempt 1 is not accepted; returned to `ready` for the owning agent to reclaim. Executor and claim timestamp remain null; attempt remains 1.
 
 ### Review Notes
 
-Task definition only; no implementation accepted.
+Reviewed implementation `de55ee8d0f2840785ccf50f414f8d450a09383d6` on `task/ARCH-057-SHOPIFY-009` (matching the implementation remote branch). Two P2 findings block acceptance:
+
+1. **Reuse the shared diagnostic boundary.** In `app/services/webhooks/shopify-webhook-observability.server.ts:172-206`, `safeErrorFields` and `safeDiagnosticText` introduce another error serializer, cause walker, truncation policy and redaction engine. Requirement E19 and `docs/architecture/ARCH-057/task-contract.md` explicitly prohibit a competing generic serializer/redactor. Reuse the existing safe diagnostic boundary and Shared `sanitizeLogFields`, limiting this adapter to lifecycle-specific fields and bounded source-owned diagnostics.
+2. **Distinguish database codes from other source codes.** In the same file at lines 184-192, every string `error.code` becomes `databaseCode`, including SDK and queue failures. Loading the actual adapter and emitting a synthetic queue publication failure produced `databaseCode: ECONNREFUSED` with operation `subscription_activated_discount_sync`, stage `publish`, and origin `best_effort`. Emit `databaseCode` only for an identified database failure; preserve other source codes separately. Add a real Shared emitted-record test covering that distinction.
 
 ### Reviewed Files
 
-Definition and latest snapshot touchpoints only.
+Implementation changes from baseline `062777ceae29695314d6c7210bd88bdd11252153` through the reviewed head: ShopService lifecycle methods; uninstall, scopes-update, auth and reinstall routes; discount lifecycle and webhook observability services; named app configuration and launcher selection; focused unit tests; PostgreSQL helper, transaction and race suites; configuration documentation and this completion report. Also inspected the installed SDK login implementation and Shared logging implementation.
 
 ### Validation Reviewed
 
-Definition/source inspection only; implementation evidence is outstanding.
+- Independently ran `npm run test:shopify-lifecycle`: 10 files, 90 tests passed using workspace-selected Node v24.19.0. Review log: `/tmp/shopify009-architect-unit.log` (local evidence, not a committed artifact).
+- Independently checked implementation `git diff --check`: passed.
+- Independently exercised the actual lifecycle logging adapter with a synthetic queue error and captured the incorrect database-code classification. The ad hoc Vite loader also emitted dependency-scan shutdown errors; this probe is diagnostic evidence only, not an additional passing test suite.
+- Inspected the submitted real PostgreSQL transaction/race tests and completion report claiming 12 tests passed. The architect did not rerun the disposable PostgreSQL suite.
+- Typecheck, build, configuration validation and scoped lint results above are submitted implementation evidence, not independently rerun architect checks.
 
 ### Architecture Conformance
 
-To be assessed after implementation against the parent decision, common contract and accepted lifecycle fence.
+The reviewed lifecycle implementation covers atomic transition-owned cleanup, duplicate credential preservation, common Shop locking, durable offline-session admission and explicit named configuration selection. Acceptance remains blocked by the diagnostic ownership and code-fidelity findings above. No acceptance or completion decision has been made.
 
 ### Follow-up
 
-Return the completed task for architect review; do not begin enabled work.
+The owning agent must reclaim this same task, correct both findings, add the emitted-record regression coverage, rerun relevant checks and update the completion report before resubmitting for architect review. ARCH-057-SHOPIFY-010 and ARCH-057-SHOPIFY-011 remain unpromoted by this review; this task does not satisfy their dependency until accepted.
