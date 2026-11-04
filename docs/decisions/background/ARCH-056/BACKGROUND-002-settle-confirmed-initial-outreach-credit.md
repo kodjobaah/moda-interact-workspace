@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-11-04T00:34:29Z
@@ -181,16 +181,16 @@ The purchased reserve P2002-to-empty-conflict conversion and existing empty inte
 
 ## Work Items
 
-- [ ] Add exact input/result contracts and a thin facade collaborator, preserving existing constructor/caller compatibility and test injection.
-- [ ] Extract the existing unique source lookup without changing compensation's refusal behavior.
-- [ ] Add same-transaction owner wrappers, promotional retained-source eligibility and the typed paid-period guard.
-- [ ] Implement durable confirmed settlement with verified positive results, rollback-on-hold and Shop-key-share-before-message locking.
-- [ ] Apply the same early owned-Shop lock to existing provider-status/compensation transaction entries, retaining all their existing policy and after-commit behavior.
-- [ ] Implement read-only retained-source revalidation, including null-message reserved-before-outbound interruption and strict absent semantics.
-- [ ] Make the existing successful-commit facade reject noncommitted owner outcomes.
-- [ ] Reuse the paid plan's already validated meter handle.
-- [ ] Implement the fixed selected failure/hold/retry diagnostic owners, stages and correlation fields, preserving original exception identity and existing accounting/status behavior.
-- [ ] Emit provider-status `applied` only after successful SQL commit; distinguish later committed-status continuation failures.
+- [x] Add exact input/result contracts and a thin facade collaborator, preserving existing constructor/caller compatibility and test injection.
+- [x] Extract the existing unique source lookup without changing compensation's refusal behavior.
+- [x] Add same-transaction owner wrappers, promotional retained-source eligibility and the typed paid-period guard.
+- [x] Implement durable confirmed settlement with verified positive results, rollback-on-hold and Shop-key-share-before-message locking.
+- [x] Apply the same early owned-Shop lock to existing provider-status/compensation transaction entries, retaining all their existing policy and after-commit behavior.
+- [x] Implement read-only retained-source revalidation, including null-message reserved-before-outbound interruption and strict absent semantics.
+- [x] Make the existing successful-commit facade reject noncommitted owner outcomes.
+- [x] Reuse the paid plan's already validated meter handle.
+- [x] Implement the fixed selected failure/hold/retry diagnostic owners, stages and correlation fields, preserving original exception identity and existing accounting/status behavior.
+- [x] Emit provider-status `applied` only after successful SQL commit; distinguish later committed-status continuation failures.
 - [ ] Add actual installed Shared-sink assertions for original direct messages, known causes, allowlisted database metadata, typed holds, exhausted retries, missing upstream fields, redaction and logging-sink failure isolation; do not certify this with logger-call mocks.
 - [ ] Add and execute the bounded unit/PostgreSQL matrix below; report contracts to BG004 and preserve BG003's lock-order agreement.
 
@@ -393,35 +393,114 @@ This section belongs to the implementing repository agent. No implementation is 
 
 ### Status
 
-Not Started
+Implementation submitted for Architect review. This is not an acceptance or completion claim: the required developer-owned PostgreSQL matrix is still pending, and some emitted-diagnostic and rollback scenarios remain unproved.
 
 ### Files Changed
 
-Pending implementation.
+Implementation repository: `moda-interact-background`; task branch `task/ARCH-056-BACKGROUND-002`; commit `00cfac4` (`Implement exact initial outreach credit settlement`), pushed to origin.
+
+- `src/services/free-recovery-reservation.service.ts`
+- `src/services/paid-included-recovery-reservation.service.ts`
+- `src/services/promotional-recovery-reservation.service.ts`
+- `src/services/purchased-recovery-reservation.service.ts`
+- `src/services/recovery-billing.service.ts`
+- `src/services/recovery-billing/recovery-billing.types.ts`
+- `src/services/recovery-billing/recovery-reservation-lifecycle.service.ts`
+- `src/services/recovery-billing/initial-outreach-credit.service.ts`
+- `src/services/recovery-billing/initial-outreach-credit-evidence.ts`
+- `src/services/recovery-delivery-compensation/lineage.ts`
+- `src/services/recovery-delivery-compensation/reconcile.service.ts`
+- `src/services/whatsapp-provider-status.service.ts`
+- `tests/integration/arch028-recovery-delivery-compensation.integration.test.ts`
+- `tests/integration/arch056-initial-outreach-credit.integration.test.ts`
+- `tests/integration/arch056-initial-outreach-credit-races.integration.test.ts`
+- `tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts`
+- `tests/integration/fixtures/arch056-initial-outreach-credit.fixture.ts`
+- `tests/unit/services/free-recovery-reservation.service.test.ts`
+- `tests/unit/services/paid-included-recovery-reservation.service.test.ts`
+- `tests/unit/services/promotional-recovery-reservation.service.test.ts`
+- `tests/unit/services/purchased-recovery-reservation.service.test.ts`
+- `tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts`
+- `tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts`
+- `tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts`
+- `tests/unit/services/recovery-billing/recovery-billing.test-support.ts`
+- `tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts`
+- `tests/unit/services/whatsapp-provider-status.service.test.ts`
 
 ### Work Completed
 
-Pending implementation.
+Implemented the billing facade/types, exact message/attempt/source evidence, same-transaction source-owner wrappers, confirmed settlement, read-only retained-source revalidation, legacy commit outcome guard, paid-meter read reuse, and bounded retry/hold/failure diagnostics. Extracted the existing exact-source lookup and applied Shop `FOR KEY SHARE` before message `FOR UPDATE` in settlement, compensation, and provider-status paths. Provider-status `applied` is emitted after successful transaction completion; post-commit failures carry committed-state context.
+
+Added owner unit coverage, Shared logger sink tests for direct errors, allowlisted Prisma metadata, retry exhaustion, exception-derived lineage holds, sink failure isolation, and a conversation-ID lineage regression. Added PostgreSQL cases for all four source commits/replays, two distinct messages sharing a counter, and the Shop-parent FK wait. Additional retained-source, `AMBIGUOUS`/`RELEASED`, and stale paid-period cases are now in the integration files but have not yet been executed.
 
 ### Validation Results
 
-Not run. Record exact commands, exit results, failures, warnings, source/build/schema provenance, scenario evidence and cleanup; do not copy planned checks as completed results.
+Launcher evidence:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-002
+parent branch: task/ARCH-056-BACKGROUND-002
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-002
+implementation branch: task/ARCH-056-BACKGROUND-002
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded implementation base: afac7c3766d92fb14beff669232c1b01c2ed0be0
+recorded database submodule: 5907b4572ea9efc2a24c07e4c3bd3e107db4260b
+implementation commit: 00cfac4
+```
+
+Agent-executed checks:
+
+- `npm run build` — passed; Prisma Client 6.19.3 generated and TypeScript build completed.
+- `npx --no-install tsc --noEmit` — passed after final integration fixture/test additions.
+- Task-scoped unit command from this task's Validation section — passed, 16 files and 266 tests.
+- Exact task-scoped `npx --no-install eslint ...` command from Validation — passed.
+- `git diff --check` — passed.
+- `npm ls @modainteract/moda-interact-shared --depth=0` — installed package `@modainteract/moda-interact-shared@3.0.0`.
+
+Broader unit check:
+
+- `npm run test:unit` — 3,692 passed, 7 failed (337 passed test files, 4 failed test files). Failures were three `whatsapp.worker.test.ts` enqueue assertions, one `whatsapp-inbound-processing.service.test.ts` enqueue assertion, one ARCH-049 frozen-image reason assertion, and two observability-startup timeouts. These are outside this task's changed paths; no applicable baseline ID was identified during this attempt.
+
+PostgreSQL checks already executed:
+
+- The initial ARCH-056 settlement/race/parent-FK command passed 3 files and 7 tests. It ran before the latest retained-source and state-hold cases were added; those new cases remain unexecuted.
+- `tests/integration/arch028-recovery-delivery-compensation.integration.test.ts` passed 28 tests.
+- `tests/integration/recovery-human-provider-status.integration.test.ts` passed 1 test.
+- The four existing reservation-owner concurrency files reported 11 failures across 4 files. Each failed during fixture creation because stale tests pass removed `BillingPlan.defaultOutboundSoftLimit` and `defaultOutboundHardLimit` fields to Prisma. The provider-status suite included in that command passed 1 test. No production/schema/test-fixture repair was made because those legacy owner fixtures are outside this task's authorized paths.
+- No cleanup failure was shown in the captured summaries. The full required matrix, including same-plan rollover and the latest added integration cases, has not been run by the agent.
+
+Developer validation required (the full disposable PostgreSQL/Redis integration command, per `docs/agent-validation-execution-policy.md`):
+
+```bash
+npm run test:integration -- tests/integration/arch056-initial-outreach-credit.integration.test.ts tests/integration/arch056-initial-outreach-credit-races.integration.test.ts tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/recovery-human-provider-status.integration.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts
+```
+
+Expected success condition: all task-owned ARCH-056 and affected lock-order tests pass; the pre-existing owner fixture/schema drift must be resolved or dispositioned before claiming the full matrix passed. The new four-source revalidation, eight ambiguity/release holds, and stale paid-period integration cases require execution against the disposable database.
 
 ### Deviations
 
-None at definition time. Record actual deviations and their architect disposition before review.
+The new coordinator is 235 physical lines: above the 200-line target but below the hard 300-line ceiling. No unowned production module was introduced to split it. The exact full PostgreSQL matrix is deferred to developer validation; the legacy owner concurrency fixtures currently fail before exercising production behavior. The full unit suite also has seven unrelated failures listed above. Emitted-record coverage is not yet complete for all specified cause/redaction, mutation-then-rollback, and selected after-commit failure scenarios.
 
 ### Assumptions
 
-The reviewed snapshot and accepted prerequisite contracts are the definition baseline. Recheck the real current checkout and task state at launch.
+The prepared launcher packet is the source for physical worktree, synchronization, claim and recursive-submodule evidence. The installed Shared package version was confirmed from the implementation worktree, not a sibling checkout.
 
 ### Unresolved Issues
 
-Pending implementation evidence. Preserve the task's explicit held/deferred and blocked-policy boundaries.
+Developer execution of the full integration command remains required. Resolve/disposition the four stale owner concurrency fixture failures. Add or complete actual Shared-sink assertions for known causes, redaction/truncation, typed period/policy holds, rollback after owner mutation/event insertion, selected after-commit failures, and compensation/status diagnostic correlation. The latest added retained-source and state-hold PostgreSQL cases are typechecked but unexecuted. Do not claim BG-013, BS-05, historical source selection, or uncertain-send settlement is resolved.
 
 ### Architectural Concerns
 
-Return changes to ownership, contracts, schema, transaction boundaries, durable-state semantics, queue behavior, security or another repository to moda_architect before expanding scope.
+No schema, package/dependency, Shared publication, cross-repository, provider, queue, Support or recovery-status policy change was made. The remaining items are evidence/validation gaps; no enabled task was started.
 
 ## Architect Review
 
