@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T02:06:06Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-040-BACKGROUND-008
@@ -354,7 +354,7 @@ Stop and report a blocking contract conflict if safe final admission requires ch
 
 ### Current review status
 
-Changes Requested — Attempt 2, 2026-11-04. Architect review found and reproduced a sequence-two cleanup regression in `failPrepared`; see the appended review. Attempt 2 is preserved, the claim is cleared, and the task returns to Ready. BACKGROUND-004 and SYSTEM-TEST-001 remain gated. The implementation is published at `a68fe273bde3503605e64fb412143ac9dc1c563d`; this architect overlay is published on the matching parent task branch under the developer’s explicit commit/push instruction.
+Accepted — Attempt 3, 2026-11-04. Attempt 3 corrects the sequence-two cleanup regression identified in Attempt 2 and adds a real PostgreSQL regression. The four unchanged HUMAN integration failures remain the previously authorized baseline exception. The task is Complete; BACKGROUND-004 and SYSTEM-TEST-001 remain gated by other dependencies.
 
 ### Historical Attempt 1 status
 
@@ -489,3 +489,32 @@ Resolve the owned attempt identity before selecting initial-only cleanup. Apply 
 ### Lifecycle
 
 `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. The next normal launcher claim creates Attempt 3. Architect acceptance remains withheld. This review overlay is applied only to the matching parent task branch and published under the developer’s explicit commit/push instruction. No implementation branch or main branch is changed by this publication.
+
+## Architect Review — Accepted (Attempt 3, 2026-11-04)
+
+### Review Notes
+
+- Attempt 3 resolves the sequence-two pre-permit cleanup regression. `failPrepared` now resolves attempt identity before selecting the initial-only cleanup path. Proven sequence-one INITIAL messages use their locked lineage path; valid sequence-two follow-ups retain guarded generic cleanup; conflicting or uncertain evidence remains untouched.
+- The new PostgreSQL regression covers unpermitted, permitted, uncertain and conflicting sequence-two evidence. The unpermitted case fails the message and removes only its exact outbound usage. The other cases preserve message, usage and attempt state. This addresses the concrete Attempt 2 reproducer.
+- Shopify resume/provider concurrency and the prior source/credit/cleanup/receipt scenarios remain covered by the reported task-owned PostgreSQL tests. The report records all task-owned cases passing.
+- The implementation remains within the assigned production/test ownership. No general follow-up processor, HUMAN runtime, schema or Woo activation behavior was changed.
+
+### Reviewed Files
+
+- All 22 paths listed in the Attempt 3 implementation diff, including `src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts` and `tests/integration/initial-outreach-admission-races.integration.test.ts`.
+- The Attempt 1 and Attempt 2 review history and the Attempt 3 Completion Report.
+
+### Validation Reviewed
+
+- Focused Vitest selection: 137 passed across 11 files.
+- Build, declared ESLint selection and whitespace check: passed.
+- Declared seven-file PostgreSQL/Redis selection: 40 passed and 4 failed. The four failures were reproduced on untouched Background main with the same Database gitlink and have the same signatures as the narrow HUMAN baseline exception authorized in the prior Architect Review. This is recorded as a nonzero command result, not as a fully passing suite. The task-owned cases and the remaining regression cases passed.
+- These results were reported by the implementation agent and reviewed, not rerun by the architect.
+
+### Architecture Conformance
+
+Conforms to the task's locked outbound permit, exact-source, uncertainty, cleanup and receipt contracts. The Attempt 2 sequence-two regression is corrected without changing the read-only follow-up processor or broadening the HUMAN baseline exception.
+
+### Follow-up
+
+`ARCH-056-BACKGROUND-004` and `ARCH-056-SYSTEM-TEST-001` remain gated because other dependencies are incomplete. This acceptance does not start them or authorize a merge to `main`.
