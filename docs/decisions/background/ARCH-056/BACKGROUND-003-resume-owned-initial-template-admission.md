@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T01:37:02Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-040-BACKGROUND-008
@@ -352,7 +352,11 @@ Stop and report a blocking contract conflict if safe final admission requires ch
 
 ## Completion Report
 
-### Status
+### Current review status
+
+Changes Requested — Attempt 2, 2026-11-04. Architect review found and reproduced a sequence-two cleanup regression in `failPrepared`; see the appended review. Attempt 2 is preserved, the claim is cleared, and the task returns to Ready. BACKGROUND-004 and SYSTEM-TEST-001 remain gated. The implementation is published at `a68fe273bde3503605e64fb412143ac9dc1c563d`; this architect overlay is published on the matching parent task branch under the developer’s explicit commit/push instruction.
+
+### Historical Attempt 1 status
 
 Blocked during Attempt 1. Implementation draft `32b80bf` is published on the Background task branch. The required PostgreSQL preservation gate has a contradictory read-only assertion. The task is not submitted for review.
 
@@ -442,3 +446,28 @@ Pending review against the parent architecture, task allowlist, interface contra
 ### Follow-up
 
 Pending implementation review; no enabled task may be started by this task's executor.
+
+## Architect Review — Changes Requested (Attempt 2, 2026-11-04)
+
+### Finding — P2: preserve sequence-two pre-permit cleanup
+
+`src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts:18–20` treats every `recovery-outreach:<attemptId>` usage key as an initial attempt and returns immediately if `lockInitial` fails. The existing sequence-two follow-up sender uses the same key format (`recovery-outreach-follow-up-processor.service.ts:177`), while `lockInitial` requires sequence one and trigger INITIAL. Therefore ordinary pre-provider suppression/moderation refusal of a sequence-two message silently skips cleanup. The message remains PENDING and its hard-limit UsageEvent remains present. A later replay sees duplicate/PENDING and cannot resume the unchanged follow-up flow, and the leaked usage consumes its message limit. This violates the explicit sequence-two preservation contract; it is not one of the four approved HUMAN baseline exceptions.
+
+Independently reproduced on disposable PostgreSQL with canonical migrations: create a valid new sequence-two NO_RESPONSE_FOLLOW_UP attempt, a PENDING AUTOMATION message with no permit/receipt, and its exact normal outbound UsageEvent; call the public facade's `failPrepared(messageId)`. Expected `{status: FAILED, usage: 0}`; observed `{status: PENDING, usage: 1}`. No production constraint was disabled. The temporary review test was removed from the implementation worktree afterward; its reproducer is retained at `/tmp/arch056-review-sequence-two.integration.test.ts` and output at `/tmp/arch056-bg003-review-sequence-two-retry.log` for local follow-up.
+
+### Required correction
+
+Resolve the owned attempt identity before selecting initial-only cleanup. Apply the new initial association/lock behavior only to proven sequence-one INITIAL attempts; preserve the existing guarded generic cleanup for valid sequence-two follow-ups, without allowing malformed/conflicting initial lineage to fall through unsafely. Add a durable regression in the already-owned test modules for a valid sequence-two pre-permit refusal, asserting FAILED message and removal of only its exact hard-limit usage, plus preservation of permitted/uncertain follow-up evidence. Rerun the declared preservation gates and reconcile Work Items/Completion Report before resubmission. Do not modify the read-only follow-up processor or broaden the HUMAN baseline exception.
+
+### Validation independently performed
+
+- Reviewed the full `afac7c3..a68fe27` task implementation diff and the Attempt 2 correction. The task uses the canonical dedicated parent and implementation worktrees; both were clean at review start. Remote implementation equals `a68fe273bde3503605e64fb412143ac9dc1c563d`, and remote parent report equals `5d1b3730ecb5b6af3ccd8615249d41eecccaa0d3`.
+- Exact required unit selection: 137 passed across 11 files.
+- Exact required seven-file PostgreSQL/Redis selection: 36 passed, four failed. All four failure names and `expected 'suppressed' to be 'admitted'` signatures match the previously authorized HUMAN baseline exception. This remains a nonzero exit, not a completely passing integration suite. The unchanged baseline archive was not rerun during this review.
+- Production build, all changed TypeScript-file ESLint, and `git diff --check afac7c3..HEAD` passed with Node 24.19.0.
+- The additional valid sequence-two database regression fails with the concrete state mismatch above. An earlier draft fixture attempted to mutate immutable attempt identity and was rejected by the database; the successful reproduction creates a new valid attempt instead. An intervening runner failed before tests on disposable Redis readiness; the retry reached the assertion and reproduced the defect.
+- No permanent implementation source or test changes were made by the reviewer. No implementation commit/push, merge, main update, or downstream promotion was performed.
+
+### Lifecycle
+
+`status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. The next normal launcher claim creates Attempt 3. Architect acceptance remains withheld. This review overlay is applied only to the matching parent task branch and published under the developer’s explicit commit/push instruction. No implementation branch or main branch is changed by this publication.
