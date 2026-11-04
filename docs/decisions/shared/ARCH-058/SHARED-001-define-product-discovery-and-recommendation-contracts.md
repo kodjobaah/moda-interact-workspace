@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: codex
 claimed_at: 2026-11-04T05:45:17Z
@@ -89,14 +89,14 @@ The database has existing JSON guard/insert equality constraints on grants. DATA
 
 ## Work Items
 
-- [ ] Confirm actual accepted source baseline and inspect each existing grant/descriptor consumer in this repository.
-- [ ] Implement the exact structural schemas/dictionaries and export names.
-- [ ] Implement deterministic built-in descriptor payloads/constants and branch-aware grant helpers.
-- [ ] Support nullable detail scalars in the bounded subset and prove the published recommendation schema compiles.
-- [ ] Update common runner descriptor registration and authorization without changing terminal error behavior.
-- [ ] Add the bounded shipping and answer-presentation contracts; correct the trusted soft-response instruction without widening hard referrals.
-- [ ] Add meaningful negative/positive contract and runner tests and update affected fixtures/export checks.
-- [ ] Run validation, record exact evidence and return for architect review without publication.
+- [x] Confirm actual accepted source baseline and inspect each existing grant/descriptor consumer in this repository.
+- [x] Implement the exact structural schemas/dictionaries and export names.
+- [x] Implement deterministic built-in descriptor payloads/constants and branch-aware grant helpers.
+- [x] Support nullable detail scalars in the bounded subset and prove the published recommendation schema compiles.
+- [x] Update common runner descriptor registration and authorization without changing terminal error behavior.
+- [x] Add the bounded shipping and answer-presentation contracts; correct the trusted soft-response instruction without widening hard referrals.
+- [x] Add meaningful negative/positive contract and runner tests and update affected fixtures/export checks.
+- [x] Run validation, record exact evidence and return for architect review without publication.
 
 ## Interfaces / Contracts
 
@@ -153,6 +153,84 @@ The developer explicitly requested revalidation of the existing implementation a
 Transition: review → ready; executor/claimed_at cleared; attempt remains 1. Execution remains agent-owned with automatic review submission. The next deterministic launcher claim owns Attempt 2. The prior review state was not Complete, so this transition creates no new downstream completion dependency regression or promotion. Downstream task states are preserved.
 
 ## Completion Report
+
+### Attempt 2 — Ready for Review
+
+Revalidated the expanded definition and implemented its missing browse, shipping and answer-presentation requirements. Implementation committed/pushed as `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139` on `task/ARCH-058-SHARED-001`. Execution is agent-owned (`codex`); no architect acceptance or package publication is asserted. Attempt 1 and the developer reopen decision remain preserved below.
+
+#### Definition comparison and corrections
+
+| Requirement | Result and evidence |
+|---|---|
+| Original categories, unavailable lookups, canonical built-ins, strict mixed grants and bounded nullable recommendation details | Retained and revalidated by the focused and full suites. The two canonical discount descriptors/hashes are unchanged. |
+| Explicit bounded browse | Added `browse` to search input with parsed default `false`; query remains nullable/default null. Query/category/browse applicability remains service policy. Exact-get/search outputs are unchanged. |
+| Fourth published shipping tool | Added/exported the shipping input/output schemas and inferred types, their dictionary members and `shipping.getInformation` operation metadata. Shipping stays outside the two-discount built-in allowlist. Candidate definition/operation versions `1.0.0` validate. |
+| Native shipping facts and independent policy outcomes | Strict objects require every nullable output field; IDs, strings, HTTPS URLs, finite nonnegative measurements and enums are bounded. Inputs default both IDs to null and reject caller-authored destination/cart/query/shop/scope/token/URL fields. Ownership, field relationships, verified hosts and the 16,384-byte policy-body budget remain adapter policy. |
+| Optional answer presentation | Added/exported dispositions and identifier-only presentation selection. Both null IDs select policy-only information; their presence/disposition relationship remains service policy. Combining its shape with recommendations retains unrelated release fields. |
+| Narrow instruction correction | Replaced the blanket unknown-fact referral instruction with trusted-host-authorized truthful limitations. Runtime data still creates no objective/permission. A positively absent policy scope differs from a failed authorized provider read. Instructions distinguish a latched product-bearing shipping observation from a policy-only ordinary answer. Host composition/branch detection stays with the host. |
+| Hard error/referral preservation | New runner tests accept normal shipping outcomes and both soft dispositions, reject nonempty hard-referral details/evidence, preserve plain-text conversion after error, and reject a soft answer after an error followed by a successful shipping result. Required-referral logic and the hard-referral validator were not changed. |
+| Real projection and public exports | Actual Commerce projector generates category/search/shipping inputs and combined recommendation/presentation details. Null/null selection and nullable recommendation IDs compile; depth-four input, depth-six details, unbounded fields, extra keys and unsupported schema keywords remain rejected. Compiled public exports are exercised in a clean process. |
+
+#### Files changed in Attempt 2
+
+`README.md`, `package.json` (focused test script only), `scripts/validate-commerce-entrypoints.mjs`, `src/commerce/definitions.ts`, `src/commerce/schemas.ts`, `src/commerce/product-discovery-contracts.test.ts`, `src/commerce/product-discovery-projection.test.ts`, `src/commerce/runner/instructions.ts`, `src/commerce/runner/runner.test.ts`.
+
+#### Validation
+
+All commands ran in the prepared Shared implementation worktree using the workspace Node bootstrap (Node 24.19.0). Both focused and full tests set `COMMERCE_CONTRACT_SOURCE_ROOT` to the explicit Commerce source checkout, so the real projection case executed rather than skipped.
+
+| Command/check | Result |
+|---|---|
+| `npm run test:product-discovery-contracts` | 77 passed; 0 failed/skipped. Includes the extended runner suite. |
+| `npm run typecheck` | Passed after the final projection fixture change. |
+| `npm test` | 432 tests: 431 passed, 0 failed, 1 existing optional live-Redis skip (`TEST_REDIS_URL` not configured). |
+| `npm run build` | Passed, including generated declarations. |
+| `npm run validate:commerce-entrypoints` | Passed in the clean process with all new schemas and the existing runner regression checks. |
+| Browser-platform bundle of `src/commerce/index.ts` | Passed; 159 bundled modules, no Node crypto requirement. |
+| `npm pack --dry-run` | Passed; 131 files, including both commerce and runner JavaScript/declaration entrypoints; no tarball/registry write. |
+| `git diff --check` | Passed for source and this report. |
+| Protected source comparison | Runtime-data authority text is byte-identical; canonical discount descriptors, hard-referral validator, subset limits and runtime runner version unchanged from Attempt 1. |
+
+Actual Commerce prerequisite: `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-commerce`. Observed checkout HEAD: `7046baabc66d5a9b1d1e374cc29474a816dd68ba`. The three consumed files were clean and their hashes match the Attempt 1 evidence (authoring `306105bcc30b4fd4cf6c03d9b5bf17363285088390315363878333054585d608`, renderer `103195938924b2c5c0b01ddf05c0e6bc660a800b8455ba84f4303a93f571ae74`, publication `a056e6b5869a35b7ca6bf78380d2caab5cde635d56fbd5697ae89efff993edaa`). Its existing projector/publication files were read only; no consumer dependency or source was changed. The first integration run exposed its released operation registry rejecting the new names. The corrected fixture checks exact candidate operation metadata against candidate Shared, then exercises the installed Commerce publication path with its existing registered `products.search` operation and the actual generated input schema. This proves schema projection/publication compatibility, not adoption of the new operation registrations by the unreleased consumer. Commerce owns that adoption after SHARED-002. No substitute input/details schema or relaxed validator is used in the projection test.
+
+Logs: `/tmp/shared058-a2-{focused,typecheck,tests,build,entrypoints,browser,pack}.log`. The original failed registry probe was resolved before the passing focused/full runs. Direct contract tests deliberately accept structurally valid but business-inconsistent combinations; these do not establish permission or provider truth.
+
+#### Provenance and remaining boundary
+
+| Final compiled artifact | SHA256 |
+|---|---|
+| `dist/commerce/index.js` | `d5f865b7812228d0ed44957fcab35b4d67859c2f59b51bd17ddd8affbb072680` |
+| `dist/commerce/index.d.ts` | `58efe0ad118969bce69f14862c327ddf47f33ca51cf0ac3216af4a90cee38556` |
+| `dist/commerce/runner/index.js` | `f01298e43e87c90a8232f13def60e2af662b100432fcf5517aa55e3c8738914f` |
+| `dist/commerce/runner/index.d.ts` | `559de76987df045ccb36a29b4d2dffb9f8c8496f834d5294014f24f873702b5a` |
+
+
+Implementation start: `602417366ecab046757f3f84dbc7923e816b009b`; end: `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`. Package metadata remains `3.1.0`; runtime runner remains `1.1.0`; the separate SHARED-002 task owns the 4.0.0 release gate. No provider/database code, consumer upgrades, new package subpath, customer-facing strings, main merge or registry publication occurred. Architect review and downstream publication/consumer implementation remain pending.
+
+Normative contract SHA256: `ae50452000759f0951d86dd200a8f08d2b29cfc747c0743b95638c9590751f60`; architecture SHA256: `1ed72af6d9e6b1e0abb64dfa4e2ac972a3854c2b76c9bdbbc2dd0ba47468f420`.
+
+```text
+canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-SHARED-001
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-SHARED-001
+both branches: task/ARCH-058-SHARED-001
+parent synchronized head before claim: b2b2985384ab5da6eaff6eba7cc87d24d9ac5ad0
+implementation synchronized head before claim: 602417366ecab046757f3f84dbc7923e816b009b
+parent and implementation remote task FF: not-needed
+parent and implementation origin/main: already-current
+final parent synchronization/re-gate: passed; no explicit dependencies
+Attempt 2 claim: bf18415409c2dce9259c6f08801422942a041e61; committed/pushed
+claimed_at: 2026-11-04T05:45:17Z
+both canonical worktrees reused for this same task: yes
+another task worktree reused: no
+recursive submodule sync/update: passed; no implementation submodule entries
+shared/default checkout switched or mutated for implementation: no
+parent implementation gitlink staged/changed: no
+main merged/updated/pushed: no
+```
+
+### Attempt 1 — Preserved Historical Report
+
 
 ### Status
 
