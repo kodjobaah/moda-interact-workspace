@@ -1,6 +1,8 @@
 # ARCH-058: Standard CommerceAgent product discovery and discount recommendations
 
-**Status:** task definitions for implementation; not implemented or deployed. 4 November 2026.
+**Status:** implementation in progress. DATABASE-001 accepted at Attempt 1 on 4 November 2026; architecture-wide implementation and deployment are not certified.
+
+Database handoff: accepted revision `ded8f14a60182f6b1443640f012caf0089b8a44c` provides the taxonomy persistence, required product-search policy and grant-shape extension. MCP-001 remains pending on SHARED-002; SYSTEM-TEST-001 remains pending on its other prerequisites. Initial statuses in the task-definition table below are historical.
 
 ## Decision
 

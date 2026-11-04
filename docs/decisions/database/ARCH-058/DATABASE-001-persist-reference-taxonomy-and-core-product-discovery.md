@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-11-04T04:43:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -36,7 +36,7 @@ Normative wire contract: `docs/architecture/ARCH-058/contracts.md`, section 4, i
 
 Coordinator: `moda_architect`.
 
-**Definition state:** defined but not materialised. This portable canonical definition has no claimed attempt, task branch, task worktree, implementation commit, push or accepted implementation. Materialise through `/moda-task ARCH-058-DATABASE-001` under `docs/task-definition-materialization.md` before execution. `ready` records the empty dependency frontier; it does not authorise deployment to a shared environment.
+**Definition state:** materialised and architect-accepted at Attempt 1 (2026-11-04). Published Database implementation `ded8f14a60182f6b1443640f012caf0089b8a44c` and parent submission `f20c5512147ddde5186543b7af39f9d61e5753c8` were verified against their remote task branches. Automatic completion is recorded below; no shared-environment deployment is authorised by this acceptance.
 
 ## Objective
 
@@ -468,24 +468,35 @@ No scope expansion or unresolved implementation blocker. The category CHECK addr
 
 ### Review Status
 
-Not reviewed.
+Accepted — Attempt 1, 2026-11-04. No blocking findings. With `completion_mode: automatic`, set `status: complete` and clear the executor claim.
 
 ### Review Notes
 
-None. This definition is not implementation acceptance.
+- All seven changed implementation paths are within the allowlist. The two Prisma models and SQL constraints match the specified persistence contract; the last-ancestor check correctly uses the actual array upper bound. No historical migration, consumer copy, dependency, new trigger or unrelated seed policy changed.
+- The single transaction guards the existing product-search feature with bounded inventory locks and literal ownership-prefix checks, preserves existing mapping configuration and unrelated data, and checks the targeted conversion before commit.
+- Both grant function replacements match the normative SQL in the task. Published authority, owner/inbound checks and immutability remain enforced; the built-in branch adds structural support without claiming runtime hash/policy authority.
+- Reviewed fixture isolation, failure handling, preserved-row comparisons, real grant insertions and migration-history checks. Fresh and upgrade execution independently confirmed the specified behavior, including all seven rejected-upgrade variants and normal migration rerun.
 
 ### Reviewed Files
 
-None.
+- `prisma/schema.prisma`
+- `prisma/seed.mjs`
+- `prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql`
+- `package.json`
+- `scripts/validate-reference-taxonomy-schema.mjs`
+- `scripts/test-reference-taxonomy-postgres.mjs`
+- `scripts/fixtures/reference-taxonomy-fixtures.mjs`
 
 ### Validation Reviewed
 
-None.
+Independently rerun from the isolated implementation worktree after the canonical Node bootstrap: `npm run validate`, `npm run prisma:generate`, `npm run test:reference-taxonomy-schema`, both fresh and upgrade PostgreSQL scripts, scoped ESLint for all three scripts, and implementation diff whitespace checks. All passed. PostgreSQL 17.11 / pgvector 0.8.7 were invocation-owned and disposable; both runners exited successfully after cleanup. No existing database or broad seed was used. Logs are `/tmp/arch058-database001-review-{validate,generate,static,fresh,upgrade,lint}.log`.
+
+Both task worktrees were clean at review start. Direct remote verification matched implementation `ded8f14a60182f6b1443640f012caf0089b8a44c` and parent submission `f20c5512147ddde5186543b7af39f9d61e5753c8`. The implementation worktree remains clean after validation.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Conforms to the frozen database contract. Importer semantic checks, immutable completed-generation usage, compatible consumer rollout, content/publication preflight, future-plan/new-store service flows and production built-in hash authority remain with their designated downstream owners. This acceptance is not deployment or taxonomy readiness evidence.
 
 ### Follow-up
 
-Do not advance dependants until the task is accepted and Complete under the normal architecture workflow.
+DATABASE-001 is complete. Checked both enabled tasks: MCP-001 remains pending because SHARED-002 is pending; SYSTEM-TEST-001 remains pending on its other implementation/publication prerequisites. No downstream task is claimed or executed. The stale unmaterialised-definition statement was reconciled with the published execution evidence. This acceptance and parent architecture handoff are local, uncommitted and unpushed; no implementation changes or main-branch merge were made.
