@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-11-04T11:13:25Z
@@ -148,7 +148,7 @@ A source manifest with verified immutable content and an existing authorized ref
 Run commands from the launcher-provided `moda-interact-mcp` implementation worktree. Before the first Node command, use `command -v node >/dev/null 2>&1 || source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"`. Do not guess an absolute developer checkout.
 
 - [x] Add focused tests at `tests/unit/execution/reference-taxonomy/{importer,reader,embedding,cli}.test.ts`; run `npm exec -- tsx --test tests/unit/execution/reference-taxonomy/*.test.ts tests/unit/capabilities/resolve.test.ts tests/unit/capabilities/prisma-reader.test.ts tests/unit/runtime/service-ports.test.ts`.
-- [ ] Add `tests/integration/reference-taxonomy.integration.test.ts` to the existing owned-fixture harness and run `npm run test:integration:docker`. This harness creates its own disposable database; never substitute a deployment `DATABASE_URL` or run tests against a live database.
+- [x] Add `tests/integration/reference-taxonomy.integration.test.ts` to the existing owned-fixture harness and run `npm run test:integration:docker`. This harness creates its own disposable database; never substitute a deployment `DATABASE_URL` or run tests against a live database.
 - [x] Cover first import, existing import, config rotation, concurrent activation, input/vector failures, read consistency, dry-run no-provider behavior and structured error sinks; use embedding stubs, not a billable API.
 - [x] Run `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check`; record exact outcomes and any existing accepted baseline separately.
 - [x] Show the fixture-only CLI receipt and the actual composition proof. Do not run production/persistent `taxonomy:sync --apply` as validation.
@@ -162,6 +162,73 @@ Stop before implementation if accepted dependencies, the approved source distrib
 The existing Admin workflow and merchant-knowledge runtime are compatibility boundaries. A valid global category describes meaning only. The current shop's provider-backed product read remains the evidence for whether it sells a hammer. The Commerce-owned setup command calls this importer as a child stage after Database migration; this task supplies that command surface, not the orchestrator.
 
 ## Completion Report
+
+### Status
+
+Attempt 2 ready for architect review. The required disposable PostgreSQL integration gate has now passed under the explicit authorization in the Attempt 1 Architect Review. No architect acceptance or downstream promotion is claimed. Implementation commit: `30cdca4e62f768722388c1d94979a88ff24f7220` on `task/ARCH-058-MCP-001`.
+
+### Corrections Completed
+
+- **P1 — required PostgreSQL validation:** ran `npm run test:integration:docker` using the owned disposable fixture harness, fixed the exposed integration fixtures, and reran the entire command successfully. `tests/integration/reference-taxonomy.integration.test.ts` now gives a published revision matching creation/publication timestamps, snapshots the actual persisted Commerce feature configuration prompt, captures only CLI receipt strings while forwarding Node test protocol frames, and gives dry-run planning a fresh configuration identity. Dry-run assertions additionally compare persisted generations, category row count and embedding configuration before/after invocation. Production implementation and database schema are unchanged in this attempt.
+- **P3 — materialization statement:** retained the architect's corrected statement. Existing parent and implementation worktrees were reused, not newly created. The earlier report below is explicitly historical; its NOT RUN/pending statements describe Attempt 1 and are superseded by this report.
+- Corrected the implementation branch upstream to `origin/task/ARCH-058-MCP-001` during the normal task-branch push.
+
+### Validation Results
+
+Command, executed from `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-001` after the prescribed Node bootstrap:
+
+```bash
+export MODA_WORKSPACE_ROOT=/Users/kwadwoadomafriyie/project/moda-interact-workspace
+command -v node >/dev/null 2>&1 || source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
+npm run test:integration:docker
+```
+
+**PASS, exit 0:** 26 tests reported; **25 passed, 0 failed, 1 skipped** (the explicitly opt-in live Shopify test). Output: `Disposable PostgreSQL integration tests passed.` The harness also passed `npm run typecheck:integration`, generated Prisma 6.19.3, and applied the accepted Database migrations only to its disposable PostgreSQL database.
+
+All seven taxonomy subtests passed: source-backed hierarchy/first concurrent import and unchanged rerun; exact provenance lookup; checksum/vector/database-write rollback; concurrent replacement and inactive-fingerprint safeguards; changed configuration and mixed dimensions; actual Prisma registry advertisement/invocation and stable manifest across missing readiness with stale-definition rejection; CLI receipt and zero-provider/no-data-change assertions. Embedding calls used controlled fixtures, not a billable API.
+
+Measured fixture diagnostic: `fixtureCategoryCount=3`, `resultLimit=2`, `roundTripMs=60.54875300000003`, `productionLatencyMeasured=false`. This is one observed service round trip against the tiny disposable fixture, not a production latency/corpus-size claim.
+
+**PASS:** `npm run lint` and `git diff --check` after the final fixture correction. Earlier runs failed on integration-fixture setup/capture assumptions; those failures were resolved before the final full run. Final log: `/tmp/mcp058-attempt2-integration-verified.log`. Temporary fixture project `moda-mcp-it-b908b77c56f9` and its container, network and volume were removed successfully by the harness.
+
+Attempt 1's 85 unit/regression passes (including the 45-test focused subset), main typecheck and build remain applicable to unchanged production sources; they were not rerun or counted as fresh Attempt 2 results. No live provider/model evaluation was run.
+
+Fixture CLI receipt observed during the successful database run:
+
+```json
+{
+  "schemaVersion": "1",
+  "environment": "test",
+  "mode": "DRY_RUN",
+  "stages": [
+    {
+      "stage": "taxonomy",
+      "status": "PLANNED",
+      "code": "TAXONOMY_PREPARE_GENERATION"
+    }
+  ],
+  "taxonomy": {
+    "sourceSha256": "67c147cbc3540c0a595d72445daf4a5ce5ad044f0c6060d2a0640530d1ade822",
+    "importFingerprint": "8135165990944ad4e3a78c88ba71bc864e590cc9a203d2ea0e12be121effaebc",
+    "generationId": null,
+    "categoryCount": 3
+  },
+  "publication": null
+}
+```
+
+### Physical Worktree and Synchronization Evidence
+
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-001`; implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-001`. Both reused their dedicated `task/ARCH-058-MCP-001` branches; no other task's worktree or shared implementation checkout was used for edits.
+
+Launcher packet: dependency gate passed for DATABASE-001/SHARED-002; parent remote task fast-forward not needed, origin/main incorporated; implementation remote task fast-forward not needed, origin/main already current. Recursive submodule sync/update and verification passed, Database pinned `ded8f14a60182f6b1443640f012caf0089b8a44c`. Parent prepared head `cf53d2390c70c92a779d0c620a1741010adebf49`; Attempt 2 claim `a658bf207249acb675814129f5a587f4491d0233`, pushed at claim; implementation start `66feebf2aeea53e6f4515a5899ad00c7bc550bce`, final `30cdca4e62f768722388c1d94979a88ff24f7220`. Only this task file changed in the parent; its implementation gitlink and Architect Review were preserved.
+
+### Remaining Issues and Boundaries
+
+The requested integration evidence gap is resolved. Independent architect acceptance remains pending and downstream tasks remain gated. No persistent database was migrated/imported, no tools were published, and no deployment/main merge was performed. Verified source/Shared/Database identities, implementation bounds and operator notes from Attempt 1 remain unchanged. No cross-repository change or new architecture decision was needed.
+
+## Attempt 1 Completion Report (historical; superseded by Attempt 2 above)
+
 
 ### Status
 
