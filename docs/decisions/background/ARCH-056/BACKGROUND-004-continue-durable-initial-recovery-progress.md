@@ -469,3 +469,24 @@ Ready for normal launcher preparation: all declared prerequisites are complete (
 The implementation retains the established exact-source credit settlement, same-message outbound admission/fence, original receipt identity, atomic Support transition, finite retry policy, Woo production gate and no-Woo-follow-up boundary. The bounded retry exhaustion repair procedure remains an explicit replay of the retained failed candidate through the same handler; no general scanner or universal eventual-recovery claim is added.
 
 All five declared prerequisites for `ARCH-056-SYSTEM-TEST-001` are complete. That task is promoted from `pending` to `ready` at Attempt 0 with no claim. It is not launched or executed here. `ARCH-056-SYSTEM-TEST-002` remains pending on SYSTEM-TEST-001. The developer's 2026-11-04 authorization to publish architect review and architecture handoff overlays on this parent task branch applies to this acceptance update. No task branch was merged to `main`.
+
+## Supplemental Architect Review — 2026-11-04
+
+Review of implementation `0575c4e`, requested and authorized for commit/push by the developer in this chat. **Changes requested by this supplemental review.** The separately recorded Attempt 2 acceptance above is preserved; this supplement does not silently reopen the accepted task or change downstream lifecycle state. Reconcile this finding with that acceptance before relying on the task as fully verified.
+
+### Remaining Finding
+
+**[P2] Completed checkouts bypass required settlement in direct initiation.** In `src/services/checkout-recovery/recovery-initiation.service.ts:353`, `handleCheckoutCreated` returns immediately when `event.completedAt` is set, before the existing-recovery lookup and `continueInitialOutreach` call at lines 357–359. If provider delivery succeeded but bookkeeping was interrupted, a direct retry after checkout completion skips exact billing/Support finalization. This conflicts with the requirement to classify durable progress before new-send lifecycle gates and allow confirmed bookkeeping after order completion. Move the completed-checkout new-send gate after existing-progress reconciliation, preserving tenant/source validation and terminal state. Add a direct-initiation regression with a confirmed receipt, incomplete finalization, and a completed checkout; assert settlement without provider work or terminal-status downgrade. This is a source-inspection finding; no new runtime regression probe was added.
+
+### Independent Validation
+
+Executed from the dedicated implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-004`, using Node 24.19.0.
+
+- Five task integration files passed: **26/26 tests**, no skipped files, through the disposable PostgreSQL/Redis runner. Includes progress, actual candidate worker, ARCH-052 no-offer dispatch, Support notice/lock races, and ARCH-055 follow-up identity.
+- Broader unit selection passed **664 tests**, with **2 failures across 46 files**. Selection: pending-candidate worker plus checkout-recovery, recovery-template-integration and woocommerce-recovery path filters. This is not the exact 11-file task selection.
+- `tests/unit/services/checkout-recovery.capacity-resume.test.ts:259` expected deferred activity but received `InitialOutreachHeldError` with `lineage-conflict`; its Shop fixture omits the platform now required by early classification.
+- `tests/unit/services/woocommerce-recovery/woo-initial-delivery.service.test.ts:122` expects `failPrepared` after a technical moderation exception, while execution preserves admission evidence. Reconcile these adjacent fixtures/expectations with the accepted contracts; neither failure alone proves a production regression.
+- `npm run build` passed; implementation correction diff whitespace check passed.
+- Local verification logs: `/tmp/arch056-bg004-review-attempt2.log`, `/tmp/arch056-bg004-review-integration.log`, `/tmp/arch056-bg004-review-build.log`. These are local evidence paths, not committed artifacts.
+
+The prior resumability fixes appear addressed, and the added interruption/lock-race coverage executed successfully. No implementation code, schema, gitlink, or dependency lifecycle was changed by this supplemental review.
