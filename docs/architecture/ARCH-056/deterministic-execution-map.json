@@ -134,7 +134,7 @@
       "task_id": "ARCH-056-BACKGROUND-002",
       "repository": "moda-interact-background",
       "path_base": "implementation repository root unless explicitly workspace-qualified",
-      "definition_revision": 3,
+      "definition_revision": 4,
       "production_modify": [
         "src/services/recovery-billing.service.ts",
         "src/services/recovery-billing/recovery-billing.types.ts",
@@ -160,7 +160,12 @@
         "tests/unit/services/promotional-recovery-reservation.service.test.ts",
         "tests/unit/services/paid-included-recovery-reservation.service.test.ts",
         "tests/unit/services/whatsapp-provider-status.service.test.ts",
-        "tests/integration/arch028-recovery-delivery-compensation.integration.test.ts"
+        "tests/integration/arch028-recovery-delivery-compensation.integration.test.ts",
+        "tests/integration/free-recovery-reservation.concurrency.integration.test.ts",
+        "tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts",
+        "tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts",
+        "tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts",
+        "tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts"
       ],
       "tests_create": [
         "tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts",
@@ -190,11 +195,6 @@
         "src/services/woocommerce-recovery/woo-initial-send-fence.service.ts",
         "src/services/woocommerce-recovery/woo-guarded-initial-sender.service.ts",
         "tests/unit/services/recovery-reservation/reservation-lifecycle.test.ts",
-        "tests/integration/free-recovery-reservation.concurrency.integration.test.ts",
-        "tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts",
-        "tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts",
-        "tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts",
-        "tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts",
         "src/services/recovery-conversation/recovery-conversation.sql.ts",
         "src/services/whatsapp-provider-status-lifecycle.ts",
         "tests/integration/recovery-human-provider-status.integration.test.ts"
@@ -218,7 +218,7 @@
         "npm run build",
         "npm run test -- tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/recovery-reservation/reservation-lifecycle.test.ts",
         "npm run test:integration -- tests/integration/initial-outreach-credit.integration.test.ts tests/integration/initial-outreach-credit-races.integration.test.ts tests/integration/initial-outreach-parent-fk.integration.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/recovery-human-provider-status.integration.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts",
-        "npx --no-install eslint src/services/recovery-billing.service.ts src/services/recovery-billing/recovery-billing.types.ts src/services/recovery-billing/recovery-reservation-lifecycle.service.ts src/services/recovery-billing/initial-outreach-credit.service.ts src/services/recovery-billing/initial-outreach-credit-evidence.ts src/services/recovery-delivery-compensation/lineage.ts src/services/recovery-delivery-compensation/reconcile.service.ts src/services/whatsapp-provider-status.service.ts src/services/free-recovery-reservation.service.ts src/services/purchased-recovery-reservation.service.ts src/services/promotional-recovery-reservation.service.ts src/services/paid-included-recovery-reservation.service.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts tests/unit/services/recovery-billing/recovery-billing.test-support.ts tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/initial-outreach-credit.integration.test.ts tests/integration/initial-outreach-credit-races.integration.test.ts tests/integration/initial-outreach-parent-fk.integration.test.ts tests/integration/fixtures/initial-outreach-credit.fixture.ts",
+        "npx --no-install eslint src/services/recovery-billing.service.ts src/services/recovery-billing/recovery-billing.types.ts src/services/recovery-billing/recovery-reservation-lifecycle.service.ts src/services/recovery-billing/initial-outreach-credit.service.ts src/services/recovery-billing/initial-outreach-credit-evidence.ts src/services/recovery-delivery-compensation/lineage.ts src/services/recovery-delivery-compensation/reconcile.service.ts src/services/whatsapp-provider-status.service.ts src/services/free-recovery-reservation.service.ts src/services/purchased-recovery-reservation.service.ts src/services/promotional-recovery-reservation.service.ts src/services/paid-included-recovery-reservation.service.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts tests/unit/services/recovery-billing/recovery-billing.test-support.ts tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/initial-outreach-credit.integration.test.ts tests/integration/initial-outreach-credit-races.integration.test.ts tests/integration/initial-outreach-parent-fk.integration.test.ts tests/integration/fixtures/initial-outreach-credit.fixture.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts",
         "git diff --check"
       ],
       "exported_contract_symbols": [
@@ -504,7 +504,19 @@
       "assigned_agent": "moda_background",
       "domain": "background",
       "task_file": "docs/decisions/background/ARCH-056/BACKGROUND-002-settle-confirmed-initial-outreach-credit.md",
-      "status": "ready"
+      "status": "ready",
+      "fixture_correction_scope": {
+        "date": "2026-11-04",
+        "reason": "Attempt 2 required matrix has twelve fixture/schema failures before owner concurrency and rollover assertions",
+        "allowed": "Minimal canonical schema/policy fixture setup in the five added tests_modify paths; preserve every original assertion and real concurrency schedule",
+        "forbidden": [
+          "production or schema changes",
+          "restoring retired BillingPlan fields",
+          "skipping or weakening cases",
+          "unowned fixture edits"
+        ],
+        "human_status": "Read-only; passed independent Attempt 2 rerun. Earlier failure remains historical and must be diagnosed if it recurs."
+      }
     },
     {
       "role": "BACKGROUND-003",
@@ -4520,6 +4532,36 @@
       {
         "task": "ARCH-056-SYSTEM-TEST-002",
         "operation": "tests_renames_to"
+      }
+    ],
+    "moda-interact-background/tests/integration/free-recovery-reservation.concurrency.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
+      }
+    ],
+    "moda-interact-background/tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts": [
+      {
+        "task": "ARCH-056-BACKGROUND-002",
+        "operation": "tests_modify"
       }
     ]
   },

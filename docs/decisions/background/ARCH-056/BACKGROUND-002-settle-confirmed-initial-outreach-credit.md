@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-11-04T02:11:43Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-028-BACKGROUND-004
@@ -30,7 +30,7 @@ updated: 2026-11-04
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 2. Materialised on the canonical parent task branch. Attempt 1 was claimed after checking its prerequisites. The implementation at `00cfac4` was submitted for review with the validation gaps recorded below; architect review returned Changes Requested. The claim is cleared for the next attempt.
+Definition revision: 4. Materialised in the canonical task worktrees. Attempt 2 implementation `79b8d5b` and report `650778eb2` are published. The 2026-11-04 architect review returns Changes Requested for strict orphan-message classification and incomplete preservation validation. The five-file fixture-only amendment below resolves the execution allowlist blocker. Attempt 2 is preserved and its claim is cleared; the next launcher claim starts Attempt 3.
 
 ## Objective
 
@@ -64,6 +64,20 @@ One repository: `moda-interact-background`. Paths below are relative to that rep
 | `src/services/paid-included-recovery-reservation.service.ts` | Modify narrowly | Add the same wrapper, a typed existing-period rejection, and remove BS-04's duplicate read |
 
 Own the unit and integration paths listed under Validation. Existing finalization, Shopify initiation, Woo orchestration and outbound fence files belong to `ARCH-056-BACKGROUND-004` and `ARCH-056-BACKGROUND-003`, respectively; they are read-only dependencies here. No file has two implementation owners.
+
+### Attempt 2 architect amendment — fixture-only scope (2026-11-04)
+
+This amendment supersedes the previous read-only restriction for **only** these five existing required regression modules:
+
+- `tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
+- `tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts`
+- `tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts`
+- `tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts`
+- `tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts`
+
+Authorize fixture/schema-alignment edits within these files: remove the retired BillingPlan soft/hard-limit and terminal-slot fields, seed their replacement policy/feature data through existing canonical schema where the tested behavior requires it, and retain the original reservation, accounting, concurrency, replay and rollover assertions. Run every original case; do not skip tests, weaken assertions, add schema fields, alter production policy, or fabricate passed evidence. These are tests_modify paths owned by BG002 in the matching execution map. Any needed shared fixture or production change outside this explicit list still requires separate disposition.
+
+`tests/integration/recovery-human-provider-status.integration.test.ts` stays read-only and remains in the full required command. It passed the independent Attempt 2 rerun; preserve the implementer's earlier null-message failure as historical evidence. If it recurs, capture the failed command/dispatch stage and compare baseline/candidate prerequisites before proposing a narrowly scoped fix. A passing rerun does not establish the cause of the earlier failure, and no waiver of its assertions is granted.
 
 ## Out of Scope
 
@@ -186,7 +200,7 @@ The purchased reserve P2002-to-empty-conflict conversion and existing empty inte
 - [x] Add same-transaction owner wrappers, promotional retained-source eligibility and the typed paid-period guard.
 - [x] Implement durable confirmed settlement with verified positive results, rollback-on-hold and Shop-key-share-before-message locking.
 - [x] Apply the same early owned-Shop lock to existing provider-status/compensation transaction entries, retaining all their existing policy and after-commit behavior.
-- [x] Implement read-only retained-source revalidation, including null-message reserved-before-outbound interruption and strict absent semantics.
+- [ ] Finish read-only retained-source revalidation: the null-message path must hold discoverable orphan automated messages, not return absent. Preserve the passing exact-source and reserved-before-outbound cases.
 - [x] Make the existing successful-commit facade reject noncommitted owner outcomes.
 - [x] Reuse the paid plan's already validated meter handle.
 - [x] Implement the fixed selected failure/hold/retry diagnostic owners, stages and correlation fields, preserving original exception identity and existing accounting/status behavior.
@@ -373,7 +387,7 @@ Run from the launcher-resolved implementation worktree after existing locked dep
 npm run build
 npm run test -- tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/services/recovery-reservation/reservation-lifecycle.test.ts
 npm run test:integration -- tests/integration/arch056-initial-outreach-credit.integration.test.ts tests/integration/arch056-initial-outreach-credit-races.integration.test.ts tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/recovery-human-provider-status.integration.test.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts
-npx --no-install eslint src/services/recovery-billing.service.ts src/services/recovery-billing/recovery-billing.types.ts src/services/recovery-billing/recovery-reservation-lifecycle.service.ts src/services/recovery-billing/initial-outreach-credit.service.ts src/services/recovery-billing/initial-outreach-credit-evidence.ts src/services/recovery-delivery-compensation/lineage.ts src/services/recovery-delivery-compensation/reconcile.service.ts src/services/whatsapp-provider-status.service.ts src/services/free-recovery-reservation.service.ts src/services/purchased-recovery-reservation.service.ts src/services/promotional-recovery-reservation.service.ts src/services/paid-included-recovery-reservation.service.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts tests/unit/services/recovery-billing/recovery-billing.test-support.ts tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/arch056-initial-outreach-credit.integration.test.ts tests/integration/arch056-initial-outreach-credit-races.integration.test.ts tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts tests/integration/fixtures/arch056-initial-outreach-credit.fixture.ts
+npx --no-install eslint src/services/recovery-billing.service.ts src/services/recovery-billing/recovery-billing.types.ts src/services/recovery-billing/recovery-reservation-lifecycle.service.ts src/services/recovery-billing/initial-outreach-credit.service.ts src/services/recovery-billing/initial-outreach-credit-evidence.ts src/services/recovery-delivery-compensation/lineage.ts src/services/recovery-delivery-compensation/reconcile.service.ts src/services/whatsapp-provider-status.service.ts src/services/free-recovery-reservation.service.ts src/services/purchased-recovery-reservation.service.ts src/services/promotional-recovery-reservation.service.ts src/services/paid-included-recovery-reservation.service.ts tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing/recovery-reservation-lifecycle.service.test.ts tests/unit/services/recovery-billing/recovery-billing.test-support.ts tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts tests/unit/services/recovery-billing/initial-outreach-credit.test-support.ts tests/unit/services/free-recovery-reservation.service.test.ts tests/unit/services/purchased-recovery-reservation.service.test.ts tests/unit/services/promotional-recovery-reservation.service.test.ts tests/unit/services/paid-included-recovery-reservation.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/integration/arch028-recovery-delivery-compensation.integration.test.ts tests/integration/arch056-initial-outreach-credit.integration.test.ts tests/integration/arch056-initial-outreach-credit-races.integration.test.ts tests/integration/arch056-initial-outreach-parent-fk.integration.test.ts tests/integration/fixtures/arch056-initial-outreach-credit.fixture.ts tests/integration/free-recovery-reservation.concurrency.integration.test.ts tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts
 git diff --check
 ```
 
@@ -393,7 +407,7 @@ This section belongs to the implementing repository agent. No implementation is 
 
 ### Status
 
-Attempt 2 is in progress on the same mirrored task branches. The retained-source PostgreSQL cases and additional emitted-log/rollback evidence now pass. The full required integration matrix remains blocked by 12 failures in read-only legacy fixtures and one separate read-only human-status failure; no acceptance claim is made.
+Attempt 2 remains `ready` with the executor claim cleared. Its latest orphan-message fix and the five explicitly authorized fixture-only corrections are uncommitted and unpushed. The full required PostgreSQL matrix is not green: 65 tests pass and the read-only HUMAN-status test fails in the combined run, although that test passes in isolation. No acceptance or downstream-unblocking claim is made.
 
 ### Attempt 1 Files Changed
 
@@ -429,13 +443,16 @@ Implementation repository: `moda-interact-background`; task branch `task/ARCH-05
 
 ### Files Changed
 
-Attempt 2 modifies only these implementation-owned files:
+Attempt 2 changes these implementation-owned files:
 
-- `src/services/recovery-billing/initial-outreach-credit.service.ts`
+- `src/services/recovery-billing/initial-outreach-credit-evidence.ts`
 - `tests/integration/arch056-initial-outreach-credit.integration.test.ts`
-- `tests/integration/arch056-initial-outreach-credit-races.integration.test.ts`
-- `tests/unit/services/recovery-billing/initial-outreach-credit.service.test.ts`
-- `tests/unit/services/whatsapp-provider-status.service.test.ts`
+- `tests/unit/services/recovery-billing/initial-outreach-credit-evidence.test.ts`
+- `tests/integration/free-recovery-reservation.concurrency.integration.test.ts`
+- `tests/integration/purchased-recovery-reservation.concurrency.integration.test.ts`
+- `tests/integration/promotional-recovery-reservation.concurrency.integration.test.ts`
+- `tests/integration/paid-included-recovery-reservation.concurrency.integration.test.ts`
+- `tests/integration/same-plan-billing-period-rollover.concurrency.integration.test.ts`
 
 ### Attempt 1 Work Completed
 
@@ -448,6 +465,8 @@ Added owner unit coverage, initial Shared logger sink tests, and PostgreSQL case
 Corrected the retained pre-permit PostgreSQL fixture to clear both message and attempt `sentAt`. Added actual Shared-sink assertions for direct errors, one-level known cause, allowlisted Prisma metadata and SQLSTATE, pure holds without fabricated upstream fields, retry exhaustion, secret redaction, truncation, and sink failure. Added status transaction versus post-commit log assertions, including compensation, reachability and notification stages.
 
 Added three disposable-PostgreSQL rollback scenarios: unique-event conflict after owner counter mutation, injected owner exception after positive-event insertion with identity preservation, and failed final positive verification. Added an integration flow through the real compensation owner and provider-status service; it proves source-owner rollback and correlates the detailed owner record with the status caller's context-only record by provider message ID.
+
+Fixed null-message absence classification so any outbound automated message in the supplied recovery conversation, including an unlinked pending message, produces `held/lineage-conflict` rather than authorizing fresh admission. Added unit and real PostgreSQL regression coverage. Corrected the five amended billing integration fixtures by seeding outbound limits and terminal reserved slots on `PlatformBillingPolicy`, retaining their original test cases and assertions.
 
 ### Attempt 1 Validation Results
 
@@ -521,26 +540,30 @@ No schema, package/dependency, Shared publication, cross-repository, provider, q
 ### Validation Results
 
 - `npm run build` — passed; Prisma Client 6.19.3 generated and TypeScript build completed.
-- Required unit matrix — passed, 16 files and 270 tests.
-- Exact task-scoped ESLint set — passed.
+- Required BG002 unit matrix — passed, 16 files and 271 tests.
+- Focused null-message evidence unit regression — passed, 1 file and 5 tests.
+- ESLint on all eight Attempt 2 changed TypeScript files and `git diff --check` — passed.
 - `git diff --check` — passed.
 - Shared runtime resolution — `npm ls @modainteract/moda-interact-shared --depth=0` reports `@modainteract/moda-interact-shared@3.0.0`.
-- Focused final PostgreSQL rerun of the settlement and race files — 2 files, 23 tests passed. The full matrix also passed the ARCH-056 settlement file (21 tests), parent-FK file (1 test), and ARCH-028 compensation file (28 tests).
-- Full required PostgreSQL matrix — 10 files, 52 tests passed and 13 failed. Twelve failures across five read-only owner-concurrency/rollover files occur at `BillingPlan.create` because their fixtures pass removed `defaultOutboundSoftLimit` and `defaultOutboundHardLimit` fields. The remaining failure in `recovery-human-provider-status.integration.test.ts` passes a null `outboundMessageId` to `findUniqueOrThrow`. No test cleanup failure was reported.
+- `tests/integration/arch056-initial-outreach-credit.integration.test.ts` — passed, 1 file and 22 tests, including the orphan-message PostgreSQL regression.
+- The five explicitly authorized reservation/rollover fixture suites — passed, 5 files and all 12 original tests.
+- Full matrix command: `node scripts/test-integration.mjs` with the ten integration paths listed in this task's Validation section.
+- Full required PostgreSQL matrix — 10 files, 65 passed and 1 failed. The only failure is the read-only `recovery-human-provider-status.integration.test.ts`: `outboundMessageId` is null when the test loads the command's message at line 43, before its provider-status assertions; the emulator reported zero messages. The same test passed when rerun alone (1 file, 1 test). This establishes a combined-run-dependent failure, not its root cause. No cleanup failure was reported.
+- Broader `npm run test:unit` — 341 files, 3,710 passed and 2 failed (3,712 tests). The unrelated failures are an inbound-processing enqueue expectation and an ARCH-049 frozen-image reason expectation; neither is in the changed files.
 
-The architect disposition is to leave all six failing files unchanged: `free-recovery-reservation.concurrency.integration.test.ts`, `paid-included-recovery-reservation.concurrency.integration.test.ts`, `promotional-recovery-reservation.concurrency.integration.test.ts`, `purchased-recovery-reservation.concurrency.integration.test.ts`, `same-plan-billing-period-rollover.concurrency.integration.test.ts`, and `recovery-human-provider-status.integration.test.ts`. They are read-only dependencies under the current BG002 execution map. Repair requires an explicit allowlist expansion or a separate fixture-correction task; do not add the retired fields to the schema.
+The five fixture files above were modified only under the explicit Attempt 2 amendment. `recovery-human-provider-status.integration.test.ts` remains read-only and unchanged. Do not weaken its assertions or infer a cause from the isolated pass; retain the combined-run failure for architect disposition.
 
 ### Deviations
 
-All edits remain within the implementation-owned paths. The complete validation gate is not satisfied because the required PostgreSQL command includes the six read-only failures above. Acceptance checklist items remain unchecked; the passing targeted evidence is not a substitute for the full matrix.
+All edits remain within the implementation-owned paths and the five-file amendment. The complete validation gate is not satisfied because the required PostgreSQL command still fails in the read-only HUMAN-status test, and the broader unit suite has two unrelated failures. Acceptance checklist items remain unchecked; targeted passes do not replace the required full matrix.
 
 ### Assumptions
 
-Attempt 2 uses the launcher-resolved implementation worktree and task claim recorded in the task metadata. Runtime logging assertions use the installed Shared package version 3.0.0.
+Attempt 2 uses the launcher-resolved implementation worktree; task metadata is `ready` with no active claim. Runtime logging assertions use the installed Shared package version 3.0.0. Changes remain uncommitted and unpushed.
 
 ### Unresolved Issues
 
-The full integration matrix requires an architect-approved scope change or separate task for the six read-only failures. Until then, do not claim the full matrix passed, set this task to review/complete, or unblock `ARCH-056-BACKGROUND-004` and `ARCH-056-SYSTEM-TEST-001`. Preserve the existing BS-05, ARCH-028-BACKGROUND-013 and uncertain-send policy boundaries.
+The combined required integration run still fails at the read-only HUMAN-status test despite its isolated pass; the cause is undetermined and no change is authorized there. The broad unit suite also has two unrelated failures. Do not mark this task complete or unblock `ARCH-056-BACKGROUND-004` or `ARCH-056-SYSTEM-TEST-001` on this evidence. Preserve the existing BS-05, ARCH-028-BACKGROUND-013 and uncertain-send policy boundaries.
 
 ### Attempt 2 Architectural Concerns
 
@@ -585,3 +608,56 @@ The inspected implementation generally follows the selected exact-source and Sho
 ### Follow-up
 
 Continue on the same mirrored task branches at Attempt 2. Do not start `ARCH-056-BACKGROUND-004` or `ARCH-056-SYSTEM-TEST-001` from this task; both remain gated on accepted prerequisites.
+
+## Architect Review — Changes Requested (Attempt 2, 2026-11-04)
+
+### P2 — Null-message revalidation overlooks unlinked automated messages
+
+`assertNoInitialMessageEvidence` in `src/services/recovery-billing/initial-outreach-credit-evidence.ts:189–200` queries only a message already linked to the attempt and the canonical UsageEvent. It never checks for a discoverable unlinked outbound AUTOMATION message in the owned recovery conversation. With a valid unsent INITIAL attempt, no reservation/usage/attempt link, and an existing PENDING automated message in that conversation, `revalidateExistingInitialOutreach({outboundMessageId: null})` returns `{kind: "absent"}`. The contract explicitly requires `held/lineage-conflict` for orphan evidence; consumers are authorized to make a fresh admission only after absent, so this result incorrectly authorizes fresh credit/admission on an inconsistent existing-message state.
+
+Independently reproduced using the task's real PostgreSQL fixture and canonical migrations. A new pending orphan message was inserted without bypassing constraints; expected `held/lineage-conflict`, observed `absent`. Add a scoped same-recovery conversation orphan check without resolving identity by phone/time or accepting a guessed message; preserve exact tenant/initial ownership. Add durable regression cases in the already-owned evidence and PostgreSQL modules for the orphan hold, read-only state preservation, and genuine absence.
+
+The temporary reviewer test was removed from the implementation worktree. Its local reproducer remains at `/tmp/arch056-review-orphan-credit.integration.test.ts`; assertion output is at `/tmp/arch056-bg002-review-orphan.log`.
+
+### Required validation and scope disposition
+
+The required preservation gate still fails before exercising twelve owner-concurrency/rollover cases. The five-file amendment above and matching machine-readable allowlist authorize the minimal fixture corrections. Complete those corrections and rerun the complete required command; passing focused settlement tests do not replace the unexecuted preservation assertions. HUMAN status is not added to the modification allowlist because it passed this independent run. No runtime, schema, provider or historical billing policy expansion is authorized.
+
+### Independently verified evidence
+
+- Implementation `79b8d5bc5cf5ad4090ee0dc0b06246e10489ca78` and parent `650778eb2d206424a367c581c4a2702b2d877c60` match their remote task branches. Both canonical task worktrees were clean at review start. Prepared Database pin is `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+- Exact required unit matrix: 270/270 passed, 16 files.
+- Exact required PostgreSQL/Redis matrix: **53 passed, 12 failed**, 65 tests in 10 files; nonzero exit. All twelve failures are Prisma fixture errors for removed BillingPlan fields across the five named suites. The human-provider-status test passed in this run, so the implementer's 52/13 result remains historical rather than the current rerun result. No root cause is established for that earlier human-status failure.
+- The additional orphan-message regression reached the database-backed assertion and failed as described above. It is separate from the 65-test required matrix.
+- Production build, declared task-scoped ESLint and whitespace checks passed using Node 24.19.0. The new fixture allowlist adds those five files to required lint for the next attempt; their edits are not implemented by this review.
+- Reviewed the added cause/Prisma/SQLSTATE, provider-status correlation and rollback evidence. The current owned cases passed, but acceptance is withheld for the concrete absence defect and incomplete preservation gate.
+
+### Lifecycle and handoff
+
+Changes Requested. Set `status: ready`, clear executor/claimed_at, preserve Attempt 2. The next normal launcher claim creates Attempt 3. BG004 and SYSTEM-TEST-001 remain gated. Preserve historical reports and do not claim BS-05 or ARCH-028-BACKGROUND-013 is resolved. No implementation source was changed, and no branch was merged. This parent review/scope overlay is local and uncommitted/unpushed pending publication.
+
+
+## Architect Re-review — Changes Requested (Attempt 2 follow-up, 2026-11-04)
+
+### Resolved findings
+
+Reviewed the eight uncommitted implementation files on top of `79b8d5bc5cf5ad4090ee0dc0b06246e10489ca78`. The orphan-message correction now checks OUTBOUND AUTOMATION messages through the exact recovery conversation after initial-attempt/recovery/Shop validation. It fails closed with lineage-conflict and does not guess a message identity or mutate accounting. The existing genuine-absence case and new PostgreSQL orphan regression both pass. The five authorized fixture edits remove the retired BillingPlan fields and seed canonical PlatformBillingPolicy values where required; the original twelve concurrency/refund/rollover tests and assertions are preserved and now pass. The prior P2 implementation finding and twelve fixture failures are resolved in this working-tree state.
+
+### Remaining validation blocker
+
+The independently executed, exact ten-file required PostgreSQL/Redis command still exits nonzero: **65 passed, 1 failed, 66 total**. `tests/integration/recovery-human-provider-status.integration.test.ts:43–44` attempts to load a message with a null command outboundMessageId; the emulator reports zero sends. This occurs before provider-receipt assertions. It reproduces the implementer's combined-run failure, but neither a production cause nor a fixture/isolation cause is established. The historical isolated pass does not satisfy the required combined preservation gate. Do not waive the failure or describe the full matrix as passing.
+
+Continue diagnosis using the existing fixture read-only and BG002-owned regression modules if additional diagnostics are needed: capture safe command state/failure code, claimed command count and the dispatcher outcome before the null lookup. Establish whether admission/preparation or test-state contamination prevented dispatch; do not infer the cause from the null ID alone. No expansion to HUMAN production code, the read-only HUMAN-status regression, or shared fixtures is granted by this review. If the demonstrated correction needs one of those paths, return the precise evidence and proposed scope for architect disposition. Preserve all original assertions and run the complete required matrix after correction.
+
+### Independently verified validation
+
+- Exact required units: **271/271 passed**, 16 files.
+- Exact required PostgreSQL/Redis matrix: **65 passed, 1 failed**, 10 files; includes the new orphan regression and all twelve repaired legacy cases.
+- Production build and the full declared task-scoped ESLint command, including the five authorized fixtures: passed.
+- Implementation whitespace check: passed.
+- Logs: `/tmp/arch056-bg002-rereview-integration.log`, `/tmp/arch056-bg002-rereview-unit.log`, `/tmp/arch056-bg002-rereview-build.log`, `/tmp/arch056-bg002-rereview-lint.log`.
+- The broader unit suite was not rerun; retain the implementer's separately reported two failures without conflating them with this passing required unit matrix.
+
+### Disposition and publication
+
+Changes Requested for the remaining required validation failure; no additional production defect was identified in this correction. Keep `status: ready`, Attempt 2, executor/claimed_at null. No downstream task is promoted: BG004 and SYSTEM-TEST-001 remain gated. The implementation correction is still uncommitted/unpushed, so this review does not identify it as published or complete. Reconcile implementation-owned checklist/report text and publish the corrected implementation before resubmission. This architect addendum is local; no implementation files were changed, no commits or pushes were performed, and nothing was merged.
