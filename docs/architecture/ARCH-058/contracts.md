@@ -2,7 +2,7 @@
 
 Status: proposed implementation contract; task definitions only, 4 November 2026.
 
-Parent: [ARCH-058 architecture](../ARCH-058-commerce-agent-product-discovery.md). This file is normative for the eight ARCH-058 tasks. The source-grounded revision 03 review remains supporting evidence; this contract resolves its open implementation choices. No runtime implementation, package publication, import, or deployment has been performed by creating this document.
+Parent: [ARCH-058 architecture](../ARCH-058-commerce-agent-product-discovery.md). This file is normative for the ten ARCH-058 tasks. The source-grounded revision 03 review remains supporting evidence; this contract resolves its open implementation choices. No runtime implementation, package publication, import, or deployment has been performed by creating this document.
 
 ## 1. Ownership and compatibility
 
@@ -12,15 +12,16 @@ Package target is **4.0.0**, conditional on the actual accepted source and regis
 
 New transport validation is structural: strict keys, types, lengths, enumerations and size bounds. Cross-field policy belongs in service functions, not new Zod refinements/transforms. Existing schema refinements unrelated to this work are not to be removed. Retain the existing result byte limits, deadlines and terminal error/referral rules.
 
-## 2. Standard product tools
+## 2. Standard product and shipping tools
 
-All three tools belong to the existing `product_search` feature, which becomes active, `ALWAYS_ENABLED` and `systemRequired`. They are available to each otherwise authorized CommerceAgent store with an active eligible plan mapping, including Free plans and future stores. This does not bypass tenant, connection, plan status, turn, release or grant checks. No merchant preference is required. No new feature or manually authored Studio definition is needed.
+All four tools belong to the existing `product_search` feature, which becomes active, `ALWAYS_ENABLED` and `systemRequired`. They are available to each otherwise authorized CommerceAgent store with an active eligible plan mapping, including Free plans and future stores. This does not bypass tenant, connection, plan status, turn, release or grant checks. No merchant preference is required. No new feature or manually authored Studio definition is needed.
 
 | Name | Definition version | Execution operation | Operation version |
 | --- | --- | --- | --- |
 | `commerce_resolve_product_categories` | `1.0.0` | `taxonomy.resolveCategories` | `1.0.0` |
 | `commerce_search_products` | `2.0.0` | `products.search` | `1.0.0` |
 | `commerce_get_product` | retain existing `1.0.0` | `products.get` | retain existing `1.0.0` |
+| `commerce_get_shipping_information` | `1.0.0` | `shipping.getInformation` | `1.0.0` |
 
 Published descriptors must pass the **actual** existing bounded subset validator after projection. Zod JSON Schema literals/enums are not automatically valid subsets: normalize string `const` to a single-item `enum`, and give fixed string literals/enums an explicit finite `maxLength` (the longest allowed value is sufficient), while preserving required keys, nullability and all declared bounds. Keep existing `$schema`/default stripping and supported nullable normalization. Either construct the exact bounded owned subset or narrowly extend the existing authoring projector; do not admit arbitrary `const`/`oneOf` keywords or create another general schema engine. Tests must start from the actual Shared schemas and the actual Commerce projection/publication route, including `category.system`, recommendation version/scope/promotion kind and nullable IDs.
 
@@ -62,7 +63,7 @@ Service invariants: `CANDIDATES` has at least one item; `NO_CANDIDATES` has none
 
 ### 2.2 Merchant product search
 
-Extend only the search input. Preserve existing maximum-price, available-only, limit and cursor contracts/defaults. `query` becomes optional/nullable with parsed default `null`; a non-null query remains 1..200 characters. Add optional `category`:
+Extend only the search input. Preserve existing maximum-price, available-only, limit and cursor contracts/defaults. Add `browse?: boolean`, parsed default `false`. `query` becomes optional/nullable with parsed default `null`; a non-null query remains 1..200 characters. Add optional `category`:
 
 ```typescript
 {
@@ -72,13 +73,74 @@ Extend only the search input. Preserve existing maximum-price, available-only, l
 }
 ```
 
-Use this flat object because the existing published JSON Schema subset does not support `oneOf`. Service policy rejects a request with neither query nor category, a category incompatible with the authorized connection, invalid native IDs, a missing/mismatched Shopify taxonomy version, or a non-null Woo taxonomy version. Shopify IDs must be canonical taxonomy GIDs validated against the active pinned reference version before deriving the provider's short filter token. Woo IDs must be positive decimal strings and are scoped to the current shop. Never treat Shopify IDs, labels, product types or broad `Shop.activeCategoryId` as Woo native category IDs.
+Use this flat object because the existing published JSON Schema subset does not support `oneOf`. Service policy rejects a normal (`browse: false`) request with neither query nor category, a category incompatible with the authorized connection, invalid native IDs, a missing/mismatched Shopify taxonomy version, or a non-null Woo taxonomy version. Shopify IDs must be canonical taxonomy GIDs validated against the active pinned reference version before deriving the provider's short filter token. Woo IDs must be positive decimal strings and are scoped to the current shop. Never treat Shopify IDs, labels, product types or broad `Shop.activeCategoryId` as Woo native category IDs.
 
 The first increment requests **exact assigned category membership**. There is no descendant flag or automatic parent expansion. For Shopify, use the documented pinned Admin API `products` category filter and verify `Product.category.id`; do not assume the variants search supports that filter. For Woo, the REST category query can include children, so exact membership requires a bounded check against returned `categories[].id`. Preserve true provider variant IDs, including null for a Woo simple product. Variant pagination within category-filtered Shopify products cannot silently drop later variants.
 
-The existing opaque cursor must bind the authorized shop/connection, provider branch, normalized query/category/version, price/availability filters and both product and variant progress where needed. A filter or shop change invalidates it. Bounded scanning can return an empty page with a continuation cursor. `truncated` and exhaustion must be truthful. Fetching a small top-k taxonomy result or product page does not justify an unbounded underlying scan.
+The existing opaque cursor must bind the authorized shop/connection, provider branch, normalized browse/query/category/version, publication-visibility rules, price/availability filters and both product and variant progress where needed. A filter or shop change invalidates it. Bounded scanning can return an empty page with a continuation cursor. `truncated` and exhaustion must be truthful. Fetching a small top-k taxonomy result or product page does not justify an unbounded underlying scan.
+
+For `browse: true`, require query null/omitted and category absent; reject combinations before provider I/O. This is an explicit bounded catalogue operation, never a fabricated wildcard/text intent. Preserve caller price/availability filters and their existing defaults; Background fallback requests set `availableOnly: true` and only recommend an observed `available === true` product with a verified non-null URL. In browse mode Shopify requires verified parent status `ACTIVE` and an actual non-null safe storefront URL; Woo requires parent `status: publish` and `catalog_visibility: visible|catalog`, plus `status: publish` for returned variations. Do not include drafts, private/hidden products, search-only Woo listings, or unpublished variants merely because inventory is positive. The provider queries/projections and post-read checks must establish these facts, without changing the public product schema. Keep the existing bounded page/request ceilings; empty output with a continuation cursor is not an exhausted catalogue. No bestseller/featured label without actual evidence. Bind `browse` and fixed visibility rules into the opaque cursor and reject cross-mode replay. Ordinary text/category search keeps its existing semantics.
 
 Search and exact product reads retain their existing output shapes. Add trustworthy currency/context only through existing declared product/context fields. Unknown currency stays unknown; shop base currency is not proof of a customer-market price. Product identity, price, availability, URL and discounts must come from the current shop's actual reads, not from the taxonomy. No product mirror is added.
+
+### 2.3 Native shipping information
+
+Add/export `CommerceShippingInformationInputSchema`, `CommerceShippingInformationInput`, `CommerceShippingInformationSchema` and `CommerceShippingInformation`; add the exact dictionary members and the `shipping.getInformation` policy operation. The fourth tool is published, granted and retained like other `product_search` tools, not a discount built-in. Missing optional policy permission must not remove the tool from an otherwise valid immutable grant or disable product discovery.
+
+Input is the strict object `{productId?: string | null, variantId?: string | null}` with each non-null ID bounded 1..128; both parsed defaults are null. Service validation requires productId when variantId is non-null, validates provider-native identifiers and current-shop ownership before reads, and rejects extra query/URL/destination/cart/shop/scope arguments. No IDs requests the native merchant policy only. No caller-supplied scope, token, provider URL or provider query is permitted.
+
+Successful output is one strict object; all shown fields are required and nullable values are explicit:
+
+```typescript
+{
+  provider: "SHOPIFY" | "WOOCOMMERCE";
+  observedAt: string; // existing ISO timestamp bound
+  product: {
+    status: "NOT_REQUESTED" | "VARIANT_REQUIRED" | "AVAILABLE";
+    productId: string | null; // 1..128
+    variantId: string | null; // 1..128
+    requiresShipping: boolean | null;
+    virtual: boolean | null;
+    weight: null | {
+      value: number; // finite, >= 0
+      unit: "GRAMS" | "KILOGRAMS" | "OUNCES" | "POUNDS" | null;
+    };
+    dimensions: null | {
+      length: number | null; // each finite, >= 0 when present
+      width: number | null;
+      height: number | null;
+      unit: string | null; // 1..16; null throughout this first increment
+    };
+    shippingClassId: string | null; // 1..128
+    shippingClassSlug: string | null; // 1..512
+  };
+  policy: {
+    status: "AVAILABLE" | "NOT_CONFIGURED" | "SCOPE_NOT_GRANTED" | "UNSUPPORTED";
+    trust: "UNTRUSTED_REFERENCE";
+    title: string | null; // 1..512
+    bodyStatus: "AVAILABLE" | "EMPTY" | "TOO_LARGE" | "NOT_AVAILABLE";
+    bodyHtml: string | null; // 1..8000 characters AND <= 16384 UTF-8 bytes
+    url: string | null; // HTTPS, 1..2048, verified current-shop policy URL
+    updatedAt: string | null; // source timestamp, never invented
+  };
+}
+```
+
+Leaf schemas enforce structural bounds; adapter/service code enforces cross-field relationships and the UTF-8 budget. This result is still inside the existing `commerce.v1` outer envelope and byte/deadline limits. `UNTRUSTED_REFERENCE` means the policy may supply facts but cannot issue instructions, create intent, expand permissions, or authorize a promotion/cart change. Policy HTML is data; do not execute it, follow embedded links, fetch the policy URL, or append raw HTML to a customer message.
+
+**Product status rules.** No requested product yields `NOT_REQUESTED` with null IDs/facts. `VARIANT_REQUIRED` follows a successful current-shop product read when variant-level facts are required; return its actual productId, null variantId and null facts. For Shopify productId alone, verify product existence and return this status; never select the first variant. For a standard Woo variable parent without a selected variation, use the same status. `AVAILABLE` identifies the exact observed simple product or requested native variant and exposes only fields actually provided. A missing product/variant, invalid native ID, mismatch or malformed provider result retains typed outer-error semantics; do not echo an unverified ID as an existing product. For this shipping operation only, support Woo type simple and standard type variable with an explicitly selected variation when needed. Reject other/custom/grouped/external types with the existing appropriate typed outer error; this is a new narrow shipping rule, not an assertion that get/search already has a type allowlist. A supplied variation for a simple product is an identity error. Preserve get/search behavior outside its separately defined browse changes.
+
+**Shopify mapping.** Use fixed named Admin 2026-07 read queries through the real connection resolver/provider/query guard. Variant reads select `productVariant(id) { id product { id } inventoryItem { requiresShipping measurement { weight { value unit } } } }`; both selected IDs must match. Existing `read_products` is sufficient for these fields. `virtual`, dimensions and shipping class fields are null. A product-only existence query is separately bounded. The policy query selects `shop { primaryDomain { url } shopPolicies { type title body url updatedAt } }`; project only `SHIPPING_POLICY`. `shop.shippingPolicy` is a Storefront field and must not be substituted into Admin.
+
+Read accessToken and nullable scope together from the same existing validated offline `shopify.Session` row; no schema migration is needed. Keep tokens/scopes private. Before the policy query, the credential-owning provider checks the exact trusted `read_legal_policies` requirement. Missing/null/blank persisted permission maps only in this shipping adapter to `SCOPE_NOT_GRANTED` with zero policy HTTP calls; product reads may still succeed. A missing/invalid session, tenant/turn/grant failure, or 401/403/GraphQL error after an attempted granted query remains an actual outer error with original diagnostics. Do not classify all `UNAVAILABLE` failures as missing permission. Preserve query/depth/pagination/field/request/response bounds and private resolver key allowlists when adding this narrowly typed preflight requirement.
+
+**Policy mapping.** A successful authorized query with no shipping policy yields `NOT_CONFIGURED`, null payload and `bodyStatus: NOT_AVAILABLE`. A returned policy yields `AVAILABLE` with its verified URL/title/timestamp; a blank body becomes `bodyStatus: EMPTY`, bodyHtml null. A nonblank body within both limits is `AVAILABLE` bodyStatus and retains its exact HTML bytes. A selected body exceeding either limit becomes `TOO_LARGE` with bodyHtml null and the valid URL/title/timestamp retained; never silently truncate a policy and imply it is complete. A whole provider response exceeding its existing transport bound remains a typed read error, not missing policy. A successful non-AVAILABLE policy status has all nullable payload fields null and bodyStatus NOT_AVAILABLE. A malformed/unsafe provider policy URL is handled by current provider-result validation, not replaced by a guessed slug. Verify against the authenticated shop and returned primary domain, preserving the existing HTTPS/host rules.
+
+**Woo mapping.** Reuse the active verified tenant-bound REST read grant and existing product/variation operations; add explicit requested/projection fields for `virtual`, `shipping_required` (product endpoint only), `weight`, `dimensions`, `shipping_class`, `shipping_class_id` and required identity/type fields. Existing REST product reads do not supply measurement units: return unit null, never assume kg/cm, and do not add settings GETs or request write permission. Normalize blank/missing measurements to null, parse supplied nonnegative decimal values to finite numbers, and reject malformed values. Return dimensions null if all three values are null; zero remains a known value. Product endpoint `shipping_required` is authoritative when returned. The variation endpoint does not return it and Woo's effective requirement is filterable: return requiresShipping null for a variation even when virtual is false; preserve its explicit virtual flag separately. Use endpoint-returned effective variation measurements/class, without a second guessed parent inheritance layer. Woo shipping_class_id 0/null/absent maps to null; a valid positive native integer maps to its decimal string, and malformed/negative IDs are errors. Empty/null/absent class slug maps to null; preserve observed fields without inventing a class name or description. Native policy is `UNSUPPORTED` with null payload; do not guess WordPress policy slugs or introduce a crawler/new page configuration in this increment.
+
+Existing `merchant_knowledge_lookup` with purpose `SHIPPING_AND_DELIVERY` remains a separately authorized/entitled source. Product-search being standard does not grant Merchant Knowledge or enable a disabled preference. A no-match knowledge result is ordinary absence; the nearest chunk is not proof that the requested cost/destination/time is covered. Contradictory or insufficient policy evidence cannot support an exact delivery claim. No shipping configuration scan, shipping-zone rate calculator, Storefront/Store API cart session, cart mutation, quote or promised ETA is introduced here.
+
+MCP-003 owns this adapter and native mappings; SHOPIFY-001 owns the declared-scope/runtime-scope rollout. A declared scope is not a granted permission. Live rates remain current provider facts, never taxonomy-vector facts. Provider references and exact source touchpoints are recorded in MCP-003 and SHOPIFY-001.
 
 ## 3. Canonical discounts and optional lookup degradation
 
@@ -98,7 +160,7 @@ Current merchant policy is checked for every discovery/detail call and again bef
 
 ## 4. Built-in tool identity and retained grants
 
-Discount tools remain code-defined built-ins; the three product tools remain published system capabilities. Do not fabricate database tool/revision/capability identities for built-ins, grant everything returned by `tools/list`, or publish duplicate discount definitions in Studio.
+Discount tools remain code-defined built-ins; the four product/shipping tools remain published system capabilities. Do not fabricate database tool/revision/capability identities for built-ins, grant everything returned by `tools/list`, or publish duplicate discount definitions in Studio.
 
 Add `CommerceBuiltInToolDescriptorSchema` and inferred type:
 
@@ -183,6 +245,38 @@ Re-read selected exact products and canonical discount facts in the existing hos
 
 A supported offer is a claim about observed current facts, not guaranteed redemption or a provider-atomic cart price. Do not calculate a guaranteed multi-discount total unless the existing canonical rules establish it. After current host finalization, the existing processor language/wrapper/moderation/send stages remain in control; no new last-moment processor hook or worker rewrite is included. Preserve admission, takeover, stale-turn and delivery behavior. Use the current conversation language and Shared localization/formatting; all new fixed customer-facing strings require the existing 20 supported locales.
 
+### 5.1 Expected limitations and answer presentation
+
+Add/export `CommerceResponseDispositionSchema` / `CommerceResponseDisposition` and `CommerceAnswerPresentationSelectionSchema` / `CommerceAnswerPresentationSelection` through the existing commerce entrypoint. The latter owns only these optional response-detail fields, independently of the existing recommendation selection fields:
+
+```typescript
+{
+  responseDisposition?: "STANDARD" | "OUT_OF_SCOPE_REDIRECT" | "SHIPPING_INFORMATION_UNVERIFIED";
+  shippingInformationSelection?: {
+    productId: string | null; // 1..128
+    variantId: string | null; // 1..128; needs productId in service policy
+  };
+}
+```
+
+No arbitrary text, amounts, URLs, scope claims or observation IDs are supplied by this selection. Both IDs null reference the current-shop policy-only observation. Non-null IDs must match the exact current-turn shipping-tool observation; choose the latest observation of the same arguments and revalidate any used facts before final composition. Shipping selection requires an explicit disposition; omission of both presentation fields is permitted for ordinary existing non-recommendation responses. A policy-only null/null shipping observation may use that ordinary path; a product-bearing shipping observation latches controlled composition even when the model omits shippingInformationSelection. The maximum details depth remains 5. `STANDARD` is the normal host-composed branch when structured recommendations/shipping presentation are present; it is not a bypass for arbitrary replyText.
+
+Expected limitations use `answerKind: ANSWER`, null referralReason and the typed disposition. Keep the hard `REFER_TO_STORE` envelope unchanged, including empty details/evidence, published-details referral handling, requiredReferral enforcement and fixed hard-referral rendering. Update the runner's blanket unknown/ungranted-fact instruction narrowly: absence of support for one fact permits a truthful limitation plus independently authorized help; it never permits asserting that unsupported fact or clearing a tool-imposed terminal error. The model's disposition creates no tool or delivery authority. Ordinary no-tool greetings/clarifications remain valid.
+
+The trusted host latches controlled composition whenever the run uses product/discount observations or a product-bearing shipping observation (a non-null productId request), the trusted workflow requires a recommendation, or a soft disposition/owned recommendation or shipping selection is present. A model cannot escape that latch by omitting details, returning empty selections or switching to plain text. Within that branch Background discards raw replyText for customer composition. Invalid/missing selections produce the localized verified-store fallback under the current failure semantics, never unvalidated promotional prose. Do not claim a semantic guarantee for unrelated legacy ordinary-text turns. Policy-only grounded answers may use the existing ordinary answer path only when no recommendation/controlled-presentation branch is active.
+
+For `OUT_OF_SCOPE_REDIRECT`, compose a brief localized store-scope sentence and at most one verified available current-shop product with any currently permitted/applicable offer. Do not invoke weather/general-web tools or send the off-topic text to taxonomy as supposed product intent. Choose from current customer product/category context, then refreshed owned-basket context, then explicit bounded browse. Merchant-selected/featured metadata can be used only if an actual authorized source provides it; no new feature-management store is added. No context means a store suggestion, not a claim of similarity or bestseller status. If bounded search yields no usable item, provide the verified store URL without claiming the entire catalogue is empty. Do not repeatedly append the same unrelated suggestion to every follow-up; honor explicit customer rejection of product suggestions using the existing conversation context.
+
+For `SHIPPING_INFORMATION_UNVERIFIED`, state that the particular delivery detail cannot be confirmed, give a verified policy/store reference, then optionally one separately validated related product/offer. Attempt the relevant granted native/knowledge read before claiming no information when the configured budget permits; an unavailable grant is not permission to call that tool. Record the expected absence/insufficiency or missing capability, without conflating it with a terminal failure. Missing/irrelevant knowledge, native policy absence, absent policy scope, empty/oversized policy body or no supported exact quote can justify the limited statement. A product alternative does not establish its delivery charge/speed/destination eligibility. Location words in an unrelated question do not become a shipping destination.
+
+For positive shipping facts combined with a recommendation, use `STANDARD` plus a shipping selection. Host composition may include the exact observed requiresShipping fact, a verified merchant-policy link, and the separately validated product/offer. Never merge raw model policy summaries, HTML, measurements with unknown units, or inferred shipping costs/times into that body. A destination-specific interpretation that the fixed facts cannot support uses SHIPPING_INFORMATION_UNVERIFIED and the policy link. This increment deliberately avoids a new semantic prose-verification engine. Ordinary policy-only answers can summarize the bounded relevant reference using the existing grounded-answer instructions, without presenting a quote as current checkout truth.
+
+Every controlled body follows: supported fixed answer or narrow limitation, verified policy/store reference where relevant, verified product, permitted promotion if applicable, verified product link. Preserve current NONE/FIXED/AI_BEST_APPLICABLE policy. NONE never triggers promotional reads/claims. An empty or incomplete optional discount result means no supported promotion for this recommendation, not that the merchant has no discounts. Missing product evidence results in store-link fallback. A free-shipping promotion cannot supply a destination/quantity/eligibility fact absent from canonical validation.
+
+Background owns trusted localized fixed strings through the existing 20 catalogues and the same effective-language evaluation as the processor; do not render the body in the old language and wrap it in a newly persisted language. Reserve and account for finalization calls/time up front, including a selected shipping refresh; perform current-turn/takeover checks around awaits. Never call provider APIs directly from Background. For controlled responses, Background constructs a private optional `hostComposedReplyCandidates` array on its internal CommerceAgentResult: 1..3 complete strings, each 1..4096, first equal to replyText. Order is full supported recommendation, one product, then a minimal disposition plus verified store reference; omit duplicates and raw bodies that already exceed the existing limit. This is not a Shared/model/MCP field. The same existing processor composition call passes these candidates to the existing wrapper service, which loads actual context/slot/locale once and uses unchanged renderPreparedWrapper to select the first fitting candidate. Advance only on OUTPUT_TOO_LONG; retain every other refusal. No wrapper means exact first-body passthrough. Existing replay/application-key rules use the selected candidate's digest/body, and a previous selected response must still match a current candidate exactly or return REPLAY_MISMATCH. Never truncate a URL or qualification. If no candidate fits, preserve the existing typed wrapper/admission failure. Authorize only this narrow existing processor/wrapper seam, not a new send stage, worker rewrite, host-side wrapper prefetch, duplicate configuration read or provider recheck in the processor.
+
+Commerce owns explicit nonempty published response instructions for these fields and the existing recommendations. Replace any inherited instruction requiring empty details for these controlled branches. Preserve ordinary non-recommendation behavior and unrelated response fields. Studio feature previews must consume the matching published/owned response instructions instead of silently pinning EMPTY_RESPONSE_CONTRACT when exercising this capability; label raw runner previews as such unless they actually use Background's final composer/wrapper. Do not claim full customer-preview parity from raw model replyText.
+
 ## 6. Taxonomy storage and import lifecycle
 
 DATABASE-001 is authoritative for exact Prisma fields, SQL names, checks, indexes and foreign keys. Use `commerce.ReferenceTaxonomyGeneration` and `commerce.ReferenceTaxonomyCategory`, with `Unsupported("vector")`, dimension checks and complete-generation activation. Corpus identity is environment/source/language. A generation pins source bytes/version/checksum, embedding provider/model/dimensions/indexVersion, deterministic embedding-text version and import fingerprint. No taxonomy rows contain merchant inventory.
@@ -209,7 +303,7 @@ Runtime implementation deliverables are:
 | --- | --- | --- |
 | Database | new forward migration; `npm run migrate:deploy` | Create schema and targeted always-enabled feature/plan policy |
 | MCP | `scripts/sync-reference-taxonomy.mjs`; `npm run taxonomy:sync` | Validate, embed, import and activate/no-op a pinned corpus |
-| Commerce | extend `scripts/sync-system-commerce-tools.mjs`; `npm run commerce:sync-tools` | Create/version/publish the three owned definitions, behavior and response fields |
+| Commerce | extend `scripts/sync-system-commerce-tools.mjs`; `npm run commerce:sync-tools` | Create/version/publish the four owned definitions, behavior and response fields |
 | Commerce | `scripts/setup-commerce-product-discovery.mjs`; `npm run commerce:setup-discovery` | Thin environment orchestration of the three stages |
 
 The setup wrapper is **Commerce-owned**. This refines revision03's proposed parent-wrapper location so every implementation file has an existing launcher repository owner. It launches documented child commands; it does not import sibling application internals or modify sibling source.
@@ -240,7 +334,7 @@ Commands emit a bounded JSON receipt with:
     previousReleaseId: string | null;
     releaseId: string | null;
     actions: Array<{
-      name: string; // every one of the three standard product tools
+      name: string; // every one of the four standard product/shipping tools
       action: string; // reuse existing synchronizer action values
       revisionId: string | null;
       definitionHash: string;
@@ -249,7 +343,7 @@ Commands emit a bounded JSON receipt with:
 }
 ```
 
-Subcommands report their owned stage(s); the wrapper assembles the ordered full receipt. Exit nonzero on failure, retain earlier successful stages and mark later stages `NOT_RUN`. Rerunning after a failure completes the remaining work without duplicate active generations, owned tools, capabilities or releases. The receipt must not contain API keys, source corpus text, vectors, credentials, customer data or database connection strings. Operator readiness is not inferred merely from exit0: verify all three tools, the active compatible release and a complete corpus.
+Subcommands report their owned stage(s); the wrapper assembles the ordered full receipt. Exit nonzero on failure, retain earlier successful stages and mark later stages `NOT_RUN`. Rerunning after a failure completes the remaining work without duplicate active generations, owned tools, capabilities or releases. The receipt must not contain API keys, source corpus text, vectors, credentials, customer data or database connection strings. Operator readiness is not inferred merely from exit0: verify all four tools, the active compatible release and a complete corpus.
 
 ## 8. Failure evidence and validation boundary
 
