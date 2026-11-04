@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
 executor: copilot
 claimed_at: 2026-11-04T22:49:27Z
@@ -263,7 +263,7 @@ Official references for executor verification: [Shopify login behavior](https://
 
 ### Status
 
-Implementation complete; returned to `moda_architect` for review. Attempt 1 was executed by Copilot in `task/ARCH-057-SHOPIFY-009`; the implementation commit is pushed, and this report is being submitted on the mirrored parent task branch.
+Attempt 2 implementation complete; both architect-requested diagnostic corrections are committed on `task/ARCH-057-SHOPIFY-009` and are being resubmitted to `moda_architect`. The task was reclaimed through the canonical launcher as Copilot; see Git / VCS for the durable claim and synchronization evidence.
 
 ### Files Changed
 
@@ -276,7 +276,7 @@ In the parent task worktree: this task report only. No other worktree was modifi
 - The uninstall service now owns the guarded Shop transition, Session deletion and catalogue invalidation in one transaction. Typed results distinguish missing Shop, first uninstall and committed duplicate; the route no longer owns credential cleanup.
 - Both reinstall admission methods use the existing Shop row lock, then inspect the durable offline Session using the shared token usability predicate before marker/schedule writes. Auth and explicit Retry callers enqueue only a returned schedule and redirect missing credentials using the authenticated shop domain.
 - Scope changes retain Shop-before-Session ordering, update only the authenticated persisted Session via `updateMany`, reread offline scope, and publish after transaction commit. Catalogue invalidation preserves existing `unavailableAt` values and avoids unchanged availability writes.
-- Shopify failure records retain bounded safe original messages, causes and codes; auth records distinguish SDK exceptions from SDK denial Responses and preserve status without response bodies. Emitted Shared JSON tests cover privacy sentinels, nested causes and a throwing sink. Best-effort activation publication records the original failure without changing success.
+- Shopify failure records now reuse the established billing diagnostic boundary for bounded safe messages and causes, and apply Shared `sanitizeLogFields` to route context rather than maintaining a second serializer/redactor. Non-database error codes are emitted as `sourceCode`; only failures with explicit `origin: database` emit `databaseCode`. Auth records distinguish SDK exceptions from SDK denial Responses and preserve status without response bodies. Real Shared JSON tests cover privacy sentinels, nested causes, code classification and a throwing sink. Best-effort activation publication records the original failure without changing success.
 - The named Moda Interact configuration has the required endpoint/topic matrix and is selected by package and custom dev launchers. The distinct default/template configuration identity is retained and documented.
 - Disposable PG17 integration exercises rollback after the real Session delete, retry after rollback, tenant/orphan isolation, simultaneous duplicate uninstall, concurrent begin and begin-versus-retry, both SDK Session persistence orders, persistence inside the uninstall window, duplicate deliveries before/after the reinstall marker, and both scope/uninstall lock orderings.
 
@@ -291,13 +291,15 @@ In the parent task worktree: this task report only. No other worktree was modifi
 
 ### Validation Results
 
-- `npm run test:shopify-lifecycle`: 10 files passed, 90 tests passed.
+- Attempt 2 focused emitted-record validation, `npx vitest run tests/unit/webhooks/shopify-lifecycle-errors.test.ts`: 1 file passed, 5 tests passed.
+- Attempt 2 `npm run test:shopify-lifecycle`: 10 files passed, 91 tests passed.
 - `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_SHOPIFY_LIFECYCLE_SQL_EVIDENCE=1 npm run test:shopify-lifecycle:postgres -- --disableConsoleIntercept`: 2 files passed, 12 tests passed, zero skipped; actual SQL evidence emitted with parameter values excluded. The socket override is required for Colima/Testcontainers on this macOS host.
-- `npm run typecheck`: passed on final implementation head `de55ee8d0f2840785ccf50f414f8d450a09383d6`. The first run after enabling Prisma query events caught readonly option inference; it was corrected in the follow-up commit and the command then passed.
-- `npm run build`: passed; warnings are from existing Zod annotations, Prisma browser import externalization, empty route chunks and a 1.22 MB merchant-i18n chunk.
+- Attempt 2 `npm run typecheck`: passed after the diagnostic changes.
+- `npm run build`: passed during Attempt 1; not rerun for the logging-only Attempt 2 change. Warnings were from existing Zod annotations, Prisma browser import externalization, empty route chunks and a 1.22 MB merchant-i18n chunk.
 - `npx shopify app config validate --config moda-interact`: success.
-- Focused `npx eslint` over modified app and test files: passed. A broader invocation including `scripts/shopify*.mjs` reports existing `process is not defined` `no-undef` diagnostics; the changed launcher arguments are not implicated.
-- `git diff --check`: passed.
+- Attempt 2 `npx eslint app/services/webhooks/shopify-webhook-observability.server.ts tests/unit/webhooks/shopify-lifecycle-errors.test.ts`: passed.
+- Attempt 2 `git diff --check`: passed.
+- The PostgreSQL lifecycle suite and Shopify config validation passed during Attempt 1 and were not rerun because Attempt 2 changed only diagnostic logging and its emitted-record test.
 
 ### Deviations
 
@@ -324,17 +326,17 @@ Physical worktree isolation:
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-009`, branch `task/ARCH-057-SHOPIFY-009`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-009`, branch `task/ARCH-057-SHOPIFY-009`.
 - Shared workspace and shared implementation checkouts were not switched or modified for task work; no other task worktree was reused.
-- Parent claim commit: `d31e4c660c00f7a90cacfe81629b751366ea0a11`; implementation start SHA: `062777ceae29695314d6c7210bd88bdd11252153`.
-- At final synchronization check, `origin/main` had advanced by two commits for ARCH-057-SHOPIFY-008 after the implementation task branch was established. Those unrelated changes were not merged into this task branch. Parent `origin/task/ARCH-057-SHOPIFY-009` remained at the claim commit before report submission.
+- Attempt 2 canonical launcher claim: parent claim commit `a8e218b9010ca5065ebed92e1487f8834951428f`, claimed at `2026-11-04T22:49:27Z`; parent synchronized head `a990756de4669da5e8ea84a60de28329f2ab37da`; implementation start head `76d69d8a3f93392eeb9a6353e5036857c22404ca`. Both worktrees were reused on their matching task branches, and the dependency gate passed.
+- The launcher required incorporating `origin/main` commit `1880440` into the implementation task branch. Its `package.json` conflict was resolved by retaining the explicit `moda-interact` dev/deploy selection and lifecycle scripts alongside the incoming merchant-knowledge scripts. The database submodule was materialized at the implementation's recorded commit `bd2d09066a8eb178a56f48fbbf88df637c411059`; no submodule gitlink was staged.
 
 Implementation repository:
-- Commits: `838cfae586585c176590ba46a4ccee8973b27097` (implementation) and `de55ee8d0f2840785ccf50f414f8d450a09383d6` (typed Prisma SQL evidence capture).
+Implementation commits: `838cfae586585c176590ba46a4ccee8973b27097` (lifecycle implementation), `de55ee8d0f2840785ccf50f414f8d450a09383d6` (typed Prisma SQL evidence), `76d69d8a3f93392eeb9a6353e5036857c22404ca` (required origin/main synchronization), and `f0cf26877a9e3f7503c0f9a956b02ede3eff2571` (shared diagnostic boundary and code classification corrections).
 - Remote branch: `origin/task/ARCH-057-SHOPIFY-009`.
-- Pushed: yes.
+- Pushed: yes; implementation head `f0cf26877a9e3f7503c0f9a956b02ede3eff2571` matches the task remote.
 
 Parent workspace:
 - Task file: `docs/decisions/shopify/ARCH-057/SHOPIFY-009-preserve-session-lifecycle-and-webhook-configuration.md`.
-- Review report commit and push: performed on `origin/task/ARCH-057-SHOPIFY-009`; the exact commit SHA is returned in the review handoff.
+- Attempt 2 report update: committed and pushed on `origin/task/ARCH-057-SHOPIFY-009` as the review submission.
 - Submodule gitlink staged: no.
 
 Merged to implementation `main`: no.
