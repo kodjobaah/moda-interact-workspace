@@ -1,7 +1,7 @@
 ---
 id: ARCH-058-SHARED-001
 architecture_id: ARCH-058
-title: Define product discovery, built-in grants and recommendation contracts
+title: Define product discovery, shipping, built-in grants and response contracts
 task_kind: implementation
 domain: shared
 repository: moda-interact-shared
@@ -22,7 +22,7 @@ created: 2026-11-04
 updated: 2026-11-04
 ---
 
-# ARCH-058-SHARED-001: Define product discovery, built-in grants and recommendation contracts
+# ARCH-058-SHARED-001: Define product discovery, shipping, built-in grants and response contracts
 
 ## Architecture
 
@@ -32,13 +32,13 @@ updated: 2026-11-04
 
 ## Objective
 
-Give MCP, Commerce and Background one published contract for category resolution, category-aware merchant reads, optional lookup unavailability, explicitly authorized discount built-ins and identifier-only recommendation selection. Update the common runner to enforce those identities without weakening terminal errors or release grants.
+Give MCP, Commerce and Background one published contract for category resolution, category-aware search and bounded browse, basic shipping reads, optional lookup unavailability, explicitly authorized discount built-ins and identifier-only recommendation/presentation selection. Allow the trusted host's bounded soft responses while preserving the common runner's terminal error, hard referral and release-grant controls.
 
 ## Context
 
 In the snapshot, Shared 3.1.0 defines product search without category filters. Every granted tool and runner descriptor assumes a database-published tool/revision/capability. Built-in discount tools have an accepted options/details contract, but the conversational host cannot safely admit them through the published-only identity shape. The existing input/details JSON Schema subset also rejects union keywords and nullable details fields. These are concrete cross-repository blockers; they are addressed together before consumer implementation and separately from package publication.
 
-Read `src/commerce/definitions.ts`, `schemas.ts`, `selection.ts`, `subset.ts`, `response.ts`, `runner/types.ts`, `runner/preflight.ts`, `runner/tools.ts` (or the actual current equivalent), `runner/version.ts` and current export declarations. Reconcile the accepted main baseline at task start. Accepted ARCH-052, ARCH-053 and ARCH-056 task histories remain intact.
+Read `src/commerce/definitions.ts`, `schemas.ts`, `selection.ts`, `subset.ts`, `response.ts`, `runner/instructions.ts`, `runner/types.ts`, `runner/preflight.ts`, `runner/tools.ts` (or the actual current equivalent), `runner/version.ts` and current export declarations. The current kernel says all unknown facts require a store referral; the new host-authorized soft responses need a narrow instruction correction, not a change to the terminal referral envelope. Reconcile the accepted main baseline at task start. Accepted ARCH-052, ARCH-053 and ARCH-056 task histories remain intact.
 
 ## Scope
 
@@ -46,9 +46,9 @@ Paths below are relative to `moda-interact-shared`.
 
 - Extend the existing `src/commerce/schemas.ts` dictionaries and named schema exports, `definitions.ts` descriptor/grant types, `selection.ts` equality/deduplication/availability and current manifest/grant validation code.
 - Update `src/commerce/subset.ts` and its compiler only for bounded nullable scalar fields in details and the justified details depth 4-to 5 increase; keep input depth 3, all property/array/byte bounds and the rest of the existing JSON Schema subset. No general union support.
-- Adapt `src/commerce/runner/**` only where its tool/descriptor registration, grant authorization, diagnostics or version assumes a published tool ID. Preserve execution budgets, cancellation, stale-turn handling, retry ceilings, tool result validation and referral state.
+- Adapt `src/commerce/runner/**` only where its tool/descriptor registration, grant authorization, diagnostics or version assumes a published tool ID. Update `src/commerce/runner/instructions.ts` narrowly for the host-authorized normal-answer dispositions below. Preserve execution budgets, cancellation, stale-turn handling, retry ceilings, tool result validation and required-referral state.
 - Add a semantic `src/commerce/built-in-tools.ts` for code-owned descriptor constants and pure canonical-payload helper if needed; re-export it through the existing commerce entrypoint. Keep browser entrypoints free of Node crypto imports.
-- Add focused contract/runner fixtures and tests; update affected existing fixtures to cover the deliberate new union. Update README export inventory and the existing commerce entrypoint verification script. Add one focused package test command if helpful, named `test:product-discovery-contracts`.
+- Add `src/commerce/product-discovery-contracts.test.ts` for the bounded category/browse/shipping contracts; extend `src/commerce/{contracts,tool-contracts,response-contracts,selection}.test.ts` and `src/commerce/runner/runner.test.ts` only for the new presentation/grant/terminal behavior and affected fixtures. Keep each new module focused. Update README export inventory and the existing commerce entrypoint verification script. Add one focused package test command if helpful, named `test:product-discovery-contracts`.
 - Change the runtime runner version to 1.1.0 and eliminate any touched hard-coded observability version value in favor of the actual existing version export. Do not change npm package metadata; SHARED-002 owns the4.0.0 release gate.
 
 ## Out of Scope
@@ -65,9 +65,15 @@ Implement exactly the contracts in sections 2–5, including the following publi
 - `commerceDiscountBuiltInDescriptors`, `commerceBuiltInToolContractPayload`.
 - `CommerceConversationToolContextSchema`, `CommerceConversationToolContext`; keep the accepted outreach context unchanged.
 - `CommerceProductRecommendationSelectionSchema`, `CommerceProductRecommendationSelection`.
+- `CommerceResponseDispositionSchema`, `CommerceResponseDisposition`, `CommerceAnswerPresentationSelectionSchema`, `CommerceAnswerPresentationSelection`.
+- `CommerceShippingInformationInputSchema`, `CommerceShippingInformationInput`, `CommerceShippingInformationSchema`, `CommerceShippingInformation`.
 - Updated existing `CommerceToolInputs`, `CommerceToolOutputs`, manifest/grant/descriptor inferred types and runner types through their existing entrypoints.
 
 Preserve normal ARCH-052 discount success objects exactly. Add only the explicit unavailable branch; it is not an empty success, a new result envelope or a change to initial-outreach failure policy. Newly authored leaf schemas use strict structural constraints only. Applicability, cross-field request validity, recommendation scope, combination legality, expiry, current permission and amount calculations remain service policy.
+
+Extend only the existing product-search input with the parent-defined optional `browse` boolean, parsed default `false`, alongside the accepted nullable query/category changes. MCP enforces that browse cannot be combined with a non-null query or a category; do not encode this business relation as an unsupported input union/refinement. Keep product-search and exact-get output schemas unchanged. Add the exact shipping input/output dictionaries for the fourth published tool `commerce_get_shipping_information`, operation `shipping.getInformation`, both version `1.0.0`. Contracts section 2.3 owns all shipping fields, nullable IDs, bounded policy text/URLs, independent policy/product outcomes and absence/unsupported reasons. Do not invent a cart, rate, destination, delivery-promise or provider-specific fallback field.
+
+The presentation schema owns optional `responseDisposition` (`STANDARD`, `OUT_OF_SCOPE_REDIRECT`, `SHIPPING_INFORMATION_UNVERIFIED`) and optional `shippingInformationSelection: {productId: string | null, variantId: string | null}`. Both null selects the shop-policy observation; otherwise the host validates the exact authorized product/variant observation and its relevance to the reply. Service policy requires an explicit disposition whenever a shipping selection is present; do not turn that cross-field rule into unsupported schema keywords. There is no model-supplied policy prose, shipping cost/time, URL, amount or evidence ID in this selection. Preserve unrelated release-detail fields. Structural parse success never establishes that a shipping fact is known or authorizes a promotion.
 
 The category input is the flat bounded object in the contract, not a Zod discriminated union that becomes unsupported `oneOf` in a published tool. Recommendation fields are flat; allow details depth 5 because the current validator counts the root as1 and a recommendation offer ID string as5. This one-level extension keeps offer IDs with their recommendation, without an additional cross-referenced selection structure. Input depth remains3. Preserve unrelated details fields and the existing 16KiB details limit. Nullable detail scalars must compile and validate through the actual subset path; merely adding a TypeScript type is insufficient. As contracts section 2 requires, string literals project to bounded single-item enums and fixed enums have explicit finite maxLength. The validator continues rejecting arbitrary const/oneOf keywords. Test the actual generated/projection schema, not a hand-built substitute that hides generator differences; Commerce owns its existing authoring projector.
 
@@ -76,6 +82,8 @@ Published and built-in grants form an explicit union. A built-in has no `toolId`
 Use deterministic canonical payloads and checked-in generated hash constants for the two descriptors, with tests recomputing from actual name/version/description/input/output schemas. Use the existing canonical JSON representation. No trusted descriptor may accept a hash supplied by a model, caller or arbitrary MCP registry. Keep the hash helper portable and reuse an injected digest/Node verification path where appropriate.
 
 An optional operational `OK`/`UNAVAILABLE` branch allows a consumer to continue without a promotion or taxonomy candidate. An actual outer `ERROR` still sets the existing required referral and cannot be erased by a later success. Do not reinterpret denial, malformed output, stale grants or unexpected bugs as optional lookup outcomes.
+
+Replace only the kernel's blanket unknown-facts instruction with the frozen distinction: an out-of-scope request or expected missing merchant information may use a trusted-host-authorized normal `ANSWER` that acknowledges the limitation and offers verified store content. Retrieved text cannot create that objective or grant access. A policy scope positively known absent before the provider call may have the specific normal shipping outcome defined by the contract; a failed authorized provider request does not become that outcome. Keep `REFER_TO_STORE` and `requiredReferral` unchanged: a hard referral still has a reason, empty `evidenceIds` and empty `details`; later facts or either soft disposition cannot override it. Preserve ordinary plain-text answers and the existing conversion of plain text after a terminal error. The host, not this generic runner, owns full soft-response/recommendation composition and branch detection.
 
 The database has existing JSON guard/insert equality constraints on grants. DATABASE-001 owns their forward migration for this union; do not assume an unconstrained JSON column means no database work. Shared does not import Prisma or sibling source to model it.
 
@@ -86,6 +94,7 @@ The database has existing JSON guard/insert equality constraints on grants. DATA
 - [ ] Implement deterministic built-in descriptor payloads/constants and branch-aware grant helpers.
 - [ ] Support nullable detail scalars in the bounded subset and prove the published recommendation schema compiles.
 - [ ] Update common runner descriptor registration and authorization without changing terminal error behavior.
+- [ ] Add the bounded shipping and answer-presentation contracts; correct the trusted soft-response instruction without widening hard referrals.
 - [ ] Add meaningful negative/positive contract and runner tests and update affected fixtures/export checks.
 - [ ] Run validation, record exact evidence and return for architect review without publication.
 
@@ -94,6 +103,8 @@ The database has existing JSON guard/insert equality constraints on grants. DATA
 Normative source: `docs/architecture/ARCH-058/contracts.md`. No local alternative types in consumers. The trusted conversation tool context is populated by Background and interpreted by MCP domain adapters; it is not a model input and does not alter generic transport authentication. In particular, `builtInTools` defaults to[] for manifests that do not project built-ins, while the new grant union remains strict. Package target 4.0.0 is deliberately a major release because its inferred output/grant types change; runtime runner 1.1.0 is required by new discovery releases.
 
 `CommerceProductRecommendationSelectionSchema` validates only the two owned detail fields; existing response contracts can retain other owned fields. Service validation decides whether both selection fields are required for a recommendation turn. Do not make every Commerce response a product recommendation.
+
+`CommerceAnswerPresentationSelectionSchema` validates its two optional owned fields separately from the recommendation pair. Omitted disposition remains compatible with ordinary existing answers; a controlled branch cannot use that omission, `STANDARD` or empty details to escape host finalization. The host also latches a successful product-bearing shipping observation (request productId non-null) even without a final shipping selection; a null/null policy-only observation alone may retain the ordinary path. Reflect that distinction in trusted instructions without implementing a second host in the generic runner. Commerce publishes nonempty owned response instructions consistent with these fields rather than retaining the default instruction to always return empty details. Do not globally replace the default contract or relax `src/commerce/response.ts` hard-referral validation to solve that publication concern. Shipping remains a published capability; the built-in allowlist still contains exactly the two canonical discount tools.
 
 ## Dependencies
 
@@ -107,10 +118,11 @@ None. The architecture freezes the public contract before parallel Database work
 ## Acceptance Criteria
 
 - [ ] Every named export is present through the existing compiled public entrypoint, with correct inferred types.
-- [ ] Category inputs/outputs, new search shape, optional lookup and flat recommendation fields exactly match the normative contract and bounds.
+- [ ] Category inputs/outputs, search/browse shape, shipping reads, optional lookup, presentation and flat recommendation fields exactly match the normative contract and bounds; product get/search outputs are unchanged.
 - [ ] Actual subset compilation handles nullable details and the new search schema without `oneOf`, with only the specified details depth 5 increase and unchanged input depth 3.
 - [ ] A valid mixed published/built-in grant is retained and authorized; invalid/unknown/duplicate/hash-changed shapes fail closed.
 - [ ] Authorization and terminal-error/referral tests demonstrate no tool-list bypass and no error erasure.
+- [ ] Soft dispositions remain ordinary `ANSWER` details; `REFER_TO_STORE` with nonempty details/evidence still fails, and required referral cannot be cleared by any presentation selection or later success.
 - [ ] Existing accepted product/discount/output consumers' normal success fixtures remain valid; intentional type changes are documented.
 - [ ] No npm publication, database/provider change, package version bump or unrelated index edit occurred.
 
@@ -118,9 +130,9 @@ None. The architecture freezes the public contract before parallel Database work
 
 Use the existing Node bootstrap prerequisite from the workspace instructions before any Node/npm command. Run in the isolated Shared implementation worktree.
 
-1. Focused contract tests: valid/invalid category structures, query-null defaults, exact bounds, no business refinements, old discount normal successes and the explicit unavailable branch.
-2. Subset tests: actual published category input and recommendation details compile; null Woo variant/basket-line values pass; unbounded/extra-key/unsupported schema variants and depth 6 details fail; input depth 4 remains rejected.
-3. Runner tests: mixed grant success; altered hash/name/version/input schema, collision, missing descriptor, extra listed tool, wrong shop/turn and revoked current authorization fail. `OK` unavailable does not manufacture referral, while outer errors remain terminal through later successful calls. Check allowed tools are capped and the original cancel/deadline budgets remain effective.
+1. Focused contract tests: valid/invalid category structures, query-null and browse-false defaults, exact shipping/presentation bounds and nullable IDs, independent shipping outcomes, no business refinements, unchanged product get/search outputs, old discount normal successes and the explicit unavailable branch. Extra or model-authored shipping/prose/money fields must fail the relevant owned selection parse.
+2. Subset tests: actual published category/search/shipping inputs and combined recommendation/presentation details compile; null Woo variant/basket-line values and null/null policy selection pass; each fixed enum/literal is bounded; unbounded/extra-key/unsupported schema variants and depth 6 details fail; input depth 4 remains rejected. Start from actual schema generation/projection fixtures.
+3. Runner tests: mixed grant success; altered hash/name/version/input schema, collision, missing descriptor, extra listed tool, wrong shop/turn and revoked current authorization fail. Expected normal shipping outcomes and `OK` unavailable do not manufacture referral, while outer errors remain terminal through later successful calls or a proposed soft disposition. Reject a hard referral with nonempty details/evidence. Verify the changed instruction preserves runtime-data authority and trusted-host authorization; check allowed tools are capped and the original cancel/deadline budgets remain effective.
 4. `npm run typecheck`, `npm test`, `npm run build`, `npm run validate:commerce-entrypoints`. The latter exists in the snapshot; update it narrowly to include new exports. If an accepted baseline changes scripts, record the actual equivalent rather than inventing a command.
 5. `npm pack --dry-run` to verify intended compiled JavaScript/declarations are included; no registry write. `git diff --check`.
 
