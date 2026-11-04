@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 60
-executor: codex
-claimed_at: 2026-11-04T00:21:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-055-API-001
@@ -132,9 +132,9 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Implement bounded underlying readiness work and deterministic unit tests.
-- [ ] Create the focused migrated PostgreSQL/HTTP runner using disposable pg17+pgvector.
-- [ ] Register all accepted focused runners and the previously omitted AI-delay suite in aggregate integration.
+- [x] Implement bounded underlying readiness work and deterministic unit tests.
+- [x] Create the focused migrated PostgreSQL/HTTP runner using disposable pg17+pgvector.
+- [x] Register all accepted focused runners and the previously omitted AI-delay suite in aggregate integration.
 - [ ] Run API typecheck/build/full integration and classify any unchanged documented baseline failures without weakening new acceptance.
 
 ## Interfaces / Contracts
@@ -168,13 +168,13 @@ No constructor-side query or timer. Preserve original rejection cause. Observer 
 
 ## Acceptance Criteria
 
-- [ ] Twenty or more concurrent timed-out health requests do not leave twenty independent probes outstanding; per-process outstanding probe count stays <=1.
+- [x] Twenty or more concurrent timed-out health requests do not leave twenty independent probes outstanding; per-process outstanding probe count stays <=1.
 - [ ] Probe acquisition/execution has a documented measured finite bound, and successful readiness resumes after database recovery without restarting/disconnecting the business client.
-- [ ] Liveness remains available during DB failure and performs zero probes.
+- [x] Liveness remains available during DB failure and performs zero probes.
 - [ ] Aggregate integration includes all accepted functional suites and canonical migration coverage; no silent skips or reduced-schema substitution.
-- [ ] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
+- [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
 - [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
-- [ ] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
+- [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
 
@@ -194,13 +194,13 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
-- [ ] `npx tsx --test tests/unit/http/server.test.ts tests/unit/http/arch055-readiness-single-flight.test.ts`
+- [x] `npx tsx --test tests/unit/http/server.test.ts tests/unit/http/arch055-readiness-single-flight.test.ts`
 - [ ] `node scripts/test-arch055-readiness-postgres.mjs`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
+- [x] `npm run typecheck`
+- [x] `npm run build`
 - [ ] `npm run test:integration`
-- [ ] `git diff --check`
-- [ ] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
+- [x] `git diff --check`
+- [x] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
 - [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition
@@ -213,43 +213,64 @@ This task owns final package.json integration-script changes so the functional t
 
 Implement in coherent internal commits/work packages (correctness first, bounded queries second, tests with each change). This reduces task count without creating one unreviewable all-API patch. Preserve ordinary task ownership; the architect reviews the completed unit.
 
-## Completion Report
+## Completion Report — Attempt 1, 2026-11-04
 
 ### Status
 
-Implementation not started. The task is Ready at Attempt 0 and awaits its normal launcher claim.
+Blocked on the required aggregate integration gate and final migrated readiness rerun. Implementation `301165eb5dd969cde1338d5b363aee963d7e08ea` is published on API `task/ARCH-055-API-009`. Attempt 1 is preserved and the claim is cleared. No downstream task is promoted.
 
-### Files Changed
+### Implementation and measured boundaries
 
-None.
+- `src/database.ts` creates a dedicated readiness Prisma 6 client. The URL keeps existing non-timeout options and sets connection_limit, pool_timeout, connect_timeout and socket_timeout to 1. The business client retains its original URL. Readiness submits parameter-free SELECT 1. Shutdown attempts both disconnects.
+- `src/readiness-probe.ts` and `src/server.ts` share the actual pending delegate across requests and clear the guard only on settlement. The 2,000 ms HTTP observer deadline and live/ready response shapes are preserved. Shared readiness logs keep the original safe error message, code and nested cause with URLs redacted.
+- The former installation runner delegates to the accepted installation and merchant-settings migration runners. All five prior fixture suites remain registered through those runners, plus the accepted installation races and category coherence cases. The aggregate preserves its prior commands and adds AI-delay and readiness exactly once. The existing restore, recovery-read, purchase-history and billing registrations already include their accepted tests.
+- The readiness runner starts a fresh pg17+pgvector container, waits for the final TCP listener, applies the canonical migrations and runs the focused PostgreSQL tests. A test adapter holds the dedicated pool and injects a blocked statement. The HTTP fixture cuts only readiness traffic, preserves the existing business backend PID and measures the stalled handshake through actual delegate settlement.
+- The one-second socket timeout bounds the client promise. The deliberately injected eight-second statement remained active on PostgreSQL until it finished. Recovery is asserted after that backend work ends. The test does not demonstrate server-side statement cancellation or capacity in the business pool. Prisma connector option reference: [Prisma v6 PostgreSQL connector](https://www.prisma.io/docs/orm/v6/overview/databases/postgresql).
 
-### Work Completed
+### Validation
 
-None. Task definition only.
+| Check | Observed outcome |
+|---|---|
+| Focused HTTP and single-flight units | 10 passed. Optional M17 profile ran separately on both versions. 24 timed-out HTTP observers left one delegate pending. A subsequent request still coalesced until settlement. Fresh requests then probed again. |
+| M17 comparison | Baseline peak 20 vs candidate peak 1 in every five-sample group. Early release returned 20 HTTP 200s on each version. Held-through-deadline returned 20 HTTP 503s, leaving 20 baseline delegates vs one candidate delegate pending until release. |
+| PostgreSQL readiness | Earlier canonical runner revision applied 71 migrations and passed both tests after recovery polling was added. A stricter cleanup assertion initially caught a paused proxy socket. The final test proxy drains handshake bytes and the exact final tests passed 2/2 in the separate pg17+pgvector driver diagnostic without migrations. Final canonical attempts stopped during Prisma migration deployment with a generic schema engine error. The diagnostic is retained separately and does not satisfy the final migrated gate. |
+| Pool and connection diagnostic | One tagged physical readiness session under held acquisition. Pool failure 1043.08 ms, socket query failure 1009.36 ms, stalled handshake including delegate settlement 1017.06 ms. Initial outage 12.70 ms, injected backend recovery 8166.89 ms, liveness issued zero probes, both transports closed at shutdown. The test probe is a constant SELECT and affects zero target rows. No wire-level SQL or byte count is claimed for the controlled fake profiles. |
+| Shutdown | Unit shutdown after a held observer deadline invokes disconnect once. Real recovered network fixture observes zero remaining sockets after repeated shutdown. |
+| Typecheck and build | Passed on Node 24.19.0/npm 11.17.0 with generated Prisma 6.19.3. |
+| Lint and whitespace | Changed-file lint and diff checks passed. Repository lint retains the existing Support routes line 75 `no-empty` error. |
+| Aggregate integration, first run | Shop brand, installation, settings, REST-read authorization and billing groups passed. The unchanged discount-offers suite then failed five cases after its mapped PostgreSQL endpoint became unreachable. |
+| Aggregate integration, serial retry | Shop brand, installation and settings passed. The unchanged REST-read overlap test returned two rejected callbacks where it expects two fulfilled outcomes. This same runner passed 9/9 on the first aggregate run. The retry did not reach the later suites. |
+| Standalone follow-up | AI-delay passed 1/1 with canonical migrations. The unchanged discount-offers runner also failed independently. Its Save transaction expired after 29,517 ms against the existing 12,000 ms bound. The remaining standalone loop was stopped while the active runner completed cleanup. |
 
-### Validation Results
+The differing failures in unchanged runners are observed validation failures, not waived baseline findings. The aggregate still needs a successful run through the complete registration sequence. No existing timeout or fixture contract was loosened.
 
-Not run. Record each command, outcome, fixture/migration identity, actual SQL/rows, concurrency schedule and resource cleanup here.
+### Worktree and provenance
 
-### Worktree and Git Evidence
+- Workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-009`, reused. Implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-009`, created. Both use `task/ARCH-055-API-009`. Shared checkouts were not switched.
+- Parent incorporated main at `608f6a06a519df103b21cea55d6327fa806dc13a`. Implementation already included main at task-start `2384bac6cea135d5571bd9f771f9431cfb0c7b45`. Neither remote task branch required a fast-forward. All eight dependencies passed the launcher gate and claim `56ba640ee25c8a816fc99330908992448de6bbd7` was published.
+- Recursive sync and initialization passed at Database `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Migration tree manifest SHA-256 from `git ls-tree -r HEAD prisma/migrations` is `907ab05d3418e60f6862597b7a8e14e54987167f60eafd2d8fe1e99463606f94`.
+- The M17 fixture used a temporary archive of task-start source and the locked candidate dependencies. It ran the same server test with `ARCH055_READINESS_MEASURE_VERSION=baseline` and `ARCH055_READINESS_SOURCE_ROOT` set to that archive, then with `ARCH055_READINESS_MEASURE_VERSION=candidate` and no source override. Command in both cases: `npx --no-install tsx --test --test-name-pattern=M17 tests/unit/http/server.test.ts`. Each sample starts a fresh local HTTP runtime, sends 20 requests and releases the held delegate before cleanup. Two warmups were discarded per scenario/version. No live database was loaded for baseline accumulation.
 
-Parent task worktree is materialised at `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-009` on `task/ARCH-055-API-009`. No implementation worktree or attempt claim was created for this promotion.
+The temporary source archive was removed. Final container inventory showed no readiness, AI-delay or discount-offers containers from the runs, and the last runner had exited. The implementation checkout is clean.
 
-### Deviations
+### Retained measurements
 
-None authorised.
+Local elapsed times are descriptive.
 
-### Assumptions
+| M17 case | Baseline min/median/max ms | Candidate min/median/max ms |
+|---|---:|---:|
+| Early release | 29.85 / 44.73 / 85.31 | 26.53 / 36.76 / 53.88 |
+| Held through deadline | 2015.39 / 2019.42 / 2026.66 | 2016.79 / 2018.97 / 2084.24 |
 
-The uploaded source snapshot is the design baseline, not proof of current remote state. Reconcile only relevant drift on the real launcher baseline; return contract-changing drift to the architect.
-
-### Unresolved Issues
-
-Required implementation/validation has not started. Do not pre-check acceptance items. The launcher may claim Attempt 1 after the canonical task branch is published.
-
-### Architectural Concerns
-
-Report ownership, schema, contract, external dependency, new index/infrastructure or transaction-boundary gaps here. Do not expand scope silently.
+```jsonl
+{"profile":"M17","version":"baseline","scenario":"release-before-deadline","warmups":2,"samples":[{"requests":20,"probes":20,"peak":20,"pending":0,"elapsedMs":44.73381900000004,"status":200,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":20,"peak":20,"pending":0,"elapsedMs":29.8485169999999,"status":200,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":20,"peak":20,"pending":0,"elapsedMs":85.31228299999998,"status":200,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":20,"peak":20,"pending":0,"elapsedMs":47.105678000000125,"status":200,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":20,"peak":20,"pending":0,"elapsedMs":34.18605200000002,"status":200,"sql":"not applicable to fake delegate","affectedRows":0}]}
+{"profile":"M17","version":"baseline","scenario":"held-through-deadline","warmups":2,"samples":[{"requests":20,"probes":20,"peak":20,"pending":20,"elapsedMs":2019.4204549999995,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":20,"peak":20,"pending":20,"elapsedMs":2021.1524659999995,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":20,"peak":20,"pending":20,"elapsedMs":2015.393637000001,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":20,"peak":20,"pending":20,"elapsedMs":2018.6505510000006,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":20,"peak":20,"pending":20,"elapsedMs":2026.6590180000003,"status":503,"sql":"not applicable to fake delegate","affectedRows":0}]}
+{"profile":"M17","version":"candidate","scenario":"release-before-deadline","warmups":2,"samples":[{"requests":20,"probes":1,"peak":1,"pending":0,"elapsedMs":53.88422700000001,"status":200,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":0,"elapsedMs":26.525485000000003,"status":200,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":0,"elapsedMs":28.526264999999967,"status":200,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":0,"elapsedMs":37.53506100000004,"status":200,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":0,"elapsedMs":36.76398500000005,"status":200,"sql":"not applicable to fake delegate","affectedRows":0}]}
+{"profile":"M17","version":"candidate","scenario":"held-through-deadline","warmups":2,"samples":[{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2019.188236,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2084.238854,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2016.7924789999997,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2018.9661239999987,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2017.43808,"status":503,"sql":"not applicable to fake delegate","affectedRows":0}]}
+{"profile":"readiness-pool-and-socket","acquireMs":1043.0844579999998,"queryMs":1009.3611509999996,"backendRecoveryMs":8166.8903740000005,"physicalConnections":1,"probeSql":"SELECT 1","affectedRows":0}
+{"profile":"readiness-http-outage","outageMs":12.700615000001562,"stalledHandshakeMs":1017.0581980000006,"liveProbes":0,"recovered":true,"socketsAfterShutdown":0}
+```
 
 ## Architect Review
 
