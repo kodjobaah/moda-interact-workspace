@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-04T06:02:39Z
+attempt: 1
 depends_on: []
 enables:
 - ARCH-058-MCP-003
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: '2026-11-04'
+updated: 2026-11-04
 ---
 
 # ARCH-058-SHOPIFY-001: Enable Shopify shipping-policy read permission through the existing installation lifecycle
