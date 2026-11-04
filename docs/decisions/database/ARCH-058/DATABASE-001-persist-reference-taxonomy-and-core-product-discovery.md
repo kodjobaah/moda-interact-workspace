@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
   - ARCH-058-MCP-001
@@ -36,7 +36,7 @@ Normative wire contract: `docs/architecture/ARCH-058/contracts.md`, section 4, i
 
 Coordinator: `moda_architect`.
 
-**Definition state:** defined but not materialised. This portable canonical definition has no claimed attempt, task branch, task worktree, implementation commit, push or accepted implementation. Materialise through `/moda-task ARCH-058-DATABASE-001` under `docs/task-definition-materialization.md` before execution. `ready` records the empty dependency frontier; it does not authorise deployment to a shared environment.
+**Definition state:** materialised and architect-accepted at Attempt 1 (2026-11-04). Published Database implementation `ded8f14a60182f6b1443640f012caf0089b8a44c` and parent submission `f20c5512147ddde5186543b7af39f9d61e5753c8` were verified against their remote task branches. Automatic completion is recorded below; no shared-environment deployment is authorised by this acceptance.
 
 ## Objective
 
@@ -332,12 +332,12 @@ Do not replace original Prisma/PostgreSQL errors with only a generic status code
 
 ## Work Items
 
-- [ ] Add the two exact Prisma models, forward SQL schema and named constraints/indexes.
-- [ ] Add transactional membership/ownership guards and targeted `product_search` conversion with postconditions.
-- [ ] Extend only the two existing grant-validation function bodies for the strict built-in branch while retaining published union/owner/immutability guards.
-- [ ] Align only the canonical `product_search` seed policy.
-- [ ] Add the semantic-named validators and isolated PostgreSQL 17 fresh/upgrade/constraint fixtures.
-- [ ] Record constraint, upgrade-preservation and conflict-rollback results; hand off the accepted Database revision without editing consumers.
+- [x] Add the two exact Prisma models, forward SQL schema and named constraints/indexes.
+- [x] Add transactional membership/ownership guards and targeted `product_search` conversion with postconditions.
+- [x] Extend only the two existing grant-validation function bodies for the strict built-in branch while retaining published union/owner/immutability guards.
+- [x] Align only the canonical `product_search` seed policy.
+- [x] Add the semantic-named validators and isolated PostgreSQL 17 fresh/upgrade/constraint fixtures.
+- [x] Record constraint, upgrade-preservation and conflict-rollback results; hand off the accepted Database revision without editing consumers.
 
 ## Interfaces / Contracts
 
@@ -358,19 +358,19 @@ None. Snapshot source and existing accepted migration history are the baseline, 
 
 ## Acceptance Criteria
 
-- [ ] Exactly two separate logged commerce taxonomy tables exist, with the specified native types/defaults, composite identity/dimension/parent constraints, and one active generation per environment/source/language.
-- [ ] The same provider category ID can appear in different generations; independent environments/corpora can each have an active generation; duplicate identity/fingerprint or a second active generation in the same scope is rejected.
-- [ ] Missing/cross-generation parents, self-parent rows, inconsistent root/ancestor metadata, wrong vector dimensions, mismatched generation dimensions, malformed hashes, nonpositive counts and active rows without activation time are rejected by the intended constraints.
-- [ ] Parent-first insertion and an atomic old/new activation succeed; rollback preserves the old active generation and its categories. A normal exact cosine query against one pinned generation succeeds using a bound vector value.
-- [ ] Existing published-only grants still pass. A valid published union plus the two allowlisted built-in grant objects inserts without any fabricated database tool/capability/revision row.
-- [ ] Unknown kinds/names, incorrect built-in version/hash shape, missing/extra keys, extra published IDs on a built-in, duplicate names across branches, combined overflow and wrong published union/provenance are rejected. A built-in cannot conceal a missing published grant.
-- [ ] Existing recovery/shop/inbound/release/expiry/snapshot-isolation and immutable-update checks still reject invalid grants. Function owners/ACLs and trigger/CHECK bindings are retained; functions use `SECURITY INVOKER` and fixed `pg_catalog` search path.
-- [ ] Fresh migration requires no taxonomy download, embedding key, live merchant, Admin service or broad seed.
-- [ ] Upgrade preserves existing merchant knowledge, Admin mappings/settings, immutable tool/release/audit rows and unrelated feature/plan/preference data; only the named feature's policy/mappings/preferences change.
-- [ ] All existing Free/paid catalogue and operational plans contain enabled product-discovery support, existing mapping configuration is retained, and the canonical seed cannot restore opt-in.
-- [ ] Unknown/custom or unauthorised same-name feature members stop the migration before conversion; missing feature and lock/conflict failure are actionable. Failed upgrade leaves the pre-upgrade feature/data state intact.
-- [ ] Reapplying through the normal migration runner reports no pending application; it does not rerun DDL, duplicate mappings or erase data. No manual migration-history repair is used.
-- [ ] Changes are confined to the allowlist. Admin code/Redis, earlier migrations, consumer schema copies, business-policy triggers and decision indexes remain untouched; only the two expressly authorised existing grant function bodies change.
+- [x] Exactly two separate logged commerce taxonomy tables exist, with the specified native types/defaults, composite identity/dimension/parent constraints, and one active generation per environment/source/language.
+- [x] The same provider category ID can appear in different generations; independent environments/corpora can each have an active generation; duplicate identity/fingerprint or a second active generation in the same scope is rejected.
+- [x] Missing/cross-generation parents, self-parent rows, inconsistent root/ancestor metadata, wrong vector dimensions, mismatched generation dimensions, malformed hashes, nonpositive counts and active rows without activation time are rejected by the intended constraints.
+- [x] Parent-first insertion and an atomic old/new activation succeed; rollback preserves the old active generation and its categories. A normal exact cosine query against one pinned generation succeeds using a bound vector value.
+- [x] Existing published-only grants still pass. A valid published union plus the two allowlisted built-in grant objects inserts without any fabricated database tool/capability/revision row.
+- [x] Unknown kinds/names, incorrect built-in version/hash shape, missing/extra keys, extra published IDs on a built-in, duplicate names across branches, combined overflow and wrong published union/provenance are rejected. A built-in cannot conceal a missing published grant.
+- [x] Existing recovery/shop/inbound/release/expiry/snapshot-isolation and immutable-update checks still reject invalid grants. Function owners/ACLs and trigger/CHECK bindings are retained; functions use `SECURITY INVOKER` and fixed `pg_catalog` search path.
+- [x] Fresh migration requires no taxonomy download, embedding key, live merchant, Admin service or broad seed.
+- [x] Upgrade preserves existing merchant knowledge, Admin mappings/settings, immutable tool/release/audit rows and unrelated feature/plan/preference data; only the named feature's policy/mappings/preferences change.
+- [x] All existing Free/paid catalogue and operational plans contain enabled product-discovery support, existing mapping configuration is retained, and the canonical seed cannot restore opt-in.
+- [x] Unknown/custom or unauthorised same-name feature members stop the migration before conversion; missing feature and lock/conflict failure are actionable. Failed upgrade leaves the pre-upgrade feature/data state intact.
+- [x] Reapplying through the normal migration runner reports no pending application; it does not rerun DDL, duplicate mappings or erase data. No manual migration-history repair is used.
+- [x] Changes are confined to the allowlist. Admin code/Redis, earlier migrations, consumer schema copies, business-policy triggers and decision indexes remain untouched; only the two expressly authorised existing grant function bodies change.
 
 ## Validation
 
@@ -386,12 +386,12 @@ Add exactly these entries to the existing `package.json` scripts object:
 
 Run from the Database implementation checkout, using the prepared workspace Node environment. Before the first Node command follow the existing bootstrap rule; do not install or select a different runtime. For Prisma commands the test harness must supply its own disposable database URL; do not inherit a live/shared URL.
 
-- [ ] `npm run validate`.
-- [ ] `npm run prisma:generate`.
-- [ ] `npm run test:reference-taxonomy-schema` — checks schema/migration contract, named partial index and narrowly aligned seed; it does not substitute for actual SQL behavior.
-- [ ] `npm run test:reference-taxonomy:postgres:fresh` — apply the unchanged migration chain plus the new migration to isolated PostgreSQL 17/pgvector; inspect real constraints/types/index definitions and run valid/invalid taxonomy and mixed grant inserts plus exact cosine retrieval.
-- [ ] `npm run test:reference-taxonomy:postgres:upgrade` — apply predecessors, add legacy plan/preference/configuration and system-tool fixtures, then migrate; verify targeted conversion and preservation. Run separate conflict fixtures for an unknown capability, a same-name member without ownership, a missing feature and a concurrent inventory write/lock timeout; verify rollback. Verify the old published-grant restrictions against real trigger execution, the new strict built-in branch, unchanged function owners/ACLs and binding identities, and normal `migrate:deploy` rerun through recorded migration history as a no-op.
-- [ ] `git diff --check`.
+- [x] `npm run validate`.
+- [x] `npm run prisma:generate`.
+- [x] `npm run test:reference-taxonomy-schema` — checks schema/migration contract, named partial index and narrowly aligned seed; it does not substitute for actual SQL behavior.
+- [x] `npm run test:reference-taxonomy:postgres:fresh` — apply the unchanged migration chain plus the new migration to isolated PostgreSQL 17/pgvector; inspect real constraints/types/index definitions and run valid/invalid taxonomy and mixed grant inserts plus exact cosine retrieval.
+- [x] `npm run test:reference-taxonomy:postgres:upgrade` — apply predecessors, add legacy plan/preference/configuration and system-tool fixtures, then migrate; verify targeted conversion and preservation. Run separate conflict fixtures for an unknown capability, a same-name member without ownership, a missing feature and a concurrent inventory write/lock timeout; verify rollback. Verify the old published-grant restrictions against real trigger execution, the new strict built-in branch, unchanged function owners/ACLs and binding identities, and normal `migrate:deploy` rerun through recorded migration history as a no-op.
+- [x] `git diff --check`.
 
 The fixture runner creates a unique disposable container/database using `pgvector/pgvector:pg17`, ignores/rejects inherited external database targets, uses bounded readiness waits, and removes its own container/volumes on success or failure. If host Prisma needs a port, bind a random loopback port only. Do not use an existing developer database or MCP's pg16 fixture. Apply historical migrations unchanged; do not create a reduced lookalike schema or run the broad seed to make tests pass.
 
@@ -413,50 +413,90 @@ After every Work Item, Acceptance Criterion and required Validation has passed, 
 
 ### Status
 
-Not started. Portable definition only; no implementation attempt is claimed.
+Ready for Review — Attempt 1. Submitted implementation `ded8f14a60182f6b1443640f012caf0089b8a44c` for moda_architect review.
 
 ### Files Changed
 
-None. Populate with actual implementation paths during execution.
+- `prisma/schema.prisma` adds only the two specified commerce taxonomy models.
+- `prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql` adds the named structural constraints/indexes, guarded feature conversion, postconditions and the two specified existing function replacements within one transaction.
+- `prisma/seed.mjs` changes only the canonical product-search feature's activation policy.
+- `package.json` adds the three specified validation commands.
+- `scripts/validate-reference-taxonomy-schema.mjs` checks the declared Prisma/SQL, seed and bounded guard contract.
+- `scripts/test-reference-taxonomy-postgres.mjs` runs the unchanged historical migration chain, target upgrade, failure variants and recorded rerun in invocation-owned PostgreSQL 17 containers.
+- `scripts/fixtures/reference-taxonomy-fixtures.mjs` supplies taxonomy, legacy preservation, membership conflict and real grant insertion cases.
 
 ### Work Completed
 
-None.
+- Added logged, dimension-flexible vector storage separate from merchant knowledge. Composite generation/dimension and same-generation parent keys, hierarchy/metadata CHECKs and the partial active-corpus index enforce the specified database boundaries.
+- Inventory locks and literal audit-prefix checks prevent conversion of unknown or unowned feature members. Conversion preserves feature identity/text and existing mapping configuration, adds support to all existing catalogue/operational plans and removes only the feature's obsolete preferences.
+- The existing grant JSON helper admits the two exact built-in shapes. The existing insert trigger compares only the published branch against the unchanged release-derived union. Function identities/owners/ACLs, trigger/CHECK bindings and immutable-update behavior were retained.
+- MCP handoff uses the exact models and constraints in this task. Insert parents before children, retain completed generations for pinned reads, and deactivate the previous active generation before activating its successor in the same transaction. Full ancestor-chain/count/vector/source validation, immutable generation use and configuration/advisory locking remain the importer's responsibilities.
+- Rollout remains coordinated by Commerce/System Test and dependent consumers. Content/publication preflight, compatible host/MCP deployment, migration, taxonomy import and controlled publication retain their specified order. Structural grant hashes in these fixtures do not authenticate production code contracts.
 
 ### Validation Results
 
-Not run. Record exact commands, disposable PostgreSQL/pgvector versions, results and any original safe diagnostic.
+All required commands completed from the isolated Database worktree.
+
+- `npm run validate` — exit 0.
+- `npm run prisma:generate` — exit 0, Prisma Client 6.19.3.
+- `npm run test:reference-taxonomy-schema` — exit 0.
+- `npm run test:reference-taxonomy:postgres:fresh` — exit 0. The full historical chain and target apply, followed by real native type/default/index/FK inspection, hierarchy/dimension/hash/activation rejection cases, atomic activation/rollback, retired-generation bound cosine retrieval, mixed grant insertions and migration-runner no-op.
+- `npm run test:reference-taxonomy:postgres:upgrade` — exit 0. Complete Free/paid/inactive catalogue plans, operational plans, nonempty mapping configuration, optional-feature preferences, merchant knowledge vectors, Admin category mappings/settings and immutable tools/releases/audits/grants survive targeted conversion. Conflict variants cover unknown disabled membership, same-name unowned membership, tool-name mismatch, wildcard-looking audit IDs, missing feature, deterministic mapping-ID collision and a real concurrent inventory writer. Each failing upgrade preserves pre-upgrade data, functions, schema and predecessor history.
+- Grant cases use both the SQL helper and the real insertion trigger. Valid published-only, published-plus-two-built-ins and built-in-only/empty-selection cases pass. Invalid shapes, names, versions, hashes, duplicate/colliding names/IDs, unsorted/duplicate provenance, 33 entries, oversized JSON, selected-key/revision/provenance mismatches, shop/recovery/inbound/release/expiry/version/isolation violations and immutable updates fail with the intended diagnostics.
+- `npx --no-install eslint scripts/validate-reference-taxonomy-schema.mjs scripts/test-reference-taxonomy-postgres.mjs scripts/fixtures/reference-taxonomy-fixtures.mjs` — exit 0.
+- `git diff --check` — exit 0.
+- Runtime versions were Node 24.19.0, npm 11.17.0, PostgreSQL 17.11 and pgvector 0.8.7 from `pgvector/pgvector:pg17`. Each runner supplies its own random loopback URL, checks historical migration checksums and removes its container/volumes and staging directory in finally.
+- Prisma's migration runner can mask an explicit-transaction failure with `25P02: current transaction is aborted`. The fixture runner preserves its nonzero result/output and captures PostgreSQL's originating error/SQLSTATE from native server diagnostics, bounded and credential-redacted. No migration-history repair or exception replacement was used.
+- Early development runs exposed incomplete fixture fields/translations and the diagnostic masking above. The final fixtures and runs resolve those failures. `npm ci` reported 10 existing dependency advisories and ignored lifecycle-script notices. Dependencies remained pinned, and explicit schema validation/client generation succeeded.
 
 ### Deviations / Assumptions / Unresolved Issues / Architectural Concerns
 
-None recorded. Return any schema-contract, membership, migration-baseline or dependency conflict before broadening scope.
+No scope expansion or unresolved implementation blocker. The category CHECK addresses the last ancestor with `array_upper` so it retains the required meaning for PostgreSQL arrays with nondefault lower bounds. No deployment or importer readiness is asserted by these database fixtures. Future-plan/new-store service flows, current built-in hash/policy authority and provider behavior remain the dependent System Test/consumer proofs.
 
 ### Worktree and Git Evidence
 
-Not materialised. No branch, worktree, commit, push or deployment is claimed. Record launcher-resolved parent and implementation worktrees, task branches, start revisions and submitted commits during a real attempt.
+- Task branch in both repositories is `task/ARCH-058-DATABASE-001`.
+- Canonical workspace is `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-DATABASE-001`, prepared at `2c2b5f0a35ca0c0c57993f4c0f6378ed5df0005c`.
+- Implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-DATABASE-001`, prepared at `8e74634ff92be9900f693c0c449ffce888e7d617`.
+- Both remote task fast-forwards were not needed and both origin/main incorporations were already current. Recursive submodule sync/update passed; the Database repository has no recursive submodule entries.
+- Durable claim `ba2feea413f0042bd0cddfba09541141efd4804c` was pushed before implementation.
+- Database implementation `ded8f14a60182f6b1443640f012caf0089b8a44c` is pushed to `origin/task/ARCH-058-DATABASE-001`. This parent task report is published on the same named parent branch. Only the task file is staged in the parent.
+- Shared/default checkouts and other task worktrees were not used for task edits. No consumer schema copy, submodule gitlink, decision index, other task or main branch was changed.
 
 ## Architect Review
 
 ### Review Status
 
-Not reviewed.
+Accepted — Attempt 1, 2026-11-04. No blocking findings. With `completion_mode: automatic`, set `status: complete` and clear the executor claim.
 
 ### Review Notes
 
-None. This definition is not implementation acceptance.
+- All seven changed implementation paths are within the allowlist. The two Prisma models and SQL constraints match the specified persistence contract; the last-ancestor check correctly uses the actual array upper bound. No historical migration, consumer copy, dependency, new trigger or unrelated seed policy changed.
+- The single transaction guards the existing product-search feature with bounded inventory locks and literal ownership-prefix checks, preserves existing mapping configuration and unrelated data, and checks the targeted conversion before commit.
+- Both grant function replacements match the normative SQL in the task. Published authority, owner/inbound checks and immutability remain enforced; the built-in branch adds structural support without claiming runtime hash/policy authority.
+- Reviewed fixture isolation, failure handling, preserved-row comparisons, real grant insertions and migration-history checks. Fresh and upgrade execution independently confirmed the specified behavior, including all seven rejected-upgrade variants and normal migration rerun.
 
 ### Reviewed Files
 
-None.
+- `prisma/schema.prisma`
+- `prisma/seed.mjs`
+- `prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql`
+- `package.json`
+- `scripts/validate-reference-taxonomy-schema.mjs`
+- `scripts/test-reference-taxonomy-postgres.mjs`
+- `scripts/fixtures/reference-taxonomy-fixtures.mjs`
 
 ### Validation Reviewed
 
-None.
+Independently rerun from the isolated implementation worktree after the canonical Node bootstrap: `npm run validate`, `npm run prisma:generate`, `npm run test:reference-taxonomy-schema`, both fresh and upgrade PostgreSQL scripts, scoped ESLint for all three scripts, and implementation diff whitespace checks. All passed. PostgreSQL 17.11 / pgvector 0.8.7 were invocation-owned and disposable; both runners exited successfully after cleanup. No existing database or broad seed was used. Logs are `/tmp/arch058-database001-review-{validate,generate,static,fresh,upgrade,lint}.log`.
+
+Both task worktrees were clean at review start. Direct remote verification matched implementation `ded8f14a60182f6b1443640f012caf0089b8a44c` and parent submission `f20c5512147ddde5186543b7af39f9d61e5753c8`. The implementation worktree remains clean after validation.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Conforms to the frozen database contract. Importer semantic checks, immutable completed-generation usage, compatible consumer rollout, content/publication preflight, future-plan/new-store service flows and production built-in hash authority remain with their designated downstream owners. This acceptance is not deployment or taxonomy readiness evidence.
 
 ### Follow-up
 
-Do not advance dependants until the task is accepted and Complete under the normal architecture workflow.
+DATABASE-001 is complete. Checked both enabled tasks: MCP-001 remains pending because SHARED-002 is pending; SYSTEM-TEST-001 remains pending on its other implementation/publication prerequisites. No downstream task is claimed or executed. The stale unmaterialised-definition statement was reconciled with the published execution evidence. This acceptance and parent architecture handoff are local, uncommitted and unpushed; no implementation changes or main-branch merge were made.
