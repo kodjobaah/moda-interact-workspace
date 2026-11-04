@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -29,7 +29,7 @@ updated: 2026-11-04
 
 Architecture ID: `ARCH-057`. Architecture document: `docs/architecture/ARCH-057-shopify-application-database-correctness-and-simplicity.md`. Coordinator: `moda_architect`.
 
-Mandatory execution/logging/validation contract: `docs/architecture/ARCH-057/task-contract.md`. This task is materialised in its canonical parent and implementation worktrees on `task/ARCH-057-SHOPIFY-007`. Attempt 1 is published and awaiting architect acceptance. The Completion Report records the claim, implementation commit, worktree paths, synchronization and validation evidence. Current lifecycle state is recorded in the task frontmatter; no implementation acceptance is asserted here.
+Mandatory execution/logging/validation contract: `docs/architecture/ARCH-057/task-contract.md`. This task is materialised in its canonical parent and implementation worktrees on `task/ARCH-057-SHOPIFY-007`. Attempt 1 is published, architect-accepted and Complete. The Completion Report records the claim, implementation commit, worktree paths, synchronization and validation evidence. Current lifecycle state is recorded in the task frontmatter; the acceptance record below states the review decision.
 
 ## Objective
 
@@ -215,7 +215,7 @@ A request read context is not a transaction snapshot. Preserve the existing fres
 
 ### Status
 
-Attempt 1 submitted for architect review on 2026-11-04. Implementation committed and pushed as `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e` on `task/ARCH-057-SHOPIFY-007`. All required gates passed. No architect decision is made by this report.
+Attempt 1 accepted and Complete on 2026-11-04. Implementation committed and pushed as `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e` on `task/ARCH-057-SHOPIFY-007`. All required gates passed; the Architect Acceptance record below states the decision.
 
 ### Files Changed
 
@@ -300,7 +300,7 @@ Launcher dependency gate proves SHOPIFY-001 Complete. No new context contract, s
 
 ### Unresolved Issues
 
-None identified within this task's bounded scope. Architect review remains pending.
+None identified within this task's bounded scope. Architect acceptance is recorded below.
 
 ### Architectural Concerns
 
@@ -331,3 +331,15 @@ To be assessed after implementation.
 ### Follow-up
 
 Return for review; do not begin SHOPIFY-008 or another enabled task.
+
+## Architect Acceptance — Attempt 1 (2026-11-04)
+
+**Accepted and Complete.** Reviewed implementation `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e` and parent submission with documentation correction `2562e5efa`. No blocking findings remain. The current submission has no implementation change since the passing review; the stale materialization statement is fixed. Historical Pending/awaiting-review entries above are superseded by this decision.
+
+The settings-specific projection preserves scalar getter reuse, ordered feature/preference revision inputs and fresh mutation reads. The minimal mutation guard retains independent access policy without unnecessary settings reads. Recovery policy validates revision and tenant ownership before the no-op, performs only nonempty added/removed discount updates, checks affected counts and advances settings revisions monotonically. Category selection requires ACTIVE under its existing Shop lock, preserving both lifecycle lock orders, generation CAS, prompt/configuration provenance and onboarding/activation behavior. Original-error diagnostics and expected business-denial mappings remain intact. No schema, dependency, locale, knowledge-processing or provider-policy change was introduced.
+
+Independent validation in the canonical implementation worktree: **106 focused unit tests plus 29 UI/onboarding/activation tests passed**, zero failures/skips. Logs: `/tmp/arch057-shopify007-review-unit.log` and `/tmp/arch057-shopify007-review-ui.log`. Reviewed recorded **23/23 passing migrated PostgreSQL tests** across five suites, including separate-connection barriers, physical timestamps/selection ownership, stale-revision winner, both category/lifecycle lock orders and rollback after actual database errors. Reviewed passing typecheck/build/scoped lint, router regression and same-fixture SQL/call evidence. PostgreSQL/build/typecheck/lint were not independently rerun in this review. No tests were repeated for the documentation-only correction; prior independent checks apply to identical implementation bytes.
+
+Canonical parent and implementation worktrees were verified clean on `task/ARCH-057-SHOPIFY-007`; implementation HEAD matches its remote task ref. The Completion Report records launcher claims, worktree synchronization, source/Database pins, installed versions and owned fixture cleanup. Automatic completion applies; Attempt remains 1, executor/claim remain null. The developer explicitly authorized this completion-report update, commit and push. No main merge, implementation edit or parent gitlink update is included.
+
+Dependency reconciliation: SHOPIFY-001 is Complete, so SHOPIFY-008 now has both prerequisites satisfied and becomes ready, unclaimed, at Attempt 0. SHOPIFY-011 remains pending on remaining prerequisites. No downstream task is executed by acceptance; ARCH-057 remains in progress.
