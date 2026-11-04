@@ -310,6 +310,15 @@ The launcher verifies the dependency's accepted integrated source before claim; 
 
 No failure-matrix evidence gap remains identified for this bounded task. Notification durability and the Background category hook remain explicitly deferred by the task. SHOPIFY-003, SHOPIFY-004 and SHOPIFY-011 remain pending architect review and downstream sequencing.
 
+### Physical Worktree and Synchronization Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-002`, branch `task/ARCH-057-SHOPIFY-002`; prepared base `7b80e6f249c2ad55f47f91cd0edcbb255b745967`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-002`, branch `task/ARCH-057-SHOPIFY-002`; prepared base `414f0094fffa6f4ae8cdf3968b56a0eb68717ac0`.
+- Parent and implementation task branches were reused; remote fast-forwards were not needed and `origin/main` was already incorporated in both worktrees.
+- Recursive implementation submodule sync and initialization passed. The `database` submodule is initialized at the recorded gitlink `8e74634ff92be9900f693c0c449ffce888e7d617`; recursive status was ready.
+- Shared/default checkouts were not used for implementation, no other task worktree was reused, and no submodule gitlink was changed.
+
 ### Architectural Concerns
 
 Return changes to ownership, lifecycle policy, schema, error contracts, lock participants or persisted/provider identity to the architect.
