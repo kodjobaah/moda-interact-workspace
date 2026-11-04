@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-11-04T07:53:37Z
@@ -205,9 +205,9 @@ The test helper exports `startBillingPostgresFixture()` returning a migrated dat
 
 - [x] Initial Paid activation succeeds against the canonical migrated schema, with one exact period, included counter and lifetime counter.
 - [x] Lifecycle locking is asserted in Shop, settings, Subscription order; obsolete late reacquisition and wrong `shopify.Shop` locking were removed.
-- [ ] Controlled concurrent milestone/activation and same-token activation preserve bounded completion, one period/counter grant and stale-token fencing.
+- [x] Controlled concurrent milestone/activation and same-token activation preserve bounded completion, one period/counter grant and stale-token fencing.
 - [x] Malformed Free replay evidence is rejected before projection writes; the callback preserves the prior projection path. Explicit null and missing-cycle provider behavior remain covered.
-- [ ] Each applicable failure-matrix case has an actual Shared output assertion at its owning boundary, preserving safe original message/code/cause and correlation, excluding injected secrets/PII/raw provider bodies and duplicate source diagnostics, with sink-failure behavior checked at provider, service and route owners.
+- [x] Each applicable failure-matrix case has an actual Shared output assertion at its owning boundary, preserving safe original message/code/cause and correlation, excluding injected secrets/PII/raw provider bodies and duplicate source diagnostics, with sink-failure behavior checked at provider, service and route owners.
 - [x] Database/local failures classify as `SUBSCRIPTION_SYNC_FAILED`, not as an assumed Partner outage.
 - [x] Exact billing-period replay performs no period update; missing-counter repair still works; hosted confirmation occurs once.
 - [x] Onboarding remains monotonic, category publication remains after billing commit, and notification best-effort policy is unchanged.
@@ -245,40 +245,32 @@ Keep provider acquisition outside write transactions. Reuse existing parser code
 
 ### Status
 
-Ready for Review. Attempt 2 addresses the complete failure-matrix evidence gap from the latest Changes Requested review. No architect acceptance decision is made here.
+Ready for Review. Attempt 3 implements all three mandatory corrections from the latest Changes Requested review and reruns the required focused unit, disposable PostgreSQL, lint, typecheck, build and diff validations. No architect acceptance decision is made here.
 
 ### Files Changed
 
-Implementation repository files changed:
+Implementation repository files changed in Attempt 3:
 
-- `app/routes/app/billing/callback/route.tsx`
-- `app/services/billing/billing-reconciliation.service.ts`
-- `app/services/billing/onboarding-milestone.server.ts`
 - `app/services/billing/providers/shopify-billing-diagnostics.server.ts`
-- `app/services/billing/subscription-ended-notification.service.ts`
-- `app/services/billing/subscription-sync.service.ts`
-- `tests/unit/routes/billing-callback.test.ts`
-- `tests/unit/routes/onboarding-resume.test.ts`
-- `tests/unit/services/billing-reconciliation.service.test.ts`
-- `tests/unit/services/billing/subscription-ended-notification.service.test.ts`
-- `tests/unit/services/billing/subscription-sync.service.test.ts`
+- `app/services/billing/providers/shopify-billing.provider.ts`
+- `tests/integration/billing-activation.postgres.integration.test.ts`
+- `tests/unit/services/billing/provider-diagnostics.test.ts`
 - `tests/unit/services/shopify-billing.provider.test.ts`
 
 No schema, dependency, package, public DTO, locale, queue identity or billing hash-preimage changed. No other implementation repository was modified.
 
 ### Work Completed
 
-- Added route-owned diagnostics for hosted verification-fence reads/returns and activation prepare/finalize failures; callback rethrow and redirect behavior remains unchanged.
-- Distinguished notification persistence from translation dispatch and reconciliation queue acquisition from queue add in the emitted stage/origin metadata; both retain their prior best-effort behavior.
-- Updated Shared diagnostic redaction so ISO schedule timestamps remain available for correlation while phone-like values continue to be redacted.
-- Retained the existing provider diagnostic as the single source record; rethrowing callback context does not duplicate its provider body/details.
+- **Review finding 1, implemented:** timestamp-aware sanitization now preserves only timestamp characters from a phone-like match and redacts the adjacent phone span. `tests/unit/services/billing/provider-diagnostics.test.ts` captures actual installed Shared JSON and asserts the schedule timestamp remains while `+447700900123` is absent and `redactionApplied` is true. Existing callback schedule timestamp correlation assertions remain covered by the focused route suite.
+- **Review finding 2, implemented:** JSON parser failures keep the original native `SyntaxError` as the propagated provider error's `cause`; emitted `causeChain` uses a separate sanitized `SyntaxError` with safe invalid-JSON reason and position/line/column metadata when supplied by the runtime. `tests/unit/services/shopify-billing.provider.test.ts` exercises the real parser and installed Shared console output for short complete and long partial synthetic sentinels, verifies no sentinel excerpt reaches the record, confirms the thrown cause remains a `SyntaxError`, and confirms no provider error fields are fabricated.
+- **Review finding 3, implemented:** the PG test service factory accepts a provider port and no longer replaces it. Both same-token services are created with the barrier provider; the test waits for and asserts two arrivals before releasing either request. The independent-client PostgreSQL result assertions still prove one activation, one period, one included counter, one lifetime counter and stale-token rejection. The distinct milestone lock-wait/rollback test is unchanged and remains in the suite.
 
-Attempt 2 failure-matrix evidence, using actual Shared output captured from the installed logger:
+Failure-matrix evidence, using actual Shared output captured from the installed logger:
 
 | Failure-matrix row | Owning output assertion and behavior evidence |
 |---|---|
 | Provider HTTP/GraphQL | `tests/unit/services/shopify-billing.provider.test.ts`: HTTP status/request ID/code and GraphQL code/request ID/original message; injected token/email/customer detail absent; one source record. |
-| Transport, body-read, JSON and malformed success | `tests/unit/services/shopify-billing.provider.test.ts`: exception/cause or safe malformed reason/path; no fabricated provider fields or raw invalid body; malformed success does not enter no-contract persistence. |
+| Transport, body-read, JSON and malformed success | `tests/unit/services/shopify-billing.provider.test.ts`: exception/cause or safe malformed reason/path; short and long JSON sentinel bodies are exercised through the real parser and Shared output; the original thrown SyntaxError is preserved while emitted cause text contains no response excerpt; no fabricated provider fields or raw invalid body; malformed success does not enter no-contract persistence. |
 | Credential/configuration | `tests/unit/services/shopify-billing.provider.test.ts`: original P2025/cause, truthful database origin, no provider fields or fetch; sink failure preserves typed rejection. |
 | Activation, fence, hosted return and period persistence | `tests/unit/routes/billing-callback.test.ts` asserts fence read, hosted-return persistence, activation prepare/finalize, hosted and initial retry persistence, and milestone owner records; `tests/unit/services/billing/subscription-sync.service.test.ts` asserts P2034/cause and transaction rollback for period persistence. Sink failures retain throws and do not advance activation/retry. |
 | Local synchronization fallback | `tests/unit/services/billing/subscription-sync.service.test.ts`: local reason and plan correlation without fabricated provider errors; result semantics remain `SYNC_ERROR` under sink failure. |
@@ -288,19 +280,27 @@ Attempt 2 failure-matrix evidence, using actual Shared output captured from the 
 | Reconciliation queue acquisition and add | `tests/unit/services/billing-reconciliation.service.test.ts` asserts distinct stages, original queue error/cause, Shop/subscription/schedule correlation, timestamp retention, redaction and best-effort resolution; sink failure on add does not change queue outcome. |
 | Shared sink failure | Actual installed Shared logger console sink throws in provider, sync, callback, resume, ended-notice and reconciliation owner tests; each existing throw, response, rollback, retry or best-effort policy remains intact. |
 
+Attempt 3 correction-to-test map:
+
+| Review correction | Durable regression evidence |
+|---|---|
+| Phone redaction adjacent to timestamp | `tests/unit/services/billing/provider-diagnostics.test.ts`: real Shared JSON output retains `2026-11-04T06:00:00.000Z`, redacts the adjacent phone, and marks redaction; callback scheduling timestamp assertions remain in `tests/unit/routes/billing-callback.test.ts`. |
+| JSON parser excerpt privacy | `tests/unit/services/shopify-billing.provider.test.ts`: actual `getActiveSubscription` parser with short and long sentinels; actual Shared output has a sanitized SyntaxError cause chain and no complete/truncated sentinel; propagated error retains the original SyntaxError cause. |
+| Same-token concurrency barrier | `tests/integration/billing-activation.postgres.integration.test.ts`: separate real Prisma clients/services, two barrier arrivals asserted before release, PostgreSQL period/counter/stale-token outcomes verified; separate milestone lock-wait and rollback case retained. |
+
 ### Validation Results
 
-- `npm test -- tests/unit/services/shopify-billing.provider.test.ts tests/unit/services/billing/provider-diagnostics.test.ts tests/unit/services/billing/subscription-activation.service.test.ts tests/unit/services/billing/subscription-sync.service.test.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/billing-period-projection.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts tests/unit/services/billing/subscription-ended-notification.service.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/billing.service.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/routes/onboarding-resume.test.ts` — passed, 12 files / 393 tests.
-- `MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/billing-activation.postgres.integration.test.ts` with the verified Colima `DOCKER_HOST` and `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock` — passed, 2 tests against disposable PG17 after canonical migrations. Real independent Prisma clients, explicit barriers, lock-wait observation and fixture cleanup were exercised. No database or transaction implementation changed in Attempt 2.
+- `npm test -- tests/unit/services/shopify-billing.provider.test.ts tests/unit/services/billing/provider-diagnostics.test.ts tests/unit/services/billing/subscription-activation.service.test.ts tests/unit/services/billing/subscription-sync.service.test.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/billing-period-projection.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts tests/unit/services/billing/subscription-ended-notification.service.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/billing.service.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/routes/onboarding-resume.test.ts` — passed, 12 files / 395 tests.
+- `DOCKER_HOST="${DOCKER_HOST:-unix://$HOME/.colima/default/docker.sock}" TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/billing-activation.postgres.integration.test.ts` — executed and passed, 2 tests against disposable PG17 after canonical migrations. The same-token provider barrier recorded two arrivals before release; real PostgreSQL results verified one period/counter grant and stale-token rejection. The separate milestone lock-wait and rollback case passed; fixture cleanup completed.
 - `npm run typecheck` — passed.
 - `npm run build` — passed and ran `npm run prisma:generate` (Prisma Client 6.19.3). Existing dependency annotation, unresolved browser Prisma import, empty route chunk, and large client chunk warnings were emitted; no build error occurred.
-- Task-mandated ESLint implementation/new-file scope plus focused changed-test lint — passed.
+- `npx --no-install eslint app/services/billing/providers/shopify-billing-diagnostics.server.ts app/services/billing/providers/shopify-billing.provider.ts tests/unit/services/billing/provider-diagnostics.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/integration/billing-activation.postgres.integration.test.ts` — passed.
 - `git diff --check` — passed.
 - Focused owner retests passed, including the final exact 12-file command; actual Shared output, safe causes/codes, redaction, timestamp correlation, deduplication and sink isolation are mapped above.
 
 ### Deviations
 
-Colima requires the verified Docker socket and in-container socket override for the disposable PostgreSQL suite. The required integration ran successfully with those environment settings. No production scope or dependency was changed.
+Colima requires the Docker socket and in-container socket override for the disposable PostgreSQL suite; the required integration executed successfully with those settings. Build emitted existing Zod/Rollup annotation, empty-route-chunk and large-client-chunk warnings but completed successfully. No production scope or dependency was changed.
 
 ### Assumptions
 
@@ -313,10 +313,10 @@ No failure-matrix evidence gap remains identified for this bounded task. Notific
 ### Physical Worktree and Synchronization Evidence
 
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
-- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-002`, branch `task/ARCH-057-SHOPIFY-002`; prepared base `7b80e6f249c2ad55f47f91cd0edcbb255b745967`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-002`, branch `task/ARCH-057-SHOPIFY-002`; prepared base `414f0094fffa6f4ae8cdf3968b56a0eb68717ac0`.
-- Parent and implementation task branches were reused; remote fast-forwards were not needed and `origin/main` was already incorporated in both worktrees.
-- Recursive implementation submodule sync and initialization passed. The `database` submodule is initialized at the recorded gitlink `8e74634ff92be9900f693c0c449ffce888e7d617`; recursive status was ready.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-002`, branch `task/ARCH-057-SHOPIFY-002`; prepared synchronized base `e5202616ea84bd44df95c18a576fd72e847cf3b8`; launcher claim commit `ecee03fa921dd3ad6f082600e73cd27c7b40ba8c` is pushed on `origin/task/ARCH-057-SHOPIFY-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-002`, branch `task/ARCH-057-SHOPIFY-002`; Attempt 3 starting SHA `f26d91209a4c177a8adeb9fd7bf875cb9c7a9577`, implementation commit `8561a870a8a5a407dca8b9da7f6239c69a140c90` pushed to `origin/task/ARCH-057-SHOPIFY-002`.
+- Parent and implementation task branches were reused by the prepared launcher; mainline was already incorporated. No branch synchronization, claim or submodule preparation was repeated by this attempt.
+- Recursive implementation submodule sync and initialization passed in launcher preparation. The `database` submodule is initialized at the recorded gitlink `8e74634ff92be9900f693c0c449ffce888e7d617`; recursive status was ready and this task did not change the gitlink.
 - Shared/default checkouts were not used for implementation, no other task worktree was reused, and no submodule gitlink was changed.
 
 ### Architectural Concerns
