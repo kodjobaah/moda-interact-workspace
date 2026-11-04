@@ -31,23 +31,25 @@ updated: '2026-11-04'
 
 Architecture ID: `ARCH-058`. Parent: `docs/architecture/ARCH-058-commerce-agent-product-discovery.md`. Normative contracts: `docs/architecture/ARCH-058/contracts.md`. Coordinator: `moda_architect`.
 
-**Defined but not materialised.** This portable definition does not establish a task branch, worktree, commit, deployment or successful provider call. Materialise through `/moda-task ARCH-058-MCP-002 --definition <path-to-this-file>`; use the implementation worktree and workspace root supplied by that launcher.
+This amendment changes the existing task definition without claiming or starting MCP-002, creating its implementation worktree or certifying deployment/provider behavior. After its declared dependencies are Complete, use the normal `/moda-task ARCH-058-MCP-002` launcher and its supplied implementation worktree/workspace root; do not derive paths from the MCP-001 worktree.
 
 ## Objective
 
-Extend the accepted MCP composition with exact category search, explicit catalogue browse and conversational use of the existing discount catalogue. Implement the concrete changes below; do not create a replacement taxonomy, discount reader, pricing engine, provider proxy or response pipeline.
+Extend the accepted MCP tool provider with exact category search, explicit catalogue browse and the existing shop-scoped discount catalogue. MCP resolves the authenticated shop, advertises executable tools and returns current source facts. Background owns conversation state, retained workflow grants, turn admission, offer applicability and customer wording.
 
 ## Context
 
-This revision is grounded in `moda-interact-workspace(20261104-094947).zip`. Read the common [execution baseline](../../../architecture/ARCH-058/execution-baseline.json) and [implementation handoff](../../../architecture/ARCH-058/implementation-handoff.md). MCP-001 is under development according to the developer; its accepted implementation is the base for this task, not work to repeat here.
+**Definition revision 6.** This revision is grounded in the supplied `moda-interact-workspace-ARCH-058-MCP-001.zip`, including its current MCP source and MCP-001 report. Read the common [execution baseline](../../../architecture/ARCH-058/execution-baseline.json) and [implementation handoff](../../../architecture/ARCH-058/implementation-handoff.md). MCP-001's eventual accepted implementation is the base for this task; do not repeat its importer, source selection or dependency preparation. The earlier 09:49:47 snapshot remains historical provenance, not the current source-presence gate.
 
 The snapshot establishes these implementation gaps:
 
 - `shopify-core.ts:SEARCH_DOCUMENT` uses variable `first: $first`, rejected by `connections/shopify/document.ts`. Its `SearchInput.query` and provider composition are text-only.
 - Woo request keys are independently checked in `connections/resolver.ts`, `connections/woocommerce/provider.ts` and `direct-product-reader.ts`; changing only the port type cannot enable a category/browse request.
 - Woo list/exact mapping unconditionally requires `parent_id`, although native variation ownership is established by the verified parent endpoint. The search loop also advances some variation indexes only after validation, leaving filtered records able to repeat.
-- `runtime/execution-registry.ts:execute` drops `toolContext` when it constructs the fresh capability-reader context. `mcp/snapshot.ts` does not match built-in descriptors to the manifest and rejects every `mode: NONE` tool, including a retained identity whose execution has since been revoked.
-- The snapshot lacks the accepted `src/execution/discount-catalogue.ts` and still has the unavailable built-in stub. This is a concrete integration prerequisite, not authority to recreate the accepted catalogue.
+- `discount-tools.ts` and `runtime/service-ports.ts` expose discount descriptors only for an outreach purpose and current non-NONE mode. The generic capability reader performs the associated settings/selection reads. These must become context-independent tool discovery; the accepted catalogue executor retains current shop configuration checks on actual calls. `mcp/snapshot.ts` also needs exact canonical descriptor/manifest equality.
+- The current upload contains `src/execution/discount-catalogue.ts`, its unit/PostgreSQL coverage and the production `executeDiscountTool` wiring. Its `execute` still rejects callers without the outreach purpose; remove that gate at the existing reader as well as in discovery/registration. Preserve its fact projection and keyset cursor.
+- The built-in branch in `mcp/registration.ts` currently calls `ports.executeDiscountTool` directly. Unlike `executePublishedTool`, that branch has no per-call deadline/cancellation/result-byte wrapper; the service's HTTP envelope bound is a separate limit. Section 7 specifies the narrow reuse of the existing execution mechanics needed to close that gap.
+- The accepted Woo diagnostic path is present in `direct-product-reader.ts`, including `safeException`, `sourceProviderError`, provider status/request ID and original bounded error/cause logging. Preserve that implementation. The older missing-catalogue/missing-diagnostics statements in the untouched initial report below are superseded by this source inspection.
 
 ## Scope
 
@@ -65,16 +67,15 @@ Paths in this table are relative to the MCP implementation worktree. Test fixtur
 | `src/execution/policy/shopify-core-executor.ts` | Add `category`/`browse` only to `products.search` mappings; inject the category reader and trusted environment into its adapter. Keep the legacy `shopify.searchProducts` mapping text-only. Preserve actual output-schema validation and rendering. |
 | `src/connections/{ports,resolver,prisma-reader}.ts` | Add the exact private list fields and trusted cursor connection identity below; forward fields through the resolver and extend its strict key checks. Select Woo installation `id`/`credentialVersion` alongside the already selected fields; no extra connection query. |
 | `src/connections/woocommerce/{provider,direct-product-reader}.ts` | Extend `approvedRequest`, `validRequest` and `pathFor` together; add list status/visibility projection and fixed ordering; preserve accepted credential/transport/original-error work. |
-| `src/capabilities/{records,prisma-reader,manifest,resolve}.ts` | Carry trusted conversation/retained-grant projection, current discount policy and canonical built-ins; extend the existing consistent read and use Shared grant deduplication. Preserve MCP-001 required-feature selection. |
-| `src/execution/conversation-discount-context.ts` — new | Own the narrow domain context/lease/grant checks below. This is not generic header authentication and owns no token, conversation write or new table. |
-| Accepted `src/execution/{discount-tools,discount-catalogue}.ts` | Extend the existing authorization/projection/reader for conversation purpose. Preserve its catalogue query, condition mapping and cursor; add only the narrowly classified optional read failure branch. |
-| `src/mcp/{ports,snapshot,registration}.ts` | Carry canonical built-in identity separately from mutable permission, validate manifest/list equality, and invoke the accepted built-in dispatcher. Remove no generic request/size checks. |
-| `src/runtime/{ports,prisma,service-ports,execution-registry}.ts` | Wire the exact reader/context additions into production composition; forward `call.toolContext` into the fresh registry authorization read. Retain the accepted built-in execution port and call wrapper. |
+| `src/capabilities/{records,prisma-reader,manifest,resolve}.ts` | Keep the exact generic shop/release/plan projections; remove discount settings/selection reads from this capability reader. Project the canonical pair independently of caller context/current mode and build the provider manifest tool union with `deduplicateTools(capabilities, builtInTools)`; read no retained grant. Preserve MCP-001 required-feature selection. |
+| Existing `src/execution/{discount-tools,discount-catalogue}.ts` | Replace purpose-dependent descriptor projection and remove the reader's outreach-purpose gate. Preserve the existing factory, current mode/FIXED selection/override checks, condition mapping and keyset cursor. Apply section 7's exact NONE/details/cursor ordering and section 8's query-scoped unavailable-data classification for every caller. |
+| `src/mcp/{ports,snapshot,registration,execution}.ts` | Use the canonical descriptor DTO and exact manifest/list equality. Remove the purpose/list-time mode gate; route built-in calls through the bounded wrapper in section 7. Share the existing call-policy/deadline/cancellation/result-byte mechanism within `execution.ts`, preserving published-call behavior. |
+| `src/runtime/{ports,prisma,service-ports}.ts` | Add the category reader to the existing composition and remove the outreach-only listing call. Preserve the existing `createPrismaDiscountCatalogueReader` -> `ports.discounts` -> `ShopifyServiceComposition.discounts` -> `executeDiscountTool` chain; forward the added private RPC signal/deadline through its existing spread. The published execution registry retains its generic shop/environment authorization read. |
 | Tests named in Validation | Add/extend focused fixtures and the existing disposable database harness. No new test framework or runtime dependency is required. |
 
 ## Out of Scope
 
-No Shared/Database changes or package publication; no edits to MCP-001, accepted ARCH-052 reports, Admin taxonomy or decision indexes. No new taxonomy source, native category-discovery endpoint, Shopify-to-Woo category translation, descendant expansion, product mirror, discount proof API, basket eligibility engine, coupon application, checkout/cart mutation, shipping fields in product results, tool publication, environment setup or customer send. Runtime filenames and symbols must not contain architecture task IDs.
+No Shared/Database changes or package publication; no edits to MCP-001, accepted ARCH-052 reports, Admin taxonomy or decision indexes. No conversation context parser, conversation/retained-grant/recovery-lifecycle reader, lease/takeover check or workflow authorization module in MCP. Existing unrelated execution adapters may still consume their established opaque toolContext. No new taxonomy source, native category-discovery endpoint, Shopify-to-Woo category translation, descendant expansion, product mirror, discount proof API, basket eligibility engine, coupon application, checkout/cart mutation, shipping fields in product results, tool publication, environment setup or customer send. Runtime filenames and symbols must not contain architecture task IDs.
 
 ## Requirements
 
@@ -82,7 +83,9 @@ No Shared/Database changes or package publication; no edits to MCP-001, accepted
 
 The prepared MCP-001 result must already contain exact `@modainteract/moda-interact-shared@4.0.0`, its lockfile, the accepted Database revision `ded8f14a60182f6b1443640f012caf0089b8a44c` or an accepted descendant, and the taxonomy resolver/required-feature implementation. Use that prepared packet and the recorded SHARED-002 registry integrity; do not repeat release discovery, choose a version, redownload the taxonomy or downgrade an accepted descendant. A package/submodule mismatch is a concrete preparation failure with the observed value in the report.
 
-Before modifying discount code, the prepared base must contain the accepted ARCH-052-MCP-002 catalogue implementation and tests: `src/execution/discount-catalogue.ts`, `tests/unit/execution/discount-catalogue.test.ts`, its real dispatcher wiring and the PostgreSQL scenario recorded in `tests/integration/prisma.integration.test.ts`. The accepted report identifies correction commit `89e9ad3` after `7cbceee89b2ae0115bd2b948418b4169b977ea8f`; the abbreviated correction is report provenance, not an invented full SHA. The accepted Woo error implementation is `1d18e6c866311d0a3238a919f335643ffbefd8c1` under ARCH-052-MCP-006. Preserve its diagnostic path. If either accepted implementation is absent, record the missing path/behavior and return an integration handoff to the developer/architect. Do not implement a competing reader/logger or check out an old task commit over MCP-001. The common handoff owns this integration prerequisite.
+The current upload already includes the ARCH-052 catalogue source, `tests/unit/execution/discount-catalogue.test.ts`, its production wiring and the persisted-snapshot scenario in `tests/integration/prisma.integration.test.ts`. The existing factory is `createPrismaDiscountCatalogueReader(database, {cursorSecret?, now?}): DiscountCatalogueReader`, whose method is `execute(call: DiscountSystemToolCall): Promise<CommerceToolResult>`. `runtime/ports.ts:createPersistedMcpPorts` constructs it once; `runtime/prisma.ts` passes `ports.discounts` to `createShopifyServicePorts`; `runtime/service-ports.ts` supplies the existing logger and invokes `options.discounts.execute`. Preserve this chain and its existing `COMMERCE_CURSOR_SECRET` source. The catalogue is no longer a missing-source blocker.
+
+Historical provenance remains ARCH-052-MCP-002's correction `89e9ad3` after `7cbceee89b2ae0115bd2b948418b4169b977ea8f`, plus ARCH-052-MCP-006's accepted diagnostic correction `1d18e6c866311d0a3238a919f335643ffbefd8c1`. An abbreviated recorded commit is not a fabricated full SHA. At normal task preparation, verify the observed source/composition is still present in the accepted MCP-001 base. Only an actual missing path or changed incompatible signature is a new prerequisite failure. Do not recreate the reader/logger, repeat integration already present in this upload or check out an old task commit over MCP-001.
 
 ### 2. Normalize the public search input before I/O
 
@@ -179,66 +182,117 @@ Preserve observed native IDs, native sale evidence and safe URLs. `availableOnly
 
 Keep product get/search output schemas and `commerce_get_product` definition unchanged. In particular, existing Shopify exact get with variantId null returns the observed first variant from its current document; this task does not redefine that behavior. Background must select/confirm an observed native Shopify variant, and must not treat a null selection as authorization for the first variant. Woo simple products retain null variant IDs. Shipping's product-only `VARIANT_REQUIRED` belongs solely to MCP-003.
 
-### 6. One domain authorization read for conversation discounts
+### 6. Generic shop discovery, with no workflow context
 
-Keep `parseMcpRequestContext` opaque. In the domain reader, a context claiming `CONVERSATION` must parse `CommerceConversationToolContextSchema`; one claiming `INITIAL_RECOVERY_OUTREACH` must parse the unchanged outreach schema. Invalid claimed-purpose fields are hard `INVALID_INPUT`. An absent/unrelated opaque context remains the generic shop caller and receives no conversational discount privileges or soft-unavailable behavior.
+Keep `parseMcpRequestContext` and the existing private-ingress trust boundary unchanged: authenticated outer shopId and server environment determine tenant scope. For product/shipping/discount discovery and these catalogue calls, an absent toolContext and any otherwise valid opaque object have identical semantics. Do not parse `CommerceConversationToolContextSchema`, discriminate a purpose, or use nested shop/turn/grant fields as authority. Keep existing opaque forwarding to unrelated registered adapters unchanged.
 
-Extend `PrismaShopCapabilityTransaction` with `conversation.findUnique` and `commerceConversationGrant.findUnique`. Export `readConversationDiscountContext` from the new context module and invoke it inside the existing RepeatableRead transaction. It makes exactly these two reads for an approved CONVERSATION purpose; other purposes make neither:
+Remove `discountPolicy` from `ShopCapabilityRecords` and remove the `shopSettings`, `shopRecoveryPolicyOverride` and selection-only `shopifyDiscount` delegates/queries from `PrismaShopCapabilityTransaction`. Do not add conversation, retained-grant, checkout or outreach-attempt delegates. The successful generic capability read keeps exactly five top-level Prisma delegate calls in its existing RepeatableRead transaction, with the existing relation-loading behavior:
+
+| Delegate call | Exact retained projection |
+| --- | --- |
+| `shop.findUnique` | `where: {id: context.shopId}`; `select: {id:true,domain:true,status:true,platform:true,wooCommerceInstallation:{select:{id:true,shopId:true,status:true,canonicalSiteUrl:true,credentialVersion:true}}}`. These Woo fields also supply the private cursor identity in section 5. |
+| `commerceReleasePointer.findUnique` | `where: {environment: databaseEnvironment(context.environment)}`; `select: {releaseId:true}`. |
+| `commerceRelease.findUnique` | `where: {id: pointer.releaseId}`; retain the existing `releaseInclude`, including MCP-001's accepted required-feature fields. |
+| `subscription.findUnique` | `where: {shopId: context.shopId}`; `select: {status:true,plan:{select:{active:true,features:{where:{featureId:{in:featureIds}},select:{featureId:true,enabled:true}}}}}`. `featureIds` is the distinct release feature-ID set as before. |
+| `shopFeaturePreference.findMany` | `where: {shopId: context.shopId,featureId:{in:featureIds}}`; `select: {featureId:true,enabled:true}`. |
+
+The shop/pointer reads can retain their existing parallel execution; release and entitlement reads keep their existing dependency order. Missing or malformed shop/release/plan data keeps the existing typed outcome. This reader makes zero discount settings/override/catalogue queries and zero workflow-state queries. `createMcpService` already resolves a fresh snapshot for every RPC, including each tools/call; do not add a second generic capability read solely for a built-in call. Keep `runtime/execution-registry.ts`'s existing shop/environment reader context for published calls.
+
+Use these exact private DTO/export changes:
 
 ```typescript
-tx.conversation.findUnique({
-  where: {id: context.conversationId},
-  select: {id: true, shopId: true, checkoutRecovery: {select: {shopId: true}},
-    controlMode: true, inboundVersion: true, processingInboundVersion: true,
-    processingStartedAt: true}
-});
-tx.commerceConversationGrant.findUnique({
-  where: {conversationId: context.conversationId},
-  select: {id: true, shopId: true, conversationId: true, initialInboundVersion: true,
-    releaseId: true, selectedCapabilityKeys: true, grantedTools: true,
-    runnerVersion: true, createdAt: true, expiresAt: true}
-});
+// src/mcp/ports.ts — type imported from installed Shared
+export type McpSystemTool = CommerceBuiltInToolDescriptor;
+
+// src/execution/discount-tools.ts — pure projection, no database/context argument
+export function projectShopDiscountTools(records: ShopCapabilityRecords): McpSystemTool[];
 ```
 
-The conversation's direct/recovery ownership must resolve to the authenticated shop; if both ownership values exist they must agree. Require `controlMode === "AI"`, current inboundVersion and processingInboundVersion equal the positive context version and a non-null finite lease timestamp with `0 <= now - processingStartedAt < 120000`, matching the existing Background lease. This checks existing state; it creates no conversation/recovery or lease policy. Absent/wrong-shop conversation or human control is `McpRequestError(FORBIDDEN, 403, false)`; stale inbound/lease/cancellation is `McpRequestError(DEADLINE, 409, true)`.
+`resolveShopCapabilities` first applies its existing `requireActiveShop` and published-release checks. The pure projection returns both installed `commerceDiscountBuiltInDescriptors` when subscription status is ACTIVE or TRIALING and `subscription.plan.active === true`; otherwise it returns `[]`. It uses no merchant offer mode, selection, optional preference, purpose or workflow state. The same active Free/paid plan rule applies to Shopify and Woo. The already present catalogue reader must remain wired through the existing production `executeDiscountTool` port; a missing port is a hard configuration failure, never permission to fabricate successful empty data.
 
-A null context grantId is allowed only before any retained grant exists. A non-null ID must match the stored grant, shop and conversation; its initialInboundVersion must not exceed the current turn, runnerVersion must equal the installed runner, expiresAt must be null/future and releaseId must equal the currently resolved immutable release. Project selected Date fields to ISO strings and parse the full row with installed `CommerceConversationGrantSchema`; derive retained built-in identities from this parsed storage only. Missing/mismatching/expired grants or null-ID bypass attempts are FORBIDDEN/403/false. Malformed stored JSON/timestamps, runner mismatch or release mismatch is INCOMPATIBLE_VERSION/503/false. Preserve current published-release/entitlement checks. Do not turn any of these failures into optional absence.
+### 7. Canonical provider identities and current catalogue semantics
 
-Read current settings/active override and FIXED selection in that existing snapshot for either approved purpose; keep `resolveDiscountAuthorizationPolicy` semantics. Extend the accepted catalogue's call-time authorization path with the same domain helper and fresh current policy; list-time authorization alone is insufficient. `runtime/execution-registry.ts` must include opaque `call.toolContext` in its fresh reader context so published product calls also retain the approved conversation checks. Do not add a new header or model argument for this data.
+Use Shared `commerceDiscountBuiltInDescriptors`, `commerceBuiltInToolContractPayload`, `isTrustedCommerceBuiltInDescriptor`, `deduplicateTools` and `isBuiltInTool`. Verify canonical hashes against the installed schemas in tests using Node SHA-256. `McpSystemTool` contains only the canonical descriptor; remove its old mode/allowedDiscountIds listing fields. Keep the existing `resolveDiscountAuthorizationPolicy` helper for the accepted executor's current shop configuration; it is not a conversation grant reader.
 
-### 7. Canonical identities and a stable retained grant
+Extend `projectCommerceManifest(release, selected, positions, builtInTools = [])` with `builtInTools: readonly CommerceBuiltInToolDescriptor[]`. `resolveShopCapabilities` computes the pure shop-plan descriptor set once, supplies it to the manifest and exposes that same set as systemTools. Build `grantedTools` with Shared `deduplicateTools(capabilities, builtInTools)` and validate the actual Shared manifest. Remove `runtime/service-ports.ts`'s separate `projectInitialOutreachDiscountTools` call so list/resource projection cannot diverge. Feature snapshots, response hash, release identity, selected published capabilities and their provenance remain unchanged.
 
-Use Shared `commerceDiscountBuiltInDescriptors`, `commerceBuiltInToolContractPayload`, `isTrustedCommerceBuiltInDescriptor`, `isTrustedCommerceBuiltInGrant`, `deduplicateTools` and `isBuiltInTool`. Verify the canonical hashes against the installed schemas in tests using Node SHA-256; do not generate a self-asserted descriptor or fabricated database ID.
+In `validateSnapshot`, require exact canonical name/version/hash/description/input-schema correspondence between systemTools and manifest.builtInTools. Reject duplicate names, collisions with published advertised/underlying names, unknown descriptors and a combined advertised list above 32; do not silently remove a descriptor to fit. Remove the mode-based snapshot rejection. Every eligible shop sees the same pair before/after NONE/FIXED/AI changes, independently of opaque caller context. `grantedTools` in this provider manifest describes its advertised capability union; Background owns any persisted workflow grant and model availability check. MCP never reads or mutates that workflow grant.
 
-Extend `McpSystemTool` with the exact Shared built-in descriptor identity while keeping its current mode/allowedDiscountIds as **private mutable permission**, outside the manifest descriptor. Replace the outreach-only projection with `projectAuthorizedDiscountTools` in `discount-tools.ts`, using the already validated purpose/grant projection from the reader:
+In `src/mcp/registration.ts`, retain the existing `CommerceToolInputs` parsing before execution and remove `isInitialOutreachDiscountCallAllowed`. In `src/execution/discount-catalogue.ts:execute`, remove the `CommerceOutreachToolContextSchema` import/check and `MCP_DISCOUNT_PURPOSE_FORBIDDEN` branch. The existing reader continues to recheck the authenticated shop, current settings, active override and current FIXED selection. Neither layer interprets a caller purpose or conversation identifier.
 
-| Context | Descriptor/list projection |
+#### 7.1 Reuse the existing bounded call mechanism
+
+The uploaded built-in branch has no per-call wrapper. In the existing `src/mcp/execution.ts`, extract its current policy selection, combined request/SDK abort controller, timer, provider budget, promise race, final deadline check, result-schema parse and result-byte bound into one private helper. Keep this helper in that file; do not create another execution framework, generic logger, policy reader or provider registry. Use these exact private signatures:
+
+```typescript
+type BoundedToolCall = Pick<CapabilityInvocation, "deadlineAt" | "signal" | "budget">;
+
+async function executeBoundedToolCall(
+  ports: McpServicePorts,
+  context: McpRequestContext,
+  requestSignal: AbortSignal,
+  sdkSignal: AbortSignal,
+  selectedPolicy: McpExecutionPolicy | undefined,
+  invoke: (call: BoundedToolCall) => Promise<CommerceToolResult>,
+): Promise<CommerceToolResult>;
+
+export async function executeDiscountTool(
+  ports: McpServicePorts,
+  context: McpRequestContext,
+  name: DiscountSystemToolName,
+  args: Record<string, unknown>,
+  requestSignal: AbortSignal,
+  sdkSignal: AbortSignal,
+  selectedPolicy?: McpExecutionPolicy,
+): Promise<CommerceToolResult>;
+```
+
+`executePublishedTool` retains its exported signature and existing invocation/diagnostic/operational-reporting behavior; its callback constructs the same `CapabilityInvocation` with the helper's deadline, signal and budget. `executeDiscountTool` invokes only the existing discount port with `{context, name, arguments: args, signal, deadlineAt}`. It creates no published capability/tool/revision identity and makes no provider request. Keep the existing policy-failure handling inside the shared mechanism: selected policy is reused without another database read; an absent/unreadable policy follows `recordPolicyFailure` and returns the same hard result without invoking the callback. Both paths use the same selected `toolDeadlineMs`/`maxResponseBytes`, clean up timers/listeners, observe a late rejection and discard a result after deadline/cancellation. Preserve `service.ts:boundedResponse` as the independent HTTP envelope bound.
+
+Add required `signal: AbortSignal` and `deadlineAt: number` fields to the existing `McpServicePorts.executeDiscountTool` input and `DiscountSystemToolCall` interface. Preserve its existing context/name/arguments/logger fields and factory signature. The existing `runtime/service-ports.ts` spread forwards these fields and adds its logger. Replace registration's direct optional-port call with `executeDiscountTool(ports, context, systemTool.name, args, request.signal, extra.signal, policy)`. A missing port returns outer UNAVAILABLE/retryable true; it must not become successful unavailable catalogue data. Wrapper exceptions retain the actual error/cause in the existing Shared logger with the real tool name. Do not call published-capability operational reporting with invented IDs, and do not log a resolved reader ERROR twice.
+
+Inside the reader, check the supplied abort/deadline before starting the transaction, before/after every awaited query group, before each next catalogue batch and before returning. An expired/aborted call throws the existing typed DEADLINE/409/retryable true with `MCP_TOOL_CALL_CANCELLED`; it never becomes optional data. Keep the existing production clock defaults: wrapper `ports.now ?? Date.now` and reader factory `options.now ?? Date.now`. Deterministic fixtures supply the same clock function through both existing seams; do not add a transported/model clock or another runtime clock dependency. Extend the private transaction option type with `timeout: number` and `maxWait: number`; after the initial deadline check calculate `remainingMs = Math.max(1, Math.ceil(call.deadlineAt - now()))` and call the same RepeatableRead transaction with `timeout: remainingMs` and `maxWait: Math.min(2000, remainingMs)`. Do not add a global Prisma setting, another client, retry or query. The wrapper still bounds the public response if an already-started database operation settles late; that completion cannot start another batch or expose data.
+
+#### 7.2 Exact current-shop catalogue branches
+
+Move the options `limit`/`cursor` shape check before its mode-specific early return, using the values already parsed by registration. For NONE, reject every non-null cursor as `MCP_DISCOUNT_CURSOR_INVALID` before returning empty options: this mode never issues a continuation token. NONE details is a hard FORBIDDEN mapped to outer DENIED. For FIXED details, reject an offerId outside `policy.allowedDiscountIds` before a detail query, with the same outer DENIED result. Use `MCP_DISCOUNT_NOT_AUTHORIZED` as that private denial reason. A permitted detail lookup uses `shopifyDiscount.findUnique({where:{id:offerId,shopId:call.context.shopId}})` and retains the existing post-read shop check and `rowIsCurrent` filter. Only a permitted absent/non-current record returns `{details:null}`. These replace the uploaded reader's NONE/details-null shortcuts; they do not introduce conversation permission.
+
+| Current authorized shop state / request | Exact catalogue behavior for every caller |
 | --- | --- |
-| Generic caller | No discount built-ins. |
-| Valid outreach; current mode NONE | No discount built-ins. |
-| Valid outreach; current mode FIXED or AI_BEST_APPLICABLE | The two canonical built-ins; existing outreach execution semantics. |
-| New conversation without a retained grant | The two canonical built-ins only when current mode permits discounts; otherwise none. |
-| Conversation with retained grant | Exactly its stored, canonical built-in set, including when the current mode is now NONE. Never widen that set. |
+| NONE; options with initial cursor null | `OK` data `{mode:"NONE",offers:[],cursor:null,truncated:false}`. This is an observed configured mode, not a default for a failed configuration read. No catalogue scan is needed. |
+| FIXED; options | Existing bounded page over current permitted selected IDs or the active exact-ID override, with `mode:"FIXED"`. |
+| AI_BEST_APPLICABLE; options | Existing bounded provider-current catalogue page independently of selection checkboxes, with the actual configured mode. |
+| NONE; details, or FIXED details outside the current permitted set | Outer `ERROR`, `code:"DENIED"`, `retryable:false`. No facts escape the configured scope. |
+| Authorized details ID has no qualifying same-shop record | Existing `OK` data `{details:null}`. Wrong-shop IDs never expose another shop's record. |
+| Authorized record exists | Existing exact offer/condition projection; unsupported or missing source observations stay PARTIAL/UNKNOWN. |
+| Invalid/expired/tampered/cross-shop/cross-mode cursor | Existing typed invalid-input rejection. A cursor from a prior mode is not accepted by the NONE branch. |
+| Missing/malformed/unavailable shop configuration or failed shop/provider authorization | Existing hard outer error; never fabricate NONE, empty offers or optional absence. |
 
-Pass this descriptor set to `projectCommerceManifest` and build grants with Shared `deduplicateTools(capabilities, builtInTools)` instead of treating every grant as published. Keep feature snapshots, release hash, selected capability keys and published provenance unchanged. In `validateSnapshot`, require exact name/version/hash/description/input-schema correspondence between systemTools and manifest.builtInTools; reject duplicate names, collisions with published advertised/underlying names, unknown descriptors and a combined advertised list above 32. Replace the unconditional mode-NONE snapshot rejection with current-permission enforcement **at execution**. Listing a retained descriptor is identity continuity, not permission to execute it.
+Preserve the accepted catalogue keyset algorithm, shop/mode/FIXED-policy/generation binding, expiry, actual page boundaries and generation-change error. Current provider status, dates and unavailability remain data filters; no provider HTTP, basket/applicability evaluator or new options-filter argument is added. Both structuredContent and text serialize the same validated result; isError is true exactly for outer ERROR. NONE's successful empty options result does not cause Background to call it: the host owns whether a tool should run.
 
-`registration.ts` must call the existing accepted catalogue dispatcher with its existing deadline/cancellation/result-byte wrapper. Both structuredContent and text must serialize the same validated result; isError is true exactly for outer ERROR. Re-read current policy immediately before lookup. NONE denies execution; FIXED restricts current permitted selection/override; AI scans permitted catalogue independently of selection checkbox. A grant initially created under NONE cannot gain tools after a later mode change. The host skips discount calls under current NONE; do not mutate the stored grant to reflect current policy.
+### 8. Generic unavailable-data outcome and original failures
 
-### 8. Catalogue facts and optional operational failure
+Keep the accepted shop-scoped PostgreSQL snapshot reader, exact offer identity and completeness mapping. Normal options/details outputs, native target IDs, threshold currency, Woo zero threshold/quota rules, exclusions, usage/customer/sale restrictions and combination uncertainty remain unchanged. `details:null` is distinct from an unavailable read.
 
-Keep the accepted shop-scoped PostgreSQL `ShopifyDiscount` snapshot reader, authenticated keyset cursor, generation checks, exact offer identity and completeness mapping. Its normal options/details outputs, native target IDs, threshold currency, Woo zero threshold/quota rules, exclusions, usage/customer/sale restrictions and combination uncertainty remain unchanged. It makes zero Shopify/Woo HTTP calls and receives no basket. `details: null` remains distinct from an unavailable lookup.
+After shop/configuration/scope checks succeed, a **catalogue data-read** failure from a genuine Prisma error/cause carrying `P1001`, `P1002`, `P1008`, `P1017` or `P2024` becomes `OK` data `{outcome:"UNAVAILABLE",reasonCode:"TEMPORARY_UNAVAILABLE"}`. Apply exactly the same classification to every caller. Do not inspect purpose, conversation state, prompt or workflow to select an error path. The caller decides whether this unavailable information permits its workflow to continue.
 
-Only **after** conversation/lease/grant/current-policy authorization succeeds may a database catalogue-read failure become `OK` with `{outcome: UNAVAILABLE, reasonCode: TEMPORARY_UNAVAILABLE}`. Classify a genuine Prisma error/cause carrying `P1001`, `P1002`, `P1008`, `P1017` or `P2024` at the owning database read boundary; do not classify from error prose or merely outer `UNAVAILABLE`. Authorization/configuration reads, P1000, missing tables/columns, invalid SQL, result parsing, cursor/generation conflicts, unexpected errors and aborted/expired turns remain outer errors. Initial outreach retains its accepted hard-failure behavior for the same failures. No catch-to-empty-offers, fabricated NONE mode or broad retry loop is permitted.
+Make the query boundary explicit inside the existing reader. `currentPolicy` retains `shop.findUnique`, `shopSettings.findUnique`, `shopRecoveryPolicyOverride.findUnique` and any FIXED-selection `shopifyDiscount.findMany`; all four are authorization/configuration reads and their failures remain hard. Remove only `shopifyDiscountCatalogue.findUnique` from its existing `Promise.all` and return `{platform, policy}`. For permitted non-NONE options, read `{syncGeneration:true}` from `shopifyDiscountCatalogue` after `currentPolicy` succeeds, then retain the existing generation/fingerprint/cursor and bounded batch algorithm. NONE initial options and details do not need this generation query. The optional-data classification applies only to that options-generation read, the options page's `shopifyDiscount.findMany`, and the permitted same-shop details `shopifyDiscount.findUnique`.
 
-Use the accepted Shared structured logger boundary. Preserve the original sanitized Prisma/SDK/provider error and cause, safe provider status/request ID and separate Moda reason. Do not invent a provider error for a DB-only catalogue read, expose raw failures in tool output, or build another generic redactor/logger. Provider adapters remain responsible for their own source diagnostics.
+At those three query boundaries only, wrap a qualifying original exception in one private `CatalogueDataReadFailure` in `discount-catalogue.ts`, retaining it as `cause`, store that marker in a call-local variable and throw it out of the transaction. Every other exception propagates unchanged. Handle the marker only when the transaction rejection is that exact marker object, after rollback and after checking the RPC abort/deadline again: log the original sanitized cause through `call.logger.error` using `mcp.discount.catalogue.unavailable`, then validate/return the canonical successful unavailable-data result. Transaction-start/commit/rollback failures are not that marker; if transaction cleanup rejects with a different error, retain that actual hard error and the saved original cause in diagnostics. Do not catch a failed statement and continue querying inside its transaction, classify the whole transaction catch, or convert the existing `MCP_DISCOUNT_DATABASE_READ_FAILED` wrapper merely because its outer code is UNAVAILABLE.
+
+Authorization/configuration reads, P1000, missing tables/columns, invalid SQL, result parsing, cursor/generation conflicts, unexpected errors and aborted/expired RPC execution remain hard outer errors. Classify at the owning catalogue query boundary, not from error prose or merely an outer UNAVAILABLE code. No catch-to-empty-offers, fabricated mode or broad retry loop is permitted.
+
+BACKGROUND-001 owns the initial-outreach compatibility adaptation: its existing selector treats this exact unavailable-data branch as its existing mandatory-read failure before graph projection, while conversational recommendations can omit a promotion. MCP has one result contract and one error path for both. Preserve current NONE/FIXED/AI and initial-outreach mode-mismatch/selection regressions; only their former purpose-exclusive discovery expectation changes.
+
+Use the accepted Shared structured logger boundary. Preserve the original sanitized Prisma/SDK/provider error and cause, safe provider status/request ID and separate Moda reason. Do not invent a provider error for a DB-only catalogue read, expose raw failures in tool output or build another generic redactor/logger. Provider adapters remain responsible for their own source diagnostics.
 
 ## Work Items
 
-- [ ] Verify the already accepted prepared source/artifact gates; report the specific accepted-source integration gap if still present.
+- [ ] Verify the prepared MCP-001 source/artifacts once against the current supplied catalogue/diagnostic composition; report only an actual new mismatch.
 - [ ] Implement the exact input/category reader, literal Shopify documents, three search branches and version-2 cursor.
 - [ ] Update all three Woo guards/projections and optional parent-ID validation; preserve transport and ordinary product contracts.
-- [ ] Add the conversation domain read and forward its opaque context at the fresh registry read.
-- [ ] Project/execute canonical built-ins with retained identity and current policy; extend the existing catalogue only for conversation purpose/classified transient failures.
+- [ ] Remove purpose/policy discovery coupling; retain the five generic capability reads and exact canonical descriptor DTO/projection.
+- [ ] Advertise both canonical built-ins for eligible shops; remove both purpose gates, reuse the bounded call mechanism and implement the exact current-shop catalogue/error branches.
 - [ ] Run agent-owned checks, prepare the exact required developer database run, complete the report and submit for review.
 
 ## Interfaces / Contracts
@@ -249,7 +303,7 @@ Shared 4.0.0 and `docs/architecture/ARCH-058/contracts.md` sections 2.2–4.1 ow
 
 - `ARCH-058-MCP-001`: accepted resolver, required-feature eligibility, exact Shared 4.0.0 package and accepted Database pin. Do not start this task while MCP-001 is under development.
 
-The known ARCH-052 source integration prerequisite in section 1 must be satisfied in the prepared base. It does not authorize reopening/reimplementing those completed tasks. No upstream task depends on terminal system testing.
+The ARCH-052 catalogue and Woo diagnostic source/composition described in section 1 are present in this upload and must remain in the accepted MCP-001 base. Preserve those completed implementations; do not reopen them or repeat integration. No upstream task depends on terminal system testing.
 
 ## Enables
 
@@ -264,20 +318,22 @@ The known ARCH-052 source integration prerequisite in section 1 must be satisfie
 - [ ] Exact membership, publication visibility and stock/currency rules produce only qualified current-shop facts; invalid input causes zero provider I/O.
 - [ ] A product with 45 variants, caller limit 2, filtered middle pages and an empty unfinished page resumes without dropped/repeated records under static fixtures, within 3 Shopify/12 Woo request ceilings.
 - [ ] Old/tampered/cross-shop/cross-connection/filter-drift cursors are rejected; a shifted Woo page or retained Shopify parent is explicitly stale, not exhausted.
-- [ ] Every normal published execution retains toolContext at its fresh read; stale/wrong-shop/missing-grant/expired-lease calls cannot bypass the domain check.
-- [ ] Built-in list/manifest/grants match canonical Shared identities and remain stable after current mode changes; execution still honors current policy and never widens an initial grant.
-- [ ] Catalogue outputs preserve accepted facts and no-provider-call behavior; only the specified optional conversational DB failures use the new successful unavailable branch.
+- [ ] Generic discovery has exactly the specified five delegate calls and no discount/workflow-state reads; irrelevant opaque context cannot change tenant, tool-list or catalogue data scope.
+- [ ] Built-in list/resource projection matches canonical Shared identities and stays stable after current mode changes; calls still use the current configured mode/selection and active shop/plan.
+- [ ] Catalogue outputs preserve accepted facts and no-provider-call behavior; NONE/nonpermitted FIXED details deny before lookup, permitted absence stays null, and NONE never accepts a non-null cursor.
+- [ ] Built-in calls use the same policy/deadline/cancellation/result-byte mechanism as published calls; abort/expiry/missing executor/oversized data remain hard, no extra policy/capability read or provider request is introduced, and no late database completion exposes data or starts another batch.
+- [ ] Only the three specified post-authorization catalogue query boundaries produce the successful unavailable branch after rollback, identically for every caller; authorization, transaction-boundary and unexpected failures remain hard.
 - [ ] Original failures remain in redacted Shared logs and not in model/customer data. Required fast checks and the separately owned database evidence are accurately reported.
 
 ## Validation
 
 Use the launcher-provided implementation worktree/preparation evidence. Before the first Node command use `command -v node >/dev/null 2>&1 || source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"`. No source download, deployment URL or persistent database is needed.
 
-**Agent-owned focused checks.** Add `tests/unit/execution/policy/{product-search-composition,product-search-cursor}.test.ts`, `tests/unit/execution/reference-taxonomy/category-membership.test.ts` and `tests/unit/execution/conversation-discount-context.test.ts`; extend the existing tests listed in these commands:
+**Agent-owned focused checks.** Add `tests/unit/execution/policy/{product-search-composition,product-search-cursor}.test.ts` and `tests/unit/execution/reference-taxonomy/category-membership.test.ts`; extend the existing generic capability/discount/protocol tests listed in these commands:
 
 ```bash
 npm exec -- tsx --test tests/unit/execution/policy/shopify-core.test.ts tests/unit/execution/policy/product-search-composition.test.ts tests/unit/execution/policy/product-search-cursor.test.ts tests/unit/execution/reference-taxonomy/category-membership.test.ts tests/unit/connections/shopify/provider.test.ts tests/unit/connections/prisma-reader.test.ts tests/unit/connections/resolver.test.ts tests/unit/connections/woocommerce/direct-product-reader.test.ts tests/unit/connections/woocommerce/provider.test.ts
-npm exec -- tsx --test tests/unit/execution/conversation-discount-context.test.ts tests/unit/execution/discount-tools.test.ts tests/unit/execution/discount-catalogue.test.ts tests/unit/capabilities/manifest.test.ts tests/unit/capabilities/prisma-reader.test.ts tests/unit/mcp/capability-invocation.test.ts tests/unit/mcp/resources.test.ts tests/unit/mcp/structured-results.test.ts tests/unit/runtime/ports.test.ts tests/unit/runtime/prisma.test.ts tests/unit/runtime/service-ports.test.ts
+npm exec -- tsx --test tests/unit/execution/discount-tools.test.ts tests/unit/execution/discount-catalogue.test.ts tests/unit/capabilities/manifest.test.ts tests/unit/capabilities/prisma-reader.test.ts tests/unit/mcp/capability-invocation.test.ts tests/unit/mcp/execution-policy.test.ts tests/unit/mcp/resources.test.ts tests/unit/mcp/structured-results.test.ts tests/unit/runtime/ports.test.ts tests/unit/runtime/prisma.test.ts tests/unit/runtime/service-ports.test.ts
 npm run typecheck
 npm run typecheck:integration
 npm run lint
@@ -287,9 +343,9 @@ git diff --check
 
 `product-search-composition.test.ts` must invoke the registered policy executor through the real connection resolver, provider and document guard with injected HTTP/session fixtures. Include query-grammar injection strings, literal query bounds, exact category plus query, default/mixed browse rejection, Shopify ACTIVE + verified URL versus draft/null/foreign URL, Woo publish/visible/catalog versus hidden/search-only/draft parents and unpublished variants, unknown/false stock, zero/unknown currency, category mismatch beyond the first 20 category entries, optional/mismatching parent_id, variable parent with an empty variation-ID list, mid-page limits, exhausted/unfinished empty pages and all bounded cursor states. Assert no extra API calls or forbidden request keys.
 
-Update the existing private-connection fixtures in `tests/fixtures/capabilities.ts` and the named connection/runtime tests with the real sourceIdentity inputs; do not bypass sourceIdentity validation in tests. The context/catalogue fixtures must exercise the real `createMcpService` list/resource/call route with the accepted dispatcher. Cover two shops, null context, malformed purpose, initial/retained grant, lease expiry, inbound version change or human takeover between list and call, code-hash drift, collisions, NONE→AI with an empty retained grant, AI→NONE with the unchanged retained descriptor set and denied call, FIXED revocation/override expiry, a classified catalogue timeout versus auth/configuration/parse failure, and the unchanged outreach response for the same failure. Use actual Shared logger sinks with credential/PII sentinels and original errors.
+Update the existing private-connection fixtures in `tests/fixtures/capabilities.ts` and the named connection/runtime tests with the real sourceIdentity inputs and the generic records shape; do not bypass sourceIdentity validation. Capability-reader fixtures expose only the five declared delegates and assert zero settings/override/catalogue reads. They expose no conversation/grant/recovery/attempt delegate; adding one to satisfy a test is a failure of this boundary. Through real `createMcpService` list/resource/call routes and the accepted dispatcher, compare omitted toolContext with opaque outreach/conversation/irrelevant objects, including misleading nested shop/turn/grant fields: the outer authenticated shop alone controls identical listing/data scope. Malformed non-object headers and model-supplied extra arguments still fail the existing structural validators. Cover two shops; ACTIVE/TRIALING versus inactive/missing plans; inactive shops/revoked Woo installations; canonical hash/list collisions; stable descriptors under NONE→AI and AI→NONE; NONE empty options and denied details; changed FIXED selection/override expiry; valid pagination and cross-mode cursor rejection. Inject each permitted transient failure separately at the generation/page/details query boundary under every opaque context and assert the same unavailable-data result after rollback. Assert settings/override/FIXED-selection/transaction-start/transaction-close/parse failures stay hard, and capture original error causes in the actual Shared sink. Extend `tests/unit/mcp/execution-policy.test.ts` with built-in calls: one selected-policy read, request abort, SDK abort, deadline, oversized output, absent executor, no provider reservation and late resolve/reject. Use injected clocks, abort controllers and deterministic barriers; retain the existing published-call assertions. In reader tests assert the exact private signal/deadline and remaining transaction options, no query before an already expired call, no next batch after cancellation, NONE with non-null cursor rejected, and denied details with zero detail query. Initial-outreach zero-client NONE and hard-unavailable host behavior are Background-owned regressions, not reasons to add an MCP purpose branch. Use actual Shared logger sinks with credential/PII sentinels and original errors.
 
-**Required developer-owned PostgreSQL run.** Add `tests/integration/conversation-product-discovery.integration.test.ts` to the existing `scripts/test-postgres.mjs` wildcard harness, using `tests/helpers/disposable-postgres.ts` and the existing fixture helpers. Exercise the category exact join, migrated grant JSON guard, two-shop lease/grant authorization and current discount policy. Preserve and run the accepted catalogue scenario; do not replace it with mocks or another database runner.
+**Required developer-owned PostgreSQL run.** Add `tests/integration/shop-product-discovery.integration.test.ts` to the existing `scripts/test-postgres.mjs` wildcard harness, using `tests/helpers/disposable-postgres.ts` and the existing fixture helpers. Exercise the category exact join, generic shop/active-plan descriptor projection, two-shop isolation and the accepted current mode/selection catalogue semantics without creating any conversation, workflow grant or recovery attempt. Preserve and run the existing persisted catalogue scenario; update its intentionally changed generic-context, denied-details and private signal/deadline expectations while retaining provider facts, pagination and current-policy coverage. Do not replace it with mocks or another database runner.
 
 ```bash
 npm run test:integration:docker
@@ -299,11 +355,11 @@ Ownership is explicit under `docs/agent-validation-execution-policy.md`: the imp
 
 ## Stop Condition
 
-Stop for the specifically missing accepted source/artifact gate, a contract/schema change outside this ownership, an unregistered provider field/query or a failed authorization invariant. Report the observed path/value and owning prerequisite; do not research a replacement feature or widen permissions. After scoped implementation and fast validation, set status to `review`, record the required developer database handoff/result accurately and return to the architect. Do not mark complete, publish, deploy, mutate a persistent environment or start another task.
+Stop for an actual prepared-source/artifact mismatch against the current observed composition, a contract/schema change outside this ownership, an unregistered provider field/query or a failed authorization invariant. Report the observed path/value and owning prerequisite; do not research a replacement feature or widen permissions. After scoped implementation and fast validation, set status to `review`, record the required developer database handoff/result accurately and return to the architect. Do not mark complete, publish, deploy, mutate a persistent environment or start another task.
 
 ## Implementation Notes
 
-This is an extension of the existing composition. Reference categories describe meaning; provider products establish the store's assortment; the existing catalogue describes discount conditions. Background remains the sole owner of applicability and customer prose. A bounded page with no match and a continuation is not evidence that the store has no matching product.
+This is an extension of the existing composition. Reference categories describe meaning; provider products establish the store's assortment; the existing catalogue reports current shop-configured options and discount conditions. Background owns conversation state, persisted grants, current-turn checks, tool-use decisions, applicability and customer prose. MCP receives no new workflow authority. A bounded page with no match and a continuation is not evidence that the store has no matching product.
 
 ## Completion Report
 
