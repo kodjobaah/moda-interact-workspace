@@ -1,0 +1,50 @@
+{
+  "old_zip": "moda-interact-workspace(20261103-235702).zip",
+  "new_zip": "moda-interact-workspace(20261104-005051).zip",
+  "old_zip_sha256": "6890c8d7cfbc68d9814920ef154d0d18b4aca7af8e1e6cc9dd9a95ff04239c6e",
+  "new_zip_sha256": "a2c582c7aecb087b5c997d953bb1ab398f4e0d90d4fa79d555f8dd267b7233ee",
+  "old_files": 9620,
+  "new_files": 9643,
+  "added": [
+    "docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md",
+    "docs/architecture/ARCH-056/deterministic-execution-map.json",
+    "docs/architecture/ARCH-056/execution-plan.md",
+    "docs/architecture/ARCH-056/finding-task-map.md",
+    "docs/architecture/ARCH-056/source-baseline.json",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/audit-source.py",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/billing.results.json",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/database-call-inventory.csv",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/probe-billing.mjs",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/probe-shop-resolver-and-locks.mjs",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/probe-webhooks.mjs",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/raw-sql-relation-inventory.csv",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/resolver-and-locks.results.json",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/review.md",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/route-inventory.csv",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/source-baseline.json",
+    "docs/architecture/reviews/shopify-database-20261103-235702-r01/webhooks.results.json",
+    "docs/decisions/api/ARCH-056/API-001-align-accepted-database-dependency.md",
+    "docs/decisions/background/ARCH-056/BACKGROUND-001-serialize-inbound-conversation-persistence.md",
+    "docs/decisions/background/ARCH-056/BACKGROUND-002-settle-confirmed-initial-outreach-credit.md",
+    "docs/decisions/background/ARCH-056/BACKGROUND-003-resume-owned-initial-template-admission.md",
+    "docs/decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md",
+    "docs/decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md"
+  ],
+  "removed": [],
+  "changed": [
+    "docs/architecture/ARCH-055-woocommerce-api-database-correctness-and-efficiency.md",
+    "docs/decisions/api/ARCH-055/API-004-correct-recovery-inbox-and-human-send-persistence.md",
+    "docs/decisions/api/ARCH-055/API-009-bound-readiness-and-reconcile-api-validation.md",
+    "moda-interact-api/tests/integration/merchant/conversations/arch055-transaction-config.postgres.test.ts"
+  ],
+  "summary_by_root": {
+    "added": {
+      "docs": 23
+    },
+    "removed": {},
+    "changed": {
+      "docs": 3,
+      "moda-interact-api": 1
+    }
+  }
+}

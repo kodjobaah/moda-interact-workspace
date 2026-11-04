@@ -101,7 +101,7 @@ Source targets are examples, not aggregate performance claims: first message pag
 
 ### ADR-08 — Bound actual readiness work
 
-Keep zero-database liveness and parameter-free SELECT 1 readiness with its existing 2,000 ms HTTP deadline. At most one underlying readiness probe per process may remain unresolved; coalesce request observers but never treat an old success as fresh readiness. The underlying acquisition/execution must have a supported, measured finite bound and recover after database recovery. API-009 uses a dedicated readiness-only Prisma6 client with connection_limit=1, pool_timeout=1, connect_timeout=1 and socket_timeout=1 (seconds), preserving all other connection/TLS settings; business client URL is unchanged. Keep the observer deadline at 2000ms and one underlying in-flight promise until actual settlement. Disconnect clients on shutdown, never per-readiness failure. The dedicated client probes connectivity, not spare capacity in the business pool. An unavailable infrastructure capability is a specific architect escalation, not permission to guess deployed settings or add a Gateway task speculatively.
+Keep zero-database liveness and parameter-free SELECT 1 readiness with its existing 2,000 ms HTTP deadline. At most one underlying readiness probe per process may remain unresolved; coalesce request observers but never treat an old success as fresh readiness. The underlying acquisition and server-side execution must have supported, measured finite bounds and recover after database recovery. API-009 uses a dedicated readiness-only Prisma 6 client with connection_limit=1, pool_timeout=1, connect_timeout=1 and socket_timeout=1 (seconds), plus PostgreSQL's per-session `statement_timeout=500ms` through the Prisma-supported connection URL `options` argument. Preserve existing `options` and all other connection/TLS settings; the business-client URL and server-wide PostgreSQL settings remain unchanged. The server-side statement timeout must expire before the socket timeout so PostgreSQL cancels the statement before the client abandons the connection. Keep the observer deadline at 2,000 ms and one in-flight promise until the actual query has been canceled or completed. Disconnect clients on shutdown, never per-readiness failure. The dedicated client probes connectivity, not spare capacity in the business pool. If the accepted connection topology does not pass the real cancellation test, return the specific infrastructure requirement for architect review rather than treating socket timeout as a backend-work bound.
 
 ## Request/event flows
 
@@ -171,25 +171,25 @@ No new service, queue, provider integration, public route, Render topology, secr
 
 ## Decisions / Tasks
 
-| Task | Owner | Bounded outcome / touchpoint | Initial state | Depends on |
+| Task | Owner | Bounded outcome / touchpoint | Current state (2026-11-04) | Depends on |
 |---|---|---|---|---|
 | `ARCH-055-DATABASE-001` | moda_database | Add explicit persistence metadata and narrowly correct existing guards | complete | — |
 | `ARCH-055-BACKGROUND-001` | moda_background | Consume the persisted human follow-up claim identity | complete | `ARCH-055-DATABASE-001` |
-| `ARCH-055-SHOPIFY-001` | moda_app | Keep the Shopify producer compatible with shared follow-up dispatch | ready | `ARCH-055-BACKGROUND-001` |
+| `ARCH-055-SHOPIFY-001` | moda_app | Keep the Shopify producer compatible with shared follow-up dispatch | complete | `ARCH-055-BACKGROUND-001` |
 | `ARCH-055-API-001` | moda_api | Harden installation and REST-read authorisation lifecycle | complete | `ARCH-055-DATABASE-001` |
 | `ARCH-055-API-002` | moda_api | Streamline consent and recovery ingress without weakening STOP | complete | — |
-| `ARCH-055-API-003` | moda_api | Consolidate merchant settings and category projections | in_progress | — |
-| `ARCH-055-API-004` | moda_api | Correct recovery inbox and human-send persistence | ready | `ARCH-055-BACKGROUND-001` |
+| `ARCH-055-API-003` | moda_api | Consolidate merchant settings and category projections | complete | — |
+| `ARCH-055-API-004` | moda_api | Correct recovery inbox and human-send persistence | complete | `ARCH-055-BACKGROUND-001` |
 | `ARCH-055-API-005` | moda_api | Correct knowledge-source and upload lifecycle | complete | `ARCH-055-DATABASE-001` |
-| `ARCH-055-API-006` | moda_api | Optimise commercial settings and reporting projections | in_progress | — |
-| `ARCH-055-API-007` | moda_api | Harden durable billing-command admission | ready | `ARCH-055-API-001` |
+| `ARCH-055-API-006` | moda_api | Optimise commercial settings and reporting projections | complete | — |
+| `ARCH-055-API-007` | moda_api | Harden durable billing-command admission | complete | `ARCH-055-API-001` |
 | `ARCH-055-API-008` | moda_api | Consolidate Support-inbox persistence | complete | — |
-| `ARCH-055-API-009` | moda_api | Bound readiness and reconcile API validation entrypoints | pending | `ARCH-055-API-001`, `ARCH-055-API-002`, `ARCH-055-API-003`, `ARCH-055-API-004`, `ARCH-055-API-005`, `ARCH-055-API-006`, `ARCH-055-API-007`, `ARCH-055-API-008` |
-| `ARCH-055-SYSTEM-TEST-001` | moda_system_test | Validate the accepted database corrections end to end | pending | `ARCH-055-DATABASE-001`, `ARCH-055-BACKGROUND-001`, `ARCH-055-SHOPIFY-001`, `ARCH-055-API-001`, `ARCH-055-API-002`, `ARCH-055-API-003`, `ARCH-055-API-004`, `ARCH-055-API-005`, `ARCH-055-API-006`, `ARCH-055-API-007`, `ARCH-055-API-008`, `ARCH-055-API-009` |
+| `ARCH-055-API-009` | moda_api | Bound readiness and reconcile API validation entrypoints | complete / Accepted Attempt 2 | `ARCH-055-API-001`, `ARCH-055-API-002`, `ARCH-055-API-003`, `ARCH-055-API-004`, `ARCH-055-API-005`, `ARCH-055-API-006`, `ARCH-055-API-007`, `ARCH-055-API-008` |
+| `ARCH-055-SYSTEM-TEST-001` | moda_system_test | Validate the accepted database corrections end to end | ready / Attempt 0 | `ARCH-055-DATABASE-001`, `ARCH-055-BACKGROUND-001`, `ARCH-055-SHOPIFY-001`, `ARCH-055-API-001`, `ARCH-055-API-002`, `ARCH-055-API-003`, `ARCH-055-API-004`, `ARCH-055-API-005`, `ARCH-055-API-006`, `ARCH-055-API-007`, `ARCH-055-API-008`, `ARCH-055-API-009` |
 
 All task IDs in `depends_on` are fully qualified in the task files. ARCH-055-API-001/004/005 need the new persistence contracts; producer tasks wait for the accepted Background consumer; ARCH-055-API-007 waits for the reviewed principal helper. Other functional API units do not wait unnecessarily for those changes. ARCH-055-API-009 waits for the eight functional units to avoid conflicting aggregate-runner rewrites. ARCH-055-SYSTEM-TEST-001 explicitly depends on all twelve implementation tasks; no dependency points from implementation to system test.
 
-Initial independent Ready definitions: ARCH-055-DATABASE-001, ARCH-055-API-002, ARCH-055-API-003, ARCH-055-API-006 and ARCH-055-API-008. The remaining eight are Pending. Ready does not mean claimed or materialised. After a dependency becomes Complete, the architect promotes its eligible dependants; repository agents do not self-promote.
+At this reconciliation, all twelve implementation tasks are Complete and `ARCH-055-SYSTEM-TEST-001` is Ready at Attempt 0. Ready does not mean claimed or executed. The system-test task remains the only outstanding ARCH-055 task.
 
 ## File ownership and merge hotspots
 

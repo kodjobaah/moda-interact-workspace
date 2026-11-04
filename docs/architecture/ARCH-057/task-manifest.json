@@ -1,0 +1,1716 @@
+{
+  "architecture_id": "ARCH-057",
+  "definition_revision": 2,
+  "state": "defined but not materialised",
+  "baseline_zip": "moda-interact-workspace(20261104-005051).zip",
+  "baseline_zip_sha256": "a2c582c7aecb087b5c997d953bb1ab398f4e0d90d4fa79d555f8dd267b7233ee",
+  "parent_architecture": "docs/architecture/ARCH-057-shopify-application-database-correctness-and-simplicity.md",
+  "mandatory_contract": "docs/architecture/ARCH-057/task-contract.md",
+  "initial_ready": [
+    "ARCH-057-SHOPIFY-001"
+  ],
+  "recommended_execution_order": [
+    "ARCH-057-SHOPIFY-001",
+    "ARCH-057-SHOPIFY-002",
+    "ARCH-057-SHOPIFY-009",
+    "ARCH-057-SHOPIFY-003",
+    "ARCH-057-SHOPIFY-010",
+    "ARCH-057-SHOPIFY-005",
+    "ARCH-057-SHOPIFY-004",
+    "ARCH-057-SHOPIFY-006",
+    "ARCH-057-SHOPIFY-007",
+    "ARCH-057-SHOPIFY-008",
+    "ARCH-057-SHOPIFY-011",
+    "ARCH-057-SHOPIFY-012",
+    "ARCH-057-SYSTEM-TEST-001"
+  ],
+  "touchpoint_note": "Task prose remains authoritative for exact responsibility, read-only exceptions and predecessor-created files; the inventory is not permission to widen edits.",
+  "parallel_shared_touchpoints": [
+    {
+      "repository": "moda-interact",
+      "path": "package.json",
+      "independent_owners": [
+        [
+          "ARCH-057-SHOPIFY-005",
+          "ARCH-057-SHOPIFY-006"
+        ],
+        [
+          "ARCH-057-SHOPIFY-005",
+          "ARCH-057-SHOPIFY-007"
+        ],
+        [
+          "ARCH-057-SHOPIFY-005",
+          "ARCH-057-SHOPIFY-008"
+        ],
+        [
+          "ARCH-057-SHOPIFY-005",
+          "ARCH-057-SHOPIFY-009"
+        ],
+        [
+          "ARCH-057-SHOPIFY-005",
+          "ARCH-057-SHOPIFY-010"
+        ],
+        [
+          "ARCH-057-SHOPIFY-006",
+          "ARCH-057-SHOPIFY-007"
+        ],
+        [
+          "ARCH-057-SHOPIFY-006",
+          "ARCH-057-SHOPIFY-008"
+        ],
+        [
+          "ARCH-057-SHOPIFY-006",
+          "ARCH-057-SHOPIFY-009"
+        ],
+        [
+          "ARCH-057-SHOPIFY-006",
+          "ARCH-057-SHOPIFY-010"
+        ],
+        [
+          "ARCH-057-SHOPIFY-007",
+          "ARCH-057-SHOPIFY-009"
+        ],
+        [
+          "ARCH-057-SHOPIFY-007",
+          "ARCH-057-SHOPIFY-010"
+        ],
+        [
+          "ARCH-057-SHOPIFY-008",
+          "ARCH-057-SHOPIFY-009"
+        ],
+        [
+          "ARCH-057-SHOPIFY-008",
+          "ARCH-057-SHOPIFY-010"
+        ]
+      ]
+    }
+  ],
+  "parallel_merge_policy": "Independent branches share package.json only; integrate script additions additively. Any new runtime overlap requires sequencing or a scoped architect amendment.",
+  "tasks": [
+    {
+      "id": "ARCH-057-SHOPIFY-001",
+      "title": "Resolve authenticated merchant context once within each request",
+      "status": "ready",
+      "priority": 10,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [],
+      "enables": [
+        "ARCH-057-SHOPIFY-002",
+        "ARCH-057-SHOPIFY-004",
+        "ARCH-057-SHOPIFY-005",
+        "ARCH-057-SHOPIFY-006",
+        "ARCH-057-SHOPIFY-007",
+        "ARCH-057-SHOPIFY-008",
+        "ARCH-057-SHOPIFY-009",
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-001-resolve-authenticated-merchant-request-context.md",
+      "definition_sha256": "f0ecf1298119ec62bb9ce5994301d140eea55b3f7c078f2a24049de9ec502d98",
+      "declared_touchpoints": [
+        {
+          "path": "app/routes/app/billing/status/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/home/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/pending-recoveries/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/recoveries/access.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/reinstalling/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/auth/catchall/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/feature-preferences/access.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/shop/merchant-request-context.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/shop/shop.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "react-router.config.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/helpers/merchant-request-fixtures.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/merchant-request-context-router.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/merchant-shop-bootstrap.postgres.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/merchant-request-context.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/merchant-route-access-policy.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/routes/auth-catchall.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/shop.service.test.ts",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "test:merchant-request:unit": "vitest run tests/unit/merchant-request-context.test.ts tests/unit/services/shop.service.test.ts tests/unit/routes/auth-catchall.test.ts tests/unit/merchant-route-access-policy.test.ts",
+        "test:merchant-request:router": "vitest run tests/integration/merchant-request-context-router.test.ts",
+        "test:merchant-request:postgres": "MODA_MERCHANT_REQUEST_POSTGRES=1 vitest run tests/integration/merchant-shop-bootstrap.postgres.test.ts"
+      },
+      "required_validation_commands": [
+        "npm run test:merchant-request:unit",
+        "npm run test:merchant-request:router",
+        "npm run test:merchant-request:postgres",
+        "npm run typecheck",
+        "npm run build",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-002",
+      "title": "Stabilise subscription activation and provider evidence",
+      "status": "pending",
+      "priority": 20,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-001"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-003",
+        "ARCH-057-SHOPIFY-004",
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-002-stabilise-subscription-activation-and-provider-evidence.md",
+      "definition_sha256": "ef64a066dfd17009d5bc8ef799a5f396a93ea18371679ad12340ac6dfda3c94e",
+      "declared_touchpoints": [
+        {
+          "path": "app/routes/app/billing/callback/route.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/onboarding/resume/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/billing-period-projection.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/billing-reconciliation.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/billing.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/billing.types.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/hosted-plan-change.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/onboarding-milestone.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/billing/providers/shopify-billing-diagnostics.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/billing/providers/shopify-billing.provider.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/shopify-billing-operation.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/subscription-activation.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/subscription-ended-notification.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/subscription-locks.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/subscription-sync.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/fixtures/billing-activation.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/helpers/billing-postgres.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/billing-activation.postgres.integration.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/routes/billing-callback.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/routes/onboarding-resume.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing-reconciliation.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/billing-period-projection.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/hosted-plan-change.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/provider-diagnostics.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/services/billing/shopify-billing-operation.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/subscription-activation.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/subscription-ended-notification.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/subscription-sync.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/shopify-billing.provider.test.ts",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {},
+      "required_validation_commands": [
+        "npm run prisma:generate",
+        "npm test -- tests/unit/services/shopify-billing.provider.test.ts tests/unit/services/billing/provider-diagnostics.test.ts tests/unit/services/billing/subscription-activation.service.test.ts tests/unit/services/billing/subscription-sync.service.test.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/billing-period-projection.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts tests/unit/services/billing/subscription-ended-notification.service.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/billing.service.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/routes/onboarding-resume.test.ts",
+        "MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/billing-activation.postgres.integration.test.ts",
+        "npm run typecheck",
+        "npm run build",
+        "npx --no-install eslint app/services/billing app/routes/app/billing/callback/route.tsx app/routes/app/onboarding/resume/route.ts tests/unit/services/billing/provider-diagnostics.test.ts tests/integration/billing-activation.postgres.integration.test.ts tests/helpers/billing-postgres.ts tests/fixtures/billing-activation.ts",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-009",
+      "title": "Preserve Shopify sessions across uninstall retries and reinstall admission",
+      "status": "pending",
+      "priority": 65,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-001"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-010",
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-009-preserve-session-lifecycle-and-webhook-configuration.md",
+      "definition_sha256": "c1887bdcfb6bf6d8a850c14c743030214ebbe6fcca38532ab5a0bbd7aada6ea5",
+      "declared_touchpoints": [
+        {
+          "path": "app/routes/app/reinstalling/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/auth/catchall/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/webhooks/app/scopes-update/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/webhooks/app/uninstalled/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/discounts/shopify-discount-lifecycle.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/shop/shop.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/webhooks/shopify-webhook-observability.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "docs/shopify-webhook-configuration.md",
+          "baseline_exists": false
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "scripts/shopify-dev-cloud.mjs",
+          "baseline_exists": true
+        },
+        {
+          "path": "scripts/shopify-dev.mjs",
+          "baseline_exists": true
+        },
+        {
+          "path": "scripts/shopify.mjs",
+          "baseline_exists": true
+        },
+        {
+          "path": "shopify.app.moda-interact.toml",
+          "baseline_exists": true
+        },
+        {
+          "path": "shopify.app.toml",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/helpers/shopify-lifecycle-postgres.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/shopify-session-lifecycle-races.postgres.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/shopify-session-lifecycle.postgres.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/routes/auth-catchall.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/routes/reinstalling-route.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/routes/scopes-update.test.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/routes/uninstalled.test.jsx",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/services/shop.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/shopify-discount-lifecycle.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/webhooks/shopify-brand-scope-config.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/webhooks/shopify-lifecycle-errors.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/webhooks/shopify-webhook-config.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/webhooks/shopify-whatsapp-consent-config.test.js",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "dev": "shopify app dev --config moda-interact",
+        "deploy": "shopify app deploy --config moda-interact",
+        "test:shopify-lifecycle": "vitest run tests/unit/routes/uninstalled.test.jsx tests/unit/routes/scopes-update.test.jsx tests/unit/routes/auth-catchall.test.ts tests/unit/routes/reinstalling-route.test.ts tests/unit/services/shop.service.test.ts tests/unit/services/shopify-discount-lifecycle.service.test.ts tests/unit/webhooks/shopify-lifecycle-errors.test.ts tests/unit/webhooks/shopify-webhook-config.test.ts tests/unit/webhooks/shopify-whatsapp-consent-config.test.js tests/unit/webhooks/shopify-brand-scope-config.test.ts",
+        "test:shopify-lifecycle:postgres": "MODA_SHOPIFY_LIFECYCLE_POSTGRES=1 vitest run tests/integration/shopify-session-lifecycle.postgres.test.ts tests/integration/shopify-session-lifecycle-races.postgres.test.ts"
+      },
+      "required_validation_commands": [
+        "npm run test:shopify-lifecycle",
+        "npm run test:shopify-lifecycle:postgres",
+        "npm run typecheck",
+        "npm run build",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-003",
+      "title": "Simplify recovery credit purchases and refunds",
+      "status": "pending",
+      "priority": 30,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-002"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-004",
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-003-simplify-recovery-credit-purchases-and-refunds.md",
+      "definition_sha256": "bb824837a74e7dfae3edb5c9d392e8e1b29f51eb043adb5335c6696d2bd72835",
+      "declared_touchpoints": [
+        {
+          "path": "app/routes/app/billing/options/route.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/billing/recovery-credit-purchases/route.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/recovery-credit-provider-context.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/billing/recovery-credit-purchase-management.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/recovery-credit-purchase-request.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/fixtures/recovery-credit-purchases.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/fixtures/recovery-credit-refunds.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/helpers/billing-postgres.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/recovery-credit-purchases.postgres.integration.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/recovery-credit-refunds.postgres.integration.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/billing-purchase-hub.test.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/recovery-credit-history-budget.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/recovery-credit-purchase-manager.test.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/routes/billing-options-action.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/routes/recovery-credit-purchases.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/recovery-credit-purchase-management.service.test.ts",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {},
+      "required_validation_commands": [
+        "npm run prisma:generate",
+        "npm test -- tests/unit/services/recovery-credit-purchase-management.service.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts tests/unit/recovery-credit-history-budget.test.ts tests/unit/routes/recovery-credit-purchases.test.ts tests/unit/routes/billing-options-action.test.ts tests/unit/recovery-credit-purchase-manager.test.tsx tests/unit/billing-purchase-hub.test.tsx",
+        "MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/recovery-credit-refunds.postgres.integration.test.ts tests/integration/recovery-credit-purchases.postgres.integration.test.ts",
+        "npm run typecheck",
+        "npm run build",
+        "npx --no-install eslint app/services/billing/recovery-credit-purchase-management.service.ts app/services/billing/recovery-credit-purchase-request.service.ts app/services/billing/recovery-credit-provider-context.server.ts app/routes/app/billing/recovery-credit-purchases/route.tsx app/routes/app/billing/options/route.tsx tests/unit/recovery-credit-history-budget.test.ts tests/unit/routes/recovery-credit-purchases.test.ts tests/unit/routes/billing-options-action.test.ts tests/integration/recovery-credit-refunds.postgres.integration.test.ts tests/integration/recovery-credit-purchases.postgres.integration.test.ts tests/fixtures/recovery-credit-refunds.ts tests/fixtures/recovery-credit-purchases.ts",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-010",
+      "title": "Bound Shopify webhook publication and remove redundant queue probes",
+      "status": "pending",
+      "priority": 70,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-009"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-010-bound-webhook-ingress-and-queue-publication.md",
+      "definition_sha256": "c97ccf4eaa713a426f90ab6c6fd9b6ec8f59946d81503ada8cb48b451c3ade00",
+      "declared_touchpoints": [
+        {
+          "path": "app/routes/webhooks/root/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/otel/shopify-webhook-telemetry.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/webhooks/shopify-webhook-ingress.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/webhooks/shopify-webhook-observability.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/webhooks/shopify-webhook-observation.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/webhooks/shopify-webhook-queue.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "docs/shopify-webhook-publication.md",
+          "baseline_exists": false
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/helpers/shopify-webhook-fixtures.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/helpers/shopify-webhook-redis.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/shopify-webhook-publication.redis.integration.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/shopify-webhook-queue-telemetry.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/otel/shopify-webhook-ingress-traceid.test.js",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/otel/shopify-webhook-telemetry.test.js",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/webhooks/shopify-webhook-deadline.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/webhooks/shopify-webhook-failure-logging.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/webhooks/shopify-webhook-ingress.service.test.js",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/webhooks/shopify-webhook-queue.server.test.js",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/webhooks/webhooks-route.test.js",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "test:shopify-webhooks": "vitest run tests/unit/webhooks tests/unit/otel/shopify-webhook-ingress-traceid.test.js tests/unit/otel/shopify-webhook-telemetry.test.js",
+        "test:shopify-webhooks:redis": "MODA_SHOPIFY_WEBHOOK_REDIS=1 vitest run tests/integration/shopify-webhook-publication.redis.integration.test.ts tests/integration/shopify-webhook-queue-telemetry.test.ts"
+      },
+      "required_validation_commands": [
+        "npm run test:shopify-webhooks",
+        "npm run test:shopify-webhooks:redis",
+        "npm run typecheck",
+        "npm run build",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-005",
+      "title": "Simplify support inbox reads and bounded acknowledgements",
+      "status": "pending",
+      "priority": 40,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-001"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-005-simplify-support-inbox-reads-and-acknowledgements.md",
+      "definition_sha256": "b8ee46b35acaf112eb968b18bd96769521dc2c3682006bc8ccc0fb34c393420c",
+      "declared_touchpoints": [
+        {
+          "path": "app/routes/app/merchant-support/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-support/merchant-support-observability.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-support/merchant-support.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/helpers/merchant-support-postgres.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/merchant-support.postgres.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/merchant-support-batch-ui.test.tsx",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/merchant-support-observability.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-support-recovery-i18n.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-support-route.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-support-service.test.ts",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "test:merchant-support:unit": "vitest run tests/unit/merchant-support-service.test.ts tests/unit/merchant-support-route.test.ts tests/unit/merchant-support-observability.test.ts tests/unit/merchant-support-recovery-i18n.test.ts tests/unit/merchant-support-batch-ui.test.tsx",
+        "test:merchant-support:postgres": "MODA_DISPOSABLE_INTEGRATION=1 vitest run tests/integration/merchant-support.postgres.test.ts"
+      },
+      "required_validation_commands": [
+        "npm run test:merchant-support:unit",
+        "npm run test:merchant-support:postgres",
+        "npm run typecheck",
+        "npm run build",
+        "npx --no-install eslint app/services/merchant-support app/routes/app/route.jsx app/routes/app/merchant-support/route.jsx tests/unit/merchant-support-service.test.ts tests/unit/merchant-support-route.test.ts tests/unit/merchant-support-observability.test.ts tests/unit/merchant-support-recovery-i18n.test.ts tests/unit/merchant-support-batch-ui.test.tsx tests/integration/merchant-support.postgres.test.ts tests/helpers/merchant-support-postgres.ts",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-004",
+      "title": "Consolidate commercial read projections",
+      "status": "pending",
+      "priority": 40,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-001",
+        "ARCH-057-SHOPIFY-002",
+        "ARCH-057-SHOPIFY-003"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-004-consolidate-commercial-read-projections.md",
+      "definition_sha256": "6e4403a091aad8b5c7a4c3e2694bb773d1687206b7ac168215ae969ae49b94e6",
+      "declared_touchpoints": [
+        {
+          "path": "app/routes/app/billing/options/route.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/billing/select/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/home/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/promotions/route.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/usage/route.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/billing-plan-resolution.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/billing.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/billing.types.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/merchant-billing-presentation.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/billing/merchant-billing-read.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/merchant-recovery-capacity-read.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/subscription-read.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-pricing/merchant-pricing.server.js",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/promotions/promotion.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/usage/history.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/fixtures/commercial-read-context.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/promotion-selection.concurrency.integration.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/billing-ui.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/commercial-read-budget.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/home-route.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-pricing-usage-overview.test.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/routes/billing-options-loader.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/routes/promotion-route.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/billing-plan-resolution.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/merchant-billing-presentation.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/services/billing/merchant-billing-read.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/billing/subscription-read.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/services/promotion.service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/usage-route.test.ts",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {},
+      "required_validation_commands": [
+        "npm run prisma:generate",
+        "npm test -- tests/unit/services/billing/merchant-billing-presentation.test.ts tests/unit/commercial-read-budget.test.ts tests/unit/routes/billing-options-loader.test.ts tests/unit/services/billing/merchant-billing-read.service.test.ts tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts tests/unit/services/billing/subscription-read.service.test.ts tests/unit/services/billing/billing-plan-resolution.service.test.ts tests/unit/services/billing.service.test.ts tests/unit/home-route.test.ts tests/unit/billing-ui.test.ts tests/unit/merchant-pricing-usage-overview.test.jsx tests/unit/services/promotion.service.test.ts tests/unit/routes/promotion-route.test.ts tests/unit/usage-route.test.ts",
+        "npm test -- tests/unit/routes/billing-options-action.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts",
+        "MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/promotion-selection.concurrency.integration.test.ts",
+        "npm run typecheck",
+        "npm run build",
+        "npx --no-install eslint app/services/billing app/services/promotions/promotion.service.ts app/services/merchant-pricing/merchant-pricing.server.js app/services/usage/history.server.ts app/routes/app/billing/options/route.tsx app/routes/app/billing/select/route.jsx app/routes/app/home/route.jsx app/routes/app/promotions/route.tsx app/routes/app/usage/route.jsx tests/unit/services/billing/merchant-billing-presentation.test.ts tests/unit/commercial-read-budget.test.ts tests/unit/routes/billing-options-loader.test.ts tests/fixtures/commercial-read-context.ts tests/integration/promotion-selection.concurrency.integration.test.ts",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-006",
+      "title": "Reuse recovery read context while preserving command admission",
+      "status": "pending",
+      "priority": 40,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-001"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-006-reuse-recovery-read-context-and-preserve-command-admission.md",
+      "definition_sha256": "c8e22c1f3da4c2878d16713055fe07e5f0b3bb10adc2b7f64f0f2cd6db06d7d6",
+      "declared_touchpoints": [
+        {
+          "path": "app/routes.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/home/overview.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/recoveries/loader.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/recovery-detail/command-http.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/recovery-detail/loader.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/recovery-detail/state.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/recoveries/recovery-detail.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/recoveries/recovery-follow-up-catalogue.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/recoveries/recovery-human-commands.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/recoveries/recovery-observability.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/fixtures/arch047-shopify-follow-up.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/helpers/recovery-detail-pg-utc.mjs",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/helpers/recovery-detail-seed.mjs",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/integration/recovery-detail-query-plans.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/arch040-shopify-command.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/arch040-shopify-http.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/arch047-shopify-follow-up-catalogue.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/arch047-shopify-follow-up-sender.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/recovery-cohort-readers.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/recovery-detail-readers.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/recovery-detail-route.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/recovery-list-route.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/recovery-overview.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/recovery-read-context.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/recovery-reader-observability.test.ts",
+          "baseline_exists": false
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "test:recovery-readers:unit": "vitest run tests/unit/recovery-read-context.test.ts tests/unit/recovery-reader-observability.test.ts tests/unit/recovery-detail-readers.test.ts tests/unit/recovery-detail-route.test.ts tests/unit/recovery-list-route.test.ts tests/unit/recovery-overview.test.ts tests/unit/recovery-cohort-readers.test.ts tests/unit/arch040-shopify-command.test.ts tests/unit/arch040-shopify-http.test.ts tests/unit/arch047-shopify-follow-up-catalogue.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts",
+        "test:recovery-readers:postgres": "MODA_RECOVERY_DETAIL_POSTGRES=1 vitest run tests/integration/recovery-detail-query-plans.test.ts"
+      },
+      "required_validation_commands": [
+        "npm run test:recovery-readers:unit",
+        "npm run test:recovery-readers:postgres",
+        "npm test -- tests/unit/arch040-shopify-command-status.test.tsx tests/unit/arch040-shopify-layout.test.tsx tests/unit/arch047-shopify-follow-up-ui.test.tsx",
+        "npm run typecheck",
+        "npm run build",
+        "npx --no-install eslint app/services/recoveries/recovery-detail.server.ts app/services/recoveries/recovery-human-commands.server.ts app/services/recoveries/recovery-follow-up-catalogue.server.ts app/services/recoveries/recovery-observability.server.ts app/routes/app/recovery-detail/loader.server.ts app/routes/app/recovery-detail/command-http.server.ts app/routes/app/recovery-detail/state.ts app/routes/app/recoveries/loader.server.ts app/routes/app/home/overview.server.ts tests/unit/recovery-read-context.test.ts tests/unit/recovery-reader-observability.test.ts tests/unit/recovery-detail-readers.test.ts tests/unit/recovery-detail-route.test.ts tests/unit/recovery-list-route.test.ts tests/unit/recovery-overview.test.ts tests/unit/recovery-cohort-readers.test.ts tests/unit/arch040-shopify-command.test.ts tests/unit/arch040-shopify-http.test.ts tests/unit/arch047-shopify-follow-up-catalogue.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts tests/fixtures/arch047-shopify-follow-up.ts tests/integration/recovery-detail-query-plans.test.ts",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-007",
+      "title": "Unify settings reads and guard merchant policy writes",
+      "status": "pending",
+      "priority": 40,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-001"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-008",
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-007-unify-settings-reads-and-guard-policy-writes.md",
+      "definition_sha256": "9b239e3a5bfe631b5f5d3b2bc3b3bf278289bf3456782d7b43c63df6e6d61c98",
+      "declared_touchpoints": [
+        {
+          "path": "app/components/settings/StoreProfileSection.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/recovery-settings/route.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/settings-save/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/store-profile/category/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/feature-preferences/access.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/feature-preferences/feature-preferences.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/feature-preferences/merchant-settings-observability.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/feature-preferences/settings-read-context.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/recovery-policy/recovery-policy.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/store-profile/store-category-selection.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/helpers/merchant-settings-postgres.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/merchant-feature-preferences.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/integration/merchant-settings-writes.postgres.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/shopify-recovery-discounts.postgres.integration.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/integration/store-category-lifecycle.postgres.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/store-category-selection.postgres.integration.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/ai-response-delay-loader.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-settings-action.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-settings-observability.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/recovery-policy-save.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/recovery-policy-snapshot.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/settings-read-context.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/settings-save-recovery-route.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/store-category-selection.test.ts",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "test:merchant-settings:unit": "vitest run tests/unit/settings-read-context.test.ts tests/unit/merchant-settings-observability.test.ts tests/unit/recovery-policy-save.test.ts tests/unit/recovery-policy-snapshot.test.ts tests/unit/settings-save-recovery-route.test.ts tests/unit/merchant-settings-action.test.ts tests/unit/ai-response-delay-loader.test.ts tests/unit/ai-response-delay.test.ts tests/unit/store-category-selection.test.ts",
+        "test:merchant-settings:postgres": "MODA_DISPOSABLE_INTEGRATION=1 MODA_SETTINGS_POSTGRES=1 vitest run tests/integration/merchant-settings-writes.postgres.test.ts tests/integration/store-category-lifecycle.postgres.test.ts tests/integration/shopify-recovery-discounts.postgres.integration.test.ts tests/integration/store-category-selection.postgres.integration.test.ts tests/integration/merchant-feature-preferences.test.ts"
+      },
+      "required_validation_commands": [
+        "npm run test:merchant-settings:unit",
+        "npm run test:merchant-settings:postgres",
+        "npm test -- tests/unit/recovery-settings-discounts.test.tsx tests/unit/recovery-settings-submit-guard.test.tsx tests/unit/ai-response-delay-settings.test.tsx tests/unit/recovery-settings-i18n.test.ts tests/unit/onboarding-store-category.test.jsx tests/unit/store-category-activation.test.ts",
+        "npm run typecheck",
+        "npm run build",
+        "npx --no-install eslint app/services/feature-preferences app/services/recovery-policy/recovery-policy.server.ts app/services/store-profile/store-category-selection.server.ts app/routes/app/recovery-settings/route.tsx app/routes/app/settings-save/route.ts app/routes/app/store-profile/category/route.ts app/components/settings/StoreProfileSection.tsx tests/unit/settings-read-context.test.ts tests/unit/merchant-settings-observability.test.ts tests/unit/recovery-policy-save.test.ts tests/unit/recovery-policy-snapshot.test.ts tests/unit/settings-save-recovery-route.test.ts tests/unit/merchant-settings-action.test.ts tests/unit/ai-response-delay-loader.test.ts tests/unit/store-category-selection.test.ts tests/integration/merchant-settings-writes.postgres.test.ts tests/integration/store-category-lifecycle.postgres.test.ts tests/integration/shopify-recovery-discounts.postgres.integration.test.ts tests/integration/store-category-selection.postgres.integration.test.ts tests/integration/merchant-feature-preferences.test.ts tests/helpers/merchant-settings-postgres.ts",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-008",
+      "title": "Simplify merchant knowledge processing and bounded refresh",
+      "status": "pending",
+      "priority": 50,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-001",
+        "ARCH-057-SHOPIFY-007"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-008-simplify-merchant-knowledge-processing-and-refresh.md",
+      "definition_sha256": "0ac330aa1a48f2c4bb7eccc5117334979e82c03b05fadcd0cc73df6d17ff942d",
+      "declared_touchpoints": [
+        {
+          "path": "app/components/settings/MerchantKnowledgeSection.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/components/settings/MerchantKnowledgeUploadForm.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/merchant-knowledge/delete/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/merchant-knowledge/refresh/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/merchant-knowledge/reorder/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/merchant-knowledge/reprocess/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/merchant-knowledge/source/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/merchant-knowledge/upload-failure/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/merchant-knowledge/upload-finalize/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/merchant-knowledge/upload-intent/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/recovery-settings/route.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-knowledge/merchant-knowledge-entitlement.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-knowledge/merchant-knowledge-error.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/merchant-knowledge/merchant-knowledge-http.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/merchant-knowledge/merchant-knowledge-observability.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-knowledge/merchant-knowledge-queue.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-knowledge/merchant-knowledge.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-knowledge/r2-client.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-knowledge/upload.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/fixtures/settings-preview/main.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/helpers/merchant-knowledge-postgres.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/helpers/merchant-knowledge-router-fixtures.tsx",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/merchant-knowledge-finalization.postgres.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/merchant-knowledge-ordering.postgres.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/merchant-knowledge-router.test.tsx",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/integration/merchant-knowledge-upload.integration.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-actions.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-entitlement.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-observability.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-ordering.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-queue.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-r2-diagnostics.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-read-context.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-read-model.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-section.test.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-upload-form.test.tsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/merchant-knowledge-upload.test.ts",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "test:merchant-knowledge:unit": "vitest run tests/unit/merchant-knowledge-actions.test.ts tests/unit/merchant-knowledge-read-model.test.ts tests/unit/merchant-knowledge-entitlement.test.ts tests/unit/merchant-knowledge-upload.test.ts tests/unit/merchant-knowledge-observability.test.ts tests/unit/merchant-knowledge-queue.test.ts tests/unit/merchant-knowledge-section.test.tsx tests/unit/merchant-knowledge-upload-form.test.tsx tests/unit/merchant-knowledge-read-context.test.ts tests/unit/merchant-knowledge-ordering.test.ts tests/unit/merchant-knowledge-r2-diagnostics.test.ts",
+        "test:merchant-knowledge:router": "vitest run tests/integration/merchant-knowledge-router.test.tsx",
+        "test:merchant-knowledge:postgres": "MODA_DISPOSABLE_INTEGRATION=1 vitest run tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts tests/integration/merchant-knowledge-upload.integration.test.ts tests/integration/merchant-knowledge-ordering.postgres.test.ts tests/integration/merchant-knowledge-finalization.postgres.test.ts"
+      },
+      "required_validation_commands": [
+        "npm run test:merchant-knowledge:unit",
+        "npm run test:merchant-knowledge:router",
+        "npm run test:merchant-knowledge:postgres",
+        "npm test -- tests/unit/merchant-knowledge-url-validation.test.ts tests/unit/recovery-settings-i18n.test.ts",
+        "npm run typecheck",
+        "npm run build",
+        "npx --no-install eslint app/services/merchant-knowledge app/routes/app/merchant-knowledge app/routes/app/recovery-settings/route.tsx app/components/settings/MerchantKnowledgeSection.tsx app/components/settings/MerchantKnowledgeUploadForm.tsx tests/unit/merchant-knowledge-actions.test.ts tests/unit/merchant-knowledge-read-model.test.ts tests/unit/merchant-knowledge-entitlement.test.ts tests/unit/merchant-knowledge-upload.test.ts tests/unit/merchant-knowledge-observability.test.ts tests/unit/merchant-knowledge-queue.test.ts tests/unit/merchant-knowledge-section.test.tsx tests/unit/merchant-knowledge-upload-form.test.tsx tests/unit/merchant-knowledge-read-context.test.ts tests/unit/merchant-knowledge-ordering.test.ts tests/unit/merchant-knowledge-r2-diagnostics.test.ts tests/integration/merchant-knowledge-router.test.tsx tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts tests/integration/merchant-knowledge-upload.integration.test.ts tests/integration/merchant-knowledge-ordering.postgres.test.ts tests/integration/merchant-knowledge-finalization.postgres.test.ts tests/helpers/merchant-knowledge-router-fixtures.tsx tests/helpers/merchant-knowledge-postgres.ts tests/fixtures/settings-preview/main.tsx",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-011",
+      "title": "Complete server diagnostic coverage with original failure messages",
+      "status": "pending",
+      "priority": 80,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-001",
+        "ARCH-057-SHOPIFY-002",
+        "ARCH-057-SHOPIFY-003",
+        "ARCH-057-SHOPIFY-004",
+        "ARCH-057-SHOPIFY-005",
+        "ARCH-057-SHOPIFY-006",
+        "ARCH-057-SHOPIFY-007",
+        "ARCH-057-SHOPIFY-008",
+        "ARCH-057-SHOPIFY-009",
+        "ARCH-057-SHOPIFY-010"
+      ],
+      "enables": [
+        "ARCH-057-SHOPIFY-012"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-011-complete-server-error-diagnostics.md",
+      "definition_sha256": "df4843523c38de86e5180a4a4a9e5d5076e0e0a4e44b9762f9cfb3e823c4039e",
+      "declared_touchpoints": [
+        {
+          "path": "app/entry.server.jsx",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/routes/app/onboarding/resume/route.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/billing-reconciliation.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/billing/subscription-ended-notification.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/discounts/shopify-discount-lifecycle.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/health/health-check.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/observability/shopify-runtime-observability.server.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "app/services/pending-recovery/pending-recovery-reader.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/platform-configuration/contracts.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/platform-configuration/repository.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/platform-configuration/seal.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/platform-configuration/service.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/store-profile/shopify-taxonomy-suggestion.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/webhooks/shopify-webhook-observability.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/shopify.server.js",
+          "baseline_exists": true
+        },
+        {
+          "path": "docs/server-error-coverage.md",
+          "baseline_exists": false
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/health/health-check.server.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/pending-recovery-reader.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/platform-configuration/service.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/platform-configuration/shopify-oauth-bootstrap.test.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "tests/unit/server-error-boundaries.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/server-error-fallbacks.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/server-error-privacy.test.ts",
+          "baseline_exists": false
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "test:server-diagnostics": "vitest run tests/unit/server-error-boundaries.test.ts tests/unit/server-error-fallbacks.test.ts tests/unit/server-error-privacy.test.ts tests/unit/platform-configuration/service.test.ts tests/unit/platform-configuration/shopify-oauth-bootstrap.test.ts tests/unit/pending-recovery-reader.test.ts tests/unit/health/health-check.server.test.ts"
+      },
+      "required_validation_commands": [
+        "npm run test:server-diagnostics",
+        "npm run typecheck",
+        "npm run build",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SHOPIFY-012",
+      "title": "Enforce domain runtime names and canonical development billing identities",
+      "status": "pending",
+      "priority": 90,
+      "repository": "moda-interact",
+      "assigned_agent": "moda_app",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-011"
+      ],
+      "enables": [
+        "ARCH-057-SYSTEM-TEST-001"
+      ],
+      "definition": "docs/decisions/shopify/ARCH-057/SHOPIFY-012-enforce-domain-runtime-names.md",
+      "definition_sha256": "18888b0c6b4b3288496a72217ec129743419e22f4dbc519b9155f4ece2d40d30",
+      "declared_touchpoints": [
+        {
+          "path": "app/services/billing/shopify-billing-operation.service.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/merchant-knowledge/r2-config.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/platform-configuration/composition.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/platform-configuration/contracts.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/platform-configuration/seal.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/recoveries/recovery-follow-up-catalogue.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/recoveries/recovery-follow-up-sender.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/recoveries/recovery-human-commands.server.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "app/services/webhooks/webhook-normalization-utils.ts",
+          "baseline_exists": true
+        },
+        {
+          "path": "docs/runtime-naming.md",
+          "baseline_exists": false
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "scripts/check-runtime-names.mjs",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/billing-activation.postgres.integration.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/integration/recovery-credit-purchases.postgres.integration.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/billing-operation-identity-vectors.test.ts",
+          "baseline_exists": false
+        },
+        {
+          "path": "tests/unit/services/billing/shopify-billing-operation.service.test.ts",
+          "baseline_exists": true
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "lint:runtime-names": "node scripts/check-runtime-names.mjs",
+        "test:billing-identity": "vitest run tests/unit/billing-operation-identity-vectors.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts"
+      },
+      "required_validation_commands": [
+        "npm run lint:runtime-names",
+        "npm run test:billing-identity",
+        "MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/billing-activation.postgres.integration.test.ts tests/integration/recovery-credit-purchases.postgres.integration.test.ts",
+        "npm run typecheck",
+        "git diff --check"
+      ]
+    },
+    {
+      "id": "ARCH-057-SYSTEM-TEST-001",
+      "title": "Verify Shopify persistence, request composition and server diagnostics",
+      "status": "pending",
+      "priority": 100,
+      "repository": "moda-interact-system-test",
+      "assigned_agent": "moda_system_test",
+      "depends_on": [
+        "ARCH-057-SHOPIFY-012"
+      ],
+      "enables": [],
+      "definition": "docs/decisions/system-test/ARCH-057/SYSTEM-TEST-001-verify-shopify-persistence-and-diagnostics.md",
+      "definition_sha256": "e82fc820df1b4e8e449efbd4b9463326b173c7098d9894e1adad798e4abe634c",
+      "declared_touchpoints": [
+        {
+          "path": "catalogue/historical-system-test-map.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "catalogue/scenarios.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "docs/SHOPIFY-COVERAGE-MATRIX.md",
+          "baseline_exists": true
+        },
+        {
+          "path": "docs/SHOPIFY-PERSISTENCE-VALIDATION.md",
+          "baseline_exists": false
+        },
+        {
+          "path": "package.json",
+          "baseline_exists": true
+        },
+        {
+          "path": "scripts/run-system-tests.js",
+          "baseline_exists": true
+        },
+        {
+          "path": "src/harness/cli.js",
+          "baseline_exists": true
+        },
+        {
+          "path": "src/harness/selection.js",
+          "baseline_exists": true
+        },
+        {
+          "path": "src/harness/shopify-persistence/accepted-suites.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "src/harness/shopify-persistence/contracts.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "src/harness/shopify-persistence/evidence.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "src/harness/shopify-persistence/executors.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "src/harness/shopify-persistence/fixtures.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "src/harness/shopify-persistence/observations.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "src/harness/shopify-persistence/runtime.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "src/harness/shopify-persistence/webhook-scenario.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "test/harness/shopify-persistence-contracts.test.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "test/harness/shopify-persistence-registration.test.js",
+          "baseline_exists": false
+        },
+        {
+          "path": "test/harness/shopify-persistence-results.test.js",
+          "baseline_exists": false
+        }
+      ],
+      "package_script_additions_or_changes": {
+        "system:shopify-persistence:plan": "node scripts/run-system-tests.js --suite shopify-persistence --list",
+        "system:shopify-persistence": "node scripts/run-system-tests.js --suite shopify-persistence --execute"
+      },
+      "required_validation_commands": [
+        "npm run typecheck",
+        "npm run lint",
+        "npm run validate:catalogue -- --write",
+        "npm run validate:catalogue",
+        "npm run test:harness",
+        "npm run system:shopify-persistence:plan",
+        "npm run system:shopify-persistence",
+        "git diff --check"
+      ]
+    }
+  ]
+}

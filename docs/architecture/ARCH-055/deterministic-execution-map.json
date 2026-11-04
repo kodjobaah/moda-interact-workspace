@@ -1,5 +1,5 @@
 {
-  "definition_revision": 3,
+  "definition_revision": 4,
   "tasks": [
     {
       "task_id": "ARCH-055-DATABASE-001",
@@ -725,7 +725,7 @@
         {
           "path": "src/database.ts",
           "baseline_exists": true,
-          "action": "CREATE one dedicated readiness-only PrismaClient per process in addition to existing business client. Derive its URL without logging it; preserve all existing non-timeout/security arguments and override connection_limit=1, pool_timeout=1, connect_timeout=1, socket_timeout=1. No extra driver package. probe uses only parameter-free SELECT1. Disconnect both clients only on normal shutdown; never disconnect business client on readiness timeout."
+          "action": "CREATE one dedicated readiness-only PrismaClient per process in addition to existing business client. Derive its URL without logging it; preserve all existing non-timeout/security arguments and override connection_limit=1, pool_timeout=1, connect_timeout=1, socket_timeout=1. Preserve existing PostgreSQL options and append the per-session statement_timeout=500ms through Prisma's supported options URL argument, so the server cancels work before the 1-second socket timeout. No extra driver package or global PostgreSQL setting. Probe uses only parameter-free SELECT1. Disconnect both clients only on normal shutdown; never disconnect business client on readiness timeout."
         },
         {
           "path": "src/readiness-probe.ts",
@@ -740,7 +740,7 @@
         {
           "path": "scripts/test-arch055-readiness-postgres.mjs",
           "baseline_exists": false,
-          "action": "CREATE canonical disposable PG runner and real HTTP failure/recovery suite. Test dedicated pool/query bounds (blocking injected query only in test adapter), network/connect failure, at most1 physical connection/probe, and no business-client shutdown."
+          "action": "CREATE canonical disposable PG runner and real HTTP failure/recovery suite. Assert statement_timeout on the dedicated session, run a real long query, and prove PostgreSQL cancels it before the Prisma promise settles and leaves no active orphan query before the next probe. Also test dedicated pool/query bounds, network/connect failure, at most1 physical connection/probe, recovery, and no business-client shutdown."
         },
         {
           "path": "tests/integration/http/arch055-readiness.postgres.test.ts",
@@ -772,8 +772,8 @@
         },
         {
           "id": "I02",
-          "fixture": "Actual dedicated pool held or test query pg_sleep>timeout; connection failure then restoration",
-          "expected": "Underlying failure settles within asserted5s safety ceiling; next request recovers, business client unaffected. 5s is acceptance ceiling, not configured SQL timeout."
+          "fixture": "Actual dedicated pool held; real pg_sleep(8); connection failure then restoration",
+          "expected": "Acquisition settles within pool timeout; server applies statement_timeout=500ms and cancels the query before socket_timeout=1s; no test query remains active when the Prisma promise settles; a fresh probe succeeds and the business client remains unaffected."
         },
         {
           "id": "I03",

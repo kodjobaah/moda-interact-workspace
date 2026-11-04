@@ -111,6 +111,8 @@ Business blocking, retryable technical failure, provider uncertainty, lineage co
 | [ARCH-056-SYSTEM-TEST-001](../decisions/system-test/ARCH-056/SYSTEM-TEST-001-validate-background-persistence-and-recovery-progress.md) | System-test; existing catalogue/runner and scoped scenarios | Pending | All five implementation tasks |
 | [ARCH-056-SYSTEM-TEST-002](../decisions/system-test/ARCH-056/SYSTEM-TEST-002-replace-architecture-based-test-names.md) | System-test; final semantic test naming and coverage preservation | Pending | SYSTEM-TEST-001 |
 
+Current handoff (2026-11-04): BACKGROUND-002 Attempt 4 and BACKGROUND-003 are accepted and complete. All seven declared BACKGROUND-004 prerequisites are complete, so BACKGROUND-004 is ready, unclaimed and unexecuted. SYSTEM-TEST-001 remains pending until its remaining implementation prerequisites complete. The table above preserves initial definition statuses.
+
 ```mermaid
 flowchart TD
     A["API dependency"] --> S["Integrated validation"]
