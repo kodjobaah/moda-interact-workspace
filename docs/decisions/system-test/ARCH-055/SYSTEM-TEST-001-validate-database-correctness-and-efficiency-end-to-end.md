@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 90
 executor: null
 claimed_at: null
@@ -29,7 +29,7 @@ depends_on:
 - ARCH-055-API-009
 enables: []
 created: '2026-11-02'
-updated: '2026-11-02'
+updated: '2026-11-04'
 ---
 
 # ARCH-055-SYSTEM-TEST-001: Validate the accepted database corrections end to end
@@ -40,7 +40,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
+**Definition state:** materialised in the canonical parent task worktree and task branch. The task was promoted from Pending after all explicit implementation dependencies became Complete. No implementation worktree or execution claim has been created.
 
 ## Objective
 
@@ -287,3 +287,8 @@ Only the authorised review may accept this task and promote dependants.
 ## Dependency reconciliation — 3 November 2026
 
 DATABASE-001 is Accepted and Complete at Attempt 2. Other required implementation tasks are not all Complete, so this task remains Pending and manually gated. No end-to-end certification is claimed.
+
+
+## Dependency promotion — 4 November 2026
+
+All twelve declared implementation dependencies are now Complete, including `ARCH-055-API-009` Accepted at Attempt 2. This task is Ready at Attempt 0 with `executor` and `claimed_at` clear. No implementation worktree has been created and no system-test execution has started. Ready indicates eligibility for the normal `/moda-task` launch only; it is not a certification or deployment claim.

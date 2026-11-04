@@ -1895,3 +1895,10 @@ Attempt 1 Changes Requested; Ready with executor/claimed_at cleared. Original in
 ### ARCH-054-BACKGROUND-002 accepted — 2 November 2026
 
 Attempt 2 accepted on implementation `64d1be0`; task Complete with claim cleared. Independent review passed 129 unit tests and 11 disposable PostgreSQL/Redis integration tests. Both Attempt 1 findings are resolved. BACKGROUND-003 promoted to Ready, Attempt 0 and unclaimed. ARCH-054 system tasks remain Pending; no downstream work was executed. This supersedes the earlier Changes Requested snapshot.
+
+
+## ARCH-055 dependency-frontier update — 4 November 2026
+
+`ARCH-055-API-009` is architect-accepted Complete at Attempt 2. Its dedicated readiness client applies a PostgreSQL-side 500 ms `statement_timeout`, and migrated PostgreSQL evidence confirms cancellation before Prisma settles. API-008 remains Complete and unchanged. The required DATABASE-001, BACKGROUND-001, SHOPIFY-001 and API-001 through API-008 prerequisites are Complete.
+
+`ARCH-055-SYSTEM-TEST-001` is promoted from Pending to Ready at Attempt 0 with no claim. It remains unstarted and requires its own normal task launch. This is the only newly eligible task in the ARCH-055 frontier.
