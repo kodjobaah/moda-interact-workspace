@@ -387,6 +387,16 @@ This is an extension of the existing composition. Reference categories describe 
 
 ## Completion Report
 
+### Current Status — Dependency Reconciled
+
+The developer explicitly authorized updating the submodule after the recorded prerequisite failure. The Database pin is now accepted **`ded8f14a60182f6b1443640f012caf0089b8a44c`**, published in implementation commit **`229ffe402a3ef36c420cff6a26746b05ca61cd3d`** on `task/ARCH-058-MCP-002`. Only the Database gitlink was staged in that commit; the unfinished implementation draft remains local, unstaged and uncommitted.
+
+Verified `aa3fd024db3a1484f72f8033b87f56ad27f4640d` is an ancestor of `ded8f14a60182f6b1443640f012caf0089b8a44c` (exit 0), so this is a forward update preserving the previous revision. The accepted taxonomy migration and both models are present. `npm run prisma:generate` passed with Prisma 6.19.3; a read-only generated-client DMMF assertion confirmed `ReferenceTaxonomyGeneration` and `ReferenceTaxonomyCategory`. No database connection, migration or import was performed. The Database worktree is clean.
+
+**The specific missing-schema preparation blocker is resolved.** The task remains `in_progress` at Attempt 1 because implementation, fixtures and full validation are unfinished. No task-wide typecheck, unit suite, integration suite or acceptance is claimed by this dependency-only update. Continue the existing draft under the same claim; do not treat the earlier missing-schema report below as the current dependency state. Parent implementation gitlinks and Architect Review are unchanged.
+
+## Initial Preparation Mismatch Report (historical; dependency resolved above)
+
 ### Status
 
 Attempt 1 stopped on the task's explicit prepared-artifact mismatch condition; **not review-ready and not complete**. Metadata remains `in_progress` with the durable launcher claim. Architect reconciliation is required before implementation can continue. No source implementation commit was published.
