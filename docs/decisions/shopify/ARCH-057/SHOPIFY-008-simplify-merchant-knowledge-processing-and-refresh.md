@@ -272,6 +272,8 @@ Launcher packet: dependency gate passed for SHOPIFY-001/007; canonical workspace
 
 Durable claim `b5f61f8de2fdfc9a0a8fb904727e41015fdc6d9f`, pushed at `2026-11-04T20:55:21Z`, Attempt 1, executor codex. Workspace bootstrap selected Node24.19.0/npm11.17.0. Installed Shared3.1.0, Prisma/client6.19.3, React Router7.18.2 and Vitest4.1.11 match the lockfile. No manual runtime or dependency upgrade. No shared/default checkout switched/edited, no other task worktree reused, no main merge or parent gitlink update. Final implementation `e41537919e2a639de4f036582555b79f29c521c6` is pushed to `origin/task/ARCH-057-SHOPIFY-008`; implementation checkout is clean. This report is submitted on the matching parent task branch with no gitlink staging. Its parent publication receipt is recorded after push below.
 
+Parent publication receipt: report commit `df4a4f8d0647e0a9abdb655106b51be35d8a75b9` was pushed to `origin/task/ARCH-057-SHOPIFY-008`. This follow-up records that receipt only; no implementation or lifecycle change.
+
 ### Deviations, Assumptions and Unresolved Issues
 
 No business-policy, schema or source/job identity deviation. Starting package syntax repair and fixture-only timeout correction are described above. Request presentation is never mutation authority. Test providers/queues are synthetic and migrations apply only to owned disposable PG17. All required validation passes; no unresolved implementation issue is identified in scope. No downstream task is started; acceptance remains with the architect.
