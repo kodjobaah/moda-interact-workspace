@@ -293,7 +293,7 @@ In the parent task worktree: this task report only. No other worktree was modifi
 
 - `npm run test:shopify-lifecycle`: 10 files passed, 90 tests passed.
 - `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_SHOPIFY_LIFECYCLE_SQL_EVIDENCE=1 npm run test:shopify-lifecycle:postgres -- --disableConsoleIntercept`: 2 files passed, 12 tests passed, zero skipped; actual SQL evidence emitted with parameter values excluded. The socket override is required for Colima/Testcontainers on this macOS host.
-- `npm run typecheck`: passed.
+- `npm run typecheck`: passed on final implementation head `de55ee8d0f2840785ccf50f414f8d450a09383d6`. The first run after enabling Prisma query events caught readonly option inference; it was corrected in the follow-up commit and the command then passed.
 - `npm run build`: passed; warnings are from existing Zod annotations, Prisma browser import externalization, empty route chunks and a 1.22 MB merchant-i18n chunk.
 - `npx shopify app config validate --config moda-interact`: success.
 - Focused `npx eslint` over modified app and test files: passed. A broader invocation including `scripts/shopify*.mjs` reports existing `process is not defined` `no-undef` diagnostics; the changed launcher arguments are not implicated.
@@ -328,7 +328,7 @@ Physical worktree isolation:
 - At final synchronization check, `origin/main` had advanced by two commits for ARCH-057-SHOPIFY-008 after the implementation task branch was established. Those unrelated changes were not merged into this task branch. Parent `origin/task/ARCH-057-SHOPIFY-009` remained at the claim commit before report submission.
 
 Implementation repository:
-- Commit: `838cfae586585c176590ba46a4ccee8973b27097`.
+- Commits: `838cfae586585c176590ba46a4ccee8973b27097` (implementation) and `de55ee8d0f2840785ccf50f414f8d450a09383d6` (typed Prisma SQL evidence capture).
 - Remote branch: `origin/task/ARCH-057-SHOPIFY-009`.
 - Pushed: yes.
 
