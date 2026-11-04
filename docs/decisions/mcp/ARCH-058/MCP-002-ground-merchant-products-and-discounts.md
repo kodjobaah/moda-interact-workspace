@@ -9,20 +9,21 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-04T15:08:56Z
+attempt: 1
 depends_on:
 - ARCH-058-MCP-001
+- ARCH-058-SHARED-004
 enables:
 - ARCH-058-MCP-003
 - ARCH-058-COMMERCE-001
 - ARCH-058-BACKGROUND-001
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: '2026-11-04'
+updated: 2026-11-04
 ---
 
 # ARCH-058-MCP-002: Ground product search, bounded catalogue browse and conversational discounts in current shop data
@@ -31,7 +32,7 @@ updated: '2026-11-04'
 
 Architecture ID: `ARCH-058`. Parent: `docs/architecture/ARCH-058-commerce-agent-product-discovery.md`. Normative contracts: `docs/architecture/ARCH-058/contracts.md`. Coordinator: `moda_architect`.
 
-This amendment changes the existing task definition without claiming or starting MCP-002, creating its implementation worktree or certifying deployment/provider behavior. After its declared dependencies are Complete, use the normal `/moda-task ARCH-058-MCP-002` launcher and its supplied implementation worktree/workspace root; do not derive paths from the MCP-001 worktree.
+**Definition revision 9 — Shared hash reconciliation.** The current uploaded worktree records MCP-001 Complete at Attempt 3 and this task `in_progress`, Attempt 1, under its existing codex claim. Preserve that claim, the accepted Database pin and the draft implementation reported at `4bffa87ed4af0fb40513ad75d38df49c51746360`. This amendment adds SHARED-004 as a prerequisite without resetting or reclaiming the task. Resume the already prepared dedicated worktrees only after SHARED-003 and SHARED-004 are Complete and architect-accepted; do not rerun `--prepare` for an already claimed task. The common handoff and [Shared hash reconciliation](../../../architecture/ARCH-058/shared-hash-reconciliation.md) govern the exact dependency correction.
 
 ## Objective
 
@@ -39,7 +40,7 @@ Extend the accepted MCP tool provider with exact category search, explicit catal
 
 ## Context
 
-**Definition revision 8.** This revision is grounded in `moda-interact-workspace(20261104-125409).zip` and the current `moda-interact-workspace-ARCH-058-MCP-001(2).zip`. The latter supplies the latest task definitions and submitted MCP-001 implementation; the full snapshot supplies the other repositories. Its MCP source remains the submitted Attempt 2 source, not a new implementation or acceptance. Read the common [execution baseline](../../../architecture/ARCH-058/execution-baseline.json) and [implementation handoff](../../../architecture/ARCH-058/implementation-handoff.md). MCP-001's eventual accepted implementation is the base for this task; do not repeat its importer, source selection or dependency preparation. Earlier archives remain historical provenance. This amendment makes no fresh test, provider-execution or deployment claim.
+The baseline for this amendment is `moda-interact-workspace-ARCH-058-MCP-002.zip`. Its Completion Report below is preserved byte-for-byte, including the resolved Database blocker, the Shared mismatch and unfinished validation. The earlier source-gap list below remains the implementation specification; it is not a claim that the preserved WIP has not already addressed some of those gaps. Continue from that WIP and assess remaining changes against the existing requirements. Do not repeat MCP-001 taxonomy source selection/importer work.
 
 The snapshot establishes these implementation gaps:
 
@@ -54,7 +55,7 @@ The snapshot establishes these implementation gaps:
 
 ## Scope
 
-Only `moda-interact-mcp` source, tests and its task report. Public input/output contracts are the already published Shared **4.0.0**, runner **1.1.0**. Product-search definition is **2.0.0**, operation `products.search` **1.0.0**. Exact product definition/operation remain **1.0.0**. Shipping implementation belongs to MCP-003.
+Only `moda-interact-mcp` source, tests and its task report. Public input/output contracts are the unchanged accepted schemas delivered by corrective Shared **4.0.1** after SHARED-004 acceptance, with exact direct **Zod 4.4.3** and runner **1.1.0**. This task owns that explicit MCP package/lock alignment. Product-search definition is **2.0.0**, operation `products.search` **1.0.0**. Exact product definition/operation remain **1.0.0**. Shipping implementation belongs to MCP-003.
 
 ### Exact implementation map
 
@@ -72,17 +73,29 @@ Paths in this table are relative to the MCP implementation worktree. Test fixtur
 | Existing `src/execution/{discount-tools,discount-catalogue}.ts` | Replace purpose-dependent descriptor projection and remove the reader's outreach-purpose gate. Preserve the existing factory, current mode/FIXED selection/override checks, condition mapping and keyset cursor. Apply section 7's exact NONE/details/cursor ordering and section 8's query-scoped unavailable-data classification for every caller. |
 | `src/mcp/{ports,snapshot,registration,execution}.ts` | Use the canonical descriptor DTO and exact manifest/list equality. Remove the purpose/list-time mode gate; route built-in calls through the bounded wrapper in section 7. Share the existing call-policy/deadline/cancellation/result-byte mechanism within `execution.ts`, preserving published-call behavior. |
 | `src/runtime/{ports,prisma,service-ports}.ts` | Add the category reader to the existing composition and remove the outreach-only listing call. Preserve the existing `createPrismaDiscountCatalogueReader` -> `ports.discounts` -> `ShopifyServiceComposition.discounts` -> `executeDiscountTool` chain; forward the added private RPC signal/deadline through its existing spread. The published execution registry retains its generic shop/environment authorization read. |
+| `package.json`, `package-lock.json` | After SHARED-004 acceptance, pin Shared exactly `4.0.1` and direct `zod` exactly `4.4.3`; retain all other dependency versions, scripts and the accepted Database gitlink. Verify the actual resolution and required hash assertions below. |
 | Tests named in Validation | Add/extend focused fixtures and the existing disposable database harness. No new test framework or runtime dependency is required. |
 
 ## Out of Scope
 
-No Shared/Database changes or package publication; no edits to MCP-001, accepted ARCH-052 reports, Admin taxonomy or decision indexes. No conversation context parser, conversation/retained-grant/recovery-lifecycle reader, lease/takeover check or workflow authorization module in MCP. Existing unrelated execution adapters may still consume their established opaque toolContext. No new taxonomy source, native category-discovery endpoint, Shopify-to-Woo category translation, descendant expansion, product mirror, discount proof API, basket eligibility engine, coupon application, checkout/cart mutation, shipping fields in product results, tool publication, environment setup or customer send. Runtime filenames and symbols must not contain architecture task IDs.
+No Shared/Database source changes or package publication; MCP owns only the explicit consumer dependency alignment above; no edits to MCP-001, accepted ARCH-052 reports, Admin taxonomy or decision indexes. No conversation context parser, conversation/retained-grant/recovery-lifecycle reader, lease/takeover check or workflow authorization module in MCP. Existing unrelated execution adapters may still consume their established opaque toolContext. No new taxonomy source, native category-discovery endpoint, Shopify-to-Woo category translation, descendant expansion, product mirror, discount proof API, basket eligibility engine, coupon application, checkout/cart mutation, shipping fields in product results, tool publication, environment setup or customer send. Runtime filenames and symbols must not contain architecture task IDs.
 
 ## Requirements
 
 ### 1. Consume the known prerequisites once
 
-The prepared MCP-001 result must already contain exact `@modainteract/moda-interact-shared@4.0.0`, its lockfile, the accepted Database revision `ded8f14a60182f6b1443640f012caf0089b8a44c` or an accepted descendant, and the taxonomy resolver/required-feature implementation. Use that prepared packet and the recorded SHARED-002 registry integrity; do not repeat release discovery, choose a version, redownload the taxonomy or downgrade an accepted descendant. A package/submodule mismatch is a concrete preparation failure with the observed value in the report.
+MCP-001 is Complete at accepted implementation `1dd5430b9d3108bf93bba86c1fb9233736f606d3`. Preserve its taxonomy/required-feature work, the current MCP-002 draft, and the resolved Database `ded8f14a60182f6b1443640f012caf0089b8a44c` (or an accepted descendant/equivalent). The uploaded MCP draft currently installs Shared 4.0.0 with direct Zod 4.6.5. Their exact published dependency graph reproduces both hash failures; they are not a new source-integrity or Database failure.
+
+After SHARED-004 is Complete and its immutable **4.0.1** receipt is architect-accepted, run from this existing MCP implementation worktree:
+
+```bash
+npm install --package-lock-only --save-exact @modainteract/moda-interact-shared@4.0.1 zod@4.4.3
+npm ci --no-audit --no-fund
+```
+
+This is an explicit architect-authorized dependency alignment, not discretion to choose a compatible version. Inspect the lock diff; retain unrelated exact resolutions and no npm override/peer bypass. Compare Shared's locked/downloaded integrity with the new SHARED-004 receipt, never the historical 4.0.0 integrity. In a clean Node process use `createRequire` anchored at this consumer and separately at the resolved Shared `/commerce` entrypoint to assert both resolve Zod **4.4.3**. Recompute both descriptor hashes with exported `commerceBuiltInToolContractPayload` and Node SHA-256; keep the existing assertions and expected 1.0.0 descriptor identities unchanged. If installation, resolution or hashing fails, report the exact failure; do not edit descriptor constants, weaken assertions, cast away type errors or reset source.
+
+The Shared dependency is exposed through public Zod schema types: a private 4.4.3 copy with MCP still on 4.6.5 is insufficient. Keep the actual merchant-knowledge schema composition and taxonomy-fixture `z.toJSONSchema` paths in typecheck. Preserve timestamp/schema semantics from the accepted 4.4.3 baseline. Reuse the existing current-claim preparation evidence; no new task attempt or repeat taxonomy/package-release discovery is needed.
 
 The current upload already includes the ARCH-052 catalogue source, `tests/unit/execution/discount-catalogue.test.ts`, its production wiring and the persisted-snapshot scenario in `tests/integration/prisma.integration.test.ts`. The existing factory is `createPrismaDiscountCatalogueReader(database, {cursorSecret?, now?}): DiscountCatalogueReader`, whose method is `execute(call: DiscountSystemToolCall): Promise<CommerceToolResult>`. `runtime/ports.ts:createPersistedMcpPorts` constructs it once; `runtime/prisma.ts` passes `ports.discounts` to `createShopifyServicePorts`; `runtime/service-ports.ts` supplies the existing logger and invokes `options.discounts.execute`. Preserve this chain and its existing `COMMERCE_CURSOR_SECRET` source. The catalogue is no longer a missing-source blocker.
 
@@ -310,6 +323,7 @@ Use the accepted Shared structured logger boundary. Preserve the original saniti
 
 ## Work Items
 
+- [ ] Complete the exact Shared 4.0.1 / Zod 4.4.3 alignment after the accepted SHARED-004 receipt; verify both hashes and real schema composition.
 - [ ] Verify the prepared MCP-001 source/artifacts once against the current supplied catalogue/diagnostic composition; report only an actual new mismatch.
 - [ ] Implement the exact input/category reader, literal Shopify documents, three search branches and version-2 cursor.
 - [ ] Update all three Woo guards/projections, all-path publication qualification, selected-source purchasable/stock mapping and optional parent-ID validation; preserve transport and public product contracts.
@@ -319,11 +333,12 @@ Use the accepted Shared structured logger boundary. Preserve the original saniti
 
 ## Interfaces / Contracts
 
-Shared 4.0.0 and `docs/architecture/ARCH-058/contracts.md` sections 2.2–4.1 own the public interfaces. The private fields and algorithms above are now selected implementation decisions, not alternatives for the agent to redesign. Shopify's [pinned products filter](https://shopify.dev/docs/api/admin-graphql/2026-07/queries/products) uses `category_id` with a short taxonomy token; [Product variants](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/Product) supports bounded after/first/sortKey traversal and identifies online-store publication through onlineStoreUrl. Shopify's [unlisted-product guidance](https://shopify.dev/docs/apps/build/product-merchandising/unlisted-products) explains why a direct URL and stock alone do not authorize product discovery. Use section 1's exact prepared schema artifact and installer, not a new schema/version download. [Woo products](https://developer.woocommerce.com/docs/apis/rest-api/v3/products/) and [variations](https://developer.woocommerce.com/docs/apis/rest-api/v3/product-variations/) define the native list/exact response shapes and distinguish publication, visibility, purchasable and stock. Native payload fields are data, not new execution permission.
+Shared 4.0.1 with exact Zod 4.4.3 and `docs/architecture/ARCH-058/contracts.md` sections 2.2–4.1 own the public interfaces. The private fields and algorithms above are now selected implementation decisions, not alternatives for the agent to redesign. Shopify's [pinned products filter](https://shopify.dev/docs/api/admin-graphql/2026-07/queries/products) uses `category_id` with a short taxonomy token; [Product variants](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/Product) supports bounded after/first/sortKey traversal and identifies online-store publication through onlineStoreUrl. Shopify's [unlisted-product guidance](https://shopify.dev/docs/apps/build/product-merchandising/unlisted-products) explains why a direct URL and stock alone do not authorize product discovery. Use section 1's exact prepared schema artifact and installer, not a new schema/version download. [Woo products](https://developer.woocommerce.com/docs/apis/rest-api/v3/products/) and [variations](https://developer.woocommerce.com/docs/apis/rest-api/v3/product-variations/) define the native list/exact response shapes and distinguish publication, visibility, purchasable and stock. Native payload fields are data, not new execution permission.
 
 ## Dependencies
 
-- `ARCH-058-MCP-001`: accepted resolver, required-feature eligibility, exact Shared 4.0.0 package and accepted Database pin. Do not start this task while MCP-001 is under development.
+- `ARCH-058-MCP-001`: Complete at Attempt 3; preserve accepted resolver, required-feature eligibility and the resolved Database pin.
+- `ARCH-058-SHARED-004`: corrective Shared 4.0.1 publication, verified artifact and architect acceptance. This is a hold on resuming the existing claim, not a lifecycle reset. SHARED-003 is its required source prerequisite.
 
 The ARCH-052 catalogue and Woo diagnostic source/composition described in section 1 are present in this upload and must remain in the accepted MCP-001 base. Preserve those completed implementations; do not reopen them or repeat integration. No upstream task depends on terminal system testing.
 
@@ -336,6 +351,7 @@ The ARCH-052 catalogue and Woo diagnostic source/composition described in sectio
 
 ## Acceptance Criteria
 
+- [ ] Shared 4.0.1 matches the SHARED-004 receipt; both resolution contexts use exact Zod 4.4.3, both original descriptor hashes match and the real consumer schema composition typechecks.
 - [ ] The actual provider/document guard accepts text/category/browse requests; guards and versioned public outputs remain intact.
 - [ ] Exact membership, all-path publication qualification and selected-source stock/purchasability/currency rules produce only qualified current-shop facts; invalid input causes zero provider I/O. Known ineligible exact reads return product null; malformed required qualifiers stay hard errors.
 - [ ] A product with 45 variants, caller limit 2, filtered middle pages and an empty unfinished page resumes without dropped/repeated records under static fixtures, within 3 Shopify/12 Woo request ceilings.
@@ -350,6 +366,8 @@ The ARCH-052 catalogue and Woo diagnostic source/composition described in sectio
 ## Validation
 
 Use the launcher-provided implementation worktree/preparation evidence. Before the first Node command use `command -v node >/dev/null 2>&1 || source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"`. No source download, deployment URL or persistent database is needed.
+
+The reported 69/71 product group and 72/73 generic group are intermediate evidence, not accepted results. Rerun these existing focused groups after alignment, complete the unfinished fixtures/integration scenario and execute the required typecheck, integration typecheck, lint and build below. The previously corrected but unrerun product failures still require evidence. Preserve the developer-owned Docker execution boundary.
 
 **Agent-owned focused checks.** Add `tests/unit/execution/policy/{product-search-composition,product-search-cursor}.test.ts` and `tests/unit/execution/reference-taxonomy/category-membership.test.ts`; extend the existing generic capability/discount/protocol tests listed in these commands:
 
@@ -386,6 +404,130 @@ Stop for an actual prepared-source/artifact mismatch against the current observe
 This is an extension of the existing composition. Reference categories describe meaning; provider products establish the store's assortment; the existing catalogue reports current shop-configured options and discount conditions. Background owns conversation state, persisted grants, current-turn checks, tool-use decisions, applicability and customer prose. MCP receives no new workflow authority. A bounded page with no match and a continuation is not evidence that the store has no matching product.
 
 ## Completion Report
+
+### Current Status — Shared Contract Mismatch
+
+Attempt 1 remains `in_progress`, stopped at the explicit frozen-contract/prepared-artifact gate. The earlier Database mismatch is resolved at the accepted pin. **The implementation is not review-ready or complete.** At the developer's explicit request, the unfinished implementation draft is now committed and pushed as **`4bffa87ed4af0fb40513ad75d38df49c51746360`** (`wip(ARCH-058-MCP-002): preserve product and discount discovery draft`). The earlier authorized Database update remains `229ffe402a3ef36c420cff6a26746b05ca61cd3d`. Publishing this draft does not resolve the Shared blocker or certify completion.
+
+### Developer-Authorized Draft Publication
+
+Committed and pushed all 40 task-owned source/test draft files on the existing implementation `task/ARCH-058-MCP-002` branch. Source commit `4bffa87ed4af0fb40513ad75d38df49c51746360` contains 858 insertions and 637 deletions; it adds the private search cursor, exact category reader and three named unit-test files alongside the existing implementation/fixture changes. No other repository implementation, dependency version, frozen descriptor hash or parent implementation gitlink was included. `git diff --check` and `git diff --cached --check` passed before commit. No test suite was rerun for this publication-only request; the intermediate failures and unfinished validation below remain applicable. Task metadata stays `in_progress`, Attempt 1. No review submission, acceptance, merge or deployment is claimed.
+
+### New Concrete Prerequisite Failure
+
+The task requires verifying canonical built-in hashes against the installed schemas with Node SHA-256. That assertion fails for **both** frozen Shared 4.0.0 discount descriptors. The independent fresh-process calculation uses only installed package exports:
+
+```js
+import { createHash } from 'node:crypto';
+import {
+  commerceDiscountBuiltInDescriptors,
+  commerceBuiltInToolContractPayload,
+} from '@modainteract/moda-interact-shared/commerce';
+for (const descriptor of commerceDiscountBuiltInDescriptors) {
+  const observed = createHash('sha256')
+    .update(commerceBuiltInToolContractPayload(descriptor)).digest('hex');
+  if (observed !== descriptor.contractHash) process.exitCode = 1;
+}
+```
+
+Observed proof (exit **1**, Node 24.19.0, exact installed/locked Shared 4.0.0, Zod 4.6.5):
+
+```json
+{
+  "sharedVersion": "4.0.0",
+  "node": "v24.19.0",
+  "results": [
+    {
+      "name": "commerce_get_discount_options",
+      "definitionVersion": "1.0.0",
+      "recorded": "a0a4a88c7920a25a31657a03761b6556419189aeab251261a58e2dfb83a3bdcb",
+      "observed": "6371003b0ade970987dabed9603d4efbfa8b653f801956252a86e5a3d7cca2b0",
+      "matches": false,
+      "trustedByInstalledShared": true
+    },
+    {
+      "name": "commerce_get_discount_details",
+      "definitionVersion": "1.0.0",
+      "recorded": "776f6bc6ac1800c75744c2ffa7357f07a32be2b61309b1d71abf0493a2de316f",
+      "observed": "62c8d17c53d8a99add784e7c9d7a1226aaafb9b297592fee45c0c107ad508d38",
+      "matches": false,
+      "trustedByInstalledShared": true
+    }
+  ]
+}
+```
+
+Shared's installed `isTrustedCommerceBuiltInDescriptor` returns true for these same constants because it compares them with the installed canonical descriptors; that does not resolve their payload hash mismatch. Shared declares Zod `^4.0.0`; this consumer's existing exact Zod 4.6.5 was not changed. The observed mismatch is recorded without asserting whether schema serialization or descriptor constants caused it. Shared package/lock integrity still matches the accepted receipt. No alternative version, replacement hash, modified output schema, dependency downgrade or trust bypass was selected.
+
+**Required owning reconciliation:** `moda_architect` / `moda_shared` must reconcile the frozen descriptor identities with the actual exported contract payloads and supply an accepted consumer artifact/version or explicit architecture decision. This task cannot change Shared constants or remove the mandated hash assertion. The task's Stop Condition explicitly requires stopping for a contract/schema change outside MCP ownership. No new task or dependency state is invented here.
+
+### Resumed Work and Observed Validation
+
+Under the existing codex Attempt 1 claim, continued the local MCP-owned draft with generic canonical built-in projection; the five-delegate capability reader; built-in execution policy/deadline/cancellation/result-size reuse; catalogue query-scoped unavailable classification; provider-specific category/browse/publication/availability/cursor changes; exact taxonomy membership; and relevant fixtures/tests. The accepted source schema artifact and Database pin remain unchanged. These edits remain **unfinished and unvalidated as a complete task**, but are now durably preserved on the remote implementation task branch at the WIP commit above.
+
+- Product-focused group: **71 tests reported, 69 passed, 2 failed**, zero skipped. Log `/tmp/mcp058-002-products.log`. The failures were in connection-projection fixture expectations and a guard test supplying undeclared variables; local corrections were made but the group has not been rerun. No final product-group pass is claimed.
+- Generic catalogue/capability/protocol/runtime group (including service tests): **73 tests, 72 passed, 1 failed**, zero skipped. Log `/tmp/mcp058-002-discounts.log`. The sole failure is the required canonical Shared descriptor hash assertion above. Passing cases include all three post-authorization transient data boundaries, every opaque context, genuine Prisma errors, hard authorization/transaction failures, after-rollback diagnostics, NONE/FIXED denials, and built-in cancellation/late-result/size/policy behavior. These are observed intermediate results, not acceptance evidence for the unfinished task.
+- Independent installed-package hash proof: **failed, exit 1**, both descriptors; `/tmp/mcp058-002-shared-hash-proof.json`.
+- An intermediate typecheck failed on then-unfinished fixture updates, now locally revised; no final typecheck, integration typecheck, lint or build pass is claimed.
+- Required new `tests/integration/shop-product-discovery.integration.test.ts` and existing integration fixture updates remain unfinished. Developer-owned `npm run test:integration:docker` remains **NOT RUN**. No Docker, database migration/import, live provider traffic, publication, deployment, customer send or main merge occurred.
+
+### VCS and Ownership Boundary
+
+Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`; both dedicated `task/ARCH-058-MCP-002`. The attempted `/moda-task --prepare` correctly returned `TASK_NOT_READY` because the durable existing claim was already `in_progress`; no new attempt or claim was created. The user requested resumption and work continued under claim `f4250e2e68a71626b36c456e901077fec656fb96`, Attempt 1. Database remains `ded8f14a60182f6b1443640f012caf0089b8a44c`. No shared checkout, other repository source, task index, architecture document, parent implementation gitlink or Architect Review was edited. Downstream tasks remain gated.
+
+## Prior Dependency Reconciliation Report (historical; Database blocker resolved)
+
+### Current Status — Dependency Reconciled
+
+The developer explicitly authorized updating the submodule after the recorded prerequisite failure. The Database pin is now accepted **`ded8f14a60182f6b1443640f012caf0089b8a44c`**, published in implementation commit **`229ffe402a3ef36c420cff6a26746b05ca61cd3d`** on `task/ARCH-058-MCP-002`. Only the Database gitlink was staged in that commit; the unfinished implementation draft remains local, unstaged and uncommitted.
+
+Verified `aa3fd024db3a1484f72f8033b87f56ad27f4640d` is an ancestor of `ded8f14a60182f6b1443640f012caf0089b8a44c` (exit 0), so this is a forward update preserving the previous revision. The accepted taxonomy migration and both models are present. `npm run prisma:generate` passed with Prisma 6.19.3; a read-only generated-client DMMF assertion confirmed `ReferenceTaxonomyGeneration` and `ReferenceTaxonomyCategory`. No database connection, migration or import was performed. The Database worktree is clean.
+
+**The specific missing-schema preparation blocker is resolved.** The task remains `in_progress` at Attempt 1 because implementation, fixtures and full validation are unfinished. No task-wide typecheck, unit suite, integration suite or acceptance is claimed by this dependency-only update. Continue the existing draft under the same claim; do not treat the earlier missing-schema report below as the current dependency state. Parent implementation gitlinks and Architect Review are unchanged.
+
+## Initial Preparation Mismatch Report (historical; dependency resolved above)
+
+### Status
+
+Attempt 1 stopped on the task's explicit prepared-artifact mismatch condition; **not review-ready and not complete**. Metadata remains `in_progress` with the durable launcher claim. Architect reconciliation is required before implementation can continue. No source implementation commit was published.
+
+### Concrete Prerequisite Failure
+
+The launcher initialized this implementation's recorded Database gitlink at **`aa3fd024db3a1484f72f8033b87f56ad27f4640d`**. The task requires accepted taxonomy Database `ded8f14a60182f6b1443640f012caf0089b8a44c` or an accepted descendant/equivalent that retains its schema and migration. Observed:
+
+- `git -C database merge-base --is-ancestor ded8f14a60182f6b1443640f012caf0089b8a44c HEAD`: **exit 1**.
+- `database/prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql`: **absent**.
+- `database/prisma/schema.prisma`: **both `ReferenceTaxonomyGeneration` and `ReferenceTaxonomyCategory` models absent**.
+- `npm run typecheck`: **exit 2**. The already accepted taxonomy store references `TransactionClient.referenceTaxonomyGeneration`, which the generated client from this pin does not contain. Log `/tmp/mcp058-002-typecheck.log`. The unfinished MCP-002 edits also have expected unresolved fixture/interface type errors; they are not claimed as an accepted baseline.
+
+This is a content mismatch as well as an ancestry mismatch, not rejection of a harmless squash/rebase. No Database files/gitlink were changed, no accepted descendant was downgraded and no replacement schema/migration was authored. Section 1 and the Stop Condition require returning this observed mismatch to `moda_architect`, rather than selecting another dependency commit.
+
+**Required owning reconciliation:** provide/record a Database revision preserving the accepted taxonomy schema/migration alongside all later accepted changes, and reconcile the MCP task's Database gitlink through the normal owner workflow. No new public contract is requested. Resume only once that exact dependency is supplied and the preparation failure is resolved.
+
+### Preparation and Draft Work Preserved
+
+Verified the existing `createPrismaDiscountCatalogueReader` -> persisted ports -> service composition -> `executeDiscountTool` chain and accepted Woo `safeException` / `sourceProviderError` diagnostics are present; no catalogue or diagnostic source omission was found.
+
+The package/lock remains exact Shared **4.0.0**, integrity `sha512-Zv78WX/AsN1lZWyaMirO2Ml/rOZknSv0cnJnxYBuyc368kzDZzswauKRPSe8GSXFfjkk3cQnr3wi4n49d9HTzw==`. `npm ci --no-audit --no-fund` completed. The MCP-local Shopify schema artifact was absent; the supplied canonical Commerce artifact at `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-commerce/lib/discovery/artifacts/admin-2026-07.json` matched approved SHA256 `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`. The existing `npm run schema:install:shopify -- <that absolute path>` installed it locally, with no download/regeneration or Commerce edit.
+
+An initial implementation draft was underway before typecheck exposed the missing accepted models. Those **unfinished, unvalidated, uncommitted local edits** are preserved only in the isolated implementation worktree. They cover generic capability/built-in projection, bounded built-in call reuse, catalogue query classification, private connection identity/Woo fields, category membership and search/cursor changes. They are not delivered or certified, and tests/fixture integration remain unfinished. New draft files are `src/execution/policy/product-search-cursor.ts` and `src/execution/reference-taxonomy/category-membership.ts`; existing edits are confined to this task's listed capability, connection, execution, MCP and runtime touchpoints. Do not treat the local draft as an accepted implementation or revert others' work.
+
+### Validation and Operational Limits
+
+- PASS: local pinned schema checksum/install and locked dependency installation.
+- FAILED: initial `npm run typecheck`, as detailed above.
+- NOT RUN: focused unit suites, integration typecheck, lint, build and disposable PostgreSQL suite. No successful task validation is claimed.
+- Required later developer-owned command, **not run**: `npm run test:integration:docker` from `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`, after code/fixtures and the dependency correction. The existing owned harness must create its own URL and clean up its own resources; no deployment URL substitution. Acceptance still requires actual scenario results and cleanup evidence.
+- No taxonomy download/import, persistent database access/migration, live provider request, customer send, publication, deployment or main merge occurred.
+
+### Launcher / Physical Worktree Evidence
+
+Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; newly created parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-002` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`, both `task/ARCH-058-MCP-002`. No other task worktree or shared implementation checkout was used for edits. Parent/implementation remote task fast-forward: not needed; origin/main: already current. Recursive submodule sync/init/update verified ready at the recorded pin above, which subsequently failed the task-specific content/ancestry check.
+
+Dependency gate passed MCP-001 Complete. Parent prepared head `bb7f06ccc391b8d6bf82142abd6bf0478a9e0c56`; claim **`f4250e2e68a71626b36c456e901077fec656fb96`**, pushed, executor codex, Attempt 1 at `2026-11-04T15:08:56Z`. Implementation HEAD remains **`469a00fbbbf1e5fb4499b19c92c158f156786633`** with the local draft described above. Only this task report is committed in the parent; no implementation gitlink/index/architecture/Architect Review change is made. Downstream tasks are not promoted.
+
+## Definition-time Completion Report (historical)
+
 
 ### Status
 

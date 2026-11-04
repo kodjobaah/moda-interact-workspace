@@ -1,0 +1,2096 @@
+{
+  "schemaVersion": "1",
+  "architectureId": "ARCH-058",
+  "definitionRevision": 9,
+  "evidenceType": "INDEPENDENT_READ_ONLY_PUBLISHED_ARTIFACT_REPRODUCTION",
+  "recordedAt": "2026-11-04T16:12:23.431396+00:00",
+  "currentArchive": {
+    "fileName": "moda-interact-workspace-ARCH-058-MCP-002.zip",
+    "sha256": "49ec33bd730f6a1a54e96c8b29e0fcf170c48039b7c5d2c16a4b3e5dace70a9a"
+  },
+  "sourceObservations": [
+    {
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
+      "path": "moda-interact-mcp/package.json",
+      "sha256": "35b3f6ef8282c2efbae05078c0f887bb64f85be77c31b76a8f4d741f2a3300f2"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
+      "path": "moda-interact-mcp/package-lock.json",
+      "sha256": "abd96d4e78b69c227b4b80ab5952c400843e4920282cb896581ab8dd8541462e"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
+      "path": "moda-interact-mcp/src/execution/merchant-knowledge/contracts.ts",
+      "sha256": "09a206023562ec37550bf056120cde555c1680ea394608ecb5c84e81a071ef8d"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
+      "path": "moda-interact-mcp/tests/fixtures/reference-taxonomy-published.ts",
+      "sha256": "dbd7a4cc79d0ada8a81178504b56e7b6dd63ac2ce9f0c1625c6e908bb609226a"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
+      "path": "docs/decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md",
+      "sha256": "40c5aafb6c631405e78a356374b66b9c2d5b083defd77e4a7826d1ac94a18f9e"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md",
+      "sha256": "84c563859c05c5afdd872778c8b9b25eb1e3a7aa5d6b57ee3e36f78ef8f51bbd"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "path": "moda-interact-shared/package.json",
+      "sha256": "b1ac53720c8b85d9c8a682a1dd1fefe594054b9443e1b416849bb0dedd10c544"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "path": "moda-interact-shared/package-lock.json",
+      "sha256": "7626207660376204326d6555a96e89053158b14ed5769d2511c7cbb49d630908"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "path": "moda-interact-shared/src/commerce/built-in-tools.ts",
+      "sha256": "fc77616161ec2aacc0c41446f6d77e76801ea12b3e0682119d6692653ba8e5d9"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "path": "moda-interact-shared/src/commerce/definitions.ts",
+      "sha256": "2840760a71ce5a9002e0b16ee5ee709517a85cec3b5fcc7fff9349a2a2f3c6dd"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "path": "moda-interact-shared/src/commerce/product-discovery-contracts.test.ts",
+      "sha256": "fcf609beef53b3a88662306950849c17f1b180bb7f18895e93cc5bed2dd06c0d"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "path": "moda-interact-shared/scripts/validate-commerce-entrypoints.mjs",
+      "sha256": "c4089a41291d9a37cb370f178a1b7024d20c478953e470a88591c99fe73286d1"
+    },
+    {
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "path": "moda-interact-shared/README.md",
+      "sha256": "d3d45378c202dc0ff94b6847928d3e88edd0e1d7f5ac1d60ff9f26adcb50f076"
+    }
+  ],
+  "publishedArtifact": {
+    "package": "@modainteract/moda-interact-shared",
+    "version": "4.0.0",
+    "url": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-4.0.0.tgz",
+    "bytes": 287127,
+    "sha256": "57f7511ae9e52eebac5f532f0cd787c6a391361520f1fc0d09386312fb3d276e",
+    "integrity": "sha512-Zv78WX/AsN1lZWyaMirO2Ml/rOZknSv0cnJnxYBuyc368kzDZzswauKRPSe8GSXFfjkk3cQnr3wi4n49d9HTzw==",
+    "matchesHistoricalReceipt": true,
+    "sourceOrArtifactModified": false
+  },
+  "method": {
+    "node": "v24.22.1",
+    "reportedUserNode": "v24.19.0",
+    "compiler": "5.9.3",
+    "exactDependencyTarballsVerifiedAgainstLocks": true,
+    "packageImport": "published ./commerce JavaScript entrypoint",
+    "hash": "SHA256 of exported commerceBuiltInToolContractPayload(descriptor)",
+    "graphConstruction": "Safely extract identical published Shared artifact and exact lock-verified dependencies into isolated scratch trees. Change only Zod resolution; third tree nests4.4.3 under Shared while consumer resolves4.6.5. No installed app tree or source is modified.",
+    "notPerformed": [
+      "npm package publication",
+      "application implementation",
+      "full repository typecheck/test suite",
+      "Docker/integration",
+      "database migration/import",
+      "deployment",
+      "Git acceptance/commit/push"
+    ]
+  },
+  "dependencyArtifacts": [
+    {
+      "fileName": "libphonenumber-js-1.12.30.tgz",
+      "bytes": 1857513,
+      "sha256": "8fa0bfe7851a50d52e375a85631fdbac0cfcde7eea00ee658d829e602a9eee80"
+    },
+    {
+      "fileName": "moda-interact-shared-4.0.0.tgz",
+      "bytes": 287127,
+      "sha256": "57f7511ae9e52eebac5f532f0cd787c6a391361520f1fc0d09386312fb3d276e"
+    },
+    {
+      "fileName": "node_modules_@formatjs_ecma402-abstract-2.3.6.tgz",
+      "bytes": 46701,
+      "sha256": "39c62cc6ec315387bb9e283fcdbcbef1330b59d4a3d1a3f52f3cdc7668d6e6a1"
+    },
+    {
+      "fileName": "node_modules_@formatjs_fast-memoize-2.2.7.tgz",
+      "bytes": 2354,
+      "sha256": "26c23867809f4dbf5f95c60146cd52a60561ba51c3f19d8453287f8ff5b8bd78"
+    },
+    {
+      "fileName": "node_modules_@formatjs_icu-messageformat-parser-2.11.4.tgz",
+      "bytes": 34771,
+      "sha256": "d924459ec3c04ff069992bfd03ba16c80998ebfeff185226115c760b2c7089b1"
+    },
+    {
+      "fileName": "node_modules_@formatjs_icu-skeleton-parser-1.8.16.tgz",
+      "bytes": 5727,
+      "sha256": "13edfbff4f612bf597114c6181cb9845a47073b4717eed93dbf3a00cb95a4d3a"
+    },
+    {
+      "fileName": "node_modules_@formatjs_intl-localematcher-0.6.2.tgz",
+      "bytes": 24092,
+      "sha256": "b485c50074b8a25d55f8caf674a1066961092e5761d4c71a5a83c81d26b03f0f"
+    },
+    {
+      "fileName": "node_modules_decimal.js-10.6.0.tgz",
+      "bytes": 69924,
+      "sha256": "433210122e8149972f64054c54b0ce0872e5f15a3c5835aab57ff1a8e6d071b1"
+    },
+    {
+      "fileName": "node_modules_intl-messageformat-10.7.18.tgz",
+      "bytes": 40736,
+      "sha256": "03ace6bf5e50e28bd6c4017f6285c3d62cedc641fbe3da0053c01d666bdafc29"
+    },
+    {
+      "fileName": "node_modules_tslib-2.8.1.tgz",
+      "bytes": 18477,
+      "sha256": "66f635d5eeabae44807534976913a102cf615b9a045368359c9f79ae6ee2119e"
+    },
+    {
+      "fileName": "semver-7.8.5.tgz",
+      "bytes": 29399,
+      "sha256": "d85045d4300d7d57c891336b95df532e73f34c22ffcd222452b6d08b9d127d5d"
+    },
+    {
+      "fileName": "typescript-5.9.3.tgz",
+      "bytes": 4377468,
+      "sha256": "10e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3"
+    },
+    {
+      "fileName": "zod-4.4.3.tgz",
+      "bytes": 759588,
+      "sha256": "ee38f17f533fd500610685a483ae2f413c26f4eb33a51684314563c8d60f279c"
+    },
+    {
+      "fileName": "zod-4.6.5.tgz",
+      "bytes": 1052733,
+      "sha256": "a78c0c533de30dc1c4afc259ac43ac06e390cb0da8d2e32eae355301b50b36fc"
+    }
+  ],
+  "graphs": [
+    {
+      "node": "v24.22.1",
+      "sharedVersion": "4.0.0",
+      "sharedDeclaredZod": "^4.0.0",
+      "resolvedZod": "4.4.3",
+      "results": [
+        {
+          "name": "commerce_get_discount_options",
+          "definitionVersion": "1.0.0",
+          "recorded": "a0a4a88c7920a25a31657a03761b6556419189aeab251261a58e2dfb83a3bdcb",
+          "observed": "a0a4a88c7920a25a31657a03761b6556419189aeab251261a58e2dfb83a3bdcb",
+          "matches": true,
+          "trusted": true,
+          "payloadBytes": 2278
+        },
+        {
+          "name": "commerce_get_discount_details",
+          "definitionVersion": "1.0.0",
+          "recorded": "776f6bc6ac1800c75744c2ffa7357f07a32be2b61309b1d71abf0493a2de316f",
+          "observed": "776f6bc6ac1800c75744c2ffa7357f07a32be2b61309b1d71abf0493a2de316f",
+          "matches": true,
+          "trusted": true,
+          "payloadBytes": 7193
+        }
+      ],
+      "fixture": "zod-4.4.3",
+      "consumerZod": "4.4.3",
+      "typeScriptVersion": "5.9.3",
+      "typecheckExitCode": 0,
+      "hashCheckExitCode": 0,
+      "runtimeComposition": {
+        "sharedEnumsInConsumerArrayAndStrictObject": "passed",
+        "taxonomySchemaProjectionAndInputSubsetValidation": "passed",
+        "crossPackageZodErrorRecognition": "passed"
+      },
+      "timestampMinuteAccepted": true,
+      "timestampSecondsAccepted": true
+    },
+    {
+      "node": "v24.22.1",
+      "sharedVersion": "4.0.0",
+      "sharedDeclaredZod": "^4.0.0",
+      "resolvedZod": "4.6.5",
+      "results": [
+        {
+          "name": "commerce_get_discount_options",
+          "definitionVersion": "1.0.0",
+          "recorded": "a0a4a88c7920a25a31657a03761b6556419189aeab251261a58e2dfb83a3bdcb",
+          "observed": "6371003b0ade970987dabed9603d4efbfa8b653f801956252a86e5a3d7cca2b0",
+          "matches": false,
+          "trusted": true,
+          "payloadBytes": 2268
+        },
+        {
+          "name": "commerce_get_discount_details",
+          "definitionVersion": "1.0.0",
+          "recorded": "776f6bc6ac1800c75744c2ffa7357f07a32be2b61309b1d71abf0493a2de316f",
+          "observed": "62c8d17c53d8a99add784e7c9d7a1226aaafb9b297592fee45c0c107ad508d38",
+          "matches": false,
+          "trusted": true,
+          "payloadBytes": 7021
+        }
+      ],
+      "fixture": "zod-4.6.5",
+      "consumerZod": "4.6.5",
+      "typeScriptVersion": "5.9.3",
+      "typecheckExitCode": 0,
+      "hashCheckExitCode": 1,
+      "runtimeComposition": {
+        "sharedEnumsInConsumerArrayAndStrictObject": "passed",
+        "taxonomySchemaProjectionAndInputSubsetValidation": "passed",
+        "crossPackageZodErrorRecognition": "passed"
+      },
+      "timestampMinuteAccepted": false,
+      "timestampSecondsAccepted": true
+    },
+    {
+      "node": "v24.22.1",
+      "sharedVersion": "4.0.0",
+      "sharedDeclaredZod": "^4.0.0",
+      "resolvedZod": "4.4.3",
+      "results": [
+        {
+          "name": "commerce_get_discount_options",
+          "definitionVersion": "1.0.0",
+          "recorded": "a0a4a88c7920a25a31657a03761b6556419189aeab251261a58e2dfb83a3bdcb",
+          "observed": "a0a4a88c7920a25a31657a03761b6556419189aeab251261a58e2dfb83a3bdcb",
+          "matches": true,
+          "trusted": true,
+          "payloadBytes": 2278
+        },
+        {
+          "name": "commerce_get_discount_details",
+          "definitionVersion": "1.0.0",
+          "recorded": "776f6bc6ac1800c75744c2ffa7357f07a32be2b61309b1d71abf0493a2de316f",
+          "observed": "776f6bc6ac1800c75744c2ffa7357f07a32be2b61309b1d71abf0493a2de316f",
+          "matches": true,
+          "trusted": true,
+          "payloadBytes": 7193
+        }
+      ],
+      "fixture": "consumer-4.6.5-shared-4.4.3",
+      "consumerZod": "4.6.5",
+      "typeScriptVersion": "5.9.3",
+      "typecheckExitCode": 2,
+      "hashCheckExitCode": 0,
+      "runtimeComposition": {
+        "sharedEnumsInConsumerArrayAndStrictObject": "passed",
+        "taxonomySchemaProjectionAndInputSubsetValidation": "passed",
+        "crossPackageZodErrorRecognition": "passed"
+      },
+      "timestampMinuteAccepted": true,
+      "timestampSecondsAccepted": true,
+      "typecheckDiagnostics": [
+        {
+          "code": "TS2345",
+          "expression": "z.array(MerchantKnowledgePurposeKeySchema)",
+          "reason": "_zod.version.minor literal 4 is not assignable to 6"
+        },
+        {
+          "code": "TS2769",
+          "expression": "z.toJSONSchema(CommerceToolInputs.commerce_resolve_product_categories, {io: \"input\"})",
+          "reason": "_zod.version.minor literal 4 is not assignable to 6"
+        }
+      ]
+    }
+  ],
+  "typecheckFlags": [
+    "--noEmit",
+    "--target",
+    "ES2022",
+    "--module",
+    "NodeNext",
+    "--moduleResolution",
+    "NodeNext",
+    "--strict",
+    "--noUncheckedIndexedAccess",
+    "--exactOptionalPropertyTypes",
+    "--esModuleInterop",
+    "--skipLibCheck",
+    "--pretty",
+    "false"
+  ],
+  "typecheckFixture": "import {z} from 'zod';\nimport {CommerceToolInputs, CommerceOfferSchema} from '@modainteract/moda-interact-shared/commerce';\nimport {MerchantKnowledgePurposeKeySchema,MerchantKnowledgeDataFormatKeySchema} from '@modainteract/moda-interact-shared/merchant-knowledge';\nimport {ModaSupportedLanguageTagSchema} from '@modainteract/moda-interact-shared/internationalization';\nconst purposes=z.array(MerchantKnowledgePurposeKeySchema).max(7).optional();\nconst row=z.strictObject({purpose:MerchantKnowledgePurposeKeySchema,dataFormat:MerchantKnowledgeDataFormatKeySchema,languageTag:ModaSupportedLanguageTagSchema});\nconst raw=z.toJSONSchema(CommerceToolInputs.commerce_resolve_product_categories,{io:'input'});\ntype Offer=z.infer<typeof CommerceOfferSchema>;\nfunction parseOffer(value:unknown): Offer { return CommerceOfferSchema.parse(value); }\nvoid [purposes,row,raw,parseOffer];\n",
+  "runtimeFixture": "import assert from 'node:assert/strict';\nimport {z} from 'zod';\nimport {CommerceToolInputs, CommerceOfferSchema, InputSchemaSchema} from '@modainteract/moda-interact-shared/commerce';\nimport {MerchantKnowledgePurposeKeySchema,MerchantKnowledgeDataFormatKeySchema} from '@modainteract/moda-interact-shared/merchant-knowledge';\nimport {ModaSupportedLanguageTagSchema} from '@modainteract/moda-interact-shared/internationalization';\nconst purposes=z.array(MerchantKnowledgePurposeKeySchema);\nassert.deepEqual(purposes.parse(['SHIPPING_AND_DELIVERY']),['SHIPPING_AND_DELIVERY']);\nassert.equal(purposes.safeParse(['BAD']).success,false);\nconst row=z.strictObject({purpose:MerchantKnowledgePurposeKeySchema,dataFormat:MerchantKnowledgeDataFormatKeySchema,languageTag:ModaSupportedLanguageTagSchema});\nconst value={purpose:'FAQ',dataFormat:'WEB_PAGE',languageTag:'en'};\nassert.deepEqual(row.parse(value),value);\nassert.equal(row.safeParse({...value,languageTag:'BAD'}).success,false);\nconst raw=z.toJSONSchema(CommerceToolInputs.commerce_resolve_product_categories,{io:'input'});\ndelete raw.$schema;\ndelete raw.properties.limit.default;\nInputSchemaSchema.parse(raw);\nconst bad=CommerceToolInputs.commerce_get_discount_details.safeParse({});\nassert.equal(bad.success,false);assert(bad.error instanceof z.ZodError);\nconsole.log(JSON.stringify({schemaComposition:'passed',taxonomyProjection:'passed',errorRecognition:'passed',timestampMinuteAccepted:CommerceOfferSchema.shape.startsAt.safeParse('2026-11-04T10:00Z').success,timestampSecondsAccepted:CommerceOfferSchema.shape.startsAt.safeParse('2026-11-04T10:00:00Z').success},null,2));\n",
+  "hashFixture": "import { createHash } from 'node:crypto';\nimport { readFile, writeFile } from 'node:fs/promises';\nimport { createRequire } from 'node:module';\nimport { resolve, join } from 'node:path';\nimport { pathToFileURL } from 'node:url';\nconst root = resolve(process.argv[2]);\nconst packageRoot = join(root, 'node_modules/@modainteract/moda-interact-shared');\nconst pkg = JSON.parse(await readFile(join(packageRoot, 'package.json'), 'utf8'));\nconst entry = pkg.exports['./commerce'].import;\nconst shared = await import(pathToFileURL(join(packageRoot, entry)).href);\nconst requireFromShared = createRequire(join(packageRoot, 'package.json'));\nconst resolvedZodPath = requireFromShared.resolve('zod/package.json');\nconst resolvedZod = JSON.parse(await readFile(resolvedZodPath, 'utf8'));\nconst results = [];\nfor (const descriptor of shared.commerceDiscountBuiltInDescriptors) {\n  const payload = shared.commerceBuiltInToolContractPayload(descriptor);\n  const observed = createHash('sha256').update(payload).digest('hex');\n  await writeFile(join(root, `${descriptor.name}.payload.json`), payload + '\\n');\n  results.push({name:descriptor.name, definitionVersion:descriptor.definitionVersion, recorded:descriptor.contractHash, observed, matches:observed === descriptor.contractHash, trusted:shared.isTrustedCommerceBuiltInDescriptor(descriptor), payloadBytes:Buffer.byteLength(payload)});\n}\nconst report={node:process.version,sharedVersion:pkg.version,sharedDeclaredZod:pkg.dependencies.zod,resolvedZod:resolvedZod.version,resolvedZodPath,results};\nawait writeFile(join(root,'result.json'),JSON.stringify(report,null,2)+'\\n');\nconsole.log(JSON.stringify(report,null,2));\nprocess.exitCode=results.every(r=>r.matches)?0:1;\n",
+  "payloadStructuralDifferences": {
+    "commerce_get_discount_details.payload.json": [
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/orderDiscounts/anyOf",
+        "before": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "after": "<absent>"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/orderDiscounts/type",
+        "before": "<absent>",
+        "after": [
+          "boolean",
+          "null"
+        ]
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/productDiscounts/anyOf",
+        "before": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "after": "<absent>"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/productDiscounts/type",
+        "before": "<absent>",
+        "after": [
+          "boolean",
+          "null"
+        ]
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/shippingDiscounts/anyOf",
+        "before": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "after": "<absent>"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/combinesWith/anyOf/0/properties/shippingDiscounts/type",
+        "before": "<absent>",
+        "after": [
+          "boolean",
+          "null"
+        ]
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/shopifyPlus/anyOf",
+        "before": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "after": "<absent>"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/combination/properties/shopifyPlus/type",
+        "before": "<absent>",
+        "after": [
+          "boolean",
+          "null"
+        ]
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/discountCurrency/anyOf",
+        "before": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "after": "<absent>"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/discountCurrency/type",
+        "before": "<absent>",
+        "after": [
+          "string",
+          "null"
+        ]
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/excludesSaleItems/anyOf",
+        "before": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "after": "<absent>"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/excludesSaleItems/type",
+        "before": "<absent>",
+        "after": [
+          "boolean",
+          "null"
+        ]
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/individualUse/anyOf",
+        "before": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "after": "<absent>"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/individualUse/type",
+        "before": "<absent>",
+        "after": [
+          "boolean",
+          "null"
+        ]
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/observedAt/pattern",
+        "before": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+        "after": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/subtotalRequirementCurrency/anyOf",
+        "before": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "after": "<absent>"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/subtotalRequirementCurrency/type",
+        "before": "<absent>",
+        "after": [
+          "string",
+          "null"
+        ]
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/facts/properties/unavailableAt/anyOf/0/pattern",
+        "before": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+        "after": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/offer/properties/endsAt/anyOf/0/pattern",
+        "before": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+        "after": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/details/anyOf/0/properties/offer/properties/startsAt/anyOf/0/pattern",
+        "before": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+        "after": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+      }
+    ],
+    "commerce_get_discount_options.payload.json": [
+      {
+        "path": "/outputSchema/anyOf/1/properties/offers/items/properties/endsAt/anyOf/0/pattern",
+        "before": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+        "after": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+      },
+      {
+        "path": "/outputSchema/anyOf/1/properties/offers/items/properties/startsAt/anyOf/0/pattern",
+        "before": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+        "after": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+      }
+    ]
+  },
+  "canonicalPayloads": {
+    "zod-4.4.3": {
+      "commerce_get_discount_details.payload.json": {
+        "definitionVersion": "1.0.0",
+        "description": "Read details for a permitted discount in the current shop.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "offerId": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "offerId"
+          ],
+          "type": "object"
+        },
+        "name": "commerce_get_discount_details",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "outcome": {
+                  "enum": [
+                    "UNAVAILABLE"
+                  ],
+                  "maxLength": 11,
+                  "type": "string"
+                },
+                "reasonCode": {
+                  "enum": [
+                    "TEMPORARY_UNAVAILABLE"
+                  ],
+                  "maxLength": 21,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "outcome",
+                "reasonCode"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "details": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "facts": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "combination": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "allowedSameLineProductTags": {
+                                  "anyOf": [
+                                    {
+                                      "items": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "maxItems": 64,
+                                      "type": "array"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "combinesWith": {
+                                  "anyOf": [
+                                    {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "orderDiscounts": {
+                                          "anyOf": [
+                                            {
+                                              "type": "boolean"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "productDiscounts": {
+                                          "anyOf": [
+                                            {
+                                              "type": "boolean"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "shippingDiscounts": {
+                                          "anyOf": [
+                                            {
+                                              "type": "boolean"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "orderDiscounts",
+                                        "productDiscounts",
+                                        "shippingDiscounts"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "discountClasses": {
+                                  "anyOf": [
+                                    {
+                                      "items": {
+                                        "enum": [
+                                          "ORDER",
+                                          "PRODUCT",
+                                          "SHIPPING"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "maxItems": 3,
+                                      "type": "array"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "discountTags": {
+                                  "anyOf": [
+                                    {
+                                      "items": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "maxItems": 64,
+                                      "type": "array"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "shopifyPlus": {
+                                  "anyOf": [
+                                    {
+                                      "type": "boolean"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "discountClasses",
+                                "shopifyPlus",
+                                "combinesWith",
+                                "discountTags",
+                                "allowedSameLineProductTags"
+                              ],
+                              "type": "object"
+                            },
+                            "completeness": {
+                              "enum": [
+                                "COMPLETE",
+                                "PARTIAL",
+                                "UNKNOWN"
+                              ],
+                              "type": "string"
+                            },
+                            "customerScope": {
+                              "enum": [
+                                "ALL",
+                                "RESTRICTED",
+                                "UNKNOWN"
+                              ],
+                              "type": "string"
+                            },
+                            "discountCurrency": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "discountKind": {
+                              "enum": [
+                                "PERCENTAGE",
+                                "FIXED_AMOUNT",
+                                "FREE_SHIPPING",
+                                "BUY_X_GET_Y",
+                                "OTHER",
+                                "UNKNOWN"
+                              ],
+                              "type": "string"
+                            },
+                            "discountValue": {
+                              "anyOf": [
+                                {
+                                  "pattern": "^[0-9]{1,18}(\\.[0-9]{1,6})?$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "excludesSaleItems": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "individualUse": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "maximumSubtotal": {
+                              "anyOf": [
+                                {
+                                  "pattern": "^[0-9]{1,18}(\\.[0-9]{1,6})?$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "minimumQuantity": {
+                              "anyOf": [
+                                {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "minimumSubtotal": {
+                              "anyOf": [
+                                {
+                                  "pattern": "^[0-9]{1,18}(\\.[0-9]{1,6})?$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "observedAt": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                              "type": "string"
+                            },
+                            "perCustomerLimit": {
+                              "anyOf": [
+                                {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "provider": {
+                              "enum": [
+                                "SHOPIFY",
+                                "WOOCOMMERCE"
+                              ],
+                              "type": "string"
+                            },
+                            "providerStatus": {
+                              "maxLength": 64,
+                              "type": "string"
+                            },
+                            "subtotalRequirementCurrency": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "targeting": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "excludedCategoryIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "excludedCollectionIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "excludedProductIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "excludedVariantIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "includedCategoryIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "includedCollectionIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "includedProductIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "includedVariantIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "kind": {
+                                  "enum": [
+                                    "ALL",
+                                    "PRODUCTS",
+                                    "VARIANTS",
+                                    "CATEGORIES",
+                                    "COLLECTIONS",
+                                    "MIXED",
+                                    "UNKNOWN"
+                                  ],
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "includedProductIds",
+                                "includedVariantIds",
+                                "includedCategoryIds",
+                                "includedCollectionIds",
+                                "excludedProductIds",
+                                "excludedVariantIds",
+                                "excludedCategoryIds",
+                                "excludedCollectionIds"
+                              ],
+                              "type": "object"
+                            },
+                            "unavailableAt": {
+                              "anyOf": [
+                                {
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "unrepresentedConditions": {
+                              "items": {
+                                "maxLength": 128,
+                                "minLength": 1,
+                                "type": "string"
+                              },
+                              "maxItems": 24,
+                              "type": "array"
+                            },
+                            "usageCount": {
+                              "anyOf": [
+                                {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "usageLimit": {
+                              "anyOf": [
+                                {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "provider",
+                            "completeness",
+                            "observedAt",
+                            "providerStatus",
+                            "unavailableAt",
+                            "discountKind",
+                            "discountValue",
+                            "discountCurrency",
+                            "targeting",
+                            "minimumSubtotal",
+                            "maximumSubtotal",
+                            "subtotalRequirementCurrency",
+                            "minimumQuantity",
+                            "usageLimit",
+                            "usageCount",
+                            "perCustomerLimit",
+                            "customerScope",
+                            "excludesSaleItems",
+                            "individualUse",
+                            "combination",
+                            "unrepresentedConditions"
+                          ],
+                          "type": "object"
+                        },
+                        "offer": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "anyOf": [
+                                {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "endsAt": {
+                              "anyOf": [
+                                {
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "method": {
+                              "enum": [
+                                "AUTOMATIC",
+                                "CODE"
+                              ],
+                              "type": "string"
+                            },
+                            "offerId": {
+                              "maxLength": 128,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "reasonCodes": {
+                              "items": {
+                                "maxLength": 64,
+                                "minLength": 1,
+                                "type": "string"
+                              },
+                              "maxItems": 16,
+                              "type": "array"
+                            },
+                            "startsAt": {
+                              "anyOf": [
+                                {
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "support": {
+                              "enum": [
+                                "SUPPORTED",
+                                "UNSUPPORTED",
+                                "UNKNOWN"
+                              ],
+                              "type": "string"
+                            },
+                            "title": {
+                              "maxLength": 512,
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "offerId",
+                            "title",
+                            "method",
+                            "code",
+                            "startsAt",
+                            "endsAt",
+                            "support",
+                            "reasonCodes"
+                          ],
+                          "type": "object"
+                        },
+                        "providerDiscountId": {
+                          "anyOf": [
+                            {
+                              "maxLength": 191,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "offer",
+                        "facts",
+                        "providerDiscountId"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "details"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "commerce_get_discount_options.payload.json": {
+        "definitionVersion": "1.0.0",
+        "description": "Read the current shop's permitted discount options.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "maxLength": 2048,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "limit": {
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "commerce_get_discount_options",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "outcome": {
+                  "enum": [
+                    "UNAVAILABLE"
+                  ],
+                  "maxLength": 11,
+                  "type": "string"
+                },
+                "reasonCode": {
+                  "enum": [
+                    "TEMPORARY_UNAVAILABLE"
+                  ],
+                  "maxLength": 21,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "outcome",
+                "reasonCode"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "maxLength": 2048,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "mode": {
+                  "enum": [
+                    "NONE",
+                    "FIXED",
+                    "AI_BEST_APPLICABLE"
+                  ],
+                  "type": "string"
+                },
+                "offers": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "anyOf": [
+                          {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "endsAt": {
+                        "anyOf": [
+                          {
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "method": {
+                        "enum": [
+                          "AUTOMATIC",
+                          "CODE"
+                        ],
+                        "type": "string"
+                      },
+                      "offerId": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "reasonCodes": {
+                        "items": {
+                          "maxLength": 64,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "maxItems": 16,
+                        "type": "array"
+                      },
+                      "startsAt": {
+                        "anyOf": [
+                          {
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "support": {
+                        "enum": [
+                          "SUPPORTED",
+                          "UNSUPPORTED",
+                          "UNKNOWN"
+                        ],
+                        "type": "string"
+                      },
+                      "title": {
+                        "maxLength": 512,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "offerId",
+                      "title",
+                      "method",
+                      "code",
+                      "startsAt",
+                      "endsAt",
+                      "support",
+                      "reasonCodes"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 50,
+                  "type": "array"
+                },
+                "truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "mode",
+                "offers",
+                "truncated"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      }
+    },
+    "zod-4.6.5": {
+      "commerce_get_discount_details.payload.json": {
+        "definitionVersion": "1.0.0",
+        "description": "Read details for a permitted discount in the current shop.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "offerId": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "offerId"
+          ],
+          "type": "object"
+        },
+        "name": "commerce_get_discount_details",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "outcome": {
+                  "enum": [
+                    "UNAVAILABLE"
+                  ],
+                  "maxLength": 11,
+                  "type": "string"
+                },
+                "reasonCode": {
+                  "enum": [
+                    "TEMPORARY_UNAVAILABLE"
+                  ],
+                  "maxLength": 21,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "outcome",
+                "reasonCode"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "details": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "facts": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "combination": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "allowedSameLineProductTags": {
+                                  "anyOf": [
+                                    {
+                                      "items": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "maxItems": 64,
+                                      "type": "array"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "combinesWith": {
+                                  "anyOf": [
+                                    {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "orderDiscounts": {
+                                          "type": [
+                                            "boolean",
+                                            "null"
+                                          ]
+                                        },
+                                        "productDiscounts": {
+                                          "type": [
+                                            "boolean",
+                                            "null"
+                                          ]
+                                        },
+                                        "shippingDiscounts": {
+                                          "type": [
+                                            "boolean",
+                                            "null"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "orderDiscounts",
+                                        "productDiscounts",
+                                        "shippingDiscounts"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "discountClasses": {
+                                  "anyOf": [
+                                    {
+                                      "items": {
+                                        "enum": [
+                                          "ORDER",
+                                          "PRODUCT",
+                                          "SHIPPING"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "maxItems": 3,
+                                      "type": "array"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "discountTags": {
+                                  "anyOf": [
+                                    {
+                                      "items": {
+                                        "maxLength": 128,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      },
+                                      "maxItems": 64,
+                                      "type": "array"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "shopifyPlus": {
+                                  "type": [
+                                    "boolean",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "discountClasses",
+                                "shopifyPlus",
+                                "combinesWith",
+                                "discountTags",
+                                "allowedSameLineProductTags"
+                              ],
+                              "type": "object"
+                            },
+                            "completeness": {
+                              "enum": [
+                                "COMPLETE",
+                                "PARTIAL",
+                                "UNKNOWN"
+                              ],
+                              "type": "string"
+                            },
+                            "customerScope": {
+                              "enum": [
+                                "ALL",
+                                "RESTRICTED",
+                                "UNKNOWN"
+                              ],
+                              "type": "string"
+                            },
+                            "discountCurrency": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "discountKind": {
+                              "enum": [
+                                "PERCENTAGE",
+                                "FIXED_AMOUNT",
+                                "FREE_SHIPPING",
+                                "BUY_X_GET_Y",
+                                "OTHER",
+                                "UNKNOWN"
+                              ],
+                              "type": "string"
+                            },
+                            "discountValue": {
+                              "anyOf": [
+                                {
+                                  "pattern": "^[0-9]{1,18}(\\.[0-9]{1,6})?$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "excludesSaleItems": {
+                              "type": [
+                                "boolean",
+                                "null"
+                              ]
+                            },
+                            "individualUse": {
+                              "type": [
+                                "boolean",
+                                "null"
+                              ]
+                            },
+                            "maximumSubtotal": {
+                              "anyOf": [
+                                {
+                                  "pattern": "^[0-9]{1,18}(\\.[0-9]{1,6})?$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "minimumQuantity": {
+                              "anyOf": [
+                                {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "minimumSubtotal": {
+                              "anyOf": [
+                                {
+                                  "pattern": "^[0-9]{1,18}(\\.[0-9]{1,6})?$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "observedAt": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                              "type": "string"
+                            },
+                            "perCustomerLimit": {
+                              "anyOf": [
+                                {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "provider": {
+                              "enum": [
+                                "SHOPIFY",
+                                "WOOCOMMERCE"
+                              ],
+                              "type": "string"
+                            },
+                            "providerStatus": {
+                              "maxLength": 64,
+                              "type": "string"
+                            },
+                            "subtotalRequirementCurrency": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "targeting": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "excludedCategoryIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "excludedCollectionIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "excludedProductIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "excludedVariantIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "includedCategoryIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "includedCollectionIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "includedProductIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "includedVariantIds": {
+                                  "items": {
+                                    "maxLength": 128,
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 128,
+                                  "type": "array"
+                                },
+                                "kind": {
+                                  "enum": [
+                                    "ALL",
+                                    "PRODUCTS",
+                                    "VARIANTS",
+                                    "CATEGORIES",
+                                    "COLLECTIONS",
+                                    "MIXED",
+                                    "UNKNOWN"
+                                  ],
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "includedProductIds",
+                                "includedVariantIds",
+                                "includedCategoryIds",
+                                "includedCollectionIds",
+                                "excludedProductIds",
+                                "excludedVariantIds",
+                                "excludedCategoryIds",
+                                "excludedCollectionIds"
+                              ],
+                              "type": "object"
+                            },
+                            "unavailableAt": {
+                              "anyOf": [
+                                {
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "unrepresentedConditions": {
+                              "items": {
+                                "maxLength": 128,
+                                "minLength": 1,
+                                "type": "string"
+                              },
+                              "maxItems": 24,
+                              "type": "array"
+                            },
+                            "usageCount": {
+                              "anyOf": [
+                                {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "usageLimit": {
+                              "anyOf": [
+                                {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "provider",
+                            "completeness",
+                            "observedAt",
+                            "providerStatus",
+                            "unavailableAt",
+                            "discountKind",
+                            "discountValue",
+                            "discountCurrency",
+                            "targeting",
+                            "minimumSubtotal",
+                            "maximumSubtotal",
+                            "subtotalRequirementCurrency",
+                            "minimumQuantity",
+                            "usageLimit",
+                            "usageCount",
+                            "perCustomerLimit",
+                            "customerScope",
+                            "excludesSaleItems",
+                            "individualUse",
+                            "combination",
+                            "unrepresentedConditions"
+                          ],
+                          "type": "object"
+                        },
+                        "offer": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "anyOf": [
+                                {
+                                  "maxLength": 128,
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "endsAt": {
+                              "anyOf": [
+                                {
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "method": {
+                              "enum": [
+                                "AUTOMATIC",
+                                "CODE"
+                              ],
+                              "type": "string"
+                            },
+                            "offerId": {
+                              "maxLength": 128,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "reasonCodes": {
+                              "items": {
+                                "maxLength": 64,
+                                "minLength": 1,
+                                "type": "string"
+                              },
+                              "maxItems": 16,
+                              "type": "array"
+                            },
+                            "startsAt": {
+                              "anyOf": [
+                                {
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "support": {
+                              "enum": [
+                                "SUPPORTED",
+                                "UNSUPPORTED",
+                                "UNKNOWN"
+                              ],
+                              "type": "string"
+                            },
+                            "title": {
+                              "maxLength": 512,
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "offerId",
+                            "title",
+                            "method",
+                            "code",
+                            "startsAt",
+                            "endsAt",
+                            "support",
+                            "reasonCodes"
+                          ],
+                          "type": "object"
+                        },
+                        "providerDiscountId": {
+                          "anyOf": [
+                            {
+                              "maxLength": 191,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "offer",
+                        "facts",
+                        "providerDiscountId"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "details"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "commerce_get_discount_options.payload.json": {
+        "definitionVersion": "1.0.0",
+        "description": "Read the current shop's permitted discount options.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "maxLength": 2048,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "limit": {
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "name": "commerce_get_discount_options",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "outcome": {
+                  "enum": [
+                    "UNAVAILABLE"
+                  ],
+                  "maxLength": 11,
+                  "type": "string"
+                },
+                "reasonCode": {
+                  "enum": [
+                    "TEMPORARY_UNAVAILABLE"
+                  ],
+                  "maxLength": 21,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "outcome",
+                "reasonCode"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "cursor": {
+                  "anyOf": [
+                    {
+                      "maxLength": 2048,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "mode": {
+                  "enum": [
+                    "NONE",
+                    "FIXED",
+                    "AI_BEST_APPLICABLE"
+                  ],
+                  "type": "string"
+                },
+                "offers": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "code": {
+                        "anyOf": [
+                          {
+                            "maxLength": 128,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "endsAt": {
+                        "anyOf": [
+                          {
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "method": {
+                        "enum": [
+                          "AUTOMATIC",
+                          "CODE"
+                        ],
+                        "type": "string"
+                      },
+                      "offerId": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "reasonCodes": {
+                        "items": {
+                          "maxLength": 64,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "maxItems": 16,
+                        "type": "array"
+                      },
+                      "startsAt": {
+                        "anyOf": [
+                          {
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "support": {
+                        "enum": [
+                          "SUPPORTED",
+                          "UNSUPPORTED",
+                          "UNKNOWN"
+                        ],
+                        "type": "string"
+                      },
+                      "title": {
+                        "maxLength": 512,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "offerId",
+                      "title",
+                      "method",
+                      "code",
+                      "startsAt",
+                      "endsAt",
+                      "support",
+                      "reasonCodes"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 50,
+                  "type": "array"
+                },
+                "truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "mode",
+                "offers",
+                "truncated"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "registryTargetAvailability": {
+    "url": "https://registry.npmjs.org/@modainteract%2Fmoda-interact-shared/4.0.1",
+    "httpStatus": 404,
+    "version": null,
+    "dist": null
+  },
+  "selectedCorrection": {
+    "sharedPackageVersion": "4.0.1",
+    "status": "DEFINED_NOT_IMPLEMENTED_OR_PUBLISHED",
+    "sharedRuntimeZod": "4.4.3",
+    "consumerDirectZod": "4.4.3",
+    "consumerOwners": [
+      "ARCH-058-MCP-002",
+      "ARCH-058-COMMERCE-001",
+      "ARCH-058-BACKGROUND-001"
+    ],
+    "sourceTask": "ARCH-058-SHARED-003",
+    "publicationTask": "ARCH-058-SHARED-004",
+    "publicSchemasChanged": false,
+    "descriptorVersionsChanged": false,
+    "descriptorHashesChanged": false,
+    "databaseChangeRequired": false,
+    "runnerVersion": "1.1.0",
+    "futureRegistryIntegrity": null
+  },
+  "evidenceLimits": [
+    "Current snapshot has no independently verified live Git history; user-reported commits remain labelled as reported.",
+    "Extracted artifact diagnostics prove the dependency cause and minimal schema interoperability; no corrected package source or registry artifact exists yet.",
+    "The consumer direct-Zod change affects local schemas too; each owning task must run its existing required validations under its final committed lock.",
+    "Mixed4.4.3/4.6.5 runtime hash success does not imply public type compatibility; the actual fixture fails and is not the approved application graph."
+  ]
+}
