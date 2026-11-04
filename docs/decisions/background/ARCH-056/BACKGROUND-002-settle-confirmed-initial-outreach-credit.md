@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-11-04T00:34:29Z
+attempt: 1
 depends_on:
 - ARCH-028-BACKGROUND-004
 - ARCH-028-BACKGROUND-009
@@ -21,7 +21,7 @@ enables:
 - ARCH-056-BACKGROUND-004
 - ARCH-056-SYSTEM-TEST-001
 created: '2026-11-03'
-updated: '2026-11-04'
+updated: 2026-11-04
 ---
 
 # ARCH-056-BACKGROUND-002: Reuse and settle the exact initial recovery credit
