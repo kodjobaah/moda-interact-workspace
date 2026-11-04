@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-11-04T06:51:44Z
@@ -207,7 +207,7 @@ The test helper exports `startBillingPostgresFixture()` returning a migrated dat
 - [x] Lifecycle locking is asserted in Shop, settings, Subscription order; obsolete late reacquisition and wrong `shopify.Shop` locking were removed.
 - [x] Controlled concurrent milestone/activation and same-token activation preserve bounded completion, one period/counter grant and stale-token fencing.
 - [x] Malformed Free replay evidence is rejected before projection writes; the callback preserves the prior projection path. Explicit null and missing-cycle provider behavior remain covered.
-- [ ] Each failure-matrix case has an actual Shared output assertion preserving safe original message/code/cause where supplied, without injected secrets/PII or duplicate upstream bodies. Representative provider/local/sink isolation paths are asserted; full per-boundary matrix coverage remains for architect review.
+- [x] Each applicable failure-matrix case has an actual Shared output assertion at its owning boundary, preserving safe original message/code/cause and correlation, excluding injected secrets/PII/raw provider bodies and duplicate source diagnostics, with sink-failure behavior checked at provider, service and route owners.
 - [x] Database/local failures classify as `SUBSCRIPTION_SYNC_FAILED`, not as an assumed Partner outage.
 - [x] Exact billing-period replay performs no period update; missing-counter repair still works; hosted confirmation occurs once.
 - [x] Onboarding remains monotonic, category publication remains after billing commit, and notification best-effort policy is unchanged.
@@ -245,35 +245,62 @@ Keep provider acquisition outside write transactions. Reuse existing parser code
 
 ### Status
 
-Ready for Review. Implementation and required executable validation are complete; one acceptance criterion remains explicitly partial as noted below.
+Ready for Review. Attempt 2 addresses the complete failure-matrix evidence gap from the latest Changes Requested review. No architect acceptance decision is made here.
 
 ### Files Changed
 
-Billing provider parsing/diagnostics, lifecycle locking and projection/retry services, callback/resume routes, the shared onboarding milestone command, focused billing unit tests, and task-owned PostgreSQL fixture/integration tests. No schema, dependency, package, queue contract, public DTO, or other repository was changed.
+Implementation repository files changed:
+
+- `app/routes/app/billing/callback/route.tsx`
+- `app/services/billing/billing-reconciliation.service.ts`
+- `app/services/billing/onboarding-milestone.server.ts`
+- `app/services/billing/providers/shopify-billing-diagnostics.server.ts`
+- `app/services/billing/subscription-ended-notification.service.ts`
+- `app/services/billing/subscription-sync.service.ts`
+- `tests/unit/routes/billing-callback.test.ts`
+- `tests/unit/routes/onboarding-resume.test.ts`
+- `tests/unit/services/billing-reconciliation.service.test.ts`
+- `tests/unit/services/billing/subscription-ended-notification.service.test.ts`
+- `tests/unit/services/billing/subscription-sync.service.test.ts`
+- `tests/unit/services/shopify-billing.provider.test.ts`
+
+No schema, dependency, package, public DTO, locale, queue identity or billing hash-preimage changed. No other implementation repository was modified.
 
 ### Work Completed
 
-- Both routes use the accepted merchant request context and the single transactional two-row onboarding milestone helper.
-- Activation, sync and hosted-plan-change paths use Shop → ShopSettings → Subscription lifecycle locking; paid finalization no longer acquires Shop late.
-- Both existing provider operations use strict active-subscription parsing. Only explicit provider null is absence; malformed responses throw typed errors. API version remains pinned to `2026-10`.
-- Provider and local failures preserve safe causes and use Shared structured logging with bounded/redacted provider diagnostics and truthful retry classification.
-- Exact replay avoids an unchanged BillingPeriod update, missing counters are repaired independently, and hosted operation confirmation is not repeated.
-- Added migrated PG17 tests for initial Paid activation, exact period/counter state, stale and concurrent same-token fencing, actual ordered lock SQL, independent-client milestone contention, and rollback when the second milestone write fails.
+- Added route-owned diagnostics for hosted verification-fence reads/returns and activation prepare/finalize failures; callback rethrow and redirect behavior remains unchanged.
+- Distinguished notification persistence from translation dispatch and reconciliation queue acquisition from queue add in the emitted stage/origin metadata; both retain their prior best-effort behavior.
+- Updated Shared diagnostic redaction so ISO schedule timestamps remain available for correlation while phone-like values continue to be redacted.
+- Retained the existing provider diagnostic as the single source record; rethrowing callback context does not duplicate its provider body/details.
+
+Attempt 2 failure-matrix evidence, using actual Shared output captured from the installed logger:
+
+| Failure-matrix row | Owning output assertion and behavior evidence |
+|---|---|
+| Provider HTTP/GraphQL | `tests/unit/services/shopify-billing.provider.test.ts`: HTTP status/request ID/code and GraphQL code/request ID/original message; injected token/email/customer detail absent; one source record. |
+| Transport, body-read, JSON and malformed success | `tests/unit/services/shopify-billing.provider.test.ts`: exception/cause or safe malformed reason/path; no fabricated provider fields or raw invalid body; malformed success does not enter no-contract persistence. |
+| Credential/configuration | `tests/unit/services/shopify-billing.provider.test.ts`: original P2025/cause, truthful database origin, no provider fields or fetch; sink failure preserves typed rejection. |
+| Activation, fence, hosted return and period persistence | `tests/unit/routes/billing-callback.test.ts` asserts fence read, hosted-return persistence, activation prepare/finalize, hosted and initial retry persistence, and milestone owner records; `tests/unit/services/billing/subscription-sync.service.test.ts` asserts P2034/cause and transaction rollback for period persistence. Sink failures retain throws and do not advance activation/retry. |
+| Local synchronization fallback | `tests/unit/services/billing/subscription-sync.service.test.ts`: local reason and plan correlation without fabricated provider errors; result semantics remain `SYNC_ERROR` under sink failure. |
+| Retry scheduling and milestone | `tests/unit/routes/billing-callback.test.ts` covers both retry-persistence boundaries and ensures a prior provider error is not copied into the persistence record; callback and `tests/unit/routes/onboarding-resume.test.ts` assert milestone P2025/cause and no false success. |
+| Post-commit category activation | Callback and resume tests assert original error/cause, stage, Shop/generation context, and failure after the subscription activation call; sink failure preserves the route throw/gates. |
+| Ended-notice persistence and dispatch | `tests/unit/services/billing/subscription-ended-notification.service.test.ts` asserts separate stage/origin records, lifecycle identity, actual cause/code, redaction, best-effort completion and Shared sink isolation; existing missing-identity propagation remains covered. |
+| Reconciliation queue acquisition and add | `tests/unit/services/billing-reconciliation.service.test.ts` asserts distinct stages, original queue error/cause, Shop/subscription/schedule correlation, timestamp retention, redaction and best-effort resolution; sink failure on add does not change queue outcome. |
+| Shared sink failure | Actual installed Shared logger console sink throws in provider, sync, callback, resume, ended-notice and reconciliation owner tests; each existing throw, response, rollback, retry or best-effort policy remains intact. |
 
 ### Validation Results
 
-- `npm run prisma:generate` — passed; Prisma Client 6.19.3 generated from the existing canonical schema.
-- Required 12-file focused unit command — passed, 368 tests. The follow-up callback/sync command passed 45 tests, including malformed Free replay preservation and synchronization's no-write-on-malformed behavior.
-- Disposable PostgreSQL command — passed, 2 tests, using `pgvector/pgvector:pg17`, canonical `prisma migrate deploy`, independent real Prisma clients, a provider barrier for same-token fencing, and `pg_stat_activity` lock-wait observation. Colima required explicit Docker socket environment overrides. Fixture cleanup disconnects clients and stops its container.
-- `npm run typecheck` — passed after typing the Prisma query-event client used by the integration SQL recorder.
-- `npm run build` — passed. Existing dependency annotation, unresolved browser Prisma import, empty route chunk, and large client chunk warnings were emitted; no build error occurred.
-- Task-mandated ESLint implementation/new-file scope and focused changed-test lint — passed.
+- `npm test -- tests/unit/services/shopify-billing.provider.test.ts tests/unit/services/billing/provider-diagnostics.test.ts tests/unit/services/billing/subscription-activation.service.test.ts tests/unit/services/billing/subscription-sync.service.test.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/billing-period-projection.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts tests/unit/services/billing/subscription-ended-notification.service.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/billing.service.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/routes/onboarding-resume.test.ts` — passed, 12 files / 393 tests.
+- `MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/billing-activation.postgres.integration.test.ts` with the verified Colima `DOCKER_HOST` and `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock` — passed, 2 tests against disposable PG17 after canonical migrations. Real independent Prisma clients, explicit barriers, lock-wait observation and fixture cleanup were exercised. No database or transaction implementation changed in Attempt 2.
+- `npm run typecheck` — passed.
+- `npm run build` — passed and ran `npm run prisma:generate` (Prisma Client 6.19.3). Existing dependency annotation, unresolved browser Prisma import, empty route chunk, and large client chunk warnings were emitted; no build error occurred.
+- Task-mandated ESLint implementation/new-file scope plus focused changed-test lint — passed.
 - `git diff --check` — passed.
-- Shared logger tests assert actual JSON output, redaction/truncation, safe cause and Prisma code retention, and sink failure isolation. They do not yet assert every individual required failure-matrix owner path.
+- Focused owner retests passed, including the final exact 12-file command; actual Shared output, safe causes/codes, redaction, timestamp correlation, deduplication and sink isolation are mapped above.
 
 ### Deviations
 
-The exact PG command without environment overrides could not discover the Colima runtime; setting the verified Colima Docker socket and the in-container socket override allowed the required disposable integration to execute and pass. No production scope or dependency was changed.
+Colima requires the verified Docker socket and in-container socket override for the disposable PostgreSQL suite. The required integration ran successfully with those environment settings. No production scope or dependency was changed.
 
 ### Assumptions
 
@@ -281,7 +308,7 @@ The launcher verifies the dependency's accepted integrated source before claim; 
 
 ### Unresolved Issues
 
-The acceptance criterion requiring an actual Shared output assertion for every row of the failure matrix is only partially demonstrated. Representative provider, local Prisma/cause, classification and Shared-sink isolation paths are covered, but not every owner boundary has an individual output assertion. This is surfaced for `moda_architect` review; no claim of full matrix coverage is made. Notification durability and the Background category hook remain explicitly deferred by the task.
+No failure-matrix evidence gap remains identified for this bounded task. Notification durability and the Background category hook remain explicitly deferred by the task. SHOPIFY-003, SHOPIFY-004 and SHOPIFY-011 remain pending architect review and downstream sequencing.
 
 ### Architectural Concerns
 
