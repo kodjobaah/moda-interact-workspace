@@ -3,59 +3,44 @@
   "architectureId": "ARCH-058",
   "reviewDate": "2026-11-04",
   "snapshot": {
-    "fileName": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-    "sha256": "49ec33bd730f6a1a54e96c8b29e0fcf170c48039b7c5d2c16a4b3e5dace70a9a",
-    "evidenceKind": "UPLOADED_TASK_WORKTREE_SNAPSHOT",
-    "documentRevision": 9
+    "fileName": "moda-interact-workspace(20261104-165221).zip",
+    "sha256": "4562616bd93ec1b8d7d4aba4127757b25bb9f5f9e0f5819bc4f4876eb118f58b",
+    "evidenceKind": "UPLOADED_CURRENT_CODEBASE_SNAPSHOT",
+    "documentRevision": 10
   },
   "scope": {
-    "amendedTasks": [
-      "ARCH-058-SHARED-002",
+    "replacedUnmaterialisedDefinitions": [
+      "ARCH-058-SHARED-003",
+      "ARCH-058-SHARED-004"
+    ],
+    "newTasks": [
+      "ARCH-058-SHARED-005",
+      "ARCH-058-SHARED-006",
+      "ARCH-058-DATABASE-002"
+    ],
+    "amendedPendingOrBlockedTasks": [
       "ARCH-058-MCP-002",
       "ARCH-058-MCP-003",
       "ARCH-058-COMMERCE-001",
       "ARCH-058-BACKGROUND-001",
       "ARCH-058-SYSTEM-TEST-001"
     ],
-    "newTasks": [
-      "ARCH-058-SHARED-003",
-      "ARCH-058-SHARED-004"
-    ],
-    "preservedTasks": [
+    "preservedCompletedTasks": [
       "ARCH-058-DATABASE-001",
       "ARCH-058-SHARED-001",
+      "ARCH-058-SHARED-002",
       "ARCH-058-SHOPIFY-001",
       "ARCH-058-MCP-001"
     ],
     "preserveDecisionIndexes": true,
     "implementationChanged": false,
-    "preserveAllExistingTaskLifecycleMetadata": true,
-    "preserveAllActualCompletionAndReviewEvidence": true,
-    "pendingTemplateCorrections": [
-      "ARCH-058-MCP-003 assumptions: corrected dependency inheritance",
-      "ARCH-058-BACKGROUND-001 report instructions: corrected dependency pair/receipt"
-    ],
-    "shared002Change": "Reverse dependency edge to SHARED-003 only, in metadata and Enables list; immutable receipt/history unchanged",
-    "mcp002Change": "Add SHARED-004 continuation prerequisite and exact consumer alignment; preserve existing in_progress Attempt1/claim and complete history",
-    "currentArchiveDefinitionBaseline": "Current MCP-002 upload includes accepted MCP-001 Attempt3, preserved in-progress MCP-002 WIP and historical Shared hash failure. Revision9 applies directly to this upload only.",
-    "newTaskDefinitionState": "DEFINED_BUT_NOT_MATERIALISED",
-    "changedDocumentCount": 14,
-    "changedPaths": [
-      "docs/architecture/ARCH-058-commerce-agent-product-discovery.md",
-      "docs/architecture/ARCH-058/contracts.md",
-      "docs/architecture/ARCH-058/execution-baseline.json",
-      "docs/architecture/ARCH-058/implementation-handoff.md",
-      "docs/architecture/ARCH-058/shared-hash-reconciliation-evidence.json",
-      "docs/architecture/ARCH-058/shared-hash-reconciliation.md",
-      "docs/decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md",
-      "docs/decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md",
-      "docs/decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md",
-      "docs/decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md",
-      "docs/decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md",
-      "docs/decisions/shared/ARCH-058/SHARED-003-pin-built-in-contract-schema-runtime.md",
-      "docs/decisions/shared/ARCH-058/SHARED-004-publish-contract-hash-runtime-fix.md",
-      "docs/decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md"
-    ]
+    "preserveAcceptedCompletionAndReviewHistory": true,
+    "mcp002WipPreserved": true,
+    "mcp002WipCommitAsReported": "4bffa87ed4af0fb40513ad75d38df49c51746360",
+    "mcp002LifecycleCorrection": "Attempt 1 is preserved; task is blocked with claim cleared until DATABASE-002 and SHARED-006 are Complete, then the same task returns Ready and is reclaimed as the next attempt.",
+    "selectedCorrection": "REMOVE_BUILT_IN_CONTRACT_HASH_IDENTITY",
+    "noCrossApplicationZodPin": true,
+    "newTaskDefinitionState": "DEFINED_BUT_NOT_MATERIALISED"
   },
   "sharedPublication": {
     "schemaVersion": "1",
@@ -174,15 +159,16 @@
       "dependsOn": [
         "ARCH-058-MCP-002",
         "ARCH-058-MCP-003",
-        "ARCH-058-COMMERCE-001"
+        "ARCH-058-COMMERCE-001",
+        "ARCH-058-SHARED-006"
       ],
       "enables": [
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "333df5c956d200847f74adc7e08315ab0da1ec391083503ec342dd6f7c588275",
-      "amendedSha256": "fc458f9aa5e28a60544dd043f1b597458f89c1f21ed6a3f9732f810c5a972006",
-      "definitionChangedInRevision9": true,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "fc458f9aa5e28a60544dd043f1b597458f89c1f21ed6a3f9732f810c5a972006",
+      "definitionSha256": "5924a392f268a5d34fea5914af3ba5c8ddb263aed19287e9585604dfd2a50742",
+      "definitionChangedInRevision10": true,
       "newPortableDefinition": false
     },
     {
@@ -194,16 +180,17 @@
       "claimedAt": null,
       "dependsOn": [
         "ARCH-058-MCP-002",
-        "ARCH-058-MCP-003"
+        "ARCH-058-MCP-003",
+        "ARCH-058-SHARED-006"
       ],
       "enables": [
         "ARCH-058-BACKGROUND-001",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "0452b91f7ee77ea53ad268bff7b7f3a91c3f18399dce03e92bbc081fba9c568e",
-      "amendedSha256": "2391cabf0dc99aebdb3a28819295f82ac86124d9325b57bb273470ac66d97adf",
-      "definitionChangedInRevision9": true,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "2391cabf0dc99aebdb3a28819295f82ac86124d9325b57bb273470ac66d97adf",
+      "definitionSha256": "076ff5bf154495e09b105c3d6c5c04ce70bc3df515c0ccd567b6efc007e838cd",
+      "definitionChangedInRevision10": true,
       "newPortableDefinition": false
     },
     {
@@ -216,13 +203,35 @@
       "dependsOn": [],
       "enables": [
         "ARCH-058-MCP-001",
+        "ARCH-058-DATABASE-002",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "6c880cea1e93b66dc92c4859738723cb2f7e434ea3e79b471e7525da27ccecc4",
-      "amendedSha256": "6c880cea1e93b66dc92c4859738723cb2f7e434ea3e79b471e7525da27ccecc4",
-      "definitionChangedInRevision9": false,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "6c880cea1e93b66dc92c4859738723cb2f7e434ea3e79b471e7525da27ccecc4",
+      "definitionSha256": "c3cec29bc54d0df4ed2fd678d62132f9202ce25c95a8b5b5a7d9ed88f45a3450",
+      "definitionChangedInRevision10": true,
       "newPortableDefinition": false
+    },
+    {
+      "id": "ARCH-058-DATABASE-002",
+      "path": "docs/decisions/database/ARCH-058/DATABASE-002-remove-built-in-contract-hash-storage.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-DATABASE-001",
+        "ARCH-058-SHARED-005"
+      ],
+      "enables": [
+        "ARCH-058-MCP-002",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "4d5b5ac811880d70b29219dce67d6c578628e6634d927e21cb35130856250b93",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": true
     },
     {
       "id": "ARCH-058-MCP-001",
@@ -239,22 +248,23 @@
         "ARCH-058-MCP-002",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "ad3e28a64321b9dd5b817ade2eb2f5e3ec36366323c60cc97ece2140e900d2f2",
-      "amendedSha256": "ad3e28a64321b9dd5b817ade2eb2f5e3ec36366323c60cc97ece2140e900d2f2",
-      "definitionChangedInRevision9": false,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "ad3e28a64321b9dd5b817ade2eb2f5e3ec36366323c60cc97ece2140e900d2f2",
+      "definitionSha256": "ad3e28a64321b9dd5b817ade2eb2f5e3ec36366323c60cc97ece2140e900d2f2",
+      "definitionChangedInRevision10": false,
       "newPortableDefinition": false
     },
     {
       "id": "ARCH-058-MCP-002",
       "path": "docs/decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md",
-      "status": "in_progress",
+      "status": "blocked",
       "attempt": 1,
-      "executor": "codex",
-      "claimedAt": "2026-11-04 15:08:56+00:00",
+      "executor": null,
+      "claimedAt": null,
       "dependsOn": [
         "ARCH-058-MCP-001",
-        "ARCH-058-SHARED-004"
+        "ARCH-058-DATABASE-002",
+        "ARCH-058-SHARED-006"
       ],
       "enables": [
         "ARCH-058-MCP-003",
@@ -262,10 +272,10 @@
         "ARCH-058-BACKGROUND-001",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "40c5aafb6c631405e78a356374b66b9c2d5b083defd77e4a7826d1ac94a18f9e",
-      "amendedSha256": "60f9470d1bd4bf07f7b88a1113eb24be321f30087e107cd3c44a17e43a675583",
-      "definitionChangedInRevision9": true,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "60f9470d1bd4bf07f7b88a1113eb24be321f30087e107cd3c44a17e43a675583",
+      "definitionSha256": "888421546d45be8738195029ab2015b3de98453e4147fb3e7a55ee41df4f16b6",
+      "definitionChangedInRevision10": true,
       "newPortableDefinition": false
     },
     {
@@ -284,10 +294,10 @@
         "ARCH-058-BACKGROUND-001",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "4dcadb71127e6a0a5ccc99d90260fbcd25cd8e5f69818e3c2a97126c2f69463b",
-      "amendedSha256": "fa09812e445a085a5d054ff311ca472c5c1e9af56700e320429b8f3c7f7be7c5",
-      "definitionChangedInRevision9": true,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "fa09812e445a085a5d054ff311ca472c5c1e9af56700e320429b8f3c7f7be7c5",
+      "definitionSha256": "371baa89a611ad24117c38375e077fabb4f2ddd119f79049ea5026cb4e9ad25b",
+      "definitionChangedInRevision10": true,
       "newPortableDefinition": false
     },
     {
@@ -302,10 +312,10 @@
         "ARCH-058-SHARED-002",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
-      "amendedSha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
-      "definitionChangedInRevision9": false,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
+      "definitionSha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
+      "definitionChangedInRevision10": false,
       "newPortableDefinition": false
     },
     {
@@ -323,15 +333,15 @@
         "ARCH-058-MCP-001",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "84c563859c05c5afdd872778c8b9b25eb1e3a7aa5d6b57ee3e36f78ef8f51bbd",
-      "amendedSha256": "e3156f2e5fe0ca9075a93857446886f4906e04bf0618a6770b005e79313b4462",
-      "definitionChangedInRevision9": true,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "e3156f2e5fe0ca9075a93857446886f4906e04bf0618a6770b005e79313b4462",
+      "definitionSha256": "e3156f2e5fe0ca9075a93857446886f4906e04bf0618a6770b005e79313b4462",
+      "definitionChangedInRevision10": false,
       "newPortableDefinition": false
     },
     {
       "id": "ARCH-058-SHARED-003",
-      "path": "docs/decisions/shared/ARCH-058/SHARED-003-pin-built-in-contract-schema-runtime.md",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-003-remove-built-in-contract-hashes.md",
       "status": "ready",
       "attempt": 0,
       "executor": null,
@@ -341,17 +351,18 @@
       ],
       "enables": [
         "ARCH-058-SHARED-004",
+        "ARCH-058-SHARED-006",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": null,
-      "sha256": null,
-      "amendedSha256": "56ea6757813ed218dad0892563104f76cba13cea5cf5335b6786068bee1a069a",
-      "definitionChangedInRevision9": true,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "31b77fee4e3ffa4aef0c99f38a4c853c0797dafb6a21515fcb26b287c35a8b60",
+      "definitionChangedInRevision10": true,
       "newPortableDefinition": true
     },
     {
       "id": "ARCH-058-SHARED-004",
-      "path": "docs/decisions/shared/ARCH-058/SHARED-004-publish-contract-hash-runtime-fix.md",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-004-remove-obsolete-conversation-tool-context.md",
       "status": "pending",
       "attempt": 0,
       "executor": null,
@@ -360,13 +371,59 @@
         "ARCH-058-SHARED-003"
       ],
       "enables": [
-        "ARCH-058-MCP-002",
+        "ARCH-058-SHARED-005",
+        "ARCH-058-SHARED-006",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": null,
-      "sha256": null,
-      "amendedSha256": "2af88d54294a959b0f424babbc9dcfdeea90f71aa25187e668884a37b5f94795",
-      "definitionChangedInRevision9": true,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "79ecf2bea4db3e4d159ab4927466fb81059325447e1472a6025f0a1c1a9d5bf2",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": true
+    },
+    {
+      "id": "ARCH-058-SHARED-005",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-005-freeze-commerce-datetime-wire-syntax.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-SHARED-004"
+      ],
+      "enables": [
+        "ARCH-058-SHARED-006",
+        "ARCH-058-DATABASE-002",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "6067045f6cc6e5ad2fa6be3d87608860bf14adbd61234fa6052f144835e77244",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": true
+    },
+    {
+      "id": "ARCH-058-SHARED-006",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-006-publish-corrected-commerce-contracts.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-SHARED-003",
+        "ARCH-058-SHARED-004",
+        "ARCH-058-SHARED-005"
+      ],
+      "enables": [
+        "ARCH-058-MCP-002",
+        "ARCH-058-COMMERCE-001",
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "23dc1371eee82f36aa5f8a917be5637f25cd7af21af6c8f4b6b8098ecc10e80a",
+      "definitionChangedInRevision10": true,
       "newPortableDefinition": true
     },
     {
@@ -381,10 +438,10 @@
         "ARCH-058-MCP-003",
         "ARCH-058-SYSTEM-TEST-001"
       ],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
-      "amendedSha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
-      "definitionChangedInRevision9": false,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
+      "definitionSha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
+      "definitionChangedInRevision10": false,
       "newPortableDefinition": false
     },
     {
@@ -396,10 +453,13 @@
       "claimedAt": null,
       "dependsOn": [
         "ARCH-058-DATABASE-001",
+        "ARCH-058-DATABASE-002",
         "ARCH-058-SHARED-001",
         "ARCH-058-SHARED-002",
         "ARCH-058-SHARED-003",
         "ARCH-058-SHARED-004",
+        "ARCH-058-SHARED-005",
+        "ARCH-058-SHARED-006",
         "ARCH-058-MCP-001",
         "ARCH-058-MCP-002",
         "ARCH-058-MCP-003",
@@ -408,10 +468,10 @@
         "ARCH-058-BACKGROUND-001"
       ],
       "enables": [],
-      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
-      "sha256": "fc2cfc04edc72510e5d18ac5d428e5e72c622476cd97a949d07881ad83151594",
-      "amendedSha256": "3ba7215ab76f39e2862cf211885bea77ef118727bb219a2f5109b29ab5809a57",
-      "definitionChangedInRevision9": true,
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "3ba7215ab76f39e2862cf211885bea77ef118727bb219a2f5109b29ab5809a57",
+      "definitionSha256": "98eafb8b13db6f9b583371613432ba0bb8db1335775f8294200c60a7a68b7f53",
+      "definitionChangedInRevision10": true,
       "newPortableDefinition": false
     }
   ],
@@ -2072,7 +2132,7 @@
     },
     "readerSha256": "9afce8c715a73b591304c501a845e374fe49b8a7aa9952164ce8f3a04bb3712d"
   },
-  "definitionRevision": 9,
+  "definitionRevision": 10,
   "mcpResponsibilityCorrection": {
     "supersedes": "Attempt 4 conversation-domain adapter and workflow authorization in MCP",
     "mcpScope": "Generic shop-eligible tool provider/executor, current shop/plan/connection/data access and structured data results",
@@ -2104,11 +2164,10 @@
       "CommerceConversationToolContext"
     ],
     "runtimeConsumersFoundInReviewedSnapshots": false,
-    "recommendedSeparateFollowup": "Remove obsolete export/docs through Shared implementation, acceptance, immutable publication under public-API version policy and coordinated consumer pins.",
+    "owningTask": "ARCH-058-SHARED-004",
+    "publicationTask": "ARCH-058-SHARED-006",
     "implementedByThisPatch": false,
-    "currentRuntimeBaseline": "4.0.0",
-    "blocksCurrentMcp001BoundaryClarification": false,
-    "acceptedPublicationReceiptPreserved": true
+    "historicalShared400ReceiptPreserved": true
   },
   "agentInstructionAmendment": {
     "revision": 8,
@@ -2323,10 +2382,10 @@
     "definitionChangedByThisAmendment": false
   },
   "activeMcp002": {
-    "snapshotStatus": "in_progress",
+    "snapshotStatus": "blocked",
     "snapshotAttempt": 1,
-    "snapshotExecutor": "codex",
-    "snapshotClaimedAt": "2026-11-04T15:08:56Z",
+    "snapshotExecutor": null,
+    "snapshotClaimedAt": null,
     "claimCommitAsReported": "f4250e2e68a71626b36c456e901077fec656fb96",
     "draftImplementationCommitAsReported": "4bffa87ed4af0fb40513ad75d38df49c51746360",
     "draftFilesAsReported": 40,
@@ -2336,8 +2395,8 @@
     "implementationWorktreeAsReported": "/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002",
     "branchAsReported": "task/ARCH-058-MCP-002",
     "liveGitVerified": false,
-    "continuationGate": "Accepted and Complete SHARED-004, then exact Shared4.0.1/Zod4.4.3 under existing claim",
-    "sourceOrLifecycleChangedByThisAmendment": false,
+    "continuationGate": "DATABASE-002 and SHARED-006 Complete + architect-accepted; then return same MCP-002 task to Ready and reclaim as next attempt",
+    "sourceOrLifecycleChangedByThisAmendment": true,
     "completeReportAndReviewHistoryPreserved": true,
     "reportedIntermediateValidation": {
       "productTests": 71,
@@ -2349,7 +2408,12 @@
       "genericFailed": 1,
       "typecheckLintBuildComplete": false,
       "requiredIntegration": "NOT_RUN"
-    }
+    },
+    "wipSourceChangedByThisAmendment": false,
+    "requiredSharedVersion": "5.0.0",
+    "requiredDatabaseTask": "ARCH-058-DATABASE-002",
+    "zodPinRequired": false,
+    "builtInContractHashRequired": false
   },
   "revision8TaskBaseline": [
     {
@@ -2528,36 +2592,40 @@
     "directZod": "4.6.5",
     "resolvedRootZod": "4.6.5",
     "sharedNestedZodPresent": false,
-    "allSourceBytesPreservedByPatch": true
+    "allSourceBytesPreservedByPatch": true,
+    "revision10Interpretation": "Shared4.0.0/direct-Zod observation is historical blocker evidence only; no revision10 cross-application Zod pin is required."
   },
   "sharedHashReconciliation": {
-    "definitionRevision": 9,
+    "definitionRevision": 10,
     "decisionDocument": "docs/architecture/ARCH-058/shared-hash-reconciliation.md",
     "evidenceFile": "docs/architecture/ARCH-058/shared-hash-reconciliation-evidence.json",
-    "evidenceSha256": "a197ff74e33907d09b1efe66c6ff77da68c88bfbd8615e773d41b2b4e490cc88",
-    "cause": "Fixed hashes generated using accepted Zod4.4.3; published ^4.0.0 runtime range permits consumer4.6.5 to change actual JSON-schema payload and datetime validation. Reproduced exact reported hashes from intact registry artifact.",
-    "sourceTask": "ARCH-058-SHARED-003",
-    "publicationTask": "ARCH-058-SHARED-004",
-    "requiredSharedVersion": "4.0.1",
-    "requiredSharedZod": "4.4.3",
-    "requiredComposingConsumerZod": "4.4.3",
-    "consumerOwners": [
-      "ARCH-058-MCP-002",
-      "ARCH-058-COMMERCE-001",
-      "ARCH-058-BACKGROUND-001"
+    "observedBlocker": "Shared 4.0.0 fixed built-in contract hashes differed from runtime-generated exported contract payloads in MCP consumer resolution.",
+    "rootCause": "Built-in identity duplicated name/version with a runtime-generated schema hash; runtime JSON-schema generation also exposed a concrete Commerce datetime semantic drift across compatible Zod minors.",
+    "selectedCorrection": "REMOVE_BUILT_IN_CONTRACT_HASH_IDENTITY",
+    "sourceTasks": [
+      "ARCH-058-SHARED-003",
+      "ARCH-058-SHARED-004",
+      "ARCH-058-SHARED-005"
     ],
-    "publicationStatus": "NOT_IMPLEMENTED_OR_PUBLISHED_BY_THIS_REVIEW",
-    "futurePublicationReceipt": null,
-    "historicalReceiptPreservedAt": "sharedPublication",
-    "descriptorDefinitionVersion": "1.0.0",
-    "descriptorHashesChanged": false,
-    "publicSchemaChanged": false,
-    "databaseMigrationRequired": false,
+    "databaseTask": "ARCH-058-DATABASE-002",
+    "publicationTask": "ARCH-058-SHARED-006",
+    "approvedPublicationTarget": "5.0.0_IF_UNOCCUPIED_AT_PUBLICATION_TIME",
+    "builtInIdentity": [
+      "toolName",
+      "definitionVersion"
+    ],
+    "contractHashRemoved": true,
+    "replacementFingerprintIntroduced": false,
+    "conversationToolContextRemoved": true,
+    "discountBuiltInTimestampSemanticsFrozen": true,
+    "generalDateSchemaChanged": false,
+    "applicationZodPinRequired": false,
+    "databaseMigrationRequired": true,
     "runnerVersion": "1.1.0",
-    "mixedZodTypeCompositionSupported": false,
-    "independentDiagnosticNode": "v24.22.1",
-    "independentDiagnosticCompiler": "5.9.3",
-    "registry401AvailabilityAtReview": "HTTP404; publication owner must recheck before publish",
+    "legacyDescriptorDefinitionVersion": "1.0.0",
+    "finalDescriptorDefinitionVersion": "2.0.0",
+    "historicalShared400ReceiptPreservedAt": "sharedPublication",
+    "revision9ZodPinningPlan": "SUPERSEDED_BEFORE_EXECUTION",
     "acceptanceOrContinuationGranted": false
   }
 }

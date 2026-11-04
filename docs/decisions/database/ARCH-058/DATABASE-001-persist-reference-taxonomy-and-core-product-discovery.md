@@ -17,6 +17,7 @@ attempt: 1
 depends_on: []
 enables:
   - ARCH-058-MCP-001
+  - ARCH-058-DATABASE-002
   - ARCH-058-SYSTEM-TEST-001
 created: 2026-11-04
 updated: 2026-11-04

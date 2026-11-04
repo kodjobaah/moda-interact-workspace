@@ -1,45 +1,48 @@
 # ARCH-058: Standard CommerceAgent product discovery, grounded responses and shipping information
 
-**Status:** implementation in progress; revision 9 reconciles the reproduced Shared contract-hash blocker on 4 November 2026. MCP-001 is Complete at accepted Attempt 3; MCP-002 remains `in_progress`, Attempt 1, under its existing claim. The architecture is not complete.
+**Status:** implementation in progress; revision 10 replaces the unexecuted Zod-pinning/hash-reconciliation plan with explicit no-hash contract corrections. MCP-001 is Complete at accepted Attempt 3. MCP-002 Attempt 1 is preserved but architecturally blocked until DATABASE-002 and SHARED-006 are Complete. The architecture is not complete.
 
 ## Current decision and patch scope
 
-Preserve the commerce contracts and implemented taxonomy/Database work. Shared 4.0.0's runtime Zod range permits the consumer's 4.6.5 serializer to change the payload behind fixed descriptor hashes. The actual published artifact reproduces both reported mismatches. Restore the accepted serializer and validation semantics by pinning Shared and its three active schema-composing consumers to exact **Zod 4.4.3**. Publish the accepted packaging correction as immutable **Shared 4.0.1**, with unchanged built-in versions/hashes and runner **1.1.0**. [Reconciliation evidence and deterministic decision](ARCH-058/shared-hash-reconciliation.md) explains the runtime, TypeScript and release implications.
+Preserve the accepted taxonomy, Database and useful Shared product/shipping/recommendation contracts. Remove the redundant built-in `contractHash` mechanism, remove the unused conversation-specific MCP context export, freeze the discount built-in timestamp wire syntax in Shared-owned code, forward-migrate persisted built-in grant JSON and publish the combined breaking Shared correction as approved target 5.0.0. Do **not** pin MCP, Commerce or Background to Zod 4.4.3 for ARCH-058. [Revision-10 reconciliation](ARCH-058/shared-hash-reconciliation.md) is the binding decision.
 
-This revision uses `moda-interact-workspace-ARCH-058-MCP-002.zip` as its sole application baseline. It adds two portable canonical Shared task definitions, updates the existing consumer instructions/dependencies and current architecture handoff, and preserves all application source, accepted task history, MCP-002 claim/WIP and decision indexes. New tasks are **defined but not materialised**; no branch, worktree, implementation commit, publication or deployment is created by this documentation amendment. SHARED-002 receives only the reverse dependency edge to SHARED-003; its historical 4.0.0 receipt remains byte-identical.
+This revision uses `moda-interact-workspace(20261104-165221).zip` as the application/documentation baseline. It preserves all accepted task Completion/Architect Review history and all application source. The previously defined SHARED-003/004 revision-9 tasks were not materialised; their definitions are replaced before execution. New DATABASE-002, SHARED-005 and SHARED-006 definitions are portable and not materialised by this patch. Decision indexes remain untouched.
 
 ## Objective
 
-Twelve repository-owned tasks (the original ten plus the two corrective Shared gates) deliver standard product discovery, native shipping information and grounded response behavior. The global reference taxonomy remains in PostgreSQL/pgvector; merchant product reads establish actual assortment; canonical discount options/details establish promotion facts for the proposed purchase. Commerce creates and publishes the four standard product/shipping tools for every otherwise authorized store, including Free plans and new stores. Admin's existing taxonomy implementation stays separate.
+Fifteen repository-owned tasks deliver standard product discovery, native shipping information and grounded response behavior, including the five corrective contract/migration/publication gates introduced by revision 10. The global reference taxonomy remains in PostgreSQL/pgvector; merchant product reads establish actual assortment; canonical discount options/details establish promotion facts for the proposed purchase. Commerce creates and publishes the four standard product/shipping tools for every otherwise authorized store, including Free plans and new stores. Admin's existing taxonomy implementation stays separate.
 
 ## Normative documents
 
-- [Contracts](ARCH-058/contracts.md): wire shapes, responsibility boundaries, instruction ownership, exact identities and current dependency policy.
-- [Implementation handoff](ARCH-058/implementation-handoff.md): accepted source, current frontier and owned continuation.
-- [Execution baseline](ARCH-058/execution-baseline.json): historical publication receipt, source observations and current task metadata.
-- [Shared hash reconciliation](ARCH-058/shared-hash-reconciliation.md): reproduced failure, chosen correction and artifact acceptance gates.
+- [Contracts](ARCH-058/contracts.md): wire shapes, responsibility boundaries, instruction ownership and corrected built-in identity.
+- [Implementation handoff](ARCH-058/implementation-handoff.md): accepted source, current frontier and continuation requirements.
+- [Execution baseline](ARCH-058/execution-baseline.json): historical publication receipt and current correction state.
+- [Shared hash reconciliation](ARCH-058/shared-hash-reconciliation.md): reproduced failure and revision-10 no-hash decision; revision 9 remedy is superseded.
 - [Original source-grounded review](reviews/commerce-agent-product-discovery-20261104-015544-r03/review.md): historical supporting evidence.
 
 ## Task graph and current frontier
 
 | Task | Repository | Concrete responsibility | Prerequisites | Current state |
 | --- | --- | --- | --- | --- |
-| [DATABASE-001](../decisions/database/ARCH-058/DATABASE-001-persist-reference-taxonomy-and-core-product-discovery.md) | `moda-interact-database` | Durable taxonomy schema, policy and grant guard | Existing task prerequisites | Complete; unchanged |
-| [SHARED-001](../decisions/shared/ARCH-058/SHARED-001-define-product-discovery-and-recommendation-contracts.md) | `moda-interact-shared` | Accepted public contracts and runner | Existing task prerequisites | Complete; unchanged |
+| [DATABASE-001](../decisions/database/ARCH-058/DATABASE-001-persist-reference-taxonomy-and-core-product-discovery.md) | `moda-interact-database` | Accepted taxonomy schema, policy and original grant guard | - | Complete; historical baseline |
+| [SHARED-001](../decisions/shared/ARCH-058/SHARED-001-define-product-discovery-and-recommendation-contracts.md) | `moda-interact-shared` | Accepted product/shipping/recommendation contracts and runner | - | Complete; historical baseline |
 | [SHARED-002](../decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md) | `moda-interact-shared` | Historical immutable 4.0.0 publication | SHARED-001 | Complete; receipt preserved |
-| [SHARED-003](../decisions/shared/ARCH-058/SHARED-003-pin-built-in-contract-schema-runtime.md) | `moda-interact-shared` | Exact Zod 4.4.3 packaging and packed-consumer regression | SHARED-002 | Ready; defined but not materialised |
-| [SHARED-004](../decisions/shared/ARCH-058/SHARED-004-publish-contract-hash-runtime-fix.md) | `moda-interact-shared` | Publish/verify accepted 4.0.1 correction | SHARED-003 | Pending; defined but not materialised |
+| [SHARED-003](../decisions/shared/ARCH-058/SHARED-003-remove-built-in-contract-hashes.md) | `moda-interact-shared` | Remove hash-based built-in identity | SHARED-002 | Ready; defined but not materialised |
+| [SHARED-004](../decisions/shared/ARCH-058/SHARED-004-remove-obsolete-conversation-tool-context.md) | `moda-interact-shared` | Remove obsolete MCP conversation-context export | SHARED-003 | Pending |
+| [SHARED-005](../decisions/shared/ARCH-058/SHARED-005-freeze-commerce-datetime-wire-syntax.md) | `moda-interact-shared` | Freeze explicit discount built-in UTC timestamp syntax and bump both discount built-ins to 2.0.0 | SHARED-004 | Pending |
+| [SHARED-006](../decisions/shared/ARCH-058/SHARED-006-publish-corrected-commerce-contracts.md) | `moda-interact-shared` | Publish/verify combined corrected package, target 5.0.0 | SHARED-003, SHARED-004, SHARED-005 | Pending |
+| [DATABASE-002](../decisions/database/ARCH-058/DATABASE-002-remove-built-in-contract-hash-storage.md) | `moda-interact-database` | Forward-convert persisted built-in grants from hashed 1.0.0 to no-hash 2.0.0 identity | DATABASE-001, SHARED-005 | Pending |
 | [MCP-001](../decisions/mcp/ARCH-058/MCP-001-import-and-resolve-postgresql-taxonomy.md) | `moda-interact-mcp` | Accepted importer, resolver and required-feature selection | DATABASE-001, SHARED-002 | Complete, Attempt 3 |
-| [MCP-002](../decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md) | `moda-interact-mcp` | Preserve draft; align package/Zod; complete product/discount provider work | MCP-001, SHARED-004 | In progress, Attempt 1; hold pending correction |
-| [SHOPIFY-001](../decisions/shopify/ARCH-058/SHOPIFY-001-enable-shipping-policy-read-scope.md) | `moda-interact-shopify` | Accepted native policy permission declaration | Existing task prerequisites | Complete; unchanged |
-| [MCP-003](../decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md) | `moda-interact-mcp` | Native shipping reader on corrected MCP-002 graph | MCP-002, SHOPIFY-001 | Pending |
-| [COMMERCE-001](../decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md) | `moda-interact-commerce` | Align package/Zod and publish standard tools/instructions | MCP-002, MCP-003 | Pending |
-| [BACKGROUND-001](../decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md) | `moda-interact-background` | Align package/Zod and implement grounded host composition | MCP-002, MCP-003, COMMERCE-001 | Pending |
-| [SYSTEM-TEST-001](../decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md) | `moda-interact-system-test` | Verify the accepted applications through existing eleven scenario IDs | All eleven implementation/publication tasks | Pending |
+| [MCP-002](../decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md) | `moda-interact-mcp` | Preserve WIP; consume corrected Shared/Database and finish product/discount work | MCP-001, DATABASE-002, SHARED-006 | Blocked after Attempt 1 |
+| [SHOPIFY-001](../decisions/shopify/ARCH-058/SHOPIFY-001-enable-shipping-policy-read-scope.md) | `moda-interact` | Accepted native policy permission declaration | - | Complete |
+| [MCP-003](../decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md) | `moda-interact-mcp` | Native shipping reader | MCP-002, SHOPIFY-001 | Pending |
+| [COMMERCE-001](../decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md) | `moda-interact-commerce` | Consume Shared 5.0.0; publish standard tools/instructions | MCP-002, MCP-003, SHARED-006 | Pending |
+| [BACKGROUND-001](../decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md) | `moda-interact-background` | Consume Shared 5.0.0; implement grounded host composition | MCP-002, MCP-003, COMMERCE-001, SHARED-006 | Pending |
+| [SYSTEM-TEST-001](../decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md) | `moda-interact-system-test` | Verify corrected contracts, migration and integrated customer behavior | All required implementation/publication tasks | Pending |
 
-SHARED-003 implementation must be accepted before SHARED-004 publishes. After SHARED-004 acceptance, resume the current MCP-002 claim and existing dedicated worktrees; no new attempt, preparation claim, source reset, Database repin or taxonomy selection. MCP-002's intermediate product failures and unfinished validation remain outstanding. Pending tasks proceed through the existing downstream order. SystemTest's ten deterministic scenarios and one optional quality scenario are unchanged; adding two prerequisite tasks does not add scenario IDs.
+Execution frontier: run SHARED-003 first, then SHARED-004, then SHARED-005. After SHARED-005 is accepted, DATABASE-002 and SHARED-006 may proceed independently through their normal task workflows. SHARED-005 performs the required `1.0.0 -> 2.0.0` built-in version bump because its datetime correction changes the discount output wire semantics. SHARED-006 publishes only after all three Shared implementation corrections are accepted. MCP-002 remains blocked with its Attempt-1 draft preserved until DATABASE-002 and SHARED-006 are Complete; then return the same task to Ready and reclaim it through `/moda-task`. Do not recreate taxonomy work, revert the WIP commit, or create compatibility hashes.
 
-The prior revisions' product, shipping, instruction, grant and error-handling decisions below remain in force. Historical statements about no additional release refer to their earlier amendments and are superseded only for the narrow Shared packaging correction defined above.
+The prior revisions' product, shipping, instruction, grant and error-handling decisions below remain in force except where revision 10 explicitly replaces hash/Zod/context/package statements.
 
 ## Product and discount behavior
 
@@ -144,8 +147,8 @@ The uploaded MCP-001 task is review/Attempt 2 and its taxonomy implementation us
 
 MCP-002's former section “One domain authorization read for conversation discounts” and its dependent reader/module/test requirements are withdrawn. Generic shop descriptors and catalogue execution replace them; Background alone owns workflow permission and retained state. The actual current catalogue factory, execution port and query boundaries now anchor those changes. The current MCP CLI also anchors the Commerce child receipt: one stdout receipt, one taxonomy stage, and a null import fingerprint only for pending-migration dry-run planning.
 
-The previously published unused `CommerceConversationToolContextSchema` is not consumed by this design. Removing that public export remains a separate Shared cleanup, acceptance and immutable publication follow-up with coordinated consumer pins. This focused correction neither removes it nor changes the current 4.0.0 runtime baseline; it does not claim that the obsolete public API has already been cleaned up.
+SHARED-004 removes the previously published unused `CommerceConversationToolContextSchema` and type. The corrected design still preserves Background/runner conversation contracts and the separately accepted outreach tool context. No conversation-specific replacement is added to MCP.
 
 ## Architect Acceptance Reconciliation (2026-11-04)
 
-MCP-001 Attempt 3 is accepted and Complete at `1dd5430b9d3108bf93bba86c1fb9233736f606d3`; its task contains the authoritative review and validation limits. Earlier review/Attempt 2 snapshots above are historical. MCP-002 subsequently entered its existing Attempt 1 claim; revision 9 now holds that claim on corrective SHARED-004. SYSTEM-TEST-001 remains pending on the remaining implementations; the architecture is not yet Implemented. No persistent import, deployment or publication is certified by task acceptance.
+MCP-001 Attempt 3 is accepted and Complete at `1dd5430b9d3108bf93bba86c1fb9233736f606d3`; its task contains the authoritative review and validation limits. Earlier review/Attempt 2 snapshots above are historical. MCP-002 subsequently entered Attempt 1 and preserved its WIP source; revision 10 blocks continuation on DATABASE-002 and SHARED-006. SYSTEM-TEST-001 remains pending on the remaining implementations; the architecture is not yet Implemented. No persistent import, deployment or publication is certified by task acceptance.
