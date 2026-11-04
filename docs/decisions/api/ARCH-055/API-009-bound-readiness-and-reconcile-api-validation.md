@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: review
 priority: 60
 executor: null
 claimed_at: null
@@ -135,7 +135,7 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 - [x] Implement bounded underlying readiness work and deterministic unit tests.
 - [x] Create the focused migrated PostgreSQL/HTTP runner using disposable pg17+pgvector.
 - [x] Register all accepted focused runners and the previously omitted AI-delay suite in aggregate integration.
-- [ ] Run API typecheck/build/full integration and classify any unchanged documented baseline failures without weakening new acceptance.
+- [x] Run API typecheck/build/full integration and classify any unchanged documented baseline failures without weakening new acceptance.
 
 ## Interfaces / Contracts
 
@@ -169,11 +169,11 @@ No constructor-side query or timer. Preserve original rejection cause. Observer 
 ## Acceptance Criteria
 
 - [x] Twenty or more concurrent timed-out health requests do not leave twenty independent probes outstanding; per-process outstanding probe count stays <=1.
-- [ ] Probe acquisition/execution has a documented measured finite bound, and successful readiness resumes after database recovery without restarting/disconnecting the business client.
+- [x] Probe acquisition/execution has a documented measured finite bound, and successful readiness resumes after database recovery without restarting/disconnecting the business client.
 - [x] Liveness remains available during DB failure and performs zero probes.
-- [ ] Aggregate integration includes all accepted functional suites and canonical migration coverage; no silent skips or reduced-schema substitution.
+- [x] Aggregate integration includes all accepted functional suites and canonical migration coverage; no silent skips or reduced-schema substitution.
 - [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
-- [ ] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
+- [x] Every mandatory requirement is tested; MEASURE-FIRST retained/deferred decisions are explicitly recorded with evidence.
 - [x] Worktree/branch/commit/submodule, validation and resource-cleanup evidence is recorded without invented execution claims.
 
 ### Required regression matrix — definition revision 2
@@ -195,13 +195,13 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
 - [x] `npx tsx --test tests/unit/http/server.test.ts tests/unit/http/arch055-readiness-single-flight.test.ts`
-- [ ] `node scripts/test-arch055-readiness-postgres.mjs`
+- [x] `node scripts/test-arch055-readiness-postgres.mjs`
 - [x] `npm run typecheck`
 - [x] `npm run build`
-- [ ] `npm run test:integration`
+- [x] `npm run test:integration`
 - [x] `git diff --check`
 - [x] Run `npm run lint`; record any broader unchanged baseline failure separately without changing unrelated files.
-- [ ] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
+- [x] Record before/after SQL/affected-row evidence and deterministic concurrent rollback/replay results for this task's selected changes.
 
 ## Stop Condition
 
@@ -270,6 +270,21 @@ Local elapsed times are descriptive.
 {"profile":"M17","version":"candidate","scenario":"held-through-deadline","warmups":2,"samples":[{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2019.188236,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2084.238854,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2016.7924789999997,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2018.9661239999987,"status":503,"sql":"not applicable to fake delegate","affectedRows":0},{"requests":20,"probes":1,"peak":1,"pending":1,"elapsedMs":2017.43808,"status":503,"sql":"not applicable to fake delegate","affectedRows":0}]}
 {"profile":"readiness-pool-and-socket","acquireMs":1043.0844579999998,"queryMs":1009.3611509999996,"backendRecoveryMs":8166.8903740000005,"physicalConnections":1,"probeSql":"SELECT 1","affectedRows":0}
 {"profile":"readiness-http-outage","outageMs":12.700615000001562,"stalledHandshakeMs":1017.0581980000006,"liveProbes":0,"recovered":true,"socketsAfterShutdown":0}
+```
+
+## Attempt 1 validation resolution — 2026-11-04
+
+Ready for architect review. The final serial `npm run test:integration` on the unchanged published API commit `301165eb5dd969cde1338d5b363aee963d7e08ea` exited 0. The API worktree was clean. This supersedes the blocked validation status above and preserves the Attempt 1 history and implementation.
+
+- The command reached the end of all retained suites, including canonical installation/settings, REST-read authorization, discount offers, cross-domain recovery, billing, Woo consent, Redis/BullMQ, restore, AI-delay and readiness. It recorded 120 Node test passes, zero failures and four explicit opt-in measurement skips (M04/M05, M15, M11–M14 and M03). The separate platform-configuration runner passed 5/5.
+- Before the successful aggregate, one retry passed REST-read and discount offers, then stopped at feature-preferences migration deployment. A temporary copy of that runner with a TCP startup check passed 2/2. The final aggregate passed the original tracked runner, so no fixture or timeout change was needed. The temporary copy was removed. The startup experiment does not establish a single cause for all earlier intermittent failures.
+- The canonical focused readiness runner also exited 0 separately and the final aggregate repeated its 2/2 result after all 71 migrations. In the aggregate, pool acquisition failure settled in 1027.27 ms, query failure in 1252.39 ms and stalled handshake in 1010.03 ms. One physical readiness session was observed under the held pool. The business backend remained available, liveness issued zero probes and shutdown left zero sockets.
+- The injected SQL finished on the backend after 8469.72 ms. The measured client bound is distinct from backend cancellation. The earlier paired M17 evidence and the unchanged repository lint finding remain applicable.
+- Final container inventory showed no disposable API test containers. Attempt 1 remains unclaimed and awaits architect review.
+
+```jsonl
+{"profile":"readiness-pool-and-socket","acquireMs":1027.271401,"queryMs":1252.3935570000003,"backendRecoveryMs":8469.72139,"physicalConnections":1,"probeSql":"SELECT 1","affectedRows":0}
+{"profile":"readiness-http-outage","outageMs":6.045367000000624,"stalledHandshakeMs":1010.0267589999985,"liveProbes":0,"recovered":true,"socketsAfterShutdown":0}
 ```
 
 ## Architect Review
