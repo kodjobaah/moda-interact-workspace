@@ -9,17 +9,17 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-11-04T00:34:05Z
+attempt: 1
 depends_on:
 - ARCH-054-BACKGROUND-001
 enables:
 - ARCH-056-SYSTEM-TEST-001
 created: '2026-11-03'
-updated: '2026-11-04'
+updated: 2026-11-04
 ---
 
 # ARCH-056-BACKGROUND-001: Serialize inbound persistence before the message foreign-key insert
