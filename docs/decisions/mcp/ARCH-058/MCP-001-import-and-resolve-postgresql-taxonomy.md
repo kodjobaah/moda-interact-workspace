@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T07:38:22Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-058-DATABASE-001
@@ -30,7 +30,7 @@ updated: 2026-11-04
 
 Architecture ID: `ARCH-058`. Parent: `docs/architecture/ARCH-058-commerce-agent-product-discovery.md`. Normative contracts: `docs/architecture/ARCH-058/contracts.md`. Coordinator: `moda_architect`.
 
-**Defined but not materialised.** This portable definition was prepared from a source snapshot. No task branch, implementation worktree, commit, deployment, import or publication has been performed. Materialise through `/moda-task ARCH-058-MCP-001 --definition <path-to-this-file>` in the canonical developer workspace; the launcher supplies the actual implementation worktree and `MODA_WORKSPACE_ROOT`.
+This task is materialised in the canonical workspace with dedicated parent and implementation worktrees. Attempt 1 has a published implementation commit and a parent task report. No deployment, persistent import or capability publication has been performed.
 
 ## Objective
 
@@ -263,27 +263,31 @@ No new architecture decision requested. Exact scans and import bounds are docume
 
 ### Review Status
 
-Pending.
+**Changes Requested — Attempt 1, 2026-11-04.** Returned to `ready`; executor and claim are cleared. Attempt remains 1. No architect acceptance or downstream promotion is made.
 
 ### Review Notes
 
-Not reviewed.
+1. **[P1] Required disposable PostgreSQL integration validation is incomplete.** Acceptance criterion 9 and the required validation item for `npm run test:integration:docker` remain unchecked. The report explicitly says the integration suite was not run, so PostgreSQL round-trip, transactional activation, concurrency, mixed-dimension reader safety, and database-backed composition have not been verified. Run the exact owned-fixture command from the report, record its exit status and results, and do not use a deployment `DATABASE_URL`. This review authorizes the assigned agent on the next attempt to launch and wait for this task's `npm run test:integration:docker` disposable integration suite; authorization is limited to the owned disposable harness and fixture database.
+2. **[P3] The task definition's materialization statement was stale.** It claimed no task branch, worktree or commit existed despite the recorded Attempt 1 worktrees and commits. The statement is corrected above; keep the report consistent with observed VCS state in the next submission.
 
 ### Reviewed Files
 
-None.
+- Implementation `66feebf2aeea53e6f4515a5899ad00c7bc550bce` and parent submission `d4e99df28`; both exact commits are present on their respective remote task branches. The implementation branch's upstream is configured as `origin/main`, although `origin/task/ARCH-058-MCP-001` points at the same implementation commit.
+- Reviewed the task definition, source manifest and importer/reader/CLI implementation, registry and capability composition, focused tests, integration harness and Attempt 1 Completion Report.
 
 ### Validation Reviewed
 
-None.
+- Reviewed the reported unit/typecheck/lint/build results and source-backed manifest verification. No test command was rerun during this review.
+- `npm run test:integration:docker` is explicitly reported as NOT RUN; this is a required acceptance gate and prevents acceptance.
+- Parent report whitespace was not independently rechecked in this review.
 
 ### Architecture Conformance
 
-Not assessed.
+The reviewed implementation stays within the MCP repository scope, consumes the accepted Shared/Database artifacts, uses fixture-backed category identity, and makes no persistent import or publication claim. The required PostgreSQL behavior remains unverified; downstream MCP-002 and SYSTEM-TEST-001 stay gated.
 
 ### Follow-up
 
-None.
+Complete the authorized disposable integration validation, correct the report/worktree evidence if needed, publish both task branches, and return the same task for architect review. Do not start or promote either enabled task before acceptance.
 
 
 ## Architect Dependency Handoff (2026-11-04)
