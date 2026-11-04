@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -593,3 +593,7 @@ None.
 ## Architect Dependency Reconciliation (2026-11-04)
 
 MCP-001 Attempt 3 is accepted and Complete at `1dd5430b9d3108bf93bba86c1fb9233736f606d3`. Its sole prerequisite is satisfied; this task is ready, unclaimed, at Attempt 0. Use normal launcher preparation and accepted-source integration gates. No implementation is started by this promotion.
+
+## Architect Resume Reconciliation (2026-11-04)
+
+MCP-001 is Complete at accepted Attempt 3; DATABASE-002 is accepted and Complete at `93225ee`; SHARED-006 is accepted and Complete with published Shared 5.0.0 / runner 1.1.0 / discount built-ins 2.0.0. All explicit prerequisites are satisfied. This supersedes the blocked lifecycle wording in revision 10 above: task is Ready, executor/claim empty, Attempt 1 retained. Preserve WIP `4bffa87ed4af0fb40513ad75d38df49c51746360` and its report; normal launcher preparation claims the next attempt in the existing dedicated worktrees. Do not reuse the stale claim or automatically start execution. Consumer adoption and validation remain task work, including the known optional Commerce projection issue.
