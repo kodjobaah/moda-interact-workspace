@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-11-04T08:07:28Z
@@ -354,51 +354,49 @@ This section belongs to the implementing repository agent. No implementation is 
 
 ### Status
 
-Implemented and submitted for architect review. No architect acceptance decision has been made by this agent.
+Attempt 2 implementation and evidence are submitted for architect review. No architect acceptance decision has been made by this agent.
 
-Implementation commit: `50a9b2c` (`feat(background): continue durable initial recovery outreach`), pushed to `origin/task/ARCH-056-BACKGROUND-004`.
+Implementation commit: `0575c4e` (`test(background): complete durable initial outreach retry evidence`), pushed to `origin/task/ARCH-056-BACKGROUND-004`.
 
 ### Files Changed
 
-Production: `src/services/checkout-recovery.service.ts`, `recovery-materialization.service.ts`, `recovery-initiation.service.ts`, `recovery-outreach-finalization.service.ts`, `recovery-initial-outreach-support-notice.service.ts`, `pending-recovery-candidate.worker.ts`, `automated-recovery-template.service.ts`, `initial-no-offer-fallback.service.ts`, `woo-recovery-outreach.service.ts`, and `woo-recovery-outreach.adapters.ts`.
-
-Tests: the task-owned worker, initiation, materialization, finalization, support-notice, template, Woo, and fallback suites; the five declared new progress/settlement test and fixture files; and Shopify initial no-offer plus Support-notice integration coverage.
+Production changes remain within task ownership: initiation, finalization, the atomic Support diagnostic, the outbound diagnostic projection, neutral fallback/facade handling, and Woo outreach diagnostics. Test changes cover the declared task unit modules, progress fixtures and integrations, Shopify no-offer worker flow, Support lock races, Woo settlement/outreach, and worker event listeners. No BG002/BG003-owned production file or database gitlink was changed.
 
 ### Work Completed
 
-- Continued durable initial outreach from canonical attempt/message progress before new preparation and admission; reused retained credit and resumed the exact prepared message.
-- Reconciled confirmed initial sends through exact settlement, atomic Support/attempt finalization, conditional recovery status updates, and deterministic Shopify follow-up scheduling while preserving Woo's no-follow-up boundary.
-- Preserved required-state exceptions and visible held/deferred outcomes; added the task-owned diagnostic and regression coverage described above.
-- Fixed the Shopify no-offer integration path: fresh initial sends now reserve the durable attempt message and enter the recovery-scoped resume path, rather than passing a general-scope admission into the recovery delivery fence.
-- Kept the `## Architect Review` section untouched.
+- A prepared Shopify message interrupted before provider permit resumes through the actual candidate worker with the same message, usage identity, attempt and retained credit, and one eventual provider dispatch.
+- A durable permit with no provider receipt is held before Shopify lookup; the actual worker does not make another resume or provider call, release credit, create Support state or report success.
+- Bounded retry exhaustion remains failed and explicit replay reaches the same candidate handler. Materialization/cleanup failures are emitted as separate safe components through the actual Shared logger; real `failed` and `error` listeners are retained and invoked in tests.
+- Confirmed settlement retry coverage now exercises billing, Support, status and follow-up publication boundaries. Retries converge on the exact message and persisted due date without duplicate debit or Support notice. Both real same-Shop Support/final-fence race orders pass.
+- Support, Shopify/Woo finalization, fallback and Woo outreach errors use bounded safe diagnostics while preserving original exception identity. Actual installed Shared logger captures verify redaction, cause/code/clientVersion where permitted, component-level preflight/release and send/compensation messages, and sink-failure isolation.
+- Technical preflight exceptions preserve retained credit; optional neutral fallback remains available for prepared progress, while required-state failures remain retryable and propagate their original exception.
 
 ### Validation Results
 
-Passed on Attempt 1 in `moda-interact-background`:
+All task gates were run against the Attempt 2 implementation worktree with PostgreSQL and Redis prerequisites enabled; integration files were run serially.
 
-- Unit selection: 11 files, 204 tests passed; the task-listed Woo composition suite separately passed 2 tests.
-- PostgreSQL/Redis integrations, run serially to avoid disposable-database contention: initial-outreach progress (2), actual worker (1), Shopify initial no-offer dispatch (2), Support notice (8), and ARCH-055 follow-up identity (4). Total: 17 tests passed.
-- `npm run build` passed with Prisma Client 6.19.3 generation and TypeScript compilation.
-- The task-defined `npx --no-install eslint ...` file list passed; the final Support integration assertion was linted again separately.
+- Exact task unit selection: 11 files, 206 tests passed.
+- PostgreSQL/Redis integrations: initial-outreach progress (5), actual worker retry/replay/finalization (3), Shopify no-offer dispatch/resume/uncertainty (4), Support notice and both lock races (10), ARCH-055 follow-up identity (4). Total: 26 tests passed, with no skipped files in these runs.
+- `npm run build` passed, including Prisma Client 6.19.3 generation and TypeScript compilation.
+- The exact task-scoped `npx --no-install eslint ...` file list passed.
 - `git diff --check` passed.
-
-An earlier Support integration run had one stale expected error-message assertion; the assertion was updated to the existing early routing-pointer rejection, and the complete suite then passed. One disposable PostgreSQL startup attempt failed before test execution; a subsequent retry and all serial integration runs passed. No combined concurrent integration run is represented as passing.
+- Additional focused Woo outreach and Support diagnostic suites passed: 50 and 10 tests respectively; their actual Shared 3.0.0 record captures assert safe component evidence and redaction.
 
 ### Deviations
 
-Fresh Shopify initial outreach uses explicit reserve-then-`resumeInitialTemplate` so it receives the recovery execution scope required by the accepted BG003 delivery contract. This preserves the attempt/message identity and final fence; it does not change BG002/BG003 production policy. Integration suites were run individually rather than concurrently due intermittent disposable database startup/contention.
+Fresh Shopify initial outreach retains the explicit reserve-then-`resumeInitialTemplate` path required for recovery execution scope by BG003. This preserves attempt/message identity and the final fence without changing BG002/BG003 production policy. Disposable PostgreSQL/Redis integrations were run one file at a time to avoid contention.
 
 ### Assumptions
 
-Accepted ARCH-056-BACKGROUND-002/003 and other declared prerequisites are present in the implementation checkout. Architect review remains required for conformance and task acceptance.
+Accepted ARCH-056-BACKGROUND-002/003 and the other declared prerequisites remain present in the implementation checkout. Architect review remains required for conformance and task acceptance.
 
 ### Unresolved Issues
 
-No known implementation blocker remains. The explicit held/deferred and blocked-policy boundaries remain as defined by the task.
+No known implementation blocker remains. Provider uncertainty, held credit, bounded retry exhaustion, and the documented no-scanner repair limit remain explicit policy boundaries; no automatic recovery scanner or unsupported credit reactivation is claimed.
 
 ### Architectural Concerns
 
-The implementation branch was published to its explicit task branch after correcting its local upstream tracking; no push to `main` was made. Architect review remains the acceptance gate.
+The implementation was published only to the explicit task branch; no push to `main` was made. Architect review remains the acceptance gate.
 
 Task status: review. Awaiting moda_architect review; no architect acceptance decision has been made by this agent.
 
