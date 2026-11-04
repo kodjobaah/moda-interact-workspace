@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -26,7 +26,7 @@ depends_on:
 enables:
 - ARCH-055-SYSTEM-TEST-001
 created: '2026-11-02'
-updated: '2026-11-02'
+updated: '2026-11-04'
 ---
 
 # ARCH-055-API-009: Bound readiness and reconcile API validation entrypoints
@@ -37,7 +37,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 2. API-owned workflow / forward-migration contract; supersedes definition revision 1 without claiming an implementation attempt.
 
-**Definition state:** defined but not materialised. No developer worktree, branch, commit, push or execution claim has been created in this snapshot-only session. Initial status is `pending` solely from the dependency graph below.
+**Definition state:** materialised in the canonical parent task worktree and branch. All eight explicit API dependencies are Complete, including API-004 at Attempt 3. The task is Ready at Attempt 0 with no executor or claim; no implementation worktree has been created.
 
 ## Objective
 
@@ -217,7 +217,7 @@ Implement in coherent internal commits/work packages (correctness first, bounded
 
 ### Status
 
-Not Started.
+Implementation not started. The task is Ready at Attempt 0 and awaits its normal launcher claim.
 
 ### Files Changed
 
@@ -233,7 +233,7 @@ Not run. Record each command, outcome, fixture/migration identity, actual SQL/ro
 
 ### Worktree and Git Evidence
 
-Not materialised. Record launcher packet, physical parent/implementation worktrees, both task branches, synchronized SHAs, accepted nested Database pin, commits/pushes and any exact publication failure.
+Parent task worktree is materialised at `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-009` on `task/ARCH-055-API-009`. No implementation worktree or attempt claim was created for this promotion.
 
 ### Deviations
 
@@ -245,7 +245,7 @@ The uploaded source snapshot is the design baseline, not proof of current remote
 
 ### Unresolved Issues
 
-Required implementation/validation has not started. Do not pre-check acceptance items.
+Required implementation/validation has not started. Do not pre-check acceptance items. The launcher may claim Attempt 1 after the canonical task branch is published.
 
 ### Architectural Concerns
 
@@ -280,3 +280,7 @@ Only the authorised review may accept this task and promote dependants.
 ### Mechanism source (not application validation)
 
 Prisma ORM6 PostgreSQL connector documentation, checked2 November2026: `https://www.prisma.io/docs/orm/v6/overview/databases/postgresql` documents connection_limit, connect_timeout, pool_timeout and socket_timeout. These support the selected explicit settings; they do not prove deployed pooler/network behavior or the runtime recovery assertion. Do not use v7 driver-adapter instructions for this pinned6.19.3 repository.
+
+## Dependency Promotion — 2026-11-04
+
+ARCH-055-API-001 through API-008 are Complete. In particular, API-004 is Accepted and Complete at Attempt 3. API-009 is promoted from Pending to Ready at Attempt 0 with executor and claim cleared. This promotion does not start implementation or create an implementation worktree. ARCH-055-SYSTEM-TEST-001 remains Pending until API-009 is Complete.
