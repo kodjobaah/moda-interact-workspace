@@ -2,7 +2,7 @@
 
 **Status:** implementation in progress. SHARED-001 Attempt 2 accepted on 4 November 2026; architecture-wide completion and deployment are not certified.
 
-Shared handoff: accepted source `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139` includes discovery, browse, shipping, built-in grants and answer-presentation contracts. SHARED-002 is ready for its separate 4.0.0 publication gate. SYSTEM-TEST-001 remains pending on publication and consumer prerequisites. The task table preserves initial definition statuses.
+Shared handoff: SHARED-001 source `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139` and SHARED-002 publication are accepted. Exact `@modainteract/moda-interact-shared@4.0.0` is independently retrievable and verified; its receipt is in SHARED-002. DATABASE-001 is complete, so MCP-001 is ready and unclaimed. SYSTEM-TEST-001 remains pending on remaining consumer prerequisites. No consumer upgrade or deployment has been performed by these reviews. The task table preserves initial definition statuses.
 
 ## Decision
 

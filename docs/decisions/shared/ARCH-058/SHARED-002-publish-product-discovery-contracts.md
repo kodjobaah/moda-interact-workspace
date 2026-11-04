@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-058-SHARED-001
 enables:
@@ -29,7 +29,7 @@ updated: 2026-11-04
 
 `docs/architecture/ARCH-058-commerce-agent-product-discovery.md`; `docs/architecture/ARCH-058/contracts.md`, section 1. Coordinator: `moda_architect`.
 
-**Defined but not materialised.** Materialise using `/moda-task ARCH-058-SHARED-002` only after its dependency is accepted. No branch, worktree, publication or execution claim exists in this definition.
+**Definition state:** materialised, published and architect-accepted at Attempt 1 on 2026-11-04. Exact package `@modainteract/moda-interact-shared@4.0.0` is verified against the immutable receipt below. No consumer upgrade or deployment is implied.
 
 ## Objective
 
@@ -58,12 +58,12 @@ Verify the new public schemas/types/constants/helper named in SHARED-001, includ
 
 ## Work Items
 
-- [ ] Verify prerequisite complete/accepted status and exact source commit.
-- [ ] Verify actual registry baseline and approved target availability; stop for reconciliation on conflict.
-- [ ] Apply only approved release metadata and inspect the package artifact.
-- [ ] Publish under the existing release workflow.
-- [ ] Retrieve the exact registry package and verify version, integrity and required exports.
-- [ ] Record the receipt and stop without upgrading consumers.
+- [x] Verify prerequisite complete/accepted status and exact source commit.
+- [x] Verify actual registry baseline and approved target availability; stop for reconciliation on conflict.
+- [x] Apply only approved release metadata and inspect the package artifact.
+- [x] Publish under the existing release workflow.
+- [x] Retrieve the exact registry package and verify version, integrity and required exports.
+- [x] Record the receipt and stop without upgrading consumers.
 
 ## Interfaces / Contracts
 
@@ -80,10 +80,10 @@ Verify the new public schemas/types/constants/helper named in SHARED-001, includ
 
 ## Acceptance Criteria
 
-- [ ] SHARED-001 is complete and architect-accepted, with the published source commit recorded.
-- [ ] Approved exact version is available from the intended registry with its integrity and required exports verified.
-- [ ] Only permitted release metadata and this report changed.
-- [ ] No consumer, runtime deployment or Commerce publication was performed.
+- [x] SHARED-001 is complete and architect-accepted, with the published source commit recorded.
+- [x] Approved exact version is available from the intended registry with its integrity and required exports verified.
+- [x] Only permitted release metadata and this report changed.
+- [x] No consumer, runtime deployment or Commerce publication was performed.
 
 ## Validation
 
@@ -111,47 +111,134 @@ Keep package publication distinct from COMMERCE-001's environment tool publicati
 
 ### Status
 
-Not started. Defined but not materialised; publication is blocked on SHARED-001 acceptance.
+Ready for Review — Attempt 1, codex, 2026-11-04. Published and retrieved `@modainteract/moda-interact-shared@4.0.0` from the existing public npm registry. The downloaded archive is byte-identical to the inspected local artifact, with registry integrity, public runtime exports and declaration-consumer checks passing. No architect acceptance, main merge, consumer upgrade or deployment is asserted.
 
 ### Files Changed
 
-None implemented.
+Implementation: `package.json` and `package-lock.json` only. Exactly three version scalars changed from 3.1.0 to 4.0.0 (package version, lock root version, lock root-package version). JSON comparison confirmed every other metadata/dependency/export field was unchanged. Release metadata committed/pushed as `2489824bb879caa8c463fd857728078642dd1fd9` on `task/ARCH-058-SHARED-002`.
+
+Parent: this task report and execution metadata only. No implementation gitlink, index, architecture, frontier or another task was changed.
 
 ### Work Completed
 
-None.
+- The task's architect dependency handoff identifies accepted SHARED-001 source `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`. The launcher confirmed its Complete dependency. Release baseline `23c32e263798cdfa604b79b8e12f3b0111b7e1b7` contains that commit and has an identical full source tree, verified before the version change.
+- Read the existing README artifact/release policy. Source metadata and npm registry baseline were both 3.1.0; 4.0.0 was unoccupied. Registry versions and latest tag were checked again immediately before publication with the same result. Used the existing npm registry/authentication configuration without exposing credentials.
+- Applied `npm version 4.0.0 --no-git-tag-version`. Built the accepted implementation through the required prepack lifecycle and inspected the actual tarball. Every existing public subpath's JavaScript/declaration or fixture target is present; no new subpath was introduced.
+- Published the exact inspected local tarball using `npm publish <approved-tarball> --access public`. Retrieved the exact registry version with `npm pack @modainteract/moda-interact-shared@4.0.0 --prefer-online` and compared full archive bytes, registry SHA-512 integrity and SHA-1 shasum with the local artifact.
+- Verified the downloaded package's public contracts, dictionaries, mixed grant types, constants/helper, canonical descriptor hashes and runnerVersion 1.1.0. Both artifact runtime imports and a strict TypeScript consumer of all named schemas/types passed, including shipping/presentation exports and the updated grant union. The existing clean-process commerce/runner verifier also passed against the extracted registry package.
+
+### Immutable Publication Receipt
+
+```json
+{
+  "schemaVersion": "1",
+  "package": "@modainteract/moda-interact-shared",
+  "version": "4.0.0",
+  "registry": "https://registry.npmjs.org/",
+  "acceptedSourceCommit": "0b5567c3e01748de1d5d8c7d3be0d84a55dfb139",
+  "releaseBaseCommit": "23c32e263798cdfa604b79b8e12f3b0111b7e1b7",
+  "releaseMetadataCommit": "2489824bb879caa8c463fd857728078642dd1fd9",
+  "publishedAt": "2026-11-04T07:13:25.365Z",
+  "tarball": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-4.0.0.tgz",
+  "integrity": "sha512-Zv78WX/AsN1lZWyaMirO2Ml/rOZknSv0cnJnxYBuyc368kzDZzswauKRPSe8GSXFfjkk3cQnr3wi4n49d9HTzw==",
+  "shasum": "07861187ae8349c522378beb87341ae026c23f1d",
+  "sha256": "57f7511ae9e52eebac5f532f0cd787c6a391361520f1fc0d09386312fb3d276e",
+  "entryCount": 131,
+  "size": 287127,
+  "unpackedSize": 1303261,
+  "localRegistryBytesIdentical": true,
+  "distTagLatest": "4.0.0",
+  "runnerVersion": "1.1.0",
+  "allPublicSubpathFilesPresent": true,
+  "runtimeExports": "passed",
+  "declarationConsumer": "passed",
+  "cleanProcessEntrypoints": "passed",
+  "verifiedAt": "2026-11-04T07:14:37.939695+00:00"
+}
+```
+
+The registry tarball URL above is the actual recorded dist URL. Size and hashes refer to the downloaded compressed archive. The version was retrievable on the initial verification attempt; no registry propagation retries were needed. The receipt records npm's publication timestamp and the final verification timestamp.
 
 ### Validation Results
 
-Not run; no registry lookup, version bump or publication has occurred in the task-definition session.
+All Node/npm operations used the workspace bootstrap (Node 24.19.0, npm 11.17.0). No SHARED-001 implementation suite was rerun; this gate verified packaging and the retrieved artifact.
+
+| Actual command/check | Result |
+|---|---|
+| Accepted commit ancestry and complete source-tree comparison | Passed; release baseline tree exactly equals accepted SHARED-001. |
+| `npm view @modainteract/moda-interact-shared versions --json` and `dist-tags --json` | Passed before preparation and immediately before publishing: latest 3.1.0, 4.0.0 unoccupied. |
+| `npm ci --no-audit --no-fund` | Installed the committed build dependencies without changing the lockfile. |
+| `npm version 4.0.0 --no-git-tag-version` and structured metadata comparison | Passed; only the three approved version scalars changed. |
+| `npm pack --dry-run` | Passed, including the required tsup JavaScript/declaration prepack build; 131 intended package files. |
+| `npm pack --ignore-scripts --json --pack-destination <temporary-local-directory>` | Produced the actual inspected archive from that completed build. All public export targets and artifact integrity passed. |
+| Local artifact runtime and TypeScript consumer checks | Passed; imports resolved to the extracted package's dist files. |
+| `npm publish <exact-inspected-4.0.0-tarball> --access public` | Passed; existing registry and auth, latest tag, public access. |
+| `npm view <exact-version> dist --json`; `npm pack <exact-version> --prefer-online --ignore-scripts --json --pack-destination <temporary-registry-directory>` | Passed; exact downloadable version and full-byte/integrity equality established. |
+| Downloaded artifact runtime/type checks | Passed for every named contract/type, shipping/search dictionaries, mixed grant branch, canonical descriptor hashes and runner 1.1.0. |
+| `COMMERCE_CONSUMER_DIRECTORY=<extracted-registry-package> npm run validate:commerce-entrypoints` | Passed in its clean process. |
+| `git diff --check` | Passed for release metadata and report. |
+
+The temporary TypeScript consumer ran with `tsc --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 --strict --skipLibCheck --types node`; it also checked that unsupported dispositions, numeric shipping IDs and published identity fields on built-in grants remain type errors. Verification used the artifact's own package self-reference. A temporary dependency-resolution link points only to installed third-party build dependencies, not a Shared source checkout or any application consumer.
+
+Local artifacts and verification scripts: `/tmp/moda-shared-4.0.0-xybsuloh`. Command logs/JSON: `/tmp/shared058-002-{versions-before,tags-before,versions-prepublish,tags-prepublish,local-pack,registry-pack,registry-dist,tags-after,times}.json`, `/tmp/shared058-002-{install,version,pack-dry-run,publish,local-runtime,local-types,local-entrypoints,registry-runtime,registry-types,registry-entrypoints}.log`. The full receipt is also available at `/tmp/moda-shared-4.0.0-xybsuloh/receipt.json`; its contents are preserved above for durable review.
 
 ### Deviations
 
-None recorded.
+The workspace Python predates tarfile extraction filters. The first temporary artifact extraction stopped on that unsupported argument; it was corrected to validate every member as a regular file/directory under `package/` without parent traversal before extraction. No source, package bytes or validation guard changed, and the passing inspection reused the same archive without rebuilding.
 
-### Assumptions
+After the required prepack build, the actual local archive was packed with `--ignore-scripts` to avoid a duplicate build. Publication used that exact inspected tarball rather than repacking a mutable directory. This preserved existing registry controls and provided an exact artifact-to-registry byte comparison.
 
-Approved conditional target 4.0.0; observed snapshot baseline 3.1.0.
+### Assumptions and Unresolved Issues
 
-### Unresolved Issues
-
-Actual registry baseline and accepted source are checked at execution, not assumed from the archive.
+None blocking this publication gate. The conditional 4.0.0 version assumptions were verified against actual accepted source and registry state. Architect review remains pending. Consumer installation, database/provider changes, Commerce environment publication and deployment remain separate tasks and were not performed.
 
 ### Physical Worktree and Synchronization Evidence
 
-Not materialised. Record real paths, branches, synchronized heads, accepted source/release commits and task-branch pushes only when they exist.
+```text
+canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent task worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-SHARED-002
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-SHARED-002
+both branches: task/ARCH-058-SHARED-002
+both worktrees newly created: yes
+another task worktree reused: no
+parent synchronized head before claim: d5fb4d0b33d830ee2f03541f049dd003f27e22d3
+implementation synchronized head before claim: 23c32e263798cdfa604b79b8e12f3b0111b7e1b7
+accepted source: 0b5567c3e01748de1d5d8c7d3be0d84a55dfb139
+release metadata head, committed and pushed: 2489824bb879caa8c463fd857728078642dd1fd9
+parent and implementation remote task FF: not-needed
+parent and implementation origin/main incorporated: already-current
+final parent synchronization/re-gate: passed; SHARED-001 Complete
+claim commit: c184381d3c9fe8f1f0b63efcb8cd0424e0679ff6; committed/pushed
+claimed_at: 2026-11-04T06:56:54Z
+executor: codex; attempt: 1
+recursive implementation submodule sync/update: passed; no entries
+shared/default checkout switched or mutated for implementation: no
+parent implementation gitlink changed/staged: no
+main merged/updated/pushed: no
+consumer upgrade or environment deployment: no
+```
 
-## Architect Review
-
-### Review Status
-
-Not reviewed; task definition only.
-
-### Review Notes
-
-Await publication evidence after SHARED-001 acceptance.
-
-
-## Architect Dependency Handoff (2026-11-04)
+## Historical Pre-publication Dependency Handoff (2026-11-04)
 
 SHARED-001 Attempt 2 is accepted and complete at implementation `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`. Its expanded browse, shipping and answer-presentation contract and original built-in/grant changes passed independent review. This publication task is ready, unclaimed and unexecuted. Use that accepted source and retain the existing registry/version/source checks before publishing 4.0.0; source acceptance alone is not registry publication. Do not advance consumer prerequisites until this task completes.
+
+
+## Architect Review — Accepted (Attempt 1, 2026-11-04)
+
+### Decision
+
+Accepted; no blocking findings. Automatic completion sets this publication task to `complete` and clears executor/claimed_at. The approved consumer version is exactly `@modainteract/moda-interact-shared@4.0.0`.
+
+### Source and Publication Verification
+
+- Compared the release baseline and accepted source Git trees: both are `25b51eb0cc7b838ab9a10ccf81697d57f6940ca7`. Compared accepted source to release HEAD: only package.json and package-lock.json changed, and structured JSON comparison confirms only the three approved version scalars changed.
+- Direct origin checks match implementation `2489824bb879caa8c463fd857728078642dd1fd9` and parent submission `77dd966989ce9c38c19039565a3c895a44bc37ac`. Both worktrees were clean at review start.
+- Independently retrieved the exact version metadata and tarball from the public npm registry into a new temporary directory. The 287,127-byte archive equals the originally inspected local archive byte for byte. SHA-512 integrity, SHA-1 and SHA-256 all match the immutable receipt above, including SHA-256 `57f7511ae9e52eebac5f532f0cd787c6a391361520f1fc0d09386312fb3d276e`.
+- Validated archive paths before extraction and confirmed every declared public export target exists. Against the newly downloaded artifact, runtime exports/dictionaries/mixed grants, canonical descriptor hashes and runnerVersion 1.1.0 pass; the strict TypeScript consumer and clean-process commerce/runner verifier also pass. Package self-reference resolves to extracted dist files; the temporary dependency link supplies only installed third-party dependencies.
+- Release diff whitespace checks pass. No implementation suite was rerun, no rebuild or publication occurred, and no consumer or shared environment was modified by this review. Prior prepack execution and target-availability checks remain recorded publication evidence.
+
+Independent artifact and runtime/type logs: `/var/folders/tc/km4tlxg554dcbpzx2smhsnkc0000gn/T/arch058-shared002-review-vu4vn_dd` (also recorded in `/tmp/arch058-shared002-review-root`). Registry bytes and metadata are preserved there.
+
+### Dependency Handoff
+
+SHARED-001 and DATABASE-001 are complete in the canonical task records. Promote MCP-001 to `ready`: both its declared prerequisites, DATABASE-001 and this publication, are complete. It must install exact 4.0.0 with its lockfile and use the accepted Database revision; it is not claimed or executed by this promotion. SYSTEM-TEST-001 and downstream consumer tasks retain their other prerequisite gates. This acceptance/dependency overlay is local, uncommitted and unpushed. Nothing is merged to main.
