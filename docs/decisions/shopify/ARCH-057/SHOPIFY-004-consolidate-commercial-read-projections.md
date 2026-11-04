@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -335,3 +335,7 @@ To be assessed from actual projections, call budgets, database policy evidence a
 ### Follow-up
 
 Return for review; terminal validation follows the parent dependency map rather than starting automatically.
+
+## Architect Dependency Reconciliation (2026-11-04)
+
+SHOPIFY-003 Attempt 2 is accepted and Complete at `fc978239097b364f43eea013525f38782ba1103b`. SHOPIFY-001/002 are also Complete; all declared prerequisites are satisfied. Promoted to ready without claim or attempt increment. Normal launcher preparation and accepted-source integration gates still apply. Earlier pending-definition statements are historical.
