@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T14:38:24Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-058-DATABASE-001
@@ -426,3 +426,13 @@ Bound and sanitize the source diagnostic and explicit cause before logging, reta
 ### Follow-up and Publication
 
 Correct the diagnostic boundary, rerun focused checks and applicable validation, publish the same mirrored task branches, and return for architect review. MCP-002 and SYSTEM-TEST-001 remain gated on acceptance; neither is promoted or executed by this review. No implementation code, schema, dependency or gitlink is changed. The developer explicitly authorized committing and pushing this review on 2026-11-04.
+
+## Architect Acceptance — Attempt 3 (2026-11-04)
+
+**Accepted and Complete.** Implementation `1dd5430b9d3108bf93bba86c1fb9233736f606d3` is published on `origin/task/ARCH-058-MCP-001`. The prior unsanitized-source diagnostic finding is resolved: the owning taxonomy boundary bounds/redacts source error and cause text, preserves safe source codes/status/request IDs separately from Moda reason codes, excludes current query wording and retains the original propagated exception. Actual installed Shared logger tests cover privacy, causes and throwing-sink isolation. No blocking findings remain. Historical Changes Requested and pending handoff entries are superseded by this acceptance.
+
+Independent validation from the canonical implementation worktree on Node 24.19.0: **58 passed, zero failed/skipped** across taxonomy, capability and runtime suites. Log: `/tmp/arch058-mcp001-attempt3-review.log`. Reviewed recorded passing typecheck/lint/build evidence and prior disposable PostgreSQL evidence: **25 passed, zero failed, one explicitly opt-in live Shopify test skipped**, with owned fixture cleanup. PostgreSQL and build/typecheck/lint were not independently rerun in this review; no fresh production performance or provider-quality claim is made. The diagnostics-only correction leaves the accepted database behavior unchanged.
+
+Canonical parent and implementation worktrees were verified clean, on the matching task branches; implementation HEAD matches its remote task ref. Accepted Shared 4.0.0, Database revision and source manifest remain unchanged. No persistent import, deployment, capability publication, main merge or parent gitlink update is included. Attempt remains 3, executor/claim are cleared, and automatic completion applies. The developer explicitly authorized this acceptance record, commit and push.
+
+Dependency reconciliation: MCP-002's sole prerequisite is now Complete, so it becomes ready without claim/attempt increment. SYSTEM-TEST-001 remains pending on its remaining implementation prerequisites and retains its manual execution gate. No downstream implementation was started.

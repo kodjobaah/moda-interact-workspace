@@ -153,3 +153,7 @@ Independently apply the default Attempt 8 patch to a fresh extraction of `moda-i
 ## Separate Shared public-contract cleanup
 
 The completed Shared implementation exported `CommerceConversationToolContextSchema` and `CommerceConversationToolContext`; the current generic MCP path does not consume them. Their obsolete purpose should be removed in a separately owned Shared correction, followed by acceptance, a new immutable publication under the repository's public-API version policy and coordinated consumer pins. Preserve the 4.0.0 receipt and legitimate host/runner conversation/grant schemas. This amendment does not claim that cleanup is complete, add an unverified package version, or block the submitted MCP-001 work on an unused export.
+
+## Accepted MCP Taxonomy Handoff (2026-11-04)
+
+MCP-001 Attempt 3 is architect-accepted and Complete at `1dd5430b9d3108bf93bba86c1fb9233736f606d3`. This supersedes earlier acceptance-pending snapshots in this handoff. The task records independent 58-test validation and reviewed prior PostgreSQL/build evidence with their limits. MCP-002 is ready, unclaimed, and must consume the accepted manifest/importer/runtime baseline through normal launcher integration. SYSTEM-TEST-001 remains pending on remaining prerequisites. No persistent import, tool publication, deployment or main merge is implied.
