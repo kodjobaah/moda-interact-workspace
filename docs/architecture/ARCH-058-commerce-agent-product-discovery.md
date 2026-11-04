@@ -27,8 +27,8 @@ Fifteen repository-owned tasks deliver standard product discovery, native shippi
 | [DATABASE-001](../decisions/database/ARCH-058/DATABASE-001-persist-reference-taxonomy-and-core-product-discovery.md) | `moda-interact-database` | Accepted taxonomy schema, policy and original grant guard | - | Complete; historical baseline |
 | [SHARED-001](../decisions/shared/ARCH-058/SHARED-001-define-product-discovery-and-recommendation-contracts.md) | `moda-interact-shared` | Accepted product/shipping/recommendation contracts and runner | - | Complete; historical baseline |
 | [SHARED-002](../decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md) | `moda-interact-shared` | Historical immutable 4.0.0 publication | SHARED-001 | Complete; receipt preserved |
-| [SHARED-003](../decisions/shared/ARCH-058/SHARED-003-remove-built-in-contract-hashes.md) | `moda-interact-shared` | Remove hash-based built-in identity | SHARED-002 | Ready; defined but not materialised |
-| [SHARED-004](../decisions/shared/ARCH-058/SHARED-004-remove-obsolete-conversation-tool-context.md) | `moda-interact-shared` | Remove obsolete MCP conversation-context export | SHARED-003 | Pending |
+| [SHARED-003](../decisions/shared/ARCH-058/SHARED-003-remove-built-in-contract-hashes.md) | `moda-interact-shared` | Remove hash-based built-in identity | SHARED-002 | Complete; accepted Attempt 2 |
+| [SHARED-004](../decisions/shared/ARCH-058/SHARED-004-remove-obsolete-conversation-tool-context.md) | `moda-interact-shared` | Remove obsolete MCP conversation-context export | SHARED-003 | Ready |
 | [SHARED-005](../decisions/shared/ARCH-058/SHARED-005-freeze-commerce-datetime-wire-syntax.md) | `moda-interact-shared` | Freeze explicit discount built-in UTC timestamp syntax and bump both discount built-ins to 2.0.0 | SHARED-004 | Pending |
 | [SHARED-006](../decisions/shared/ARCH-058/SHARED-006-publish-corrected-commerce-contracts.md) | `moda-interact-shared` | Publish/verify combined corrected package, target 5.0.0 | SHARED-003, SHARED-004, SHARED-005 | Pending |
 | [DATABASE-002](../decisions/database/ARCH-058/DATABASE-002-remove-built-in-contract-hash-storage.md) | `moda-interact-database` | Forward-convert persisted built-in grants from hashed 1.0.0 to no-hash 2.0.0 identity | DATABASE-001, SHARED-005 | Pending |
@@ -152,3 +152,7 @@ SHARED-004 removes the previously published unused `CommerceConversationToolCont
 ## Architect Acceptance Reconciliation (2026-11-04)
 
 MCP-001 Attempt 3 is accepted and Complete at `1dd5430b9d3108bf93bba86c1fb9233736f606d3`; its task contains the authoritative review and validation limits. Earlier review/Attempt 2 snapshots above are historical. MCP-002 subsequently entered Attempt 1 and preserved its WIP source; revision 10 blocks continuation on DATABASE-002 and SHARED-006. SYSTEM-TEST-001 remains pending on the remaining implementations; the architecture is not yet Implemented. No persistent import, deployment or publication is certified by task acceptance.
+
+## Shared Hash Removal Acceptance (2026-11-04)
+
+SHARED-003 Attempt 2 is architect-accepted and Complete at `59ea61f34197d64180e46680ac6d552b5e989a36`. Its provenance correction closes the prior documentation finding; implementation and prior independent validation are unchanged. Earlier unmaterialised/ready references are historical. SHARED-004 is now ready and unclaimed. SHARED-006 remains pending on SHARED-004/005; the intermediate source must not be published. Remaining architecture and system-test gates are unchanged.
