@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-11-04T20:04:52Z
@@ -28,7 +28,7 @@ updated: 2026-11-04
 
 Architecture ID: `ARCH-057`. Architecture document: `docs/architecture/ARCH-057-shopify-application-database-correctness-and-simplicity.md`. Coordinator: `moda_architect`.
 
-Mandatory execution/logging/validation contract: `docs/architecture/ARCH-057/task-contract.md`. **Defined but not materialised.** Canonical destination: `docs/decisions/shopify/ARCH-057/SHOPIFY-006-reuse-recovery-read-context-and-preserve-command-admission.md`.
+Mandatory execution/logging/validation contract: `docs/architecture/ARCH-057/task-contract.md`. Materialised through the prepared launcher for Attempt 1. Canonical task: `docs/decisions/shopify/ARCH-057/SHOPIFY-006-reuse-recovery-read-context-and-preserve-command-admission.md`.
 
 ## Objective
 
@@ -59,6 +59,9 @@ All paths are relative to `moda-interact`.
 | `tests/unit/arch040-shopify-command.test.ts`, `tests/unit/arch040-shopify-http.test.ts`, `tests/unit/arch047-shopify-follow-up-catalogue.test.ts`, `tests/unit/arch047-shopify-follow-up-sender.test.ts` | Preserve admission/replay/CSRF/window/publication/private-claim contracts; assert locked-row reuse |
 | `tests/fixtures/arch047-shopify-follow-up.ts` | Add fields returned by the locked Shop query to deterministic fixtures, without changing provider eligibility |
 | `tests/integration/recovery-detail-query-plans.test.ts` | Extend actual-query composition/tenant cases; keep existing EXPLAIN and UNION limits |
+| `app/services/platform-configuration/contracts.server.ts` | Add an optional standard Error cause to the existing typed configuration error/helper while preserving existing constructor/helper callers, wrapper name, key, code and message |
+| `app/services/platform-configuration/repository.server.ts` | Retain the original database exception as the cause of the existing DATABASE_UNAVAILABLE wrapper; preserve all query, validation and failure classifications |
+| `tests/unit/platform-configuration/service.test.ts` | Assert original database cause identity and the existing configuration classifications/fallback contracts |
 | `package.json` | Add the exact unit/PostgreSQL scripts below |
 
 New files:
@@ -108,13 +111,19 @@ No provider send, Background worker, moderation, recipient reachability, service
 | Missing app URL, invalid JSON/cursor, foreign ID, permission or origin denial | Existing business/configuration classification | No invented provider error; original internal error only where one exists |
 | Throwing Shared sink | Shared isolation | Response, rollback, replay and admission decisions unchanged |
 
+### Architect scope clarification — configuration database cause, 2026-11-04
+
+R3 includes the original database failure underlying sender-configuration reads. Inspection found that `readPlatformConfiguration` currently catches and discards that exception before creating `ShopifyPlatformConfigurationError` with `DATABASE_UNAVAILABLE`. The three scope additions above authorize only preserving the exception through the standard server-only Error cause mechanism and verifying it through the existing tests. Existing callers that supply no cause remain compatible. Preserve the wrapper classification and public safe responses, and let the existing Shared logging projection serialize/redact the cause at the recovery boundary. Retain the actual safe Prisma/provider code on that cause. The already scoped recovery semantic adapter may select the original cause for diagnostic emission only when the supplied error is the existing ShopifyPlatformConfigurationError classified DATABASE_UNAVAILABLE and has a cause. This prevents the wrapper classification from hiding the actual database code in the Shared output. Preserve the typed wrapper for propagation and HTTP/business classification. Use Shared serialization/redaction without adding a generic serializer or recursively unwrapping arbitrary errors. Verify the actual catalogue-to-sender-to-repository path, original cause identity and emitted safe database code in the existing recovery observability test. Do not add raw configuration values, credentials, request payloads or diagnostics to merchant DTOs.
+
+`app/services/recoveries/recovery-follow-up-sender.server.ts` remains a read-only consumer for this clarification. Its current non-MISSING error path already rethrows the typed error, while only MISSING permits the established environment fallback. Prove cause preservation through that existing path using the already scoped sender test and real Shared capture-output test. Do not change sender eligibility, fallback policy, seal/keyring behavior, database access or configuration validation. This amendment changes implementation scope only and leaves review pending.
+
 ## Work Items
 
-- [ ] Add one-owner detail factory and narrow independent resource ownership.
-- [ ] Wire loader composition and actual framework context without serializing server context.
-- [ ] Reuse the locked Shop row and trusted read-only Shop snapshot at the specified catalogue callers.
-- [ ] Preserve all paging/command/admission invariants and add complete recovery diagnostic ownership.
-- [ ] Add/update focused tests, register scripts and record actual query evidence.
+- [x] Add one-owner detail factory and narrow independent resource ownership.
+- [x] Wire loader composition and actual framework context without serializing server context.
+- [x] Reuse the locked Shop row and trusted read-only Shop snapshot at the specified catalogue callers.
+- [x] Preserve all paging/command/admission invariants and add complete recovery diagnostic ownership.
+- [x] Add/update focused tests, register scripts and record actual query evidence.
 
 ## Interfaces / Contracts
 
@@ -165,22 +174,23 @@ Add exact package scripts:
 
 ## Acceptance Criteria
 
-- [ ] Normal detail composition performs one full owner query/five raw data SELECTs, with unchanged messages/related/detail output.
-- [ ] Standalone resources remain independently authorized and use one narrow tenant ownership read; foreign/missing resources and cursor scopes retain behavior.
-- [ ] Actual PostgreSQL query-plan cases retain bounded UNION arms and indexed keyset access; no application-loop per-row query is introduced.
-- [ ] The mutation reuses only its own locked Shop and retains all current admission/replay/follow-up checks and durable identities.
-- [ ] The advisory catalogue and transactional catalogue use their distinct authoritative Shop sources; missing optional snapshot still performs the existing fallback read.
-- [ ] Every listed operational failure emits original safe message/code/cause through real Shared logging, without internal details in merchant DTOs.
-- [ ] Existing recovery copy/locales, safe error states, independent section rendering and command response/status behavior remain unchanged.
+- [x] Normal detail composition performs one full owner query/five raw data SELECTs, with unchanged messages/related/detail output.
+- [x] Standalone resources remain independently authorized and use one narrow tenant ownership read; foreign/missing resources and cursor scopes retain behavior.
+- [x] Actual PostgreSQL query-plan cases retain bounded UNION arms and indexed keyset access; no application-loop per-row query is introduced.
+- [x] The mutation reuses only its own locked Shop and retains all current admission/replay/follow-up checks and durable identities.
+- [x] The advisory catalogue and transactional catalogue use their distinct authoritative Shop sources; missing optional snapshot still performs the existing fallback read.
+- [x] Every listed operational failure emits original safe message/code/cause through real Shared logging, without internal details in merchant DTOs.
+- [x] Existing recovery copy/locales, safe error states, independent section rendering and command response/status behavior remain unchanged.
 
 ## Validation
 
-- [ ] `npm run test:recovery-readers:unit` — include one-owner count, no-conversation/no-customer/empty cases, malformed/foreign cursor cases, context spoof rejection, locked INACTIVE status denial, replay and missing-publication denial, and every failure-matrix case.
-- [ ] `npm run test:recovery-readers:postgres` — existing own `pgvector/pgvector:pg17` with canonical migrations; execute composition with real SQL, separate-tenant/inconsistent legacy links, first/next/previous/latest pages and command-only attempts. Record actual EXPLAIN output; skipped/container-unavailable is blocked, not passed.
-- [ ] `npm test -- tests/unit/arch040-shopify-command-status.test.tsx tests/unit/arch040-shopify-layout.test.tsx tests/unit/arch047-shopify-follow-up-ui.test.tsx` — presentation/status/advisory-choice regression, no runtime loop claim from mocked hooks.
-- [ ] `npm run typecheck` and `npm run build`.
-- [ ] `npx --no-install eslint app/services/recoveries/recovery-detail.server.ts app/services/recoveries/recovery-human-commands.server.ts app/services/recoveries/recovery-follow-up-catalogue.server.ts app/services/recoveries/recovery-observability.server.ts app/routes/app/recovery-detail/loader.server.ts app/routes/app/recovery-detail/command-http.server.ts app/routes/app/recovery-detail/state.ts app/routes/app/recoveries/loader.server.ts app/routes/app/home/overview.server.ts tests/unit/recovery-read-context.test.ts tests/unit/recovery-reader-observability.test.ts tests/unit/recovery-detail-readers.test.ts tests/unit/recovery-detail-route.test.ts tests/unit/recovery-list-route.test.ts tests/unit/recovery-overview.test.ts tests/unit/recovery-cohort-readers.test.ts tests/unit/arch040-shopify-command.test.ts tests/unit/arch040-shopify-http.test.ts tests/unit/arch047-shopify-follow-up-catalogue.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts tests/fixtures/arch047-shopify-follow-up.ts tests/integration/recovery-detail-query-plans.test.ts`.
-- [ ] `git diff --check`; record same-fixture before/after method calls, raw SQL and outcomes separately from transaction statements and provider work. Capture actual Shared JSON and cleanup.
+- [x] `npm run test:recovery-readers:unit` — include one-owner count, no-conversation/no-customer/empty cases, malformed/foreign cursor cases, context spoof rejection, locked INACTIVE status denial, replay and missing-publication denial, and every failure-matrix case.
+- [x] `npm run test:recovery-readers:postgres` — existing own `pgvector/pgvector:pg17` with canonical migrations; execute composition with real SQL, separate-tenant/inconsistent legacy links, first/next/previous/latest pages and command-only attempts. Record actual EXPLAIN output; skipped/container-unavailable is blocked, not passed.
+- [x] `npm test -- tests/unit/arch040-shopify-command-status.test.tsx tests/unit/arch040-shopify-layout.test.tsx tests/unit/arch047-shopify-follow-up-ui.test.tsx` — presentation/status/advisory-choice regression, no runtime loop claim from mocked hooks.
+- [x] `npm run typecheck` and `npm run build`.
+- [x] `npx --no-install eslint app/services/recoveries/recovery-detail.server.ts app/services/recoveries/recovery-human-commands.server.ts app/services/recoveries/recovery-follow-up-catalogue.server.ts app/services/recoveries/recovery-observability.server.ts app/routes/app/recovery-detail/loader.server.ts app/routes/app/recovery-detail/command-http.server.ts app/routes/app/recovery-detail/state.ts app/routes/app/recoveries/loader.server.ts app/routes/app/home/overview.server.ts tests/unit/recovery-read-context.test.ts tests/unit/recovery-reader-observability.test.ts tests/unit/recovery-detail-readers.test.ts tests/unit/recovery-detail-route.test.ts tests/unit/recovery-list-route.test.ts tests/unit/recovery-overview.test.ts tests/unit/recovery-cohort-readers.test.ts tests/unit/arch040-shopify-command.test.ts tests/unit/arch040-shopify-http.test.ts tests/unit/arch047-shopify-follow-up-catalogue.test.ts tests/unit/arch047-shopify-follow-up-sender.test.ts tests/fixtures/arch047-shopify-follow-up.ts tests/integration/recovery-detail-query-plans.test.ts`.
+- [x] `npm test -- tests/unit/platform-configuration/service.test.ts` and scoped ESLint for the three newly allowed files. Verify original DB cause identity, unchanged wrapper classification and MISSING-only sender fallback, plus real Shared output containing the harmless source marker/actual code and excluding injected sensitive spans.
+- [x] `git diff --check`; record same-fixture before/after method calls, raw SQL and outcomes separately from transaction statements and provider work. Capture actual Shared JSON and cleanup.
 
 ## Stop Condition
 
@@ -194,35 +204,86 @@ The reader factory is a small same-module composition mechanism, not a new repos
 
 ### Status
 
-Not Started. Defined but not materialised; attempt 0, no execution claim.
+Attempt 1 implemented, validated and submitted for independent architect review. Status: review; no acceptance or completion decision is asserted. Implementation commit: `99f00a1` on `task/ARCH-057-SHOPIFY-006`.
 
 ### Files Changed
 
-None. Definition only.
+Nineteen implementation files, all within the original scope or the architect's 2026-11-04 cause-preservation amendment:
+
+- Detail service/loader: pure detail projection, one full-owner factory, navigation-only bound section readers, narrow independently guarded section ownership, existing DTOs and edge queries.
+- Human-command service/current catalogue: private transaction-locked Shop snapshot, retained fresh subscription checks, trusted advisory Shop snapshot and independent fallback. Existing fourth-argument sender injection remains supported for existing server test callers; production uses the explicit trusted Shop object.
+- Recovery semantic adapter, list/overview/detail/command HTTP boundaries: original safe diagnostics, section/recovery identity, retry-conflict warning and unchanged responses. Invalid app-URL diagnostics use the actual parser error and internal configuration origin without logging its input.
+- Approved platform-configuration contracts/repository: optional standard ErrorOptions cause, unchanged typed wrapper name/key/code/message and MISSING-only fallback. The recovery adapter selects only the original cause of the named DATABASE_UNAVAILABLE wrapper for diagnostic emission; it does not unwrap arbitrary errors. Sender implementation remains read-only.
+- Exact package scripts; existing unit/route/command/sender/configuration fixtures and PostgreSQL query-plan suite; three new declared files. New file sizes: adapter 18 lines, context tests 89 lines, emitted-output tests 125 lines.
 
 ### Work Completed
 
-None.
+All work items and acceptance criteria are satisfied by implementation and the validation below, subject to independent architect review.
+
+The composed detail loader resolves full ownership once and serializes only its existing detail DTO. Standalone resources still authenticate independently, parse navigation before querying ownership, and retain same-shop customer and same-shop/legacy-null RECOVERY conversation predicates. Message UNION arms, limits, tuple ordering, command-only exclusion and edge queries remain intact.
+
+Mutation admission reuses only its current transaction's locked Shop. Replay order, fresh plan/features, restriction/window/reachability, publication eligibility, sequence-two claim, private UUID/public retry identity and existing transaction/HTTP behavior remain intact. Advisory request context is never mutation authority. The non-ACTIVE lock denial uses the canonical SUSPENDED enum; the schema has no INACTIVE enum value.
+
+The existing framework context continues through every selected guard. Each selected fallback/command boundary owns its diagnostic. Actual sender configuration failures now preserve the original exception across the existing typed boundary, with real Shared serialization/redaction and sink isolation. No provider/Redis/R2 work was introduced inside admission.
 
 ### Validation Results
 
-Not run. Record exact commands, required cases, installed packages, prepared worktrees/source pins, actual SQL/plan and Shared-log evidence, failure/outcome preservation and owned-resource cleanup.
+Final amended-source checks passed:
+
+- `npm run test:recovery-readers:unit`: **289 tests across 11 files**, none skipped. The existing optional cohort SQL case was enabled against an additional task-owned disposable PostgreSQL database; it is separate from the canonical migrated detail suite.
+- `npm run test:recovery-readers:postgres`: **8 tests**, all executed on PostgreSQL 17.11 using `pgvector/pgvector:pg17` and the canonical forward migration sequence. Covered identical composed DTOs, foreign/missing resources, inconsistent customer/conversation links, legacy-null conversation links, first/next/previous/latest pagination, bounded/indexed EXPLAIN plans and command-only attempts. Later changes concerned asynchronous rejection semantics and configuration cause propagation, with no SQL changes.
+- Required command-status/layout/follow-up presentation regressions: **85 tests**.
+- Amendment validation `npm test -- tests/unit/platform-configuration/service.test.ts`: **8 tests**, including original cause identity and unchanged wrapper contract. Existing sender tests also prove MISSING-only fallback and retained original DB cause.
+- Required original lint scope plus all three amendment files; typecheck; production build; `git diff --check`: passed. Existing client chunk-size warning remains non-fatal.
+- Full emitted-output failure matrix covers owner/message/related/template/list/existence/overview failures, actual page/edge failures, command/control/status errors, P2002/P2034 warnings, original URL-parser errors, context/control-flow denials and throwing sinks. Real catalogue → sender → configuration repository coverage verifies unchanged empty advisory templates/HTTP success and actual safe database evidence.
+
+Same-fixture evidence:
+
+| Operation | Starting implementation | Final implementation | Evidence and outcome |
+|---|---|---|---|
+| Detail + messages + related | 3 public reader calls, 7 raw SELECTs, 3 full owner projections | 1 factory + 2 bound section calls, 5 raw SELECTs, 1 full owner projection | Starting commit executed in a temporary baseline probe on the same canonical migrated fixture; 50 messages/5 related rows; final DTO equality; no transaction-control statements or provider calls |
+| New text admission | 1 ORM Shop read plus 1 Shop lock | 0 ORM Shop reads plus 1 Shop lock | Same deterministic fixture and source-baseline command implementation; fresh subscription read remains 1; durable ACCEPTED outcome |
+| New follow-up admission | 2 ORM Shop reads plus 1 Shop lock | 0 ORM Shop reads plus 1 Shop lock | Same fixture; subscription remains 1, publication and sequence-two checks retained; durable ACCEPTED outcome |
+
+Command counts are mocked repository-method evidence, not emitted SQL or latency measurements. The separate real PostgreSQL composition case records seven compatibility-reader SELECTs versus five composed SELECTs and identical output. Each of the four message-page EXPLAIN cases retains the indexed ConversationMessage keyset scan and three LIMIT 51 clauses (two UNION sources and outer page). Full actual EXPLAIN JSON is retained in the PostgreSQL log.
+
+Representative fields from captured actual Shared output:
+
+```json
+{"operation":"read_detail","stage":"read_detail","origin":"database","shopId":"shop-1","identities":{"recoveryId":"owned-recovery"},"error":{"name":"Error","message":"original recovery marker [REDACTED] [REDACTED]"},"causeChain":[{"name":"Error","message":"original cause [REDACTED]"}],"databaseCode":"P2010","redactionApplied":true,"truncated":false}
+```
+
+Logs under `/tmp/arch057-shopify006-`: `amended-unit.log`, `postgres.log`, `ui.log`, `amended-config.log`, `amended-lint.log`, `amended-types.log`, `amended-build.log`, `baseline-command.log`, `baseline-postgres.log`. Baseline probes selected one proof case each; their filtered/skipped cases are not counted as completed suites. Temporary baseline source/test edits were restored and removed.
+
+Earlier evidence is retained: the first focused run had the existing optional cohort DB case skipped before its disposable fixture was enabled; three new test type errors were corrected. The real sender-configuration probe failed twice before the approved amendment (`config-before.log`), proving the discarded cause; both cases pass in the final 289-test suite. No earlier failed/skipped run is presented as passing evidence.
+
+Resource cleanup awaited only owned container/client shutdowns, including the baseline and optional cohort containers. No shared Docker pruning, live Shopify request, persistent migration/import or provider send was performed.
+
+### Source and Prepared Launcher Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-006`; implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-006`; both branches `task/ARCH-057-SHOPIFY-006`.
+- Both dedicated worktrees created by the launcher; shared/default checkouts were not switched or mutated; no previous task worktree reused.
+- Starting parent `df683a2f5c78e2314b5ffa84989567ebaf8531f1`; implementation `de5650e73df91e4d52bbcb4131dd80d1c7a7d339`. Attempt 1 claim `745c6cd62326d264dcbc0f3d6ec2bba1f53bde26`, executor codex, claimed `2026-11-04T20:04:52Z`, committed/pushed by launcher after prerequisite SHOPIFY-001 passed.
+- Parent and implementation remote task fast-forward: not needed; origin/main already current in both, as recorded by preparation. No preparation/claim was repeated.
+- Recursive submodule sync/update passed. Recorded and final working Database pin: `8e74634ff92be9900f693c0c449ffce888e7d617`. Database/schema/gitlinks unchanged.
+- Node 24.19.0, npm 11.17.0, Prisma client 6.19.3, Vitest 4.1.11, installed Shared 3.1.0; pinned installation through npm ci. No dependency upgrade or lockfile change.
 
 ### Deviations
 
-None.
+Only the architect-authored 2026-11-04 scope amendment documented in R3 and the scope table. No business policy, sender behavior, schema, locale, command identity, route topology or provider/Background contract changed.
 
 ### Assumptions
 
-The launcher verifies the accepted prerequisite and actual integrated runtime before claiming execution.
+Request-context Shop is advisory; the current transaction's locked Shop and fresh subscription/catalogue remain admission authority. Source-level method counts are distinguished from real SQL; no throughput/latency claim is made.
 
 ### Unresolved Issues
 
-Implementation and required evidence are outstanding.
+No known implementation/validation gap within the amended scope. Independent architect review remains outstanding. No downstream task was started or promoted.
 
 ### Architectural Concerns
 
-Return ownership, schema, transaction, public DTO, identity, queue or provider changes to the architect.
+The scoped discarded-cause issue was returned to moda_architect and resolved under its written amendment. No further cross-repository, schema or authority change was needed. Domain index, frontier, main branches and parent implementation gitlink remain outside this implementation handoff.
 
 ## Architect Review
 
