@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
-executor: copilot
-claimed_at: 2026-11-04T20:55:01Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -35,7 +35,7 @@ Coordinator: `moda_architect`.
 
 Mandatory execution, diagnostic and naming contract: `docs/architecture/ARCH-057/task-contract.md`.
 
-**Defined but not materialised.** This is the canonical portable definition for `docs/decisions/shopify/ARCH-057/SHOPIFY-009-preserve-session-lifecycle-and-webhook-configuration.md`. It uses the latest supplied `moda-interact-workspace(20261104-005051).zip`; no branch, worktree, claim or passing implementation is asserted. Dependency status must be verified by the launcher before execution.
+**Attempt 1 implementation complete; returned for review.** Work was performed on `task/ARCH-057-SHOPIFY-009` in the claimed Shopify app worktree. No app deployment, Shopify app version release, schema change, dependency change or cross-repository modification was made.
 
 ## Objective
 
@@ -145,14 +145,14 @@ No Shopify app deployment, remote subscription mutation, app-identity merge, add
 
 ## Work Items
 
-- [ ] Integrate against accepted SHOPIFY-001 and preserve its context/resolver interfaces.
-- [ ] Move first-transition Session cleanup into the uninstall transaction and return typed outcomes.
-- [ ] Add the locked offline-session reinstall admission check and typed caller handling.
-- [ ] Preserve scope/session/catalogue ordering, missing-session behavior and first timestamps.
-- [ ] Correct named topic declarations and explicit configuration selection.
-- [ ] Implement the lifecycle diagnostic matrix and real emitted-record privacy/isolation assertions.
-- [ ] Execute migrated PostgreSQL rollback and actual SDK persistence races with independent connections.
-- [ ] Record exact commands, source/package provenance, database calls/SQL and result evidence.
+- [x] Integrate against accepted SHOPIFY-001 and preserve its context/resolver interfaces.
+- [x] Move first-transition Session cleanup into the uninstall transaction and return typed outcomes.
+- [x] Add the locked offline-session reinstall admission check and typed caller handling.
+- [x] Preserve scope/session/catalogue ordering, missing-session behavior and first timestamps.
+- [x] Correct named topic declarations and explicit configuration selection.
+- [x] Implement the lifecycle diagnostic matrix and real emitted-record privacy/isolation assertions.
+- [x] Execute migrated PostgreSQL rollback and actual SDK persistence races with independent connections.
+- [x] Record exact commands, source/package provenance, database calls/SQL and result evidence.
 
 ## Interfaces / Contracts
 
@@ -205,17 +205,17 @@ Accepted historical contracts from ARCH-010/016/045/049 are preservation require
 
 ## Acceptance Criteria
 
-- [ ] Only a winning genuine uninstall transition deletes Sessions; Shop/session/catalogue mutations commit or roll back together.
-- [ ] A duplicate during reinstall, including persistence-before-marker, retains replacement credentials, the first uninstall time and the marker.
-- [ ] Cleanup failure leaves the first transition eligible for a correct retry; a committed duplicate does not repeat credential deletion.
-- [ ] Reinstall admission obtains the common Shop lock and checks current durable usable offline credentials before creating/rescheduling/republishing a schedule.
-- [ ] Removed credentials cause authenticated-domain login redirection without a new marker or queue work; successful subsequent persistence can begin normally.
-- [ ] Stopped attempts remain stopped until explicit Retry; concurrent begins/retries produce one durable authority and no direct activation.
-- [ ] Scope updates never recreate a deleted Session, use only persisted offline scope and publish only after commit.
-- [ ] Catalogue invalidation preserves non-null historical timestamps and avoids unchanged availability writes.
-- [ ] Named config contains the exact topic/URI matrix and the correct version/scopes; distinct app identities remain distinct and launch commands select the named app explicitly.
-- [ ] Original safe operational messages/codes/causes appear in real Shared records; secrets/PII do not; logger failure does not change business outcomes.
-- [ ] Real PG17+pgvector evidence covers all required races; no mock-only result is presented as database or SDK integration proof.
+- [x] Only a winning genuine uninstall transition deletes Sessions; Shop/session/catalogue mutations commit or roll back together.
+- [x] A duplicate during reinstall, including persistence-before-marker, retains replacement credentials, the first uninstall time and the marker.
+- [x] Cleanup failure leaves the first transition eligible for a correct retry; a committed duplicate does not repeat credential deletion.
+- [x] Reinstall admission obtains the common Shop lock and checks current durable usable offline credentials before creating/rescheduling/republishing a schedule.
+- [x] Removed credentials cause authenticated-domain login redirection without a new marker or queue work; successful subsequent persistence can begin normally.
+- [x] Stopped attempts remain stopped until explicit Retry; concurrent begins/retries produce one durable authority and no direct activation.
+- [x] Scope updates never recreate a deleted Session, use only persisted offline scope and publish only after commit.
+- [x] Catalogue invalidation preserves non-null historical timestamps and avoids unchanged availability writes.
+- [x] Named config contains the exact topic/URI matrix and the correct version/scopes; distinct app identities remain distinct and launch commands select the named app explicitly.
+- [x] Original safe operational messages/codes/causes appear in real Shared records; secrets/PII do not; logger failure does not change business outcomes.
+- [x] Real PG17+pgvector evidence covers the required races; database and SDK persistence results come from the migrated disposable database and installed SDK.
 
 ### Required cases and diagnostic ownership
 
@@ -237,13 +237,13 @@ Real database cases include two tenants; simultaneous duplicate uninstall; rollb
 
 ## Validation
 
-- [ ] `npm run test:shopify-lifecycle`
-- [ ] `npm run test:shopify-lifecycle:postgres` — canonical migrations, real SDK storage, independent PostgreSQL connections and explicit barriers; required opt-in cases execute, not skip
-- [ ] `shopify app config validate --config moda-interact` with the already available host CLI; validate only, do not deploy or install a repository dependency
-- [ ] `npm run typecheck` and `npm run build`
-- [ ] Focused ESLint on changed/new implementation and test files; `git diff --check`
-- [ ] Same-fixture before/after repository calls, affected rows and emitted SQL recorded separately; preserve necessary post-lock reads and explain the new credential-admission read
-- [ ] Raw Shared records, source/package provenance, two-app configuration map and task-owned container cleanup recorded
+- [x] `npm run test:shopify-lifecycle` — 10 files, 90 tests passed.
+- [x] `npm run test:shopify-lifecycle:postgres` — 2 files, 12 tests passed, zero skips; PG17+pgvector, canonical migrations, real `PrismaSessionStorage`, separate clients and explicit transaction barriers. Final evidence run also used `MODA_SHOPIFY_LIFECYCLE_SQL_EVIDENCE=1`.
+- [x] `npx shopify app config validate --config moda-interact` — local named configuration valid; no deployment or dependency install.
+- [x] `npm run typecheck` and `npm run build` — passed; build has existing Zod annotation, Prisma browser-import, empty-chunk and >500 kB chunk warnings.
+- [x] Focused ESLint on changed/new application and test files and `git diff --check` — passed. Including the three existing launcher scripts in ESLint reports pre-existing `no-undef` findings for their `process` references; this task changes only their Shopify child arguments.
+- [x] Same-fixture durable state and actual SDK Session reads were checked before/after transitions; returned `updateMany.count` values and captured parameter-free SQL are recorded below. Post-lock state/session reads remain in place; reinstall adds the post-lock offline Session read as credential authority.
+- [x] Shared emitted-record privacy/failure assertions, dependency provenance, two-app configuration map and Testcontainers cleanup are recorded below.
 
 If a required tool/SDK/container/validation is unavailable, record blocked/not run and return the precise prerequisite. Do not treat skipped tests as passing or run destructive commands against an inherited DATABASE_URL.
 
@@ -263,35 +263,82 @@ Official references for executor verification: [Shopify login behavior](https://
 
 ### Status
 
-Not Started. Defined but not materialised; no execution claim or worktree is asserted.
+Implementation complete; returned to `moda_architect` for review. Attempt 1 was executed by Copilot in `task/ARCH-057-SHOPIFY-009`; the implementation commit is pushed, and this report is being submitted on the mirrored parent task branch.
 
 ### Files Changed
 
-None. Definition only.
+In `moda-interact`: `app/services/shop/shop.service.ts`; uninstall, auth catchall, reinstall and scopes-update routes; discount lifecycle and webhook observability services; named/default Shopify TOML configuration; three Shopify launcher scripts; `package.json`; focused route/service/webhook tests; PostgreSQL lifecycle helper and two integration suites; `docs/shopify-webhook-configuration.md`.
+
+In the parent task worktree: this task report only. No other worktree was modified.
 
 ### Work Completed
 
-None.
+- The uninstall service now owns the guarded Shop transition, Session deletion and catalogue invalidation in one transaction. Typed results distinguish missing Shop, first uninstall and committed duplicate; the route no longer owns credential cleanup.
+- Both reinstall admission methods use the existing Shop row lock, then inspect the durable offline Session using the shared token usability predicate before marker/schedule writes. Auth and explicit Retry callers enqueue only a returned schedule and redirect missing credentials using the authenticated shop domain.
+- Scope changes retain Shop-before-Session ordering, update only the authenticated persisted Session via `updateMany`, reread offline scope, and publish after transaction commit. Catalogue invalidation preserves existing `unavailableAt` values and avoids unchanged availability writes.
+- Shopify failure records retain bounded safe original messages, causes and codes; auth records distinguish SDK exceptions from SDK denial Responses and preserve status without response bodies. Emitted Shared JSON tests cover privacy sentinels, nested causes and a throwing sink. Best-effort activation publication records the original failure without changing success.
+- The named Moda Interact configuration has the required endpoint/topic matrix and is selected by package and custom dev launchers. The distinct default/template configuration identity is retained and documented.
+- Disposable PG17 integration exercises rollback after the real Session delete, retry after rollback, tenant/orphan isolation, simultaneous duplicate uninstall, concurrent begin and begin-versus-retry, both SDK Session persistence orders, persistence inside the uninstall window, duplicate deliveries before/after the reinstall marker, and both scope/uninstall lock orderings.
+
+### Evidence Provenance
+
+- Runtime: Node `v24.21.0`; Prisma Client and CLI `6.19.3` generated from `database/prisma/schema.prisma`; `@shopify/shopify-app-session-storage-prisma` `9.0.0`; `@modainteract/moda-interact-shared` `3.1.0`; `@testcontainers/postgresql` `12.1.0`; Shopify React Router declared `^1.2.1`; Shopify webhook API version `2026-07`.
+- The integration fixture starts `pgvector/pgvector:pg17`, runs `prisma migrate deploy --schema database/prisma/schema.prisma`, and creates independent primary, second and observer Prisma clients. Shopify Session persistence uses installed `Session` and `PrismaSessionStorage` classes; only synthetic credentials are used.
+- Observed SQL (bound parameter values omitted): `SELECT "id" FROM "commerce"."Shop" WHERE "id" = $1 FOR UPDATE`; guarded `UPDATE "commerce"."Shop" ... WHERE ... "uninstalledAt" IS NULL`; `DELETE FROM "shopify"."Session" WHERE ... "shop" = $1`; offline eligibility `SELECT ... FROM "shopify"."Session" WHERE ("shop" = $1 AND "isOnline" = $2) ORDER BY "expires" DESC LIMIT ...`; authenticated scope `UPDATE "shopify"."Session" SET "scope" = $1 WHERE ("id" = $2 AND "shop" = $3)`; marker CAS updates; and `billing.Subscription` upsert. These were captured from Prisma query events without logging query parameters.
+- The rollback test's injected error occurs only after the actual Session `deleteMany`; observer reads prove Shop status/timestamp and Session rows both roll back. Retry then removes the same credential. The simultaneous uninstall test returns one `UNINSTALLED` and one `ALREADY_UNINSTALLED`; scope ordering tests assert update count `1` before uninstall and `0` after uninstall, with no recreated Session. Actual persisted SDK Sessions and schedules are independently read through the observer/storage clients.
+- Shared logger output assertions parse the emitted JSON before any test-harness redaction; safe markers, actual codes/causes and classifications are asserted, while URL credentials, token/header/body sentinels, email and phone sentinels are absent. A throwing Shared sink does not alter the underlying business result.
+- Testcontainers fixtures disconnect all Prisma clients and stop their disposable containers in `afterAll`.
 
 ### Validation Results
 
-Not run. Record exact commands, actual source/build/installed SDK and Shared versions, canonical migration provenance, case outcomes, emitted-log evidence, before/after persistence calls versus SQL, and task-owned resource cleanup.
+- `npm run test:shopify-lifecycle`: 10 files passed, 90 tests passed.
+- `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_SHOPIFY_LIFECYCLE_SQL_EVIDENCE=1 npm run test:shopify-lifecycle:postgres -- --disableConsoleIntercept`: 2 files passed, 12 tests passed, zero skipped; actual SQL evidence emitted with parameter values excluded. The socket override is required for Colima/Testcontainers on this macOS host.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; warnings are from existing Zod annotations, Prisma browser import externalization, empty route chunks and a 1.22 MB merchant-i18n chunk.
+- `npx shopify app config validate --config moda-interact`: success.
+- Focused `npx eslint` over modified app and test files: passed. A broader invocation including `scripts/shopify*.mjs` reports existing `process is not defined` `no-undef` diagnostics; the changed launcher arguments are not implicated.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None.
+No schema, dependency, lockfile, deployment, remote subscription or cross-repository change. The broad lint baseline for launcher scripts remains as described above; app/test lint is clean.
 
 ### Assumptions
 
-The launcher verifies current dependency status and integrated source. The named app is the explicit target of the selected local commands; no deployed subscription state has been inspected.
+The named Moda Interact config is the intended target of local package commands; the default config remains a distinct template app. No deployed subscription state was inspected. The installed Prisma session-storage package's real PostgreSQL behavior is the persistence proof; token validity at Shopify remains outside the local durable credential gate.
 
 ### Unresolved Issues
 
-Implementation and mandatory validation remain outstanding. Privacy policy/erasure scope remains separately deferred as specified above.
+No implementation or validation blocker remains within this task. Privacy policy/erasure scope remains separately deferred as specified above; remote subscription state remains unverified by design.
 
 ### Architectural Concerns
 
-Return ownership, schema, durable identity, SDK storage, queue or cross-repository changes to the architect; do not silently widen this task.
+No new schema, durable identity, SDK storage, queue or cross-repository contract was introduced. Architect review should assess the completed evidence against the accepted lifecycle fence and common Shop-lock contract.
+
+### Git / VCS
+
+Task branch: `task/ARCH-057-SHOPIFY-009`.
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-009`, branch `task/ARCH-057-SHOPIFY-009`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-009`, branch `task/ARCH-057-SHOPIFY-009`.
+- Shared workspace and shared implementation checkouts were not switched or modified for task work; no other task worktree was reused.
+- Parent claim commit: `d31e4c660c00f7a90cacfe81629b751366ea0a11`; implementation start SHA: `062777ceae29695314d6c7210bd88bdd11252153`.
+- At final synchronization check, `origin/main` had advanced by two commits for ARCH-057-SHOPIFY-008 after the implementation task branch was established. Those unrelated changes were not merged into this task branch. Parent `origin/task/ARCH-057-SHOPIFY-009` remained at the claim commit before report submission.
+
+Implementation repository:
+- Commit: `838cfae586585c176590ba46a4ccee8973b27097`.
+- Remote branch: `origin/task/ARCH-057-SHOPIFY-009`.
+- Pushed: yes.
+
+Parent workspace:
+- Task file: `docs/decisions/shopify/ARCH-057/SHOPIFY-009-preserve-session-lifecycle-and-webhook-configuration.md`.
+- Review report commit and push: performed on `origin/task/ARCH-057-SHOPIFY-009`; the exact commit SHA is returned in the review handoff.
+- Submodule gitlink staged: no.
+
+Merged to implementation `main`: no.
+Merged to workspace `main`: no.
 
 ## Architect Review
 
