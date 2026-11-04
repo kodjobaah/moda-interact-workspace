@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-11-04T00:34:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-028-BACKGROUND-004
@@ -30,7 +30,7 @@ updated: 2026-11-04
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 2. **Defined but not materialised.** No task branch, claim, implementation, test execution, commit or push is asserted. The two explicit prerequisites are Complete in the supplied snapshot; recheck their canonical status before execution.
+Definition revision: 2. Materialised on the canonical parent task branch. Attempt 1 was claimed after checking its prerequisites. The implementation at `00cfac4` was submitted for review with the validation gaps recorded below; architect review returned Changes Requested. The claim is cleared for the next attempt.
 
 ## Objective
 
@@ -393,7 +393,7 @@ This section belongs to the implementing repository agent. No implementation is 
 
 ### Status
 
-Implementation submitted for Architect review. This is not an acceptance or completion claim: the required developer-owned PostgreSQL matrix is still pending, and some emitted-diagnostic and rollback scenarios remain unproved.
+Attempt 1 was submitted for Architect review and returned Changes Requested. The required PostgreSQL matrix is still incomplete, and emitted-diagnostic and rollback scenarios remain unproved.
 
 ### Files Changed
 
@@ -508,24 +508,36 @@ This section belongs only to moda_architect. Definition authoring is not impleme
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-11-04). Return the task to `ready`; clear the executor claim. Do not mark complete or promote downstream tasks.
 
 ### Review Notes
 
-Awaiting an implementation submission and its evidence.
+- The implementation is substantial, but its own Completion Report says required acceptance evidence is incomplete. In particular, the latest retained-source and state-hold PostgreSQL cases were added after the passing 7-test run and have not been executed; the full required integration matrix has not passed.
+- The report records 11 failures across four existing reservation-owner concurrency suites because their fixtures pass removed Prisma fields. The task's Validation section explicitly requires those failures to be resolved or dispositioned before claiming the matrix passed. Keep the limitation visible and obtain an architect disposition or update the approved scope/evidence before resubmission; do not claim those cases passed.
+- Required actual installed-Shared-sink coverage remains incomplete for causes, typed holds, missing upstream fields, redaction/truncation, sink failure, rollback after owner/event mutation, and selected after-commit failure/correlation. The report also identifies these gaps; complete the owned assertions in the required test files.
+- Complete the required mutation-and-rollback evidence, including same-error identity and the emitted owner record, then run the full task validation matrix including the newly added integration cases. Record actual Shared package resolution and precise pass/fail/skip results.
+- Update the implementation-owned acceptance checklist from verified evidence on resubmission. The acceptance criteria currently remain unchecked, which is consistent with the outstanding validation.
+- The initial task metadata said the definition was unmaterialised even though the canonical task branch and attempt claim exist. This review corrects that report discrepancy; future attempt provenance should match the launcher evidence.
 
 ### Reviewed Files
 
-No implementation submitted.
+- `src/services/recovery-billing/initial-outreach-credit.service.ts`
+- `src/services/recovery-billing/initial-outreach-credit-evidence.ts`
+- `src/services/recovery-billing/recovery-billing.types.ts`
+- `src/services/recovery-billing/recovery-reservation-lifecycle.service.ts`
+- `src/services/recovery-delivery-compensation/lineage.ts`
+- `src/services/recovery-delivery-compensation/reconcile.service.ts`
+- `src/services/whatsapp-provider-status.service.ts`
+- The implementation report's 27 listed production and test paths
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Reviewed the reported build, focused unit suite (266 tests), targeted lint, and initial three-file PostgreSQL run (7 tests), plus the 28-test compensation and 1-test provider-status runs. These were reported by the implementer and not rerun during review. The latest added PostgreSQL cases are unexecuted; the complete required integration matrix is not passing, and emitted-record/rollback evidence remains incomplete as detailed above.
 
 ### Architecture Conformance
 
-Pending review against the parent architecture, task allowlist, interface contracts, repository boundaries and failure requirements.
+The inspected implementation generally follows the selected exact-source and Shop-before-message lock design. Acceptance is blocked by the required evidence and validation gaps above; no conclusion is recorded for the unexecuted cases. No architecture-wide or schema change is approved by this review.
 
 ### Follow-up
 
-Pending implementation review; no enabled task may be started by this task's executor.
+Continue on the same mirrored task branches at Attempt 2. Do not start `ARCH-056-BACKGROUND-004` or `ARCH-056-SYSTEM-TEST-001` from this task; both remain gated on accepted prerequisites.
