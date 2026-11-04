@@ -1,0 +1,56 @@
+{
+  "evidenceType": "source execution with mocked database/auth/queue boundaries plus static declarations",
+  "limitations": "No PostgreSQL, Redis, Shopify SDK, provider, network, latency, or throughput validation.",
+  "nodeVersion": "v24.22.1",
+  "probes": [
+    {
+      "probe": "duplicate-uninstall-during-pending-reinstall",
+      "assertions": "passed: observed baseline defect reproduced",
+      "responseStatus": 200,
+      "reinstallMarkerPreserved": true,
+      "replacementOfflineSessionDeleted": true,
+      "explicitRepositoryDatabaseCalls": [
+        "shop.findUnique",
+        "lifecycle-lock",
+        "shop.findUnique",
+        "shop.updateMany",
+        "catalogue.upsert",
+        "discount.updateMany",
+        "discount.updateMany",
+        "session.deleteMany"
+      ],
+      "downstreamTokenReadError": "No offline Shopify session found for review.myshopify.com"
+    },
+    {
+      "probe": "checkout-publication-pre-read-not-covered-by-timeout",
+      "assertions": "passed: observed baseline defect reproduced",
+      "getJobCalls": 1,
+      "addCalls": 0,
+      "armedTimers": 0,
+      "publicationSettled": false
+    },
+    {
+      "probe": "named-subscription-declaration-vs-implemented-handlers",
+      "assertions": "passed: observed baseline mismatch reproduced",
+      "existingConsentTestEquivalentPassed": false,
+      "missingTopics": [
+        "app/uninstalled",
+        "customers_whats_app_marketing_consent/update",
+        "discounts/create",
+        "discounts/update",
+        "discounts/delete",
+        "discounts/redeemcode_added",
+        "discounts/redeemcode_removed"
+      ],
+      "deployedSubscriptionState": "not inspected; no claim made"
+    }
+  ],
+  "sourceSha256": {
+    "moda-interact/app/services/discounts/shopify-discount-lifecycle.service.ts": "aa4323f8e360f438c292bf3b58130cf10294e96bb341e5f77074353603d9e814",
+    "moda-interact/app/services/shop/shop.service.ts": "284fe172e4b63445af1cc7d2525a1db98ef687945d5ac1359cf54ef009e3b274",
+    "moda-interact/app/routes/webhooks/app/uninstalled/route.jsx": "024cb78e95c2345d990db9ce8d786d3f82922d6ba7efc29b923919acb57b5055",
+    "moda-interact-background/src/services/shopify-session.service.ts": "8ff718f5e5f7dcda9d774c87fafeea72ad56615edb0ac4acfb492449ec5c58aa",
+    "moda-interact/app/services/webhooks/shopify-webhook-queue.server.ts": "83a61ddce23e3965db804765cc4937b5e189a584110fd2071bb88c1c041811e3",
+    "moda-interact/shopify.app.moda-interact.toml": "0c074949c28ceba1822a0730f325f010b8d9d1b24dda7c2cdd2f53a7754a5448"
+  }
+}
