@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-11-04T04:57:56Z
@@ -354,35 +354,53 @@ This section belongs to the implementing repository agent. No implementation is 
 
 ### Status
 
-Not Started
+Implemented and submitted for architect review. No architect acceptance decision has been made by this agent.
+
+Implementation commit: `50a9b2c` (`feat(background): continue durable initial recovery outreach`), pushed to `origin/task/ARCH-056-BACKGROUND-004`.
 
 ### Files Changed
 
-Pending implementation.
+Production: `src/services/checkout-recovery.service.ts`, `recovery-materialization.service.ts`, `recovery-initiation.service.ts`, `recovery-outreach-finalization.service.ts`, `recovery-initial-outreach-support-notice.service.ts`, `pending-recovery-candidate.worker.ts`, `automated-recovery-template.service.ts`, `initial-no-offer-fallback.service.ts`, `woo-recovery-outreach.service.ts`, and `woo-recovery-outreach.adapters.ts`.
+
+Tests: the task-owned worker, initiation, materialization, finalization, support-notice, template, Woo, and fallback suites; the five declared new progress/settlement test and fixture files; and Shopify initial no-offer plus Support-notice integration coverage.
 
 ### Work Completed
 
-Pending implementation.
+- Continued durable initial outreach from canonical attempt/message progress before new preparation and admission; reused retained credit and resumed the exact prepared message.
+- Reconciled confirmed initial sends through exact settlement, atomic Support/attempt finalization, conditional recovery status updates, and deterministic Shopify follow-up scheduling while preserving Woo's no-follow-up boundary.
+- Preserved required-state exceptions and visible held/deferred outcomes; added the task-owned diagnostic and regression coverage described above.
+- Fixed the Shopify no-offer integration path: fresh initial sends now reserve the durable attempt message and enter the recovery-scoped resume path, rather than passing a general-scope admission into the recovery delivery fence.
+- Kept the `## Architect Review` section untouched.
 
 ### Validation Results
 
-Not run. Record exact commands, exit results, failures, warnings, source/build/schema provenance, scenario evidence and cleanup; do not copy planned checks as completed results.
+Passed on Attempt 1 in `moda-interact-background`:
+
+- Unit selection: 11 files, 204 tests passed; the task-listed Woo composition suite separately passed 2 tests.
+- PostgreSQL/Redis integrations, run serially to avoid disposable-database contention: initial-outreach progress (2), actual worker (1), Shopify initial no-offer dispatch (2), Support notice (8), and ARCH-055 follow-up identity (4). Total: 17 tests passed.
+- `npm run build` passed with Prisma Client 6.19.3 generation and TypeScript compilation.
+- The task-defined `npx --no-install eslint ...` file list passed; the final Support integration assertion was linted again separately.
+- `git diff --check` passed.
+
+An earlier Support integration run had one stale expected error-message assertion; the assertion was updated to the existing early routing-pointer rejection, and the complete suite then passed. One disposable PostgreSQL startup attempt failed before test execution; a subsequent retry and all serial integration runs passed. No combined concurrent integration run is represented as passing.
 
 ### Deviations
 
-None at definition time. Record actual deviations and their architect disposition before review.
+Fresh Shopify initial outreach uses explicit reserve-then-`resumeInitialTemplate` so it receives the recovery execution scope required by the accepted BG003 delivery contract. This preserves the attempt/message identity and final fence; it does not change BG002/BG003 production policy. Integration suites were run individually rather than concurrently due intermittent disposable database startup/contention.
 
 ### Assumptions
 
-The reviewed snapshot and accepted prerequisite contracts are the definition baseline. Recheck the real current checkout and task state at launch.
+Accepted ARCH-056-BACKGROUND-002/003 and other declared prerequisites are present in the implementation checkout. Architect review remains required for conformance and task acceptance.
 
 ### Unresolved Issues
 
-Pending implementation evidence. Preserve the task's explicit held/deferred and blocked-policy boundaries.
+No known implementation blocker remains. The explicit held/deferred and blocked-policy boundaries remain as defined by the task.
 
 ### Architectural Concerns
 
-Return changes to ownership, contracts, schema, transaction boundaries, durable-state semantics, queue behavior, security or another repository to moda_architect before expanding scope.
+The implementation branch was published to its explicit task branch after correcting its local upstream tracking; no push to `main` was made. Architect review remains the acceptance gate.
+
+Task status: review. Awaiting moda_architect review; no architect acceptance decision has been made by this agent.
 
 ## Architect Review
 
