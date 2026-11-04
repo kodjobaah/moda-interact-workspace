@@ -1,0 +1,641 @@
+{
+  "review_id": "commerce-agent-product-discovery-20261104-015544-r03",
+  "review_date": "2026-11-04",
+  "status": "assessment_and_proposed_direction",
+  "snapshot": {
+    "filename": "moda-interact-workspace(20261104-015544).zip",
+    "sha256": "4ac4c6d99ff697ad0b4655e2fabbfe9bdd06ad46871ff205652ba7bb409a79c3"
+  },
+  "architect_brief": {
+    "filename": "moda_architect(20261104-015552).toml",
+    "sha256": "1b5548a98a9c899a9f44e442d86df2e2510b0827ecd2fa742a829b07d00dec3e"
+  },
+  "evidence_scope": {
+    "application_review": "static_source_inspection",
+    "provider_documentation_checked": true,
+    "application_test_suites_run": false,
+    "live_provider_calls_run": false,
+    "live_taxonomy_retrieval_run": false,
+    "deployed_state_verified": false,
+    "installed_shared_packages_verified": false,
+    "performance_measured": false,
+    "developer_branches_or_worktrees_created": false,
+    "implementation_files_modified": false,
+    "task_statuses_modified": false,
+    "setup_scripts_implemented": false,
+    "database_migrations_or_imports_executed": false,
+    "admin_implementation_files_modified": false
+  },
+  "missing_expected_schema_artifacts": [
+    "moda-interact-commerce/lib/discovery/artifacts/admin-2026-07.json",
+    "moda-interact-mcp/artifacts/shopify-admin-2026-07.json"
+  ],
+  "full_taxonomy_distribution_members": [],
+  "packages": {
+    "moda-interact-shared": {
+      "source_package_version": "3.1.0",
+      "shared_dependency": null
+    },
+    "moda-interact-background": {
+      "source_package_version": "1.0.0",
+      "shared_dependency": "3.0.0"
+    },
+    "moda-interact-admin": {
+      "source_package_version": "0.1.0",
+      "shared_dependency": "3.0.0"
+    },
+    "moda-interact-mcp": {
+      "source_package_version": "0.1.0",
+      "shared_dependency": "2.8.1"
+    },
+    "moda-interact-commerce": {
+      "source_package_version": "0.1.0",
+      "shared_dependency": "2.7.2"
+    }
+  },
+  "sources": [
+    {
+      "path": "docs/architecture/ARCH-023-merchant-knowledge.md",
+      "bytes": 193552,
+      "sha256": "2c8a4fd5b6a791edd4fc99b928c53a9b2a5a952ec6a4a6a07c54ff01667b72cd",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "docs/architecture/ARCH-032-standalone-commerce-mcp-extraction.md",
+      "bytes": 29428,
+      "sha256": "5649f85a066477d689cdc2a2d585e1eebd7a9b1a4da903fc65db8f94b08d4ecb",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "docs/decisions/commerce/ARCH-023/COMMERCE-003-resolve-platform-shop-instructions.md",
+      "bytes": 32117,
+      "sha256": "7da971ff3d7d70cb4502af0f450252848703330606ed3d4e8591d2b1bf6b4ad5",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "docs/decisions/mcp/ARCH-032/MCP-013-shop-scoped-capability-resolution-and-structured-logging.md",
+      "bytes": 6812,
+      "sha256": "4238194955e02da32b887cf7e4e30db9cab99e777b6857dc853e66281881d171",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/package.json",
+      "bytes": 7036,
+      "sha256": "fec881a9c1c108d1df185137253a5693b16794914bd3aa9330b69ce51cf273d2",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/scripts/shopify-taxonomy-distribution.mjs",
+      "bytes": 3222,
+      "sha256": "30838cd36d61a06f75ec9bd42298cf646c1c2ba648a4e20f74d5efd718ec226a",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/scripts/shopify-taxonomy-redis-sync.mjs",
+      "bytes": 9134,
+      "sha256": "465da22726c45169d3d9c7da421ab1de2ea14fa6168a4672d3d4015f56c1be1b",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/scripts/sync-shopify-taxonomy.mjs",
+      "bytes": 16479,
+      "sha256": "67f91d18ccc7dfea3fbfe9c5406de57c70864bad86b96a1de8c7d3521ac3c02b",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/src/data/shopify-taxonomy-manifest.json",
+      "bytes": 185,
+      "sha256": "b3aac029c05c5f4568072112cb27a971d5519157f1962c6e4d74d95cf2da4b00",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/shopify-taxonomy-embedding.ts",
+      "bytes": 7903,
+      "sha256": "3fa5814430fe3b9dab5e3288b3ffde72631daa17c22d2b0128cbb07cef953f64",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/shopify-taxonomy-index-management.ts",
+      "bytes": 15318,
+      "sha256": "543338161b17bedc2bc326fc88a6a45ff586c2340fc0b790cf5b9fd303f6fe35",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/shopify-taxonomy.ts",
+      "bytes": 18178,
+      "sha256": "875e76f7e5961753e050a48ea9cfbab922878207b66d9556aa90774d8e0ee1bc",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/package.json",
+      "bytes": 7439,
+      "sha256": "9faf1369f760bc2b635e9138e571981005320fba5f5869e158d811f59e030f3d",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/agents/commerce.agent.ts",
+      "bytes": 2599,
+      "sha256": "81a5bb1f60295838a16a286a3c9cb6386e0a801685f00ea00f7ceefde3ed5c7d",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/commerce/evidence.ts",
+      "bytes": 10748,
+      "sha256": "ebc83913b9a5a3fc3c222ff376e7620a821d6be40164258e6b8292e05a86ff09",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/commerce/grants.ts",
+      "bytes": 3368,
+      "sha256": "3da686750ea12b3f623eb3630c353b9f4ce8916e5f7b1d9f296f004856260bc4",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/commerce/host-diagnostics.ts",
+      "bytes": 15203,
+      "sha256": "221ddc4c908cd68579fce2bfdc9fe02559d7407279e8e19260efd7b8167798ed",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/commerce/host.ts",
+      "bytes": 24078,
+      "sha256": "71b1f3b6636a58dae2fde066290a52d7ce9c28536a5df6c3651df7a82f22be55",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/commerce/mcp-client.ts",
+      "bytes": 20251,
+      "sha256": "1fdaf05960ff0c018d08a3b21f8763d282320174ee3d1ac5634fb4f9081ef721",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/commerce/model-resolution.ts",
+      "bytes": 6106,
+      "sha256": "1b77f594dffb424eea32fb35cb058b8b4b4bd933e1b862a0d0b5bfa0e71805d3",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/commerce/production-model.ts",
+      "bytes": 14841,
+      "sha256": "06b1973737c5a6371fc9b318bcc82db1eeaa047d227730b8365995e1e686fe65",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/commerce/recovery-instructions.ts",
+      "bytes": 1531,
+      "sha256": "015938d48179f87aa6e63f454767b4ffa544d6edd947586b91700eefbe949843",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-offers/initial-outreach-agent-context.service.ts",
+      "bytes": 13045,
+      "sha256": "cd9a741fac254d38dc5d5b6c493a6736339c9faa24fbbe0a34552b1f877637ad",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/tests/integration/commerce/host-suites/authority.ts",
+      "bytes": 5574,
+      "sha256": "9ff68fde14096d3129e36e7298423fa5ef4a43d39b5fd10771ffa713fd7b8662",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/tests/integration/commerce/host-suites/grants.ts",
+      "bytes": 8461,
+      "sha256": "03fb01e140588424830819db02136715c417d32cb5cae7cf6eb684f9b3dc06e3",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/lib/discovery/admin-schema.ts",
+      "bytes": 6483,
+      "sha256": "65b00aecba1879f5d241643bba9f365b4db3a6f7453de37e761a4be9a6e7587f",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/package.json",
+      "bytes": 7353,
+      "sha256": "c2adf77f89603bcf66a0d3abb5ba6abd4aa18f328b12cf649adc0abc3aa82d4b",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/agent-configuration/effective-configuration.ts",
+      "bytes": 11863,
+      "sha256": "f9fad70c3ad4e57ffb77c2aaaf8d7c95334b8658443853fc121878132c2a2194",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/bootstrap/system-commerce-tool-sync.ts",
+      "bytes": 25169,
+      "sha256": "1a300f12c9bbf83754301677b84a51beb2b8fa164684955bae3edc236f4ffe60",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/bootstrap/system-product-tools.ts",
+      "bytes": 3015,
+      "sha256": "9b75e6a8f48e0dde3e0d725868b7a986c17afe6a3e2d50beedfecbf91a683f03",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/execution/policy-operation-authoring.ts",
+      "bytes": 8556,
+      "sha256": "306105bcc30b4fd4cf6c03d9b5bf17363285088390315363878333054585d608",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/preview/local-policy-providers.ts",
+      "bytes": 35498,
+      "sha256": "96c8584e682d7bf223db03c161e4544a4d03b3acea6ab5007f79e68fa5df64f2",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/preview/service.ts",
+      "bytes": 41325,
+      "sha256": "b7e4d010ba4ba9b4523b66d697141620dd719607ee1dfb03163c807515cd4f8e",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/products/index.ts",
+      "bytes": 21265,
+      "sha256": "19946a2204debb7d9a1bc545ad23665655b02bde6ab10cf7d03921fd5617d171",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/woocommerce/read-operation-catalogue.ts",
+      "bytes": 33891,
+      "sha256": "57e49f53e701daeaff4d012d07c19a4a142fa6be97b99396f7449c70798d21ef",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-database/prisma/schema.prisma",
+      "bytes": 191864,
+      "sha256": "5c68e467f392cafe2e6b5be730b81e000a3590e31567135c4037791bcfe11052",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-gateway/docs/mcp-private-deployment.md",
+      "bytes": 3829,
+      "sha256": "da7e60d913dc882693a74a84eb67355c0a41bf79da000d60dab76f13d02f469c",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-gateway/render.test.yaml",
+      "bytes": 16163,
+      "sha256": "b97ad6fb44209cfbe96512176542ae54533f5d46567079d6e1f3cb59221d3217",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/package.json",
+      "bytes": 1603,
+      "sha256": "ca65962739e30676db19c2d0b72866c58526f8353ca3924a5d34e11a9ad1225f",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/scripts/install-shopify-admin-schema.mjs",
+      "bytes": 1576,
+      "sha256": "df5d28a9ec9c4633fe9de7ed104cca8e04304ee6a330e5d2faa269ef8dd20a5b",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/capabilities/resolve.ts",
+      "bytes": 7817,
+      "sha256": "708d80d191a3a11ec9ff3eca76a193d45ad66deaf34b33fbc6566d69a7e315b4",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/ports.ts",
+      "bytes": 2963,
+      "sha256": "0ed89ef39db70a50bc4996059567157560352c75a07938fec40686029023f4c4",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/resolver.ts",
+      "bytes": 7437,
+      "sha256": "0b64045fe18883b64d1c363e570ebbd26d044f9073791322a701a41636d248fd",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/shopify/document.ts",
+      "bytes": 3424,
+      "sha256": "e344b1794d8c4d6e9b4608f733cf0d08055cd86f3e5d5699915378b967afc1a0",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/shopify/provider.ts",
+      "bytes": 22892,
+      "sha256": "d3b4c4e9fc533ea47df8097fa0f56a3d31ebb8c873928a0fb6f733a24dc4d6b0",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts",
+      "bytes": 17645,
+      "sha256": "387f3f724fc30f26bda3931c2447f0626d9b6940913b822d2ee2881bed4313a8",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/merchant-knowledge/contracts.ts",
+      "bytes": 1782,
+      "sha256": "09a206023562ec37550bf056120cde555c1680ea394608ecb5c84e81a071ef8d",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/merchant-knowledge/embedding-runtime.ts",
+      "bytes": 5538,
+      "sha256": "dc9ee222e227bb8c14a65add3fd1a84f15921996ae5837888f166d8d5b60a10b",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/merchant-knowledge/retrieval.ts",
+      "bytes": 7100,
+      "sha256": "d5391325f46585d1fc9d10409d9774f7e21f6d0a8ee4d7b7a8dc5d18bfbeb830",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/policy/shopify-core-executor.ts",
+      "bytes": 13601,
+      "sha256": "9f25547d0a4f5cd951a434060278273ccc25c0ba69276e7bcd89d14aa7cbb6a0",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/policy/shopify-core.ts",
+      "bytes": 30077,
+      "sha256": "33752c05570b297bb26d6a0609ba6159587bee7c71f4df39f64dad4a31b8f247",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/runtime/service-ports.ts",
+      "bytes": 4753,
+      "sha256": "df57771488e3c2387fd27d32fe90d9794117625c4f01452c678c3912ece6c728",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/tests/unit/connections/shopify/provider.test.ts",
+      "bytes": 12993,
+      "sha256": "0ddb4308f616b8f48f290dff632e82448ff4c4b4702a27537e5b505c6ac3b581",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/tests/unit/execution/policy/shopify-core.test.ts",
+      "bytes": 18954,
+      "sha256": "28ba7e5d1c63b37f7b3eb184d3c0e9e0419d541ee9acd89d98d34d9513af3fac",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-shared/package.json",
+      "bytes": 7164,
+      "sha256": "75a810fa20a0ec79f1d95adcf7dc9594e182cafc5ed73d92f1ae78fc6eefe0d0",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/final-response.ts",
+      "bytes": 2057,
+      "sha256": "50c0e603bd00a4ab6e0118d9fd1ba300a7e7ec1692e3accea36c8eda71cb27d1",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/graph/graph.ts",
+      "bytes": 2513,
+      "sha256": "4c6da02c0597c557732c292e8af0990bc30ec1e6d95afec602f7ffcb43b4f013",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/preflight.ts",
+      "bytes": 5899,
+      "sha256": "2ff64106ed962dd72c6da280f98830049b8f2a6d8988aae74ff72f86934d7ac0",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/tool-execution.ts",
+      "bytes": 7074,
+      "sha256": "8ed23597e5b37717c9867109067b131d5532d9a140d6e5296e7b1b440c84498f",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/schemas.ts",
+      "bytes": 16401,
+      "sha256": "0deeb01e5d11caa35439e92c4908b806a0f2f91ad8ed02d89ca2075a5eacfc5b",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-shared/src/logging/redaction.ts",
+      "bytes": 3597,
+      "sha256": "8c10c8769d10e16000a825d68c910ff4725ec4148592cd644a11b78e23d984d7",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact/app/services/store-profile/shopify-taxonomy-suggestion.server.ts",
+      "bytes": 4087,
+      "sha256": "fde62c99f940407ba5c5ab79a50aa4011df48acb2604613158805eade90b6c2b",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact/app/services/store-profile/store-category-selection.server.ts",
+      "bytes": 14105,
+      "sha256": "8577cee2ee1fdb7d890b4a8cadcf445ea7e4dcedcd657019416b2688718e4add",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "docs/architecture/ARCH-052-checkout-personalised-initial-whatsapp-outreach.md",
+      "bytes": 82618,
+      "sha256": "47668fc26155be90843784f91fde9d4b332ed9912fc84b57fd28572ea631cca9",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "docs/decisions/mcp/ARCH-052/MCP-002-execute-published-discount-options-and-proof.md",
+      "bytes": 29909,
+      "sha256": "ffa29a840160becb4714dc81a30a597761d64f033fd457323816e7b12a75deb0",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/capabilities/prisma-reader.ts",
+      "bytes": 6506,
+      "sha256": "3a2f96e344e53b6dd882f09bdf44e504f318e9258f8661dacce113bd55fd362c",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/discount-tools.ts",
+      "bytes": 3355,
+      "sha256": "7bb462ebad44af30fccdf7b00d1b1c8a500fea70b71a7f84efb391d7c2300e91",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/mcp/registration.ts",
+      "bytes": 5452,
+      "sha256": "7e67a7fa7e5da0e4cd87b3135ce51453d98be679a21797c02e3e62f4fed3a38c",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.eligibility.ts",
+      "bytes": 15209,
+      "sha256": "172ef32288884d21cb317d3f75a5c661be634bc246e23a508b1abbc71adf5fc2",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer-product-target.ts",
+      "bytes": 3023,
+      "sha256": "89b39d5974b69e2278805d43d724636ff7465d0e47ec3812c1eff1714385c996",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.graph.ts",
+      "bytes": 32982,
+      "sha256": "a3443486543a5b8c19a37d9fab6797c0e745576f03caa6bebbc9acd084d20ecc",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.instructions.ts",
+      "bytes": 2817,
+      "sha256": "3d1239758705dadf5dbb7529e5b53439f4c85f99464c1287fbb242651e85ceec",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.combinations.ts",
+      "bytes": 7268,
+      "sha256": "26cd12fd21883161b4956753ea53bdec8b3700b68e92c54458e0c78deede9601",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-offers/current-outreach-offer-revalidation.service.ts",
+      "bytes": 21067,
+      "sha256": "9367024583d228366feb5652ca02c12e855af4012258b5abd13a89e5cd4b7bae",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-offers/current-discount-source-fence.ts",
+      "bytes": 8387,
+      "sha256": "dab792ece028be7726b79be6ae63c36c6ae366c287ad143e14477e22fce9162e",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-offers/recovery-outreach-mcp-selector.service.ts",
+      "bytes": 9753,
+      "sha256": "9ed59b878928edd4a09122e7e4493e90bbb7cfe9d48ef6b2d5dabb311d695be7",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/response.ts",
+      "bytes": 6094,
+      "sha256": "18e1c3855dd1017823e24ddd9720c38cb95481010bc452233cb8362650721912",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-database/prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql",
+      "bytes": 17316,
+      "sha256": "30c4e717002e1c2d1c8ed306c9b4ed051630adcd5a0122c0cde11645389c36b8",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-database/prisma/migrations/20261005093000_arch023_embedding_configuration/migration.sql",
+      "bytes": 6772,
+      "sha256": "20cfbd78a47dab5391af7191bff4bf431caf6650d9952597b4ccfc7e29413071",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-database/prisma/migrations/20261005143000_ai_conversations_required/migration.sql",
+      "bytes": 3211,
+      "sha256": "5e8f554c7700e6a74d0e79ded4f96493611f2c4364e7d427d89be2ddac6d54ba",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-database/prisma/seed.mjs",
+      "bytes": 16783,
+      "sha256": "4b155232b7c2e4944423b424e794eb9c4730e381021bf8bc592ffeea72e22b9c",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-database/package.json",
+      "bytes": 15574,
+      "sha256": "d53242275375e8fb9f62d9a3a02ac881bb2403f18a8d8538a8ca408772fb8719",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/scripts/sync-system-commerce-tools.mjs",
+      "bytes": 1721,
+      "sha256": "a99963cdc9118d1e481a01042592012539ff5915f2fc4288b7b155a8d030b102",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/bootstrap/system-commerce-tool-sync.cli.ts",
+      "bytes": 10791,
+      "sha256": "ccca3dc68742a3ad542021a2cd27e724d787cca0631f2406ceb95d3dcac71377",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/selection.ts",
+      "bytes": 3637,
+      "sha256": "daf62c3017b287bffb9c847677755dc011f1f28ecd784d34316d1877a362d65c",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/src/capabilities/records.ts",
+      "bytes": 1906,
+      "sha256": "5110abb33ad27fdecbbd82a89f998016b09016e0c8383ad3a493a374ee6697d8",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/integration/backend.ts",
+      "bytes": 22858,
+      "sha256": "2fce54fba71f395d90f5af5c31510f70939e5c80c7168fd1944df067322000b0",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/merchant-knowledge-plan-policy.ts",
+      "bytes": 5918,
+      "sha256": "ef73c652ad8425febd7e1ff97d3e0f50dd600626b69c5c924975926b9311cbca",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/merchant/pricing-plan-feature-controls.ts",
+      "bytes": 1924,
+      "sha256": "437dc2bc610c43c2ad0f63fd89e33132e6e2be13f24661273047038e09d605b7",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/merchant/merchant-pricing-plan-feature-persistence.ts",
+      "bytes": 1590,
+      "sha256": "54ee127b700e36220660f32dda539efdd9fe56b41c1894eff7cbe095fa52e137",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact/app/services/billing/billing-plan-resolution.service.ts",
+      "bytes": 10028,
+      "sha256": "85808fdfcf2f43c3a2bc56788e3152e6606d2a920a77c2a15dd37b2b6b4f1eea",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-api/src/woocommerce/billing/initial-free-activation.service.ts",
+      "bytes": 13784,
+      "sha256": "c2b8ec96283e6ec374d4946896281eb67e060645fff24f227fd1d93ae573ce70",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-mcp/tests/integration/compose.yaml",
+      "bytes": 606,
+      "sha256": "74b57906b6cf8193185e9a5282990318161322b25db2e8b75246cfc9509acc0a",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "docs/observability/shared-logging.md",
+      "bytes": 12067,
+      "sha256": "fd61d64de52701e56b79501deeb7fdc23aa022cfa324395623a72221c738fb8b",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/publication/lifecycle.ts",
+      "bytes": 26783,
+      "sha256": "2bf6b57b946681009c5473f75886d2b35ec49077184346dae30497c9d338220e",
+      "matches_uploaded_archive": true
+    },
+    {
+      "path": "docs/decisions/commerce/ARCH-052/COMMERCE-006-bootstrap-product-search-and-get-product-tools.md",
+      "bytes": 33571,
+      "sha256": "afaffcaca48367b22acfa8ddaaf9bca80656c8bd3f6f30f93c298cabd8986639",
+      "matches_uploaded_archive": true
+    }
+  ],
+  "review_revision": 3,
+  "revision_requirement": "PostgreSQL/pgvector conversation taxonomy, repeatable per-environment schema/import/tool publication, standard discovery for all authorized stores, Admin unchanged, recommendation-time discount checking retained.",
+  "delivery_baseline": "Original uploaded snapshot; user confirmed no earlier review patch was applied.",
+  "supersedes_unapplied_review_revisions": [
+    1,
+    2
+  ]
+}

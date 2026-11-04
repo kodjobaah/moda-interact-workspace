@@ -6,7 +6,7 @@
     "domain": "database",
     "repo": "moda-interact-database",
     "agent": "moda_database",
-    "status": "ready",
+    "status": "complete",
     "deps": [],
     "enables": [
       "ARCH-055-BACKGROUND-001",
@@ -31,7 +31,7 @@
     "domain": "background",
     "repo": "moda-interact-background",
     "agent": "moda_background",
-    "status": "pending",
+    "status": "complete",
     "deps": [
       "ARCH-055-DATABASE-001"
     ],
@@ -58,7 +58,7 @@
     "domain": "shopify",
     "repo": "moda-interact",
     "agent": "moda_app",
-    "status": "pending",
+    "status": "complete",
     "deps": [
       "ARCH-055-BACKGROUND-001"
     ],
@@ -77,7 +77,7 @@
     "domain": "api",
     "repo": "moda-interact-api",
     "agent": "moda_api",
-    "status": "pending",
+    "status": "complete",
     "deps": [
       "ARCH-055-DATABASE-001"
     ],
@@ -105,7 +105,7 @@
     "domain": "api",
     "repo": "moda-interact-api",
     "agent": "moda_api",
-    "status": "ready",
+    "status": "complete",
     "deps": [],
     "enables": [
       "ARCH-055-API-009",
@@ -127,7 +127,7 @@
     "domain": "api",
     "repo": "moda-interact-api",
     "agent": "moda_api",
-    "status": "ready",
+    "status": "complete",
     "deps": [],
     "enables": [
       "ARCH-055-API-009",
@@ -155,7 +155,7 @@
     "domain": "api",
     "repo": "moda-interact-api",
     "agent": "moda_api",
-    "status": "pending",
+    "status": "complete",
     "deps": [
       "ARCH-055-BACKGROUND-001"
     ],
@@ -182,7 +182,7 @@
     "domain": "api",
     "repo": "moda-interact-api",
     "agent": "moda_api",
-    "status": "pending",
+    "status": "complete",
     "deps": [
       "ARCH-055-DATABASE-001"
     ],
@@ -211,7 +211,7 @@
     "domain": "api",
     "repo": "moda-interact-api",
     "agent": "moda_api",
-    "status": "ready",
+    "status": "complete",
     "deps": [],
     "enables": [
       "ARCH-055-API-009",
@@ -237,7 +237,7 @@
     "domain": "api",
     "repo": "moda-interact-api",
     "agent": "moda_api",
-    "status": "pending",
+    "status": "complete",
     "deps": [
       "ARCH-055-API-001"
     ],
@@ -261,7 +261,7 @@
     "domain": "api",
     "repo": "moda-interact-api",
     "agent": "moda_api",
-    "status": "ready",
+    "status": "complete",
     "deps": [],
     "enables": [
       "ARCH-055-API-009",
@@ -281,7 +281,7 @@
     "domain": "api",
     "repo": "moda-interact-api",
     "agent": "moda_api",
-    "status": "pending",
+    "status": "complete",
     "deps": [
       "ARCH-055-API-001",
       "ARCH-055-API-002",
@@ -299,7 +299,7 @@
       60,
       61
     ],
-    "definition_revision": 2
+    "definition_revision": 3
   },
   {
     "id": "ARCH-055-SYSTEM-TEST-001",
@@ -308,7 +308,7 @@
     "domain": "system-test",
     "repo": "moda-interact-system-test",
     "agent": "moda_system_test",
-    "status": "pending",
+    "status": "ready",
     "deps": [
       "ARCH-055-DATABASE-001",
       "ARCH-055-BACKGROUND-001",
