@@ -1,8 +1,8 @@
 # ARCH-058: Standard CommerceAgent product discovery, grounded responses and shipping information
 
-**Status:** implementation in progress. DATABASE-001 accepted at Attempt 1 on 4 November 2026; architecture-wide implementation and deployment are not certified.
+**Status:** implementation in progress. SHARED-001 Attempt 2 accepted on 4 November 2026; architecture-wide completion and deployment are not certified.
 
-Database handoff: accepted revision `ded8f14a60182f6b1443640f012caf0089b8a44c` provides the taxonomy persistence, required product-search policy and grant-shape extension. MCP-001 remains pending on SHARED-002; SYSTEM-TEST-001 remains pending on its other prerequisites. Initial statuses in the task-definition table below are historical.
+Shared handoff: SHARED-001 source `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139` and SHARED-002 publication are accepted. Exact `@modainteract/moda-interact-shared@4.0.0` is independently retrievable and verified; its receipt is in SHARED-002. DATABASE-001 is complete, so MCP-001 is ready and unclaimed. SYSTEM-TEST-001 remains pending on remaining consumer prerequisites. No consumer upgrade or deployment has been performed by these reviews. The task table preserves initial definition statuses.
 
 ## Decision
 
