@@ -77,7 +77,9 @@ The change is confined to Shopify-owned builders. API's similarly spelled namesp
 
 ## Current review handoff
 
-On 2026-11-04, ARCH-057-SHOPIFY-002 Attempt 3 was accepted and marked complete with its claim cleared. All three prior findings are resolved. Independent validation passed 395 unit tests, the isolated 2-test PostgreSQL suite, typecheck, build and changed-file lint. The review preserves an initial milestone-transaction timeout and teardown error before the unchanged isolated rerun passed; its root cause is not claimed as proven. SHOPIFY-003 Attempt 1 was reviewed with Changes Requested and returned to ready with its claim cleared. Its impossible zero-credit PostgreSQL success requirement was amended to canonical constraint-rejection proof plus the unchanged defensive-branch unit regression; no schema or financial policy changed. Independent validation passed 106 unit and 14 database tests, but two Admin malformed-response privacy probes failed. SHOPIFY-004 and SHOPIFY-011 remain pending on SHOPIFY-003 and their other prerequisites. See the [SHOPIFY-003 review and amendment](../decisions/shopify/ARCH-057/SHOPIFY-003-simplify-recovery-credit-purchases-and-refunds.md#architect-review). See the [task review](../decisions/shopify/ARCH-057/SHOPIFY-002-stabilise-subscription-activation-and-provider-evidence.md#architect-review) for evidence and historical findings. The table below records initial task states, not current lifecycle status.
+On 2026-11-04, SHOPIFY-005 Attempt 1 was independently accepted and marked Complete with its claim cleared. Review found no actionable correctness issue. Independent validation passed 79 support unit/UI tests, four migrated PostgreSQL tests, nine request-context router tests, typecheck, production build and scoped lint. The review accepted the router compatibility fixture adjustment without widening production scope. See the [support task review](../decisions/shopify/ARCH-057/SHOPIFY-005-simplify-support-inbox-reads-and-acknowledgements.md#architect-review).
+
+Current task YAML in this branch also records SHOPIFY-001, SHOPIFY-002 and SHOPIFY-003 Complete, and SHOPIFY-004 in Review. Earlier SHOPIFY-003 Changes Requested notes are historical; Attempt 2 is Complete. The [execution plan](ARCH-057/execution-plan.md) records the current frontier. SHOPIFY-011 remains Pending on other functional prerequisites. These review updates are local and unpublished. The table below records initial states, not current lifecycle status.
 
 ## Task map
 
@@ -125,3 +127,7 @@ The terminal task extends the existing system-test runner with domain-named sele
 Definition validation checks canonical sections/YAML, unique IDs, dependencies, path ownership, findings coverage, latest-source alignment and patch applicability. Runtime validation remains unchecked until an implementation agent executes and the architect reviews it.
 
 This package adds only new ARCH-057-owned files. Every `_index.md`, earlier task/architecture, source file, migration and submodule pointer is unchanged. The developer applies/reviews the definition patch, then the normal launcher materialises matching task branches/worktrees. Parent-definition publication is not a claim that implementation has started.
+
+## Settings Task Acceptance (2026-11-04)
+
+ARCH-057-SHOPIFY-007 Attempt 1 is architect-accepted and Complete at `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e`. Its task records independent 135-test validation, reviewed 23-test PostgreSQL evidence and review limits. Earlier ready/pending snapshots for this task are historical. SHOPIFY-008 is now ready and unclaimed; SHOPIFY-011 remains pending on remaining prerequisites. No downstream execution, main merge or architecture completion is implied.

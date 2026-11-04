@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
 - ARCH-057-SHOPIFY-007
@@ -29,7 +29,7 @@ updated: 2026-11-04
 
 Architecture ID: `ARCH-057`. Architecture document: `docs/architecture/ARCH-057-shopify-application-database-correctness-and-simplicity.md`. Coordinator: `moda_architect`.
 
-Mandatory execution/logging/validation contract: `docs/architecture/ARCH-057/task-contract.md`. **Defined but not materialised.** Canonical destination: `docs/decisions/shopify/ARCH-057/SHOPIFY-008-simplify-merchant-knowledge-processing-and-refresh.md`.
+Mandatory execution/logging/validation contract: `docs/architecture/ARCH-057/task-contract.md`. Materialised in the canonical parent and implementation worktrees on `task/ARCH-057-SHOPIFY-008`; Attempt 1 was claimed by the launcher. The Completion Report records implementation/validation evidence; architect acceptance is not asserted.
 
 ## Objective
 
@@ -151,12 +151,12 @@ R2 diagnostics remove credentials, signed URLs, object keys, raw request/respons
 
 ## Work Items
 
-- [ ] Migrate all knowledge actions to the minimal context-aware guard.
-- [ ] Reuse settings read facts and preserve dormant source/activation semantics.
-- [ ] Remove the two unused upload reads and implement zero-write no-op/two-statement order changes.
-- [ ] Add cause-preserving unavailable/error mapping and complete the diagnostic matrix.
-- [ ] Remove duplicate success revalidation and implement the fixed visibility/idle/deadline polling episode.
-- [ ] Add exact mounted-router and migrated PostgreSQL proofs; register scripts and report emitted-log/query evidence.
+- [x] Migrate all knowledge actions to the minimal context-aware guard.
+- [x] Reuse settings read facts and preserve dormant source/activation semantics.
+- [x] Remove the two unused upload reads and implement zero-write no-op/two-statement order changes.
+- [x] Add cause-preserving unavailable/error mapping and complete the diagnostic matrix.
+- [x] Remove duplicate success revalidation and implement the fixed visibility/idle/deadline polling episode.
+- [x] Add exact mounted-router and migrated PostgreSQL proofs; register scripts and report emitted-log/query evidence.
 
 ## Interfaces / Contracts
 
@@ -208,25 +208,25 @@ Add exact package scripts:
 
 ## Acceptance Criteria
 
-- [ ] All eight actions perform no guard-only settings read for established valid tenants while retaining authenticated prerequisite repair; GET presentation reuses supplied scalar/plan/preference facts and retains global-feature fallback where necessary.
-- [ ] OFF configuration and dormant/over-limit source management remain intact; indeterminate availability never masquerades as plan denial.
-- [ ] Upload intent performs no activation read; validated-language finalization performs no default-language fallback read.
-- [ ] Identical dense reorder has zero ordering writes; changed order has two SQL writes regardless of source count; delete compaction preserves unique contiguous positions and rollback.
-- [ ] The actual pinned mounted router proves one automatic action refresh, no success-effect loop, no overlapping polls and a fixed60-second deadline across revalidation/visibility transitions. Plain-fetch upload still refreshes once.
-- [ ] Database/provider unavailability maps to safe503 rather than403/400 misclassification; real missing object remains400, with original cause and safe provider evidence logged once.
-- [ ] Concurrent source/order/finalize tests run on canonical migrated PG17 and preserve exact ownership, count limits, unique positions, one successful finalization and durable pending work after queue failure.
-- [ ] Every failure-matrix row passes actual Shared JSON marker/code/cause/redaction/sink assertions, without source/provider/credential leakage to merchant DTOs.
-- [ ] No new endpoint, schema, global cache, dependency, queue identity, user-facing English-only text or architecture-ID runtime name is introduced.
+- [x] All eight actions perform no guard-only settings read for established valid tenants while retaining authenticated prerequisite repair; GET presentation reuses supplied scalar/plan/preference facts and retains global-feature fallback where necessary.
+- [x] OFF configuration and dormant/over-limit source management remain intact; indeterminate availability never masquerades as plan denial.
+- [x] Upload intent performs no activation read; validated-language finalization performs no default-language fallback read.
+- [x] Identical dense reorder has zero ordering writes; changed order has two SQL writes regardless of source count; delete compaction preserves unique contiguous positions and rollback.
+- [x] The actual pinned mounted router proves one automatic action refresh, no success-effect loop, no overlapping polls and a fixed60-second deadline across revalidation/visibility transitions. Plain-fetch upload still refreshes once.
+- [x] Database/provider unavailability maps to safe503 rather than403/400 misclassification; real missing object remains400, with original cause and safe provider evidence logged once.
+- [x] Concurrent source/order/finalize tests run on canonical migrated PG17 and preserve exact ownership, count limits, unique positions, one successful finalization and durable pending work after queue failure.
+- [x] Every failure-matrix row passes actual Shared JSON marker/code/cause/redaction/sink assertions, without source/provider/credential leakage to merchant DTOs.
+- [x] No new endpoint, schema, global cache, dependency, queue identity, user-facing English-only text or architecture-ID runtime name is introduced.
 
 ## Validation
 
-- [ ] `npm run test:merchant-knowledge:unit` — include null/denied/unavailable entitlement, active/inactive/missing global Feature fallback, downgraded sources, no-op versus changed ordering, integer-range failure, unused-read absence, storage404/403/429/503/transport, postcommit continuation and complete diagnostic matrix.
-- [ ] `npm run test:merchant-knowledge:router` — mounted actual installed `createMemoryRouter`/`RouterProvider` and hooks; record installed/locked version. Test all five fetcher operations, automatic revalidation, failed action, successful plain-fetch finalize, pending→active, repeated revalidations through60s, slow loader overlap, hidden/visible transitions, unmount and a later new episode. Do not mock useFetcher/useRevalidator or treat a hook stub as runtime proof.
-- [ ] `npm run test:merchant-knowledge:postgres` — all own `pgvector/pgvector:pg17`, canonical migrations. New ordering suite proves overlapping reorder/reorder and both delete/reorder lock orders using separate connections/barriers, exact-set conflict and unchanged rows on no-op. New finalization suite proves two simultaneous finalizations of one asset have one committed source/revision, inactive-shop/count-limit denial leaves no partial rows, and postcommit activation/queue failure retains durable pending work. Provider/storage/queue boundaries are controlled fixtures, not live services. Missing Docker or skipped tests block validation.
-- [ ] `npm test -- tests/unit/merchant-knowledge-url-validation.test.ts tests/unit/recovery-settings-i18n.test.ts` — URL restrictions and all existing locale keys remain valid.
-- [ ] `npm run typecheck` and `npm run build`.
-- [ ] `npx --no-install eslint app/services/merchant-knowledge app/routes/app/merchant-knowledge app/routes/app/recovery-settings/route.tsx app/components/settings/MerchantKnowledgeSection.tsx app/components/settings/MerchantKnowledgeUploadForm.tsx tests/unit/merchant-knowledge-actions.test.ts tests/unit/merchant-knowledge-read-model.test.ts tests/unit/merchant-knowledge-entitlement.test.ts tests/unit/merchant-knowledge-upload.test.ts tests/unit/merchant-knowledge-observability.test.ts tests/unit/merchant-knowledge-queue.test.ts tests/unit/merchant-knowledge-section.test.tsx tests/unit/merchant-knowledge-upload-form.test.tsx tests/unit/merchant-knowledge-read-context.test.ts tests/unit/merchant-knowledge-ordering.test.ts tests/unit/merchant-knowledge-r2-diagnostics.test.ts tests/integration/merchant-knowledge-router.test.tsx tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts tests/integration/merchant-knowledge-upload.integration.test.ts tests/integration/merchant-knowledge-ordering.postgres.test.ts tests/integration/merchant-knowledge-finalization.postgres.test.ts tests/helpers/merchant-knowledge-router-fixtures.tsx tests/helpers/merchant-knowledge-postgres.ts tests/fixtures/settings-preview/main.tsx`.
-- [ ] `git diff --check`; report same-fixture source method calls, emitted SQL/affected rows, router loader/action/poll counts and actual Shared records separately. Preserve safe original cause markers, no invented upstream fields, and owned-container/client/timer cleanup.
+- [x] `npm run test:merchant-knowledge:unit` — include null/denied/unavailable entitlement, active/inactive/missing global Feature fallback, downgraded sources, no-op versus changed ordering, integer-range failure, unused-read absence, storage404/403/429/503/transport, postcommit continuation and complete diagnostic matrix.
+- [x] `npm run test:merchant-knowledge:router` — mounted actual installed `createMemoryRouter`/`RouterProvider` and hooks; record installed/locked version. Test all five fetcher operations, automatic revalidation, failed action, successful plain-fetch finalize, pending→active, repeated revalidations through60s, slow loader overlap, hidden/visible transitions, unmount and a later new episode. Do not mock useFetcher/useRevalidator or treat a hook stub as runtime proof.
+- [x] `npm run test:merchant-knowledge:postgres` — all own `pgvector/pgvector:pg17`, canonical migrations. New ordering suite proves overlapping reorder/reorder and both delete/reorder lock orders using separate connections/barriers, exact-set conflict and unchanged rows on no-op. New finalization suite proves two simultaneous finalizations of one asset have one committed source/revision, inactive-shop/count-limit denial leaves no partial rows, and postcommit activation/queue failure retains durable pending work. Provider/storage/queue boundaries are controlled fixtures, not live services. Missing Docker or skipped tests block validation.
+- [x] `npm test -- tests/unit/merchant-knowledge-url-validation.test.ts tests/unit/recovery-settings-i18n.test.ts` — URL restrictions and all existing locale keys remain valid.
+- [x] `npm run typecheck` and `npm run build`.
+- [x] `npx --no-install eslint app/services/merchant-knowledge app/routes/app/merchant-knowledge app/routes/app/recovery-settings/route.tsx app/components/settings/MerchantKnowledgeSection.tsx app/components/settings/MerchantKnowledgeUploadForm.tsx tests/unit/merchant-knowledge-actions.test.ts tests/unit/merchant-knowledge-read-model.test.ts tests/unit/merchant-knowledge-entitlement.test.ts tests/unit/merchant-knowledge-upload.test.ts tests/unit/merchant-knowledge-observability.test.ts tests/unit/merchant-knowledge-queue.test.ts tests/unit/merchant-knowledge-section.test.tsx tests/unit/merchant-knowledge-upload-form.test.tsx tests/unit/merchant-knowledge-read-context.test.ts tests/unit/merchant-knowledge-ordering.test.ts tests/unit/merchant-knowledge-r2-diagnostics.test.ts tests/integration/merchant-knowledge-router.test.tsx tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts tests/integration/merchant-knowledge-upload.integration.test.ts tests/integration/merchant-knowledge-ordering.postgres.test.ts tests/integration/merchant-knowledge-finalization.postgres.test.ts tests/helpers/merchant-knowledge-router-fixtures.tsx tests/helpers/merchant-knowledge-postgres.ts tests/fixtures/settings-preview/main.tsx`.
+- [x] `git diff --check`; report same-fixture source method calls, emitted SQL/affected rows, router loader/action/poll counts and actual Shared records separately. Preserve safe original cause markers, no invented upstream fields, and owned-container/client/timer cleanup.
 
 ## Stop Condition
 
@@ -240,58 +240,80 @@ The read projection and transaction admission serve different purposes. Keep the
 
 ### Status
 
-Not Started. Defined but not materialised; attempt 0, no claim/worktree/publication asserted.
+Ready for Review — Attempt 1. Implementation and required validation pass. Implementation `e41537919e2a639de4f036582555b79f29c521c6` is committed and pushed on `task/ARCH-057-SHOPIFY-008`. No architect acceptance decision is made here.
 
-### Files Changed
+### Work Completed and Files Changed
 
-None. Definition only.
+- Added the one cause-preserving domain error module with compatibility re-export and the local common HTTP mapper. All eight knowledge actions use `settingsMutationAccess(request, context)`; existing form/tenant bounds remain. Typed invalid/denied/conflict outcomes retain 400/403/409; operational failures become bounded UNAVAILABLE503 with evidence-based retryability and no internal message in browser responses.
+- Settings GET supplies its accepted read context to knowledge loading. Pure entitlement projection is shared with fresh transaction admission; supplied Shop/Subscription/plan/features/preferences avoid duplicate reads. A missing plan mapping triggers only the necessary global Feature lookup, without rereading preferences. Inactive/missing global Feature remains disabled. All configured sources remain visible after downgrade and during unavailability; uncertainty does not become NO_CURRENT_PLAN. The DTO adds entitlementState. The settings preview fixture has no knowledge DTO to amend and remains unchanged.
+- Upload intent drops its unused activation read; finalization uses its already validated language without the unreachable default-language query. HEAD stays before SQL. Actual HTTP404/genuine service not-found differs from 403/429/503/transport; nonretryable configuration and unknown internal failures remain distinct. Original causes survive typed wrapping, including P2025 normalization. Successful committed finalization retains queued:false and pending revisions after activation/queue failure.
+- Ordering validates the exact tenant set under the existing ACTIVE Shop lock. Dense identical/empty order returns with zero ordering writes. Changed order uses a checked maxPosition+1 disjoint offset and one bound text-array unnest/ordinality assignment, verifies both row counts, and sets one operation timestamp only in the final statement. Deletion reuses compaction only when needed. Generation/asset/source locks, current entitlement admission and explicit refresh/reprocess generation behavior remain fresh.
+- MerchantKnowledgeSection drops its redundant fetcher-success effect. A ref-owned sixty-second episode with four-second ticks checks current visibility/revalidator idle state and prevents overlap. Rerenders and reloads do not extend its deadline; end/unmount cleans timers and later false-to-true starts a new episode. Actual installed React Router tests use real hooks. Plain-fetch upload keeps its one explicit refresh. Unavailable data uses existing common.unavailable copy and disables mutation controls while retaining readable source rows.
+- The existing knowledge semantic adapter uses Shared createLogger/sanitizeLogFields and the existing safe boundary helper. It supplies bounded original cause/code/status/request evidence, distinguishes real Prisma/driver codes from domain source codes, masks known R2 secrets/object identity and protects native JSON-parser excerpts without mutating the thrown SDK exception. Queue constructor/old-close/add failures retain false and warn; optional absence has truthful internal classification. No generic serializer, sink or log registry is introduced.
+- Added the three exact package scripts; fixed a missing comma already present between starting scripts so package.json could parse. No package/dependency/router version changed. Updated existing knowledge tests and added the declared context/order/R2/router/PostgreSQL helpers/suites; all new files are below 300 lines. Existing lifecycle integration has focused fixture/assertion edits only. No schema, locale, key/signing/job identity, Background, context-contract or other implementation repository changed.
 
-### Work Completed
+### Validation and Evidence
 
-None.
+- Locked `npm ci` and pinned-schema Prisma generation passed. Initial tests ran before generation finished and failed to import the client; those results are superseded by generated-client runs and are not counted as acceptance evidence.
+- Final exact unit script: **81 passed**, eleven files, zero failures/skips; includes diagnostic classification and cause-preserving P2025 normalization. Real Shared assertions cover original message/cause/native codes, source code versus database code, R2 status/request IDs, privacy sentinels, malformed parser excerpts, source ownership and throwing sinks.
+- Actual mounted router suite: **10 passed**, zero skips, with real createMemoryRouter/RouterProvider/useFetcher/useRevalidator. Five successful fetcher operations each cause exactly one automatic loader reload; failure does not add a success loop. Tests cover plain-fetch finalize, pending-to-active, repeated reloads, sixty-second hidden-time-inclusive deadline, later episode, slow loader overlap, unmount and unavailable read-only presentation. This does not claim an observed production loop was reproduced.
+- URL/localization preservation: **7 passed**, zero skips.
+- Final `npm run typecheck`, `npm run build`, required scoped ESLint and `git diff --check` passed. Existing build chunk-size advisory is unchanged. No final gate was skipped.
+- The developer explicitly authorized `npm run test:merchant-knowledge:postgres`. Initial serial migrated PG17 run: **19 passed, 2 failed**, no skips. One existing malformed-configuration assertion expected DENIED rather than required nonretryable UNAVAILABLE. One pre-existing feature-preference setup transaction exceeded the fixture client's default five seconds (6,475ms), producing P2028. Corrected the assertion and increased only that suite's test-client transaction allowance to thirty seconds, leaving production transaction limits unchanged. Final serial rerun: **4 files, 21 passed, zero failed/skipped** using `npm run test:merchant-knowledge:postgres -- --maxWorkers=1 --no-file-parallelism --testTimeout=60000 --hookTimeout=240000`. Logs retain both initial failures rather than presenting them as passing evidence. Runner-only deadlines/serialization accommodate the local host; package scripts and production transaction limits remain unchanged.
+- New ordering tests measured two actual UPDATE statements with affected counts [3,3] and two transaction controls for three sources. No-op equality/timestamps, exact-set conflict, rollback after a genuine P2010, and separate-connection Shop-lock barriers are asserted. Finalization suite uses separate clients/barriers for one-asset competition, lifecycle/count denial and durable postcommit pending work. All cases passed on canonical forward migrations in owned pgvector/pgvector:pg17 fixtures. Awaited teardown removed task-owned clients/containers; mounted-router tests clean roots/routers/timers. No unrelated resource was removed.
 
-### Validation Results
+Same-fixture baseline comparison used the exact starting source `062777ceae29695314d6c7210bd88bdd11252153` and identical three-source inputs; temporary source/harness were removed. Unchanged order: before four ordering writes/six source methods, after zero writes/two source methods. Changed order: before four writes/six methods, after two writes/four methods. Counts exclude the separately controlled entitlement port and transaction statements, with zero provider calls. These are repository-call measurements, not emitted SQL or latency/capacity claims. Actual PostgreSQL counts/affected rows and mounted-router loader/action counts are recorded separately.
 
-Not run. Record exact scripts/cases, actual router and Shared versions, prepared worktree/source/Database pins, barrier/row/SQL evidence, source error/code/cause/redaction assertions, timer behavior and task-owned cleanup. Skipped checks remain outstanding.
+Final evidence logs: `/tmp/shopify008-unit-all-final.log` (81), `...-router-complete.log` (10), `...-postgres-final.log` (21), `...-preservation.log` (7), `...-types-final.log`, `...-build-final.log`, `...-lint-final.log`, `...-before-after.log` and `...-upload-final.log` (16-case subset, not additional passes). `/tmp/shopify008-postgres-initial.log` retains the 19-pass/two-failure run. Earlier install/generation/fixture/type/lint errors remain in initial logs. No live R2, Redis, Shopify or embedding call was used; external boundaries are controlled fixtures. All disposable clients/containers/timers are task-owned and cleaned by their harnesses.
 
-### Deviations
+### Provenance and Isolation
 
-None.
+Launcher packet: dependency gate passed for SHOPIFY-001/007; canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-008`, prepared start `311086f7d5196e486e39a406890f2b25712f397e`. Implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-008`, start `062777ceae29695314d6c7210bd88bdd11252153`. Both newly created, both `task/ARCH-057-SHOPIFY-008`; both remote task fast-forwards not-needed and origin/main already current. Recursive submodule sync/update/init/verification passed; recorded/working Database pin `8e74634ff92be9900f693c0c449ffce888e7d617` unchanged.
 
-### Assumptions
+Durable claim `b5f61f8de2fdfc9a0a8fb904727e41015fdc6d9f`, pushed at `2026-11-04T20:55:21Z`, Attempt 1, executor codex. Workspace bootstrap selected Node24.19.0/npm11.17.0. Installed Shared3.1.0, Prisma/client6.19.3, React Router7.18.2 and Vitest4.1.11 match the lockfile. No manual runtime or dependency upgrade. No shared/default checkout switched/edited, no other task worktree reused, no main merge or parent gitlink update. Final implementation `e41537919e2a639de4f036582555b79f29c521c6` is pushed to `origin/task/ARCH-057-SHOPIFY-008`; implementation checkout is clean. This report is submitted on the matching parent task branch with no gitlink staging. Its parent publication receipt is recorded after push below.
 
-Both dependencies are accepted and the launcher verifies current integrated source before execution.
+Parent publication receipt: report commit `df4a4f8d0647e0a9abdb655106b51be35d8a75b9` was pushed to `origin/task/ARCH-057-SHOPIFY-008`. This follow-up records that receipt only; no implementation or lifecycle change.
 
-### Unresolved Issues
+### Deviations, Assumptions and Unresolved Issues
 
-Implementation and all required validation are outstanding.
+No business-policy, schema or source/job identity deviation. Starting package syntax repair and fixture-only timeout correction are described above. Request presentation is never mutation authority. Test providers/queues are synthetic and migrations apply only to owned disposable PG17. All required validation passes; no unresolved implementation issue is identified in scope. No downstream task is started; acceptance remains with the architect.
 
 ### Architectural Concerns
 
-Return ownership, schema, provider/queue identity, tenant policy, transaction or cross-repository changes to the architect.
+None requiring a cross-repository amendment has been identified.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+**Accepted — Attempt 1, 2026-11-04.** Implementation `e41537919e2a639de4f036582555b79f29c521c6` satisfies the reviewed bounded task. No blocking findings identified. Task marked Complete under automatic completion mode; executor/claim cleared and Attempt 1 preserved.
 
-### Review Notes
+### Reviewed Source and Conformance
 
-Portable definition only; no implementation accepted.
+Reviewed the implementation diff, task requirements and Completion Report, with source inspection of the presentation read context, entitlement projection, ordering rewrite, upload/finalization behavior, error/HTTP mapping, R2 and queue diagnostic boundaries, and polling implementation and mounted-router tests.
 
-### Reviewed Files
+Presentation reuses supplied server settings facts while mutation paths retain fresh locked tenant/source/asset and entitlement checks. Global-feature fallback and management source visibility remain intact. Reorder performs no writes for an identical dense order and uses two checked SQL updates for changed order under the existing Shop lock. Upload removes the selected unused reads, separates genuine missing-object responses from operational unavailability, and retains durable pending work after postcommit queue failure. Diagnostics preserve safe source/cause/code evidence; public responses retain safe classifications. Polling uses a fixed episode deadline, current router state/visibility and overlap guard, without the redundant success effect; plain-fetch finalization retains its explicit refresh. No blocking defect was identified within this scope.
 
-Definition and latest unchanged knowledge/settings touchpoints.
+### Independent Validation and Limits
 
-### Validation Reviewed
+Executed in the dedicated implementation worktree using Node 24.19.0:
 
-Definition inspection only; actual implementation evidence outstanding.
+- `npm run test:merchant-knowledge:unit`: **81/81 tests passed**, 11 files, no skips.
+- `npm run test:merchant-knowledge:router`: **10/10 tests passed**, no skips, using the actual installed router and hooks. Includes action-managed refresh, fixed deadline/visibility, slow-loader overlap, unmount, later episode and plain-fetch finalization.
+- Implementation comparison whitespace check passed.
 
-### Architecture Conformance
+Local independent logs: `/tmp/arch057-shopify008-review-unit.log` and `/tmp/arch057-shopify008-review-router.log` (not committed artifacts).
 
-To be assessed after implementation.
+Reviewed submitted final evidence for **21 PostgreSQL tests across four files**, **7 URL/localization tests**, typecheck, build and scoped lint. These were not independently rerun by this review. The report preserves the initial PostgreSQL failures and their fixture corrections; acceptance relies on the reported final serial migrated PG17 run rather than relabeling earlier failures as passes. Recorded real SQL affected-row and lock-barrier evidence is distinct from repository method-count measurements; no production performance claim is inferred.
 
-### Follow-up
+### Isolation and Follow-up
 
-Return for architect review; do not execute enabled work.
+Reviewed prepared worktree/dependency/synchronization evidence in the report. Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-008`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-008`; both on `task/ARCH-057-SHOPIFY-008`. No implementation code, schema, dependency or gitlink is changed by this review.
+
+SHOPIFY-011 retains its remaining prerequisite gates and is not promoted or executed here. Integrated architecture validation remains with the terminal system-test task; ARCH-057 is not marked implemented.
+
+The developer explicitly authorized updating acceptance, committing and pushing on 2026-11-04. Only parent documentation is published; no task branch is merged into main.
+
+## Architect Dependency Reconciliation (2026-11-04)
+
+SHOPIFY-007 Attempt 1 is accepted and Complete at `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e`; SHOPIFY-001 is also Complete. Both declared prerequisites are satisfied. This task is ready, unclaimed, at Attempt 0. Normal launcher preparation and source-integration gates remain required. No implementation is started by this promotion.

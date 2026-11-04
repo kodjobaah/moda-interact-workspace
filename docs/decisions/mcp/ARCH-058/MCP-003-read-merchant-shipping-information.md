@@ -35,17 +35,17 @@ This amendment changes the existing task definition without claiming or starting
 
 ## Objective
 
-Add `commerce_get_shipping_information` definition **1.0.0**, operation `shipping.getInformation` **1.0.0**, to the existing published policy executor. Return the current store's native shipping policy and exact requested product/variant facts through the already authorized Shopify/Woo connections. This task implements the selected private interfaces and mappings below; the public schemas are unchanged from accepted Shared 4.0.0 and are delivered by corrective Shared 4.0.1 after SHARED-004 acceptance.
+Add `commerce_get_shipping_information` definition **1.0.0**, operation `shipping.getInformation` **1.0.0**, to the existing published policy executor. Return the current store's native shipping policy and exact requested product/variant facts through the already authorized Shopify/Woo connections. This task implements the selected private interfaces and mappings below; consume the corrected public schemas from exact Shared 5.0.0 after SHARED-006 acceptance through the accepted MCP-002 base.
 
 ## Context
 
-**Definition revision 9.** Dependency amendment against `moda-interact-workspace-ARCH-058-MCP-002.zip`; shipping behavior and scope remain unchanged. The [execution baseline](../../../architecture/ARCH-058/execution-baseline.json) and [implementation handoff](../../../architecture/ARCH-058/implementation-handoff.md) record the accepted prerequisites and current source. SHARED-001/002 and SHOPIFY-001 remain Complete. SHARED-003/004 own the corrective dependency release; consume it transitively through accepted MCP-002, without repeating source implementation or publication. The Shopify scope task accepted `c3b580cec5acc46e5c53386dd94279ad97b02ee9`; its configuration acceptance does not establish a live merchant grant.
+**Definition revision 10.** Shipping behavior and scope remain unchanged. The [execution baseline](../../../architecture/ARCH-058/execution-baseline.json) and [implementation handoff](../../../architecture/ARCH-058/implementation-handoff.md) record the accepted prerequisites and current source. SHARED-001/002 and SHOPIFY-001 remain historical Complete tasks; SHARED-003/004/005/006 and DATABASE-002 correct the contract identity/storage boundary before MCP-002 completes. MCP-003 consumes that accepted result transitively through MCP-002 and must not repeat Shared/Database implementation or publication. The Shopify scope task accepted `c3b580cec5acc46e5c53386dd94279ad97b02ee9`; its configuration acceptance does not establish a live merchant grant.
 
 The current uploaded MCP source still has three specific missing shipping seams: `ShopifyOfflineSessionReader.read` returns only a token; the resolver's GraphQL request allowlist drops any other key; and both Woo exact-read guards/projections omit shipping fields. `shopify-core-executor.ts` also assumes every non-basket/non-get policy operation is search and requires a cursor secret. Registering an authoring operation alone cannot execute shipping. The current upload already includes the accepted Woo `safeException`/`sourceProviderError` diagnostics in `direct-product-reader.ts` and the existing discount catalogue/composition; preserve them through MCP-002. Neither is a missing-source integration blocker in this upload.
 
 ## Scope
 
-Only `moda-interact-mcp`, its tests and this report. Consume accepted MCP-002 as the task base and keep its product, generic shop-catalogue, original-error and canonical tool-identity changes. Retain MCP-002's accepted exact **Shared 4.0.1 / Zod 4.4.3** package/lock pair and runner **1.1.0**; do not select another version, regenerate taxonomy, edit database schema or update the completed Shopify task.
+Only `moda-interact-mcp`, its tests and this report. Consume accepted MCP-002 as the task base and keep its product, generic shop-catalogue, original-error and canonical no-hash tool-identity changes. Retain MCP-002's accepted exact **Shared 5.0.0** package/lock and runner **1.1.0**; do not change MCP's direct Zod dependency for ARCH-058, select another Shared version, regenerate taxonomy, edit database schema or update the completed Shopify task.
 
 ### Exact implementation map
 
@@ -207,7 +207,7 @@ Use the already accepted Shared structured logger and original source-error hand
 
 ## Interfaces / Contracts
 
-Public owner after accepted SHARED-004 publication is `@modainteract/moda-interact-shared/commerce@4.0.1`: `CommerceShippingInformationInputSchema`, `CommerceShippingInformationSchema`, inferred types and both `commerce_get_shipping_information` dictionary entries. `docs/architecture/ARCH-058/contracts.md` section 2.3 remains normative. No wire/status/field/version choice is left open in this task.
+Public owner after accepted SHARED-006 publication is `@modainteract/moda-interact-shared/commerce@5.0.0`: `CommerceShippingInformationInputSchema`, `CommerceShippingInformationSchema`, inferred types and both `commerce_get_shipping_information` dictionary entries. `docs/architecture/ARCH-058/contracts.md` section 2.3 remains normative. No wire/status/field/version choice is left open in this task.
 
 Provider references: [Admin 2026-07 ShopPolicy](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/ShopPolicy) requires read_legal_policies and supplies policy fields; [InventoryItem](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/InventoryItem) / [measurement](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/InventoryItemMeasurement) supply exact variant shipping fields. [Woo products](https://developer.woocommerce.com/docs/apis/rest-api/v3/products/) and [variations](https://developer.woocommerce.com/docs/apis/rest-api/v3/product-variations/) have different field sets; the variation contract does not establish shipping_required or units. These are schema/semantics references, not live merchant execution evidence.
 
@@ -291,7 +291,7 @@ None.
 
 ### Assumptions
 
-Shared 4.0.0 and Shopify scope configuration are historical accepted baselines. This task consumes accepted MCP-002 with corrective Shared 4.0.1 / exact Zod 4.4.3 after SHARED-004 acceptance; configuration acceptance is not a live offline grant, and Woo measurement units remain unknown.
+Shared 4.0.0 and Shopify scope configuration are historical accepted baselines. This task consumes accepted MCP-002 with exact Shared 5.0.0 after SHARED-006 acceptance; ARCH-058 does not change MCP's direct Zod dependency; configuration acceptance is not a live offline grant, and Woo measurement units remain unknown.
 
 ### Unresolved Issues
 

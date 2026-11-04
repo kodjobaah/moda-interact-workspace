@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1",
   "architectureId": "ARCH-058",
-  "definitionRevision": 9,
+  "definitionRevision": 10,
   "evidenceType": "INDEPENDENT_READ_ONLY_PUBLISHED_ARTIFACT_REPRODUCTION",
   "recordedAt": "2026-11-04T16:12:23.431396+00:00",
   "currentArchive": {
@@ -2069,23 +2069,39 @@
     "dist": null
   },
   "selectedCorrection": {
-    "sharedPackageVersion": "4.0.1",
+    "decision": "REMOVE_BUILT_IN_CONTRACT_HASH_IDENTITY",
     "status": "DEFINED_NOT_IMPLEMENTED_OR_PUBLISHED",
-    "sharedRuntimeZod": "4.4.3",
-    "consumerDirectZod": "4.4.3",
+    "sharedPackageTarget": "5.0.0_IF_UNOCCUPIED_AT_PUBLICATION",
+    "sourceTasks": [
+      "ARCH-058-SHARED-003",
+      "ARCH-058-SHARED-004",
+      "ARCH-058-SHARED-005"
+    ],
+    "publicationTask": "ARCH-058-SHARED-006",
+    "databaseTask": "ARCH-058-DATABASE-002",
     "consumerOwners": [
       "ARCH-058-MCP-002",
       "ARCH-058-COMMERCE-001",
       "ARCH-058-BACKGROUND-001"
     ],
-    "sourceTask": "ARCH-058-SHARED-003",
-    "publicationTask": "ARCH-058-SHARED-004",
-    "publicSchemasChanged": false,
-    "descriptorVersionsChanged": false,
-    "descriptorHashesChanged": false,
-    "databaseChangeRequired": false,
+    "builtInIdentity": [
+      "toolName",
+      "definitionVersion"
+    ],
+    "descriptorVersionsChanged": true,
+    "contractHashRemoved": true,
+    "conversationToolContextRemoved": true,
+    "commerceDateTimeSemanticsFrozen": false,
+    "applicationZodPinRequired": false,
+    "databaseChangeRequired": true,
     "runnerVersion": "1.1.0",
-    "futureRegistryIntegrity": null
+    "futureRegistryIntegrity": null,
+    "supersedes": "REVISION_9_ZOD_PINNING_PLAN",
+    "legacyDescriptorVersion": "1.0.0",
+    "finalDescriptorVersion": "2.0.0",
+    "discountBuiltInTimestampSemanticsFrozen": true,
+    "generalDateSchemaChanged": false,
+    "definitionVersionReason": "SHARED-005 changes timestamp acceptance in both discount built-in outputs; name+definitionVersion is the final contract identity, so both built-ins move to 2.0.0."
   },
   "evidenceLimits": [
     "Current snapshot has no independently verified live Git history; user-reported commits remain labelled as reported.",
