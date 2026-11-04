@@ -9,18 +9,18 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-11-04T00:32:54Z
+attempt: 1
 depends_on:
 - ARCH-055-DATABASE-001
 - ARCH-055-API-005
 enables:
 - ARCH-056-SYSTEM-TEST-001
 created: '2026-11-03'
-updated: '2026-11-04'
+updated: 2026-11-04
 ---
 
 # ARCH-056-API-001: Align the API Database dependency with accepted lifecycle contracts
