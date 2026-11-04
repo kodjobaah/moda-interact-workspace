@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-11-04T03:04:51Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-028-BACKGROUND-004
@@ -200,13 +200,13 @@ The purchased reserve P2002-to-empty-conflict conversion and existing empty inte
 - [x] Add same-transaction owner wrappers, promotional retained-source eligibility and the typed paid-period guard.
 - [x] Implement durable confirmed settlement with verified positive results, rollback-on-hold and Shop-key-share-before-message locking.
 - [x] Apply the same early owned-Shop lock to existing provider-status/compensation transaction entries, retaining all their existing policy and after-commit behavior.
-- [ ] Finish read-only retained-source revalidation: the null-message path must hold discoverable orphan automated messages, not return absent. Preserve the passing exact-source and reserved-before-outbound cases.
+- [x] Finish read-only retained-source revalidation: the null-message path holds discoverable orphan automated messages and attempt-linked merchant commands rather than returning absent. Exact-source and reserved-before-outbound cases remain covered.
 - [x] Make the existing successful-commit facade reject noncommitted owner outcomes.
 - [x] Reuse the paid plan's already validated meter handle.
 - [x] Implement the fixed selected failure/hold/retry diagnostic owners, stages and correlation fields, preserving original exception identity and existing accounting/status behavior.
 - [x] Emit provider-status `applied` only after successful SQL commit; distinguish later committed-status continuation failures.
-- [ ] Add actual installed Shared-sink assertions for original direct messages, known causes, allowlisted database metadata, typed holds, exhausted retries, missing upstream fields, redaction and logging-sink failure isolation; do not certify this with logger-call mocks.
-- [ ] Add and execute the bounded unit/PostgreSQL matrix below; report contracts to BG004 and preserve BG003's lock-order agreement.
+- [x] Add actual installed Shared-sink assertions for original direct messages, known causes, allowlisted database metadata, typed holds, exhausted retries, missing upstream fields, redaction and logging-sink failure isolation; do not certify this with logger-call mocks.
+- [x] Add and execute the bounded unit/PostgreSQL matrix below; report contracts to BG004 and preserve BG003's lock-order agreement.
 
 ## Interfaces / Contracts
 
@@ -317,19 +317,19 @@ BG002 does not migrate orchestration files. BG004 must not duplicate billing sou
 
 ## Acceptance Criteria
 
-- [ ] Four source owners settle a positively confirmed initial message at most once through their existing accounting transactions.
-- [ ] Exact COMMITTED replay validates the original positive event and remains safe after period/policy change; stale RESERVED paid periods remain held.
-- [ ] AMBIGUOUS, RELEASED, compensated, missing or nonunique source evidence never becomes a new charge or a successful finalization result.
-- [ ] Pre-permit restart returns the same reservation/source admission without accounting mutation; null-message interruption is covered and only verified source absence authorizes fresh admission.
-- [ ] Every held/error outcome preserves ledger state or rolls back all changes; failures retain their original diagnostics.
-- [ ] Confirmed settlement, provider failure/131026 compensation, final permit and shared-counter races obey the documented lock order and positive accounting invariants.
-- [ ] BS-04's duplicate Shopify meter read is removed without report/provider changes; BS-05 and Blocked BG013 remain accurately bounded.
+- [x] Four source owners settle a positively confirmed initial message at most once through their existing accounting transactions.
+- [x] Exact COMMITTED replay validates the original positive event and remains safe after period/policy change; stale RESERVED paid periods remain held.
+- [x] AMBIGUOUS, RELEASED, compensated, missing or nonunique source evidence never becomes a new charge or a successful finalization result.
+- [x] Pre-permit restart returns the same reservation/source admission without accounting mutation; null-message interruption, orphan automated-message evidence, and attempt-linked command evidence are covered; only verified source absence authorizes fresh admission.
+- [x] Every held/error outcome preserves ledger state or rolls back all changes; failures retain their original diagnostics.
+- [ ] Confirmed settlement, provider failure/131026 compensation, final permit and shared-counter races obey the documented lock order and positive accounting invariants. BG002 settlement/status/compensation and shared-counter races are covered; the final-permit interaction remains BG003-owned and is not certified by this task's validation.
+- [x] BS-04's duplicate Shopify meter read is removed without report/provider changes; BS-05 and Blocked BG013 remain accurately bounded.
 - [x] No edits escape the declared ownership allowlist or change schema, provider, queue, Support or recovery-status behavior directly.
 
-- [ ] Every selected material technical failure and exception-derived hold has its original safe direct message in an actual emitted Shared record at the declared service owner, with precise stage and available original identities.
+- [x] Every selected material technical failure and exception-derived hold has its original safe direct message in an actual emitted Shared record at the declared service owner, with precise stage and available original identities.
 - [x] Final retry failure rethrows the same exception, logs the actual retry state, and cannot emit false successful status application; after-commit failures identify which state already committed.
 - [x] Known cause and allowlisted Prisma/SQLSTATE diagnostics are emitted explicitly when present; missing data produces no invented provider/database facts. Stack/cause-graph completeness is not claimed from Shared's direct Error serializer.
-- [ ] Captured emitted records pass the common sensitive-data/redaction/truncation assertions. Logging sink failure leaves accounting, holds, retries and original thrown exceptions unchanged.
+- [x] Captured emitted records pass the common sensitive-data/redaction/truncation assertions. Logging sink failure leaves accounting, holds, retries and original thrown exceptions unchanged.
 - [x] Source-owned detailed diagnostics and downstream stage context follow the owner table; tests do not rely on an unrelated worker callback to compensate for a missing direct-service diagnostic.
 
 ## Validation
@@ -407,7 +407,7 @@ This section belongs to the implementing repository agent. No implementation is 
 
 ### Status
 
-Attempt 2 remains `ready` with the executor claim cleared. Its latest orphan-message fix and the five explicitly authorized fixture-only corrections are uncommitted and unpushed. The full required PostgreSQL matrix is not green: 65 tests pass and the read-only HUMAN-status test fails in the combined run, although that test passes in isolation. No acceptance or downstream-unblocking claim is made.
+Attempt 3 remains in progress under the launcher claim. The orphan-message fix, attempt-linked command evidence check, five authorized fixture corrections, and architect-approved ARCH-028 fixture isolation are present on the implementation branch. The exact required PostgreSQL matrix passes all 67 tests in its declared order with default Vitest scheduling. Implementation changes remain uncommitted; acceptance and downstream promotion have not been claimed.
 
 ### Attempt 1 Files Changed
 
@@ -569,6 +569,41 @@ The combined required integration run still fails at the read-only HUMAN-status 
 
 No schema, package/dependency, Shared publication, cross-repository, provider, queue, Support or recovery-status policy changes were made. The only production edit adds explicit one-level cause context to the BG002-owned settlement/revalidation diagnostics.
 
+### Attempt 3 Validation and Disposition
+
+Launcher claim: Attempt 3, task `in_progress`, executor `copilot`, claimed at `2026-11-04T03:04:51Z`. Dependency checks passed for ARCH-028-BACKGROUND-004 and ARCH-028-BACKGROUND-009. The parent claim commit is `d07754e63876fb2220b16f41480f4f6139700c16`; parent and implementation branches are `task/ARCH-056-BACKGROUND-002`. Recursive database submodule initialization passed at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+
+Attempt 3 worktree and synchronization evidence:
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-002`, branch `task/ARCH-056-BACKGROUND-002`, HEAD and `origin/task/ARCH-056-BACKGROUND-002` at `d07754e63876fb2220b16f41480f4f6139700c16`. The launcher incorporated the already-current `origin/main`; the Attempt 3 claim was committed and pushed. The only parent-worktree modification is this completion report, not yet committed or pushed.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-002`, branch `task/ARCH-056-BACKGROUND-002`, HEAD `a5953b9def12b91b79b02b5874b686fcec5cbeaf`; implementation origin task ref at `79b8d5bc5cf5ad4090ee0dc0b06246e10489ca78`. At final validation the implementation branch is six commits ahead of its origin task ref and has nine unstaged, uncommitted implementation-file modifications. No implementation commit or push was made in Attempt 3. Shared workspace and implementation checkouts were not switched or mutated by launcher preparation.
+- Recursive Database submodule: initialized and synchronized at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+- Final scope is the nine changed implementation files listed in the implementation worktree status and this one report file in the parent worktree. No temporary diagnostic test/import remains.
+
+Validation on the implementation worktree:
+
+- `npm run build` — passed; Prisma Client 6.19.3 generated and TypeScript build completed.
+- Required BG002 unit matrix — 16 files, 271 tests passed.
+- Full declared task-scoped ESLint command, including the five authorized fixture files — passed.
+- `git diff --check` — passed.
+- `tests/integration/arch056-initial-outreach-credit.integration.test.ts` — 22/22 passed after removal of the temporary diagnostic test.
+- Initial Attempt 3 required ten-file PostgreSQL/Redis run — 10 files, 65 passed and 1 failed at the unchanged read-only `recovery-human-provider-status.integration.test.ts:43`; both outbound message IDs were null and the emulator recorded zero sends.
+- Following the first authorized teardown cleanup, a default-parallel run passed the HUMAN test but exposed one foreign command from the new BG002 regression itself (66 passed, 1 failed). That regression now inserts accepted intent and transitions it to `CANCELLED` with its attempt link in the same transaction, before it can enter the global claim queue.
+- Final exact required ten-file command in declared order with default Vitest scheduling — 10 files, 67/67 passed.
+- The exact required ten-file command with `--no-file-parallelism` in declared order — 10 files, 66/66 passed before the command regression was added. The earlier HUMAN-first serial 66/66 run was diagnostic only.
+- `arch028-recovery-delivery-compensation.integration.test.ts` followed by the unchanged HUMAN-status test with `--no-file-parallelism` — 2 files, 29/29 passed after cleanup.
+- Required BG002 unit matrix — 16 files, 272/272 passed after the command-evidence change.
+- Focused evidence unit tests — 6/6 passed; focused BG002 PostgreSQL integration file — 23/23 passed, including orphan-message and attempt-linked command holds.
+- `npm run build` and scoped ESLint over all nine changed implementation TypeScript files — passed after cleanup.
+- `git diff --check` — passed in both implementation and parent report worktrees.
+
+Safe diagnostic evidence was collected with temporary tests in the BG002-owned integration module; all probes and their imports were removed before final validation. In isolation, a fixture analogue claimed its two own command IDs and both commands reached `SENT` with one dispatch attempt, provider dispatch keys, outbound message IDs, and two provider requests. After earlier matrix suites, the claim call returned two different command IDs; its own commands remained `ACCEPTED`, `failureCode` null, dispatch-attempt count zero, with no dispatch key, outbound ID, or provider request. A safe candidate snapshot identified the two earliest foreign candidates as `ACCEPTED` rows with `arch028-` Shop IDs, created by the HUMAN branches of `arch028-recovery-delivery-compensation.integration.test.ts`. That fixture previously left accepted commands claimable after teardown. The architect approved making these synthetic lineage commands terminal within the same setup transaction that inserts and links them, while retaining conditional cleanup. A subsequent 66/67 default-parallel run exposed a second contaminant: the new BG002 command-evidence regression had itself created an accepted command. Its fixture now inserts, links and cancels that synthetic command in one transaction. This preserves realistic accepted-intent creation and command lineage without exposing test-only accepted rows to another file's global claim. `processClaim` returning normally was not treated as proof of a send.
+
+The initial matrix failure was caused by stale accepted HUMAN commands left by the ARCH-028 integration fixture. Following explicit architect approval, `arch028-recovery-delivery-compensation.integration.test.ts` creates each synthetic command as accepted intent and transitions it to `CANCELLED` with its outbound link inside one transaction, so it is non-claimable as soon as it becomes visible. Teardown also cancels only tracked rows that still belong to that fixture's Shop, remain `ACCEPTED`, have no provider dispatch key, and have no lease token or expiry. The BG002 command-evidence regression likewise makes its synthetic linked command terminal atomically. These changes preserve lineage and existing assertions while preventing test-only rows from being consumed by the global due-command query. No edits were made to HUMAN production code, `recovery-human-provider-status.integration.test.ts`, its shared fixture, or the integration runner. Temporary diagnostics are absent from the final implementation diff.
+
+**Architect disposition:** the architect approved the ARCH-028 fixture-only isolation correction. Its final guidance was to insert synthetic commands as accepted intent and cancel/link them atomically before commit, retaining conditional teardown cleanup. The implementation also added the architect-requested null-message attempt-command check and unit/PostgreSQL regressions; the command regression's own fixture is made terminal atomically to avoid polluting the global claim queue. The final required matrix, build, 272-test unit matrix, scoped lint, and diff checks pass. Task acceptance is pending architect re-review; keep ARCH-056-BACKGROUND-004 and ARCH-056-SYSTEM-TEST-001 gated until explicit acceptance. Implementation changes remain uncommitted and unpushed.
+
 ## Architect Review
 
 This section belongs only to moda_architect. Definition authoring is not implementation acceptance.
@@ -661,3 +696,31 @@ Continue diagnosis using the existing fixture read-only and BG002-owned regressi
 ### Disposition and publication
 
 Changes Requested for the remaining required validation failure; no additional production defect was identified in this correction. Keep `status: ready`, Attempt 2, executor/claimed_at null. No downstream task is promoted: BG004 and SYSTEM-TEST-001 remain gated. The implementation correction is still uncommitted/unpushed, so this review does not identify it as published or complete. Reconcile implementation-owned checklist/report text and publish the corrected implementation before resubmission. This architect addendum is local; no implementation files were changed, no commits or pushes were performed, and nothing was merged.
+
+
+## Architect Review — Changes Requested (Attempt 3, 2026-11-04)
+
+### Resolved implementation and fixture findings
+
+Reviewed the nine local implementation-file changes on `a5953b9def12b91b79b02b5874b686fcec5cbeaf`. Null-message revalidation now holds both orphan automated-message evidence and a merchant command linked to the validated INITIAL attempt. The additional command check is read-only and does not select a replacement identity. The ARCH-028 fixture creates accepted intent and cancels/links it atomically, so another worker cannot observe its synthetic commands as due work. Conditional cleanup is scoped to tracked IDs, Shop, accepted state and absence of dispatch/lease evidence. The new command-evidence fixture likewise becomes terminal atomically. Existing compensation assertions are retained. These corrections resolve the previously reproduced code and global-command-queue contamination findings.
+
+### P2 — Complete the required final-permit/settlement evidence
+
+The open acceptance item is still an explicit BG002 validation obligation. Validation case 8 requires honest winner predicates: a PENDING permit winner makes settlement hold, and a confirmed-settlement winner makes the fence refuse another provider request. The task says full actual-fence integration is *also* checked in BG003; it does not transfer all BG002 proof to that task.
+
+BG003 is accepted and its code is incorporated in this worktree. Its `initial-outreach-admission-races.integration.test.ts` uses a synthetic owner transaction that directly mutates counters/reservations and inserts a fixture ledger event; it does not invoke `InitialOutreachCreditService.settleConfirmedInitialOutreach`. BG002's parent-FK test proves one Shop-lock-before-message ordering, but does not exercise the two specified final-permit/settlement outcomes. The passing unit message-not-confirmed case does not replace the required PostgreSQL interaction evidence.
+
+Add the missing cases in BG002-owned integration modules, using independent clients and explicit barriers where overlap is asserted. Exercise the real BG002 settlement port against the accepted fence or its documented boundary; assert held/no accounting mutation for the pending permit winner and no new permit/provider request after valid confirmed settlement, with exact reservation/counter/positive-event state. Keep eligibility states truthful; do not fabricate a successful settlement of a PENDING message. This requires no BG003 production change or edits to its owned tests. No new scope expansion is granted. Reconcile the checklist from that evidence and rerun the affected and required suites before resubmission.
+
+### Independently verified validation and scheduling correction
+
+- Exact declared ten-file PostgreSQL/Redis command: **67/67 passed**, 10 files, no skips.
+- Required units: **272/272 passed**, 16 files.
+- Build, full declared scoped ESLint and implementation/parent whitespace checks: passed.
+- The effective `vitest.config.ts` sets `fileParallelism: false` when disposable integration is enabled. Therefore the passing default command is serial across files; the report's description of it as default-parallel is incorrect.
+- Additional diagnostic run of the same ten files with explicit `--fileParallelism=true`: **62 passed, 5 failed**, across 3 failed files. Failures report Prisma P2034 write conflicts/deadlocks in the source settlement cases, shared-counter race and parent-FK test. The HUMAN-status case passed. The root cause of these parallel-run failures was not established by this review. This override is not the declared validation command and does not negate its 67/67 pass; do not claim parallel validation passed or expand production retry policy from this diagnostic result.
+- Logs: `/tmp/arch056-bg002-attempt3-review-integration.log`, `/tmp/arch056-bg002-attempt3-review-unit.log`, `/tmp/arch056-bg002-attempt3-review-build.log`, `/tmp/arch056-bg002-attempt3-review-lint.log`, `/tmp/arch056-bg002-attempt3-review-parallel.log`.
+
+### Disposition and handoff
+
+Changes Requested for the outstanding required interaction evidence, not for a newly demonstrated production defect. Correct the scheduling description in the completion report and retain the diagnostic result. Return to `ready`, clear executor/claimed_at, preserve Attempt 3; the next normal claim creates Attempt 4. Implementation corrections remain uncommitted/unpushed; publication is still required before durable completion. BG004 and SYSTEM-TEST-001 remain gated. This review changes only the parent task record, is local and uncommitted, and neither publishes implementation nor merges any branch.
