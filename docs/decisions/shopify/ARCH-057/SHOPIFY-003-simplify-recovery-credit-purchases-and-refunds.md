@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 30
-executor: codex
-claimed_at: 2026-11-04T08:23:14Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-002
@@ -33,7 +33,7 @@ Architecture document: `docs/architecture/ARCH-057-shopify-application-database-
 
 Coordinator: `moda_architect`.
 
-Mandatory execution, diagnostic, provenance and validation contract: `docs/architecture/ARCH-057/task-contract.md`. This is a **portable definition, defined but not materialised**. No implementation claim, worktree, branch, commit or acceptance is asserted. SHOPIFY-002 is not Complete, so this task is Pending.
+Mandatory execution, diagnostic, provenance and validation contract: `docs/architecture/ARCH-057/task-contract.md`. This task is materialised in the canonical parent and implementation worktrees recorded below. SHOPIFY-002 is complete and architect-accepted. Attempt 1 was reviewed with Changes Requested; the claim is cleared and this task is ready for correction, not accepted.
 
 ## Objective
 
@@ -125,7 +125,7 @@ The preflight purchase read and transaction reread are intentional: the former a
 
 ### R5. Preserve idempotent recovery and reactivation
 
-Keep current unique-conflict receipt recovery, including same-Shop/provider validation and returned current purchase outcome. A replay may not create a second refund or balance hold. Preserve reactivation's transaction, provider-action fence, zero-credit completion case and three-entity CAS; no provider read is required for reactivation. Batches remain sequential, bounded and individually transactional rather than holding one transaction across provider calls.
+Keep current unique-conflict receipt recovery, including same-Shop/provider validation and returned current purchase outcome. A replay may not create a second refund or balance hold. Preserve reactivation's transaction, provider-action fence, defensive zero-credit completion branch and three-entity CAS; the zero-credit validation amendment below governs evidence for that unreachable persisted state; no provider read is required for reactivation. Batches remain sequential, bounded and individually transactional rather than holding one transaction across provider calls.
 
 Return all normal business denials in the existing typed outcomes. Unexpected persistence/transport errors retain their original cause. Do not hide retry exhaustion behind a new generic message without the originating error evidence.
 
@@ -147,6 +147,14 @@ Use direct Shared logging at the owning boundary, consuming SHOPIFY-002's typed 
 
 Known cause chains are supplied explicitly as bounded Shared fields under the common contract; preserve the actual thrown cause as well. No raw form, provider payload, online user object, credential or payment detail enters logs or merchant responses.
 
+## Architect Validation Amendment (2026-11-04)
+
+The accepted baseline migration `20260912000000_arch010_first_production_baseline/migration.sql:1479–1484` defines `RecoveryCreditPurchase_lifecycle_amounts`: WITHDRAWN requires `currentAmount > 0`, while COMPLETED/REFUNDED require zero current and reserved amounts. No later pinned migration replaces this constraint. `reactivateRefund` requires WITHDRAWN before its defensive `COMPLETED_NO_CREDITS` branch, so successful execution of that branch against the canonical migrated database is not a reachable state.
+
+For this bounded task, replace the impossible successful PostgreSQL zero-credit reactivation requirement with (1) real migrated PostgreSQL rejection of WITHDRAWN/currentAmount=0 by that exact constraint, asserting unchanged purchase/counter balances and versions, and (2) retention of the existing isolated unit regression for the unchanged defensive branch, labelled as such rather than production database proof. The submitted integration and unit assertions satisfy this amended zero-credit evidence requirement and were independently rerun during review.
+
+This is a validation correction, not a financial or lifecycle policy change. It authorizes no schema change, constraint bypass, new legal state, provider refund, or removal/rewrite of the defensive branch. All other real transaction, race, rollback and diagnostic gates remain mandatory. The implementer's blocker record below is preserved as historical evidence; this amendment resolves that specific blocker only. The separate Admin-response logging finding prevents acceptance.
+
 ## Work Items
 
 - [x] Consume request context in the declared route handlers while retaining independent access checks.
@@ -155,7 +163,7 @@ Known cause chains are supplied explicitly as bounded Shared fields under the co
 - [x] Replace unbounded nested refunds with the two bounded summary reads.
 - [x] Move each new-refund provider preflight before its write transaction and use only transaction-local current state for admission.
 - [x] Retain replay, CAS, batch and reactivation behaviour; leave namespace replacement to SHOPIFY-012.
-- [ ] Complete actual Shared-output assertions, deterministic call budgets and both migrated PostgreSQL suites. Shared-output/budgets and 14 executable database cases pass; required zero-credit completion remains blocked by the accepted lifecycle constraint (see Completion Report).
+- [ ] Complete actual Shared-output assertions, deterministic call budgets and both migrated PostgreSQL suites. The budgets and 14 database cases pass, including the amended zero-credit constraint proof; Admin malformed-response privacy needs the correction in Architect Review.
 
 ## Interfaces / Contracts
 
@@ -205,7 +213,7 @@ Preserve `PurchaseHistoryPage`, `PurchaseHistoryItem`, `RefundOutcome`, `Reactiv
 - [x] Refund HTTP/credential/root-client context reads never execute while a write transaction is open.
 - [x] Refund/refund, refund/reservation and reactivation interleavings preserve one durable hold, nonnegative balances, versions and provider-action fences on real PostgreSQL.
 - [x] Purchase same-ID and same-offer races preserve one admissible durable request and atomic UsageEvent/Purchase/BillingOperation persistence.
-- [x] Every named operational failure retains original safe Shared output and cause; provider text is not duplicated and secret/PII sentinels do not appear.
+- [ ] Every named operational failure retains original safe Shared output and cause; provider text is not duplicated and secret/PII sentinels do not appear.
 - [x] No schema, dependency, public DTO, locale, pricing policy, hash preimage, identity or Background change occurred.
 
 ## Validation
@@ -220,11 +228,11 @@ Run from the prepared `moda-interact` implementation worktree under the mandator
 - [x] `npx --no-install eslint app/services/billing/recovery-credit-purchase-management.service.ts app/services/billing/recovery-credit-purchase-request.service.ts app/services/billing/recovery-credit-provider-context.server.ts app/routes/app/billing/recovery-credit-purchases/route.tsx app/routes/app/billing/options/route.tsx tests/unit/recovery-credit-history-budget.test.ts tests/unit/routes/recovery-credit-purchases.test.ts tests/unit/routes/billing-options-action.test.ts tests/integration/recovery-credit-refunds.postgres.integration.test.ts tests/integration/recovery-credit-purchases.postgres.integration.test.ts tests/fixtures/recovery-credit-refunds.ts tests/fixtures/recovery-credit-purchases.ts` and focused lint of changed existing tests.
 - [x] `git diff --check`
 
-**Required zero-credit completion is blocked, not passed.** The command above passes 14 executable cases, including an explicit migrated-constraint rejection test; that rejection does not replace the requested successful completion proof.
+**Amended zero-credit evidence:** the real migrated-constraint rejection and unchanged balances/versions, together with the existing defensive-branch unit regression, satisfy the Architect Validation Amendment above. Do not describe this as successful PostgreSQL execution of `COMPLETED_NO_CREDITS`.
 
 Both PostgreSQL files must run against task-owned `pgvector/pgvector:pg17` containers with all accepted forward migrations, using the prerequisite helper. Separate real Prisma connections and explicit barriers control races; provider ports are synthetic. Do not use a mocked transaction, fabricated SQL result or timing sleep as database proof.
 
-Required database cases: two same-ID new purchases; different IDs competing for the same unresolved offer; billing-cycle change after provider observations but before final admission; rollback after one of the three purchase writes; two refund requests; reservation/version change before refund CAS; refund-versus-reactivation; reactivation after provider action has begun; zero-credit completion; failure after refund creation before counter CAS. Assert durable row counts, request identities, versions, reserved/refunding/current quantities and no partial writes.
+Required database cases: two same-ID new purchases; different IDs competing for the same unresolved offer; billing-cycle change after provider observations but before final admission; rollback after one of the three purchase writes; two refund requests; reservation/version change before refund CAS; refund-versus-reactivation; reactivation after provider action has begun; the amended zero-credit constraint-rejection proof; failure after refund creation before counter CAS. Assert durable row counts, request identities, versions, reserved/refunding/current quantities and no partial writes.
 
 Record same-fixture before/after method/provider counts and actual emitted SQL separately. The expected new refund preflight adds a deliberate read; the acceptance goal is a correct short transaction, not fewer reads at any cost. Include actual Shared JSON evidence, unavailable validation, warnings and owned-resource cleanup in the Completion Report.
 
@@ -326,27 +334,36 @@ Evidence: accepted Database migration `20260912000000_arch010_first_production_b
 
 ### Review Status
 
-Pending.
+**Changes Requested — Attempt 1, 2026-11-04.** The zero-credit validation blocker is resolved by the scoped amendment above. A reproduced privacy defect remains, so the task is not accepted or complete. Status is `ready`, executor/claimed_at are cleared and Attempt remains 1.
 
-### Review Notes
+### Finding
 
-Portable definition only; no implementation accepted.
+**[P2] Exclude malformed Admin response text from both diagnostic messages.** In `app/routes/app/billing/recovery-credit-purchases/route.tsx:55–63`, the `response.json()` catch copies the native parser's message into the typed error and retains that same error as its logged cause. Node includes response text in SyntaxError messages. A synthetic body `SECRETXYZ` at both HTTP 200 and HTTP 503 appeared verbatim in actual Shared output in `error.message` and `causeChain[0].message`, with `redactionApplied: false`. This violates the task's raw-provider-data exclusion even though refund execution correctly fails closed.
 
-### Reviewed Files
+Use a safe internal parse reason for the emitted top-level error and the accepted SHOPIFY-002 `diagnosticCause` facility for a sanitized parse diagnostic, retaining the original SyntaxError object as the propagated cause. Preserve safe HTTP status/request ID and truthful classification. Add actual-route/real-Shared tests for short full-body and long partial-body sentinels on both successful and non-2xx malformed responses; assert no mutation, original propagated cause, safe correlation and absence of body fragments. Keep source-error handling for other SDK/transport failures intact. No edit to the prerequisite diagnostics contract is needed.
 
-Definition and the named latest-snapshot touchpoints.
+### Reviewed Files and Architecture Conformance
+
+- Implementation `fffbf30641544574b7de72c7829b85a9ea4fc0d4`, its 15-file delta from `b40775fd2f0b68ed39efc4b937c9ecec2cd607f7`, and parent submission `4821936db`.
+- Both declared routes, request/management services, provider-context matcher, focused route/service/history fixtures, migrated purchase/refund suites and the canonical lifecycle constraint.
+- The history context and separately bounded latest/completed summaries preserve the intended request-local design. Refund provider preflight precedes each transaction and the local authorization reads use the transaction client. Existing purchase replay, two provider/catalogue observations, current cycle validation, CAS and atomic persistence remain in place.
+- Verified the official configured Admin 2026-07 `ShopPlan.partnerDevelopment` Boolean contract with the Shopify AI Toolkit: https://shopify.dev/docs/api/admin-graphql/2026-07/objects/ShopPlan. No live provider operation was performed.
+- No additional blocking implementation finding was identified in the reviewed scope. This is not acceptance while the privacy failure remains.
 
 ### Validation Reviewed
 
-Definition checks only. Implementation evidence is outstanding.
+- Independent exact seven-file unit/route/render command: **106/106 passed**, no skips. Log: `/tmp/arch057-shopify003-review-units.log`.
+- Independent exact two-file migrated PG17 integration command: **14/14 passed**, no skips. Real barriers/connections cover purchase/refund races, serialization retry, cycle change, rollback, provider-action fence and the zero-credit constraint rejection. Fixture cleanup completed. Log: `/tmp/arch057-shopify003-review-postgres.log`.
+- History SQL measurements reproduced **9 SELECTs** and one synthetic provider call for each 1/5/20-row fixture; method budgets remain separately asserted by the unit suite. No SQL reduction or latency claim is inferred from fewer method calls.
+- Two temporary actual-route malformed-response probes **both failed**, at HTTP 200 and 503. They used native Response parsing and the installed Shared logger; synthetic body text appeared twice in emitted records. Log: `/tmp/arch057-shopify003-review-probes.log`. The probe additions were removed and the original test file restored byte-for-byte.
+- Node 24.19.0 and the existing locked toolchain were used. Reviewed the reported Prisma generation, typecheck, build and lint results; these were not independently rerun because the reproduced blocker already prevents acceptance. Implementation and parent whitespace checks passed.
+- No implementation, schema, dependency, public DTO, pricing, identity or gitlink change was retained by the review.
 
-### Architecture Conformance
+### Follow-up and Dependencies
 
-To be assessed from actual source, unchanged identities, transaction/race results and original-error output.
+Fix the Admin-response diagnostic boundary and add the regression evidence within the existing allowlist. Reconcile the next Completion Report with the validation amendment and rerun affected suites and applicable gates. The defensive zero-credit unit case must remain clearly distinguished from the real migrated constraint proof; do not restore an impossible database success requirement or alter financial policy.
 
-### Follow-up
-
-Return for review; do not begin enabled work automatically.
+SHOPIFY-004 and SHOPIFY-011 were checked and remain `pending` because SHOPIFY-003 is not complete. No downstream task was claimed or executed. The developer explicitly authorized committing and pushing the review, validation amendment and architecture handoff on the parent task branch on 2026-11-04.
 
 ## Architect Dependency Reconciliation (2026-11-04)
 
