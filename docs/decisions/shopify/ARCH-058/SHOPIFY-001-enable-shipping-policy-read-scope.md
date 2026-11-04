@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-11-04T06:02:39Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -28,7 +28,7 @@ updated: 2026-11-04
 
 Architecture ID: `ARCH-058`. Parent: `docs/architecture/ARCH-058-commerce-agent-product-discovery.md`. Normative contracts: `docs/architecture/ARCH-058/contracts.md`, especially section 2.3. Coordinator: `moda_architect`.
 
-**Defined but not materialised.** This portable definition does not establish a task branch, worktree, commit, deployed app configuration or merchant permission. Materialise through `/moda-task ARCH-058-SHOPIFY-001 --definition <path-to-this-file>`; use the implementation worktree and canonical workspace root supplied by that launcher.
+Materialised through the canonical launcher-resolved parent and implementation worktrees recorded in the Completion Report. The task's successful completion establishes source configuration and rollout guidance only; it does not establish a deployed app configuration or merchant permission.
 
 ## Objective
 
@@ -156,7 +156,7 @@ Keep edits in the canonical dedicated implementation worktree and use the launch
 
 ### Status
 
-Ready for Review — Attempt 1. Submitted implementation `c3b580cec5acc46e5c53386dd94279ad97b02ee9` for moda_architect review.
+Accepted and Complete — Attempt 1. Implementation `c3b580cec5acc46e5c53386dd94279ad97b02ee9` is pushed to `task/ARCH-058-SHOPIFY-001`. Architect acceptance is recorded below. No merge to main or live deployment is asserted.
 
 ### Files Changed
 
@@ -195,7 +195,7 @@ The operator must verify the actual selected client/app version and matching ext
 
 ### Unresolved Issues
 
-Live rollout/grant evidence is outstanding for the intended installation. The source reconciliation found ARCH-057-SHOPIFY-009 still pending its own implementation; this task does not claim its planned missing-session race correction.
+Live rollout and grant evidence remains outstanding for the intended installation, as required by the task's operator rollout boundary. This is not an implementation acceptance blocker. ARCH-057-SHOPIFY-009's separate planned lifecycle changes are outside this task and are not claimed here.
 
 ### Physical Worktree and Synchronization Evidence
 
@@ -215,24 +215,28 @@ No unresolved configuration-identity conflict was found in the selected source. 
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Not reviewed.
+The additive required `read_legal_policies` scope is present exactly once in each declared deployable app configuration. Existing scopes, app identities, URLs, versions, installation flags and scope-update subscriptions are preserved. The new regression tests and report's TOML parse/comparison establish the exact configuration delta. The runbook distinguishes configuration deployment, external `SCOPES` alignment, merchant approval, authenticated notification and the usable persisted offline grant; it does not claim a live installation has received permission. Shopify's current documentation confirms that `ShopPolicy` requires this scope and that `currentAppInstallation.accessScopes` reports granted scopes ([ShopPolicy](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/ShopPolicy), [currentAppInstallation](https://shopify.dev/docs/api/admin-graphql/2026-07/queries/currentAppInstallation), [manage access scopes](https://shopify.dev/docs/apps/build/authentication-authorization/manage-access-scopes)).
 
 ### Reviewed Files
 
-None.
+Reviewed implementation files: `shopify.app.moda-interact.toml`, `shopify.app.toml`, `tests/unit/webhooks/shopify-shipping-scope-config.test.ts`, `docs/shipping-policy-read-permission.md`; existing `app/shopify.server.js` and authenticated `app/routes/webhooks/app/scopes-update/route.jsx` were inspected for lifecycle preservation.
 
 ### Validation Reviewed
 
-None.
+Reviewed reported validation: 20 tests passed across four files, both TOMLs parsed with Python `tomllib`, additive-scope object comparison passed, typecheck and diff checks passed, and the host Shopify AI Toolkit documentation check passed. No live selected-app deployment, merchant approval, authenticated scope-update observation or offline grant check was performed, matching the task's explicit `NOT_RUN` boundary. Tests were not rerun during architect review.
 
 ### Architecture Conformance
 
-Not assessed.
+Conforms to the configuration-only task contract. No runtime scope defaults, OAuth/session lifecycle changes, new webhook, fabricated grant, database change or out-of-scope repository edit was introduced. The accepted Shopify documentation supports the specified permission and verification query.
 
 ### Follow-up
 
-None.
+`ARCH-058-MCP-003` and `ARCH-058-SYSTEM-TEST-001` remain Pending because their other explicit dependencies are incomplete; this acceptance does not promote them. The operator rollout procedure remains the prerequisite for native policy readiness at a specific installation.
+
+### Accepted Completion Decision
+
+`completion_mode: automatic`; task status is Complete at Attempt 1, with `executor: null` and `claimed_at: null`. Implementation `c3b580cec5acc46e5c53386dd94279ad97b02ee9` and the accepted task report are published on their matching task branches. No merge to main or deployment was performed.
