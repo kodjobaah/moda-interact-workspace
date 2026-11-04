@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-11-04T05:06:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -34,7 +34,7 @@ Architecture document: `docs/architecture/ARCH-057-shopify-application-database-
 
 Coordinator: `moda_architect`.
 
-Mandatory execution, diagnostic, provenance and validation contract: `docs/architecture/ARCH-057/task-contract.md`. This is a **portable definition, defined but not materialised**. It has no execution claim, branch, worktree, commit or accepted implementation. Its dependency is not Complete, so its status is Pending.
+Mandatory execution, diagnostic, provenance and validation contract: `docs/architecture/ARCH-057/task-contract.md`. This task is materialised in the canonical launcher-resolved parent and implementation worktrees recorded in its Completion Report. Its dependency, ARCH-057-SHOPIFY-001, is Complete.
 
 ## Objective
 
@@ -291,24 +291,28 @@ Return changes to ownership, lifecycle policy, schema, error contracts, lock par
 
 ### Review Status
 
-Pending.
+Changes Requested.
 
 ### Review Notes
 
-Portable definition only; no implementation acceptance.
+Attempt 1 is not acceptable yet because one explicit acceptance criterion remains unchecked. The task requires an actual Shared output assertion for every row in the Required failure matrix. `provider-diagnostics.test.ts` currently demonstrates representative provider diagnostics, local Prisma/cause logging, classification and sink isolation, while the Completion Report explicitly confirms that it does not assert every owning boundary. This leaves the diagnostic ownership and privacy contract unverified at the callback/resume, retry scheduling, category-activation fallback, ended-notice and reconciliation-queue boundaries as applicable.
 
 ### Reviewed Files
 
-Task definition and the named latest-snapshot touchpoints.
+- All implementation paths in `moda-interact` commit `54c021b`.
+- `app/services/billing/providers/shopify-billing-diagnostics.server.ts` and `app/services/billing/providers/shopify-billing.provider.ts`.
+- Failure owners in the callback/resume routes, activation/sync/hosted-plan services, milestone, ended-notification and reconciliation services.
+- `tests/unit/services/billing/provider-diagnostics.test.ts` and relevant provider, route, service and PostgreSQL test suites.
+- Attempt 1 Completion Report and recorded validation evidence.
 
 ### Validation Reviewed
 
-Definition checks only. Implementation evidence remains outstanding.
+Reviewed the reported passing evidence: 368 focused unit tests plus a 45-test callback/sync follow-up, 2 PostgreSQL integration tests, Prisma generation, typecheck, build, focused ESLint and diff checks. The report confirms that actual Shared JSON assertions do not yet cover every required matrix row. Tests were not rerun during this review.
 
 ### Architecture Conformance
 
-To be assessed against the implemented behavior, source, lock/race evidence and diagnostic output.
+The provider parser, lock order, transaction fences, replay behavior and representative diagnostic paths conform to the reviewed task contracts. Full diagnostic-matrix conformance is not demonstrated because the required per-owner Shared output assertions are incomplete.
 
 ### Follow-up
 
-Return for review; do not start enabled work automatically.
+For Attempt 2, complete the unchecked acceptance criterion. Add actual Shared logger JSON output assertions for each Required failure matrix row at its owning boundary, including provider HTTP/GraphQL/transport/malformed response, credential/configuration and local database failures, activation/fence and period persistence, synchronization fallback, retry scheduling and milestone persistence, post-commit category activation, ended-notice persistence/translation, reconciliation enqueue failure, and Shared sink isolation. For each case assert the actual original safe message/cause/code and source/stage/shop/operation correlation required by that row, the truthful origin/classification, absence of injected credentials/PII/raw provider data, and absence of duplicate source diagnostics where one owner already emitted them. Preserve the existing behavior and retry/rollback assertions. If a row is structurally inapplicable to this task's implementation, document the concrete call path and retained owner assertion instead of marking it covered by a generic utility test. Rerun the focused suites that cover the changed tests and update the report with a row-by-row evidence map. Keep SHOPIFY-003, -004 and -011 pending until acceptance.
