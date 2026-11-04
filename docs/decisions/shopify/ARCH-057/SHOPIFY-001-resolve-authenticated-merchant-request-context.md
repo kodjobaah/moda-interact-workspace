@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: codex
 claimed_at: 2026-11-04T04:41:14Z
@@ -200,6 +200,140 @@ After the defined work and required evidence pass, set this task to review, comp
 Current `v8_middleware` is already enabled. Verify through actual types/runtime; current online documentation is explanatory, not a substitute for 7.18.2 tests. Shared request facts are an internal composition improvement. No global session cache, middleware framework or freshness scheduler is needed.
 
 ## Completion Report
+
+### Status
+
+Ready for Review — Attempt 2, codex, 2026-11-04. Corrections were validated and committed unchanged as `61d937b50f56bb994d4002ea32ae62e7fc8d71b0`, pushed on `task/ARCH-057-SHOPIFY-001`. Architect review remains pending; no acceptance, merge to main or downstream promotion is asserted.
+
+### Correction Checklist
+
+| Requested correction | Disposition | Changed paths / focused proof |
+|---|---|---|
+| Pass actual framework context through every production settings access chain | implemented | Recovery settings GET, settings-save action and all eight merchant-knowledge actions now destructure `context` from router arguments and pass `settingsAccess(request, context)` |
+| Thread context through every recovery chain, including intermediate helpers | implemented | Recovery list/detail loaders, section loader and three command/status handlers pass the original context to `requireRecoveryHistory`; section wrappers already forward complete router args and command exports remain direct aliases |
+| Prove settings and recovery GET sharing under app middleware | implemented | Two new cases in `merchant-request-context-router.test.ts` execute real production route exports, real access helpers, real request context/profile resolver and installed router middleware |
+| Rerun required focused validation and record evidence | implemented | 97 unit, 9 router, 7 PostgreSQL and 164 consumer regression tests passed; typecheck/build/focused ESLint/diff checks passed |
+
+The production call-site audit finds ten `settingsAccess` calls and six `requireRecoveryHistory` calls, all supplied with the router context. No production caller constructs an isolated provider. Optional isolated defaults remain only in the existing access-helper API for direct helper/test compatibility.
+
+### Files Changed
+
+```text
+app/routes/app/merchant-knowledge/delete/route.ts
+app/routes/app/merchant-knowledge/refresh/route.ts
+app/routes/app/merchant-knowledge/reorder/route.ts
+app/routes/app/merchant-knowledge/reprocess/route.ts
+app/routes/app/merchant-knowledge/source/route.ts
+app/routes/app/merchant-knowledge/upload-failure/route.ts
+app/routes/app/merchant-knowledge/upload-finalize/route.ts
+app/routes/app/merchant-knowledge/upload-intent/route.ts
+app/routes/app/recoveries/loader.server.ts
+app/routes/app/recovery-detail/command-http.server.ts
+app/routes/app/recovery-detail/loader.server.ts
+app/routes/app/recovery-settings/route.tsx
+app/routes/app/settings-save/route.ts
+app/services/shop/shop.service.ts
+tests/integration/merchant-request-context-router.test.ts
+tests/unit/services/shop.service.test.ts
+```
+
+The Architect Review follow-up authorises the additional production argument-forwarding paths. Their business operations, response DTOs, authorization checks, mutation origin checks and locked persistence admission remain unchanged.
+
+### Work Completed
+
+- Settings and knowledge handlers now preserve the framework context from entry to their access helper, including the settings action re-exported by the settings page.
+- Recovery list/detail/section and control/send/status handlers now preserve context throughout their call chains. The message/related wrappers forward full router arguments; route aliases forward those arguments directly.
+- Added real settings/recovery page composition tests through the app layout middleware. SDK, Prisma and unrelated domain read ports are controlled synthetic fixtures; the router, route exports, access helpers, profile resolver and context module execute their actual installed code.
+- Required PostgreSQL validation exposed a concurrent-bootstrap P2002 on `shopifyShopId`. Added one bounded transaction retry after a fresh lookup proves the same authenticated domain, canonical Shopify ID and SHOPIFY platform. A missing or mismatched winner propagates the original failure. The retry reuses the same provider observation, preserves the original diagnostic at Shared warn level, and never recurses.
+- Added deterministic retry tests covering a matching winner, absent winner, different Shopify identity, different platform and second-attempt exhaustion. Original code/message/cause and trusted Shop correlation are asserted in actual Shared JSON.
+
+### Validation Results
+
+| Command / gate | Attempt 2 result |
+|---|---|
+| `npm run test:merchant-request:unit` | 97 passed |
+| `npm run test:merchant-request:router` | 9 passed |
+| `npm run test:merchant-request:postgres` | 7 passed, zero skipped |
+| Twelve affected consumer regression suites | 164 passed |
+| `npm run typecheck` | passed |
+| `npm run build` | passed |
+| Focused ESLint of all sixteen changed paths | passed |
+| `git diff --check` and staged diff check | passed |
+
+277 focused tests passed in this attempt. Regression coverage included the original seven consumer suites and the five settings/knowledge/HTTP consumer suites affected by the new argument forwarding:
+
+```sh
+npx vitest run tests/unit/home-route.test.ts tests/unit/pending-recoveries-route.test.ts tests/unit/routes/app-layout-access.test.ts tests/unit/routes/billing-status.test.ts tests/unit/routes/reinstalling-route.test.ts tests/unit/recovery-list-route.test.ts tests/unit/recovery-detail-route.test.ts tests/unit/merchant-settings-action.test.ts tests/unit/merchant-knowledge-actions.test.ts tests/unit/ai-response-delay-loader.test.ts tests/unit/arch040-shopify-http.test.ts tests/unit/settings-save-recovery-route.test.ts
+```
+
+The new GET assertions are per request, through the real production routes:
+
+| Actual page chain | SDK authentication | Profile GraphQL observation | Local Shop lookup | Scalar subscription read | Scalar settings read |
+|---|---:|---:|---:|---:|---:|
+| app layout → recovery settings loader → settingsAccess | 1 | 1 | 1 | 1 | 1 |
+| app layout → recoveries route → list loader → requireRecoveryHistory | 1 | 1 | 1 | 1 | 1 |
+
+Both cases verify successful child DTOs and that the submitted foreign Shop ID, authentication object and private credential fixture do not reach loader JSON. The recovery reader receives the authenticated Shop ID. These are installed-router call-count assertions with labelled synthetic ports, not emitted-SQL measurements.
+
+The PostgreSQL suite again uses the owned `pgvector/pgvector:pg17` container, all 71 canonical forward migrations, real Prisma SQL and distinct one-connection clients. Its explicit barrier confirms both concurrent requests observed an absent Shop before bootstrap. Final durable cardinalities remain one Shop, one subscription and one settings row. The rollback and no-op/profile/repair cases also pass. Task-owned connections and containers are cleaned by teardown/finally; no shared Docker resources were pruned.
+
+The initial PostgreSQL run failed in the concurrent-bootstrap case with P2002 on the unique `shopifyShopId` field (six other cases passed). The failure was preserved as `/tmp/shopify001-attempt2-postgres-initial-failure.log`, SHA-256 `ecd56ccca05d8090c43957ac72f2526cd37902841005ad7dca31a35e50544c27`. It was corrected in the existing resolver scope, rather than retried away. After the bounded recovery and deterministic unit fixtures were added, all seven PostgreSQL cases passed. Terminal failures preserve the actual original exception; retries log its actual code/cause without another provider request.
+
+Prior same-fixture SQL measurements and safe-diagnostic evidence are retained below as Attempt 1 history. No new throughput/latency claim is made. The successful resolver hot path is unchanged by the retry guard; the new page-chain sharing proof is the production-route router evidence above.
+
+### Launcher, Source and Build Provenance
+
+```text
+canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-001
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-001
+both branches: task/ARCH-057-SHOPIFY-001
+existing canonical worktrees reused for the same task: yes
+another task's worktree reused: no
+shared workspace/source checkout switched or mutated for implementation: no
+parent pre-claim synchronized head: f86a745ee248d67d0932c95fcd5be932502cd17e
+parent remote task fast-forward: not-needed
+parent origin/main incorporated: yes
+final parent re-gate synchronization: already-current
+implementation remote task fast-forward: not-needed
+implementation origin/main incorporated: already-current
+implementation start: f69948137a20d8b994691194b5e081593e39e77c
+implementation end/pushed: 61d937b50f56bb994d4002ea32ae62e7fc8d71b0
+Attempt 2 claim: 5043bf698c26e3d9a6c8bc97588c9b49c7c5bbc4
+claim committed and pushed: yes
+claimed_at: 2026-11-04T04:41:14Z
+dependency gate: passed; no dependencies
+recursive submodule sync/update: passed
+recorded/working Database pin: 8e74634ff92be9900f693c0c449ffce888e7d617
+parent implementation gitlink staged or changed: no
+```
+
+Installed tooling remains Node 24.19.0 through the workspace bootstrap, React Router 7.18.2, Shopify React Router SDK 1.2.1, Prisma Client 6.19.3, Shared 3.1.0 and PostgreSQL Testcontainers 12.1.0. No dependency or lockfile changed. Built `build/server/index.js` SHA-256: `9eec717f8228bfe90cbcd3ec6dfa1f65e32c2f23ea1f082e08c7575f55f2af05`. Generated build output is ignored and not committed.
+
+Current command output: `/tmp/shopify001-attempt2-{unit,router,postgres,regressions,typecheck,build,lint}.log`. Tests/build validated the exact source subsequently committed unchanged.
+
+### Deviations
+
+The required PostgreSQL run exposed the concurrent unique-index bootstrap failure described above. Its correction is confined to the already-declared Shop resolver and service unit test. There is no schema, lock hierarchy, provider contract, global cache, dependency or new runner change.
+
+### Assumptions
+
+Framework contexts remain request-owned; isolated helper defaults support direct test/helper callers only. Cached read rows do not replace fresh locked mutation admission.
+
+### Unresolved Issues
+
+No requested correction remains unresolved in this submission. Awaiting architect review. Downstream task states remain unchanged.
+
+### Architectural Concerns
+
+No cross-repository amendment was required. Enabled task business refactors were not started.
+
+### Attempt 1 Submission — Historical Evidence
+
+The prior submission below received Changes Requested, as recorded in Architect Review. Its status and unresolved-issue text describe Attempt 1 only.
+
+<details>
+<summary>Preserved Attempt 1 report and SQL evidence</summary>
 
 ### Status
 
@@ -411,6 +545,8 @@ The framework context is not threaded from production route handlers into the tw
 ### Architectural Concerns
 
 No schema, dependency version, router flag/origin-policy, queue, billing identity or external contract change was needed. The public merchant-context helper is available for the separately owned downstream migrations.
+
+</details>
 
 ## Architect Review
 
