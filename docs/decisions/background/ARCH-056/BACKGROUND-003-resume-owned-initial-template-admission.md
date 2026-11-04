@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-11-04T02:06:06Z
@@ -186,19 +186,19 @@ The selected BG002 provider-status entry also acquires owned Shop FOR KEY SHARE 
 
 ## Work Items
 
-- [ ] Extend the existing canonical lookup and add the scoped initial evidence/result types, preserving legacy facade compatibility.
-- [ ] Implement same-message initial-template resume and carry original source/attempt context through both provider-specific delivery paths.
-- [ ] Add the exact initial credit/content/attempt proof to the existing Shopify fence and reorder Woo message-before-credit locking.
-- [ ] Make initial cleanup and known rejection lineage atomic, conditional and parent-ordered; preserve 131026 ownership and uncertainty.
-- [ ] Scope the new technical moderation retry exception to initial templates; distinguish HTTP errors from receipt persistence failures.
-- [ ] Make receipt persistence Conversation-before-message with per-call ownership predicates and one atomic receipt/timestamp unit.
-- [ ] Add focused unit/PostgreSQL proofs and run every listed preservation gate.
-- [ ] Report the final additive contract to BACKGROUND-004; keep deferred general-consumer and billing-policy findings explicit.
+- [x] Extend the existing canonical lookup and add the scoped initial evidence/result types, preserving legacy facade compatibility.
+- [x] Implement same-message initial-template resume and carry original source/attempt context through both provider-specific delivery paths.
+- [x] Add the exact initial credit/content/attempt proof to the existing Shopify fence and reorder Woo message-before-credit locking.
+- [x] Make initial cleanup and known rejection lineage atomic, conditional and parent-ordered; preserve 131026 ownership and uncertainty.
+- [x] Scope the new technical moderation retry exception to initial templates; distinguish HTTP errors from receipt persistence failures.
+- [x] Make receipt persistence Conversation-before-message with per-call ownership predicates and one atomic receipt/timestamp unit.
+- [x] Add focused unit/PostgreSQL proofs and run every listed preservation gate.
+- [x] Report the final additive contract to BACKGROUND-004; keep deferred general-consumer and billing-policy findings explicit.
 
-- [ ] Implement the declared initial-path diagnostic owners/stages and safe original-message/code fields, preserving existing source Meta/moderation diagnostics.
-- [ ] Emit both fixed-role original failures before selected cleanup/reconciliation aggregation; preserve exception identity and logging failure isolation.
-- [ ] Correct only the existing Meta diagnostic projection's nested trace validation and child-array transformation flags.
-- [ ] Replace synthetic-persistence and phone-retention expectations and verify actual installed Shared sink records, redaction, source metadata, correlation and business outcomes.
+- [x] Implement the declared initial-path diagnostic owners/stages and safe original-message/code fields, preserving existing source Meta/moderation diagnostics.
+- [x] Emit both fixed-role original failures before selected cleanup/reconciliation aggregation; preserve exception identity and logging failure isolation.
+- [x] Correct only the existing Meta diagnostic projection's nested trace validation and child-array transformation flags.
+- [x] Replace synthetic-persistence and phone-retention expectations and verify actual installed Shared sink records, redaction, source metadata, correlation and business outcomes.
 
 ## Interfaces / Contracts
 
@@ -412,6 +412,24 @@ Authorize an update to the read-only Woo race-test logging assertion or assign t
 - Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-003`. Attempt 2 claim `8c4103867eafc05132cd45edccb4c826009d3334`.
 - Background worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-003`. Implementation commit `a68fe273bde3503605e64fb412143ac9dc1c563d` pushed to `origin/task/ARCH-056-BACKGROUND-003`.
 - Both worktrees use `task/ARCH-056-BACKGROUND-003`. Both were already current with `origin/main` at preparation, with no remote task fast-forward needed. Recursive submodule initialization passed. Only the task file is staged for the parent review commit on the same remote branch. No gitlink, shared checkout or other task worktree changed. Neither repository was merged to main.
+
+### Attempt 3 — Submitted for architect review
+
+- `failPrepared` resolves the canonical usage key to the stored attempt and verifies the recovery, sender, usage source and existing message association before selecting cleanup. Proven sequence-one INITIAL attempts retain their locked, atomic lineage path. Valid sequence-two follow-ups retain guarded generic cleanup. Unresolved or conflicting recovery identities keep their evidence.
+- PostgreSQL regressions exercise the public facade with a genuine sequence-two attempt. An unpermitted message becomes FAILED and only its exact outbound usage is removed. An existing permit, inconsistent receipt evidence and an unresolvable attempt key each preserve the message and usage. The original initial-outreach usage and sequence-two attempt row remain intact in every case.
+- BACKGROUND-004 handoff. Use `inspectInitialOutreachAdmission(scope)` and `resumeInitialTemplate` with the original message and exact credit source. Pass `initialOutreach` and `recoveryCreditSourceKey` on fresh Shopify initial delivery. Keep Woo on its explicit guarded sender. General AI consumer behavior, broader completion semantics and ARCH-028-BACKGROUND-013 uncertainty policy remain deferred. No downstream task was started.
+
+#### Validation
+
+- The exact focused Vitest selection in Validation passed 137 tests across 11 files. The declared ESLint command, production build and whitespace check exited 0.
+- The exact seven-file PostgreSQL/Redis selection in Validation exited 1 with 40 passed and four failed. The unchanged HUMAN integration module on untouched current Background main `eb6d7a6` exited 1 with seven passed and four failed using the same installed dependencies and Database gitlink `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Both used the disposable runner and completed teardown. An earlier baseline run also hit an expired Prisma transaction during the concurrent claim case. The repeat baseline completed that case successfully and reproduced only the four authorized failures.
+- The four failure names listed under Attempt 2 matched on current main and candidate, all with `AssertionError: expected 'suppressed' to be 'admitted' // Object.is equality`. The authorized exception is unchanged. All task-owned tests and the remaining regression cases passed.
+
+#### Git and worktree evidence
+
+- The canonical workspace is `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. The isolated parent is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-003`. The isolated Background worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-003`.
+- Both worktrees use `task/ARCH-056-BACKGROUND-003`. The launcher incorporated current `origin/main` in both worktrees, with no remote task fast-forward needed. Recursive sync and initialization passed at the recorded Database gitlink. The durable Attempt 3 claim was `8e8f79cae7b8066c70bcaf0c3af46ae24892def2`.
+- Implementation commit `d343450d2b7537db316f607cc418a0e2b42c5098` was pushed on the Background task branch. The parent review submission uses the same task branch and changes only this task file. Shared checkouts, other task worktrees and gitlinks were left intact.
 
 ## Architect Review
 
