@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: codex
-claimed_at: 2026-11-04T02:47:42Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-055-API-001
@@ -37,7 +37,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 3. Adds a server-side PostgreSQL execution bound to readiness; it supersedes revision 2 for the unresolved readiness timeout requirement. API-008 remains complete and unchanged.
 
-**Definition state:** materialised in the canonical parent task worktree and branch. Attempt 1 was prepared after all eight explicit API dependencies were Complete. Implementation is submitted on the API task branch; architect review returned Changes Requested. The task is Ready with the claim cleared.
+**Definition state:** materialised in the canonical parent task worktree and branch. All eight explicit API dependencies are Complete. Attempt 1 was returned with Changes Requested; the revision-3 server-side timeout amendment was implemented in Attempt 2. Attempt 2 is submitted for architect review with the claim cleared. API-008 remains complete and unchanged.
 
 ## Objective
 
@@ -132,7 +132,7 @@ The exact edit map selects the mandatory implementation pattern for this revisio
 
 ## Work Items
 
-- [ ] Bound actual PostgreSQL execution server-side before the client socket timeout; prove cancellation with the pinned Prisma runtime and deterministic tests.
+- [x] Bound actual PostgreSQL execution server-side before the client socket timeout; prove cancellation with the pinned Prisma runtime and deterministic tests.
 - [x] Implement bounded HTTP observer/single-flight behavior and deterministic unit tests.
 - [x] Create the focused migrated PostgreSQL/HTTP runner using disposable pg17+pgvector.
 - [x] Register all accepted focused runners and the previously omitted AI-delay suite in aggregate integration.
@@ -170,7 +170,7 @@ No constructor-side query or timer. Preserve original rejection cause. Observer 
 ## Acceptance Criteria
 
 - [x] Twenty or more concurrent timed-out health requests do not leave twenty independent probes outstanding; per-process outstanding probe count stays <=1.
-- [ ] Probe acquisition and server-side execution each have documented measured finite bounds; an overlong statement is canceled before client socket timeout, and readiness resumes without restarting/disconnecting the business client.
+- [x] Probe acquisition and server-side execution each have documented measured finite bounds; an overlong statement is canceled before client socket timeout, and readiness resumes without restarting/disconnecting the business client.
 - [x] Liveness remains available during DB failure and performs zero probes.
 - [x] Aggregate integration includes all accepted functional suites and canonical migration coverage; no silent skips or reduced-schema substitution.
 - [x] Original diagnostic causes survive with redaction; no new swallowed business failures or generic telemetry duplication.
@@ -196,7 +196,7 @@ No new Prisma models/fields/constraints/indexes or migrations are authorised in 
 Run from the **implementation repository** in its launcher-resolved worktree, after its documented dependency setup. New commands are labelled as task deliverables in Implementation Notes/Interfaces.
 
 - [x] `npx tsx --test tests/unit/http/server.test.ts tests/unit/http/arch055-readiness-single-flight.test.ts`
-- [ ] `node scripts/test-arch055-readiness-postgres.mjs` — must prove PostgreSQL-side cancellation and no orphan query with Prisma 6.19.3.
+- [x] `node scripts/test-arch055-readiness-postgres.mjs` — proves PostgreSQL-side cancellation and no orphan query with Prisma 6.19.3.
 - [x] `npm run typecheck`
 - [x] `npm run build`
 - [x] `npm run test:integration`
@@ -345,3 +345,27 @@ A disposable PostgreSQL 17.11 diagnostic used the pinned Prisma 6.19.3 client, t
 Architect decision requested: authorize a readiness-specific server deadline and a mechanism that retains the guard after ambiguous transport failure until PostgreSQL confirms cancellation or termination of the original session. That mechanism needs an approved connection and authorization contract, including behavior when confirmation is unavailable. An alternative ADR would need to explicitly permit bounded overlap after transport loss.
 
 The disposable container, proxy, clients and temporary experiment script were cleaned up. This is investigation evidence only. Attempt 1 remains Ready with the claim cleared. The Changes Requested review and production code are unchanged.
+
+## Completion Report — Attempt 2, 2026-11-04
+
+### Status
+
+Submitted for Architect review. The claim is cleared and the task status is `review`. API-008 remains Complete and unchanged. `ARCH-055-SYSTEM-TEST-001` remains gated; no downstream task was promoted.
+
+### Implementation
+
+- `src/database.ts` appends `-c statement_timeout=500ms` to the dedicated readiness client's existing PostgreSQL startup `options`, preserving existing options. The dedicated client retains its one-second pool, connection, and socket limits; the business client URL is unchanged.
+- `tests/integration/http/arch055-readiness.postgres.test.ts` now sends the readiness connection through a local TCP test proxy. While the eight-second `pg_sleep` is running, the proxy holds PostgreSQL response bytes. A second PostgreSQL connection confirms the server has canceled the statement and no tagged active query remains while the Prisma promise is still pending; then the test releases the response and confirms Prisma reports SQLSTATE `57014`. It also checks the effective `statement_timeout`, preservation of `lock_timeout=7s`, and a successful fresh query.
+
+### Validation
+
+| Check | Observed outcome |
+|---|---|
+| Final canonical readiness PostgreSQL runner | Passed 2/2 on PostgreSQL 17 with all 71 canonical migrations applied, Prisma 6.19.3. The test observed one dedicated session, pool acquisition at 1031 ms, server cancellation at 519 ms, and HTTP outage recovery at 1008 ms. No active `pg_sleep` query remained while Prisma's promise was held pending; the subsequent probe succeeded, the business backend remained available, and shutdown left zero sockets. |
+| Focused readiness unit tests | Passed 10; one optional M17 profile was skipped by the focused command. |
+| Aggregate integration | Passed 120 Node tests with four explicit opt-in measurement skips; the separate platform-configuration PostgreSQL runner passed 5/5. This aggregate run preceded the final integration-test-only proxy ordering assertion; the final migrated readiness runner above was rerun after that assertion was added. |
+| Typecheck and build | `npm run typecheck` passed after the final test change. `npm run build` passed with generated Prisma Client 6.19.3. |
+| Lint | Changed-file ESLint passed. Repository-wide `npm run lint` still reports the existing `no-empty` error in untouched `src/merchant/support/routes.ts:75`. |
+| Diff and cleanup | `git diff --check` passed. The disposable PostgreSQL container, proxy sockets, and test clients were cleaned up. |
+
+The PostgreSQL server-side timeout closes the gap found in Attempt 1: the readiness promise no longer settles while its timed-out statement continues running on the backend. This is the direct PostgreSQL 17 test topology; deployment pooler behavior is still bounded by the configured connection URL and should be covered by deployment verification. The mechanism is documented by [Prisma ORM v6 PostgreSQL connector](https://www.prisma.io/docs/orm/v6/overview/databases/postgresql) and [PostgreSQL 17 `statement_timeout`](https://www.postgresql.org/docs/17/runtime-config-client.html#GUC-STATEMENT-TIMEOUT).
