@@ -389,6 +389,48 @@ This is an extension of the existing composition. Reference categories describe 
 
 ### Status
 
+Attempt 1 stopped on the task's explicit prepared-artifact mismatch condition; **not review-ready and not complete**. Metadata remains `in_progress` with the durable launcher claim. Architect reconciliation is required before implementation can continue. No source implementation commit was published.
+
+### Concrete Prerequisite Failure
+
+The launcher initialized this implementation's recorded Database gitlink at **`aa3fd024db3a1484f72f8033b87f56ad27f4640d`**. The task requires accepted taxonomy Database `ded8f14a60182f6b1443640f012caf0089b8a44c` or an accepted descendant/equivalent that retains its schema and migration. Observed:
+
+- `git -C database merge-base --is-ancestor ded8f14a60182f6b1443640f012caf0089b8a44c HEAD`: **exit 1**.
+- `database/prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql`: **absent**.
+- `database/prisma/schema.prisma`: **both `ReferenceTaxonomyGeneration` and `ReferenceTaxonomyCategory` models absent**.
+- `npm run typecheck`: **exit 2**. The already accepted taxonomy store references `TransactionClient.referenceTaxonomyGeneration`, which the generated client from this pin does not contain. Log `/tmp/mcp058-002-typecheck.log`. The unfinished MCP-002 edits also have expected unresolved fixture/interface type errors; they are not claimed as an accepted baseline.
+
+This is a content mismatch as well as an ancestry mismatch, not rejection of a harmless squash/rebase. No Database files/gitlink were changed, no accepted descendant was downgraded and no replacement schema/migration was authored. Section 1 and the Stop Condition require returning this observed mismatch to `moda_architect`, rather than selecting another dependency commit.
+
+**Required owning reconciliation:** provide/record a Database revision preserving the accepted taxonomy schema/migration alongside all later accepted changes, and reconcile the MCP task's Database gitlink through the normal owner workflow. No new public contract is requested. Resume only once that exact dependency is supplied and the preparation failure is resolved.
+
+### Preparation and Draft Work Preserved
+
+Verified the existing `createPrismaDiscountCatalogueReader` -> persisted ports -> service composition -> `executeDiscountTool` chain and accepted Woo `safeException` / `sourceProviderError` diagnostics are present; no catalogue or diagnostic source omission was found.
+
+The package/lock remains exact Shared **4.0.0**, integrity `sha512-Zv78WX/AsN1lZWyaMirO2Ml/rOZknSv0cnJnxYBuyc368kzDZzswauKRPSe8GSXFfjkk3cQnr3wi4n49d9HTzw==`. `npm ci --no-audit --no-fund` completed. The MCP-local Shopify schema artifact was absent; the supplied canonical Commerce artifact at `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-commerce/lib/discovery/artifacts/admin-2026-07.json` matched approved SHA256 `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`. The existing `npm run schema:install:shopify -- <that absolute path>` installed it locally, with no download/regeneration or Commerce edit.
+
+An initial implementation draft was underway before typecheck exposed the missing accepted models. Those **unfinished, unvalidated, uncommitted local edits** are preserved only in the isolated implementation worktree. They cover generic capability/built-in projection, bounded built-in call reuse, catalogue query classification, private connection identity/Woo fields, category membership and search/cursor changes. They are not delivered or certified, and tests/fixture integration remain unfinished. New draft files are `src/execution/policy/product-search-cursor.ts` and `src/execution/reference-taxonomy/category-membership.ts`; existing edits are confined to this task's listed capability, connection, execution, MCP and runtime touchpoints. Do not treat the local draft as an accepted implementation or revert others' work.
+
+### Validation and Operational Limits
+
+- PASS: local pinned schema checksum/install and locked dependency installation.
+- FAILED: initial `npm run typecheck`, as detailed above.
+- NOT RUN: focused unit suites, integration typecheck, lint, build and disposable PostgreSQL suite. No successful task validation is claimed.
+- Required later developer-owned command, **not run**: `npm run test:integration:docker` from `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`, after code/fixtures and the dependency correction. The existing owned harness must create its own URL and clean up its own resources; no deployment URL substitution. Acceptance still requires actual scenario results and cleanup evidence.
+- No taxonomy download/import, persistent database access/migration, live provider request, customer send, publication, deployment or main merge occurred.
+
+### Launcher / Physical Worktree Evidence
+
+Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; newly created parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-002` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`, both `task/ARCH-058-MCP-002`. No other task worktree or shared implementation checkout was used for edits. Parent/implementation remote task fast-forward: not needed; origin/main: already current. Recursive submodule sync/init/update verified ready at the recorded pin above, which subsequently failed the task-specific content/ancestry check.
+
+Dependency gate passed MCP-001 Complete. Parent prepared head `bb7f06ccc391b8d6bf82142abd6bf0478a9e0c56`; claim **`f4250e2e68a71626b36c456e901077fec656fb96`**, pushed, executor codex, Attempt 1 at `2026-11-04T15:08:56Z`. Implementation HEAD remains **`469a00fbbbf1e5fb4499b19c92c158f156786633`** with the local draft described above. Only this task report is committed in the parent; no implementation gitlink/index/architecture/Architect Review change is made. Downstream tasks are not promoted.
+
+## Definition-time Completion Report (historical)
+
+
+### Status
+
 Not Started — defined but not materialised.
 
 ### Files Changed
