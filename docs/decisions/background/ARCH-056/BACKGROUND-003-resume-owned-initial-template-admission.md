@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-11-04T01:37:02Z
@@ -383,6 +383,31 @@ Blocked during Attempt 1. Implementation draft `32b80bf` is published on the Bac
 ### Unresolved Issues and Architect Handoff
 
 Authorize an update to the read-only Woo race-test logging assertion or assign that correction to its owner. Reconcile the four independently reproduced baseline failures with the mandatory preservation gate. The implementation remains a draft. Complete the remaining matrix evidence, including Shopify resume/provider concurrency, historical and paid candidate ambiguity, promotional owner invalidation, and the settlement contender's ledger insertion. Do not infer full coverage from the passing focused cases. BACKGROUND-004 and terminal system testing were not started.
+
+### Attempt 2 — Submitted for architect review
+
+- Updated only the authorized Woo race-test diagnostic assertion. It checks the supplied source marker, final-permit stage, scoped IDs and safe projection flags. The original exception identity, rollback and retry checks remain in place.
+- The Shopify resume test uses the public admission facade and real SQL fence with controlled consent and moderation prerequisites. A provider barrier holds the first worker after permit commit. The second worker observes the permit and returns duplicate. The test checks the original message, one usage event, one credit reservation and one provider call.
+- Added held legacy-attempt evidence, ambiguous historical paid credit and invalidated promotional selection cases. The paid and promotional cases suppress dispatch and preserve the credit records. The settlement race acquires Shop KEY SHARE, then the message and funding rows, and commits a recovery usage event. The losing fence does not create a permit.
+- Added installed Shared capture-sink tests for unexpected preparation and thrown moderation errors. The records retain independent source markers and scoped IDs, redact the injected phone, and preserve the thrown objects without a provider call or usage deletion. Shared resolved to version 3.0.0 through `./dist/logging/index.js`.
+
+#### Validation
+
+- The exact focused Vitest command in Validation exited 0 with 137 passed in 11 files. The declared ESLint command, lint reruns for the final edited test files, `npm run build` and `git diff --check` exited 0.
+- The seven-file `npm run test:integration -- …` command in Validation exited 1 with 36 passed and 4 failed across 7 files. The isolated baseline command `npm run test:integration -- tests/integration/recovery-conversation.services.integration.test.ts` on untouched Background `afac7c3766d92fb14beff669232c1b01c2ed0be0` exited 1 with 7 passed and 4 failed. Both used the prepared Database schema at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`, the same installed dependencies and the repository's disposable PostgreSQL and Redis runner. The runner completed teardown.
+- The following tests in `recovery-conversation.services.integration.test.ts` had the same signature on baseline and candidate, `AssertionError: expected 'suppressed' to be 'admitted' // Object.is equality`.
+  - `provider admission commits before later takeover, then UNKNOWN is reconciliation-only`
+  - `verified definitive provider rejection settles one message and never permits retry`
+  - `UNKNOWN with verified definitive failure resolves to FAILED without a second send`
+  - `rate denial stops evaluation before final durable eligibility/billing admission`
+- All task-owned cases and the other required regression cases passed. The four matching failures meet the narrow baseline exception in Architect Review. The HUMAN test module and runtime remain untouched. No further task was started.
+
+#### Git and worktree evidence
+
+- Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-003`. Attempt 2 claim `8c4103867eafc05132cd45edccb4c826009d3334`.
+- Background worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-003`. Implementation commit `a68fe273bde3503605e64fb412143ac9dc1c563d` pushed to `origin/task/ARCH-056-BACKGROUND-003`.
+- Both worktrees use `task/ARCH-056-BACKGROUND-003`. Both were already current with `origin/main` at preparation, with no remote task fast-forward needed. Recursive submodule initialization passed. Only the task file is staged for the parent review commit on the same remote branch. No gitlink, shared checkout or other task worktree changed. Neither repository was merged to main.
 
 ## Architect Review
 
