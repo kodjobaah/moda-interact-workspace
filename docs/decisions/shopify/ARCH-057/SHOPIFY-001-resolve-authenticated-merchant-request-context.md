@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: codex
-claimed_at: 2026-11-04T04:41:14Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -203,7 +203,7 @@ Current `v8_middleware` is already enabled. Verify through actual types/runtime;
 
 ### Status
 
-Ready for Review — Attempt 2, codex, 2026-11-04. Corrections were validated and committed unchanged as `61d937b50f56bb994d4002ea32ae62e7fc8d71b0`, pushed on `task/ARCH-057-SHOPIFY-001`. Architect review remains pending; no acceptance, merge to main or downstream promotion is asserted.
+Accepted and Complete — Attempt 2, 2026-11-04. The implementation correction is committed and pushed as `61d937b50f56bb994d4002ea32ae62e7fc8d71b0` on `task/ARCH-057-SHOPIFY-001`. Architect acceptance is recorded below. No merge to main is asserted.
 
 ### Correction Checklist
 
@@ -322,7 +322,7 @@ Framework contexts remain request-owned; isolated helper defaults support direct
 
 ### Unresolved Issues
 
-No requested correction remains unresolved in this submission. Awaiting architect review. Downstream task states remain unchanged.
+None. Attempt 2 satisfies the production context-threading correction. Eligible direct dependants are promoted below; dependants with additional incomplete prerequisites remain pending.
 
 ### Architectural Concerns
 
@@ -552,29 +552,36 @@ No schema, dependency version, router flag/origin-policy, queue, billing identit
 
 ### Review Status
 
-Changes Requested.
+Accepted.
 
 ### Review Notes
 
-Attempt 1 does not satisfy requirement 9. `settingsAccess(request, context?)` and `requireRecoveryHistory(request, context?)` have isolated-provider defaults, but production handlers call them with only `request`. These callers therefore do not share the GET/HEAD promise installed by `merchantPageContextMiddleware` and perform another Shopify authentication and local Shop lookup. The request-scoped context's core reuse guarantee is consequently absent from the settings and recovery routes.
+Attempt 2 resolves the sole Attempt 1 finding. All production settings and recovery access-helper call chains pass the actual React Router context, including intermediate recovery section and command/status handlers. The real-router integration now exercises the production settings and recovery page chains through app middleware and verifies one authentication, one profile observation, one Shop lookup, and one read of each lazy scalar per request. The authenticated Shop remains the sole tenant identity.
 
 ### Reviewed Files
 
-- `app/services/shop/merchant-request-context.server.ts`
-- `app/services/feature-preferences/access.server.ts`
-- `app/routes/app/recoveries/access.server.ts`
-- Production call sites of `settingsAccess` and `requireRecoveryHistory`, including recovery settings, recovery list/detail loaders, recovery section loader, and recovery command handlers.
-- `tests/integration/merchant-request-context-router.test.ts`
-- This task's Completion Report and validation evidence.
+- All changed production paths in implementation commit `61d937b50f56bb994d4002ea32ae62e7fc8d71b0`.
+- `app/services/shop/merchant-request-context.server.ts` and `app/services/shop/shop.service.ts`.
+- All production call sites of `settingsAccess` and `requireRecoveryHistory`.
+- `tests/integration/merchant-request-context-router.test.ts`, `tests/integration/merchant-shop-bootstrap.postgres.test.ts`, and `tests/unit/services/shop.service.test.ts`.
+- Attempt 2 Completion Report and launcher/worktree provenance.
 
 ### Validation Reviewed
 
-Reviewed the reported passing validation: 92 focused unit tests, 7 router integration tests, 7 PostgreSQL tests, 117 authorized existing consumer tests, typecheck, build, focused ESLint and `git diff --check`. No tests were rerun during this review. Existing router coverage demonstrates sharing for the migrated app layout/home path but does not establish context threading through the production access-helper callers listed above.
+Reviewed the Attempt 2 evidence: 97 focused unit tests, 9 router integration tests, 7 PostgreSQL tests, 164 consumer regression tests, typecheck, build, focused ESLint, and diff checks all passed. The report records that all 277 focused tests passed, with zero PostgreSQL skips, plus the deterministic bounded retry coverage for the observed unique-index race. No tests were rerun during this review.
 
 ### Architecture Conformance
 
-The implementation follows the authenticated identity, lazy scalar reads, explicit page refresh, and server-only context contracts. It does not fully conform to task requirement 9 because production handlers fail to pass their actual framework context to the access helpers.
+The implementation conforms to the task's authenticated identity, lazy scalar reads, explicit page refresh, GET/HEAD request sharing, fresh non-GET reads, server-only context, logging, and isolation contracts. The bounded bootstrap retry is supported by a reproducible PostgreSQL race, verifies exact authenticated tenant identity before retrying once, preserves the original diagnostic, and leaves terminal failures propagated.
 
 ### Follow-up
 
-For Attempt 2, update each production `settingsAccess` and `requireRecoveryHistory` call chain to pass the actual `context` supplied by React Router. Thread it through any intermediate loader/action helper rather than constructing a provider. Keep the isolated default only for direct test/helper callers. Add or extend actual-router integration coverage to exercise at least one settings route and one recovery route through the app middleware, asserting one authentication and one local Shop resolution per GET. Then rerun the task's required focused validation and update the Completion Report. Keep downstream tasks pending until acceptance.
+ARCH-057-SHOPIFY-002, -005, -006, -007, and -009 are Ready because their explicit prerequisites are now Complete. Tasks with additional incomplete dependencies remain Pending. No downstream implementation was started as part of this review.
+
+### Attempt 1 Review History — Changes Requested
+
+Attempt 1 did not satisfy requirement 9: production callers of `settingsAccess` and `requireRecoveryHistory` omitted the router context, bypassing the middleware-installed promise on settings and recovery routes. The task returned to Ready at Attempt 1 with executor and claim cleared. Attempt 2 implemented and validated the correction described above.
+
+### Accepted Completion Decision
+
+`completion_mode: automatic`; task status is Complete at Attempt 2, with `executor: null` and `claimed_at: null`. Implementation commit `61d937b50f56bb994d4002ea32ae62e7fc8d71b0` and its report are published on their matching task branches. No merge to main was performed.

@@ -2,7 +2,17 @@
 
 ## Scope and starting point
 
-This package defines twelve Shopify implementation tasks plus one terminal system-test task. All are **defined but not materialised**, unclaimed and attempt 0. Only ARCH-057-SHOPIFY-001 is initially Ready. Dependency acceptance/integration and normal architect promotion are required before a Pending task can be claimed.
+This package defines twelve Shopify implementation tasks plus one terminal system-test task. The task definitions are materialised in the canonical workspace. As of 2026-11-04, ARCH-057-SHOPIFY-001 is Complete at Attempt 2; ARCH-057-SHOPIFY-002, -005, -006, -007, and -009 are Ready at Attempt 0; the remaining tasks are Pending. Task YAML frontmatter is authoritative. Dependency acceptance/integration and normal architect promotion are required before a Pending task can be claimed.
+
+## Current dependency frontier
+
+| State | Tasks |
+|---|---|
+| Complete | ARCH-057-SHOPIFY-001 |
+| Ready | ARCH-057-SHOPIFY-002, ARCH-057-SHOPIFY-005, ARCH-057-SHOPIFY-006, ARCH-057-SHOPIFY-007, ARCH-057-SHOPIFY-009 |
+| Pending | ARCH-057-SHOPIFY-003, ARCH-057-SHOPIFY-004, ARCH-057-SHOPIFY-008, ARCH-057-SHOPIFY-010, ARCH-057-SHOPIFY-011, ARCH-057-SHOPIFY-012, ARCH-057-SYSTEM-TEST-001 |
+
+002, 005, 006, 007, and 009 have all explicit dependencies satisfied. The other tasks retain their declared additional prerequisites and are not promoted here.
 
 Apply the definition patch directly to the latest supplied `moda-interact-workspace(20261104-005051).zip` baseline. It already includes the original Shopify review. No earlier patch needs to be applied again. The new API/Background work occupies ARCH-056; it remains unchanged and does not add a Shopify prerequisite.
 
