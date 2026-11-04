@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-11-04T06:56:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-058-SHARED-001
@@ -29,7 +29,7 @@ updated: 2026-11-04
 
 `docs/architecture/ARCH-058-commerce-agent-product-discovery.md`; `docs/architecture/ARCH-058/contracts.md`, section 1. Coordinator: `moda_architect`.
 
-**Defined but not materialised.** Materialise using `/moda-task ARCH-058-SHARED-002` only after its dependency is accepted. No branch, worktree, publication or execution claim exists in this definition.
+**Definition state:** materialised, published and architect-accepted at Attempt 1 on 2026-11-04. Exact package `@modainteract/moda-interact-shared@4.0.0` is verified against the immutable receipt below. No consumer upgrade or deployment is implied.
 
 ## Objective
 
@@ -80,10 +80,10 @@ Verify the new public schemas/types/constants/helper named in SHARED-001, includ
 
 ## Acceptance Criteria
 
-- [ ] SHARED-001 is complete and architect-accepted, with the published source commit recorded.
-- [ ] Approved exact version is available from the intended registry with its integrity and required exports verified.
-- [ ] Only permitted release metadata and this report changed.
-- [ ] No consumer, runtime deployment or Commerce publication was performed.
+- [x] SHARED-001 is complete and architect-accepted, with the published source commit recorded.
+- [x] Approved exact version is available from the intended registry with its integrity and required exports verified.
+- [x] Only permitted release metadata and this report changed.
+- [x] No consumer, runtime deployment or Commerce publication was performed.
 
 ## Validation
 
@@ -218,17 +218,27 @@ main merged/updated/pushed: no
 consumer upgrade or environment deployment: no
 ```
 
-## Architect Review
-
-### Review Status
-
-Not reviewed; task definition only.
-
-### Review Notes
-
-Await publication evidence after SHARED-001 acceptance.
-
-
-## Architect Dependency Handoff (2026-11-04)
+## Historical Pre-publication Dependency Handoff (2026-11-04)
 
 SHARED-001 Attempt 2 is accepted and complete at implementation `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`. Its expanded browse, shipping and answer-presentation contract and original built-in/grant changes passed independent review. This publication task is ready, unclaimed and unexecuted. Use that accepted source and retain the existing registry/version/source checks before publishing 4.0.0; source acceptance alone is not registry publication. Do not advance consumer prerequisites until this task completes.
+
+
+## Architect Review — Accepted (Attempt 1, 2026-11-04)
+
+### Decision
+
+Accepted; no blocking findings. Automatic completion sets this publication task to `complete` and clears executor/claimed_at. The approved consumer version is exactly `@modainteract/moda-interact-shared@4.0.0`.
+
+### Source and Publication Verification
+
+- Compared the release baseline and accepted source Git trees: both are `25b51eb0cc7b838ab9a10ccf81697d57f6940ca7`. Compared accepted source to release HEAD: only package.json and package-lock.json changed, and structured JSON comparison confirms only the three approved version scalars changed.
+- Direct origin checks match implementation `2489824bb879caa8c463fd857728078642dd1fd9` and parent submission `77dd966989ce9c38c19039565a3c895a44bc37ac`. Both worktrees were clean at review start.
+- Independently retrieved the exact version metadata and tarball from the public npm registry into a new temporary directory. The 287,127-byte archive equals the originally inspected local archive byte for byte. SHA-512 integrity, SHA-1 and SHA-256 all match the immutable receipt above, including SHA-256 `57f7511ae9e52eebac5f532f0cd787c6a391361520f1fc0d09386312fb3d276e`.
+- Validated archive paths before extraction and confirmed every declared public export target exists. Against the newly downloaded artifact, runtime exports/dictionaries/mixed grants, canonical descriptor hashes and runnerVersion 1.1.0 pass; the strict TypeScript consumer and clean-process commerce/runner verifier also pass. Package self-reference resolves to extracted dist files; the temporary dependency link supplies only installed third-party dependencies.
+- Release diff whitespace checks pass. No implementation suite was rerun, no rebuild or publication occurred, and no consumer or shared environment was modified by this review. Prior prepack execution and target-availability checks remain recorded publication evidence.
+
+Independent artifact and runtime/type logs: `/var/folders/tc/km4tlxg554dcbpzx2smhsnkc0000gn/T/arch058-shared002-review-vu4vn_dd` (also recorded in `/tmp/arch058-shared002-review-root`). Registry bytes and metadata are preserved there.
+
+### Dependency Handoff
+
+SHARED-001 and DATABASE-001 are complete in the canonical task records. Promote MCP-001 to `ready`: both its declared prerequisites, DATABASE-001 and this publication, are complete. It must install exact 4.0.0 with its lockfile and use the accepted Database revision; it is not claimed or executed by this promotion. SYSTEM-TEST-001 and downstream consumer tasks retain their other prerequisite gates. This acceptance/dependency overlay is local, uncommitted and unpushed. Nothing is merged to main.
