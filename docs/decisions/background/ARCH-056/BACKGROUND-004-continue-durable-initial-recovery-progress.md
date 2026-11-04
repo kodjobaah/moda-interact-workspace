@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-11-04T04:57:56Z
+attempt: 1
 depends_on:
 - ARCH-056-BACKGROUND-002
 - ARCH-056-BACKGROUND-003
@@ -25,7 +25,7 @@ depends_on:
 enables:
 - ARCH-056-SYSTEM-TEST-001
 created: '2026-11-03'
-updated: '2026-11-04'
+updated: 2026-11-04
 ---
 
 # ARCH-056-BACKGROUND-004: Continue candidate and initial-recovery finalization from durable progress
