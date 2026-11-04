@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-11-04T10:41:30Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-057-SHOPIFY-002
@@ -430,3 +430,13 @@ SHOPIFY-004 and SHOPIFY-011 were checked and remain `pending` because SHOPIFY-00
 ## Architect Dependency Reconciliation (2026-11-04)
 
 ARCH-057-SHOPIFY-002 Attempt 3 is architect-accepted and complete at implementation `8561a870a8a5a407dca8b9da7f6239c69a140c90`. This task's only declared prerequisite is satisfied; status is `ready` for normal launcher preparation. Attempt remains 0 and executor/claimed_at remain empty. No implementation was claimed or started by this promotion. The launcher must retain the normal accepted-source integration and worktree gates.
+
+## Architect Acceptance — Attempt 2 (2026-11-04)
+
+**Accepted and Complete.** Reviewed implementation `fc978239097b364f43eea013525f38782ba1103b`, published on `origin/task/ARCH-057-SHOPIFY-003`. The sole Attempt 1 privacy finding is resolved: malformed Admin JSON uses safe diagnostic messages/causes while preserving the original thrown cause, safe status/request correlation and fail-closed behavior. Native short/long response fragments at HTTP 200/503 are absent from actual Shared output; throwing-sink behavior remains isolated. No new blocking finding was identified. Earlier Changes Requested and readiness entries above are historical and superseded by this acceptance.
+
+Independent focused validation: seven suites, **112/112 passed**, no skips, from the canonical implementation worktree on Node 24.19.0. Log: `/tmp/arch057-shopify003-current-review.log`. Reviewed Attempt 2 PostgreSQL evidence: **14/14 passed**, no skips, migrated PG17 with real connections/barriers and task-owned cleanup. Reviewed the recorded passing typecheck, build and scoped lint evidence; these gates and PostgreSQL were not independently rerun during this acceptance. The amended zero-credit requirement is satisfied by real constraint rejection plus the defensive unit branch, not an impossible migrated success state.
+
+Implementation and parent worktrees are canonical, correctly branched and clean before this overlay; implementation HEAD matches its remote task ref. Existing provenance, bounded history, fresh preflight/transaction-local authorization, replay/CAS/atomicity and unchanged schema/identity contracts remain accepted. Attempt stays **2**; executor and claim are cleared under automatic completion. The developer explicitly authorized this acceptance update, commit and push. No main branch integration or gitlink update is included.
+
+Dependency reconciliation: SHOPIFY-001/002 are Complete; SHOPIFY-004 becomes ready with all three prerequisites satisfied. SHOPIFY-011 remains pending on its remaining functional prerequisites. No downstream task is claimed or started.
