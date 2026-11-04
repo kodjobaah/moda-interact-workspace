@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: codex
 claimed_at: 2026-11-04T07:38:22Z
@@ -105,13 +105,13 @@ Use the frozen schema-versioned receipt, including target environment/mode, safe
 
 ## Work Items
 
-- [ ] Confirm accepted Database/Shared artifacts and approved source manifest; record their exact immutable identities.
-- [ ] Add bounded parser/manifest validation, deterministic text/fingerprint logic and purpose-correct embedding resolution.
-- [ ] Implement dry-run planning, identical-active no-op, outside-transaction preparation and atomic activation.
-- [ ] Implement the exact PostgreSQL reader, readiness diagnostics and published policy adapter.
-- [ ] Correct required-feature selection and diagnostic parity without changing optional features.
-- [ ] Add focused unit, actual composition and disposable PostgreSQL tests; document the operator command and rollback boundary.
-- [ ] Complete the Completion Report, set this task to `review`, return to the architect and stop.
+- [x] Confirm accepted Database/Shared artifacts and approved source manifest; record their exact immutable identities.
+- [x] Add bounded parser/manifest validation, deterministic text/fingerprint logic and purpose-correct embedding resolution.
+- [x] Implement dry-run planning, identical-active no-op, outside-transaction preparation and atomic activation.
+- [x] Implement the exact PostgreSQL reader, readiness diagnostics and published policy adapter.
+- [x] Correct required-feature selection and diagnostic parity without changing optional features.
+- [x] Add focused unit, actual composition and disposable PostgreSQL tests; document the operator command and rollback boundary.
+- [x] Complete the Completion Report, set this task to `review`, return to the architect and stop.
 
 ## Interfaces / Contracts
 
@@ -147,11 +147,11 @@ A source manifest with verified immutable content and an existing authorized ref
 
 Run commands from the launcher-provided `moda-interact-mcp` implementation worktree. Before the first Node command, use `command -v node >/dev/null 2>&1 || source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"`. Do not guess an absolute developer checkout.
 
-- [ ] Add focused tests at `tests/unit/execution/reference-taxonomy/{importer,reader,embedding,cli}.test.ts`; run `npm exec -- tsx --test tests/unit/execution/reference-taxonomy/*.test.ts tests/unit/capabilities/resolve.test.ts tests/unit/capabilities/prisma-reader.test.ts tests/unit/runtime/service-ports.test.ts`.
+- [x] Add focused tests at `tests/unit/execution/reference-taxonomy/{importer,reader,embedding,cli}.test.ts`; run `npm exec -- tsx --test tests/unit/execution/reference-taxonomy/*.test.ts tests/unit/capabilities/resolve.test.ts tests/unit/capabilities/prisma-reader.test.ts tests/unit/runtime/service-ports.test.ts`.
 - [ ] Add `tests/integration/reference-taxonomy.integration.test.ts` to the existing owned-fixture harness and run `npm run test:integration:docker`. This harness creates its own disposable database; never substitute a deployment `DATABASE_URL` or run tests against a live database.
-- [ ] Cover first import, existing import, config rotation, concurrent activation, input/vector failures, read consistency, dry-run no-provider behavior and structured error sinks; use embedding stubs, not a billable API.
-- [ ] Run `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check`; record exact outcomes and any existing accepted baseline separately.
-- [ ] Show the fixture-only CLI receipt and the actual composition proof. Do not run production/persistent `taxonomy:sync --apply` as validation.
+- [x] Cover first import, existing import, config rotation, concurrent activation, input/vector failures, read consistency, dry-run no-provider behavior and structured error sinks; use embedding stubs, not a billable API.
+- [x] Run `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check`; record exact outcomes and any existing accepted baseline separately.
+- [x] Show the fixture-only CLI receipt and the actual composition proof. Do not run production/persistent `taxonomy:sync --apply` as validation.
 
 ## Stop Condition
 
@@ -165,35 +165,99 @@ The existing Admin workflow and merchant-knowledge runtime are compatibility bou
 
 ### Status
 
-Not Started — defined but not materialised.
+Ready for architect review at Attempt 1; developer Docker validation pending. Implementation committed as `66feebf2aeea53e6f4515a5899ad00c7bc550bce` on `task/ARCH-058-MCP-001`. Acceptance criteria remain for independent architect assessment; this report makes no acceptance or PostgreSQL execution claim.
 
 ### Files Changed
 
-None.
+- `src/data/reference-taxonomy-manifest.json` and `src/execution/reference-taxonomy/{model,errors,source,embedding,credentials,generation,store,service,adapter,sync.cli}.ts`: trusted source, import, reader, diagnostics, registry adapter and CLI.
+- `scripts/sync-reference-taxonomy.mjs`, `package.json`, `package-lock.json`, `tsconfig.json`: installed TypeScript execution, exact Shared 4.0.0, JSON build assets.
+- `src/runtime/{prisma,service-ports}.ts`, `src/capabilities/{records,prisma-reader,resolve,manifest}.ts`: real execution composition, independent readiness and Shared eligibility parity.
+- Narrow compatibility updates in policy executors, sealed keyring diagnostics and existing test fixtures; removed one pre-existing unused `randomUUID` import from the Shopify provider to satisfy lint.
+- `database` gitlink: accepted Database revision; no schema authored or applied.
+- Reference taxonomy unit/integration tests and fixtures, existing capability/runtime regression tests, integration harness prerequisite, upstream fixture MIT license and README operator notes.
+
+### Accepted Artifacts and Verified Source
+
+- Database: `ded8f14a60182f6b1443640f012caf0089b8a44c` through this implementation's normal submodule.
+- Shared: installed published `@modainteract/moda-interact-shared@4.0.0`; release metadata `2489824bb879caa8c463fd857728078642dd1fd9`, accepted source `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`. Lock integrity: `sha512-Zv78WX/AsN1lZWyaMirO2Ml/rOZknSv0cnJnxYBuyc368kzDZzswauKRPSe8GSXFfjkk3cQnr3wi4n49d9HTzw==`.
+- Approved [Shopify 2026-08 release](https://github.com/Shopify/product-taxonomy/releases/tag/v2026-08), English asset `https://github.com/Shopify/product-taxonomy/releases/download/v2026-08/categories.en.txt.gz`. Release ID 375990317, asset ID 528193854, published 2026-08-24T21:25:13Z.
+- Downloaded compressed bytes: **183429**; SHA-256 **afc8f21242527a209622302bd99e29efe8cc2521ae949104c2c0dc3f931e461a**, matching GitHub's asset digest. Expanded bytes 2091730. Actual compiled parser validated **14606 unique categories**, complete ancestors, maximum level 7, maximum category ID length 48 and full-path length 228. This read-only verification made zero embedding calls and zero database writes.
+- Full distribution is not checked in. Three-category fixture and 130-row concurrency subset are explicitly fixture data derived from that release, with upstream license attribution.
 
 ### Work Completed
 
-None.
+- Validates trusted source checksum/length, hierarchy, unique IDs and bounded deterministic text before embedding; fingerprint covers the frozen environment/source/model/index/text-format identity. Production cannot override the manifest. Matching complete active generations no-op before embedding/writes; stale/inactive fingerprints and source downgrades fail explicitly.
+- Resolves the existing `REFERENCE_TAXONOMY` configuration and decrypted credential with matching Shared purpose AAD, sealed keyring and no merchant-purpose/API-key fallback. Vectors are prepared outside the transaction with bounded retries, provider budgets, sibling cancellation and finite nonzero float32 validation.
+- Atomic activation uses transaction-scoped corpus advisory lock, active baseline re-read and configuration row lock through commit, parent-before-child inserts, count/vector-health checks and smoke search before active switch. Old generations are retained. Cancellation before commit rolls back; confirmed commits report truthfully.
+- Reader pins provenance and tuple, rechecks compatibility after embedding, and materializes generation/dimension-filtered candidates before cosine distance. Parameterized exact search, deterministic category-ID ties, maximum ten results. SQL statement timeout is set server-side; result limit does not imply bounded scan count.
+- Published resolver uses existing registry/descriptor/entitlement/deadline/output gates and Shared wire contracts. Readiness does not remove authorized descriptors or alter grants. Only classified operational failures become permitted unavailable data; malformed/configuration/cancellation/contract failures remain hard errors. Existing provider product eligibility stays independent.
+- Capability eligibility and exclusion diagnostics use Shared selection semantics. Shopify/Woo, free/paid and missing/false preference parity covered; ALWAYS_ENABLED preserves ordinary shop/subscription/plan/release/provider gates, optional features retain opt-in.
+- CLI validates all flags and environment before effects, emits schema-versioned stage receipt, uses stderr Shared logging and nonzero failures. Dry run performs no embeddings or mutations. Explicit operator rollback boundary documented; no automatic reactivation/deletion.
+- Original sanitized errors/causes, database codes and safe provider status/request IDs remain separate from Moda reason codes. No query text, full corpus, vectors or secrets logged; logging failures do not change results.
+
+Bounds: 4 MiB compressed / 8 MiB expanded source, 20000 categories, 8192 UTF-8 bytes per embedding text, batches of 64 with concurrency 2, maximum 4096 dimensions / 64 million prepared components, 8 MiB provider response, 10-second provider deadline, one retry, 15-minute overall import, provider-call cap 626. Database read statement 1500 ms, write statement 5000 ms, lock 1000 ms, final transaction 120000 ms, inserts at most 64 rows. These are implementation limits, not measured production performance.
 
 ### Validation Results
 
-Not run.
+Node 24.19.0, npm 11.17, Prisma 6.19.3. Commands run in the isolated implementation worktree after the prescribed Node bootstrap:
 
-### Deviations
+- **PASS: 85 tests**, zero failures/skips: `npm exec -- tsx --test tests/unit/execution/reference-taxonomy/*.test.ts tests/unit/capabilities/*.test.ts tests/unit/runtime/service-ports.test.ts tests/unit/runtime/prisma.test.ts tests/unit/mcp/resources.test.ts tests/unit/execution/merchant-knowledge/*.test.ts tests/unit/execution/policy/*.test.ts`.
+- **PASS: 45 focused tests**, zero failures/skips: `npm exec -- tsx --test tests/unit/execution/reference-taxonomy/*.test.ts tests/unit/capabilities/resolve.test.ts tests/unit/capabilities/prisma-reader.test.ts tests/unit/runtime/service-ports.test.ts`. These are a subset of the 85, not additional tests.
+- **PASS:** `npm run typecheck`, `npm run typecheck:integration`, `npm run lint`, `npm run build`, script syntax checks and `git diff --check`.
+- **PASS:** compiled parser read the actual approved full source with the identities/count above; zero provider/database effects.
+- Actual service-port execution registry is exercised by passing unit tests: resolver remains advertised across readiness changes, executes the registered handler and validates output. Prisma composition readonly diagnostic test passes. Actual PostgreSQL-backed composition is authored in the integration suite and remains unexecuted.
+- **NOT RUN:** `npm run test:integration:docker`. Integration source compiles, but PostgreSQL round-trip/locking/concurrency/mixed-dimension/query-work assertions and database-backed composition are not claimed passed. No production latency, live semantic/model quality or multilingual evaluation was measured.
 
-None.
+Fixture-only CLI dry-run receipt (three fixture categories; not the full approved distribution and not a persistent import):
 
-### Assumptions
+```json
+{
+  "schemaVersion": "1",
+  "environment": "test",
+  "mode": "DRY_RUN",
+  "stages": [
+    {
+      "stage": "taxonomy",
+      "status": "PLANNED",
+      "code": "TAXONOMY_PREPARE_GENERATION"
+    }
+  ],
+  "taxonomy": {
+    "sourceSha256": "67c147cbc3540c0a595d72445daf4a5ce5ad044f0c6060d2a0640530d1ade822",
+    "importFingerprint": "fc023ae553c960d1ad85e71ca1f4266d6033d4e265f1a4a03b8086aef5027f7a",
+    "generationId": null,
+    "categoryCount": 3
+  },
+  "publication": null
+}
+```
 
-Implementation will use the canonical launcher, accepted dependency artifacts and an approved immutable taxonomy distribution.
+### Developer Validation Required
 
-### Unresolved Issues
+`docs/agent-validation-execution-policy.md` states: “Unless the developer or architect explicitly requests autonomous execution for the specific task, repository agents MUST NOT launch or wait on” multi-container Docker integration suites. It directs agents to return fast-checked work to review with the exact developer command. No task-specific override was supplied. Run:
 
-No approved full-distribution checksum/count or environment execution is established by this task definition.
+```bash
+export MODA_WORKSPACE_ROOT=/Users/kwadwoadomafriyie/project/moda-interact-workspace
+cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-001
+command -v node >/dev/null 2>&1 || source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
+npm run test:integration:docker
+```
+
+Required result: exit 0 and the disposable PostgreSQL integration suite success, including the newly added taxonomy suite. Use only the owned disposable harness, controlled embeddings and fixture database; no deployment DATABASE_URL substitution. Record actual output and fixture query timing before acceptance. This pending execution is the remaining evidence gap.
+
+### Isolation and VCS Evidence
+
+Prepared packet established canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-001` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-001`, both on `task/ARCH-058-MCP-001`. Both were newly created; origin/main was already current, task fast-forward not needed, dependency re-gate passed and recursive submodule initialization verified ready.
+
+Parent initial `bafe199d25b8b2ad4ee9e9927675d7b4eecedda9`; durable claim `55d76f6361fd336befed7f15716612323c36ddc3`; implementation initial `a1df91670bbfb445bd07d3f3a58ba5eb23ad973d`, final `66feebf2aeea53e6f4515a5899ad00c7bc550bce`. Database initial `139765042baad3901682cfe9c54a3d6bba73e75c` explicitly advanced to the accepted revision above. Only the implementation's dependency gitlink and this parent task report were updated; no parent implementation gitlink, architecture, task index or canonical checkout was changed. No main merge, deployment, persistent migration/import, Commerce publication or billable embedding call occurred.
+
+### Deviations and Unresolved Issues
+
+The new Shared grant union and product input defaults required narrow existing fixture/type compatibility updates. Existing native product executor fails closed for newly recognized browse/category forms; actual provider support belongs to MCP-002. A pre-existing unused provider import was removed for the required lint check. No schema or public contract was changed. Developer Docker execution and independent architect review remain pending; downstream tasks remain gated.
 
 ### Architectural Concerns
 
-None beyond the explicit prerequisite and compatibility gates above.
+No new architecture decision requested. Exact scans and import bounds are documented; production performance requires separately recorded measurements. Authorization stays independent of operational readiness.
 
 ## Architect Review
 
