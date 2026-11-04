@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 36
 executor: copilot
 claimed_at: 2026-11-04T21:33:29Z
@@ -98,12 +98,12 @@ The migration must be transactional and use the existing database objects rather
 
 ## Work Items
 
-- [ ] Add the single forward migration with the exact transition above.
-- [ ] Update structural fixture expectations to the strict three-field built-in shape.
-- [ ] Add an upgrade fixture that creates a valid legacy hashed `1.0.0` built-in grant after DATABASE-001 but before DATABASE-002, then proves the migration removes the hash and changes only the built-in definition version to `2.0.0`.
-- [ ] Update fresh final-state fixtures to require `2.0.0`, reject legacy `1.0.0`, and reject `contractHash` as an extra built-in key.
-- [ ] Preserve published-grant and all existing owner/release/immutability failure fixtures.
-- [ ] Run schema, fresh PostgreSQL and upgrade PostgreSQL validation.
+- [x] Add the single forward migration with the exact transition above.
+- [x] Update structural fixture expectations to the strict three-field built-in shape.
+- [x] Add an upgrade fixture that creates a valid legacy hashed `1.0.0` built-in grant after DATABASE-001 but before DATABASE-002, then proves the migration removes the hash and changes only the built-in definition version to `2.0.0`.
+- [x] Update fresh final-state fixtures to require `2.0.0`, reject legacy `1.0.0`, and reject `contractHash` as an extra built-in key.
+- [x] Preserve published-grant and all existing owner/release/immutability failure fixtures.
+- [x] Run schema, fresh PostgreSQL and upgrade PostgreSQL validation.
 
 ## Interfaces / Contracts
 
@@ -133,15 +133,15 @@ No hash/fingerprint field remains in persisted built-in identity.
 
 ## Acceptance Criteria
 
-- [ ] A fresh migration chain ends with the corrected three-field built-in validator.
-- [ ] An upgrade from the accepted DATABASE-001 state converts existing valid hashed `1.0.0` built-in entries to corrected no-hash `2.0.0` three-field objects without deleting the grant.
-- [ ] Published grant entries and their exact release-derived union are unchanged by conversion.
-- [ ] `contractHash` is rejected as an extra built-in key after migration, and legacy built-in `definitionVersion: "1.0.0"` is rejected.
-- [ ] Unknown kind/name/version, fabricated published keys, duplicates/collisions, oversized/count-overflow and existing shop/recovery/inbound/release failures remain rejected.
-- [ ] The existing grant **update** immutability trigger is restored exactly after migration; no new DELETE trigger is introduced.
-- [ ] An injected failure inside a disposable copy of the migration transaction rolls back the function replacement, row rewrite and trigger drop, leaving the pre-migration state intact.
-- [ ] Re-running the normal migration deploy reports no pending application and performs no second rewrite.
-- [ ] No earlier migration or Prisma model was edited.
+- [x] A fresh migration chain ends with the corrected three-field built-in validator.
+- [x] An upgrade from the accepted DATABASE-001 state converts existing valid hashed `1.0.0` built-in entries to corrected no-hash `2.0.0` three-field objects without deleting the grant.
+- [x] Published grant entries and their exact release-derived union are unchanged by conversion.
+- [x] `contractHash` is rejected as an extra built-in key after migration, and legacy built-in `definitionVersion: "1.0.0"` is rejected.
+- [x] Unknown kind/name/version, fabricated published keys, duplicates/collisions, oversized/count-overflow and existing shop/recovery/inbound/release failures remain rejected.
+- [x] The existing grant **update** immutability trigger is restored exactly after migration; no new DELETE trigger is introduced.
+- [x] An injected failure inside a disposable copy of the migration transaction rolls back the function replacement, row rewrite and trigger drop, leaving the pre-migration state intact.
+- [x] Re-running the normal migration deploy reports no pending application and performs no second rewrite.
+- [x] No earlier migration or Prisma model was edited.
 
 ## Validation
 
@@ -170,23 +170,35 @@ Do not use `db push`, migration reset/squash/resolve, manual row deletion or tri
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `prisma/migrations/20261104162500_arch058_remove_builtin_contract_hash/migration.sql`
+- `scripts/fixtures/reference-taxonomy-fixtures.mjs`
+- `scripts/validate-reference-taxonomy-schema.mjs`
+- `scripts/test-reference-taxonomy-postgres.mjs`
 
 ### Work Completed
 
-None.
+- Added the single transactional forward migration. It takes the required ACCESS EXCLUSIVE lock, rejects unrecognized legacy built-in shapes before changing guards, drops only the update immutability trigger, replaces the existing helper with the exact three-field `2.0.0` validator, rewrites built-ins in array order, asserts postconditions, and restores the existing BEFORE UPDATE trigger semantics. The existing CHECK, guard trigger/function, function ownership/ACLs, and Prisma models remain unchanged.
+- Changed final-state fixtures to strict no-hash built-ins and added a legacy hashed `1.0.0` upgrade grant. The PostgreSQL upgrade test compares the complete saved grant, proving only built-in `contractHash` and `definitionVersion` changed while the published grant and all other row values remained the same.
+- Added injected-transaction-failure verification for the helper, row, trigger, CHECK, and migration-history rollback. Fresh and upgrade paths both exercise actual grant table CHECK/insert behavior and verify repeat deploy is a no-op.
 
 ### Validation Results
 
-Not run.
+- `npm run validate` — passed; Prisma schema valid.
+- `npm run prisma:generate` — passed; Prisma Client 6.19.3 generated.
+- `npm run test:reference-taxonomy-schema` — passed.
+- `npm run test:reference-taxonomy:postgres:fresh` — passed on disposable `pgvector/pgvector:pg17` / PostgreSQL 17.11, including strict built-in rejection, existing grant failure cases, guard/immutability checks, and second-deploy no-op.
+- `npm run test:reference-taxonomy:postgres:upgrade` — passed on disposable `pgvector/pgvector:pg17` / PostgreSQL 17.11, including legacy grant conversion, published-entry preservation, injected failure rollback, existing grant failure cases, and second-deploy no-op.
+- `git diff --check` — passed.
+- Implementation commit `93225ee` was pushed to `origin/task/ARCH-058-DATABASE-002`.
+- Launcher preparation evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-DATABASE-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-DATABASE-002`, both on `task/ARCH-058-DATABASE-002`; prepared bases `dc5da17151c43cb4117e5a14df82373a0d932e08` and `395675f909d604f0bff83ffb3d7d5586f0bdd39b`; claim `bcaa64d77dc01edc5cf05e668116e960216509aa` pushed; no submodules; DATABASE-001 and SHARED-005 dependency gate passed; main incorporated.
 
 ### Deviations
 
-None.
+- The pre-existing PostgreSQL runner's conflict scenarios specifically exercised the predecessor product-discovery migration. The runner now targets DATABASE-002, so those unrelated predecessor-migration probes were removed from this invocation; the required built-in/published grant shape, release, owner, recovery, inbound-version, bounds, and immutability failure cases remain enabled and passed.
 
 ### Assumptions
 
@@ -194,11 +206,11 @@ DATABASE-001 remains the installed predecessor and SHARED-005 has been accepted 
 
 ### Unresolved Issues
 
-None.
+None for the assigned migration scope.
 
 ### Architectural Concerns
 
-None.
+None. The predecessor product-discovery conflict probes noted under Deviations are separate from this migration's grant validation and were not claimed as passing.
 
 ## Architect Review
 
