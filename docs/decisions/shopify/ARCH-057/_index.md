@@ -15,8 +15,8 @@ Individual task YAML frontmatter is authoritative.
 | [ARCH-057-SHOPIFY-004](SHOPIFY-004-consolidate-commercial-read-projections.md) | Consolidate commercial read projections | Review | SHOPIFY-001, SHOPIFY-002, SHOPIFY-003 |
 | [ARCH-057-SHOPIFY-005](SHOPIFY-005-simplify-support-inbox-reads-and-acknowledgements.md) | Simplify support inbox reads and acknowledgements | Complete | SHOPIFY-001 |
 | [ARCH-057-SHOPIFY-006](SHOPIFY-006-reuse-recovery-read-context-and-preserve-command-admission.md) | Reuse recovery read context while preserving command admission | Ready | SHOPIFY-001 |
-| [ARCH-057-SHOPIFY-007](SHOPIFY-007-unify-settings-reads-and-guard-policy-writes.md) | Unify settings reads and guard merchant policy writes | Ready | SHOPIFY-001 |
-| [ARCH-057-SHOPIFY-008](SHOPIFY-008-simplify-merchant-knowledge-processing-and-refresh.md) | Simplify merchant knowledge processing and refresh | Pending | SHOPIFY-001, SHOPIFY-007 |
+| [ARCH-057-SHOPIFY-007](SHOPIFY-007-unify-settings-reads-and-guard-policy-writes.md) | Unify settings reads and guard merchant policy writes | Complete | SHOPIFY-001 |
+| [ARCH-057-SHOPIFY-008](SHOPIFY-008-simplify-merchant-knowledge-processing-and-refresh.md) | Simplify merchant knowledge processing and refresh | Ready | SHOPIFY-001, SHOPIFY-007 |
 | [ARCH-057-SHOPIFY-009](SHOPIFY-009-preserve-session-lifecycle-and-webhook-configuration.md) | Preserve sessions across uninstall retries and reinstall admission | Ready | SHOPIFY-001 |
 | [ARCH-057-SHOPIFY-010](SHOPIFY-010-bound-webhook-ingress-and-queue-publication.md) | Bound webhook ingress and queue publication | Pending | SHOPIFY-009 |
 | [ARCH-057-SHOPIFY-011](SHOPIFY-011-complete-server-error-diagnostics.md) | Complete server error diagnostics after functional tasks | Pending | SHOPIFY-001–010 |
