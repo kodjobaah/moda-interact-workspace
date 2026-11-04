@@ -354,7 +354,7 @@ None. Snapshot source and existing accepted migration history are the baseline, 
 ## Enables
 
 - `ARCH-058-MCP-001`, once this task and its other declared prerequisites are Complete.
-- `ARCH-058-SYSTEM-TEST-001`, once all seven implementation/publication prerequisites are Complete.
+- `ARCH-058-SYSTEM-TEST-001`, once all nine implementation/publication prerequisites are Complete.
 
 ## Acceptance Criteria
 
