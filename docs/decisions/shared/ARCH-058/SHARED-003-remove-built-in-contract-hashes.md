@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 35
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-058-SHARED-002
 enables:
@@ -116,13 +116,13 @@ A directly related existing focused test may be changed only when it asserts the
 
 ## Work Items
 
-- [ ] Remove `contractHash` from the built-in grant and descriptor schemas/types.
-- [ ] Remove built-in hash constants and `commerceBuiltInToolContractPayload`.
-- [ ] Update trusted-descriptor/grant helpers and manifest/grant projection/equality logic.
-- [ ] Update runner built-in resolution to use canonical name/version identity without hashes.
-- [ ] Replace hash-specific focused tests with strict name/version/extra-field tests.
-- [ ] Update the clean-process Commerce entrypoint verifier and README contract inventory.
-- [ ] Run the required validation and record exact results.
+- [x] Remove `contractHash` from the built-in grant and descriptor schemas/types.
+- [x] Remove built-in hash constants and `commerceBuiltInToolContractPayload`.
+- [x] Update trusted-descriptor/grant helpers and manifest/grant projection/equality logic.
+- [x] Update runner built-in resolution to use canonical name/version identity without hashes.
+- [x] Replace hash-specific focused tests with strict name/version/extra-field tests.
+- [x] Update the clean-process Commerce entrypoint verifier and README contract inventory.
+- [x] Run the required validation and record exact results.
 
 ## Interfaces / Contracts
 
@@ -150,15 +150,15 @@ commerce_get_discount_details@1.0.0
 
 ## Acceptance Criteria
 
-- [ ] Neither built-in descriptor nor built-in grant schemas/types contain `contractHash`.
-- [ ] `commerceBuiltInToolContractPayload` is absent from source, generated declarations and the clean-process export check.
-- [ ] Both canonical built-ins retain their existing names, descriptions, input schemas and definition version `1.0.0`.
-- [ ] A corrected built-in grant with exactly three fields parses; the same object with `contractHash`, `toolId`, `capabilityKeys`, an unknown name or version `2.0.0` fails.
-- [ ] A corrected manifest and retained grant match when the built-in name/version pair matches and fail when either name/version differs.
-- [ ] Published-tool grant behavior and existing release/capability provenance behavior are unchanged.
-- [ ] Runner built-in authorization resolves only the corrected canonical descriptor and does not use a hash.
-- [ ] No Zod/package dependency change is present.
-- [ ] Unrelated hash fields/helpers remain unchanged.
+- [x] Neither built-in descriptor nor built-in grant schemas/types contain `contractHash`.
+- [x] `commerceBuiltInToolContractPayload` is absent from source, generated declarations and the clean-process export check.
+- [x] Both canonical built-ins retain their existing names, descriptions, input schemas and definition version `1.0.0`.
+- [x] A corrected built-in grant with exactly three fields parses; the same object with `contractHash`, `toolId`, `capabilityKeys`, an unknown name or version `2.0.0` fails.
+- [x] A corrected manifest and retained grant match when the built-in name/version pair matches and fail when either name/version differs.
+- [x] Published-tool grant behavior and existing release/capability provenance behavior are unchanged.
+- [x] Runner built-in authorization resolves only the corrected canonical descriptor and does not use a hash.
+- [x] No Zod/package dependency change is present.
+- [x] Unrelated hash fields/helpers remain unchanged.
 
 ## Validation
 
@@ -199,31 +199,61 @@ This is a deliberate pre-production breaking contract correction. Do not add com
 
 ### Status
 
-Not Started
+Ready for architect review
+
+### Execution Provenance
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-SHARED-003`, branch `task/ARCH-058-SHARED-003`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-SHARED-003`, branch `task/ARCH-058-SHARED-003`.
+- Both attempts used these dedicated task worktrees. The shared workspace/source checkouts and other task worktrees were not used for implementation edits.
+- Attempt 1 launcher start: parent worktree was created at `df683a2f5c78e2314b5ffa84989567ebaf8531f`; implementation worktree was created at `d13e9310e758f14a21c6798d71e51cada1e61053`. For both repositories, remote task-branch fast-forward was `not-needed` and `origin/main` was already current. Recursive submodule sync/update passed; the implementation worktree had no submodule entries. The attempt-1 parent claim commit `1384fc14ae90b6f1e3a240fd16eb438293bc1566` was committed and pushed.
+- Attempt 1 submission: implementation commit `59ea61f34197d64180e46680ac6d552b5e989a36` was pushed to `origin/task/ARCH-058-SHARED-003`; parent report commit `19803b455337c913f822998a16b295191208af30` was pushed to the matching parent task branch. The implementation push used an explicit same-name refspec because the newly created local branch initially tracked `origin/main`; the matching task-branch upstream was then set. No main branch was pushed.
+- Attempt 2 launcher start: the same dedicated worktrees were reused. Parent start commit was `c3dc5d9692f3694356f1a06d96f893737a178d1f`; remote task-branch fast-forward was `not-needed` and `origin/main` was incorporated (`yes`). Implementation start commit was `59ea61f34197d64180e46680ac6d552b5e989a36`; remote task-branch fast-forward was `not-needed` and `origin/main` was already current. Recursive submodule sync/update passed with no entries. The attempt-2 claim commit `6acf684986427ff32345e8643ac8da2602efc221` was committed and pushed.
+- Attempt 2 made no implementation-source changes; implementation remains at `59ea61f34197d64180e46680ac6d552b5e989a36`, matching the remote task ref. The provenance correction was committed as `a1566b23d` and pushed to `origin/task/ARCH-058-SHARED-003`; this follow-up changes only this task report.
+- The implementation validation commands used the workspace Node-bootstrap guard and `npm ci --no-audit --no-fund` installed 211 locked packages. The original implementation command output did not capture exact Node/npm versions. The independent Architect Review records its validation runtime as Node 24.19.0 via the workspace bootstrap; that is reviewer provenance, not a retroactive claim about the original run.
 
 ### Files Changed
 
-None.
+- `README.md`
+- `scripts/validate-commerce-entrypoints.mjs`
+- `src/commerce/built-in-tools.ts`
+- `src/commerce/definitions.ts`
+- `src/commerce/product-discovery-contracts.test.ts`
+- `src/commerce/runner/built-in-tools.test.ts`
+- `src/commerce/runner/tool-policy.ts`
+- `src/commerce/schemas.ts`
+- `src/commerce/selection.ts`
 
 ### Work Completed
 
-None.
+- Removed `contractHash` from the strict built-in grant and descriptor schemas and public types, deleted the hash constants/helper, and retained both canonical descriptors at version `1.0.0` with unchanged descriptions and input schemas.
+- Updated trusted grant checks, selection and manifest equality, and runner descriptor resolution to use the canonical descriptor with name/version identity.
+- Replaced hash assertions with strict-field and canonical-identity tests; updated the clean-process export verifier and README inventory.
 
 ### Validation Results
 
-Not run.
+- `npm ci --no-audit --no-fund` — passed; installed 211 locked packages.
+- `npm run test:product-discovery-contracts` — passed; 76 passed, 0 failed, 1 skipped.
+- `npm run typecheck` — passed.
+- `npm run build` — passed.
+- `npm run validate:commerce-entrypoints` — passed; clean-process exports and runner checks passed, including absence of the removed helper.
+- `npm pack --dry-run` — passed; package contains 131 files.
+- `git diff --check` — passed.
+- Required production grep for `contractHash` and `commerceBuiltInToolContractPayload` — no matches in the five specified contract/runtime files.
+- Generated Commerce declarations — confirmed the removed helper is absent.
 
 ### Deviations
 
-None.
+None. Package metadata and dependencies were not changed.
 
 ### Assumptions
 
-The accepted SHARED-002 4.0.0 receipt is historical evidence only; no corrected package has yet been published.
+The accepted SHARED-002 4.0.0 receipt remains historical evidence only; this task did not publish the corrected source.
 
 ### Unresolved Issues
 
-None beyond the declared dependent correction/publication tasks.
+None within this task. The coordinated semantics/version bump and publication remain with the declared dependent tasks.
 
 ### Architectural Concerns
 
@@ -233,24 +263,46 @@ None.
 
 ### Review Status
 
-Pending
+**Changes Requested — Attempt 1, 2026-11-04.** No blocking code finding was identified, but required execution provenance is missing from the Completion Report. Status returns to ready; executor/claim are cleared and Attempt remains 1. No acceptance or downstream promotion is recorded.
 
 ### Review Notes
 
-Not reviewed.
+**[P2] Record required execution provenance before acceptance.** The Completion Report lists changes and validation but omits canonical parent/implementation worktree paths, start/final commits, start-of-attempt remote-task synchronization and origin/main incorporation results, and implementation/parent branch publication evidence. `docs/agent-worktree-isolation-policy.md` requires these facts and explicitly treats missing or contradictory evidence as workflow non-conformance. Current clean branches and passing tests alone do not prove historical execution isolation.
+
+Reconcile the report with the original launcher preparation packet and actual Git history. Record the exact task branch/worktree pair, claim and source identities, synchronization outcomes, pushed implementation/parent commits and relevant toolchain provenance. Distinguish observed facts from unavailable historical evidence; do not invent a preparation receipt. No code churn or repeat dependency installation is requested solely to add this documentation. If execution isolation cannot be established, apply the policy's canonical-worktree validation remediation and record it truthfully.
 
 ### Reviewed Files
 
-None.
+Implementation `59ea61f34197d64180e46680ac6d552b5e989a36`, matching its remote task ref, and its nine-file delta against origin/main: README, clean-process entrypoint verifier, built-in definitions/descriptors, manifest schemas/selection, runner policy and focused tests. Parent submission `19803b455337c913f822998a16b295191208af30` and the task's revision-10 normative hash-reconciliation decision were reviewed.
+
+Review used the canonical parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-SHARED-003` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-SHARED-003`, both on `task/ARCH-058-SHARED-003`. Both were clean before this review overlay. These are independently observed review locations, not a substitute for the missing implementation preparation evidence.
 
 ### Validation Reviewed
 
-None.
+Independently ran from the canonical implementation checkout with Node 24.19.0 via the workspace bootstrap:
+
+- `npm run test:product-discovery-contracts`: **76 passed, zero failed, one skipped**. The skipped case is the actual Commerce projector/publication integration case; it is not counted as passed. Log: `/tmp/arch058-shared003-review-tests.log`.
+- `npm run typecheck`: passed. Log: `/tmp/arch058-shared003-review-types.log`.
+- `npm run build`: passed, including declarations. Log: `/tmp/arch058-shared003-review-build.log`.
+- `npm run validate:commerce-entrypoints`: passed; clean-process Commerce/runner imports, schema and scripted runner checks confirm absence of the removed helper. Log: `/tmp/arch058-shared003-review-entrypoints.log`.
+- Required five-file production grep: no removed hash field/helper matches. Implementation whitespace check passed and checkout remained clean.
+
+Reviewed the reported locked install and package dry-run results; these were not independently rerun. No package publication occurred during review.
 
 ### Architecture Conformance
 
-Not assessed.
+Hash fields/constants and the public payload helper are removed without a replacement identity digest. Strict schemas reject legacy hash-bearing objects, while canonical descriptor equality and name/version authorization remain. Names, descriptions, input contracts, intermediate definition version 1.0.0 and runner 1.1.0 remain unchanged; package metadata/dependencies and unrelated hashes are untouched. No blocking implementation defect was identified in scope. Acceptance remains gated on the provenance correction above. Later semantics/version/publication and durable-row conversion remain with their declared owners.
 
 ### Follow-up
 
-None.
+Correct the Completion Report, publish the same mirrored task branches as needed and return for review. Preserve Attempt 1 history; any normal next claim increments the attempt once. Do not start SHARED-004/006, convert Database grants, publish a package or promote downstream work as part of this review. The developer explicitly authorized committing and pushing this review on the parent task branch. No implementation, gitlink or main-branch change is included.
+
+## Architect Acceptance — Attempt 2 (2026-11-04)
+
+**Accepted and Complete.** The provenance correction resolves the sole Attempt 1 finding. Reviewed parent submission `bdcb96e8e66772666ed8bfb7206102e7acb44ace` and unchanged implementation `59ea61f34197d64180e46680ac6d552b5e989a36`, each matching its remote task ref, with clean canonical worktrees. The report now records both task worktrees, both attempts' source/claim identities, synchronization, publication and toolchain evidence, explicitly distinguishing unavailable original runtime version output from independently observed reviewer provenance. Git history confirms the stated claim commits and Attempt 2 origin/main merge. Historical Changes Requested entries remain as history and are superseded by this acceptance.
+
+No implementation source changed in Attempt 2. Prior independent validation on the identical implementation remains applicable: **76 passed, zero failed, one skipped** (actual Commerce projector/publication integration), plus passing typecheck, build, clean-process Commerce entrypoint checks and production hash-removal grep. These checks were not rerun for the documentation-only correction. Reported locked-install/package dry-run evidence remains reviewed rather than independently rerun. No blocking finding remains; intermediate built-in definition 1.0.0, runner 1.1.0, package metadata/dependencies and unrelated hashes remain unchanged. This acceptance does not publish the intermediate package or certify skipped integration.
+
+Automatic completion applies; Attempt stays 2 and executor/claim are cleared. The developer authorized committing and pushing this review/completion record. No implementation, schema, parent gitlink or main-branch change is included.
+
+Dependency reconciliation: SHARED-004's only prerequisite is now Complete, so it becomes ready without claim or attempt increment. SHARED-006 remains pending on SHARED-004/005; SYSTEM-TEST-001 remains pending on remaining prerequisites. No downstream work was started.
