@@ -785,6 +785,24 @@
       "exists": true,
       "sha256": "6dc0e42d6de8074658cca5906d2039ba23846f45256564243410dd94e560887f",
       "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001.zip"
+    },
+    {
+      "path": "moda-interact-background/src/agents/commerce.agent.ts",
+      "exists": true,
+      "sha256": "81a5bb1f60295838a16a286a3c9cb6386e0a801685f00ea00f7ceefde3ed5c7d",
+      "sourceSnapshot": "moda-interact-workspace(20261104-094947).zip"
+    },
+    {
+      "path": "moda-interact-background/src/commerce/recovery-instructions.ts",
+      "exists": true,
+      "sha256": "015938d48179f87aa6e63f454767b4ffa544d6edd947586b91700eefbe949843",
+      "sourceSnapshot": "moda-interact-workspace(20261104-094947).zip"
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.instructions.ts",
+      "exists": true,
+      "sha256": "3d1239758705dadf5dbb7529e5b53439f4c85f99464c1287fbb242651e85ceec",
+      "sourceSnapshot": "moda-interact-workspace(20261104-094947).zip"
     }
   ],
   "evidenceLimits": [
@@ -811,7 +829,7 @@
     },
     "readerSha256": "9afce8c715a73b591304c501a845e374fe49b8a7aa9952164ce8f3a04bb3712d"
   },
-  "definitionRevision": 6,
+  "definitionRevision": 7,
   "mcpResponsibilityCorrection": {
     "supersedes": "Attempt 4 conversation-domain adapter and workflow authorization in MCP",
     "mcpScope": "Generic shop-eligible tool provider/executor, current shop/plan/connection/data access and structured data results",
@@ -848,5 +866,54 @@
     "currentRuntimeBaseline": "4.0.0",
     "blocksCurrentMcp001BoundaryClarification": false,
     "acceptedPublicationReceiptPreserved": true
+  },
+  "agentInstructionAmendment": {
+    "revision": 7,
+    "evidenceSourceSnapshot": "moda-interact-workspace(20261104-094947).zip",
+    "currentMcpArchiveContainsCommerceOrBackgroundImplementation": false,
+    "runtimeImplementationPerformed": false,
+    "featureOwner": "COMMERCE-001 / SYSTEM_PRODUCT_BEHAVIOUR",
+    "responseOwner": "COMMERCE-001 / SYSTEM_PRODUCT_RESPONSE_INSTRUCTIONS",
+    "plannedCommerceSource": "moda-interact-commerce/src/commerce/bootstrap/system-product-response.ts",
+    "recoveryOwner": "BACKGROUND-001 / RECOVERY_INSTRUCTIONS",
+    "recoveryReplacement": "Replace the entire existing third string with the exact task literal; do not append a contradictory rule.",
+    "obsoleteRecoverySentence": "Missing evidence requires REFER_TO_STORE.",
+    "assemblyOrder": [
+      "Shared kernel",
+      "Background recovery",
+      "published Platform",
+      "optional published current Shop",
+      "pinned response contract",
+      "pinned granted feature prompts in manifest order"
+    ],
+    "assemblyOrderCreatesPermissionPrecedence": false,
+    "requiredInspectionHelper": "evaluateRecommendationDiscountInspection(observations, policy)",
+    "requiredInspectionOutcomes": [
+      "NOT_REQUIRED",
+      "SATISFIED",
+      "MISSING_OPTIONS",
+      "MISSING_DETAILS"
+    ],
+    "inspectionRequiredModes": [
+      "FIXED with nonempty authorized IDs",
+      "AI_BEST_APPLICABLE"
+    ],
+    "inspectionExemptModes": [
+      "NONE",
+      "FIXED with empty authorized IDs"
+    ],
+    "candidateSet": "Union of permitted IDs across retained latest-per-arguments normal options outcomes; FIXED intersects local authorized IDs.",
+    "nonemptyCandidatesRequirement": "At least one accepted current-turn matching details outcome, including explicit null or canonical optional UNAVAILABLE.",
+    "missingInspectionBehavior": "Discard product proposals; existing controlled composition without products; retain independent authorized shipping presentation; no further discovery/model call.",
+    "eligibilityAndRevalidationUnchanged": true,
+    "mcpConversationResponsibilityAdded": false,
+    "additionalDatabaseReadsOrToolBudgetAdded": false,
+    "newSharedOrDatabaseChange": false,
+    "fromAttempt6ChangedTasks": [
+      "ARCH-058-COMMERCE-001",
+      "ARCH-058-BACKGROUND-001",
+      "ARCH-058-SYSTEM-TEST-001"
+    ],
+    "inspectionAppliesOnlyToProductRecommendationProposals": true
   }
 }
