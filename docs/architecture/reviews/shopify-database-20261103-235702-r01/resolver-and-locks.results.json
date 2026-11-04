@@ -1,0 +1,74 @@
+{
+  "validation_kind": "original-source execution with in-memory substitutes",
+  "runtime": "v24.22.1",
+  "postgres_executed": false,
+  "shopify_sdk_executed": false,
+  "assertions": "passed",
+  "outcomes": [
+    {
+      "case": "existing_unchanged_shop",
+      "observed": [
+        "shopify.graphql",
+        "shop.findUnique",
+        "subscription.findUnique",
+        "shopSettings.findUnique"
+      ],
+      "prisma_operations": 3,
+      "provider_requests": 1,
+      "writes": 0
+    },
+    {
+      "case": "two_concurrent_resolutions_same_shop",
+      "observed": [
+        "shopify.graphql",
+        "shopify.graphql",
+        "shop.findUnique",
+        "shop.findUnique",
+        "subscription.findUnique",
+        "shopSettings.findUnique",
+        "subscription.findUnique",
+        "shopSettings.findUnique"
+      ],
+      "prisma_operations": 6,
+      "provider_requests": 2,
+      "writes": 0
+    },
+    {
+      "case": "profile_refresh_during_resolution",
+      "observed": [
+        "shopify.graphql",
+        "shop.findUnique",
+        "subscription.findUnique",
+        "shopSettings.findUnique",
+        "$transaction",
+        "shop.update",
+        "shopSettings.update"
+      ],
+      "prisma_operations": 5,
+      "transaction_wrappers": 1,
+      "provider_requests": 1,
+      "writes": 2
+    },
+    {
+      "case": "graphql_error_body_without_shop",
+      "resulting_error": "Unable to resolve Shopify shop identity for review.myshopify.com",
+      "original_provider_error_preserved": false,
+      "limitation": "The SDK itself is mocked; this verifies handling if an errors-only body reaches ShopService."
+    },
+    {
+      "case": "initial_paid_activation_lock",
+      "emitted_sql": "SELECT \"id\" FROM \"shopify\".\"Shop\" WHERE \"id\" = $1 FOR UPDATE",
+      "canonical_relation": "commerce.Shop",
+      "relation_mismatch": true,
+      "sql_executed": false
+    },
+    {
+      "case": "existing_settings_subscription_locks",
+      "emitted_sql": [
+        "SELECT \"shopId\" FROM \"shopify\".\"ShopSettings\" WHERE \"shopId\" = $1 FOR UPDATE",
+        "SELECT \"id\" FROM \"billing\".\"Subscription\" WHERE \"shopId\" = $1 FOR UPDATE"
+      ],
+      "sql_executed": false
+    }
+  ]
+}
