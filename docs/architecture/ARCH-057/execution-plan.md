@@ -89,3 +89,7 @@ Privacy export/redaction/retention F17 remains separate functional work requirin
 Per task, record actual parent/implementation paths and SHAs, nested Database pins, installed Shared/router versions, exact commands/results, relevant SQL/provider/log case artifacts and task-owned container cleanup. Required blocked/skipped tests remain unchecked. Return to architect review and stop; repository agents do not accept their own tasks or start downstream work.
 
 Definition validation and patch apply checks are supplied with the handoff. They are separate from future implementation tests.
+
+## Commercial Read Acceptance (2026-11-04)
+
+ARCH-057-SHOPIFY-004 Attempt 1 is architect-accepted and Complete at `525194c9598c18f8f736b4d24752bfdf07228720`. Earlier pending snapshots above are historical for this task. Its task record contains independent 448-test results, reviewed PostgreSQL/build evidence and verification limits. SHOPIFY-011 remains pending on remaining prerequisites; no downstream execution or main integration is performed.

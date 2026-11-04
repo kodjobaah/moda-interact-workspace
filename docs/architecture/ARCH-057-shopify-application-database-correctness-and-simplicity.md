@@ -125,3 +125,7 @@ The terminal task extends the existing system-test runner with domain-named sele
 Definition validation checks canonical sections/YAML, unique IDs, dependencies, path ownership, findings coverage, latest-source alignment and patch applicability. Runtime validation remains unchecked until an implementation agent executes and the architect reviews it.
 
 This package adds only new ARCH-057-owned files. Every `_index.md`, earlier task/architecture, source file, migration and submodule pointer is unchanged. The developer applies/reviews the definition patch, then the normal launcher materialises matching task branches/worktrees. Parent-definition publication is not a claim that implementation has started.
+
+## Commercial Read Task Acceptance (2026-11-04)
+
+ARCH-057-SHOPIFY-004 Attempt 1 is accepted and Complete at `525194c9598c18f8f736b4d24752bfdf07228720`; its task record is authoritative for the review and validation limits. Earlier pending-state snapshots do not represent its current status. SHOPIFY-011 remains pending on remaining dependencies. This acceptance does not complete the architecture or merge task branches.

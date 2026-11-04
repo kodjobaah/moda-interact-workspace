@@ -12,7 +12,7 @@ Individual task YAML frontmatter is authoritative.
 | [ARCH-057-SHOPIFY-001](SHOPIFY-001-resolve-authenticated-merchant-request-context.md) | Resolve authenticated merchant context once per request | Complete | — |
 | [ARCH-057-SHOPIFY-002](SHOPIFY-002-stabilise-subscription-activation-and-provider-evidence.md) | Stabilise subscription activation and provider evidence | Ready | SHOPIFY-001 |
 | [ARCH-057-SHOPIFY-003](SHOPIFY-003-simplify-recovery-credit-purchases-and-refunds.md) | Simplify recovery credit purchases, refunds and history admission | Complete | SHOPIFY-002 |
-| [ARCH-057-SHOPIFY-004](SHOPIFY-004-consolidate-commercial-read-projections.md) | Consolidate commercial read projections | Ready | SHOPIFY-001, SHOPIFY-002, SHOPIFY-003 |
+| [ARCH-057-SHOPIFY-004](SHOPIFY-004-consolidate-commercial-read-projections.md) | Consolidate commercial read projections | Complete | SHOPIFY-001, SHOPIFY-002, SHOPIFY-003 |
 | [ARCH-057-SHOPIFY-005](SHOPIFY-005-simplify-support-inbox-reads-and-acknowledgements.md) | Simplify support inbox reads and acknowledgements | Ready | SHOPIFY-001 |
 | [ARCH-057-SHOPIFY-006](SHOPIFY-006-reuse-recovery-read-context-and-preserve-command-admission.md) | Reuse recovery read context while preserving command admission | Ready | SHOPIFY-001 |
 | [ARCH-057-SHOPIFY-007](SHOPIFY-007-unify-settings-reads-and-guard-policy-writes.md) | Unify settings reads and guard merchant policy writes | Ready | SHOPIFY-001 |

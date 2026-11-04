@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: codex
-claimed_at: 2026-11-04T14:57:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -34,7 +34,7 @@ Architecture document: `docs/architecture/ARCH-057-shopify-application-database-
 
 Coordinator: `moda_architect`.
 
-Mandatory execution, diagnostic, provenance and validation contract: `docs/architecture/ARCH-057/task-contract.md`. This task is materialised in its canonical parent and implementation worktrees on `task/ARCH-057-SHOPIFY-004`. All named prerequisites are Complete. Attempt 1 is published and awaiting architect acceptance; the Completion Report records the claim, implementation commits, worktree paths and validation evidence. Current lifecycle state is recorded in the task frontmatter; no implementation acceptance is asserted here.
+Mandatory execution, diagnostic, provenance and validation contract: `docs/architecture/ARCH-057/task-contract.md`. This task is materialised in its canonical parent and implementation worktrees on `task/ARCH-057-SHOPIFY-004`. All named prerequisites are Complete. Attempt 1 is published, architect-accepted and Complete; the Completion Report records the claim, implementation commits, worktree paths and validation evidence. Current lifecycle state is recorded in the task frontmatter; the acceptance record below states the review decision.
 
 ## Objective
 
@@ -404,3 +404,15 @@ Return for review; terminal validation follows the parent dependency map rather 
 ## Architect Dependency Reconciliation (2026-11-04)
 
 SHOPIFY-003 Attempt 2 is accepted and Complete at `fc978239097b364f43eea013525f38782ba1103b`. SHOPIFY-001/002 are also Complete; all declared prerequisites are satisfied. Promoted to ready without claim or attempt increment. Normal launcher preparation and accepted-source integration gates still apply. Earlier pending-definition statements are historical.
+
+## Architect Acceptance — Attempt 1 (2026-11-04)
+
+**Accepted and Complete.** Reviewed implementation `525194c9598c18f8f736b4d24752bfdf07228720` (following implementation commit `2b2ad2b1c48cda45cffcc7dea39d3a96bbeba2c1`) and parent submission/documentation correction `4e121bf50c7187d5678a8e8aca4545e3aa0d7f8c`. No blocking findings remain. The stale materialization statement is corrected. Historical pending/readiness entries above are superseded by this decision.
+
+The composition preserves scalar request facts, current/pending plan identity, separate balance types and durable-shell/nullable fallbacks. Options performs the bounded shared reads and one provider observation; Home remains local and select uses scalar status. Promotion paging applies matching translated eligibility predicates to count/page; selection retains fresh Serializable admission and rejects an unexpired same-campaign selection. Usage combines identical-filter aggregates while retaining bounded tenant/source queries. Purchase action/replay and two fresh mutation observations remain unchanged. No schema, pricing, identity, prerequisite-context or public DTO redesign was introduced.
+
+Independent validation during the implementation review: **16 suites, 448 tests passed, zero skipped**, including the fourteen-file focused set and prerequisite purchase action/request regressions. Log: `/tmp/arch057-shopify004-review-tests.log`. Reviewed PostgreSQL evidence: **3 passed, zero skipped**, migrated PG17 with separate connections/barriers for same/different-campaign selection races, throwing-sink isolation and translated 6/6/4 pagination. Reviewed reported passing typecheck/build/scoped lint and source/SQL provenance. PostgreSQL/build/typecheck/lint were not independently rerun; no tests were repeated for the documentation-only correction. SQL counts remain distinct from repository-method budgets; no latency/capacity claim is accepted.
+
+Verified clean canonical parent/implementation worktrees on `task/ARCH-057-SHOPIFY-004`; implementation HEAD matches its remote task ref. The Completion Report records launcher preparation, synchronization, claim, source/build/dependency pins and cleanup. Automatic completion applies; Attempt stays 1 and executor/claim are cleared. The developer explicitly authorized committing and pushing this review/completion record. No implementation, gitlink or main-branch change is included.
+
+Dependency reconciliation: SHOPIFY-011 remains pending on its remaining explicit prerequisites, including SHOPIFY-008/010. No downstream task is claimed, promoted or executed by this acceptance. The architecture remains in progress.
