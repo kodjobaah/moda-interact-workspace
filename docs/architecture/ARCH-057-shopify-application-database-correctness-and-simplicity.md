@@ -77,7 +77,7 @@ The change is confined to Shopify-owned builders. API's similarly spelled namesp
 
 ## Current review handoff
 
-On 2026-11-04, ARCH-057-SHOPIFY-002 Attempt 2 received Changes Requested and returned to `ready` with its claim cleared. Its review records two reproduced diagnostic privacy defects and an overwritten same-token concurrency-test barrier. The required unit suite independently passed 393/393; this does not supersede those findings. SHOPIFY-003, SHOPIFY-004 and SHOPIFY-011 remain pending. See the [task review](../decisions/shopify/ARCH-057/SHOPIFY-002-stabilise-subscription-activation-and-provider-evidence.md#architect-review) for corrections and validation requirements. The table below records initial task states, not current lifecycle status.
+On 2026-11-04, ARCH-057-SHOPIFY-002 Attempt 3 was accepted and marked complete with its claim cleared. All three prior findings are resolved. Independent validation passed 395 unit tests, the isolated 2-test PostgreSQL suite, typecheck, build and changed-file lint. The review preserves an initial milestone-transaction timeout and teardown error before the unchanged isolated rerun passed; its root cause is not claimed as proven. SHOPIFY-003 is ready and unclaimed; SHOPIFY-004 and SHOPIFY-011 remain pending on additional prerequisites. See the [task review](../decisions/shopify/ARCH-057/SHOPIFY-002-stabilise-subscription-activation-and-provider-evidence.md#architect-review) for evidence and historical findings. The table below records initial task states, not current lifecycle status.
 
 ## Task map
 

@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-11-04T07:53:37Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -324,6 +324,35 @@ No failure-matrix evidence gap remains identified for this bounded task. Notific
 Return changes to ownership, lifecycle policy, schema, error contracts, lock participants or persisted/provider identity to the architect.
 
 ## Architect Review
+
+### Review Status
+
+**Accepted — Attempt 3, 2026-11-04.** All three Attempt 2 findings are resolved. No remaining blocking finding was identified in the scoped review. Under this task's automatic completion mode, status is `complete`, the claim is cleared, and Attempt remains 3. The implementing agent's Completion Report remains its submission evidence; this section is the architect acceptance decision.
+
+### Findings Resolved
+
+1. Timestamp-aware redaction now preserves only timestamp characters within a numeric match and redacts adjacent phone spans. The real Shared regression retains the schedule timestamp, excludes the synthetic phone and asserts the redaction flag. Existing route timestamp-correlation tests pass.
+2. The provider retains the original native JSON SyntaxError as the propagated cause while supplying a separate safe diagnostic cause. Logs retain exception type and bounded parser position/reason information without the response excerpt. Short and long invalid-response regressions exercise the real parser and installed Shared output; transport and other original-cause paths remain covered.
+3. The PostgreSQL service factory accepts the provider port without overwriting it. Both independent clients reach the shared barrier, the test asserts two arrivals before release, and real persistence assertions establish one activation/period/counter grant plus stale-token rejection. The separate milestone lock-wait and second-write rollback case remains intact.
+
+### Reviewed Source and Validation
+
+- Implementation: `8561a870a8a5a407dca8b9da7f6239c69a140c90`; five-file corrective delta from `f26d91209a4c177a8adeb9fd7bf875cb9c7a9577`. Parent submission: `24b1f81ca50162486ff4e856b97a93c6edc1b057`.
+- Independently reran the exact required 12-file unit command: **395/395 passed**, no skips. Log: `/tmp/arch057-shopify002-attempt3-review-units.log`.
+- Independently reran the disposable PG17 suite: final isolated run **2/2 passed**, no skips, including same-token concurrency and milestone/rollback. Canonical migrations and the fixture cleanup hook executed. Log: `/tmp/arch057-shopify002-attempt3-review-postgres-rerun.log`.
+- Preserve the first review PostgreSQL result: **1 passed, 1 failed**, plus an unhandled teardown error. The milestone case hit an expired interactive transaction while other review checks were running; the same-token case passed. The unchanged suite passed when rerun alone after those checks finished. This does not establish the timeout's root cause. Initial log: `/tmp/arch057-shopify002-attempt3-review-postgres.log`.
+- Independent `npm run typecheck`, production build (including Prisma Client 6.19.3 generation), changed-file ESLint and `git diff --check` passed. Logs: `/tmp/arch057-shopify002-attempt3-review-typecheck.log`, `/tmp/arch057-shopify002-attempt3-review-build.log`, `/tmp/arch057-shopify002-attempt3-review-lint.log`. Existing build warnings are not represented as errors.
+- The implementation worktree remained clean after review. No implementation, package, schema or gitlink changes were made by the architect. Earlier review evidence is preserved below rather than overwritten.
+
+### Architecture Conformance and Dependencies
+
+The correction preserves provider exception propagation, explicit-null parsing policy, original lifecycle locks/fences, milestone ordering and current notification/retry behavior. The previously reviewed owner-level diagnostic matrix remains covered by the passing focused suites. This acceptance makes no general performance, deadlock-freedom or production-rollout claim.
+
+SHOPIFY-001 is complete. SHOPIFY-003's only prerequisite is now complete, so it is promoted from `pending` to `ready`, unclaimed at Attempt 0. SHOPIFY-004 remains pending on SHOPIFY-003; SHOPIFY-011 retains its remaining incomplete prerequisites. No downstream task was executed or claimed. No `_index.md` or implementation gitlink was changed.
+
+The developer explicitly authorized committing and pushing the acceptance, dependency and architecture handoff updates on the parent task branch on 2026-11-04.
+
+### Previous Review — Attempt 2
 
 ### Review Status
 
