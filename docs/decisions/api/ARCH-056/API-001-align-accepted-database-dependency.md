@@ -243,3 +243,5 @@ The required `npm run test:arch035-knowledge-upload:postgres` failure is **not w
 The implementation branch finding is resolved without a source commit: `moda-interact-api` has the published `task/ARCH-056-API-001` ref at `2384bac6cea135d5571bd9f771f9431cfb0c7b45`, matching the reported clean zero-diff task commit. No implementation source or test work was performed in this routing step.
 
 `ARCH-056-API-002` is the bounded API-owned diagnosis/correction task for the failing upload suite. API-001 now depends on API-002 and is `pending`; its Copilot claim is cleared, and attempt 2 is preserved. After API-002 is accepted, API-001 must rerun the three required PostgreSQL suites and satisfy every existing criterion before acceptance. No ARCH-056 system-test task is created or made Ready by this disposition.
+
+This routing supersedes only the earlier Follow-up instruction to address both findings within API-001's task branch: the implementation-ref publication finding is resolved, and the upload source/test diagnosis and correction belongs to API-002. The earlier review notes remain as historical review evidence.
