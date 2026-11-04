@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -667,3 +667,25 @@ MCP-001 Attempt 3 is accepted and Complete at `1dd5430b9d3108bf93bba86c1fb923373
 ## Architect Resume Reconciliation (2026-11-04)
 
 MCP-001 is Complete at accepted Attempt 3; DATABASE-002 is accepted and Complete at `93225ee`; SHARED-006 is accepted and Complete with published Shared 5.0.0 / runner 1.1.0 / discount built-ins 2.0.0. All explicit prerequisites are satisfied. This supersedes the blocked lifecycle wording in revision 10 above: task is Ready, executor/claim empty, Attempt 1 retained. Preserve WIP `4bffa87ed4af0fb40513ad75d38df49c51746360` and its report; normal launcher preparation claims the next attempt in the existing dedicated worktrees. Do not reuse the stale claim or automatically start execution. Consumer adoption and validation remain task work, including the known optional Commerce projection issue.
+
+## Architect Review — Developer Integration Run, Attempt 2
+
+**Changes Requested — returned to Ready.** This review supersedes the earlier NOT_RUN/pending-validation disposition. Attempt 2 remains preserved, executor and claim remain null; the repository agent must use normal launcher preparation for its next attempt. No acceptance or downstream promotion is recorded.
+
+### Evidence
+
+Reviewed the developer-supplied terminal transcript at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002/typescript` against unchanged implementation `b95c397d840568a5481c9332517e6ee3dc3713e1`. It records the owned `npm run test:integration:docker` harness, migrated PostgreSQL 16.15/pgvector fixture, **31 tests: 26 passed, 4 failed, 1 opt-in live Shopify test skipped**, and `MCP_IT_ASSERTIONS_FAILED: npm exited with status 1`. Four failures include the parent shop-product-discovery suite and its three failing subtests; they are not four independently diagnosed defects. The transcript confirms removal of the owned container, volume and network. This review inspected the supplied evidence and source; it did not rerun Docker. The transcript is an untracked developer artifact and is not staged by this documentation handoff.
+
+### Findings to Resolve
+
+1. **[P2] Incorrect category error assertion.** `tests/integration/shop-product-discovery.integration.test.ts:78` tests `error.message` for `MCP_PRODUCT_CATEGORY_NOT_READY`. The actual `McpRequestError` correctly uses message `UNAVAILABLE` and carries the diagnostic in `reason`. Assert the typed error/code/reason rather than changing the production error contract to satisfy the assertion. Rerun the remaining generation/language/version/category cases, which this early failure prevented from completing.
+2. **[P2] FIXED-mode fixture violates the installed database constraint.** At line 118 the fixture sets `recoveryOfferMode: FIXED` without `fixedShopifyDiscountId`; PostgreSQL rejects it under `ck_arch016_shop_settings_fixed_offer`. Supply valid same-shop fixture state under the existing schema and intended policy semantics. Preserve the meaningful selection-change, details-denial, AI pagination, cross-shop/cross-mode and exact override-expiry assertions. This failure prevented the rest of that subtest from running; no pass is claimed for those later checks. Do not alter the database constraint or production policy to accommodate invalid test setup.
+3. **[P2] Expected published product capability is absent.** Line 150 expects the seeded product capability plus the canonical built-ins, but actual tools/list contains only the two built-ins. Investigate the seeded published definition, registration/executor compatibility, feature/release/provider eligibility and expected descriptor name against the corrected task contract. Establish the real cause; the current evidence does not prove whether this is fixture drift or a runtime defect. Do not simply remove the expected published capability or weaken authorization to pass. Prove that changing the other tenant's installation does not hide or expand this shop's legitimately eligible published tool.
+
+### Correction and Validation Handoff
+
+Resolve all three findings in the existing task-owned source/tests, preserve WIP/history and exact accepted Shared 5.0.0/Database contracts, run the required fast checks, and publish the same mirrored task branches. Do not edit Shared/Database or fabricate a new contract to fix fixture assumptions. If investigation reveals a genuinely unowned change, return the concrete gap to the architect.
+
+The existing developer-owned integration execution policy remains in force: after corrections, provide the exact `npm run test:integration:docker` command for the developer to rerun through the owned disposable harness. Record corrected HEAD/Database pin, complete scenario results, overall exit and cleanup before acceptance. This Ready transition does not itself authorize autonomous Docker execution or claim a new attempt. Earlier independently passing 118 unit tests remain historical evidence for the reviewed commit, not validation of future corrections.
+
+MCP-003, COMMERCE-001, BACKGROUND-001 and SYSTEM-TEST-001 remain Pending on acceptance of MCP-002 and their other prerequisites. The developer requested this review be added to the definition and the task returned to Ready for agent correction. No implementation, gitlink or main branch is changed.
