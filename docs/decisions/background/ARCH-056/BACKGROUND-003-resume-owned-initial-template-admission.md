@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 40
 executor: codex
 claimed_at: 2026-11-04T00:49:19Z
@@ -352,39 +352,37 @@ Stop and report a blocking contract conflict if safe final admission requires ch
 
 ## Completion Report
 
-This section belongs to the implementing repository agent. No implementation is recorded by this definition.
-
 ### Status
 
-Not Started
+Blocked during Attempt 1. Implementation draft `32b80bf` is published on the Background task branch. The required PostgreSQL preservation gate has a contradictory read-only assertion. The task is not submitted for review.
 
-### Files Changed
+### Files Changed and Work Completed
 
-Pending implementation.
-
-### Work Completed
-
-Pending implementation.
+- Existing admission facade, types and reservation owner expose scoped initial evidence and same-message resume, with normal usage identity and ownership checks.
+- Existing Shopify and Woo permit owners check the original attempt, prepared message and exact credit. Woo retains its explicit fence. The credit read follows the prepared-message lock.
+- Existing delivery and failure owners distinguish moderation retry, provider HTTP and receipt persistence. Receipt writes acquire Conversation first. Guarded pre-permit cleanup and known initial rejection keep the attempt link in the transaction that removes usage.
+- Existing Meta diagnostic projection validates trace identifiers and propagates nested array transformation flags. Initial failure owners emit bounded source evidence through the installed Shared logger.
+- Added the five scoped test/fixture modules declared by the task. Updated only owned regression tests and source files. No schema, gitlink, queue contract or other task record changed.
 
 ### Validation Results
 
-Not run. Record exact commands, exit results, failures, warnings, source/build/schema provenance, scenario evidence and cleanup; do not copy planned checks as completed results.
+- The declared focused Vitest selection passed 135 tests across 11 files. The declared ESLint selection, production build and `git diff --check` passed.
+- Installed Shared version was 3.0.0. The logging import resolved through its `./dist/logging/index.js` export. Capture-sink tests cover stage and source evidence, provider versus receipt failure, paired errors, protected retry identity, and Meta nested flags.
+- The declared integration selection ran on disposable PostgreSQL/Redis and reported 31 passed and five failed across seven files. New real PostgreSQL cases passed for Woo same-message resume, inconsistent pending receipts, refusal lineage, cleanup versus permit, released credit and the competing receipt transaction. General STOP and follow-up preservation passed.
+- Four HUMAN-send failures in `recovery-conversation.services.integration.test.ts` reproduced using an untouched archive of `afac7c3766d92fb14beff669232c1b01c2ed0be0` and the prepared schema. They involve provider admission before takeover, definitive rejection settlement, UNKNOWN resolution, and rate denial.
+- The fifth failure is `tests/integration/woo-initial-send-fence-races.integration.test.ts:209–216`. This read-only required test explicitly requires `Error("PERSISTENCE_FAILURE")` and rejects the actual injected source message. The task's logging requirement explicitly prohibits that synthetic error and requires safe source wording. Production emits the bounded source diagnostic and preserves the original throw. The test remains untouched.
+- The database check constraint rejects a control-revision-only permit at write time. The defensive read classification is covered in unit tests. No constraint was disabled for integration testing.
 
-### Deviations
+### Worktree and synchronization evidence
 
-None at definition time. Record actual deviations and their architect disposition before review.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-003`, `task/ARCH-056-BACKGROUND-003`, origin/main incorporated, remote task fast-forward not needed. Durable claim `6c4d06f5cea3b67617863c21b33d836625424e33`.
+- Implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-003`, `task/ARCH-056-BACKGROUND-003`, origin/main already current at `afac7c3766d92fb14beff669232c1b01c2ed0be0`, remote task fast-forward not needed.
+- Recursive sync and initialization passed. Database gitlink `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. Shared checkouts and other task worktrees were not used for implementation.
 
-### Assumptions
+### Unresolved Issues and Architect Handoff
 
-The reviewed snapshot and accepted prerequisite contracts are the definition baseline. Recheck the real current checkout and task state at launch.
-
-### Unresolved Issues
-
-Pending implementation evidence. Preserve the task's explicit held/deferred and blocked-policy boundaries.
-
-### Architectural Concerns
-
-Return changes to ownership, contracts, schema, transaction boundaries, durable-state semantics, queue behavior, security or another repository to moda_architect before expanding scope.
+Authorize an update to the read-only Woo race-test logging assertion or assign that correction to its owner. Reconcile the four independently reproduced baseline failures with the mandatory preservation gate. The implementation remains a draft. Complete the remaining matrix evidence, including Shopify resume/provider concurrency, historical and paid candidate ambiguity, promotional owner invalidation, and the settlement contender's ledger insertion. Do not infer full coverage from the passing focused cases. BACKGROUND-004 and terminal system testing were not started.
 
 ## Architect Review
 
