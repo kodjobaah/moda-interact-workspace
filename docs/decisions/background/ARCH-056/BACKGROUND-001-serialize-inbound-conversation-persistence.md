@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-11-04T00:34:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-054-BACKGROUND-001
@@ -28,7 +28,7 @@ updated: 2026-11-04
 
 Architecture: `ARCH-056`. Parent: `docs/architecture/ARCH-056-background-persistence-and-recovery-progress.md`. Coordinator: `moda_architect`.
 
-Definition revision: 2. Materialised on the canonical parent task branch. Attempt 1 was prepared by the launcher after rechecking the `ARCH-054-BACKGROUND-001` dependency; the durable parent claim is `85f053e04d1913dd35489e12e8fd4a851586c984`. Implementation is submitted for architect review at `a918c85` on the mirrored Background task branch. No merge or architect acceptance has occurred.
+Definition revision: 2. Materialised on the canonical parent task branch. Attempt 1 was prepared by the launcher after rechecking the `ARCH-054-BACKGROUND-001` dependency; the durable parent claim is `85f053e04d1913dd35489e12e8fd4a851586c984`. Implementation was submitted for review at `a918c85` on the mirrored Background task branch and accepted by moda_architect below. No merge has occurred.
 
 ## Objective
 
@@ -155,7 +155,7 @@ Implementation submission by `moda_background` (`copilot`), Attempt 1. This repo
 
 ### Status
 
-Review. Implementation branch commit `a918c85` is pushed to `origin/task/ARCH-056-BACKGROUND-001`. Parent report branch is being submitted separately. No merge or architect acceptance has occurred.
+Complete. Implementation branch commit `a918c85` is pushed to `origin/task/ARCH-056-BACKGROUND-001`. Architect acceptance is recorded below; no merge has occurred.
 
 ### Files Changed
 
@@ -216,24 +216,35 @@ This section belongs only to moda_architect. Definition authoring is not impleme
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-11-04). The stale executor claim is cleared; task status is Complete.
 
 ### Review Notes
 
-Awaiting an implementation submission and its evidence.
+- The implementation moves the existing locked pending-turn helper before the child message insert while preserving one transaction for pending state, message, language and clocks. Post-commit engagement remains outside the transaction.
+- The real PostgreSQL barrier evidence demonstrates that the second receive waits on the parent before its child insert; duplicate and injected-failure evidence verifies losing mutations roll back.
+- The changed error projections preserve the original thrown object and safe source message while recording the failure stage and supplied Prisma metadata. The worker callback no longer reintroduces raw errors after redaction.
+- The disclosed transient quiet-window coalescing failure passed in isolation and subsequent full runs. It does not block acceptance; no new blocker was found in the reviewed scope.
 
 ### Reviewed Files
 
-No implementation submitted.
+- `src/services/conversation.service.ts`
+- `src/workers/whatsapp.worker.ts`
+- `tests/unit/services/conversation.service.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
+- `tests/integration/conversation-turn-scheduling.integration.test.ts`
+- `tests/integration/arch056-inbound-lock-order.integration.test.ts`
+- `tests/integration/arch056-inbound-rollback.integration.test.ts`
+- `tests/integration/helpers/arch056-inbound-fixtures.ts`
+- `tests/integration/helpers/arch056-inbound-barriers.ts`
 
 ### Validation Reviewed
 
-No implementation validation submitted.
+Reviewed the implementation report's results: focused unit suite (80 tests), PostgreSQL/Redis integration suite (10 tests, no skips), build, changed-file ESLint and `git diff --check` all passed. These commands were not rerun during review. The report records the transient earlier quiet-window failure and later passing reruns.
 
 ### Architecture Conformance
 
-Pending review against the parent architecture, task allowlist, interface contracts, repository boundaries and failure requirements.
+Conforms to ARCH-056 revision 2, the task allowlist and the existing conversation persistence contract. No schema, queue, lock-mode or public-interface change was introduced. The original exception identity and truthful atomic/post-commit stage are preserved.
 
 ### Follow-up
 
-Pending implementation review; no enabled task may be started by this task's executor.
+`ARCH-056-SYSTEM-TEST-001` remains Pending because its other implementation prerequisites are not complete. This acceptance does not authorize a merge to `main` or start another task.
