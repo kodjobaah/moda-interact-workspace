@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: codex
-claimed_at: 2026-11-04T05:45:17Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -28,7 +28,7 @@ updated: 2026-11-04
 
 `docs/architecture/ARCH-058-commerce-agent-product-discovery.md`; normative interfaces: `docs/architecture/ARCH-058/contracts.md`, sections 1–5. Coordinator: `moda_architect`.
 
-**Defined but not materialised.** No task branch, worktree, claim, commit, push or implementation exists by virtue of this definition. Materialise with `/moda-task ARCH-058-SHARED-001` under the existing workspace workflow. The empty dependency frontier makes this task ready; the frozen architecture contract, rather than a sibling checkout, is the implementation input.
+**Definition state:** materialised and architect-accepted at Attempt 2 on 2026-11-04. Implementation `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139` and parent submission `86e70838928db5bdabf246dce27648a1937f4fd7` are published on the matching task branches. This task completes the Shared source contract; SHARED-002 owns package publication.
 
 ## Objective
 
@@ -117,14 +117,14 @@ None. The architecture freezes the public contract before parallel Database work
 
 ## Acceptance Criteria
 
-- [ ] Every named export is present through the existing compiled public entrypoint, with correct inferred types.
-- [ ] Category inputs/outputs, search/browse shape, shipping reads, optional lookup, presentation and flat recommendation fields exactly match the normative contract and bounds; product get/search outputs are unchanged.
-- [ ] Actual subset compilation handles nullable details and the new search schema without `oneOf`, with only the specified details depth 5 increase and unchanged input depth 3.
-- [ ] A valid mixed published/built-in grant is retained and authorized; invalid/unknown/duplicate/hash-changed shapes fail closed.
-- [ ] Authorization and terminal-error/referral tests demonstrate no tool-list bypass and no error erasure.
-- [ ] Soft dispositions remain ordinary `ANSWER` details; `REFER_TO_STORE` with nonempty details/evidence still fails, and required referral cannot be cleared by any presentation selection or later success.
-- [ ] Existing accepted product/discount/output consumers' normal success fixtures remain valid; intentional type changes are documented.
-- [ ] No npm publication, database/provider change, package version bump or unrelated index edit occurred.
+- [x] Every named export is present through the existing compiled public entrypoint, with correct inferred types.
+- [x] Category inputs/outputs, search/browse shape, shipping reads, optional lookup, presentation and flat recommendation fields exactly match the normative contract and bounds; product get/search outputs are unchanged.
+- [x] Actual subset compilation handles nullable details and the new search schema without `oneOf`, with only the specified details depth 5 increase and unchanged input depth 3.
+- [x] A valid mixed published/built-in grant is retained and authorized; invalid/unknown/duplicate/hash-changed shapes fail closed.
+- [x] Authorization and terminal-error/referral tests demonstrate no tool-list bypass and no error erasure.
+- [x] Soft dispositions remain ordinary `ANSWER` details; `REFER_TO_STORE` with nonempty details/evidence still fails, and required referral cannot be cleared by any presentation selection or later success.
+- [x] Existing accepted product/discount/output consumers' normal success fixtures remain valid; intentional type changes are documented.
+- [x] No npm publication, database/provider change, package version bump or unrelated index edit occurred.
 
 ## Validation
 
@@ -386,8 +386,30 @@ npm publication: no
 
 ### Review Status
 
-Not reviewed; task definition only.
+Accepted — Attempt 2, 2026-11-04. No blocking findings. Automatic completion: `status: complete`; executor/claimed_at cleared.
 
 ### Review Notes
 
-Await implementation and evidence. No acceptance is implied.
+- Reviewed the complete 23-file change against the accepted main baseline and the expanded normative contract. Category/search/browse/shipping schemas, optional lookup results, identifier-only selections, named exports and bounded nullable details conform. Product get/search outputs and normal discount success shapes are preserved; cross-field applicability and trusted composition remain service responsibilities.
+- The two immutable built-in descriptors are pinned to canonical generated hashes. Strict mixed grants, manifest equality, combined limits, registered-tool checks and explicit current authorization prevent accidental authority expansion. Authorization is rechecked after awaited execution; malformed results, stale turns, cancellation and terminal referral behavior remain enforced.
+- The instruction change permits only trusted-host-authorized normal limitations and retains the hard-referral envelope and runtime-data authority boundary. No host composer, provider implementation, schema migration or consumer upgrade is introduced.
+- Actual Commerce projection tests use candidate Shared validators and the existing owner projector/publication path. The publication compatibility fixture uses its already registered products.search operation while candidate operation names are validated separately against candidate Shared. This proves schema compatibility, not deployed consumer registration; downstream Commerce owns registration adoption after publication.
+- Package metadata/dependencies/subpaths remain unchanged at 3.1.0; runtime runner is 1.1.0. The separate release task retains the approved 4.0.0 gate.
+
+### Validation Reviewed
+
+Independently executed in the dedicated Shared worktree after the canonical Node bootstrap, with `COMMERCE_CONTRACT_SOURCE_ROOT` pointing to the read-only real Commerce checkout:
+
+- Focused discovery/projection/built-in/runner suite: **77/77 passed**, no skips.
+- Full suite: **431 passed, 1 skipped, 0 failed**. The sole skip is the existing live-Redis BullMQ telemetry case because TEST_REDIS_URL is unset; no required contract/projection case was skipped.
+- Typecheck, build (including declarations), clean-process commerce entrypoint checks and implementation diff whitespace checks: passed.
+- Browser-platform bundle of the commerce entrypoint: passed, 159 inputs and no required Node-only import.
+- `npm pack --dry-run`, including its normal prepack build: passed, 131 intended package files. No registry write occurred.
+
+Logs: `/tmp/arch058-shared001-review-{focused,typecheck,tests,build,entrypoints,pack}.log`. Both published task revisions were verified directly against origin: implementation `0b5567c3e01748de1d5d8c7d3be0d84a55dfb139`, parent submission `86e70838928db5bdabf246dce27648a1937f4fd7`. Both worktrees were clean at review start; implementation and Commerce source were not edited by this review.
+
+### Architecture Conformance and Handoff
+
+Accepted for downstream publication and consumer implementation. Provider semantics, taxonomy readiness, current tenant/grant permission, trusted customer composition, future-plan/store behavior and end-to-end deployment remain with the named owners. No live-provider or semantic ranking quality claim is made.
+
+Promote SHARED-002 to ready because its sole prerequisite is now complete; do not claim or execute it. SYSTEM-TEST-001 remains pending on publication and consumer prerequisites. The stale unmaterialised-definition text is reconciled. This acceptance and dependency handoff are local and uncommitted/unpushed; no implementation commit, publication or main-branch merge was performed.
