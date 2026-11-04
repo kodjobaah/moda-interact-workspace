@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-11-04T04:33:03Z
@@ -322,7 +322,7 @@ BG002 does not migrate orchestration files. BG004 must not duplicate billing sou
 - [x] AMBIGUOUS, RELEASED, compensated, missing or nonunique source evidence never becomes a new charge or a successful finalization result.
 - [x] Pre-permit restart returns the same reservation/source admission without accounting mutation; null-message interruption, orphan automated-message evidence, and attempt-linked command evidence are covered; only verified source absence authorizes fresh admission.
 - [x] Every held/error outcome preserves ledger state or rolls back all changes; failures retain their original diagnostics.
-- [ ] Confirmed settlement, provider failure/131026 compensation, final permit and shared-counter races obey the documented lock order and positive accounting invariants. BG002 settlement/status/compensation and shared-counter races are covered; the final-permit interaction remains BG003-owned and is not certified by this task's validation.
+- [x] Confirmed settlement, provider failure/131026 compensation, final permit and shared-counter races obey the documented lock order and positive accounting invariants. BG002 PostgreSQL coverage now exercises the real settlement service against the accepted final fence in both permit-first/PENDING-hold and confirmed-settlement-first/refused-repeat-permit orders, using independent clients and asserting accounting and provider-call state.
 - [x] BS-04's duplicate Shopify meter read is removed without report/provider changes; BS-05 and Blocked BG013 remain accurately bounded.
 - [x] No edits escape the declared ownership allowlist or change schema, provider, queue, Support or recovery-status behavior directly.
 
@@ -407,7 +407,7 @@ This section belongs to the implementing repository agent. No implementation is 
 
 ### Status
 
-Attempt 3 remains in progress under the launcher claim. The orphan-message fix, attempt-linked command evidence check, five authorized fixture corrections, and architect-approved ARCH-028 fixture isolation are present on the implementation branch. The exact required PostgreSQL matrix passes all 67 tests in its declared order with default Vitest scheduling. Implementation changes remain uncommitted; acceptance and downstream promotion have not been claimed.
+Attempt 4's scoped implementation and validation are complete under the launcher claim. The orphan-message fix, attempt-linked command evidence check, five authorized fixture corrections, architect-approved ARCH-028 fixture isolation, and required final-permit/settlement interaction tests are present on the implementation branch. The exact required PostgreSQL matrix passes all 69 tests in its declared order. Acceptance and downstream promotion have not been claimed; the task is in review.
 
 ### Attempt 1 Files Changed
 
@@ -603,6 +603,34 @@ Safe diagnostic evidence was collected with temporary tests in the BG002-owned i
 The initial matrix failure was caused by stale accepted HUMAN commands left by the ARCH-028 integration fixture. Following explicit architect approval, `arch028-recovery-delivery-compensation.integration.test.ts` creates each synthetic command as accepted intent and transitions it to `CANCELLED` with its outbound link inside one transaction, so it is non-claimable as soon as it becomes visible. Teardown also cancels only tracked rows that still belong to that fixture's Shop, remain `ACCEPTED`, have no provider dispatch key, and have no lease token or expiry. The BG002 command-evidence regression likewise makes its synthetic linked command terminal atomically. These changes preserve lineage and existing assertions while preventing test-only rows from being consumed by the global due-command query. No edits were made to HUMAN production code, `recovery-human-provider-status.integration.test.ts`, its shared fixture, or the integration runner. Temporary diagnostics are absent from the final implementation diff.
 
 **Architect disposition:** the architect approved the ARCH-028 fixture-only isolation correction. Its final guidance was to insert synthetic commands as accepted intent and cancel/link them atomically before commit, retaining conditional teardown cleanup. The implementation also added the architect-requested null-message attempt-command check and unit/PostgreSQL regressions; the command regression's own fixture is made terminal atomically to avoid polluting the global claim queue. The final required matrix, build, 272-test unit matrix, scoped lint, and diff checks pass. Task acceptance is pending architect re-review; keep ARCH-056-BACKGROUND-004 and ARCH-056-SYSTEM-TEST-001 gated until explicit acceptance. Implementation changes remain uncommitted and unpushed.
+
+### Attempt 4 Validation and Disposition
+
+Launcher claim: Attempt 4, task `in_progress`, executor `copilot`, claimed at `2026-11-04T04:33:03Z`. Dependency checks passed for ARCH-028-BACKGROUND-004 and ARCH-028-BACKGROUND-009. The parent claim commit is `60b9427632a1bc4f08472362b274acb2c5eb1a32`; recursive database submodule synchronization/initialization passed at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+
+Attempt 4 worktree evidence:
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-056-BACKGROUND-002`, branch `task/ARCH-056-BACKGROUND-002`, launcher claim at `60b9427632a1bc4f08472362b274acb2c5eb1a32`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-056-BACKGROUND-002`, branch `task/ARCH-056-BACKGROUND-002`, base `a5953b9def12b91b79b02b5874b686fcec5cbeaf`.
+- Database submodule: initialized and synchronized at `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`.
+- No production code or BG003-owned files changed in Attempt 4. The BG002-owned race integration module now contains the two requested final-permit/settlement winner cases.
+
+The permit-first case admits through the real Shopify `OutboundSendFenceService`, then invokes the real `InitialOutreachCreditService` while the message truthfully remains PENDING. Settlement returns `held/message-not-confirmed`; reservation, counter, and recovery-usage rows remain unchanged, and the provider mock is untouched. The confirmed-settlement-first case sends through the existing Shopify resume path, verifies durable SENT/provider identity, settles through the real BG002 service on an independent client, then confirms a later real fence call is suppressed and resume cannot produce a second provider call. The reservation/counter and positive recovery UsageEvent assertions verify exact settlement. These are ordered winner cases, not a claim of simultaneous overlap; no barrier-based concurrency is claimed by these two tests.
+
+Attempt 4 validation on the implementation worktree:
+
+- Focused `tests/integration/arch056-initial-outreach-credit-races.integration.test.ts` — 4/4 passed after correcting the test helper to receive its Prisma client explicitly.
+- `npm run build` — passed; Prisma Client 6.19.3 generated and TypeScript compilation completed.
+- Required BG002 unit command — 16 files, 272/272 passed.
+- Exact required ten-file disposable PostgreSQL/Redis command in the Validation section — 10 files, 69/69 passed, no skips.
+- Scoped ESLint over all ten changed TypeScript files — passed.
+- `npm ls @modainteract/moda-interact-shared --depth=0` — installed runtime package `@modainteract/moda-interact-shared@3.0.0`.
+- Implementation `git diff --check` — passed.
+
+Scheduling and parallel diagnostic: `vitest.config.ts` sets `fileParallelism: false` when `MODA_DISPOSABLE_INTEGRATION=1`; the passing declared integration command is therefore serial across files. The architect's separate explicit `--fileParallelism=true` diagnostic from Attempt 3 produced 62 passed and 5 failed tests in three files, with P2034 conflicts/deadlocks; its root cause was not established. That override is not the declared validation command, and no parallel-pass or broader retry-policy claim is made.
+
+Implementation changes and this report are being prepared for task review. No acceptance beyond the evidence above is claimed; ARCH-056-BACKGROUND-004 and ARCH-056-SYSTEM-TEST-001 remain gated pending architect disposition.
 
 ## Architect Review
 
