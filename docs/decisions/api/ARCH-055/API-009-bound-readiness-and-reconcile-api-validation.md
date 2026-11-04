@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -37,7 +37,7 @@ Architecture: `ARCH-055`. Parent: `docs/architecture/ARCH-055-woocommerce-api-da
 
 **Definition revision:** 3. Adds a server-side PostgreSQL execution bound to readiness; it supersedes revision 2 for the unresolved readiness timeout requirement. API-008 remains complete and unchanged.
 
-**Definition state:** materialised in the canonical parent task worktree and branch. All eight explicit API dependencies are Complete. Attempt 1 was returned with Changes Requested; the revision-3 server-side timeout amendment was implemented in Attempt 2. Attempt 2 is submitted for architect review with the claim cleared. API-008 remains complete and unchanged.
+**Definition state:** materialised in the canonical parent task worktree and branch. All eight explicit API dependencies are Complete. Attempt 1 was returned with Changes Requested; the revision-3 server-side timeout amendment was implemented and Accepted in Attempt 2. API-008 remains complete and unchanged.
 
 ## Objective
 
@@ -369,3 +369,31 @@ Submitted for Architect review. The claim is cleared and the task status is `rev
 | Diff and cleanup | `git diff --check` passed. The disposable PostgreSQL container, proxy sockets, and test clients were cleaned up. |
 
 The PostgreSQL server-side timeout closes the gap found in Attempt 1: the readiness promise no longer settles while its timed-out statement continues running on the backend. This is the direct PostgreSQL 17 test topology; deployment pooler behavior is still bounded by the configured connection URL and should be covered by deployment verification. The mechanism is documented by [Prisma ORM v6 PostgreSQL connector](https://www.prisma.io/docs/orm/v6/overview/databases/postgresql) and [PostgreSQL 17 `statement_timeout`](https://www.postgresql.org/docs/17/runtime-config-client.html#GUC-STATEMENT-TIMEOUT).
+
+### Git / VCS evidence — Attempt 2
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-055-API-009`, `task/ARCH-055-API-009`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-055-API-009`, `task/ARCH-055-API-009`.
+- The launcher published Attempt 2 claim `05b153d0de05634f277d9fba608d14e014e71efe`. The parent branch had incorporated `origin/main` in merge `2d4deed40200bde4e067edef27bcc3a4aab3a669`; the implementation worktree resumed the same task branch at the Attempt 1 submission `301165eb5dd969cde1338d5b363aee963d7e08ea`.
+- Implementation repository `moda-interact-api`: commit `3fe1b447087aa5caffd5dbc6df14724cbc9daaf2`, pushed to and verified at `origin/task/ARCH-055-API-009`.
+- Parent workspace submission: commit `034b6c64fd88ec9f50ee683ee66cf0bbd2109a12`, pushed to and verified at `origin/task/ARCH-055-API-009` before this architect acceptance record.
+- Recursive Database pin: `5907b4572ea9efc2a24c07e4c3bd3e107db4260b`. The task used its canonical task worktrees; no sibling task worktree or shared checkout was switched for implementation. Both task worktrees were clean at review. No main branch was changed and no submodule gitlink was staged.
+
+## Architect Review
+
+### Review Status
+
+Accepted — Attempt 2 (2026-11-04). The implementation satisfies the revised server-side execution-bound requirement. Completion mode is `automatic`; task status is `complete`, with the claim cleared. No implementation correction is required. API-008 remains complete and unchanged.
+
+### Review Notes
+
+- Reviewed the dedicated readiness URL construction and its separation from the business Prisma URL in `src/database.ts`.
+- Reviewed the migrated readiness regression. It preserves existing startup options, verifies the effective 500 ms setting, holds PostgreSQL response delivery until a separate connection observes cancellation and no active tagged query, then verifies Prisma's `57014` error and a successful subsequent query.
+- The Render blueprint wires `DATABASE_URL` from its managed PostgreSQL `connectionString`; the test validates the direct PostgreSQL 17 connection path. No separate external pooler is configured in that blueprint, and this review does not claim evidence for one.
+- Reviewed the reported final readiness PostgreSQL result (2/2), typecheck, build, focused tests, changed-file lint and aggregate integration evidence. The repository-wide lint failure is in untouched `src/merchant/support/routes.ts:75`; it does not invalidate the passing changed-file lint.
+- Verified the implementation task ref is `3fe1b447087aa5caffd5dbc6df14724cbc9daaf2` and the parent report ref before acceptance is `034b6c64fd88ec9f50ee683ee66cf0bbd2109a12`; both matched their remote task refs. Physical worktree and recursive submodule evidence is recorded above.
+
+### Dependency Frontier
+
+`ARCH-055-SYSTEM-TEST-001` is the sole dependent task. Its remaining prerequisites are Complete; promote it from Pending to Ready at Attempt 0. It remains unclaimed and is not launched by this acceptance.
