@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: codex
-claimed_at: 2026-11-05T15:41:10Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-043-ADMIN-001
@@ -42,7 +42,7 @@ updated: 2026-11-05
 - Architecture: `ARCH-043` — `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Proposed schema/key contract: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Repository owner: `moda-interact-gateway` / `moda_gateway`.
-- Parent task definition is materialised on `task/ARCH-043-GATEWAY-001`; route-only verification resolves this canonical file as Ready. Attempt remains 0 with no execution claim. Prepare the implementation worktree and claim through the normal task launcher.
+- Parent task definition is materialised on `task/ARCH-043-GATEWAY-001`. Attempt 1 has been reviewed with changes requested for publication and required validation evidence; status Ready, executor/claim null, attempt preserved. Continue through the normal workflow.
 
 ## Objective
 
@@ -145,7 +145,7 @@ Complete the defined scope and required validation, update the task and Completi
 
 ### Status
 
-Ready for Review — publication limited by remote failure; Attempt 1, `codex`, 5 November 2026. Local implementation and bounded validation complete; live deployment acceptance remains developer-owned and is not claimed. Implementation commits `4826b08` and `2c3a7de` on mirrored `task/ARCH-043-GATEWAY-001`; publication details are recorded below.
+Changes Requested after architect review — Attempt 1, 5 November 2026. Publication and required validation gaps remain; the task is not accepted. Local implementation and bounded validation complete; live deployment acceptance remains developer-owned and is not claimed. Implementation commits `4826b08` and `2c3a7de` on mirrored `task/ARCH-043-GATEWAY-001`; publication details are recorded below.
 
 ### Files Changed
 
@@ -224,27 +224,36 @@ The accepted MCP root format differs from the other readers and must stay explic
 
 ### Review Status
 
-Pending
+Changes Requested on 2026-11-05. Attempt 1 not accepted; returned to Ready with executor/claimed_at null and attempt unchanged. No additional source finding was identified in the bounded review; acceptance is blocked by publication and required operational evidence.
 
-### Review Notes
+### Review Notes / Required Follow-up
 
-Awaiting implementation, validation evidence and architect decision.
+1. **Publish the final reviewed source.** Local implementation `2c3a7de1b202406e4743d77cd369f385ebe7193d` contains the event-worker unseal correction, but the inspected implementation task remote remains at `4826b0885cd525e6a19819616f45777024cc8028`. Resolve the reported normal-push failure and publish the final correction without force-pushing or rewriting unrelated history. Verify final HEAD equals the remote task ref and update the publication report. The review itself does not publish implementation changes.
+2. **Complete the required developer validation and cutover evidence.** The submission reports the developer-owned integration command below and the environment-specific rollout/rotation/revocation/tamper/cold-start/rollback checks as unexecuted. Obtain and record the required bounded outcomes, or an explicit architect-approved scope decision before acceptance. Static fixtures and accepted reader-source inspection do not establish deployed operation. Preserve deferred Messaging Meta declarations until their separate deployed verification passes. This review authorizes no Docker run, deployment, live credential mutation or production probe.
+
+```bash
+bash scripts/developer-validation.sh ARCH-043-GATEWAY-001 -- bash tests/run-tests.sh
+```
 
 ### Reviewed Files
 
-None
+Inspected the task requirements/report, both Render Blueprint diffs from `ac092dc783d715db3b0e2136bce1cc51abaee5a1`, final event-worker correction, positive/adversarial validator changes and the cutover runbook's reader ownership, unseal distribution, per-environment sequencing and rollback limits. Inspected the developer integration harness entrypoint. No independent live consumer or Render validation was performed.
 
 ### Validation Reviewed
 
-None
+- Independently ran `bash tests/validate-render-blueprints.sh`: passed. Local log `/tmp/gateway043-review-positive.log`.
+- Independently ran `bash tests/validate-render-blueprints-negative.sh`: passed, including the public-MCP denial case and all 90 focused platform-configuration mutations. Local log `/tmp/gateway043-review-negative.log`.
+- Independently checked implementation `git diff --check ac092dc HEAD`: passed.
+- Confirmed local versus remote implementation SHA mismatch above. Parent task worktree was clean before this documentation update.
+- Reviewed submitted shell/YAML/observability checks and source-reader evidence; those checks were not independently repeated. Developer Docker integration and environment cutover verification remain NOT_RUN as reported. No full integration/deployment success is inferred.
 
 ### Architecture Conformance
 
-Not yet assessed.
+The source preserves the documented infrastructure/authentication/keyring boundaries and distinguishes MCP's supported unseal format. Messaging credential retirement is explicitly deferred. Source/static validation is satisfactory within the inspected scope, but the controlling consolidation assigns deployment/least-privilege/rollback proof to this task; the outstanding evidence and unpublished correction prevent completion.
 
 ### Follow-up
 
-None
+Reconcile final source publication and required developer evidence, update the Completion Report, and resubmit for architect review through the normal task workflow. ARCH-043-SYSTEM-TEST-001 remains gated on Gateway acceptance; no downstream status is promoted or execution started. No implementation, gitlink, index, main merge or deployment change is made by this review.
 
 ## 17 October 2026 ARCH-043 extension (architect-owned amendment)
 
