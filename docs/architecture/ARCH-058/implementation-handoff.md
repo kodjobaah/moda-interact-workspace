@@ -180,3 +180,10 @@ COMMERCE-001 revision 11 resolves the stale Database task-SHA gate using accepte
 ## Commerce Attempt 2 Review — 2026-11-05
 
 COMMERCE-001 implementation `7927e07` is not accepted. Returned to Ready/unclaimed at Attempt 2 for the owned-descendant timeout correction and regression. Independent focused review passed 140 tests across 11 files; required developer-owned build/disposable PostgreSQL evidence remains NOT_RUN. Preserve the original fixture and accepted dependencies; use normal claiming for continuation. BACKGROUND-001 and SYSTEM-TEST-001 remain gated on Commerce acceptance and their other prerequisites. See the task's Architect Implementation Review for exact corrections and validation limits.
+
+
+## Commerce accepted frontier — 5 November 2026
+
+COMMERCE-001 Attempt 3 is accepted at final implementation `58f5418ada85d1cfc08400f64ab41b198fb427b4`. Both prior review findings are resolved: surviving detached-group descendants are killed independently of the npm leader's exit, and the required developer-authorized build/PostgreSQL proof passed. The PostgreSQL race fixture now uses the actual response-active base and still proves stale-feature rejection, pointer preservation and surviving manual content. Independent setup regressions passed 7/7; submitted aggregate fast checks passed 149 tests; PostgreSQL proof passed 1/1 with exit 0 and zero owned containers remaining. The parent acceptance records exact pins/digest and evidence provenance.
+
+BACKGROUND-001 is Ready/unclaimed at Attempt 0; the launcher may claim it only on explicit invocation. Background owns actual provider-context/model-request and host-finalization proof. SYSTEM-TEST-001 remains Pending on Background acceptance, retaining its terminal cross-repository operator/process/transport responsibilities. Persistent publication, deployment, final integration and live merchant proof are not certified by Commerce acceptance.

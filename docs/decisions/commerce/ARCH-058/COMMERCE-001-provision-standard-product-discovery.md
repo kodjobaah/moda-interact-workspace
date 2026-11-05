@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -470,3 +470,30 @@ Independently executed 11 focused suites: system-commerce-tool-sync, system-prod
 ### Follow-up
 
 The owning agent must reclaim the same task, correct the process-group timeout, add the regression, rerun relevant fast checks and update the report. Required developer-owned build/PostgreSQL proof must remain explicitly NOT_RUN until actual evidence exists. Preserve the accepted fixture, dependency pins and immutable release requirements. Return for architect review; no downstream task is promoted or started.
+
+
+## Architect Acceptance — Attempt 3, 5 November 2026
+
+**Accepted.** Reviewed final implementation **`58f5418ada85d1cfc08400f64ab41b198fb427b4`** and developer-validation report commit **`10e935445f2457901540b3ab83f3cb51074fd245`**. Both explicit Attempt 2 review findings are resolved. With `completion_mode: automatic`, task is Complete; executor/claim remain null and Attempt 3 is preserved. This decision supersedes the earlier Changes Requested/pending-validation disposition, without rewriting that history.
+
+### Correction review
+
+The process cleanup captures the detached child's owned POSIX group and shares one idempotent termination sequence. Escalation to group KILL no longer depends on the npm leader's exit status, so a TERM-resistant descendant retaining inherited output pipes cannot bypass the timeout/overflow termination path. The added actual-process tests cover timeout and overflow, confirm the descendant/group terminates and verify an unrelated sentinel survives. The architect independently reran `npm test -- tests/commerce-product-discovery-setup.test.ts`: **7/7 passed, exit 0**, log `/tmp/commerce001-attempt3-architect-setup.log`. This is distinct from the submitted 149-test aggregate, and is not represented as a second independent aggregate run.
+
+The final PostgreSQL fixture correction consistently uses the currently active response-only release's ID, description, hash, members and feature snapshots with the current pointer version. It fixes invalid setup rather than weakening the intended concurrency proof. The assertions still require `CONCURRENT_STATE_CHANGE`, an unchanged active pointer and preservation of the concurrent manual feature edit.
+
+### Validation reviewed
+
+- Prior independent Attempt 2 review: **140 tests passed across 11 suites**; the only code finding was the process-group escalation defect above. Attempt 3's changes are confined to that cleanup, its regressions and the PostgreSQL fixture base identity.
+- Submitted Attempt 3 fast validation: **149 tests passed across 12 files**; typecheck passed; lint had 0 errors and 11 unchanged-file warnings. The architect did not relabel these as an independently repeated aggregate/typecheck/lint run.
+- Developer-authorized `npm run build` on final Commerce source passed, exit 0. The architect inspected `/tmp/commerce001-attempt3-build.log`: packaged smoke checks, compilation, TypeScript, static generation and build traces completed; the Nunjucks critical-dependency warning did not fail the build.
+- Developer-authorized `node scripts/run-system-commerce-tool-sync-postgres.mjs` passed, exit 0, at the corrected source. Reviewed captured completed command-session **20154** evidence supplied by the executing agent: accepted migrations PASS, **1/1 PostgreSQL test passed**, proof PASS, and cleanup PASS with **zero owned PostgreSQL containers**. The architect inspected the test/harness source and the supplied execution evidence; it did not launch a second Docker run.
+- Image: `pgvector/pgvector:pg17`; inspected RepoDigest `pgvector/pgvector@sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8` in `/tmp/commerce001-attempt3-postgres-image.log`. Database `bd2d09066a8eb178a56f48fbbf88df637c411059`; Shared 5.0.0 release `1927375a74496488aa83049c39edeee9d278497a`; Commerce final revision above.
+- The migrated proof covers read-only planning, immutable unrelated member/feature preservation, exactly one four-tool successor, repeat no-op without state changes, one response-only successor and stale-feature activation rejection. Initial failed fixture setup is disclosed and superseded by the corrected pass, not hidden as a successful run.
+- Legacy fixture SHA256 independently remains `f31d8315bb00595967948cc1936801bb5d0ced62d16e34d835dcbfa33528475a`. Implementation final HEAD matches its pushed task branch; implementation/parent worktrees were clean before this architect documentation update. Whitespace check passed.
+
+### Boundaries and handoff
+
+Dedicated worktree/claim/submodule evidence is recorded in the Completion Report and conforms to the launcher protocol. Accepted merged Database ancestry and exact Shared/Zod pins remain preserved. No implementation edit, package publication, persistent environment apply, deployment, customer send, main merge or parent gitlink update is performed by this review.
+
+BACKGROUND-001 now has all explicit dependencies Complete and is promoted to Ready, unclaimed, Attempt 0 preserved. It retains ownership of actual host model-request/context/finalization work. SYSTEM-TEST-001 remains Pending on Background acceptance; its terminal cross-repository proof has not been performed. This accepts the Commerce task only, not a deployment or the complete architecture. The developer retains final integration/merge authority.
