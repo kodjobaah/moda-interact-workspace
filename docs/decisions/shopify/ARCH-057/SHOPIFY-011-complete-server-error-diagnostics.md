@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
-executor: codex
-claimed_at: 2026-11-05T10:08:28Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -298,3 +298,25 @@ Retain distinct source event evidence while suppressing equivalent/duplicate fai
 ### Handoff
 
 Use normal launcher preparation for the next attempt, correct the finding within this task's existing scope, rerun required diagnostic/predecessor/static checks, publish both task branches and return for review. SHOPIFY-012 and terminal system validation remain gated; neither is promoted or executed. The developer explicitly authorized committing and pushing this review on 5 November 2026.
+
+## Architect Acceptance — Attempt 2, 5 November 2026
+
+**Accepted.** Reviewed correction `aa02676` against prior submission `528ec1c`. No blocking findings remain. Task marked Complete under automatic completion mode; Attempt 2 preserved and executor/claim cleared. Earlier Changes Requested/Ready/pending review text remains historical and is superseded by this acceptance.
+
+### Finding Resolved
+
+Health Redis, health PostgreSQL and pending Redis/BullMQ now emit source events immediately through their existing semantic owners. A later distinct generic rejection or local/driver timeout cannot discard original source wording/cause/code. The existing original-error marker suppresses repeated emission of the same Error instance without a new global registry. The correction preserves existing Boolean/unavailable responses, deadlines and cleanup. Tests cover all four event paths, distinct rejection, local/driver timeout, repeated event/rejection identity, privacy and throwing-sink behavior. The coverage inventory now records these executed cases.
+
+### Independent Validation and Limits
+
+Independently ran `npm run test:server-diagnostics` in the dedicated implementation worktree using the prescribed Node 24.19.0 bootstrap: **138/138 tests passed across seven files**, no skips. This includes the added regression cases for the reproduced Attempt 1 gap. Whitespace check passed; implementation checkout clean. Local independent log `/tmp/shopify011-review-attempt2.log` is not a committed artifact.
+
+Reviewed the submitted **73 predecessor test passes**, typecheck, build and scoped lint results; these were not independently rerun during this review. Source inspection covered the entire correction diff and updated inventory, with the prior broader implementation review retained above. Local emitted-log tests do not establish live Redis behavior, remote collector delivery/retention or global production observability. No Docker/live provider/deployment check is claimed.
+
+### Isolation and Downstream
+
+Reviewed prepared worktree/claim evidence in the report. Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-011`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-011`, matching task branches. No implementation, schema, dependency, gitlink or main branch is changed by this review.
+
+SHOPIFY-012's sole explicit prerequisite is now Complete. Promoted to Ready, unclaimed, at Attempt 0. SYSTEM-TEST-001 remains Pending on SHOPIFY-012; no downstream task is executed. ARCH-057 is not marked implemented.
+
+The developer explicitly authorized updating acceptance/dependencies, committing and pushing on 5 November 2026.

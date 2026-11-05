@@ -304,3 +304,7 @@ To be assessed after implementation.
 ### Follow-up
 
 Return the completed task for architect review; do not start enabled tasks.
+
+## Architect Dependency Reconciliation — 5 November 2026
+
+SHOPIFY-011 Attempt 2 is accepted and Complete at `aa02676`; SHOPIFY-012 is Ready but incomplete. This terminal system-test task remains Pending, with its dependency list/claim/attempt unchanged. Do not execute before all explicit prerequisites are Complete and architect-accepted.
