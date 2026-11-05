@@ -10,4 +10,4 @@ Assigned agent: `moda_commerce`. Coordinator: `moda_architect`.
 
 The task YAML is authoritative. Commerce is accepted at `58f5418`; Background is Ready/unclaimed. Terminal system validation remains Pending on Background acceptance.
 
-| ARCH-058-COMMERCE-002 | Remove cursor cryptography, binding and secret gating | Ready | None |
+| [ARCH-058-COMMERCE-002](COMMERCE-002-remove-cryptographic-cursor-validation.md) | Remove cursor cryptography, binding and secret gating | Complete; accepted Attempt 1 | None |
