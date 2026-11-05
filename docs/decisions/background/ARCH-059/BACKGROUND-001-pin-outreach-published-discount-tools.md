@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-05T23:14:01Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-059-SHARED-002", "ARCH-059-COMMERCE-001", "ARCH-059-MCP-001", "ARCH-058-BACKGROUND-001"]
 enables: ["ARCH-059-SYSTEM-TEST-001"]
@@ -311,4 +311,32 @@ This amendment is authoritative over historical hardcoded-tool requirements and 
 
 ## Developer-authorized Attempt 2 publication — 5 November 2026
 
-The developer explicitly requested commit and push after the amended implementation and its 343 passing focused tests, build and lint. Published implementation `772f9e8` and this current task/report record on matching `task/ARCH-059-BACKGROUND-001` branches. Staged only the 17 task-owned implementation files and this task document; whitespace checks passed. No implementation change or repeated validation was required for publication. Status remains In Progress, executor developer, Attempt 2; developer review/completion remains separate. No main merge/push, gitlink change, deployment, activation or downstream promotion.
+The developer explicitly requested commit and push after the amended implementation and its 343 passing focused tests, build and lint. Published implementation `772f9e8` and this current task/report record on matching `task/ARCH-059-BACKGROUND-001` branches. Staged only the 17 task-owned implementation files and this task document; whitespace checks passed. No implementation change or repeated validation was required for publication. At that publication point status remained In Progress, executor developer, Attempt 2; the later Developer Self-Review record governs current review status. No main merge/push, gitlink change, deployment, activation or downstream promotion.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 2 (2026-11-05)
+
+**Review passed under the controlling MCP-owned revision and dynamic capability-discovery amendments. No actionable findings.** Reconciled implementation `772f9e88d65b32c26bb64d03ca996b4757c9873c`, published report and the actual 17-file correction. Status Review, executor/claimed_at null, Attempt 2 unchanged. Execution/completion remain developer/developer; explicit `/moda_developer_update ARCH-059-BACKGROUND-001 complete` is still required. Earlier expected-call prerequisites and fixed-name review requirements are superseded, not outstanding blockers.
+
+### Source and acceptance reconciliation
+
+The selector derives tool membership from the authorized product_search Feature projection and current MCP descriptors. Fixed four-name sets/unions, forced first-tool calls, name-specific admission quotas and default unknown-tool rejection were removed from the agent/selector path. Generic supported results reach the next model step without a fixture-specific production dispatch entry. Retained name-specific interpretation protects existing offer/product facts rather than controlling whether an added supported member can execute.
+
+The client no longer pins a manifest/revision across requests. MCP selects the current revision; current membership/input validation and trusted shop/purpose remain enforced. Conversation scope derives from the historical grant's authorized Feature membership without rewriting stored grants or admitting unrelated Features. Current offer policy, aggregate budgets/deadlines, cancellation, conversation controls and deterministic offer/result validation remain in force.
+
+Inspected the actual loopback extension regression: the new member appears in the model request, is chosen first, crosses the selector/client/MCP boundary and returns bounded data to the next model step before a valid NO_VERIFIED_OFFER final outcome. Removed/revoked/unrelated/invented cases reject without a tool request. Additional cases cover compatible activation, unchanged historical grant scope, aggregate call/deadline limits, cancellation, oversized results and absence of injected named-tool discovery.
+
+### Validation
+
+- Independently reran the isolated loopback host suite using the declared `vitest.commerce-host.config.ts`: **81 tests passed**, exit 0. Local evidence `/tmp/arch059-bg-attempt2-review-host.log`.
+- Independently reran the eight-file focused published-tools/client/grants, selector, offer selection/context, product-media and billing-policy set listed in the report: **65 tests passed**, exit 0. Local evidence `/tmp/arch059-bg-attempt2-review-unit.log`.
+- Independently checked `git diff --check 0995635 HEAD`: passed, and source HEAD equals its remote task ref.
+- Reviewed submitted 197 recommendation tests, build/lint and the disclosed broad-suite baseline comparison; these checks were not independently repeated. No complete full-unit-suite pass is claimed. No Docker, live provider/model, deployment or activation was performed by this review.
+
+### Publication and ownership
+
+Implementation `772f9e8` is already committed/pushed. The canonical implementation worktree is clean; the parent task worktree was clean before this update. Matching dedicated task paths/branches, Attempt 2 claim `8ba1fd0ab`, preparation/synchronization, unchanged Database pin and authorized Codex assistance are recorded in the Completion Report. Assistance and publication do not transfer developer completion authority. Only this parent task record is committed/pushed by the reconciliation; no implementation or gitlink change and no main merge.
+
+### Follow-up
+
+Explicit developer completion remains pending. SYSTEM-TEST-001 is not promoted while Background remains Review; terminal execution and staged-release rollout remain separately gated. This passing review certifies the amended task scope and deterministic local evidence, not live provider behavior or deployment.
