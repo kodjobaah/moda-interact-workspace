@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 2
+executor: codex
+claimed_at: 2026-11-05T00:09:18Z
+attempt: 3
 depends_on:
 - ARCH-058-MCP-001
 - ARCH-058-DATABASE-002
@@ -24,7 +24,7 @@ enables:
 - ARCH-058-BACKGROUND-001
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: 2026-11-04
+updated: 2026-11-05
 ---
 
 # ARCH-058-MCP-002: Ground product search, bounded catalogue browse and conversational discounts in current shop data
