@@ -386,13 +386,13 @@ No new agent, queue, worker, transaction retry framework, product mirror, Admin/
 - Added private AI candidate propagation and locale-compatible rendering at the existing wrapper stage; no extra model/send path was introduced.
 - Added focused recommendation, context PostgreSQL, host-loopback, fixture, wrapper, and processor coverage.
 
-Implementation files are the task-owned changes committed in `6106059c73ca66404fa4bea25becc23b58bce813` (57 files; see the implementation branch diff).
+Implementation files are committed on the task branch: initial implementation `6106059c73ca66404fa4bea25becc23b58bce813`, followed by the PostgreSQL fixture-cleanup correction `46ff3adc652a8bfba369622667f968a29faf75ac` (see the implementation branch diff).
 
 ### Dependency and database evidence
 
 - Installed and resolved `@modainteract/moda-interact-shared@5.0.0`; direct Background `zod` remains `^4.4.3`, lock resolution `4.6.5`.
 - Prepared Database submodule gitlink: `bd2d09066a8eb178a56f48fbbf88df637c411059`; no schema or migration bytes were changed.
-- The disposable PostgreSQL integration file is `tests/integration/commerce/recommendation-context.integration.test.ts`.
+- The disposable PostgreSQL integration file is `tests/integration/commerce/recommendation-context.integration.test.ts`. Its published prompt revision rows are immutable under ARCH-021; fixture cleanup now relies on the harness disposing of its isolated database rather than deleting those rows.
 
 ### Validation
 
@@ -406,13 +406,13 @@ Agent-executed checks passed:
 - `git diff --check`.
 - `npm ls @modainteract/moda-interact-shared --depth=0` — 5.0.0.
 
-Developer validation required, **NOT RUN** pending explicit authorization for ARCH-058-BACKGROUND-001:
+Developer validation required. The authorized first run was attempted once and exited 1 because fixture teardown tried to delete immutable ARCH-021 prompt revisions (`P0001`). The context assertions reached cleanup; this is a failed command, not a passing PostgreSQL result. The cleanup correction is committed in `46ff3adc652a8bfba369622667f968a29faf75ac`. A rerun after this code change is **NOT RUN** pending fresh authorization for this task.
 
 ```sh
 node scripts/test-integration.mjs tests/integration/commerce/recommendation-context.integration.test.ts
 ```
 
-Expected success is all assertions passing against the disposable PostgreSQL harness with its owned containers cleaned up. No normal/local `DATABASE_URL` was used, no Docker container was started, and no PostgreSQL pass is claimed.
+Required rerun: all assertions must pass against the disposable PostgreSQL harness. The harness uses a `finally` block to remove the owned PostgreSQL and Redis containers. The failed run used the disposable harness and no normal/local `DATABASE_URL`; no PostgreSQL pass is claimed.
 
 ### Git / VCS
 
@@ -429,19 +429,19 @@ Physical worktree isolation:
 - Prepared launcher synchronized the task worktrees and recursively prepared implementation submodules before claim.
 
 Implementation repository:
-- Commit: `6106059c73ca66404fa4bea25becc23b58bce813`
+- Latest implementation commit: `46ff3adc652a8bfba369622667f968a29faf75ac`
 - Remote: `origin/task/ARCH-058-BACKGROUND-001`
 - Pushed: yes.
 
 Parent workspace:
 - Task file: `docs/decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md`
-- Report commit: `c6937bb1b38683c4a7c32b7215c6aacd1ee5be0a` (pushed).
+- Previous report commit: `82351009e5b64c297fb9b9fcb36f8ff637af0240` (pushed); this validation update is being committed now.
 - Remote: `origin/task/ARCH-058-BACKGROUND-001`
 - Submodule gitlink staged: no.
 
 Merged to either main branch: no.
 
-Awaiting developer execution/authorization for the PostgreSQL command and moda_architect review. No architect acceptance decision has been made by this agent.
+Awaiting fresh developer authorization for one rerun of the PostgreSQL command after the cleanup correction, and moda_architect review. No architect acceptance decision has been made by this agent.
 
 ## Architect Review
 
