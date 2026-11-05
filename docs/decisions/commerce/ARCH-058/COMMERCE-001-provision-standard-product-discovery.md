@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 60
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-05T08:53:29Z
+attempt: 1
 depends_on:
 - ARCH-058-MCP-002
 - ARCH-058-MCP-003
@@ -22,7 +22,7 @@ enables:
 - ARCH-058-BACKGROUND-001
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: '2026-11-05'
+updated: 2026-11-05
 ---
 
 # ARCH-058-COMMERCE-001: Provision the standard product discovery tools and repeatable environment setup
