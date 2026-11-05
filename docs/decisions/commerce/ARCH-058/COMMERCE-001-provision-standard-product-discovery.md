@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: codex
-claimed_at: 2026-11-05T11:13:52Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-058-MCP-002
@@ -340,20 +340,22 @@ Dependencies remain `ARCH-058-MCP-002` and `ARCH-058-MCP-003`, including their a
 Stop on an absent accepted dependency, mismatched immutable source/package/manifest, an accepted MCP CLI that differs from the explicitly reconciled dry-run/receipt contract, manual owned content, unpreservable release delta or cross-owner implementation need. Report the exact path/input/conflict. Do not rediscover upstream release decisions, invent new credentials, weaken contracts, manufacture passing tests or widen a grant. After implementation and bounded checks, provide the actual Completion Report and any exact developer validation handoff, set status to Review through the existing workflow and return to the architect. Do not merge, deploy, mark Complete or run downstream tasks.
 
 ## Completion Report
-### Status — Changes Requested, Attempt 2
+### Status — Ready for Architect Review, Attempt 3
 
-**Attempt 2 reviewed; changes requested on 2026-11-05.** Task returned to Ready with executor/claim null and attempt unchanged. Implementation is not accepted; the owned-process timeout defect and required developer validation remain unresolved.
+Attempt 3 corrects the owned-process timeout/overflow defect identified in the Attempt 2 review and adds real-process regression coverage for both termination paths. The task is submitted for Architect re-review. This submission does not claim architecture acceptance. Developer-owned build and disposable PostgreSQL evidence remain NOT RUN and are still required before acceptance.
 
 ### Implementation delivered
 
 - Extended the source-owned tool synchronizer to provision the four required product discovery tools in resolver/search/get/shipping order, preserve the unchanged get-product definition and immutable legacy hashes, validate feature ownership and exact content before writes, and create one exact immutable release successor with pointer and feature-configuration CAS checks.
 - Added the Shared-backed operation projections, exact product behavior and response contract, response-only release planning, runner compatibility checks, and built-in/published descriptor narrowing across preview and external-availability boundaries. The preview uses the current runner and response-contract hash; the UI shows the required Background composition disclosure.
 - Added the operator setup CLI and checkout/database preflight. It requires an explicit workspace root, verifies selected submodule pins and migration checksums, delegates taxonomy checks/import to the selected MCP CLI, runs only the prescribed child commands, bounds child output/time, and owns one ordered receipt. Dry-run validates taxonomy even while migrations are pending and performs no migration or publication writes.
+- Corrected timeout and output-overflow cleanup to capture the detached child's owned process-group ID, send TERM and then KILL to that group regardless of the leader's exit status, and share one idempotent termination sequence. This handles an npm leader that exits while a TERM-resistant descendant still holds inherited stdout/stderr pipes; unrelated process groups are not targeted.
 - Updated the Commerce README and the required focused tests, including the immutable PostgreSQL fixture test for four tools, response-only reconciliation, exact successor count, no-op repeat, and the transactional feature-edit activation race.
+- Added POSIX subprocess regressions for both timeout and output overflow. Each fixture waits for a real descendant to become ready, has the leader exit on TERM while the descendant ignores it and retains inherited output pipes, verifies the descendant and owned process group terminate, and checks that an unrelated sentinel process survives.
 
 ### Validation completed
 
-- Focused Vitest run: **147 tests passed across 12 files**. Coverage included system-tool sync, response ownership, setup receipt/process contracts, lifecycle/storage release deltas, policy operation registration, preview composition/service, Studio integration, conversation disclosure, external availability, and feature authoring.
+- Focused Vitest run: **149 tests passed across 12 files**. This includes both new timeout/overflow process-group regressions and the system-tool sync, response ownership, setup receipt/process contracts, lifecycle/storage release deltas, policy operation registration, preview composition/service, Studio integration, conversation disclosure, external availability, and feature-authoring suites.
 - `npm run typecheck`: **passed** (schema synchronization, route type generation and TypeScript check).
 - `npm run lint`: **passed with 0 errors and 11 warnings**. All remaining warnings are in untouched files; modified files have no lint warnings.
 - `npm ls @modainteract/moda-interact-shared semver @types/semver zod --depth=0`: Shared **5.0.0**, semver **7.8.5**, @types/semver **7.8.0**, direct Zod **4.6.5**.
@@ -362,14 +364,14 @@ Stop on an absent accepted dependency, mismatched immutable source/package/manif
 
 ### Developer-owned validation handoff — NOT RUN
 
-The task assigns these commands to the developer-owned disposable PostgreSQL proof. They were not run here; no Docker container, PostgreSQL migration, live provider/embedding call, persistent environment apply, package publication, deployment or customer send occurred:
+The Attempt 2 review assigns these commands to developer-owned validation. They were not run for this submission; no Docker container, PostgreSQL migration, live provider/embedding call, persistent environment apply, package publication, deployment or customer send occurred:
 
 ```sh
 npm run build
 node scripts/run-system-commerce-tool-sync-postgres.mjs
 ```
 
-The PostgreSQL suite is extended for the developer run. Record its selected image digest, Database/Shared/Commerce revisions, exact command and exit status, and verify zero owned-container leftovers. `ARCH-058-SYSTEM-TEST-001` still owns the cross-repository process/transport/Background composition run.
+The PostgreSQL suite is extended for the developer run. Record the selected image digest, Database/Shared/Commerce revisions, exact command and exit status, immutable prior-release preservation, exact single successor/no-op and activation-race results, and verify zero owned-container leftovers. These results are required before task acceptance. `ARCH-058-SYSTEM-TEST-001` still owns the cross-repository process/transport/Background composition run.
 
 ### Task branch and worktree evidence
 
@@ -377,8 +379,8 @@ The PostgreSQL suite is extended for the developer run. Record its selected imag
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-COMMERCE-001`, branch `task/ARCH-058-COMMERCE-001`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-COMMERCE-001`, branch `task/ARCH-058-COMMERCE-001`.
 - The implementation worktree's Database submodule is `bd2d09066a8eb178a56f48fbbf88df637c411059`. The implementation changes are isolated to this Commerce task worktree; the shared workspace checkout and MCP source were not changed. Shared is pinned as package `5.0.0` with the accepted SHARED-006 lock integrity.
-- The prepared Attempt 2 claim was pushed by the launcher as parent commit `9af0948e907a93633c6a8ab180f6a63647281560`. The preserved implementation draft `0914178808de0b2110e7ad7da667ce8e68c8fc8b` was continued without resetting or recapturing the legacy fixture. Recursive submodule sync/update passed; the prepared Database submodule remained at the accepted pin above. The shared/default workspace checkouts were not switched or mutated, and no other task worktree was reused.
-- Implementation commit **`7927e07`** (`feat(commerce): provision product discovery tools`) is pushed to `origin/task/ARCH-058-COMMERCE-001`. The parent task report/status update is committed and pushed separately below. No task branch was merged to `main`; no parent implementation gitlink was staged.
+- The prepared Attempt 3 claim was pushed by the launcher as parent commit `68483396d0fb0bbf338fc96567ba5efd22d87b95`. The preserved implementation draft `0914178808de0b2110e7ad7da667ce8e68c8fc8b` and prior implementation `7927e07101b48359d50c260f209ee385e245a3a8` were continued without resetting or recapturing the legacy fixture. Recursive submodule sync/update passed; the prepared Database submodule remained at the accepted pin above. The shared/default workspace checkouts were not switched, and no other task worktree was reused.
+- Attempt 3 implementation commit **`8c789a1`** (`fix(commerce): bound owned setup process cleanup`) is pushed to `origin/task/ARCH-058-COMMERCE-001`. The parent report/status update is committed and pushed separately. No task branch was merged to `main`; no parent implementation gitlink was staged.
 
 Downstream tasks remain gated pending Architect review/acceptance. This submission records implementation and bounded validation only; it does not mark the task Complete.
 
