@@ -31,7 +31,7 @@ depends_on:
 - ARCH-058-BACKGROUND-001
 enables: []
 created: '2026-11-04'
-updated: '2026-11-04'
+updated: 2026-11-05
 ---
 
 # ARCH-058-SYSTEM-TEST-001: Validate discovery, shipping and grounded customer responses end to end
@@ -367,3 +367,8 @@ MCP-002 Attempt 3 is architect-accepted and Complete at `11fba27`, with develope
 ## Architect Dependency Reconciliation — MCP-003 Acceptance, 5 November 2026
 
 MCP-003 Attempt 1 is architect-accepted and Complete at `69b64669a621c899f3b764fb92004f27f249b9e7`. Remains Pending on remaining explicit consumer prerequisites; no claim or attempt change. This supersedes earlier MCP-002/MCP-003 pending-validation gate snapshots. No execution is started; live provider/deployment and terminal system proof remain separately owned.
+
+
+## Dependency Verification — 5 November 2026
+
+Commerce Attempt 3 is accepted and Complete at implementation `58f5418ada85d1cfc08400f64ab41b198fb427b4`. All explicit prerequisites are Complete except BACKGROUND-001, which is Ready and unclaimed. This task remains Pending, unclaimed, Attempt 0; terminal execution must await Background acceptance and the normal validation authorization/integration gates. No terminal proof is claimed by this dependency update.

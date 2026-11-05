@@ -170,3 +170,25 @@ MCP-002 Attempt 3 is accepted and Complete at `11fba27`. All prior integration f
 ## Shipping accepted frontier — 5 November 2026
 
 MCP-003 Attempt 1 is accepted and Complete at `69b64669`, with 59 independently rerun shipping/core tests and reviewed 71-test regression/static/build/query evidence. Live merchant grants/provider/deployment checks remain operator work. COMMERCE-001 is Ready/unclaimed at Attempt 0 because MCP-002 and SHARED-006 are also Complete. Background remains Pending on Commerce; terminal system validation retains its consumer prerequisites. No consumer execution, tool publication, deployment or architecture completion is implied.
+
+
+## Commerce continuation handoff — 5 November 2026
+
+COMMERCE-001 revision 11 resolves the stale Database task-SHA gate using accepted merged ancestor `395675f909d604f0bff83ffb3d7d5586f0bdd39b`. Its complete tree matches historical `ded8f14a`; prepared `bd2d090` passes ancestry and preserves the later grant migration. Commerce is Ready/unclaimed, Attempt 1 retained, with unfinished implementation `0914178` and original legacy fixture preserved. Resume through normal launcher preparation; do not reset/recreate the draft or recapture the legacy fixture from upgraded Shared. Complete original Commerce implementation and validation. Background's actual model-request fixtures remain BACKGROUND-001-owned downstream evidence; Commerce validates actual publication/Shared parsing. No task is accepted or downstream task promoted by this handoff.
+
+
+## Commerce Attempt 2 Review — 2026-11-05
+
+COMMERCE-001 implementation `7927e07` is not accepted. Returned to Ready/unclaimed at Attempt 2 for the owned-descendant timeout correction and regression. Independent focused review passed 140 tests across 11 files; required developer-owned build/disposable PostgreSQL evidence remains NOT_RUN. Preserve the original fixture and accepted dependencies; use normal claiming for continuation. BACKGROUND-001 and SYSTEM-TEST-001 remain gated on Commerce acceptance and their other prerequisites. See the task's Architect Implementation Review for exact corrections and validation limits.
+
+
+## Commerce accepted frontier — 5 November 2026
+
+COMMERCE-001 Attempt 3 is accepted at final implementation `58f5418ada85d1cfc08400f64ab41b198fb427b4`. Both prior review findings are resolved: surviving detached-group descendants are killed independently of the npm leader's exit, and the required developer-authorized build/PostgreSQL proof passed. The PostgreSQL race fixture now uses the actual response-active base and still proves stale-feature rejection, pointer preservation and surviving manual content. Independent setup regressions passed 7/7; submitted aggregate fast checks passed 149 tests; PostgreSQL proof passed 1/1 with exit 0 and zero owned containers remaining. The parent acceptance records exact pins/digest and evidence provenance.
+
+BACKGROUND-001 is Ready/unclaimed at Attempt 0; the launcher may claim it only on explicit invocation. Background owns actual provider-context/model-request and host-finalization proof. SYSTEM-TEST-001 remains Pending on Background acceptance, retaining its terminal cross-repository operator/process/transport responsibilities. Persistent publication, deployment, final integration and live merchant proof are not certified by Commerce acceptance.
+
+
+## Dependency Frontier Verification — 5 November 2026
+
+Commerce acceptance and follow-up verification are published. Rechecked task frontmatter: BACKGROUND-001 has all four prerequisites Complete and remains Ready/unclaimed at Attempt 0. SYSTEM-TEST-001 remains Pending solely on BACKGROUND-001. No dependency edge, execution claim, attempt, integration gate or terminal-validation authorization is changed. Earlier pending-Commerce handoff snapshots are historical.

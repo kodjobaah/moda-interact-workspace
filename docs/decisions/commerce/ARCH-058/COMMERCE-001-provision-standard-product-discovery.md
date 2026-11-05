@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 60
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
 - ARCH-058-MCP-002
 - ARCH-058-MCP-003
@@ -22,14 +22,14 @@ enables:
 - ARCH-058-BACKGROUND-001
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: '2026-11-05'
+updated: 2026-11-05
 ---
 
 # ARCH-058-COMMERCE-001: Provision the standard product discovery tools and repeatable environment setup
 
 ## Architecture and execution state
 
-Definition revision: 10. Exact dependency correction is specified by [Shared hash reconciliation](../../../architecture/ARCH-058/shared-hash-reconciliation.md). MCP remains a generic shop-scoped tool provider/executor. Background owns conversation identity, retained grants, processing/control state and per-turn tool admission.
+Definition revision: 11 — accepted merged Database ancestry reconciliation. Exact dependency correction is specified by [Shared hash reconciliation](../../../architecture/ARCH-058/shared-hash-reconciliation.md). MCP remains a generic shop-scoped tool provider/executor. Background owns conversation identity, retained grants, processing/control state and per-turn tool admission.
 
 Architecture ID: `ARCH-058`. Read the parent architecture, `docs/architecture/ARCH-058/contracts.md`, `docs/architecture/ARCH-058/implementation-handoff.md` and `docs/architecture/ARCH-058/execution-baseline.json`. This is a pending task-definition amendment; it creates no execution claim, branch or worktree. Use the launcher's dedicated implementation worktree when its two declared dependencies are Complete. Preserve all task claims, review history and accepted upstream work.
 
@@ -117,10 +117,12 @@ npm install --save-exact @modainteract/moda-interact-shared@5.0.0 semver@7.8.5
 npm install --save-dev --save-exact @types/semver@7.8.0
 npm ls @modainteract/moda-interact-shared semver
 node --input-type=module -e "import {runnerVersion} from '@modainteract/moda-interact-shared/commerce/runner'; if (runnerVersion !== '1.1.0') throw new Error('RUNNER_VERSION_MISMATCH'); console.log(runnerVersion)"
-git -C database merge-base --is-ancestor ded8f14a60182f6b1443640f012caf0089b8a44c HEAD
+git -C database merge-base --is-ancestor 395675f909d604f0bff83ffb3d7d5586f0bdd39b HEAD
 ```
 
-Verify the committed lock's root Shared pin and installed integrity against the accepted immutable SHARED-006 receipt for 5.0.0; the SHARED-002 4.0.0 receipt remains historical. Verify Commerce's direct Zod dependency did not change as part of ARCH-058. Install from the existing registry configuration; do not run `npm publish`, inspect `latest`, use a sibling import or substitute a tarball. The Database ancestry check is a minimum accepted capability check; retain the exact compatible Database gitlink supplied by the accepted MCP dependency chain, including later accepted migrations. A missing commit/export or conflicting accepted tree is a concrete stop, not permission to choose another dependency.
+Verify the committed lock's root Shared pin and installed integrity against the accepted immutable SHARED-006 receipt for 5.0.0; the SHARED-002 4.0.0 receipt remains historical. Verify Commerce's direct Zod dependency did not change as part of ARCH-058. Install from the existing registry configuration; do not run `npm publish`, inspect `latest`, use a sibling import or substitute a tarball. The Database ancestry check uses accepted merged DATABASE-001 ancestor `395675f909d604f0bff83ffb3d7d5586f0bdd39b`, whose full tree is identical to historical task commit `ded8f14a60182f6b1443640f012caf0089b8a44c`. The latter was squash-integrated and is not an ancestor of the accepted merged chain; its historical task-commit ancestry is not a gate. Retain the exact compatible Database gitlink supplied by the accepted MCP dependency chain, including later accepted migrations; the prepared `bd2d09066a8eb178a56f48fbbf88df637c411059` satisfies this merged-ancestor check and preserves DATABASE-002. A genuinely missing merged ancestor/export or conflicting accepted tree remains a concrete stop, not permission to choose another dependency.
+
+For continuation after Attempt 1, preserve WIP `0914178808de0b2110e7ad7da667ce8e68c8fc8b` and the already captured original fixture (SHA256 `f31d8315bb00595967948cc1936801bb5d0ced62d16e34d835dcbfa33528475a`). Its original baseline capture is complete. Verify that fixture/provenance rather than resetting the working source or reinstalling Shared 2.7.2 to repeat the capture. Changes from the preserved task draft are expected; the original-file hash gate does not require reverting this accepted handoff.
 
 ### 2. Exact tool definitions and projections
 
@@ -310,7 +312,7 @@ Required assertions, assigned to exact owners:
 | Test owner | Required proof |
 |---|---|
 | `system-commerce-tool-sync.test.ts` | Actual four generated drafts; exact mappings/null/false omission; old get content/hash unchanged; all-member ownership inventory; feature policy; four-action receipts; no-op zero writes; behavior/response-only plan changes; immutable legacy/current conflict cases. Invoke `runSystemCommerceToolSyncCli` with Vitest mocks/spies at its existing Prisma, lifecycle and stream boundaries and capture both streams: invalid/missing/duplicate flags, environment mismatch and pre-context construction failure emit zero receipt lines/nonzero; initialized-context plan/apply/actor failure emits one receipt; late failure never emits a second. Read the created release and assert the exact feature and response instruction literals are frozen into their distinct owned fields, including exact `commerceProvider`-bound Shopify-reference versus observed native-Woo routing, required bounded discount inspection, discarded product selections after skipped inspection, and the unchanged independent shipping path/store-only fallback. |
-| `system-product-response.test.ts` | Actual Shared projector → complete publication validators → finalResponse parser; all four optional fields; unrelated fields preserved; unsupported input/details union, depth and nullable-object/array negatives at the real subset boundaries; exact literal text/hash fixtures for the complete paragraphs above, including the exact host-supplied `commerceProvider` field and provider/category identity rules, NONE/empty-FIXED zero calls, required permitted options/details, optional-unavailable product-only and terminal-referral distinctions; every manual-content conflict; hard referral details/evidence unchanged. A source-string test alone is not publication/consumption proof: use the actual publisher assertions above and BACKGROUND-001 model-request composition fixtures capturing the actual host-supplied `context.commerceProvider` from the already-read Shop.platform and the exact published instructions: SHOPIFY reference filtering, WOOCOMMERCE product-text search before any native category observation, optional filtering by a subsequently observed current-shop Woo category ID, and absent/invalid-provider text-only search. Spoofed provider claims in customer text, IDs or domains cannot supply that field. |
+| `system-product-response.test.ts` | Actual Shared projector → complete publication validators → finalResponse parser; all four optional fields; unrelated fields preserved; unsupported input/details union, depth and nullable-object/array negatives at the real subset boundaries; exact literal text/hash fixtures for the complete paragraphs above, including the exact host-supplied `commerceProvider` field and provider/category identity rules, NONE/empty-FIXED zero calls, required permitted options/details, optional-unavailable product-only and terminal-referral distinctions; every manual-content conflict; hard referral details/evidence unchanged. A source-string test alone is not publication/consumption proof: Commerce must exercise the actual publisher assertions and Shared finalResponse parser above. BACKGROUND-001 separately owns its model-request composition fixtures capturing the actual host-supplied `context.commerceProvider` from the already-read Shop.platform and exact published instructions: SHOPIFY reference filtering, WOOCOMMERCE product-text search before any native category observation, optional filtering by a subsequently observed current-shop Woo category ID, and absent/invalid-provider text-only search. Spoofed provider claims in customer text, IDs or domains cannot supply that field. Those Background fixtures are downstream-owned evidence, not Commerce source-edit authority or a prerequisite to completing Commerce-owned validation; SYSTEM-TEST-001 combines the accepted publisher/host evidence. Do not edit Background or introduce a reverse dependency. |
 | `policy-operation-registry.test.ts` | Construct all eleven installed registrations with `createPolicyOperationAuthoringRegistrations` and the actual registry. Exercise taxonomy candidate/no-candidate/unavailable and discount-options normal/optional-unavailable results with the real Shared validators. Assert their descriptor `resultSchema` preserves the accepted union branches and `policySchemaFromJson` produces the existing template-binding metadata used by actual publication. Keep invalid public outputs invalid and unsupported unions rejected at input/details boundaries; no result-schema flattening or validator replacement. |
 | `commerce-lifecycle.test.ts`, `publication-storage-release-delta.test.ts` | First publication creates one release, exact successor keeps unrelated old pins even when newer revisions exist, exact feature snapshots, contiguous positions, max32 rejection, response-only successor, pointer CAS race, source hash mismatch, atomic release/audit, lost-response replay. Existing release rows are never rewritten. |
 | `commerce-product-discovery-setup.test.ts` | Exact child argv/cwd and source forwarding; no sibling imports; wrong root/pin/env/duplicate flag rejection; migration checksum/history drift; dry-run zero writes/embedding; fresh unconfigured partial receipt; each stage failure/timeout/overflow; actor recheck. Capture `runProductDiscoverySetupCli` stdout/stderr and assert the exact pre-context zero-receipt versus initialized-context one-receipt boundary. Cover wrapper build/import failure and late cleanup/close failure without a duplicate receipt through the existing process seams. Assert exact child stdout/stage/mode/exit/nullable-fingerprint cases from requirement 6, including missing/duplicate/early-failure receipts, rejection of stderr-only receipts, success-shaped receipt with nonzero exit and pending-migration success with no writes; four publication actions; cleanup; rerun no-op. Inject only child/process/database seams in these unit tests; do not call a mock an actual CLI execution. |
@@ -338,38 +340,52 @@ Dependencies remain `ARCH-058-MCP-002` and `ARCH-058-MCP-003`, including their a
 Stop on an absent accepted dependency, mismatched immutable source/package/manifest, an accepted MCP CLI that differs from the explicitly reconciled dry-run/receipt contract, manual owned content, unpreservable release delta or cross-owner implementation need. Report the exact path/input/conflict. Do not rediscover upstream release decisions, invent new credentials, weaken contracts, manufacture passing tests or widen a grant. After implementation and bounded checks, provide the actual Completion Report and any exact developer validation handoff, set status to Review through the existing workflow and return to the architect. Do not merge, deploy, mark Complete or run downstream tasks.
 
 ## Completion Report
+### Status — Ready for Architect Review, Attempt 3
 
-### Status
+Attempt 3 corrects the owned-process timeout/overflow defect identified in the Attempt 2 review and adds real-process regression coverage for both termination paths. The developer-owned build and disposable PostgreSQL evidence have now passed against the final Commerce source revision. The task remains submitted for Architect re-review; this report does not claim architecture acceptance.
 
-Not Started — defined but not materialised.
+### Implementation delivered
 
-### Files Changed
+- Extended the source-owned tool synchronizer to provision the four required product discovery tools in resolver/search/get/shipping order, preserve the unchanged get-product definition and immutable legacy hashes, validate feature ownership and exact content before writes, and create one exact immutable release successor with pointer and feature-configuration CAS checks.
+- Added the Shared-backed operation projections, exact product behavior and response contract, response-only release planning, runner compatibility checks, and built-in/published descriptor narrowing across preview and external-availability boundaries. The preview uses the current runner and response-contract hash; the UI shows the required Background composition disclosure.
+- Added the operator setup CLI and checkout/database preflight. It requires an explicit workspace root, verifies selected submodule pins and migration checksums, delegates taxonomy checks/import to the selected MCP CLI, runs only the prescribed child commands, bounds child output/time, and owns one ordered receipt. Dry-run validates taxonomy even while migrations are pending and performs no migration or publication writes.
+- Corrected timeout and output-overflow cleanup to capture the detached child's owned process-group ID, send TERM and then KILL to that group regardless of the leader's exit status, and share one idempotent termination sequence. This handles an npm leader that exits while a TERM-resistant descendant still holds inherited stdout/stderr pipes; unrelated process groups are not targeted.
+- Updated the Commerce README and the required focused tests, including the immutable PostgreSQL fixture test for four tools, response-only reconciliation, exact successor count, no-op repeat, and the transactional feature-edit activation race.
+- Added POSIX subprocess regressions for both timeout and output overflow. Each fixture waits for a real descendant to become ready, has the leader exit on TERM while the descendant ignores it and retains inherited output pipes, verifies the descendant and owned process group terminate, and checks that an unrelated sentinel process survives.
+- Corrected the PostgreSQL activation-race fixture to prepare its competing successor from the currently active response-only release. The first disposable run exposed that its stale base-release ID did not match the active pointer; the corrected proof then passed.
 
-None.
+### Validation completed
 
-### Work Completed
+- Focused Vitest run: **149 tests passed across 12 files**. This includes both new timeout/overflow process-group regressions and the system-tool sync, response ownership, setup receipt/process contracts, lifecycle/storage release deltas, policy operation registration, preview composition/service, Studio integration, conversation disclosure, external availability, and feature-authoring suites.
+- `npm run typecheck`: **passed** (schema synchronization, route type generation and TypeScript check).
+- `npm run lint`: **passed with 0 errors and 11 warnings**. All remaining warnings are in untouched files; modified files have no lint warnings.
+- `npm run build`: **passed, exit 0**, on final Commerce revision `58f5418ada85d1cfc08400f64ab41b198fb427b4`. Schema synchronization, packaged manual/runtime smoke checks, Prisma generation, Next.js compilation, TypeScript, static generation and build traces completed. Next.js emitted one existing Nunjucks critical-dependency warning; it did not fail the build. Full output: `/tmp/commerce001-attempt3-build.log`.
+- `node scripts/run-system-commerce-tool-sync-postgres.mjs`: **passed, exit 0** on the source tree corresponding to Commerce revision `58f5418ada85d1cfc08400f64ab41b198fb427b4`; accepted migrations passed and the PostgreSQL test passed **1/1**. The run used `pgvector/pgvector:pg17`, RepoDigest **`pgvector/pgvector@sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8`** (read-only inspect output: `/tmp/commerce001-attempt3-postgres-image.log`), Database revision **`bd2d09066a8eb178a56f48fbbf88df637c411059`**, Shared release revision **`1927375a74496488aa83049c39edeee9d278497a`** (`@modainteract/moda-interact-shared@5.0.0`), and Commerce revision **`58f5418ada85d1cfc08400f64ab41b198fb427b4`**. The test proved dry-run read-only behavior; preservation of the immutable unrelated prior member/feature; exactly one four-tool release successor; an identical second-run no-op with unchanged state; a single response-only successor; and activation-race rejection with the pointer unchanged and concurrent feature edit preserved. Captured command session `20154` exited 0 and reported `accepted migrations PASS`, `PASS ARCH-052-COMMERCE-006 disposable PostgreSQL proof`, and `cleanup PASS; zero owned PostgreSQL containers remain` (**1 test passed**).
+- `npm ls @modainteract/moda-interact-shared semver @types/semver zod --depth=0`: Shared **5.0.0**, semver **7.8.5**, @types/semver **7.8.0**, direct Zod **4.6.5**.
+- Immutable legacy fixture SHA-256 remains **`f31d8315bb00595967948cc1936801bb5d0ced62d16e34d835dcbfa33528475a`**. The accepted Database gitlink **`bd2d09066a8eb178a56f48fbbf88df637c411059`** descends from merged DATABASE-001 commit `395675f909d604f0bff83ffb3d7d5586f0bdd39b`; the full-tree equivalence reconciliation and later Database changes remain preserved.
+- `git diff --check`: **passed**.
 
-None.
+### Developer-owned validation evidence — COMPLETE
 
-### Validation Results
+The user authorized the developer-owned checks. Both required commands completed successfully on the final Commerce source revision:
 
-Not run.
+```sh
+npm run build
+node scripts/run-system-commerce-tool-sync-postgres.mjs
+```
 
-### Deviations
+Only the isolated, ownership-labeled PostgreSQL container was created and removed. No live provider/embedding call, persistent environment apply, package publication, deployment or customer send occurred. `ARCH-058-SYSTEM-TEST-001` still owns the cross-repository process/transport/Background composition run.
 
-None.
+### Task branch and worktree evidence
 
-### Assumptions
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-COMMERCE-001`, branch `task/ARCH-058-COMMERCE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-COMMERCE-001`, branch `task/ARCH-058-COMMERCE-001`.
+- The implementation worktree's Database submodule is `bd2d09066a8eb178a56f48fbbf88df637c411059`. The implementation changes are isolated to this Commerce task worktree; the shared workspace checkout and MCP source were not changed. Shared is pinned as package `5.0.0` with the accepted SHARED-006 lock integrity.
+- The prepared Attempt 3 claim was pushed by the launcher as parent commit `68483396d0fb0bbf338fc96567ba5efd22d87b95`. The preserved implementation draft `0914178808de0b2110e7ad7da667ce8e68c8fc8b` and prior implementation `7927e07101b48359d50c260f209ee385e245a3a8` were continued without resetting or recapturing the legacy fixture. Recursive submodule sync/update passed; the prepared Database submodule remained at the accepted pin above. The shared/default workspace checkouts were not switched, and no other task worktree was reused.
+- Attempt 3 implementation revision **`58f5418`** (process-group timeout correction and PostgreSQL activation-race fixture fix) is pushed to `origin/task/ARCH-058-COMMERCE-001`; it includes commit `8c789a1` (`fix(commerce): bound owned setup process cleanup`). The parent report/status update is committed and pushed separately. No task branch was merged to `main`; no parent implementation gitlink was staged.
 
-The developer will select a canonical operator checkout containing accepted revision pins and supply existing environment/actor/embedding configuration after compatible consumers are deployed.
-
-### Unresolved Issues
-
-No persistent environment prerequisites, migration state, actor configuration or actual publication have been verified by this task definition.
-
-### Architectural Concerns
-
-None beyond the explicit ownership, preservation and operational gates above.
+Downstream tasks remain gated pending Architect review/acceptance. This submission records implementation and bounded validation only; it does not mark the task Complete.
 
 ## Architect Review
 
@@ -408,3 +424,85 @@ MCP-002 Attempt 3 is architect-accepted and Complete at `11fba27`, with develope
 ## Architect Dependency Reconciliation — MCP-003 Acceptance, 5 November 2026
 
 MCP-003 Attempt 1 is architect-accepted and Complete at `69b64669a621c899f3b764fb92004f27f249b9e7`. All explicit prerequisites are Complete. Promoted to Ready, unclaimed, Attempt 0 preserved. This supersedes earlier MCP-002/MCP-003 pending-validation gate snapshots. No execution is started; live provider/deployment and terminal system proof remain separately owned.
+
+
+## Architect Prerequisite Reconciliation — 5 November 2026
+
+**Changes Requested — prerequisite corrected; Ready for continuation.** Attempt 1 correctly stopped at the definition's explicit historical ancestry gate. This reconciliation supersedes that stop and the prior pending review disposition only for execution eligibility; it does not accept the unfinished implementation. Status Ready, executor/claim null, Attempt 1 preserved. The next normal `/moda-task ARCH-058-COMMERCE-001` preparation claims Attempt 2 exactly once.
+
+### Independently verified evidence and decision
+
+- Prepared implementation/Database pins: Commerce `0914178808de0b2110e7ad7da667ce8e68c8fc8b` preserves the draft; nested Database is `bd2d09066a8eb178a56f48fbbf88df637c411059`.
+- Historical Database task commit `ded8f14a60182f6b1443640f012caf0089b8a44c` exists but is not an ancestor of the merged pin. Merged DATABASE-001 commit **`395675f909d604f0bff83ffb3d7d5586f0bdd39b`** is an ancestor (exit 0).
+- `git -C database diff --name-status ded8f14a60182f6b1443640f012caf0089b8a44c 395675f909d604f0bff83ffb3d7d5586f0bdd39b` emits no paths: their **complete trees are identical**, not only the taxonomy migration. This establishes the accepted squash integration's source equivalence. The later accepted DATABASE-002 squash merge `bd2d090` remains preserved.
+- Explicit MCP-002, MCP-003 and SHARED-006 dependency task metadata remains Complete. Legacy fixture SHA256 independently matches `f31d8315bb00595967948cc1936801bb5d0ced62d16e34d835dcbfa33528475a`.
+
+Requirement 1 now checks the accepted merged ancestor rather than the unmerged task SHA. No Database commit/pin, schema, contract, package identity or implementation file was changed by the architect. Do not reset or recapture the original fixture after upgrading Shared.
+
+### Mandatory continuation checklist
+
+1. Resume the preserved draft; complete all remaining original Commerce-owned implementation and required fast validation. This is not a reduced scope or a passing code review.
+2. Verify the legacy fixture/provenance and unchanged get definition, and review the dependency diff as already required. Do not recapture original definitions from Shared 5.0.0.
+3. Preserve all exact release, ownership, authorization, concurrency, receipt, child-process and preview requirements. The task report identifies unfinished work; no existing draft is certified as correct by this reconciliation.
+4. Commerce owns publisher/Shared-parser proof. BACKGROUND-001 owns actual host model-request fixtures; do not edit Background or make Commerce depend on its downstream task. Terminal integrated proof remains SYSTEM-TEST-001-owned.
+5. Developer-owned build/disposable PostgreSQL execution remains separately owned. Report NOT_RUN when absent, with the exact prescribed commands; no autonomous Docker/live/persistent publication is authorized here.
+
+Reviewed only the prerequisite history/tree equivalence, preserved fixture hash, dependency metadata and task handoff. No tests, lint, application typecheck, build, PostgreSQL suite or implementation acceptance is claimed. Background/System Test remain Pending on Commerce acceptance and their other prerequisites. This documentation-only reconciliation is published on the existing parent task branch; no implementation commit, main merge or deployment is performed by the architect.
+
+
+## Architect Implementation Review — Attempt 2 (2026-11-05)
+
+### Decision
+
+**Changes Requested.** Reviewed implementation `7927e07101b48359d50c260f209ee385e245a3a8`. Status Ready, executor/claimed_at null, Attempt 2 preserved. Earlier prerequisite reconciliations only establish execution eligibility; they do not accept this implementation. Background and System Test remain gated on Commerce acceptance.
+
+### Required corrections
+
+1. **P2 — Bound termination of surviving owned descendants.** In `src/commerce/bootstrap/product-discovery-setup.ts:67-70`, escalation from TERM to KILL depends on `child.exitCode === null`. The npm process can exit while a descendant ignores TERM and retains inherited stdout/stderr. In that case escalation is skipped and the promise waits indefinitely for `close`, defeating the required timeout/output-overflow boundary. Check and terminate the owned POSIX process group independently of the leader's exit status, preserve ownership isolation and bounded reaping, and add regression coverage where the leader exits but a descendant retains the pipes. Do not kill unrelated processes.
+2. **Required validation incomplete.** The submission explicitly reports `npm run build` and `node scripts/run-system-commerce-tool-sync-postgres.mjs` as NOT_RUN. Obtain the developer-owned build and migrated disposable PostgreSQL evidence before acceptance. Record the selected image digest, Database/Shared/Commerce revisions, exact commands/exits, immutable prior-release preservation, exact successor/no-op and activation race results, and zero owned-container leftovers. Unit tests do not substitute for this proof. This review does not authorize autonomous Docker execution or persistent environment apply.
+
+### Scope and evidence reviewed
+
+Inspected the task requirements, completion/provenance report, implementation change inventory, setup orchestration/preflight, bounded child process implementation, desired release construction and exact-release lifecycle admission. No passing full architecture acceptance is implied by this bounded review.
+
+Independently executed 11 focused suites: system-commerce-tool-sync, system-product-response, commerce-product-discovery-setup, commerce-lifecycle, publication-storage-release-delta, policy-operation-registry, studio-integration, feature-preview-composition, preview-service, test-conversations-screen and external-availability. **140 tests passed across 11 files** at the reviewed source. Local evidence: `/tmp/commerce001-review.log`. This is distinct from the submitted 147-test/12-file run; the architect did not rerun the additional feature-authoring suite, typecheck, lint, build or PostgreSQL proof.
+
+### Follow-up
+
+The owning agent must reclaim the same task, correct the process-group timeout, add the regression, rerun relevant fast checks and update the report. Required developer-owned build/PostgreSQL proof must remain explicitly NOT_RUN until actual evidence exists. Preserve the accepted fixture, dependency pins and immutable release requirements. Return for architect review; no downstream task is promoted or started.
+
+
+## Architect Acceptance — Attempt 3, 5 November 2026
+
+**Accepted.** Reviewed final implementation **`58f5418ada85d1cfc08400f64ab41b198fb427b4`** and developer-validation report commit **`10e935445f2457901540b3ab83f3cb51074fd245`**. Both explicit Attempt 2 review findings are resolved. With `completion_mode: automatic`, task is Complete; executor/claim remain null and Attempt 3 is preserved. This decision supersedes the earlier Changes Requested/pending-validation disposition, without rewriting that history.
+
+### Correction review
+
+The process cleanup captures the detached child's owned POSIX group and shares one idempotent termination sequence. Escalation to group KILL no longer depends on the npm leader's exit status, so a TERM-resistant descendant retaining inherited output pipes cannot bypass the timeout/overflow termination path. The added actual-process tests cover timeout and overflow, confirm the descendant/group terminates and verify an unrelated sentinel survives. The architect independently reran `npm test -- tests/commerce-product-discovery-setup.test.ts`: **7/7 passed, exit 0**, log `/tmp/commerce001-attempt3-architect-setup.log`. This is distinct from the submitted 149-test aggregate, and is not represented as a second independent aggregate run.
+
+The final PostgreSQL fixture correction consistently uses the currently active response-only release's ID, description, hash, members and feature snapshots with the current pointer version. It fixes invalid setup rather than weakening the intended concurrency proof. The assertions still require `CONCURRENT_STATE_CHANGE`, an unchanged active pointer and preservation of the concurrent manual feature edit.
+
+### Validation reviewed
+
+- Prior independent Attempt 2 review: **140 tests passed across 11 suites**; the only code finding was the process-group escalation defect above. Attempt 3's changes are confined to that cleanup, its regressions and the PostgreSQL fixture base identity.
+- Submitted Attempt 3 fast validation: **149 tests passed across 12 files**; typecheck passed; lint had 0 errors and 11 unchanged-file warnings. The architect did not relabel these as an independently repeated aggregate/typecheck/lint run.
+- Developer-authorized `npm run build` on final Commerce source passed, exit 0. The architect inspected `/tmp/commerce001-attempt3-build.log`: packaged smoke checks, compilation, TypeScript, static generation and build traces completed; the Nunjucks critical-dependency warning did not fail the build.
+- Developer-authorized `node scripts/run-system-commerce-tool-sync-postgres.mjs` passed, exit 0, at the corrected source. Reviewed captured completed command-session **20154** evidence supplied by the executing agent: accepted migrations PASS, **1/1 PostgreSQL test passed**, proof PASS, and cleanup PASS with **zero owned PostgreSQL containers**. The architect inspected the test/harness source and the supplied execution evidence; it did not launch a second Docker run.
+- Image: `pgvector/pgvector:pg17`; inspected RepoDigest `pgvector/pgvector@sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8` in `/tmp/commerce001-attempt3-postgres-image.log`. Database `bd2d09066a8eb178a56f48fbbf88df637c411059`; Shared 5.0.0 release `1927375a74496488aa83049c39edeee9d278497a`; Commerce final revision above.
+- The migrated proof covers read-only planning, immutable unrelated member/feature preservation, exactly one four-tool successor, repeat no-op without state changes, one response-only successor and stale-feature activation rejection. Initial failed fixture setup is disclosed and superseded by the corrected pass, not hidden as a successful run.
+- Legacy fixture SHA256 independently remains `f31d8315bb00595967948cc1936801bb5d0ced62d16e34d835dcbfa33528475a`. Implementation final HEAD matches its pushed task branch; implementation/parent worktrees were clean before this architect documentation update. Whitespace check passed.
+
+### Boundaries and handoff
+
+Dedicated worktree/claim/submodule evidence is recorded in the Completion Report and conforms to the launcher protocol. Accepted merged Database ancestry and exact Shared/Zod pins remain preserved. No implementation edit, package publication, persistent environment apply, deployment, customer send, main merge or parent gitlink update is performed by this review.
+
+BACKGROUND-001 now has all explicit dependencies Complete and is promoted to Ready, unclaimed, Attempt 0 preserved. It retains ownership of actual host model-request/context/finalization work. SYSTEM-TEST-001 remains Pending on Background acceptance; its terminal cross-repository proof has not been performed. This accepts the Commerce task only, not a deployment or the complete architecture. The developer retains final integration/merge authority.
+
+
+## Architect Follow-up Verification — 5 November 2026
+
+Rechecked the accepted Attempt 3 after the developer requested another review. **No new findings; Complete and accepted remain unchanged.** Implementation HEAD and its task remote both resolve to `58f5418ada85d1cfc08400f64ab41b198fb427b4`; parent acceptance `c1976628f916e807525153e0b48221448b198153` was already pushed. Both canonical task worktrees were clean at inspection.
+
+Inspected the process-group correction and actual timeout/overflow regression source, confirmed the correction's whitespace check, and reviewed the existing seven-test architect setup log and completed build log. The earlier acceptance records the supplied developer PostgreSQL proof and cleanup evidence. No tests, build or Docker proof were rerun in this follow-up; no additional independent validation is claimed. Both previous blockers remain resolved under the existing acceptance decision.
+
+Status remains Complete, executor/claimed_at null, Attempt 3 unchanged. The existing BACKGROUND-001 Ready handoff and SYSTEM-TEST-001 Pending gate remain in effect. This update records review verification only; no implementation, dependency promotion, gitlink, merge, publication or deployment change is made.
