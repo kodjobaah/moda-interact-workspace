@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-11-05T23:57:17Z
+attempt: 1
 depends_on: []
 enables: ["ARCH-061-SHARED-002"]
 created: 2026-11-05
@@ -135,8 +135,10 @@ Create the new focused test paths listed in this exact command where absent; pre
 No execution started. Use launcher isolated/synchronized task worktrees when requested. Use the installed SDK surfaces and official recovery policy identified in revision 2. Node recovery uses workspace bootstrap. No new schema or alternative lock primitive is authorized. Publication is release mechanics only.
 
 ## Completion Report
+
 ### Status
-Not Started
+
+In Progress — Attempt 1 claimed by developer at 2026-11-05T23:57:17Z.
 ### Files Changed
 None
 ### Work Completed
