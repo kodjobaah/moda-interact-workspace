@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: codex
 claimed_at: 2026-11-05T15:41:10Z
@@ -74,11 +74,11 @@ Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin
 
 ## Work Items
 
-- [ ] Audit `render.test.yaml`, `render.production.yaml` and canonical `render.yaml` where applicable for policy variables replaced by ARCH-043.
-- [ ] Remove obsolete settings only after the owning consumer explicitly proves database-only behaviour and safe rollback.
-- [ ] Keep required bootstrap variables, ingress credentials not migrated by an accepted consumer, DB/Redis, OTEL and Woo-plugin local connection environment variables. Verify the accepted Messaging reader before retiring any Messaging-specific legacy values.
-- [ ] Record environment-specific deploy sequencing and a rollback table.
-- [ ] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
+- [x] Audit `render.test.yaml`, `render.production.yaml` and canonical `render.yaml` where applicable for policy variables replaced by ARCH-043.
+- [x] Remove obsolete settings only after the owning consumer explicitly proves database-only behaviour and safe rollback.
+- [x] Keep required bootstrap variables, ingress credentials not migrated by an accepted consumer, DB/Redis, OTEL and Woo-plugin local connection environment variables. Verify the accepted Messaging reader before retiring any Messaging-specific legacy values.
+- [x] Record environment-specific deploy sequencing and a rollback table.
+- [x] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
@@ -122,14 +122,14 @@ Treat accepted `ARCH-043-SHOPIFY-002` as the sole Shopify Partner billing, Shopi
 
 ## Acceptance Criteria
 
-- [ ] Maintain test/production separation and no secret values in Blueprint.
-- [ ] Render topology remains deployable with all independent service startups.
-- [ ] The bounded task implementation passes the specified validation without regressions to existing domain configuration.
+- [x] Maintain test/production separation and no secret values in Blueprint.
+- [x] Render topology remains deployable with all independent service startups.
+- [x] The bounded task implementation passes the specified validation without regressions to existing domain configuration.
 
 ## Validation
 
-- [ ] Blueprint parser/validation and diff review
-- [ ] Deployment environment matrix/roll-back check
+- [x] Blueprint parser/validation and diff review
+- [x] Deployment environment matrix/roll-back check
 
 ## Stop Condition
 
@@ -145,35 +145,80 @@ Complete the defined scope and required validation, update the task and Completi
 
 ### Status
 
-Not Started
+Ready for Review — Attempt 1, `codex`, 5 November 2026. Local implementation and bounded validation complete; live deployment acceptance remains developer-owned and is not claimed. Implementation commits `4826b08` and `2c3a7de` on mirrored `task/ARCH-043-GATEWAY-001`; publication details are recorded below.
 
 ### Files Changed
 
-None
+Implementation repository (`moda-interact-gateway`):
+
+- `render.test.yaml`, `render.production.yaml`.
+- `tests/validate-render-blueprints.sh`, `tests/validate-render-blueprints-negative.sh`, new `tests/validate-platform-configuration-negative.sh`.
+- New `docs/platform-configuration-cutover.md`.
+- `docs/merchant-knowledge-deployment.md`, `docs/commerce-deployment.md`, `docs/mcp-private-deployment.md`, `docs/render-topology.md`, `docs/deployment-prerequisites.md`, `README.md`.
+
+Parent repository: only this task file. No gitlink, index, architecture definition or downstream task edits.
 
 ### Work Completed
 
-None
+- Inspected both actual Blueprints, positive/negative validators and accepted current production consumer factories at seven pinned repository revisions. Recorded the per-service variable-to-reader matrix in `docs/platform-configuration-cutover.md` before removing declarations. No canonical `render.yaml` exists.
+- Retired superseded Shopify OAuth/Partner/App Events, R2/upload, translation, transcription, AI/sender, production embedding, Commerce bootstrap-email and test Woo billing credential declarations. Traced production App Events factory to `shopify.appEvents`; the remaining environment parser is not a live default consumer. Support translation remains on existing Commerce model/provider rows; no parallel `support.translation` or legacy-editor flag was created.
+- Preserved infrastructure/identity/observability, Shopify scopes/app URL, Admin/Commerce absent-row auth bundles, API Woo environment/public-origin/public connection mode, ARCH-039 reader keyrings, active writer selectors and Commerce-only command HMAC. Verified protected declarations and non-environment service/resource topology against the pre-change revision.
+- Corrected test unseal distribution: Gateway no longer receives it; each sealed reader receives its required external group. Added isolated production equivalents. MCP receives only its supported `MODA_CONFIG_UNSEAL_KEYS_JSON` map; the other services receive JSON-in-`MODA_CONFIG_UNSEAL_KEY` plus active ID. No secret/root values committed. This avoids the inspected MCP reader's incompatible single-base64 interpretation of `MODA_CONFIG_UNSEAL_KEY`.
+- Added missing production Messaging PostgreSQL wiring and production API Woo infrastructure settings. Kept both legacy Messaging Meta declarations pending actual environment verification. The accepted reader is direct PostgreSQL; no private resolver, API-to-Messaging link or internal identity was added.
+- Restored test MCP `/health/ready` configuration to the existing validator/runbook contract. Plans, instance counts, routes, hosts, other health settings, worker commands and resources remain unchanged; no material capacity/cost change.
+- Updated runbooks with independent test/production import, root provisioning, reader rollout, cold-start/rotation/revocation/tamper verification and rollback gates. Canonical R2 has one sealed six-field record; existing embedding and translation authorities remain intact.
+- Preserved all existing unrelated validator protections, adapted retired-group fixtures and added 90 targeted adversarial fixtures covering every sealed reader's root attachment, excess recipients, wrong MCP format, shadow/direct roots, Messaging DB isolation, retained auth/Woo/Meta inputs and retired-variable reintroduction. The standard negative suite now invokes the focused suite. Final source tracing includes `checkout.worker.ts` → `ShopifyWhatsAppConsentService` → consent provider → `getShopifyAccessToken`; this prevents incorrectly dropping the event worker's root.
 
 ### Validation Results
 
-Not run
+Passed locally in the isolated implementation worktree:
+
+- `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh tests/validate-platform-configuration-negative.sh` — exit 0.
+- Psych `safe_load(..., aliases: false)` of both Blueprints — exit 0.
+- `bash tests/validate-render-blueprints.sh` — exit 0 for test and production, including private routing and documentation assertions.
+- `bash tests/validate-render-blueprints-negative.sh` — final combined run exit 0 after the event-worker correction: 127 adapted existing mutation fixtures, the public-MCP denial fixture and all 90 focused ARCH-043 test/production fixtures. **218 adversarial cases passed.**
+- `bash tests/validate-platform-configuration-negative.sh` — standalone run exit 0; all 90 fixtures also passed in the final combined run, including required event-worker root access.
+- `bash tests/validate-observability-config.sh` — exit 0.
+- One-off parsed comparison to implementation starting HEAD — databases unchanged; service topology unchanged except restoring test MCP readiness; exact existing ARCH-039 and Auth.js declarations preserved.
+- `git diff --check` — exit 0; reviewed Blueprint and validator diffs.
+
+Baseline positive validation initially rejected required `MODA_WOO_REST_READ_PUBLIC_ORIGIN` via an overbroad credential-alias expression. Narrowed only that exact exception; forbidden keyring/active-key aliases still fail negative fixtures. The baseline also lacked test MCP readiness despite its existing validator requiring it; corrected the declaration.
+
+Accepted owning-reader source and tests were inspected for cold OAuth startup, fresh operation reads, revoked/disabled records, wrong/missing wrapping roots, tampering/AAD failures, rotation and no last-good fallback. Exact source revisions and test paths are in the cutover document. Those tests were not rerun across repository ownership boundaries, and source inspection is not live deployment proof.
+
+Developer-owned integration handoff (not executed):
+
+```bash
+bash scripts/developer-validation.sh ARCH-043-GATEWAY-001 -- bash tests/run-tests.sh
+```
+
+Expected result: exit 0 and all gateway integration checks pass. No Docker orchestration or live deployment was launched. Independently perform the environment matrix in `docs/platform-configuration-cutover.md`: accepted imports/rotations and key-ID compatibility, restart every sealed consumer, protected-operation success, controlled missing/revoked/tampered/DB-unavailable failure, next-operation rotation and safe rollback. Record bounded outcomes only, never credentials. Production uses separately approved safe probes/maintenance, not arbitrary corruption of live secrets.
 
 ### Deviations
 
-None
+- Messaging Meta credential retirement is deliberately deferred: accepted direct-reader code exists, but no deployed verification evidence was supplied. Existing declarations remain in both Blueprints, with an explicit release gate. No unrelated ingress credential was removed.
+- Added the MCP-specific supported root variable/group because source inspection proves the generic root input has a different accepted format in MCP. No consumer or crypto codec changes were made.
+- Restored missing test MCP readiness and missing production Messaging DB/API Woo infrastructure wiring as necessary independent-startup configuration corrections.
 
 ### Assumptions
 
-None
+Cleanup Blueprints are synchronized only after the per-environment accepted consumer deployment, credential import/rotation and rollback gates pass. Static validation establishes configuration shape and ownership; it does not establish Render acceptance, populated secrets, real provider access or runtime success.
 
 ### Unresolved Issues
 
-None
+No local implementation/test failures remain. Live Render validation, root/row population, cold starts, credential rotation/revocation/tamper probes, R2 exact-origin/create-only checks and deployed rollback remain developer-operated release gates. Standalone SYSTEM-TEST-001 was neither enabled nor executed by this agent. Preserve Meta declarations until its separate deployed gate passes.
 
 ### Architectural Concerns
 
-None
+The accepted MCP root format differs from the other readers and must stay explicitly separated until its owner changes the contract. A DB-only consumer cannot roll back by merely restoring env values; restore a compatible accepted service revision and configuration together. Never roll back to a compromised/revoked credential or delete durable configuration/audit data.
+
+### Worktree Isolation and Publication
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-GATEWAY-001`, branch `task/ARCH-043-GATEWAY-001`, starting parent `ba4250ea22403d11e0c3964750ac8b39ebe6bf80`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-GATEWAY-001`, matching branch, starting revision `ac092dc783d715db3b0e2136bce1cc51abaee5a1`.
+- Launcher prepared/synchronized both isolated branches, verified all fourteen explicit dependencies Complete and recursive submodule state ready (Gateway has no submodule entries), then durably pushed claim `dde4e4929d214775cfd75856545caf70cf3163a8`, Attempt 1 at `2026-11-05T15:41:10Z`.
+- Implementation head: `2c3a7de` (initial cleanup `4826b08`, followed by the event-worker reader correction); no other repository source edited. Implementation is pushed to `origin/task/ARCH-043-GATEWAY-001`; this report is submitted on the matching parent task branch. No merge or push to `main`; no architect acceptance decision made.
 
 ## Architect Review
 
