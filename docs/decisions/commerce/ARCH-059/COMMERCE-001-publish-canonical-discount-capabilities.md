@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 50
-executor: developer
-claimed_at: 2026-11-05T18:15:07Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-059-SHARED-002", "ARCH-058-COMMERCE-001"]
 enables: ["ARCH-059-MCP-001", "ARCH-059-BACKGROUND-001", "ARCH-059-SYSTEM-TEST-001"]
@@ -168,3 +168,25 @@ None
 ## Architect Dependency Reconciliation — 5 November 2026
 
 SHARED-002 Attempt 1 passed review and is explicitly developer-completed. Exact published Shared version is 5.1.0, release metadata `3096ca2`, accepted source `50891ef`. All explicit prerequisites are Complete (including ARCH-058-COMMERCE-001); promoted to Ready, unclaimed, Attempt 0 preserved. Readiness does not authorize automatic execution, consumer deployment or cutover; the staged-release rollout gate remains binding.
+
+## Developer Self-Review — Changes Requested, 5 November 2026
+
+Reviewed the current uncommitted developer draft in the canonical implementation worktree, baseline HEAD `7f50848`. Returned to Ready, executor/claim null, Attempt 1 preserved; execution/completion ownership remains developer. No acceptance or downstream promotion. No implementation source is committed, reverted or otherwise changed by this review. Use the normal developer claim workflow for the next attempt; preserve the existing dirty task-owned implementation.
+
+### Required Correction
+
+**[P2] Setup rejects legitimate unrelated capabilities on Product Search.** `src/commerce/bootstrap/system-commerce-tool-sync.ts:149` fails IDENTITY_CONFLICT whenever any capability selected under product_search has a key outside the six canonical tool keys. The query deliberately loads all capabilities for that Feature, so an existing unrelated or future published capability causes plan/apply to abort. The task explicitly requires preservation of unrelated members and permits a total greater than six, with the canonical subset appearing exactly once. Preserve and validate unrelated same-Feature members instead of treating every noncanonical key as an identity conflict. Retain rejection of actual canonical-name/ID collisions and immutable revision drift.
+
+The existing preservation case in `tests/system-commerce-tool-sync.test.ts` creates its unrelated capability under `feature-unrelated`; it does not exercise this failing same-product_search branch. Add a same-Feature unrelated capability/release fixture. Prove read-only plan, staged apply, repeat apply and interrupted retry retain that exact member/revision/feature snapshot and the old active pointer, while all six canonical members occur once and conflicting canonical names still fail closed. This finding is source-inspection evidence; no runtime reproduction is claimed.
+
+### Validation and Submission Gaps
+
+The developer draft contains 15 changed files, including Shared 5.1.0 adoption, details authoring/rendering and setup/staged cutover changes. Reviewed the current diff, task requirements and tests. The task Completion Report remains Not Started; required validation and final implementation publication are not yet recorded.
+
+Attempted the declared focused test command via npm test with system-commerce-tool-sync, commerce-product-discovery-setup, persisted-policy-operation-tool-editor, policy-operation-authoring-server-actions and policy-operation-registry files. It failed before test execution because the pretest schema-sync prerequisite could not find `node_modules/@shopify/dev-mcp/package.json`. This is a missing worktree dependency, not a reproduced application/test assertion failure. Local log `/tmp/arch059-commerce001-review.log`. No tests/typecheck/build passes are claimed by this review. Working-tree whitespace check passed.
+
+After correction, install the locked worktree prerequisites through the established workflow and run focused checks for every Work Item plus required typecheck/build. Complete the report with exact changes, stage-only/default-safe activation and optimistic-concurrency evidence, active-plan/Free provisioning without operator-policy overwrite, idempotence/interruption/conflict behavior, developer/agent assistance, physical worktree/synchronization and final task-branch commit/push evidence. Do not activate a real staged release, deploy or operate provider accounts merely to complete this source task. Consumer cutover remains gated on strict MCP acceptance.
+
+### Ownership and Downstream
+
+Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-059-COMMERCE-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-COMMERCE-001`, matching task branches. This review changes only parent task documentation. Developer source edits remain untouched. MCP, Background and terminal system validation stay Pending on this unaccepted prerequisite. No main merge, implementation gitlink update, deployment or new attempt occurs.
