@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -749,3 +749,31 @@ Resolve all three findings in the existing task-owned source/tests, preserve WIP
 The existing developer-owned integration execution policy remains in force: after corrections, provide the exact `npm run test:integration:docker` command for the developer to rerun through the owned disposable harness. Record corrected HEAD/Database pin, complete scenario results, overall exit and cleanup before acceptance. This Ready transition does not itself authorize autonomous Docker execution or claim a new attempt. Earlier independently passing 118 unit tests remain historical evidence for the reviewed commit, not validation of future corrections.
 
 MCP-003, COMMERCE-001, BACKGROUND-001 and SYSTEM-TEST-001 remain Pending on acceptance of MCP-002 and their other prerequisites. The developer requested this review be added to the definition and the task returned to Ready for agent correction. No implementation, gitlink or main branch is changed.
+
+## Architect Acceptance — Attempt 3, 5 November 2026
+
+**Accepted.** Implementation `11fba27` resolves all three prior integration findings. No blocking findings remain. Task is Complete under automatic completion mode, Attempt 3 preserved, executor and claim null. This supersedes earlier Changes Requested/Ready/pending-validation dispositions, retained above as historical evidence.
+
+### Findings Resolved
+
+1. Category assertions use typed McpRequestError code/reason, retaining the production error contract. Generation/language/version/category cases now execute successfully.
+2. FIXED settings fixtures provide valid same-shop fixed discount identity and clear it on mode changes. Current selection, denied details, AI pagination, cross-shop/cross-mode and exact override-expiry assertions remain meaningful and passed.
+3. The prior generic published fixture rendered an unsupported result field. The corrected shared test fixture uses products.search 1.0.0 with product definition 2.0.0 and the supported product output template. Discovery assertions were strengthened rather than removed. Real-registry tests reject the old template, accept the corrected definition and retain eligibility checks; PostgreSQL tests preserve full list/manifest assertions and cross-tenant installation revocation checks. Only four test/fixture files changed from the reviewed Attempt 2; production authorization was not weakened.
+
+### Developer Integration Evidence
+
+The newly supplied terminal transcript at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002/typescript` records the developer-run `npm run test:integration:docker` on 5 November 2026, from 00:15:55 to 00:16:53 London time. It reports **31 tests: 30 passed, 0 failed, 1 explicitly opt-in live Shopify test skipped**, and `Disposable PostgreSQL integration tests passed.` The formerly failing subtests all passed. Owned container `moda-mcp-it-901507446732-postgres-1`, volume and network were removed. No live Shopify pass is claimed.
+
+Reviewed the correction diff and transcript against current implementation `11fba27`, with Database gitlink `bd2d09066a8eb178a56f48fbbf88df637c411059`. Transcript SHA256: `7582013c39fed38f8c73336f0d0d4fe21b4f39974bdf3edab676b94296b3ff2a`. The report's earlier corrected-HEAD NOT_RUN statement is superseded by this subsequent developer evidence. The untracked developer transcript is preserved and not staged.
+
+### Independent Review Checks and Limits
+
+Independently ran `node --import tsx --test tests/unit/runtime/service-ports.test.ts`: **7/7 passed**, no skips. Correction whitespace check passed. Local review log `/tmp/arch058-mcp002-review-a3.log` is not a committed artifact. The earlier independent 118-unit pass remains evidence for unchanged production code at Attempt 2; it is not counted as a fresh Attempt 3 run. Reviewed Attempt 3's reported product/catalogue groups and fast checks. Docker was run by the developer, not rerun by this review.
+
+Parent and implementation review paths remain the canonical dedicated MCP-002 worktrees on matching task branches. This acceptance changes only parent documentation, with no implementation, schema, dependency, gitlink, main merge or deployment change.
+
+### Downstream Reconciliation
+
+MCP-003's explicit MCP-002 and SHOPIFY-001 prerequisites are now Complete. MCP-003 is promoted to Ready, unclaimed at Attempt 0. Commerce remains Pending on MCP-003; Background remains Pending on MCP-003 and Commerce; SYSTEM-TEST-001 retains its remaining implementation prerequisites. No downstream task is started. ARCH-058 remains incomplete until its required consumer and system validation work is accepted.
+
+The developer explicitly authorized updating the task report, downstream dependencies, committing and pushing on 5 November 2026.
