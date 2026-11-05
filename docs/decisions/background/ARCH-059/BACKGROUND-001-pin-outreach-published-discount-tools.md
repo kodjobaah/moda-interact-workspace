@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-11-05T23:14:01Z
+attempt: 2
 depends_on: ["ARCH-059-SHARED-002", "ARCH-059-COMMERCE-001", "ARCH-059-MCP-001", "ARCH-058-BACKGROUND-001"]
 enables: ["ARCH-059-SYSTEM-TEST-001"]
 created: 2026-11-05
@@ -143,7 +143,7 @@ Use launcher-resolved isolated matching task worktrees/branches and record synch
 
 ### Status
 
-In Progress — developer-owned Attempt 1; authorized Codex implementation assistance completed the Background-local changes and validation below. NOT ready for review/completion: the before-provider-I/O pinning criterion has an architect-confirmed Shared/MCP prerequisite gap. Executor, claim, attempt and execution/completion modes are unchanged. No downstream task started.
+In Progress — Attempt 2 claimed by developer at 2026-11-05T23:14:01Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
