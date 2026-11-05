@@ -342,7 +342,7 @@ Stop on an absent accepted dependency, mismatched immutable source/package/manif
 ## Completion Report
 ### Status — Ready for Architect Review, Attempt 3
 
-Attempt 3 corrects the owned-process timeout/overflow defect identified in the Attempt 2 review and adds real-process regression coverage for both termination paths. The task is submitted for Architect re-review. This submission does not claim architecture acceptance. Developer-owned build and disposable PostgreSQL evidence remain NOT RUN and are still required before acceptance.
+Attempt 3 corrects the owned-process timeout/overflow defect identified in the Attempt 2 review and adds real-process regression coverage for both termination paths. The developer-owned build and disposable PostgreSQL evidence have now passed against the final Commerce source revision. The task remains submitted for Architect re-review; this report does not claim architecture acceptance.
 
 ### Implementation delivered
 
@@ -352,26 +352,29 @@ Attempt 3 corrects the owned-process timeout/overflow defect identified in the A
 - Corrected timeout and output-overflow cleanup to capture the detached child's owned process-group ID, send TERM and then KILL to that group regardless of the leader's exit status, and share one idempotent termination sequence. This handles an npm leader that exits while a TERM-resistant descendant still holds inherited stdout/stderr pipes; unrelated process groups are not targeted.
 - Updated the Commerce README and the required focused tests, including the immutable PostgreSQL fixture test for four tools, response-only reconciliation, exact successor count, no-op repeat, and the transactional feature-edit activation race.
 - Added POSIX subprocess regressions for both timeout and output overflow. Each fixture waits for a real descendant to become ready, has the leader exit on TERM while the descendant ignores it and retains inherited output pipes, verifies the descendant and owned process group terminate, and checks that an unrelated sentinel process survives.
+- Corrected the PostgreSQL activation-race fixture to prepare its competing successor from the currently active response-only release. The first disposable run exposed that its stale base-release ID did not match the active pointer; the corrected proof then passed.
 
 ### Validation completed
 
 - Focused Vitest run: **149 tests passed across 12 files**. This includes both new timeout/overflow process-group regressions and the system-tool sync, response ownership, setup receipt/process contracts, lifecycle/storage release deltas, policy operation registration, preview composition/service, Studio integration, conversation disclosure, external availability, and feature-authoring suites.
 - `npm run typecheck`: **passed** (schema synchronization, route type generation and TypeScript check).
 - `npm run lint`: **passed with 0 errors and 11 warnings**. All remaining warnings are in untouched files; modified files have no lint warnings.
+- `npm run build`: **passed, exit 0**, on final Commerce revision `58f5418ada85d1cfc08400f64ab41b198fb427b4`. Schema synchronization, packaged manual/runtime smoke checks, Prisma generation, Next.js compilation, TypeScript, static generation and build traces completed. Next.js emitted one existing Nunjucks critical-dependency warning; it did not fail the build. Full output: `/tmp/commerce001-attempt3-build.log`.
+- `node scripts/run-system-commerce-tool-sync-postgres.mjs`: **passed, exit 0** on the source tree corresponding to Commerce revision `58f5418ada85d1cfc08400f64ab41b198fb427b4`; accepted migrations passed and the PostgreSQL test passed **1/1**. The run used `pgvector/pgvector:pg17`, RepoDigest **`pgvector/pgvector@sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8`** (read-only inspect output: `/tmp/commerce001-attempt3-postgres-image.log`), Database revision **`bd2d09066a8eb178a56f48fbbf88df637c411059`**, Shared release revision **`1927375a74496488aa83049c39edeee9d278497a`** (`@modainteract/moda-interact-shared@5.0.0`), and Commerce revision **`58f5418ada85d1cfc08400f64ab41b198fb427b4`**. The test proved dry-run read-only behavior; preservation of the immutable unrelated prior member/feature; exactly one four-tool release successor; an identical second-run no-op with unchanged state; a single response-only successor; and activation-race rejection with the pointer unchanged and concurrent feature edit preserved. Captured command session `20154` exited 0 and reported `accepted migrations PASS`, `PASS ARCH-052-COMMERCE-006 disposable PostgreSQL proof`, and `cleanup PASS; zero owned PostgreSQL containers remain` (**1 test passed**).
 - `npm ls @modainteract/moda-interact-shared semver @types/semver zod --depth=0`: Shared **5.0.0**, semver **7.8.5**, @types/semver **7.8.0**, direct Zod **4.6.5**.
 - Immutable legacy fixture SHA-256 remains **`f31d8315bb00595967948cc1936801bb5d0ced62d16e34d835dcbfa33528475a`**. The accepted Database gitlink **`bd2d09066a8eb178a56f48fbbf88df637c411059`** descends from merged DATABASE-001 commit `395675f909d604f0bff83ffb3d7d5586f0bdd39b`; the full-tree equivalence reconciliation and later Database changes remain preserved.
 - `git diff --check`: **passed**.
 
-### Developer-owned validation handoff — NOT RUN
+### Developer-owned validation evidence — COMPLETE
 
-The Attempt 2 review assigns these commands to developer-owned validation. They were not run for this submission; no Docker container, PostgreSQL migration, live provider/embedding call, persistent environment apply, package publication, deployment or customer send occurred:
+The user authorized the developer-owned checks. Both required commands completed successfully on the final Commerce source revision:
 
 ```sh
 npm run build
 node scripts/run-system-commerce-tool-sync-postgres.mjs
 ```
 
-The PostgreSQL suite is extended for the developer run. Record the selected image digest, Database/Shared/Commerce revisions, exact command and exit status, immutable prior-release preservation, exact single successor/no-op and activation-race results, and verify zero owned-container leftovers. These results are required before task acceptance. `ARCH-058-SYSTEM-TEST-001` still owns the cross-repository process/transport/Background composition run.
+Only the isolated, ownership-labeled PostgreSQL container was created and removed. No live provider/embedding call, persistent environment apply, package publication, deployment or customer send occurred. `ARCH-058-SYSTEM-TEST-001` still owns the cross-repository process/transport/Background composition run.
 
 ### Task branch and worktree evidence
 
@@ -380,7 +383,7 @@ The PostgreSQL suite is extended for the developer run. Record the selected imag
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-COMMERCE-001`, branch `task/ARCH-058-COMMERCE-001`.
 - The implementation worktree's Database submodule is `bd2d09066a8eb178a56f48fbbf88df637c411059`. The implementation changes are isolated to this Commerce task worktree; the shared workspace checkout and MCP source were not changed. Shared is pinned as package `5.0.0` with the accepted SHARED-006 lock integrity.
 - The prepared Attempt 3 claim was pushed by the launcher as parent commit `68483396d0fb0bbf338fc96567ba5efd22d87b95`. The preserved implementation draft `0914178808de0b2110e7ad7da667ce8e68c8fc8b` and prior implementation `7927e07101b48359d50c260f209ee385e245a3a8` were continued without resetting or recapturing the legacy fixture. Recursive submodule sync/update passed; the prepared Database submodule remained at the accepted pin above. The shared/default workspace checkouts were not switched, and no other task worktree was reused.
-- Attempt 3 implementation commit **`8c789a1`** (`fix(commerce): bound owned setup process cleanup`) is pushed to `origin/task/ARCH-058-COMMERCE-001`. The parent report/status update is committed and pushed separately. No task branch was merged to `main`; no parent implementation gitlink was staged.
+- Attempt 3 implementation revision **`58f5418`** (process-group timeout correction and PostgreSQL activation-race fixture fix) is pushed to `origin/task/ARCH-058-COMMERCE-001`; it includes commit `8c789a1` (`fix(commerce): bound owned setup process cleanup`). The parent report/status update is committed and pushed separately. No task branch was merged to `main`; no parent implementation gitlink was staged.
 
 Downstream tasks remain gated pending Architect review/acceptance. This submission records implementation and bounded validation only; it does not mark the task Complete.
 
