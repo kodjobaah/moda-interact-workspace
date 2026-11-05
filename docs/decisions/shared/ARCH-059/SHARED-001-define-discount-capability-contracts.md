@@ -148,3 +148,33 @@ None
 Pending implementation.
 ### Follow-up
 None
+
+## Architect Draft Review — 5 November 2026
+
+### Disposition
+
+**No blocking code findings identified in the inspected uncommitted draft. Formal acceptance pending developer completion/submission.** This is a review of working-tree bytes, not an accepted or published implementation commit. Preserve `execution_mode: developer`, `completion_mode: developer`, `status: in_progress`, executor/claim and Attempt 1. Explicit developer completion via the existing developer workflow remains required. SHARED-002 is not promoted or executed. Earlier definition-only review text is historical.
+
+### Reviewed Draft
+
+Reviewed the current edits to `src/commerce/definitions.ts`, `src/commerce/index.ts` and `src/commerce/README.md`, plus new untracked `src/commerce/discount-capability-contracts.ts` and `src/commerce/discount-capability-contracts.test.ts` in the dedicated implementation worktree. Implementation HEAD was `9b84d11`, a baseline rather than a commit containing these draft changes. This review does not stage, commit or push those developer source files.
+
+The draft adds discounts.getDetails to accepted policy execution IDs and exports canonical options/details descriptors referencing the existing input/output validators. It retains operationVersion 1.0.0 independently of published definitionVersion. Discount payload/timestamp schemas and legacy built-in exports remain unchanged for compatible consumers. Focused vectors cover canonical operation mapping, forged input rejection, preserved discount facts, feature eligibility facts, stale revision mismatch, duplicate published/built-in names and historical built-in rejection from the selected published-membership path. These Shared fixtures do not independently prove real plan provisioning, runtime MCP cutover or Commerce setup; those remain their owning tasks. No blocking defect was identified in the inspected draft.
+
+### Independent Validation
+
+Initial tests could not start because the new worktree lacked installed dependencies (zod/langgraph module-not-found); those startup failures are not classified as implementation regressions. Installed the committed dependency graph with `npm ci --no-audit --no-fund`, then ran:
+
+```bash
+npm exec -- tsx --test src/commerce/discount-capability-contracts.test.ts src/commerce/runner/built-in-tools.test.ts
+npm run typecheck
+npm run build
+```
+
+**14/14 tests passed**, no failures/skips; typecheck and build passed, including declarations. Working-tree whitespace check passed. No package publication, live provider, database operation or consumer upgrade was performed. Dependency installation/build generated only ordinary local artifacts; developer source edits were preserved. Local logs `/tmp/arch059-shared001-review.log` and `/tmp/arch059-shared001-review-install.log` are not committed artifacts.
+
+### Completion Handoff
+
+Before formal acceptance, finish the developer Completion Report with exact implementation commit, files, validation and isolation/synchronization evidence; publish the intended implementation through the authorized developer workflow and submit it for review. Do not treat this draft assessment as package availability or authority to start SHARED-002. If draft bytes change, reassess affected checks/findings against the final submission.
+
+Parent review worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-059-SHARED-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-SHARED-001`, matching task branches. The developer explicitly authorized updating the task definition and committing/pushing this review on 5 November 2026. Only parent review documentation is published; no claim, task completion, dependency promotion, implementation source, gitlink or main branch change is made.
