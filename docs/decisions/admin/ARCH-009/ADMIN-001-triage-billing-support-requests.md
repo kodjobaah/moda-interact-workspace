@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: superseded
 priority: 60
-executor: copilot
-claimed_at: 2026-09-11T01:43:49Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-009-DATABASE-001
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-009-ADMIN-002
 created: 2026-09-09
-updated: 2026-09-11T01:52:00Z
+updated: 2026-11-05
 ---
 
 # ARCH-009-ADMIN-001
@@ -224,3 +224,9 @@ None
 Pending
 ### Follow-up
 None
+
+## Architect supersession — 2026-11-05
+
+Explicitly authorized by the developer. Superseded; do not claim or implement this legacy definition. Preserve all earlier attempt, implementation and review history; supersession does not accept the old implementation.
+
+Binding replacements: [ARCH-010 lifecycle ownership](../../../architecture/ARCH-010-merchant-lifecycle-state-transitions.md) removes the local cancellation state machine and assigns subscription cancellation to Shopify. [ARCH-015 Admin refund replacement](../ARCH-015/ADMIN-001-manual-refund-fallback.md) owns the current refund workflow and guarded provider settlement. Remaining Woo-specific support stays in ARCH-027-ADMIN-001.
