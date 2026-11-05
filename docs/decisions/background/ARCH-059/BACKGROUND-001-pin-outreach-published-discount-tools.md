@@ -1,7 +1,7 @@
 ---
 id: ARCH-059-BACKGROUND-001
 architecture_id: ARCH-059
-title: Pin outreach published discount tools
+title: Consume MCP-authorized published discount capabilities
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -19,13 +19,13 @@ enables: ["ARCH-059-SYSTEM-TEST-001"]
 created: 2026-11-05
 updated: 2026-11-05
 ---
-# Pin outreach published discount tools
+# Consume MCP-authorized published discount capabilities
 
 ## Architecture
 ARCH-059; docs/architecture/ARCH-059-unified-discount-capability-registration.md. Coordinator: moda_architect.
 
 ## Objective
-Pin outreach published discount tools through canonical setup, immutable release and MCP authorization.
+Consume published discount capabilities while MCP owns current release/revision selection and execution authorization for each request.
 
 ## Context
 MCP currently appends global discount tools outside published membership. Follow parent architecture identity, parity and compatible migration decisions.
@@ -42,25 +42,26 @@ Feature product_search (Product Search) owns both canonical discount tools exact
 ## Work Items
 - [ ] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
 - [ ] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; preserve four-tool outreach allowlist, budgets and deadline.
-- [ ] Pin release/capability/revision within attempt; missing/stale/mismatched tools follow existing unavailable/no-verified-offer behavior, never permissive fallback. Require the versioned Shared expected-call identity and positive MCP enforcement support described in the definition amendment; host pre/post checks alone do not satisfy this item.
+- [ ] Request permitted capabilities through MCP; MCP resolves and validates the current published release/revision for each request before dispatch. Background must not require an attempt-pinned expected revision or reject an otherwise authorized call solely because activation changed the revision between requests. Missing or denied capabilities retain the existing explicit failure behavior; no permissive fallback.
 - [ ] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
 - [ ] Add parity tests for conversation/outreach tool identity, duplicate names, denied purpose, missing release, revoked permission and existing eligibility fixtures.
 
 ## Interfaces / Contracts
 Published @modainteract/moda-interact-shared/commerce input/output, release/capability/revision/grant validators; versioned extensions owned by ARCH-059-SHARED-001, registry availability by ARCH-059-SHARED-002. Producers/consumers and storage trust boundary are normative in parent architecture.
 
-### Architect-confirmed expected-call prerequisite (definition amendment)
+### Controlling developer-as-architect decision — MCP-owned revision selection (2026-11-05)
 
-The implementation exposed a cross-request pinning gap in accepted MCP-001. A host manifest read followed by a call is not an atomic expected-release assertion. Preserve the original before-provider-I/O requirement; pre/post host checks and pause/drain do not replace it.
+MCP owns selecting the correct current published revision for each request. Background requests an allowed capability with trusted shop/purpose context; it does not select a server revision or require MCP to execute an attempt-pinned revision. A legitimate activation between discovery and execution may cause MCP to execute the newly current authorized revision. That change alone is not a stale-attempt violation.
 
-Before this task can return for review:
+MCP must continue validating current tenant, active release membership, capability/revision consistency, Feature/plan permissions and supported operation/input contracts before provider dispatch, including its existing fresh registry admission checks. Request-local snapshot-to-dispatch consistency remains MCP's responsibility. This does not authorize dispatch by an untrusted name alone, missing membership fallback, revoked permissions or an unsupported contract.
 
-- Complete the architect-defined sequence ARCH-059-SHARED-003 (validated trusted expected published-call identity), ARCH-059-SHARED-004 (exact package publication) and ARCH-059-MCP-002 (server enforcement and positive support advertisement).
-- Consume that exact published Shared contract. Send the attempt-pinned release/capability/key/tool/revision/name in trusted client context; model arguments cannot supply or override it. Reject missing enforcement support because older MCP ignores unknown context fields.
-- Prove unchanged identity success, malformed/foreign identity rejection, and release activation both before the MCP request snapshot and before its fresh registry check. Both race cases must reject before dispatch/provider I/O, with zero provider calls.
-- Preserve historical grants and the existing four-name outreach purpose allowlist, current policy checks, budgets, deadlines, credit and delivery semantics.
+Background retains trusted INITIAL_RECOVERY_OUTREACH purpose, checkout_recovery admission, the four-name outreach allowlist, bounded discovery, current merchant policy, turn/lease/takeover checks, result validation, budgets, deadlines and delivery/credit behavior. Discovery metadata and persisted historical grants may retain revision IDs for audit/compatibility; they do not make Background the authority selecting or enforcing a remote revision. Do not rewrite historical grants. Contract/permission incompatibility must still fail closed; revision equality across separate MCP requests is not required by this task.
 
-These three prerequisites are portable architect definitions, not yet materialised/claimed/complete tasks. Their exact contract and resumption sequence are recorded in this definition and its report. The formal dependency list must be reconciled by the architect when they are materialised; no missing prerequisite is treated as satisfied. Preserve this active developer Attempt 1 rather than silently reclaiming it.
+The earlier proposed SHARED-003, SHARED-004 and MCP-002 expected-call sequence is **withdrawn for this task**. No expected-revision context field, positive expected-call support advertisement, additional Shared publication or zero-provider-call test for activation alone is required. The portable files in `/tmp/arch059-background-prerequisites/` are superseded proposals, not prerequisites to materialise or execute under this definition.
+
+Required deterministic proof: Background supplies trusted shop/purpose and only permitted capability arguments; MCP owns current revision selection; a compatible activation between requests is not rejected solely for revision drift; current membership/permission/tenant and incompatible input/output failures still deny safely; existing conversation-state and outreach budgets remain enforced. Use the existing accepted MCP/Shared contracts rather than inventing a new expected-call transport.
+
+This decision changes the task contract, not its completion status. Existing implementation contains host manifest-pinning checks and must be reconciled against this boundary in a subsequent implementation/review cycle. No passing review, completion or runtime change is asserted here.
 
 ## Dependencies
 - ARCH-059-SHARED-002
@@ -74,7 +75,7 @@ These three prerequisites are portable architect definitions, not yet materialis
 ## Acceptance Criteria
 - [ ] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
 - [ ] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; preserve four-tool outreach allowlist, budgets and deadline.
-- [ ] Pin release/capability/revision within attempt; missing/stale/mismatched tools follow existing unavailable/no-verified-offer behavior, never permissive fallback. Require the versioned Shared expected-call identity and positive MCP enforcement support described in the definition amendment; host pre/post checks alone do not satisfy this item.
+- [ ] Request permitted capabilities through MCP; MCP resolves and validates the current published release/revision for each request before dispatch. Background must not require an attempt-pinned expected revision or reject an otherwise authorized call solely because activation changed the revision between requests. Missing or denied capabilities retain the existing explicit failure behavior; no permissive fallback.
 - [ ] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
 - [ ] Add parity tests for conversation/outreach tool identity, duplicate names, denied purpose, missing release, revoked permission and existing eligibility fixtures.
 - [ ] Existing authorization/provider evaluation and unrelated published members remain intact.
@@ -283,3 +284,8 @@ Reviewed the reported 64 focused tests, 197 recommendation tests, 70 host tests,
 ### Downstream
 
 ARCH-059-SYSTEM-TEST-001 remains gated on Background completion and terminal manual execution requirements. No downstream task is promoted. Explicit developer completion is unavailable until required work and a later passing review are durable.
+
+
+## Definition Decision Superseding Expected-Call Blocker — 2026-11-05
+
+The developer explicitly directed MCP-owned revision selection and requested this definition update. The earlier Developer Self-Review Changes Requested record remains historical, but its expected-call prerequisites and activation-alone zero-provider-call criterion are superseded by the controlling decision above. They must not be used to block this task or spawn additional work. The task remains Ready, developer/developer, claim null, Attempt 1 unchanged. Reconcile the existing host manifest/grant checks and tests with the amended responsibility boundary before a new passing review; do not simply relabel the prior implementation accepted. Formal dependency IDs are unchanged. No downstream promotion, claim, code change, package publication, deployment or activation occurs.
