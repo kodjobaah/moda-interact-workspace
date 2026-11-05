@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -376,7 +376,7 @@ No new agent, queue, worker, transaction retry framework, product mirror, Admin/
 
 ## Completion Report
 
-**Status: Ready for Review (Attempt 2).** The Attempt 1 P2 correction is implemented and published. No architect acceptance decision has been made by this agent.
+**Status: Architect-accepted and Complete (Attempt 2).** Accepted on 2026-11-05 at source `f49dcb0b87ac9213824db74bcd10fd97c7043a00`. Executor/claimed_at remain null and attempt remains 2.
 
 ### Architect correction checklist
 
@@ -449,7 +449,7 @@ Merged to either main branch: no. Task is returned to `review` for moda_architec
 
 ## Architect Review
 
-Changes Requested on 2026-11-05; see the Attempt 1 review below. Acceptance remains withheld.
+Accepted at Attempt 2 on 2026-11-05; see the acceptance record below. The historical Attempt 1 finding is resolved.
 
 ## Architect Dependency Gate — MCP-002 Attempt 2 (2026-11-04)
 
@@ -498,3 +498,14 @@ Reviewed the submitted build/lint/wrapper regression results and the recorded de
 ### Follow-up
 
 The owning agent must reclaim this task through the normal launcher, implement and test the correction, rerun relevant validation and update the completion report before resubmission. All explicit upstream dependencies remain Complete. SYSTEM-TEST-001 remains Pending on Background acceptance. No implementation edit, integration merge, deployment, persistent publication or customer send is made by this review.
+
+
+## Architect Acceptance — Attempt 2 (2026-11-05)
+
+**Accepted and Complete.** Reviewed implementation `f49dcb0b87ac9213824db74bcd10fd97c7043a00`, matching the pushed implementation task branch. No actionable findings remain. Automatic completion applies; executor/claimed_at remain null, Attempt 2 unchanged.
+
+The host now invokes `selectFallbackRecommendation` before refresh planning for both soft dispositions, retains at most one valid observed proposal and preserves current-context/exact-basket/browse preference. The integrated loopback regression asserts the chosen product, full controlled body and exactly two searches plus one selected-product refresh, with zero discount calls. The unit regression covers exact basket product/variant identity. Discount inspection, independent shipping, authorization and call-budget paths remain in place.
+
+Independent review validation: `npm run test:commerce-recommendations` passed **197 tests across 20 files**; `npm run test:commerce-host` passed **70 tests**. Local logs: `/tmp/background058-attempt2-review-unit.log` and `/tmp/background058-attempt2-review-host.log`. Correction `git diff --check` passed; implementation and parent worktrees were clean at review. Reviewed submitted Attempt 2 build/lint and 84 wrapper/processor tests; those checks were not independently rerun. The recorded developer-authorized PostgreSQL context proof passed 1 test, exit 0, at `46ff3ad`; its boundary is unchanged by the fallback correction and was not rerun by the architect.
+
+SYSTEM-TEST-001 now has all explicit prerequisites Complete and is promoted to dependency-ready (`ready`), unclaimed, Attempt 0 preserved. Terminal execution remains subject to its existing developer authorization, integration and environment gates. No test execution, main merge, deployment, persistent publication or customer send is authorized by this readiness transition. This accepts Background only; the architecture's terminal proof remains outstanding.

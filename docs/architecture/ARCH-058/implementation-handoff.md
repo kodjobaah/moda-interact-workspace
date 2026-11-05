@@ -197,3 +197,8 @@ Commerce acceptance and follow-up verification are published. Rechecked task fro
 ## Background Attempt 1 Review — 5 November 2026
 
 BACKGROUND-001 is Ready/unclaimed, Attempt 1 preserved, after architect Changes Requested at source `46ff3ad`. Its host does not invoke the required at-most-one fallback selector for soft dispositions; the task review specifies the correction and integrated loopback regression. Independent review passed 196 recommendation tests plus 69 host tests. Recorded developer PostgreSQL validation is complete; it was not rerun by the architect. Upstream prerequisites remain Complete; SYSTEM-TEST-001 remains Pending on Background acceptance. This supersedes historical Attempt 0 readiness snapshots without starting execution or changing dependency edges.
+
+
+## Background Acceptance and Terminal Frontier — 5 November 2026
+
+BACKGROUND-001 Attempt 2 is accepted and Complete at `f49dcb0b87ac9213824db74bcd10fd97c7043a00`. Its fallback-selection finding is resolved; independent focused review passed 197 recommendation and 70 host tests. SYSTEM-TEST-001 has all explicit prerequisites Complete and is now dependency-ready/unclaimed at Attempt 0. Existing developer authorization, launcher integration and terminal environment gates still apply. Earlier Pending/Changes Requested frontier snapshots are historical. No terminal execution, persistent setup, main merge, deployment or complete-architecture acceptance is implied.
