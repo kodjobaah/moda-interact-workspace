@@ -42,12 +42,25 @@ Feature product_search (Product Search) owns both canonical discount tools exact
 ## Work Items
 - [ ] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
 - [ ] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; preserve four-tool outreach allowlist, budgets and deadline.
-- [ ] Pin release/capability/revision within attempt; missing/stale/mismatched tools follow existing unavailable/no-verified-offer behavior, never permissive fallback.
+- [ ] Pin release/capability/revision within attempt; missing/stale/mismatched tools follow existing unavailable/no-verified-offer behavior, never permissive fallback. Require the versioned Shared expected-call identity and positive MCP enforcement support described in the definition amendment; host pre/post checks alone do not satisfy this item.
 - [ ] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
 - [ ] Add parity tests for conversation/outreach tool identity, duplicate names, denied purpose, missing release, revoked permission and existing eligibility fixtures.
 
 ## Interfaces / Contracts
 Published @modainteract/moda-interact-shared/commerce input/output, release/capability/revision/grant validators; versioned extensions owned by ARCH-059-SHARED-001, registry availability by ARCH-059-SHARED-002. Producers/consumers and storage trust boundary are normative in parent architecture.
+
+### Architect-confirmed expected-call prerequisite (definition amendment)
+
+The implementation exposed a cross-request pinning gap in accepted MCP-001. A host manifest read followed by a call is not an atomic expected-release assertion. Preserve the original before-provider-I/O requirement; pre/post host checks and pause/drain do not replace it.
+
+Before this task can return for review:
+
+- Complete the architect-defined sequence ARCH-059-SHARED-003 (validated trusted expected published-call identity), ARCH-059-SHARED-004 (exact package publication) and ARCH-059-MCP-002 (server enforcement and positive support advertisement).
+- Consume that exact published Shared contract. Send the attempt-pinned release/capability/key/tool/revision/name in trusted client context; model arguments cannot supply or override it. Reject missing enforcement support because older MCP ignores unknown context fields.
+- Prove unchanged identity success, malformed/foreign identity rejection, and release activation both before the MCP request snapshot and before its fresh registry check. Both race cases must reject before dispatch/provider I/O, with zero provider calls.
+- Preserve historical grants and the existing four-name outreach purpose allowlist, current policy checks, budgets, deadlines, credit and delivery semantics.
+
+These three prerequisites are portable architect definitions, not yet materialised/claimed/complete tasks. Their exact contract and resumption sequence are recorded in this definition and its report. The formal dependency list must be reconciled by the architect when they are materialised; no missing prerequisite is treated as satisfied. Preserve this active developer Attempt 1 rather than silently reclaiming it.
 
 ## Dependencies
 - ARCH-059-SHARED-002
@@ -61,7 +74,7 @@ Published @modainteract/moda-interact-shared/commerce input/output, release/capa
 ## Acceptance Criteria
 - [ ] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
 - [ ] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; preserve four-tool outreach allowlist, budgets and deadline.
-- [ ] Pin release/capability/revision within attempt; missing/stale/mismatched tools follow existing unavailable/no-verified-offer behavior, never permissive fallback.
+- [ ] Pin release/capability/revision within attempt; missing/stale/mismatched tools follow existing unavailable/no-verified-offer behavior, never permissive fallback. Require the versioned Shared expected-call identity and positive MCP enforcement support described in the definition amendment; host pre/post checks alone do not satisfy this item.
 - [ ] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
 - [ ] Add parity tests for conversation/outreach tool identity, duplicate names, denied purpose, missing release, revoked permission and existing eligibility fixtures.
 - [ ] Existing authorization/provider evaluation and unrelated published members remain intact.
@@ -129,22 +142,87 @@ Use launcher-resolved isolated matching task worktrees/branches and record synch
 
 ### Status
 
-In Progress — developer-owned Attempt 1 claimed at 2026-11-05T21:57:46Z. Codex implementation assistance explicitly authorized. Launcher report formatting repaired before publishing this same claim.
+In Progress — developer-owned Attempt 1; authorized Codex implementation assistance completed the Background-local changes and validation below. NOT ready for review/completion: the before-provider-I/O pinning criterion has an architect-confirmed Shared/MCP prerequisite gap. Executor, claim, attempt and execution/completion modes are unchanged. No downstream task started.
 
 ### Files Changed
-None
+
+Canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-BACKGROUND-001`, branch `task/ARCH-059-BACKGROUND-001` (21 committed task-owned files):
+
+- `package.json`, `package-lock.json`: accepted published Shared 5.1.0.
+- `src/commerce/published-tools.ts` (new): Shared manifest/grant validation, published-only admission and capability-key list checks; valid underlying tool reuse remains supported.
+- `src/commerce/{grants,mcp-client,host}.ts`: published member/revision persistence validation, historical built-in refusal without rewriting records, attempt manifest pinning, pre/post result validation, capability-key routing and preserved current-offer policy refresh.
+- `src/services/recovery-offers/{recovery-outreach-mcp-selector,initial-outreach-offer-selection,current-outreach-offer-revalidation}.service.ts`, `src/agents/initial-outreach-offer.agent.ts`, `src/services/recovery-product-media/recovery-product-image-resolver.ts`: async production factory admission through existing checkout_recovery entitlement before selector/client creation; pinned outreach discovery and calls.
+- `tests/fixtures/commerce/published-discounts.ts` (new), `tests/unit/commerce/published-{tools,client,grants}.test.ts` (new), `tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts`: Shared-derived fixtures, persisted identities, stale/missing/duplicate/legacy/purpose failures and admission tests.
+- `tests/integration/commerce/host.fixture.ts`, `tests/integration/commerce/host-suites/{authority,grants,recommendations}.ts`: real local SDK fixture now advertises capability keys and uses published discount grants; expectations preserve unrelated underlying tool reuse and recommendation facts.
+- `README.md`: migration behavior, outstanding prerequisite and operator rollout gate.
+
+Implementation publication is explicitly authorized by the developer and recorded in Git / VCS below. The durable developer claim was pushed at `86b511c13`. Shared/default implementation and parent checkouts were not switched for execution; no gitlink or main update.
+
+### Git / VCS
+
+- Task branch in both repositories: `task/ARCH-059-BACKGROUND-001`.
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Dedicated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-059-BACKGROUND-001`; dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-BACKGROUND-001`.
+- Preparation synchronization/dependency/submodule steps completed before the report-format claim repair; no claim increment or startup synchronization was repeated for publication.
+- Implementation baseline `efbbe0f`; implementation commit `0995635` published successfully to `origin/task/ARCH-059-BACKGROUND-001` on 5 November 2026, explicitly authorized by the developer. All 21 source/test/doc/dependency files are committed; staged scope and whitespace were checked.
+- Parent durable claim `86b511c13`; this definition/report publication commit stages only this task file and is pushed to matching `origin/task/ARCH-059-BACKGROUND-001`. Its resulting SHA is reported to the developer after successful publication.
+- Submodule gitlink staged: no. Shared checkouts switched/mutated for implementation: no. Another task worktree reused: no. Main merges/pushes, deployment and activation: none.
+
 ### Work Completed
-None
+
+- Removed conversation built-in descriptor/grant admission; new persistence requires a Shared-valid published projection and exact stored capability/tool/revision/definition metadata. Historical rows remain untouched and fail closed on the new path.
+- Conversation and outreach share canonical published identities. Tools/list is checked against capability keys/input schemas; underlying model tool names route to an admitted published capability key. Legitimate capability description overrides and same-revision tool reuse remain valid.
+- Outreach retains trusted INITIAL_RECOVERY_OUTREACH purpose, the explicit four-name allowlist, list-before-call, Shared input/output validation and existing call/search/detail budgets. The existing graph, deadline, eligibility/combinations algorithms and identifier-only model selection remain unchanged.
+- Every production selector factory, including price reconciliation, current offer revalidation and product media, uses the existing checkout_recovery Feature admission before construction. No new Feature or billing rule/credit mutation introduced.
+- Manifest/release/revision drift and revoked selections are checked before calls, and post-call drift discards a raced result. These are HOST checks only and are explicitly insufficient for the remaining server-enforced race gate below.
+- Existing offer policy refresh, revalidation, moderation, human takeover, credit and delivery behavior remain unchanged. Task-focused existing behavior suites pass.
+
 ### Validation Results
-Not run; definition only.
+
+Node 24.19.0 / npm 11.17.0 through canonical bootstrap; commands run in the isolated implementation worktree unless noted.
+
+- `npm install --save-exact @modainteract/moda-interact-shared@5.1.0 --include=dev` — passed.
+- `npm test -- tests/unit/commerce/published-tools.test.ts tests/unit/commerce/published-client.test.ts tests/unit/commerce/published-grants.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts tests/unit/services/recovery-offers/initial-outreach-offer-selection.service.test.ts tests/unit/services/recovery-offers/initial-outreach-agent-context.service.test.ts tests/unit/services/recovery-product-media/recovery-product-image-resolver.test.ts tests/unit/services/effective-billing-policy.service.test.ts` — 8 files / 64 tests passed. Evidence `/tmp/arch059-bg-focused-final.log`.
+- `npm run test:commerce-recommendations` — 20 files / 197 tests passed, including eligibility, combinations, agent/graph, current offer revalidation, context/recommendation and template behaviors. Evidence `/tmp/arch059-bg-recommendations.log`.
+- `npm run test:commerce-host` — 70 tests passed using local mocked HTTP/SDK/model fixtures, no live provider or production service. Evidence `/tmp/arch059-bg-host-last.log`. Earlier migrated fixture assertions were corrected, not waived.
+- `npm run build` — passed, including declared Prisma generation and TypeScript compilation. No separate typecheck script exists; none invented. Evidence `/tmp/arch059-bg-build-last.log`.
+- `npm run lint` — passed with no diagnostics. Evidence `/tmp/arch059-bg-lint-last.log`.
+- `git -c core.fsmonitor=false diff --check` — passed; report also checked after writing.
+
+Exploratory broad run: `npm run test:unit -- tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` runs the full tests/unit directory because the script already supplies that directory. It reported 3741 passed / 40 failed across 356 files: five new fixture constraint failures were subsequently fixed and the affected focused tests passed; 35 failures were outside task files. Evidence `/tmp/arch059-bg-unit-first.log`.
+
+Controlled baseline comparison: extracted pre-task HEAD `efbbe0f` read-only into `/tmp/arch059-bg-pre-task`, reused identical installed dependencies, and ran `npm test -- <the 12 unchanged failing test file paths>` via subprocess (exact list `/tmp/arch059-bg-pre-task-files.json`). Baseline also reported 35 failed / 165 passed. Thirty-four broad-run failure identifiers matched; the remaining identity on each side was a different 5-second observability child-process timeout. Isolated `npm test -- tests/unit/runtime/observability-startup.test.ts` reruns on current and baseline both had 9 passed / 1 failed, only the inherited test hardcoding Shared 3.0.0 (pre-task package already pinned 5.0.0). No child-process timeout reproduced in isolation. Evidence `/tmp/arch059-bg-baseline.log`, `/tmp/arch059-bg-runtime-{current,baseline}.log`. Full suite is NOT claimed green. Historical ARCH025-BACKGROUND-TEST-001 does not describe this full current failure set; it was not used to waive new failures.
+
+No Docker/PostgreSQL/Redis integration, live external provider, deployment, queue operation, release activation or grant migration was performed. Canonical setup provisioning/apply/retry behavior remains prerequisite Commerce evidence; this task does not claim to rerun it.
+
 ### Deviations
-None
+
+A narrow correction to task report blank-line formatting was necessary after the launcher wrote Attempt 1 but before it could publish the claim. The existing claim was completed and pushed once; no second attempt/claim was created. Preparation had already synchronized worktrees/submodules and passed dependency gates before the report-format stop.
+
+The requested implementation cannot satisfy the complete pinning gate using Background changes alone. No contract was invented locally and no other implementation repository was edited. No acceptance criterion was weakened.
+
 ### Assumptions
-Existing lifecycle persistence supports canonical capabilities.
+
+Accepted Commerce provisions the explicit product_search mappings for active Free/paid plans and stages the complete release. Existing effective billing Feature selection remains authoritative for checkout_recovery; MCP remains authoritative for current published tool entitlement/provider access.
+
 ### Unresolved Issues
-None identified during definition.
+
+REQUIRED BEFORE REVIEW: trusted expected-call identity and positive enforcement support must be published by Shared, enforced by MCP and then consumed by this client. Current pre/post host checks cannot prove rejection before provider I/O if release activation races the request. Architect assessment and portable prerequisite handoff are recorded below. Current task remains developer In Progress; no review, completion or downstream promotion.
+
 ### Architectural Concerns
-Return newly discovered cross-service or policy gaps before proceeding.
+
+Architect assistance confirmed the concrete race against accepted MCP `519e905`: it selects the current release for tools/call and its registry compares against that request's snapshot, not Background's pinned attempt. Activation after the last Background manifest read but before MCP snapshot resolution can execute the new revision. Background may discard the result afterward, but this does not meet the normative before-provider-I/O requirement. Pause/drain is rollout mitigation, not enforcement evidence.
+
+Portable architect definitions (defined, NOT materialised, not claimed/executed) are available at:
+
+- `/tmp/arch059-background-prerequisites/SHARED-003-define-expected-published-call-identity.md`
+- `/tmp/arch059-background-prerequisites/SHARED-004-publish-expected-published-call-identity.md`
+- `/tmp/arch059-background-prerequisites/MCP-002-enforce-host-expected-published-call-identity.md`
+- `/tmp/arch059-background-prerequisites/HANDOFF.md`
+
+Sequence: accepted/completed SHARED-003 -> published/accepted/completed SHARED-004 -> accepted/completed MCP-002 -> architect reconciles current Background prerequisites and resumes THIS developer attempt. The new contract must carry the pinned release/capability/key/tool/revision/name through trusted context, with positive support advertisement because old MCP ignores extra context keys. Model arguments never supply that authority. Required resumption tests cover unchanged identity success, malformed/foreign identity, and both activation race windows with zero provider calls. Existing lifecycle/dependencies and architect review section were not edited by this assistance pass.
+
+Retain controlled staged activation, pause/drain, unique-name/plan-parity verification and paired MCP/Background/pointer rollback. No deployment or activation is authorized by portable definitions or local source readiness.
 
 ## Architect Review
 ### Review Status
@@ -172,3 +250,10 @@ COMMERCE-001 Attempt 1 passed developer self-review and is explicitly developer-
 ## Architect Dependency Reconciliation — 5 November 2026
 
 Developer-completed ARCH-059-MCP-001 after durable accepted Attempt 1 review `7cbf62320` and published implementation `519e905`. All explicit prerequisites are Complete (ARCH-059-SHARED-002, ARCH-059-COMMERCE-001, ARCH-059-MCP-001, ARCH-058-BACKGROUND-001). Promoted Pending -> Ready; Attempt 0, executor null and claimed_at null preserved. No claim/execution is authorized by reconciliation alone. Retain staged-release cutover, pause/drain and operator activation gates.
+
+
+## Developer-authorized definition and publication update — 5 November 2026
+
+The developer requested: “can you update the task definition commit and push”. The definition now explicitly records the architect-confirmed expected-call prerequisite, positive enforcement support and zero-provider race tests. Original acceptance requirements are preserved, not waived. The original formal dependencies remain unchanged until the portable prerequisite definitions are materialised and reconciled through the architect workflow. No lifecycle/claim/attempt or architect review decision was changed.
+
+Both matching task branches are published for preservation/review of the current implementation state. Publication does not establish task completion or readiness for deployment; the cross-repository prerequisite remains required. No main branch or submodule gitlink is staged or updated.
