@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: codex
 claimed_at: 2026-11-05T12:02:23Z
@@ -376,7 +376,72 @@ No new agent, queue, worker, transaction retry framework, product mirror, Admin/
 
 ## Completion Report
 
-Not started. On execution record prepared isolation/synchronization evidence, parent/implementation branches and SHAs, the accepted SHARED-006 receipt/accepted DATABASE-002 gitlink and installed Shared 5.0.0 evidence, including unchanged direct Zod dependency, exact changed files, context/observation/refresh interfaces, source-rule extraction compatibility, complete-text/locale/length cases, actual command/test counts, original safe/redacted diagnostic examples, developer-run disposable evidence or its outstanding status, and overlap resolutions. Record actual implementation/parent task-report publication or its precise failure; do not claim merges/deployment.
+**Status: Ready for Review.** Attempt 1 implementation is complete and published. The required disposable PostgreSQL boundary has not been run; developer authorization for this specific task is still required under `docs/agent-validation-execution-policy.md`.
+
+### Implementation
+
+- Added bounded recommendation context loading, published Platform/Shop instruction composition, provider identity projection, turn-local validated observations, policy-gated discount inspection, stable refresh planning, safe product/basket matching, discount eligibility/combination selection, shipping selection, controlled rendering, and full/one/minimal reply candidates under `src/commerce/recommendations/`.
+- Integrated the behavior into the existing Commerce host and retained grant/policy/turn checks. Conversation MCP requests now carry only the trusted generic `{shopId}` header; legacy outreach encoding remains separate.
+- Replaced only the third recovery instruction with the required literal. Extracted neutral discount eligibility and combination rules while preserving outreach adapters and failure mapping.
+- Added private AI candidate propagation and locale-compatible rendering at the existing wrapper stage; no extra model/send path was introduced.
+- Added focused recommendation, context PostgreSQL, host-loopback, fixture, wrapper, and processor coverage.
+
+Implementation files are the task-owned changes committed in `6106059c73ca66404fa4bea25becc23b58bce813` (57 files; see the implementation branch diff).
+
+### Dependency and database evidence
+
+- Installed and resolved `@modainteract/moda-interact-shared@5.0.0`; direct Background `zod` remains `^4.4.3`, lock resolution `4.6.5`.
+- Prepared Database submodule gitlink: `bd2d09066a8eb178a56f48fbbf88df637c411059`; no schema or migration bytes were changed.
+- The disposable PostgreSQL integration file is `tests/integration/commerce/recommendation-context.integration.test.ts`.
+
+### Validation
+
+Agent-executed checks passed:
+
+- `npm run build` (includes Prisma generation and TypeScript compilation).
+- `npm run lint`.
+- `npm run test:commerce-recommendations` — 20 files, 196 tests passed.
+- `npm run test:commerce-host` — registered loopback host suite, 1 file, 69 tests passed.
+- Focused wrapper/processor Vitest command from the task — 4 files, 84 tests passed.
+- `git diff --check`.
+- `npm ls @modainteract/moda-interact-shared --depth=0` — 5.0.0.
+
+Developer validation required, **NOT RUN** pending explicit authorization for ARCH-058-BACKGROUND-001:
+
+```sh
+node scripts/test-integration.mjs tests/integration/commerce/recommendation-context.integration.test.ts
+```
+
+Expected success is all assertions passing against the disposable PostgreSQL harness with its owned containers cleaned up. No normal/local `DATABASE_URL` was used, no Docker container was started, and no PostgreSQL pass is claimed.
+
+### Git / VCS
+
+Task branch: `task/ARCH-058-BACKGROUND-001`
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-BACKGROUND-001`
+- Parent branch: `task/ARCH-058-BACKGROUND-001`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-BACKGROUND-001`
+- Implementation branch: `task/ARCH-058-BACKGROUND-001`
+- Shared workspace and implementation checkouts switched for task work: no.
+- Another task worktree reused: no.
+- Prepared launcher synchronized the task worktrees and recursively prepared implementation submodules before claim.
+
+Implementation repository:
+- Commit: `6106059c73ca66404fa4bea25becc23b58bce813`
+- Remote: `origin/task/ARCH-058-BACKGROUND-001`
+- Pushed: yes.
+
+Parent workspace:
+- Task file: `docs/decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md`
+- Commit: pending this report commit.
+- Remote: `origin/task/ARCH-058-BACKGROUND-001`
+- Submodule gitlink staged: no.
+
+Merged to either main branch: no.
+
+Awaiting developer execution/authorization for the PostgreSQL command and moda_architect review. No architect acceptance decision has been made by this agent.
 
 ## Architect Review
 
