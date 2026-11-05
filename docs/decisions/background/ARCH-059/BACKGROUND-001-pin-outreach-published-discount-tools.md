@@ -40,7 +40,7 @@ Other repositories, new Feature identities, provider evaluator redesign, schema 
 Feature product_search (Product Search) owns both canonical discount tools exactly once. INITIAL_RECOVERY_OUTREACH remains purpose with checkout_recovery host admission. Preserve active-plan permission parity including Free through explicit provisioning verification; preserve merchant settings and provider evaluation. Fail closed on missing release or stale identity. No global fallback, duplicate descriptors, contract hashes or locally copied Shared contracts. Follow recorded rollout order.
 
 ## Work Items
-- [ ] Consume canonical published MCP identities in outreach and conversation; remove fabricated built-in grant/descriptor registration.
+- [ ] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
 - [ ] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; preserve four-tool outreach allowlist, budgets and deadline.
 - [ ] Pin release/capability/revision within attempt; missing/stale/mismatched tools follow existing unavailable/no-verified-offer behavior, never permissive fallback.
 - [ ] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
@@ -59,7 +59,7 @@ Published @modainteract/moda-interact-shared/commerce input/output, release/capa
 - ARCH-059-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Consume canonical published MCP identities in outreach and conversation; remove fabricated built-in grant/descriptor registration.
+- [ ] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
 - [ ] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; preserve four-tool outreach allowlist, budgets and deadline.
 - [ ] Pin release/capability/revision within attempt; missing/stale/mismatched tools follow existing unavailable/no-verified-offer behavior, never permissive fallback.
 - [ ] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
