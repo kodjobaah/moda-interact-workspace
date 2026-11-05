@@ -40,11 +40,11 @@ Other repositories, new Feature identities, provider evaluator redesign, schema 
 Feature product_search (Product Search) owns both canonical discount tools exactly once. INITIAL_RECOVERY_OUTREACH remains purpose with checkout_recovery host admission. Preserve active-plan permission parity including Free through explicit provisioning verification; preserve merchant settings and provider evaluation. Fail closed on missing release or stale identity. No global fallback, duplicate descriptors, contract hashes or locally copied Shared contracts. Follow recorded rollout order.
 
 ## Work Items
-- [ ] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
-- [ ] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; derive tool membership from the authorized published capability, remove the hardcoded tool-name allowlist, and retain bounded execution budgets and deadline.
-- [ ] Request permitted capabilities through MCP; MCP resolves and validates the current published release/revision for each request before dispatch. Background must not require an attempt-pinned expected revision or reject an otherwise authorized call solely because activation changed the revision between requests. Missing or denied capabilities retain the existing explicit failure behavior; no permissive fallback.
-- [ ] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
-- [ ] Add parity tests for conversation/outreach tool identity, duplicate names, denied purpose, missing release, revoked permission and existing eligibility fixtures.
+- [x] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
+- [x] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; derive tool membership from the authorized published capability, remove the hardcoded tool-name allowlist, and retain bounded execution budgets and deadline.
+- [x] Request permitted capabilities through MCP; MCP resolves and validates the current published release/revision for each request before dispatch. Background must not require an attempt-pinned expected revision or reject an otherwise authorized call solely because activation changed the revision between requests. Missing or denied capabilities retain the existing explicit failure behavior; no permissive fallback.
+- [x] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
+- [x] Add parity tests for conversation/outreach tool identity, duplicate names, denied purpose, missing release, revoked permission and existing eligibility fixtures.
 
 ## Interfaces / Contracts
 Published @modainteract/moda-interact-shared/commerce input/output, release/capability/revision/grant validators; versioned extensions owned by ARCH-059-SHARED-001, registry availability by ARCH-059-SHARED-002. Producers/consumers and storage trust boundary are normative in parent architecture.
@@ -73,16 +73,16 @@ This decision changes the task contract, not its completion status. Existing imp
 - ARCH-059-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
-- [ ] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; derive tool membership from the authorized published capability, remove the hardcoded tool-name allowlist, and retain bounded execution budgets and deadline.
-- [ ] Request permitted capabilities through MCP; MCP resolves and validates the current published release/revision for each request before dispatch. Background must not require an attempt-pinned expected revision or reject an otherwise authorized call solely because activation changed the revision between requests. Missing or denied capabilities retain the existing explicit failure behavior; no permissive fallback.
-- [ ] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
-- [ ] Add parity tests for conversation/outreach tool identity, duplicate names, denied purpose, missing release, revoked permission and existing eligibility fixtures.
-- [ ] Existing authorization/provider evaluation and unrelated published members remain intact.
+- [x] Consume canonical published MCP identities in outreach and conversation; replace the existing code-owned built-in descriptor/grant path with published capability/revision identities. Preserve existing authorization checks and historical grants; do not delete or reinterpret historical records.
+- [x] Keep INITIAL_RECOVERY_OUTREACH as trusted runtime purpose and require existing checkout_recovery admission before selector creation; derive tool membership from the authorized published capability, remove the hardcoded tool-name allowlist, and retain bounded execution budgets and deadline.
+- [x] Request permitted capabilities through MCP; MCP resolves and validates the current published release/revision for each request before dispatch. Background must not require an attempt-pinned expected revision or reject an otherwise authorized call solely because activation changed the revision between requests. Missing or denied capabilities retain the existing explicit failure behavior; no permissive fallback.
+- [x] Preserve initial outreach eligibility/combinations, current-offer revalidation, identifier-only selection, moderation, takeover, credit and delivery behavior.
+- [x] Add parity tests for conversation/outreach tool identity, duplicate names, denied purpose, missing release, revoked permission and existing eligibility fixtures.
+- [x] Existing authorization/provider evaluation and unrelated published members remain intact.
 
 ## Validation
-- [ ] Inspect package.json and run declared focused tests for every Work Item, plus declared typecheck/build when deployable TypeScript changes; record exact commands/results. Do not invent missing scripts.
-- [ ] Reports contain no secrets and demonstrate task scope only.
+- [x] Inspect package.json and run declared focused tests for every Work Item, plus declared typecheck/build when deployable TypeScript changes; record exact commands/results. Do not invent missing scripts.
+- [x] Reports contain no secrets and demonstrate task scope only.
 
 ## Stop Condition
 After Work Items, Acceptance Criteria and Validation complete, submit Completion Report for review and STOP. Explicit developer completion via /moda_developer_update is required. Do not start enabled work. System Test is manually invoked after prerequisites complete.
@@ -143,87 +143,65 @@ Use launcher-resolved isolated matching task worktrees/branches and record synch
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-11-05T23:14:01Z. Attempt 1 review history is preserved below.
+In Progress — developer-owned Attempt 2. Authorized implementation assistance completed the amended Background scope and required focused validation. Ready for `/moda_developer_update ARCH-059-BACKGROUND-001` reconciliation/review; no self-review acceptance or completion decision is claimed. Status, developer executor, claim and Attempt 2 remain unchanged. No downstream execution or promotion.
+
+The controlling MCP-owned revision-selection and dynamic-discovery decisions supersede Attempt 1's expected-call blocker and four-tool requirements. SHARED-003/004 and MCP-002 remain withdrawn proposals, not prerequisites for this task. No expected-revision field or positive enforcement advertisement was added.
 
 ### Files Changed
 
-Canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-BACKGROUND-001`, branch `task/ARCH-059-BACKGROUND-001` (21 committed task-owned files):
+Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-BACKGROUND-001`, branch `task/ARCH-059-BACKGROUND-001`; 17 task-owned changed/new files relative to published `099563513207fcc1e67feedcee3d9ed10baaa45c`:
 
-- `package.json`, `package-lock.json`: accepted published Shared 5.1.0.
-- `src/commerce/published-tools.ts` (new): Shared manifest/grant validation, published-only admission and capability-key list checks; valid underlying tool reuse remains supported.
-- `src/commerce/{grants,mcp-client,host}.ts`: published member/revision persistence validation, historical built-in refusal without rewriting records, attempt manifest pinning, pre/post result validation, capability-key routing and preserved current-offer policy refresh.
-- `src/services/recovery-offers/{recovery-outreach-mcp-selector,initial-outreach-offer-selection,current-outreach-offer-revalidation}.service.ts`, `src/agents/initial-outreach-offer.agent.ts`, `src/services/recovery-product-media/recovery-product-image-resolver.ts`: async production factory admission through existing checkout_recovery entitlement before selector/client creation; pinned outreach discovery and calls.
-- `tests/fixtures/commerce/published-discounts.ts` (new), `tests/unit/commerce/published-{tools,client,grants}.test.ts` (new), `tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts`: Shared-derived fixtures, persisted identities, stale/missing/duplicate/legacy/purpose failures and admission tests.
-- `tests/integration/commerce/host.fixture.ts`, `tests/integration/commerce/host-suites/{authority,grants,recommendations}.ts`: real local SDK fixture now advertises capability keys and uses published discount grants; expectations preserve unrelated underlying tool reuse and recommendation facts.
-- `README.md`: migration behavior, outstanding prerequisite and operator rollout gate.
+- `src/services/recovery-offers/recovery-outreach-mcp-selector.service.ts`: current published Feature-scope projection; dynamic descriptors and generic Shared input/result validation; no named membership set or quota; existing checkout_recovery factory admission retained.
+- `src/agents/initial-outreach-offer.graph.ts`: dynamic per-model-step discovery, generic result flow, agent-selected call order; remove forced first/options and injected final product read; retain deterministic fact interpretation and aggregate limits.
+- `src/agents/initial-outreach-offer.instructions.ts`: agent chooses from supplied capability descriptors without a mandatory first tool.
+- `src/commerce/{mcp-client,published-tools,grants,host}.ts`: remove attempt revision equality; MCP owns current selection, current input checks and capability-key routing remain. Conversation execution derives its retained Feature scope from historical release membership and projects current MCP members within that scope. Historical database grant rows are never rewritten.
+- `tests/fixtures/commerce/outreach-context.ts` (new); `tests/integration/commerce/host-suites/dynamic-outreach.ts` (new): actual initial agent/graph/selector/client loopback extension, isolation, activation and limits proof.
+- `tests/integration/commerce/{host.fixture,host.test}.ts`; `tests/integration/commerce/host-suites/grants.ts`: trusted outreach context harness; compatible activation and retained grant-history/scope expectations.
+- `tests/unit/agents/initial-outreach-offer.graph.test.ts`; `tests/unit/commerce/{published-client,published-tools}.test.ts`; `tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts`: remove obsolete first-call, injected-read, static-membership and stale-revision assumptions while preserving fact-safety cases.
+- `README.md`: current responsibility boundary, generic execution, scope and retained aggregate controls; obsolete prerequisite/allowlist text removed.
 
-Implementation publication is explicitly authorized by the developer and recorded in Git / VCS below. The durable developer claim was pushed at `86b511c13`. Shared/default implementation and parent checkouts were not switched for execution; no gitlink or main update.
+### Work Completed — correction and gate inventory
 
-### Git / VCS
-
-- Task branch in both repositories: `task/ARCH-059-BACKGROUND-001`.
-- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
-- Dedicated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-059-BACKGROUND-001`; dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-BACKGROUND-001`.
-- Preparation synchronization/dependency/submodule steps completed before the report-format claim repair; no claim increment or startup synchronization was repeated for publication.
-- Implementation baseline `efbbe0f`; implementation commit `0995635` published successfully to `origin/task/ARCH-059-BACKGROUND-001` on 5 November 2026, explicitly authorized by the developer. All 21 source/test/doc/dependency files are committed; staged scope and whitespace were checked.
-- Parent durable claim `86b511c13`; this definition/report publication commit stages only this task file and is pushed to matching `origin/task/ARCH-059-BACKGROUND-001`. Its resulting SHA is reported to the developer after successful publication.
-- Submodule gitlink staged: no. Shared checkouts switched/mutated for implementation: no. Another task worktree reused: no. Main merges/pushes, deployment and activation: none.
-
-### Work Completed
-
-- Removed conversation built-in descriptor/grant admission; new persistence requires a Shared-valid published projection and exact stored capability/tool/revision/definition metadata. Historical rows remain untouched and fail closed on the new path.
-- Conversation and outreach share canonical published identities. Tools/list is checked against capability keys/input schemas; underlying model tool names route to an admitted published capability key. Legitimate capability description overrides and same-revision tool reuse remain valid.
-- Outreach retains trusted INITIAL_RECOVERY_OUTREACH purpose, the explicit four-name allowlist, list-before-call, Shared input/output validation and existing call/search/detail budgets. The existing graph, deadline, eligibility/combinations algorithms and identifier-only model selection remain unchanged.
-- Every production selector factory, including price reconciliation, current offer revalidation and product media, uses the existing checkout_recovery Feature admission before construction. No new Feature or billing rule/credit mutation introduced.
-- Manifest/release/revision drift and revoked selections are checked before calls, and post-call drift discards a raced result. These are HOST checks only and are explicitly insufficient for the remaining server-enforced race gate below.
-- Existing offer policy refresh, revalidation, moderation, human takeover, credit and delivery behavior remain unchanged. Task-focused existing behavior suites pass.
+1. **MCP-owned revision selection implemented.** Removed pinnedManifest and pre/post revision equality refusal, manifestMatchesGrant-based remote revision veto and selector attempt comparison. Compatible activation is accepted by unit and real loopback paths. Current membership, current input schema, Shared result-envelope validation and persisted current release/member consistency checks remain. No unknown contract/permission fallback.
+2. **Selector membership gates removed.** Removed OUTREACH_MCP_TOOL_NAMES, ALLOWED_TOOLS, OutreachMcpToolName, required options/details presence, per-tool Shared input/output registry membership and named search/detail quotas. Trusted product_search Feature ID plus the current MCP-authorized published projection determines membership. The full shop projection is validated internally; only the selected Feature's descriptors are exposed to the outreach model. Identically named tools belonging only to another Feature are excluded.
+3. **Graph/model/dispatch gates removed.** Removed options-first final/dispatch checks, name-specific product stage restrictions, named search/detail counters, name-based pre-call source prerequisites, exhaustive default rejection and automatic insertion of commerce_get_product after a final choice. Discovery refreshes each model step; calls must belong to that advertised set and current selector membership. An additional supported member uses its published input schema and Shared CommerceToolResult envelope without a new Background handler or schema-switch entry.
+4. **Safe result handling retained.** Generic outputs are bounded and delivered to the next model step as untrusted data. Known options/details/product interpreters remain solely to redact/project known facts and populate deterministic offer/product evidence. They do not gate advertising, selection or execution of other supported members. Positive customer-facing discounts/promotions still require source-bound known facts and existing eligibility/combinations/finalization. Missing exact product evidence no longer injects a host-selected call and cannot establish a promotion.
+5. **Authority and budgets retained.** checkout_recovery admission precedes every production selector factory. Trusted shop/purpose, current merchant policy and conversation lease/control/takeover checks remain. Historical grants are retained as audit/scope records; per-turn current published runner projections do not write or widen their stored Feature scope. Current MCP membership remains required. Aggregate 16 remote calls, 8 model steps, at most 512 output tokens per step, 45-second graph deadline, 32 KiB projected result and 128 KiB message history remain. Generic duplicate-call protection remains; no replacement per-tool admission list.
+6. **Required integrated extension regression implemented.** The existing loopback MCP/model harness runs the actual initial-outreach agent, graph, selector and client. A published_store_guidance member absent from the original four is advertised, selected FIRST by the agent, reaches the MCP tools/call boundary and returns a bounded result to the next actual model request. No special production handler/list entry exists for it. A valid NO_VERIFIED_OFFER final outcome leaves grant/transaction/credit/delivery writes untouched. Removal, revocation, unrelated-only membership and invented names all deny without a tool call. Compatible activation succeeds; aggregate call/deadline, cancellation and result-size limits stop the dynamic path.
+7. **Historical review disposition.** Attempt 1 review items 1–3 (expected-call contract, publication, support advertisement and activation-alone zero-provider tests) are superseded by the controlling definition decision, not left blocked or falsely reported implemented. Its fourth item's static four-tool requirement is superseded by the mandatory dynamic scope; current merchant policy, admission, finalization and aggregate safety controls are retained and revalidated. No withdrawn prerequisite task was materialised or executed.
 
 ### Validation Results
 
-Node 24.19.0 / npm 11.17.0 through canonical bootstrap; commands run in the isolated implementation worktree unless noted.
+Declared commands ran in the dedicated implementation worktree using Node 24.19.0 / npm 11.17.0, recovered only through the canonical workspace bootstrap. Shared remains the accepted published 5.1.0; no dependency upgrade or new Shared contract in this attempt.
 
-- `npm install --save-exact @modainteract/moda-interact-shared@5.1.0 --include=dev` — passed.
-- `npm test -- tests/unit/commerce/published-tools.test.ts tests/unit/commerce/published-client.test.ts tests/unit/commerce/published-grants.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts tests/unit/services/recovery-offers/initial-outreach-offer-selection.service.test.ts tests/unit/services/recovery-offers/initial-outreach-agent-context.service.test.ts tests/unit/services/recovery-product-media/recovery-product-image-resolver.test.ts tests/unit/services/effective-billing-policy.service.test.ts` — 8 files / 64 tests passed. Evidence `/tmp/arch059-bg-focused-final.log`.
-- `npm run test:commerce-recommendations` — 20 files / 197 tests passed, including eligibility, combinations, agent/graph, current offer revalidation, context/recommendation and template behaviors. Evidence `/tmp/arch059-bg-recommendations.log`.
-- `npm run test:commerce-host` — 70 tests passed using local mocked HTTP/SDK/model fixtures, no live provider or production service. Evidence `/tmp/arch059-bg-host-last.log`. Earlier migrated fixture assertions were corrected, not waived.
-- `npm run build` — passed, including declared Prisma generation and TypeScript compilation. No separate typecheck script exists; none invented. Evidence `/tmp/arch059-bg-build-last.log`.
-- `npm run lint` — passed with no diagnostics. Evidence `/tmp/arch059-bg-lint-last.log`.
-- `git -c core.fsmonitor=false diff --check` — passed; report also checked after writing.
+- `npm test -- tests/unit/commerce/published-tools.test.ts tests/unit/commerce/published-client.test.ts tests/unit/commerce/published-grants.test.ts tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts tests/unit/services/recovery-offers/initial-outreach-offer-selection.service.test.ts tests/unit/services/recovery-offers/initial-outreach-agent-context.service.test.ts tests/unit/services/recovery-product-media/recovery-product-image-resolver.test.ts tests/unit/services/effective-billing-policy.service.test.ts` — **8 files / 65 tests passed**, exit 0. `/tmp/arch059-bg2-focused-final.log`.
+- `npm run test:commerce-recommendations` — **20 files / 197 tests passed**, exit 0. Includes actual graph/agent, eligibility/combinations, recommendation facts, revalidation and automated recovery template/finalization regressions. `/tmp/arch059-bg2-recommendations.log`.
+- `npm run test:commerce-host` — **81 tests passed**, exit 0, including 11 actual loopback dynamic/scope/activation/resource scenarios alongside existing conversation host authorization, diagnostics, state, lifecycle and finalization tests. `/tmp/arch059-bg2-host-final.log`.
+- `npm run build` — passed, including declared Prisma generation and TypeScript compilation. No separate typecheck script exists. `/tmp/arch059-bg2-build-final.log`.
+- `npm run lint` — passed, no diagnostics. `/tmp/arch059-bg2-lint-final.log`.
+- `git -c core.fsmonitor=false diff --check` — passed in implementation and after report update.
+- Source inventory for removed fixed-name gates returned no matches for OUTREACH_MCP_TOOL_NAMES, ALLOWED_TOOLS, OutreachMcpToolName, FIRST_TOOL_CALL_MUST, MAX_PRODUCT_SEARCHES/MAX_PRODUCT_DETAIL_READS, pinnedManifest, OUTREACH_TOOL_NOT_ALLOWED or obsolete named stage/read admission reasons on the affected agent/commerce/selector paths.
 
-Exploratory broad run: `npm run test:unit -- tests/unit/services/recovery-offers/recovery-outreach-mcp-selector.service.test.ts` runs the full tests/unit directory because the script already supplies that directory. It reported 3741 passed / 40 failed across 356 files: five new fixture constraint failures were subsequently fixed and the affected focused tests passed; 35 failures were outside task files. Evidence `/tmp/arch059-bg-unit-first.log`.
+Total focused proof: **343 passing tests** across these distinct suites. The full unit suite was not rerun in Attempt 2 and is not claimed green. Attempt 1's published report at parent `4b27ce2a9` retains the exploratory full-suite failure evidence and controlled pre-task comparison: 35 failures outside task files reproduced on the pre-task source, with child-process timing variability isolated separately. That historical broad result is not substituted for this attempt's focused tests and does not describe a newly run full suite.
 
-Controlled baseline comparison: extracted pre-task HEAD `efbbe0f` read-only into `/tmp/arch059-bg-pre-task`, reused identical installed dependencies, and ran `npm test -- <the 12 unchanged failing test file paths>` via subprocess (exact list `/tmp/arch059-bg-pre-task-files.json`). Baseline also reported 35 failed / 165 passed. Thirty-four broad-run failure identifiers matched; the remaining identity on each side was a different 5-second observability child-process timeout. Isolated `npm test -- tests/unit/runtime/observability-startup.test.ts` reruns on current and baseline both had 9 passed / 1 failed, only the inherited test hardcoding Shared 3.0.0 (pre-task package already pinned 5.0.0). No child-process timeout reproduced in isolation. Evidence `/tmp/arch059-bg-baseline.log`, `/tmp/arch059-bg-runtime-{current,baseline}.log`. Full suite is NOT claimed green. Historical ARCH025-BACKGROUND-TEST-001 does not describe this full current failure set; it was not used to waive new failures.
+No Docker/PostgreSQL/Redis integration, live provider, actual model API, deployment, release activation, customer send or stored grant/credit migration was run. Loopback fixtures simulate authorized supported published operations; no new operation implementation was added. Setup/provisioning/retry behavior remains accepted Commerce prerequisite evidence.
 
-No Docker/PostgreSQL/Redis integration, live external provider, deployment, queue operation, release activation or grant migration was performed. Canonical setup provisioning/apply/retry behavior remains prerequisite Commerce evidence; this task does not claim to rerun it.
+### Git / VCS
 
-### Deviations
+- Canonical primary workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Dedicated parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-059-BACKGROUND-001`; dedicated implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-BACKGROUND-001`; both branch `task/ARCH-059-BACKGROUND-001`. No shared checkout switch or another task worktree reuse.
+- Launcher preparation: both remote task branches not-needed for fast-forward, origin/main already-current; explicit dependency gate passed. Recursive submodule sync/update passed; database at recorded `bd2d09066a8eb178a56f48fbbf88df637c411059`.
+- Developer Attempt 2 claim `8ba1fd0ab7950caf3d52d3e2e1b7113c402fd208` pushed, claimed_at 2026-11-05T23:14:01Z. No repeated claim/preparation.
+- Published implementation baseline `099563513207fcc1e67feedcee3d9ed10baaa45c`. At the developer's explicit request to commit/push, Attempt 2 implementation was committed as `772f9e8` (17 task-owned files) and pushed successfully to implementation `origin/task/ARCH-059-BACKGROUND-001`. This task-only report update is committed/pushed to the matching parent task branch; its resulting SHA is reported after publication. No lifecycle or acceptance transition is implied.
+- No submodule gitlink staged; no main merge/push, withdrawn prerequisite materialisation, dependency promotion, deployment or activation.
 
-A narrow correction to task report blank-line formatting was necessary after the launcher wrote Attempt 1 but before it could publish the claim. The existing claim was completed and pushed once; no second attempt/claim was created. Preparation had already synchronized worktrees/submodules and passed dependency gates before the report-format stop.
+### Deviations / Assumptions
 
-The requested implementation cannot satisfy the complete pinning gate using Background changes alone. No contract was invented locally and no other implementation repository was edited. No acceptance criterion was weakened.
+None from the controlling amended scope. The fixed product_search Feature key is the trusted host-owned capability group, not a tool-name membership list; current MCP authorization supplies its members. Conversation Feature scope is read from historical grant/release membership and kept separate from current remote revision selection. Shared schemas validate published inputs/envelopes; generic results alone cannot supply new deterministic offer authority.
 
-### Assumptions
+### Unresolved Issues / Architectural Concerns
 
-Accepted Commerce provisions the explicit product_search mappings for active Free/paid plans and stages the complete release. Existing effective billing Feature selection remains authoritative for checkout_recovery; MCP remains authoritative for current published tool entitlement/provider access.
-
-### Unresolved Issues
-
-REQUIRED BEFORE REVIEW: trusted expected-call identity and positive enforcement support must be published by Shared, enforced by MCP and then consumed by this client. Current pre/post host checks cannot prove rejection before provider I/O if release activation races the request. Architect assessment and portable prerequisite handoff are recorded below. Current task remains developer In Progress; no review, completion or downstream promotion.
-
-### Architectural Concerns
-
-Architect assistance confirmed the concrete race against accepted MCP `519e905`: it selects the current release for tools/call and its registry compares against that request's snapshot, not Background's pinned attempt. Activation after the last Background manifest read but before MCP snapshot resolution can execute the new revision. Background may discard the result afterward, but this does not meet the normative before-provider-I/O requirement. Pause/drain is rollout mitigation, not enforcement evidence.
-
-Portable architect definitions (defined, NOT materialised, not claimed/executed) are available at:
-
-- `/tmp/arch059-background-prerequisites/SHARED-003-define-expected-published-call-identity.md`
-- `/tmp/arch059-background-prerequisites/SHARED-004-publish-expected-published-call-identity.md`
-- `/tmp/arch059-background-prerequisites/MCP-002-enforce-host-expected-published-call-identity.md`
-- `/tmp/arch059-background-prerequisites/HANDOFF.md`
-
-Sequence: accepted/completed SHARED-003 -> published/accepted/completed SHARED-004 -> accepted/completed MCP-002 -> architect reconciles current Background prerequisites and resumes THIS developer attempt. The new contract must carry the pinned release/capability/key/tool/revision/name through trusted context, with positive support advertisement because old MCP ignores extra context keys. Model arguments never supply that authority. Required resumption tests cover unchanged identity success, malformed/foreign identity, and both activation race windows with zero provider calls. Existing lifecycle/dependencies and architect review section were not edited by this assistance pass.
-
-Retain controlled staged activation, pause/drain, unique-name/plan-parity verification and paired MCP/Background/pointer rollback. No deployment or activation is authorized by portable definitions or local source readiness.
+No implementation or required focused-check failure remains. Developer reconciliation/review and explicit completion remain separate workflow actions. The earlier expected-call gap and portable prerequisites are withdrawn by the task's controlling decision and must not block this attempt. Operator rollout/activation gates remain unchanged; implementation readiness does not execute them.
 
 ## Architect Review
 ### Review Status
@@ -316,11 +294,11 @@ Tool-specific **fact interpretation** may remain only where needed to validate a
 
 ### Additional Work Items / Acceptance Criteria
 
-- [ ] Inventory and remove all Background hardcoded tool-membership/admission gates on the affected conversation and initial-outreach paths, including graph/model projection/dispatch gates rather than only selector constants. Record each removed gate and any retained name-specific fact interpreter with its non-admission purpose.
-- [ ] The requested authorized capability's supported published descriptors determine the agent-visible tool set. The agent can select an additional supported member absent from the original four names; no Background source/config allowlist edit is needed.
-- [ ] Adding, replacing or removing a supported tool within that capability is reflected through MCP discovery/current authorization. Unrelated or unauthorized capabilities and model-invented tools remain denied; no global tools/list exposure or grant widening.
-- [ ] Preserve trusted shop/purpose, checkout_recovery admission, current merchant offer policy, conversation state, takeover/moderation, aggregate budgets/deadlines and credit/delivery behavior. Preserve deterministic validation of any customer-facing offer facts.
-- [ ] Remove obsolete fixed-name test assumptions. Do not manufacture extension support with a mock that bypasses the actual graph/model projection or dispatch gate.
+- [x] Inventory and remove all Background hardcoded tool-membership/admission gates on the affected conversation and initial-outreach paths, including graph/model projection/dispatch gates rather than only selector constants. Record each removed gate and any retained name-specific fact interpreter with its non-admission purpose.
+- [x] The requested authorized capability's supported published descriptors determine the agent-visible tool set. The agent can select an additional supported member absent from the original four names; no Background source/config allowlist edit is needed.
+- [x] Adding, replacing or removing a supported tool within that capability is reflected through MCP discovery/current authorization. Unrelated or unauthorized capabilities and model-invented tools remain denied; no global tools/list exposure or grant widening.
+- [x] Preserve trusted shop/purpose, checkout_recovery admission, current merchant offer policy, conversation state, takeover/moderation, aggregate budgets/deadlines and credit/delivery behavior. Preserve deterministic validation of any customer-facing offer facts.
+- [x] Remove obsolete fixed-name test assumptions. Do not manufacture extension support with a mock that bypasses the actual graph/model projection or dispatch gate.
 
 ### Required integrated extension regression
 
@@ -329,3 +307,8 @@ Use the existing loopback MCP/model harness and the actual initial-outreach agen
 Run the declared focused agent/graph, selector/client, conversation-host and offer/finalization regressions plus build/lint. Report actual commands/results and any unchanged baseline failures separately. No live provider run or new operation implementation is introduced by this acceptance test.
 
 This amendment is authoritative over historical hardcoded-tool requirements and prior source reports. Task remains Ready, developer/developer, Attempt 1 preserved with no active claim. Runtime allowlist removal is still implementation work; no passing review/completion or automatic execution is asserted by this definition commit.
+
+
+## Developer-authorized Attempt 2 publication — 5 November 2026
+
+The developer explicitly requested commit and push after the amended implementation and its 343 passing focused tests, build and lint. Published implementation `772f9e8` and this current task/report record on matching `task/ARCH-059-BACKGROUND-001` branches. Staged only the 17 task-owned implementation files and this task document; whitespace checks passed. No implementation change or repeated validation was required for publication. Status remains In Progress, executor developer, Attempt 2; developer review/completion remains separate. No main merge/push, gitlink change, deployment, activation or downstream promotion.
