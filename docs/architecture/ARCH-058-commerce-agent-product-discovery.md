@@ -36,7 +36,7 @@ Fifteen repository-owned tasks deliver standard product discovery, native shippi
 | [MCP-002](../decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md) | `moda-interact-mcp` | Preserve WIP; consume corrected Shared/Database and finish product/discount work | MCP-001, DATABASE-002, SHARED-006 | Blocked after Attempt 1 |
 | [SHOPIFY-001](../decisions/shopify/ARCH-058/SHOPIFY-001-enable-shipping-policy-read-scope.md) | `moda-interact` | Accepted native policy permission declaration | - | Complete |
 | [MCP-003](../decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md) | `moda-interact-mcp` | Native shipping reader | MCP-002, SHOPIFY-001 | Pending |
-| [COMMERCE-001](../decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md) | `moda-interact-commerce` | Consume Shared 5.0.0; publish standard tools/instructions | MCP-002, MCP-003, SHARED-006 | Pending |
+| [COMMERCE-001](../decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md) | `moda-interact-commerce` | Consume Shared 5.0.0; publish standard tools/instructions | MCP-002, MCP-003, SHARED-006 | Ready (Attempt 1 prerequisite reconciled) |
 | [BACKGROUND-001](../decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md) | `moda-interact-background` | Consume Shared 5.0.0; implement grounded host composition | MCP-002, MCP-003, COMMERCE-001, SHARED-006 | Pending |
 | [SYSTEM-TEST-001](../decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md) | `moda-interact-system-test` | Verify corrected contracts, migration and integrated customer behavior | All required implementation/publication tasks | Pending |
 
@@ -156,3 +156,8 @@ MCP-001 Attempt 3 is accepted and Complete at `1dd5430b9d3108bf93bba86c1fb923373
 ## Shared Hash Removal Acceptance (2026-11-04)
 
 SHARED-003 Attempt 2 is architect-accepted and Complete at `59ea61f34197d64180e46680ac6d552b5e989a36`. Its provenance correction closes the prior documentation finding; implementation and prior independent validation are unchanged. Earlier unmaterialised/ready references are historical. SHARED-004 is now ready and unclaimed. SHARED-006 remains pending on SHARED-004/005; the intermediate source must not be published. Remaining architecture and system-test gates are unchanged.
+
+
+## Commerce prerequisite reconciliation — 5 November 2026
+
+COMMERCE-001 Attempt 1 preserved its unfinished draft at `0914178` and stopped at a historical Database task-commit ancestry check. The complete tree of `ded8f14a` equals accepted squash merge `395675f`; the accepted Database pin `bd2d090` descends from that merged commit and retains DATABASE-002. Revision 11 uses the merged ancestor, preserves the immutable original Shared 2.7.2 tool fixture, and returns Commerce Ready/unclaimed with Attempt 1 retained. This is prerequisite reconciliation, not implementation acceptance. Background owns downstream model-request instruction/context fixtures; Commerce owns publisher/Shared-parser proof. No reverse dependency, source edit, deployment or downstream execution is authorized by the reconciliation.

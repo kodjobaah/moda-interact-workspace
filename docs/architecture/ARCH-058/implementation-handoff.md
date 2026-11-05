@@ -170,3 +170,8 @@ MCP-002 Attempt 3 is accepted and Complete at `11fba27`. All prior integration f
 ## Shipping accepted frontier — 5 November 2026
 
 MCP-003 Attempt 1 is accepted and Complete at `69b64669`, with 59 independently rerun shipping/core tests and reviewed 71-test regression/static/build/query evidence. Live merchant grants/provider/deployment checks remain operator work. COMMERCE-001 is Ready/unclaimed at Attempt 0 because MCP-002 and SHARED-006 are also Complete. Background remains Pending on Commerce; terminal system validation retains its consumer prerequisites. No consumer execution, tool publication, deployment or architecture completion is implied.
+
+
+## Commerce continuation handoff — 5 November 2026
+
+COMMERCE-001 revision 11 resolves the stale Database task-SHA gate using accepted merged ancestor `395675f909d604f0bff83ffb3d7d5586f0bdd39b`. Its complete tree matches historical `ded8f14a`; prepared `bd2d090` passes ancestry and preserves the later grant migration. Commerce is Ready/unclaimed, Attempt 1 retained, with unfinished implementation `0914178` and original legacy fixture preserved. Resume through normal launcher preparation; do not reset/recreate the draft or recapture the legacy fixture from upgraded Shared. Complete original Commerce implementation and validation. Background's actual model-request fixtures remain BACKGROUND-001-owned downstream evidence; Commerce validates actual publication/Shared parsing. No task is accepted or downstream task promoted by this handoff.
