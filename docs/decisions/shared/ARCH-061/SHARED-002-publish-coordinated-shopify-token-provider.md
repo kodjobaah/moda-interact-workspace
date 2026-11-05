@@ -42,7 +42,7 @@ Task-owned moda-interact-shared changes and focused validation only. Cross-repos
 Central token service, agent tools, sibling imports, credential UI, schema changes, node_modules patches, automatic execution, claims or main merges.
 
 ## Requirements
-The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Stop for unsupported SDK/lifecycle/recovery gaps instead of weakening coordination.
+The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Use the binding revision public-wrapper/ALS/lifecycle gate architecture; do not choose a different synchronization mechanism.
 
 ## Work Items
 - [ ] Publish accepted provider export and verify exact registry version and exports; release metadata only.
@@ -71,8 +71,19 @@ Shared Node-only factory and structural transaction interface/error categories d
 ## Stop Condition
 Submit completed report for authorized review and STOP after scoped criteria/validation. Explicit developer completion required. Do not start enabled tasks; system validation is terminal/manually invoked.
 
+
+### Task-owned exact file changes and read-only inventory
+NEW paths below are to be created RELATIVE TO THIS TASK REPOSITORY. Existing fully qualified paths are verified. Cross-repository evidence is read-only.
+
+| Path | Exact existing/new surface | Required edit |
+|---|---|---|
+| moda-interact-shared/package.json | version/exports | Publish exact architect-accepted artifacts only; approve next available version in release report, verify registry tarball exports. |
+
+### Task-specific deterministic assertions
+- [ ] Registry exact version/tarball exports ./shopify/node; no implementation source changes; prereq accepted.
+
 ## Implementation Notes
-No execution started. Use launcher isolated/synchronized task worktrees when requested. Read installed SDK and official Shopify recovery guidance before implementing. Node recovery uses workspace bootstrap. Return new schema, lock primitive or unsupported SDK requirements to architect. Publication is release mechanics only.
+No execution started. Use launcher isolated/synchronized task worktrees when requested. Use the installed SDK surfaces and official recovery policy identified in revision 2. Node recovery uses workspace bootstrap. No new schema or alternative lock primitive is authorized. Publication is release mechanics only.
 
 ## Completion Report
 ### Status
@@ -86,11 +97,11 @@ Definition only.
 ### Deviations
 None
 ### Assumptions
-Same canonical PostgreSQL credential row and supported provider recovery rules; implementation must verify lifecycle/SDK gates.
+Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2.
 ### Unresolved Issues
-See parent open implementation gates; no false implementation claim.
+None blocking architecture definition. Revision-1 feasibility questions are superseded by binding revision 2 decisions.
 ### Architectural Concerns
-Stop for absent-row lifecycle, unsupported SDK boundary or recovery persistence needs.
+Implement binding revision 2 exactly; report actual incompatibility with evidence instead of selecting alternate architecture.
 
 ## Architect Review
 ### Review Status
@@ -105,3 +116,8 @@ None
 Pending implementation.
 ### Follow-up
 None
+
+### Architecture definition review — 2026-11-05 revision 2
+Definition reviewed against installed SDK control flow and current repository reads/writes. Public authenticate/unauthenticated wrapper + ALS storage and runtime setAbstractFetchFunc are the selected integration; no fictional SDK hook. Session row plus stable per-shop lifecycle advisory gate is selected for demonstrated deletion/recreation. Provider lost-response recovery is grounded in official Shopify August 28, 2026 policy. No implementation reviewed and no lifecycle status changed.
+
+Publication exports the selected-Shop-ID API defined by revised SHARED-001. Do not publish the superseded host-argument API.
