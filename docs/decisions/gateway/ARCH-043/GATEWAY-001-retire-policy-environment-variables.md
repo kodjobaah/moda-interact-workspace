@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: codex
-claimed_at: 2026-11-05T16:15:40Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-043-ADMIN-001
@@ -293,3 +293,27 @@ Inspect both actual Render Blueprints and their positive/negative validators. Cu
 ## Definition reconciliation — 2026-11-02
 
 Source evidence: Gateway ac092dc render.test.yaml, render.production.yaml, tests/validate-render-blueprints.sh and its negative suite still contain policy/provider environment groups. Definition deduplicated and consolidated; code/deployment validation is still required. Canonical ARCH-039 keyring/authentication fallback retention is mandatory as detailed above.
+
+
+## Architect Review — Attempt 2 (2026-11-05)
+
+### Decision
+
+**Changes Requested.** Attempt 2 not accepted; return to Ready, executor/claimed_at null, attempt unchanged. Publication is resolved; integration correctness and required operational evidence remain outstanding. This decision supersedes the current disposition of Attempt 1 without rewriting its historical findings.
+
+### Resolved publication finding
+
+Verified local implementation HEAD and `origin/task/ARCH-043-GATEWAY-001` both resolve to `2c3a7de1b202406e4743d77cd369f385ebe7193d`. The final event-worker unseal correction is published. No implementation delta exists since the prior source review; repeat static validation was not necessary.
+
+### Remaining blockers and required corrections
+
+1. **Reconcile the two failing Connections-depth integration expectations.** The developer-authorized run at the reviewed source exited 1: **176 passed, 2 failed**. `/connections/example/deeper` and `/connections/example/deeper/more` returned HTTP 200, while the harness expects 404. Inspection confirms `haproxy/haproxy.cfg:25` permits `^/connections(/.*)?$`, and `tests/run-tests.sh:486-493` expects those paths to be rejected. Both files and related fixtures/entrypoint are unchanged from starting source `ac092dc783d715db3b0e2136bce1cc51abaee5a1`. This establishes an existing source/test mismatch, not a passing baseline or authority to weaken either boundary. Reconcile the authoritative intended Commerce routing contract before a narrowly scoped source/test correction; record the reason and relevant regression evidence. Do not blindly rerun the long suite or broaden route access to obtain a pass. A passing required integration result or explicit approved scope decision is still needed.
+2. **Supply operational cutover evidence or an explicit approved scope decision.** Environment-specific imports/root-ID compatibility, independent cold starts, protected operations, controlled revoked/tampered/DB-unavailable behavior, next-operation rotation, R2 checks and rollback remain unexecuted. The controlling task consolidation includes those checks. Static fixtures, documented procedures and accepted consumer source inspection do not replace actual outcomes. Preserve deferred Meta declarations; no deployment, live secret mutation, production probe or Docker rerun is authorized by this review.
+
+### Evidence reviewed
+
+Inspected the updated completion report and retained `.validation/ARCH-043-GATEWAY-001-20261105T161801Z/report.md`, including its failed result, plus the relevant harness expectations and HAProxy allowlist. Independently checked local/remote source equality and empty baseline-to-final diffs for routing/harness/fixtures/entrypoint. Prior independent positive/adversarial Blueprint and whitespace checks remain applicable to unchanged source. The architect did not rerun Docker or live validation, and does not represent 176 passing assertions as a passing integration suite.
+
+### Follow-up
+
+Resolve the bounded routing-contract mismatch and required operational evidence, update the report and resubmit through the normal task workflow. Preserve Attempt 2 history and increment only on the next normal claim. ARCH-043-SYSTEM-TEST-001 remains gated on Gateway acceptance. No downstream promotion, implementation edit, gitlink/index change, main merge or deployment is made by this review.
