@@ -6,16 +6,16 @@ This package defines twelve Shopify implementation tasks plus one terminal syste
 
 ## Current dependency frontier
 
-Reconciled against the task records in this branch on 2026-11-04 after SHOPIFY-009 Attempt 2 acceptance.
+Reconciled against the task records in this branch on 2026-11-05 after SHOPIFY-010 Attempt 1 acceptance.
 
 | State | Tasks |
 |---|---|
-| Complete | ARCH-057-SHOPIFY-001, ARCH-057-SHOPIFY-002, ARCH-057-SHOPIFY-003, ARCH-057-SHOPIFY-005, ARCH-057-SHOPIFY-006, ARCH-057-SHOPIFY-007, ARCH-057-SHOPIFY-008, ARCH-057-SHOPIFY-009 |
+| Complete | ARCH-057-SHOPIFY-001, ARCH-057-SHOPIFY-002, ARCH-057-SHOPIFY-003, ARCH-057-SHOPIFY-005, ARCH-057-SHOPIFY-006, ARCH-057-SHOPIFY-007, ARCH-057-SHOPIFY-008, ARCH-057-SHOPIFY-009, ARCH-057-SHOPIFY-010 |
 | Review | ARCH-057-SHOPIFY-004 |
-| Ready | ARCH-057-SHOPIFY-010 |
+| Ready | None |
 | Pending | ARCH-057-SHOPIFY-011, ARCH-057-SHOPIFY-012, ARCH-057-SYSTEM-TEST-001 |
 
-SHOPIFY-009 is architect-accepted at `f0cf26877a9e3f7503c0f9a956b02ede3eff2571`: both diagnostic findings are resolved and independent focused validation passed 91 tests. The previously reviewed 12-test PostgreSQL evidence was not rerun for the diagnostic correction. Its claim is cleared. SHOPIFY-010 is Ready and unclaimed because its sole prerequisite is Complete. SHOPIFY-011 remains Pending on the incomplete prerequisite records in this branch (SHOPIFY-004 and SHOPIFY-010); no downstream execution, main merge or architecture completion is implied. Historical frontier notes below do not override these current task records.
+SHOPIFY-010 Attempt 1 is architect-accepted at `6e8029deb30de8903e937dc092b68f8b304e4dce`; independent validation passed 168 tests. Reviewed recorded Redis evidence passed 9 tests; it was not rerun by the architect. Its claim is cleared. SHOPIFY-011 remains Pending solely on SHOPIFY-004, which is still in Review in this branch. Later tasks remain Pending transitively. No downstream execution, main merge, live drain or deployment is implied. Historical frontier notes below do not override current task records.
 
 Apply the definition patch directly to the latest supplied `moda-interact-workspace(20261104-005051).zip` baseline. It already includes the original Shopify review. No earlier patch needs to be applied again. The new API/Background work occupies ARCH-056; it remains unchanged and does not add a Shopify prerequisite.
 
