@@ -435,7 +435,7 @@ Implementation repository:
 
 Parent workspace:
 - Task file: `docs/decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md`
-- Commit: pending this report commit.
+- Report commit: `c6937bb1b38683c4a7c32b7215c6aacd1ee5be0a` (pushed).
 - Remote: `origin/task/ARCH-058-BACKGROUND-001`
 - Submodule gitlink staged: no.
 
