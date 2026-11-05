@@ -101,3 +101,7 @@ ARCH-057-SHOPIFY-007 Attempt 1 is architect-accepted and Complete at `e1533e4658
 ## Published Acceptance Reconciliation — 2026-11-05
 
 SHOPIFY-004's published architect acceptance was reconciled from its remote task branch; the former Review snapshot was stale. All SHOPIFY-001–010 prerequisites are Complete. SHOPIFY-011 is Ready and unclaimed (attempt 0), subject to normal launcher integration checks. SHOPIFY-012 and SYSTEM-TEST-001 remain Pending. This current frontier supersedes earlier notes naming SHOPIFY-004 as a blocker. No new implementation acceptance was fabricated and no implementation or gitlink was changed.
+
+## Accepted implementation frontier — 5 November 2026
+
+SHOPIFY-012 is accepted and Complete at `905e8a79`, following accepted SHOPIFY-011 at `aa02676` and the transitive functional tasks. The twelve-task application implementation chain is accepted. SYSTEM-TEST-001 is Ready/unclaimed at Attempt 0; developer manual validation and the terminal integrated scenarios remain outstanding. No system-test execution, deployment or architecture-wide completion is claimed. Earlier pending snapshots are historical.
