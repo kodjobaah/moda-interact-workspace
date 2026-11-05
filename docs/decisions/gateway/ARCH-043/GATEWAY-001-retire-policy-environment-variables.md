@@ -9,11 +9,11 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-05T15:41:10Z
+attempt: 1
 depends_on:
 - ARCH-043-ADMIN-001
 - ARCH-043-ADMIN-002
@@ -32,7 +32,7 @@ depends_on:
 enables:
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
-updated: 2026-11-02
+updated: 2026-11-05
 ---
 
 # Remove retired application-policy environment variables
