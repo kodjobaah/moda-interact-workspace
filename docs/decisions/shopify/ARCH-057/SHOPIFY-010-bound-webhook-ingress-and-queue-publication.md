@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
-executor: codex
-claimed_at: 2026-11-05T00:12:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-009
@@ -34,7 +34,7 @@ Coordinator: `moda_architect`.
 
 Mandatory execution, diagnostic and naming contract: `docs/architecture/ARCH-057/task-contract.md`.
 
-**Materialised task definition; Attempt 1 submitted for review.** ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete at implementation `f0cf26877a9e3f7503c0f9a956b02ede3eff2571`; its acceptance satisfies this task's sole prerequisite. The launcher prepared and claimed this attempt; implementation and validation evidence follow below. No live deployment or drain is asserted.
+**Materialised task definition; Attempt 1 architect-accepted and Complete.** ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete at implementation `f0cf26877a9e3f7503c0f9a956b02ede3eff2571`; its acceptance satisfies this task's sole prerequisite. The launcher prepared and claimed this attempt; implementation and validation evidence follow below. No live deployment or drain is asserted.
 
 ## Objective
 
@@ -262,7 +262,7 @@ Official behavior references for executor verification: [BullMQ job IDs](https:/
 
 ### Status
 
-Attempt 1 implemented, validated and returned for independent architect review. Task status: review. This report is not an architect acceptance decision.
+Attempt 1 architect-accepted and Complete on 2026-11-05. Executor and claim timestamp are cleared; attempt remains 1.
 
 Implementation commit `6e8029deb30de8903e937dc092b68f8b304e4dce`, pushed to implementation `task/ARCH-057-SHOPIFY-010`. Parent report/approved scope amendment are submitted on the same-named parent branch. No main merge or parent implementation gitlink update.
 
@@ -351,7 +351,7 @@ Historical ARCH-004-SHOPIFY-001 and ARCH-003-BACKGROUND-001 were read. Producer 
 
 ### Unresolved Issues
 
-No known implementation/required-validation gap within the amended scope. Independent architect review remains outstanding. Live drain/rollout evidence is an explicit deployment responsibility, not claimed by source tests. No enabled task was started or promoted.
+No known implementation/required-validation gap within the amended scope. Independent architect review passed on 2026-11-05. Live drain/rollout evidence is an explicit deployment responsibility, not claimed by source tests. No enabled task was started or promoted.
 
 ### Architectural Concerns
 
@@ -361,24 +361,27 @@ The demonstrated unsafe Redis-TLS diagnostic extraction was returned to moda_arc
 
 ### Review Status
 
-Pending.
+Accepted on 2026-11-05. Attempt 1 Complete; no actionable findings. Executor and claimed_at cleared; attempt unchanged.
 
 ### Review Notes
 
-Task definition only; no implementation accepted.
+Reviewed implementation `6e8029deb30de8903e937dc092b68f8b304e4dce`, matching the pushed implementation task branch. Single-add publication preserves deterministic IDs, payloads and job options. The deadline covers acquisition/add and observes late settlement without claiming cancellation. Ingress retains authentication and tenant admission, emits truthful accepted/discarded outcomes and owns typed 503 failures. Diagnostics reuse the established safe boundary, including the narrowly authorized rediss scheme correction.
 
 ### Reviewed Files
 
-Definition and latest snapshot producer/ingress/consumer-contract touchpoints only.
+All 19 changed implementation files: queue/ingress, root failure owner, observability/observation/telemetry, centralized URL-pattern correction, package scripts, focused tests, Redis helper/fixtures and both Redis suites, and publication documentation. Reviewed the completion report and recorded source/package/worktree provenance.
 
 ### Validation Reviewed
 
-Definition/source inspection only; implementation evidence is outstanding.
+- Independently ran `npm run test:shopify-webhooks`: 168 tests across 15 files passed. Local evidence: `/tmp/shopify010-review.log`.
+- Independently checked `git diff --check`: passed; implementation HEAD matches its task remote.
+- Inspected the real Redis suites and `/tmp/arch057-shopify010-redis-final.log`: 9 tests across both suites passed, covering concurrent retained-ID acceptance, tenant separation, auto-removal/replay, late-add/retry and telemetry. The architect did not rerun the disposable Redis suite.
+- Reviewed submitted typecheck/build/scoped lint, five billing diagnostic regression tests and before/after invocation evidence; these were not independently rerun.
 
 ### Architecture Conformance
 
-To be assessed after implementation against the parent decision, common contract and unchanged Shared wire contracts.
+Conforms to the amended task scope and unchanged Shared contracts. No receipt/outbox, alternate identity, schema change or consumer policy was introduced. At-least-once and legacy-drain rollout limits are documented; no deployment or live drain is certified by this acceptance.
 
 ### Follow-up
 
-Return the completed task for architect review; do not begin enabled work.
+SHOPIFY-010 is Complete. SHOPIFY-011 remains Pending because SHOPIFY-004 is still recorded in Review in this branch; SHOPIFY-012 and SYSTEM-TEST-001 remain Pending transitively. Normal dependency/integration checks apply before execution. No downstream work, main merge or deployment is performed by this acceptance.

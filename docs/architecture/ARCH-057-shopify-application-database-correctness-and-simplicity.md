@@ -136,3 +136,8 @@ ARCH-057-SHOPIFY-007 Attempt 1 is architect-accepted and Complete at `e1533e4658
 ## Session Lifecycle Task Acceptance (2026-11-04)
 
 ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete at `f0cf26877a9e3f7503c0f9a956b02ede3eff2571`. Both earlier diagnostic findings are resolved; independent focused validation passed 91 tests. Reviewed earlier PostgreSQL evidence covers 12 tests; it was not rerun for the logging correction. SHOPIFY-010 is now Ready and unclaimed. SHOPIFY-011 remains Pending on its other incomplete prerequisites in this branch; later tasks remain Pending. The task map above retains initial states; current task YAML and the execution plan govern the dependency frontier. No main merge, app deployment or architecture completion is implied.
+
+
+## Webhook Publication Task Acceptance (2026-11-05)
+
+ARCH-057-SHOPIFY-010 Attempt 1 is architect-accepted and Complete at `6e8029deb30de8903e937dc092b68f8b304e4dce`. Independent focused validation passed 168 tests; reviewed recorded Redis evidence passed 9 tests and was not rerun. SHOPIFY-011 remains Pending solely on SHOPIFY-004's current Review record in this branch. Later tasks remain Pending. Current task YAML and execution plan govern over historical frontier notes; no main merge, live drain, deployment or architecture completion is implied.
