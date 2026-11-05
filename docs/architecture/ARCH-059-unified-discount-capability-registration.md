@@ -51,8 +51,8 @@ Reuse existing structured lifecycle/setup/MCP diagnostics; include bounded relea
 | ARCH-059-SHARED-001 | moda_shared | Ready | - |
 | ARCH-059-SHARED-002 | moda_shared | Pending | ARCH-059-SHARED-001 |
 | ARCH-059-COMMERCE-001 | moda_commerce | Pending | ARCH-059-SHARED-002, ARCH-058-COMMERCE-001 |
-| ARCH-059-MCP-001 | moda_mcp | Pending | ARCH-059-SHARED-002, ARCH-059-COMMERCE-001, ARCH-058-MCP-003 |
-| ARCH-059-BACKGROUND-001 | moda_background | Pending | ARCH-059-SHARED-002, ARCH-059-COMMERCE-001, ARCH-059-MCP-001, ARCH-058-BACKGROUND-001 |
+| ARCH-059-MCP-001 | moda_mcp | Complete | ARCH-059-SHARED-002, ARCH-059-COMMERCE-001, ARCH-058-MCP-003 |
+| ARCH-059-BACKGROUND-001 | moda_background | Ready | ARCH-059-SHARED-002, ARCH-059-COMMERCE-001, ARCH-059-MCP-001, ARCH-058-BACKGROUND-001 |
 | ARCH-059-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-059-SHARED-002, ARCH-059-COMMERCE-001, ARCH-059-MCP-001, ARCH-059-BACKGROUND-001 |
 
 ## Open Questions
@@ -81,3 +81,8 @@ Once an operation/version is implemented, an authorized staff user may configure
 | Immutable release/capability/revision membership | Commerce lifecycle/storage | MCP snapshot and published execution | Existing published descriptor/revision checks and Feature/plan selection |
 | Trusted manifest/grant identity | MCP snapshot then Background grant persistence | Background and MCP calls | validateRelease, manifestMatchesGrant and MCP published admission |
 | Outreach purpose/allowlist | Background host | MCP context and selector | Trusted context and explicit OUTREACH_MCP_TOOL_NAMES; no model-granted authority |
+
+
+## Dependency frontier reconciliation — 5 November 2026
+
+ARCH-059-MCP-001 is Complete by explicit developer decision following durable passing Attempt 1 review `7cbf62320` and published implementation `519e905`. ARCH-059-BACKGROUND-001 is Ready (all four explicit prerequisites Complete), still unclaimed Attempt 0. ARCH-059-SYSTEM-TEST-001 remains Pending Background completion and manual-gated. This reconciliation authorizes no downstream execution, deployment or release activation; preserve the coordinated staged-release cutover and paired rollback procedure.

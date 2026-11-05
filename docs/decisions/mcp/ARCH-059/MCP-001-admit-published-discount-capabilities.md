@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -128,7 +128,7 @@ Use launcher-resolved isolated matching task worktrees/branches and record synch
 
 ### Status
 
-Developer Self-Review Passed — Attempt 1, 5 November 2026. Implementation and review are published through the developer-update workflow. Status Review, executor/claimed_at null, attempt unchanged. Explicit `/moda_developer_update ARCH-059-MCP-001 complete` remains required for completion; no completion decision is inferred.
+Complete — explicit developer completion on 5 November 2026 after durable passing Attempt 1 review `7cbf62320`. Implementation `519e905` is committed/pushed. Executor/claimed_at remain null; Attempt 1 and developer execution/completion modes are preserved.
 
 ### Files Changed
 
@@ -165,7 +165,7 @@ All commands ran in the isolated MCP task worktree with Node 24.19.0 / npm 11.17
 - `npm run typecheck` — passed, including declared Prisma generation.
 - `npm run build` — passed, including declared Prisma generation.
 - `npm run lint` — passed, zero errors/warnings.
-- `git -c core.fsmonitor=false diff --check` — passed before report update; final whitespace check also required after report write.
+- `git -c core.fsmonitor=false diff --check` — passed, including the published review report. Completion/frontier documentation is checked again before publication.
 
 An earlier full run found an obsolete built-in grant-count expectation and two missing local schema-artifact prerequisites; corrected/installed, then reran the complete declared suite successfully. Earlier lint unused-variable finding was corrected before the final successful lint run.
 
@@ -181,7 +181,7 @@ Accepted Commerce setup provisions Product Search mappings explicitly for eligib
 
 ### Unresolved Issues
 
-No implementation/check failures remain. Developer self-review passed and implementation is committed/pushed; explicit developer completion remains outstanding. No downstream task was started or promoted.
+No required implementation/check failures remain. Developer completion is recorded below. Background is dependency-ready; System Test remains pending Background completion and manual execution. No downstream execution was started.
 
 ### Architectural Concerns
 
@@ -226,3 +226,14 @@ Independently ran declared `npm run test:unit`: **347 passed, 0 failed/skipped/c
 - No startup synchronization or claim was repeated by this review. Existing prepared developer claim is reconciled rather than incremented. No package publication, deployment, release activation or operational pause/drain occurred.
 
 The staged-release cutover gate remains mandatory: strict MCP and compatible host artifacts, owned maintenance/drain, explicit operator activation and paired rollback. Downstream Background/System Test tasks are not promoted because this task is not Complete. The developer may make the explicit completion decision after this durable passing review.
+
+
+## Developer Completion Decision — Attempt 1 (2026-11-05)
+
+The developer explicitly invoked `/moda_developer_update ARCH-059-MCP-001 complete`. The current attempt has durable Developer Self-Review Passed / Accepted at parent `7cbf623201a6187fc6edd1e5a4ceb5e9503fca57`; all required Work Items, Acceptance Criteria and Validation are checked. Implementation `519e905aa21e8ee30acc476cec23601664070eb0` and that parent review were verified against their remote `task/ARCH-059-MCP-001` branch tips before this decision. Both dedicated worktrees were clean. No implementation changes or repeated tests were needed for this documentation-only transition.
+
+Set status Complete; preserve Attempt 1, execution_mode/completion_mode developer, executor null and claimed_at null. This decision does not replace the historical review or claim independent architect review acceptance. Publish this task decision and the authorized dependency-frontier records on the matching parent task branch. No main merge/push or submodule gitlink change.
+
+### Dependency frontier
+
+ARCH-059-BACKGROUND-001: Pending -> Ready, Attempt 0 preserved, unclaimed. Its explicit prerequisites ARCH-059-SHARED-002, ARCH-059-COMMERCE-001, ARCH-059-MCP-001 and ARCH-058-BACKGROUND-001 are all Complete in the authoritative task records. ARCH-059-SYSTEM-TEST-001 remains Pending because ARCH-059-BACKGROUND-001 is not Complete; its manual execution gate remains binding. No downstream work or deployment is started. The staged-release activation, pause/drain and paired rollback gates remain unchanged.
