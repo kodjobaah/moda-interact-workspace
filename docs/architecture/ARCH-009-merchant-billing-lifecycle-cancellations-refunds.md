@@ -543,3 +543,7 @@ Implementation agents must not invent:
 - automatic financial authorization.
 
 On genuine source-contract drift, STOP and return exact evidence.
+
+## Admin task retirement — 2026-11-05 — ARCH-009-ADMIN-003
+
+Developer-authorized supersession of ARCH-009-ADMIN-003. ARCH-010 owns the provider-authoritative lifecycle; ARCH-015 owns the replacement Admin refund workflow. Do not restore the legacy cancellation/approval model. Future generic corrections must retain the server-side purchase/refund bypass prohibition from ADMIN-003, including when ARCH-007-ADMIN-004 is implemented. ARCH-009-SYSTEM-TEST-001 retains Pending and its manual gate; its legacy dependencies/scenarios require deliberate scope alignment with current ARCH-010/015 certification, not automatic promotion on supersession. Existing reviews and attempts remain history, not newly accepted work.

@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 80
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-009-SYSTEM-TEST-001
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-11-05
 ---
 
 # ARCH-009-ADMIN-003
@@ -103,3 +103,11 @@ None
 Pending
 ### Follow-up
 None
+
+## Architect supersession — 2026-11-05
+
+Explicitly authorized by the developer. Superseded; do not claim or implement this legacy definition. Preserve all earlier attempt, implementation and review history; supersession does not accept the old implementation.
+
+Binding replacements: [ARCH-010 lifecycle ownership](../../../architecture/ARCH-010-merchant-lifecycle-state-transitions.md) removes the local cancellation state machine and assigns subscription cancellation to Shopify. [ARCH-015 Admin refund replacement](../ARCH-015/ADMIN-001-manual-refund-fallback.md) owns the current refund workflow and guarded provider settlement. Remaining Woo-specific support stays in ARCH-027-ADMIN-001.
+
+Safety requirement retained for any future generic billing correction (including ARCH-007-ADMIN-004 if that capability proceeds): reload the durable original UsageEvent server-side; reject recovery-credit purchase corrections through the generic path, create neither negative event nor misleading correction audit, ignore browser-supplied metric claims, and direct the operator to the canonical refund workflow. Include focused tests before acceptance. This is a future capability constraint, not implementation authorization or a new claim. Current Admin event action is retry-only.
