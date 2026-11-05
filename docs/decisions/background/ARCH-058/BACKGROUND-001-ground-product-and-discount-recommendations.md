@@ -389,3 +389,7 @@ MCP-002 remains in Review, not Complete or accepted, at implementation `b95c397d
 ## Architect Dependency Reconciliation — 5 November 2026
 
 MCP-002 Attempt 3 is architect-accepted and Complete at `11fba27`, with developer PostgreSQL evidence of 30 passed, 0 failed and 1 opt-in live test skipped. This supersedes the earlier pending-validation gate note. This task remains Pending on its remaining explicit prerequisites; no attempt or claim changes. No execution is started.
+
+## Architect Dependency Reconciliation — MCP-003 Acceptance, 5 November 2026
+
+MCP-003 Attempt 1 is architect-accepted and Complete at `69b64669a621c899f3b764fb92004f27f249b9e7`. Remains Pending on remaining explicit consumer prerequisites; no claim or attempt change. This supersedes earlier MCP-002/MCP-003 pending-validation gate snapshots. No execution is started; live provider/deployment and terminal system proof remain separately owned.

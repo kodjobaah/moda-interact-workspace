@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
 executor: null
 claimed_at: null
@@ -363,3 +363,31 @@ MCP-002 remains in Review, not Complete or accepted, at implementation `b95c397d
 ## Architect Dependency Reconciliation — 5 November 2026
 
 MCP-002 Attempt 3 is architect-accepted and Complete at `11fba27`, with developer PostgreSQL evidence of 30 passed, 0 failed and 1 opt-in live test skipped. This supersedes the earlier pending-validation gate note. All explicit prerequisites (MCP-002 and SHOPIFY-001) are Complete. Promoted to Ready, Attempt 0 preserved, no executor/claim. No execution is started.
+
+## Architect Acceptance — 5 November 2026
+
+**Accepted — Attempt 1.** Reviewed implementation `69b64669a621c899f3b764fb92004f27f249b9e7` and parent submission `75e2315fae144e4707dea4d75bedace53c18a753`. No blocking findings identified. Task marked Complete under automatic completion mode; Attempt 1 preserved and executor/claim remain empty. This supersedes the earlier pending review and pre-execution snapshots.
+
+### Source Review and Conformance
+
+Reviewed shipping adapter, paired offline-session/scope validation, provider preflight and strict request/projection guards, existing core-executor registration/rendering, native mappings, source diagnostics and real composition tests against the task contract. Tenant/provider authorization remains authoritative; only the private missing-scope preflight subtype becomes SCOPE_NOT_GRANTED, while attempted provider failures remain outer errors. Product facts precede policy work, exact native identities and Woo parent relationships are checked, units are not guessed, and policy HTML remains inert structured source data. The shipping operation uses the existing published executor without requiring a cursor secret. No blocking implementation defect was identified in inspected paths.
+
+### Independent Validation and Limits
+
+Independently reran the exact required shipping/core command with the prescribed Node bootstrap:
+
+```bash
+npm exec -- tsx --test tests/unit/execution/policy/shipping-information.test.ts tests/unit/execution/policy/shipping-information-composition.test.ts tests/unit/execution/policy/shopify-core.test.ts
+```
+
+**59/59 tests passed**, zero failures/skips. Implementation comparison whitespace check passed and checkout was clean. Local independent log: `/tmp/mcp003-architect-review.log` (not a committed artifact).
+
+Reviewed the submitted **71 provider/resolver/runtime/protocol regression passes**, main/integration typechecks, lint, build and all three fixed-query validations. Those were not rerun during this architect review. Native fields and long policy-body preservation are exercised through actual service/registry/resolver/provider/renderer paths with controlled transports. Live merchant approval/grants, provider responses and deployment remain NOT_RUN operator checks; this acceptance makes no live-store or system-wide readiness claim. No additional Docker suite is required by this bounded task.
+
+### Isolation and Downstream
+
+Reviewed the prepared worktree/synchronization evidence. Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-003`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-003`, both on `task/ARCH-058-MCP-003`. No implementation source, schema, dependency, gitlink or main branch is changed by this review.
+
+COMMERCE-001 now has all three explicit prerequisites Complete: MCP-002, MCP-003 and SHARED-006. Promoted to Ready at Attempt 0 with empty executor/claim. BACKGROUND-001 remains Pending on COMMERCE-001, and SYSTEM-TEST-001 retains its remaining consumer prerequisites. No downstream task is executed; ARCH-058 remains incomplete until its required consumer/system validation is accepted. The known optional Commerce projection compatibility issue remains a consumer-validation coordination item.
+
+The developer explicitly authorized committing/pushing acceptance and downstream reconciliation on 5 November 2026.
