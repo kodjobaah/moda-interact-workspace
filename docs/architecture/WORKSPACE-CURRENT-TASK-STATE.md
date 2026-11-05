@@ -1,5 +1,7 @@
 # Workspace current durable task state
 
+> **5 November 2026 reconciliation:** The historical tables below are not the current workspace inventory. See [production readiness reconciliation](reviews/production-reconciliation-2026-11-05/review.md) and its [complete task inventory](reviews/production-reconciliation-2026-11-05/task-inventory.json) for the audited 1,285-task snapshot. Individual task YAML remains authoritative.
+
 > Synchronized by `moda_architect` on 2026-09-08 from individual task YAML frontmatter,
 > with explicit restoration of previously accepted task records where the supplied workspace had drifted.
 > ARCH-005 was reconciled again on 2026-10-08 after SHOPIFY-004 Attempt 2 acceptance.
