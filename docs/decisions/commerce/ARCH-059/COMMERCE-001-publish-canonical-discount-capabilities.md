@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-059-SHARED-002", "ARCH-058-COMMERCE-001"]
 enables: ["ARCH-059-MCP-001", "ARCH-059-BACKGROUND-001", "ARCH-059-SYSTEM-TEST-001"]
 created: 2026-11-05
@@ -40,11 +40,11 @@ Other repositories, new Feature identities, provider evaluator redesign, schema 
 Feature product_search (Product Search) owns both canonical discount tools exactly once. INITIAL_RECOVERY_OUTREACH remains purpose with checkout_recovery host admission. Preserve active-plan permission parity including Free through explicit provisioning verification; preserve merchant settings and provider evaluation. Fail closed on missing release or stale identity. No global fallback, duplicate descriptors, contract hashes or locally copied Shared contracts. Follow recorded rollout order.
 
 ## Work Items
-- [ ] Extend existing setup plan/apply/verify with the two discount tools, canonical policy-operation revisions and FeatureCapabilities under product_search; display tools as Get Discount Options and Get Discount Details.
-- [ ] Provision enabled product_search plan mappings for every previously discount-eligible active plan including Free; verify active ALWAYS_ENABLED/systemRequired identity without overriding conflicting operator policy. Preserve checkout_recovery mappings and all merchant discount settings.
-- [ ] Use deterministic operation IDs and existing authoring/validation/audit/lifecycle services; publish complete immutable releases preserving unrelated members and stage without activation; activate only at the explicit strict-MCP cutover gate using optimistic concurrency.
-- [ ] Dry-run reports mapping/revision/release changes without writes; rerun converges and interrupted execution resumes; conflicting drafts fail without overwrite.
-- [ ] Verify each discount name appears once in published membership and preserve old-client compatibility during staged rollout; no provider reads during setup.
+- [x] Extend existing setup plan/apply/verify with the two discount tools, canonical policy-operation revisions and FeatureCapabilities under product_search; display tools as Get Discount Options and Get Discount Details.
+- [x] Provision enabled product_search plan mappings for every previously discount-eligible active plan including Free; verify active ALWAYS_ENABLED/systemRequired identity without overriding conflicting operator policy. Preserve checkout_recovery mappings and all merchant discount settings.
+- [x] Use deterministic operation IDs and existing authoring/validation/audit/lifecycle services; publish complete immutable releases preserving unrelated members and stage without activation; activate only at the explicit strict-MCP cutover gate using optimistic concurrency.
+- [x] Dry-run reports mapping/revision/release changes without writes; rerun converges and interrupted execution resumes; conflicting drafts fail without overwrite.
+- [x] Verify each discount name appears once in published membership and preserve old-client compatibility during staged rollout; no provider reads during setup.
 
 ## Interfaces / Contracts
 Published @modainteract/moda-interact-shared/commerce input/output, release/capability/revision/grant validators; versioned extensions owned by ARCH-059-SHARED-001, registry availability by ARCH-059-SHARED-002. Producers/consumers and storage trust boundary are normative in parent architecture.
@@ -59,16 +59,16 @@ Published @modainteract/moda-interact-shared/commerce input/output, release/capa
 - ARCH-059-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Extend existing setup plan/apply/verify with the two discount tools, canonical policy-operation revisions and FeatureCapabilities under product_search; display tools as Get Discount Options and Get Discount Details.
-- [ ] Provision enabled product_search plan mappings for every previously discount-eligible active plan including Free; verify active ALWAYS_ENABLED/systemRequired identity without overriding conflicting operator policy. Preserve checkout_recovery mappings and all merchant discount settings.
-- [ ] Use deterministic operation IDs and existing authoring/validation/audit/lifecycle services; publish complete immutable releases preserving unrelated members and stage without activation; activate only at the explicit strict-MCP cutover gate using optimistic concurrency.
-- [ ] Dry-run reports mapping/revision/release changes without writes; rerun converges and interrupted execution resumes; conflicting drafts fail without overwrite.
-- [ ] Verify each discount name appears once in published membership and preserve old-client compatibility during staged rollout; no provider reads during setup.
-- [ ] Existing authorization/provider evaluation and unrelated published members remain intact.
+- [x] Extend existing setup plan/apply/verify with the two discount tools, canonical policy-operation revisions and FeatureCapabilities under product_search; display tools as Get Discount Options and Get Discount Details.
+- [x] Provision enabled product_search plan mappings for every previously discount-eligible active plan including Free; verify active ALWAYS_ENABLED/systemRequired identity without overriding conflicting operator policy. Preserve checkout_recovery mappings and all merchant discount settings.
+- [x] Use deterministic operation IDs and existing authoring/validation/audit/lifecycle services; publish complete immutable releases preserving unrelated members and stage without activation; activate only at the explicit strict-MCP cutover gate using optimistic concurrency.
+- [x] Dry-run reports mapping/revision/release changes without writes; rerun converges and interrupted execution resumes; conflicting drafts fail without overwrite.
+- [x] Verify each discount name appears once in published membership and preserve old-client compatibility during staged rollout; no provider reads during setup.
+- [x] Existing authorization/provider evaluation and unrelated published members remain intact.
 
 ## Validation
-- [ ] Inspect package.json and run declared focused tests for every Work Item, plus declared typecheck/build when deployable TypeScript changes; record exact commands/results. Do not invent missing scripts.
-- [ ] Reports contain no secrets and demonstrate task scope only.
+- [x] Inspect package.json and run declared focused tests for every Work Item, plus declared typecheck/build when deployable TypeScript changes; record exact commands/results. Do not invent missing scripts.
+- [x] Reports contain no secrets and demonstrate task scope only.
 
 ## Stop Condition
 After Work Items, Acceptance Criteria and Validation complete, submit Completion Report for review and STOP. Explicit developer completion via /moda_developer_update is required. Do not start enabled work. System Test is manually invoked after prerequisites complete.
@@ -132,22 +132,47 @@ MCP must reject duplicate persisted names before server registration. No name-ba
 Use launcher-resolved isolated matching task worktrees/branches and record synchronization evidence. No execution started by this definition. Reuse existing policy/lifecycle services. Return missing schema/contract capability or permission-parity conflicts to architect.
 
 ## Completion Report
+
 ### Status
-Not Started
+
+Ready for Developer Completion — Attempt 1. Passing developer self-review is recorded below; explicit developer completion remains pending.
 ### Files Changed
-None
+`package.json`, `package-lock.json`, `src/commerce/bootstrap/product-discovery-setup.cli.ts`, `src/commerce/bootstrap/product-discovery-setup.ts`, `src/commerce/bootstrap/system-commerce-tool-sync.cli.ts`, `src/commerce/bootstrap/system-commerce-tool-sync.ts`, `src/commerce/bootstrap/system-product-tools.ts`, `src/commerce/execution/policy-operation-authoring.ts`, `src/commerce/execution/renderer.ts`, `src/commerce/tool-definition/contracts.ts`, `tests/commerce-product-discovery-setup.test.ts`, `tests/persisted-policy-operation-tool-editor.test.tsx`, `tests/policy-operation-authoring-server-actions.test.ts`, `tests/policy-operation-registry.test.ts`, `tests/system-commerce-tool-sync.test.ts`.
 ### Work Completed
-None
+- Pinned the Commerce consumer to accepted `@modainteract/moda-interact-shared@5.1.0`. Registered `discounts.getDetails@1.0.0` using Shared validators and bounded rendering. Added Get Discount Options and Get Discount Details as canonical Product Search capabilities with input-only trusted-context bindings and immutable revision identities.
+- Generalized setup planning/application to all six canonical Product Search tools. Setup reports and provisions enabled `product_search` mappings for every active plan, including Free, verifies the complete active-plan set, and preserves existing mappings such as `checkout_recovery`. Existing merchant discount settings and provider evaluation are not modified or invoked by setup.
+- Reused deterministic operation IDs, authoring and lifecycle services. Default apply creates/verifies the complete immutable release as staged and leaves the active pointer unchanged. Explicit strict-MCP version, staged release ID, expected base release ID and expected pointer edit version are required for activation; lifecycle CAS and post-activation snapshot checks remain in force.
+- Added read-only dry-run, plan mapping conflict, canonical identity/content conflict, idempotent rerun, interrupted draft/release retry, exact six-member and same-Feature unrelated-member preservation coverage. The P2 correction removes rejection of unrelated Product Search capabilities while retaining duplicate capability key and canonical identity checks.
+- No provider reads, production activation, consumer deployment, database schema change, main merge or submodule gitlink update was performed.
 ### Validation Results
-Not run; definition only.
+- `npm test -- tests/system-commerce-tool-sync.test.ts tests/commerce-product-discovery-setup.test.ts tests/persisted-policy-operation-tool-editor.test.tsx tests/policy-operation-registry.test.ts tests/policy-operation-authoring-server-actions.test.ts` — 5 files and 32 tests passed.
+- `npm run typecheck` — passed.
+- `npm run build` — passed; Next.js emitted the existing Nunjucks dynamic-dependency warning.
+- `git diff --check` — passed.
+- Commands ran against an isolated validation copy of the final task source under `/private/tmp/moda-commerce-arch059-001-validation`; the implementation worktree lacked the pretest `@shopify/dev-mcp` package required by `schema:sync`. The validation copy used the locked task dependency set and no production services.
+### Git / VCS
+
+Task branch: `task/ARCH-059-COMMERCE-001`.
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-059-COMMERCE-001`; branch `task/ARCH-059-COMMERCE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-COMMERCE-001`; branch `task/ARCH-059-COMMERCE-001`.
+- Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+
+Synchronization and publication:
+- Parent `origin/main` is incorporated by merge commit `687d1f097`; implementation baseline `7f50848` matched `origin/main` before the implementation commit.
+- Implementation repository: `moda-interact-commerce`; commit `770d6ab` (`task(ARCH-059-COMMERCE-001): preserve unrelated Product Search capabilities`); pushed to `origin/task/ARCH-059-COMMERCE-001`.
+- Parent task record: review submission commit `1ea7c8e99` pushed to `origin/task/ARCH-059-COMMERCE-001`; this VCS evidence update is also on that task branch. Submodule gitlink staged: no.
+- Merged to implementation main: no. Merged to workspace main: no.
 ### Deviations
-None
+The implementation worktree's dependencies did not include `@shopify/dev-mcp`, so declared checks ran in an isolated validation copy rather than directly in the task worktree. The exact focused test/typecheck/build commands and results are recorded above.
 ### Assumptions
-Existing lifecycle persistence supports canonical capabilities.
+Shared 5.1.0 is the accepted ARCH-059-SHARED-002 publication; existing Commerce lifecycle persistence supports canonical capabilities.
 ### Unresolved Issues
-None identified during definition.
+Strict-MCP release activation and consumer rollout remain intentionally deferred until the strict MCP and Background consumer artifacts are accepted and the operational pause/drain and verification gates are completed. This is the task's required deployment gate, not an implementation blocker.
 ### Architectural Concerns
-Return newly discovered cross-service or policy gaps before proceeding.
+None identified. No activation or deployment was attempted.
 
 ## Architect Review
 ### Review Status
@@ -166,3 +191,41 @@ None
 ## Architect Dependency Reconciliation — 5 November 2026
 
 SHARED-002 Attempt 1 passed review and is explicitly developer-completed. Exact published Shared version is 5.1.0, release metadata `3096ca2`, accepted source `50891ef`. All explicit prerequisites are Complete (including ARCH-058-COMMERCE-001); promoted to Ready, unclaimed, Attempt 0 preserved. Readiness does not authorize automatic execution, consumer deployment or cutover; the staged-release rollout gate remains binding.
+
+## Developer Self-Review — Changes Requested, 5 November 2026
+
+Reviewed the current uncommitted developer draft in the canonical implementation worktree, baseline HEAD `7f50848`. Returned to Ready, executor/claim null, Attempt 1 preserved; execution/completion ownership remains developer. No acceptance or downstream promotion. No implementation source is committed, reverted or otherwise changed by this review. Use the normal developer claim workflow for the next attempt; preserve the existing dirty task-owned implementation.
+
+### Required Correction
+
+**[P2] Setup rejects legitimate unrelated capabilities on Product Search.** `src/commerce/bootstrap/system-commerce-tool-sync.ts:149` fails IDENTITY_CONFLICT whenever any capability selected under product_search has a key outside the six canonical tool keys. The query deliberately loads all capabilities for that Feature, so an existing unrelated or future published capability causes plan/apply to abort. The task explicitly requires preservation of unrelated members and permits a total greater than six, with the canonical subset appearing exactly once. Preserve and validate unrelated same-Feature members instead of treating every noncanonical key as an identity conflict. Retain rejection of actual canonical-name/ID collisions and immutable revision drift.
+
+The existing preservation case in `tests/system-commerce-tool-sync.test.ts` creates its unrelated capability under `feature-unrelated`; it does not exercise this failing same-product_search branch. Add a same-Feature unrelated capability/release fixture. Prove read-only plan, staged apply, repeat apply and interrupted retry retain that exact member/revision/feature snapshot and the old active pointer, while all six canonical members occur once and conflicting canonical names still fail closed. This finding is source-inspection evidence; no runtime reproduction is claimed.
+
+### Validation and Submission Gaps
+
+The developer draft contains 15 changed files, including Shared 5.1.0 adoption, details authoring/rendering and setup/staged cutover changes. Reviewed the current diff, task requirements and tests. The task Completion Report remains Not Started; required validation and final implementation publication are not yet recorded.
+
+Attempted the declared focused test command via npm test with system-commerce-tool-sync, commerce-product-discovery-setup, persisted-policy-operation-tool-editor, policy-operation-authoring-server-actions and policy-operation-registry files. It failed before test execution because the pretest schema-sync prerequisite could not find `node_modules/@shopify/dev-mcp/package.json`. This is a missing worktree dependency, not a reproduced application/test assertion failure. Local log `/tmp/arch059-commerce001-review.log`. No tests/typecheck/build passes are claimed by this review. Working-tree whitespace check passed.
+
+After correction, install the locked worktree prerequisites through the established workflow and run focused checks for every Work Item plus required typecheck/build. Complete the report with exact changes, stage-only/default-safe activation and optimistic-concurrency evidence, active-plan/Free provisioning without operator-policy overwrite, idempotence/interruption/conflict behavior, developer/agent assistance, physical worktree/synchronization and final task-branch commit/push evidence. Do not activate a real staged release, deploy or operate provider accounts merely to complete this source task. Consumer cutover remains gated on strict MCP acceptance.
+
+### Ownership and Downstream
+
+Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-059-COMMERCE-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-059-COMMERCE-001`, matching task branches. This review changes only parent task documentation. Developer source edits remain untouched. MCP, Background and terminal system validation stay Pending on this unaccepted prerequisite. No main merge, implementation gitlink update, deployment or new attempt occurs.
+
+## Developer Self-Review — Passed, 5 November 2026
+
+The required P2 correction is implemented and validated. The system sync now retains unrelated capabilities selected under the existing Product Search Feature while continuing to reject duplicate capability keys, canonical identity collisions and immutable revision drift. The same-Feature regression test verifies read-only planning, staged apply, repeat apply and interrupted retry preserve the unrelated member's exact revision and Feature snapshot, keep the previous active pointer, and include each of the six canonical Product Search tools exactly once. Existing conflicting canonical-name coverage still fails closed.
+
+All Work Items and Acceptance Criteria are met by the scoped Commerce source changes. Focused tests, typecheck, build and whitespace validation passed as recorded in the Completion Report. Material assigned-agent assistance: `moda_commerce` implemented the canonical discount publication changes and the same-Feature preservation correction at the developer's explicit request. No real release was activated, no provider account was accessed, and no consumer was deployed.
+
+Attempt 1 is preserved. This self-review passes the implementation to `review`; because `completion_mode: developer`, the developer's explicit completion decision remains pending. No downstream task is started or promoted here.
+
+## Explicit Developer Completion Decision — 5 November 2026
+
+The developer invoked `/moda_developer_update ARCH-059-COMMERCE-001 complete`. The current Attempt 1 has a durable passing self-review at `1ea7c8e99`, publication receipt update `6f7c9d3bb`, completed Work Items/Acceptance Criteria and reported focused/typecheck/build evidence. The previously requested same-Feature capability correction is included in committed implementation `770d6ab`; both worktrees are clean, parent synchronized, and implementation push reconfirmed Everything up-to-date.
+
+**Complete — Attempt 1 preserved, executor/claim null, execution/completion modes remain developer.** This records the explicit developer decision, not a new claim or inference from a commit message. The existing passing review is the completion basis; no fresh tests/build or live staging/activation/deployment run is claimed by this transition. The recorded isolated-copy validation limitation remains explicit.
+
+ARCH-059-MCP-001 now has all explicit prerequisites Complete: SHARED-002, COMMERCE-001 and ARCH-058-MCP-003. Promoted to Ready, unclaimed, Attempt 0 preserved. Background and terminal system-test retain remaining prerequisites and stay Pending. No downstream execution starts. The strict-MCP cutover confirmation, staged release activation, operational pause/drain and rollback pairing gates remain binding; completing Commerce does not activate the new release against old MCP. No main merge, gitlink update, provider operation or architecture completion occurs.
