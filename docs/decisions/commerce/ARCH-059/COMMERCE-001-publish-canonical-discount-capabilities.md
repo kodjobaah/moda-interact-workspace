@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -221,3 +221,11 @@ The required P2 correction is implemented and validated. The system sync now ret
 All Work Items and Acceptance Criteria are met by the scoped Commerce source changes. Focused tests, typecheck, build and whitespace validation passed as recorded in the Completion Report. Material assigned-agent assistance: `moda_commerce` implemented the canonical discount publication changes and the same-Feature preservation correction at the developer's explicit request. No real release was activated, no provider account was accessed, and no consumer was deployed.
 
 Attempt 1 is preserved. This self-review passes the implementation to `review`; because `completion_mode: developer`, the developer's explicit completion decision remains pending. No downstream task is started or promoted here.
+
+## Explicit Developer Completion Decision — 5 November 2026
+
+The developer invoked `/moda_developer_update ARCH-059-COMMERCE-001 complete`. The current Attempt 1 has a durable passing self-review at `1ea7c8e99`, publication receipt update `6f7c9d3bb`, completed Work Items/Acceptance Criteria and reported focused/typecheck/build evidence. The previously requested same-Feature capability correction is included in committed implementation `770d6ab`; both worktrees are clean, parent synchronized, and implementation push reconfirmed Everything up-to-date.
+
+**Complete — Attempt 1 preserved, executor/claim null, execution/completion modes remain developer.** This records the explicit developer decision, not a new claim or inference from a commit message. The existing passing review is the completion basis; no fresh tests/build or live staging/activation/deployment run is claimed by this transition. The recorded isolated-copy validation limitation remains explicit.
+
+ARCH-059-MCP-001 now has all explicit prerequisites Complete: SHARED-002, COMMERCE-001 and ARCH-058-MCP-003. Promoted to Ready, unclaimed, Attempt 0 preserved. Background and terminal system-test retain remaining prerequisites and stay Pending. No downstream execution starts. The strict-MCP cutover confirmation, staged release activation, operational pause/drain and rollback pairing gates remain binding; completing Commerce does not activate the new release against old MCP. No main merge, gitlink update, provider operation or architecture completion occurs.
