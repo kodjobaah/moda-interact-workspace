@@ -10,12 +10,12 @@ Reconciled against the task records in this branch on 2026-11-05 after SHOPIFY-0
 
 | State | Tasks |
 |---|---|
-| Complete | ARCH-057-SHOPIFY-001, ARCH-057-SHOPIFY-002, ARCH-057-SHOPIFY-003, ARCH-057-SHOPIFY-005, ARCH-057-SHOPIFY-006, ARCH-057-SHOPIFY-007, ARCH-057-SHOPIFY-008, ARCH-057-SHOPIFY-009, ARCH-057-SHOPIFY-010 |
-| Review | ARCH-057-SHOPIFY-004 |
-| Ready | None |
-| Pending | ARCH-057-SHOPIFY-011, ARCH-057-SHOPIFY-012, ARCH-057-SYSTEM-TEST-001 |
+| Complete | ARCH-057-SHOPIFY-001, ARCH-057-SHOPIFY-002, ARCH-057-SHOPIFY-003, ARCH-057-SHOPIFY-004, ARCH-057-SHOPIFY-005, ARCH-057-SHOPIFY-006, ARCH-057-SHOPIFY-007, ARCH-057-SHOPIFY-008, ARCH-057-SHOPIFY-009, ARCH-057-SHOPIFY-010 |
+| Review | None |
+| Ready | ARCH-057-SHOPIFY-011 |
+| Pending | ARCH-057-SHOPIFY-012, ARCH-057-SYSTEM-TEST-001 |
 
-SHOPIFY-010 Attempt 1 is architect-accepted at `6e8029deb30de8903e937dc092b68f8b304e4dce`; independent validation passed 168 tests. Reviewed recorded Redis evidence passed 9 tests; it was not rerun by the architect. Its claim is cleared. SHOPIFY-011 remains Pending solely on SHOPIFY-004, which is still in Review in this branch. Later tasks remain Pending transitively. No downstream execution, main merge, live drain or deployment is implied. Historical frontier notes below do not override current task records.
+SHOPIFY-010 Attempt 1 is architect-accepted at `6e8029deb30de8903e937dc092b68f8b304e4dce`; independent validation passed 168 tests. Reviewed recorded Redis evidence passed 9 tests; it was not rerun by the architect. Its claim is cleared. SHOPIFY-011 is Ready after reconciliation of SHOPIFY-004's published acceptance. Later tasks remain Pending transitively. No downstream execution, main merge, live drain or deployment is implied. Historical frontier notes below do not override current task records.
 
 Apply the definition patch directly to the latest supplied `moda-interact-workspace(20261104-005051).zip` baseline. It already includes the original Shopify review. No earlier patch needs to be applied again. The new API/Background work occupies ARCH-056; it remains unchanged and does not add a Shopify prerequisite.
 
@@ -96,3 +96,8 @@ Definition validation and patch apply checks are supplied with the handoff. They
 ## Settings Task Acceptance (2026-11-04)
 
 ARCH-057-SHOPIFY-007 Attempt 1 is architect-accepted and Complete at `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e`. Its task records independent 135-test validation, reviewed 23-test PostgreSQL evidence and review limits. Earlier ready/pending snapshots for this task are historical. SHOPIFY-008 is now ready and unclaimed; SHOPIFY-011 remains pending on remaining prerequisites. No downstream execution, main merge or architecture completion is implied.
+
+
+## Published Acceptance Reconciliation — 2026-11-05
+
+SHOPIFY-004's published architect acceptance was reconciled from its remote task branch; the former Review snapshot was stale. All SHOPIFY-001–010 prerequisites are Complete. SHOPIFY-011 is Ready and unclaimed (attempt 0), subject to normal launcher integration checks. SHOPIFY-012 and SYSTEM-TEST-001 remain Pending. This current frontier supersedes earlier notes naming SHOPIFY-004 as a blocker. No new implementation acceptance was fabricated and no implementation or gitlink was changed.

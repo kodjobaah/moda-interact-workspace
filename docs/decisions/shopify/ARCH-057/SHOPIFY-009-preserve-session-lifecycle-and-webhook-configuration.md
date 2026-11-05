@@ -392,3 +392,8 @@ Completion clears executor/claimed_at without increasing attempt. SHOPIFY-010 is
 ### Downstream Reconciliation — 2026-11-05
 
 Reconciled with published parent main `d9e959e37` after SHOPIFY-010 Attempt 1 acceptance (`4dfa4c1df`). SHOPIFY-009 remains Complete at Attempt 2; its implementation and acceptance are unchanged. SHOPIFY-010 is now Complete, superseding the historical Ready frontier above. SHOPIFY-011 remains Pending solely because SHOPIFY-004 is still recorded in Review in the published task definitions. SHOPIFY-012 and SYSTEM-TEST-001 remain Pending transitively. The task index and execution plan already reflect this frontier; no additional task promotion or execution is warranted. The parent task branch was fast-forwarded to incorporate the published records; no implementation checkout or gitlink was changed.
+
+
+### Published Dependency Correction — 2026-11-05
+
+SHOPIFY-004 was already architect-accepted on its published task branch. Its accepted record is now reconciled here, superseding the stale Review snapshot and prior blocker notes. SHOPIFY-001–010 are Complete; SHOPIFY-011 is Ready and unclaimed. SHOPIFY-012 and SYSTEM-TEST-001 remain Pending. Normal launcher preparation/integration checks still apply.
