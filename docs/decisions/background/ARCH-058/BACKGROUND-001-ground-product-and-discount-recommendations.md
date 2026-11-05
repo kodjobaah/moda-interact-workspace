@@ -435,7 +435,7 @@ Implementation repository:
 
 Parent workspace:
 - Task file: `docs/decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md`
-- Previous report commit: `82351009e5b64c297fb9b9fcb36f8ff637af0240` (pushed); this validation update is being committed now.
+- Validation report commit: `5cae296b5a3deb8bf5b07baad515794b37b84b4e` (pushed); earlier report updates are on the same branch.
 - Remote: `origin/task/ARCH-058-BACKGROUND-001`
 - Submodule gitlink staged: no.
 
