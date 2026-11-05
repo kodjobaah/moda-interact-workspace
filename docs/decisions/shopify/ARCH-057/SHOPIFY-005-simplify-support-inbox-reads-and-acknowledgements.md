@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
 enables:
@@ -28,7 +28,7 @@ updated: 2026-11-04
 
 Architecture ID: `ARCH-057`. Architecture document: `docs/architecture/ARCH-057-shopify-application-database-correctness-and-simplicity.md`. Coordinator: `moda_architect`.
 
-Read the mandatory `docs/architecture/ARCH-057/task-contract.md`, including its latest-snapshot provenance, materialisation, original-error logging and validation requirements. **Defined but not materialised.** Canonical destination: `docs/decisions/shopify/ARCH-057/SHOPIFY-005-simplify-support-inbox-reads-and-acknowledgements.md`. No branch, worktree, execution claim, commit, push or passing implementation result is asserted.
+Read the mandatory `docs/architecture/ARCH-057/task-contract.md`, including its latest-snapshot provenance, materialisation, original-error logging and validation requirements. Materialised in the canonical task worktrees on `task/ARCH-057-SHOPIFY-005`; Attempt 1 was claimed by the launcher. The Completion Report records implementation and validation evidence; Attempt 1 was independently accepted on 2026-11-04.
 
 ## Objective
 
@@ -105,12 +105,12 @@ Apply the common mandatory server-error contract. Reuse the existing support sem
 
 ## Work Items
 
-- [ ] Implement the unread count and two-query inbox projection.
-- [ ] Implement bounded atomic acknowledgement and one-ID compatibility adapter.
-- [ ] Wire actual framework context and one-batch UI acknowledgement.
-- [ ] Combine thread writes and preserve postcommit translation success.
-- [ ] Cover every operational failure in the matrix with emitted Shared diagnostics.
-- [ ] Register/run focused unit/UI/PostgreSQL checks and record same-fixture call/SQL/write evidence.
+- [x] Implement the unread count and two-query inbox projection.
+- [x] Implement bounded atomic acknowledgement and one-ID compatibility adapter.
+- [x] Wire actual framework context and one-batch UI acknowledgement.
+- [x] Combine thread writes and preserve postcommit translation success.
+- [x] Cover every operational failure in the matrix with emitted Shared diagnostics.
+- [x] Register/run focused unit/UI/PostgreSQL checks and record same-fixture call/SQL/write evidence.
 
 ## Interfaces / Contracts
 
@@ -152,23 +152,23 @@ Add exact package scripts:
 
 ## Acceptance Criteria
 
-- [ ] Badge executes one raw SELECT; inbox executes two; existing DTO, locale and system recovery-link semantics are unchanged.
-- [ ] Fifty visible unread messages produce one acknowledgement POST and one batch SQL statement, not fifty requests.
-- [ ] Mixed foreign/missing/unavailable batches change nothing; all valid already-read batches succeed without row changes; unseen messages remain unread.
-- [ ] PostgreSQL overlapping batches preserve first readAt/updatedAt, and concurrent compose transactions increment the thread version exactly once per committed message.
-- [ ] Compose uses three data calls without translation/four with translation, excluding transaction statements, with atomic rollback on insertion failure.
-- [ ] Queue acquisition/publication failure after commit retains the durable success and logs its original safe evidence.
-- [ ] Actual Shared records satisfy every failure-matrix case, redaction/cause checks and sink isolation.
-- [ ] No merchant copy/catalogue or independent authorization rule regresses.
+- [x] Badge executes one raw SELECT; inbox executes two; existing DTO, locale and system recovery-link semantics are unchanged.
+- [x] Fifty visible unread messages produce one acknowledgement POST and one batch SQL statement, not fifty requests.
+- [x] Mixed foreign/missing/unavailable batches change nothing; all valid already-read batches succeed without row changes; unseen messages remain unread.
+- [x] PostgreSQL overlapping batches preserve first readAt/updatedAt, and concurrent compose transactions increment the thread version exactly once per committed message.
+- [x] Compose uses three data calls without translation/four with translation, excluding transaction statements, with atomic rollback on insertion failure.
+- [x] Queue acquisition/publication failure after commit retains the durable success and logs its original safe evidence.
+- [x] Actual Shared records satisfy every failure-matrix case, redaction/cause checks and sink isolation.
+- [x] No merchant copy/catalogue or independent authorization rule regresses.
 
 ## Validation
 
-- [ ] `npm run test:merchant-support:unit` — named cases include batch cardinality/body bounds, cancelled UI effect, one refresh, partial invalid set, already-read success and complete diagnostic matrix.
-- [ ] `npm run test:merchant-support:postgres` — own `pgvector/pgvector:pg17`, canonical forward migrations, separate connections and explicit lock barriers; test overlapping batches, rollback, cross-shop isolation, untranslated/system visibility and concurrent compose versions. Missing Docker or skipped cases block validation.
-- [ ] `npm run typecheck` and `npm run build`.
-- [ ] `npx --no-install eslint app/services/merchant-support app/routes/app/route.jsx app/routes/app/merchant-support/route.jsx tests/unit/merchant-support-service.test.ts tests/unit/merchant-support-route.test.ts tests/unit/merchant-support-observability.test.ts tests/unit/merchant-support-recovery-i18n.test.ts tests/unit/merchant-support-batch-ui.test.tsx tests/integration/merchant-support.postgres.test.ts tests/helpers/merchant-support-postgres.ts`.
-- [ ] `git diff --check`.
-- [ ] Record starting/final same-fixture repository calls separately from emitted SQL, transaction statements, rows changed and GraphQL calls. Capture actual Shared JSON; a mocked logger call is insufficient. Cleanup only task-owned containers/clients.
+- [x] `npm run test:merchant-support:unit` — named cases include batch cardinality/body bounds, cancelled UI effect, one refresh, partial invalid set, already-read success and complete diagnostic matrix.
+- [x] `npm run test:merchant-support:postgres` — own `pgvector/pgvector:pg17`, canonical forward migrations, separate connections and explicit lock barriers; test overlapping batches, rollback, cross-shop isolation, untranslated/system visibility and concurrent compose versions. Missing Docker or skipped cases block validation.
+- [x] `npm run typecheck` and `npm run build`.
+- [x] `npx --no-install eslint app/services/merchant-support app/routes/app/route.jsx app/routes/app/merchant-support/route.jsx tests/unit/merchant-support-service.test.ts tests/unit/merchant-support-route.test.ts tests/unit/merchant-support-observability.test.ts tests/unit/merchant-support-recovery-i18n.test.ts tests/unit/merchant-support-batch-ui.test.tsx tests/integration/merchant-support.postgres.test.ts tests/helpers/merchant-support-postgres.ts`.
+- [x] `git diff --check`.
+- [x] Record starting/final same-fixture repository calls separately from emitted SQL, transaction statements, rows changed and GraphQL calls. Capture actual Shared JSON; a mocked logger call is insufficient. Cleanup only task-owned containers/clients.
 
 ## Stop Condition
 
@@ -182,58 +182,81 @@ Keep the batching implementation local to the support service. An eligible-row l
 
 ### Status
 
-Not Started. Defined but not materialised; attempt 0 and no execution claim.
+Ready for Review — Attempt 1. Implementation and required validation pass and are published. No architect acceptance decision is made here.
 
-### Files Changed
+### Files Changed and Work Completed
 
-None. Definition only.
-
-### Work Completed
-
-None.
+- Support service: one parameterized unread-count SELECT; two-query inbox with combined total/unread aggregate; one ordered locking eligible-row CTE and count-gated batch UPDATE; legacy one-ID adapter. Direct-service and route validation enforce 1–50 unique nonempty IDs of at most 191 characters. Already-read rows retain both timestamps; a mixed invalid set changes nothing.
+- Parent route consumes the scalar unread count. Support loader/action consume the existing request context and retain independent support authorization, active-only subscription policy and bounded merchant JSON. The action reads at most 65,536 bytes before form parsing and rejects extra/duplicate batch fields. The visible-page effect sends one JSON-array batch and refreshes once only after an uncancelled successful response. Compose keeps router-managed revalidation.
+- Composition folds thread timestamps, needsAdminResponse and version into the upsert, followed by message/optional translation insertion in the same transaction. New version is 1; each subsequent successful compose increments once. Queue acquisition, replacement/close and publication all occur inside the postcommit best-effort boundary. Failed replacement cannot cache a closed queue. Missing configuration logs an internal unavailable diagnostic only when dispatch is required; durable PENDING translation and successful message response survive.
+- Existing support semantic diagnostics delegate to the existing sanitized Shared boundary adapter for original safe error/code/causes; no generic logger or serializer is added. Stage distinguishes badge/page/aggregate/ack/compose/dispatch. Real Shared output tests cover source privacy, cause identity, status preservation and throwing sinks.
+- Added only the two specified package scripts. Added task-local PG17 helper, PostgreSQL suite and mounted UI suite (all below 300 lines). Existing support tests updated; localized recovery action catalogue test is unchanged.
+- Test-only compatibility adjustment: `tests/integration/merchant-request-context-router.test.ts` mocks the new unread-count port and the already-migrated Home presentation port. Real parent/child/middleware regression passes. Production edit scope remains exactly the four declared support/route files and package scripts; no prerequisite context implementation was changed.
 
 ### Validation Results
 
-Not run. Record exact commands/results, fixture names, actual SQL versus method counts, log-marker/cause/redaction evidence, installed versions, prepared worktree packet, source pins and owned-resource cleanup.
+- `npm ci` and `npm run prisma:generate`: passed using locked dependencies and the pinned Database schema; no dependency/lockfile change. Existing npm allow-scripts notices were retained without changing approvals.
+- `npm run test:merchant-support:unit`: **79 passed**, five files, no skips. Mounted UI tests use actual React Router loader/revalidation behavior, fifty rendered IDs, one POST/refresh, false/non-OK/transport failures and unmount cancellation. Unit/service/actual-Shared tests cover bounded payloads, tenant policy, one-ID compatibility, read budgets, original diagnostic evidence and queue constructor/close/add failure.
+- `npm run test:merchant-support:postgres`: **4 passed**, no skips, owned `pgvector/pgvector:pg17`, canonical forward migrations, separate clients, explicit row-lock wait observation and compose barriers. Mixed foreign/missing/merchant/unavailable batches leave valid rows untouched. Already-read retries preserve timestamps; unseen rows remain unread. Overlap waits on the held row and retains the first readAt/updatedAt. Concurrent composes produce one version increment per message. Failures after actual message/translation inserts roll back thread and child rows. Postcommit queue failure retains durable PENDING translation. Final helper cleanup completed.
+- `npm run test:merchant-request:router`: **9 passed**, no skips, real parent/child loaders and existing request-context/middleware with controlled external ports.
+- `npm run build`: passed; existing large client-chunk warning remains.
+- Required scoped ESLint command, focused router-fixture lint and final UI-fixture lint: passed. `npm run typecheck` passed after correcting the UI mock’s type annotation; this correction does not alter executed behavior.
+- `git diff --check`: passed. Initial mounted UI setup, lint and mock typing failures were corrected; their earlier logs are retained, not counted as passing validation.
 
-### Deviations
+Same-fixture repository-call comparison ran the exact accepted starting service `de5650e73df91e4d52bbcb4131dd80d1c7a7d339` and current service with identical empty inbox/English compose inputs: inbox **3 -> 2** data calls, English compose **4 -> 3**, zero provider calls. The temporary baseline source/test were removed. Translation adds one insert (current four data calls), confirmed by service assertions. Badge now uses one raw SELECT; batch fifty-ID unit fixture uses one SQL invocation and one POST in mounted UI. These are method/request counts, not latency or physical-SQL claims.
 
-None.
+Actual PostgreSQL SQL was counted separately: badge one SELECT; inbox two SELECTs plus BEGIN/COMMIT, returning four visible rows/three unread in the fixture. Final integration emitted **106 SQL statements including all setup, races, writes and assertion reads**; this total is not a per-operation budget. Batch executes one CTE statement plus transaction control; ownership denials change zero rows, successful submitted rows alone change, and already-read timestamps are compared byte-for-byte by returned row equality. No Shopify GraphQL or embedding call occurs in these support service fixtures. No throughput/capacity claim is inferred.
 
-### Assumptions
+Actual Shared sink assertions inspect serialized records for original database marker, P2010 and original cause, and absence of injected email/token/Redis URL. Constructor, old-queue close and add failures are exercised through composition, not just direct mocked logger calls. The original thrown errors/cause identities remain intact. Sink failures preserve service rejection, rollback/marked outcome and durable postcommit success.
 
-The canonical launcher verifies the accepted dependency and integrated source before execution.
+Evidence logs: `/tmp/arch057-shopify005-unit-router-final.log`, `...-postgres-final.log`, `...-router.log`, `...-build-final.log`, `...-lint-verified.log`, `...-before-after.log`; final passing type evidence is `/tmp/arch057-shopify005-types-final.log` and `/tmp/arch057-shopify005-ui-lint-typed.log`. All provider/queue fixtures are synthetic; no persistent migration/import, live Shopify request or external publication occurred.
 
-### Unresolved Issues
+### Provenance, Isolation and VCS
 
-Implementation and validation remain outstanding.
+Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-005`, start `d7d9052aaa1565b52704228f8c204733f7ac414e`. Implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-005`, start `de5650e73df91e4d52bbcb4131dd80d1c7a7d339`. Both newly created by launcher, on `task/ARCH-057-SHOPIFY-005`. Remote task fast-forwards not needed; origin/main already current in both. Dependency gate passed for SHOPIFY-001. Recursive submodule sync/update/verification passed; recorded/working Database pin `8e74634ff92be9900f693c0c449ffce888e7d617` unchanged.
+
+Durable Attempt 1 claim `8ee777b7a2c97e10add3bbd26ca71fb537c4822f`, pushed at `2026-11-04T16:19:52Z`, executor codex. Node 24.19.0/npm 11.17.0 via prescribed bootstrap, Prisma 6.19.3, installed Shared 3.1.0. Existing Colima endpoint/socket override used for the bounded single-container fixture, without host configuration changes or shared-resource cleanup. No shared/default checkout switched or edited, no other task worktree reused, no main merge, schema edit, identity/queue payload change or parent gitlink update. Implementation commits `793299f` and final `bc02d1095ed81daf601ca48d73e7958abdcb2768` are pushed to `origin/task/ARCH-057-SHOPIFY-005`. Both implementation and parent task branches use the matching task name. This task-only report is committed/pushed on the parent branch at submission; the parent gitlink is not staged.
+
+### Deviations and Unresolved Issues
+
+No business-policy, schema, locale, support visibility/translation or queue-identity change. One existing router test fixture was aligned as described above to verify the changed parent caller and current Home API; it adds no production scope. No unresolved implementation or validation issue remains in the bounded scope. Independent architect review remains pending. No downstream task was started.
 
 ### Architectural Concerns
 
-Return changes to ownership, schema, tenant/visibility policy, queue identity or durable-state semantics to `moda_architect`.
+None identified requiring a schema or cross-repository amendment. Request reads remain observations rather than mutation authority; architect review is still required.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1, 2026-11-04. Completion mode is automatic: task is complete and the developer claim is cleared.
 
 ### Review Notes
 
-Portable definition only; no implementation acceptance.
+No actionable correctness or regression finding identified after independent source and test review. Badge and inbox reads meet the one/two SELECT budgets. The tenant-scoped batch statement locks eligible IDs in deterministic order, gates the entire update on eligibility, and preserves the first read timestamp. Request bounds and field/cardinality checks, legacy single-ID compatibility, mounted UI batching/cancellation, compose rollback/version increments, and postcommit queue failure isolation conform to the task.
+
+The existing request-context router test adjustment is accepted as a compatibility fixture update for the changed parent caller; it does not widen production behavior. No schema, policy, locale, provider operation, translation payload or deterministic queue identity change was introduced.
 
 ### Reviewed Files
 
-Definition and latest unchanged support touchpoints.
+Reviewed all 12 changed files in implementation commit `bc02d1095ed81daf601ca48d73e7958abdcb2768` against starting commit `de5650e73df91e4d52bbcb4131dd80d1c7a7d339`: support route and parent route, support service and observability adapter, package scripts, PostgreSQL helper/suite, request-context router fixture, and support service/route/observability/mounted UI unit suites. Reviewed the existing Shared diagnostic boundary and task/architecture contract as context. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-005`.
 
 ### Validation Reviewed
 
-Definition inspection only; implementation evidence is outstanding.
+Independent reruns passed:
+
+- Focused support unit/UI suite: 79 tests across five files, including real Shared output and throwing-sink checks.
+- Disposable migrated PostgreSQL 17 suite: all four tests executed; no skipped suite. Captured inbox evidence: two SELECTs, two transaction-control statements and four visible rows. Full suite emitted 106 SQL statements including fixtures. Covered tenant/visibility rejection, already-read no-op, lock overlap/first timestamps, rollback and concurrent compose versions. Only suite-owned resources were cleaned up.
+- Request-context router integration fixture: nine tests.
+- Typecheck, production build, required support lint scope and changed router fixture lint.
+- Implementation diff whitespace check and clean implementation worktree.
+
+Review logs are local `/tmp/arch057-shopify005-review-{units,postgres,typecheck,build,lint,required-lint,router}.log`. The production build retains its existing client chunk-size warning; it completed successfully. No live Shopify call was needed or made for this support database/UI review. Full platform certification remains owned by the terminal system-test task.
 
 ### Architecture Conformance
 
-To be assessed after implementation.
+Accepted within the bounded Shopify support lifecycle. Existing authentication, active subscription filtering, message visibility, translation rendering, transaction atomicity and durable compose success are preserved. Shared logging remains the serializer/sink owner; the support adapter adds semantic stage context without introducing a new logging implementation.
 
 ### Follow-up
 
-Return the completed task for architect review; do not start downstream work.
+SHOPIFY-011 remains pending on its other explicit prerequisites. No downstream task was started. Acceptance and lifecycle reconciliation are local review edits; they have not been committed or pushed.

@@ -1,77 +1,60 @@
 # ARCH-058: Standard CommerceAgent product discovery, grounded responses and shipping information
 
-**Status:** implementation in progress; remaining task definitions corrected in Attempt 4 on 4 November 2026. Architecture-wide completion and deployment are not certified.
+**Status:** implementation in progress; revision 10 replaces the unexecuted Zod-pinning/hash-reconciliation plan with explicit no-hash contract corrections. MCP-001 is Complete at accepted Attempt 3. MCP-002 Attempt 1 is preserved but architecturally blocked until DATABASE-002 and SHARED-006 are Complete. The architecture is not complete.
 
-DATABASE-001, SHARED-001, SHARED-002 and SHOPIFY-001 are complete in the uploaded 094947 snapshot. Shared 4.0.0 / runner 1.1.0 is published and accepted; its immutable receipt is recorded. The user reports MCP-001 is under development, although the archived task still says ready/Attempt 0. This amendment preserves that task and its active work. MCP-002, MCP-003, COMMERCE-001, BACKGROUND-001 and SYSTEM-TEST-001 remain pending; their definitions now identify exact source changes and validation ownership.
+## Current decision and patch scope
 
-The [implementation handoff](ARCH-058/implementation-handoff.md) and [execution baseline](ARCH-058/execution-baseline.json) record accepted pins, inspected source hashes and concrete integration prerequisites. This is a documentation correction, not a claim that remaining consumers are implemented or deployed.
+Preserve the accepted taxonomy, Database and useful Shared product/shipping/recommendation contracts. Remove the redundant built-in `contractHash` mechanism, remove the unused conversation-specific MCP context export, freeze the discount built-in timestamp wire syntax in Shared-owned code, forward-migrate persisted built-in grant JSON and publish the combined breaking Shared correction as approved target 5.0.0. Do **not** pin MCP, Commerce or Background to Zod 4.4.3 for ARCH-058. [Revision-10 reconciliation](ARCH-058/shared-hash-reconciliation.md) is the binding decision.
 
-## Decision
+This revision uses `moda-interact-workspace(20261104-165221).zip` as the application/documentation baseline. It preserves all accepted task Completion/Architect Review history and all application source. The previously defined SHARED-003/004 revision-9 tasks were not materialised; their definitions are replaced before execution. New DATABASE-002, SHARED-005 and SHARED-006 definitions are portable and not materialised by this patch. Decision indexes remain untouched.
 
-Create ten repository-owned tasks to make product discovery and basic native shipping information standard CommerceAgent capabilities, with explicit grounded fallback responses. Use a global reference taxonomy in PostgreSQL/pgvector to interpret a product request, current merchant product reads to establish what the shop actually sells, and the canonical discount options/details flow to check promotions against the exact proposed purchase. Automatically create and publish the four standard product/shipping tools for every otherwise authorized store, including Free plans and new stores.
+## Objective
 
-The required operator workflow is repeatable: migrate the database, import and activate the approved taxonomy generation, then publish the owned Commerce definitions/behavior/response fields. Admin's current Redis taxonomy implementation stays separate and intact.
+Fifteen repository-owned tasks deliver standard product discovery, native shipping information and grounded response behavior, including the five corrective contract/migration/publication gates introduced by revision 10. The global reference taxonomy remains in PostgreSQL/pgvector; merchant product reads establish actual assortment; canonical discount options/details establish promotion facts for the proposed purchase. Commerce creates and publishes the four standard product/shipping tools for every otherwise authorized store, including Free plans and new stores. Admin's existing taxonomy implementation stays separate.
 
-Attempt 4 is based on the exact uploaded `moda-interact-workspace(20261104-094947).zip`. It amends only five remaining task definitions plus their architecture/contracts/handoff evidence. The completed Database/Shared/Shopify records, MCP-001, existing review artifacts and all decision indexes remain byte-identical. Apply this correction directly to that snapshot state; do not apply an older replacement bundle first. If a remaining task has since been claimed, preserve its actual claim/history and reconcile the definition in its canonical parent task worktree. ARCH-057 remains the separate Shopify application initiative.
+## Normative documents
 
-## Source and governing documents
+- [Contracts](ARCH-058/contracts.md): wire shapes, responsibility boundaries, instruction ownership and corrected built-in identity.
+- [Implementation handoff](ARCH-058/implementation-handoff.md): accepted source, current frontier and continuation requirements.
+- [Execution baseline](ARCH-058/execution-baseline.json): historical publication receipt and current correction state.
+- [Shared hash reconciliation](ARCH-058/shared-hash-reconciliation.md): reproduced failure and revision-10 no-hash decision; revision 9 remedy is superseded.
+- [Original source-grounded review](reviews/commerce-agent-product-discovery-20261104-015544-r03/review.md): historical supporting evidence.
 
-- [Source-grounded review, revision03](reviews/commerce-agent-product-discovery-20261104-015544-r03/review.md), including its evidence table and explicit unverified deployment assumptions.
-- [Source-baseline hashes](reviews/commerce-agent-product-discovery-20261104-015544-r03/source-baseline.json).
-- [Frozen interfaces and execution behavior](ARCH-058/contracts.md), normative for the tasks below.
-- [Remaining implementation handoff](ARCH-058/implementation-handoff.md) and [execution baseline](ARCH-058/execution-baseline.json), including exact accepted artifact identities and the observed accepted MCP catalogue/diagnostics integration gaps.
-- [Task definition and materialisation](../task-definition-materialization.md), [developer task workflow](../developer-task-workflow.md), [worktree isolation](../agent-worktree-isolation-policy.md), [VCS ownership](../agent-vcs-ownership-policy.md) and [Shared logging](../observability/shared-logging.md).
+## Task graph and current frontier
 
-Snapshot facts are not claims about the running environment. Consume the accepted artifacts listed in the handoff. In particular, the archive records ARCH-052-MCP-002 as complete but lacks its discount reader source; MCP-002 requires that accepted implementation in its prepared base before extending it. Do not recreate a catalogue or reopen an accepted task to compensate for an integration gap. Matching launcher preparation evidence is reused, not rediscovered.
-
-## Tasks and deliverables
-
-| Task | Repository | Main deliverable | Prerequisites | Current recorded state |
+| Task | Repository | Concrete responsibility | Prerequisites | Current state |
 | --- | --- | --- | --- | --- |
-| [DATABASE-001](../decisions/database/ARCH-058/DATABASE-001-persist-reference-taxonomy-and-core-product-discovery.md) | `moda-interact-database` | Forward taxonomy/schema migration, required `product_search` policy and targeted existing/future plan mappings; grant JSON guard update | None | complete |
-| [SHARED-001](../decisions/shared/ARCH-058/SHARED-001-define-product-discovery-and-recommendation-contracts.md) | `moda-interact-shared` | Category/search/browse/shipping schemas, built-in identities/grants, trusted conversation context, optional lookup outcome and typed answer presentation; runner integration | None | complete |
-| [SHARED-002](../decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md) | `moda-interact-shared` | Publish the accepted exact Shared package and verify registry artifact | SHARED-001 | complete |
-| [MCP-001](../decisions/mcp/ARCH-058/MCP-001-import-and-resolve-postgresql-taxonomy.md) | `moda-interact-mcp` | Approved source manifest, repeatable importer, PostgreSQL category resolution and always-enabled feature eligibility | DATABASE-001, SHARED-002 | in progress per user; archived task ready |
-| [MCP-002](../decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md) | `moda-interact-mcp` | Current-shop category/product/browse reads, visibility/pagination/currency correctness; canonical conversational discounts | MCP-001 | pending |
-| [SHOPIFY-001](../decisions/shopify/ARCH-058/SHOPIFY-001-enable-shipping-policy-read-scope.md) | `moda-interact` | Add `read_legal_policies` to deployable app configurations, verify runtime SCOPES/actual grants and document rollout | None | complete |
-| [MCP-003](../decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md) | `moda-interact-mcp` | Fixed native shipping reads, paired offline scope preflight, normalized variant facts and bounded policy data | MCP-002, SHOPIFY-001 | pending |
-| [COMMERCE-001](../decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md) | `moda-interact-commerce` | Automatic creation/versioning/publication of four standard tools and owned behavior/response fields; one environment setup command | MCP-002, MCP-003 | pending |
-| [BACKGROUND-001](../decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md) | `moda-interact-background` | Trusted context, grounded recommendations and limitation responses, shipping presentation, final revalidation and localized host composition | MCP-002, MCP-003, COMMERCE-001 | pending |
-| [SYSTEM-TEST-001](../decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md) | `moda-interact-system-test` | Integrated provision/restart/restore, all-store access, product/shipping/discount authorization, fallback composition and failure-evidence tests | All nine implementation/publication tasks | pending |
+| [DATABASE-001](../decisions/database/ARCH-058/DATABASE-001-persist-reference-taxonomy-and-core-product-discovery.md) | `moda-interact-database` | Accepted taxonomy schema, policy and original grant guard | - | Complete; historical baseline |
+| [SHARED-001](../decisions/shared/ARCH-058/SHARED-001-define-product-discovery-and-recommendation-contracts.md) | `moda-interact-shared` | Accepted product/shipping/recommendation contracts and runner | - | Complete; historical baseline |
+| [SHARED-002](../decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md) | `moda-interact-shared` | Historical immutable 4.0.0 publication | SHARED-001 | Complete; receipt preserved |
+| [SHARED-003](../decisions/shared/ARCH-058/SHARED-003-remove-built-in-contract-hashes.md) | `moda-interact-shared` | Remove hash-based built-in identity | SHARED-002 | Complete; accepted Attempt 2 |
+| [SHARED-004](../decisions/shared/ARCH-058/SHARED-004-remove-obsolete-conversation-tool-context.md) | `moda-interact-shared` | Remove obsolete MCP conversation-context export | SHARED-003 | Ready |
+| [SHARED-005](../decisions/shared/ARCH-058/SHARED-005-freeze-commerce-datetime-wire-syntax.md) | `moda-interact-shared` | Freeze explicit discount built-in UTC timestamp syntax and bump both discount built-ins to 2.0.0 | SHARED-004 | Pending |
+| [SHARED-006](../decisions/shared/ARCH-058/SHARED-006-publish-corrected-commerce-contracts.md) | `moda-interact-shared` | Publish/verify combined corrected package, target 5.0.0 | SHARED-003, SHARED-004, SHARED-005 | Pending |
+| [DATABASE-002](../decisions/database/ARCH-058/DATABASE-002-remove-built-in-contract-hash-storage.md) | `moda-interact-database` | Forward-convert persisted built-in grants from hashed 1.0.0 to no-hash 2.0.0 identity | DATABASE-001, SHARED-005 | Pending |
+| [MCP-001](../decisions/mcp/ARCH-058/MCP-001-import-and-resolve-postgresql-taxonomy.md) | `moda-interact-mcp` | Accepted importer, resolver and required-feature selection | DATABASE-001, SHARED-002 | Complete, Attempt 3 |
+| [MCP-002](../decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md) | `moda-interact-mcp` | Preserve WIP; consume corrected Shared/Database and finish product/discount work | MCP-001, DATABASE-002, SHARED-006 | Blocked after Attempt 1 |
+| [SHOPIFY-001](../decisions/shopify/ARCH-058/SHOPIFY-001-enable-shipping-policy-read-scope.md) | `moda-interact` | Accepted native policy permission declaration | - | Complete |
+| [MCP-003](../decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md) | `moda-interact-mcp` | Native shipping reader | MCP-002, SHOPIFY-001 | Pending |
+| [COMMERCE-001](../decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md) | `moda-interact-commerce` | Consume Shared 5.0.0; publish standard tools/instructions | MCP-002, MCP-003, SHARED-006 | Pending |
+| [BACKGROUND-001](../decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md) | `moda-interact-background` | Consume Shared 5.0.0; implement grounded host composition | MCP-002, MCP-003, COMMERCE-001, SHARED-006 | Pending |
+| [SYSTEM-TEST-001](../decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md) | `moda-interact-system-test` | Verify corrected contracts, migration and integrated customer behavior | All required implementation/publication tasks | Pending |
 
-Shared implementation and Shared publication are deliberately separate because consumers must install a verified published package. Three MCP tasks separate corpus lifecycle/retrieval, merchant product/discount execution and the independently reviewable shipping reader with its distinct permission and absence semantics. The setup wrapper belongs to Commerce, which already owns system-tool publication; no additional parent-workspace, Gateway or Admin implementation task is needed.
+Execution frontier: run SHARED-003 first, then SHARED-004, then SHARED-005. After SHARED-005 is accepted, DATABASE-002 and SHARED-006 may proceed independently through their normal task workflows. SHARED-005 performs the required `1.0.0 -> 2.0.0` built-in version bump because its datetime correction changes the discount output wire semantics. SHARED-006 publishes only after all three Shared implementation corrections are accepted. MCP-002 remains blocked with its Attempt-1 draft preserved until DATABASE-002 and SHARED-006 are Complete; then return the same task to Ready and reclaim it through `/moda-task`. Do not recreate taxonomy work, revert the WIP commit, or create compatibility hashes.
 
-The five amended pending definitions retain attempt 0, null executor/claim and their existing dependency metadata. Completed records retain accepted attempts and reports. No task branch, implementation worktree, claim, commit, package publication or environment import is created by this patch. The new handoff clarifies the remaining work without resetting accepted or active execution state.
-
-## Execution order
-
-Finish and review the active MCP-001 work, consuming the already accepted Database and published Shared artifacts. Then execute MCP-002 after its accepted discount source is integrated; follow with MCP-003, COMMERCE-001 and BACKGROUND-001. Shopify permission setup is already complete, but actual installation grants remain a runtime check. SYSTEM-TEST-001 is invoked by the developer after all nine prerequisites are complete. The graph includes completed prerequisites for traceability; it is not an instruction to repeat them.
-
-```mermaid
-flowchart TD
-  D["Database migration and policy"] --> M1["MCP taxonomy import and resolution"]
-  S1["Shared implementation"] --> S2["Shared publication"]
-  S2 --> M1
-  M1 --> M2["MCP products, browse and discounts"]
-  M2 --> M3["MCP shipping reads"]
-  P["Shopify policy permission"] --> M3
-  M3 --> C["Commerce provisioning"]
-  C --> B["Background grounded responses"]
-  M3 --> B
-  B --> T["Integrated system tests"]
-```
-
-The system-test task formally depends on every preceding task even though the diagram shows the final chain for readability. Each task returns to the architect for acceptance before its dependent frontier is promoted. Do not merge, publish or deploy merely because a task definition is marked ready.
+The prior revisions' product, shipping, instruction, grant and error-handling decisions below remain in force except where revision 10 explicitly replaces hash/Zod/context/package statements.
 
 ## Product and discount behavior
 
 For a request such as “I want a hammer,” the agent can call `commerce_resolve_product_categories` with the customer's intent. MCP embeds that text with the pinned reference embedding configuration and returns a bounded ranked set of real taxonomy IDs and full paths from a complete PostgreSQL generation. Those candidates establish product meaning. They do not establish that the current shop carries hammers.
 
-The agent then calls `commerce_search_products` for the authenticated shop, using useful text and, where supported, a verified native category filter. Exact product reads confirm relevant product/variant identity, availability, price and currency when known. A taxonomy match without merchant products produces no stock claim. An ambiguous request can lead to a clarification; a temporarily unavailable optional taxonomy lookup can lead to ordinary merchant text search. Hard authorization, stale-turn and malformed-result errors retain their existing terminal behavior.
+The agent then calls `commerce_search_products` for the authenticated shop, using useful text and, where supported, a verified native category filter. Exact product reads confirm relevant product/variant identity, availability, price and currency when known. A taxonomy match without merchant products produces no stock claim. An ambiguous request can lead to a clarification; a temporarily unavailable optional taxonomy lookup can lead to ordinary merchant text search. MCP retains hard shop/data authorization and malformed-result errors. Background owns stale-turn/lease/control failures and its terminal response behavior.
 
-Shopify's reference IDs are not WooCommerce shop category IDs. Shopify category filtering uses the provider's documented products path; Woo filtering uses a native shop category and verifies exact assigned membership after bounded provider reads. The first increment does not introduce descendant expansion, arbitrary SQL, a merchant product mirror or a cross-platform guessed ID map.
+The model receives trusted `commerceProvider` (SHOPIFY or WOOCOMMERCE) from the already-read current `Shop.platform`. Shopify's reference IDs are not WooCommerce shop category IDs. Shopify category filtering uses the provider's documented products path; Woo begins with real product text unless a current-shop native ID has already been observed; its filter uses `WOOCOMMERCE_PRODUCT_CATEGORY` with null taxonomyVersion and verifies exact assigned membership after bounded provider reads. An absent/invalid provider context uses direct text search, never inferred routing from domain, customer text or an ID. The first increment does not introduce descendant expansion, arbitrary SQL, a merchant product mirror or a cross-platform guessed ID map.
 
-When recommending a product, read the current merchant discount policy and use the accepted `commerce_get_discount_options`/`commerce_get_discount_details` flow. `NONE` produces no promotional lookup or claim. `FIXED` respects the current permitted selection/override. `AI_BEST_APPLICABLE` reads the permitted canonical catalogue. The host checks conditions for each proposed product, real variant or null Woo simple-product variant, explicit quantity, current purchase scope and known currency. Do not treat the three suggested alternatives as one qualifying basket.
+When recommending a product, Background reads the current merchant discount policy and controls use of the accepted `commerce_get_discount_options`/`commerce_get_discount_details` flow. `NONE` produces no promotional lookup or claim. `FIXED` respects the current permitted selection/override. `AI_BEST_APPLICABLE` reads the permitted canonical catalogue. The host checks conditions for each proposed product, real variant or null Woo simple-product variant, explicit quantity, current purchase scope and known currency. Do not treat the three suggested alternatives as one qualifying basket.
+
+Every product search mode and exact refresh applies private publication qualification before public mapping: Shopify ACTIVE plus a safe storefront URL; Woo published parent/selected variation with the mode-specific permitted catalog visibility. Woo availability combines the selected source's purchasable/stock facts; stock alone does not prove buyability. Known ineligibility skips/nulls, malformed required qualifiers remain hard errors, and availableOnly:false cannot bypass publication. The public product schema stays unchanged.
 
 The model selects observed IDs; it does not author trusted prices or calculate promotions. The host rechecks selected products and conditions in finalization and composes the full recommendation from validated data in the current conversation language. Unknown, stale, incomplete, unauthorized or unsupported conditions produce no asserted saving. Current observed facts are not a provider redemption guarantee. Existing admission, takeover, language, moderation and delivery processing stay in control.
 
@@ -120,9 +103,9 @@ npm run commerce:setup-discovery -- \
   --apply
 ```
 
-These are future implementation commands; the scripts do not exist merely because this task bundle is applied. The wrapper validates the selected repository identities/environment, then invokes the exact Database migration command, accepted MCP importer and Commerce publisher in order. A schema-empty target defers configuration/actor checks until after migration; missing prerequisites produce explicit partial-failure receipts, and the same command resumes after the existing configuration workflow supplies them. An optional staged source file must match the approved manifest bytes. Production retains the existing explicit confirmation flag. Dry-run does not mutate state, publish, create audit entries or call the paid embedding API.
+The MCP taxonomy CLI is present in the submitted worktree; its acceptance remains pending. The Commerce setup/publication changes are future implementation work. The wrapper validates selected repository identities/environment, then invokes Database migration, the accepted MCP importer and Commerce publication in order. A schema-empty target defers database-dependent configuration/actor checks until after migration; missing prerequisites produce explicit partial-failure receipts and a rerun resumes after existing configuration workflows supply them. An optional staged source file must match the approved manifest bytes. Production retains the explicit confirmation flag. Dry-run does not mutate state, publish, create audit entries or call the paid embedding API.
 
-The wrapper emits a stage receipt, stops on failure, reports the completed stages, and can be rerun safely. Publication preserves unrelated release pins, feature prompts and response fields, uses ownership/content checks and a pointer compare-and-swap, and reports all four standard tools. It does not silently migrate retained conversation grants. Use fresh pre-production test conversations or an explicitly reviewed transition after a compatible rollout.
+After validated receipt-context initialization, the owning CLI emits exactly one stage receipt, stops on failure, reports completed stages and can be rerun safely. Invalid invocation or earlier initialization/bundling/import failure has nonzero exit, safe original stderr diagnostics and no receipt; outer wrappers never fabricate or duplicate one. The setup parent rejects missing/multiple/malformed/exit-inconsistent child receipts. Publication preserves unrelated release pins, feature prompts and response fields, uses ownership/content checks and a pointer compare-and-swap, and reports all four standard tools. It does not silently migrate retained conversation grants. Use fresh pre-production test conversations or an explicitly reviewed transition after a compatible rollout.
 
 ## Important boundaries
 
@@ -138,7 +121,7 @@ Individual tasks specify their repository tests and exact completion-report requ
 
 An optional real-model evaluation separately measures semantic retrieval and clarification/relevance across the supported languages under a named model/corpus/budget. A scripted model or fixture transport cannot certify real-model semantic quality. Missing optional evaluation is explicitly NOT_RUN/BLOCKED, never reported as passed.
 
-For Attempt 4, validation consists of canonical task metadata/routes, the dependency graph, source-relative links, byte-identical completed/active task records and implementation files, unchanged indexes, strict `git apply --check --whitespace=error-all`, applied `git diff --check` and reverse-apply verification against a fresh exact 094947 archive extraction. New runtime validation is not claimed. Each remaining task separates fast agent checks from exact developer-owned long commands under the existing validation policy; pending evidence is not a pass.
+For Attempt 6, validation checks all ten task routes/metadata/dependencies, local links, the exact ten-document patch scope, unchanged completed records and MCP-001 report/review bytes, unchanged indexes and application files, strict `git apply --check --whitespace=error-all`, actual application, `git diff --check`, reverse checks and actual byte-restoring reverse application against a fresh extraction of the current MCP-001 upload. Earlier 094947 evidence is retained with an explicit source label. Runtime tests reported by the implementer are not rerun or claimed as newly executed by this documentation review.
 
 ## Attempt 3 definition review
 
@@ -148,6 +131,28 @@ Primary provider references: [Shopify Admin ShopPolicy](https://shopify.dev/docs
 
 ## Attempt 4 remaining-task review
 
-The review corrected concrete implementation gaps: stale release selection; missing accepted discount source integration; category/browse pagination and private Woo allowlists; execution-time conversation context; paired shipping permission reads; publication changes to owned response instructions; fresh-schema setup prerequisites and stdout receipts; actual Background prompt/policy/basket projections; one shared finalization budget; host test discovery; and SystemTest fixtures that would overwrite the real published release. Each is assigned to one of the five existing pending owners with exact touchpoints, outcomes and commands in its task. No additional Database, Shared, Admin or taxonomy redesign is introduced.
+The review corrected concrete implementation gaps: stale release selection; missing accepted discount source integration; category/browse pagination and private Woo allowlists; a conversation-context ownership proposal subsequently withdrawn in Attempt 5; paired shipping permission reads; publication changes to owned response instructions; fresh-schema setup prerequisites and stdout receipts; actual Background prompt/policy/basket projections; one shared finalization budget; host test discovery; and SystemTest fixtures that would overwrite the real published release. Each is assigned to one of the five existing pending owners with exact touchpoints, outcomes and commands in its task. No additional Database, Shared, Admin or taxonomy redesign is introduced.
 
 Natural-language intent and relevance remain model behavior. Trusted feature instructions direct bounded discovery and discount checks; the host validates selections, source facts, current policy and output. Missing or invalid selections produce the verified store-link fallback. Scripted integration fixtures demonstrate this control flow and the deterministic host guarantees, not real-model semantic quality or live merchant deployment.
+
+## Attempt 5 MCP responsibility correction
+
+MCP is the generic tool provider and executor. The earlier proposal for an MCP conversation context, conversation/grant database reads, lease/control validation and retained-grant-specific listing is withdrawn. Background owns those workflow checks. MCP enforces current shop/plan/connection/data access, validates tool inputs, performs the selected reads and returns facts. The existing discount result's configured shop mode and permitted catalogue remain legitimate tool data; MCP does not choose how a customer conversation uses them.
+
+The standard Background client sends only `{shopId}` after local assertion validation. MCP advertises stable canonical discount descriptors for an otherwise authorized shop. Background persists the full validated descriptor set for new conversation grants and uses current policy to expose/execute tools, with existing exact manifest equality and current-turn checks. Generic optional data unavailability has one provider meaning; caller-specific continuation belongs in Background. No new Shared release, Database migration or change to active MCP-001 is introduced. Contracts section 4.1 and the implementation handoff define this boundary; the pending tasks name its exact files and tests.
+
+## Attempt 6 current-worktree reconciliation
+
+The uploaded MCP-001 task is review/Attempt 2 and its taxonomy implementation uses only generic shop/published-definition/RPC checks. `WorkContext` carries AbortSignal, deadline and provider-request budget; it contains no conversation identity or retained grant. The clarified task removes ambiguous grant/stale-invocation wording without restarting valid importer work. Its submitted integration report records 25 passes and one opt-in live skip; this amendment preserves that report and does not independently accept it.
+
+MCP-002's former section “One domain authorization read for conversation discounts” and its dependent reader/module/test requirements are withdrawn. Generic shop descriptors and catalogue execution replace them; Background alone owns workflow permission and retained state. The actual current catalogue factory, execution port and query boundaries now anchor those changes. The current MCP CLI also anchors the Commerce child receipt: one stdout receipt, one taxonomy stage, and a null import fingerprint only for pending-migration dry-run planning.
+
+SHARED-004 removes the previously published unused `CommerceConversationToolContextSchema` and type. The corrected design still preserves Background/runner conversation contracts and the separately accepted outreach tool context. No conversation-specific replacement is added to MCP.
+
+## Architect Acceptance Reconciliation (2026-11-04)
+
+MCP-001 Attempt 3 is accepted and Complete at `1dd5430b9d3108bf93bba86c1fb9233736f606d3`; its task contains the authoritative review and validation limits. Earlier review/Attempt 2 snapshots above are historical. MCP-002 subsequently entered Attempt 1 and preserved its WIP source; revision 10 blocks continuation on DATABASE-002 and SHARED-006. SYSTEM-TEST-001 remains pending on the remaining implementations; the architecture is not yet Implemented. No persistent import, deployment or publication is certified by task acceptance.
+
+## Shared Hash Removal Acceptance (2026-11-04)
+
+SHARED-003 Attempt 2 is architect-accepted and Complete at `59ea61f34197d64180e46680ac6d552b5e989a36`. Its provenance correction closes the prior documentation finding; implementation and prior independent validation are unchanged. Earlier unmaterialised/ready references are historical. SHARED-004 is now ready and unclaimed. SHARED-006 remains pending on SHARED-004/005; the intermediate source must not be published. Remaining architecture and system-test gates are unchanged.

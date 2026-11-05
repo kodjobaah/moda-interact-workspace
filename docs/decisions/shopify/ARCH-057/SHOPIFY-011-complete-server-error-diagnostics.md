@@ -217,3 +217,13 @@ To be assessed after implementation.
 ### Follow-up
 
 Return the completed task for architect review; do not start enabled tasks.
+
+
+## Dependency Reconciliation — 2026-11-04
+
+ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete. This task remains Pending: SHOPIFY-010 is Ready but incomplete, and SHOPIFY-004 is still recorded in Review in this branch. No claim or downstream execution is authorized by this update; the normal launcher must check current dependency records and integration before execution.
+
+
+## Dependency Reconciliation — 2026-11-05
+
+SHOPIFY-010 Attempt 1 is architect-accepted and Complete at `6e8029deb30de8903e937dc092b68f8b304e4dce`. This task remains Pending: SHOPIFY-004 is still recorded in Review in this branch. All other explicit prerequisites are Complete. This note supersedes the earlier frontier note naming SHOPIFY-010 as incomplete; no claim or execution is started.

@@ -3,19 +3,29 @@
   "architectureId": "ARCH-058",
   "reviewDate": "2026-11-04",
   "snapshot": {
-    "fileName": "moda-interact-workspace(20261104-094947).zip",
-    "sha256": "69cb55e82d895592b8ac7f543bedba52866512b189e8e31ab035a120ca9af0ff",
-    "evidenceKind": "UPLOADED_SOURCE_SNAPSHOT"
+    "fileName": "moda-interact-workspace(20261104-165221).zip",
+    "sha256": "4562616bd93ec1b8d7d4aba4127757b25bb9f5f9e0f5819bc4f4876eb118f58b",
+    "evidenceKind": "UPLOADED_CURRENT_CODEBASE_SNAPSHOT",
+    "documentRevision": 10
   },
   "scope": {
-    "amendedTasks": [
+    "replacedUnmaterialisedDefinitions": [
+      "ARCH-058-SHARED-003",
+      "ARCH-058-SHARED-004"
+    ],
+    "newTasks": [
+      "ARCH-058-SHARED-005",
+      "ARCH-058-SHARED-006",
+      "ARCH-058-DATABASE-002"
+    ],
+    "amendedPendingOrBlockedTasks": [
       "ARCH-058-MCP-002",
       "ARCH-058-MCP-003",
       "ARCH-058-COMMERCE-001",
       "ARCH-058-BACKGROUND-001",
       "ARCH-058-SYSTEM-TEST-001"
     ],
-    "preservedTasks": [
+    "preservedCompletedTasks": [
       "ARCH-058-DATABASE-001",
       "ARCH-058-SHARED-001",
       "ARCH-058-SHARED-002",
@@ -23,7 +33,14 @@
       "ARCH-058-MCP-001"
     ],
     "preserveDecisionIndexes": true,
-    "implementationChanged": false
+    "implementationChanged": false,
+    "preserveAcceptedCompletionAndReviewHistory": true,
+    "mcp002WipPreserved": true,
+    "mcp002WipCommitAsReported": "4bffa87ed4af0fb40513ad75d38df49c51746360",
+    "mcp002LifecycleCorrection": "Attempt 1 is preserved; task is blocked with claim cleared until DATABASE-002 and SHARED-006 are Complete, then the same task returns Ready and is reclaimed as the next attempt.",
+    "selectedCorrection": "REMOVE_BUILT_IN_CONTRACT_HASH_IDENTITY",
+    "noCrossApplicationZodPin": true,
+    "newTaskDefinitionState": "DEFINED_BUT_NOT_MATERIALISED"
   },
   "sharedPublication": {
     "schemaVersion": "1",
@@ -54,20 +71,29 @@
     "acceptedImplementationCommit": "ded8f14a60182f6b1443640f012caf0089b8a44c",
     "acceptedTask": "ARCH-058-DATABASE-001",
     "migration": "prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql",
-    "evidenceKind": "ACCEPTED_TASK_REPORT_AND_PRESENT_SOURCE"
+    "evidenceKind": "ACCEPTED_TASK_REPORT_AND_PRESENT_SOURCE",
+    "evidenceSourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+    "currentNestedMigrationPath": "moda-interact-mcp/database/prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql",
+    "currentNestedMigrationPresent": true
   },
   "shopifyPermission": {
     "acceptedImplementationCommit": "c3b580cec5acc46e5c53386dd94279ad97b02ee9",
     "acceptedTask": "ARCH-058-SHOPIFY-001",
     "declaredScope": "read_legal_policies",
-    "actualInstallationGrantVerified": false
+    "actualInstallationGrantVerified": false,
+    "evidenceSourceSnapshot": "moda-interact-workspace(20261104-125409).zip"
   },
   "activeMcp001": {
-    "snapshotStatus": "ready",
-    "userReportedStatus": "in_progress",
-    "liveTaskWorktreeIncluded": false,
-    "editAllowed": false,
-    "handoff": "Consume accepted importer manifest, CLI and source receipt after MCP-001 acceptance; do not independently rediscover source, change importer contracts, or reopen its claim."
+    "snapshotStatus": "complete",
+    "snapshotAttempt": 3,
+    "snapshotExecutor": null,
+    "snapshotClaimedAt": null,
+    "evidenceKind": "CURRENT_UPLOADED_TASK_ARCHITECT_ACCEPTANCE",
+    "acceptedImplementationCommitAsReported": "1dd5430b9d3108bf93bba86c1fb9233736f606d3",
+    "implementationCommitIndependentlyVerifiedFromGit": false,
+    "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
+    "definitionChangedByThisAmendment": false,
+    "handoff": "Preserve accepted source, manifest/importer and validation evidence. MCP-002 is already claimed; no repeat source selection or preparation."
   },
   "taxonomy": {
     "existingAdminManifest": "moda-interact-admin/src/data/shopify-taxonomy-manifest.json",
@@ -78,13 +104,30 @@
     },
     "fullCategoryDistributionPresentInUploadedArchive": false,
     "mcp001SourceGate": {
-      "evidenceKind": "USER_QUOTED_AGENT_REPORT",
+      "evidenceKind": "UPLOADED_MCP_MANIFEST_AND_SUBMITTED_REPORT",
       "release": "v2026-08",
       "uniqueCategoryCount": 14606,
-      "bytesOrReceiptIncluded": false,
-      "independentlyVerifiedCategoryCount": false
+      "distributionSha256": "afc8f21242527a209622302bd99e29efe8cc2521ae949104c2c0dc3f931e461a",
+      "compressedBytes": 183429,
+      "fullDistributionIncluded": false,
+      "independentlyDownloadedOrCountedByThisReview": false,
+      "implementationAcceptancePending": false,
+      "acceptanceEvidenceSourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip"
     },
-    "runtimeSourceAuthority": "Accepted MCP-001 src/data/reference-taxonomy-manifest.json; an operator --source must match its approved distribution-byte hash exactly."
+    "runtimeSourceAuthority": "MCP-001 accepted Attempt3 manifest/importer and reported receipt. Preserve exact source identity; no downstream source reselection.",
+    "existingAdminEvidenceSourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+    "mcpManifestPath": "moda-interact-mcp/src/data/reference-taxonomy-manifest.json",
+    "mcpManifestSha256": "85afc078442efea7c26c232cc36624ea08e58842f11185d73b985d49c0bae09d",
+    "mcpManifest": {
+      "schemaVersion": "1",
+      "source": "SHOPIFY_STANDARD_PRODUCT_TAXONOMY",
+      "taxonomyVersion": "2026-08",
+      "languageTag": "en",
+      "sourceUrl": "https://github.com/Shopify/product-taxonomy/releases/download/v2026-08/categories.en.txt.gz",
+      "sourceSha256": "afc8f21242527a209622302bd99e29efe8cc2521ae949104c2c0dc3f931e461a",
+      "categoryCount": 14606,
+      "compressedBytes": 183429
+    }
   },
   "discountIntegration": {
     "task": "ARCH-052-MCP-002",
@@ -93,10 +136,17 @@
     "acceptedCorrectionCommitAsRecorded": "89e9ad3",
     "correctionFullCommitVerified": false,
     "expectedReaderPath": "moda-interact-mcp/src/execution/discount-catalogue.ts",
-    "expectedReaderPresentInSnapshot": false,
-    "snapshotRegistrationState": "UNAVAILABLE_STUB",
-    "githubReadResult": "404_NOT_FOUND",
-    "requiredAction": "Integrate already accepted catalogue into prepared MCP task source before extending it; do not recreate the reader or reopen accepted historical task."
+    "expectedReaderPresentInSnapshot": true,
+    "snapshotRegistrationState": "PRESENT_EXECUTE_DISCOUNT_TOOL_PORT",
+    "requiredAction": "Extend the present catalogue through its existing executeDiscountTool port as specified by MCP002; remove outreach-purpose-only discovery/execution. Preserve source projection/cursor bounds and original diagnostics. Do not rebuild or re-integrate solely because the earlier snapshot omitted it.",
+    "earlierSnapshotFinding": {
+      "sourceSnapshot": "moda-interact-workspace(20261104-094947).zip",
+      "readerPresent": false,
+      "registrationState": "UNAVAILABLE_STUB",
+      "githubReadResult": "404_NOT_FOUND"
+    },
+    "currentFactory": "createPrismaDiscountCatalogueReader(database, {cursorSecret?, now?}).execute(call)",
+    "readerSha256": "960bb27397f4c2e2d2968692011de4a274d0653e03d3864dd17f1c9c4e12050c"
   },
   "tasks": [
     {
@@ -109,9 +159,17 @@
       "dependsOn": [
         "ARCH-058-MCP-002",
         "ARCH-058-MCP-003",
-        "ARCH-058-COMMERCE-001"
+        "ARCH-058-COMMERCE-001",
+        "ARCH-058-SHARED-006"
       ],
-      "sha256": "c323cb8c91b17ae92418bc0d84de5f1ca70ff1b7cfa515385ecf1f910b52e4b1"
+      "enables": [
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "fc458f9aa5e28a60544dd043f1b597458f89c1f21ed6a3f9732f810c5a972006",
+      "definitionSha256": "5924a392f268a5d34fea5914af3ba5c8ddb263aed19287e9585604dfd2a50742",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": false
     },
     {
       "id": "ARCH-058-COMMERCE-001",
@@ -122,9 +180,18 @@
       "claimedAt": null,
       "dependsOn": [
         "ARCH-058-MCP-002",
-        "ARCH-058-MCP-003"
+        "ARCH-058-MCP-003",
+        "ARCH-058-SHARED-006"
       ],
-      "sha256": "c7e7b5fd5fadfbc7f7b7ef80c8965701122658b82929e0ee8f9fdb7a5833fbdd"
+      "enables": [
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "2391cabf0dc99aebdb3a28819295f82ac86124d9325b57bb273470ac66d97adf",
+      "definitionSha256": "076ff5bf154495e09b105c3d6c5c04ce70bc3df515c0ccd567b6efc007e838cd",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": false
     },
     {
       "id": "ARCH-058-DATABASE-001",
@@ -134,32 +201,82 @@
       "executor": null,
       "claimedAt": null,
       "dependsOn": [],
-      "sha256": "6c880cea1e93b66dc92c4859738723cb2f7e434ea3e79b471e7525da27ccecc4"
+      "enables": [
+        "ARCH-058-MCP-001",
+        "ARCH-058-DATABASE-002",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "6c880cea1e93b66dc92c4859738723cb2f7e434ea3e79b471e7525da27ccecc4",
+      "definitionSha256": "c3cec29bc54d0df4ed2fd678d62132f9202ce25c95a8b5b5a7d9ed88f45a3450",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": false
+    },
+    {
+      "id": "ARCH-058-DATABASE-002",
+      "path": "docs/decisions/database/ARCH-058/DATABASE-002-remove-built-in-contract-hash-storage.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-DATABASE-001",
+        "ARCH-058-SHARED-005"
+      ],
+      "enables": [
+        "ARCH-058-MCP-002",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "4d5b5ac811880d70b29219dce67d6c578628e6634d927e21cb35130856250b93",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": true
     },
     {
       "id": "ARCH-058-MCP-001",
       "path": "docs/decisions/mcp/ARCH-058/MCP-001-import-and-resolve-postgresql-taxonomy.md",
-      "status": "ready",
-      "attempt": 0,
+      "status": "complete",
+      "attempt": 3,
       "executor": null,
       "claimedAt": null,
       "dependsOn": [
         "ARCH-058-DATABASE-001",
         "ARCH-058-SHARED-002"
       ],
-      "sha256": "9db9afbb3df6ef6e0084dc9a910d137a608dfb30f1469b4cf4239d21312d64e5"
+      "enables": [
+        "ARCH-058-MCP-002",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "ad3e28a64321b9dd5b817ade2eb2f5e3ec36366323c60cc97ece2140e900d2f2",
+      "definitionSha256": "ad3e28a64321b9dd5b817ade2eb2f5e3ec36366323c60cc97ece2140e900d2f2",
+      "definitionChangedInRevision10": false,
+      "newPortableDefinition": false
     },
     {
       "id": "ARCH-058-MCP-002",
       "path": "docs/decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md",
-      "status": "pending",
-      "attempt": 0,
+      "status": "blocked",
+      "attempt": 1,
       "executor": null,
       "claimedAt": null,
       "dependsOn": [
-        "ARCH-058-MCP-001"
+        "ARCH-058-MCP-001",
+        "ARCH-058-DATABASE-002",
+        "ARCH-058-SHARED-006"
       ],
-      "sha256": "2af98a89aaf6ab5c12d04a4f9b751d299ad9bf93625f87bf17492455a547b436"
+      "enables": [
+        "ARCH-058-MCP-003",
+        "ARCH-058-COMMERCE-001",
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "60f9470d1bd4bf07f7b88a1113eb24be321f30087e107cd3c44a17e43a675583",
+      "definitionSha256": "888421546d45be8738195029ab2015b3de98453e4147fb3e7a55ee41df4f16b6",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": false
     },
     {
       "id": "ARCH-058-MCP-003",
@@ -172,7 +289,16 @@
         "ARCH-058-MCP-002",
         "ARCH-058-SHOPIFY-001"
       ],
-      "sha256": "969e48c983b69627c45d322b368fb33e7b51228afc93af6436712123d432516e"
+      "enables": [
+        "ARCH-058-COMMERCE-001",
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "fa09812e445a085a5d054ff311ca472c5c1e9af56700e320429b8f3c7f7be7c5",
+      "definitionSha256": "371baa89a611ad24117c38375e077fabb4f2ddd119f79049ea5026cb4e9ad25b",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": false
     },
     {
       "id": "ARCH-058-SHARED-001",
@@ -182,7 +308,15 @@
       "executor": null,
       "claimedAt": null,
       "dependsOn": [],
-      "sha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7"
+      "enables": [
+        "ARCH-058-SHARED-002",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
+      "definitionSha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
+      "definitionChangedInRevision10": false,
+      "newPortableDefinition": false
     },
     {
       "id": "ARCH-058-SHARED-002",
@@ -194,7 +328,103 @@
       "dependsOn": [
         "ARCH-058-SHARED-001"
       ],
-      "sha256": "84c563859c05c5afdd872778c8b9b25eb1e3a7aa5d6b57ee3e36f78ef8f51bbd"
+      "enables": [
+        "ARCH-058-SHARED-003",
+        "ARCH-058-MCP-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "e3156f2e5fe0ca9075a93857446886f4906e04bf0618a6770b005e79313b4462",
+      "definitionSha256": "e3156f2e5fe0ca9075a93857446886f4906e04bf0618a6770b005e79313b4462",
+      "definitionChangedInRevision10": false,
+      "newPortableDefinition": false
+    },
+    {
+      "id": "ARCH-058-SHARED-003",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-003-remove-built-in-contract-hashes.md",
+      "status": "ready",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-SHARED-002"
+      ],
+      "enables": [
+        "ARCH-058-SHARED-004",
+        "ARCH-058-SHARED-006",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "31b77fee4e3ffa4aef0c99f38a4c853c0797dafb6a21515fcb26b287c35a8b60",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": true
+    },
+    {
+      "id": "ARCH-058-SHARED-004",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-004-remove-obsolete-conversation-tool-context.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-SHARED-003"
+      ],
+      "enables": [
+        "ARCH-058-SHARED-005",
+        "ARCH-058-SHARED-006",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "79ecf2bea4db3e4d159ab4927466fb81059325447e1472a6025f0a1c1a9d5bf2",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": true
+    },
+    {
+      "id": "ARCH-058-SHARED-005",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-005-freeze-commerce-datetime-wire-syntax.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-SHARED-004"
+      ],
+      "enables": [
+        "ARCH-058-SHARED-006",
+        "ARCH-058-DATABASE-002",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "6067045f6cc6e5ad2fa6be3d87608860bf14adbd61234fa6052f144835e77244",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": true
+    },
+    {
+      "id": "ARCH-058-SHARED-006",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-006-publish-corrected-commerce-contracts.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-SHARED-003",
+        "ARCH-058-SHARED-004",
+        "ARCH-058-SHARED-005"
+      ],
+      "enables": [
+        "ARCH-058-MCP-002",
+        "ARCH-058-COMMERCE-001",
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": null,
+      "definitionSha256": "23dc1371eee82f36aa5f8a917be5637f25cd7af21af6c8f4b6b8098ecc10e80a",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": true
     },
     {
       "id": "ARCH-058-SHOPIFY-001",
@@ -204,7 +434,2130 @@
       "executor": null,
       "claimedAt": null,
       "dependsOn": [],
-      "sha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5"
+      "enables": [
+        "ARCH-058-MCP-003",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
+      "definitionSha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
+      "definitionChangedInRevision10": false,
+      "newPortableDefinition": false
+    },
+    {
+      "id": "ARCH-058-SYSTEM-TEST-001",
+      "path": "docs/decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-DATABASE-001",
+        "ARCH-058-DATABASE-002",
+        "ARCH-058-SHARED-001",
+        "ARCH-058-SHARED-002",
+        "ARCH-058-SHARED-003",
+        "ARCH-058-SHARED-004",
+        "ARCH-058-SHARED-005",
+        "ARCH-058-SHARED-006",
+        "ARCH-058-MCP-001",
+        "ARCH-058-MCP-002",
+        "ARCH-058-MCP-003",
+        "ARCH-058-SHOPIFY-001",
+        "ARCH-058-COMMERCE-001",
+        "ARCH-058-BACKGROUND-001"
+      ],
+      "enables": [],
+      "sourceSnapshot": "moda-interact-workspace(20261104-165221).zip",
+      "baselineSha256": "3ba7215ab76f39e2862cf211885bea77ef118727bb219a2f5109b29ab5809a57",
+      "definitionSha256": "98eafb8b13db6f9b583371613432ba0bb8db1335775f8294200c60a7a68b7f53",
+      "definitionChangedInRevision10": true,
+      "newPortableDefinition": false
+    }
+  ],
+  "repositories": {
+    "moda-interact-shared": {
+      "packageName": "@modainteract/moda-interact-shared",
+      "packageVersion": "4.0.0",
+      "sharedDependency": null,
+      "packageJsonSha256": "b1ac53720c8b85d9c8a682a1dd1fefe594054b9443e1b416849bb0dedd10c544",
+      "packageLockSha256": "7626207660376204326d6555a96e89053158b14ed5769d2511c7cbb49d630908",
+      "nestedDatabaseSchemaSha256": null,
+      "hasAcceptedTaxonomyMigration": false,
+      "nestedDatabaseHasAcceptedTaxonomyMigration": null,
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "presentInCurrentArchive": true
+    },
+    "moda-interact-mcp": {
+      "packageName": "moda-interact-mcp",
+      "packageVersion": "0.1.0",
+      "sharedDependency": "4.0.0",
+      "packageJsonSha256": "35b3f6ef8282c2efbae05078c0f887bb64f85be77c31b76a8f4d741f2a3300f2",
+      "packageLockSha256": "abd96d4e78b69c227b4b80ab5952c400843e4920282cb896581ab8dd8541462e",
+      "nestedDatabaseSchemaSha256": "28e11f6f454dddb030402436a9db7fc6d046da2259b9370c1c7cb18aa379cd64",
+      "nestedDatabaseHasAcceptedTaxonomyMigration": true,
+      "lockedSharedArtifact": {
+        "version": "4.0.0",
+        "resolved": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-4.0.0.tgz",
+        "integrity": "sha512-Zv78WX/AsN1lZWyaMirO2Ml/rOZknSv0cnJnxYBuyc368kzDZzswauKRPSe8GSXFfjkk3cQnr3wi4n49d9HTzw=="
+      },
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "presentInCurrentArchive": true,
+      "hasAcceptedTaxonomyMigration": false
+    },
+    "moda-interact-commerce": {
+      "packageName": "moda-interact-commerce",
+      "packageVersion": "0.1.0",
+      "sharedDependency": "2.7.2",
+      "packageJsonSha256": "c2adf77f89603bcf66a0d3abb5ba6abd4aa18f328b12cf649adc0abc3aa82d4b",
+      "packageLockSha256": "01830b46804ace6e92f148f892b7a54d4b918673ff780ee01390c097548fdf14",
+      "nestedDatabaseSchemaSha256": "28e11f6f454dddb030402436a9db7fc6d046da2259b9370c1c7cb18aa379cd64",
+      "nestedDatabaseHasAcceptedTaxonomyMigration": true,
+      "lockedSharedArtifact": {
+        "version": "2.7.2",
+        "resolved": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-2.7.2.tgz",
+        "integrity": "sha512-quqPSi/dIB3WbfYsYOO4tt12CVRboA8OPDi/obsAQhrMTaHcgYzMpbRoBRIxmehpbGDOOAjdL3j4xBRNTsyU+Q=="
+      },
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "presentInCurrentArchive": true,
+      "hasAcceptedTaxonomyMigration": false
+    },
+    "moda-interact-background": {
+      "packageName": "worker-kwadwos-gpt",
+      "packageVersion": "1.0.0",
+      "sharedDependency": "3.0.0",
+      "packageJsonSha256": "9faf1369f760bc2b635e9138e571981005320fba5f5869e158d811f59e030f3d",
+      "packageLockSha256": "2d85edc521eeada7cf877ef35940dff0f7ceaefea60c2fa8bdf7ef507c699cc5",
+      "nestedDatabaseSchemaSha256": "28e11f6f454dddb030402436a9db7fc6d046da2259b9370c1c7cb18aa379cd64",
+      "nestedDatabaseHasAcceptedTaxonomyMigration": true,
+      "lockedSharedArtifact": {
+        "version": "3.0.0",
+        "resolved": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-3.0.0.tgz",
+        "integrity": "sha512-CvixJpQEL0nOQv+zoDUAveF0JA1G9PFrT2FN+ubYu94tEgjiLRMtHZGLyxfE5FUHroDt6ZajY/36j3EvyJyFuw=="
+      },
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "presentInCurrentArchive": true,
+      "hasAcceptedTaxonomyMigration": false
+    },
+    "moda-interact-database": {
+      "packageName": "moda-interact-database",
+      "packageVersion": "1.0.0",
+      "sharedDependency": null,
+      "packageJsonSha256": "6ba242ab143bac835e4834266bb6cdaa4e915f6f640b6f1f90f480fce97fad3a",
+      "packageLockSha256": "5c3475a870d2ec9058b53076d594179a12f0c3acb7e8a43991c22f89010099d9",
+      "nestedDatabaseSchemaSha256": null,
+      "hasAcceptedTaxonomyMigration": true,
+      "nestedDatabaseHasAcceptedTaxonomyMigration": null,
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "presentInCurrentArchive": true
+    },
+    "moda-interact-system-test": {
+      "packageName": "moda-interact-system-test",
+      "packageVersion": "1.0.0",
+      "sharedDependency": null,
+      "packageJsonSha256": "ed2e3961c953cdfdc1829d888293dfbc7d3ee6d23db4e4db3c383808ec4f8eab",
+      "packageLockSha256": "43f099911c4d552be157a58c34f679ac7eab7b79d1ea7c38bb36a33727547994",
+      "nestedDatabaseSchemaSha256": null,
+      "hasAcceptedTaxonomyMigration": false,
+      "nestedDatabaseHasAcceptedTaxonomyMigration": null,
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "presentInCurrentArchive": true
+    }
+  },
+  "inspectedFiles": [
+    {
+      "path": ".codex/agents/moda_architect.toml",
+      "exists": true,
+      "sha256": "1b5548a98a9c899a9f44e442d86df2e2510b0827ecd2fa742a829b07d00dec3e",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": ".gitmodules",
+      "exists": true,
+      "sha256": "d2d7e92610c581b0d37e5820ab3b9705fe1183c291a5870f4d3ffd1028466fa0",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "docs/agent-validation-execution-policy.md",
+      "exists": true,
+      "sha256": "bc51517273fc724ff107833a6ffa129655f8a12c15737f0aad220019da78c380",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "docs/agent-vcs-ownership-policy.md",
+      "exists": true,
+      "sha256": "0ab0d3c006aac13171baecb96bc83ec71bea33fb14e1f50483330b48246a1903",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "docs/agent-worktree-isolation-policy.md",
+      "exists": true,
+      "sha256": "a02a630ef2ab8a69dce3499a45af9ba1179a3adc6d9b5d1203048093e00c80fa",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "docs/decisions/background/ARCH-055/BACKGROUND-001-consume-persisted-human-follow-up-claim-identity.md",
+      "exists": true,
+      "sha256": "4c6df03c7206952b4d5e52cdcdaa8918e4f3bf11f39236313306edc057e68add",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "docs/decisions/background/ARCH-056/BACKGROUND-001-serialize-inbound-conversation-persistence.md",
+      "exists": true,
+      "sha256": "3280d39d58219d99bab82ed593ac2ee190f88c0e7fcb2c1a69b90ff9ccd7cd6a",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "docs/decisions/background/ARCH-056/BACKGROUND-003-resume-owned-initial-template-admission.md",
+      "exists": true,
+      "sha256": "e1f3b9e549a8e88552baf757a37f172d62fcf3909edaaf9a3471e02b538b8a32",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "docs/decisions/background/ARCH-056/BACKGROUND-004-continue-durable-initial-recovery-progress.md",
+      "exists": true,
+      "sha256": "2f9d5b1651ca73c6716668f03eea874ef537366f496a8f842676408132cf0c9f",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "docs/decisions/mcp/ARCH-052/MCP-006-preserve-original-woo-provider-errors.md",
+      "exists": true,
+      "sha256": "6ef8823c1be1c147c465d4685448f61ee6a71ce662d8378f9bad43b81dd52845",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "docs/observability/shared-logging.md",
+      "exists": true,
+      "sha256": "fd61d64de52701e56b79501deeb7fdc23aa022cfa324395623a72221c738fb8b",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "docs/task-definition-materialization.md",
+      "exists": true,
+      "sha256": "343d51d289b08bb46200aaa702498d04a2fee7d774ae7e1cd1850eba14430f59",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-admin/package.json",
+      "exists": true,
+      "sha256": "fec881a9c1c108d1df185137253a5693b16794914bd3aa9330b69ce51cf273d2",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-admin/scripts/provision-platform-admin.mjs",
+      "exists": true,
+      "sha256": "468a4d2083c808cd5678a30ff39a2ef587df10685a51336aae8bc193a6e15905",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-admin/scripts/shopify-taxonomy-distribution.mjs",
+      "exists": true,
+      "sha256": "30838cd36d61a06f75ec9bd42298cf646c1c2ba648a4e20f74d5efd718ec226a",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-admin/scripts/sync-shopify-taxonomy.mjs",
+      "exists": true,
+      "sha256": "67f91d18ccc7dfea3fbfe9c5406de57c70864bad86b96a1de8c7d3521ac3c02b",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-admin/scripts/update_platform.mjs",
+      "exists": true,
+      "sha256": "ef5c7715dbe95e20f8b6a9e5e501412b4c28be2b7708b3320fa23ac67bd7a4fb",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-admin/src/app/(protected)/system-controls/embeddings/page.tsx",
+      "exists": true,
+      "sha256": "49ccb8f43ee5f876e3e5d0fdfa1fa62098889da93bdee166e98f1d5a06622c97",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-admin/src/app/(protected)/system-controls/platform-configuration/page.tsx",
+      "exists": true,
+      "sha256": "45a7973e36f92a61e6a3bf3aaf70feb1adcce25a7096f890176a8cfc43ea53fc",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-admin/src/app/actions/merchant-pricing-plan.ts",
+      "exists": true,
+      "sha256": "e01248c0eb36be5536db8deef9e3f0d198807394ac406175ab97623b74531736",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-admin/src/components/admin/embedding-configuration/embedding-configurations-panel.tsx",
+      "exists": true,
+      "sha256": "f7da055c4b153f9da191bbfd915af31bb235075a206e6903e4869b50137028f7",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-admin/src/data/shopify-taxonomy-manifest.json",
+      "exists": true,
+      "sha256": "b3aac029c05c5f4568072112cb27a971d5519157f1962c6e4d74d95cf2da4b00",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/embedding-configuration-validation.ts",
+      "exists": true,
+      "sha256": "87189438d86ae4088126b27d80461d841bceb20fa7796e1163efbd523a9bb4f0",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/embedding-configuration.ts",
+      "exists": true,
+      "sha256": "cbaa1364bda826726f14039cdb952ff148ea3c4f59c09af957ae60c849139912",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/merchant-knowledge-plan-policy.ts",
+      "exists": true,
+      "sha256": "ef73c652ad8425febd7e1ff97d3e0f50dd600626b69c5c924975926b9311cbca",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-admin/src/lib/admin/whatsapp-templates/translations/locale-contract.ts",
+      "exists": true,
+      "sha256": "dd09dda7759e29270e937b6d650fea396760114b1026f91c84fa3f759aa2cc34",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/package-lock.json",
+      "exists": true,
+      "sha256": "2d85edc521eeada7cf877ef35940dff0f7ceaefea60c2fa8bdf7ef507c699cc5",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/package.json",
+      "exists": true,
+      "sha256": "9faf1369f760bc2b635e9138e571981005320fba5f5869e158d811f59e030f3d",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/agents/commerce.agent.ts",
+      "exists": true,
+      "sha256": "81a5bb1f60295838a16a286a3c9cb6386e0a801685f00ea00f7ceefde3ed5c7d",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.agent.ts",
+      "exists": true,
+      "sha256": "a6af993e1a718cd11d499a410980411d582b2cabd09b3f2a809d396879cfb020",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.combinations.ts",
+      "exists": true,
+      "sha256": "26cd12fd21883161b4956753ea53bdec8b3700b68e92c54458e0c78deede9601",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.eligibility.ts",
+      "exists": true,
+      "sha256": "172ef32288884d21cb317d3f75a5c661be634bc246e23a508b1abbc71adf5fc2",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.graph.ts",
+      "exists": true,
+      "sha256": "a3443486543a5b8c19a37d9fab6797c0e745576f03caa6bebbc9acd084d20ecc",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.instructions.ts",
+      "exists": true,
+      "sha256": "3d1239758705dadf5dbb7529e5b53439f4c85f99464c1287fbb242651e85ceec",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-background/src/agents/initial-outreach-offer.types.ts",
+      "exists": true,
+      "sha256": "51b1afc0fb16f9a57bbf18440b72cee13c896bc3a93a0afc3ca4d18e881225bd",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/agents/types.ts",
+      "exists": true,
+      "sha256": "61362a2d5cfcf1d23ade5b7f5d5f4e4621bbad60a22747729565bf600924ee8d",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/commerce/evidence.ts",
+      "exists": true,
+      "sha256": "ebc83913b9a5a3fc3c222ff376e7620a821d6be40164258e6b8292e05a86ff09",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/commerce/grants.ts",
+      "exists": true,
+      "sha256": "3da686750ea12b3f623eb3630c353b9f4ce8916e5f7b1d9f296f004856260bc4",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/commerce/host-diagnostics.ts",
+      "exists": true,
+      "sha256": "221ddc4c908cd68579fce2bfdc9fe02559d7407279e8e19260efd7b8167798ed",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/commerce/host.ts",
+      "exists": true,
+      "sha256": "71b1f3b6636a58dae2fde066290a52d7ce9c28536a5df6c3651df7a82f22be55",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-background/src/commerce/mcp-client.ts",
+      "exists": true,
+      "sha256": "1fdaf05960ff0c018d08a3b21f8763d282320174ee3d1ac5634fb4f9081ef721",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/commerce/openrouter-credential.ts",
+      "exists": true,
+      "sha256": "09d92687ed31810d4b735e4635ac7c6e470bb7dd564c91e324f951a4ef0883bd",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-background/src/commerce/production-model.ts",
+      "exists": true,
+      "sha256": "06b1973737c5a6371fc9b318bcc82db1eeaa047d227730b8365995e1e686fe65",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-background/src/commerce/provider-credential-validation.ts",
+      "exists": true,
+      "sha256": "78e64379e65683b45fe33bfcc0bee4b01994ef7794adc4c2632d7099bb3a4fb5",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-background/src/commerce/recovery-instructions.ts",
+      "exists": true,
+      "sha256": "015938d48179f87aa6e63f454767b4ffa544d6edd947586b91700eefbe949843",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/conversation-language.service.ts",
+      "exists": true,
+      "sha256": "7bfb4c1d9f3b53d3ad64c28e5587495586059dd95e3c4041d42e47e12c89b408",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/conversation-turn-processor.service.ts",
+      "exists": true,
+      "sha256": "cd850abcc8366a84e1f5f323214f9bd4ea08f65da895caee438a62f6bde556f3",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/conversation-wrappers/compose-ai-outbound.ts",
+      "exists": true,
+      "sha256": "9df6b6187773e420b0f21c8f448159f651fc884b23ce6535c15b5bd6013246e2",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/conversation-wrappers/contracts.ts",
+      "exists": true,
+      "sha256": "081f12c127ce0d3b87dfe9876a4ff8ddcd93dd0108d9e08e80fd3e83bcc98fbb",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/conversation-wrappers/selection.ts",
+      "exists": true,
+      "sha256": "3285967375d9ae7f2796113381c93fcaa9bfba15cb8e19b9425737dfe83c53dc",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/conversation-wrappers/service.ts",
+      "exists": true,
+      "sha256": "a3d18887fcdd36eec96f9f591bc5b0180bfb5c991ea7eb6ab953292a48d62cd9",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/conversation.service.ts",
+      "exists": true,
+      "sha256": "88688e243c0bfa3c5a49bcd976589ccc1f98bc5d7bfd09d8f615bcc592b87437",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/outbound-whatsapp-admission.service.ts",
+      "exists": true,
+      "sha256": "7d8e69a8f69f8fe43f2cd15d8f290b3ffbe1cf57461a030dcdc2da9a915b06b6",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/outbound-whatsapp-admission/outbound-admission-reservation.service.ts",
+      "exists": true,
+      "sha256": "6e23e02216d19b0a4837af6d5c1e0321612781f728094701c5a604700fcc24f6",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts",
+      "exists": true,
+      "sha256": "6c307a68173eb51cf655af80e6bfef4bb3a3303fee61520d19a80a8c03a88329",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts",
+      "exists": true,
+      "sha256": "d72738d885bb034fe47c4df756e3b7f4ca3520cdfa7130b6ef769ced5fd6b0af",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-conversation/ai-turn-ownership.service.ts",
+      "exists": true,
+      "sha256": "71a77d222385a0784b14b48b1f0c0d9663c71525203ab7012f455bf6492030cb",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-offers/current-outreach-offer-revalidation.service.ts",
+      "exists": true,
+      "sha256": "9367024583d228366feb5652ca02c12e855af4012258b5abd13a89e5cd4b7bae",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-offers/initial-outreach-agent-context.service.ts",
+      "exists": true,
+      "sha256": "cd9a741fac254d38dc5d5b6c493a6736339c9faa24fbbe0a34552b1f877637ad",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-offers/initial-outreach-offer-selection.service.ts",
+      "exists": true,
+      "sha256": "f9e7fbd95f81eaa107d07fd09917c89527c7ae0dc16780a79666decf8bb8818a",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-offers/promotion-product-url.ts",
+      "exists": true,
+      "sha256": "ed32dd5deb92421e6a87c4d153bda60e2434c6f8cc0b699d0d45e148ab3bef53",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-policy.service.ts",
+      "exists": true,
+      "sha256": "d165bf78bc44d1e8c1fe1466c8e94e43cdf1e27c95d152af1d3f7b6f7c72c962",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-pricing/price-comparison.ts",
+      "exists": true,
+      "sha256": "1e02317f8df8f5d3afaac69300cb4eae36729c3f01f4555342dc4a2c69e5c9b6",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-template-integration/automated-recovery-template.service.ts",
+      "exists": true,
+      "sha256": "9f4636282dc15ae7b402c23fd5413d3b6e39c1921f510c4d39a9fc04f21edfea",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-template-integration/initial-no-offer-fallback.service.ts",
+      "exists": true,
+      "sha256": "5878e7546aaf3edc2a275e68ce59f079af3331939ba16e7efa17414637fe6913",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/src/services/recovery-template-integration/initial-outreach-fallback-selection.ts",
+      "exists": true,
+      "sha256": "6952f4233d47624b055fc4ae9b6024a45827609419026070ff301fc0a390ce4c",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/src/workers/whatsapp.worker.ts",
+      "exists": true,
+      "sha256": "74f29a832ed0ddbcdb3be890f1d582037990be7078b0a881c2785649562fc2b5",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/tests/integration/commerce/host-suites/authority.ts",
+      "exists": true,
+      "sha256": "9ff68fde14096d3129e36e7298423fa5ef4a43d39b5fd10771ffa713fd7b8662",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/tests/integration/commerce/host-suites/language.ts",
+      "exists": true,
+      "sha256": "1ade195f4f15cbb8295ae1c03ebf365991192970ac37ee16680a6c070c5b5036",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/tests/integration/commerce/host.fixture.ts",
+      "exists": true,
+      "sha256": "4b81c8d7622ace41341a987ecd0903b2a57ab4cb12b0e90c41c80c62926aab58",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/tests/integration/commerce/host.test.ts",
+      "exists": true,
+      "sha256": "7a9b82683484f3801f73493a9a8ea053f8aa9f51dafc65ac68bf2594be5f7404",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/tests/unit/commerce/host-diagnostics.test.ts",
+      "exists": true,
+      "sha256": "683f69504d6cedebf805bfbc146b3d41a08edf9a3e58b69f29c7d40468d5082a",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/tests/unit/services/conversation-wrappers/service.test.ts",
+      "exists": true,
+      "sha256": "f2d53ce2d3e46a841ace1baa4f91d180be1bb7562437cf8846c54ed20ce995a5",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-background/tests/unit/services/recovery-template-integration/automated-recovery-template.service.test.ts",
+      "exists": true,
+      "sha256": "1497c4fcff9bd55105a8b1f2fa14bee95cc54d794aa022f7c8727360fed686d6",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-background/vitest.config.ts",
+      "exists": true,
+      "sha256": "9a4ea3522d7b5640f92f4791c7340d8e6abddb163f27a2ac89174e71246a8eb5",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-commerce/.gitmodules",
+      "exists": true,
+      "sha256": "d593e9b366d88423a252441eb28a24fa9d176aeea57a49fe057fc39811858dde",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/docs/arch044-commerce-006-agent-mcp-reconciliation.md",
+      "exists": true,
+      "sha256": "a2ef1301bd3778445af12a8b0712005a1a9129001e7b34ad3c40d2e595c98991",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-commerce/docs/discount-support-matrix.md",
+      "exists": true,
+      "sha256": "d295ab69eb36e581989a6b6a3baf73100eb4eac7e050590b0afe99ffc34deef9",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-commerce/package-lock.json",
+      "exists": true,
+      "sha256": "01830b46804ace6e92f148f892b7a54d4b918673ff780ee01390c097548fdf14",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-commerce/package.json",
+      "exists": true,
+      "sha256": "c2adf77f89603bcf66a0d3abb5ba6abd4aa18f328b12cf649adc0abc3aa82d4b",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/scripts/run-system-commerce-tool-sync-postgres.mjs",
+      "exists": true,
+      "sha256": "87b1a85cc66d8909e2eae10a2cd22b15dfd128194891efa1aa6b6548502db538",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/scripts/sync-shopify-admin-schema.mjs",
+      "exists": true,
+      "sha256": "30581682f5a6110d3c41a3fc173bbe731d95b411214f28250e27e1cda977ee60",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-commerce/scripts/sync-system-commerce-tools.mjs",
+      "exists": true,
+      "sha256": "a99963cdc9118d1e481a01042592012539ff5915f2fc4288b7b155a8d030b102",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/bootstrap/system-commerce-tool-sync.cli.ts",
+      "exists": true,
+      "sha256": "ccca3dc68742a3ad542021a2cd27e724d787cca0631f2406ceb95d3dcac71377",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/bootstrap/system-commerce-tool-sync.ts",
+      "exists": true,
+      "sha256": "1a300f12c9bbf83754301677b84a51beb2b8fa164684955bae3edc236f4ffe60",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/bootstrap/system-product-tools.ts",
+      "exists": true,
+      "sha256": "9b75e6a8f48e0dde3e0d725868b7a986c17afe6a3e2d50beedfecbf91a683f03",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/execution/policy-operation-authoring.ts",
+      "exists": true,
+      "sha256": "306105bcc30b4fd4cf6c03d9b5bf17363285088390315363878333054585d608",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/execution/policy-result-schema.ts",
+      "exists": true,
+      "sha256": "103195938924b2c5c0b01ddf05c0e6bc660a800b8455ba84f4303a93f571ae74",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/execution/ports.ts",
+      "exists": true,
+      "sha256": "757f936d7e2910898cb9f1ea8a4759047907b7487b6e3ca87f289d6e03012efa",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/integration/backend.ts",
+      "exists": true,
+      "sha256": "2fce54fba71f395d90f5af5c31510f70939e5c80c7168fd1944df067322000b0",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/integration/backend/publication-registry.ts",
+      "exists": true,
+      "sha256": "6eb226d442aa9f1c4ecc7795b8d294964e7893a9053d301d8b49ea38e180dedd",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/integration/backend/publication-storage.ts",
+      "exists": true,
+      "sha256": "7434a9ac08100d3dddabe089e3557a8958d3cb81fd791ed1cd4f1f06d68ec1c9",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/integration/preview/adapters.ts",
+      "exists": true,
+      "sha256": "b6823ac3886e0cbea55116436af9ef7f95bf59daa835b2e40fddc574125f586b",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/preview/types.ts",
+      "exists": true,
+      "sha256": "76d51042992ec824cd7a54276585847e88fdf0d4d8e17c40ab2f8c9a66fdb10c",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/publication/lifecycle.ts",
+      "exists": true,
+      "sha256": "2bf6b57b946681009c5473f75886d2b35ec49077184346dae30497c9d338220e",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/publication/ports.ts",
+      "exists": true,
+      "sha256": "e8b9998b06cd144fa4d42a4f690b9bf748496c7d162522bd8b67d354633595ad",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/publication/validation.ts",
+      "exists": true,
+      "sha256": "567a34f7c484d0ce9ba227b69f00db60298c363fa91667e687bcc4219db1cf7f",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/tool-authoring/result-template-contract.ts",
+      "exists": true,
+      "sha256": "3b99eadff7875204fb4b7d894676b00f150dfcad892d39be2ed095e77bdf6d82",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/tool-definition/contracts.ts",
+      "exists": true,
+      "sha256": "7a00e4dbdafdf7af251261ea89232f0e1ce5e18de6214227863544a82e9306f3",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/tool-definition/index.ts",
+      "exists": true,
+      "sha256": "e7677dcf4bfb1e11e1aace232c0412155509d07e14dc209307e74f43010bb97d",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-commerce/src/commerce/tool-definition/publication.ts",
+      "exists": true,
+      "sha256": "a056e6b5869a35b7ca6bf78380d2caab5cde635d56fbd5697ae89efff993edaa",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-commerce/src/studio/features/persistence.ts",
+      "exists": true,
+      "sha256": "fbc5c2ebb323ad37ded973428a1d4adb8c9ce3c6e8f5b8885148a1d965d9e233",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/src/studio/test-conversations/conversation-panel.tsx",
+      "exists": true,
+      "sha256": "d3c51fb8b9649c7362dff8b2dc422e3e4e2794a7a0d1a5a5236b06034940420c",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/tests/policy-operation-authoring-server-actions.test.ts",
+      "exists": true,
+      "sha256": "04fb6a4f13c42ec0a9275d3b60ae6b5f95f79fc2e10c86f46c17a6644b65eb20",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/tests/policy-operation-registry.test.ts",
+      "exists": true,
+      "sha256": "fa2e2e8e8838a15989e38a183d477ac3f1c2489775c8c8f14716024103c37c8b",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-commerce/tests/system-commerce-tool-sync.test.ts",
+      "exists": true,
+      "sha256": "8fed329cdcb3c6b526a9cb7257bb4ff124166b3b3e41c4b42742dee013581c0a",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-database/package.json",
+      "exists": true,
+      "sha256": "6ba242ab143bac835e4834266bb6cdaa4e915f6f640b6f1f90f480fce97fad3a",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-database/prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql",
+      "exists": true,
+      "sha256": "cbf48bc53ef8efc71b0e2df87dc1302d19ec82792ca52abf40edc314c110337e",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-database/prisma/schema.prisma",
+      "exists": true,
+      "sha256": "28e11f6f454dddb030402436a9db7fc6d046da2259b9370c1c7cb18aa379cd64",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-database/prisma/seed.mjs",
+      "exists": true,
+      "sha256": "aa16c847887b477046745a60dcd62cb6f7ae69efdb61a7c5283700d1bb9bd2ce",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/README.md",
+      "exists": true,
+      "sha256": "57f11d7dd9df09ff80752bb9b6d5e529d625a973d82b46822f8b33a5390b15f0",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-shared/package.json",
+      "exists": true,
+      "sha256": "b1ac53720c8b85d9c8a682a1dd1fefe594054b9443e1b416849bb0dedd10c544",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/definitions.ts",
+      "exists": true,
+      "sha256": "2840760a71ce5a9002e0b16ee5ee709517a85cec3b5fcc7fff9349a2a2f3c6dd",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/model/index.ts",
+      "exists": true,
+      "sha256": "13d5fef216dd770b4659c6965bfd35285ddea7c64b1c9d4d63ed1a4908fd38bf",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/model/openrouter-model-client.internal.ts",
+      "exists": true,
+      "sha256": "5961fe5cfd29604d2a0fb7cc1fc06576c8bd3570b80e270ab8153109a530f4ef",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/product-discovery-contracts.test.ts",
+      "exists": true,
+      "sha256": "fcf609beef53b3a88662306950849c17f1b180bb7f18895e93cc5bed2dd06c0d",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/product-discovery-projection.test.ts",
+      "exists": true,
+      "sha256": "832462782019ff425d8cfbc8604a8cd887cca2c8c3dd195f7a55f10b873addc9",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/evidence.ts",
+      "exists": true,
+      "sha256": "8ccc5eb63b5d53a2837e1c92bb679c8eaa1d99c1d870880b0da7050a1d7fe6aa",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/failure.ts",
+      "exists": true,
+      "sha256": "5c89459cc6a53d4e92805538586b1100b37ad86a303d3fdb430fc650094f29ae",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/final-response.ts",
+      "exists": true,
+      "sha256": "50c0e603bd00a4ab6e0118d9fd1ba300a7e7ec1692e3accea36c8eda71cb27d1",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/graph/nodes/execute-tool-calls.ts",
+      "exists": true,
+      "sha256": "a0de8aaa063cae2a15208c2e0afc5bd09e36968bcd6bf7cd22feed161c59d52b",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/instructions.ts",
+      "exists": true,
+      "sha256": "f0c9cb7d59cc69d6a4dd7aa44adee26a58c3afe88bd400e70cc2cc65f5a4f9e6",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/preflight.ts",
+      "exists": true,
+      "sha256": "854177a4f338358403a57ef28a8ddd94bda5e275692b2593fcb5c0c9e5d57981",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/runtime.ts",
+      "exists": true,
+      "sha256": "f120d26343f9ac5343d9f8db56771fed46fc117ac6f59fa085a5d18352c53c23",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/tool-execution.ts",
+      "exists": true,
+      "sha256": "89e8e765656848ecc38892f7d58eae2d5ac39e57c9ba22fc841bfc762f2eced1",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/tool-policy.ts",
+      "exists": true,
+      "sha256": "900deabbc18de808d1e297bdc9cda8fd4beef03895d7b68cae1b5e10e442ccd5",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/runner/version.ts",
+      "exists": true,
+      "sha256": "d698bfd0081ba3d54ad36f82a9401271b055fd1a1d4414a414f9e384723678c0",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/schemas.ts",
+      "exists": true,
+      "sha256": "39c857d14e8c658526f24167e0a60ad0244eda421e197061cfce9fe265cd5af5",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-shared/src/commerce/selection.ts",
+      "exists": true,
+      "sha256": "d56023fb9b222bad0aa65100e88498ff4cd27b74f89f68f427e69aa70c9e29f9",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-shared/src/internationalization.ts",
+      "exists": true,
+      "sha256": "369ed0a5840aa3d186010d9d9396389954161d55a9c3535b709925de9565468c",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "relevant sections"
+    },
+    {
+      "path": "moda-interact-system-test/README.md",
+      "exists": true,
+      "sha256": "a7b96cf3b32c8beb529a733cd25c6004852d869ce6645e1245bb1ee6fa0da287",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-system-test/background-compose.env.example",
+      "exists": true,
+      "sha256": "a1921a716893ce8cc3654b40dc529fb5c7572b21cd3f903527861483d44ee9c0",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-system-test/package.json",
+      "exists": true,
+      "sha256": "ed2e3961c953cdfdc1829d888293dfbc7d3ee6d23db4e4db3c383808ec4f8eab",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/scripts/diagnostics/probe-commerce-model.mjs",
+      "exists": true,
+      "sha256": "1e4201db48d0520fb29b3353ee8b0a2c6eab7aa12ce4dd3351f3c18225e7df4b",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-system-test/scripts/run-system-tests.js",
+      "exists": true,
+      "sha256": "f4b8261903fdd8244361d4bc5451736da81bfc590ae61cdbef50e7261bb442bb",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/ephemeral-postgres.js",
+      "exists": true,
+      "sha256": "076cdb8344cfd21d1350c1f8214992b8f45185962642158470f57eb38518c2d0",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/aimock/openrouter-fetch-redirect.cjs",
+      "exists": true,
+      "sha256": "74b2a9c5ec892195ba3c5799e0bfd17c9fe028e4e08c6c75229bc7671258a169",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/aimock/runtime.js",
+      "exists": true,
+      "sha256": "109bca836f398e7d47258a6d3fd27f91d240f958da23ec8b1a75217e43bc43a2",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/background-worker-container.js",
+      "exists": true,
+      "sha256": "e0f0e56554cf2c568b1e9557b1b672ee6289dc68688095da42c2532bdb3886a1",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/cli.js",
+      "exists": true,
+      "sha256": "c1fdce55d1666c0b228ed3843266324cd86a2c92a89310375c53b7834a198a51",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/command-recorder.js",
+      "exists": true,
+      "sha256": "6a1c6dd513ff2586594a5b544abdc201f6197c5ff5537686ae0b2223cdd0731f",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/commerce-model.js",
+      "exists": true,
+      "sha256": "58c5c3a60ee4dff34f009e4e3f32bf27cfe5ec6cb89043795995c7b65a8828f1",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/data-plane.js",
+      "exists": true,
+      "sha256": "62a5d409d53fdb1dac247b12809dfdc02896df90bb235bc3f3d44a01360b39d4",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/environment.js",
+      "exists": true,
+      "sha256": "6b13d58b749f41a8994ae86177f7e308e9e8b56dbca09fd18ae56e3f85cba007",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/language/conversation-diagnostics.js",
+      "exists": true,
+      "sha256": "9cd501c09e5ba6b908be52f9f7d163dc002d7f138ce773c3f28429ce7506d71a",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/language/conversation-observation.js",
+      "exists": true,
+      "sha256": "38dd69a9f08750e311e2b1a9caedbd013ffed924b3444308c8c4f25cb49c1e23",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/language/conversation-runtime.js",
+      "exists": true,
+      "sha256": "71ed9b72da6b9b97fd15c87819f7b63c0d81d79c6296259547b7fb3b29335452",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/language/conversation-turn.js",
+      "exists": true,
+      "sha256": "6c3a20cc343bffff45d7015e0c9eb69b159ede0a52287b2e88d65271b384d5fb",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/language/mcp-runtime.js",
+      "exists": true,
+      "sha256": "6d990d12438593e055a3b94ee987857dc23e4228b73921269d8d8f2bea8b0382",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/language/model-fixture.js",
+      "exists": true,
+      "sha256": "6b7dc224504503f809d0666c0bbd424a93451b2b0b104d7db17c1062b204f35e",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/language/pricing-plan-fixture.js",
+      "exists": true,
+      "sha256": "bcb7bfa830eda9c75a6436fee962c11baadf7ef1d62c86934270b41d6048ba2d",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/language/provider-runtime-setup.js",
+      "exists": true,
+      "sha256": "404f60a32c278f54289887368debc4cdc7d036cdb75ffb7c81e3304fe5639fc0",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/mcp-production-image.js",
+      "exists": true,
+      "sha256": "f4ffeeee00ec4f22c77e6ecc2fdf50a97fe26543627e0c708ffe0b02aa0afd77",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/messaging/runtime.js",
+      "exists": true,
+      "sha256": "80e4f829247a69a3ec2d34e73e7d1725a070b9620863c84ed4a1f8246b0fc440",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/platform-configuration-fixture.js",
+      "exists": true,
+      "sha256": "2c04340dc2595f2e52dcd5e8c0cedb0f95b9d35365ba96353dc16535da12e6ea",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/processes.js",
+      "exists": true,
+      "sha256": "40a08408977cac8f4315d05b5768ddc35e03cba793841cee0deafad377021f33",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/provenance.js",
+      "exists": true,
+      "sha256": "8456646358db445122de084ee6ca26371d795d856f3e6bbe7e9c879822326e5e",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/harness/runner.js",
+      "exists": true,
+      "sha256": "0c3fa7799c3d357fd7979b763a57c3b31b8a5a3d10fd2c71079e63ba6a2b8f97",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "moda-interact-system-test/src/whatsapp-emulator.js",
+      "exists": true,
+      "sha256": "84bdfcfb23184de2f5068dd13000230b0239d5c81a82d4026a9d9da9260c206f",
+      "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+      "inspectionScope": "Relevant declarations, functions or task-evidence sections; not a claim of whole-repository line-by-line review."
+    },
+    {
+      "path": "docs/agent-validation-execution-policy.md",
+      "exists": true,
+      "sha256": "bc51517273fc724ff107833a6ffa129655f8a12c15737f0aad220019da78c380",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "docs/architecture/ARCH-058/contracts.md",
+      "exists": true,
+      "sha256": "3d17fe06fa4b7ff71c754b73a09667fa8601e2a89248cd81d521bf1c33307672",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "full"
+    },
+    {
+      "path": "docs/decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md",
+      "exists": true,
+      "sha256": "be378e465917feba17422f1b5f70c553addbe0ce44357eff1ad21e0037f31d06",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md",
+      "exists": true,
+      "sha256": "832c37c5fab7402b519e0e84d05c8ef58f79eb43db7e30a6aa5dd432a386d947",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/decisions/database/ARCH-058/DATABASE-001-persist-reference-taxonomy-and-core-product-discovery.md",
+      "exists": true,
+      "sha256": "6c880cea1e93b66dc92c4859738723cb2f7e434ea3e79b471e7525da27ccecc4",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/decisions/mcp/ARCH-058/MCP-001-import-and-resolve-postgresql-taxonomy.md",
+      "exists": true,
+      "sha256": "21550835e554823f563ba92d5245fff7dfe5d9634a42c94f2740e3e3708da6f0",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md",
+      "exists": true,
+      "sha256": "afc28d4f7b2b88c3697165624c518bfc09192c6fc0d2002f8d29944599f4f717",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md",
+      "exists": true,
+      "sha256": "4dcadb71127e6a0a5ccc99d90260fbcd25cd8e5f69818e3c2a97126c2f69463b",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/decisions/shared/ARCH-058/SHARED-001-define-product-discovery-and-recommendation-contracts.md",
+      "exists": true,
+      "sha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md",
+      "exists": true,
+      "sha256": "84c563859c05c5afdd872778c8b9b25eb1e3a7aa5d6b57ee3e36f78ef8f51bbd",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/decisions/shopify/ARCH-058/SHOPIFY-001-enable-shipping-policy-read-scope.md",
+      "exists": true,
+      "sha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/decisions/system-test/ARCH-058/SYSTEM-TEST-001-validate-standard-product-discovery.md",
+      "exists": true,
+      "sha256": "63063009c6261578c57ca3aff7d4c48adf32f57acaf5cf2ee15f5c5dc6ef1ca6",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Task definition and preserved lifecycle/history inspected across the review team."
+    },
+    {
+      "path": "docs/observability/shared-logging.md",
+      "exists": true,
+      "sha256": "fd61d64de52701e56b79501deeb7fdc23aa022cfa324395623a72221c738fb8b",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/.gitmodules",
+      "exists": true,
+      "sha256": "d593e9b366d88423a252441eb28a24fa9d176aeea57a49fe057fc39811858dde",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "whole file or relevant source sections; see review for precise evidence"
+    },
+    {
+      "path": "moda-interact-mcp/database/prisma/schema.prisma",
+      "exists": true,
+      "sha256": "28e11f6f454dddb030402436a9db7fc6d046da2259b9370c1c7cb18aa379cd64",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/package-lock.json",
+      "exists": true,
+      "sha256": "abd96d4e78b69c227b4b80ab5952c400843e4920282cb896581ab8dd8541462e",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/package.json",
+      "exists": true,
+      "sha256": "35b3f6ef8282c2efbae05078c0f887bb64f85be77c31b76a8f4d741f2a3300f2",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/scripts/install-shopify-admin-schema.mjs",
+      "exists": true,
+      "sha256": "df5d28a9ec9c4633fe9de7ed104cca8e04304ee6a330e5d2faa269ef8dd20a5b",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/scripts/sync-reference-taxonomy.mjs",
+      "exists": true,
+      "sha256": "00ab3083756cbf292a5795f41aa679953ef699d8d343312e7ed5bb10f5ec881b",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/src/capabilities/manifest.ts",
+      "exists": true,
+      "sha256": "97a16c8d9a2ac200d5d2fb0bbc30c7f722c2967148f035eceaf59a0c5c1f5a7c",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/src/capabilities/prisma-reader.ts",
+      "exists": true,
+      "sha256": "7dc24a0a99fcb37509512d9965ca34f54c1128e20609d242c58c6338601faf51",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/src/capabilities/records.ts",
+      "exists": true,
+      "sha256": "719dc344236e1cb417dfe21ea9b4457d63fd6a5621412e42ae6e1ae2ad0f67f7",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/src/capabilities/resolve.ts",
+      "exists": true,
+      "sha256": "cf8971a734e2dc9bf7e6c7a257f546011c748f77f0581a0aff4fb0f124e5c639",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/ports.ts",
+      "exists": true,
+      "sha256": "0ed89ef39db70a50bc4996059567157560352c75a07938fec40686029023f4c4",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/prisma-reader.ts",
+      "exists": true,
+      "sha256": "553971e20011ff2a76b0b9ae8a621dcc5549c4a66c36452773f3985149364073",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/resolver.ts",
+      "exists": true,
+      "sha256": "0b64045fe18883b64d1c363e570ebbd26d044f9073791322a701a41636d248fd",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/shopify/document.ts",
+      "exists": true,
+      "sha256": "e344b1794d8c4d6e9b4608f733cf0d08055cd86f3e5d5699915378b967afc1a0",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/shopify/provider.ts",
+      "exists": true,
+      "sha256": "9678a5bfb0f5464ecc6b1b9635af4b5f072dc62d1f8f94096cdc0d1f4ea1c8ed",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/shopify/session-reader.ts",
+      "exists": true,
+      "sha256": "d97e700d582faaef4c9c43bda06e07e7ee80e58aff07fa50b07deb59011668ab",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts",
+      "exists": true,
+      "sha256": "9afce8c715a73b591304c501a845e374fe49b8a7aa9952164ce8f3a04bb3712d",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/src/connections/woocommerce/provider.ts",
+      "exists": true,
+      "sha256": "1cf17e2dc6cccf0c94dbe6bca54c92bde80bb46e4a758b8e1e1a4b3e453e2f2d",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/src/data/reference-taxonomy-manifest.json",
+      "exists": true,
+      "sha256": "85afc078442efea7c26c232cc36624ea08e58842f11185d73b985d49c0bae09d",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/discount-catalogue.ts",
+      "exists": true,
+      "sha256": "960bb27397f4c2e2d2968692011de4a274d0653e03d3864dd17f1c9c4e12050c",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/discount-tools.ts",
+      "exists": true,
+      "sha256": "7bb462ebad44af30fccdf7b00d1b1c8a500fea70b71a7f84efb391d7c2300e91",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/policy/shopify-core-executor.ts",
+      "exists": true,
+      "sha256": "f3725beeda545fd5e4e1e629f5aae7f1ff193059a10214b0d0c566de579dbdbb",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/policy/shopify-core.ts",
+      "exists": true,
+      "sha256": "bc3c0bd7c7328e70a32a3da84e5cf18ffbb89ace0af6efc39de8af66e09d6868",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/adapter.ts",
+      "exists": true,
+      "sha256": "7bf143fa1a0b5de32735eb3e14d924581ab6e39a597ef75dd6a18c72d5040f0c",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/credentials.ts",
+      "exists": true,
+      "sha256": "77405de427c9e0c27b2c236ef6ecbfb3715ab9788cb8c8550d278af6b1a66716",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/embedding.ts",
+      "exists": true,
+      "sha256": "d806d850417812a659498e7413ac8592f254e1802c53731450df99ed5bd0e805",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/errors.ts",
+      "exists": true,
+      "sha256": "f7b6a549e2bea08246d692ca4762a4db0b00d6c6d8937009de85767fff114038",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/generation.ts",
+      "exists": true,
+      "sha256": "c90312468a1e0835e9642feb116c348f12c784825d2e7ebfdde60a0a270d27f0",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/model.ts",
+      "exists": true,
+      "sha256": "7cb50ad9b7ed4e8d54fdbe5bdd95969bfa8d89148370482983e5219aea39e41f",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/service.ts",
+      "exists": true,
+      "sha256": "70a2545e29e982dc3566402fed7cce563223cf738486873efc4b75670204995b",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/source.ts",
+      "exists": true,
+      "sha256": "bd6558e82393dc892ebb63f967ff1bb3898b5d13e1c42e1cba60eccfc5fbc5b9",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/store.ts",
+      "exists": true,
+      "sha256": "5fb431fc33dd3f9958644169050f53f8c95caaa8850ec0c62845d1b586a8e3e0",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/execution/reference-taxonomy/sync.cli.ts",
+      "exists": true,
+      "sha256": "6dc0e42d6de8074658cca5906d2039ba23846f45256564243410dd94e560887f",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/src/mcp/authentication.ts",
+      "exists": true,
+      "sha256": "548383cd3f7694f177ae3bbd36fdd20a2b0d7a002c702bd310df7e7dba315c2a",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/src/mcp/execution.ts",
+      "exists": true,
+      "sha256": "a9492f711283d3122842b1fe4f2abcfd35487e5fa726d81c88bc46213b667e4b",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/src/mcp/ports.ts",
+      "exists": true,
+      "sha256": "b9e008b1983788687b69d76b742f0b12447f741faef82c431fab6231e09d4f64",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/src/mcp/registration.ts",
+      "exists": true,
+      "sha256": "15e0e4be73eaa1216f489bc90c45cc76a04002d4dcda5be09544446f1a4afef2",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/src/mcp/service.ts",
+      "exists": true,
+      "sha256": "a89c6ddcba3339cded1abede8d9e09d96cf471faab42ff3d9528be4e24c3f847",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/src/runtime/ports.ts",
+      "exists": true,
+      "sha256": "1ece722aa06d788715cc93423d721a62d18ea8692ec717c3e3846a13ef40f2ff",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/src/runtime/prisma.ts",
+      "exists": true,
+      "sha256": "86991caeae07fad5f62a62a5f6989d13d38643e7e63adda8af0603e25a745dee",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/tests/integration/reference-taxonomy.integration.test.ts",
+      "exists": true,
+      "sha256": "304367c2a6915b69aab6d682442ba6110da422a7c6ef4109d4f23e46c3c04f43",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/tests/unit/connections/woocommerce/direct-product-reader.test.ts",
+      "exists": true,
+      "sha256": "a304bcfed918fc66ca650800e98d2ac6ba8316221982d1e07b562437646c8039",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    },
+    {
+      "path": "moda-interact-mcp/tests/unit/execution/reference-taxonomy/cli.test.ts",
+      "exists": true,
+      "sha256": "f727e8dc9d59fb0a7d4a9a0c4c3849fcbeab3fc1c776c002c19740c857767b83",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/tests/unit/execution/reference-taxonomy/embedding.test.ts",
+      "exists": true,
+      "sha256": "a5d98afb4c918c19384b3e942db7749a9ab2dd3c554458bb5eb55eb99d241ba0",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/tests/unit/execution/reference-taxonomy/importer.test.ts",
+      "exists": true,
+      "sha256": "2e0c50f6a51d8fe5a619c32d841f43c0654817b30d5fca7a08438d434ce6842e",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/tests/unit/execution/reference-taxonomy/reader.test.ts",
+      "exists": true,
+      "sha256": "4fe3ee85b758d6a520cf861a5572fcbc755077d977ae0caff7f2d1027eff32f6",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "complete"
+    },
+    {
+      "path": "moda-interact-mcp/tests/unit/execution/reference-taxonomy/store.test.ts",
+      "exists": true,
+      "sha256": "b19b83156dd47f02cc22044715783e08dc109b4ecff277bedf55f655d579c6e1",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "selected_sections"
+    },
+    {
+      "path": "moda-interact-mcp/tests/unit/runtime/service-ports.test.ts",
+      "exists": true,
+      "sha256": "090c4f0ab41dbdb5e9babe6c18e5e8c7dbf8fa4e33d1b5b95322b2145bff61a8",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "inspectionScope": "Prior inspected source reverified byte-identical against the fresh archive."
+    }
+  ],
+  "evidenceLimits": [
+    "Task-definition/source-boundary review only. No application implementation, runtime test, migration, import, publication or deployment was performed.",
+    "MCP001 integration results remain submitted report evidence; this review neither reran them nor granted implementation acceptance.",
+    "The ZIPs contain source bytes without usable Git history; reported commit identities and ancestry are not independently asserted from Git.",
+    "The full taxonomy distribution is absent. Source count/checksum comes from the submitted manifest/report, not a new download.",
+    "Application evidence uses fresh merged source except MCP, for which the active worktree is authoritative. Earlier omission observations are retained only as historical findings.",
+    "All lifecycle fields, completed task files and all Completion/Architect Review tails remain unchanged; five downstream tasks stay pending.",
+    "Deterministic runtime cases and optional paid real-model evaluation remain future task-owned/developer-controlled evidence. Document/patch checks cannot certify either.",
+    "Revision9 adds separately labelled registry-artifact/hash/type/runtime diagnostics. Earlier inspectedFiles/repositories/review findings retain their original source labels and are not relabelled as current application execution. New Shared tasks are unimplemented/unpublished; all actual application validation remains task-owned."
+  ],
+  "wooDiagnosticsIntegration": {
+    "task": "ARCH-052-MCP-006",
+    "snapshotTaskStatus": "complete",
+    "acceptedImplementationCommit": "1d18e6c866311d0a3238a919f335643ffbefd8c1",
+    "expectedReaderPath": "moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts",
+    "snapshotSourceState": "ORIGINAL_ERROR_DIAGNOSTICS_PRESENT",
+    "evidenceKind": "ACCEPTED_TASK_REPORT_COMPARED_WITH_UPLOADED_SOURCE",
+    "remoteAcceptedSourceInspected": false,
+    "requiredAction": "Preserve the present original-error capture and regression coverage while extending product/shipping reads; do not repeat missing-source integration or create another logger.",
+    "earlierSnapshotFinding": {
+      "sourceSnapshot": "moda-interact-workspace(20261104-094947).zip",
+      "state": "PRE_ACCEPTED_DIAGNOSTIC_IMPLEMENTATION",
+      "observedGap": "Transport/DNS/credential/parser catch paths discard original errors; HTTP error bodies are mapped without original source diagnostics."
+    },
+    "readerSha256": "9afce8c715a73b591304c501a845e374fe49b8a7aa9952164ce8f3a04bb3712d"
+  },
+  "definitionRevision": 10,
+  "mcpResponsibilityCorrection": {
+    "supersedes": "Attempt 4 conversation-domain adapter and workflow authorization in MCP",
+    "mcpScope": "Generic shop-eligible tool provider/executor, current shop/plan/connection/data access and structured data results",
+    "backgroundScope": "Conversation lifecycle, retained grants, current recommendation policy, execution admission, applicability and customer composition",
+    "standardClientHeaderPayload": {
+      "shopId": "<authenticated current shop>"
+    },
+    "newMcpConversationReaders": false,
+    "mcpReadsConversationGrants": false,
+    "mcpConversationContextSchemaUsed": false,
+    "stableBuiltInDescriptorSetIndependentOfMode": true,
+    "newHostGrantsRetainBothCanonicalBuiltIns": true,
+    "sharedDiscountModeFieldPreservedAsShopData": true,
+    "unavailableOutcomeIndependentOfCallerPurpose": true,
+    "sharedPublicationChanged": false,
+    "databaseMigrationChanged": false,
+    "activeMcp001Changed": false,
+    "evidenceKind": "USER_BOUNDARY_CORRECTION_AND_UPLOADED_SOURCE",
+    "activeMcp001ChangeScope": "Earlier definition clarification is retained unchanged. Attempt8 edits no MCP001 definition/source/lifecycle/history."
+  },
+  "priorSnapshot": {
+    "fileName": "moda-interact-workspace(20261104-094947).zip",
+    "sha256": "69cb55e82d895592b8ac7f543bedba52866512b189e8e31ab035a120ca9af0ff",
+    "evidenceKind": "UPLOADED_SOURCE_SNAPSHOT"
+  },
+  "sharedPublicContractCleanup": {
+    "obsoleteExports": [
+      "CommerceConversationToolContextSchema",
+      "CommerceConversationToolContext"
+    ],
+    "runtimeConsumersFoundInReviewedSnapshots": false,
+    "owningTask": "ARCH-058-SHARED-004",
+    "publicationTask": "ARCH-058-SHARED-006",
+    "implementedByThisPatch": false,
+    "historicalShared400ReceiptPreserved": true
+  },
+  "agentInstructionAmendment": {
+    "revision": 8,
+    "evidenceSourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+    "currentMcpArchiveContainsCommerceOrBackgroundImplementation": false,
+    "runtimeImplementationPerformed": false,
+    "featureOwner": "COMMERCE-001 / SYSTEM_PRODUCT_BEHAVIOUR",
+    "responseOwner": "COMMERCE-001 / SYSTEM_PRODUCT_RESPONSE_INSTRUCTIONS",
+    "plannedCommerceSource": "moda-interact-commerce/src/commerce/bootstrap/system-product-response.ts",
+    "recoveryOwner": "BACKGROUND-001 / RECOVERY_INSTRUCTIONS",
+    "recoveryReplacement": "Replace the entire existing third string with the exact task literal; do not append a contradictory rule.",
+    "obsoleteRecoverySentence": "Missing evidence requires REFER_TO_STORE.",
+    "assemblyOrder": [
+      "Shared kernel",
+      "Background recovery",
+      "published Platform",
+      "optional published current Shop",
+      "pinned response contract",
+      "pinned granted feature prompts in manifest order"
+    ],
+    "assemblyOrderCreatesPermissionPrecedence": false,
+    "requiredInspectionHelper": "evaluateRecommendationDiscountInspection(observations, policy)",
+    "requiredInspectionOutcomes": [
+      "NOT_REQUIRED",
+      "SATISFIED",
+      "MISSING_OPTIONS",
+      "MISSING_DETAILS"
+    ],
+    "inspectionRequiredModes": [
+      "FIXED with nonempty authorized IDs",
+      "AI_BEST_APPLICABLE"
+    ],
+    "inspectionExemptModes": [
+      "NONE",
+      "FIXED with empty authorized IDs"
+    ],
+    "candidateSet": "Union of permitted IDs across retained latest-per-arguments normal options outcomes; FIXED intersects local authorized IDs.",
+    "nonemptyCandidatesRequirement": "At least one accepted current-turn matching details outcome, including explicit null or canonical optional UNAVAILABLE.",
+    "missingInspectionBehavior": "Discard product proposals; existing controlled composition without products; retain independent authorized shipping presentation; no further discovery/model call.",
+    "eligibilityAndRevalidationUnchanged": true,
+    "mcpConversationResponsibilityAdded": false,
+    "additionalDatabaseReadsOrToolBudgetAdded": false,
+    "newSharedOrDatabaseChange": false,
+    "fromAttempt6ChangedTasks": [
+      "ARCH-058-COMMERCE-001",
+      "ARCH-058-BACKGROUND-001",
+      "ARCH-058-SYSTEM-TEST-001"
+    ],
+    "inspectionAppliesOnlyToProductRecommendationProposals": true,
+    "introducedInRevision": 7,
+    "modelProviderContext": {
+      "field": "commerceProvider",
+      "source": "already-read validated Shop.platform",
+      "values": [
+        "SHOPIFY",
+        "WOOCOMMERCE"
+      ],
+      "additionalDatabaseReads": 0,
+      "mcpHeaderChanged": false,
+      "invalidHostPlatform": "hard context validation failure before model invocation",
+      "literalMissingContextFallback": "direct product text search without category"
+    }
+  },
+  "mergedSnapshot": {
+    "fileName": "moda-interact-workspace(20261104-125409).zip",
+    "sha256": "daacb04e76150c1dedd3f28147990f6cae28fb17f15ef7a70a970f570e25bfd4",
+    "evidenceKind": "UPLOADED_MERGED_SOURCE_SNAPSHOT",
+    "documentRevision": 6
+  },
+  "mergedMcpComparison": {
+    "sourceSnapshot": "moda-interact-workspace(20261104-125409).zip",
+    "sharedDependency": "2.8.1",
+    "authoritativeMcpImplementationSource": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+    "reason": "The active worktree contains the submitted MCP001 implementation and accepted package adoption; merged main is an older MCP source baseline."
+  },
+  "inspectionMethod": "Fresh source excerpts/functional reads and exact prior-byte revalidation, by named owner. Hashes establish inspected source identity, not runtime success or whole-repository exhaustive review.",
+  "deepReviewCorrections": [
+    {
+      "id": "PUBLIC_PRODUCT_QUALIFICATION",
+      "owners": [
+        "ARCH-058-MCP-002",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "Private publication/visibility qualification on all search modes and exact product refresh; selected Woo purchasable/stock truth table; no public schema/version change."
+    },
+    {
+      "id": "EXPLICIT_PROVIDER_CONTEXT",
+      "owners": [
+        "ARCH-058-COMMERCE-001",
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "Host supplies commerceProvider from current Shop.platform; exact published literal distinguishes Shopify reference filters from observed Woo native IDs."
+    },
+    {
+      "id": "PROJECTOR_BOUNDARIES",
+      "owners": [
+        "ARCH-058-COMMERCE-001"
+      ],
+      "choice": "Preserve accepted policy output union metadata; bounded input/details schemas retain their actual subset validation."
+    },
+    {
+      "id": "RECEIPT_INITIALIZATION",
+      "owners": [
+        "ARCH-058-COMMERCE-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "No receipt before valid invocation/runtime context; exactly one owner afterward; parent rejects missing/multiple/malformed/exit-inconsistent child output."
+    },
+    {
+      "id": "BODY_WRAPPER_LOCALE",
+      "owners": [
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "Exact committed tag then supported body locale then existing choices, stable-deduplicated and restricted to body primary language/resolved supported locale, preserving first-selected validation."
+    },
+    {
+      "id": "OUTREACH_FALLBACK_COMPATIBILITY",
+      "owners": [
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "Revalidator uses retryable FAILURE/OFFER_DISCOVERY_INCOMPLETE; graph keeps MCP_UNAVAILABLE; existing ARCH056 orchestration alone owns no-offer fallback."
+    },
+    {
+      "id": "RETAIN_ORIGINAL_HOST_FAILURE",
+      "owners": [
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "Existing explicit deadline first, then retained original host code/retryability/cause/sourceFailure plus runner diagnostic, otherwise generic runner result."
+    },
+    {
+      "id": "FRESH_PRICE_AND_INDEPENDENT_SHIPPING",
+      "owners": [
+        "ARCH-058-BACKGROUND-001",
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "Recompute from fresh supported current price/currency for the same qualifying identity; no stale assessment or invented basket; removing products preserves independent shipping."
+    },
+    {
+      "id": "TERMINAL_OBSERVER",
+      "owners": [
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "Scoped reply/no-send observers use actual original job/lease/reservation/row/emulator evidence, without timeout-based PASS, unrelated-turn attribution or diagnostic RPCs."
+    },
+    {
+      "id": "BINARY_RESTORE_TRANSPORT",
+      "owners": [
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "Use owned container files and recorded docker cp/exec for pg_dump/pg_restore; CommandRecorder has ignored stdin and text stdout, so no binary streaming or invented port."
+    },
+    {
+      "id": "REAL_QUALITY_INPUTS",
+      "owners": [
+        "ARCH-058-SYSTEM-TEST-001"
+      ],
+      "choice": "Explicit optional quality configuration/credentials, checksum-pinned real-vector restore, real-provider route, run-global enforced request/time limits and honest spending evidence; no automatic paid corpus import."
+    }
+  ],
+  "providerReferences": [
+    {
+      "url": "https://shopify.dev/docs/apps/build/product-merchandising/unlisted-products",
+      "purpose": "UNLISTED product semantics and recommendation exclusion",
+      "retrievedOn": "2026-11-04"
+    },
+    {
+      "url": "https://developer.woocommerce.com/docs/apis/rest-api/v3/products/",
+      "purpose": "Product publication/visibility/purchasability/stock fields",
+      "retrievedOn": "2026-11-04"
+    }
+  ],
+  "revision8Snapshot": {
+    "fileName": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+    "sha256": "78d85216db9c027ac7c4d7a8dcad054e4b45c4a87586f71d2d6077ecbfc9641e",
+    "evidenceKind": "UPLOADED_TASK_WORKTREE_SNAPSHOT",
+    "documentRevision": 7
+  },
+  "historicalMcp001ReviewSnapshot": {
+    "snapshotStatus": "review",
+    "snapshotAttempt": 2,
+    "snapshotExecutor": "codex",
+    "snapshotClaimedAt": "2026-11-04T11:13:25Z",
+    "liveTaskWorktreeIncluded": true,
+    "evidenceKind": "UPLOADED_WORKTREE_SOURCE_AND_SUBMITTED_COMPLETION_REPORT",
+    "implementationCommitAsReported": "30cdca4e62f768722388c1d94979a88ff24f7220",
+    "implementationCommitIndependentlyVerifiedFromGit": false,
+    "parentTaskWorktreeAsReported": "/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-001",
+    "implementationWorktreeAsReported": "/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-001",
+    "branchAsReported": "task/ARCH-058-MCP-001",
+    "definitionEditAuthorizedByUser": true,
+    "implementationEditPerformed": false,
+    "lifecycleAndHistoricalEvidenceChanged": false,
+    "implementationAcceptanceGrantedByThisAmendment": false,
+    "boundaryFinding": "Taxonomy source uses generic shop/published-definition/RPC context; no conversation, retained-grant, lease or human-control lookup was found.",
+    "integrationEvidence": {
+      "kind": "SUBMITTED_COMPLETION_REPORT",
+      "command": "npm run test:integration:docker",
+      "exitCode": 0,
+      "reportedTests": 26,
+      "reportedPassed": 25,
+      "reportedFailed": 0,
+      "reportedSkipped": 1,
+      "skipReason": "Explicitly opt-in live Shopify test",
+      "disposableCleanupReported": true,
+      "independentlyRerunByThisReview": false
+    },
+    "handoff": "Preserve current definition/source and review/Attempt2. After separate acceptance, dependants consume this prepared source; do not repeat taxonomy selection, package adoption or importer preparation solely for this review.",
+    "definitionChangedByThisAmendment": false
+  },
+  "activeMcp002": {
+    "snapshotStatus": "blocked",
+    "snapshotAttempt": 1,
+    "snapshotExecutor": null,
+    "snapshotClaimedAt": null,
+    "claimCommitAsReported": "f4250e2e68a71626b36c456e901077fec656fb96",
+    "draftImplementationCommitAsReported": "4bffa87ed4af0fb40513ad75d38df49c51746360",
+    "draftFilesAsReported": 40,
+    "databaseUpdateCommitAsReported": "229ffe402a3ef36c420cff6a26746b05ca61cd3d",
+    "databasePinAsReported": "ded8f14a60182f6b1443640f012caf0089b8a44c",
+    "parentTaskWorktreeAsReported": "/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-002",
+    "implementationWorktreeAsReported": "/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002",
+    "branchAsReported": "task/ARCH-058-MCP-002",
+    "liveGitVerified": false,
+    "continuationGate": "DATABASE-002 and SHARED-006 Complete + architect-accepted; then return same MCP-002 task to Ready and reclaim as next attempt",
+    "sourceOrLifecycleChangedByThisAmendment": true,
+    "completeReportAndReviewHistoryPreserved": true,
+    "reportedIntermediateValidation": {
+      "productTests": 71,
+      "productPassed": 69,
+      "productFailed": 2,
+      "productCorrectionsRerun": false,
+      "genericTests": 73,
+      "genericPassed": 72,
+      "genericFailed": 1,
+      "typecheckLintBuildComplete": false,
+      "requiredIntegration": "NOT_RUN"
+    },
+    "wipSourceChangedByThisAmendment": false,
+    "requiredSharedVersion": "5.0.0",
+    "requiredDatabaseTask": "ARCH-058-DATABASE-002",
+    "zodPinRequired": false,
+    "builtInContractHashRequired": false
+  },
+  "revision8TaskBaseline": [
+    {
+      "id": "ARCH-058-BACKGROUND-001",
+      "path": "docs/decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-MCP-002",
+        "ARCH-058-MCP-003",
+        "ARCH-058-COMMERCE-001"
+      ],
+      "sha256": "be378e465917feba17422f1b5f70c553addbe0ce44357eff1ad21e0037f31d06",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "a6274f3701719b3cb834b1b9152667b62687f5e0e07a08e46dc0da2a437b8348",
+      "amendedSha256": "333df5c956d200847f74adc7e08315ab0da1ec391083503ec342dd6f7c588275",
+      "definitionChangedInAttempt8": true
+    },
+    {
+      "id": "ARCH-058-COMMERCE-001",
+      "path": "docs/decisions/commerce/ARCH-058/COMMERCE-001-provision-standard-product-discovery.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-MCP-002",
+        "ARCH-058-MCP-003"
+      ],
+      "sha256": "832c37c5fab7402b519e0e84d05c8ef58f79eb43db7e30a6aa5dd432a386d947",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "6237feb2f54e52b9b5a074d24e9a4364324237e1db95d3d854257b6b68f170c0",
+      "amendedSha256": "0452b91f7ee77ea53ad268bff7b7f3a91c3f18399dce03e92bbc081fba9c568e",
+      "definitionChangedInAttempt8": true
+    },
+    {
+      "id": "ARCH-058-DATABASE-001",
+      "path": "docs/decisions/database/ARCH-058/DATABASE-001-persist-reference-taxonomy-and-core-product-discovery.md",
+      "status": "complete",
+      "attempt": 1,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [],
+      "sha256": "6c880cea1e93b66dc92c4859738723cb2f7e434ea3e79b471e7525da27ccecc4",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "6c880cea1e93b66dc92c4859738723cb2f7e434ea3e79b471e7525da27ccecc4",
+      "amendedSha256": "6c880cea1e93b66dc92c4859738723cb2f7e434ea3e79b471e7525da27ccecc4",
+      "definitionChangedInAttempt8": false
+    },
+    {
+      "id": "ARCH-058-MCP-001",
+      "path": "docs/decisions/mcp/ARCH-058/MCP-001-import-and-resolve-postgresql-taxonomy.md",
+      "status": "review",
+      "attempt": 2,
+      "executor": "codex",
+      "claimedAt": "2026-11-04T11:13:25+00:00",
+      "dependsOn": [
+        "ARCH-058-DATABASE-001",
+        "ARCH-058-SHARED-002"
+      ],
+      "sha256": "21550835e554823f563ba92d5245fff7dfe5d9634a42c94f2740e3e3708da6f0",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "21550835e554823f563ba92d5245fff7dfe5d9634a42c94f2740e3e3708da6f0",
+      "amendedSha256": "21550835e554823f563ba92d5245fff7dfe5d9634a42c94f2740e3e3708da6f0",
+      "definitionChangedInAttempt8": false
+    },
+    {
+      "id": "ARCH-058-MCP-002",
+      "path": "docs/decisions/mcp/ARCH-058/MCP-002-ground-merchant-products-and-discounts.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-MCP-001"
+      ],
+      "sha256": "afc28d4f7b2b88c3697165624c518bfc09192c6fc0d2002f8d29944599f4f717",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "afc28d4f7b2b88c3697165624c518bfc09192c6fc0d2002f8d29944599f4f717",
+      "amendedSha256": "1876b0881434c7e00720a9729eb208cc6d11e562ee0fbb07b80a8cbe9b00f86b",
+      "definitionChangedInAttempt8": true
+    },
+    {
+      "id": "ARCH-058-MCP-003",
+      "path": "docs/decisions/mcp/ARCH-058/MCP-003-read-merchant-shipping-information.md",
+      "status": "pending",
+      "attempt": 0,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-MCP-002",
+        "ARCH-058-SHOPIFY-001"
+      ],
+      "sha256": "4dcadb71127e6a0a5ccc99d90260fbcd25cd8e5f69818e3c2a97126c2f69463b",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "4dcadb71127e6a0a5ccc99d90260fbcd25cd8e5f69818e3c2a97126c2f69463b",
+      "amendedSha256": "4dcadb71127e6a0a5ccc99d90260fbcd25cd8e5f69818e3c2a97126c2f69463b",
+      "definitionChangedInAttempt8": false
+    },
+    {
+      "id": "ARCH-058-SHARED-001",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-001-define-product-discovery-and-recommendation-contracts.md",
+      "status": "complete",
+      "attempt": 2,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [],
+      "sha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
+      "amendedSha256": "ec6276fb48f362be562e558758b02bb28d5876508f21db71e5592464f8dd8ff7",
+      "definitionChangedInAttempt8": false
+    },
+    {
+      "id": "ARCH-058-SHARED-002",
+      "path": "docs/decisions/shared/ARCH-058/SHARED-002-publish-product-discovery-contracts.md",
+      "status": "complete",
+      "attempt": 1,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [
+        "ARCH-058-SHARED-001"
+      ],
+      "sha256": "84c563859c05c5afdd872778c8b9b25eb1e3a7aa5d6b57ee3e36f78ef8f51bbd",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "84c563859c05c5afdd872778c8b9b25eb1e3a7aa5d6b57ee3e36f78ef8f51bbd",
+      "amendedSha256": "84c563859c05c5afdd872778c8b9b25eb1e3a7aa5d6b57ee3e36f78ef8f51bbd",
+      "definitionChangedInAttempt8": false
+    },
+    {
+      "id": "ARCH-058-SHOPIFY-001",
+      "path": "docs/decisions/shopify/ARCH-058/SHOPIFY-001-enable-shipping-policy-read-scope.md",
+      "status": "complete",
+      "attempt": 1,
+      "executor": null,
+      "claimedAt": null,
+      "dependsOn": [],
+      "sha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
+      "amendedSha256": "da5e9a54a73ef5ad4077723c3e43ccee83512eb799a3e4dcf20660baee0a55b5",
+      "definitionChangedInAttempt8": false
     },
     {
       "id": "ARCH-058-SYSTEM-TEST-001",
@@ -224,290 +2577,55 @@
         "ARCH-058-COMMERCE-001",
         "ARCH-058-BACKGROUND-001"
       ],
-      "sha256": "c8dc15e5bd42bda210e54b3110089da3379cf68d2da806e440b906c8bce39f65"
+      "sha256": "63063009c6261578c57ca3aff7d4c48adf32f57acaf5cf2ee15f5c5dc6ef1ca6",
+      "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-001(2).zip",
+      "mergedSourceSha256": "2a80a8a77ccc4ede914c65548f79647f4455a175df17cc76e24d8391cebb98c6",
+      "amendedSha256": "fc2cfc04edc72510e5d18ac5d428e5e72c622476cd97a949d07881ad83151594",
+      "definitionChangedInAttempt8": true
     }
   ],
-  "repositories": {
-    "moda-interact-shared": {
-      "packageName": "@modainteract/moda-interact-shared",
-      "packageVersion": "4.0.0",
-      "sharedDependency": null,
-      "packageJsonSha256": "b1ac53720c8b85d9c8a682a1dd1fefe594054b9443e1b416849bb0dedd10c544",
-      "packageLockSha256": "7626207660376204326d6555a96e89053158b14ed5769d2511c7cbb49d630908",
-      "nestedDatabaseSchemaSha256": null,
-      "hasAcceptedTaxonomyMigration": false,
-      "nestedDatabaseHasAcceptedTaxonomyMigration": null
-    },
-    "moda-interact-mcp": {
-      "packageName": "moda-interact-mcp",
-      "packageVersion": "0.1.0",
-      "sharedDependency": "2.8.1",
-      "packageJsonSha256": "ca65962739e30676db19c2d0b72866c58526f8353ca3924a5d34e11a9ad1225f",
-      "packageLockSha256": "02ef88186d352f95ca1c33512d89709eef53a9f9fbe3592d43bb4e1c65ad91ba",
-      "nestedDatabaseSchemaSha256": "220e0d9e6e7960a3e89264998a776911b5dd442f839ec5618063724d49c32ae2",
-      "nestedDatabaseHasAcceptedTaxonomyMigration": false,
-      "lockedSharedArtifact": {
-        "version": "2.8.1",
-        "resolved": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-2.8.1.tgz",
-        "integrity": "sha512-wvYK8jLGPiLEoOU9biPpCZmJFRloJ5SgdpeCsIkENPev16c6WOViKMjqDTcoMnymVmNybOIc/e1otti80EDaug=="
-      }
-    },
-    "moda-interact-commerce": {
-      "packageName": "moda-interact-commerce",
-      "packageVersion": "0.1.0",
-      "sharedDependency": "2.7.2",
-      "packageJsonSha256": "c2adf77f89603bcf66a0d3abb5ba6abd4aa18f328b12cf649adc0abc3aa82d4b",
-      "packageLockSha256": "01830b46804ace6e92f148f892b7a54d4b918673ff780ee01390c097548fdf14",
-      "nestedDatabaseSchemaSha256": "28e11f6f454dddb030402436a9db7fc6d046da2259b9370c1c7cb18aa379cd64",
-      "nestedDatabaseHasAcceptedTaxonomyMigration": true,
-      "lockedSharedArtifact": {
-        "version": "2.7.2",
-        "resolved": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-2.7.2.tgz",
-        "integrity": "sha512-quqPSi/dIB3WbfYsYOO4tt12CVRboA8OPDi/obsAQhrMTaHcgYzMpbRoBRIxmehpbGDOOAjdL3j4xBRNTsyU+Q=="
-      }
-    },
-    "moda-interact-background": {
-      "packageName": "worker-kwadwos-gpt",
-      "packageVersion": "1.0.0",
-      "sharedDependency": "3.0.0",
-      "packageJsonSha256": "9faf1369f760bc2b635e9138e571981005320fba5f5869e158d811f59e030f3d",
-      "packageLockSha256": "2d85edc521eeada7cf877ef35940dff0f7ceaefea60c2fa8bdf7ef507c699cc5",
-      "nestedDatabaseSchemaSha256": "28e11f6f454dddb030402436a9db7fc6d046da2259b9370c1c7cb18aa379cd64",
-      "nestedDatabaseHasAcceptedTaxonomyMigration": true,
-      "lockedSharedArtifact": {
-        "version": "3.0.0",
-        "resolved": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-3.0.0.tgz",
-        "integrity": "sha512-CvixJpQEL0nOQv+zoDUAveF0JA1G9PFrT2FN+ubYu94tEgjiLRMtHZGLyxfE5FUHroDt6ZajY/36j3EvyJyFuw=="
-      }
-    },
-    "moda-interact-database": {
-      "packageName": "moda-interact-database",
-      "packageVersion": "1.0.0",
-      "sharedDependency": null,
-      "packageJsonSha256": "6ba242ab143bac835e4834266bb6cdaa4e915f6f640b6f1f90f480fce97fad3a",
-      "packageLockSha256": "5c3475a870d2ec9058b53076d594179a12f0c3acb7e8a43991c22f89010099d9",
-      "nestedDatabaseSchemaSha256": null,
-      "hasAcceptedTaxonomyMigration": false,
-      "nestedDatabaseHasAcceptedTaxonomyMigration": null
-    },
-    "moda-interact-system-test": {
-      "packageName": "moda-interact-system-test",
-      "packageVersion": "1.0.0",
-      "sharedDependency": null,
-      "packageJsonSha256": "ed2e3961c953cdfdc1829d888293dfbc7d3ee6d23db4e4db3c383808ec4f8eab",
-      "packageLockSha256": "43f099911c4d552be157a58c34f679ac7eab7b79d1ea7c38bb36a33727547994",
-      "nestedDatabaseSchemaSha256": null,
-      "hasAcceptedTaxonomyMigration": false,
-      "nestedDatabaseHasAcceptedTaxonomyMigration": null
-    }
+  "currentMcpRepositoryObservation": {
+    "sourceSnapshot": "moda-interact-workspace-ARCH-058-MCP-002.zip",
+    "packageJsonSha256": "35b3f6ef8282c2efbae05078c0f887bb64f85be77c31b76a8f4d741f2a3300f2",
+    "packageLockSha256": "abd96d4e78b69c227b4b80ab5952c400843e4920282cb896581ab8dd8541462e",
+    "sharedVersion": "4.0.0",
+    "directZod": "4.6.5",
+    "resolvedRootZod": "4.6.5",
+    "sharedNestedZodPresent": false,
+    "allSourceBytesPreservedByPatch": true,
+    "revision10Interpretation": "Shared4.0.0/direct-Zod observation is historical blocker evidence only; no revision10 cross-application Zod pin is required."
   },
-  "inspectedFiles": [
-    {
-      "path": "moda-interact-admin/src/data/shopify-taxonomy-manifest.json",
-      "exists": true,
-      "sha256": "b3aac029c05c5f4568072112cb27a971d5519157f1962c6e4d74d95cf2da4b00"
-    },
-    {
-      "path": "moda-interact-admin/scripts/shopify-taxonomy-distribution.mjs",
-      "exists": true,
-      "sha256": "30838cd36d61a06f75ec9bd42298cf646c1c2ba648a4e20f74d5efd718ec226a"
-    },
-    {
-      "path": "moda-interact-admin/scripts/sync-shopify-taxonomy.mjs",
-      "exists": true,
-      "sha256": "67f91d18ccc7dfea3fbfe9c5406de57c70864bad86b96a1de8c7d3521ac3c02b"
-    },
-    {
-      "path": "moda-interact-admin/src/lib/admin/merchant-knowledge-plan-policy.ts",
-      "exists": true,
-      "sha256": "ef73c652ad8425febd7e1ff97d3e0f50dd600626b69c5c924975926b9311cbca"
-    },
-    {
-      "path": "moda-interact-admin/src/app/actions/merchant-pricing-plan.ts",
-      "exists": true,
-      "sha256": "e01248c0eb36be5536db8deef9e3f0d198807394ac406175ab97623b74531736"
-    },
-    {
-      "path": "moda-interact-shared/src/commerce/schemas.ts",
-      "exists": true,
-      "sha256": "39c857d14e8c658526f24167e0a60ad0244eda421e197061cfce9fe265cd5af5"
-    },
-    {
-      "path": "moda-interact-shared/src/commerce/definitions.ts",
-      "exists": true,
-      "sha256": "2840760a71ce5a9002e0b16ee5ee709517a85cec3b5fcc7fff9349a2a2f3c6dd"
-    },
-    {
-      "path": "moda-interact-shared/src/commerce/runner/instructions.ts",
-      "exists": true,
-      "sha256": "f0c9cb7d59cc69d6a4dd7aa44adee26a58c3afe88bd400e70cc2cc65f5a4f9e6"
-    },
-    {
-      "path": "moda-interact-shared/src/commerce/runner/version.ts",
-      "exists": true,
-      "sha256": "d698bfd0081ba3d54ad36f82a9401271b055fd1a1d4414a414f9e384723678c0"
-    },
-    {
-      "path": "moda-interact-database/prisma/schema.prisma",
-      "exists": true,
-      "sha256": "28e11f6f454dddb030402436a9db7fc6d046da2259b9370c1c7cb18aa379cd64"
-    },
-    {
-      "path": "moda-interact-database/prisma/seed.mjs",
-      "exists": true,
-      "sha256": "aa16c847887b477046745a60dcd62cb6f7ae69efdb61a7c5283700d1bb9bd2ce"
-    },
-    {
-      "path": "moda-interact-database/prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql",
-      "exists": true,
-      "sha256": "cbf48bc53ef8efc71b0e2df87dc1302d19ec82792ca52abf40edc314c110337e"
-    },
-    {
-      "path": "moda-interact-mcp/src/mcp/registration.ts",
-      "exists": true,
-      "sha256": "7e67a7fa7e5da0e4cd87b3135ce51453d98be679a21797c02e3e62f4fed3a38c"
-    },
-    {
-      "path": "moda-interact-mcp/src/execution/policy/shopify-core.ts",
-      "exists": true,
-      "sha256": "33752c05570b297bb26d6a0609ba6159587bee7c71f4df39f64dad4a31b8f247"
-    },
-    {
-      "path": "moda-interact-mcp/src/execution/policy/shopify-core-executor.ts",
-      "exists": true,
-      "sha256": "9f25547d0a4f5cd951a434060278273ccc25c0ba69276e7bcd89d14aa7cbb6a0"
-    },
-    {
-      "path": "moda-interact-mcp/src/connections/shopify/document.ts",
-      "exists": true,
-      "sha256": "e344b1794d8c4d6e9b4608f733cf0d08055cd86f3e5d5699915378b967afc1a0"
-    },
-    {
-      "path": "moda-interact-commerce/scripts/sync-system-commerce-tools.mjs",
-      "exists": true,
-      "sha256": "a99963cdc9118d1e481a01042592012539ff5915f2fc4288b7b155a8d030b102"
-    },
-    {
-      "path": "moda-interact-background/src/commerce/host.ts",
-      "exists": true,
-      "sha256": "71b1f3b6636a58dae2fde066290a52d7ce9c28536a5df6c3651df7a82f22be55"
-    },
-    {
-      "path": "moda-interact-background/vitest.config.ts",
-      "exists": true,
-      "sha256": "9a4ea3522d7b5640f92f4791c7340d8e6abddb163f27a2ac89174e71246a8eb5"
-    },
-    {
-      "path": "moda-interact-system-test/src/harness/language/model-fixture.js",
-      "exists": true,
-      "sha256": "6b7dc224504503f809d0666c0bbd424a93451b2b0b104d7db17c1062b204f35e"
-    },
-    {
-      "path": "moda-interact-system-test/src/harness/language/pricing-plan-fixture.js",
-      "exists": true,
-      "sha256": "bcb7bfa830eda9c75a6436fee962c11baadf7ef1d62c86934270b41d6048ba2d"
-    },
-    {
-      "path": "moda-interact-system-test/src/harness/language/mcp-runtime.js",
-      "exists": true,
-      "sha256": "6d990d12438593e055a3b94ee987857dc23e4228b73921269d8d8f2bea8b0382"
-    },
-    {
-      "path": "docs/agent-validation-execution-policy.md",
-      "exists": true,
-      "sha256": "bc51517273fc724ff107833a6ffa129655f8a12c15737f0aad220019da78c380"
-    },
-    {
-      "path": "moda-interact-commerce/package.json",
-      "exists": true,
-      "sha256": "c2adf77f89603bcf66a0d3abb5ba6abd4aa18f328b12cf649adc0abc3aa82d4b"
-    },
-    {
-      "path": "moda-interact-commerce/package-lock.json",
-      "exists": true,
-      "sha256": "01830b46804ace6e92f148f892b7a54d4b918673ff780ee01390c097548fdf14"
-    },
-    {
-      "path": "moda-interact-commerce/src/commerce/bootstrap/system-product-tools.ts",
-      "exists": true,
-      "sha256": "9b75e6a8f48e0dde3e0d725868b7a986c17afe6a3e2d50beedfecbf91a683f03"
-    },
-    {
-      "path": "moda-interact-commerce/src/commerce/execution/policy-operation-authoring.ts",
-      "exists": true,
-      "sha256": "306105bcc30b4fd4cf6c03d9b5bf17363285088390315363878333054585d608"
-    },
-    {
-      "path": "moda-interact-commerce/src/commerce/tool-definition/contracts.ts",
-      "exists": true,
-      "sha256": "7a00e4dbdafdf7af251261ea89232f0e1ce5e18de6214227863544a82e9306f3"
-    },
-    {
-      "path": "moda-interact-commerce/src/commerce/tool-definition/index.ts",
-      "exists": true,
-      "sha256": "e7677dcf4bfb1e11e1aace232c0412155509d07e14dc209307e74f43010bb97d"
-    },
-    {
-      "path": "moda-interact-commerce/src/commerce/tool-definition/publication.ts",
-      "exists": true,
-      "sha256": "a056e6b5869a35b7ca6bf78380d2caab5cde635d56fbd5697ae89efff993edaa"
-    },
-    {
-      "path": "moda-interact-commerce/src/commerce/publication/validation.ts",
-      "exists": true,
-      "sha256": "567a34f7c484d0ce9ba227b69f00db60298c363fa91667e687bcc4219db1cf7f"
-    },
-    {
-      "path": "moda-interact-admin/scripts/provision-platform-admin.mjs",
-      "exists": true,
-      "sha256": "468a4d2083c808cd5678a30ff39a2ef587df10685a51336aae8bc193a6e15905"
-    },
-    {
-      "path": "moda-interact-admin/scripts/update_platform.mjs",
-      "exists": true,
-      "sha256": "ef5c7715dbe95e20f8b6a9e5e501412b4c28be2b7708b3320fa23ac67bd7a4fb"
-    },
-    {
-      "path": "moda-interact-admin/src/app/(protected)/system-controls/embeddings/page.tsx",
-      "exists": true,
-      "sha256": "49ccb8f43ee5f876e3e5d0fdfa1fa62098889da93bdee166e98f1d5a06622c97"
-    },
-    {
-      "path": "moda-interact-admin/src/app/(protected)/system-controls/platform-configuration/page.tsx",
-      "exists": true,
-      "sha256": "45a7973e36f92a61e6a3bf3aaf70feb1adcce25a7096f890176a8cfc43ea53fc"
-    },
-    {
-      "path": "docs/decisions/mcp/ARCH-052/MCP-006-preserve-original-woo-provider-errors.md",
-      "exists": true,
-      "sha256": "6ef8823c1be1c147c465d4685448f61ee6a71ce662d8378f9bad43b81dd52845"
-    },
-    {
-      "path": "moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts",
-      "exists": true,
-      "sha256": "387f3f724fc30f26bda3931c2447f0626d9b6940913b822d2ee2881bed4313a8"
-    },
-    {
-      "path": "moda-interact-mcp/tests/unit/connections/woocommerce/direct-product-reader.test.ts",
-      "exists": true,
-      "sha256": "8194eab499ddb0bf4c5acf62b0d12bd4324a49dbc971caef65dde5d5e9e5cd22"
-    }
-  ],
-  "evidenceLimits": [
-    "No new runtime implementation, migration, import, package publication or deployment performed in this review.",
-    "Snapshot task reports describe previous executed validation; this review does not rerun or claim those tests.",
-    "Live private MCP source commit could not be read through GitHub; no remote ancestry or implementation equivalence is asserted.",
-    "A task source file marked complete does not prove its implementation is integrated in every consumer checkout."
-  ],
-  "wooDiagnosticsIntegration": {
-    "task": "ARCH-052-MCP-006",
-    "snapshotTaskStatus": "complete",
-    "acceptedImplementationCommit": "1d18e6c866311d0a3238a919f335643ffbefd8c1",
-    "expectedReaderPath": "moda-interact-mcp/src/connections/woocommerce/direct-product-reader.ts",
-    "snapshotSourceState": "PRE_ACCEPTED_DIAGNOSTIC_IMPLEMENTATION",
-    "observedGap": "Transport/DNS/credential/parser catch paths discard original errors; HTTP error bodies are mapped without original source diagnostics.",
-    "evidenceKind": "ACCEPTED_TASK_REPORT_COMPARED_WITH_UPLOADED_SOURCE",
-    "remoteAcceptedSourceInspected": false,
-    "requiredAction": "Integrate accepted original-error correction into the prepared MCP base and preserve its diagnostic/test behavior; do not recreate its logger or reopen the accepted historical task."
+  "sharedHashReconciliation": {
+    "definitionRevision": 10,
+    "decisionDocument": "docs/architecture/ARCH-058/shared-hash-reconciliation.md",
+    "evidenceFile": "docs/architecture/ARCH-058/shared-hash-reconciliation-evidence.json",
+    "observedBlocker": "Shared 4.0.0 fixed built-in contract hashes differed from runtime-generated exported contract payloads in MCP consumer resolution.",
+    "rootCause": "Built-in identity duplicated name/version with a runtime-generated schema hash; runtime JSON-schema generation also exposed a concrete Commerce datetime semantic drift across compatible Zod minors.",
+    "selectedCorrection": "REMOVE_BUILT_IN_CONTRACT_HASH_IDENTITY",
+    "sourceTasks": [
+      "ARCH-058-SHARED-003",
+      "ARCH-058-SHARED-004",
+      "ARCH-058-SHARED-005"
+    ],
+    "databaseTask": "ARCH-058-DATABASE-002",
+    "publicationTask": "ARCH-058-SHARED-006",
+    "approvedPublicationTarget": "5.0.0_IF_UNOCCUPIED_AT_PUBLICATION_TIME",
+    "builtInIdentity": [
+      "toolName",
+      "definitionVersion"
+    ],
+    "contractHashRemoved": true,
+    "replacementFingerprintIntroduced": false,
+    "conversationToolContextRemoved": true,
+    "discountBuiltInTimestampSemanticsFrozen": true,
+    "generalDateSchemaChanged": false,
+    "applicationZodPinRequired": false,
+    "databaseMigrationRequired": true,
+    "runnerVersion": "1.1.0",
+    "legacyDescriptorDefinitionVersion": "1.0.0",
+    "finalDescriptorDefinitionVersion": "2.0.0",
+    "historicalShared400ReceiptPreservedAt": "sharedPublication",
+    "revision9ZodPinningPlan": "SUPERSEDED_BEFORE_EXECUTION",
+    "acceptanceOrContinuationGranted": false
   }
 }

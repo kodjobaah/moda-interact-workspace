@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 70
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-009
 enables:
 - ARCH-057-SHOPIFY-011
 created: 2026-11-04
-updated: 2026-11-04
+updated: 2026-11-05
 ---
 
 # ARCH-057-SHOPIFY-010: Bound Shopify webhook publication and remove redundant queue probes
@@ -34,7 +34,7 @@ Coordinator: `moda_architect`.
 
 Mandatory execution, diagnostic and naming contract: `docs/architecture/ARCH-057/task-contract.md`.
 
-**Defined but not materialised.** This is the canonical portable definition for `docs/decisions/shopify/ARCH-057/SHOPIFY-010-bound-webhook-ingress-and-queue-publication.md`. Baseline: the latest supplied `moda-interact-workspace(20261104-005051).zip`. No implementation, branch, worktree, live subscription check or passing runtime test is asserted.
+**Materialised task definition; Attempt 1 architect-accepted and Complete.** ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete at implementation `f0cf26877a9e3f7503c0f9a956b02ede3eff2571`; its acceptance satisfies this task's sole prerequisite. The launcher prepared and claimed this attempt; implementation and validation evidence follow below. No live deployment or drain is asserted.
 
 ## Objective
 
@@ -59,6 +59,7 @@ Paths are relative to `moda-interact`.
 | `app/services/webhooks/shopify-webhook-ingress.service.ts` | Classify unsupported topics before the Shop read; select only id/domain/status; explicit success/error outcomes for every supported branch; preserve original publication diagnostics |
 | `app/services/webhooks/shopify-webhook-queue.server.ts` | One add and one total publication deadline per call; retain current ID bytes and queue contracts; preserve cause/code/stage; own safe queue-emitter diagnostics |
 | `app/services/webhooks/shopify-webhook-observability.server.ts` | Extend the SHOPIFY-009 domain adapter for publication and connection-event failures; no competing logger/serializer |
+| `app/services/billing/providers/shopify-billing-diagnostics.server.ts` | Narrowly extend the existing centralized safeText URL scheme pattern from redis to redis/rediss so TLS Redis URLs are removed by the existing projection |
 | `app/services/webhooks/shopify-webhook-observation.ts` | Keep the narrow semantic observation contract; document accepted/discarded outcomes truthfully without carrying error/payload objects into metric dimensions |
 | `app/services/otel/shopify-webhook-telemetry.server.ts` | Recognize the selected accepted/discarded outcome names; retain metric/span names and bounded attributes |
 | `app/routes/webhooks/root/route.jsx` | Reconcile the documented failure owner if needed; retain authentication, exact consent raw-body handling, response and framework propagation |
@@ -139,16 +140,22 @@ The existing `shopId--digest` prefix remains unchanged; renaming a local variabl
 22. Reuse Shared `createLogger`/`sanitizeLogFields` and the existing environment resolver. Error name/message, safe actual driver code and explicit cause/causeChain (at most four known entries) must reach real emitted JSON. Preserve original exception/cause propagation; safe logging may redact or bound text, with flags, but cannot replace all diagnostic detail with `QUEUE_ADD_FAILED` or an error type.
 23. Never log Redis URLs, passwords, API/session tokens, webhook bodies, consent customer identifiers, customer PII, GraphQL data or arbitrary response bodies. Remove sensitive spans in the domain adapter before Shared defense-in-depth sanitization. Expected invalid metadata/payload is bounded rejection control flow, not a fabricated operational/provider failure. Throwing log sinks must not alter status, retries, queue data or propagation.
 
+### Architect scope clarification — TLS Redis diagnostic redaction, 2026-11-05
+
+The required emitted-JSON publication failure test reproduces a TLS Redis URL disclosure through the existing webhook semantic adapter and its reused `logBillingBoundaryFailure` projection. The existing centralized `safeText` URL pattern recognizes `redis://` but omits `rediss://`. A synthetic no-auth TLS URL retains its private host in the actual emitted record. This is within requirement 23's Redis URL privacy contract.
+
+Authorize only extending that existing URL scheme alternative to recognize both Redis schemes. Keep the existing redaction flags, bounds, actual safe source marker/code/cause projection and original exception propagation. Use the already declared webhook failure-logging suite to cover credential-bearing and no-auth TLS Redis URLs, including the queue-emitter owner. Preserve all billing/provider/business decisions, publication deadlines and queue contracts. This clarification does not authorize another redactor, generic logger, serializer or any broader billing diagnostic refactor. Review remains pending.
+
 ## Work Items
 
-- [ ] Integrate SHOPIFY-009 observability changes and inspect all six current publishers/callers.
-- [ ] Move unsupported-topic admission before the Shop lookup and use the exact required select.
-- [ ] Replace pre-reads/message-regex duplicate detection with one current-ID add and accepted result.
-- [ ] Apply one overall publication deadline and preserve causes/context across all failure branches.
-- [ ] Make success/discard/failure outcomes truthful, including discount success and typed 503 handling.
-- [ ] Cover original emitted diagnostics, queue error events, privacy and throwing sinks.
-- [ ] Execute real Redis duplicate/tenant/late-add/retry/telemetry cases and record the actual evidence class.
-- [ ] Document retirement of legacy producer probes and the explicit rollout evidence boundary.
+- [x] Integrate SHOPIFY-009 observability changes and inspect all six current publishers/callers.
+- [x] Move unsupported-topic admission before the Shop lookup and use the exact required select.
+- [x] Replace pre-reads/message-regex duplicate detection with one current-ID add and accepted result.
+- [x] Apply one overall publication deadline and preserve causes/context across all failure branches.
+- [x] Make success/discard/failure outcomes truthful, including discount success and typed 503 handling.
+- [x] Cover original emitted diagnostics, queue error events, privacy and throwing sinks.
+- [x] Execute real Redis duplicate/tenant/late-add/retry/telemetry cases and record the actual evidence class.
+- [x] Document retirement of legacy producer probes and the explicit rollout evidence boundary.
 
 ## Interfaces / Contracts
 
@@ -193,17 +200,17 @@ The Redis helper starts and stops only its own isolated container, discovers the
 
 ## Acceptance Criteria
 
-- [ ] Valid unsupported topics use zero DB/Redis operations; supported topics use one narrow authoritative Shop lookup without generic-ingress writes.
-- [ ] Every supported active publication uses exactly one Queue.add and zero per-delivery getJob calls, with unchanged current deterministic IDs and Shared payload/job contracts.
-- [ ] One 3,500 ms budget covers queue acquisition/readiness/add; no separate unbounded or restarted publication phase exists.
-- [ ] Success is reported only after add resolves; all six publishers use the truthful accepted result and discount successes emit their final outcome.
-- [ ] Unknown/inactive deliveries are explicitly discarded/ignored, with no durable quarantine or replay claim.
-- [ ] Timeout/connection/add failures return 503 at generic ingress and preserve original safe error/cause/code and known tenant/job context in emitted Shared records.
-- [ ] Late completion/rejection creates no unhandled promise rejection and retry retains the deterministic ID; no possible late job is removed.
-- [ ] Concurrent duplicate publication and tenant separation are proved with real BullMQ/Redis; completed-job replay limits are documented honestly.
-- [ ] Queue options, normalizers, consent integer/version handling, trace propagation and downstream wire contracts remain unchanged.
-- [ ] Legacy producer-probe retirement has a precise pre-production/drain boundary; no live compatibility/drain state is fabricated and no indefinite lookup bridge is added.
-- [ ] Raw emitted-record sentinel and throwing-sink tests pass without changing business behavior.
+- [x] Valid unsupported topics use zero DB/Redis operations; supported topics use one narrow authoritative Shop lookup without generic-ingress writes.
+- [x] Every supported active publication uses exactly one Queue.add and zero per-delivery getJob calls, with unchanged current deterministic IDs and Shared payload/job contracts.
+- [x] One 3,500 ms budget covers queue acquisition/readiness/add; no separate unbounded or restarted publication phase exists.
+- [x] Success is reported only after add resolves; all six publishers use the truthful accepted result and discount successes emit their final outcome.
+- [x] Unknown/inactive deliveries are explicitly discarded/ignored, with no durable quarantine or replay claim.
+- [x] Timeout/connection/add failures return 503 at generic ingress and preserve original safe error/cause/code and known tenant/job context in emitted Shared records.
+- [x] Late completion/rejection creates no unhandled promise rejection and retry retains the deterministic ID; no possible late job is removed.
+- [x] Concurrent duplicate publication and tenant separation are proved with real BullMQ/Redis; completed-job replay limits are documented honestly.
+- [x] Queue options, normalizers, consent integer/version handling, trace propagation and downstream wire contracts remain unchanged.
+- [x] Legacy producer-probe retirement has a precise pre-production/drain boundary; no live compatibility/drain state is fabricated and no indefinite lookup bridge is added.
+- [x] Raw emitted-record sentinel and throwing-sink tests pass without changing business behavior.
 
 ### Required cases, log owners and outcomes
 
@@ -229,14 +236,15 @@ For source-level counts, keep SDK authentication/storage outside the repository-
 
 ## Validation
 
-- [ ] `npm run test:shopify-webhooks`
-- [ ] `npm run test:shopify-webhooks:redis` — actual disposable Redis/BullMQ, all required opt-in cases execute rather than skip
-- [ ] `npm run typecheck` and `npm run build`
-- [ ] Focused ESLint on changed/new source and tests; `git diff --check`
-- [ ] Same-fixture before/after repository Shop/Queue.add/getJob invocation evidence, actual Redis stored-job assertions and unchanged deterministic ID vectors
-- [ ] Real Shared emitted-log fault/privacy/sink assertions; correct failure ownership for generic ingress, lifecycle callers and queue events
-- [ ] Review source compatibility note against the current deployment facts available to the executor; explicitly label live drain/deployment as not performed when unavailable
-- [ ] Record source/package provenance, Redis/container version, fixture IDs, command results and cleanup
+- [x] `npm run test:shopify-webhooks`
+- [x] `npm run test:shopify-webhooks:redis` — actual disposable Redis/BullMQ, all required opt-in cases execute rather than skip
+- [x] `npm run typecheck` and `npm run build`
+- [x] Focused ESLint on changed/new source and tests; `git diff --check`
+- [x] Same-fixture before/after repository Shop/Queue.add/getJob invocation evidence, actual Redis stored-job assertions and unchanged deterministic ID vectors
+- [x] Run `npm test -- tests/unit/services/billing/provider-diagnostics.test.ts` for the reused diagnostic projection and scoped ESLint for `app/services/billing/providers/shopify-billing-diagnostics.server.ts`. The declared webhook emitted-JSON tests must remove complete synthetic redis/rediss URL spans while retaining safe source markers, actual codes/causes and sink isolation.
+- [x] Real Shared emitted-log fault/privacy/sink assertions; correct failure ownership for generic ingress, lifecycle callers and queue events
+- [x] Review source compatibility note against the current deployment facts available to the executor; explicitly label live drain/deployment as not performed when unavailable
+- [x] Record source/package provenance, Redis/container version, fixture IDs, command results and cleanup
 
 ## Stop Condition
 
@@ -254,58 +262,126 @@ Official behavior references for executor verification: [BullMQ job IDs](https:/
 
 ### Status
 
-Not Started. Defined but not materialised; no execution claim or worktree is asserted.
+Attempt 1 architect-accepted and Complete on 2026-11-05. Executor and claim timestamp are cleared; attempt remains 1.
+
+Implementation commit `6e8029deb30de8903e937dc092b68f8b304e4dce`, pushed to implementation `task/ARCH-057-SHOPIFY-010`. Parent report/approved scope amendment are submitted on the same-named parent branch. No main merge or parent implementation gitlink update.
 
 ### Files Changed
 
-None. Definition only.
+Nineteen implementation files within the selected scope and the written Redis-TLS diagnostic amendment:
+
+- Ingress, queue publisher, existing webhook observation/observability adapter and telemetry accepted-outcome classification; generic root route DB-failure origin.
+- One existing centralized diagnostic URL-pattern alternative extended from redis to redis/rediss, as authorized by the scoped amendment. No new serializer, redaction engine or logging transport.
+- Exact package scripts; existing queue/ingress/telemetry tests; new deadline and real Shared failure/privacy tests.
+- Two declared fixture/helpers, real publication Redis suite and updated actual producer/Worker telemetry suite.
+- `docs/shopify-webhook-publication.md` documents budgets, accepted/discarded outcomes, owner boundaries, unchanged identities/options, at-least-once limits and the separate pre-production legacy-drain release gate.
+
+New tests/helpers are below 300 lines each: fixtures 38, Redis helper 49, deadline tests 78, failure-logging tests 158, real publication suite 86.
 
 ### Work Completed
 
-None.
+All selected work items and acceptance criteria are implemented, subject to independent architect review.
+
+Unsupported authenticated topics are classified after existing metadata validation and before Shop lookup. Supported topics have one exact id/domain/status lookup. Unknown/inactive Shops are acknowledged as discarded, with distinct ignored outcomes and no persistence/replay claim. Existing SDK authentication, consent-only raw-body cloning, exact large numeric customer identity, API version handling and normalizers remain unchanged.
+
+Every publisher performs one current-ID add and zero getJob probes under a single 3,500 ms budget armed before lazy acquisition/add. It preserves wire payloads, Shared queue/job names, deterministic input framing and retry/removal options. Successful add is accepted, including a retained-ID acceptance; it is not classified as newly created or duplicate. Discount deliveries now emit their final acceptance observation. Typed failures retain cause, stage and known queue/job context; ingress owns conversion to 503 and its final semantic outcome.
+
+Producer listeners prevent unhandled queue errors. Active publication contexts retain an actual observed connection error for a hanging-operation deadline diagnostic, while idle/late emitter events have their own semantic owner. Generated timeout/configuration errors without a source event have no invented cause or driver code. Promise settlement after deadline stays observed, does not produce another final HTTP outcome and does not cancel/remove the possible late job.
+
+Existing lifecycle/scopes/best-effort callers remain owners of propagated publication errors. Their wrapper/cause identity and existing deduplication behavior remain intact, while the selected adapter preserves actual driver code and queue/job/stage context. Publication source origin remains distinct from a caller's best-effort policy label. Unexpected DB/internal errors and SDK denials retain original propagation.
 
 ### Validation Results
 
-Not run. Record exact commands, actual source/build/Shared/BullMQ/Redis versions, case outcomes, call versus protocol evidence, emitted records, legacy-boundary assessment and task-owned resource cleanup.
+Final source validation passed:
+
+- `npm run test:shopify-webhooks`: **168 tests across 15 files**, none skipped. Covers six single-add publishers, preserved IDs/options, metadata/tenant admission, every valid discount topic, exact consent handling, deadline cleanup, delayed acquisition/readiness, blocked timer delivery, late success/rejection, actual Shared output, bounded causes, source classification, queue events, lifecycle ownership and throwing sinks.
+- `npm run test:shopify-webhooks:redis`: **9 tests across both suites**, none skipped. Each uses its own helper-owned `redis:7.4.2-alpine` container, random loopback port and actual Redis 7.4.2. No inherited production/shared REDIS_URL or TEST_REDIS_URL is consumed.
+- `npm test -- tests/unit/services/billing/provider-diagnostics.test.ts`: **5 tests**, unchanged diagnostic regression under the approved one-pattern amendment.
+- Focused ESLint for every changed/new source/test, including the amended diagnostic file; typecheck; production build; `git diff --check`: passed. Existing non-fatal client chunk-size warning remains.
+
+Real Redis evidence:
+
+- Each of the six publishers accepted 12 concurrent same-ID adds plus a retained-ID replay, with one actual retained job for that ID and a distinct second-tenant ID/job. Stored business data and default attempts/backoff/remove options matched the canonical fixtures.
+- A completed job was actually auto-removed; replay created another accepted job. This is not an exactly-once claim.
+- After producer warmup, an independent control connection acknowledged CLIENT PAUSE WRITE. The original publication timed out, then its actual add settled after CLIENT UNPAUSE. A retry used the same ID and one retained job remained. The test does not remove the possible late job; only its separate owned warmup job is removed before the barrier.
+- Actual producer/Worker spans retained trace continuity with instrumentation enabled. The disabled path preserved the Shared business payload and identity contract.
+
+Same-fixture baseline probes executed the starting implementation, not an invented source-level estimate:
+
+| Operation | Starting source | Final source |
+|---|---|---|
+| Unsupported topic | Shop 1, add 0, getJob 0 | Shop 0, add 0, getJob 0 |
+| Supported checkout | Shop 1, add 1, getJob 2 | Shop 1, add 1, getJob 0 |
+| Discount ingress | Shop 1, add 1, getJob 1, final outcomes 0 | Shop 1, add 1, getJob 0, final outcomes 1 |
+| Checkout created/updated, cart, order publishers | add 1, getJob 2 each | add 1, getJob 0 each |
+| Discount/consent publishers | add 1, getJob 1 each | add 1, getJob 0 each |
+| All six deterministic job-ID vectors | Current starting bytes | Identical bytes |
+
+Those are mocked repository/Queue API invocation counts, not emitted PostgreSQL, Redis protocol operations, authentication storage totals or HTTP latency measurements. Separate real Redis stored-job assertions provide the concurrency evidence. Temporary baseline copies/test edits were restored and removed. The two filtered baseline proof cases passed; their intentionally filtered cases are not counted as completed suites.
+
+Representative fields from actual captured Shared JSON:
+
+```json
+{"event":"shopify.webhook.publication_failed","data":{"topic":"CHECKOUTS_CREATE","deliveryId":"delivery-fixture","queue":"checkout-events","reasonCode":"QUEUE_ADD_FAILED","operation":"publish_webhook","stage":"add","origin":"transport","shopId":"shop-a","error":{"name":"Error","message":"original driver marker [REDACTED] [REDACTED] [REDACTED] [REDACTED]"},"causeChain":[{"name":"Error","message":"original cause [REDACTED]"}],"redactionApplied":true,"truncated":false,"sourceCode":"ECONNREFUSED"}}
+```
+
+Full actual envelope and safe job ID are in the emitted-record log. Raw-record assertions exclude injected Redis/Redis-TLS connection URLs, credential/email/token sentinels and consent customer identity. No assertion relies on harness output redaction.
+
+Evidence logs have prefix `/tmp/arch057-shopify010-`: `unit-complete.log`, `redis-final.log`, `diagnostics-final.log`, `lint-complete.log`, `types-complete.log`, `build-complete.log`, `baseline.log`, `shopify-docs.log`. Initial three stale expectation failures and five focused lint errors were corrected; the no-auth Redis-TLS privacy probe failed before the amendment (`tls-before.log`) and passes in the final suite. Earlier failed/filtered runs are not counted as passing mandatory validation.
+
+Only owned clients, Queues, Workers and containers were closed/stopped. No shared Docker pruning or live Redis mutation. No PostgreSQL migration/write, Shopify provider request, deployment or legacy drain was performed.
+
+### Source, Package and Prepared Launcher Provenance
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-010`; implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-010`. Both physical task branches: `task/ARCH-057-SHOPIFY-010`; both created by launcher. No previous task worktree reused, and no shared/default checkout switched/mutated.
+- Starting parent `7e86751068b12b43a934fa051fd12493589e7b57`; implementation `407cec23dd8a0f5af6e9ead99015a12b1e86b406`.
+- Prepared Attempt 1 claim `b8c066f868cd1ac19dc867d306750907609cdfa2`, executor codex, claimed `2026-11-05T00:12:20Z`, committed/pushed by launcher after SHOPIFY-009 passed Complete. No second claim or startup synchronization was performed.
+- Parent and implementation task-branch fast-forward: not needed; origin/main already current in both, per packet. Recursive submodule sync/update passed at recorded and final working Database pin `bd2d09066a8eb178a56f48fbbf88df637c411059`.
+- Node 24.19.0, npm 11.17.0, BullMQ 6.3.1, ioredis 6.0.0, Shared 3.1.0, Prisma client 6.19.3. Installed with pinned npm ci; no package version/lockfile change.
+- Canonical synthetic fixture tenants shop-a/shop-b and late/replay variants; full accepted ID vectors and actual Redis version are in the logs. No customer/provider credentials were used.
 
 ### Deviations
 
-None.
+Only the architect-authored Redis-TLS redaction scope amendment above: reuse the existing centralized pattern to cover a demonstrated no-auth rediss URL leak, with existing diagnostic regressions. No business/delivery identity, Shared schema, consumer, queue policy, dependency, database or route topology change.
 
-### Assumptions
+### Assumptions and Release Boundary
 
-The launcher verifies current dependency status and integrated source. No assertion about deployed subscriptions, legacy queue contents or production rollout is made from the archive.
+Historical ARCH-004-SHOPIFY-001 and ARCH-003-BACKGROUND-001 were read. Producer legacy-ID lookups are retired only for the selected pre-production release boundary; Background pending-candidate compatibility is unchanged. There is no evidence available from this source task that a real deployed target is drained. No live queue inspection, old-producer stop or deployment occurred. A real live-legacy/rollback requirement must be returned to moda_architect before rollout, as documented; no runtime compatibility flag or automatic replay was added.
 
 ### Unresolved Issues
 
-Implementation and mandatory validation remain outstanding. Live release/drain evidence remains a separate deployment responsibility.
+No known implementation/required-validation gap within the amended scope. Independent architect review passed on 2026-11-05. Live drain/rollout evidence is an explicit deployment responsibility, not claimed by source tests. No enabled task was started or promoted.
 
 ### Architectural Concerns
 
-Return ownership, schema, wire identity, consumer compatibility, durable acceptance or logging-contract changes to the architect.
+The demonstrated unsafe Redis-TLS diagnostic extraction was returned to moda_architect and resolved through its written narrow amendment. No outbox, receipt, cache, extra queue, new consumer adapter or cross-repository requirement was introduced. The direct queue-acceptance contract remains at-least-once and does not establish end-to-end consumer idempotency.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted on 2026-11-05. Attempt 1 Complete; no actionable findings. Executor and claimed_at cleared; attempt unchanged.
 
 ### Review Notes
 
-Task definition only; no implementation accepted.
+Reviewed implementation `6e8029deb30de8903e937dc092b68f8b304e4dce`, matching the pushed implementation task branch. Single-add publication preserves deterministic IDs, payloads and job options. The deadline covers acquisition/add and observes late settlement without claiming cancellation. Ingress retains authentication and tenant admission, emits truthful accepted/discarded outcomes and owns typed 503 failures. Diagnostics reuse the established safe boundary, including the narrowly authorized rediss scheme correction.
 
 ### Reviewed Files
 
-Definition and latest snapshot producer/ingress/consumer-contract touchpoints only.
+All 19 changed implementation files: queue/ingress, root failure owner, observability/observation/telemetry, centralized URL-pattern correction, package scripts, focused tests, Redis helper/fixtures and both Redis suites, and publication documentation. Reviewed the completion report and recorded source/package/worktree provenance.
 
 ### Validation Reviewed
 
-Definition/source inspection only; implementation evidence is outstanding.
+- Independently ran `npm run test:shopify-webhooks`: 168 tests across 15 files passed. Local evidence: `/tmp/shopify010-review.log`.
+- Independently checked `git diff --check`: passed; implementation HEAD matches its task remote.
+- Inspected the real Redis suites and `/tmp/arch057-shopify010-redis-final.log`: 9 tests across both suites passed, covering concurrent retained-ID acceptance, tenant separation, auto-removal/replay, late-add/retry and telemetry. The architect did not rerun the disposable Redis suite.
+- Reviewed submitted typecheck/build/scoped lint, five billing diagnostic regression tests and before/after invocation evidence; these were not independently rerun.
 
 ### Architecture Conformance
 
-To be assessed after implementation against the parent decision, common contract and unchanged Shared wire contracts.
+Conforms to the amended task scope and unchanged Shared contracts. No receipt/outbox, alternate identity, schema change or consumer policy was introduced. At-least-once and legacy-drain rollout limits are documented; no deployment or live drain is certified by this acceptance.
 
 ### Follow-up
 
-Return the completed task for architect review; do not begin enabled work.
+SHOPIFY-010 is Complete. SHOPIFY-011 remains Pending because SHOPIFY-004 is still recorded in Review in this branch; SHOPIFY-012 and SYSTEM-TEST-001 remain Pending transitively. Normal dependency/integration checks apply before execution. No downstream work, main merge or deployment is performed by this acceptance.
