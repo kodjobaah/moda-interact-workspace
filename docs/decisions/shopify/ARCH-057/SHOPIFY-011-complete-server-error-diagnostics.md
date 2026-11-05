@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
 executor: codex
 claimed_at: 2026-11-05T08:49:45Z
@@ -73,6 +73,11 @@ Paths relative to `moda-interact`.
 | `tests/unit/platform-configuration/shopify-oauth-bootstrap.test.ts` | Missing/revoked/malformed configuration fails closed and logs safe original cause |
 | `tests/unit/pending-recovery-reader.test.ts` | Read, emitter and cleanup diagnostics with no status change |
 | `tests/unit/health/health-check.server.test.ts` | Probe failure/cause and safe Boolean/timeout behaviour |
+| `app/services/merchant-support/merchant-support.service.ts`, `app/services/merchant-knowledge/merchant-knowledge-queue.server.ts` | Attach bounded error listeners to the existing owned producer queues through their semantic adapters |
+| `app/services/merchant-support/merchant-support-observability.server.ts`, `app/services/merchant-knowledge/merchant-knowledge-observability.server.ts` | Add narrowly named producer connection-error diagnostic exports as needed, reusing the existing central projection and Shared logger |
+| `app/services/billing/providers/shopify-billing-diagnostics.server.ts` | Expose the existing safeText projection for runtime adapter reuse and optionally accept known sensitive values/explicit diagnostic cause in the existing boundary logger; retain one existing projection |
+| `tests/unit/merchant-support-service.test.ts`, `tests/unit/merchant-support-observability.test.ts`, `tests/unit/merchant-knowledge-queue.test.ts`, `tests/unit/merchant-knowledge-observability.test.ts`, `tests/unit/services/billing/provider-diagnostics.test.ts` | Existing predecessor queue/emitted-output regression coverage for these narrow changes |
+| `app/routes/system/telemetry-probe/route.ts` | Preserve the existing probe request and HTTP/DTO contract while diagnosing network/non-success attempts and projecting target/error safely in logs and response |
 | `package.json` | Add the exact diagnostic test command below |
 
 The coverage inventory reads all server routes/services, provider adapters, queue constructors and framework callbacks. Corrections outside this write list are returned to their prior task owner or require an explicit scope amendment; no broad unreviewed app rewrite.
@@ -102,13 +107,27 @@ No competing logging kernel or new log sink, remote Loki access/retention setup,
 9. Every selected technical failure preserves source wording except explicit security redaction/truncation. Expected invalid cursor/form/optional locale parsing is documented control flow, not a mandatory error-level log. All unexpected dependency/read/write/queue/provider failures remain diagnosable, including those converted into success/fallback.
 10. Capture actual Shared output before harness redaction. No secret/PII/signed capability appears in it. A throwing Shared sink cannot change the business result or hide a real exception behind another exception.
 
+### Architect scope and installed SDK contract clarification — 2026-11-05
+
+The two producer constructors above currently have no error listener. Authorize a listener for each owned queue instance using the corresponding existing semantic adapter and the actual safe source error/cause/code. Idle connection events have no request-owned diagnostic. Preserve queue identity, data/options, admission, deadlines, retries and best-effort outcomes. Do not add process-level handlers, connection probes, queries for logging or a competing logging transport. Verify the emitted record and unchanged behavior with the existing predecessor queue/observability suites and throwing-sink cases.
+
+The runtime adapter must reuse the existing central safeText and error/cause projection. The existing logBillingBoundaryFailure input may gain only optional diagnosticError (an explicit diagnostic projection of the caught error), sensitiveValues (known strings to remove), and explicit redactionApplied/truncated booleans. Reuse existing safeErrorValue, causeChain and safeText on the selected diagnosticError or original error. Keep original-error ownership/deduplication marking on the original supplied error. These optional inputs support SDK/configuration-parser privacy. Preserve original thrown error/cause identity in application propagation and existing billing behavior when these optional inputs are absent. Any projected diagnostic input must have direct provenance in the actual caught exception. A JSON parser exception may echo plaintext configuration. Preserve the actual SyntaxError as the thrown wrapper cause, while emitting its safely projected name/message/cause with explicit redaction metadata. Omit the sensitive echo rather than copying configuration into logs. Retain safely available source wording and actual diagnostic code. Keep existing bounds and honest redaction/truncation flags. This is a narrow reuse amendment, not authority for another serializer, redaction kernel or generic logger.
+
+Installed Shopify API `LogFunction` is `(severity, msg)` in `dist/ts/lib/base-types.d.ts`. Its `logger/log.mjs` formats message and context before invoking that callback. Requirement 4 therefore means retain supplied severity and the safely projectable supplied formatted text. There is no separate structured context argument to preserve. Wire the supported callback directly. Do not recover guessed structured fields by parsing console output or SDK formatting, and do not emit arbitrary formatted request/session/header/body context. The SDK semantic adapter may omit the entire opaque suffix beginning at the installed formatter delimiter ` | {` and mark redactionApplied. This is one privacy omission of opaque supplied text, not reconstruction of structured fields. Retain the independently safe message prefix and supplied severity through the existing central projection. If the message prefix itself contains opaque request/session/body/JSON content that cannot safely be retained, omit that unsafe content with an explicit privacy-omission classification. Use the existing centralized projection and known sensitive values. If a safely retained source portion cannot be established, omit the unsafe text with an explicit privacy-omission classification and document the concrete SDK capability limitation in the inventory. This explicit privacy omission does not authorize substituting generic labels for safely available source wording. Actual thrown SDK errors retain their original propagation and named diagnostic owner. SDK tests must exercise the installed callback path, source-marker/severity retention for safe messages, sensitive formatted-context omission/redaction and sink isolation. Any operational failure whose required safe evidence remains unavailable is recorded as a blocker before review.
+
+### Architect scope clarification — telemetry probe failure owner, 2026-11-05
+
+The telemetry probe converts fetch exceptions into HTTP 200 NETWORK_ERROR but currently retains only an error-message string and publishes configured target/error text in its information record and response. Authorize the existing runtime semantic adapter to add a narrowly named recordTelemetryProbeFailure export using the existing central projection. Capture the actual caught network error/cause/code before the fallback. For a non-success HTTP response, record the actual numeric status and fixed probe operation/stage as an internally classified failed probe, without inventing a provider exception, message, cause or body. Preserve the existing one-shot fetch, target selection, HTTP 200, no-store, otel/probe nesting, probe keys, status classification and elapsed-time semantics. Keep the normal correlation information record and assign the full technical diagnostic to the named failure owner once.
+
+Response privacy is explicitly within this narrow correction. Preserve target as a string and error as string-or-null, but sanitize their values using the reused central safeText projection and known configured sensitive values. If a safe value cannot be established, use a fixed redacted string. Do not expose target userinfo, signed/query capabilities, credentials, raw configured URL or unsafe exception text in either captured logs or response JSON. Keep the actual target exclusively for the fetch operation. Verify injected credential/signed-target sentinels are absent from both outputs, while the safe source marker/code/cause remains available in the internal failure record. Use the already declared server-error-fallbacks/privacy tests for network, non-success, success and throwing-sink behavior. No new metric/span, remote telemetry setup, authentication policy or bootstrap edit is authorized. observability.mjs remains read-only.
+
 ## Work Items
 
-- [ ] Inventory and classify all final server failure paths.
-- [ ] Close the exact remaining entry/bootstrap/configuration/health/pending-work gaps.
-- [ ] Preserve error causes, truthfully classify failures and retain normal response behaviour.
-- [ ] Execute source-message, privacy, fallback, event-emitter and sink-isolation cases.
-- [ ] Record complete coverage and any unresolved prerequisite gap.
+- [x] Inventory and classify all final server failure paths.
+- [x] Close the exact remaining entry/bootstrap/configuration/health/pending-work gaps.
+- [x] Preserve error causes, truthfully classify failures and retain normal response behaviour.
+- [x] Execute source-message, privacy, fallback, event-emitter and sink-isolation cases.
+- [x] Record complete coverage and any unresolved prerequisite gap.
 
 ## Interfaces / Contracts
 
@@ -134,21 +153,22 @@ ARCH-057-SHOPIFY-001 through ARCH-057-SHOPIFY-010, each explicitly listed in fro
 
 ## Acceptance Criteria
 
-- [ ] Every server inventory row has a valid classification and named diagnostic owner; no unexplained operational swallowing remains.
-- [ ] Emitted records contain actual safe source messages and available causes/codes/request IDs, including caught fallback and typed-error branches.
-- [ ] Provider-origin and internally generated failures remain distinguishable; no guessed provider messages.
-- [ ] SDK/startup/SSR/uncaught handler/dependency/queue-emitter/cleanup cases are covered.
-- [ ] Raw captured records and evidence contain no injected sensitive sentinel.
-- [ ] Merchant/browser responses and established status/rollback/retry/best-effort behaviour remain unchanged.
-- [ ] Throwing-sink tests preserve behaviour; no new logging kernel, query-for-logging or broad catch-and-continue.
+- [x] Every server inventory row has a valid classification and named diagnostic owner; no unexplained operational swallowing remains.
+- [x] Emitted records contain actual safe source messages and available causes/codes/request IDs, including caught fallback and typed-error branches.
+- [x] Provider-origin and internally generated failures remain distinguishable; no guessed provider messages.
+- [x] SDK/startup/SSR/uncaught handler/dependency/queue-emitter/cleanup cases are covered.
+- [x] Raw captured records and evidence contain no injected sensitive sentinel.
+- [x] Merchant/browser responses and established status/rollback/retry/best-effort behaviour remain unchanged.
+- [x] Throwing-sink tests preserve behaviour; no new logging kernel, query-for-logging or broad catch-and-continue.
 
 ## Validation
 
-- [ ] `npm run test:server-diagnostics`
-- [ ] Re-run affected predecessor failure suites only where an owned diagnostic path changed; list exact commands/results
-- [ ] `npm run typecheck` and `npm run build` — preserve server-only imports and SDK bootstrap
-- [ ] Focused ESLint and `git diff --check`
-- [ ] Coverage inventory references actual emitted JSON records and outcome assertions, not only logger-spy calls
+- [x] `npm run test:server-diagnostics`
+- [x] Re-run affected predecessor failure suites only where an owned diagnostic path changed; list exact commands/results
+- [x] Run `npm test -- tests/unit/merchant-support-service.test.ts tests/unit/merchant-support-observability.test.ts tests/unit/merchant-knowledge-queue.test.ts tests/unit/merchant-knowledge-observability.test.ts tests/unit/services/billing/provider-diagnostics.test.ts` and scoped ESLint for newly authorized files. Verify idle producer error events, original safe source/cause/code, configuration privacy, optional-input compatibility and throwing-sink behavior.
+- [x] `npm run typecheck` and `npm run build` — preserve server-only imports and SDK bootstrap
+- [x] Focused ESLint and `git diff --check`
+- [x] Coverage inventory references actual emitted JSON records and outcome assertions, not only logger-spy calls
 
 ## Stop Condition
 
@@ -162,35 +182,75 @@ The user explicitly requires original error messages for pre-production diagnosi
 
 ### Status
 
-Not Started. Defined but not materialised; no execution claim or worktree is asserted.
+Ready for Review — Attempt 1, codex, 2026-11-05. Implementation committed and pushed as `528ec1c2e53cdd1f00fc8f45141cc77c2d9e5561` on `task/ARCH-057-SHOPIFY-011`. This is an implementation submission, not architect acceptance. ARCH-057-SHOPIFY-012 remains subject to the architect dependency gate.
+
+### Prepared Execution / Provenance
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-011`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-011`.
+- Both branches: `task/ARCH-057-SHOPIFY-011`. Launcher verified all ten explicit prerequisites complete, synchronized both branches, initialized exact nested submodule pins and durably claimed Attempt 1.
+- Parent start: `28a45258d8d138cb3172d5395950c9dbcf24f804`; claim: `e8b4f8070a7ed8b2af4f8d74ea2cb395f55eee9a`, claimed at `2026-11-05T08:49:45Z`. Parent end is the report-submission commit containing this report; no self-referential SHA is invented.
+- Implementation start: `84f1bfb2b91164e660b2a87c4c14a41e60f313d0`; end: `528ec1c2e53cdd1f00fc8f45141cc77c2d9e5561`.
+- Nested Database recorded and working commit: `bd2d09066a8eb178a56f48fbbf88df637c411059`, unchanged.
+- Installed packages after `npm ci`: Shared 3.1.0, Prisma client 6.19.3, Shopify API 13.1.0, Shopify React Router 1.2.1, React Router 7.18.2, BullMQ 6.3.1, ioredis 6.0.0, pg 8.23.0. Node24.19.0 / npm11.17.0 from workspace bootstrap. Prisma generated from the pinned nested Database schema.
 
 ### Files Changed
 
-None. Definition only.
+25 implementation files (full exact list in implementation commit):
+
+- `app/entry.server.jsx`, `app/shopify.server.js`, new `app/services/observability/shopify-runtime-observability.server.ts`.
+- `app/services/platform-configuration/seal.server.ts`, `service.server.ts`; existing contracts/repository already preserved wrapper causes and required no correction.
+- `app/services/health/health-check.server.ts`, `app/services/pending-recovery/pending-recovery-reader.server.ts`.
+- `app/services/billing/providers/shopify-billing-diagnostics.server.ts`, `billing/billing-reconciliation.service.ts`, `billing/subscription-ended-notification.service.ts`.
+- Merchant support service/observability and merchant knowledge queue/observability files authorized by the scope amendment.
+- `app/services/store-profile/shopify-taxonomy-suggestion.server.ts`, `app/routes/system/telemetry-probe/route.ts`.
+- Three new `tests/unit/server-error-{boundaries,fallbacks,privacy}.test.ts`; existing support service/observability, knowledge queue and pending-reader tests.
+- `package.json`, new `docs/server-error-coverage.md`.
+
+Onboarding resume, discount lifecycle and webhook source already had owning diagnostics from accepted predecessors; inspected and retained. No copied schema, migration, Shared package, logging transport, gitlink or unrelated task/index was edited.
 
 ### Work Completed
 
-None.
+- Reconciled all 200 application JS/TS/JSX/TSX modules plus read-only `observability.mjs`. The final TypeScript AST inventory contains 1,147 source anchors: catch/rejection/throw paths, async propagation, constructors/listeners, provider/status branches, typed fallbacks and otherwise-unrepresented modules. Every row names classification, origin/outcome, owner, safe fields and evidence/result; browser/presentation controls are separated. Repeated anchors represent propagation stages, not distinct incidents or independently injected tests.
+- Added source/cause/code diagnostics to framework/SSR/bootstrap and wired the installed SDK callback directly. Preserved original shell rejection, render status, abort timing, expected redirect/4xx suppression and bootstrap fail-closed behavior.
+- Preserved configuration wrapper codes/key and original cause identity; safely projected parser echoes without logging sealed/plaintext/keyring data.
+- Diagnosed dependency attempts, idle queue events and cleanup while retaining existing health Boolean/deadline and pending unavailable behavior. No process-level keep-running handler or global registry.
+- Kept postcommit notification/scheduling best effort; classified persistence, dispatch and invariant failures by actual stage. No durable-delivery or automatic retry claim.
+- Captured taxonomy transport/parser/actual GraphQL source evidence before the existing fallback. Kept the query and fallback policy.
+- Implemented the architect-authorized probe owner and response-value privacy correction, retaining fetch/HTTP200/no-store/keys/types/status behavior.
+- Coverage document includes actual Shared JSON sink records before harness redaction, source wording/cause/code evidence, explicit SDK capability/privacy limitations and local-evidence limits.
 
 ### Validation Results
 
-Not run. Record exact commands, fixture/case results, source/build/installed-package provenance, original diagnostic assertions, SQL/provider counts where required, and task-owned resource cleanup.
+All required gates passed on final implementation:
+
+1. `npm ci` and `npm run prisma:generate` — passed, pinned packages/schema above.
+2. `npm run test:server-diagnostics` — **116 tests passed, 7 files**. Includes real Shared serialization, installed SDK callback severities, original exceptions/causes, parser privacy, framework/SSR, dependency/queue/error-event/cleanup, fallback/status and throwing-sink cases. Final run 2026-11-05 09:40 UTC. A separate passing capture run produced the JSON examples committed in the inventory; its temporary capture hook was restored afterward.
+3. `npm test -- tests/unit/merchant-support-service.test.ts tests/unit/merchant-support-observability.test.ts tests/unit/merchant-knowledge-queue.test.ts tests/unit/merchant-knowledge-observability.test.ts tests/unit/services/billing/provider-diagnostics.test.ts tests/unit/services/billing-reconciliation.service.test.ts tests/unit/services/billing/subscription-ended-notification.service.test.ts tests/unit/shopify-taxonomy-suggestion.test.ts tests/unit/routes/onboarding-resume.test.ts` — **73 tests passed, 9 files**. Idle producer event/source/cause/code/privacy and sink-isolation cases pass; optional central input behavior retains existing predecessor compatibility.
+4. `npm run typecheck` — passed. `npm run build` — passed on final source; Vite's existing chunk-size advisory remains non-failing.
+5. Scoped ESLint over all changed/new JS/JSX/TS files — passed, zero errors/warnings. `git diff --check` — passed. New runtime source is47 lines; new tests66/136/91 lines, each below300.
+6. Shopify toolkit official docs search executed for SDK custom logging, then installed callback signature/formatter inspected. Required toolkit feedback invoked once (exit0); no new API operation/schema/code generation/version change.
+
+Local command artifacts: `/tmp/arch057-shopify011-{install,prisma,tests,predecessors,typecheck,build,lint,shopify-docs,capture}.log`, raw synthetic sink capture `/tmp/arch057-shopify011-emitted.jsonl`. Durable case evidence and JSON examples are in `docs/server-error-coverage.md`.
+
+No live provider request, charge/refund, new SQL query, database concurrency claim, real Redis deadline claim or remote collector/retention proof. Dependency faults used controlled ports. No task-owned containers, databases or volumes were created; fake timers/globals were restored and temporary capture edits removed. No integration resource cleanup or Docker pruning was needed.
 
 ### Deviations
 
-None.
+Three architect scope/contract clarifications above were implemented: existing producer queue error ownership and central projection reuse; installed SDK flattened-text privacy handling; telemetry probe failure/response privacy. No additional architectural change was inferred.
 
 ### Assumptions
 
-The launcher will verify actual dependency status and the accepted integrated source before claiming this task.
+Accepted predecessor source/test ownership is reconciled by inspection where unchanged; it is explicitly distinguished from this attempt's executed fault cases. Generic propagated route failures use the tested final framework owner. Local emitted-record validation does not certify global production observability.
 
 ### Unresolved Issues
 
-Implementation and required validation are outstanding.
+No task-owned implementation or validation blocker remains. Architect review is pending. Installed SDK exposes severity plus formatted text only: opaque context/unsafe prefix content is explicitly omitted with redaction metadata, retaining independently safe source text. There is no separately available structured context to reconstruct; the authorized limitation is recorded in the inventory.
 
 ### Architectural Concerns
 
-Return changed ownership, persisted identity, schema, queue, transaction or external contract requirements to the architect.
+No billing, notification durability, schema, transaction, queue admission/retry, sampling or deployment policy was changed. No architect acceptance decision or downstream dependency update is asserted by this implementation agent.
 
 ## Architect Review
 
