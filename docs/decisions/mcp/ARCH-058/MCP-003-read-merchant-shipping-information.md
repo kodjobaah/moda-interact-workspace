@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: codex
-claimed_at: 2026-11-05T08:12:53Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-058-MCP-002
@@ -199,11 +199,11 @@ Use the already accepted Shared structured logger and original source-error hand
 
 ## Work Items
 
-- [ ] Verify the prepared accepted MCP-002 base and exact published shipping exports; reuse completed Shopify scope work.
-- [ ] Change paired-session/request interfaces, all strict guards and provider preflight together.
-- [ ] Implement the fixed Shopify documents and Woo exact SHIPPING projections with the selected mappings/errors.
-- [ ] Register, dispatch, validate and render shipping through the existing production core executor without a cursor-secret requirement.
-- [ ] Run the focused real-boundary tests, record actual outcomes and submit for architect review.
+- [x] Verify the prepared accepted MCP-002 base and exact published shipping exports; reuse completed Shopify scope work.
+- [x] Change paired-session/request interfaces, all strict guards and provider preflight together.
+- [x] Implement the fixed Shopify documents and Woo exact SHIPPING projections with the selected mappings/errors.
+- [x] Register, dispatch, validate and render shipping through the existing production core executor without a cursor-secret requirement.
+- [x] Run the focused real-boundary tests, record actual outcomes and submit for architect review.
 
 ## Interfaces / Contracts
 
@@ -224,13 +224,13 @@ Provider references: [Admin 2026-07 ShopPolicy](https://shopify.dev/docs/api/adm
 
 ## Acceptance Criteria
 
-- [ ] Both providers list and execute the pinned published shipping tool through the actual registry; it works without a cursor secret and preserves current authenticated-shop, active-plan, published-capability and provider-permission checks.
-- [ ] Invalid request shape/native IDs fail before provider I/O; an unsupported Woo type or simple-product variation request fails after its one necessary parent read. The selected product/policy ordering and maximum read counts are observed.
-- [ ] The exact offline select returns paired token/scope; only the private positive scope-preflight outcome yields SCOPE_NOT_GRANTED and zero policy fetches. Attempted authorization/provider failures stay outer errors.
-- [ ] Product-only requests verify existence then return VARIANT_REQUIRED where specified; exact identities, optional Woo parent_id and native facts follow the mapping table.
-- [ ] Policy states/nullability/UTF-8 limits and Woo measurement/class/unknown-unit rules exactly match the contract, without guesses or truncation.
-- [ ] Qualified structured HTML survives the real rendering/result route unchanged while the standard renderedText remains the fixed short string; unsafe/instructional content is not executed or fetched.
-- [ ] Ordinary product definitions/output, accepted diagnostics, provider credential/read-permission validation and typed errors remain intact. No live quote, extra page/settings read, environment mutation or customer send is introduced.
+- [x] Both providers list and execute the pinned published shipping tool through the actual registry; it works without a cursor secret and preserves current authenticated-shop, active-plan, published-capability and provider-permission checks.
+- [x] Invalid request shape/native IDs fail before provider I/O; an unsupported Woo type or simple-product variation request fails after its one necessary parent read. The selected product/policy ordering and maximum read counts are observed.
+- [x] The exact offline select returns paired token/scope; only the private positive scope-preflight outcome yields SCOPE_NOT_GRANTED and zero policy fetches. Attempted authorization/provider failures stay outer errors.
+- [x] Product-only requests verify existence then return VARIANT_REQUIRED where specified; exact identities, optional Woo parent_id and native facts follow the mapping table.
+- [x] Policy states/nullability/UTF-8 limits and Woo measurement/class/unknown-unit rules exactly match the contract, without guesses or truncation.
+- [x] Qualified structured HTML survives the real rendering/result route unchanged while the standard renderedText remains the fixed short string; unsafe/instructional content is not executed or fetched.
+- [x] Ordinary product definitions/output, accepted diagnostics, provider credential/read-permission validation and typed errors remain intact. No live quote, extra page/settings read, environment mutation or customer send is introduced.
 
 ## Validation
 
@@ -271,39 +271,64 @@ Native facts and policy availability are independent within one qualified respon
 
 ### Status
 
-Not Started — defined but not materialised.
+Attempt 1 submitted for architect review. Implementation `69b64669a621c899f3b764fb92004f27f249b9e7` is committed and pushed to `origin/task/ARCH-058-MCP-003`. Status is Review, claim cleared, Attempt 1 preserved. No architect acceptance, deployment or live merchant verification is claimed.
 
-### Files Changed
+### Files Changed and Work Completed
 
-None.
-
-### Work Completed
-
-None.
+- Added `src/execution/policy/shipping-information.ts`: the three fixed named Admin queries, exact product/variant identity checks, product-before-policy ordering, native Shopify facts, Woo simple/variable mappings, private decimal measurement/class normalization, independent policy outcomes and both policy body limits. Successful undefined/null policy responses remain malformed; only the private scope-preflight subtype produces SCOPE_NOT_GRANTED.
+- Extended the registered core executor with shipping input/output/template-path metadata, real connection resolution, both provider branches and no cursor-secret requirement. Shared validates actual returned data; a 7000-plus-character inert body survives the real MCP/renderer route unchanged while renderedText remains `Shipping information checked.`. Exported existing safeStoreUrl unchanged for reuse; no product query/output/cursor behavior changed.
+- Paired Shopify offline token/scope comes from the same existing select. Scope and token are bounded/validated. The provider performs exact comma-token policy-scope preflight before fetch; ordinary calls omit it. The resolver preserves the private subtype and existing admitted-read budget charging. Original session DB causes survive wrapping and are safely diagnosed at the provider boundary. All existing token-only session fixtures were updated.
+- Added private SHIPPING on the two Woo exact operations and all three strict guards. The real direct credential reader uses only the prescribed parent/variation endpoint projections; list requests do not gain the flag. Parent/optional parent_id identity is checked, variation requiresShipping remains null, and units are never inferred.
+- Reused existing Shared logging and the existing safe domain diagnostic projection for adapter validation; no generic serializer/logger was introduced. Tests capture actual Shared output for HTTP/GraphQL/SDK/Prisma and native validation, retained source/cause/code/request ID, privacy sentinels, nonmutation of thrown source exceptions and failing sinks. Provider diagnostics are not relabelled as missing-scope success.
+- Added the two declared focused shipping test modules and updated session/provider/product-composition fixtures. New modules are below 300 physical lines. Runtime ports/Prisma composition already consume the paired reader structurally and required no parallel reader or second handler. No package, lockfile, schema, dependency, credential format, other repository or parent gitlink changed.
 
 ### Validation Results
 
-Not run.
+Node 24.19.0/npm 11.17.0 from the workspace bootstrap; Prisma 6.19.3, exact Shared 5.0.0 and runner 1.1.0 retained. All checks ran in the dedicated implementation worktree.
 
-### Deviations
+- `npm ci --no-audit --no-fund`: passed; locked dependencies installed for this new worktree.
+- `npm run schema:install:shopify -- /Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-commerce/lib/discovery/artifacts/admin-2026-07.json`: passed from the approved local artifact; SHA256 gate `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`. No schema download/regeneration.
+- Exact required shipping/core command: **59 tests passed**, zero failures/skips. Covers native identity/ordering/errors, actual registry/provider/renderer for both providers, no cursor secret, irrelevant opaque contexts, native scope absence, body/UTF-8 bounds and raw HTML preservation, measurement/class normalization, cancellation, original source diagnostics and sink isolation.
+- Exact required provider/resolver/runtime/protocol command: **71 tests passed**, zero failures/skips. Existing ordinary product and transport regressions remain covered; these 71 are not counted as additional shipping-only cases.
+- `npm run typecheck`, `npm run typecheck:integration`, `npm run lint`, `npm run build`: passed on final source. Final affected-source checks were rerun after diff review caught and corrected an undefined-policy-payload sentinel edge. Initial implementation type/lint errors were fixed and are not presented as baseline limitations.
+- `git diff --check`: passed before commit.
+- All three fixed queries pass the real document guard/provider paths and pinned Admin schema validation in composition. Shopify AI Toolkit documentation search and schema validation also passed for the three Admin 2026-07 queries; policy validator reports read_legal_policies, product/variant validators report native product/inventory scope requirements. Toolkit telemetry was opted out.
 
-None.
+Final local evidence logs: `/tmp/mcp003-shipping-release.log` (59), `/tmp/mcp003-regressions-final.log` (71), `/tmp/mcp003-types-release.log`, `/tmp/mcp003-integration-types-release.log`, `/tmp/mcp003-lint-release.log`, `/tmp/mcp003-build-release.log`, `/tmp/mcp003-toolkit-search.log`, `/tmp/mcp003-toolkit-validate.log`, `/tmp/mcp003-toolkit-product.log`, `/tmp/mcp003-toolkit-variant.log`. These local logs are not committed artifacts.
 
-### Assumptions
+### Limits, Deviations and Unresolved Issues
 
-Shared 4.0.0 and Shopify scope configuration are historical accepted baselines. This task consumes accepted MCP-002 with exact Shared 5.0.0 after SHARED-006 acceptance; ARCH-058 does not change MCP's direct Zod dependency; configuration acceptance is not a live offline grant, and Woo measurement units remain unknown.
+No implementation-scope deviation or known blocker. The task does not require an autonomous Docker suite; none was run. No live provider/merchant response, selected-app deployment, granted live policy permission, tool publication, settings/cart mutation, quote calculation or customer send was performed. Those remain operator/consumer/terminal system-validation checks; fixture success is not a live grant or production compatibility claim.
 
-### Unresolved Issues
-
-No live merchant grant, policy, product response or deployment has been verified by this definition. Unsupported native Woo policy and absent measurement units are explicit contract limits.
+Source references used by the toolkit: [ShopPolicy](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/ShopPolicy) and [InventoryItemMeasurement](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/InventoryItemMeasurement). The supplied fixed queries and approved artifact remain the execution contract.
 
 ### Physical Worktree and Synchronization Evidence
 
-Not materialised. Record the actual launcher preparation packet, canonical parent/implementation worktrees and start-of-attempt synchronization when execution begins; do not invent them here.
+```text
+canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent task worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-003
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-003
+both branches: task/ARCH-058-MCP-003
+parent prepared head: 4a920137d95abe443a09a3522930aa0a8dc6f466
+implementation prepared head: c22148dbcb38d2462ff7e59fc16b599f6ba83c7c
+claim: 2a4ae9eae12b910df12cd3cdab2b6438206e1106; pushed
+claim executor/time: codex / 2026-11-05T08:12:53Z; Attempt 1
+parent/implementation worktrees: newly created by launcher
+parent/implementation remote task fast-forward: not-needed
+parent/implementation origin/main incorporation: already-current
+dependency gate: MCP-002 and SHOPIFY-001 Complete
+recursive submodule sync/update/init/verification: passed; ready
+recorded/working Database pin: bd2d09066a8eb178a56f48fbbf88df637c411059 (unchanged)
+implementation submitted: 69b64669a621c899f3b764fb92004f27f249b9e7; pushed
+shared/default checkouts switched or mutated for implementation: no
+another task worktree reused: no
+```
+
+No second preparation/claim, main merge/push, parent gitlink update or downstream task execution. The parent submission changes only this task report/state; architect review/reconciliation history below is preserved.
 
 ### Architectural Concerns
 
-None beyond the explicit contract, scope-provenance, provider-semantics and failure-boundary gates above.
+No new cross-repository requirement. Background retains conversation/lease/grant/human-control ownership; MCP shipping reads only the authenticated shop/provider and exact requested native facts. Commerce publication and consumer adoption remain separately owned.
 
 ## Architect Review
 
