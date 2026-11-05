@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-11-05T14:05:48Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -187,3 +187,26 @@ Pending implementation.
 
 ### Follow-up
 None
+
+## Architect Acceptance — 5 November 2026
+
+**Accepted — Attempt 1.** Reviewed implementation `2f5bf96504063cc93f170da53baf37d177aaf2a7`. No blocking findings identified. Task marked Complete under automatic completion mode; executor/claim cleared and Attempt 1 preserved. This supersedes the earlier pending review text without changing the submitted evidence.
+
+### Reviewed Source and Conformance
+
+Reviewed the task's explicit pre-production override, deployment-context confirmation, full implementation diff, product cursor parser, Shopify/Woo continuation progression, discount catalogue cursor/current-policy queries, runtime secret/advertisement removal, docs/config and relevant regression tests. The change removes Moda cursor cryptography, expiry/binding checks and secret gates as authorized. Versioned unsigned envelopes contain progress only; current authenticated shop/provider/filter/entitlement/policy state remains authoritative. Strict shape/string/JSON/UTF-8 bounds, safe offsets, provider token forwarding, query parameterization, scan/output budgets and cancellation remain. Legacy tokens receive bounded INVALID_INPUT/restart instructions rather than signature verification or arbitrary provider-cursor interpretation. Credential encryption/authentication and unrelated source/basket hashes remain outside this removal. No blocking defect was identified in inspected paths.
+
+### Independent Validation and Limits
+
+- Independently ran `npm run test:unit` using the prescribed Node 24.19.0 bootstrap in the dedicated implementation worktree: **326/326 passed, zero failures/skips**. Includes no-secret advertisement/execution, unsigned continuation, changed filters/current policy, legacy/malformed tokens and tenant/provider regression coverage.
+- Searched inspected `src`, `.env.example` and README for retired cursor secret/signing/encryption symbols: no matches.
+- Implementation comparison whitespace check passed; implementation checkout clean.
+- Reviewed reported typecheck, integration typecheck, lint and build results; those were not independently rerun in this architect review. No Docker, live provider, deployment or persistence rehearsal is claimed or required by this bounded task. Local independent log `/tmp/mcp004-review-unit.log` is not a committed artifact.
+
+### Isolation and Follow-up
+
+Reviewed prepared worktree/synchronization evidence. Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-004`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-004`, matching task branches. This acceptance changes no implementation source, schema, dependency, gitlink or main branch.
+
+No explicit downstream tasks are enabled by this task. Commerce preview parity remains separately owned by ARCH-058-COMMERCE-002; this review does not accept its implementation, perform coordinated deployment or start follow-on work. Existing pre-production pagination sessions restart across the breaking continuation transition. ARCH-058 is not marked implemented.
+
+The developer explicitly authorized updating the task definition, committing and pushing on 5 November 2026.
