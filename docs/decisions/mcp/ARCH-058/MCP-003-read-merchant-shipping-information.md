@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ enables:
 - ARCH-058-BACKGROUND-001
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: '2026-11-04'
+updated: '2026-11-05'
 ---
 
 # ARCH-058-MCP-003: Read native merchant shipping policy and exact product shipping facts
@@ -330,3 +330,11 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Architect Dependency Gate — MCP-002 Attempt 2 (2026-11-04)
+
+MCP-002 remains in Review, not Complete or accepted, at implementation `b95c397d840568a5481c9332517e6ee3dc3713e1`. Its required developer-owned disposable PostgreSQL validation is NOT_RUN. This task remains Pending with its existing dependency list, attempt and claim unchanged; do not execute it until all explicit prerequisites are Complete and architect-accepted. Independent MCP-002 unit checks passed but do not replace the database acceptance gate.
+
+## Architect Dependency Reconciliation — 5 November 2026
+
+MCP-002 Attempt 3 is architect-accepted and Complete at `11fba27`, with developer PostgreSQL evidence of 30 passed, 0 failed and 1 opt-in live test skipped. This supersedes the earlier pending-validation gate note. All explicit prerequisites (MCP-002 and SHOPIFY-001) are Complete. Promoted to Ready, Attempt 0 preserved, no executor/claim. No execution is started.

@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 3
 depends_on:
 - ARCH-058-MCP-001
 - ARCH-058-DATABASE-002
@@ -24,7 +24,7 @@ enables:
 - ARCH-058-BACKGROUND-001
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: 2026-11-04
+updated: 2026-11-05
 ---
 
 # ARCH-058-MCP-002: Ground product search, bounded catalogue browse and conversational discounts in current shop data
@@ -406,6 +406,124 @@ Stop for an actual prepared-source/artifact mismatch against the current observe
 
 This is an extension of the existing composition. Reference categories describe meaning; provider products establish the store's assortment; the existing catalogue reports current shop-configured options and discount conditions. Background owns conversation state, persisted grants, current-turn checks, tool-use decisions, applicability and customer prose. MCP receives no new workflow authority. A bounded page with no match and a continuation is not evidence that the store has no matching product.
 
+## Attempt 3 Completion Report
+
+### Result
+
+All three corrections in **Architect Review — Developer Integration Run, Attempt 2** are implemented in task-owned fixtures/tests. Agent-owned validation passes. Submitted for review with a fresh developer-owned PostgreSQL rerun still required; no architect acceptance or downstream promotion is claimed.
+
+Implementation **`11fba27f458309930f0809ee3f556851c3d59ba4`** is committed and pushed on `task/ARCH-058-MCP-002`, preserving `b95c397` and WIP ancestor `4bffa87`. This attempt changes four test/fixture files only; production behavior, Shared 5.0.0, direct Zod 4.6.5, Database pin, constraints and authorization remain unchanged.
+
+### Mandatory correction checklist
+
+| Requested correction | Changed implementation and verification |
+| --- | --- |
+| Typed category error assertions | `tests/integration/shop-product-discovery.integration.test.ts` now checks `McpRequestError`, `code` and `reason` for missing corpus/non-English corpus and wrong version/unknown category. It preserves the successful exact English join. Production error messages are unchanged. Integration typechecking passes; persisted cases await the developer rerun. |
+| Valid FIXED-mode state | The same scenario sets a valid same-shop `fixedShopifyDiscountId` on entering FIXED, changes it alongside the availability selection, and clears it when leaving FIXED for AI/NONE. This matches `ck_arch016_shop_settings_fixed_offer` without modifying the constraint. Existing details denial, selection changes, AI pagination, cross-shop/cross-mode cursors and exact override expiry assertions remain. Integration typechecking passes; PostgreSQL execution remains pending. |
+| Missing published capability root cause | The generic seeded policy fixture used `{{ result.values }}`, a field absent from the product policy output schema. `supportedShopifyCoreDefinition` therefore correctly rejected the fixture at its template validation boundary. A new shared test fixture, `tests/fixtures/product-search-published.ts`, defines version 2.0.0 `products.search` operation 1.0.0 with bounded input mapping and `result.products` rendering. `tests/integration/fixtures.ts` adopts it through an explicit option for this scenario and persists revision version 2.0.0. Other fixture consumers retain their existing definitions. |
+
+The new `tests/unit/runtime/service-ports.test.ts` regression proves the invalid output-field template is rejected, the corrected shared fixture passes the actual core validator, and the actual registry advertises the published capability/descriptor without a permissive definitions stub or provider call. Merchant preference revocation still removes the capability and restoration advertises it again. This establishes fixture drift at the executable-definition boundary; no production eligibility relaxation was needed.
+
+The PostgreSQL scenario now requires the exact full tools/list result and selected manifest capability keys for each shop and every opaque context, rather than checking only the final built-in pair. It explicitly requires shop A's published capability before and after shop B's installation revocation, retaining the original expected capability. Thus a future missing published capability fails immediately and cannot be hidden by deleting an expectation. Persisted cross-tenant verification still requires the rerun below.
+
+### Observed validation
+
+Commands ran from the canonical implementation worktree with the prescribed bootstrap: Node 24.19.0, npm 11.17.0, Prisma 6.19.3.
+
+| Command/check | Observed result |
+| --- | --- |
+| Focused `tests/unit/runtime/service-ports.test.ts` | **7 passed**, no failures/skips; `/tmp/mcp002-a3-registry.log` |
+| Required product/provider/category/cursor group from Validation | **76 passed**, no failures/skips; `/tmp/mcp002-a3-products.log` |
+| Required catalogue/capability/protocol/runtime group plus service tests | **76 passed**, no failures/skips; `/tmp/mcp002-a3-discounts.log` |
+| `npm run typecheck` | PASS; `/tmp/mcp002-a3-typecheck.log` |
+| `npm run typecheck:integration` | PASS; `/tmp/mcp002-a3-typecheck-integration.log` |
+| `npm run lint` | PASS; `/tmp/mcp002-a3-lint.log` |
+| `npm run build` | PASS; `/tmp/mcp002-a3-build.log` |
+| `git diff --check` | PASS |
+
+The two required groups contain **152 passing tests total**; the separate seven-test check is overlapping evidence, not added again. No Docker suite was run by the agent this attempt.
+
+### Developer evidence and required rerun
+
+The developer's prior transcript confirms the reviewed Attempt 2 run: **31 tests, 26 passed, 4 failed, 1 opt-in live Shopify test skipped**, `MCP_IT_ASSERTIONS_FAILED: npm exited with status 1`, with owned container, volume and network removed. These results are historical evidence for `b95c397`, not a pass for the correction. The four reported failures include the parent suite and three subtests.
+
+The launcher's first preparation stopped at untracked `typescript`. Inspection established it was that developer terminal transcript. It was preserved byte-for-byte outside the implementation worktree at `/var/folders/tc/km4tlxg554dcbpzx2smhsnkc0000gn/T/ARCH-058-MCP-002-developer-evidence-z59a3s9_/typescript`; SHA256 **`d85d193f207e173b94dda0f2f5301a751ccb737b39f9d9514f45cc938ebb3d20`**. It was not deleted or committed. Retrying the normal launcher then succeeded.
+
+**Corrected-HEAD integration status: NOT_RUN / developer validation required.** Per the explicit developer execution boundary, run:
+
+```bash
+cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002
+npm run test:integration:docker
+```
+
+Required implementation HEAD **`11fba27f458309930f0809ee3f556851c3d59ba4`**; Database gitlink **`bd2d09066a8eb178a56f48fbbf88df637c411059`**. Record all generation/language/version/category cases, full shop-product-discovery suite, existing persisted catalogue scenario, aggregate counts/exit status and harness-owned container/volume/network cleanup. The existing wildcard runner and its disposable URL remain authoritative. Do not substitute an external DATABASE_URL. This attempt claims no corrected PostgreSQL scenario result, aggregate integration pass or cleanup result. Architect acceptance remains gated on actual required evidence.
+
+### Preparation and publication
+
+Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`; both branch `task/ARCH-058-MCP-002`. No shared checkout or another task worktree was switched/reused for implementation.
+
+Launcher dependency gate passed MCP-001, DATABASE-002 and SHARED-006 Complete. Both worktrees reused; parent and implementation remote fast-forward `not-needed`, origin/main incorporation `already-current`. Parent prepared head **`02b673935ef389dbd81d3237944a5d83f56d7a10`**; implementation prepared head **`b95c397d840568a5481c9332517e6ee3dc3713e1`**. Recursive submodule sync/update/init passed, ready at Database **`bd2d09066a8eb178a56f48fbbf88df637c411059`**. Claim **`9de63b4d489755d71a8c15f2195b40e45d2b1b7b`**, pushed, codex Attempt 3 at **2026-11-05T00:09:18Z**.
+
+Implementation commit above is pushed; this report is separately committed/pushed on the mirrored parent task branch. Parent changes only this task metadata/report. Prior reports and the entire Architect Review/reconciliation tail are byte-identical. No parent gitlink/index, architecture, other task, Shared/Database source, package publication, provider HTTP, persistent database, main merge or downstream execution changed. Status review; executor/claim cleared; Attempt 3 retained.
+
+## Attempt 2 Completion Report
+
+### Result and scope
+
+Scoped implementation and agent-owned validation are finished; submitted for architect review with the explicitly developer-owned PostgreSQL evidence pending. This report supersedes the historical unresolved dependency/validation findings below. The prior Completion Report and the complete Architect Review/reconciliation tail are preserved byte-for-byte. Architect acceptance is not claimed, and downstream tasks remain gated.
+
+Continued the preserved WIP ancestor `4bffa87ed4af0fb40513ad75d38df49c51746360` without resetting or recreating it. Implementation is committed and pushed at **`b95c397d840568a5481c9332517e6ee3dc3713e1`**, branch `task/ARCH-058-MCP-002`.
+
+### Contract and source alignment
+
+- Installed exact registry Shared **5.0.0**, matching SHARED-006 integrity `sha512-6IcxLh8QcNNRCN5/n2he7IdbzbWLao4ZNazD/wdijkZ5W2ztHHdEN+LAxILgVrbXuLNw82j7/xtSKuEcjPwSjQ==`. `npm ci --no-audit --no-fund` and `npm ls --depth=0 @modainteract/moda-interact-shared zod` passed. Direct Zod remains exact **4.6.5**; the lockfile changes only the Shared package identity.
+- Fresh proof imports the actual installed MCP package: runner **1.1.0**, canonical discount definitions **2.0.0**, strict no-hash descriptors/grants, legacy 1.0.0 and injected contractHash rejection, removed context/payload exports absent, preserved exports present. Nineteen timestamp fixtures (7 valid, 12 invalid) passed all four timestamp fields and composed outputs. Evidence: `/tmp/mcp002-a2-shared-proof.json`; normal consumer schema composition also typechecks.
+- Database gitlink remains **`bd2d09066a8eb178a56f48fbbf88df637c411059`**; accepted DATABASE-002 `93225ee` is an ancestor (exit 0). No gitlink change was needed this attempt.
+- Reused the pinned local Shopify schema artifact; SHA256 **`2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`**. Actual assembled text/category/exact documents pass schema validation and the real document guard. No schema/source download, taxonomy reimport or embedding generation occurred.
+
+### Implementation and acceptance mapping
+
+The retained implementation uses the five-delegate generic capability reader and canonical Shared built-ins, with current active shop/plan eligibility and identical list/resource identities regardless of opaque context or discount mode. Discount execution reuses the selected policy, abort/deadline/budget/result-size path. Current NONE/FIXED/AI semantics, exact tenant detail predicates, generation-bound keyset cursors, and admin override expiry remain enforced at invocation. Only genuine permitted Prisma failures at generation/page/details queries degrade after the exact rollback marker; authorization/configuration/transaction/cancellation failures stay hard.
+
+This attempt completes Shared 5 adoption and the unfinished integration fixtures, and tightens malformed native IDs, retained category identity validation, and inconsistent Shopify continuation metadata. Exact malformed provider qualifiers now emit the same safe diagnostic boundary as search. Catalogue diagnostics retain genuine database codes through bounded original cause chains and preserve safe multiline failure reasons while redacting credentials/PII. Fake code properties do not become database codes. A throwing actual Shared logging sink cannot alter the rolled-back result.
+
+Product fixtures exercise the registered executor through real connection resolvers, Shopify/Woo providers and document guards with injected transport/session data. They cover exact category plus quoted text, grammar injection, invalid/mixed branches without provider IO, fixed request bounds/projections, full Woo category membership beyond 20 entries, publication and purchasability tables, variable parents without incidental IDs, optional/conflicting parent IDs, 45-variant traversal with limit 2, excluded middle entries, empty unfinished pages, request ceilings, stale partial pages/retained parents, cursor replay rejection, zero/unknown currency, and final exact publication refresh. Public exact-get definition/operation versions and product result shapes remain unchanged.
+
+Added `tests/integration/shop-product-discovery.integration.test.ts` to the existing wildcard harness, without changing its runner. The typed scenario covers the real exact generation/category join, two shop types, ACTIVE paid/TRIALING Free eligibility, identical canonical list/resource projection for opaque contexts, zero conversation/grant/recovery/attempt rows, current NONE/FIXED/AI selection and override expiry, pagination/cross-shop/cross-mode rejection, inactive plan/subscription and revoked Woo installation, and zero provider calls. Existing persisted catalogue fixtures retain provider facts/current policy coverage with generic context and explicit signal/deadline; denied FIXED detail expectations now match the contract. Fixture seeding can omit the recovery snapshot while existing callers preserve their default behavior.
+
+### Observed validation
+
+All commands ran in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002` after the required Node bootstrap: Node 24.19.0, npm 11.17.0, Prisma 6.19.3.
+
+| Check | Observed result |
+| --- | --- |
+| Required product/provider/category/cursor group | **76 passed, 0 failed, 0 skipped**; `/tmp/mcp002-a2-products-final.log` |
+| Required catalogue/capability/protocol/runtime group, plus service tests | **75 passed, 0 failed, 0 skipped**; `/tmp/mcp002-a2-discounts-final.log` |
+| `npm run typecheck` | PASS; `/tmp/mcp002-a2-typecheck-final.log` |
+| `npm run typecheck:integration` | PASS; `/tmp/mcp002-a2-typecheck-integration-final.log` |
+| `npm run lint` | PASS; `/tmp/mcp002-a2-lint-final.log` |
+| `npm run build` | PASS; `/tmp/mcp002-a2-build-final.log` |
+| `git diff --check` | PASS |
+
+Initial integration types identified two missing override fixture fields, which were supplied before the passing rerun. Initial lint identified four task-local findings, all corrected before the passing rerun. These superseded failures are not presented as baseline limitations. No full PostgreSQL or aggregate integration pass is claimed.
+
+### Required developer validation handoff — NOT_RUN
+
+Per this task's explicit validation ownership, the agent did **not** run or wait on Docker/PostgreSQL integration. Developer must run:
+
+```bash
+cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002
+npm run test:integration:docker
+```
+
+Validate implementation HEAD **`b95c397d840568a5481c9332517e6ee3dc3713e1`**, database gitlink **`bd2d09066a8eb178a56f48fbbf88df637c411059`**. Record the new shop-product-discovery scenario and existing persisted catalogue scenario results, overall exit status and the harness-owned container cleanup. The harness supplies its own disposable URL and runs wildcard files serially; do not substitute an external DATABASE_URL. Scenario execution, overall integration exit status and container cleanup are all currently **NOT_RUN / developer validation required**. Architect acceptance requires the actual required scenario results; review submission with these pending is explicitly allowed.
+
+### Preparation, ownership and publication
+
+Deterministic preparation passed all three dependencies. Parent prepared head `6d6cc9ad5f7f73d95ff2de94acebaf529711fd1e`; implementation prepared head `0aa6b4e882c8fa8f49b4bb7e01cfaacdc754f2b3`; recursive submodules ready. Parent origin/main incorporated; implementation already current. Claim **`64217a2cd94ebc38fe510f75031263346cae7bf4`**, pushed, codex Attempt 2 at `2026-11-04T22:33:58Z`.
+
+Both canonical worktrees use `task/ARCH-058-MCP-002`. Parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-002` changes only this task's metadata/report; no parent gitlink, index, architecture document, other task or Architect Review change. Implementation commit above is pushed. This report is committed/pushed separately on the mirrored parent task branch. No package publication, provider HTTP, deployment, persistent database operation, customer send, shipping implementation or main merge was performed. Status is review; executor/claim cleared; Attempt 2 retained.
+
 ## Completion Report
 
 ### Current Status — Shared Contract Mismatch
@@ -568,27 +686,39 @@ None beyond the explicit source/contract and provider-semantic gates above.
 
 ### Review Status
 
-Pending.
+**Acceptance pending developer validation — Attempt 2, 2026-11-04.** Reviewed `b95c397d840568a5481c9332517e6ee3dc3713e1`. No additional blocking code defect was identified in inspected paths, but the mandatory PostgreSQL acceptance gate is unexecuted. Status remains `review`, executor/claim empty, Attempt 2 preserved. This is not acceptance and does not require a new implementation claim solely to run the developer-owned check.
 
-### Review Notes
+### Finding
 
-Not reviewed.
+**[P1] Required PostgreSQL evidence is missing.** The Attempt 2 report explicitly records `npm run test:integration:docker` as NOT_RUN. The real shop-product-discovery and persisted catalogue scenarios, aggregate exit status and owned-container cleanup must be recorded before acceptance. Unit/mock coverage and integration typechecking do not establish the required persisted behavior. This is a validation gap, not a reproduced production defect or a finding that the permitted review submission was improper.
 
-### Reviewed Files
+### Reviewed Source and Independent Validation
 
-None.
+Reviewed the corrected task requirements and Attempt 2 report, source/Shared/Database alignment, product search/cursor/category membership, built-in execution wrapper and relevant test coverage. The submission consumes Shared 5.0.0 and records an accepted DATABASE-002 descendant. Historical Attempt 1 reports remain preserved and are superseded by Attempt 2's current submission.
 
-### Validation Reviewed
+Independently executed with Node 24.19.0 from the dedicated implementation worktree:
 
-None.
+```bash
+node --import tsx --test tests/unit/execution/policy/*.test.ts tests/unit/execution/discount*.test.ts tests/unit/capabilities/*.test.ts tests/unit/mcp/*.test.ts
+```
 
-### Architecture Conformance
+**118 tests passed, zero failures/skips.** Local log `/tmp/arch058-mcp002-review-unit.log` is not a committed artifact. Implementation comparison whitespace check passed and the implementation checkout remained clean. This selection is not relabelled as either of the implementer's reported 76/75-test groups. No Docker, fresh build, lint or typecheck run is claimed by this review.
 
-Not assessed.
+### Required Developer Handoff
 
-### Follow-up
+From `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`, with the prescribed Node bootstrap:
 
-None.
+```bash
+npm run test:integration:docker
+```
+
+Pin implementation `b95c397d840568a5481c9332517e6ee3dc3713e1` and Database gitlink `bd2d09066a8eb178a56f48fbbf88df637c411059`. Use only the owned disposable harness; do not substitute a deployment DATABASE_URL. Record actual scenario results, overall exit status, errors/skips if any, and cleanup evidence in this task, then return for architect review. The existing task assigns this execution to the developer; this review does not silently transfer it to the repository agent. Do not fabricate a pass, weaken assertions or start enabled tasks. If the run reveals implementation failures, route them back to the owning task before acceptance.
+
+### Downstream and Publication
+
+MCP-003, COMMERCE-001, BACKGROUND-001 and SYSTEM-TEST-001 remain Pending. None is eligible through this unaccepted MCP-002 dependency. Their explicit dependency edges remain unchanged. Acceptance of the Shared release and Database correction does not substitute for MCP-002's validation.
+
+Parent review worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-MCP-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002`, both matching task branches. The developer explicitly authorized task/downstream documentation updates, commit and push on 2026-11-04. No implementation source, schema, dependency, gitlink, main branch or downstream execution is changed.
 
 ## Architect Dependency Reconciliation (2026-11-04)
 
@@ -597,3 +727,53 @@ MCP-001 Attempt 3 is accepted and Complete at `1dd5430b9d3108bf93bba86c1fb923373
 ## Architect Resume Reconciliation (2026-11-04)
 
 MCP-001 is Complete at accepted Attempt 3; DATABASE-002 is accepted and Complete at `93225ee`; SHARED-006 is accepted and Complete with published Shared 5.0.0 / runner 1.1.0 / discount built-ins 2.0.0. All explicit prerequisites are satisfied. This supersedes the blocked lifecycle wording in revision 10 above: task is Ready, executor/claim empty, Attempt 1 retained. Preserve WIP `4bffa87ed4af0fb40513ad75d38df49c51746360` and its report; normal launcher preparation claims the next attempt in the existing dedicated worktrees. Do not reuse the stale claim or automatically start execution. Consumer adoption and validation remain task work, including the known optional Commerce projection issue.
+
+## Architect Review — Developer Integration Run, Attempt 2
+
+**Changes Requested — returned to Ready.** This review supersedes the earlier NOT_RUN/pending-validation disposition. Attempt 2 remains preserved, executor and claim remain null; the repository agent must use normal launcher preparation for its next attempt. No acceptance or downstream promotion is recorded.
+
+### Evidence
+
+Reviewed the developer-supplied terminal transcript at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002/typescript` against unchanged implementation `b95c397d840568a5481c9332517e6ee3dc3713e1`. It records the owned `npm run test:integration:docker` harness, migrated PostgreSQL 16.15/pgvector fixture, **31 tests: 26 passed, 4 failed, 1 opt-in live Shopify test skipped**, and `MCP_IT_ASSERTIONS_FAILED: npm exited with status 1`. Four failures include the parent shop-product-discovery suite and its three failing subtests; they are not four independently diagnosed defects. The transcript confirms removal of the owned container, volume and network. This review inspected the supplied evidence and source; it did not rerun Docker. The transcript is an untracked developer artifact and is not staged by this documentation handoff.
+
+### Findings to Resolve
+
+1. **[P2] Incorrect category error assertion.** `tests/integration/shop-product-discovery.integration.test.ts:78` tests `error.message` for `MCP_PRODUCT_CATEGORY_NOT_READY`. The actual `McpRequestError` correctly uses message `UNAVAILABLE` and carries the diagnostic in `reason`. Assert the typed error/code/reason rather than changing the production error contract to satisfy the assertion. Rerun the remaining generation/language/version/category cases, which this early failure prevented from completing.
+2. **[P2] FIXED-mode fixture violates the installed database constraint.** At line 118 the fixture sets `recoveryOfferMode: FIXED` without `fixedShopifyDiscountId`; PostgreSQL rejects it under `ck_arch016_shop_settings_fixed_offer`. Supply valid same-shop fixture state under the existing schema and intended policy semantics. Preserve the meaningful selection-change, details-denial, AI pagination, cross-shop/cross-mode and exact override-expiry assertions. This failure prevented the rest of that subtest from running; no pass is claimed for those later checks. Do not alter the database constraint or production policy to accommodate invalid test setup.
+3. **[P2] Expected published product capability is absent.** Line 150 expects the seeded product capability plus the canonical built-ins, but actual tools/list contains only the two built-ins. Investigate the seeded published definition, registration/executor compatibility, feature/release/provider eligibility and expected descriptor name against the corrected task contract. Establish the real cause; the current evidence does not prove whether this is fixture drift or a runtime defect. Do not simply remove the expected published capability or weaken authorization to pass. Prove that changing the other tenant's installation does not hide or expand this shop's legitimately eligible published tool.
+
+### Correction and Validation Handoff
+
+Resolve all three findings in the existing task-owned source/tests, preserve WIP/history and exact accepted Shared 5.0.0/Database contracts, run the required fast checks, and publish the same mirrored task branches. Do not edit Shared/Database or fabricate a new contract to fix fixture assumptions. If investigation reveals a genuinely unowned change, return the concrete gap to the architect.
+
+The existing developer-owned integration execution policy remains in force: after corrections, provide the exact `npm run test:integration:docker` command for the developer to rerun through the owned disposable harness. Record corrected HEAD/Database pin, complete scenario results, overall exit and cleanup before acceptance. This Ready transition does not itself authorize autonomous Docker execution or claim a new attempt. Earlier independently passing 118 unit tests remain historical evidence for the reviewed commit, not validation of future corrections.
+
+MCP-003, COMMERCE-001, BACKGROUND-001 and SYSTEM-TEST-001 remain Pending on acceptance of MCP-002 and their other prerequisites. The developer requested this review be added to the definition and the task returned to Ready for agent correction. No implementation, gitlink or main branch is changed.
+
+## Architect Acceptance — Attempt 3, 5 November 2026
+
+**Accepted.** Implementation `11fba27` resolves all three prior integration findings. No blocking findings remain. Task is Complete under automatic completion mode, Attempt 3 preserved, executor and claim null. This supersedes earlier Changes Requested/Ready/pending-validation dispositions, retained above as historical evidence.
+
+### Findings Resolved
+
+1. Category assertions use typed McpRequestError code/reason, retaining the production error contract. Generation/language/version/category cases now execute successfully.
+2. FIXED settings fixtures provide valid same-shop fixed discount identity and clear it on mode changes. Current selection, denied details, AI pagination, cross-shop/cross-mode and exact override-expiry assertions remain meaningful and passed.
+3. The prior generic published fixture rendered an unsupported result field. The corrected shared test fixture uses products.search 1.0.0 with product definition 2.0.0 and the supported product output template. Discovery assertions were strengthened rather than removed. Real-registry tests reject the old template, accept the corrected definition and retain eligibility checks; PostgreSQL tests preserve full list/manifest assertions and cross-tenant installation revocation checks. Only four test/fixture files changed from the reviewed Attempt 2; production authorization was not weakened.
+
+### Developer Integration Evidence
+
+The newly supplied terminal transcript at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-MCP-002/typescript` records the developer-run `npm run test:integration:docker` on 5 November 2026, from 00:15:55 to 00:16:53 London time. It reports **31 tests: 30 passed, 0 failed, 1 explicitly opt-in live Shopify test skipped**, and `Disposable PostgreSQL integration tests passed.` The formerly failing subtests all passed. Owned container `moda-mcp-it-901507446732-postgres-1`, volume and network were removed. No live Shopify pass is claimed.
+
+Reviewed the correction diff and transcript against current implementation `11fba27`, with Database gitlink `bd2d09066a8eb178a56f48fbbf88df637c411059`. Transcript SHA256: `7582013c39fed38f8c73336f0d0d4fe21b4f39974bdf3edab676b94296b3ff2a`. The report's earlier corrected-HEAD NOT_RUN statement is superseded by this subsequent developer evidence. The untracked developer transcript is preserved and not staged.
+
+### Independent Review Checks and Limits
+
+Independently ran `node --import tsx --test tests/unit/runtime/service-ports.test.ts`: **7/7 passed**, no skips. Correction whitespace check passed. Local review log `/tmp/arch058-mcp002-review-a3.log` is not a committed artifact. The earlier independent 118-unit pass remains evidence for unchanged production code at Attempt 2; it is not counted as a fresh Attempt 3 run. Reviewed Attempt 3's reported product/catalogue groups and fast checks. Docker was run by the developer, not rerun by this review.
+
+Parent and implementation review paths remain the canonical dedicated MCP-002 worktrees on matching task branches. This acceptance changes only parent documentation, with no implementation, schema, dependency, gitlink, main merge or deployment change.
+
+### Downstream Reconciliation
+
+MCP-003's explicit MCP-002 and SHOPIFY-001 prerequisites are now Complete. MCP-003 is promoted to Ready, unclaimed at Attempt 0. Commerce remains Pending on MCP-003; Background remains Pending on MCP-003 and Commerce; SYSTEM-TEST-001 retains its remaining implementation prerequisites. No downstream task is started. ARCH-058 remains incomplete until its required consumer and system validation work is accepted.
+
+The developer explicitly authorized updating the task report, downstream dependencies, committing and pushing on 5 November 2026.
