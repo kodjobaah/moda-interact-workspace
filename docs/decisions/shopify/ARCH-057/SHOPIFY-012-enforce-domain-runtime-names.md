@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 90
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-011
 enables:
 - ARCH-057-SYSTEM-TEST-001
 created: 2026-11-04
-updated: 2026-11-04
+updated: 2026-11-05
 ---
 
 # ARCH-057-SHOPIFY-012: Enforce domain runtime names and canonical development billing identities
@@ -116,11 +116,11 @@ Do not create an upgrade/backward-compatibility acceptance case, a migration scr
 
 ## Work Items
 
-- [ ] Record the development-only/no-legacy-preservation decision and exact replacement map.
-- [ ] Replace all three runtime hash namespaces and rewrite the specified explanatory comments.
-- [ ] Add the zero-exception naming gate and new canonical fixed vectors.
-- [ ] Update affected expectations and verify fresh same-format replay/conflict/rollback behaviour.
-- [ ] Run focused unit and migrated PostgreSQL regressions and record the final scan inventory.
+- [x] Record the development-only/no-legacy-preservation decision and exact replacement map.
+- [x] Replace all three runtime hash namespaces and rewrite the specified explanatory comments.
+- [x] Add the zero-exception naming gate and new canonical fixed vectors.
+- [x] Update affected expectations and verify fresh same-format replay/conflict/rollback behaviour.
+- [x] Run focused unit and migrated PostgreSQL regressions and record the final scan inventory.
 
 ## Interfaces / Contracts
 
@@ -147,22 +147,22 @@ This transitively follows all ten functional touchpoint tasks. Their existing id
 
 ## Acceptance Criteria
 
-- [ ] All three old literals are absent from Shopify runtime code; each new canonical literal is used at its specified builder.
-- [ ] Final runtime names/comments contain no architecture/task labels; the naming check reports no allowed legacy matches.
-- [ ] Fixed request-key/fingerprint vectors reflect the new namespaces, actual operation kinds and unchanged input/framing rules.
-- [ ] Fresh same-format replay returns one operation/receipt and creates no extra grant/purchase; conflicts, tenant checks and rollback remain correct.
-- [ ] No legacy fallback, dual-read/write, digest alias, backfill, migration or compatibility flag was added.
-- [ ] Tests/documents retain valid architecture traceability; unrelated encryption, queue, pricing and public DTO contracts are unchanged.
-- [ ] Required real PostgreSQL cases execute; historical-development-data preservation is not used as a blocker or acceptance requirement.
+- [x] All three old literals are absent from Shopify runtime code; each new canonical literal is used at its specified builder.
+- [x] Final runtime names/comments contain no architecture/task labels; the naming check reports no allowed legacy matches.
+- [x] Fixed request-key/fingerprint vectors reflect the new namespaces, actual operation kinds and unchanged input/framing rules.
+- [x] Fresh same-format replay returns one operation/receipt and creates no extra grant/purchase; conflicts, tenant checks and rollback remain correct.
+- [x] No legacy fallback, dual-read/write, digest alias, backfill, migration or compatibility flag was added.
+- [x] Tests/documents retain valid architecture traceability; unrelated encryption, queue, pricing and public DTO contracts are unchanged.
+- [x] Required real PostgreSQL cases execute; historical-development-data preservation is not used as a blocker or acceptance requirement.
 
 ## Validation
 
-- [ ] `npm run lint:runtime-names`
-- [ ] `npm run test:billing-identity`
-- [ ] `MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/billing-activation.postgres.integration.test.ts tests/integration/recovery-credit-purchases.postgres.integration.test.ts`
-- [ ] `npm run typecheck`
-- [ ] Focused ESLint on modified/new files and `git diff --check`
-- [ ] Record the zero-exception final runtime scan, temporary gate-rejection checks, new fixed vectors, fresh replay results and task-owned database cleanup
+- [x] `npm run lint:runtime-names`
+- [x] `npm run test:billing-identity`
+- [x] `MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/billing-activation.postgres.integration.test.ts tests/integration/recovery-credit-purchases.postgres.integration.test.ts`
+- [x] `npm run typecheck`
+- [x] Focused ESLint on modified/new files and `git diff --check`
+- [x] Record the zero-exception final runtime scan, temporary gate-rejection checks, new fixed vectors, fresh replay results and task-owned database cleanup
 
 ## Stop Condition
 
@@ -176,35 +176,68 @@ The user explicitly prioritised one simple canonical development implementation 
 
 ### Status
 
-Not Started. Defined but not materialised; no execution claim or worktree is asserted.
+Ready for Review — Attempt 1, codex, 2026-11-05. Implementation committed and pushed as `905e8a79ec16f11901375e3fc14931b3f45cbbcd` on `task/ARCH-057-SHOPIFY-012`. No architect acceptance or terminal-task promotion is asserted.
+
+### Prepared Execution / Provenance
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-012`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-012`. Both branches `task/ARCH-057-SHOPIFY-012`; both newly created by the launcher. No shared/default checkout or another task worktree was switched or edited.
+- Launcher verified SHOPIFY-011 Complete. Both remote-task fast-forwards not needed; both origin/main integrations already current. Parent start `69ff2a6e3e1e6f49e97f32c1f5cfe085470d475a`; implementation start `cf0e8dfd314c92183b07a935dff68c933f445daf`.
+- Durable claim `0e562fb1417041178296fd0ef09d34ccc42222f9`, Attempt1, executor codex, `2026-11-05T10:22:20Z`. Parent end is the report-submission commit containing this report; no self-referential SHA is invented. Implementation end `905e8a79ec16f11901375e3fc14931b3f45cbbcd`.
+- Recursive submodule sync/update passed in launcher; recorded/working nested Database `bd2d09066a8eb178a56f48fbbf88df637c411059`, unchanged.
+- `npm ci` passed; generated Prisma from the pinned Database schema. Actual installation: Shared3.1.0, Prisma client6.19.3, Vitest4.1.11, TypeScript5.9.3. Prescribed workspace bootstrap supplied Node24.19.0/npm11.17.0. No dependency/schema changes.
 
 ### Files Changed
 
-None. Definition only.
+16 implementation files, all declared scope:
+
+- `app/services/billing/shopify-billing-operation.service.ts`: exactly the three authorized namespace substitutions.
+- Eight specified comment files: webhook normalization utilities; configuration contracts/seal/composition; merchant knowledge R2 configuration; recovery follow-up catalogue/sender and human commands. Responsibility/security/AAD/ordering explanation retained.
+- `scripts/check-runtime-names.mjs` (new), `tests/unit/billing-operation-identity-vectors.test.ts` (new), `docs/runtime-naming.md` (new).
+- `tests/unit/services/billing/shopify-billing-operation.service.test.ts`; both specified activation/purchase PostgreSQL suites; `package.json`.
 
 ### Work Completed
 
-None.
+- Replaced `arch027-shopify-operation-key-v1`, `arch027-recurring-v1`, `arch027-topup-v1` directly with the exact canonical names. Each canonical namespace occurs exactly once at its designated builder. The old values are absent from runtime source; no aliases, fallback, encoded strings, compatibility flags, backfill or migration.
+- Preserved UTF-8, newline framing, SHA-256, field order and validation; the private key builder remains private. Public enums/signatures, one-time purchase-key format, encryption AAD bytes, queue/pricing/accounting/authorization policy remain unchanged.
+- Added a deterministic zero-exception naming gate over241 selected runtime files (234 application source files +7 actual entry/configuration/deployment surfaces) plus production manifest values. Filenames/content and supported architecture/task forms fail with file/line/classification only; no source-line/secret dump. Role/path exclusions preserve test/document traceability, generated/vendor/history/validation artifacts and secret-file boundaries. Symlinks, including parents of literal production-command paths, are not followed. Complete selected-path inventory is in `docs/runtime-naming.md`.
+- Added17 new vector/identity cases with independently Python-derived fixed SHA-256 constants, non-ASCII fields and all four real kinds. Service entrypoints expose request keys without exporting the builder. Existing fresh replay case now asserts canonical fixed values. Tests retain field differentiation, cancellation exclusions, provider-reference enrichment/conflict/exclusion and invalid controls.
+- Strengthened real PostgreSQL fixtures: repeat initial preparation and concurrent finalization produce one confirmed operation and one25-credit grant; purchase replay creates one receipt/usage/operation and no extra provider observation; changed-quote fingerprint conflict and tenant rejection retain state. Existing lock, cycle-race and rollback assertions preserved.
+- Recorded development-only/no-legacy-preservation decision, exact namespace map, ordered field/framing contract, fixed vectors, runtime inventory, gate fixture results, real persistence results and cleanup in the evidence document.
 
 ### Validation Results
 
-Not run. Record exact commands, fixture/case results, source/build/installed-package provenance, original diagnostic assertions, SQL/provider counts where required, and task-owned resource cleanup.
+All required checks passed:
+
+1. `npm run lint:runtime-names` — **241 files + production manifest values,0 violations,0 exceptions**.
+2. **16 disposable gate checks passed**: architecture/task spelling forms, all three old literals, filename/config/production-manifest rejection (including actual manifest line), excluded test/document/validation-manifest traceability, external symlink, final clean scope. All fixtures/temporary manifest edits removed/restored.
+3. `npm run test:billing-identity` — **41 tests passed,2 files** (17 new +24 existing).
+4. `MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/billing-activation.postgres.integration.test.ts tests/integration/recovery-credit-purchases.postgres.integration.test.ts` — **8 tests passed,2 files**, zero skips in successful run. Two separate fresh task-owned `pgvector/pgvector:pg17` containers, each initialized with canonical `prisma migrate deploy --schema database/prisma/schema.prisma`, real persistence/independent connections/barriers and controlled providers. No db-push/copied schema/mock persistence.
+5. `npm run typecheck` — passed.
+6. Focused ESLint over all changed/new JS/TS files — passed. Gate lint rerun after its final manifest-line refinement — passed. `git diff --check` — passed. New source/test files remain below300 lines.
+7. Shopify toolkit app-pricing reference and official documentation search consulted; required skill-use and once-per-turn feedback commands returned0. No API operation or version changed, so no API schema/code-generation claim.
+
+The first PostgreSQL invocation could not discover Docker from the non-login test process and ran no cases; not counted as a pass. The successful invocation supplied `DOCKER_HOST` from the active Colima context and `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock` only to that process. No host configuration repair/change. Testcontainers stopped both task PostgreSQL containers and its task Ryuk helper; before/after running-container inventories match exactly, preserving three pre-existing containers. No shared Docker pruning or retained task database/volume.
+
+Purchase suite reports364 emitted SQL statements across fixture/assertion/business work; this is not a before/after performance measurement. Synthetic provider call assertions remain in their original cases; no live charge, refund, provider account or merchant data was used. No new server error-handling path was added; accepted error contracts retained.
+
+Local artifacts: `/tmp/arch057-shopify012-{install,prisma,names,unit,postgres,typecheck,lint,gate-lint,shopify-docs}.log`, `/tmp/arch057-shopify012-vectors.json`, `/tmp/arch057-shopify012-gate-fixtures.json`, `/tmp/arch057-shopify012-runtime-inventory.txt`, `/tmp/arch057-shopify012-containers-{before,after}.txt`. Durable map/vectors/inventory/case evidence is committed in `docs/runtime-naming.md`.
 
 ### Deviations
 
-None.
+None. Changed development hashes are intentional and authorized, not a compatibility failure. No undeclared runtime naming touchpoint required an amendment.
 
 ### Assumptions
 
-The launcher will verify actual dependency status and the accepted integrated source before claiming this task.
+Fresh task-owned fixture databases establish the canonical launch/development baseline. Old development operation rows are disposable and are neither converted nor accepted through an alternate format. Existing reset/seed workflow remains developer-controlled; no startup deletion is introduced.
 
 ### Unresolved Issues
 
-Implementation and required validation are outstanding.
+No task-owned implementation/validation blocker. Architect review pending; terminal SYSTEM-TEST-001 remains gated and was not started.
 
 ### Architectural Concerns
 
-Return changed ownership, persisted identity, schema, queue, transaction or external contract requirements to the architect.
+No cross-repository/schema/wire change, historical identity preservation mechanism, main merge, gitlink, index or downstream task update. The Architect Review below is preserved unchanged.
 
 ## Architect Review
 
@@ -231,3 +264,33 @@ To be assessed after implementation.
 ### Follow-up
 
 Return the completed task for architect review; do not start enabled tasks.
+
+## Architect Dependency Reconciliation — 5 November 2026
+
+SHOPIFY-011 Attempt 2 is architect-accepted and Complete at `aa02676`. Its sole prerequisite is satisfied; promoted to Ready at Attempt 0, executor/claim null. Earlier pending dependency snapshots are historical. Normal launcher preparation is required; no execution is started here.
+
+## Architect Acceptance — Attempt 1, 5 November 2026
+
+**Accepted.** Reviewed implementation `905e8a79ec16f11901375e3fc14931b3f45cbbcd`. No blocking findings identified. Task marked Complete under automatic completion mode; executor/claim cleared and Attempt 1 preserved. Earlier pending review and pre-execution snapshots remain historical.
+
+### Reviewed Source and Conformance
+
+Reviewed the full task diff, zero-exception naming gate, fixed identity vectors, PostgreSQL assertion changes, naming inventory and Completion Report against the development-only/no-legacy-preservation decision. The runtime billing change is exactly the three authorized namespace substitutions. UTF-8/newline framing, SHA-256, field participation/order, input validation and ordinary request-key formats remain unchanged. Public signatures/accounting policy and unrelated encryption AAD are preserved. No old-format reader, alias, dual writer, migration/backfill or startup deletion is added. Naming comments retain domain/security/ordering meaning and the gate avoids secret-source dumps and external symlink traversal. Fresh replay/conflict/tenant/accounting assertions remain substantive.
+
+### Independent Validation and Limits
+
+Executed with the prescribed Node 24.19.0 bootstrap in the dedicated implementation worktree:
+
+- `npm run lint:runtime-names`: passed, 241 selected runtime files plus production manifest values, zero violations/exceptions.
+- `npm run test:billing-identity`: **41/41 tests passed**, two files, zero skips.
+- Implementation comparison whitespace check passed; no review source edits retained.
+
+Local independent log `/tmp/shopify012-review.log` is not a committed artifact. Reviewed reported **8 PostgreSQL tests across two suites**, **16 disposable naming-gate checks**, typecheck and scoped lint, including the disclosed initial Docker-discovery failure and later successful owned PG17 run/cleanup. Those gates were not independently rerun by this architect review. Repository-call/SQL counts are not treated as production performance measurements. No live charge/refund or provider-account operation is claimed.
+
+### Isolation and Downstream
+
+Reviewed prepared worktree/dependency/synchronization evidence: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-012`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-012`, matching task branches. No implementation, schema, dependency, gitlink or main branch is modified by this review.
+
+SYSTEM-TEST-001's sole explicit prerequisite, SHOPIFY-012, is now Complete; the transitive Shopify implementation chain is accepted. Promoted to Ready, unclaimed, at Attempt 0. No system test is launched here. Developer-owned integration/manual validation and terminal proof remain separate; ARCH-057 is not marked Implemented.
+
+The developer explicitly authorized task/dependency updates, commit and push on 5 November 2026.

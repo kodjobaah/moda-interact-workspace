@@ -19,8 +19,8 @@ Individual task YAML frontmatter is authoritative.
 | [ARCH-057-SHOPIFY-008](SHOPIFY-008-simplify-merchant-knowledge-processing-and-refresh.md) | Simplify merchant knowledge processing and refresh | Complete | SHOPIFY-001, SHOPIFY-007 |
 | [ARCH-057-SHOPIFY-009](SHOPIFY-009-preserve-session-lifecycle-and-webhook-configuration.md) | Preserve sessions across uninstall retries and reinstall admission | Complete | SHOPIFY-001 |
 | [ARCH-057-SHOPIFY-010](SHOPIFY-010-bound-webhook-ingress-and-queue-publication.md) | Bound webhook ingress and queue publication | Complete | SHOPIFY-009 |
-| [ARCH-057-SHOPIFY-011](SHOPIFY-011-complete-server-error-diagnostics.md) | Complete server error diagnostics after functional tasks | Ready | SHOPIFY-001–010 |
-| [ARCH-057-SHOPIFY-012](SHOPIFY-012-enforce-domain-runtime-names.md) | Enforce descriptive runtime names and canonical development identities | Pending | SHOPIFY-011 |
-| [ARCH-057-SYSTEM-TEST-001](../../system-test/ARCH-057/SYSTEM-TEST-001-verify-shopify-persistence-and-diagnostics.md) | Verify integrated Shopify persistence and diagnostics | Pending | SHOPIFY-012 and transitive prerequisites |
+| [ARCH-057-SHOPIFY-011](SHOPIFY-011-complete-server-error-diagnostics.md) | Complete server error diagnostics after functional tasks | Complete | SHOPIFY-001–010 |
+| [ARCH-057-SHOPIFY-012](SHOPIFY-012-enforce-domain-runtime-names.md) | Enforce descriptive runtime names and canonical development identities | Complete | SHOPIFY-011 |
+| [ARCH-057-SYSTEM-TEST-001](../../system-test/ARCH-057/SYSTEM-TEST-001-verify-shopify-persistence-and-diagnostics.md) | Verify integrated Shopify persistence and diagnostics | Ready | SHOPIFY-012 and transitive prerequisites |
 
 The task definitions and dependency frontier are maintained in the execution plan. A Ready status means all explicit prerequisites are Complete; it does not authorize starting several tasks in parallel without their normal launcher preparation.
