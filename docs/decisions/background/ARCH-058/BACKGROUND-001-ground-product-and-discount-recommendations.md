@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 60
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-058-MCP-002
 - ARCH-058-MCP-003
@@ -376,11 +376,80 @@ No new agent, queue, worker, transaction retry framework, product mirror, Admin/
 
 ## Completion Report
 
-Not started. On execution record prepared isolation/synchronization evidence, parent/implementation branches and SHAs, the accepted SHARED-006 receipt/accepted DATABASE-002 gitlink and installed Shared 5.0.0 evidence, including unchanged direct Zod dependency, exact changed files, context/observation/refresh interfaces, source-rule extraction compatibility, complete-text/locale/length cases, actual command/test counts, original safe/redacted diagnostic examples, developer-run disposable evidence or its outstanding status, and overlap resolutions. Record actual implementation/parent task-report publication or its precise failure; do not claim merges/deployment.
+**Status: Architect-accepted and Complete (Attempt 2).** Accepted on 2026-11-05 at source `f49dcb0b87ac9213824db74bcd10fd97c7043a00`. Executor/claimed_at remain null and attempt remains 2.
+
+### Architect correction checklist
+
+- **P2 — Apply fallback selection for soft dispositions:** implemented in `src/commerce/host.ts` and `src/commerce/recommendations/fallback-selection.ts`. For `OUT_OF_SCOPE_REDIRECT` and `SHIPPING_INFORMATION_UNVERIFIED`, the host selects at most one valid submitted proposal before refresh planning. It ranks observed non-browse customer-context products first, exact product/variant identities from the owned basket second, and other observed browse products last, preserving proposal order within each class.
+- **Preserve discount inspection, shipping, authority, and budget rules:** the inspection gate and proposal validation remain before selection; only selected proposals enter product/offer refresh planning. Independent shipping refresh/composition remains on its existing path. The existing shared call budget remains unchanged.
+- **Real loopback host proof:** added a multi-proposal scenario that submits browse first and customer-context second, then asserts the complete controlled response chooses the context item and the exact tool calls are two searches plus one selected-product refresh, with zero discount calls.
+
+### Changes
+
+Attempt 2 changes are limited to:
+
+- `src/commerce/host.ts`
+- `src/commerce/recommendations/fallback-selection.ts`
+- `tests/unit/commerce/recommendations/fallback-selection.test.ts`
+- `tests/integration/commerce/host.fixture.ts`
+- `tests/integration/commerce/host-suites/recommendations.ts`
+
+The real basket identity now includes both product and variant IDs. A unit test verifies a same-product, wrong-variant proposal does not receive basket priority. The new loopback host case verifies customer-context priority over browse regardless of proposal order.
+
+### Dependency baseline
+
+- Shared remains pinned and resolved at `5.0.0`; Background direct Zod remains `^4.4.3`, locked at `4.6.5`.
+- Database remains at the prepared accepted gitlink `bd2d09066a8eb178a56f48fbbf88df637c411059`; Attempt 2 changed no schema, migrations, or gitlink.
+
+### Validation
+
+Attempt 2 checks passed:
+
+- `npm run build` (Prisma generation and TypeScript compilation).
+- `npm run lint`.
+- `npm run test:commerce-recommendations` — 20 files, 197 tests passed.
+- `npm run test:commerce-host` — isolated loopback suite, 1 file, 70 tests passed.
+- Focused wrapper/processor command from the task — 4 files, 84 tests passed.
+- `git diff --check`.
+
+The required developer-owned disposable PostgreSQL command passed on the preceding implementation (`46ff3adc652a8bfba369622667f968a29faf75ac`):
+
+```sh
+node scripts/test-integration.mjs tests/integration/commerce/recommendation-context.integration.test.ts
+```
+
+Result: 1 test passed, 0 failed, exit code 0. An earlier run failed only because teardown attempted to delete immutable ARCH-021 published prompt revisions (`P0001`); the fixture cleanup was corrected in `46ff3adc652a8bfba369622667f968a29faf75ac`, then the authorized rerun passed. The disposable harness invoked its `finally` cleanup for PostgreSQL and Redis. Attempt 2 changes only host fallback selection and its host/unit tests, so the database context boundary was not rerun.
+
+### Git / VCS
+
+Task branch: `task/ARCH-058-BACKGROUND-001`
+
+Attempt 2 launcher evidence:
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-BACKGROUND-001`, `task/ARCH-058-BACKGROUND-001`
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-BACKGROUND-001`, `task/ARCH-058-BACKGROUND-001`
+- Parent task branch fast-forward: not needed; parent `origin/main`: already current.
+- Implementation task branch fast-forward: not needed; implementation `origin/main`: already current.
+- Recursive submodule sync/update: passed; Database at `bd2d09066a8eb178a56f48fbbf88df637c411059`.
+- Shared workspace/implementation checkouts switched for task work: no. Another task worktree reused: no.
+- Attempt 2 claim was committed and pushed by the launcher as `3fc5485c1be77c993a573327a577310695a53d70`.
+
+Implementation repository:
+- Attempt 2 commit: `f49dcb0b87ac9213824db74bcd10fd97c7043a00`
+- Remote: `origin/task/ARCH-058-BACKGROUND-001`
+- Pushed: yes.
+
+Parent workspace:
+- Task file: `docs/decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md`
+- Attempt 2 report commit: `3978459dbf74406d086c0be85703a9792037da35` (pushed).
+- Remote: `origin/task/ARCH-058-BACKGROUND-001`
+- Parent submodule gitlink staged: no.
+
+Merged to either main branch: no. Task is returned to `review` for moda_architect; SYSTEM-TEST-001 remains gated on Background acceptance.
 
 ## Architect Review
 
-Pending. Acceptance requires the implemented source mapping, preserved initial-outreach/legacy evidence behavior, deterministic authorized-call accounting, complete controlled-body composition, unchanged downstream ownership and actual mandatory validation evidence. A task definition or proposed command is not proof of execution.
+Accepted at Attempt 2 on 2026-11-05; see the acceptance record below. The historical Attempt 1 finding is resolved.
 
 ## Architect Dependency Gate — MCP-002 Attempt 2 (2026-11-04)
 
@@ -403,3 +472,40 @@ COMMERCE-001 Attempt 3 is accepted and Complete at `58f5418ada85d1cfc08400f64ab4
 ## Dependency Verification — 5 November 2026
 
 Reverified all four explicit prerequisites as Complete: MCP-002, MCP-003, COMMERCE-001 and SHARED-006. Commerce Attempt 3 acceptance is published at parent `c1976628f`, with follow-up verification `669e47783`, for implementation `58f5418ada85d1cfc08400f64ab41b198fb427b4`. This task remains Ready, unclaimed, Attempt 0. Normal launcher preparation and accepted-source integration checks are required before execution; no claim or implementation is started here.
+
+
+## Architect Implementation Review — Attempt 1 (2026-11-05)
+
+### Decision
+
+**Changes Requested.** Reviewed implementation `46ff3adc652a8bfba369622667f968a29faf75ac`, following `6106059c73ca66404fa4bea25becc23b58bce813`. Return to Ready, executor/claimed_at null; Attempt 1 remains unchanged. No downstream task is promoted or started.
+
+### Blocking finding
+
+**P2 — Apply the fallback selector for soft dispositions.** In `src/commerce/host.ts:704-706`, all submitted proposals flow into the ordinary refresh/render path, including `OUT_OF_SCOPE_REDIRECT` and `SHIPPING_INFORMATION_UNVERIFIED`. The required `selectFallbackRecommendation` helper exists but is never invoked by the host. These soft replies can therefore retain multiple products and ignore the specified current-context → owned-basket → browse preference. Invoke the pure selector before refresh planning for soft dispositions, preserving proposal order within each preference class and selecting at most one already observed/proposed product. Keep required discount inspection, independent shipping, authorization and the shared call budget intact. Add a real loopback host case with multiple proposals that asserts the chosen identity, complete returned body and exact tool-call counts, rather than only testing the isolated helper.
+
+### Evidence reviewed
+
+Inspected the task requirements and source changes covering recommendation context, turn-local observations, selection, refresh planning, host finalization, discount eligibility, shipping/rendering and the unused fallback helper. The completion report's stale initial NOT_RUN PostgreSQL sentence is reconciled with its later recorded passing developer validation; that old sentence is not treated as a second outstanding validation blocker.
+
+Independently executed:
+
+- `npm run test:commerce-recommendations`: **196 tests across 20 files passed**. Local evidence `/tmp/background058-review-unit.log`.
+- `npm run test:commerce-host`: **69 tests passed** through the isolated loopback host configuration. Local evidence `/tmp/background058-review-host.log`.
+
+Reviewed the submitted build/lint/wrapper regression results and the recorded developer-authorized disposable PostgreSQL pass after immutable-fixture cleanup. Those checks were not independently rerun by the architect. Passing focused suites do not cover the missing integrated soft-disposition selection behavior identified above.
+
+### Follow-up
+
+The owning agent must reclaim this task through the normal launcher, implement and test the correction, rerun relevant validation and update the completion report before resubmission. All explicit upstream dependencies remain Complete. SYSTEM-TEST-001 remains Pending on Background acceptance. No implementation edit, integration merge, deployment, persistent publication or customer send is made by this review.
+
+
+## Architect Acceptance — Attempt 2 (2026-11-05)
+
+**Accepted and Complete.** Reviewed implementation `f49dcb0b87ac9213824db74bcd10fd97c7043a00`, matching the pushed implementation task branch. No actionable findings remain. Automatic completion applies; executor/claimed_at remain null, Attempt 2 unchanged.
+
+The host now invokes `selectFallbackRecommendation` before refresh planning for both soft dispositions, retains at most one valid observed proposal and preserves current-context/exact-basket/browse preference. The integrated loopback regression asserts the chosen product, full controlled body and exactly two searches plus one selected-product refresh, with zero discount calls. The unit regression covers exact basket product/variant identity. Discount inspection, independent shipping, authorization and call-budget paths remain in place.
+
+Independent review validation: `npm run test:commerce-recommendations` passed **197 tests across 20 files**; `npm run test:commerce-host` passed **70 tests**. Local logs: `/tmp/background058-attempt2-review-unit.log` and `/tmp/background058-attempt2-review-host.log`. Correction `git diff --check` passed; implementation and parent worktrees were clean at review. Reviewed submitted Attempt 2 build/lint and 84 wrapper/processor tests; those checks were not independently rerun. The recorded developer-authorized PostgreSQL context proof passed 1 test, exit 0, at `46ff3ad`; its boundary is unchanged by the fallback correction and was not rerun by the architect.
+
+SYSTEM-TEST-001 now has all explicit prerequisites Complete and is promoted to dependency-ready (`ready`), unclaimed, Attempt 0 preserved. Terminal execution remains subject to its existing developer authorization, integration and environment gates. No test execution, main merge, deployment, persistent publication or customer send is authorized by this readiness transition. This accepts Background only; the architecture's terminal proof remains outstanding.
