@@ -67,6 +67,17 @@ Published @modainteract/moda-interact-shared/commerce input/output, release/capa
 ## Stop Condition
 After Work Items, Acceptance Criteria and Validation complete, submit Completion Report for review and STOP. Explicit developer completion via /moda_developer_update is required. Do not start enabled work. System Test is manually invoked after prerequisites complete.
 
+
+### Verified publication touchpoint
+`moda-interact-shared/package.json`: inspect version, exports and declared publication scripts; change release metadata only and use the approved publication command. Registry receipt records exact published version.
+
+### Release acceptance matrix
+| Check | Required result |
+|---|---|
+| Prerequisite review | SHARED-001 Complete/accepted |
+| Registry receipt | Exact approved immutable version visible with expected exports |
+| Source diff | Release metadata only; no runtime source changes |
+
 ## Implementation Notes
 Use launcher-resolved isolated matching task worktrees/branches and record synchronization evidence. No execution started by this definition. Reuse existing policy/lifecycle services. Return missing schema/contract capability or permission-parity conflicts to architect.
 
