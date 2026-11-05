@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: codex
-claimed_at: 2026-11-05T08:53:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-058-MCP-002
@@ -339,37 +339,56 @@ Stop on an absent accepted dependency, mismatched immutable source/package/manif
 
 ## Completion Report
 
-### Status
+### Status — prerequisite reconciliation required, Attempt 1
 
-Not Started — defined but not materialised.
+**Implementation is unfinished.** Stopped at requirement 1's explicit Database ancestry gate; this is a reconciliation submission, not a completed implementation or acceptance request. Task returned to review with claim cleared and Attempt 1 retained. Downstream tasks remain gated.
 
-### Files Changed
+### Concrete gate failure and required architect decision
 
-None.
+The prescribed command, run in the launcher-prepared Commerce implementation worktree, returned **exit 1**:
 
-### Work Completed
+```sh
+git -C database merge-base --is-ancestor ded8f14a60182f6b1443640f012caf0089b8a44c HEAD
+```
 
-None.
+The required commit exists (`git cat-file -t` returns `commit`), but is not an ancestor of the exact prepared/accepted Database gitlink **`bd2d09066a8eb178a56f48fbbf88df637c411059`**. Its recent history is `bd2d090 feat(database): migrate built-in grants to no-hash v2 identity (#70)` → `395675f task(ARCH-058-DATABASE-001): persist reference taxonomy and core discovery policy (#69)`. This is consistent with squash integration rather than preservation of the original task commit ancestry; it is not evidence that the migration is missing.
 
-### Validation Results
+Read-only comparison of `prisma/migrations/20261104120000_reference_taxonomy_and_core_product_discovery/migration.sql` between `ded8f14a` and the prepared pin returns no diff. Requirement 1 nevertheless explicitly prescribes that ancestry gate and requires reconciliation for a conflicting accepted tree. The agent has not substituted a different prerequisite, reset the Database pin, changed the definition or treated a failed gate as passed.
 
-Not run.
+**moda_architect action:** reconcile the task's historical task-commit ancestry requirement with the accepted merged Database chain, supplying an explicit accepted merged ancestor/capability-equivalence decision. Preserve the later accepted Database migrations and the existing draft. After reconciliation, resume through the normal task lifecycle; do not recapture the immutable legacy fixture from upgraded Shared.
 
-### Deviations
+### Work preserved
 
-None.
+Committed and pushed unfinished implementation draft **`0914178808de0b2110e7ad7da667ce8e68c8fc8b`**, branch `task/ARCH-058-COMMERCE-001`:
 
-### Assumptions
+- Verified all recorded Commerce inspected-file hashes in `execution-baseline.json` against the prepared checkout before edits; package/lock, tool drafts, projector and hash-helper sources matched.
+- `npm ci` using the original committed Shared 2.7.2 lock succeeded. Ran the exact esbuild-based legacy capture before dependency/source changes. Immutable fixture `tests/fixtures/system-product-tools-legacy.json` SHA256 **`f31d8315bb00595967948cc1936801bb5d0ced62d16e34d835dcbfa33528475a`**. Captured search hash **`ccdff99f720b8809d024d3c4de471a3798c14aca8777aee3671ab40fcac4da97`**; get hash **`ab96fc8c3e8b07208a5214ce49f5c4a95e814f3c00f64edb568ce21bf10c65f5`**. Original integrity remains in that fixture.
+- Installed exact Shared **5.0.0**, semver **7.8.5**, development @types/semver **7.8.0** using the existing registry. Installed runner reports **1.1.0**. Shared integrity matches accepted SHARED-006: `sha512-6IcxLh8QcNNRCN5/n2he7IdbzbWLao4ZNazD/wdijkZ5W2ztHHdEN+LAxILgVrbXuLNw82j7/xtSKuEcjPwSjQ==`. Direct Zod remains **4.6.5**. The install/lock changes are preserved but not claimed fully validated against the dependency-preservation acceptance criteria.
+- Drafted four-tool registry/search-v2 mappings with the unchanged get draft, legacy hash literals, Shared-backed taxonomy/shipping authoring entries, extracted enum/const projector, exact instruction constants/owned response fragment, and installed-runner semver helper. These source edits are **unvalidated WIP**, not completed functionality. No partial publisher/setup execution occurred.
 
-The developer will select a canonical operator checkout containing accepted revision pins and supply existing environment/actor/embedding configuration after compatible consumers are deployed.
+### Validation and remaining implementation
 
-### Unresolved Issues
+Observed: original `npm ci`, immutable legacy capture, exact dependency installations and clean-process runner assertion succeeded. Required Database ancestry check failed as above. `git diff --check` passed. Logs: `/tmp/commerce058-original-install.log`, `/tmp/commerce058-upgrade.log`, `/tmp/commerce058-dependencies.log`.
 
-No persistent environment prerequisites, migration state, actor configuration or actual publication have been verified by this task definition.
+Not run: full installed-export/schema-composition assertions, required focused tests, application typecheck, lint, build, PostgreSQL proof and all persistent/live commands. No test pass is claimed. Remaining work includes exact-release planning/lifecycle/CAS, ownership inventory, sync receipt handling, setup CLI/preflight/children, inspection/preview union boundaries and parity, UI disclosure, README, required unit/integration fixtures, dependency-diff review and all final validation. The present draft must not be deployed or used to publish an environment.
 
-### Architectural Concerns
+Developer-owned proof remains **NOT_RUN — developer validation required**, after implementation and bounded checks are completed:
 
-None beyond the explicit ownership, preservation and operational gates above.
+```sh
+cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-COMMERCE-001
+npm run build
+node scripts/run-system-commerce-tool-sync-postgres.mjs
+```
+
+No Docker, PostgreSQL execution, live provider/embedding request, taxonomy source download, environment apply, package publication, customer send or deployment occurred.
+
+### Launcher and VCS evidence
+
+Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; new parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-COMMERCE-001`; new implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-COMMERCE-001`; both branch `task/ARCH-058-COMMERCE-001`. Shared workspace/implementation checkouts were not switched or mutated; no other task worktree was reused.
+
+Launcher dependency gate passed MCP-002, MCP-003 and SHARED-006 Complete. Parent prepared HEAD **`ace42f3a72c9300ea539dd2c12947b709072b064`**, implementation prepared HEAD **`069cd4831840c6928f431a38b672176c66784cf3`**. Both task-branch fast-forwards `not-needed`; both origin/main incorporations `already-current`. Recursive sync and update/init passed, submodules ready at Database **`bd2d09066a8eb178a56f48fbbf88df637c411059`**. Claim **`c68b3f16a5c408e4646f08f84b255e1b655cd966`**, pushed, codex Attempt 1, **2026-11-05T08:53:29Z**.
+
+Implementation draft above is pushed; this report is committed/pushed separately on the mirrored parent task branch. Only this task metadata/report changes in the parent; no task index, architecture, other task, parent gitlink, Database/Shared source or main branch changes. Architect Review and all reconciliation sections are preserved byte-for-byte.
 
 ## Architect Review
 
