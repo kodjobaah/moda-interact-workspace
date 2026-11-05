@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: codex
-claimed_at: 2026-11-05T14:23:17Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
 - ARCH-058-MCP-002
@@ -376,72 +376,76 @@ No new agent, queue, worker, transaction retry framework, product mirror, Admin/
 
 ## Completion Report
 
-**Status: Changes Requested after Attempt 1 review.** Implementation is published, but not accepted. The required developer-authorized PostgreSQL validation subsequently passed as recorded below; the remaining blocker is the host soft-disposition fallback selection. Task is Ready/unclaimed; Attempt 1 is preserved.
+**Status: Ready for Review (Attempt 2).** The Attempt 1 P2 correction is implemented and published. No architect acceptance decision has been made by this agent.
 
-### Implementation
+### Architect correction checklist
 
-- Added bounded recommendation context loading, published Platform/Shop instruction composition, provider identity projection, turn-local validated observations, policy-gated discount inspection, stable refresh planning, safe product/basket matching, discount eligibility/combination selection, shipping selection, controlled rendering, and full/one/minimal reply candidates under `src/commerce/recommendations/`.
-- Integrated the behavior into the existing Commerce host and retained grant/policy/turn checks. Conversation MCP requests now carry only the trusted generic `{shopId}` header; legacy outreach encoding remains separate.
-- Replaced only the third recovery instruction with the required literal. Extracted neutral discount eligibility and combination rules while preserving outreach adapters and failure mapping.
-- Added private AI candidate propagation and locale-compatible rendering at the existing wrapper stage; no extra model/send path was introduced.
-- Added focused recommendation, context PostgreSQL, host-loopback, fixture, wrapper, and processor coverage.
+- **P2 — Apply fallback selection for soft dispositions:** implemented in `src/commerce/host.ts` and `src/commerce/recommendations/fallback-selection.ts`. For `OUT_OF_SCOPE_REDIRECT` and `SHIPPING_INFORMATION_UNVERIFIED`, the host selects at most one valid submitted proposal before refresh planning. It ranks observed non-browse customer-context products first, exact product/variant identities from the owned basket second, and other observed browse products last, preserving proposal order within each class.
+- **Preserve discount inspection, shipping, authority, and budget rules:** the inspection gate and proposal validation remain before selection; only selected proposals enter product/offer refresh planning. Independent shipping refresh/composition remains on its existing path. The existing shared call budget remains unchanged.
+- **Real loopback host proof:** added a multi-proposal scenario that submits browse first and customer-context second, then asserts the complete controlled response chooses the context item and the exact tool calls are two searches plus one selected-product refresh, with zero discount calls.
 
-Implementation files are committed on the task branch: initial implementation `6106059c73ca66404fa4bea25becc23b58bce813`, followed by the PostgreSQL fixture-cleanup correction `46ff3adc652a8bfba369622667f968a29faf75ac` (see the implementation branch diff).
+### Changes
 
-### Dependency and database evidence
+Attempt 2 changes are limited to:
 
-- Installed and resolved `@modainteract/moda-interact-shared@5.0.0`; direct Background `zod` remains `^4.4.3`, lock resolution `4.6.5`.
-- Prepared Database submodule gitlink: `bd2d09066a8eb178a56f48fbbf88df637c411059`; no schema or migration bytes were changed.
-- The disposable PostgreSQL integration file is `tests/integration/commerce/recommendation-context.integration.test.ts`. Its published prompt revision rows are immutable under ARCH-021; fixture cleanup now relies on the harness disposing of its isolated database rather than deleting those rows.
+- `src/commerce/host.ts`
+- `src/commerce/recommendations/fallback-selection.ts`
+- `tests/unit/commerce/recommendations/fallback-selection.test.ts`
+- `tests/integration/commerce/host.fixture.ts`
+- `tests/integration/commerce/host-suites/recommendations.ts`
+
+The real basket identity now includes both product and variant IDs. A unit test verifies a same-product, wrong-variant proposal does not receive basket priority. The new loopback host case verifies customer-context priority over browse regardless of proposal order.
+
+### Dependency baseline
+
+- Shared remains pinned and resolved at `5.0.0`; Background direct Zod remains `^4.4.3`, locked at `4.6.5`.
+- Database remains at the prepared accepted gitlink `bd2d09066a8eb178a56f48fbbf88df637c411059`; Attempt 2 changed no schema, migrations, or gitlink.
 
 ### Validation
 
-Agent-executed checks passed:
+Attempt 2 checks passed:
 
-- `npm run build` (includes Prisma generation and TypeScript compilation).
+- `npm run build` (Prisma generation and TypeScript compilation).
 - `npm run lint`.
-- `npm run test:commerce-recommendations` — 20 files, 196 tests passed.
-- `npm run test:commerce-host` — registered loopback host suite, 1 file, 69 tests passed.
-- Focused wrapper/processor Vitest command from the task — 4 files, 84 tests passed.
+- `npm run test:commerce-recommendations` — 20 files, 197 tests passed.
+- `npm run test:commerce-host` — isolated loopback suite, 1 file, 70 tests passed.
+- Focused wrapper/processor command from the task — 4 files, 84 tests passed.
 - `git diff --check`.
-- `npm ls @modainteract/moda-interact-shared --depth=0` — 5.0.0.
 
-Developer validation completed after correction. The first authorized run exited 1 during fixture teardown because it tried to delete immutable ARCH-021 prompt revisions (`P0001`); its context assertions reached cleanup. The correction is committed in `46ff3adc652a8bfba369622667f968a29faf75ac`. After fresh authorization, the exact command below was rerun once and passed: 1 test passed, 0 failed, exit code 0.
+The required developer-owned disposable PostgreSQL command passed on the preceding implementation (`46ff3adc652a8bfba369622667f968a29faf75ac`):
 
 ```sh
 node scripts/test-integration.mjs tests/integration/commerce/recommendation-context.integration.test.ts
 ```
 
-Result: pass. The isolated test passed against the disposable PostgreSQL harness. Its `finally` block invoked cleanup for the owned PostgreSQL and Redis containers (`docker rm --force --volumes`). The harness supplied the disposable `TEST_DATABASE_URL`; no normal/local database was used.
+Result: 1 test passed, 0 failed, exit code 0. An earlier run failed only because teardown attempted to delete immutable ARCH-021 published prompt revisions (`P0001`); the fixture cleanup was corrected in `46ff3adc652a8bfba369622667f968a29faf75ac`, then the authorized rerun passed. The disposable harness invoked its `finally` cleanup for PostgreSQL and Redis. Attempt 2 changes only host fallback selection and its host/unit tests, so the database context boundary was not rerun.
 
 ### Git / VCS
 
 Task branch: `task/ARCH-058-BACKGROUND-001`
 
-Physical worktree isolation:
-- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-BACKGROUND-001`
-- Parent branch: `task/ARCH-058-BACKGROUND-001`
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-BACKGROUND-001`
-- Implementation branch: `task/ARCH-058-BACKGROUND-001`
-- Shared workspace and implementation checkouts switched for task work: no.
-- Another task worktree reused: no.
-- Prepared launcher synchronized the task worktrees and recursively prepared implementation submodules before claim.
+Attempt 2 launcher evidence:
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-058-BACKGROUND-001`, `task/ARCH-058-BACKGROUND-001`
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-058-BACKGROUND-001`, `task/ARCH-058-BACKGROUND-001`
+- Parent task branch fast-forward: not needed; parent `origin/main`: already current.
+- Implementation task branch fast-forward: not needed; implementation `origin/main`: already current.
+- Recursive submodule sync/update: passed; Database at `bd2d09066a8eb178a56f48fbbf88df637c411059`.
+- Shared workspace/implementation checkouts switched for task work: no. Another task worktree reused: no.
+- Attempt 2 claim was committed and pushed by the launcher as `3fc5485c1be77c993a573327a577310695a53d70`.
 
 Implementation repository:
-- Latest implementation commit: `46ff3adc652a8bfba369622667f968a29faf75ac`
+- Attempt 2 commit: `f49dcb0b87ac9213824db74bcd10fd97c7043a00`
 - Remote: `origin/task/ARCH-058-BACKGROUND-001`
 - Pushed: yes.
 
 Parent workspace:
 - Task file: `docs/decisions/background/ARCH-058/BACKGROUND-001-ground-product-and-discount-recommendations.md`
-- Validation report commit: `5cae296b5a3deb8bf5b07baad515794b37b84b4e` (pushed); earlier report updates are on the same branch.
+- Report commit: pending this report commit.
 - Remote: `origin/task/ARCH-058-BACKGROUND-001`
-- Submodule gitlink staged: no.
+- Parent submodule gitlink staged: no.
 
-Merged to either main branch: no.
-
-PostgreSQL validation is complete. Architect review requested the correction recorded below; no acceptance decision has been made.
+Merged to either main branch: no. Task is returned to `review` for moda_architect; SYSTEM-TEST-001 remains gated on Background acceptance.
 
 ## Architect Review
 
