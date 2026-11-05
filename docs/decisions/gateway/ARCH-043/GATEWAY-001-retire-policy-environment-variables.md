@@ -145,12 +145,12 @@ Complete the defined scope and required validation, update the task and Completi
 
 ### Status
 
-Ready for Review — Attempt 2, 5 November 2026. Final reviewed source publication is resolved; required developer integration and deployment evidence remain pending. No architect acceptance is claimed.
+Ready for Review — Attempt 2, 5 November 2026. Final reviewed source publication is resolved; authorized local integration completed with two failures; deployment evidence remains pending. No architect acceptance is claimed.
 
 ### Attempt 2 — Required Corrections
 
 1. **Publish final source — resolved.** Normal push succeeded from `4826b08` to `2c3a7de1b202406e4743d77cd369f385ebe7193d`, without force or history rewriting. Final local HEAD and remote task ref were verified equal. No implementation source changed in this attempt; the existing event-worker correction is now published.
-2. **Developer integration/cutover evidence — pending.** No new results have been supplied. The review explicitly authorizes no Docker run, deployment, credential mutation or production probe. Requested developer results or authorization for the exact local integration command; no permission is inferred from the task invocation. Source inspection/static fixtures are not substituted for required operational evidence. Retain Messaging Meta declarations until separate deployed verification passes.
+2. **Developer integration/cutover evidence — executed locally, not passing.** The developer explicitly authorized the local Docker integration command only after the publication report. Ran it once on unchanged implementation `2c3a7de`: exit 1, **176 passed, 2 failed**. Both failures are deeper Commerce Connections paths accepted with HTTP 200 instead of the test's required 404. Routing configuration, harness and fixtures are unchanged from pre-task `ac092dc`; no routing/test change or rerun was made to suppress the failures. Return this concrete source/expectation mismatch to the architect for a bounded decision. Deployment, credential mutation and production probes remain unauthorized/unexecuted; retain deferred Messaging Meta declarations.
 
 Prior successful local/static validation below remains applicable to unchanged implementation `2c3a7de`; the architect also independently passed the positive/negative suites. No redundant static rerun or live success is claimed in Attempt 2.
 
@@ -193,13 +193,29 @@ Baseline positive validation initially rejected required `MODA_WOO_REST_READ_PUB
 
 Accepted owning-reader source and tests were inspected for cold OAuth startup, fresh operation reads, revoked/disabled records, wrong/missing wrapping roots, tampering/AAD failures, rotation and no last-good fallback. Exact source revisions and test paths are in the cutover document. Those tests were not rerun across repository ownership boundaries, and source inspection is not live deployment proof.
 
-Developer-owned integration handoff (not executed):
+Developer-authorized local integration execution (5 November 2026):
 
 ```bash
 bash scripts/developer-validation.sh ARCH-043-GATEWAY-001 -- bash tests/run-tests.sh
 ```
 
-Expected result: exit 0 and all gateway integration checks pass. No Docker orchestration or live deployment was launched. Independently perform the environment matrix in `docs/platform-configuration-cutover.md`: accepted imports/rotations and key-ID compatibility, restart every sealed consumer, protected-operation success, controlled missing/revoked/tampered/DB-unavailable failure, next-operation rotation and safe rollback. Record bounded outcomes only, never credentials. Production uses separately approved safe probes/maintenance, not arbitrary corruption of live secrets.
+Result: **exit 1; 176 passed, 2 failed**. Executed once, `20261105T161801Z`–`20261105T162123Z`, against `2c3a7de1b202406e4743d77cd369f385ebe7193d`.
+
+Failures:
+
+- `/connections/example/deeper`: expected rejection, actual HTTP 200.
+- `/connections/example/deeper/more`: expected rejection, actual HTTP 200.
+
+Evidence retained locally in the implementation worktree:
+
+- `.validation/ARCH-043-GATEWAY-001-20261105T161801Z/report.md`
+- `.validation/ARCH-043-GATEWAY-001-20261105T161801Z/full.log`
+
+Checked `git diff ac092dc783d715db3b0e2136bce1cc51abaee5a1 HEAD -- haproxy/haproxy.cfg tests/run-tests.sh tests/fixtures docker/entrypoint.sh`: empty. These routing/harness/fixture files were not changed by this configuration task. The suite asserts no application route-selection ACLs at line 116, but lines 486–493 require rejection of these deeper application paths. This is evidence of an existing routing/test expectation mismatch, not proof of a passing baseline Docker run. No baseline rerun, routing change, fixture weakening or automatic retry was performed. Architect decision remains required.
+
+Passing coverage includes host/API routing, private MCP denial, webhook body/signature preservation, request/correlation headers, credential-query log redaction (including failures), upstream recovery, request size limits, timeouts, missing-input fail-fast and rendered HAProxy syntax. The failed suite does not establish release readiness.
+
+No live deployment, secret mutation or production probe was executed. The separate environment matrix in `docs/platform-configuration-cutover.md` remains pending: accepted imports/rotations and key-ID compatibility, independent cold starts, protected-operation success, controlled missing/revoked/tampered/DB-unavailable failure, next-operation rotation and safe rollback. These require environment evidence or an explicit architect-approved scope decision; local fixture results cannot substitute for them.
 
 ### Deviations
 
@@ -213,7 +229,7 @@ Cleanup Blueprints are synchronized only after the per-environment accepted cons
 
 ### Unresolved Issues
 
-Publication failure from Attempt 1 is resolved. Required integration and operational evidence remain outstanding: developer-owned Docker integration, environment-specific import/rotation/root provisioning, independent cold starts, revoked/tampered/DB-unavailable failures, R2 checks and rollback, or an explicit architect-approved scope decision. No such decision or execution evidence was supplied in this attempt. These prevent acceptance; no system-test/downstream task is promoted.
+Publication failure from Attempt 1 is resolved. The authorized Docker integration run failed two Connections-depth expectations (176 passed/2 failed, exit 1); architect diagnosis/scope decision is required. Required operational evidence remains outstanding: environment-specific import/rotation/root provisioning, independent cold starts, revoked/tampered/DB-unavailable failures, R2 checks and rollback, or an explicit architect-approved scope decision. No live-environment execution evidence or scope decision was supplied in this attempt. These prevent acceptance; no system-test/downstream task is promoted.
 
 ### Architectural Concerns
 
