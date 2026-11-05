@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 55
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-05T08:12:53Z
+attempt: 1
 depends_on:
 - ARCH-058-MCP-002
 - ARCH-058-SHOPIFY-001
@@ -22,7 +22,7 @@ enables:
 - ARCH-058-BACKGROUND-001
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: '2026-11-05'
+updated: 2026-11-05
 ---
 
 # ARCH-058-MCP-003: Read native merchant shipping policy and exact product shipping facts
