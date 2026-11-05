@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 80
-executor: codex
-claimed_at: 2026-11-05T08:49:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-057-SHOPIFY-001
@@ -292,3 +292,26 @@ SHOPIFY-010 Attempt 1 is architect-accepted and Complete at `6e8029deb30de8903e9
 ## Dependency Reconciliation — Published Acceptance Correction (2026-11-05)
 
 SHOPIFY-004's published task branch contains its architect acceptance at implementation `525194c9598c18f8f736b4d24752bfdf07228720`. Its accepted task record was reconciled from `origin/task/ARCH-057-SHOPIFY-004`; the earlier Review snapshot in this branch was stale. All ten explicit prerequisites, SHOPIFY-001 through SHOPIFY-010, are now Complete. Promoted to Ready, unclaimed, with attempt unchanged at 0. Normal launcher preparation and accepted-source integration checks are required before execution. SHOPIFY-012 and SYSTEM-TEST-001 remain Pending; no downstream implementation is started.
+
+## Architect Review — Attempt 1, 5 November 2026
+
+**Changes Requested.** Reviewed implementation `528ec1c2e53cdd1f00fc8f45141cc77c2d9e5561`. Returned to Ready with executor/claim cleared and Attempt 1 preserved. This supersedes the earlier pending review text; no acceptance or downstream promotion is recorded.
+
+### Finding
+
+**[P2] Distinct connection source errors are discarded when an operation also rejects.** In `app/services/health/health-check.server.ts:80–84`, the error listener saves `observed`, but the finally block emits it only when `failed` is false. The PostgreSQL probe has the same suppression condition. `app/services/pending-recovery/pending-recovery-reader.server.ts:167–171` repeats the pattern for Redis/BullMQ. This assumes the operation's rejection is the same diagnostic as the emitted connection error. If the event contains the actual transport failure/cause/code while the operation rejects with a generic closed-connection error or a local timeout, the original evidence is lost. This violates the task's source-message/cause ownership requirement.
+
+An independent temporary regression invoked the actual Redis health function with a controlled emitter: it emitted an Error containing a synthetic original marker, cause and ECONNREFUSED code, then rejected connect with a distinct `Error("Connection is closed.")`. Readiness remained false, but the actual installed Shared sink captured only the generic closed-connection message, with no original marker, cause or code. The assertion requiring the original marker failed. This is a controlled reproduction, not a claim that a live Redis incident was observed.
+
+Retain distinct source event evidence while suppressing equivalent/duplicate failure reporting. Cover health Redis, health PostgreSQL and pending Redis/BullMQ paths, including event-then-generic-rejection and event-then-timeout where supported. Preserve Boolean/unavailable outcomes, existing deadlines/cleanup, safe redaction and throwing-sink isolation. Do not replace the operation exception, invent provider fields, add process-level handlers or introduce a global deduplication registry. Update the coverage inventory to reflect the executed cases and retain useful source wording/code/cause.
+
+### Independent Validation and Limits
+
+- `npm run test:server-diagnostics`: **116/116 tests passed**, seven files, using the prescribed Node 24.19.0 bootstrap in the dedicated implementation worktree. Local log `/tmp/shopify011-review.log`.
+- Additional temporary regression: **failed as described**, one selected test. Local log `/tmp/shopify011-review-probe.log`; the 48 filtered tests are not counted as completed validation. Probe used synthetic data only. Original test file restored byte-for-byte; implementation checkout clean afterward. No probe edit is retained.
+- Inspected task requirements/scope amendments and submitted report; runtime/SDK, framework, configuration, health and pending diagnostic changes, central boundary reuse and selected emitted-output tests. Reviewed submitted predecessor/build/typecheck/lint evidence; these gates were not independently rerun in this review.
+- No implementation, dependency, schema or gitlink is changed by this review. Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-057-SHOPIFY-011`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-057-SHOPIFY-011`, matching task branches.
+
+### Handoff
+
+Use normal launcher preparation for the next attempt, correct the finding within this task's existing scope, rerun required diagnostic/predecessor/static checks, publish both task branches and return for review. SHOPIFY-012 and terminal system validation remain gated; neither is promoted or executed. The developer explicitly authorized committing and pushing this review on 5 November 2026.
