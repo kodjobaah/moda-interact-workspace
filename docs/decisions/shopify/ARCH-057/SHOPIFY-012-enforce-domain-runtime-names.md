@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 90
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
 - ARCH-057-SYSTEM-TEST-001
 created: 2026-11-04
-updated: 2026-11-04
+updated: 2026-11-05
 ---
 
 # ARCH-057-SHOPIFY-012: Enforce domain runtime names and canonical development billing identities
@@ -231,3 +231,7 @@ To be assessed after implementation.
 ### Follow-up
 
 Return the completed task for architect review; do not start enabled tasks.
+
+## Architect Dependency Reconciliation — 5 November 2026
+
+SHOPIFY-011 Attempt 2 is architect-accepted and Complete at `aa02676`. Its sole prerequisite is satisfied; promoted to Ready at Attempt 0, executor/claim null. Earlier pending dependency snapshots are historical. Normal launcher preparation is required; no execution is started here.
