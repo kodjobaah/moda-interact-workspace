@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 50
-executor: developer
-claimed_at: 2026-11-05T21:57:46Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-059-SHARED-002", "ARCH-059-COMMERCE-001", "ARCH-059-MCP-001", "ARCH-058-BACKGROUND-001"]
 enables: ["ARCH-059-SYSTEM-TEST-001"]
@@ -257,3 +257,29 @@ Developer-completed ARCH-059-MCP-001 after durable accepted Attempt 1 review `7c
 The developer requested: “can you update the task definition commit and push”. The definition now explicitly records the architect-confirmed expected-call prerequisite, positive enforcement support and zero-provider race tests. Original acceptance requirements are preserved, not waived. The original formal dependencies remain unchanged until the portable prerequisite definitions are materialised and reconciled through the architect workflow. No lifecycle/claim/attempt or architect review decision was changed.
 
 Both matching task branches are published for preservation/review of the current implementation state. Publication does not establish task completion or readiness for deployment; the cross-repository prerequisite remains required. No main branch or submodule gitlink is staged or updated.
+
+
+## Developer Self-Review - Changes Requested — Attempt 1 (2026-11-05)
+
+### Decision
+
+**Review fails: required expected-call enforcement is not implemented.** Reconciled the actual published implementation `099563513207fcc1e67feedcee3d9ed10baaa45c`, report, controlling prerequisite amendment and portable handoff using `/moda_developer_update`. Return to Ready with executor/claimed_at null and Attempt 1 unchanged, as required by the invoked developer review workflow. Execution/completion modes remain developer/developer. No completion, new claim or next attempt is created here. Historical instructions to preserve the active attempt describe the earlier assistance pause; this explicit review now clears the claim while preserving its source and history.
+
+### Required corrections and ordering
+
+1. Materialise, implement, review and complete the architect-defined SHARED-003, SHARED-004 and MCP-002 prerequisite sequence through its normal authorized workflows. The portable handoff is not implementation or dependency acceptance. This review creates no new tasks and does not fabricate formal dependency edges to nonexistent materialised records. Architect reconciliation of the durable dependencies is required before continuation, as specified by the controlling amendment; Ready here is the changes-requested workflow disposition, not permission to bypass that gate.
+2. Consume the exact accepted published Shared contract and send the pinned release/capability/key/tool/revision/name through trusted client context for both conversation and outreach. Require positive MCP enforcement support; older servers ignoring extra context keys must fail closed. Model arguments must never supply or replace the identity.
+3. Add deterministic cross-boundary tests for unchanged identity success, malformed/foreign identity denial and release activation in both windows: before MCP request snapshot and before fresh registry validation. Both race cases must reject before dispatch/provider I/O with zero provider calls. Host pre/post manifest reads and operational pause/drain do not substitute for enforcement.
+4. Preserve published grant history, checkout_recovery admission, four-tool outreach allowlist, current policy/permission, budgets, deadlines, eligibility/combinations and delivery/credit behavior. Rerun relevant declared checks and update the report before resubmitting. Preserve the published partial implementation rather than resetting it.
+
+### Review evidence and limits
+
+Inspected `src/commerce/mcp-client.ts` manifest/list/call changes: it pins and rereads the manifest but sends only capability name and model arguments in tools/call; it does not attach the required expected tuple or check positive enforcement support. Inspected outreach selector list/admission and the documented prerequisite handoff at `/tmp/arch059-background-prerequisites/HANDOFF.md`. The canonical task tree contains no materialised SHARED-003/004 or MCP-002 definitions at this review. Thus the submission's own unmet before-provider-I/O criterion remains concrete, not merely missing prose.
+
+Implementation HEAD equals its remote task ref at `099563513207fcc1e67feedcee3d9ed10baaa45c`; canonical implementation and parent worktrees were clean before this task update. The source whitespace check passed. Dedicated paths, matching task branches, preparation/claim repair, publication and material authorized Codex assistance are recorded in the Completion Report and remain preserved.
+
+Reviewed the reported 64 focused tests, 197 recommendation tests, 70 host tests, build/lint and controlled broad-suite baseline comparison. **No tests, build, lint, Docker or live provider validation were rerun by this review.** Reported full-suite failures remain disclosed and are not relabelled as a passing suite. Existing green tests cannot satisfy the missing expected-call/race cases. No implementation change, integration merge, dependency publication, cutover, release activation, grant migration or customer send is made by this reconciliation.
+
+### Downstream
+
+ARCH-059-SYSTEM-TEST-001 remains gated on Background completion and terminal manual execution requirements. No downstream task is promoted. Explicit developer completion is unavailable until required work and a later passing review are durable.
