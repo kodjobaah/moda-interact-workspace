@@ -406,13 +406,13 @@ Agent-executed checks passed:
 - `git diff --check`.
 - `npm ls @modainteract/moda-interact-shared --depth=0` — 5.0.0.
 
-Developer validation required. The authorized first run was attempted once and exited 1 because fixture teardown tried to delete immutable ARCH-021 prompt revisions (`P0001`). The context assertions reached cleanup; this is a failed command, not a passing PostgreSQL result. The cleanup correction is committed in `46ff3adc652a8bfba369622667f968a29faf75ac`. A rerun after this code change is **NOT RUN** pending fresh authorization for this task.
+Developer validation completed after correction. The first authorized run exited 1 during fixture teardown because it tried to delete immutable ARCH-021 prompt revisions (`P0001`); its context assertions reached cleanup. The correction is committed in `46ff3adc652a8bfba369622667f968a29faf75ac`. After fresh authorization, the exact command below was rerun once and passed: 1 test passed, 0 failed, exit code 0.
 
 ```sh
 node scripts/test-integration.mjs tests/integration/commerce/recommendation-context.integration.test.ts
 ```
 
-Required rerun: all assertions must pass against the disposable PostgreSQL harness. The harness uses a `finally` block to remove the owned PostgreSQL and Redis containers. The failed run used the disposable harness and no normal/local `DATABASE_URL`; no PostgreSQL pass is claimed.
+Result: pass. The isolated test passed against the disposable PostgreSQL harness. Its `finally` block invoked cleanup for the owned PostgreSQL and Redis containers (`docker rm --force --volumes`). The harness supplied the disposable `TEST_DATABASE_URL`; no normal/local database was used.
 
 ### Git / VCS
 
@@ -441,7 +441,7 @@ Parent workspace:
 
 Merged to either main branch: no.
 
-Awaiting fresh developer authorization for one rerun of the PostgreSQL command after the cleanup correction, and moda_architect review. No architect acceptance decision has been made by this agent.
+PostgreSQL validation is complete; awaiting moda_architect review. No architect acceptance decision has been made by this agent.
 
 ## Architect Review
 
