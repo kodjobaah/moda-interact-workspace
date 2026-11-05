@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -340,9 +340,9 @@ Dependencies remain `ARCH-058-MCP-002` and `ARCH-058-MCP-003`, including their a
 Stop on an absent accepted dependency, mismatched immutable source/package/manifest, an accepted MCP CLI that differs from the explicitly reconciled dry-run/receipt contract, manual owned content, unpreservable release delta or cross-owner implementation need. Report the exact path/input/conflict. Do not rediscover upstream release decisions, invent new credentials, weaken contracts, manufacture passing tests or widen a grant. After implementation and bounded checks, provide the actual Completion Report and any exact developer validation handoff, set status to Review through the existing workflow and return to the architect. Do not merge, deploy, mark Complete or run downstream tasks.
 
 ## Completion Report
-### Status — Review, Attempt 2
+### Status — Changes Requested, Attempt 2
 
-**Implementation is complete and submitted for moda_architect review.** The task remains at Attempt 2, with the developer claim cleared. No architect acceptance decision has been made.
+**Attempt 2 reviewed; changes requested on 2026-11-05.** Task returned to Ready with executor/claim null and attempt unchanged. Implementation is not accepted; the owned-process timeout defect and required developer validation remain unresolved.
 
 ### Implementation delivered
 
@@ -443,3 +443,25 @@ Requirement 1 now checks the accepted merged ancestor rather than the unmerged t
 5. Developer-owned build/disposable PostgreSQL execution remains separately owned. Report NOT_RUN when absent, with the exact prescribed commands; no autonomous Docker/live/persistent publication is authorized here.
 
 Reviewed only the prerequisite history/tree equivalence, preserved fixture hash, dependency metadata and task handoff. No tests, lint, application typecheck, build, PostgreSQL suite or implementation acceptance is claimed. Background/System Test remain Pending on Commerce acceptance and their other prerequisites. This documentation-only reconciliation is published on the existing parent task branch; no implementation commit, main merge or deployment is performed by the architect.
+
+
+## Architect Implementation Review — Attempt 2 (2026-11-05)
+
+### Decision
+
+**Changes Requested.** Reviewed implementation `7927e07101b48359d50c260f209ee385e245a3a8`. Status Ready, executor/claimed_at null, Attempt 2 preserved. Earlier prerequisite reconciliations only establish execution eligibility; they do not accept this implementation. Background and System Test remain gated on Commerce acceptance.
+
+### Required corrections
+
+1. **P2 — Bound termination of surviving owned descendants.** In `src/commerce/bootstrap/product-discovery-setup.ts:67-70`, escalation from TERM to KILL depends on `child.exitCode === null`. The npm process can exit while a descendant ignores TERM and retains inherited stdout/stderr. In that case escalation is skipped and the promise waits indefinitely for `close`, defeating the required timeout/output-overflow boundary. Check and terminate the owned POSIX process group independently of the leader's exit status, preserve ownership isolation and bounded reaping, and add regression coverage where the leader exits but a descendant retains the pipes. Do not kill unrelated processes.
+2. **Required validation incomplete.** The submission explicitly reports `npm run build` and `node scripts/run-system-commerce-tool-sync-postgres.mjs` as NOT_RUN. Obtain the developer-owned build and migrated disposable PostgreSQL evidence before acceptance. Record the selected image digest, Database/Shared/Commerce revisions, exact commands/exits, immutable prior-release preservation, exact successor/no-op and activation race results, and zero owned-container leftovers. Unit tests do not substitute for this proof. This review does not authorize autonomous Docker execution or persistent environment apply.
+
+### Scope and evidence reviewed
+
+Inspected the task requirements, completion/provenance report, implementation change inventory, setup orchestration/preflight, bounded child process implementation, desired release construction and exact-release lifecycle admission. No passing full architecture acceptance is implied by this bounded review.
+
+Independently executed 11 focused suites: system-commerce-tool-sync, system-product-response, commerce-product-discovery-setup, commerce-lifecycle, publication-storage-release-delta, policy-operation-registry, studio-integration, feature-preview-composition, preview-service, test-conversations-screen and external-availability. **140 tests passed across 11 files** at the reviewed source. Local evidence: `/tmp/commerce001-review.log`. This is distinct from the submitted 147-test/12-file run; the architect did not rerun the additional feature-authoring suite, typecheck, lint, build or PostgreSQL proof.
+
+### Follow-up
+
+The owning agent must reclaim the same task, correct the process-group timeout, add the regression, rerun relevant fast checks and update the report. Required developer-owned build/PostgreSQL proof must remain explicitly NOT_RUN until actual evidence exists. Preserve the accepted fixture, dependency pins and immutable release requirements. Return for architect review; no downstream task is promoted or started.

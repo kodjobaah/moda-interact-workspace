@@ -175,3 +175,8 @@ MCP-003 Attempt 1 is accepted and Complete at `69b64669`, with 59 independently 
 ## Commerce continuation handoff — 5 November 2026
 
 COMMERCE-001 revision 11 resolves the stale Database task-SHA gate using accepted merged ancestor `395675f909d604f0bff83ffb3d7d5586f0bdd39b`. Its complete tree matches historical `ded8f14a`; prepared `bd2d090` passes ancestry and preserves the later grant migration. Commerce is Ready/unclaimed, Attempt 1 retained, with unfinished implementation `0914178` and original legacy fixture preserved. Resume through normal launcher preparation; do not reset/recreate the draft or recapture the legacy fixture from upgraded Shared. Complete original Commerce implementation and validation. Background's actual model-request fixtures remain BACKGROUND-001-owned downstream evidence; Commerce validates actual publication/Shared parsing. No task is accepted or downstream task promoted by this handoff.
+
+
+## Commerce Attempt 2 Review — 2026-11-05
+
+COMMERCE-001 implementation `7927e07` is not accepted. Returned to Ready/unclaimed at Attempt 2 for the owned-descendant timeout correction and regression. Independent focused review passed 140 tests across 11 files; required developer-owned build/disposable PostgreSQL evidence remains NOT_RUN. Preserve the original fixture and accepted dependencies; use normal claiming for continuation. BACKGROUND-001 and SYSTEM-TEST-001 remain gated on Commerce acceptance and their other prerequisites. See the task's Architect Implementation Review for exact corrections and validation limits.
