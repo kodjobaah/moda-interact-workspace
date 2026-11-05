@@ -187,3 +187,8 @@ COMMERCE-001 implementation `7927e07` is not accepted. Returned to Ready/unclaim
 COMMERCE-001 Attempt 3 is accepted at final implementation `58f5418ada85d1cfc08400f64ab41b198fb427b4`. Both prior review findings are resolved: surviving detached-group descendants are killed independently of the npm leader's exit, and the required developer-authorized build/PostgreSQL proof passed. The PostgreSQL race fixture now uses the actual response-active base and still proves stale-feature rejection, pointer preservation and surviving manual content. Independent setup regressions passed 7/7; submitted aggregate fast checks passed 149 tests; PostgreSQL proof passed 1/1 with exit 0 and zero owned containers remaining. The parent acceptance records exact pins/digest and evidence provenance.
 
 BACKGROUND-001 is Ready/unclaimed at Attempt 0; the launcher may claim it only on explicit invocation. Background owns actual provider-context/model-request and host-finalization proof. SYSTEM-TEST-001 remains Pending on Background acceptance, retaining its terminal cross-repository operator/process/transport responsibilities. Persistent publication, deployment, final integration and live merchant proof are not certified by Commerce acceptance.
+
+
+## Dependency Frontier Verification — 5 November 2026
+
+Commerce acceptance and follow-up verification are published. Rechecked task frontmatter: BACKGROUND-001 has all four prerequisites Complete and remains Ready/unclaimed at Attempt 0. SYSTEM-TEST-001 remains Pending solely on BACKGROUND-001. No dependency edge, execution claim, attempt, integration gate or terminal-validation authorization is changed. Earlier pending-Commerce handoff snapshots are historical.
