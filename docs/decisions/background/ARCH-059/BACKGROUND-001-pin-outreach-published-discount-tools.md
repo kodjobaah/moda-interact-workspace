@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -340,3 +340,10 @@ Implementation `772f9e8` is already committed/pushed. The canonical implementati
 ### Follow-up
 
 Explicit developer completion remains pending. SYSTEM-TEST-001 is not promoted while Background remains Review; terminal execution and staged-release rollout remain separately gated. This passing review certifies the amended task scope and deterministic local evidence, not live provider behavior or deployment.
+
+
+## Explicit Developer Completion Decision — Attempt 2 (2026-11-05)
+
+The developer explicitly invoked `/moda_developer_update ARCH-059-BACKGROUND-001 complete`. **Complete.** Passing developer review is durable at parent `4758c6e9f`; reviewed implementation `772f9e88d65b32c26bb64d03ca996b4757c9873c` equals its pushed task ref and the implementation worktree is clean. No required work remains under the controlling MCP-owned revision and dynamic capability-discovery amendments. The review records independently passing 81 host and 65 focused tests and the limits of submitted regression/build/lint evidence.
+
+Execution/completion modes remain developer/developer. Executor/claimed_at remain null; Attempt 2 unchanged. Historical pending-completion statements above are superseded by this explicit decision. SYSTEM-TEST-001 now has all explicit prerequisites Complete and becomes dependency-ready, unclaimed at Attempt 0. Existing manual execution, environment and rollout authorization gates remain intact. No suite, deployment, activation, main merge, grant migration or customer send is executed by completion.

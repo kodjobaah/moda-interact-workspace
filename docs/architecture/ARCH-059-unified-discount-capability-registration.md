@@ -109,3 +109,8 @@ Earlier four-tool allowlist requirements, review instructions and implementation
 ## Initial outreach extensibility acceptance — 5 November 2026
 
 ARCH-059-BACKGROUND-001 explicitly owns removing every hardcoded tool-membership gate from initial outreach and conversation discovery/model projection/dispatch, including selector constants, fixed unions/filters, graph switches or named-first-call requirements that block an added capability member. Agent selection uses MCP-provided tools for the requested authorized capability. New supported members must work without a Background tool-name code edit; unrelated capabilities remain unauthorized. Retained tool-specific offer-fact interpreters may protect customer claims but cannot become admission gates. Aggregate budgets, state/control checks and deterministic offer/delivery safety remain required. The task's integrated regression must exercise an added non-original tool through the actual initial-outreach model/selector/client path. This is in-scope implementation work for the existing task, not a deferred cleanup or automatic implementation acceptance.
+
+
+## Background Completion / Terminal Frontier — 5 November 2026
+
+The developer explicitly completed BACKGROUND-001 Attempt 2 after passing review `4758c6e9f`, source `772f9e8`. SHARED-001/002, COMMERCE-001 and MCP-001 are also Complete. SYSTEM-TEST-001 is now dependency-ready/unclaimed at Attempt 0; its developer execution/completion and manual environment/cutover gates remain mandatory. No terminal proof, rollout, release activation or complete-architecture acceptance is implied by implementation completion.
