@@ -13,7 +13,7 @@ status: ready
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
 - ARCH-043-ADMIN-001
 - ARCH-043-ADMIN-002
@@ -32,7 +32,7 @@ depends_on:
 enables:
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
-updated: 2026-11-02
+updated: 2026-11-05
 ---
 
 # Remove retired application-policy environment variables
@@ -42,7 +42,7 @@ updated: 2026-11-02
 - Architecture: `ARCH-043` — `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Proposed schema/key contract: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Repository owner: `moda-interact-gateway` / `moda_gateway`.
-- Parent task definition is materialised on `task/ARCH-043-GATEWAY-001`; route-only verification resolves this canonical file as Ready. Attempt remains 0 with no execution claim. Prepare the implementation worktree and claim through the normal task launcher.
+- Parent task definition is materialised on `task/ARCH-043-GATEWAY-001`. Attempt 1 has been reviewed with changes requested for publication and required validation evidence; status Ready, executor/claim null, attempt preserved. Continue through the normal workflow.
 
 ## Objective
 
@@ -74,11 +74,11 @@ Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin
 
 ## Work Items
 
-- [ ] Audit `render.test.yaml`, `render.production.yaml` and canonical `render.yaml` where applicable for policy variables replaced by ARCH-043.
-- [ ] Remove obsolete settings only after the owning consumer explicitly proves database-only behaviour and safe rollback.
-- [ ] Keep required bootstrap variables, ingress credentials not migrated by an accepted consumer, DB/Redis, OTEL and Woo-plugin local connection environment variables. Verify the accepted Messaging reader before retiring any Messaging-specific legacy values.
-- [ ] Record environment-specific deploy sequencing and a rollback table.
-- [ ] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
+- [x] Audit `render.test.yaml`, `render.production.yaml` and canonical `render.yaml` where applicable for policy variables replaced by ARCH-043.
+- [x] Remove obsolete settings only after the owning consumer explicitly proves database-only behaviour and safe rollback.
+- [x] Keep required bootstrap variables, ingress credentials not migrated by an accepted consumer, DB/Redis, OTEL and Woo-plugin local connection environment variables. Verify the accepted Messaging reader before retiring any Messaging-specific legacy values.
+- [x] Record environment-specific deploy sequencing and a rollback table.
+- [x] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
@@ -122,14 +122,14 @@ Treat accepted `ARCH-043-SHOPIFY-002` as the sole Shopify Partner billing, Shopi
 
 ## Acceptance Criteria
 
-- [ ] Maintain test/production separation and no secret values in Blueprint.
+- [x] Maintain test/production separation and no secret values in Blueprint.
 - [ ] Render topology remains deployable with all independent service startups.
 - [ ] The bounded task implementation passes the specified validation without regressions to existing domain configuration.
 
 ## Validation
 
-- [ ] Blueprint parser/validation and diff review
-- [ ] Deployment environment matrix/roll-back check
+- [x] Blueprint parser/validation and diff review
+- [x] Deployment environment matrix/roll-back check
 
 ## Stop Condition
 
@@ -145,61 +145,140 @@ Complete the defined scope and required validation, update the task and Completi
 
 ### Status
 
-Not Started
+Ready for Review — Attempt 2, 5 November 2026. Final reviewed source publication is resolved; authorized local integration completed with two failures; deployment evidence remains pending. No architect acceptance is claimed.
+
+### Attempt 2 — Required Corrections
+
+1. **Publish final source — resolved.** Normal push succeeded from `4826b08` to `2c3a7de1b202406e4743d77cd369f385ebe7193d`, without force or history rewriting. Final local HEAD and remote task ref were verified equal. No implementation source changed in this attempt; the existing event-worker correction is now published.
+2. **Developer integration/cutover evidence — executed locally, not passing.** The developer explicitly authorized the local Docker integration command only after the publication report. Ran it once on unchanged implementation `2c3a7de`: exit 1, **176 passed, 2 failed**. Both failures are deeper Commerce Connections paths accepted with HTTP 200 instead of the test's required 404. Routing configuration, harness and fixtures are unchanged from pre-task `ac092dc`; no routing/test change or rerun was made to suppress the failures. Return this concrete source/expectation mismatch to the architect for a bounded decision. Deployment, credential mutation and production probes remain unauthorized/unexecuted; retain deferred Messaging Meta declarations.
+
+Prior successful local/static validation below remains applicable to unchanged implementation `2c3a7de`; the architect also independently passed the positive/negative suites. No redundant static rerun or live success is claimed in Attempt 2.
 
 ### Files Changed
 
-None
+Implementation repository (`moda-interact-gateway`):
+
+- `render.test.yaml`, `render.production.yaml`.
+- `tests/validate-render-blueprints.sh`, `tests/validate-render-blueprints-negative.sh`, new `tests/validate-platform-configuration-negative.sh`.
+- New `docs/platform-configuration-cutover.md`.
+- `docs/merchant-knowledge-deployment.md`, `docs/commerce-deployment.md`, `docs/mcp-private-deployment.md`, `docs/render-topology.md`, `docs/deployment-prerequisites.md`, `README.md`.
+
+Parent repository: only this task file. No gitlink, index, architecture definition or downstream task edits.
 
 ### Work Completed
 
-None
+- Inspected both actual Blueprints, positive/negative validators and accepted current production consumer factories at seven pinned repository revisions. Recorded the per-service variable-to-reader matrix in `docs/platform-configuration-cutover.md` before removing declarations. No canonical `render.yaml` exists.
+- Retired superseded Shopify OAuth/Partner/App Events, R2/upload, translation, transcription, AI/sender, production embedding, Commerce bootstrap-email and test Woo billing credential declarations. Traced production App Events factory to `shopify.appEvents`; the remaining environment parser is not a live default consumer. Support translation remains on existing Commerce model/provider rows; no parallel `support.translation` or legacy-editor flag was created.
+- Preserved infrastructure/identity/observability, Shopify scopes/app URL, Admin/Commerce absent-row auth bundles, API Woo environment/public-origin/public connection mode, ARCH-039 reader keyrings, active writer selectors and Commerce-only command HMAC. Verified protected declarations and non-environment service/resource topology against the pre-change revision.
+- Corrected test unseal distribution: Gateway no longer receives it; each sealed reader receives its required external group. Added isolated production equivalents. MCP receives only its supported `MODA_CONFIG_UNSEAL_KEYS_JSON` map; the other services receive JSON-in-`MODA_CONFIG_UNSEAL_KEY` plus active ID. No secret/root values committed. This avoids the inspected MCP reader's incompatible single-base64 interpretation of `MODA_CONFIG_UNSEAL_KEY`.
+- Added missing production Messaging PostgreSQL wiring and production API Woo infrastructure settings. Kept both legacy Messaging Meta declarations pending actual environment verification. The accepted reader is direct PostgreSQL; no private resolver, API-to-Messaging link or internal identity was added.
+- Restored test MCP `/health/ready` configuration to the existing validator/runbook contract. Plans, instance counts, routes, hosts, other health settings, worker commands and resources remain unchanged; no material capacity/cost change.
+- Updated runbooks with independent test/production import, root provisioning, reader rollout, cold-start/rotation/revocation/tamper verification and rollback gates. Canonical R2 has one sealed six-field record; existing embedding and translation authorities remain intact.
+- Preserved all existing unrelated validator protections, adapted retired-group fixtures and added 90 targeted adversarial fixtures covering every sealed reader's root attachment, excess recipients, wrong MCP format, shadow/direct roots, Messaging DB isolation, retained auth/Woo/Meta inputs and retired-variable reintroduction. The standard negative suite now invokes the focused suite. Final source tracing includes `checkout.worker.ts` → `ShopifyWhatsAppConsentService` → consent provider → `getShopifyAccessToken`; this prevents incorrectly dropping the event worker's root.
 
 ### Validation Results
 
-Not run
+Passed locally in the isolated implementation worktree:
+
+- `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh tests/validate-platform-configuration-negative.sh` — exit 0.
+- Psych `safe_load(..., aliases: false)` of both Blueprints — exit 0.
+- `bash tests/validate-render-blueprints.sh` — exit 0 for test and production, including private routing and documentation assertions.
+- `bash tests/validate-render-blueprints-negative.sh` — final combined run exit 0 after the event-worker correction: 127 adapted existing mutation fixtures, the public-MCP denial fixture and all 90 focused ARCH-043 test/production fixtures. **218 adversarial cases passed.**
+- `bash tests/validate-platform-configuration-negative.sh` — standalone run exit 0; all 90 fixtures also passed in the final combined run, including required event-worker root access.
+- `bash tests/validate-observability-config.sh` — exit 0.
+- One-off parsed comparison to implementation starting HEAD — databases unchanged; service topology unchanged except restoring test MCP readiness; exact existing ARCH-039 and Auth.js declarations preserved.
+- `git diff --check` — exit 0; reviewed Blueprint and validator diffs.
+
+Baseline positive validation initially rejected required `MODA_WOO_REST_READ_PUBLIC_ORIGIN` via an overbroad credential-alias expression. Narrowed only that exact exception; forbidden keyring/active-key aliases still fail negative fixtures. The baseline also lacked test MCP readiness despite its existing validator requiring it; corrected the declaration.
+
+Accepted owning-reader source and tests were inspected for cold OAuth startup, fresh operation reads, revoked/disabled records, wrong/missing wrapping roots, tampering/AAD failures, rotation and no last-good fallback. Exact source revisions and test paths are in the cutover document. Those tests were not rerun across repository ownership boundaries, and source inspection is not live deployment proof.
+
+Developer-authorized local integration execution (5 November 2026):
+
+```bash
+bash scripts/developer-validation.sh ARCH-043-GATEWAY-001 -- bash tests/run-tests.sh
+```
+
+Result: **exit 1; 176 passed, 2 failed**. Executed once, `20261105T161801Z`–`20261105T162123Z`, against `2c3a7de1b202406e4743d77cd369f385ebe7193d`.
+
+Failures:
+
+- `/connections/example/deeper`: expected rejection, actual HTTP 200.
+- `/connections/example/deeper/more`: expected rejection, actual HTTP 200.
+
+Evidence retained locally in the implementation worktree:
+
+- `.validation/ARCH-043-GATEWAY-001-20261105T161801Z/report.md`
+- `.validation/ARCH-043-GATEWAY-001-20261105T161801Z/full.log`
+
+Checked `git diff ac092dc783d715db3b0e2136bce1cc51abaee5a1 HEAD -- haproxy/haproxy.cfg tests/run-tests.sh tests/fixtures docker/entrypoint.sh`: empty. These routing/harness/fixture files were not changed by this configuration task. The suite asserts no application route-selection ACLs at line 116, but lines 486–493 require rejection of these deeper application paths. This is evidence of an existing routing/test expectation mismatch, not proof of a passing baseline Docker run. No baseline rerun, routing change, fixture weakening or automatic retry was performed. Architect decision remains required.
+
+Passing coverage includes host/API routing, private MCP denial, webhook body/signature preservation, request/correlation headers, credential-query log redaction (including failures), upstream recovery, request size limits, timeouts, missing-input fail-fast and rendered HAProxy syntax. The failed suite does not establish release readiness.
+
+No live deployment, secret mutation or production probe was executed. The separate environment matrix in `docs/platform-configuration-cutover.md` remains pending: accepted imports/rotations and key-ID compatibility, independent cold starts, protected-operation success, controlled missing/revoked/tampered/DB-unavailable failure, next-operation rotation and safe rollback. These require environment evidence or an explicit architect-approved scope decision; local fixture results cannot substitute for them.
 
 ### Deviations
 
-None
+- Messaging Meta credential retirement is deliberately deferred: accepted direct-reader code exists, but no deployed verification evidence was supplied. Existing declarations remain in both Blueprints, with an explicit release gate. No unrelated ingress credential was removed.
+- Added the MCP-specific supported root variable/group because source inspection proves the generic root input has a different accepted format in MCP. No consumer or crypto codec changes were made.
+- Restored missing test MCP readiness and missing production Messaging DB/API Woo infrastructure wiring as necessary independent-startup configuration corrections.
 
 ### Assumptions
 
-None
+Cleanup Blueprints are synchronized only after the per-environment accepted consumer deployment, credential import/rotation and rollback gates pass. Static validation establishes configuration shape and ownership; it does not establish Render acceptance, populated secrets, real provider access or runtime success.
 
 ### Unresolved Issues
 
-None
+Publication failure from Attempt 1 is resolved. The authorized Docker integration run failed two Connections-depth expectations (176 passed/2 failed, exit 1); architect diagnosis/scope decision is required. Required operational evidence remains outstanding: environment-specific import/rotation/root provisioning, independent cold starts, revoked/tampered/DB-unavailable failures, R2 checks and rollback, or an explicit architect-approved scope decision. No live-environment execution evidence or scope decision was supplied in this attempt. These prevent acceptance; no system-test/downstream task is promoted.
 
 ### Architectural Concerns
 
-None
+The accepted MCP root format differs from the other readers and must stay explicitly separated until its owner changes the contract. A DB-only consumer cannot roll back by merely restoring env values; restore a compatible accepted service revision and configuration together. Never roll back to a compromised/revoked credential or delete durable configuration/audit data.
+
+### Worktree Isolation and Publication
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-GATEWAY-001`, branch `task/ARCH-043-GATEWAY-001`, starting parent `ba4250ea22403d11e0c3964750ac8b39ebe6bf80`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-GATEWAY-001`, matching branch, starting revision `ac092dc783d715db3b0e2136bce1cc51abaee5a1`.
+- Launcher prepared/synchronized both isolated branches, verified all fourteen explicit dependencies Complete and recursive submodule state ready (Gateway has no submodule entries), then durably pushed claim `dde4e4929d214775cfd75856545caf70cf3163a8`, Attempt 1 at `2026-11-05T15:41:10Z`.
+- Implementation head `2c3a7de1b202406e4743d77cd369f385ebe7193d` is now published on `origin/task/ARCH-043-GATEWAY-001`, verified equal to local HEAD. Attempt 1's two failed pushes remain historical evidence, not a current publication blocker.
+- Attempt 2 launcher reused the same dedicated worktrees, dependency gate passed (all fourteen Complete), parent synchronization incorporated origin/main, implementation already current, recursive submodules ready with no entries. Starting parent `d94de268eb97c5cbe4d0fa7586dec4a86539db63`; starting implementation `2c3a7de1b202406e4743d77cd369f385ebe7193d`. Durable claim `9ce18c4d68512641aff5238615ef32ea40540173`, executor `codex`, claimed `2026-11-05T16:15:40Z`.
+- Only this report changes in the parent repository. No implementation source, shared checkout, other task worktree, gitlink, index or downstream status was edited. No merge or push to main and no architect acceptance decision.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Changes Requested on 2026-11-05. Attempt 1 not accepted; returned to Ready with executor/claimed_at null and attempt unchanged. No additional source finding was identified in the bounded review; acceptance is blocked by publication and required operational evidence.
 
-### Review Notes
+### Review Notes / Required Follow-up
 
-Awaiting implementation, validation evidence and architect decision.
+1. **Publish the final reviewed source.** Local implementation `2c3a7de1b202406e4743d77cd369f385ebe7193d` contains the event-worker unseal correction, but the inspected implementation task remote remains at `4826b0885cd525e6a19819616f45777024cc8028`. Resolve the reported normal-push failure and publish the final correction without force-pushing or rewriting unrelated history. Verify final HEAD equals the remote task ref and update the publication report. The review itself does not publish implementation changes.
+2. **Complete the required developer validation and cutover evidence.** The submission reports the developer-owned integration command below and the environment-specific rollout/rotation/revocation/tamper/cold-start/rollback checks as unexecuted. Obtain and record the required bounded outcomes, or an explicit architect-approved scope decision before acceptance. Static fixtures and accepted reader-source inspection do not establish deployed operation. Preserve deferred Messaging Meta declarations until their separate deployed verification passes. This review authorizes no Docker run, deployment, live credential mutation or production probe.
+
+```bash
+bash scripts/developer-validation.sh ARCH-043-GATEWAY-001 -- bash tests/run-tests.sh
+```
 
 ### Reviewed Files
 
-None
+Inspected the task requirements/report, both Render Blueprint diffs from `ac092dc783d715db3b0e2136bce1cc51abaee5a1`, final event-worker correction, positive/adversarial validator changes and the cutover runbook's reader ownership, unseal distribution, per-environment sequencing and rollback limits. Inspected the developer integration harness entrypoint. No independent live consumer or Render validation was performed.
 
 ### Validation Reviewed
 
-None
+- Independently ran `bash tests/validate-render-blueprints.sh`: passed. Local log `/tmp/gateway043-review-positive.log`.
+- Independently ran `bash tests/validate-render-blueprints-negative.sh`: passed, including the public-MCP denial case and all 90 focused platform-configuration mutations. Local log `/tmp/gateway043-review-negative.log`.
+- Independently checked implementation `git diff --check ac092dc HEAD`: passed.
+- Confirmed local versus remote implementation SHA mismatch above. Parent task worktree was clean before this documentation update.
+- Reviewed submitted shell/YAML/observability checks and source-reader evidence; those checks were not independently repeated. Developer Docker integration and environment cutover verification remain NOT_RUN as reported. No full integration/deployment success is inferred.
 
 ### Architecture Conformance
 
-Not yet assessed.
+The source preserves the documented infrastructure/authentication/keyring boundaries and distinguishes MCP's supported unseal format. Messaging credential retirement is explicitly deferred. Source/static validation is satisfactory within the inspected scope, but the controlling consolidation assigns deployment/least-privilege/rollback proof to this task; the outstanding evidence and unpublished correction prevent completion.
 
 ### Follow-up
 
-None
+Reconcile final source publication and required developer evidence, update the Completion Report, and resubmit for architect review through the normal task workflow. ARCH-043-SYSTEM-TEST-001 remains gated on Gateway acceptance; no downstream status is promoted or execution started. No implementation, gitlink, index, main merge or deployment change is made by this review.
 
 ## 17 October 2026 ARCH-043 extension (architect-owned amendment)
 
@@ -214,3 +293,27 @@ Inspect both actual Render Blueprints and their positive/negative validators. Cu
 ## Definition reconciliation — 2026-11-02
 
 Source evidence: Gateway ac092dc render.test.yaml, render.production.yaml, tests/validate-render-blueprints.sh and its negative suite still contain policy/provider environment groups. Definition deduplicated and consolidated; code/deployment validation is still required. Canonical ARCH-039 keyring/authentication fallback retention is mandatory as detailed above.
+
+
+## Architect Review — Attempt 2 (2026-11-05)
+
+### Decision
+
+**Changes Requested.** Attempt 2 not accepted; return to Ready, executor/claimed_at null, attempt unchanged. Publication is resolved; integration correctness and required operational evidence remain outstanding. This decision supersedes the current disposition of Attempt 1 without rewriting its historical findings.
+
+### Resolved publication finding
+
+Verified local implementation HEAD and `origin/task/ARCH-043-GATEWAY-001` both resolve to `2c3a7de1b202406e4743d77cd369f385ebe7193d`. The final event-worker unseal correction is published. No implementation delta exists since the prior source review; repeat static validation was not necessary.
+
+### Remaining blockers and required corrections
+
+1. **Reconcile the two failing Connections-depth integration expectations.** The developer-authorized run at the reviewed source exited 1: **176 passed, 2 failed**. `/connections/example/deeper` and `/connections/example/deeper/more` returned HTTP 200, while the harness expects 404. Inspection confirms `haproxy/haproxy.cfg:25` permits `^/connections(/.*)?$`, and `tests/run-tests.sh:486-493` expects those paths to be rejected. Both files and related fixtures/entrypoint are unchanged from starting source `ac092dc783d715db3b0e2136bce1cc51abaee5a1`. This establishes an existing source/test mismatch, not a passing baseline or authority to weaken either boundary. Reconcile the authoritative intended Commerce routing contract before a narrowly scoped source/test correction; record the reason and relevant regression evidence. Do not blindly rerun the long suite or broaden route access to obtain a pass. A passing required integration result or explicit approved scope decision is still needed.
+2. **Supply operational cutover evidence or an explicit approved scope decision.** Environment-specific imports/root-ID compatibility, independent cold starts, protected operations, controlled revoked/tampered/DB-unavailable behavior, next-operation rotation, R2 checks and rollback remain unexecuted. The controlling task consolidation includes those checks. Static fixtures, documented procedures and accepted consumer source inspection do not replace actual outcomes. Preserve deferred Meta declarations; no deployment, live secret mutation, production probe or Docker rerun is authorized by this review.
+
+### Evidence reviewed
+
+Inspected the updated completion report and retained `.validation/ARCH-043-GATEWAY-001-20261105T161801Z/report.md`, including its failed result, plus the relevant harness expectations and HAProxy allowlist. Independently checked local/remote source equality and empty baseline-to-final diffs for routing/harness/fixtures/entrypoint. Prior independent positive/adversarial Blueprint and whitespace checks remain applicable to unchanged source. The architect did not rerun Docker or live validation, and does not represent 176 passing assertions as a passing integration suite.
+
+### Follow-up
+
+Resolve the bounded routing-contract mismatch and required operational evidence, update the report and resubmit through the normal task workflow. Preserve Attempt 2 history and increment only on the next normal claim. ARCH-043-SYSTEM-TEST-001 remains gated on Gateway acceptance. No downstream promotion, implementation edit, gitlink/index change, main merge or deployment is made by this review.
