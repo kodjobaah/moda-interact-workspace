@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 80
 executor: null
 claimed_at: null
@@ -28,7 +28,7 @@ depends_on:
 enables:
 - ARCH-057-SHOPIFY-012
 created: 2026-11-04
-updated: 2026-11-04
+updated: 2026-11-05
 ---
 
 # ARCH-057-SHOPIFY-011: Complete server diagnostic coverage with original failure messages
@@ -227,3 +227,8 @@ ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete. This task rem
 ## Dependency Reconciliation — 2026-11-05
 
 SHOPIFY-010 Attempt 1 is architect-accepted and Complete at `6e8029deb30de8903e937dc092b68f8b304e4dce`. This task remains Pending: SHOPIFY-004 is still recorded in Review in this branch. All other explicit prerequisites are Complete. This note supersedes the earlier frontier note naming SHOPIFY-010 as incomplete; no claim or execution is started.
+
+
+## Dependency Reconciliation — Published Acceptance Correction (2026-11-05)
+
+SHOPIFY-004's published task branch contains its architect acceptance at implementation `525194c9598c18f8f736b4d24752bfdf07228720`. Its accepted task record was reconciled from `origin/task/ARCH-057-SHOPIFY-004`; the earlier Review snapshot in this branch was stale. All ten explicit prerequisites, SHOPIFY-001 through SHOPIFY-010, are now Complete. Promoted to Ready, unclaimed, with attempt unchanged at 0. Normal launcher preparation and accepted-source integration checks are required before execution. SHOPIFY-012 and SYSTEM-TEST-001 remain Pending; no downstream implementation is started.

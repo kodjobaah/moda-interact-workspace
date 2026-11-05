@@ -141,3 +141,8 @@ ARCH-057-SHOPIFY-009 Attempt 2 is architect-accepted and Complete at `f0cf26877a
 ## Webhook Publication Task Acceptance (2026-11-05)
 
 ARCH-057-SHOPIFY-010 Attempt 1 is architect-accepted and Complete at `6e8029deb30de8903e937dc092b68f8b304e4dce`. Independent focused validation passed 168 tests; reviewed recorded Redis evidence passed 9 tests and was not rerun. SHOPIFY-011 remains Pending solely on SHOPIFY-004's current Review record in this branch. Later tasks remain Pending. Current task YAML and execution plan govern over historical frontier notes; no main merge, live drain, deployment or architecture completion is implied.
+
+
+### Published Dependency Correction — 2026-11-05
+
+SHOPIFY-004 was already architect-accepted on its published task branch. Its accepted record is now reconciled here, superseding the stale Review snapshot and prior blocker notes. SHOPIFY-001–010 are Complete; SHOPIFY-011 is Ready and unclaimed. SHOPIFY-012 and SYSTEM-TEST-001 remain Pending. Normal launcher preparation/integration checks still apply.
