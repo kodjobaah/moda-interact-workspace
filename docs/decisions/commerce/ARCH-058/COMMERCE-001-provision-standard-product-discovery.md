@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ enables:
 - ARCH-058-BACKGROUND-001
 - ARCH-058-SYSTEM-TEST-001
 created: '2026-11-04'
-updated: '2026-11-04'
+updated: '2026-11-05'
 ---
 
 # ARCH-058-COMMERCE-001: Provision the standard product discovery tools and repeatable environment setup
@@ -404,3 +404,7 @@ MCP-002 remains in Review, not Complete or accepted, at implementation `b95c397d
 ## Architect Dependency Reconciliation — 5 November 2026
 
 MCP-002 Attempt 3 is architect-accepted and Complete at `11fba27`, with developer PostgreSQL evidence of 30 passed, 0 failed and 1 opt-in live test skipped. This supersedes the earlier pending-validation gate note. This task remains Pending on its remaining explicit prerequisites; no attempt or claim changes. No execution is started.
+
+## Architect Dependency Reconciliation — MCP-003 Acceptance, 5 November 2026
+
+MCP-003 Attempt 1 is architect-accepted and Complete at `69b64669a621c899f3b764fb92004f27f249b9e7`. All explicit prerequisites are Complete. Promoted to Ready, unclaimed, Attempt 0 preserved. This supersedes earlier MCP-002/MCP-003 pending-validation gate snapshots. No execution is started; live provider/deployment and terminal system proof remain separately owned.
