@@ -359,7 +359,7 @@ Attempt 3 corrects the owned-process timeout/overflow defect identified in the A
 - `npm run typecheck`: **passed** (schema synchronization, route type generation and TypeScript check).
 - `npm run lint`: **passed with 0 errors and 11 warnings**. All remaining warnings are in untouched files; modified files have no lint warnings.
 - `npm ls @modainteract/moda-interact-shared semver @types/semver zod --depth=0`: Shared **5.0.0**, semver **7.8.5**, @types/semver **7.8.0**, direct Zod **4.6.5**.
-- Immutable legacy fixture SHA-256 remains **`f31d8315bb00595967948cc1936801bb5d0ced62d16e34d835dcbfa33528475a`**. The accepted Database gitlink is **`bd2d09066a8eb178a56f48fbbf88df637c411059`**, an ancestor of merged DATABASE-001 commit `395675f909d604f0bff83ffb3d7d5586f0bdd39b`; the full-tree equivalence reconciliation and later Database changes remain preserved.
+- Immutable legacy fixture SHA-256 remains **`f31d8315bb00595967948cc1936801bb5d0ced62d16e34d835dcbfa33528475a`**. The accepted Database gitlink **`bd2d09066a8eb178a56f48fbbf88df637c411059`** descends from merged DATABASE-001 commit `395675f909d604f0bff83ffb3d7d5586f0bdd39b`; the full-tree equivalence reconciliation and later Database changes remain preserved.
 - `git diff --check`: **passed**.
 
 ### Developer-owned validation handoff — NOT RUN
