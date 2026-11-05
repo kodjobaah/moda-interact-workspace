@@ -163,7 +163,7 @@ Physical worktree isolation:
 Synchronization and publication:
 - Parent `origin/main` is incorporated by merge commit `687d1f097`; implementation baseline `7f50848` matched `origin/main` before the implementation commit.
 - Implementation repository: `moda-interact-commerce`; commit `770d6ab` (`task(ARCH-059-COMMERCE-001): preserve unrelated Product Search capabilities`); pushed to `origin/task/ARCH-059-COMMERCE-001`.
-- Parent task record is being committed and pushed on `origin/task/ARCH-059-COMMERCE-001`; submodule gitlink staged: no.
+- Parent task record: review submission commit `1ea7c8e99` pushed to `origin/task/ARCH-059-COMMERCE-001`; this VCS evidence update is also on that task branch. Submodule gitlink staged: no.
 - Merged to implementation main: no. Merged to workspace main: no.
 ### Deviations
 The implementation worktree's dependencies did not include `@shopify/dev-mcp`, so declared checks ran in an isolated validation copy rather than directly in the task worktree. The exact focused test/typecheck/build commands and results are recorded above.
