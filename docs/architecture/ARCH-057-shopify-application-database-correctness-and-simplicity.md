@@ -128,7 +128,7 @@ Definition validation checks canonical sections/YAML, unique IDs, dependencies, 
 
 This package adds only new ARCH-057-owned files. Every `_index.md`, earlier task/architecture, source file, migration and submodule pointer is unchanged. The developer applies/reviews the definition patch, then the normal launcher materialises matching task branches/worktrees. Parent-definition publication is not a claim that implementation has started.
 
-## Settings Task Acceptance (2026-11-04)
+## Commercial Read Task Acceptance (2026-11-04)
 
 ARCH-057-SHOPIFY-007 Attempt 1 is architect-accepted and Complete at `e1533e4658e7e69eeb33e7efd6516211f0bcbe2e`. Its task records independent 135-test validation, reviewed 23-test PostgreSQL evidence and review limits. Earlier ready/pending snapshots for this task are historical. SHOPIFY-008 is now ready and unclaimed; SHOPIFY-011 remains pending on remaining prerequisites. No downstream execution, main merge or architecture completion is implied.
 
