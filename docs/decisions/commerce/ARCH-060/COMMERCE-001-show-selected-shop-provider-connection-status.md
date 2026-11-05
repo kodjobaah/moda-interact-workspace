@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-05T18:39:43Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -110,10 +110,10 @@ None
 None
 
 ## Acceptance Criteria
-- [ ] Every deterministic matrix row above passes.
-- [ ] Shopify and Woo credentials are fetched via existing integrations for actual runtime execution, never configured or duplicated by this change.
-- [ ] Provider metadata status remains distinguishable from live connectivity and external API connections.
-- [ ] No tenant/auth widening, credential/decryption/provider calls on render, or persisted writes.
+- [x] Every deterministic matrix row above passes.
+- [x] Shopify and Woo credentials are fetched via existing integrations for actual runtime execution, never configured or duplicated by this change.
+- [x] Provider metadata status remains distinguishable from live connectivity and external API connections.
+- [x] No tenant/auth widening, credential/decryption/provider calls on render, or persisted writes.
 
 ## Validation
 - [x] Run declared focused test command for connections-production, connections-ui, connections-route-composition and selected-shop-navigation tests after inspecting package.json.
@@ -130,7 +130,7 @@ Prepare through normal launcher-resolved isolated task worktrees and synchronize
 
 ### Status
 
-In Progress — developer-owned Attempt 1. Codex implementation assistance was explicitly authorized by the developer. Bounded metadata/UI/navigation implementation is complete locally. The developer explicitly requested moda_architect consultation; its controlling clarification resolves the Shopify deferred-Test and inherited development-bootstrap acceptance conflicts. Additional guarded two-draft reuse evidence is added and passing, including the final corrected typecheck. Publication is authorized by the developer and completed on the mirrored task branches; formal developer reconciliation remains pending. This is not a self-submission, acceptance or completion. Execution/completion modes, executor and lifecycle status remain developer-owned.
+Developer Self-Review Passed — Attempt 1. Implementation `a152092a3d95639ccf588be31e3bce8f11ed90f8` is committed and pushed. The review applies the controlling architect clarification below: Shopify authoritative authoring validation/guarded draft Save with inert deferred Test, and the inherited approved development identity bootstrap exception. Status Review, executor/claimed_at null, Attempt 1 unchanged. `execution_mode: developer` and `completion_mode: developer` are preserved; explicit developer completion remains pending. Codex assistance was authorized and does not transfer completion authority.
 
 ### Files Changed
 
@@ -223,7 +223,7 @@ Existing authenticated Studio shop inspection is the authority for shop visibili
 
 ### Unresolved Issues
 
-The two reported acceptance conflicts are resolved by moda_architect's controlling clarification. Guarded native two-draft evidence is added and passing locally; no live-test restoration is required by this task. Final corrected typecheck and reuse tests pass; no known local validation failure remains under the clarified scope. The developer explicitly authorized commit/push. Source and tests are committed as `a152092` and pushed to the implementation task branch; this task report and architect amendment are published on the matching parent task branch. Formal developer review remains pending. Assistance does not transfer lifecycle/completion authority; `/moda_developer_update ARCH-060-COMMERCE-001` remains the normal reconciliation interface. No full implementation acceptance or completion is claimed.
+The two reported acceptance conflicts are resolved by moda_architect's controlling clarification. Guarded native two-draft evidence is added and passing locally; no live-test restoration is required by this task. Final corrected typecheck and reuse tests pass; no known local validation failure remains under the clarified scope. The developer explicitly authorized commit/push. Source and tests are committed as `a152092` and pushed to the implementation task branch; this task report and architect amendment are published on the matching parent task branch. Developer self-review passed as recorded below; explicit developer completion remains pending. Assistance does not transfer lifecycle/completion authority; `/moda_developer_update ARCH-060-COMMERCE-001` remains the normal reconciliation interface. No full implementation acceptance or completion is claimed.
 
 ### Architectural Concerns
 
@@ -291,13 +291,13 @@ Credentials are fetched server-side through the existing Shopify session/WooComm
 | `moda-interact-commerce/src/commerce/woocommerce/authoring-credential.ts` / `resolveWooReadGrant` | Retain current shop/installation/grant checks for every WooCommerce test. |
 
 ### Additional mandatory acceptance criteria
-- [ ] Authorized Shopify shop -> Create tool opens Shopify Admin GraphQL authoring with that shop selected; an additional supported tool can be validated/tested/saved through the existing lifecycle using fetched credentials.
-- [ ] Authorized WooCommerce shop -> Create tool opens WooCommerce REST API authoring with that shop selected; additional supported read tools retain the existing current-test proof before save.
-- [ ] Missing selection, denied authoring role or missing/inactive provider metadata never exposes an enabled native Create tool shortcut; deep-link attempts still obey existing server authorization. Do not disable independently authorized external API creation.
-- [ ] Changing shop/provider invalidates stale authoring tests and previous-shop preselection; a forged provider kind cannot select another tenant or mismatched adapter.
-- [ ] Credentials revoked after metadata load cause the subsequent test/run to fail through existing guards; status display never supplies authority.
-- [ ] Two separately created tools reuse the same native integration without creating provider external-connection/credential records; no secret values in routes, drafts, browser props or logs.
-- [ ] Creating a tool leaves existing integration scopes, feature entitlements and outreach allowlists unchanged; normal publication is required for production capability use.
+- [x] Authorized Shopify shop -> Create tool opens Shopify Admin GraphQL authoring with that shop selected; an additional supported tool can be validated/tested/saved through the existing lifecycle using fetched credentials.
+- [x] Authorized WooCommerce shop -> Create tool opens WooCommerce REST API authoring with that shop selected; additional supported read tools retain the existing current-test proof before save.
+- [x] Missing selection, denied authoring role or missing/inactive provider metadata never exposes an enabled native Create tool shortcut; deep-link attempts still obey existing server authorization. Do not disable independently authorized external API creation.
+- [x] Changing shop/provider invalidates stale authoring tests and previous-shop preselection; a forged provider kind cannot select another tenant or mismatched adapter.
+- [x] Credentials revoked after metadata load cause the subsequent test/run to fail through existing guards; status display never supplies authority.
+- [x] Two separately created tools reuse the same native integration without creating provider external-connection/credential records; no secret values in routes, drafts, browser props or logs.
+- [x] Creating a tool leaves existing integration scopes, feature entitlements and outreach allowlists unchanged; normal publication is required for production capability use.
 
 No new provider operation is implemented by this task. Unsupported operations require separately reviewed runtime work before they can be offered in authoring. Extend focused Connections and tool-authoring UI/server tests to prove every row above. Definition amendment only; implementation remains unclaimed.
 
@@ -329,3 +329,25 @@ Deterministic evidence must distinguish (a) the provider projection after author
 ### Decision limits and remaining requirements
 
 All other original task criteria remain in force, including tenant/auth boundaries, safe selected-shop projection, external/provider independence, stale-result rejection, provider-kind validation, credential canaries, Woo proof/revocation guards and reuse of native integrations without duplicated credentials. This clarification does not check completion boxes or assert that the current local changes prove every row. Normal source/test reconciliation, authorized publication and developer review/completion remain required. No repository source, task lifecycle/claim metadata, dependency, index/frontier, main branch or runtime credential is changed by this decision.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 1 (2026-11-05)
+
+Reconciled source, task scope/amendment, worktree/publication state, validation and authorized assistance using `/moda_developer_update ARCH-060-COMMERCE-001`. **Review passed; no actionable findings.** This is passing review, not task completion: `completion_mode: developer` requires an explicit `/moda_developer_update ARCH-060-COMMERCE-001 complete` decision. Status Review; claim cleared; attempt remains 1.
+
+### Implementation and conformance
+
+Reviewed all 28 changed files against baseline `7f50848ee783479ec4d259c10000effd3d2e1bd6`, including authorized selected-shop metadata queries, bounded DTO, independent external/provider composition, selection-keyed rendering/navigation and server-validated native authoring preselection. Provider status selects credential-presence metadata only, with no decrypt/provider I/O or credential writes. Current tenant, platform, offline-session and Woo installation/grant/version checks retain existing authorization. Runtime credential fetching and current-proof/revocation guards remain owned by their existing adapters.
+
+The deterministic status/navigation/privacy matrix and guarded two-draft reuse are covered by the focused evidence. Acceptance checkboxes above are reconciled **under the controlling architect clarification**: the original Shopify live-test wording is superseded by authoring validation/guarded Save and deferred-Test negative proof; zero-write assertions apply to the new projection and ordinary authenticated reads, with only the explicitly permitted inherited development identity bootstrap exception. No live Shopify authoring test, provider connectivity, decryption success or universal development-request zero-write claim is made.
+
+### Validation and publication
+
+- Independently ran the fifteen-file focused command listed in the report plus `tests/commerce-lifecycle.test.ts` as one aggregate: **257 tests across 16 files passed**, exit 0. Log `/tmp/arch060-developer-review.log`. This covers the amended guarded reuse and existing Shopify/Woo authoring regressions; it is not added to earlier counts as unique extra coverage.
+- Independently checked `git diff --check HEAD^`: passed; inspected submitted typecheck/build logs and reported scoped lint. Typecheck/build/lint were not independently rerun in this review.
+- Implementation HEAD and `origin/task/ARCH-060-COMMERCE-001` both equal `a152092a3d95639ccf588be31e3bce8f11ed90f8`. No uncommitted implementation changes. Canonical parent worktree was clean at `bf8078a8dfc49e02f02230df511dc8eb182e4fef` before this record; its task ref matched the remote.
+- Dedicated parent/implementation paths, matching branches, preparation/synchronization, unchanged Database pin and material authorized Codex assistance are recorded in the Completion Report. No implementation changes were needed or published by this reconciliation; only the parent task review is committed/pushed.
+
+### Boundaries and follow-up
+
+No explicit dependencies/enables exist; no downstream task is promoted. No main merge, gitlink update, credential mutation, deployment or task completion is performed. The developer retains final completion/integration authority. Earlier architecture wording requiring live Shopify Test is superseded for this task by the recorded clarification; duplicated initiative wording must be reconciled before the initiative is marked Implemented, as already required by that decision.
