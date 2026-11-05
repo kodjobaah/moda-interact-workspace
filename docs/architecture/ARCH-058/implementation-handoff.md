@@ -192,3 +192,8 @@ BACKGROUND-001 is Ready/unclaimed at Attempt 0; the launcher may claim it only o
 ## Dependency Frontier Verification — 5 November 2026
 
 Commerce acceptance and follow-up verification are published. Rechecked task frontmatter: BACKGROUND-001 has all four prerequisites Complete and remains Ready/unclaimed at Attempt 0. SYSTEM-TEST-001 remains Pending solely on BACKGROUND-001. No dependency edge, execution claim, attempt, integration gate or terminal-validation authorization is changed. Earlier pending-Commerce handoff snapshots are historical.
+
+
+## Background Attempt 1 Review — 5 November 2026
+
+BACKGROUND-001 is Ready/unclaimed, Attempt 1 preserved, after architect Changes Requested at source `46ff3ad`. Its host does not invoke the required at-most-one fallback selector for soft dispositions; the task review specifies the correction and integrated loopback regression. Independent review passed 196 recommendation tests plus 69 host tests. Recorded developer PostgreSQL validation is complete; it was not rerun by the architect. Upstream prerequisites remain Complete; SYSTEM-TEST-001 remains Pending on Background acceptance. This supersedes historical Attempt 0 readiness snapshots without starting execution or changing dependency edges.

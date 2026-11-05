@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
-executor: codex
-claimed_at: 2026-11-05T12:02:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-058-MCP-002
@@ -376,7 +376,7 @@ No new agent, queue, worker, transaction retry framework, product mirror, Admin/
 
 ## Completion Report
 
-**Status: Ready for Review.** Attempt 1 implementation is complete and published. The required disposable PostgreSQL boundary has not been run; developer authorization for this specific task is still required under `docs/agent-validation-execution-policy.md`.
+**Status: Changes Requested after Attempt 1 review.** Implementation is published, but not accepted. The required developer-authorized PostgreSQL validation subsequently passed as recorded below; the remaining blocker is the host soft-disposition fallback selection. Task is Ready/unclaimed; Attempt 1 is preserved.
 
 ### Implementation
 
@@ -441,11 +441,11 @@ Parent workspace:
 
 Merged to either main branch: no.
 
-PostgreSQL validation is complete; awaiting moda_architect review. No architect acceptance decision has been made by this agent.
+PostgreSQL validation is complete. Architect review requested the correction recorded below; no acceptance decision has been made.
 
 ## Architect Review
 
-Pending. Acceptance requires the implemented source mapping, preserved initial-outreach/legacy evidence behavior, deterministic authorized-call accounting, complete controlled-body composition, unchanged downstream ownership and actual mandatory validation evidence. A task definition or proposed command is not proof of execution.
+Changes Requested on 2026-11-05; see the Attempt 1 review below. Acceptance remains withheld.
 
 ## Architect Dependency Gate — MCP-002 Attempt 2 (2026-11-04)
 
@@ -468,3 +468,29 @@ COMMERCE-001 Attempt 3 is accepted and Complete at `58f5418ada85d1cfc08400f64ab4
 ## Dependency Verification — 5 November 2026
 
 Reverified all four explicit prerequisites as Complete: MCP-002, MCP-003, COMMERCE-001 and SHARED-006. Commerce Attempt 3 acceptance is published at parent `c1976628f`, with follow-up verification `669e47783`, for implementation `58f5418ada85d1cfc08400f64ab41b198fb427b4`. This task remains Ready, unclaimed, Attempt 0. Normal launcher preparation and accepted-source integration checks are required before execution; no claim or implementation is started here.
+
+
+## Architect Implementation Review — Attempt 1 (2026-11-05)
+
+### Decision
+
+**Changes Requested.** Reviewed implementation `46ff3adc652a8bfba369622667f968a29faf75ac`, following `6106059c73ca66404fa4bea25becc23b58bce813`. Return to Ready, executor/claimed_at null; Attempt 1 remains unchanged. No downstream task is promoted or started.
+
+### Blocking finding
+
+**P2 — Apply the fallback selector for soft dispositions.** In `src/commerce/host.ts:704-706`, all submitted proposals flow into the ordinary refresh/render path, including `OUT_OF_SCOPE_REDIRECT` and `SHIPPING_INFORMATION_UNVERIFIED`. The required `selectFallbackRecommendation` helper exists but is never invoked by the host. These soft replies can therefore retain multiple products and ignore the specified current-context → owned-basket → browse preference. Invoke the pure selector before refresh planning for soft dispositions, preserving proposal order within each preference class and selecting at most one already observed/proposed product. Keep required discount inspection, independent shipping, authorization and the shared call budget intact. Add a real loopback host case with multiple proposals that asserts the chosen identity, complete returned body and exact tool-call counts, rather than only testing the isolated helper.
+
+### Evidence reviewed
+
+Inspected the task requirements and source changes covering recommendation context, turn-local observations, selection, refresh planning, host finalization, discount eligibility, shipping/rendering and the unused fallback helper. The completion report's stale initial NOT_RUN PostgreSQL sentence is reconciled with its later recorded passing developer validation; that old sentence is not treated as a second outstanding validation blocker.
+
+Independently executed:
+
+- `npm run test:commerce-recommendations`: **196 tests across 20 files passed**. Local evidence `/tmp/background058-review-unit.log`.
+- `npm run test:commerce-host`: **69 tests passed** through the isolated loopback host configuration. Local evidence `/tmp/background058-review-host.log`.
+
+Reviewed the submitted build/lint/wrapper regression results and the recorded developer-authorized disposable PostgreSQL pass after immutable-fixture cleanup. Those checks were not independently rerun by the architect. Passing focused suites do not cover the missing integrated soft-disposition selection behavior identified above.
+
+### Follow-up
+
+The owning agent must reclaim this task through the normal launcher, implement and test the correction, rerun relevant validation and update the completion report before resubmission. All explicit upstream dependencies remain Complete. SYSTEM-TEST-001 remains Pending on Background acceptance. No implementation edit, integration merge, deployment, persistent publication or customer send is made by this review.
