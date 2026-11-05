@@ -166,3 +166,7 @@ MCP-002 Attempt 2 is submitted at `b95c397` with Shared 5.0.0 and the accepted D
 ## MCP-002 accepted frontier — 5 November 2026
 
 MCP-002 Attempt 3 is accepted and Complete at `11fba27`. All prior integration findings are resolved; developer-run disposable integration reports 30 passed, 0 failed and 1 opt-in live skip with owned-resource cleanup, and independent registry checks passed 7/7. This supersedes earlier pending-validation/resume snapshots. MCP-003 is Ready/unclaimed at Attempt 0 because SHOPIFY-001 is also Complete. Commerce, Background and terminal system validation retain their remaining prerequisite gates. No follow-on execution, publication, deployment or architecture-wide completion is implied.
+
+## Shipping accepted frontier — 5 November 2026
+
+MCP-003 Attempt 1 is accepted and Complete at `69b64669`, with 59 independently rerun shipping/core tests and reviewed 71-test regression/static/build/query evidence. Live merchant grants/provider/deployment checks remain operator work. COMMERCE-001 is Ready/unclaimed at Attempt 0 because MCP-002 and SHARED-006 are also Complete. Background remains Pending on Commerce; terminal system validation retains its consumer prerequisites. No consumer execution, tool publication, deployment or architecture completion is implied.
