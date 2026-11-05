@@ -2,18 +2,20 @@
 
 ## Scope and starting point
 
-This package defines twelve Shopify implementation tasks plus one terminal system-test task. The task definitions are materialised in the task workspace. As of this 2026-11-04 review, SHOPIFY-001 (Attempt 2), SHOPIFY-002 (Attempt 3), SHOPIFY-003 (Attempt 2) and SHOPIFY-005 (Attempt 1) are Complete; SHOPIFY-004 is in Review. Task YAML frontmatter is authoritative. Dependency acceptance/integration and normal architect promotion are required before a Pending task can be claimed.
+This package defines twelve Shopify implementation tasks plus one terminal system-test task. The definitions are materialised. Task YAML frontmatter is authoritative; normal launcher dependency/integration checks remain required before execution.
 
 ## Current dependency frontier
 
+Reconciled against the task records in this branch on 2026-11-04 after SHOPIFY-009 Attempt 2 acceptance.
+
 | State | Tasks |
 |---|---|
-| Complete | ARCH-057-SHOPIFY-001, ARCH-057-SHOPIFY-002, ARCH-057-SHOPIFY-003, ARCH-057-SHOPIFY-005 |
+| Complete | ARCH-057-SHOPIFY-001, ARCH-057-SHOPIFY-002, ARCH-057-SHOPIFY-003, ARCH-057-SHOPIFY-005, ARCH-057-SHOPIFY-006, ARCH-057-SHOPIFY-007, ARCH-057-SHOPIFY-008, ARCH-057-SHOPIFY-009 |
 | Review | ARCH-057-SHOPIFY-004 |
-| Ready | ARCH-057-SHOPIFY-006, ARCH-057-SHOPIFY-007, ARCH-057-SHOPIFY-009 |
-| Pending | ARCH-057-SHOPIFY-008, ARCH-057-SHOPIFY-010, ARCH-057-SHOPIFY-011, ARCH-057-SHOPIFY-012, ARCH-057-SYSTEM-TEST-001 |
+| Ready | ARCH-057-SHOPIFY-010 |
+| Pending | ARCH-057-SHOPIFY-011, ARCH-057-SHOPIFY-012, ARCH-057-SYSTEM-TEST-001 |
 
-006, 007 and 009 have all explicit dependencies satisfied. SHOPIFY-005 Attempt 1 was independently accepted with 79 support unit/UI, four migrated PostgreSQL and nine router tests passing, plus typecheck, build and required lint. Its claim is cleared. SHOPIFY-011 still depends on the other functional tasks and remains Pending; no downstream work was started. This frontier reconciles the task YAML in this branch and does not publish review edits.
+SHOPIFY-009 is architect-accepted at `f0cf26877a9e3f7503c0f9a956b02ede3eff2571`: both diagnostic findings are resolved and independent focused validation passed 91 tests. The previously reviewed 12-test PostgreSQL evidence was not rerun for the diagnostic correction. Its claim is cleared. SHOPIFY-010 is Ready and unclaimed because its sole prerequisite is Complete. SHOPIFY-011 remains Pending on the incomplete prerequisite records in this branch (SHOPIFY-004 and SHOPIFY-010); no downstream execution, main merge or architecture completion is implied. Historical frontier notes below do not override these current task records.
 
 Apply the definition patch directly to the latest supplied `moda-interact-workspace(20261104-005051).zip` baseline. It already includes the original Shopify review. No earlier patch needs to be applied again. The new API/Background work occupies ARCH-056; it remains unchanged and does not add a Shopify prerequisite.
 
