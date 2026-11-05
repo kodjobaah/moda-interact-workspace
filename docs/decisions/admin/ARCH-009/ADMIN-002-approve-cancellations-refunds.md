@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 70
 executor: null
 claimed_at: null
@@ -199,3 +199,9 @@ None
 ## Architect frontier reconciliation — 2026-11-05
 
 ARCH-009-ADMIN-002 is Pending because ARCH-009-ADMIN-001 is not Complete. At refreshed origin/main 4b300e7ec, ADMIN-001 is Ready; its published task branch records Review, not accepted completion. Neither state satisfies this dependency. No implementation review or acceptance is implied. Preserve Attempt 0, executor null and claimed_at null. ADMIN-003 remains Pending because ADMIN-002 and ARCH-007-ADMIN-004 are not Complete. No task was claimed and no implementation worktree was created.
+
+## Architect supersession — 2026-11-05
+
+Explicitly authorized by the developer. Superseded; do not claim or implement this legacy definition. Preserve all earlier attempt, implementation and review history; supersession does not accept the old implementation.
+
+Binding replacements: [ARCH-010 lifecycle ownership](../../../architecture/ARCH-010-merchant-lifecycle-state-transitions.md) removes the local cancellation state machine and assigns subscription cancellation to Shopify. [ARCH-015 Admin refund replacement](../ARCH-015/ADMIN-001-manual-refund-fallback.md) owns the current refund workflow and guarded provider settlement. Remaining Woo-specific support stays in ARCH-027-ADMIN-001.

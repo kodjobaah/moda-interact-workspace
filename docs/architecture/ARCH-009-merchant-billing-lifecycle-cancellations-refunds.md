@@ -547,3 +547,7 @@ On genuine source-contract drift, STOP and return exact evidence.
 ## Frontier reconciliation — 2026-11-05
 
 ARCH-009-ADMIN-002 is Pending until ARCH-009-ADMIN-001 is Complete. The latter is Ready in refreshed main and Review on its published task branch; neither is accepted completion. ARCH-009-ADMIN-003 remains Pending on ADMIN-002 and ARCH-007-ADMIN-004. This correction preserves attempt/claim/history and does not accept or implement any task.
+
+## Admin task retirement — 2026-11-05 — ARCH-009-ADMIN-002
+
+Developer-authorized supersession of ARCH-009-ADMIN-002. ARCH-010 owns the provider-authoritative lifecycle; ARCH-015 owns the replacement Admin refund workflow. Do not restore the legacy cancellation/approval model. Future generic corrections must retain the server-side purchase/refund bypass prohibition from ADMIN-003, including when ARCH-007-ADMIN-004 is implemented. ARCH-009-SYSTEM-TEST-001 retains Pending and its manual gate; its legacy dependencies/scenarios require deliberate scope alignment with current ARCH-010/015 certification, not automatic promotion on supersession. Existing reviews and attempts remain history, not newly accepted work.
