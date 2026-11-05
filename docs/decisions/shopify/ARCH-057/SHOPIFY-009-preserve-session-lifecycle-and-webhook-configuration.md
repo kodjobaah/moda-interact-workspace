@@ -20,7 +20,7 @@ enables:
 - ARCH-057-SHOPIFY-010
 - ARCH-057-SHOPIFY-011
 created: 2026-11-04
-updated: 2026-11-04
+updated: 2026-11-05
 ---
 
 # ARCH-057-SHOPIFY-009: Preserve Shopify sessions across uninstall retries and reinstall admission
@@ -387,3 +387,8 @@ Architect decision on 2026-11-04: accepted; task Complete. Reviewed source `f0cf
 - Reviewed submitted Attempt 2 typecheck/scoped lint and earlier build/config validation evidence. The previously inspected 12-test PostgreSQL evidence remains applicable; the architect did not rerun that suite. No deployment or remote subscription verification is implied.
 
 Completion clears executor/claimed_at without increasing attempt. SHOPIFY-010 is promoted to Ready, unclaimed, because its sole prerequisite is now Complete. SHOPIFY-011 remains Pending on the remaining prerequisites recorded in this branch, including SHOPIFY-010; SHOPIFY-012 and SYSTEM-TEST-001 remain Pending. No downstream implementation is started by this decision. The historical Attempt 1 findings and validation limits above remain part of the review record.
+
+
+### Downstream Reconciliation — 2026-11-05
+
+Reconciled with published parent main `d9e959e37` after SHOPIFY-010 Attempt 1 acceptance (`4dfa4c1df`). SHOPIFY-009 remains Complete at Attempt 2; its implementation and acceptance are unchanged. SHOPIFY-010 is now Complete, superseding the historical Ready frontier above. SHOPIFY-011 remains Pending solely because SHOPIFY-004 is still recorded in Review in the published task definitions. SHOPIFY-012 and SYSTEM-TEST-001 remain Pending transitively. The task index and execution plan already reflect this frontier; no additional task promotion or execution is warranted. The parent task branch was fast-forwarded to incorporate the published records; no implementation checkout or gitlink was changed.
