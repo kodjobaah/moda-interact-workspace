@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 70
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-009-ADMIN-003
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-11-05
 ---
 
 # ARCH-009-ADMIN-002
@@ -195,3 +195,7 @@ None
 Pending
 ### Follow-up
 None
+
+## Architect frontier reconciliation — 2026-11-05
+
+ARCH-009-ADMIN-002 is Pending because ARCH-009-ADMIN-001 is not Complete. At refreshed origin/main 4b300e7ec, ADMIN-001 is Ready; its published task branch records Review, not accepted completion. Neither state satisfies this dependency. No implementation review or acceptance is implied. Preserve Attempt 0, executor null and claimed_at null. ADMIN-003 remains Pending because ADMIN-002 and ARCH-007-ADMIN-004 are not Complete. No task was claimed and no implementation worktree was created.

@@ -9,3 +9,7 @@
 ADMIN-003 intentionally depends on ARCH-007-ADMIN-004.
 
 Current frontier: `ARCH-009-ADMIN-001` is Ready after SHOPIFY-001 acceptance; ADMIN-002 and ADMIN-003 remain Pending.
+
+### Frontier verified 2026-11-05
+
+ADMIN-002 is Pending, corrected from its invalid Ready YAML state. ADMIN-001 remains unaccepted (Ready in integrated main; Review on its published task branch); ADMIN-003 remains Pending. No execution is authorized by this reconciliation.

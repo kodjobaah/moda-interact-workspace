@@ -543,3 +543,7 @@ Implementation agents must not invent:
 - automatic financial authorization.
 
 On genuine source-contract drift, STOP and return exact evidence.
+
+## Frontier reconciliation — 2026-11-05
+
+ARCH-009-ADMIN-002 is Pending until ARCH-009-ADMIN-001 is Complete. The latter is Ready in refreshed main and Review on its published task branch; neither is accepted completion. ARCH-009-ADMIN-003 remains Pending on ADMIN-002 and ARCH-007-ADMIN-004. This correction preserves attempt/claim/history and does not accept or implement any task.
