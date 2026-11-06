@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T09:56:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-061-SHARED-002", "ARCH-061-SHOPIFY-001"]
 enables: ["ARCH-061-SYSTEM-TEST-001"]
@@ -47,9 +47,9 @@ Central token service, agent tools, sibling imports, credential UI, schema chang
 The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Use the binding revision public-wrapper/ALS/lifecycle gate architecture; do not choose a different synchronization mechanism.
 
 ## Work Items
-- [ ] Compose published factory with service-owned Prisma and OAuth resolver; remove duplicate refresh implementation.
-- [ ] Preserve existing getShopifyAccessToken callers while mapping safe failures and cancellation.
-- [ ] Test separate-client race, expiry and domain behavior without raw response logs.
+- [x] Compose published factory with service-owned Prisma and OAuth resolver; remove duplicate refresh implementation.
+- [x] Preserve existing getShopifyAccessToken callers while mapping safe failures and cancellation.
+- [x] Test separate-client race, expiry and domain behavior without raw response logs.
 
 ## Interfaces / Contracts
 Shared Node-only factory and structural transaction interface/error categories defined by SHARED-001 and published by SHARED-002. Consumers inject local client/config/fetch and translate errors. No sibling source imports; no browser exports or raw token DTOs. App owns all SDK/lifecycle mutation entrypoints.
@@ -62,14 +62,14 @@ Shared Node-only factory and structural transaction interface/error categories d
 - ARCH-061-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Compose published factory with service-owned Prisma and OAuth resolver; remove duplicate refresh implementation.
-- [ ] Preserve existing getShopifyAccessToken callers while mapping safe failures and cancellation.
-- [ ] Test separate-client race, expiry and domain behavior without raw response logs.
-- [ ] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
+- [x] Compose published factory with service-owned Prisma and OAuth resolver; remove duplicate refresh implementation.
+- [x] Preserve existing getShopifyAccessToken callers while mapping safe failures and cancellation.
+- [x] Test separate-client race, expiry and domain behavior without raw response logs.
+- [x] Relevant Background matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
 
 ## Validation
-- [ ] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
-- [ ] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
+- [x] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
+- [x] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
 
 ## Stop Condition
 Submit completed report for authorized review and STOP after scoped criteria/validation. Explicit developer completion required. Do not start enabled tasks; system validation is terminal/manually invoked.
@@ -126,9 +126,9 @@ NEW paths below are to be created RELATIVE TO THIS TASK REPOSITORY. Existing ful
 | moda-interact-background/src/services/abandoned-checkout-lookup.service.ts | lookup token caller | Propagate existing signal into helper option; preserve lookup/admission logic. |
 
 ### Task-specific deterministic assertions
-- [ ] Existing helper callers return same data behavior with Shared provider; two service client instances produce one normal refresh.
-- [ ] Force provider error with token canary -> bounded fixed code; no raw body/client secret/token in logger capture.
-- [ ] Catalogue scope-only query makes zero OAuth calls even expired access.
+- [x] Existing helper callers return same data behavior with Shared provider; two service client instances produce one normal refresh.
+- [x] Force provider error with token canary -> bounded fixed code; no raw body/client secret/token in logger capture.
+- [x] Catalogue scope-only query makes zero OAuth calls even expired access.
 
 Create the new focused test paths listed in this exact command where absent; preserve existing test files. Required focused command: `npx vitest run tests/unit/services/shopify-session.service.test.ts tests/integration/shopify-session-coordination.test.ts`. Run declared `npm run build`; App/Commerce/MCP additionally `npm run typecheck`; System Test uses `npm run typecheck` only.
 
@@ -139,22 +139,59 @@ No execution started. Use launcher isolated/synchronized task worktrees when req
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-11-06T09:56:21Z. Attempt 0 review history is preserved below.
+Ready for Review — Developer Attempt 1 implementation and self-review passed; awaiting moda_architect review.
 
 ### Files Changed
-None
+
+- `package.json`, `package-lock.json`: pin the published `@modainteract/moda-interact-shared` dependency to 5.2.0.
+- `src/services/shopify-session.service.ts`: compose the Shared provider once with this service's Prisma client, read `shopify.oauth` through the existing configuration consumer, resolve domain-only callers to one active stored Shopify Shop, and delegate token reads to Shared.
+- `src/services/shopify.service.ts`: preserve the domain-only internal lookup through the exact active-Shop resolver.
+- `src/providers/shopify-discount.provider.ts`, `src/services/shopify-discount-catalogue.service.ts`: pass selected Shop ID to the provider while retaining scope-only lookup through the actual offline session ID, without token refresh.
+- `src/providers/shopify-whatsapp-consent.provider.ts`, `src/services/shopify-whatsapp-consent.service.ts`: pass the already selected Shop ID and cancellation signal through the injected token reader.
+- `src/services/abandoned-checkout-lookup.service.ts`: pass the selected Shop ID and supplied cancellation signal to token acquisition and Shopify requests.
+- `tests/unit/services/shopify-session.service.test.ts`: cover Shared-provider composition, per-refresh configuration reads, exact domain mapping and closed failures for missing/ambiguous Shops.
+- `tests/integration/shopify-session-coordination.test.ts`: cover separate-client refresh coordination, selected-Shop rejection, and provider-failure canaries against disposable PostgreSQL.
+- Updated provider/catalogue unit tests for selected-Shop identity, cancellation, persisted offline session ID, and expired-token scope-only behavior.
+
 ### Work Completed
-None
+
+- Replaced the local unlocked refresh implementation with the published Shared Node provider. No sibling source import, schema change, token cache, or service-owned refresh logic remains.
+- All selected-Shop consumers use `shopId`; the remaining domain-only internal consumer resolves exactly one active SHOPIFY Shop by its stored domain and fails closed on none, ambiguity or persistence failure.
+- Preserved discount and WhatsApp consent behavior. Cancellation signals propagate through token acquisition where callers provide them.
+- The discount catalogue reads scope metadata using the actual persisted offline session ID and does not invoke OAuth, including when access has expired.
+- Provider error canaries resolve to Shared's fixed error and are absent from the error/stack and logger capture.
+- No change was needed to the architect-owned integration matrix or review section.
+
 ### Validation Results
-Definition only.
+
+- `npx vitest run tests/unit/services/shopify-session.service.test.ts tests/integration/shopify-session-coordination.test.ts` — 3 unit tests passed; the PostgreSQL file is activated by the repository disposable-integration runner.
+- `node scripts/test-integration.mjs tests/integration/shopify-session-coordination.test.ts` — 3 disposable PostgreSQL tests passed: two independent Prisma clients perform one coordinated normal refresh; inactive selected Shop is rejected before OAuth; provider error and secret/token canaries remain absent from diagnostics and logs. Runner-owned disposable infrastructure completed cleanup.
+- Focused regressions: `npx vitest run tests/unit/services/shopify-session.service.test.ts tests/integration/shopify-session-coordination.test.ts tests/unit/providers/shopify-discount.provider.test.ts tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts tests/unit/services/abandoned-checkout-lookup.service.test.ts` — 72 tests passed across 5 files (PostgreSQL file not enabled in this non-disposable invocation).
+- `npm run build` — passed (Prisma Client generation and TypeScript compilation; exit 0).
+- `git diff --check` — passed.
+- Dependency evidence: installed package resolves to the published Shared 5.2.0 export `@modainteract/moda-interact-shared/shopify/node`.
+- Worktree evidence from developer preparation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-BACKGROUND-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-BACKGROUND-001`; both use `task/ARCH-061-BACKGROUND-001`. Preparation passed the declared dependency gate, synchronized current `origin/main`, initialized recursive submodules at recorded commits (Background database submodule `bd2d09066a8eb178a56f48fbbf88df637c411059`), and durably pushed the Attempt 1 parent claim (`961ed4d383f2273c0b36a5d52b0f27214cd0c688`).
+
 ### Deviations
-None
+
+- The required PostgreSQL test is run through `scripts/test-integration.mjs`, which supplies disposable PostgreSQL and enables integration tests; plain Vitest does not run its database scenarios. No implementation contract was changed.
+
 ### Assumptions
-Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2.
+
+- Existing authorization at each caller establishes tenant access before the selected-Shop ID reaches this service. The token provider is not an authorization API.
+- Existing Shop.domain and Session.shop values represent the stored Shopify integration domain, per the binding revision's selected-Shop contract.
+
 ### Unresolved Issues
-None blocking architecture definition. Revision-1 feasibility questions are superseded by binding revision 2 decisions.
+
+None identified within this task's Background scope. Parent architecture rows owned by App, Commerce, MCP, Shared or other repositories are outside this implementation task.
+
 ### Architectural Concerns
-Implement binding revision 2 exactly; report actual incompatibility with evidence instead of selecting alternate architecture.
+
+None. The service uses the published Shared contract; no cross-repository gap was found.
+
+### Developer Self-Review — Passed
+
+Attempt 1 implementation and all task-owned acceptance criteria were reviewed against the binding revision 2 contract. Focused unit tests, disposable PostgreSQL coordination/provider-failure scenarios, Background build and diff checks passed. No task-owned required item remains incomplete. Completion mode is developer, so this review submission does not decide completion; explicit developer completion remains pending architect review.
 
 ## Architect Review
 ### Review Status
