@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables: ["ARCH-063-SYSTEM-TEST-001"]
 created: 2026-11-06
@@ -74,15 +74,15 @@ SDK-managed refresh/token exchange is not observable solely from Shared getSessi
 Shared implementation extends existing API compatibly; publication chooses next available approved semver and records exact version before consumer pins. No forced version guess or unpublished sibling import. Commerce UI correction is independent and Ready now; it uses existing accepted ARCH-060/061/062 contracts, does not wait for log publication. Shared logging implementation is also independently Ready. Consumer event wiring depends on Shared publication. App wiring includes metadata-readiness correction. System Test is terminal on all fixes; manually invoked after optional user exercise. Compatible rollout, no schema/credential/env or Render topology change. Logging absent in old binaries is expected until owning consumer deployed; do not assert deployed observability from local code. No new metric/span framework. Metadata reads and tooling never expose provider secrets.
 
 ## Work Items
-- [ ] Audit components/production-studio-page.tsx native tool preselection and src/studio/tools/shopify-admin-editor.tsx plus existing authoring actions referenced by that editor: navigation/test/save must not pre-reject REFRESHABLE; metadata-only save must not invoke refresh; runtime scope/tenant authorization remains authoritative. Add route/deep-link and live-test fixtures, including stale status after refresh revocation.
-- [ ] Add REFRESHABLE safe metadata query and explicit unusable/ambiguous states without token selects.
-- [ ] Add REFRESHABLE; keep secret-free local DTO.
-- [ ] Export/reuse isStoreIntegrationUsableForAuthoring; accept AVAILABLE/REFRESHABLE Shopify only.
-- [ ] Render automatic-refresh guidance and permit usable link; retain stale shop result exclusion.
-- [ ] Replace hardcoded Shopify boolean label with provider-specific metadata status.
-- [ ] Replace existence boolean with safe storeIntegration metadata field.
-- [ ] Reuse metadata classifier, no OAuth status probe.
-- [ ] Return new explicit provider metadata fixture shape.
+- [x] Audit components/production-studio-page.tsx native tool preselection and src/studio/tools/shopify-admin-editor.tsx plus existing authoring actions referenced by that editor: navigation/test/save must not pre-reject REFRESHABLE; metadata-only save must not invoke refresh; runtime scope/tenant authorization remains authoritative. Add route/deep-link and live-test fixtures, including stale status after refresh revocation.
+- [x] Add REFRESHABLE safe metadata query and explicit unusable/ambiguous states without token selects.
+- [x] Add REFRESHABLE; keep secret-free local DTO.
+- [x] Export/reuse isStoreIntegrationUsableForAuthoring; accept AVAILABLE/REFRESHABLE Shopify only.
+- [x] Render automatic-refresh guidance and permit usable link; retain stale shop result exclusion.
+- [x] Replace hardcoded Shopify boolean label with provider-specific metadata status.
+- [x] Replace existence boolean with safe storeIntegration metadata field.
+- [x] Reuse metadata classifier, no OAuth status probe.
+- [x] Return new explicit provider metadata fixture shape.
 
 ## Interfaces / Contracts
 Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published optional Shared onEvent hook and exact frozen event schema above. Each consumer owns safe logger forwarding; provider/runtime credentials stay server-only. Exact version recorded by SHARED-002 before consumer pins.
@@ -94,14 +94,14 @@ None
 - ARCH-063-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Expired/within-skew access+future refresh -> REFRESHABLE; expired/within-skew access with expired/missing refresh ->EXPIRED (UI label: Refresh or reconnection required); beyond-skew valid access AVAILABLE; zero decrypt/network/write metadata calls.
-- [ ] Header and Connections agree for Shopify/Woo; existing custom-domain integration mapping unchanged.
-- [ ] AVAILABLE and REFRESHABLE links/deep-link preselection work; stale shop response excluded.
-- [ ] Actual live test of expired-refreshable row invokes Shared once, persists pair/expiry then provider request; revoked scope and cross-tenant selection fail.
+- [x] Expired/within-skew access+future refresh -> REFRESHABLE; expired/within-skew access with expired/missing refresh ->EXPIRED (UI label: Refresh or reconnection required); beyond-skew valid access AVAILABLE; zero decrypt/network/write metadata calls.
+- [x] Header and Connections agree for Shopify/Woo; existing custom-domain integration mapping unchanged.
+- [x] AVAILABLE and REFRESHABLE links/deep-link preselection work; stale shop response excluded.
+- [x] Actual live test of expired-refreshable row invokes Shared once, persists pair/expiry then provider request; revoked scope and cross-tenant selection fail.
 
 ## Validation
-- [ ] Run focused command `npx vitest run tests/store-integration.test.tsx tests/provider-tool-handoff.test.ts tests/connections-production.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
-- [ ] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
+- [x] Run focused command `npx vitest run tests/store-integration.test.tsx tests/provider-tool-handoff.test.ts tests/connections-production.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
+- [x] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
 
 ## Stop Condition
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
@@ -110,22 +110,45 @@ Complete defined work/criteria/validation, submit report for authorized review a
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
 ## Completion Report
+
 ### Status
-Not Started
+
+Complete — Attempt 1 explicitly developer-completed on 2026-11-06.
+
 ### Files Changed
-None
+31 task-owned files: provider metadata/status contracts, authoring predicate and Connections UI, selected-shop header and production projection, preview/test-conversation contract consumers, injected fixtures and regression tests. Exact paths are recorded by implementation commit 97ab6ce.
+
 ### Work Completed
-None
+Added Shopify REFRESHABLE using the helper's 320000ms skew and future refresh expiry. Bounded id-only predicates detect missing/ambiguous offline rows without selecting credentials. Shared authoring predicate admits AVAILABLE/REFRESHABLE for Shopify and AVAILABLE for Woo. Header and Connections share provider-specific metadata labels and automatic-refresh guidance. Existing custom-domain mapping retained; malformed Shopify paths/ports rejected. ProductionStudioPage deep links admit usable hints; pending shop-switch results remain excluded.
+
+Audited ShopifyAdminEditor and server actions: compiler actions retain independent role authorization; draft saves remain metadata-only and use guarded publication lifecycle; execution resolves current selected-shop credentials through Shared. Real published Shared 5.2.0 local fixture refreshes expired credentials once, persists rotated pair/expiry and resolves transaction before Admin request. Revoked refresh, revoked scope and foreign-shop cases fail safely. Native draft-save fixture asserts zero network calls.
+
 ### Validation Results
-Definition only.
-### Deviations
-None
-### Assumptions
-Existing accepted coordinator and metadata integration remain available at owner task baseline.
-### Unresolved Issues
-None blocking definition.
-### Architectural Concerns
-Return actual incompatible contract evidence before widening scope.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; existing Nunjucks dynamic-import warning only.
+- `npx tsc --noEmit`: passed.
+- ESLint on all 11 changed production files: passed.
+- `git diff --check`: passed.
+- `npx vitest run tests/feature-configuration-page.test.tsx tests/store-integration.test.tsx tests/provider-tool-handoff.test.ts tests/connections-production.test.ts tests/provider-metadata-refreshable.test.ts tests/shop-execution-context.test.ts tests/selected-shop-navigation.test.tsx tests/shopify-session-coordination.test.ts tests/test-conversations-screen.test.tsx tests/tool-authoring-no-provider-io.test.ts tests/selected-shop-route.test.tsx tests/preview-page.test.tsx tests/studio-simulated-tool-tests.test.ts tests/commerce-lifecycle.test.ts`: 14 files / 153 tests passed.
+- Metadata tests cover exactly now+320000 and +320001, expired/missing refresh, nonexpiring access, empty access, ambiguity and safe selects.
+
+### Deviations / Assistance
+Task is developer-owned; explicit user implementation authorization was fulfilled with material moda_commerce agent assistance. Root retained lifecycle/publication responsibility. Launcher synchronized isolated worktrees and set Attempt 1 before report-format failure; normalized report and published durable claim e26cc87b3 without incrementing attempt. Dependent preview/test-conversation consumers and fixtures required compatible local contract updates. No Shared dependency bump required for this independent UI task.
+
+### Validation Limits / Unresolved Issues
+Execution proof is local synthetic database/transport with the real published helper. No deployed Shopify or real PostgreSQL run is claimed; Shared PostgreSQL evidence belongs to the accepted Shared task, and terminal system validation remains separately manual-gated. No implementation issues remain.
+
+### Git / VCS
+Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-063-COMMERCE-001.
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-063-COMMERCE-001.
+Both branches: task/ARCH-063-COMMERCE-001. Launcher established/synchronized both worktrees before claim; recursive database submodule recorded bd2d09066a8eb178a56f48fbbf88df637c411059. Implementation baseline 76f46d2. Shared checkouts were not switched for implementation; no other task worktree reused.
+Implementation: 97ab6ce; published origin/task/ARCH-063-COMMERCE-001.
+Parent claim: e26cc87b3; this review report is published on the matching parent task branch, exact commit recorded by Git history.
+Submodule gitlink staged: no. Merged/pushed main: no.
+
+## Developer Self-Review - Passed
+Attempt 1 local implementation meets the defined Commerce scope with required focused tests, production build and typecheck passing. Actual tool execution is exercised through published Shared using synthetic credentials and transport; deployed behavior is not asserted. Execution ownership remains developer. Explicit `/moda_developer_update ARCH-063-COMMERCE-001 complete` is pending.
 
 ## Architect Review
 ### Review Status
@@ -140,3 +163,9 @@ Task metadata/dependency/path checks only.
 Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
 ### Follow-up
 None
+
+## Developer Completion Decision
+2026-11-06: Developer explicitly invoked `/moda_developer_update ARCH-063-COMMERCE-001 complete`. Accepted Attempt 1 remains unchanged. Durable passing self-review: ea1aa862422f270fa0abb0d6fd9a12a293f0070d. Implementation 97ab6cec333eafb629d9ada3db065560610b61b2 matches origin/task/ARCH-063-COMMERCE-001; both worktrees were clean at completion verification. Required implementation and local validation satisfied as reported, with synthetic execution evidence distinguished from deployed validation. Executor and claimed_at remain null. No main merge/push.
+
+### Dependency-frontier reconciliation
+ARCH-063-SYSTEM-TEST-001 remains Pending and manually gated because ARCH-063-SHOPIFY-001 is In Progress. SHARED-002, BACKGROUND-001, COMMERCE-002 and MCP-001 are Complete. No downstream task is promoted or started; concurrent task records are preserved.
