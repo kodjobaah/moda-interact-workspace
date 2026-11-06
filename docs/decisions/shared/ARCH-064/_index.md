@@ -21,6 +21,8 @@ SHARED-003 bounded output correction Attempt1 Accepted; separate publication sti
 
 SHARED-003 Attempt1 explicitly completed; SHARED-004 publication Ready/unclaimed. Commerce remains Blocked.
 
-| ARCH-064-SHARED-004 | Review (Accepted; developer completion pending) | ARCH-064-SHARED-003 |
+| ARCH-064-SHARED-004 | Complete | ARCH-064-SHARED-003 |
 
 Verified corrected purpose contract release5.5.0; no consumer execution.
+
+SHARED-004 Attempt1 explicitly developer-completed; corrected package5.5.0 verified. Commerce unblocking handled on its own canonical task branch.
