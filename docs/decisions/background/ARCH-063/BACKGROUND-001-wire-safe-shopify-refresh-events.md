@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T17:01:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-063-SHARED-002"]
 enables: ["ARCH-063-SYSTEM-TEST-001"]
@@ -67,7 +67,7 @@ SDK-managed refresh/token exchange is not observable solely from Shared getSessi
 Shared implementation extends existing API compatibly; publication chooses next available approved semver and records exact version before consumer pins. No forced version guess or unpublished sibling import. Commerce UI correction is independent and Ready now; it uses existing accepted ARCH-060/061/062 contracts, does not wait for log publication. Shared logging implementation is also independently Ready. Consumer event wiring depends on Shared publication. App wiring includes metadata-readiness correction. System Test is terminal on all fixes; manually invoked after optional user exercise. Compatible rollout, no schema/credential/env or Render topology change. Logging absent in old binaries is expected until owning consumer deployed; do not assert deployed observability from local code. No new metric/span framework. Metadata reads and tooling never expose provider secrets.
 
 ## Work Items
-- [ ] Pin published version and pass hook forwarding to existing service logger; preserve no premature expiry gate.
+- [x] Pin published version and pass hook forwarding to existing service logger; preserve no premature expiry gate.
 
 ## Interfaces / Contracts
 Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published optional Shared onEvent hook and exact frozen event schema above. Each consumer owns safe logger forwarding; provider/runtime credentials stay server-only. Exact version recorded by SHARED-002 before consumer pins.
@@ -79,17 +79,17 @@ Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published o
 - ARCH-063-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Real Shared refresh committed/failure maps to bounded info/warn semantic event; existing callers unchanged and no token/body/error logging.
+- [x] Real Shared refresh committed/failure maps to bounded info/warn semantic event; existing callers unchanged and no token/body/error logging.
 
 ## Validation
-- [ ] Run focused command `npx vitest run tests/unit/services/shopify-session.service.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
-- [ ] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
+- [x] Run focused command `npx vitest run tests/unit/services/shopify-session.service.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
+- [x] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
 
 ## Stop Condition
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
 
 ## Implementation Notes
-Dependency reconciliation (2026-11-06): ARCH-063-SHARED-002 is Accepted and explicitly developer-completed; published package @modainteract/moda-interact-shared@5.3.0 has verified downloadable immutable archive and Node hook exports. Task is Ready at unchanged Attempt 0, unclaimed. No automatic execution.
+Dependency reconciliation (2026-11-06): ARCH-063-SHARED-002 is Accepted and explicitly developer-completed; published package @modainteract/moda-interact-shared@5.3.0 has verified downloadable immutable archive and Node hook exports. Task was Ready at Attempt 0 before developer preparation.
 
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
@@ -97,21 +97,47 @@ Use launcher-resolved isolated/synchronized task worktrees when execution reques
 
 ### Status
 
-In Progress — Attempt 1 is claimed by the developer as of 2026-11-06T17:01:06Z. `moda_background` is providing the explicitly requested implementation assistance in the canonical Background worktree. No source changes have been made yet.
+
+Developer self-review accepted for Attempt 1 on 2026-11-06. Task transitioned to `review`; completion mode is `developer`, with the explicit developer completion decision recorded separately.
+
 ### Files Changed
-None
+- `package.json`
+- `package-lock.json`
+- `src/services/shopify-session.service.ts`
+- `tests/unit/services/shopify-session.service.test.ts`
+
 ### Work Completed
-None
+- Pinned `@modainteract/moda-interact-shared` from 5.2.0 to published 5.3.0 in the Background manifest and lockfile, including the registry tarball integrity.
+- Wired the Shared provider's optional `onEvent` hook to the existing shared logger. Started and committed events use `info`; failed events use `warn`. Forwarded fields are limited to operation ID, trusted shop ID, source, duration, outcome and reason code; no raw Error or provider credentials are attached.
+- Wrapped logger calls so synchronous logging failures do not change provider refresh behavior. No access-expiry gate, refresh trigger, schema, infrastructure or non-Background consumer changes were introduced.
+- `moda_background` provided explicitly requested implementation assistance; the developer retained lifecycle ownership and committed/published the implementation.
+
 ### Validation Results
-Definition only.
+- PASS: `npx vitest run tests/unit/services/shopify-session.service.test.ts` (1 file, 6 tests), independently rerun.
+- PASS: `npm run build` (Prisma client generation and TypeScript compilation).
+- PASS: `git diff --check`.
+- PASS: the build resolved the installed `@modainteract/moda-interact-shared/shopify/node` and `/logging` imports at 5.3.0; manifest and lockfile both pin 5.3.0.
+- The focused tests exercise the logger adapter with secret canaries and verify a synchronous logger exception is swallowed. Shared's source event lifecycle is covered by the accepted/published prerequisite; no disposable PostgreSQL integration test was run in this Background task.
+- Implementation commit `13aa6d1` is pushed to `origin/task/ARCH-063-BACKGROUND-001`; implementation worktree is clean after publication.
+
 ### Deviations
-None
+- The launcher initially rejected the task's Completion Report because required blank lines around `### Status` were absent. The parent record was minimally corrected; the developer claim remained Attempt 1 and was durably published before implementation. No task scope or lifecycle mode was changed.
+
 ### Assumptions
-Existing accepted coordinator and metadata integration remain available at owner task baseline.
+The accepted Shared 5.3.0 Node export provides the optional refresh callback and bounded event schema described by SHARED-002.
+
 ### Unresolved Issues
-None blocking definition.
+No blocking issue in the Background-owned scope. npm dependency installation reported audit findings (the agent observed 33; a transient verification install reported 18); no audit remediation was in scope or performed.
+
 ### Architectural Concerns
-Return actual incompatible contract evidence before widening scope.
+The system-test task remains terminal/manual-gated and was not started. No merge to `main` was performed.
+
+## Developer Self-Review
+### Attempt 1
+- Result: Accepted; Background event forwarding and validation criteria passed.
+- Implementation: `13aa6d1`, pushed to `origin/task/ARCH-063-BACKGROUND-001`.
+- Material assistance: `moda_background` implemented the scoped service, dependency and test changes; the developer independently reviewed the diff and reran the focused test and build.
+- Decision: Transition to `review`. The Architect Review section remains pending and unchanged.
 
 ## Architect Review
 ### Review Status
