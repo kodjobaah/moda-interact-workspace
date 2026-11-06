@@ -137,7 +137,9 @@ Create the new focused test paths listed in this exact command where absent; pre
 No execution started. Use launcher isolated/synchronized task worktrees when requested. Use the installed SDK surfaces and official recovery policy identified in revision 2. Node recovery uses workspace bootstrap. No new schema or alternative lock primitive is authorized. Publication is release mechanics only.
 
 ## Completion Report
+
 ### Status
+
 Not Started
 ### Files Changed
 None
