@@ -41,7 +41,7 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 | ARCH-064-SHARED-001 | shared | Complete | - |
 | ARCH-064-SHARED-002 | shared | Complete | ARCH-064-SHARED-001 |
 | ARCH-064-COMMERCE-001 | commerce | Ready | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
-| ARCH-064-MCP-001 | mcp | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
+| ARCH-064-MCP-001 | mcp | Ready | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
 | ARCH-064-BACKGROUND-001 | background | Pending | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
 | ARCH-064-SYSTEM-TEST-001 | system-test | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-064-BACKGROUND-001 |
 
@@ -66,3 +66,9 @@ ARCH-064-SHARED-003 Attempt1 Accepted at review, explicit developer completion p
 2026-11-06: SHARED-004 Attempt1 published corrected contract5.5.0, exact public archive/hash/exports verified and architect Accepted at review. Explicit developer completion pending; Commerce integration remains separately blocked/gated, no consumer execution.
 
 2026-11-06 explicit completion: SHARED-004 Attempt1 Complete, verified5.5.0. Commerce external contract blocker resolved; canonical Commerce task may reclaim same branches for corrected package adoption/default acceptance. No implicit attempt increment or follow-on implementation.
+
+2026-11-06 task-branch synchronization resolution: retained current main complete SHARED-003/004 records and full review history. Canonical COMMERCE-001 remains Ready at prior Attempt1, claim cleared, corrected5.5.0 adoption/default revalidation correction contract retained in its task. No main update or implicit claim performed.
+
+2026-11-06: COMMERCE-001 Attempt2 Accepted; Shared5.5.0 canonical compiler resolves actual default outputs and first seed->publication fixtures, retaining bounded supported fifth read and role/immutable guards.39 lifecycle/storage+42 authoring/UI/seed tests and production typecheck passed. Explicit developer completion pending; no downstream promotion/activation.
+
+2026-11-06 explicit completion: Commerce001 Attempt2 Complete. Canonical dependency reconciliation promotes MCP001 Ready/unclaimed; Background remains Pending on MCP and terminal/manual-gated System Test remains Pending. No main/live/follow-on execution.
