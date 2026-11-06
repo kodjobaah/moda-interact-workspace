@@ -1923,3 +1923,7 @@ ARCH-062-SHOPIFY-001 is Complete at Attempt 2 after durable passing review `f7e7
 ## ARCH-063 — 6 November 2026 frontier
 
 ARCH-063-SHARED-001 Attempt 1 is Complete after architect Accepted review and explicit developer completion. Implementation task branch: 4097eb3662c11bf97989cd1012da914973ec7592. ARCH-063-SHARED-002 publication is Ready (developer execution, unclaimed Attempt 0). ARCH-063-COMMERCE-001 remains independently Ready; publication consumers and terminal/manual-gated System Test remain Pending. Individual task YAML remains authoritative; no task or release auto-started and no main integration performed.
+
+## ARCH-063 — Shared release completion
+
+2026-11-06: ARCH-063-SHARED-002 Attempt 1 explicitly developer-completed after Accepted review and public 5.3.0 archive/hash/export verification. Newly Ready, unclaimed: ARCH-063-SHOPIFY-001, ARCH-063-BACKGROUND-001, ARCH-063-COMMERCE-002, ARCH-063-MCP-001. ARCH-063-COMMERCE-001 remains Ready. ARCH-063-SYSTEM-TEST-001 remains Pending on incomplete implementation dependencies and terminal/manual-gated. No implementation/release auto-started and no main integration performed.
