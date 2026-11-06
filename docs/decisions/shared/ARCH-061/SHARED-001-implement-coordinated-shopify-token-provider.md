@@ -9,15 +9,15 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on: []
 enables: ["ARCH-061-SHARED-002"]
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Implement coordinated shopify token provider
 
@@ -46,9 +46,9 @@ Central token service, agent tools, sibling imports, credential UI, schema chang
 The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Use the binding revision public-wrapper/ALS/lifecycle gate architecture; do not choose a different synchronization mechanism.
 
 ## Work Items
-- [ ] Implement the normative transaction/fetch/validation/error contract with consumer-owned Prisma injection.
-- [ ] Implement fixed revision-2 row/advisory lock order, public SDK lifecycle interface and provider-supported ambiguous-outcome recovery.
-- [ ] Add unit and disposable PostgreSQL concurrency tests using two independent Prisma clients.
+- [x] Implement the normative transaction/fetch/validation/error contract with consumer-owned Prisma injection.
+- [x] Implement fixed revision-2 row/advisory lock order, public SDK lifecycle interface and provider-supported ambiguous-outcome recovery.
+- [x] Add unit and disposable PostgreSQL concurrency tests using two independent Prisma clients.
 
 ## Interfaces / Contracts
 Shared Node-only factory and structural transaction interface/error categories defined by SHARED-001 and published by SHARED-002. Consumers inject local client/config/fetch and translate errors. No sibling source imports; no browser exports or raw token DTOs. App owns all SDK/lifecycle mutation entrypoints.
@@ -60,14 +60,14 @@ None
 - ARCH-061-SHARED-002
 
 ## Acceptance Criteria
-- [ ] Implement the normative transaction/fetch/validation/error contract with consumer-owned Prisma injection.
-- [ ] Implement fixed revision-2 row/advisory lock order, public SDK lifecycle interface and provider-supported ambiguous-outcome recovery.
-- [ ] Add unit and disposable PostgreSQL concurrency tests using two independent Prisma clients.
-- [ ] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
+- [x] Implement the normative transaction/fetch/validation/error contract with consumer-owned Prisma injection.
+- [x] Implement fixed revision-2 row/advisory lock order, public SDK lifecycle interface and provider-supported ambiguous-outcome recovery.
+- [x] Add unit and disposable PostgreSQL concurrency tests using two independent Prisma clients.
+- [x] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
 
 ## Validation
-- [ ] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
-- [ ] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
+- [x] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
+- [x] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
 
 ## Stop Condition
 Submit completed report for authorized review and STOP after scoped criteria/validation. Explicit developer completion required. Do not start enabled tasks; system validation is terminal/manually invoked.
@@ -135,22 +135,71 @@ Create the new focused test paths listed in this exact command where absent; pre
 No execution started. Use launcher isolated/synchronized task worktrees when requested. Use the installed SDK surfaces and official recovery policy identified in revision 2. Node recovery uses workspace bootstrap. No new schema or alternative lock primitive is authorized. Publication is release mechanics only.
 
 ## Completion Report
+
 ### Status
-Not Started
+
+Complete — Attempt 2 was accepted by the durable Developer Self-Review Passed / Accepted record. The developer explicitly completed this task at 2026-11-06T02:05:03Z. Attempt number remains 2.
+
 ### Files Changed
-None
+
+The implementation contains eight task-owned files; Attempt 2 corrects two of those files across the two commits:
+
+- Initial implementation `66b59a295de835a66930aa57c1c98ef424ccbfb4`: Node entrypoint exports; injected offline-token provider and unit/PostgreSQL tests; sealed OAuth configuration reader/tests; disposable PostgreSQL and generated-client contract runners.
+- Attempt 2 correction `f399a84`: `src/shopify/offline-token-provider.ts` and `src/shopify/offline-token-provider.test.ts`.
+
+The existing package export map and build entry already exposed the Node-only `./shopify/node` subpath at baseline `e9f5968`; no package or browser-safe Shopify entrypoint change was needed. No dependency/version, database schema, or consumer repository changes were made.
+
 ### Work Completed
-None
+
+Implemented the Shared injected-client Shopify offline token provider, structural Prisma contract, Node-only exports, and OAuth configuration reader using the existing sealed configuration format.
+
+Addressed both Attempt 1 findings:
+
+1. Once Shopify returns a successful status, malformed JSON, invalid token/lifetime fields, invalid dates, and streamed body overflow now map to retryable `REFRESH_OUTCOME_UNKNOWN`. No uncommitted credentials are returned or persisted; the next independent request can use the documented persisted-token recovery path.
+2. `getSession` and `withSessionLock` now establish one 15-second operation deadline and check cancellation before the initial selected-Shop lookup. The lookup, transaction, lock work, and callback share that deadline; it is not reset after resolution. Regressions cover a stalled initial lookup and a pre-aborted caller that must not issue the lookup.
+
 ### Validation Results
-Definition only.
-### Deviations
-None
-### Assumptions
-Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2.
+
+All required validations passed on the correction:
+
+- `npx tsx --test src/shopify/offline-token-provider.test.ts src/shopify/oauth-configuration.test.ts` — 18 passed, 0 failed.
+- `npm run typecheck -- --pretty false` — passed.
+- `npm run build` — passed (ESM and declaration builds).
+- `node scripts/test-arch061-shopify-token-postgres.mjs` — 1 passed using two independent Prisma clients; verified one normal refresh for the race, bounded lock wait, different-shop progress, rollback after injected save failure, and next-request recovery. Disposable container `arch061-shared-e9c5e224-201a-4aad-bf0e-6a8384d41045` was removed by the runner.
+- `TMPDIR=/private/tmp node scripts/test-arch061-shopify-prisma-contracts.mjs` — passed for Background and Commerce generated Prisma adapters.
+- `git diff --check` — passed.
+
+### Deviations / Assistance
+
+No agent assistance or consumer changes were used. The task definition names `src/shopify/index.ts` and the `./shopify/node` export as new surfaces; inspection of the task branch baseline confirmed the package export and build entry already existed, so the implementation added the runtime API through the existing Node entrypoint and preserved the browser-safe Shopify entrypoint.
+
+### Git / VCS
+
+Task branch: `task/ARCH-061-SHARED-001`.
+
+Physical worktree isolation:
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-SHARED-001` / `task/ARCH-061-SHARED-001`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-SHARED-001` / `task/ARCH-061-SHARED-001`.
+- Shared workspace checkout switched for task work: no. Shared implementation checkout switched for task work: no. Another task worktree reused: no.
+- Recursive implementation submodule sync and update-init: passed; no recursive entries were present.
+
+Start-of-attempt synchronization from the Attempt 2 preparation packet:
+
+- Parent remote task branch fast-forward: not needed; parent `origin/main` incorporated: already current.
+- Implementation remote task branch fast-forward: not needed; implementation `origin/main` incorporated: already current.
+
+Implementation repository: `moda-interact-shared`; correction commit `f399a84` pushed to `origin/task/ARCH-061-SHARED-001`. Implementation worktree is clean after publication.
+Parent workspace task file: `docs/decisions/shared/ARCH-061/SHARED-001-implement-coordinated-shopify-token-provider.md`; report submission commit `fc07d3190` was pushed to `origin/task/ARCH-061-SHARED-001`. No submodule gitlink is staged. Neither task branch is merged to `main`.
+
 ### Unresolved Issues
-None blocking architecture definition. Revision-1 feasibility questions are superseded by binding revision 2 decisions.
+
+None within the Shared implementation scope. App SDK lifecycle coordination and production consumer wiring belong to their separately assigned ARCH-061 tasks; this Shared validation does not claim those consumer behaviors. ARCH-061-SHARED-002 was promoted from Pending to Ready after this completion; no downstream task was started.
+
 ### Architectural Concerns
-Implement binding revision 2 exactly; report actual incompatibility with evidence instead of selecting alternate architecture.
+
+Preserve revision 2 boundaries: consumers inject their local Prisma clients; no shared Prisma runtime or schema change; use selected Shop identity, stored integration domain and actual Session row ID; keep SDK/lifecycle mutation under the App-owned public-wrapper boundary; do not infer consumer rollout readiness from Shared tests.
 
 ## Architect Review
 ### Review Status
@@ -187,3 +236,57 @@ Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
+
+
+## Developer Self-Review - Changes Requested — Attempt 1 (2026-11-06)
+
+### Decision
+
+**Review fails.** Reconciled the current uncommitted implementation against binding revision 2. Return to Ready, executor/claimed_at null, Attempt 1 unchanged; developer execution/completion modes preserved. No next claim or completion is created. Preserve all WIP; this review changes only the parent task record.
+
+### Corrections required
+
+1. **P2 — Classify ambiguous successful refresh responses as retryable unknown outcomes.** `src/shopify/offline-token-provider.ts:352-369` propagates REFRESH_RESPONSE_INVALID for oversized/malformed/invalid successful responses. That code is non-retryable, despite a successful remote response possibly having rotated credentials. The binding taxonomy explicitly assigns malformed success and post-dispatch body failures to REFRESH_OUTCOME_UNKNOWN. Preserve rollback/no-token-return, emit only bounded safe errors and allow the documented next independent request recovery. Update existing tests currently asserting REFRESH_RESPONSE_INVALID for these post-dispatch cases, including malformed JSON, invalid lifetime/token fields and oversized bodies; verify no write/uncommitted token and retryable true.
+2. **P2 — Include initial selected-shop resolution in cancellation/deadline handling.** `getSession` and `withSessionLock` await `resolveShop` before `runLocked` creates/checks the operation deadline. A stalled initial database lookup is therefore unbounded, and a pre-aborted caller still performs/waits for that lookup. Establish the call budget and cancellation check at the public selected-shop entrypoint, cover initial resolution and transaction/callback with the same budget, preserve transaction rollback/no late work, and test a stalled initial lookup plus already-aborted caller. Do not reset the operation budget after resolution.
+3. **Finish the semantic completion/validation report.** It still says Files Changed/Work Completed None and Validation Definition only, while seven task-owned files exist as WIP. Record the actual implementation and assistance, prepared worktree/synchronization evidence, exact unit/typecheck/build and required disposable PostgreSQL results, including separate-client lock/race/recovery proof and cleanup. The new PostgreSQL test/helper source alone is not passing execution evidence. Report NOT_RUN if absent; no Docker/integration execution is authorized by this review.
+
+### Implementation and verification inspected
+
+Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-SHARED-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-SHARED-001`, matching task branches. Implementation baseline HEAD `e9f59680693db13efd73a04b512970245ff9b4f5`. WIP: modified `src/shopify/node.ts`; new offline-token-provider source/unit/PostgreSQL tests, OAuth configuration source/tests and disposable runner script. No task-owned implementation commit/publication exists yet; no WIP is discarded or falsely labelled published.
+
+Inspected provider lock/identity/refresh/error/deadline logic, the OAuth sealed-reader adapter and PostgreSQL runner/test source. Independently ran the required two-file unit set via installed tsx: **17 tests passed**, zero failed/skipped, exit 0; local evidence `/tmp/arch061-shared-review.log`. Passing tests currently encode the erroneous response classification and do not replace the missing initial-lookup bounds or database evidence. No typecheck/build/PostgreSQL/live provider run is claimed by this review. Consumer SDK/ALS integration remains separately owned and is not inferred from Shared helper tests.
+
+### Follow-up
+
+Reclaim through the normal developer workflow, preserve this Attempt 1 history and current WIP, correct both source issues, reconcile the report and provide required evidence before resubmission. Explicit developer completion remains unavailable until a passing review is durable. SHARED-002 stays gated on this task's completion; no downstream promotion, package publication, main merge, schema change or consumer edit is performed.
+
+
+## Developer Self-Review - Changes Requested — Attempt 1 Recheck (2026-11-06)
+
+The developer invoked the reconciliation skill again while the task remained Ready/unclaimed. No new claim or attempt is manufactured. **Changes Requested remains in effect.** Implementation is now committed and pushed at `66b59a295de835a66930aa57c1c98ef424ccbfb4`; the earlier WIP/publication description is historical.
+
+Source verification confirms both open findings: `getSession` and `withSessionLock` await `resolveShop` before `runLocked` constructs the deadline; malformed successful bodies and invalid successful payload fields still throw REFRESH_RESPONSE_INVALID, bypassing the unknown-outcome mapping through CallbackFailure. Commit publication and added test helpers do not fix those behaviors. Apply the exact previous corrections and regressions, then provide the final semantic report and actual required validation results.
+
+No tests or Docker runs were repeated; no new passing evidence is claimed. The initial completion report has been reconciled to describe the committed partial implementation rather than None/Definition only. Status Ready, executor/claimed_at null, Attempt 1 preserved; developer execution/completion modes unchanged. SHARED-002 remains gated. No source alteration, downstream promotion, release or merge is performed by this recheck.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 2 (2026-11-06)
+
+**Review passed; no actionable findings remain from the requested corrections.** Reviewed implementation `f399a84b592da1a3855e2a6561567a788ea3fcfa`, matching its published task ref. Status Review; executor/claimed_at null; Attempt 2 unchanged. Execution/completion modes remain developer/developer. Explicit developer completion remains pending; this review does not complete the task or unblock SHARED-002.
+
+### Correction and evidence reconciliation
+
+Malformed successful JSON, invalid returned token/lifetime/date fields and streamed overflow now produce retryable REFRESH_OUTCOME_UNKNOWN, with no returned uncommitted credential. Public getSession/withSessionLock create and check one operation deadline before initial selected-Shop resolution, race that lookup against cancellation/deadline and pass the same budget through lock/transaction/callback. The updated unit regressions cover malformed success, stalled initial lookup and pre-aborted caller. The completion report now describes the actual source, publication, isolation and required validation instead of definition-only placeholders.
+
+Independently ran `node --import tsx --test src/shopify/offline-token-provider.test.ts src/shopify/oauth-configuration.test.ts` using workspace Node 24.19.0: **18 passed, 0 failed/skipped**, exit 0. Local evidence `/tmp/arch061-shared-attempt2-review.log`. Independently checked correction whitespace and source/remote equality. Inspected the provider correction, focused tests and generated-client structural runner.
+
+Reviewed the submitted report of passing typecheck/build, generated Background/Commerce client compilation and disposable PostgreSQL proof (1 passed, two independent clients, lock contention/different-shop progress/rollback recovery and owned-container cleanup). Those checks were not independently rerun by this review; no live Shopify request or consumer SDK integration is certified by the Shared test evidence. Earlier failed dispositions are historical and superseded for the corrected source.
+
+The canonical dedicated parent/implementation worktrees were clean at review. Attempt 2 preparation/claim/synchronization, unchanged consumer boundary and implementation/report commits are recorded in the Completion Report. No new claim, implementation edit, package publication, dependency promotion, main merge or deployment occurs. The durable parent review is committed/pushed separately on the matching task branch. The developer retains explicit completion and final integration authority.
+
+
+## Developer Completion Decision — 2026-11-06T02:05:03Z
+
+The developer explicitly completes ARCH-061-SHARED-001 Attempt 2 after the durable Accepted review. All Work Items, Acceptance Criteria and required validations are recorded complete above. Implementation commit `f399a84b592da1a3855e2a6561567a788ea3fcfa` is pushed to `origin/task/ARCH-061-SHARED-001`; the parent task/report branch is pushed. No merge to either `main` branch was performed.
+
+Dependency frontier reconciliation: ARCH-061-SHARED-002 is Ready because its sole explicit dependency is now Complete. ARCH-061-SHOPIFY-001, Background, Commerce, MCP and System Test tasks remain Pending because their other dependencies remain incomplete; System Test remains manually gated.
