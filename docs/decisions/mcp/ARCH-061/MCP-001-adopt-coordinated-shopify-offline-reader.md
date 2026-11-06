@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -137,7 +137,7 @@ Attempt 1 implementation is prepared in the canonical isolated MCP worktree. Use
 
 ### Status
 
-Developer Self-Review Passed — Attempt 1. Task status Review, executor/claimed_at null, attempt unchanged. Explicit developer completion remains pending; no completion decision is inferred. Implementation commit `c9ca303` is pushed to MCP `task/ARCH-061-MCP-001`. This updated report is published on the matching parent task branch under the developer’s explicit commit/push authorization.
+Complete — Attempt 1, explicitly completed by the developer on 6 November 2026 after the durable passing review in `7f61bde93`. Executor/claimed_at remain null and attempt remains 1. Implementation commit `c9ca303` is pushed to MCP `task/ARCH-061-MCP-001`. This updated report is published on the matching parent task branch under the developer’s explicit commit/push authorization.
 
 ### Files Changed
 
@@ -182,7 +182,7 @@ Local evidence: `/tmp/arch061-mcp-coordination-final.log`, `/tmp/arch061-mcp-foc
 
 ### Publication — 6 November 2026
 
-The developer explicitly authorized committing and pushing both task branches. Implementation `c9ca303` contains the task-owned source, tests, dependency pin and documentation. The matching parent task branch publishes this report. Existing validation results and full-suite failures are preserved. Task status remains `in_progress`; no review acceptance, completion, dependency promotion, deployment, main merge or gitlink update is implied.
+The developer explicitly authorized committing and pushing both task branches. Implementation `c9ca303` contains the task-owned source, tests, dependency pin and documentation. The matching parent task branch publishes this report. Existing validation results and full-suite failures are preserved. At that publication, task status remained `in_progress`; no review acceptance, completion, dependency promotion, deployment, main merge or gitlink update was implied.
 
 ### Physical Worktree and Preparation Evidence
 
@@ -205,7 +205,7 @@ Uses the same canonical PostgreSQL database and the accepted Shared 5.2.0 / App 
 
 ### Unresolved Issues
 
-Full-suite discount fixture and cross-tenant cursor failures require separately scoped correction/architect disposition. Authorized review and explicit developer completion remain pending. No downstream task was started/promoted.
+Full-suite discount fixture and cross-tenant cursor failures require separately scoped correction/architect disposition. Passing scoped review and explicit developer completion are recorded below. SYSTEM-TEST-001 remains Pending on BACKGROUND-001 and COMMERCE-001; no downstream task was started.
 
 ### Architectural Concerns
 
@@ -274,3 +274,11 @@ The reported full Docker run remains **failed** (20 passed, 15 failed, 1 opt-in 
 ### Publication and follow-up
 
 Implementation and parent worktrees were clean before this update; implementation is already committed/pushed. Only the task report/review is published here. No code edit, new claim/attempt, schema/gitlink/main merge, deployment or downstream promotion. Explicit developer completion remains pending; SYSTEM-TEST-001 stays gated on this task and its other consumer prerequisites/manual execution requirements.
+
+## Developer Completion Decision — Attempt 1 (6 November 2026)
+
+The developer explicitly invoked `/moda_developer_update ARCH-061-MCP-001 complete`. Completion prerequisites verified: durable passing scoped review `7f61bde93` accepts implementation `c9ca303ba7a9f77a768e7d4ea00246119f5f3486`; all required Work Items/Acceptance Criteria are checked; implementation and review/report branches were clean and matched their published remote task branches. No additional source changes or test reruns were needed for this documentation/lifecycle decision.
+
+Set status Complete; preserve Attempt 1, developer execution/completion modes, null executor and null claimed_at. Codex acting as moda_mcp supplied the explicitly requested implementation, tests and report assistance; developer ownership is unchanged. Preserve the accepted scoped disposition of the broader Docker failures: this completion does not claim that the full Docker suite is green, certify App/cross-service rollout or waive the separate discount/fixture corrections.
+
+Dependency frontier recalculated from current task records and fetched origin/main: SHARED-002 and SHOPIFY-001 are Complete; BACKGROUND-001 and COMMERCE-001 are Ready, not Complete. SYSTEM-TEST-001 therefore remains Pending, unclaimed, with its existing terminal/manual execution gates. MCP is no longer an incomplete prerequisite. No enabled task was executed, no deployment/main merge occurred and no gitlink changed.
