@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 50
-executor: codex
-claimed_at: 2026-11-06T16:59:46Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-063-SHARED-002"]
 enables: ["ARCH-063-SYSTEM-TEST-001"]
@@ -142,14 +142,18 @@ Parent report commit follows this edit on matching task branch. Submodule gitlin
 
 ## Architect Review
 ### Review Status
-Pending
+Accepted — explicit developer completion pending.
 ### Review Notes
-Definition source audit completed; implementation not reviewed. Historical task acceptance preserved.
+2026-11-06 moda_architect inspected actual implementation 4b2abdde15c6612b96f95fd3ec23dcf3a4c3dc2a and report 8c667804512d4c4af1e40e233273abd1a062ed7a. Both factory paths wire published Shared 5.3.0 hook through one small semantic adapter using Shared logging. Explicit field projection preserves safe correlation/outcome metadata without error, body, domain, session or credentials. Started/committed log info and failed logs warn. Primary provider injection prevents duplicate fallback construction; no metadata refresh/event path introduced. No implementation corrections required.
 ### Reviewed Files
-Task touchpoints above; canonical MCP ARCH-061 reader inspected separately from stale shared checkout.
+- src/commerce/preview/shopify-refresh-events.ts
+- src/commerce/preview/local-provider-composition.ts
+- src/commerce/preview/local-policy-providers.ts
+- tests/shopify-refresh-events.test.ts
+- package.json/package-lock.json and task Completion Report.
 ### Validation Reviewed
-Task metadata/dependency/path checks only.
+Focused 10/10 and strengthened envelope fixture 6/6 passed, production typecheck:build passed, Prisma generation and whitespace validation passed. Inspected real published-provider fixtures through both composition paths for metadata/reuse silence, committed expiry and selected Shop correlation, network/commit UNKNOWN failures with no committed event and secret-canary exclusion. Accepted Shared PostgreSQL fixtures already cover actual database postcommit/concurrency mechanics; consumer did not duplicate cross-repository validation.
 ### Architecture Conformance
-Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
+Conforms to ARCH-063 bounded Commerce consumer wiring; consumes exact published package and canonical Shared logger. No generic logger fork, lock changes, UI/status scope crossover into COMMERCE-001, schema, deployment or gitlink changes. Canonical launcher worktrees/start synchronization/database submodule evidence verified. Local results make no deployed-state claim.
 ### Follow-up
-None
+Task remains review under completion_mode developer. Explicit completion: `/moda_developer_update ARCH-063-COMMERCE-002 complete`. System Test remains Pending on incomplete dependencies/manual-gated; no follow-on work starts automatically.
