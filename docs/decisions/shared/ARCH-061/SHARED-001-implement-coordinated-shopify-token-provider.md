@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T01:37:23Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables: ["ARCH-061-SHARED-002"]
@@ -138,35 +138,68 @@ No execution started. Use launcher isolated/synchronized task worktrees when req
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-11-06T01:37:23Z. Attempt 1 review history is preserved below.
+Submitted for architect review — Attempt 2. The review-requested source corrections and required Shared validation are complete. The task remains in `review`; explicit developer completion is pending a durable passing review and a separate developer decision.
 
 ### Files Changed
 
-Published implementation `66b59a295de835a66930aa57c1c98ef424ccbfb4` contains eight task-owned files: token provider and unit/PostgreSQL tests; OAuth configuration reader/tests; Node entrypoint exports; disposable PostgreSQL and generated-Prisma structural contract runners. No dependency/version/schema or consumer implementation change is recorded in this commit.
+The implementation contains eight task-owned files; Attempt 2 corrects two of those files across the two commits:
+
+- Initial implementation `66b59a295de835a66930aa57c1c98ef424ccbfb4`: Node entrypoint exports; injected offline-token provider and unit/PostgreSQL tests; sealed OAuth configuration reader/tests; disposable PostgreSQL and generated-client contract runners.
+- Attempt 2 correction `f399a84`: `src/shopify/offline-token-provider.ts` and `src/shopify/offline-token-provider.test.ts`.
+
+The existing package export map and build entry already exposed the Node-only `./shopify/node` subpath at baseline `e9f5968`; no package or browser-safe Shopify entrypoint change was needed. No dependency/version, database schema, or consumer repository changes were made.
 
 ### Work Completed
 
-The initial injected-client provider, OAuth reader, exported types and test helpers are implemented and committed/pushed. This is a partial implementation, not acceptance. The two reviewed behavior defects remain present at the published head.
+Implemented the Shared injected-client Shopify offline token provider, structural Prisma contract, Node-only exports, and OAuth configuration reader using the existing sealed configuration format.
+
+Addressed both Attempt 1 findings:
+
+1. Once Shopify returns a successful status, malformed JSON, invalid token/lifetime fields, invalid dates, and streamed body overflow now map to retryable `REFRESH_OUTCOME_UNKNOWN`. No uncommitted credentials are returned or persisted; the next independent request can use the documented persisted-token recovery path.
+2. `getSession` and `withSessionLock` now establish one 15-second operation deadline and check cancellation before the initial selected-Shop lookup. The lookup, transaction, lock work, and callback share that deadline; it is not reset after resolution. Regressions cover a stalled initial lookup and a pre-aborted caller that must not issue the lookup.
 
 ### Validation Results
 
-Prior independent unit review passed 17 tests in the required two-file unit set; log `/tmp/arch061-shared-review.log`. The current recheck inspected published source and did not rerun tests. Required final typecheck/build, separate-client disposable PostgreSQL results and cleanup must still be recorded with actual command/exit evidence; their execution is not inferred from added runner files. The generated-client contract runner's presence likewise is not execution proof.
+All required validations passed on the correction:
+
+- `npx tsx --test src/shopify/offline-token-provider.test.ts src/shopify/oauth-configuration.test.ts` — 18 passed, 0 failed.
+- `npm run typecheck -- --pretty false` — passed.
+- `npm run build` — passed (ESM and declaration builds).
+- `node scripts/test-arch061-shopify-token-postgres.mjs` — 1 passed using two independent Prisma clients; verified one normal refresh for the race, bounded lock wait, different-shop progress, rollback after injected save failure, and next-request recovery. Disposable container `arch061-shared-e9c5e224-201a-4aad-bf0e-6a8384d41045` was removed by the runner.
+- `TMPDIR=/private/tmp node scripts/test-arch061-shopify-prisma-contracts.mjs` — passed for Background and Commerce generated Prisma adapters.
+- `git diff --check` — passed.
 
 ### Deviations / Assistance
 
-Implementation assistance and exact execution evidence must be reconciled by the implementing developer in the final report; commit messages alone do not establish them. No source edit, test execution, package release or consumer work was performed by this recheck.
+No agent assistance or consumer changes were used. The task definition names `src/shopify/index.ts` and the `./shopify/node` export as new surfaces; inspection of the task branch baseline confirmed the package export and build entry already existed, so the implementation added the runtime API through the existing Node entrypoint and preserved the browser-safe Shopify entrypoint.
 
 ### Git / VCS
 
-Canonical dedicated paths are recorded in the Attempt 1 review. Published implementation HEAD and task remote both equal `66b59a295de835a66930aa57c1c98ef424ccbfb4`; the implementation and parent task worktrees were clean at recheck. The implementation baseline is `e9f5968`. No new claim or attempt was created. Parent review is published separately on the matching task branch, without a gitlink or main-branch change.
+Task branch: `task/ARCH-061-SHARED-001`.
+
+Physical worktree isolation:
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-SHARED-001` / `task/ARCH-061-SHARED-001`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-SHARED-001` / `task/ARCH-061-SHARED-001`.
+- Shared workspace checkout switched for task work: no. Shared implementation checkout switched for task work: no. Another task worktree reused: no.
+- Recursive implementation submodule sync and update-init: passed; no recursive entries were present.
+
+Start-of-attempt synchronization from the Attempt 2 preparation packet:
+
+- Parent remote task branch fast-forward: not needed; parent `origin/main` incorporated: already current.
+- Implementation remote task branch fast-forward: not needed; implementation `origin/main` incorporated: already current.
+
+Implementation repository: `moda-interact-shared`; correction commit `f399a84` pushed to `origin/task/ARCH-061-SHARED-001`. Implementation worktree is clean after publication.
+Parent workspace task file: this report is being submitted on `task/ARCH-061-SHARED-001`; no submodule gitlink is staged. Neither task branch is merged to `main`.
 
 ### Unresolved Issues
 
-Malformed successful refresh/oversized body handling still emits non-retryable REFRESH_RESPONSE_INVALID; initial resolveShop is still outside the call cancellation/deadline. See the review below for exact corrections and required evidence. No passing review or completion is recorded.
+None within the Shared implementation scope. App SDK lifecycle coordination and production consumer wiring belong to their separately assigned ARCH-061 tasks; this Shared validation does not claim those consumer behaviors. ARCH-061-SHARED-002 remains gated pending completion of this task.
 
 ### Architectural Concerns
 
-Preserve binding revision 2, injected service clients, exact identity/lock order, provider-supported recovery and consumer-owned SDK/lifecycle boundaries. Added compile/DB helpers do not certify SDK coordination or deployed consumer behavior.
+Preserve revision 2 boundaries: consumers inject their local Prisma clients; no shared Prisma runtime or schema change; use selected Shop identity, stored integration domain and actual Session row ID; keep SDK/lifecycle mutation under the App-owned public-wrapper boundary; do not infer consumer rollout readiness from Shared tests.
 
 ## Architect Review
 ### Review Status
