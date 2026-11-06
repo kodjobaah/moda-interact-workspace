@@ -7,7 +7,7 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -93,6 +93,8 @@ None
 Submit completed scoped report for authorized review and STOP. Explicit developer completion required. No enabled follow-on task auto-start; terminal System Test manually invoked after accepted dependencies.
 
 ## Implementation Notes
+Execution ownership amendment (2026-11-06): developer explicitly requested agent implementation through `/moda-task ARCH-064-DATABASE-001` and authorized synchronization plus task claim, implementation and review publication. Delegate to moda_database through canonical preparation, retaining completion_mode developer and exact additive schema/migration scope. No live database migration or downstream runtime implementation authorized by this amendment.
+
 No execution from definition. Use normal launcher-isolated/synchronized task worktrees when requested. Exact architecture choices above are binding; report demonstrated incompatibility instead of selecting new schema/identity/authorization design. Preserve historical task status and unrelated edits.
 
 ## Completion Report
