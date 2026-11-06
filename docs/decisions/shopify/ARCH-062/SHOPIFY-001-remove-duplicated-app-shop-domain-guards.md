@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T13:36:56Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-061-SHOPIFY-001"]
 enables: ["ARCH-062-SYSTEM-TEST-001"]
@@ -75,10 +75,10 @@ App authenticated profile myshopifyDomain is provider-owned integration identity
 No blanket search/replace of every myshopify string. Leave SDK internals, documentation/examples of actual Admin endpoints and Shopify-admin billing handle construction intact. Recovery summary display-only regex is not authentication: change only if necessary for correct display, with dedicated fixture; never replace provider endpoint with it. Partner API tokens are a different credential domain and outside scope. No schema/DNS/secret/infrastructure change. Compatible application rollout after each ARCH-061 owner adoption; preserve old stored identities. Do not change lock identity/refresh recovery. System test is terminal after accepted implementation and optional user manual checks. Definitions only, no deployment/claim. Existing generic logging suffices; no observability framework work.
 
 ## Work Items
-- [ ] Drop suffix regex; retain bounded provider string shape and compare provider identity to SDK session.shop, never storefront input. Preserve Shop GID checks.
-- [ ] Remove duplicate suffix admission; delegate to existing SDK auth, preserve safe return URL; unknown custom domain gets Shopify launch guidance, no discovery.
-- [ ] Remove regex as tenant admission; derive trusted selected shop/session identity through existing authenticated context, preserve signed upload/ownership constraints.
-- [ ] Create focused test file tests/unit/shopify-domain-boundary.test.ts and cover task-specific/common acceptance matrix.
+- [x] Drop suffix regex; retain bounded provider string shape and compare provider identity to SDK session.shop, never storefront input. Preserve Shop GID checks.
+- [x] Remove duplicate suffix admission; delegate to existing SDK auth, preserve safe return URL; unknown custom domain gets Shopify launch guidance, no discovery.
+- [x] Remove regex as tenant admission; derive trusted selected shop/session identity through existing authenticated context, preserve signed upload/ownership constraints.
+- [x] Create focused test file tests/unit/shopify-domain-boundary.test.ts and cover task-specific/common acceptance matrix.
 
 ## Interfaces / Contracts
 Reuse published ARCH-061 Node-only provider getSession(selectedShopId), server-only snapshot.shop/accessToken/scope and existing selected-shop auth. Update owning local ports to thread trusted endpoint, no new Shared wire contract. SDK auth remains install authority; primaryDomain is never credential destination.
@@ -90,14 +90,14 @@ Reuse published ARCH-061 Node-only provider getSession(selectedShopId), server-o
 - ARCH-062-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Provider profile custom primaryDomain with authentic integration identity passes; mismatched SDK identity rejects.
-- [ ] Public custom-storefront input performs no credentialed network or DNS alias resolution and shows SDK installation guidance on rejection.
-- [ ] Authorized upload passes with trusted association; foreign selected-shop input denied independent of domain shape.
+- [x] Provider profile custom primaryDomain with authentic integration identity passes; mismatched SDK identity rejects.
+- [x] Public custom-storefront input performs no credentialed network or DNS alias resolution and shows SDK installation guidance on rejection.
+- [x] Authorized upload passes with trusted association; foreign selected-shop input denied independent of domain shape.
 
 ## Validation
-- [ ] Run `npx vitest run tests/unit/shopify-domain-boundary.test.ts` from owning repository; test file above is explicitly new if absent.
-- [ ] Run declared production build for application changes; App/Commerce/MCP also declared typecheck; Background uses its declared build; System Test uses npm run typecheck instead of build.
-- [ ] Verify no credentials reach override/custom/redirect origin, no provider secrets in errors/DTO/HTML/logs, and no unrelated domain checks removed.
+- [x] Run `npx vitest run tests/unit/shopify-domain-boundary.test.ts` from owning repository; test file above is explicitly new if absent.
+- [x] Run declared production build for application changes; App/Commerce/MCP also declared typecheck; Background uses its declared build; System Test uses npm run typecheck instead of build.
+- [x] Verify no credentials reach override/custom/redirect origin, no provider secrets in errors/DTO/HTML/logs, and no unrelated domain checks removed.
 
 ## Stop Condition
 Finish defined work/acceptance/validation, submit Completion Report and STOP. Explicit developer completion required; no automatic execution of enabled tasks.
@@ -109,23 +109,34 @@ No implementation/claim from this definition. Use normal launcher isolated workt
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-11-06T13:36:56Z. Attempt 0 review history is preserved below.
+Ready for Architect Review — Attempt 1. Developer self-review passed; developer completion remains pending architect acceptance and an explicit developer completion decision. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None
+- `app/services/shop/shop.service.ts`: bounded nonempty provider identity, compared with the SDK-authenticated `session.shop`; Shop GID validation is unchanged.
+- `app/services/shop/merchant-request-context.server.ts` and `app/routes/auth/catchall/route.jsx`: name and pass the authenticated SDK shop identity explicitly.
+- `app/routes/public/home/route.jsx` and `app/routes/auth/login/error.server.jsx`: remove the app-owned suffix parser, preserve the platform launch query handoff, delegate installation validation to Shopify SDK login/auth, and provide Shopify installation guidance on rejection.
+- `app/services/merchant-knowledge/upload.server.ts` and `app/routes/app/merchant-knowledge/upload-intent/route.ts`: remove domain admission and domain-derived object-key namespace; use the already-authorized selected Shop ID for the server-generated signed-upload key.
+- `tests/unit/shopify-domain-boundary.test.ts`, `tests/unit/services/shop.service.test.ts`, `tests/unit/routes/public-home-route.test.ts`, `tests/unit/merchant-knowledge-upload.test.ts`, `tests/integration/merchant-knowledge-upload.integration.test.ts`, `tests/integration/merchant-knowledge-finalization.postgres.test.ts`, and `tests/integration/merchant-shop-bootstrap.postgres.test.ts`: add/update identity, no-discovery, selected-Shop ownership, key and caller coverage.
 
 ### Work Completed
 
-None
+- Authenticated profile provider identity now accepts a bounded provider-owned value and must equal the SDK-authenticated session shop before any local tenant read/write. Shop GID checks remain intact.
+- Public installation no longer classifies shop input with an app-owned suffix regex. Shopify launch parameters are preserved through the existing app handoff; direct custom storefront input receives Shopify installation guidance without lookup, DNS discovery, or profile probes. SDK `InvalidShop` rejection uses the same guidance.
+- Upload-intent authorization still resolves the selected owned Shop through `settingsMutationAccess`; request bodies cannot supply `shopId` or `shopDomain`. The service uses that trusted ID to namespace the server-generated object key, then preserves the existing ownership, file, expiry, and signed PUT checks.
+- Focused acceptance coverage verifies a custom storefront with matching SDK integration identity, mismatch rejection before local access, no public custom-domain discovery, Shopify SDK guidance, selected-Shop-bound upload, and rejection of a foreign Shop ID/domain override.
 
 ### Validation Results
 
-Definition only; runtime tests not run.
+- `npx vitest run tests/unit/shopify-domain-boundary.test.ts` — 1 test file passed; 4 tests passed.
+- `npx vitest run tests/unit/shopify-domain-boundary.test.ts tests/unit/services/shop.service.test.ts tests/unit/merchant-knowledge-upload.test.ts tests/unit/routes/public-home-route.test.ts` — 4 test files passed; 65 tests passed.
+- `npm run build` — passed (Prisma client generation, client build, and server build). Existing upstream Rollup comment/chunk-size and Prisma browser-import warnings remain non-fatal.
+- `npm run typecheck` — passed.
+- `git diff --check` — passed. Touchpoint review confirms suffix guards were removed only from the three task-owned boundaries; unrelated display/provider-domain handling was not changed. Upload DTOs and diagnostics contain neither user-supplied domain nor Shopify credential values.
 
 ### Deviations
 
-None
+Upload storage namespace now uses the trusted selected Shop ID instead of a domain. This removes storefront-domain shape from tenant admission and key selection while preserving each persisted asset's explicit object key and existing signed-upload semantics. No schema or external contract changed.
 
 ### Assumptions
 
@@ -133,11 +144,53 @@ ARCH-061 prerequisite provides selected-shop snapshot with trusted endpoint.
 
 ### Unresolved Issues
 
-None blocking definition.
+None known for developer review. No PostgreSQL container scenario was required by this task's declared validation.
 
 ### Architectural Concerns
 
-No new endpoint discovery, schema or permission widening authorized.
+No new endpoint discovery, schema, credential destination, or permission widening was introduced. Existing Shopify SDK install/auth validation remains authoritative; custom storefront hosts are never used as Admin credential destinations.
+
+### Git / VCS
+
+Task branch: `task/ARCH-062-SHOPIFY-001`
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-062-SHOPIFY-001`
+  parent branch: `task/ARCH-062-SHOPIFY-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-062-SHOPIFY-001`
+  implementation branch: `task/ARCH-062-SHOPIFY-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes; architect readiness reconciliation and report-format fix were present before the claim
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed; launcher started from current origin/main
+  implementation origin/main incorporated: already-current
+
+Implementation repository:
+  repository: `moda-interact`
+  commit: `3a5c920b4217f09dd8a958dacb6cae13971237bc`
+  remote branch: `origin/task/ARCH-062-SHOPIFY-001`
+  pushed: yes
+
+Parent workspace:
+  task file: `docs/decisions/shopify/ARCH-062/SHOPIFY-001-remove-duplicated-app-shop-domain-guards.md`
+  commit: pending report commit
+  remote branch: `origin/task/ARCH-062-SHOPIFY-001`
+  pushed: pending
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+
+### Developer Self-Review - Passed
+
+Attempt: 1
+Scope: reviewed all task Work Items, Acceptance Criteria, and declared validation against the implementation diff and test results above.
+Decision: implementation passes developer self-review and is submitted for `moda_architect` review. No architect acceptance decision has been made. Because `completion_mode` is `developer`, explicit developer completion remains pending.
 
 ## Architect Review
 ### Review Status
