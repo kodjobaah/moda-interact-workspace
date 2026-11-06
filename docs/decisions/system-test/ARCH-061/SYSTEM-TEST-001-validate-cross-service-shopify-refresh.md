@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-061-SHARED-002", "ARCH-061-SHOPIFY-001", "ARCH-061-BACKGROUND-001", "ARCH-061-COMMERCE-001", "ARCH-061-MCP-001"]
 enables: []
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Validate cross service shopify refresh
 
@@ -186,3 +186,7 @@ Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
+
+## Architect Dependency Reconciliation — 2026-11-06
+
+All explicit dependencies resolve as Complete: ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001, ARCH-061-BACKGROUND-001, ARCH-061-COMMERCE-001 and ARCH-061-MCP-001. Promoted from Pending to dependency-ready; executor and claimed_at remain null, Attempt 0 unchanged. System validation remains manual-gated: this update does not claim or start execution, establish cross-service validation success, or authorize cutover/deployment. The developer must explicitly initiate task preparation/execution.
