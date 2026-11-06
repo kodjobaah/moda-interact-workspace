@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -109,7 +109,7 @@ Attempt 1 was implemented by `moda_commerce` in the canonical Commerce implement
 
 ### Status
 
-Developer self-review accepted for Attempt 1 on 2026-11-06. Task transitioned to `review`; completion mode is `developer`, with the explicit developer completion decision recorded separately below.
+Complete — Attempt 1 passed developer self-review, followed by the developer's explicit completion decision on 2026-11-06.
 
 ### Files Changed
 - `package-lock.json`
@@ -151,7 +151,13 @@ The required scope is Commerce-only; this task does not validate Shopify App SDK
 - Result: Accepted; scoped destination-binding criteria and required validation passed.
 - Implementation: `f7f9385` (including specialist commit `ee4ca8a0f631d66e58cc48e7d858b732546e4790`), pushed to `origin/task/ARCH-062-COMMERCE-001`.
 - Material assistance: `moda_commerce` implemented and published the source/test changes; the developer independently reviewed the diff, corrected the lockfile mismatch, and reran focused tests, typecheck and build.
-- Decision: Transition to `review`. The Architect Review section remains unchanged and pending.
+- Decision: Accepted for the developer-owned completion workflow. The Architect Review section remains unchanged and pending.
+
+## Developer Completion Decision
+- Decision: Complete Attempt 1 after the durable passing self-review.
+- Authority: Explicit developer completion requested by the user; no merge to `main` was required or performed.
+- Architect review: The existing Architect Review section remains pending and unchanged.
+- Downstream: `ARCH-062-SYSTEM-TEST-001` was not started.
 
 ## Architect Review
 ### Review Status
