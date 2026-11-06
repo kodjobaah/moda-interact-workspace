@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -109,7 +109,7 @@ No implementation/claim from this definition. Use normal launcher isolated workt
 
 ### Status
 
-Ready for Architect Review — Attempt 1. Developer self-review passed; developer completion remains pending architect acceptance and an explicit developer completion decision. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1. Independent review found two failing regression assertions in directly affected caller tests. Implementation criteria remain recorded below; passing review and completion are blocked pending the corrections documented in the review.
 
 ### Files Changed
 
@@ -144,7 +144,7 @@ ARCH-061 prerequisite provides selected-shop snapshot with trusted endpoint.
 
 ### Unresolved Issues
 
-None known for developer review. No PostgreSQL container scenario was required by this task's declared validation.
+Two directly affected caller regression tests fail after the argument changes: `tests/unit/routes/auth-catchall.test.ts:43` expects the removed `domain` argument, and `tests/unit/merchant-knowledge-actions.test.ts:193` expects the removed `shopDomain` upload field. Correct those assertions while retaining SDK identity and selected-Shop ownership coverage. No PostgreSQL container scenario was required by this task's declared validation.
 
 ### Architectural Concerns
 
@@ -194,17 +194,35 @@ Decision: implementation passes developer self-review and is submitted for `moda
 
 ## Architect Review
 ### Review Status
-Pending
+Changes Requested — Attempt 1 (2026-11-06).
 ### Review Notes
-Definition reviewed against existing suffix checks and official storefront/Admin identity distinction; no implementation reviewed.
+No production identity/destination defect identified in the reviewed diff. Two directly affected existing regression tests remain stale and fail against the new caller contracts; the submitted four-file validation selection omitted them.
 ### Reviewed Files
-Touchpoint table above.
+All 14 changed files at implementation `3a5c920b4217f09dd8a958dacb6cae13971237bc`, plus existing auth/login, upload ownership/finalization, merchant request-context and affected caller tests.
 ### Validation Reviewed
-Definition metadata/path validation only.
+Independent submitted focused selection: 65 tests in 4 files passed. Independent caller selection: 29 passed, 2 failed in 3 files. Independent `npm run typecheck` passed. Diff whitespace check passed. Build success is developer-reported; no independent build or PostgreSQL run was performed in this review.
 ### Architecture Conformance
-Task is repository-owned and gated by its ARCH-061 adoption prerequisite.
+Selected SDK session identity equality, Shop GID validation and authenticated upload ownership remain enforced. Upload finalization uses each persisted asset object key, so existing domain-namespaced assets do not require rewriting. Public login remains delegated to the installed Shopify SDK; no discovery or credential destination override was added. ARCH-061 prerequisite is Complete.
 ### Follow-up
-None
+Update both stale caller assertions to the new contracts and rerun the focused and affected-caller selections, then resubmit on the same task branch. Next developer claim increments the attempt; this review does not.
 
 ## Dependency frontier reconciliation — 2026-11-06
 Architect coordination only: the explicit ARCH-061 prerequisite is Complete with a durable developer completion decision in its canonical task record. Promoted Pending -> Ready; executor/claimed_at remain null and attempt remains 0. No execution, acceptance or completion decision occurred.
+
+
+## Developer Self-Review - Changes Requested — Attempt 1 (2026-11-06)
+
+### Finding and required correction
+
+[P2] Update existing regression coverage for the changed caller contracts. `tests/unit/routes/auth-catchall.test.ts:43` still asserts `resolveShopifyShop({admin, domain})` although the route now supplies `{admin, sessionShop: session.shop}`. `tests/unit/merchant-knowledge-actions.test.ts:193` still expects `shopDomain` although the upload action now supplies only the authenticated Shop ID and permitted upload fields. Both fail on the reviewed task source. Assert the new exact arguments and retain the protections that identity comes from SDK authentication and cannot be overridden by request input; do not restore domain admission or weaken assertions to make tests pass.
+
+Rerun the declared four-file focused selection plus `tests/unit/merchant-request-context.test.ts`, `tests/unit/routes/auth-catchall.test.ts`, and `tests/unit/merchant-knowledge-actions.test.ts`; record passing results and updated build/typecheck evidence as appropriate to the correction. Update the Completion Report to cover these caller regressions. No implementation correction was made during this review.
+
+### Evidence and disposition
+
+- Reviewed implementation `3a5c920b4217f09dd8a958dacb6cae13971237bc`, baseline `f14509f`; implementation and parent canonical worktrees are clean and on `task/ARCH-062-SHOPIFY-001`. Live remote source matched that implementation commit; parent pre-review HEAD matched live remote `be3833f0ad7da8ede467bb882aa1a84efb5d4a7f`.
+- Launcher-resolved physical paths verified: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-062-SHOPIFY-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-062-SHOPIFY-001`. Recorded preparation/synchronization evidence remains in the report. No shared/default checkout was switched or reused for implementation/review.
+- Independent command `node node_modules/vitest/vitest.mjs run tests/unit/shopify-domain-boundary.test.ts tests/unit/services/shop.service.test.ts tests/unit/merchant-knowledge-upload.test.ts tests/unit/routes/public-home-route.test.ts`: 65 passed in 4 files, exit 0 (`/tmp/arch062-shopify-review-unit.log`).
+- Independent command `node node_modules/vitest/vitest.mjs run tests/unit/merchant-request-context.test.ts tests/unit/routes/auth-catchall.test.ts tests/unit/merchant-knowledge-actions.test.ts`: 29 passed, 2 failed in 3 files, exit 1 (`/tmp/arch062-shopify-review-callers.log`). Both failures are the concrete contract mismatches above.
+- Independent `npm run typecheck`: passed, exit 0 (`/tmp/arch062-shopify-review-typecheck.log`). `git diff --check HEAD^`: passed. Node 24.19.0 used in the canonical implementation worktree. No independent production build or container tests were run; existing report build evidence remains developer-reported.
+- Decision: Ready, executor null, claimed_at null, Attempt 1 unchanged; completion remains developer-controlled. This supersedes the earlier developer self-review pass for acceptance purposes. No new attempt is created, downstream task is promoted, main is merged, gitlink is staged or deployment is performed.
