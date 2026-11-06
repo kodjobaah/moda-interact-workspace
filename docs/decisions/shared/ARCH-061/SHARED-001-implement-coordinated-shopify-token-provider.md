@@ -191,7 +191,7 @@ Start-of-attempt synchronization from the Attempt 2 preparation packet:
 - Implementation remote task branch fast-forward: not needed; implementation `origin/main` incorporated: already current.
 
 Implementation repository: `moda-interact-shared`; correction commit `f399a84` pushed to `origin/task/ARCH-061-SHARED-001`. Implementation worktree is clean after publication.
-Parent workspace task file: this report is being submitted on `task/ARCH-061-SHARED-001`; no submodule gitlink is staged. Neither task branch is merged to `main`.
+Parent workspace task file: `docs/decisions/shared/ARCH-061/SHARED-001-implement-coordinated-shopify-token-provider.md`; report submission commit `fc07d3190` was pushed to `origin/task/ARCH-061-SHARED-001`. No submodule gitlink is staged. Neither task branch is merged to `main`.
 
 ### Unresolved Issues
 
