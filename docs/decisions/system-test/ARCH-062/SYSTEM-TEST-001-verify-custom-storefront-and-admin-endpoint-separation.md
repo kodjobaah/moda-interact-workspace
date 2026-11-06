@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-062-SHOPIFY-001", "ARCH-062-BACKGROUND-001", "ARCH-062-COMMERCE-001", "ARCH-062-MCP-001"]
 enables: []
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Verify custom storefront and admin endpoint separation
 
@@ -135,3 +135,13 @@ Definition metadata/path validation only.
 Task is repository-owned and gated by its ARCH-061 adoption prerequisite.
 ### Follow-up
 None
+
+## Dependency Reconciliation — 6 November 2026
+
+MCP-001 Attempt 1 is explicitly developer-completed after accepted scoped
+review `a7e085a23`, source `d0a8de3`. Fetched published Background
+(`6d8c9d6ee`) and Commerce (`1bcf42b25`) records are Complete.
+Shopify is Ready after Changes Requested (`d812181a6`), not Complete.
+This task remains Pending solely on Shopify completion, attempt 0,
+executor/claimed_at null. No promotion, claim, execution or cutover is
+authorized by this reconciliation; manual terminal gates remain unchanged.

@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -111,7 +111,7 @@ Attempt 1 implements the selected-shop snapshot boundary in the launcher-resolve
 
 ### Status
 
-Developer Self-Review Passed / Accepted — Attempt 1. Task status Review; executor/claimed_at cleared and attempt unchanged. Explicit developer completion remains pending. Implementation commit `d0a8de3` is pushed to MCP `task/ARCH-062-MCP-001`; this report is published on the matching parent task branch under explicit developer authorization. The scoped passing review is recorded below; no completion decision is claimed.
+Complete — Attempt 1, explicitly completed by the developer on 6 November 2026 following accepted review `a7e085a23`. Executor/claimed_at remain null and attempt is unchanged. Implementation commit `d0a8de3` is pushed to MCP `task/ARCH-062-MCP-001`; this report is published on the matching parent task branch under explicit developer authorization. The scoped passing review and explicit completion decision are recorded below.
 
 ### Files Changed
 
@@ -177,7 +177,7 @@ Official Shopify [Shop 2026-07 reference](https://shopify.dev/docs/api/admin-gra
 
 ### Unresolved Issues
 
-No task-owned implementation issue remains. Scoped developer review passed; explicit developer completion remains pending. ARCH-062-SYSTEM-TEST-001 was not started/promoted.
+No task-owned implementation issue remains. Scoped review and explicit developer completion are recorded. ARCH-062-SYSTEM-TEST-001 remains Pending on Shopify completion; it was not started/promoted.
 
 ### Architectural Concerns
 
@@ -261,3 +261,25 @@ Explicit `/moda_developer_update ARCH-062-MCP-001 complete` is still required.
 No completion or downstream promotion is made by this review. No code edit,
 test-infrastructure deployment, main merge, gitlink change, new attempt or
 enabled system-test execution occurred.
+
+## Developer Completion Decision — Attempt 1 (6 November 2026)
+
+The developer explicitly invoked `/moda_developer_update ARCH-062-MCP-001 complete`.
+Verified durable accepted scoped review `a7e085a23`, all required checked Work
+Items/Acceptance Criteria, and the clean published implementation
+`d0a8de3a26244aeaa184a58f3def613891fca5d3`. The parent review branch was also
+clean and aligned with its fetched remote before this update. No implementation
+change or test rerun was necessary for this documentation/lifecycle decision.
+
+Set status Complete; keep Attempt 1, developer execution/completion modes,
+executor null and claimed_at null. Preserve the scoped review and its evidence
+limits: this task does not certify App SDK installation, persisted aliases,
+live providers or integrated cross-service rollout.
+
+Recalculated downstream eligibility using fetched published parent task records:
+BACKGROUND-001 Complete at `6d8c9d6ee`, COMMERCE-001 Complete at
+`1bcf42b25`, and SHOPIFY-001 Ready after Changes Requested at `d812181a6`.
+SYSTEM-TEST-001 therefore remains Pending, unclaimed, on Shopify completion.
+Its manual terminal execution/cutover gates remain in force. No sibling task
+lifecycle was changed, no enabled task was executed, and no main merge,
+deployment or gitlink update occurred.

@@ -41,10 +41,10 @@ No blanket search/replace of every myshopify string. Leave SDK internals, docume
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-062-SHOPIFY-001 | shopify | Pending | ARCH-061-SHOPIFY-001 |
-| ARCH-062-BACKGROUND-001 | background | Ready | ARCH-061-BACKGROUND-001 |
-| ARCH-062-COMMERCE-001 | commerce | Pending | ARCH-061-COMMERCE-001 |
-| ARCH-062-MCP-001 | mcp | Ready | ARCH-061-MCP-001 |
+| ARCH-062-SHOPIFY-001 | shopify | Ready | ARCH-061-SHOPIFY-001 |
+| ARCH-062-BACKGROUND-001 | background | Complete | ARCH-061-BACKGROUND-001 |
+| ARCH-062-COMMERCE-001 | commerce | Complete | ARCH-061-COMMERCE-001 |
+| ARCH-062-MCP-001 | mcp | Complete | ARCH-061-MCP-001 |
 | ARCH-062-SYSTEM-TEST-001 | system-test | Pending | ARCH-062-SHOPIFY-001, ARCH-062-BACKGROUND-001, ARCH-062-COMMERCE-001, ARCH-062-MCP-001 |
 
 ## Architecture definition review
@@ -53,3 +53,16 @@ Inspected existing suffix checks and trusted session flow; official sources sepa
 Dependency frontier — 2026-11-06: ARCH-062-BACKGROUND-001 is Ready/unclaimed following explicit completion of ARCH-061-BACKGROUND-001. Other task statuses remain unchanged.
 
 Dependency frontier — 6 November 2026: ARCH-062-MCP-001 is Ready/unclaimed after canonical ARCH-061-MCP-001 completion `38b94f3cb`. No enabled task execution or deployment is authorized by this correction.
+
+## MCP Completion / Current Dependency Frontier — 6 November 2026
+
+MCP-001 Attempt 1 is explicitly developer-completed following passing scoped
+review `a7e085a23`, implementation `d0a8de3`. Fetched published parent
+records show Background Complete (`6d8c9d6ee`), Commerce Complete
+(`1bcf42b25`), and Shopify Ready after Changes Requested (`d812181a6`).
+These records supersede the older readiness summaries above; no sibling
+lifecycle is changed here.
+
+SYSTEM-TEST-001 remains Pending solely on Shopify completion. Terminal/manual
+execution and cutover gates remain unchanged; no system run, deployment,
+main merge, gitlink update or architecture-wide completion is implied.
