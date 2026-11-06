@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -100,7 +100,7 @@ Use launcher-resolved isolated/synchronized task worktrees when execution reques
 
 ## Completion Report
 ### Status
-Ready for Review
+Complete — Accepted and explicitly developer-completed
 ### Files Changed
 - package.json and package-lock.json: exact published Shared 5.3.0 pin.
 - src/commerce/preview/shopify-refresh-events.ts: domain semantic logger adapter.
@@ -142,7 +142,7 @@ Parent report commit follows this edit on matching task branch. Submodule gitlin
 
 ## Architect Review
 ### Review Status
-Accepted — explicit developer completion pending.
+Accepted — explicitly developer-completed.
 ### Review Notes
 2026-11-06 moda_architect inspected actual implementation 4b2abdde15c6612b96f95fd3ec23dcf3a4c3dc2a and report 8c667804512d4c4af1e40e233273abd1a062ed7a. Both factory paths wire published Shared 5.3.0 hook through one small semantic adapter using Shared logging. Explicit field projection preserves safe correlation/outcome metadata without error, body, domain, session or credentials. Started/committed log info and failed logs warn. Primary provider injection prevents duplicate fallback construction; no metadata refresh/event path introduced. No implementation corrections required.
 ### Reviewed Files
@@ -157,3 +157,6 @@ Focused 10/10 and strengthened envelope fixture 6/6 passed, production typecheck
 Conforms to ARCH-063 bounded Commerce consumer wiring; consumes exact published package and canonical Shared logger. No generic logger fork, lock changes, UI/status scope crossover into COMMERCE-001, schema, deployment or gitlink changes. Canonical launcher worktrees/start synchronization/database submodule evidence verified. Local results make no deployed-state claim.
 ### Follow-up
 Task remains review under completion_mode developer. Explicit completion: `/moda_developer_update ARCH-063-COMMERCE-002 complete`. System Test remains Pending on incomplete dependencies/manual-gated; no follow-on work starts automatically.
+
+## Developer Completion Decision
+2026-11-06T17:45:51.565637+00:00 — Developer explicitly invoked `/moda_developer_update ARCH-063-COMMERCE-002 complete`. Verified durable Accepted review at parent 8d7b58a1ca2dc0007c2d6829ded116642f20ac2c and clean published implementation 4b2abdde15c6612b96f95fd3ec23dcf3a4c3dc2a; remote hashes match. Required Work Items/Acceptance Criteria/Validation complete. Completed unchanged Attempt 1 with executor/claimed_at null and execution/completion modes preserved. No main merge, gitlink change or follow-on execution. Canonical route reconciliation preserves concurrent BACKGROUND-001/MCP-001 Complete and SHOPIFY-001 In Progress; COMMERCE-001 Ready. System Test remains Pending on incomplete COMMERCE-001 and SHOPIFY-001, terminal/manual-gated.
