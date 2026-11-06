@@ -52,9 +52,9 @@ Inspected existing suffix checks and trusted session flow; official sources sepa
 
 Dependency frontier — 2026-11-06: ARCH-062-BACKGROUND-001 is Ready/unclaimed following explicit completion of ARCH-061-BACKGROUND-001. Other task statuses remain unchanged.
 
-## Completion/frontier reconciliation — 6 November 2026
+Dependency frontier — 6 November 2026: ARCH-062-MCP-001 is Ready/unclaimed after canonical ARCH-061-MCP-001 completion `38b94f3cb`. No enabled task execution or deployment is authorized by this correction.
 
-This is governance reconciliation only: no implementation tests, task launches, active claims, new completion decisions, merges or deployments. Existing historical review text is preserved; current task YAML and latest explicit completion records take precedence over historical pending text. Background mirror was reconciled from its canonical task worktree. Shopify/Commerce/MCP definitions remain unmaterialised: launcher reports expected parent paths, but those worktrees are absent; their local definitions are dependency-ready without any branch/worktree/publication claim. No publication is claimed by this local update.
+## MCP Completion / Current Dependency Frontier — 6 November 2026
 
 Completion frontier — 2026-11-06: Commerce and Background are Complete. Live published task branches show Shopify in Review and MCP In Progress. System Test remains Pending and manually gated; no sibling claim or attempt is changed.
 

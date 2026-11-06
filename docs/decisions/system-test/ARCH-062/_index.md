@@ -8,7 +8,7 @@ Architecture: ../../../architecture/ARCH-062-remove-duplicated-shopify-domain-gu
 
 Developer definitions only, unclaimed.
 
-## Dependency Frontier — 6 November 2026
+## Current Dependency Frontier — 6 November 2026
 
 BACKGROUND-001 is Complete (accepted review `86b9f84f0`, completion
 `401c1ac3a`, source `f040512`). SYSTEM-TEST-001 remains Pending while
