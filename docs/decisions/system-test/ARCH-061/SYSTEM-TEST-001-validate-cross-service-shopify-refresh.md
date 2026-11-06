@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -187,12 +187,6 @@ Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Sh
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
 
-## Dependency Reconciliation — 6 November 2026
+## Architect Dependency Reconciliation — 2026-11-06
 
-ARCH-061-MCP-001 Attempt 1 is explicitly developer-completed following passing
-scoped review `7f61bde93`, implementation `c9ca303`. SHARED-002 and SHOPIFY-001
-are also Complete. BACKGROUND-001 and COMMERCE-001 remain Ready, not Complete,
-in current canonical task records and fetched origin/main; this task therefore
-remains Pending with attempt 0, executor/claimed_at null. MCP is no longer an
-incomplete prerequisite. Terminal/manual invocation and operator cutover gates
-are unchanged; no claim or execution is authorized by this reconciliation.
+All explicit dependencies resolve as Complete: ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001, ARCH-061-BACKGROUND-001, ARCH-061-COMMERCE-001 and ARCH-061-MCP-001. Promoted from Pending to dependency-ready; executor and claimed_at remain null, Attempt 0 unchanged. System validation remains manual-gated: this update does not claim or start execution, establish cross-service validation success, or authorize cutover/deployment. The developer must explicitly initiate task preparation/execution.
