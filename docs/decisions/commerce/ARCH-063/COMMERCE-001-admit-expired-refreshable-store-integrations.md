@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -113,7 +113,7 @@ Use launcher-resolved isolated/synchronized task worktrees when execution reques
 
 ### Status
 
-Ready for Review — Attempt 1. Implementation and local validation passed; explicit developer completion pending.
+Complete — Attempt 1 explicitly developer-completed on 2026-11-06.
 
 ### Files Changed
 31 task-owned files: provider metadata/status contracts, authoring predicate and Connections UI, selected-shop header and production projection, preview/test-conversation contract consumers, injected fixtures and regression tests. Exact paths are recorded by implementation commit 97ab6ce.
@@ -163,3 +163,9 @@ Task metadata/dependency/path checks only.
 Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
 ### Follow-up
 None
+
+## Developer Completion Decision
+2026-11-06: Developer explicitly invoked `/moda_developer_update ARCH-063-COMMERCE-001 complete`. Accepted Attempt 1 remains unchanged. Durable passing self-review: ea1aa862422f270fa0abb0d6fd9a12a293f0070d. Implementation 97ab6cec333eafb629d9ada3db065560610b61b2 matches origin/task/ARCH-063-COMMERCE-001; both worktrees were clean at completion verification. Required implementation and local validation satisfied as reported, with synthetic execution evidence distinguished from deployed validation. Executor and claimed_at remain null. No main merge/push.
+
+### Dependency-frontier reconciliation
+ARCH-063-SYSTEM-TEST-001 remains Pending and manually gated because ARCH-063-SHOPIFY-001 is In Progress. SHARED-002, BACKGROUND-001, COMMERCE-002 and MCP-001 are Complete. No downstream task is promoted or started; concurrent task records are preserved.
