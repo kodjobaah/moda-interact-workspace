@@ -192,7 +192,7 @@ Parent workspace:
   Attempt 2 claim commit: `0597d8ea717293bfe03893f0400be69dd0446543`
   Attempt 2 review report commit: `2eea08576` (publication evidence finalized in the following parent report commit)
   remote branch: `origin/task/ARCH-062-SHOPIFY-001`
-  pushed: Attempt 1 yes; Attempt 2 claim yes; Attempt 2 report pending publication
+  pushed: yes; Attempt 2 report and VCS evidence are published on `origin/task/ARCH-062-SHOPIFY-001`
   submodule gitlink staged: no
 
 Merged to implementation main: no
