@@ -7,7 +7,7 @@ domain: commerce
 repository: moda-interact-commerce
 assigned_agent: moda_commerce
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -104,6 +104,8 @@ Exact purpose profile/membership/behavior schemas and draft/release join models 
 Submit completed scoped report for authorized review and STOP. Explicit developer completion required. No enabled follow-on task auto-start; terminal System Test manually invoked after accepted dependencies.
 
 ## Implementation Notes
+Execution ownership amendment (2026-11-06): developer explicitly requested `/moda-task ARCH-064-COMMERCE-001` implementation and authorized sync plus task claim/source/review publication. Delegate to moda_commerce via canonical preparation, preserving completion_mode developer and exact authoring/publication/seed scope. No live migration, consumer deployment, main merge or enabled execution.
+
 Dependency reconciliation (2026-11-06): canonical routes confirm ARCH-064-DATABASE-001 and ARCH-059-COMMERCE-001 Complete; ARCH-064-SHARED-002 explicitly completed with verified published 5.4.0 purpose contract. All explicit dependencies satisfied; Ready at unchanged Attempt 0, unclaimed. No automatic execution.
 
 No execution from definition. Use normal launcher-isolated/synchronized task worktrees when requested. Exact architecture choices above are binding; report demonstrated incompatibility instead of selecting new schema/identity/authorization design. Preserve historical task status and unrelated edits.
