@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 50
-executor: codex
-claimed_at: 2026-11-06T19:10:41Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: ["ARCH-064-COMMERCE-001", "ARCH-064-MCP-001", "ARCH-064-SYSTEM-TEST-001"]
@@ -138,17 +138,20 @@ Parent report commit follows this edit, matching task branch; submodule gitlink 
 
 ## Architect Review
 ### Review Status
-Pending
+Accepted — explicit developer completion pending.
 ### Review Notes
-Definition inspected against single-owner schema, role model and selector/graph code; no implementation reviewed.
+2026-11-06 moda_architect inspected actual schema, migration and fixture at b161a0fa251031737fdc05f4ddbfcb265742af71 plus report 7455d6b9ab2286a144dd5a8bba85a90c60b59c2b. Two joins implement exact draft/release purpose membership without capability ownership duplication. Same-release composite FKs bind immutable Feature and Capability snapshots, positions are nonnegative/unique, Restrict relationships preserve references, existing immutable row guard blocks release-purpose rewrite/delete. No copied schemas/revisions or merchant entitlement introduced. Generated DDL identifier mismatch found during implementation was corrected and validated; no outstanding correction.
 ### Reviewed Files
-Verified touchpoints above.
+- prisma/schema.prisma
+- prisma/migrations/20261106192000_arch064_purpose_capability_membership/migration.sql
+- scripts/test-arch064-purpose-membership-postgres.mjs
+- package.json, scoped generated prisma-erd.puml, task Completion Report.
 ### Validation Reviewed
-Metadata/dependency/path checks only.
+Prisma validate/client generation and generated DDL comparison passed; SQL identifiers match Prisma bounded names and mapped unique index. Disposable pgvector PostgreSQL17 applied complete migration history successfully. Focused actual new migration validates valid same-release membership, editable drafts/owner preservation and 14 rejected FK/position/immutable/delete mutations. Focused parent-key fixture uses equivalent immutable function; actual accepted guard is applied by full-chain proof. No claims of tenant/role/fifth-tool runtime validation at database boundary. Scoped generated ERD/diff checks passed.
 ### Architecture Conformance
-Single owning repository; shared contract publication separated; terminal integrated test.
+Conforms to ARCH-064 additive database contract and single-owner boundary. SQL CHECK/trigger supplement Prisma representation. Migration authoring via generated diff plus disposable full-chain proof is acceptable and avoids unauthorized live migration. Canonical dedicated worktrees/synchronization/durable claim evidence verified. No live migration, main merge, gitlink, seed, runtime or permission changes.
 ### Follow-up
-None
+Task remains review at Attempt 1 with completion_mode developer. Explicit completion: `/moda_developer_update ARCH-064-DATABASE-001 complete`. Additive migration must precede consumers during rollout; no dependent task promotion before actual completion, no automatic follow-on execution.
 
 
 ## Purpose publication authority and underlying tool edits
