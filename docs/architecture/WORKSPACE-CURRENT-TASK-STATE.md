@@ -1931,3 +1931,7 @@ ARCH-063-SHARED-001 Attempt 1 is Complete after architect Accepted review and ex
 ## ARCH-063 — Commerce refresh wiring completion
 
 2026-11-06: COMMERCE-002 Attempt 1 explicitly developer-completed after Accepted review of published 4b2abdde15c6612b96f95fd3ec23dcf3a4c3dc2a. Canonical route snapshots: SHARED-001/002, BACKGROUND-001 and MCP-001 Complete; SHOPIFY-001 In Progress; COMMERCE-001 Ready. No concurrent task records modified. SYSTEM-TEST-001 remains Pending on COMMERCE-001/SHOPIFY-001 and terminal/manual-gated. No task newly unblocked, no main integration or follow-on execution.
+
+## ARCH-064 — Purpose release completion frontier
+
+2026-11-06: SHARED-002 Attempt 1 explicitly developer-completed after Accepted 5.4.0 release review. DATABASE-001 and SHARED-001 Complete; canonical ARCH-059 Commerce/MCP/Background prerequisites Complete. ARCH-064-COMMERCE-001 newly Ready/unclaimed; MCP-001, BACKGROUND-001 and terminal/manual-gated SYSTEM-TEST-001 remain Pending on incomplete dependencies. No repeat release/main integration/live changes or follow-on execution.

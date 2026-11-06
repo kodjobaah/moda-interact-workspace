@@ -37,10 +37,10 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-064-DATABASE-001 | database | Ready | - |
+| ARCH-064-DATABASE-001 | database | Complete | - |
 | ARCH-064-SHARED-001 | shared | Complete | - |
-| ARCH-064-SHARED-002 | shared | Review (Accepted; developer completion pending) | ARCH-064-SHARED-001 |
-| ARCH-064-COMMERCE-001 | commerce | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
+| ARCH-064-SHARED-002 | shared | Complete | ARCH-064-SHARED-001 |
+| ARCH-064-COMMERCE-001 | commerce | Ready | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
 | ARCH-064-MCP-001 | mcp | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
 | ARCH-064-BACKGROUND-001 | background | Pending | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
 | ARCH-064-SYSTEM-TEST-001 | system-test | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-064-BACKGROUND-001 |
@@ -55,3 +55,5 @@ Any release containing initial_outreach behavior/purpose members requires SUPER_
 2026-11-06 explicit developer completion: SHARED-001 Attempt 1 Complete, implementation d478b05 and passing review 180aced32 verified published. SHARED-002 becomes Ready/unclaimed at unchanged Attempt 0. Downstream consumers remain publication-gated; System Test remains Pending/manual-gated. No enabled task started or package published.
 
 2026-11-06: SHARED-002 Attempt 1 published purpose contract 5.4.0; exact registry artifact/hash/exports verified and architect Accepted. Explicit developer completion pending; no consumer promotion or automatic execution.
+
+2026-11-06 explicit completion: SHARED-002 Attempt 1 Complete, public 5.4.0 archive verified. Canonical DATABASE-001/ARCH-059-COMMERCE-001 Complete; COMMERCE-001 newly Ready. MCP/Background/System Test remain Pending on incomplete dependencies; no concurrent task records overwritten or automatic execution.
