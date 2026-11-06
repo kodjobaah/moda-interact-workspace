@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 50
-executor: codex
-claimed_at: 2026-11-06T20:48:20Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-064-DATABASE-001", "ARCH-064-SHARED-002", "ARCH-059-COMMERCE-001", "ARCH-064-SHARED-004"]
 enables: ["ARCH-064-MCP-001", "ARCH-064-BACKGROUND-001", "ARCH-064-SYSTEM-TEST-001"]
@@ -207,6 +207,13 @@ Partial code respects single-owner and fail-closed boundaries; no local schema i
 ### Follow-up
 ARCH-064-SHARED-003 implements bounded canonical output compatibility; ARCH-064-SHARED-004 publishes accepted correction. Then reclaim same Commerce task/branches for corrected package pin and real default/fifth-tool acceptance. No source reimplementation merely to manufacture commits; preserve existing validated work. No automatic task execution.
 
+
+### Attempt2 Review — Accepted (2026-11-06)
+Latest review outcome: Accepted; explicit developer completion pending. Historical Attempt1 Blocked finding above preserved and resolved through independently accepted/published Shared correction.
+
+Inspected actual correction bef213b650b80864fd135dff98c92ae8694ca298 and report60af49f635bdf3f30445c1028c5e59ae71c05afc. Package/lock pins published5.5.0; purpose read helper uses canonical Shared compiler without local schema projection/widening. Prior valid authoring/UI/seed/lifecycle code retained. All prior correction items satisfied: real first-seeded four canonical IDs/order/behavior publish successfully; complete nonempty discount/product outputs satisfy both canonical compiler and unchanged actual output validators. Supported compiler-backed GraphQL fifth add/remove, empty/unsupported rejection, role/forged direct lifecycle and immutable snapshots covered. Shipping descriptor remains rejected when outside bounded supported subset; no universal tool admission claimed.
+
+Validation reviewed:39 publication/lifecycle/storage tests and42 authoring/UI/seed tests passed; production typecheck and whitespace checks passed. Read actual seed/publication/result fixtures and helper/package diff. Canonical prepared Attempt2 worktree/synchronization/claim evidence and remote publication verified. No live migration/activation/main/gitlink or downstream implementation. No outstanding correction. Task remains review at Attempt2 with cleared claim and completion_mode developer. Explicit completion: `/moda_developer_update ARCH-064-COMMERCE-001 complete`; dependent tasks remain gated until actual completion.
 
 ## Purpose publication authority and underlying tool edits
 Any release containing initial_outreach behavior/purpose members requires SUPER_ADMIN at publish AND activate/rollback, checked server-side in lifecycle services, not only Feature editor. Global ADMIN may retain existing rights to edit unrelated/shared tool drafts, but cannot publish/activate a new outreach snapshot or repoint its revisions through another Feature workflow. Existing immutable release references mean editing a draft never changes active outreach. Super Admin publication reviews selected exact revision IDs and behavior as one complete snapshot; ordinary release services cannot silently copy/advance outreach members to latest revisions. For a release that preserves outreach unchanged, activation still requires SUPER_ADMIN because the pointer controls this purpose. No bypass via setup command, generic release action, development role field or forged client role. Existing authenticated development bypass policy remains explicit and may not impersonate SUPER_ADMIN for production mutations. Add ADMIN direct lifecycle publish/activate/rollback tests plus underlying draft edit test proving active pinned profile unchanged. Keep existing audit reason/actor/operationId and immutable snapshot evidence; no new permission granted to arbitrary tools.
