@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
 executor: codex
 claimed_at: 2026-11-06T16:59:46Z
@@ -68,8 +68,8 @@ SDK-managed refresh/token exchange is not observable solely from Shared getSessi
 Shared implementation extends existing API compatibly; publication chooses next available approved semver and records exact version before consumer pins. No forced version guess or unpublished sibling import. Commerce UI correction is independent and Ready now; it uses existing accepted ARCH-060/061/062 contracts, does not wait for log publication. Shared logging implementation is also independently Ready. Consumer event wiring depends on Shared publication. App wiring includes metadata-readiness correction. System Test is terminal on all fixes; manually invoked after optional user exercise. Compatible rollout, no schema/credential/env or Render topology change. Logging absent in old binaries is expected until owning consumer deployed; do not assert deployed observability from local code. No new metric/span framework. Metadata reads and tooling never expose provider secrets.
 
 ## Work Items
-- [ ] Pass safe event adapter using existing Shared logger.
-- [ ] Pass same adapter; one factory execution path logs once, no status events.
+- [x] Pass safe event adapter using existing Shared logger.
+- [x] Pass same adapter; one factory execution path logs once, no status events.
 
 ## Interfaces / Contracts
 Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published optional Shared onEvent hook and exact frozen event schema above. Each consumer owns safe logger forwarding; provider/runtime credentials stay server-only. Exact version recorded by SHARED-002 before consumer pins.
@@ -81,12 +81,12 @@ Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published o
 - ARCH-063-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Actual expired execution logs started/committed with selected shop ID and refreshed expiry; metadata render logs no refresh.
-- [ ] Injected commit/network failure emits failed only; secret canaries absent.
+- [x] Actual expired execution logs started/committed with selected shop ID and refreshed expiry; metadata render logs no refresh.
+- [x] Injected commit/network failure emits failed only; secret canaries absent.
 
 ## Validation
-- [ ] Run focused command `npx vitest run tests/shopify-session-coordination.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
-- [ ] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
+- [x] Run focused command `npx vitest run tests/shopify-session-coordination.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
+- [x] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
 
 ## Stop Condition
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
@@ -100,21 +100,45 @@ Use launcher-resolved isolated/synchronized task worktrees when execution reques
 
 ## Completion Report
 ### Status
-Not Started
+Ready for Review
 ### Files Changed
-None
+- package.json and package-lock.json: exact published Shared 5.3.0 pin.
+- src/commerce/preview/shopify-refresh-events.ts: domain semantic logger adapter.
+- src/commerce/preview/local-provider-composition.ts and local-policy-providers.ts: hook wiring.
+- tests/shopify-refresh-events.test.ts: real published-provider composition fixtures.
 ### Work Completed
-None
+Primary and fallback factories pass one safe observer to the published Shared provider. Adapter uses existing Shared logging implementation with canonical Commerce identity and factory environment. Explicit field allowlist excludes domain, session ID, credentials, scopes and errors. Started/committed use info; failed uses warn. Primary passes its provider into fallback registrations, so no duplicate observer/provider is created. Metadata/status paths unchanged; no COMMERCE-001 work. Existing refresh coordination, authorization, provider calls and caller errors preserved.
 ### Validation Results
-Definition only.
+- `npx vitest run tests/shopify-session-coordination.test.ts tests/shopify-refresh-events.test.ts`: PASS 2 files, 10 tests, no skips. Real published provider through both factory paths verifies actual expired refresh, persisted expiry, one safe pair, metadata/reuse silence, commit/network UNKNOWN failure without committed, secret canary absence.
+- `npm run prisma:generate`: PASS using recorded nested database schema; generated local client only. Initial fresh-install focused collection needed this generation, then passed.
+- `npm run typecheck:build`: PASS (schema sync, Next route typegen, production TypeScript).
+- Focused strengthened logging-envelope assertions: PASS 1 file, 6 tests; canonical service/environment and exact safe field keys. Used exact previously bootstrap-resolved Node executable with architect approval after redundant bootstrap delay; no runtime selection/PATH change.
+- `git diff --check`: PASS.
+- Published package install via `npm install @modainteract/moda-interact-shared@5.3.0 --save-exact --ignore-scripts` succeeded. npm reported 35 audit issues (18 moderate,16 high,1 critical); no unrelated dependency remediation attempted. Peer/deprecation warnings recorded; lock diff limited to Shared version/registry integrity.
 ### Deviations
-None
+Added a separate focused real-provider fixture because existing coordination test mocks Shared factory. No duplicate Shared mechanism. Consumer test uses mocked local persistence/network and production composition/policy adapter/Shared provider/logger; no live provider calls. Shared postcommit/PostgreSQL behavior already validated by accepted SHARED-001; no cross-repository rerun.
 ### Assumptions
-Existing accepted coordinator and metadata integration remain available at owner task baseline.
+Refresh logs are best effort process-local diagnostics; no deployment state inferred from local checks. Definition dispatch layer is mocked solely to reach registered policy execution in primary factory fixture.
 ### Unresolved Issues
-None blocking definition.
+None.
 ### Architectural Concerns
-Return actual incompatible contract evidence before widening scope.
+None. No cross-repository code, database schema, UI/metadata or deployment changes.
+### Git / VCS
+Task branch: task/ARCH-063-COMMERCE-002
+Physical worktree isolation:
+- canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+- parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-063-COMMERCE-002
+- implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-063-COMMERCE-002
+- parent and implementation branches: task/ARCH-063-COMMERCE-002
+- shared workspace/source checkout switched or mutated: no
+- another task worktree reused: no
+Start-of-attempt synchronization (launcher packet):
+- parent/implementation remote task fast-forward: not-needed
+- parent/implementation origin/main incorporated: already-current
+- recursive submodule sync/update: passed; database bd2d09066a8eb178a56f48fbbf88df637c411059; status ready
+- Attempt 1 claim f9e4a608b92fd6012db3c9dbb082521d869fa2ff pushed
+Implementation commit: 4b2abdd (full hash in task history); pushed to origin/task/ARCH-063-COMMERCE-002.
+Parent report commit follows this edit on matching task branch. Submodule gitlink staged: no. Main merges: none.
 
 ## Architect Review
 ### Review Status
