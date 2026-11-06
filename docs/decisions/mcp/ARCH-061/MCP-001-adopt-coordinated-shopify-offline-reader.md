@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T09:59:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-061-SHARED-002", "ARCH-061-SHOPIFY-001"]
 enables: ["ARCH-061-SYSTEM-TEST-001"]
@@ -137,7 +137,7 @@ Attempt 1 implementation is prepared in the canonical isolated MCP worktree. Use
 
 ### Status
 
-In Progress — Attempt 1 implementation and task-owned validation finished; awaiting authorized developer reconciliation/review. No acceptance or completion decision is recorded. Implementation commit `c9ca303` is pushed to MCP `task/ARCH-061-MCP-001`. This updated report is published on the matching parent task branch under the developer’s explicit commit/push authorization.
+Developer Self-Review Passed — Attempt 1. Task status Review, executor/claimed_at null, attempt unchanged. Explicit developer completion remains pending; no completion decision is inferred. Implementation commit `c9ca303` is pushed to MCP `task/ARCH-061-MCP-001`. This updated report is published on the matching parent task branch under the developer’s explicit commit/push authorization.
 
 ### Files Changed
 
@@ -251,3 +251,26 @@ Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOff
 ## Architect Dependency Reconciliation — 2026-11-06
 
 SHOPIFY-001 Attempt 2 is explicitly developer-completed after passing review `e1310a6aa`, implementation `17fb986`. SHARED-002 is also Complete (published Shared 5.2.0). All explicit prerequisites are satisfied. Promoted to Ready, executor/claimed_at null, existing attempt unchanged. Normal developer preparation, accepted-source integration and task validation gates apply; no claim, execution or rollout is started by this update.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 1 (2026-11-06)
+
+**Scoped review passed; no actionable finding in this token-coordination change.** Reviewed implementation `c9ca303ba7a9f77a768e7d4ea00246119f5f3486`, matching its pushed task branch. Developer execution/completion modes preserved; status Review, claim cleared, Attempt 1 unchanged. Explicit `/moda_developer_update ARCH-061-MCP-001 complete` remains required.
+
+### Source review
+
+Inspected all task changes, particularly the Shared 5.2.0 provider composition with the real connected local Prisma client, trusted deployment-environment OAuth reader, selected shop-ID propagation, stored-domain consistency, cancellation and committed token/scope snapshot. No direct unlocked Session credential read, local refresh retry/cache, alternate lock, OAuth plaintext fallback or request-supplied configuration authority is introduced. Existing positive scope checks and error/privacy boundary remain intact. Worktree/preparation, accepted dependencies and material assistance are recorded in the Completion Report; no ownership transfer is inferred from assistance.
+
+### Independent validation
+
+Ran the coordination, session-reader, provider and runtime-ports four-file unit set using installed tsx: **41 passed, 0 failed/skipped**, exit 0; local evidence `/tmp/arch061-mcp-review.log`. Independently checked source/remote equality and whitespace. Inspected `/tmp/arch061-mcp-postgres-focused.log`: task-owned disposable PostgreSQL run passed, including actual separate-client contention/recovery/cancellation and successful container/network/volume removal. The architect did not rerun Docker.
+
+Reviewed submitted 60-test focused set, 374-test full unit pass, typecheck/integration-typecheck, build and lint results; these were not independently repeated. Task acceptance does not claim App SDK or all cross-service behavior; terminal proof remains separately owned.
+
+### Explicit broader-suite disposition
+
+The reported full Docker run remains **failed** (20 passed, 15 failed, 1 opt-in live skip), not green. Independently confirmed an empty baseline-to-final diff for all seven paths in `/tmp/arch061-mcp-unchanged-failure-paths.json`: discount guard/catalogue/service composition and old integration fixtures/tests. The guard rejection and cross-tenant cursor expectation concern published-discount/cursor fixtures outside this credential-reader change; targeted token coordination assertions pass independently. Accept this bounded task without requiring unrelated fixture repairs here. This scope disposition is not a passing baseline Docker run, general regression waiver or architecture/deployment certification; the failures remain visible and require separate owner correction before claiming a green full suite.
+
+### Publication and follow-up
+
+Implementation and parent worktrees were clean before this update; implementation is already committed/pushed. Only the task report/review is published here. No code edit, new claim/attempt, schema/gitlink/main merge, deployment or downstream promotion. Explicit developer completion remains pending; SYSTEM-TEST-001 stays gated on this task and its other consumer prerequisites/manual execution requirements.
