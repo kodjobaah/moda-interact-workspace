@@ -35,7 +35,7 @@ Shared implementation extends existing API compatibly; publication chooses next 
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-063-COMMERCE-001 | commerce | Ready | - |
+| ARCH-063-COMMERCE-001 | commerce | Complete | - |
 | ARCH-063-SHARED-001 | shared | Complete | - |
 | ARCH-063-SHARED-002 | shared | Complete | ARCH-063-SHARED-001 |
 | ARCH-063-SHOPIFY-001 | shopify | In Progress | ARCH-063-SHARED-002 |
@@ -59,3 +59,5 @@ ARCH-060 expired-status rule and availability-only link tests require Commerce c
 2026-11-06: COMMERCE-002 Attempt 1 execution refresh-event wiring Accepted after focused/typecheck validation; explicit developer completion pending. No COMMERCE-001 UI/status work or System Test promotion.
 
 2026-11-06 explicit developer completion: COMMERCE-002 Attempt 1 Complete. Canonical route snapshots preserve concurrent BACKGROUND-001 and MCP-001 Complete, SHOPIFY-001 In Progress and COMMERCE-001 Ready. No concurrent task records changed. SYSTEM-TEST-001 remains Pending/manual-gated; no new Ready task or automatic execution.
+
+2026-11-06 explicit developer completion: COMMERCE-001 Attempt 1 Complete; implementation 97ab6ce and passing review ea1aa8624 verified published. System Test remains Pending/manual-gated on SHOPIFY-001 (In Progress); all other explicit dependencies Complete. No downstream work started or concurrent records modified.
