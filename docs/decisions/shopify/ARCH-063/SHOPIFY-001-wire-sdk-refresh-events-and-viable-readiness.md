@@ -102,7 +102,9 @@ Dependency reconciliation (2026-11-06): ARCH-063-SHARED-002 is Accepted and expl
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
 ## Completion Report
+
 ### Status
+
 Not Started
 ### Files Changed
 None
