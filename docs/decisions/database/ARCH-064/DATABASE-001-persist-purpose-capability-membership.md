@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-06T19:10:41Z
+attempt: 1
 depends_on: []
 enables: ["ARCH-064-COMMERCE-001", "ARCH-064-MCP-001", "ARCH-064-SYSTEM-TEST-001"]
 created: 2026-11-06
