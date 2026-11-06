@@ -40,7 +40,7 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 | ARCH-064-DATABASE-001 | database | Complete | - |
 | ARCH-064-SHARED-001 | shared | Complete | - |
 | ARCH-064-SHARED-002 | shared | Complete | ARCH-064-SHARED-001 |
-| ARCH-064-COMMERCE-001 | commerce | Ready (contract blocker resolved) | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
+| ARCH-064-COMMERCE-001 | commerce | Ready | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
 | ARCH-064-MCP-001 | mcp | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
 | ARCH-064-BACKGROUND-001 | background | Pending | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
 | ARCH-064-SYSTEM-TEST-001 | system-test | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-064-BACKGROUND-001 |
@@ -58,7 +58,13 @@ Any release containing initial_outreach behavior/purpose members requires SUPER_
 
 2026-11-06 explicit completion: SHARED-002 Attempt 1 Complete, public 5.4.0 archive verified. Canonical DATABASE-001/ARCH-059-COMMERCE-001 Complete; COMMERCE-001 newly Ready. MCP/Background/System Test remain Pending on incomplete dependencies; no concurrent task records overwritten or automatic execution.
 
-## Purpose output contract correction — 2026-11-06
-Commerce actual default outputs cannot satisfy original outputSchema:DetailsSchemaSchema choice. That strict subset rejects discount union outcomes and product nullable objects/fixed formats/patterns/128-item bounded identifiers. Do not alter tool result semantics or fabricate a lossy local projection. Shared must own a narrowly bounded purpose output schema validator supporting existing canonical default results while retaining finite schema/result budgets and rejecting unsupported constructs. ARCH-064-SHARED-003 defines this correction; ARCH-064-SHARED-004 publishes it. Commerce remains Blocked on that release and then pins/tests defaults. No existing accepted history overwritten; no consumer execution auto-start.
+## Bounded output correction implementation review — 2026-11-06
+ARCH-064-SHARED-003 Attempt1 Accepted at review, explicit developer completion pending. Purpose-specific canonical output validator supports actual default unions/nullable objects/128 identifiers with schema32KiB/depth8/nodes256/properties128/union4/string4096/array128 caps and result32KiB. Only fixed money/UTC encodings and safe HTTPS URI semantics; no caller regex execution or generic Details/Input change. Current locked Zod optional-seconds UTC spelling explicitly supported alongside historical spellings. Shared69 focused tests/typecheck/build passed. SHARED-004 publication and Commerce real-default integration remain gated; no release or follow-on execution.
 
-2026-11-06: SHARED-004 Complete with public5.5.0; canonical COMMERCE-001 returned Ready at prior Attempt1, claim cleared, exact next-attempt adoption/default-validation correction appended. No implementation auto-start. MCP/Background/System Test remain gated.
+2026-11-06 explicit completion: SHARED-003 Attempt1 Complete with verified published sourcee42a8a38044cdb1b9b909bf790bbb35e37332d6b. SHARED-004 publication newly Ready/unclaimed. Commerce remains Blocked on corrected package plus same-task default integration validation; no release/main/follow-on execution.
+
+2026-11-06: SHARED-004 Attempt1 published corrected contract5.5.0, exact public archive/hash/exports verified and architect Accepted at review. Explicit developer completion pending; Commerce integration remains separately blocked/gated, no consumer execution.
+
+2026-11-06 explicit completion: SHARED-004 Attempt1 Complete, verified5.5.0. Commerce external contract blocker resolved; canonical Commerce task may reclaim same branches for corrected package adoption/default acceptance. No implicit attempt increment or follow-on implementation.
+
+2026-11-06 task-branch synchronization resolution: retained current main complete SHARED-003/004 records and full review history. Canonical COMMERCE-001 remains Ready at prior Attempt1, claim cleared, corrected5.5.0 adoption/default revalidation correction contract retained in its task. No main update or implicit claim performed.

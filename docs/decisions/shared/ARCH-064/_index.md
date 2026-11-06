@@ -13,7 +13,16 @@ SHARED-002 Attempt 1 published verified 5.4.0 and architect Accepted; explicit d
 
 SHARED-002 Attempt 1 explicitly developer-completed; verified contract release 5.4.0.
 
-| ARCH-064-SHARED-003 | Ready | ARCH-064-SHARED-002 |
-| ARCH-064-SHARED-004 | Pending | ARCH-064-SHARED-003 |
+| ARCH-064-SHARED-003 | Complete | ARCH-064-SHARED-002 |
 
-Correction definitions materialised for canonical purpose-output compatibility; no execution started.
+SHARED-003 bounded output correction Attempt1 Accepted; separate publication still gated.
+
+| ARCH-064-SHARED-004 | Ready | ARCH-064-SHARED-003 |
+
+SHARED-003 Attempt1 explicitly completed; SHARED-004 publication Ready/unclaimed. Commerce remains Blocked.
+
+| ARCH-064-SHARED-004 | Complete | ARCH-064-SHARED-003 |
+
+Verified corrected purpose contract release5.5.0; no consumer execution.
+
+SHARED-004 Attempt1 explicitly developer-completed; corrected package5.5.0 verified. Commerce unblocking handled on its own canonical task branch.
