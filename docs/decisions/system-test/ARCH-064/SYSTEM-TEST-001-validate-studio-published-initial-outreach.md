@@ -14,7 +14,7 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-064-DATABASE-001", "ARCH-064-SHARED-002", "ARCH-064-COMMERCE-001", "ARCH-064-MCP-001", "ARCH-064-BACKGROUND-001"]
+depends_on: ["ARCH-064-DATABASE-001", "ARCH-064-SHARED-002", "ARCH-064-COMMERCE-001", "ARCH-064-MCP-001", "ARCH-064-BACKGROUND-001", "ARCH-064-COMMERCE-002"]
 enables: []
 created: 2026-11-06
 updated: 2026-11-06
@@ -75,6 +75,7 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 Exact purpose profile/membership/behavior schemas and draft/release join models above; Shared publication prerequisite gates consumers. Initial Outreach is governance Feature, checkout_recovery remains admission, referenced owner-feature eligibility remains required.
 
 ## Dependencies
+- ARCH-064-COMMERCE-002
 - ARCH-064-DATABASE-001
 - ARCH-064-SHARED-002
 - ARCH-064-COMMERCE-001

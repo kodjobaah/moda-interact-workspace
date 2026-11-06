@@ -41,8 +41,8 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 | ARCH-064-SHARED-001 | shared | Complete | - |
 | ARCH-064-SHARED-002 | shared | Complete | ARCH-064-SHARED-001 |
 | ARCH-064-COMMERCE-001 | commerce | Ready | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
-| ARCH-064-MCP-001 | mcp | Ready | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
-| ARCH-064-BACKGROUND-001 | background | Pending | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
+| ARCH-064-MCP-001 | mcp | Complete | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
+| ARCH-064-BACKGROUND-001 | background | Ready | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
 | ARCH-064-SYSTEM-TEST-001 | system-test | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-064-BACKGROUND-001 |
 
 ## Definition review
@@ -72,3 +72,10 @@ ARCH-064-SHARED-003 Attempt1 Accepted at review, explicit developer completion p
 2026-11-06: COMMERCE-001 Attempt2 Accepted; Shared5.5.0 canonical compiler resolves actual default outputs and first seed->publication fixtures, retaining bounded supported fifth read and role/immutable guards.39 lifecycle/storage+42 authoring/UI/seed tests and production typecheck passed. Explicit developer completion pending; no downstream promotion/activation.
 
 2026-11-06 explicit completion: Commerce001 Attempt2 Complete. Canonical dependency reconciliation promotes MCP001 Ready/unclaimed; Background remains Pending on MCP and terminal/manual-gated System Test remains Pending. No main/live/follow-on execution.
+
+## Production reader correction — 2026-11-06
+MCP generated-Prisma review confirmed accepted Commerce publication-storage.ts:108 queries nonexistent CommerceRelease.purposeMemberships; actual DB379d563 uses ReleaseFeature.purposeMembers/Capability.purposeMemberships. ARCH-064-COMMERCE-002 Ready bounded correction owns production read/projection and generated type/reader fixtures; prior Complete history retained. Terminal System Test explicitly depends on correction. MCP fixes its own reader only; no integrated runtime/deployment completion claimed.
+
+2026-11-06: MCP001 Attempt1 Accepted after trusted purpose/release pin, same-release/entitlement subset and actual fifth HTTP execution validation. Explicit developer completion pending. Commerce002 production reader correction remains Ready; no integrated completion/deployment claim.
+
+2026-11-06 explicit completion: MCP001 Attempt1 Complete; canonical Background prerequisites all Complete, Background001 Ready/unclaimed. Commerce002 production reader correction remains Ready and System Test dependency; System Test remains Pending/manual-gated. No integrated runtime/deployment completion or automatic execution claimed.
