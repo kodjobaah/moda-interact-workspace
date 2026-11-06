@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
 executor: codex
 claimed_at: 2026-11-06T19:10:41Z
@@ -69,7 +69,7 @@ SUPER_ADMIN edits membership and behavior, publishes/activates release, then new
 Compatible staged rollout: Database additive migration, Shared accepted implementation then publication; Commerce UI/seed/staged complete release (do not activate against old consumer), MCP support, Background consumer after existing ARCH-059 Background adoption; operator pauses affected attempts and drains pinned legacy sessions via separately recorded operational procedure, activates complete profile release and resumes only after smoke verification. No procedure or deployment is claimed executed by these definitions. New runtime with missing profile fails closed. Previous runtime/release pairing is rollback unit; do not restore hardcoded fallback in new code. No schema destruction, queue deletion, new ingress/topology/secret requirement. No Gateway task identified. Reuse existing structured lifecycle diagnostics with release/purpose/capability IDs, no secrets or raw prompts/customer payloads. Terminal System Test after accepted dependencies and optional user exercise. No implementation auto-launch.
 
 ## Work Items
-- [ ] Add exact two purpose membership joins and relations/checks/indexes; preserve existing ownership/immutability.
+- [x] Add exact two purpose membership joins and relations/checks/indexes; preserve existing ownership/immutability.
 
 ## Interfaces / Contracts
 Exact purpose profile/membership/behavior schemas and draft/release join models above; Shared publication prerequisite gates consumers. Initial Outreach is governance Feature, checkout_recovery remains admission, referenced owner-feature eligibility remains required.
@@ -83,11 +83,11 @@ None
 - ARCH-064-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Migration accepts same-release member references and rejects cross-release/missing member, duplicate position and delete/rewrite immutable release purposes.
+- [x] Migration accepts same-release member references and rejects cross-release/missing member, duplicate position and delete/rewrite immutable release purposes.
 
 ## Validation
-- [ ] Run declared focused owner tests for each task assertion; add deterministic unit/integration fixtures for same-release/tenant/role/purpose/immutability constraints and the supported fifth-tool case.
-- [ ] Run declared typecheck/build appropriate to owner (Database schema/migration/constraint tests; Background build; System Test harness/syntax instead of app build). Record exact commands/results and no secrets in diagnostics.
+- [x] Run declared focused owner tests for each task assertion; add deterministic unit/integration fixtures for same-release/tenant/role/purpose/immutability constraints and the supported fifth-tool case.
+- [x] Run declared typecheck/build appropriate to owner (Database schema/migration/constraint tests; Background build; System Test harness/syntax instead of app build). Record exact commands/results and no secrets in diagnostics.
 
 ## Stop Condition
 Submit completed scoped report for authorized review and STOP. Explicit developer completion required. No enabled follow-on task auto-start; terminal System Test manually invoked after accepted dependencies.
@@ -99,21 +99,42 @@ No execution from definition. Use normal launcher-isolated/synchronized task wor
 
 ## Completion Report
 ### Status
-Not Started
+Ready for Review
 ### Files Changed
-None
+- prisma/schema.prisma: two exact purpose membership joins and four inverse relations.
+- prisma/migrations/20261106192000_arch064_purpose_capability_membership/migration.sql: additive tables, keys/checks/indexes/Restrict FKs and existing immutable trigger.
+- scripts/test-arch064-purpose-membership-postgres.mjs and package.json: focused disposable fixture command.
+- docs/generated/prisma-erd.puml: task-specific generated entities/relations.
 ### Work Completed
-None
+Draft membership references canonical Feature/Capability without changing ownership. Release membership references exact same-release Feature snapshot and Capability member through composite FKs, deriving revision identity from existing member. Unique ordered positions and nonnegative checks apply to both joins. Release update/delete uses existing commerce.arch020_immutable guard; draft remains editable. Reverse capability index supports reference lookup/deletion integrity; release/capability index supports member FK and reverse lookup. Existing PK/unique prefixes support ordered purpose reads. No seed, entitlement, permission/runtime or live migration changed.
 ### Validation Results
-Definition only.
+- `npm ci --ignore-scripts`: PASS locked install; audit reported 9 existing dependency issues (4 moderate,5 high), no dependency changes/remediation.
+- `npm run prisma:validate`: PASS; repeated final validation after whitespace-only minimization PASS.
+- `prisma migrate diff --from-schema-datamodel <accepted-before-schema> --to-schema-datamodel prisma/schema.prisma --script`: PASS generated DDL comparison. SQL names aligned exactly to Prisma 63-byte bounded FK and explicitly mapped unique index; SQL adds required CHECK/trigger beyond Prisma representation.
+- `npm run test:arch064-purpose-membership:postgres` (final direct invocation using exact bootstrap-resolved Node): PASS fresh complete migration history on disposable pgvector/pgvector:pg17 plus focused actual migration over minimal accepted parent-key fixture. Valid same-release members/draft edits accepted; 14 deterministic invalid cross/missing-release/feature/capability/position/rewrite/delete operations rejected; canonical owner preserved. Container removed. Initial plain postgres image lacked vector extension; corrected to repository-standard pgvector image. Readiness socket messages transient; historical migration identifier notices only, no new truncation notice.
+- `npm run prisma:generate`: PASS Prisma Client 6.19.3.
+- `npm run erd:puml`: PASS; retained only two generator-produced entity blocks and their relationships, avoiding unrelated stale-ERD catch-up.
+- `git diff --check`: PASS.
 ### Deviations
-None
+Authored additive SQL from Prisma-generated schema diff and validated complete chain on disposable PostgreSQL rather than running migrate dev against the user's standard local database; no shared/live database touched. Focused integrity fixture uses minimal accepted parent-key tables and an equivalent immutable trigger function; full-chain proof applies actual accepted guard history. Tenant/role/fifth-tool runtime assertions belong to consumer/system tasks, not these global join constraints. ERD update scoped to generated task additions, avoiding unrelated 800-line catch-up. No semantic schema formatter churn retained.
 ### Assumptions
-Existing publication and supported read operation registry remain canonical.
+Purpose membership is global Studio governance; tenant/role authorization and optimistic feature configuration/audit updates remain owning Commerce service responsibilities. Missing profile publication rejection and release orchestration remain consumers' responsibility.
 ### Unresolved Issues
-None blocking definition.
+None.
 ### Architectural Concerns
-Do not widen permissions or generic result evidence authority.
+No new cross-repository requirement; additive migration must precede consumers. No rollback destruction/backfill or data rewrite required.
+### Git / VCS
+Task branch: task/ARCH-064-DATABASE-001
+Physical isolation:
+- canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+- parent: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-064-DATABASE-001
+- implementation: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-064-DATABASE-001
+- parent/implementation branch: task/ARCH-064-DATABASE-001
+- shared/default checkout mutated/switched: no; other task worktree reused: no
+Start synchronization (prepared launcher): both remote task fast-forwards not-needed; both origin/main already-current; recursive submodule sync/update passed, no submodules.
+Claim Attempt1 e24ef28dd49b95808ac5ce186dc7ce4b051095a6 pushed.
+Implementation: b161a0fa251031737fdc05f4ddbfcb265742af71 pushed and exact remote verified.
+Parent report commit follows this edit, matching task branch; submodule gitlink staged no. Main merges none.
 
 ## Architect Review
 ### Review Status
