@@ -290,3 +290,6 @@ The canonical dedicated parent/implementation worktrees were clean at review. At
 The developer explicitly completes ARCH-061-SHARED-001 Attempt 2 after the durable Accepted review. All Work Items, Acceptance Criteria and required validations are recorded complete above. Implementation commit `f399a84b592da1a3855e2a6561567a788ea3fcfa` is pushed to `origin/task/ARCH-061-SHARED-001`; the parent task/report branch is pushed. No merge to either `main` branch was performed.
 
 Dependency frontier reconciliation: ARCH-061-SHARED-002 is Ready because its sole explicit dependency is now Complete. ARCH-061-SHOPIFY-001, Background, Commerce, MCP and System Test tasks remain Pending because their other dependencies remain incomplete; System Test remains manually gated.
+
+## Scoped follow-up — ARCH-063 (2026-11-06)
+See docs/architecture/ARCH-063-refreshable-shopify-status-and-safe-refresh-events.md for source-audited refreshable metadata admission and safe postcommit refresh-event corrections. Historical completion/review and attempt are preserved; this reference does not reopen or claim the task. No deployed-state inference.

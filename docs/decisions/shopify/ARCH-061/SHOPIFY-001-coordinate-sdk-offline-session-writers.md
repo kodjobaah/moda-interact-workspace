@@ -285,3 +285,6 @@ Canonical dedicated worktree/branch, preparation/claim, publication and validati
 The developer explicitly invoked `/moda_developer_update ARCH-061-SHOPIFY-001 complete`. **Complete.** Passing review `e1310a6aa` is durable; implementation `17fb986a8f0635ea771327261d84b548d06d36cb` is committed/pushed and equals its task remote, with a clean implementation worktree. No required correction remains under the reviewed task scope. Developer execution/completion modes are preserved; executor/claimed_at remain null and Attempt 2 is unchanged. Historical pending-completion statements are superseded by this explicit decision.
 
 SHARED-002 is Complete. BACKGROUND-001, COMMERCE-001 and MCP-001 now have all explicit prerequisites Complete and become Ready, unclaimed; SYSTEM-TEST-001 remains Pending on those three consumers and its manual terminal execution requirements. No implementation, package publication, main merge, gitlink update, deployment or downstream execution is performed by completion.
+
+## Scoped follow-up — ARCH-063 (2026-11-06)
+See docs/architecture/ARCH-063-refreshable-shopify-status-and-safe-refresh-events.md for source-audited refreshable metadata admission and safe postcommit refresh-event corrections. Historical completion/review and attempt are preserved; this reference does not reopen or claim the task. No deployed-state inference.

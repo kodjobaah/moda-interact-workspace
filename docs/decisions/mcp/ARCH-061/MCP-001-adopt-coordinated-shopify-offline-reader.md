@@ -282,3 +282,6 @@ The developer explicitly invoked `/moda_developer_update ARCH-061-MCP-001 comple
 Set status Complete; preserve Attempt 1, developer execution/completion modes, null executor and null claimed_at. Codex acting as moda_mcp supplied the explicitly requested implementation, tests and report assistance; developer ownership is unchanged. Preserve the accepted scoped disposition of the broader Docker failures: this completion does not claim that the full Docker suite is green, certify App/cross-service rollout or waive the separate discount/fixture corrections.
 
 Dependency frontier recalculated from current task records and fetched origin/main: SHARED-002 and SHOPIFY-001 are Complete; BACKGROUND-001 and COMMERCE-001 are Ready, not Complete. SYSTEM-TEST-001 therefore remains Pending, unclaimed, with its existing terminal/manual execution gates. MCP is no longer an incomplete prerequisite. No enabled task was executed, no deployment/main merge occurred and no gitlink changed.
+
+## Scoped follow-up — ARCH-063 (2026-11-06)
+See docs/architecture/ARCH-063-refreshable-shopify-status-and-safe-refresh-events.md for source-audited refreshable metadata admission and safe postcommit refresh-event corrections. Historical completion/review and attempt are preserved; this reference does not reopen or claim the task. No deployed-state inference.

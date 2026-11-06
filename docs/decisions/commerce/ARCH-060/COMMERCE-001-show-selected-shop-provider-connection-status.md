@@ -364,3 +364,6 @@ Transitioned Review -> Complete. Preserved developer execution/completion modes 
 Recalculated eligibility from task definitions: no explicit dependencies/enables and no downstream task references exist for this task. Updated the ARCH-060 Commerce task index row to Complete; no other task is promoted or started. The architecture initiative is not marked Implemented by this task completion; the existing architect instruction to reconcile duplicated initiative wording remains separate.
 
 Committed/pushed only the current task record and its domain-index completion reconciliation on parent `task/ARCH-060-COMMERCE-001`. Implementation is already published; no source change, gitlink update, main merge/push, credential mutation or deployment is performed.
+
+## Scoped follow-up — ARCH-063 (2026-11-06)
+See docs/architecture/ARCH-063-refreshable-shopify-status-and-safe-refresh-events.md for source-audited refreshable metadata admission and safe postcommit refresh-event corrections. Historical completion/review and attempt are preserved; this reference does not reopen or claim the task. No deployed-state inference.
