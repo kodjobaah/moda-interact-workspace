@@ -4,9 +4,9 @@ Architecture: ../../../architecture/ARCH-061-shopify-offline-token-refresh-coord
 
 | Task | Status | Dependencies |
 |---|---|---|
-| ARCH-061-SHOPIFY-001 | Ready | ARCH-061-SHARED-002 |
+| ARCH-061-SHOPIFY-001 | Complete; Attempt 2 | ARCH-061-SHARED-002 |
 
-Developer definitions only; no execution claims.
+SHOPIFY-001 is explicitly developer-completed; downstream consumer tasks are Ready and unclaimed. Historical definition notes below do not override current task YAML.
 
 Revision 2 fixes exact Shared API/SQL/budgets, SDK wrapper/storage/transport integration, all-reader/writer inventories and task-specific assertions; no implementation or claim.
 

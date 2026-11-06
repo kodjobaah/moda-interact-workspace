@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -278,3 +278,10 @@ Independently ran the focused unit/coordination/storage three-file set: **14 tes
 Reviewed submitted Attempt 2 typecheck/build, additional lifecycle/privacy regression results and the recorded **two passing PostgreSQL cases** using separate clients with owned Testcontainers cleanup. Those checks and Docker execution were not independently repeated by this review. No live Shopify/provider or consumer rollout proof is implied. Source retains no raw SDK auth/storage escape and the earlier broad implementation review remains applicable outside the corrected provenance path.
 
 Canonical dedicated worktree/branch, preparation/claim, publication and validation evidence are recorded in the Completion Report. Implementation/parent worktrees were clean before this review update. Only the parent task record is published here; no source change, attempt/claim creation, gitlink/main merge, package publication, deployment or downstream execution occurs. Explicit developer completion and terminal cross-service proof remain separately gated.
+
+
+## Explicit Developer Completion Decision — Attempt 2 (2026-11-06)
+
+The developer explicitly invoked `/moda_developer_update ARCH-061-SHOPIFY-001 complete`. **Complete.** Passing review `e1310a6aa` is durable; implementation `17fb986a8f0635ea771327261d84b548d06d36cb` is committed/pushed and equals its task remote, with a clean implementation worktree. No required correction remains under the reviewed task scope. Developer execution/completion modes are preserved; executor/claimed_at remain null and Attempt 2 is unchanged. Historical pending-completion statements are superseded by this explicit decision.
+
+SHARED-002 is Complete. BACKGROUND-001, COMMERCE-001 and MCP-001 now have all explicit prerequisites Complete and become Ready, unclaimed; SYSTEM-TEST-001 remains Pending on those three consumers and its manual terminal execution requirements. No implementation, package publication, main merge, gitlink update, deployment or downstream execution is performed by completion.
