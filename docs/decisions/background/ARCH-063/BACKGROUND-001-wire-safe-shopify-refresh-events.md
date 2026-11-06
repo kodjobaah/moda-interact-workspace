@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -98,7 +98,7 @@ Use launcher-resolved isolated/synchronized task worktrees when execution reques
 ### Status
 
 
-Developer self-review accepted for Attempt 1 on 2026-11-06. Task transitioned to `review`; completion mode is `developer`, with the explicit developer completion decision recorded separately.
+Complete — Attempt 1 passed developer self-review, followed by the developer's explicit completion decision on 2026-11-06.
 
 ### Files Changed
 - `package.json`
@@ -137,7 +137,13 @@ The system-test task remains terminal/manual-gated and was not started. No merge
 - Result: Accepted; Background event forwarding and validation criteria passed.
 - Implementation: `13aa6d1`, pushed to `origin/task/ARCH-063-BACKGROUND-001`.
 - Material assistance: `moda_background` implemented the scoped service, dependency and test changes; the developer independently reviewed the diff and reran the focused test and build.
-- Decision: Transition to `review`. The Architect Review section remains pending and unchanged.
+- Decision: Accepted for the developer-owned completion workflow. The Architect Review section remains pending and unchanged.
+
+## Developer Completion Decision
+- Decision: Complete Attempt 1 after the durable passing self-review.
+- Authority: Explicit user authorization to have `moda_background` complete this task; no merge to `main` was requested or performed.
+- Architect review: The existing Architect Review section remains pending and unchanged.
+- Downstream: `ARCH-063-SYSTEM-TEST-001` was not started.
 
 ## Architect Review
 ### Review Status
