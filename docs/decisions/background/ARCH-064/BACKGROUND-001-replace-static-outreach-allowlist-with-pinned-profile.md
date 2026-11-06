@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 50
-executor: codex
-claimed_at: 2026-11-06T21:53:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-064-SHARED-002", "ARCH-064-COMMERCE-001", "ARCH-064-MCP-001", "ARCH-059-BACKGROUND-001"]
 enables: ["ARCH-064-SYSTEM-TEST-001"]
@@ -156,18 +156,17 @@ Implementation: b682a6e690e6cfb904e6d5a529a28f72acde61a7 pushed and exact remote
 
 ## Architect Review
 ### Review Status
-Pending
+Accepted — explicit developer completion pending.
 ### Review Notes
-Definition inspected against single-owner schema, role model and selector/graph code; no implementation reviewed.
+Inspected actual sourceb682a6e690e6cfb904e6d5a529a28f72acde61a7 and reportca7f9326d3e681cfa6b421f618f3e6c75e566957. Removed runtime four-name admission ceiling/ad-hoc regex validation; immutable Shared5.5 purpose profile binds manifest/list names, capability/tool/revision IDs, input schemas and descriptions. Canonical Shared input/output compilers validate bounded values. Client pins trusted purpose/release before calls and rejects unpinned/unlisted attempts. Dynamic generic read observations reach model context without entering typed offer/product/evaluator evidence stores; missing discount membership permits safe no-offer rather than hidden restoration. Host safety/budget/final identifier-only choice remains authoritative above published behavior and untrusted merchant/tool content.
 ### Reviewed Files
-Verified touchpoints above.
+recovery-outreach-mcp-selector.service.ts, commerce/mcp-client.ts, initial-outreach-offer.graph.ts/instructions.ts, focused selector/client/graph/instruction fixtures, package/lock and Completion Report.
 ### Validation Reviewed
-Metadata/dependency/path checks only.
+Selector/client19/19 including actual SDK HTTP trusted purpose/release pins and stale/revoked403; known semantic evaluator/combinations/agent/graph/current-offer/instruction regressions76/76 passed. Final changed selector12/12 and compiler exit0 after ordering hardening; declared Background build, changed-file lint/diff passed. Fifth dynamic generic read/removal, missing/forged/wrong-release/revision/duplicate/schema denial, immutable pin and call16/search3/detail5/result32KiB/messages128KiB bounds covered. Generic context cannot establish savings/product/URL authority or bypass host safety. No live provider/model/customer send claimed.
 ### Architecture Conformance
-Single owning repository; shared contract publication separated; terminal integrated test.
+Conforms to exact Background-only profile consumer scope. Generic conversations unchanged; no Shared validator/hash fork or all-tools fallback. Canonical isolated worktree/sync/claim evidence verified. Stale ARCH059 prerequisite snapshot reconciled from exact durable Complete record before successful gate, no dependency weakening. No main/gitlink/live migration/activation/downstream implementation.
 ### Follow-up
-None
-
+Explicit completion: `/moda_developer_update ARCH-064-BACKGROUND-001 complete`. COMMERCE002 production-reader correction remains separate required integrated validation gate; System Test remains terminal/manual-gated until all required tasks Complete. No integrated runtime/deployment completion or automatic follow-on work claimed.
 
 ## Purpose publication authority and underlying tool edits
 Any release containing initial_outreach behavior/purpose members requires SUPER_ADMIN at publish AND activate/rollback, checked server-side in lifecycle services, not only Feature editor. Global ADMIN may retain existing rights to edit unrelated/shared tool drafts, but cannot publish/activate a new outreach snapshot or repoint its revisions through another Feature workflow. Existing immutable release references mean editing a draft never changes active outreach. Super Admin publication reviews selected exact revision IDs and behavior as one complete snapshot; ordinary release services cannot silently copy/advance outreach members to latest revisions. For a release that preserves outreach unchanged, activation still requires SUPER_ADMIN because the pointer controls this purpose. No bypass via setup command, generic release action, development role field or forged client role. Existing authenticated development bypass policy remains explicit and may not impersonate SUPER_ADMIN for production mutations. Add ADMIN direct lifecycle publish/activate/rollback tests plus underlying draft edit test proving active pinned profile unchanged. Keep existing audit reason/actor/operationId and immutable snapshot evidence; no new permission granted to arbitrary tools.

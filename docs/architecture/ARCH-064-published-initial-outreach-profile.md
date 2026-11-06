@@ -42,7 +42,7 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 | ARCH-064-SHARED-002 | shared | Complete | ARCH-064-SHARED-001 |
 | ARCH-064-COMMERCE-001 | commerce | Ready | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
 | ARCH-064-MCP-001 | mcp | Complete | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
-| ARCH-064-BACKGROUND-001 | background | Ready | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
+| ARCH-064-BACKGROUND-001 | background | Review (Accepted; developer completion pending) | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
 | ARCH-064-SYSTEM-TEST-001 | system-test | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-064-BACKGROUND-001 |
 
 ## Definition review
@@ -79,3 +79,5 @@ MCP generated-Prisma review confirmed accepted Commerce publication-storage.ts:1
 2026-11-06: MCP001 Attempt1 Accepted after trusted purpose/release pin, same-release/entitlement subset and actual fifth HTTP execution validation. Explicit developer completion pending. Commerce002 production reader correction remains Ready; no integrated completion/deployment claim.
 
 2026-11-06 explicit completion: MCP001 Attempt1 Complete; canonical Background prerequisites all Complete, Background001 Ready/unclaimed. Commerce002 production reader correction remains Ready and System Test dependency; System Test remains Pending/manual-gated. No integrated runtime/deployment completion or automatic execution claimed.
+
+2026-11-06: Background001 Attempt1 Accepted, dynamic pinned profile/generic non-evidence observations and host safety/budgets verified; explicit completion pending. Commerce002 reader correction and terminal System Test remain gated; no integrated completion/deployment claimed.
