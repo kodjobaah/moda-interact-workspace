@@ -46,9 +46,9 @@ Central token service, agent tools, sibling imports, credential UI, schema chang
 The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Use the binding revision public-wrapper/ALS/lifecycle gate architecture; do not choose a different synchronization mechanism.
 
 ## Work Items
-- [ ] Replace unlocked offline credential read with coordinated provider, preserving scope return from same committed identity.
-- [ ] Wire local OAuth config source without moving secrets into MCP requests or tool parameters; stop missing config gap.
-- [ ] Test cancellation, stale identity/scope and distinct-client refresh race with typed failures.
+- [x] Replace unlocked offline credential read with coordinated provider, preserving scope return from same committed identity.
+- [x] Wire local OAuth config source without moving secrets into MCP requests or tool parameters; stop missing config gap.
+- [x] Test cancellation, stale identity/scope and distinct-client refresh race with typed failures.
 
 ## Interfaces / Contracts
 Shared Node-only factory and structural transaction interface/error categories defined by SHARED-001 and published by SHARED-002. Consumers inject local client/config/fetch and translate errors. No sibling source imports; no browser exports or raw token DTOs. App owns all SDK/lifecycle mutation entrypoints.
@@ -61,14 +61,14 @@ Shared Node-only factory and structural transaction interface/error categories d
 - ARCH-061-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Replace unlocked offline credential read with coordinated provider, preserving scope return from same committed identity.
-- [ ] Wire local OAuth config source without moving secrets into MCP requests or tool parameters; stop missing config gap.
-- [ ] Test cancellation, stale identity/scope and distinct-client refresh race with typed failures.
-- [ ] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
+- [x] Replace unlocked offline credential read with coordinated provider, preserving scope return from same committed identity.
+- [x] Wire local OAuth config source without moving secrets into MCP requests or tool parameters; stop missing config gap.
+- [x] Test cancellation, stale identity/scope and distinct-client refresh race with typed failures.
+- [x] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
 
 ## Validation
-- [ ] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
-- [ ] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
+- [x] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
+- [x] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
 
 ## Stop Condition
 Submit completed report for authorized review and STOP after scoped criteria/validation. Explicit developer completion required. Do not start enabled tasks; system validation is terminal/manually invoked.
@@ -124,35 +124,92 @@ NEW paths below are to be created RELATIVE TO THIS TASK REPOSITORY. Existing ful
 | moda-interact-mcp/src/execution/policy/shipping-information.ts | scope-positive preflight | Continue same snapshot-derived scope checks; no alternate token source. |
 
 ### Task-specific deterministic assertions
-- [ ] Reader preserves scope validation while getSession obtains access; caller abort maps existing typed DEADLINE with no secrets.
-- [ ] Runtime real Prisma client passed to factory; two MCP runtimes same expired row count1 refresh.
-- [ ] Missing/disabled/wrong-environment OAuth row fails before provider call without environment fallback.
+- [x] Reader preserves scope validation while getSession obtains access; caller abort maps existing typed DEADLINE with no secrets.
+- [x] Runtime real Prisma client passed to factory; two MCP runtimes same expired row count1 refresh.
+- [x] Missing/disabled/wrong-environment OAuth row fails before provider call without environment fallback.
 
 Create the new focused test paths listed in this exact command where absent; preserve existing test files. Required focused command: `npx tsx --test tests/unit/connections/shopify-session-coordination.test.ts`. Run declared `npm run build`; App/Commerce/MCP additionally `npm run typecheck`; System Test uses `npm run typecheck` only.
 
 ## Implementation Notes
-No execution started. Use launcher isolated/synchronized task worktrees when requested. Use the installed SDK surfaces and official recovery policy identified in revision 2. Node recovery uses workspace bootstrap. No new schema or alternative lock primitive is authorized. Publication is release mechanics only.
+Attempt 1 implementation is prepared in the canonical isolated MCP worktree. Uses published Shared 5.2.0 and the selected Shop ID contract. No schema, lock primitive, SDK wrapper, lifecycle or rollout changes were made here. SDK/lifecycle coordination remains App-owned. Node was recovered through the canonical workspace bootstrap.
 
 ## Completion Report
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-11-06T09:59:19Z. Attempt 0 review history is preserved below.
+In Progress — Attempt 1 implementation and task-owned validation finished; awaiting authorized developer reconciliation/review. No acceptance or completion decision is recorded. Implementation commit `c9ca303` is pushed to MCP `task/ARCH-061-MCP-001`. This updated report is published on the matching parent task branch under the developer’s explicit commit/push authorization.
 
 ### Files Changed
-None
+
+- `package.json`, `package-lock.json`: exact published Shared 5.2.0. `scripts/test-postgres.mjs` adds a strict optional selector and `test:integration:shopify-session` runs only this task's disposable PostgreSQL test; the default full suite is unchanged.
+- `src/connections/shopify/session-reader.ts`, `provider.ts`: trusted Shop ID plus stored-domain consistency, coordinated committed access/scope snapshot, preserved positive scope preflight and caller signal, bounded typed error translation with no raw cause.
+- `src/runtime/ports.ts`, `prisma.ts`: inject the provider instead of an unlocked Session read port; compose one provider per trusted deployment environment with the actual connected local Prisma client. Generated client compile-checks the Shared transaction/config contracts before the pre-existing erased read-port bridge.
+- NEW `src/runtime/shopify-oauth.ts`: Shared sealed OAuth reader, environment from runtime/service composition, existing deployment unseal-key parser, no plaintext OAuth fallback.
+- `src/execution/merchant-knowledge/sealed-commerce-keyring.ts`: export existing deployment root-key parser for reuse; its behavior is unchanged.
+- NEW `tests/unit/connections/shopify-session-coordination.test.ts`, `tests/fixtures/shopify-offline.ts`, `tests/integration/shopify-session-coordination.integration.test.ts`.
+- Updated affected reader, provider, runtime composition and shipping-information tests; `README.md` documents configuration and cutover boundaries.
+
 ### Work Completed
-None
+
+1. Removed the direct `session.findFirst` credential read from MCP production source. The reader calls Shared `getSession(selectedShopId, { signal })`; token and permission scope come from the same committed snapshot. Stored domain equality remains a consistency check.
+2. Preserved trusted connection resolution, GraphQL read-only admission, scope-positive shipping preflight, aggregate request bounds and cancellation. Unknown/foreign/inactive/ambiguous/stale identities fail before OAuth in focused tests. Legitimate persisted SDK Session IDs are used unchanged.
+3. Shared owns gate-before-read, actual row locking, bounded refresh, atomic pair/scope persistence, commit-before-return and ambiguity recovery. MCP supplies its connected Prisma client, deployment OAuth configuration and fetch implementation; no local token cache, alternative lock or refresh retry.
+4. OAuth configuration reads the deployment environment's sealed `shopify.oauth` row using the existing canonical-base64 `MODA_CONFIG_UNSEAL_KEY` / rotated keyring parser. Missing, disabled, foreign-environment, corrupt or missing-key configurations fail closed; no request/model secret inputs or OAuth environment fallback.
+5. Unit probes cover Shared error categories, cancellation, credential/scope validation, malformed remote success and secret/cause exclusion. Actual PostgreSQL tests use two independently opened MCP runtimes/Prisma clients and confirm real advisory-lock contention, one refresh, both GraphQL calls using the committed token/scope, waiter cancellation, rollback after malformed success and later independent durable-pair recovery.
+
 ### Validation Results
-Definition only.
+
+All commands ran in the launcher-resolved implementation worktree, with Node 24.19.0 / npm 11.17.0 from the canonical bootstrap.
+
+| Command | Result |
+|---|---|
+| `npx tsx --test tests/unit/connections/shopify-session-coordination.test.ts` | 15 passed, exit 0. |
+| `npx tsx --test tests/unit/connections/shopify-session-coordination.test.ts tests/unit/connections/shopify/session-reader.test.ts tests/unit/connections/shopify/provider.test.ts tests/unit/runtime/ports.test.ts tests/unit/runtime/prisma.test.ts tests/unit/execution/policy/shipping-information-composition.test.ts` | 60 passed, exit 0. |
+| `npm run test:unit` | 374 passed, 0 failed/skipped, exit 0. Includes the focused tests above. |
+| `npm run typecheck` | Passed, exit 0; real generated local Prisma client satisfies published Shared interfaces. |
+| `npm run typecheck:integration` | Passed, exit 0. |
+| `npm run build` | Passed, exit 0. |
+| `npm run lint` | Passed, exit 0; final lint after source/test edits also passed. |
+| `npm run test:integration:shopify-session` | Final focused disposable PostgreSQL rerun: 5 passed, 0 failed/skipped, exit 0. Both race and cancellation assertions verify actual blocked advisory-lock waiters. Container/volume cleanup passed. |
+| `npm run test:integration:docker` | Explicitly authorized local run; task-owned coordination group passed (parent + 4 assertions = 5 passing tests). Full suite: 36 tests, 20 passed, 15 failed, 1 skipped (opt-in live Shopify); exit 1. Disposable project/volume removed by runner. |
+| `git -c core.fsmonitor=false diff --check` | Passed. |
+
+**Full-suite boundary:** 11 unrelated leaf assertions fail at the published discount-member guard; their old release fixtures do not seed the required published discount members. A separate discount cursor cross-tenant assertion expects ERROR but gets OK. Node also counts the three failing parent groups, producing 15 failures total. The discount guard/catalogue, service registry, integration fixtures and all three affected integration files are byte-identical to pre-task `213f931ac4af025e2dee7c8d0d5c7f955f6736f9`. A bounded probe reproduces the unchanged guard rejection before any session/provider read. No pre-task full Docker suite was rerun and no frozen baseline waiver or passing full-suite claim is made. Those discount/fixture corrections remain outside this credential-coordination task.
+
+Pinned Shopify schema installed through `npm run schema:install:shopify -- /Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-commerce/lib/discovery/artifacts/admin-2026-07.json`; repository installer verified the canonical SHA-256. No schema substitution/download or sibling source change.
+
+Local evidence: `/tmp/arch061-mcp-coordination-final.log`, `/tmp/arch061-mcp-focused-final.log`, `/tmp/arch061-mcp-unit.log`, `/tmp/arch061-mcp-typecheck-final.log`, `/tmp/arch061-mcp-integration-typecheck.log`, `/tmp/arch061-mcp-build.log`, `/tmp/arch061-mcp-lint-final.log`, `/tmp/arch061-mcp-docker.log`, `/tmp/arch061-mcp-postgres-focused.log`, `/tmp/arch061-mcp-unchanged-failure-paths.json`, `/tmp/arch061-mcp-guard-probe.log`. Temporary logs are local evidence, not durable publication.
+
+### Publication — 6 November 2026
+
+The developer explicitly authorized committing and pushing both task branches. Implementation `c9ca303` contains the task-owned source, tests, dependency pin and documentation. The matching parent task branch publishes this report. Existing validation results and full-suite failures are preserved. Task status remains `in_progress`; no review acceptance, completion, dependency promotion, deployment, main merge or gitlink update is implied.
+
+### Physical Worktree and Preparation Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-MCP-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-MCP-001`.
+- Both branches: `task/ARCH-061-MCP-001`; reused correct isolated worktrees, no shared checkout switch, no other task worktree reuse.
+- Both remote task fast-forwards: not-needed; both origin/main incorporation checks: already-current.
+- Recursive submodule sync/update/verification: passed; `database` at `bd2d09066a8eb178a56f48fbbf88df637c411059`.
+- Both explicit dependencies Complete at launcher gate. Durable Attempt 1 developer claim: `4fea79992c31d450c23333b2dbab6bc9e8a5292b`, pushed, timestamp `2026-11-06T09:59:19Z`.
+- Preparation exposed missing blank lines in Completion Report headings. Task-only format correction `e1981c316` was committed/pushed, then preparation completed normally without changing requirements or incrementing the attempt twice.
+
 ### Deviations
-None
+
+No architectural deviation. The existing MCP deployment unseal-key parser is exported/reused rather than copied. Full Docker suite is explicitly reported failing on unchanged discount/fixture paths; task-owned PostgreSQL assertions pass.
+
 ### Assumptions
-Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2.
+
+Uses the same canonical PostgreSQL database and the accepted Shared 5.2.0 / App coordination prerequisites. Tests here prove MCP-to-MCP coordination through actual Prisma clients; they do not independently prove App SDK wrappers, all lifecycle writers, cross-service production deployment or exactly-once remote refresh.
+
 ### Unresolved Issues
-None blocking architecture definition. Revision-1 feasibility questions are superseded by binding revision 2 decisions.
+
+Full-suite discount fixture and cross-tenant cursor failures require separately scoped correction/architect disposition. Authorized review and explicit developer completion remain pending. No downstream task was started/promoted.
+
 ### Architectural Concerns
-Implement binding revision 2 exactly; report actual incompatibility with evidence instead of selecting alternate architecture.
+
+No alternative synchronization mechanism, schema, credential service, SDK patch or sibling import introduced. No live Shopify/model calls, deployment, cutover, main merge or parent gitlink update performed. ARCH-061-SYSTEM-TEST-001 and the operator stop/drain cutover remain separate manual gates.
 
 ## Architect Review
 ### Review Status
