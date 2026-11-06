@@ -35,7 +35,7 @@ Shared implementation extends existing API compatibly; publication chooses next 
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-063-COMMERCE-001 | commerce | Ready | - |
+| ARCH-063-COMMERCE-001 | commerce | Complete | - |
 | ARCH-063-SHARED-001 | shared | Complete | - |
 | ARCH-063-SHARED-002 | shared | Complete | ARCH-063-SHARED-001 |
 | ARCH-063-SHOPIFY-001 | shopify | Ready | ARCH-063-SHARED-002 |
