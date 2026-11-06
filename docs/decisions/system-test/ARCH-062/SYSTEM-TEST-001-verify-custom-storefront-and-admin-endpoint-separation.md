@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-062-SHOPIFY-001", "ARCH-062-BACKGROUND-001", "ARCH-062-COMMERCE-001", "ARCH-062-MCP-001"]
 enables: []
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Verify custom storefront and admin endpoint separation
 
@@ -135,3 +135,8 @@ Definition metadata/path validation only.
 Task is repository-owned and gated by its ARCH-061 adoption prerequisite.
 ### Follow-up
 None
+
+
+## Dependency Frontier Reconciliation — 2026-11-06
+
+ARCH-062-COMMERCE-001 and BACKGROUND-001 are explicitly developer-completed. Current published task records show SHOPIFY-001 in Review and MCP-001 In Progress; therefore this task remains Pending, Attempt 0, executor/claimed_at null. No claim or test run is authorized. After all prerequisites complete, terminal system validation still requires explicit developer invocation. Source task-branch evidence is recorded in the Commerce completion reconciliation.
