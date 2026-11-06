@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -104,7 +104,7 @@ No implementation/claim from this definition. Use normal launcher isolated workt
 
 ### Status
 
-Review passed — Attempt 1 independently reviewed on 2026-11-06; explicit developer completion remains pending.
+Complete — Developer explicitly completed Attempt 1 on 2026-11-06 after the durable accepted review.
 
 ### Files Changed
 
@@ -149,7 +149,13 @@ None. No endpoint discovery, schema change, permission widening, custom-domain O
 
 ### Developer Self-Review — Passed
 
-Attempt 1 was checked against the full task definition and acceptance matrix. Required focused tests, related consent/session regressions, Background build, endpoint-origin controls and credential-redaction evidence passed. Completion mode remains developer; explicit completion is pending after architect review.
+Attempt 1 was checked against the full task definition and acceptance matrix. Required focused tests, related consent/session regressions, Background build, endpoint-origin controls and credential-redaction evidence passed. Completion mode is developer; the explicit completion decision is recorded below.
+
+## Developer Completion Decision — 2026-11-06
+
+The developer explicitly invoked `/moda_developer_update ARCH-062-BACKGROUND-001 complete`. Attempt 1 has the durable `Developer Self-Review Accepted` record; all required Work Items and Acceptance Criteria are checked; the implementation branch is committed, pushed, clean and aligned with `origin/task/ARCH-062-BACKGROUND-001` at `f04051270b4de36530c8efe325e7defe1bb51ec4`. No merge to `main` is required or performed.
+
+Dependency-frontier reconciliation: `ARCH-062-SYSTEM-TEST-001` remains `pending` and manual-gated because its other explicit dependencies `ARCH-062-SHOPIFY-001`, `ARCH-062-COMMERCE-001`, and `ARCH-062-MCP-001` are each still `pending`. No downstream task was promoted by this completion.
 
 ## Architect Review
 ### Review Status
