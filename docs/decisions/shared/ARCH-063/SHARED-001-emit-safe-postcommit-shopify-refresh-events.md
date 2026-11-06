@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: blocked
+status: review
 priority: 50
-executor: codex
-claimed_at: 2026-11-06T16:05:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: ["ARCH-063-SHARED-002"]
@@ -103,7 +103,7 @@ Use launcher-resolved isolated/synchronized task worktrees when execution reques
 
 ## Completion Report
 ### Status
-Implementation validated locally; publication blocked by automatic approval review. Not submitted for review until both mirrored branches are published.
+Ready for Review — architect Accepted; explicit developer completion pending.
 ### Files Changed
 - src/shopify/offline-token-provider.ts
 - src/shopify/node.ts
@@ -124,7 +124,7 @@ Task touchpoint table names index.ts for Node-only exports; actual ./shopify/nod
 ### Assumptions
 Hook telemetry is process-local and best effort; process death can leave started without terminal. Consumer adapter integration and package publication remain separate tasks.
 ### Unresolved Issues
-Automatic approval review rejected implementation push: "This pushes the implementation source and tests to an external Git remote; authorization covered task claiming but did not specifically authorize exporting the implementation payload to this destination." No implementation push executed. Explicit permission to push implementation source/tests to the configured remote is required. Local implementation is complete and validated.
+None. Initial automatic publication rejection was resolved by explicit developer authorization to push implementation source/tests and the parent task review report to their remote task branches.
 ### Architectural Concerns
 None introduced. Completion mode remains developer; enabled tasks remain gated.
 ### Git / VCS
@@ -151,12 +151,12 @@ Start-of-attempt synchronization (launcher packet):
 Implementation repository: moda-interact-shared
 - commit: 4097eb3662c11bf97989cd1012da914973ec7592
 - local branch: task/ARCH-063-SHARED-001
-- pushed: no, approval review rejected publication before execution
+- pushed: yes; remote task branch verified at 4097eb3662c11bf97989cd1012da914973ec7592 after explicit developer publication authorization
 
 Parent workspace:
 - task file: docs/decisions/shared/ARCH-063/SHARED-001-emit-safe-postcommit-shopify-refresh-events.md
-- report commit: see parent task branch history (local report commit follows this edit)
-- report pushed: no, awaiting publication resolution and architect reconciliation
+- report/review commit: see current parent task branch history; initial report 52d7f2d0e57193c2a85f7b74241f3ece9c35d361
+- report pushed: yes on matching task branch; final review publication verified after commit
 - submodule gitlink staged: no
 
 Merged to implementation main: no
@@ -164,11 +164,11 @@ Merged to workspace main: no
 
 ## Architect Review
 ### Review Status
-Blocked — local implementation review passed; publication authorization outstanding.
+Accepted — explicit developer completion pending.
 ### Review Notes
 2026-11-06 moda_architect inspected actual implementation commit 4097eb3662c11bf97989cd1012da914973ec7592 and focused test changes. No implementation corrections identified. Optional observer preserves caller behavior and transaction/lock flow; committed emission follows awaited interactive transaction resolution. Event payload uses an explicit frozen field allowlist, fresh UUID, trusted resolved Shop identity and bounded monotonic duration. Errors/body/credentials are excluded, and synchronous throws/asynchronous rejections are isolated. Existing valid credential reuse and lock waiters do not emit attempts. Cancellation, remote uncertainty and commit failure produce one terminal event after started.
 
-Local technical review passes. Final acceptance/submission remains blocked solely because automatic approval review rejected implementation publication. No publication retry, main integration, package release or dependent execution is authorized by this review.
+Technical review passes. Developer explicitly authorized publication of source/tests and the task review report after the initial automatic rejection. Accepted implementation remains at review under completion_mode developer; no main integration, package release or dependent execution is authorized by this review.
 ### Reviewed Files
 - src/shopify/offline-token-provider.ts
 - src/shopify/node.ts
@@ -180,4 +180,4 @@ Reviewed evidence: unit 20/20; disposable PostgreSQL 1/1 without skips and succe
 ### Architecture Conformance
 Conforms to bounded Shared hook contract and compatible rollout. Node-only export correctly resides in node.ts; browser-safe index retained. Physical worktrees and startup synchronization match canonical launcher packet. Developer completion authority retained. ARCH-063-SHARED-002 remains Pending until this task is published, accepted and explicitly completed by developer.
 ### Follow-up
-Obtain explicit authorization to push implementation source/tests and parent task/report to their configured remotes. Then publish the already reviewed commits, reconcile publication evidence and final acceptance without source churn. Preserve completion_mode developer and do not complete or start enabled tasks implicitly.
+Developer completion pending via `/moda_developer_update ARCH-063-SHARED-001 complete`. Preserve completion_mode developer; no enabled task starts implicitly.

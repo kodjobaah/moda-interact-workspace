@@ -36,7 +36,7 @@ Shared implementation extends existing API compatibly; publication chooses next 
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
 | ARCH-063-COMMERCE-001 | commerce | Ready | - |
-| ARCH-063-SHARED-001 | shared | Blocked (publication approval; local review passed) | - |
+| ARCH-063-SHARED-001 | shared | Review (Accepted; developer completion pending) | - |
 | ARCH-063-SHARED-002 | shared | Pending | ARCH-063-SHARED-001 |
 | ARCH-063-SHOPIFY-001 | shopify | Pending | ARCH-063-SHARED-002 |
 | ARCH-063-BACKGROUND-001 | background | Pending | ARCH-063-SHARED-002 |
