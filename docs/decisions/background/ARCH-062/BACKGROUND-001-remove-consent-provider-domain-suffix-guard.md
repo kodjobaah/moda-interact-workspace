@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T12:23:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-061-BACKGROUND-001"]
 enables: ["ARCH-062-SYSTEM-TEST-001"]
@@ -73,8 +73,8 @@ App authenticated profile myshopifyDomain is provider-owned integration identity
 No blanket search/replace of every myshopify string. Leave SDK internals, documentation/examples of actual Admin endpoints and Shopify-admin billing handle construction intact. Recovery summary display-only regex is not authentication: change only if necessary for correct display, with dedicated fixture; never replace provider endpoint with it. Partner API tokens are a different credential domain and outside scope. No schema/DNS/secret/infrastructure change. Compatible application rollout after each ARCH-061 owner adoption; preserve old stored identities. Do not change lock identity/refresh recovery. System test is terminal after accepted implementation and optional user manual checks. Definitions only, no deployment/claim. Existing generic logging suffices; no observability framework work.
 
 ## Work Items
-- [ ] Remove duplicated suffix guard; use authorized shop ID and coordinated snapshot endpoint; preserve exact origin binding, customer identity and consent semantics.
-- [ ] Create focused test file tests/unit/providers/shopify-whatsapp-consent-domain.test.ts and cover task-specific/common acceptance matrix.
+- [x] Remove duplicated suffix guard; use authorized shop ID and coordinated snapshot endpoint; preserve exact origin binding, customer identity and consent semantics.
+- [x] Create focused test file tests/unit/providers/shopify-whatsapp-consent-domain.test.ts and cover task-specific/common acceptance matrix.
 
 ## Interfaces / Contracts
 Reuse published ARCH-061 Node-only provider getSession(selectedShopId), server-only snapshot.shop/accessToken/scope and existing selected-shop auth. Update owning local ports to thread trusted endpoint, no new Shared wire contract. SDK auth remains install authority; primaryDomain is never credential destination.
@@ -86,13 +86,13 @@ Reuse published ARCH-061 Node-only provider getSession(selectedShopId), server-o
 - ARCH-062-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Custom storefront label with trusted installed session still executes consent read/update only on stored integration endpoint.
-- [ ] Foreign shop/session or overridden origin causes no consent provider call; permissions and customer scopes unchanged.
+- [x] Custom storefront label with trusted installed session still executes consent read/update only on stored integration endpoint.
+- [x] Foreign shop/session or overridden origin causes no consent provider call; permissions and customer scopes unchanged.
 
 ## Validation
-- [ ] Run `npx vitest run tests/unit/providers/shopify-whatsapp-consent-domain.test.ts` from owning repository; test file above is explicitly new if absent.
-- [ ] Run declared production build for application changes; App/Commerce/MCP also declared typecheck; Background uses its declared build; System Test uses npm run typecheck instead of build.
-- [ ] Verify no credentials reach override/custom/redirect origin, no provider secrets in errors/DTO/HTML/logs, and no unrelated domain checks removed.
+- [x] Run `npx vitest run tests/unit/providers/shopify-whatsapp-consent-domain.test.ts` from owning repository; test file above is explicitly new if absent.
+- [x] Run declared production build for application changes; App/Commerce/MCP also declared typecheck; Background uses its declared build; System Test uses npm run typecheck instead of build.
+- [x] Verify no credentials reach override/custom/redirect origin, no provider secrets in errors/DTO/HTML/logs, and no unrelated domain checks removed.
 
 ## Stop Condition
 Finish defined work/acceptance/validation, submit Completion Report and STOP. Explicit developer completion required; no automatic execution of enabled tasks.
@@ -104,35 +104,52 @@ No implementation/claim from this definition. Use normal launcher isolated workt
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-11-06T12:23:28Z. Attempt 0 review history is preserved below.
+Ready for Review — Developer Attempt 1 implementation and self-review passed; awaiting moda_architect review.
 
 ### Files Changed
 
-None
+- `src/providers/shopify-whatsapp-consent.provider.ts`: remove the `.myshopify.com` admission regex; obtain the selected Shop's Shared session snapshot and construct the fixed Admin endpoint from `snapshot.shop`, enforcing exact HTTPS host/origin, no credentials or explicit port, fixed path, bounded request/response, and `redirect: "error"`.
+- `src/services/shopify-session.service.ts`: expose Shared `getSession(shopId)` through a server-only local helper while retaining the existing token helper for other callers.
+- `src/services/shopify-whatsapp-consent.service.ts`: call the consent reader with the already authorized Shop ID and customer GID; do not pass a display/storefront domain as a credential destination.
+- `tests/unit/providers/shopify-whatsapp-consent-domain.test.ts`: add custom-storefront override, missing/foreign session, malformed stored endpoint, and redirect/error canary cases.
+- Updated `tests/unit/providers/shopify-whatsapp-consent.provider.test.ts`, `tests/unit/services/shopify-whatsapp-consent.service.test.ts`, and `tests/unit/services/shopify-session.service.test.ts` for snapshot threading and unchanged consent/session behavior.
 
 ### Work Completed
 
-None
+- Removed the duplicate provider-owned `.myshopify.com` suffix regex from consent execution. The provider now uses the selected Shop ID to retrieve the ARCH-061 coordinated server-side snapshot and sends the access token only to the trusted endpoint from that same snapshot.
+- Removed `shopDomain` from the consent-reader input and service call, preventing a storefront/display host or caller override from selecting the credential recipient.
+- Preserved customer GID validation, consent query/state decoding, local authorization/write semantics, timeout/cancellation, and response-size bounds. The request remains a fixed POST to the fixed Admin GraphQL path with `redirect: "error"`.
+- Added endpoint checks for exact HTTPS host/origin, no embedded credentials, no explicit port, and no path/query/fragment override. Malformed stored endpoint data fails closed before fetch.
+- Retained the existing selected-shop/session association as the source of authorization; missing/foreign associations yield no Shopify request. No unrelated suffix/domain checks were removed.
 
 ### Validation Results
 
-Definition only; runtime tests not run.
+- `npx vitest run tests/unit/providers/shopify-whatsapp-consent-domain.test.ts` — 7 tests passed.
+- `npx vitest run tests/unit/providers/shopify-whatsapp-consent-domain.test.ts tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts tests/unit/services/shopify-session.service.test.ts` — 53 tests passed across 4 files.
+- `npm run build` — passed, including Prisma Client generation and TypeScript compilation (exit 0).
+- `git diff --check` — passed.
+- Endpoint/credential evidence: tests assert the custom storefront override is absent from the request URL, only the stored snapshot host receives the selected Shop token, malformed hosts do not reach fetch, redirect handling is `error`, and returned failure results do not expose the token canary.
+- Preparation evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-062-BACKGROUND-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-062-BACKGROUND-001`; both branches `task/ARCH-062-BACKGROUND-001`. Dependency gate passed (`ARCH-061-BACKGROUND-001` Complete). Both worktrees reused; task remote fast-forward was not needed and `origin/main` was already incorporated. Recursive submodule preparation passed; `database` was initialized at `bd2d09066a8eb178a56f48fbbf88df637c411059`. The parent report-format correction is `eec74c0c4a3cba4953a376135252e02849b209c7`; durable Attempt 1 claim is `7271eafe6bdad14309ad8185c1017d2436862867`.
 
 ### Deviations
 
-None
+- The initial launcher run found the definition's Completion Report headings missing required blank-line spacing. Corrected and pushed the task-owned report formatting before the durable claim; no task scope or acceptance criterion changed.
 
 ### Assumptions
 
-ARCH-061 prerequisite provides selected-shop snapshot with trusted endpoint.
+- ARCH-061 `getSession(selectedShopId)` returns the server-only snapshot from the same selected Shop/session association and includes the SDK-established integration endpoint and access token.
 
 ### Unresolved Issues
 
-None blocking definition.
+None identified within the bounded Background task.
 
 ### Architectural Concerns
 
-No new endpoint discovery, schema or permission widening authorized.
+None. No endpoint discovery, schema change, permission widening, custom-domain OAuth/Admin support, or sibling-repository changes were introduced.
+
+### Developer Self-Review — Passed
+
+Attempt 1 was checked against the full task definition and acceptance matrix. Required focused tests, related consent/session regressions, Background build, endpoint-origin controls and credential-redaction evidence passed. Completion mode remains developer; explicit completion is pending after architect review.
 
 ## Architect Review
 ### Review Status
