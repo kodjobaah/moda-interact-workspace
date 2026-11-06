@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-11-06T17:06:52Z
+attempt: 1
 depends_on: ["ARCH-063-SHARED-002"]
 enables: ["ARCH-063-SYSTEM-TEST-001"]
 created: 2026-11-06
@@ -105,7 +105,8 @@ Use launcher-resolved isolated/synchronized task worktrees when execution reques
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-11-06T17:06:52Z. Attempt 0 review history is preserved below.
+
 ### Files Changed
 None
 ### Work Completed
