@@ -178,9 +178,9 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-062/SHOPIFY-001-remove-duplicated-app-shop-domain-guards.md`
-  commit: pending report commit
+  commit: `4168d87f1` (report and review transition; report publication details recorded in the following commit)
   remote branch: `origin/task/ARCH-062-SHOPIFY-001`
-  pushed: pending
+  pushed: yes; task branch publication follows the report evidence amendment
   submodule gitlink staged: no
 
 Merged to implementation main: no
