@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-061-SHARED-002", "ARCH-061-SHOPIFY-001", "ARCH-061-BACKGROUND-001", "ARCH-061-COMMERCE-001", "ARCH-061-MCP-001"]
 enables: []
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Validate cross service shopify refresh
 
@@ -186,3 +186,13 @@ Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
+
+## Dependency Reconciliation — 6 November 2026
+
+ARCH-061-MCP-001 Attempt 1 is explicitly developer-completed following passing
+scoped review `7f61bde93`, implementation `c9ca303`. SHARED-002 and SHOPIFY-001
+are also Complete. BACKGROUND-001 and COMMERCE-001 remain Ready, not Complete,
+in current canonical task records and fetched origin/main; this task therefore
+remains Pending with attempt 0, executor/claimed_at null. MCP is no longer an
+incomplete prerequisite. Terminal/manual invocation and operator cutover gates
+are unchanged; no claim or execution is authorized by this reconciliation.
