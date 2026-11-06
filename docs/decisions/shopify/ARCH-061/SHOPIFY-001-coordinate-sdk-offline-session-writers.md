@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T08:46:05Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-061-SHARED-002"]
 enables: ["ARCH-061-BACKGROUND-001", "ARCH-061-COMMERCE-001", "ARCH-061-MCP-001", "ARCH-061-SYSTEM-TEST-001"]
@@ -148,44 +148,45 @@ No execution started. Use launcher isolated/synchronized task worktrees when req
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-11-06T08:46:05Z. Attempt 1 review history is preserved below.
+Review — Attempt 2 submitted for architect review on 2026-11-06. Attempt 1 review history is preserved below.
 
 ### Files Changed
 `package.json`, `package-lock.json`; `app/shopify.server.js`; new `app/services/shopify-offline-coordination.server.ts` and `app/services/shopify-session-storage.server.ts` with their focused tests; `app/services/shop/shop.service.ts`; `app/services/observability/shopify-runtime-observability.server.ts`; `app/routes/webhooks/app/scopes-update/route.jsx`; `app/routes/webhooks/shop/redact/route.jsx`; `tests/helpers/shopify-lifecycle-postgres.ts`; new `tests/unit/shopify-offline-coordination.test.ts` and `tests/integration/shopify-offline-coordination.test.ts`; updated `tests/unit/routes/scopes-update.test.jsx`, `tests/unit/services/shop.service.test.ts`, and `tests/unit/server-error-privacy.test.ts`.
 ### Work Completed
 - Upgraded App to the published `@modainteract/moda-interact-shared` 5.2.0 Node export and composed its provider with the App Prisma client and the existing App OAuth configuration service.
-- Replaced raw SDK session storage exposure with a public `SessionStorage` adapter. Offline reads/writes use the authentication transaction binding; direct writes are denied; an existing offline Session can be updated only from the Session object loaded in that authentication context. The SDK facade wraps public admin, webhook and unauthenticated-admin entrypoints and exports no raw authentication or storage escape.
+- Replaced raw SDK session storage exposure with a public `SessionStorage` adapter. Offline reads/writes use the authentication transaction binding; direct writes are denied. For an existing row, storage tracks its current credential fingerprint and accepts a replacement pair only when the bounded OAuth response in that same binding supplied it; each successful write advances the accepted fingerprint, rejecting stale stores. Shop and actual persisted Session ID checks remain mandatory. The SDK facade wraps public admin, webhook and unauthenticated-admin entrypoints and exports no raw authentication or storage escape.
 - Installed the SDK public abstract-fetch adapter. OAuth refresh traffic requires the bound stored integration host and POST method, rejects redirects, limits streamed response size to 16 KiB, applies an 8-second network budget, and maps rejected versus ambiguous post-dispatch failures to fixed Shared error categories. Other SDK transport and callback work is bounded to 15 seconds. SDK diagnostic messages are wholly omitted during coordinated authentication.
 - Applied the same Shared domain advisory gate before the existing Shop lifecycle lock and actual Session row lock where applicable. Uninstall, scopes-update, and shop-redact persistence reuse the gate-bound transaction. Scope/readiness checks remain metadata-only and do not refresh tokens.
 - Audited production paths: raw SDK `authenticate.admin`, `authenticate.webhook`, and `unauthenticated.admin` invocation exists only inside the facade wrappers; offline Session write/delete paths are the coordinated storage adapter and the gated uninstall/scopes/redaction lifecycle transactions. The default SDK storage/auth object is not exported.
-- Added App unit assertions for redirect commit versus failure rollback, mismatched Session identity, missing binding, stale Session rejection, safe error categories, transport bounds, and raw SDK export policy. Added real PostgreSQL separate-client refresh serialization and SDK-refresh/uninstall/reinstall callback ordering coverage.
+- Added App unit assertions for redirect commit versus failure rollback, mismatched Session identity, missing binding, stale Session rejection (including an older credential pair after a successful replacement in the same binding), safe error categories, transport bounds, and raw SDK export policy. The PostgreSQL regressions now install through `sdk.authenticate.admin`, read the SDK-generated persisted Session ID, expire that row, and invoke the installed public `sdk.unauthenticated.admin` refresh. They prove the newly constructed SDK Session atomically commits both tokens while an independent Shared client waits on the same gate, and preserve the SDK-refresh/uninstall/reinstall ordering test.
 ### Validation Results
-- `npm run typecheck` — passed.
-- `npm run build` — passed. Vite emitted existing dependency annotation, external Prisma browser-entry, and large client-chunk warnings; no build errors.
-- Required focused command `npx vitest run tests/unit/shopify-offline-coordination.test.ts tests/integration/shopify-offline-coordination.test.ts` — 10 passed; the two PostgreSQL cases are flag-gated and skipped in this unflagged invocation.
-- Disposable PostgreSQL command `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_SHOPIFY_LIFECYCLE_POSTGRES=1 npx vitest run tests/integration/shopify-offline-coordination.test.ts` — 2 passed using separate Prisma clients; Testcontainers stopped the owned fixture container after the run.
+- `npm run typecheck` — passed after the Attempt 2 correction.
+- `npm run build` — passed after the Attempt 2 correction. Vite emitted dependency annotation, external Prisma browser-entry, and large client-chunk warnings; no build errors.
+- Required focused command `npx vitest run tests/unit/shopify-offline-coordination.test.ts tests/integration/shopify-offline-coordination.test.ts` — 11 passed; the two PostgreSQL cases are flag-gated and skipped in this unflagged invocation.
+- Disposable PostgreSQL command `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_SHOPIFY_LIFECYCLE_POSTGRES=1 npx vitest run tests/integration/shopify-offline-coordination.test.ts` — 2 passed. Both cases use real SDK auth/refresh and separate Prisma clients; Testcontainers stopped the owned fixture container after the run.
+- Additional focused coordination/session-storage test command — 14 passed across 3 files.
 - Additional focused command covering coordination/storage service tests, privacy diagnostics, ShopService, and scopes-update route — 82 passed; 2 flag-gated PostgreSQL cases skipped.
 - `git diff --check` — passed.
 ### Deviations
-None. The initial container-runtime attempts failed because Testcontainers did not inherit the active Colima endpoint; the successful run used the endpoint and socket override shown above.
+Attempt 2 replaces the identity-only guard with a credential-pair provenance protocol tied to the actual bounded OAuth response and transaction binding, as required by the review. The first PostgreSQL run exposed a test helper trying to enumerate offline Sessions outside a binding; it now reads the SDK-generated persisted ID through the independent observer client. The corrected PostgreSQL run passed using the Colima endpoint and socket override shown above.
 ### Assumptions
 Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2. No schema changes or service-side OAuth configuration changes were made.
 ### Unresolved Issues
-None identified in the scoped implementation or validation. The task is awaiting architect review and the developer retains explicit completion authority.
+None identified in the scoped implementation or validation. Attempt 2 is awaiting architect review; `completion_mode: developer` is preserved and explicit developer completion remains pending.
 ### Architectural Concerns
 Architect review remains pending. No architect review decision has been made by the developer implementation.
 
 ## Developer Self-Review
 ### Review Status
-Passed — Attempt 1. The implementation and report were reconciled against every Work Item and Acceptance Criterion; focused unit, route, typecheck, build, and separate-client PostgreSQL race evidence is recorded above. The implementation task branch and this parent task-report branch are published. `completion_mode: developer` is preserved, so explicit developer completion is pending. No architect review decision has been made.
+Passed — Attempt 2 self-review. The Attempt 1 P1 is corrected and the report reconciled against every Work Item and Acceptance Criterion. Attempt 2 implementation/report are published for architect review. `completion_mode: developer` is preserved; explicit developer completion remains pending. No architect acceptance decision has been made by this agent.
 ### Reviewed Files
 All files listed under Completion Report → Files Changed, including the coordinated SessionStorage, Shopify facade/transport, lifecycle routes and services, and focused test fixtures.
 ### Validation Reviewed
-`npm run typecheck`; `npm run build`; the required focused Vitest command; focused App lifecycle/privacy tests; disposable PostgreSQL independent-client refresh and uninstall/reinstall callback race tests; `git diff --check`.
+`npm run typecheck`; `npm run build`; required focused Vitest command (11 passed, 2 PostgreSQL tests skipped in unflagged mode); focused coordination/session-storage service tests (14 passed); disposable PostgreSQL independent-client real SDK refresh and uninstall/reinstall race tests (2 passed); `git diff --check`.
 ### Self-Review Findings
-No known acceptance gaps or uncoordinated offline Session writer paths remain within this task's scope. The only raw SDK public auth calls are invoked inside the facade wrappers; the facade exports wrapped auth functions and the coordinated storage adapter.
+The credential provenance guard now admits the replacement Session constructed by the installed SDK only when its shop/Session identity is bound and its credential pair came from the bounded OAuth response in that transaction. The accepted credential fingerprint advances after each successful store, so an older pair cannot overwrite the committed replacement. Real PostgreSQL SDK refresh, Shared-client serialization, stale-store, and uninstall/reinstall checks pass. The only raw SDK public auth calls are invoked inside the facade wrappers; the facade exports wrapped auth functions and coordinated storage.
 ### Decision
-Submit Attempt 1 for `moda_architect` review. Do not mark complete until the developer explicitly requests completion after architect review.
+Submit Attempt 2 for `moda_architect` review. Do not mark complete until the developer explicitly requests completion after architect review.
 
 ## Architect Review
 ### Review Status
@@ -222,6 +223,21 @@ Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
+
+## Developer Self-Review — Attempt 2
+
+### Review Outcome
+Passed. The architect's Attempt 1 P1 is addressed. Attempt 2 has been submitted for architect review; the task remains developer-controlled and is not complete.
+
+### Finding-to-Evidence Reconciliation
+- Fresh SDK Session rejected by identity-only provenance: replaced with same-binding OAuth response credential provenance plus bound shop/actual Session ID checks; the current persisted credential fingerprint advances on write.
+- Stale credential overwrite: unit coverage rejects the earlier pair after a fresh pair is stored in the same binding; the PostgreSQL integration also rejects a stale Session from a later binding.
+- Actual SDK compatibility: PostgreSQL tests perform public `sdk.authenticate.admin` bootstrap, obtain the ID from the Session row actually persisted by the SDK, expire it, and run public `sdk.unauthenticated.admin` refresh through the composed real storage adapter. Authentication succeeds and both access and refresh tokens are persisted.
+- Concurrency/lifecycle: a separate Shared Prisma client waits on the same advisory gate while the actual SDK refresh is held; the refresh issues one request and Shared observes its committed token. The second PostgreSQL case retains SDK refresh, uninstall, and actual SDK reinstall ordering.
+- Foreign and unbound writes remain denied by the existing focused assertions.
+
+### Decision
+Submit Attempt 2 to `moda_architect`. Preserve Attempt 1 review history and `completion_mode: developer`; wait for architect review and an explicit developer completion request before marking complete.
 
 
 ## Developer Self-Review - Changes Requested — Attempt 1 (2026-11-06)
