@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-061-SHOPIFY-001"]
 enables: ["ARCH-062-SYSTEM-TEST-001"]
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Remove duplicated app shop domain guards
 
@@ -136,3 +136,6 @@ Definition metadata/path validation only.
 Task is repository-owned and gated by its ARCH-061 adoption prerequisite.
 ### Follow-up
 None
+
+## Dependency frontier reconciliation — 2026-11-06
+Architect coordination only: the explicit ARCH-061 prerequisite is Complete with a durable developer completion decision in its canonical task record. Promoted Pending -> Ready; executor/claimed_at remain null and attempt remains 0. No execution, acceptance or completion decision occurred.
