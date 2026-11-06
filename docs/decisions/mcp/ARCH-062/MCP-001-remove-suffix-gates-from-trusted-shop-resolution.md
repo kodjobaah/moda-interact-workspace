@@ -76,11 +76,11 @@ App authenticated profile myshopifyDomain is provider-owned integration identity
 No blanket search/replace of every myshopify string. Leave SDK internals, documentation/examples of actual Admin endpoints and Shopify-admin billing handle construction intact. Recovery summary display-only regex is not authentication: change only if necessary for correct display, with dedicated fixture; never replace provider endpoint with it. Partner API tokens are a different credential domain and outside scope. No schema/DNS/secret/infrastructure change. Compatible application rollout after each ARCH-061 owner adoption; preserve old stored identities. Do not change lock identity/refresh recovery. System test is terminal after accepted implementation and optional user manual checks. Definitions only, no deployment/claim. Existing generic logging suffices; no observability framework work.
 
 ## Work Items
-- [ ] Remove Shopify suffix admission; preserve selected ID/platform/status and existing Woo installation checks.
-- [ ] Resolve trusted selected-shop connection without suffix gate; require installed snapshot binding before provider execution.
-- [ ] Use actual coordinated Session.shop endpoint from selected Shop identity; preserve exact origin/https/fixed operation path and all authorization checks.
-- [ ] Carry trusted shopId and snapshot endpoint through local reader result, no caller URL/domain as authority.
-- [ ] Create focused test file tests/unit/connections/shopify-domain-boundary.test.ts and cover task-specific/common acceptance matrix.
+- [x] Remove Shopify suffix admission; preserve selected ID/platform/status and existing Woo installation checks.
+- [x] Resolve trusted selected-shop connection without suffix gate; require installed snapshot binding before provider execution.
+- [x] Use actual coordinated Session.shop endpoint from selected Shop identity; preserve exact origin/https/fixed operation path and all authorization checks.
+- [x] Carry trusted shopId and snapshot endpoint through local reader result, no caller URL/domain as authority.
+- [x] Create focused test file tests/unit/connections/shopify-domain-boundary.test.ts and cover task-specific/common acceptance matrix.
 
 ## Interfaces / Contracts
 Reuse published ARCH-061 Node-only provider getSession(selectedShopId), server-only snapshot.shop/accessToken/scope and existing selected-shop auth. Update owning local ports to thread trusted endpoint, no new Shared wire contract. SDK auth remains install authority; primaryDomain is never credential destination.
@@ -92,41 +92,96 @@ Reuse published ARCH-061 Node-only provider getSession(selectedShopId), server-o
 - ARCH-062-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Selected owned custom-storefront shop reaches published tools with legitimate installed snapshot.
-- [ ] Missing/foreign integration, request endpoint mismatch or inactive shop still fails before provider call.
-- [ ] No arbitrary custom domain gets token and no cross-shop snapshot can authorize a tool.
+- [x] Selected owned custom-storefront shop reaches published tools with legitimate installed snapshot.
+- [x] Missing/foreign integration, request endpoint mismatch or inactive shop still fails before provider call.
+- [x] No arbitrary custom domain gets token and no cross-shop snapshot can authorize a tool.
 
 ## Validation
-- [ ] Run `npx tsx --test tests/unit/connections/shopify-domain-boundary.test.ts` from owning repository; test file above is explicitly new if absent.
-- [ ] Run declared production build for application changes; App/Commerce/MCP also declared typecheck; Background uses its declared build; System Test uses npm run typecheck instead of build.
-- [ ] Verify no credentials reach override/custom/redirect origin, no provider secrets in errors/DTO/HTML/logs, and no unrelated domain checks removed.
+- [x] Run `npx tsx --test tests/unit/connections/shopify-domain-boundary.test.ts` from owning repository; test file above is explicitly new if absent.
+- [x] Run declared production build for application changes; App/Commerce/MCP also declared typecheck; Background uses its declared build; System Test uses npm run typecheck instead of build.
+- [x] Verify no credentials reach override/custom/redirect origin, no provider secrets in errors/DTO/HTML/logs, and no unrelated domain checks removed.
 
 ## Stop Condition
 Finish defined work/acceptance/validation, submit Completion Report and STOP. Explicit developer completion required; no automatic execution of enabled tasks.
 
 ## Implementation Notes
-No implementation/claim from this definition. Use normal launcher isolated worktrees when requested. Existing paths verified; new test file explicitly named. Actual install integration domain remains SDK-established and selected-shop bound, not inferred by a new parser. Return demonstrated contract/schema incompatibility instead of widening scope.
+Attempt 1 implements the selected-shop snapshot boundary in the launcher-resolved MCP worktree. Actual installation identity remains established by the credential owner/SDK; no alias discovery, schema change or new suffix validator was introduced.
 
 ## Completion Report
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-11-06T13:14:21Z. Attempt 0 review history is preserved below.
+In Progress — Attempt 1 implementation and required validation finished; ready for authorized developer reconciliation/review. Implementation commit `d0a8de3` is pushed to MCP `task/ARCH-062-MCP-001`; this report is published on the matching parent task branch under explicit developer authorization. No passing review or completion decision is claimed.
 
 ### Files Changed
-None
+
+- `src/capabilities/resolve.ts`: remove Shopify suffix admission; preserve selected ID, active status, platform and bounded nonempty metadata; Woo checks unchanged.
+- `src/connections/resolver.ts`, `ports.ts`: remove the Shopify suffix constant and remove domain from the private provider input. Provider execution receives the trusted selected Shop ID.
+- `src/connections/shopify/session-reader.ts`: selected-ID-only read; return the server-only `Pick<OfflineCredentialSnapshot, "shopId" | "shop" | "accessToken" | "scope">` from one committed Shared result. Keep identity, token, scope, error-privacy and signal checks.
+- `src/connections/shopify/provider.ts`: remove suffix admission and bind the fixed versioned GraphQL POST URL to that same snapshot's endpoint/Shop ID. Validate exact HTTPS host/origin, no credentials/port, fixed path, no query/hash, no redirect; retain read-only query checks, scope-positive preflight, version/response bounds and cancellation.
+- NEW `tests/unit/connections/shopify-domain-boundary.test.ts`: actual handler/registry/resolver/reader/provider boundary tests.
+- Updated resolver, reader, provider, coordination and product-search composition fixtures to carry the snapshot endpoint/identity rather than a caller domain.
+- `README.md`: document endpoint authority and retained mapping/rollout boundary.
+
 ### Work Completed
-None
+
+1. Removed only the three task-identified suffix gates. Metadata discovery does not acquire or refresh credentials. Existing tenant/platform/status, plan/Feature and Woo installation/origin checks remain.
+2. Removed caller/display domain from the local credential-reader and Shopify provider ports. The transport uses the endpoint, token, permission scope and selected Shop identity from the same Shared snapshot. There is no browser Host, URL, opaque context or tool-argument authority over credential destination.
+3. Added transport destination binding using URL structural equality, not a replacement suffix admission policy. Malformed endpoint components, alternate response origins and redirects fail closed; the fixed Admin API version/path/method and read-only operation constraints remain.
+4. Kept the published Shared 5.2.0 provider, existing integration mapping, lock identity, refresh recovery and configuration unchanged. A Shared mapping probe proves that a stored Shop.domain/Session.shop mismatch cannot cause alias guessing, OAuth/config reads or provider IO.
+5. New tests execute an eligible published tool through the real MCP HTTP handler and registry with custom storefront metadata and an injected legitimate installation snapshot. They cover request overrides, missing/foreign/inactive/wrong-provider shops, missing/conflicting credentials, foreign snapshots, malformed endpoints, redirects, response-origin mismatch, secret canaries and Feature revocation.
+6. Codex acting as moda_mcp provided the explicitly requested source, test, documentation and validation assistance. Developer execution/completion ownership remains unchanged.
+
 ### Validation Results
-Definition only; runtime tests not run.
+
+All repository commands ran in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-062-MCP-001` with Node 24.19.0 / npm 11.17.0 recovered through the canonical workspace bootstrap.
+
+| Command | Result |
+|---|---|
+| `npm ci --ignore-scripts` | Locked dependencies installed; no package/lockfile changes. |
+| `npx tsx --test tests/unit/connections/shopify-domain-boundary.test.ts` | 26 passed, 0 failed/skipped, exit 0. |
+| `npm run test:unit` | 400 passed, 0 failed/skipped, exit 0; includes all new boundary and affected connection/policy/Woo tests. |
+| `npm run typecheck` | Passed, exit 0. |
+| `npm run build` | Passed, exit 0. |
+| `npm run lint` | Passed, exit 0. |
+| `git -c core.fsmonitor=false diff --check` | Passed. |
+| Scoped source inspection | No Shopify suffix regex/DOMAIN gate remains in capabilities/connections. Woo implementation validation branches and unrelated domain checks were not removed. |
+
+The prior adapter's scope-only expected shape was updated to include the newly threaded shop identity/endpoint; the final 400-test pass includes that correction. The required new 26-test command passed independently.
+
+Pinned schema setup used `npm run schema:install:shopify -- /Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-commerce/lib/discovery/artifacts/admin-2026-07.json`; the installer verified the existing canonical SHA-256. No schema download/substitution or sibling source edit.
+
+Evidence: `/tmp/arch062-mcp-domain.log`, `/tmp/arch062-mcp-unit.log`, `/tmp/arch062-mcp-typecheck-final.log`, `/tmp/arch062-mcp-build.log`, `/tmp/arch062-mcp-lint.log`, `/tmp/arch062-mcp-schema.log`. These are local temporary receipts; the exact commands and outcomes are preserved here.
+
+### Worktree and Preparation Evidence
+
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-062-MCP-001`, reused.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-062-MCP-001`, newly created, base `bdd69ca353fac6d84b86060c4715b4d187581e58` already contains the accepted ARCH-061 adoption.
+- Both branches: `task/ARCH-062-MCP-001`. Neither shared checkout was switched/mutated for source work; no other task worktree reused.
+- Both remote task branch fast-forwards: not-needed; both origin/main incorporation results: already-current.
+- Recursive submodule sync/update/verification: passed; `database` at `bd2d09066a8eb178a56f48fbbf88df637c411059`.
+- Launcher dependency gate passed: ARCH-061-MCP-001 Complete.
+- Readiness correction `1f192a7b5` reconciled that completed canonical prerequisite and normalized report heading spacing before preparation. It changed no requirements, execution/completion mode or attempt.
+- Durable developer claim `e801cc057ff4f63dd401956f8cadca6eda82d831`, pushed; Attempt 1 at `2026-11-06T13:14:21Z`.
+
 ### Deviations
-None
-### Assumptions
-ARCH-061 prerequisite provides selected-shop snapshot with trusted endpoint.
+
+None. Reused the published Shared snapshot type in a private local port; no new Shared wire contract, schema, validator, alias mapping or service was introduced.
+
+### Assumptions / Evidence Boundary
+
+The positive custom-storefront test supplies an already trusted SDK-established snapshot through the credential-owner seam. It does not invent or prove a persisted alias between a custom Shop.domain and a different Session.shop. The separate negative test uses the actual published Shared provider with an injected database to prove that missing association fails closed without network. No new PostgreSQL, Docker, live Shopify, App SDK/install or integrated cross-service run was performed for this task; those are not claimed by these unit proofs.
+
+Official Shopify [Shop 2026-07 reference](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/Shop) retains separate myshopifyDomain and primaryDomain fields. Runtime authority remains the accepted installation snapshot, not recognition of a domain string.
+
 ### Unresolved Issues
-None blocking definition.
+
+No task-owned implementation issue remains. Authorized developer review and explicit developer completion remain pending. ARCH-062-SYSTEM-TEST-001 was not started/promoted.
+
 ### Architectural Concerns
-No new endpoint discovery, schema or permission widening authorized.
+
+No arbitrary custom storefront host becomes an Admin/OAuth destination by user input. Missing/mismatched installation association continues to fail without guessing. No lock/recovery, SDK, Woo/external credential, DNS, deployment, main merge or gitlink change was made.
 
 ## Architect Review
 ### Review Status
@@ -152,3 +207,7 @@ Correct the stale Pending flag to Ready, leaving attempt 0, executor/claimed_at
 null and developer execution/completion modes unchanged. No requirements are
 waived and no claim is created by this readiness correction. Normal developer
 preparation and source/validation gates still apply.
+
+## Publication — 6 November 2026
+
+The developer explicitly authorized committing and pushing both task branches. Implementation `d0a8de3` contains the source, tests and documentation described above. The matching parent branch publishes this report. Task remains `in_progress`, Attempt 1, pending authorized review; no acceptance/completion, downstream promotion, main merge, deployment or gitlink update is implied.
