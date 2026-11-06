@@ -7,7 +7,7 @@ domain: shared
 repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -93,6 +93,8 @@ Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published o
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
 
 ## Implementation Notes
+Execution ownership amendment (2026-11-06): developer explicitly requested agent implementation through `/moda-task ARCH-063-SHARED-002` and authorized task synchronization, claim, release-task changes and review publication. Delegate bounded publication to moda_shared through canonical launcher; retain completion_mode developer and all release-only constraints. No attempt, dependency or scope change.
+
 Dependency reconciliation (2026-11-06): ARCH-063-SHARED-001 Attempt 1 is architect Accepted and explicitly developer-completed; publication task is now Ready, unclaimed at Attempt 0. No publication or implementation is started by this promotion.
 
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
