@@ -41,13 +41,17 @@ No blanket search/replace of every myshopify string. Leave SDK internals, docume
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-062-SHOPIFY-001 | shopify | Pending | ARCH-061-SHOPIFY-001 |
-| ARCH-062-BACKGROUND-001 | background | Ready | ARCH-061-BACKGROUND-001 |
-| ARCH-062-COMMERCE-001 | commerce | Pending | ARCH-061-COMMERCE-001 |
-| ARCH-062-MCP-001 | mcp | Pending | ARCH-061-MCP-001 |
+| ARCH-062-SHOPIFY-001 | shopify | Ready | ARCH-061-SHOPIFY-001 |
+| ARCH-062-BACKGROUND-001 | background | Complete | ARCH-061-BACKGROUND-001 |
+| ARCH-062-COMMERCE-001 | commerce | Ready | ARCH-061-COMMERCE-001 |
+| ARCH-062-MCP-001 | mcp | Ready | ARCH-061-MCP-001 |
 | ARCH-062-SYSTEM-TEST-001 | system-test | Pending | ARCH-062-SHOPIFY-001, ARCH-062-BACKGROUND-001, ARCH-062-COMMERCE-001, ARCH-062-MCP-001 |
 
 ## Architecture definition review
 Inspected existing suffix checks and trusted session flow; official sources separate storefront from Admin identity. No new domain discovery or storage needed. Existing ARCH-061 adoption provides selected-shop snapshot. No unresolved architectural decision is delegated to implementation.
 
-Dependency frontier — 2026-11-06: ARCH-062-BACKGROUND-001 is Ready/unclaimed following explicit completion of ARCH-061-BACKGROUND-001. Other task statuses remain unchanged.
+
+## Dependency frontier reconciliation — 2026-11-06
+Canonical launcher route-only/task metadata and durable explicit developer completion decisions were inspected for the four ARCH-061 adoption prerequisites. All four are Complete. ARCH-062 Background is already Complete in its canonical task worktree; this audit preserves that existing decision and history rather than completing it again. Shopify, Commerce and MCP are now Ready/unclaimed (Attempt 0). System Test remains Pending on those three implementation tasks; completed Background satisfies its fourth prerequisite. ARCH-061 System Test readiness is not a dependency of ARCH-062 implementation and does not block it.
+
+This is governance reconciliation only: no implementation tests, task launches, active claims, new completion decisions, merges or deployments. Existing historical review text is preserved; current task YAML and latest explicit completion records take precedence over historical pending text. Background mirror was reconciled from its canonical task worktree. Shopify/Commerce/MCP definitions remain unmaterialised: launcher reports expected parent paths, but those worktrees are absent; their local definitions are dependency-ready without any branch/worktree/publication claim. No publication is claimed by this local update.

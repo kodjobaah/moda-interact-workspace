@@ -4,8 +4,6 @@ Architecture: ../../../architecture/ARCH-062-remove-duplicated-shopify-domain-gu
 
 | Task | Status | Dependencies |
 |---|---|---|
-| ARCH-062-BACKGROUND-001 | Ready | ARCH-061-BACKGROUND-001 |
+| ARCH-062-BACKGROUND-001 | Complete | ["ARCH-061-BACKGROUND-001"] |
 
-Developer definitions only, unclaimed.
-
-Dependency frontier — 2026-11-06: ARCH-062-BACKGROUND-001 is Ready/unclaimed following explicit completion of ARCH-061-BACKGROUND-001. Other task statuses remain unchanged.
+Reconciled 2026-11-06 from canonical task metadata and explicit prerequisite completion records. No new claim/attempt/completion; System Test remains terminal.
