@@ -4,6 +4,6 @@ Architecture: ../../../architecture/ARCH-064-published-initial-outreach-profile.
 
 | Task | Status | Dependencies |
 |---|---|---|
-| ARCH-064-DATABASE-001 | Ready | - |
+| ARCH-064-DATABASE-001 | Complete | - |
 
-Developer definitions only; no claim.
+DATABASE-001 Attempt 1 implemented, validated and architect Accepted; explicitly developer-completed.
