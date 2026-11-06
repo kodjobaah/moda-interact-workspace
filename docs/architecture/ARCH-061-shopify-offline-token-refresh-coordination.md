@@ -15,7 +15,7 @@ Revision 1 was replaced before implementation. Revision 2 below is the sole norm
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
 | ARCH-061-SHARED-001 | shared | Complete | - |
-| ARCH-061-SHARED-002 | shared | Ready | ARCH-061-SHARED-001 |
+| ARCH-061-SHARED-002 | shared | Review | ARCH-061-SHARED-001 |
 | ARCH-061-SHOPIFY-001 | shopify | Pending | ARCH-061-SHARED-002 |
 | ARCH-061-BACKGROUND-001 | background | Pending | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
 | ARCH-061-COMMERCE-001 | commerce | Pending | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
