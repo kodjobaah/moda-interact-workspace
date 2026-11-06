@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -46,9 +46,9 @@ Central token service, agent tools, sibling imports, credential UI, schema chang
 The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Use the binding revision public-wrapper/ALS/lifecycle gate architecture; do not choose a different synchronization mechanism.
 
 ## Work Items
-- [ ] Implement the normative transaction/fetch/validation/error contract with consumer-owned Prisma injection.
-- [ ] Implement fixed revision-2 row/advisory lock order, public SDK lifecycle interface and provider-supported ambiguous-outcome recovery.
-- [ ] Add unit and disposable PostgreSQL concurrency tests using two independent Prisma clients.
+- [x] Implement the normative transaction/fetch/validation/error contract with consumer-owned Prisma injection.
+- [x] Implement fixed revision-2 row/advisory lock order, public SDK lifecycle interface and provider-supported ambiguous-outcome recovery.
+- [x] Add unit and disposable PostgreSQL concurrency tests using two independent Prisma clients.
 
 ## Interfaces / Contracts
 Shared Node-only factory and structural transaction interface/error categories defined by SHARED-001 and published by SHARED-002. Consumers inject local client/config/fetch and translate errors. No sibling source imports; no browser exports or raw token DTOs. App owns all SDK/lifecycle mutation entrypoints.
@@ -60,14 +60,14 @@ None
 - ARCH-061-SHARED-002
 
 ## Acceptance Criteria
-- [ ] Implement the normative transaction/fetch/validation/error contract with consumer-owned Prisma injection.
-- [ ] Implement fixed revision-2 row/advisory lock order, public SDK lifecycle interface and provider-supported ambiguous-outcome recovery.
-- [ ] Add unit and disposable PostgreSQL concurrency tests using two independent Prisma clients.
-- [ ] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
+- [x] Implement the normative transaction/fetch/validation/error contract with consumer-owned Prisma injection.
+- [x] Implement fixed revision-2 row/advisory lock order, public SDK lifecycle interface and provider-supported ambiguous-outcome recovery.
+- [x] Add unit and disposable PostgreSQL concurrency tests using two independent Prisma clients.
+- [x] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
 
 ## Validation
-- [ ] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
-- [ ] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
+- [x] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
+- [x] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
 
 ## Stop Condition
 Submit completed report for authorized review and STOP after scoped criteria/validation. Explicit developer completion required. Do not start enabled tasks; system validation is terminal/manually invoked.
@@ -138,7 +138,7 @@ No execution started. Use launcher isolated/synchronized task worktrees when req
 
 ### Status
 
-Submitted for architect review — Attempt 2. The review-requested source corrections and required Shared validation are complete. The task remains in `review`; explicit developer completion is pending a durable passing review and a separate developer decision.
+Complete — Attempt 2 was accepted by the durable Developer Self-Review Passed / Accepted record. The developer explicitly completed this task at 2026-11-06T02:05:03Z. Attempt number remains 2.
 
 ### Files Changed
 
@@ -195,7 +195,7 @@ Parent workspace task file: `docs/decisions/shared/ARCH-061/SHARED-001-implement
 
 ### Unresolved Issues
 
-None within the Shared implementation scope. App SDK lifecycle coordination and production consumer wiring belong to their separately assigned ARCH-061 tasks; this Shared validation does not claim those consumer behaviors. ARCH-061-SHARED-002 remains gated pending completion of this task.
+None within the Shared implementation scope. App SDK lifecycle coordination and production consumer wiring belong to their separately assigned ARCH-061 tasks; this Shared validation does not claim those consumer behaviors. ARCH-061-SHARED-002 was promoted from Pending to Ready after this completion; no downstream task was started.
 
 ### Architectural Concerns
 
@@ -283,3 +283,10 @@ Independently ran `node --import tsx --test src/shopify/offline-token-provider.t
 Reviewed the submitted report of passing typecheck/build, generated Background/Commerce client compilation and disposable PostgreSQL proof (1 passed, two independent clients, lock contention/different-shop progress/rollback recovery and owned-container cleanup). Those checks were not independently rerun by this review; no live Shopify request or consumer SDK integration is certified by the Shared test evidence. Earlier failed dispositions are historical and superseded for the corrected source.
 
 The canonical dedicated parent/implementation worktrees were clean at review. Attempt 2 preparation/claim/synchronization, unchanged consumer boundary and implementation/report commits are recorded in the Completion Report. No new claim, implementation edit, package publication, dependency promotion, main merge or deployment occurs. The durable parent review is committed/pushed separately on the matching task branch. The developer retains explicit completion and final integration authority.
+
+
+## Developer Completion Decision — 2026-11-06T02:05:03Z
+
+The developer explicitly completes ARCH-061-SHARED-001 Attempt 2 after the durable Accepted review. All Work Items, Acceptance Criteria and required validations are recorded complete above. Implementation commit `f399a84b592da1a3855e2a6561567a788ea3fcfa` is pushed to `origin/task/ARCH-061-SHARED-001`; the parent task/report branch is pushed. No merge to either `main` branch was performed.
+
+Dependency frontier reconciliation: ARCH-061-SHARED-002 is Ready because its sole explicit dependency is now Complete. ARCH-061-SHOPIFY-001, Background, Commerce, MCP and System Test tasks remain Pending because their other dependencies remain incomplete; System Test remains manually gated.
