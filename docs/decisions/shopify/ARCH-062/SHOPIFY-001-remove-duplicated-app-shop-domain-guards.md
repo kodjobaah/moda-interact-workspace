@@ -190,9 +190,9 @@ Parent workspace:
   task file: `docs/decisions/shopify/ARCH-062/SHOPIFY-001-remove-duplicated-app-shop-domain-guards.md`
   Attempt 1 report commit: `4168d87f1` (report and review transition; evidence amendment in `be3833f0a`)
   Attempt 2 claim commit: `0597d8ea717293bfe03893f0400be69dd0446543`
-  Attempt 2 review report commit: pending publication
+  Attempt 2 review report commit: `2eea08576` (publication evidence finalized in the following parent report commit)
   remote branch: `origin/task/ARCH-062-SHOPIFY-001`
-  pushed: Attempt 1 yes; Attempt 2 claim yes; review report publication pending
+  pushed: Attempt 1 yes; Attempt 2 claim yes; Attempt 2 report pending publication
   submodule gitlink staged: no
 
 Merged to implementation main: no
