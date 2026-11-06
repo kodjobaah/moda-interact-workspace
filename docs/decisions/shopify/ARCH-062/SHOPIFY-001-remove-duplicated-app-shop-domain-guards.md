@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T14:23:39Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-061-SHOPIFY-001"]
 enables: ["ARCH-062-SYSTEM-TEST-001"]
@@ -109,7 +109,7 @@ No implementation/claim from this definition. Use normal launcher isolated workt
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-11-06T14:23:39Z. Attempt 1 review history is preserved below.
+Ready for Architect Review — Attempt 2. The Attempt 1 architect review is preserved below; its two required caller-test corrections are complete.
 
 ### Files Changed
 
@@ -118,6 +118,7 @@ In Progress — Attempt 2 claimed by developer at 2026-11-06T14:23:39Z. Attempt 
 - `app/routes/public/home/route.jsx` and `app/routes/auth/login/error.server.jsx`: remove the app-owned suffix parser, preserve the platform launch query handoff, delegate installation validation to Shopify SDK login/auth, and provide Shopify installation guidance on rejection.
 - `app/services/merchant-knowledge/upload.server.ts` and `app/routes/app/merchant-knowledge/upload-intent/route.ts`: remove domain admission and domain-derived object-key namespace; use the already-authorized selected Shop ID for the server-generated signed-upload key.
 - `tests/unit/shopify-domain-boundary.test.ts`, `tests/unit/services/shop.service.test.ts`, `tests/unit/routes/public-home-route.test.ts`, `tests/unit/merchant-knowledge-upload.test.ts`, `tests/integration/merchant-knowledge-upload.integration.test.ts`, `tests/integration/merchant-knowledge-finalization.postgres.test.ts`, and `tests/integration/merchant-shop-bootstrap.postgres.test.ts`: add/update identity, no-discovery, selected-Shop ownership, key and caller coverage.
+- `tests/unit/routes/auth-catchall.test.ts` and `tests/unit/merchant-knowledge-actions.test.ts`: Attempt 2 updates the two stale assertions to the `sessionShop` and selected-Shop-ID-only caller contracts.
 
 ### Work Completed
 
@@ -125,6 +126,7 @@ In Progress — Attempt 2 claimed by developer at 2026-11-06T14:23:39Z. Attempt 
 - Public installation no longer classifies shop input with an app-owned suffix regex. Shopify launch parameters are preserved through the existing app handoff; direct custom storefront input receives Shopify installation guidance without lookup, DNS discovery, or profile probes. SDK `InvalidShop` rejection uses the same guidance.
 - Upload-intent authorization still resolves the selected owned Shop through `settingsMutationAccess`; request bodies cannot supply `shopId` or `shopDomain`. The service uses that trusted ID to namespace the server-generated object key, then preserves the existing ownership, file, expiry, and signed PUT checks.
 - Focused acceptance coverage verifies a custom storefront with matching SDK integration identity, mismatch rejection before local access, no public custom-domain discovery, Shopify SDK guidance, selected-Shop-bound upload, and rejection of a foreign Shop ID/domain override.
+- Attempt 2 addressed both P2 review findings: the auth catchall test now asserts that `session.shop` is passed as `sessionShop`; the merchant knowledge action test now expects only the authenticated selected Shop ID and allowed upload fields. Its existing malicious `shopId`/`shopDomain` request rejection coverage remains in place.
 
 ### Validation Results
 
@@ -133,6 +135,10 @@ In Progress — Attempt 2 claimed by developer at 2026-11-06T14:23:39Z. Attempt 
 - `npm run build` — passed (Prisma client generation, client build, and server build). Existing upstream Rollup comment/chunk-size and Prisma browser-import warnings remain non-fatal.
 - `npm run typecheck` — passed.
 - `git diff --check` — passed. Touchpoint review confirms suffix guards were removed only from the three task-owned boundaries; unrelated display/provider-domain handling was not changed. Upload DTOs and diagnostics contain neither user-supplied domain nor Shopify credential values.
+- Attempt 2 focused selection `npx vitest run tests/unit/shopify-domain-boundary.test.ts tests/unit/services/shop.service.test.ts tests/unit/merchant-knowledge-upload.test.ts tests/unit/routes/public-home-route.test.ts` — 4 files passed; 65 tests passed.
+- Attempt 2 caller selection `npx vitest run tests/unit/merchant-request-context.test.ts tests/unit/routes/auth-catchall.test.ts tests/unit/merchant-knowledge-actions.test.ts` — 3 files passed; 31 tests passed. This includes the two caller tests that failed review.
+- Attempt 2 `npm run typecheck` — passed. The production source is unchanged in Attempt 2, so the successful Attempt 1 `npm run build` remains the applicable build evidence; no PostgreSQL run was required by declared validation or requested by the review.
+- Attempt 2 `git diff --check` — passed.
 
 ### Deviations
 
@@ -144,7 +150,7 @@ ARCH-061 prerequisite provides selected-shop snapshot with trusted endpoint.
 
 ### Unresolved Issues
 
-Two directly affected caller regression tests fail after the argument changes: `tests/unit/routes/auth-catchall.test.ts:43` expects the removed `domain` argument, and `tests/unit/merchant-knowledge-actions.test.ts:193` expects the removed `shopDomain` upload field. Correct those assertions while retaining SDK identity and selected-Shop ownership coverage. No PostgreSQL container scenario was required by this task's declared validation.
+None known for architect review. Both Attempt 1 caller-test findings are corrected and the requested affected-caller selection passes. No PostgreSQL container scenario was required by this task's declared validation.
 
 ### Architectural Concerns
 
@@ -165,32 +171,45 @@ Physical worktree isolation:
   another task worktree reused: no
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: yes; architect readiness reconciliation and report-format fix were present before the claim
-  parent origin/main incorporated: already-current
-  implementation remote task branch fast-forwarded: not-needed; launcher started from current origin/main
-  implementation origin/main incorporated: already-current
+  Attempt 1: parent remote task branch fast-forwarded: yes; architect readiness reconciliation and report-format fix were present before the claim
+  Attempt 1: parent origin/main incorporated: already-current
+  Attempt 1: implementation remote task branch fast-forwarded: not-needed; launcher started from current origin/main
+  Attempt 1: implementation origin/main incorporated: already-current
+  Attempt 2: parent remote task branch fast-forwarded: not-needed; origin/main incorporated: already-current
+  Attempt 2: implementation remote task branch fast-forwarded: not-needed; origin/main incorporated: already-current
+  Attempt 2 recursive submodules: sync --recursive passed; update --init --recursive passed; `database` at `bd2d09066a8eb178a56f48fbbf88df637c411059`
 
 Implementation repository:
   repository: `moda-interact`
-  commit: `3a5c920b4217f09dd8a958dacb6cae13971237bc`
+  Attempt 1 commit: `3a5c920b4217f09dd8a958dacb6cae13971237bc`
+  Attempt 2 commit: `249de4e130117d85a86763de3abc4c71b36e9996`
   remote branch: `origin/task/ARCH-062-SHOPIFY-001`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/shopify/ARCH-062/SHOPIFY-001-remove-duplicated-app-shop-domain-guards.md`
-  commit: `4168d87f1` (report and review transition; report publication details recorded in the following commit)
+  Attempt 1 report commit: `4168d87f1` (report and review transition; evidence amendment in `be3833f0a`)
+  Attempt 2 claim commit: `0597d8ea717293bfe03893f0400be69dd0446543`
+  Attempt 2 review report commit: pending publication
   remote branch: `origin/task/ARCH-062-SHOPIFY-001`
-  pushed: yes; task branch publication follows the report evidence amendment
+  pushed: Attempt 1 yes; Attempt 2 claim yes; review report publication pending
   submodule gitlink staged: no
 
 Merged to implementation main: no
 Merged to workspace main: no
 
-### Developer Self-Review - Passed
+### Developer Self-Review - Passed — Attempt 1 (superseded by architect review)
 
 Attempt: 1
 Scope: reviewed all task Work Items, Acceptance Criteria, and declared validation against the implementation diff and test results above.
 Decision: implementation passes developer self-review and is submitted for `moda_architect` review. No architect acceptance decision has been made. Because `completion_mode` is `developer`, explicit developer completion remains pending.
+
+### Developer Self-Review - Passed — Attempt 2
+
+Attempt: 2
+Finding: both stale caller assertions identified in the Attempt 1 Architect Review now match the implementation's authenticated session and selected-Shop-ID-only contracts.
+Validation: all 65 focused tests and all 31 tests in the affected caller selection pass; `npm run typecheck` and `git diff --check` pass. Attempt 1 production build remains applicable because Attempt 2 changes tests only.
+Decision: the required corrections pass developer self-review and are resubmitted for `moda_architect` review. No architect acceptance decision has been made. Because `completion_mode` is `developer`, explicit developer completion remains pending.
 
 ## Architect Review
 ### Review Status
