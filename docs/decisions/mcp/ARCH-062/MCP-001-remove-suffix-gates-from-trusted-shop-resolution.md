@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-061-MCP-001"]
 enables: ["ARCH-062-SYSTEM-TEST-001"]
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Remove suffix gates from trusted shop resolution
 
@@ -108,7 +108,9 @@ Finish defined work/acceptance/validation, submit Completion Report and STOP. Ex
 No implementation/claim from this definition. Use normal launcher isolated worktrees when requested. Existing paths verified; new test file explicitly named. Actual install integration domain remains SDK-established and selected-shop bound, not inferred by a new parser. Return demonstrated contract/schema incompatibility instead of widening scope.
 
 ## Completion Report
+
 ### Status
+
 Not Started
 ### Files Changed
 None
@@ -138,3 +140,14 @@ Definition metadata/path validation only.
 Task is repository-owned and gated by its ARCH-061 adoption prerequisite.
 ### Follow-up
 None
+
+## Dependency Reconciliation — 6 November 2026
+
+The synchronized canonical ARCH-061-MCP-001 record is Complete, Attempt 1,
+following accepted review `7f61bde93` and explicit developer completion
+`38b94f3cb` (source `c9ca303`). Its completion is present in this task's
+synchronized parent branch. All explicit prerequisites are therefore Complete.
+Correct the stale Pending flag to Ready, leaving attempt 0, executor/claimed_at
+null and developer execution/completion modes unchanged. No requirements are
+waived and no claim is created by this readiness correction. Normal developer
+preparation and source/validation gates still apply.
