@@ -9,15 +9,15 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 50
-executor: developer
-claimed_at: 2026-11-05T23:57:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: ["ARCH-061-SHARED-002"]
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Implement coordinated shopify token provider
 
@@ -189,3 +189,26 @@ Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
+
+
+## Developer Self-Review - Changes Requested — Attempt 1 (2026-11-06)
+
+### Decision
+
+**Review fails.** Reconciled the current uncommitted implementation against binding revision 2. Return to Ready, executor/claimed_at null, Attempt 1 unchanged; developer execution/completion modes preserved. No next claim or completion is created. Preserve all WIP; this review changes only the parent task record.
+
+### Corrections required
+
+1. **P2 — Classify ambiguous successful refresh responses as retryable unknown outcomes.** `src/shopify/offline-token-provider.ts:352-369` propagates REFRESH_RESPONSE_INVALID for oversized/malformed/invalid successful responses. That code is non-retryable, despite a successful remote response possibly having rotated credentials. The binding taxonomy explicitly assigns malformed success and post-dispatch body failures to REFRESH_OUTCOME_UNKNOWN. Preserve rollback/no-token-return, emit only bounded safe errors and allow the documented next independent request recovery. Update existing tests currently asserting REFRESH_RESPONSE_INVALID for these post-dispatch cases, including malformed JSON, invalid lifetime/token fields and oversized bodies; verify no write/uncommitted token and retryable true.
+2. **P2 — Include initial selected-shop resolution in cancellation/deadline handling.** `getSession` and `withSessionLock` await `resolveShop` before `runLocked` creates/checks the operation deadline. A stalled initial database lookup is therefore unbounded, and a pre-aborted caller still performs/waits for that lookup. Establish the call budget and cancellation check at the public selected-shop entrypoint, cover initial resolution and transaction/callback with the same budget, preserve transaction rollback/no late work, and test a stalled initial lookup plus already-aborted caller. Do not reset the operation budget after resolution.
+3. **Finish the semantic completion/validation report.** It still says Files Changed/Work Completed None and Validation Definition only, while seven task-owned files exist as WIP. Record the actual implementation and assistance, prepared worktree/synchronization evidence, exact unit/typecheck/build and required disposable PostgreSQL results, including separate-client lock/race/recovery proof and cleanup. The new PostgreSQL test/helper source alone is not passing execution evidence. Report NOT_RUN if absent; no Docker/integration execution is authorized by this review.
+
+### Implementation and verification inspected
+
+Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-SHARED-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-SHARED-001`, matching task branches. Implementation baseline HEAD `e9f59680693db13efd73a04b512970245ff9b4f5`. WIP: modified `src/shopify/node.ts`; new offline-token-provider source/unit/PostgreSQL tests, OAuth configuration source/tests and disposable runner script. No task-owned implementation commit/publication exists yet; no WIP is discarded or falsely labelled published.
+
+Inspected provider lock/identity/refresh/error/deadline logic, the OAuth sealed-reader adapter and PostgreSQL runner/test source. Independently ran the required two-file unit set via installed tsx: **17 tests passed**, zero failed/skipped, exit 0; local evidence `/tmp/arch061-shared-review.log`. Passing tests currently encode the erroneous response classification and do not replace the missing initial-lookup bounds or database evidence. No typecheck/build/PostgreSQL/live provider run is claimed by this review. Consumer SDK/ALS integration remains separately owned and is not inferred from Shared helper tests.
+
+### Follow-up
+
+Reclaim through the normal developer workflow, preserve this Attempt 1 history and current WIP, correct both source issues, reconcile the report and provide required evidence before resubmission. Explicit developer completion remains unavailable until a passing review is durable. SHARED-002 stays gated on this task's completion; no downstream promotion, package publication, main merge, schema change or consumer edit is performed.
