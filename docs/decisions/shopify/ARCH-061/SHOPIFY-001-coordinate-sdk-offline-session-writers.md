@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T03:11:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-061-SHARED-002"]
 enables: ["ARCH-061-BACKGROUND-001", "ARCH-061-COMMERCE-001", "ARCH-061-MCP-001", "ARCH-061-SYSTEM-TEST-001"]
@@ -47,9 +47,9 @@ Central token service, agent tools, sibling imports, credential UI, schema chang
 The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Use the binding revision public-wrapper/ALS/lifecycle gate architecture; do not choose a different synchronization mechanism.
 
 ## Work Items
-- [ ] Inventory every SDK/custom offline writer and prove supported coordinated read-through-refresh scope. Storage-write-only adapter is forbidden.
-- [ ] Implement App lifecycle ordering with the fixed advisory gate then row-lock order and canonical identity checks from revision 2.
-- [ ] Prove SDK/Background-style client simultaneous refresh yields one normal remote call; stale store cannot overwrite new pair.
+- [x] Inventory every SDK/custom offline writer and prove supported coordinated read-through-refresh scope. Storage-write-only adapter is forbidden.
+- [x] Implement App lifecycle ordering with the fixed advisory gate then row-lock order and canonical identity checks from revision 2.
+- [x] Prove SDK/Background-style client simultaneous refresh yields one normal remote call; stale store cannot overwrite new pair.
 
 ## Interfaces / Contracts
 Shared Node-only factory and structural transaction interface/error categories defined by SHARED-001 and published by SHARED-002. Consumers inject local client/config/fetch and translate errors. No sibling source imports; no browser exports or raw token DTOs. App owns all SDK/lifecycle mutation entrypoints.
@@ -64,14 +64,14 @@ Shared Node-only factory and structural transaction interface/error categories d
 - ARCH-061-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Inventory every SDK/custom offline writer and prove supported coordinated read-through-refresh scope. Storage-write-only adapter is forbidden.
-- [ ] Implement App lifecycle ordering with the fixed advisory gate then row-lock order and canonical identity checks from revision 2.
-- [ ] Prove SDK/Background-style client simultaneous refresh yields one normal remote call; stale store cannot overwrite new pair.
-- [ ] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
+- [x] Inventory every SDK/custom offline writer and prove supported coordinated read-through-refresh scope. Storage-write-only adapter is forbidden.
+- [x] Implement App lifecycle ordering with the fixed advisory gate then row-lock order and canonical identity checks from revision 2.
+- [x] Prove SDK/Background-style client simultaneous refresh yields one normal remote call; stale store cannot overwrite new pair.
+- [x] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
 
 ## Validation
-- [ ] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
-- [ ] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
+- [x] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
+- [x] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
 
 ## Stop Condition
 Submit completed report for authorized review and STOP after scoped criteria/validation. Explicit developer completion required. Do not start enabled tasks; system validation is terminal/manually invoked.
@@ -148,21 +148,43 @@ No execution started. Use launcher isolated/synchronized task worktrees when req
 
 ### Status
 
-In Progress — developer-owned Attempt 1 claimed at 2026-11-06T03:11:34Z after ARCH-061-SHARED-002 completed. The canonical implementation worktree is synchronized to `origin/main` at `40e1f58`; implementation has not yet begun.
+Developer self-review passed — Attempt 1 is submitted for architect review; explicit developer completion remains pending. The task was claimed at 2026-11-06T03:11:34Z after ARCH-061-SHARED-002 completed. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-SHOPIFY-001`, branch `task/ARCH-061-SHOPIFY-001`, claim commit `27cb0f926e4ee5301b76d92a9b59b1c45622c0fe`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-SHOPIFY-001`, same task branch, based on synchronized `origin/main` commit `40e1f58efa3b5724301de66e0280bf8548394fcd`. Implementation commit `39d2f91` is pushed to `origin/task/ARCH-061-SHOPIFY-001`; no main merge was made.
 ### Files Changed
-None
+`package.json`, `package-lock.json`; `app/shopify.server.js`; new `app/services/shopify-offline-coordination.server.ts` and `app/services/shopify-session-storage.server.ts` with their focused tests; `app/services/shop/shop.service.ts`; `app/services/observability/shopify-runtime-observability.server.ts`; `app/routes/webhooks/app/scopes-update/route.jsx`; `app/routes/webhooks/shop/redact/route.jsx`; `tests/helpers/shopify-lifecycle-postgres.ts`; new `tests/unit/shopify-offline-coordination.test.ts` and `tests/integration/shopify-offline-coordination.test.ts`; updated `tests/unit/routes/scopes-update.test.jsx`, `tests/unit/services/shop.service.test.ts`, and `tests/unit/server-error-privacy.test.ts`.
 ### Work Completed
-None
+- Upgraded App to the published `@modainteract/moda-interact-shared` 5.2.0 Node export and composed its provider with the App Prisma client and the existing App OAuth configuration service.
+- Replaced raw SDK session storage exposure with a public `SessionStorage` adapter. Offline reads/writes use the authentication transaction binding; direct writes are denied; an existing offline Session can be updated only from the Session object loaded in that authentication context. The SDK facade wraps public admin, webhook and unauthenticated-admin entrypoints and exports no raw authentication or storage escape.
+- Installed the SDK public abstract-fetch adapter. OAuth refresh traffic requires the bound stored integration host and POST method, rejects redirects, limits streamed response size to 16 KiB, applies an 8-second network budget, and maps rejected versus ambiguous post-dispatch failures to fixed Shared error categories. Other SDK transport and callback work is bounded to 15 seconds. SDK diagnostic messages are wholly omitted during coordinated authentication.
+- Applied the same Shared domain advisory gate before the existing Shop lifecycle lock and actual Session row lock where applicable. Uninstall, scopes-update, and shop-redact persistence reuse the gate-bound transaction. Scope/readiness checks remain metadata-only and do not refresh tokens.
+- Audited production paths: raw SDK `authenticate.admin`, `authenticate.webhook`, and `unauthenticated.admin` invocation exists only inside the facade wrappers; offline Session write/delete paths are the coordinated storage adapter and the gated uninstall/scopes/redaction lifecycle transactions. The default SDK storage/auth object is not exported.
+- Added App unit assertions for redirect commit versus failure rollback, mismatched Session identity, missing binding, stale Session rejection, safe error categories, transport bounds, and raw SDK export policy. Added real PostgreSQL separate-client refresh serialization and SDK-refresh/uninstall/reinstall callback ordering coverage.
 ### Validation Results
-Definition only.
+- `npm run typecheck` — passed.
+- `npm run build` — passed. Vite emitted existing dependency annotation, external Prisma browser-entry, and large client-chunk warnings; no build errors.
+- Required focused command `npx vitest run tests/unit/shopify-offline-coordination.test.ts tests/integration/shopify-offline-coordination.test.ts` — 10 passed; the two PostgreSQL cases are flag-gated and skipped in this unflagged invocation.
+- Disposable PostgreSQL command `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_SHOPIFY_LIFECYCLE_POSTGRES=1 npx vitest run tests/integration/shopify-offline-coordination.test.ts` — 2 passed using separate Prisma clients; Testcontainers stopped the owned fixture container after the run.
+- Additional focused command covering coordination/storage service tests, privacy diagnostics, ShopService, and scopes-update route — 82 passed; 2 flag-gated PostgreSQL cases skipped.
+- `git diff --check` — passed.
 ### Deviations
-None
+None. The initial container-runtime attempts failed because Testcontainers did not inherit the active Colima endpoint; the successful run used the endpoint and socket override shown above.
 ### Assumptions
-Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2.
+Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2. No schema changes or service-side OAuth configuration changes were made.
 ### Unresolved Issues
-None blocking architecture definition. Revision-1 feasibility questions are superseded by binding revision 2 decisions.
+None identified in the scoped implementation or validation. The task is awaiting architect review and the developer retains explicit completion authority.
 ### Architectural Concerns
-Implement binding revision 2 exactly; report actual incompatibility with evidence instead of selecting alternate architecture.
+Architect review remains pending. No architect review decision has been made by the developer implementation.
+
+## Developer Self-Review
+### Review Status
+Passed — Attempt 1. The implementation and report were reconciled against every Work Item and Acceptance Criterion; focused unit, route, typecheck, build, and separate-client PostgreSQL race evidence is recorded above. The implementation task branch and this parent task-report branch are published. `completion_mode: developer` is preserved, so explicit developer completion is pending. No architect review decision has been made.
+### Reviewed Files
+All files listed under Completion Report → Files Changed, including the coordinated SessionStorage, Shopify facade/transport, lifecycle routes and services, and focused test fixtures.
+### Validation Reviewed
+`npm run typecheck`; `npm run build`; the required focused Vitest command; focused App lifecycle/privacy tests; disposable PostgreSQL independent-client refresh and uninstall/reinstall callback race tests; `git diff --check`.
+### Self-Review Findings
+No known acceptance gaps or uncoordinated offline Session writer paths remain within this task's scope. The only raw SDK public auth calls are invoked inside the facade wrappers; the facade exports wrapped auth functions and the coordinated storage adapter.
+### Decision
+Submit Attempt 1 for `moda_architect` review. Do not mark complete until the developer explicitly requests completion after architect review.
 
 ## Architect Review
 ### Review Status
