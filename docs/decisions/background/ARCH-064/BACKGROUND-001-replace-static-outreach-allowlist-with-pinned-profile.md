@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -101,6 +101,8 @@ Exact purpose profile/membership/behavior schemas and draft/release join models 
 Submit completed scoped report for authorized review and STOP. Explicit developer completion required. No enabled follow-on task auto-start; terminal System Test manually invoked after accepted dependencies.
 
 ## Implementation Notes
+Execution ownership amendment (2026-11-06): developer explicitly requested `/moda-task ARCH-064-BACKGROUND-001` implementation and authorized sync plus claim/source/review publication. Delegate to moda_background via canonical preparation, preserving completion_mode developer and exact pinned profile/generic observation safety scope. No live execution, main merge, deployment or follow-on task execution.
+
 Dependency reconciliation (2026-11-06): canonical Shared002, Commerce001, MCP001 and ARCH059-Background001 Complete. Task Ready at unchanged Attempt0/unclaimed. Consume corrected Shared5.5.0 and trusted private MCP context executionPurpose plus pinned releaseId from discovery; purpose calls without pin fail closed. No automatic execution. Commerce002 production reader correction remains separate required integrated validation gate.
 
 No execution from definition. Use normal launcher-isolated/synchronized task worktrees when requested. Exact architecture choices above are binding; report demonstrated incompatibility instead of selecting new schema/identity/authorization design. Preserve historical task status and unrelated edits.
