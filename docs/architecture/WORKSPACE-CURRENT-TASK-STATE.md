@@ -1941,3 +1941,7 @@ ARCH-063-SHARED-001 Attempt 1 is Complete after architect Accepted review and ex
 2026-11-06: SHARED-003 Attempt1 explicitly developer-completed after Accepted review and69 focused tests/typecheck/build. SHARED-004 publication newly Ready/unclaimed; Commerce remains Blocked until published correction and own integration validation. No package release/main/follow-on execution.
 
 ARCH-064-COMMERCE-001 task-branch reconciliation: Ready at prior Attempt1 after SHARED-004 Complete/public5.5.0; same-task correction contract preserved. Current main rollup retained; no other task claim/status changed.
+
+## ARCH-064 — Commerce Attempt2 completion frontier
+
+2026-11-06: Commerce001 Attempt2 Complete after Accepted review ofbef213b650b80864fd135dff98c92ae8694ca298. MCP001 newly Ready/unclaimed (DATABASE/Shared/ARCH059 prerequisites Complete). Background remains Pending on MCP; terminal/manual-gated System Test Pending on MCP/Background. No live activation/migration/main/follow-on execution.
