@@ -268,3 +268,18 @@ The developer invoked the reconciliation skill again while the task remained Rea
 Source verification confirms both open findings: `getSession` and `withSessionLock` await `resolveShop` before `runLocked` constructs the deadline; malformed successful bodies and invalid successful payload fields still throw REFRESH_RESPONSE_INVALID, bypassing the unknown-outcome mapping through CallbackFailure. Commit publication and added test helpers do not fix those behaviors. Apply the exact previous corrections and regressions, then provide the final semantic report and actual required validation results.
 
 No tests or Docker runs were repeated; no new passing evidence is claimed. The initial completion report has been reconciled to describe the committed partial implementation rather than None/Definition only. Status Ready, executor/claimed_at null, Attempt 1 preserved; developer execution/completion modes unchanged. SHARED-002 remains gated. No source alteration, downstream promotion, release or merge is performed by this recheck.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 2 (2026-11-06)
+
+**Review passed; no actionable findings remain from the requested corrections.** Reviewed implementation `f399a84b592da1a3855e2a6561567a788ea3fcfa`, matching its published task ref. Status Review; executor/claimed_at null; Attempt 2 unchanged. Execution/completion modes remain developer/developer. Explicit developer completion remains pending; this review does not complete the task or unblock SHARED-002.
+
+### Correction and evidence reconciliation
+
+Malformed successful JSON, invalid returned token/lifetime/date fields and streamed overflow now produce retryable REFRESH_OUTCOME_UNKNOWN, with no returned uncommitted credential. Public getSession/withSessionLock create and check one operation deadline before initial selected-Shop resolution, race that lookup against cancellation/deadline and pass the same budget through lock/transaction/callback. The updated unit regressions cover malformed success, stalled initial lookup and pre-aborted caller. The completion report now describes the actual source, publication, isolation and required validation instead of definition-only placeholders.
+
+Independently ran `node --import tsx --test src/shopify/offline-token-provider.test.ts src/shopify/oauth-configuration.test.ts` using workspace Node 24.19.0: **18 passed, 0 failed/skipped**, exit 0. Local evidence `/tmp/arch061-shared-attempt2-review.log`. Independently checked correction whitespace and source/remote equality. Inspected the provider correction, focused tests and generated-client structural runner.
+
+Reviewed the submitted report of passing typecheck/build, generated Background/Commerce client compilation and disposable PostgreSQL proof (1 passed, two independent clients, lock contention/different-shop progress/rollback recovery and owned-container cleanup). Those checks were not independently rerun by this review; no live Shopify request or consumer SDK integration is certified by the Shared test evidence. Earlier failed dispositions are historical and superseded for the corrected source.
+
+The canonical dedicated parent/implementation worktrees were clean at review. Attempt 2 preparation/claim/synchronization, unchanged consumer boundary and implementation/report commits are recorded in the Completion Report. No new claim, implementation edit, package publication, dependency promotion, main merge or deployment occurs. The durable parent review is committed/pushed separately on the matching task branch. The developer retains explicit completion and final integration authority.
