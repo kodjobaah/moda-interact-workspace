@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-11-06T08:46:05Z
+attempt: 2
 depends_on: ["ARCH-061-SHARED-002"]
 enables: ["ARCH-061-BACKGROUND-001", "ARCH-061-COMMERCE-001", "ARCH-061-MCP-001", "ARCH-061-SYSTEM-TEST-001"]
 created: 2026-11-05
@@ -148,7 +148,8 @@ No execution started. Use launcher isolated/synchronized task worktrees when req
 
 ### Status
 
-Developer self-review passed — Attempt 1 is submitted for architect review; explicit developer completion remains pending. The task was claimed at 2026-11-06T03:11:34Z after ARCH-061-SHARED-002 completed. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-SHOPIFY-001`, branch `task/ARCH-061-SHOPIFY-001`, claim commit `27cb0f926e4ee5301b76d92a9b59b1c45622c0fe`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-SHOPIFY-001`, same task branch, based on synchronized `origin/main` commit `40e1f58efa3b5724301de66e0280bf8548394fcd`. Implementation commit `39d2f91` is pushed to `origin/task/ARCH-061-SHOPIFY-001`; no main merge was made.
+In Progress — Attempt 2 claimed by developer at 2026-11-06T08:46:05Z. Attempt 1 review history is preserved below.
+
 ### Files Changed
 `package.json`, `package-lock.json`; `app/shopify.server.js`; new `app/services/shopify-offline-coordination.server.ts` and `app/services/shopify-session-storage.server.ts` with their focused tests; `app/services/shop/shop.service.ts`; `app/services/observability/shopify-runtime-observability.server.ts`; `app/routes/webhooks/app/scopes-update/route.jsx`; `app/routes/webhooks/shop/redact/route.jsx`; `tests/helpers/shopify-lifecycle-postgres.ts`; new `tests/unit/shopify-offline-coordination.test.ts` and `tests/integration/shopify-offline-coordination.test.ts`; updated `tests/unit/routes/scopes-update.test.jsx`, `tests/unit/services/shop.service.test.ts`, and `tests/unit/server-error-privacy.test.ts`.
 ### Work Completed
