@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -101,6 +101,8 @@ Exact purpose profile/membership/behavior schemas and draft/release join models 
 Submit completed scoped report for authorized review and STOP. Explicit developer completion required. No enabled follow-on task auto-start; terminal System Test manually invoked after accepted dependencies.
 
 ## Implementation Notes
+Dependency reconciliation (2026-11-06): canonical Shared002, Commerce001, MCP001 and ARCH059-Background001 Complete. Task Ready at unchanged Attempt0/unclaimed. Consume corrected Shared5.5.0 and trusted private MCP context executionPurpose plus pinned releaseId from discovery; purpose calls without pin fail closed. No automatic execution. Commerce002 production reader correction remains separate required integrated validation gate.
+
 No execution from definition. Use normal launcher-isolated/synchronized task worktrees when requested. Exact architecture choices above are binding; report demonstrated incompatibility instead of selecting new schema/identity/authorization design. Preserve historical task status and unrelated edits.
 
 ## Completion Report
