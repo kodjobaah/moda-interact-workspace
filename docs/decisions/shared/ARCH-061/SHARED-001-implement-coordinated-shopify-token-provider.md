@@ -138,21 +138,35 @@ No execution started. Use launcher isolated/synchronized task worktrees when req
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-11-05T23:57:17Z.
+Changes Requested — Attempt 1 remains Ready/unclaimed after developer-update recheck on 2026-11-06. Implementation is published, but both source corrections and the completed validation report remain outstanding.
+
 ### Files Changed
-None
+
+Published implementation `66b59a295de835a66930aa57c1c98ef424ccbfb4` contains eight task-owned files: token provider and unit/PostgreSQL tests; OAuth configuration reader/tests; Node entrypoint exports; disposable PostgreSQL and generated-Prisma structural contract runners. No dependency/version/schema or consumer implementation change is recorded in this commit.
+
 ### Work Completed
-None
+
+The initial injected-client provider, OAuth reader, exported types and test helpers are implemented and committed/pushed. This is a partial implementation, not acceptance. The two reviewed behavior defects remain present at the published head.
+
 ### Validation Results
-Definition only.
-### Deviations
-None
-### Assumptions
-Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2.
+
+Prior independent unit review passed 17 tests in the required two-file unit set; log `/tmp/arch061-shared-review.log`. The current recheck inspected published source and did not rerun tests. Required final typecheck/build, separate-client disposable PostgreSQL results and cleanup must still be recorded with actual command/exit evidence; their execution is not inferred from added runner files. The generated-client contract runner's presence likewise is not execution proof.
+
+### Deviations / Assistance
+
+Implementation assistance and exact execution evidence must be reconciled by the implementing developer in the final report; commit messages alone do not establish them. No source edit, test execution, package release or consumer work was performed by this recheck.
+
+### Git / VCS
+
+Canonical dedicated paths are recorded in the Attempt 1 review. Published implementation HEAD and task remote both equal `66b59a295de835a66930aa57c1c98ef424ccbfb4`; the implementation and parent task worktrees were clean at recheck. The implementation baseline is `e9f5968`. No new claim or attempt was created. Parent review is published separately on the matching task branch, without a gitlink or main-branch change.
+
 ### Unresolved Issues
-None blocking architecture definition. Revision-1 feasibility questions are superseded by binding revision 2 decisions.
+
+Malformed successful refresh/oversized body handling still emits non-retryable REFRESH_RESPONSE_INVALID; initial resolveShop is still outside the call cancellation/deadline. See the review below for exact corrections and required evidence. No passing review or completion is recorded.
+
 ### Architectural Concerns
-Implement binding revision 2 exactly; report actual incompatibility with evidence instead of selecting alternate architecture.
+
+Preserve binding revision 2, injected service clients, exact identity/lock order, provider-supported recovery and consumer-owned SDK/lifecycle boundaries. Added compile/DB helpers do not certify SDK coordination or deployed consumer behavior.
 
 ## Architect Review
 ### Review Status
@@ -212,3 +226,12 @@ Inspected provider lock/identity/refresh/error/deadline logic, the OAuth sealed-
 ### Follow-up
 
 Reclaim through the normal developer workflow, preserve this Attempt 1 history and current WIP, correct both source issues, reconcile the report and provide required evidence before resubmission. Explicit developer completion remains unavailable until a passing review is durable. SHARED-002 stays gated on this task's completion; no downstream promotion, package publication, main merge, schema change or consumer edit is performed.
+
+
+## Developer Self-Review - Changes Requested — Attempt 1 Recheck (2026-11-06)
+
+The developer invoked the reconciliation skill again while the task remained Ready/unclaimed. No new claim or attempt is manufactured. **Changes Requested remains in effect.** Implementation is now committed and pushed at `66b59a295de835a66930aa57c1c98ef424ccbfb4`; the earlier WIP/publication description is historical.
+
+Source verification confirms both open findings: `getSession` and `withSessionLock` await `resolveShop` before `runLocked` constructs the deadline; malformed successful bodies and invalid successful payload fields still throw REFRESH_RESPONSE_INVALID, bypassing the unknown-outcome mapping through CallbackFailure. Commit publication and added test helpers do not fix those behaviors. Apply the exact previous corrections and regressions, then provide the final semantic report and actual required validation results.
+
+No tests or Docker runs were repeated; no new passing evidence is claimed. The initial completion report has been reconciled to describe the committed partial implementation rather than None/Definition only. Status Ready, executor/claimed_at null, Attempt 1 preserved; developer execution/completion modes unchanged. SHARED-002 remains gated. No source alteration, downstream promotion, release or merge is performed by this recheck.
