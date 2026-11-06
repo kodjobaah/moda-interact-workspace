@@ -7,7 +7,7 @@ domain: shared
 repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -97,6 +97,8 @@ None
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
 
 ## Implementation Notes
+Execution ownership amendment (2026-11-06): the developer explicitly requested `/moda-task ARCH-063-SHARED-001`, authorized agent implementation, and requested moda_architect assistance to resolve preparation. Execution is delegated to moda_shared through the canonical agent launcher; completion_mode remains developer, preserving explicit developer completion authority. No scope, acceptance, dependency or attempt change.
+
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
 ## Completion Report
