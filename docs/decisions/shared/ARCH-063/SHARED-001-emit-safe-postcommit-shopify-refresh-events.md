@@ -7,13 +7,13 @@ domain: shared
 repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables: ["ARCH-063-SHARED-002"]
 created: 2026-11-06
@@ -70,10 +70,10 @@ SDK-managed refresh/token exchange is not observable solely from Shared getSessi
 Shared implementation extends existing API compatibly; publication chooses next available approved semver and records exact version before consumer pins. No forced version guess or unpublished sibling import. Commerce UI correction is independent and Ready now; it uses existing accepted ARCH-060/061/062 contracts, does not wait for log publication. Shared logging implementation is also independently Ready. Consumer event wiring depends on Shared publication. App wiring includes metadata-readiness correction. System Test is terminal on all fixes; manually invoked after optional user exercise. Compatible rollout, no schema/credential/env or Render topology change. Logging absent in old binaries is expected until owning consumer deployed; do not assert deployed observability from local code. No new metric/span framework. Metadata reads and tooling never expose provider secrets.
 
 ## Work Items
-- [ ] Add optional safe hook and exact schema/timing/error event contract; do not alter refresh/lock/recovery mechanics.
-- [ ] Export event type/code types for consumer adapters; retain browser boundary.
-- [ ] Assert safe payload, no reuse events, hook isolation and terminal categories.
-- [ ] Assert success only after actual commit and one normal refresh attempt for independent clients.
+- [x] Add optional safe hook and exact schema/timing/error event contract; do not alter refresh/lock/recovery mechanics.
+- [x] Export event type/code types for consumer adapters; retain browser boundary.
+- [x] Assert safe payload, no reuse events, hook isolation and terminal categories.
+- [x] Assert success only after actual commit and one normal refresh attempt for independent clients.
 
 ## Interfaces / Contracts
 Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published optional Shared onEvent hook and exact frozen event schema above. Each consumer owns safe logger forwarding; provider/runtime credentials stay server-only. Exact version recorded by SHARED-002 before consumer pins.
@@ -85,48 +85,102 @@ None
 - ARCH-063-SHARED-002
 
 ## Acceptance Criteria
-- [ ] Committed observer can read new expiry/pair from second client; save/commit failure never emits committed.
-- [ ] Two clients same expired row ->one started+committed; waiting reuse ->no event.
-- [ ] Token/body/error canaries absent; throwing/rejecting callback cannot fail business call.
+- [x] Committed observer can read new expiry/pair from second client; save/commit failure never emits committed.
+- [x] Two clients same expired row ->one started+committed; waiting reuse ->no event.
+- [x] Token/body/error canaries absent; throwing/rejecting callback cannot fail business call.
 
 ## Validation
-- [ ] Run focused command `npx tsx --test src/shopify/offline-token-provider.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
-- [ ] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
+- [x] Run focused command `npx tsx --test src/shopify/offline-token-provider.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
+- [x] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
 
 ## Stop Condition
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
 
 ## Implementation Notes
+Execution ownership amendment (2026-11-06): the developer explicitly requested `/moda-task ARCH-063-SHARED-001`, authorized agent implementation, and requested moda_architect assistance to resolve preparation. Execution is delegated to moda_shared through the canonical agent launcher; completion_mode remains developer, preserving explicit developer completion authority. No scope, acceptance, dependency or attempt change.
+
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
 ## Completion Report
 ### Status
-Not Started
+Complete — architect Accepted; explicitly completed by developer.
 ### Files Changed
-None
+- src/shopify/offline-token-provider.ts
+- src/shopify/node.ts
+- src/shopify/offline-token-provider.test.ts
+- src/shopify/offline-token-provider.postgres.test.ts
 ### Work Completed
-None
+Added optional isolated onEvent hook with exact frozen safe metadata, fresh UUID identity and monotonic bounded duration. Started is emitted immediately before dispatch after eligibility checks; committed only after transaction resolution. Failures emit one safe terminal category, including UNKNOWN for remote acceptance with persistence/commit ambiguity. Existing refresh, lock, credential and caller-error behavior is preserved. Reuse and lock waiters emit no refresh events. Node-only event type export supports independently owned consumer adapters. No service logger, SDK wrapper, publication version or consumer code changed.
 ### Validation Results
-Definition only.
+- `npx tsx --test src/shopify/offline-token-provider.test.ts`: PASS 20/20, zero skips, including secret canaries, sync/async hook failures, no-reuse events, cancellation and actual 8-second network timeout.
+- `MODA_WORKSPACE_ROOT=<canonical workspace> node scripts/test-arch061-shopify-token-postgres.mjs`: PASS 1/1, zero skips; independent clients, single refresh pair, committed observer reads new credential pair/expiry from second client, save rollback, actual deferred-constraint COMMIT failure, recovery. Disposable container removed successfully. Initial readiness socket message was transient and retried by the existing runner.
+- Targeted strengthened event timing test: PASS 1/1 (timing assertions outside isolated callbacks).
+- `npm run typecheck`: PASS.
+- `npm run build`: PASS ESM and declarations.
+- `git diff --check`: PASS.
+- Locked `npm ci --ignore-scripts` completed; audit reported 3 existing dependency vulnerabilities (1 low, 2 high); no dependency/lockfile changes made.
 ### Deviations
-None
+Task touchpoint table names index.ts for Node-only exports; actual ./shopify/node entrypoint is src/shopify/node.ts. Export added there, preserving browser-safe index.ts, as confirmed by moda_architect.
 ### Assumptions
-Existing accepted coordinator and metadata integration remain available at owner task baseline.
+Hook telemetry is process-local and best effort; process death can leave started without terminal. Consumer adapter integration and package publication remain separate tasks.
 ### Unresolved Issues
-None blocking definition.
+None. Initial automatic publication rejection was resolved by explicit developer authorization to push implementation source/tests and the parent task review report to their remote task branches.
 ### Architectural Concerns
-Return actual incompatible contract evidence before widening scope.
+None introduced. Completion mode remains developer; enabled tasks remain gated.
+### Git / VCS
+Task branch: task/ARCH-063-SHARED-001
+
+Physical worktree isolation:
+- canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+- parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-063-SHARED-001
+- parent branch: task/ARCH-063-SHARED-001
+- implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-063-SHARED-001
+- implementation branch: task/ARCH-063-SHARED-001
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization (launcher packet):
+- parent remote task branch fast-forwarded: not-needed
+- parent origin/main incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation origin/main incorporated: already-current
+- recursive submodule sync/update: passed; recorded submodules: none; status ready
+- Attempt 1 claim commit: 760282f8400c4c02a1353a623110b29202dcad1d; pushed yes
+
+Implementation repository: moda-interact-shared
+- commit: 4097eb3662c11bf97989cd1012da914973ec7592
+- local branch: task/ARCH-063-SHARED-001
+- pushed: yes; remote task branch verified at 4097eb3662c11bf97989cd1012da914973ec7592 after explicit developer publication authorization
+
+Parent workspace:
+- task file: docs/decisions/shared/ARCH-063/SHARED-001-emit-safe-postcommit-shopify-refresh-events.md
+- report/review commit: see current parent task branch history; initial report 52d7f2d0e57193c2a85f7b74241f3ece9c35d361
+- report pushed: yes on matching task branch; final review publication verified after commit
+- submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 ### Review Status
-Pending
+Accepted — explicitly completed by developer.
 ### Review Notes
-Definition source audit completed; implementation not reviewed. Historical task acceptance preserved.
+2026-11-06 moda_architect inspected actual implementation commit 4097eb3662c11bf97989cd1012da914973ec7592 and focused test changes. No implementation corrections identified. Optional observer preserves caller behavior and transaction/lock flow; committed emission follows awaited interactive transaction resolution. Event payload uses an explicit frozen field allowlist, fresh UUID, trusted resolved Shop identity and bounded monotonic duration. Errors/body/credentials are excluded, and synchronous throws/asynchronous rejections are isolated. Existing valid credential reuse and lock waiters do not emit attempts. Cancellation, remote uncertainty and commit failure produce one terminal event after started.
+
+Technical review passes. Developer explicitly authorized publication of source/tests and the task review report after the initial automatic rejection. Accepted implementation remains at review under completion_mode developer; no main integration, package release or dependent execution is authorized by this review.
 ### Reviewed Files
-Task touchpoints above; canonical MCP ARCH-061 reader inspected separately from stale shared checkout.
+- src/shopify/offline-token-provider.ts
+- src/shopify/node.ts
+- src/shopify/offline-token-provider.test.ts
+- src/shopify/offline-token-provider.postgres.test.ts
+- Current task Completion Report and launcher preparation packet.
 ### Validation Reviewed
-Task metadata/dependency/path checks only.
+Reviewed evidence: unit 20/20; disposable PostgreSQL 1/1 without skips and successful cleanup; typecheck; ESM/declaration build; diff whitespace check. Inspected assertions for actual deferred-constraint COMMIT failure, independent-client postcommit visibility, concurrency single event pair, secret canaries, hook failure isolation and timing assertions outside swallowed observer callbacks. No redundant validation rerun required.
 ### Architecture Conformance
-Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
+Conforms to bounded Shared hook contract and compatible rollout. Node-only export correctly resides in node.ts; browser-safe index retained. Physical worktrees and startup synchronization match canonical launcher packet. Developer completion authority retained. ARCH-063-SHARED-002 remains Pending until this task is published, accepted and explicitly completed by developer.
 ### Follow-up
-None
+Developer explicitly completed this task. ARCH-063-SHARED-002 is dependency-ready; no enabled task starts implicitly.
+
+## Developer Completion Decision
+2026-11-06: Developer explicitly invoked `/moda_developer_update ARCH-063-SHARED-001 complete`. Verified durable Accepted review at parent c6cfd2009cf47e4260dfa3d3805bd41562d0f1f8, all required Work Items/Acceptance Criteria/Validation satisfied, clean canonical worktrees, and published implementation 4097eb3662c11bf97989cd1012da914973ec7592 matching remote task branch. Completed accepted Attempt 1 without incrementing attempt or changing execution/completion mode. Executor and claimed_at remain null. No main merge or gitlink change. Dependency frontier: ARCH-063-SHARED-002 becomes Ready; consumers and terminal/manual-gated System Test remain Pending on incomplete dependencies.
