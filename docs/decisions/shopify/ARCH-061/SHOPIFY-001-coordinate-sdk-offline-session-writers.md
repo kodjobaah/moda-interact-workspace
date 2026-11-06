@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -221,3 +221,24 @@ Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
+
+
+## Developer Self-Review - Changes Requested — Attempt 1 (2026-11-06)
+
+**Review fails: actual installed SDK refresh Sessions are rejected by the storage guard.** Status Ready, executor/claimed_at null, Attempt 1 unchanged; developer execution/completion modes preserved. Earlier implementer self-review does not establish acceptance against this finding.
+
+### P1 — Support freshly constructed SDK refresh/exchange Sessions safely
+
+`app/services/shopify-session-storage.server.ts:165-166` requires `binding.loadedOfflineSessions.has(session)` for every existing-row update. The installed Shopify React Router helper `helpers/ensure-offline-token-is-not-expired.mjs` calls `api.auth.refreshToken`, obtains its returned Session and passes it to `storeSession`. The installed Shopify API `auth/oauth/refresh-token.mjs` constructs that result through `createSession`, whose public implementation returns `new Session`. It is therefore a different object from the one returned by storage.loadSession, even for the same legitimate shop/session identity while the coordination gate is held. The WeakSet test rejects the normal SDK refresh and token-exchange path with SESSION_IDENTITY_CONFLICT after possible remote rotation; authentication cannot reliably persist the new pair.
+
+Replace JavaScript object-identity provenance with a safe coordinated protocol that permits a newly constructed Session from an actual scoped SDK refresh/exchange while still rejecting a stale store and mismatched shop/actual session ID. Preserve existing public SDK wrappers, transaction-bound storage, same gate/row authority and no uncoordinated writes. Do not weaken identity checks merely to make the write succeed.
+
+### Required actual SDK regression
+
+Exercise the installed public SDK authentication/refresh flow with controlled fetch and real SessionStorage composition. Verify the newly constructed refreshed Session is accepted under its correct binding, both tokens commit atomically, authentication succeeds, and stale/foreign/unbound stores remain denied. Extend the separate-client PostgreSQL race to include that actual SDK call, preserving exactly one normal remote refresh and uninstall/reinstall ordering. The current PostgreSQL callback at `tests/integration/shopify-offline-coordination.test.ts:85-91` manually loads a Session, changes its properties through installRefresh and stores that same object; it cannot expose this compatibility failure and must not be labelled proof of the installed SDK refresh path.
+
+### Review evidence
+
+Reviewed implementation `39d2f917a074173eec99214a9d71689952d58dfc`, the facade/transport/wrapper, storage guard and test sources, and the installed SDK refresh/token-exchange/createSession implementations. Independently ran `vitest run tests/unit/shopify-offline-coordination.test.ts`: **10 passed**, exit 0; local log `/tmp/arch061-shopify-review.log`. The green unit callbacks do not replace actual SDK coverage. Submitted typecheck/build, 82-test extra set and two PostgreSQL cases were reviewed as reported evidence, not independently rerun. No Docker/live Shopify run was performed.
+
+Preserve the published implementation/report and dedicated worktrees. Reclaim through the normal developer workflow, implement the safe correction, add actual SDK regression/race evidence and resubmit. No implementation edit, new claim, attempt increment, package change, main merge, deployment or downstream promotion occurs in this review. Explicit completion remains unavailable until a passing review is durable.
