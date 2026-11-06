@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -109,7 +109,7 @@ No implementation/claim from this definition. Use normal launcher isolated workt
 
 ### Status
 
-Developer Self-Review Passed / Accepted — Attempt 2, 2026-11-06. Both prior findings are resolved. Status remains Review pending explicit developer completion.
+Complete — Attempt 2 explicitly developer-completed on 2026-11-06 after passing review `f7e72526a`. Both prior findings are resolved.
 
 ### Files Changed
 
@@ -255,3 +255,10 @@ Rerun the declared four-file focused selection plus `tests/unit/merchant-request
 - Independent validation: `node node_modules/vitest/vitest.mjs run tests/unit/shopify-domain-boundary.test.ts tests/unit/services/shop.service.test.ts tests/unit/merchant-knowledge-upload.test.ts tests/unit/routes/public-home-route.test.ts tests/unit/merchant-request-context.test.ts tests/unit/routes/auth-catchall.test.ts tests/unit/merchant-knowledge-actions.test.ts` passed all 96 tests in 7 files, exit 0, using Node 24.19.0 in the canonical implementation worktree (`/tmp/arch062-shopify-attempt2-review.log`). `git diff --check 3a5c920 HEAD` passed in that implementation worktree.
 - Validation scope: reviewed reported Attempt 2 typecheck pass. Production source is unchanged, so the prior independent typecheck and submitted successful build remain applicable. No independent build/typecheck rerun or PostgreSQL scenario is claimed for this review.
 - Publication: this review updates only the current task record on the parent task branch. No main merge, gitlink staging, deployment, claim, attempt increment or downstream execution/promotion occurs. No material assigned-agent assistance was newly reported for this correction.
+
+
+## Explicit Developer Completion Decision — 2026-11-06
+
+The developer explicitly invoked `/moda_developer_update ARCH-062-SHOPIFY-001 complete`. Accepted Attempt 2 is Complete; executor and claimed_at remain null and attempt remains 2. Passing review `f7e72526a4725334e6fdaaf45144792c597b8701` is durable. Accepted implementation `249de4e130117d85a86763de3abc4c71b36e9996` is clean and verified equal to the live remote task branch. No known required Work Item or Acceptance Criterion remains incomplete. Earlier pending-completion wording is historical and superseded by this decision.
+
+Dependency frontier: Background Complete on published parent `6d8c9d6eec065dbd2e923762cdd1d923b6039650`; Commerce Complete on `1bcf42b25713c1986536185a92d661c59c273a06`; MCP Complete on `1cf2236d6586974babe5730d4e08369825b7f16f`. Synchronize these existing records, then promote ARCH-062-SYSTEM-TEST-001 Pending -> Ready, preserving Attempt 0, executor null and claimed_at null. This is dependency eligibility only: terminal system validation remains manually gated and requires explicit developer invocation. No main merge, gitlink update, test execution, deployment or rollout is included.

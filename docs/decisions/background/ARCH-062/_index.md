@@ -17,3 +17,5 @@ and explicit developer completion `401c1ac3a`, source `f040512`. Completion
 was already published when the developer repeated the completion command; no
 new attempt, implementation edit or second completion decision was created.
 SYSTEM-TEST-001 remains Pending on Shopify, Commerce and MCP completion.
+
+Current completion frontier — 2026-11-06: all ARCH-062 implementation prerequisites are Complete. SYSTEM-TEST-001 is Ready/unclaimed at Attempt 0; terminal manual execution and rollout gates remain in force. Earlier frontier notes are historical.

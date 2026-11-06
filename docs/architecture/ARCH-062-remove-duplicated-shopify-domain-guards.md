@@ -41,11 +41,11 @@ No blanket search/replace of every myshopify string. Leave SDK internals, docume
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-062-SHOPIFY-001 | shopify | Review | ARCH-061-SHOPIFY-001 |
+| ARCH-062-SHOPIFY-001 | shopify | Complete | ARCH-061-SHOPIFY-001 |
 | ARCH-062-BACKGROUND-001 | background | Complete | ARCH-061-BACKGROUND-001 |
 | ARCH-062-COMMERCE-001 | commerce | Complete | ARCH-061-COMMERCE-001 |
-| ARCH-062-MCP-001 | mcp | In Progress | ARCH-061-MCP-001 |
-| ARCH-062-SYSTEM-TEST-001 | system-test | Pending | ARCH-062-SHOPIFY-001, ARCH-062-BACKGROUND-001, ARCH-062-COMMERCE-001, ARCH-062-MCP-001 |
+| ARCH-062-MCP-001 | mcp | Complete | ARCH-061-MCP-001 |
+| ARCH-062-SYSTEM-TEST-001 | system-test | Ready | ARCH-062-SHOPIFY-001, ARCH-062-BACKGROUND-001, ARCH-062-COMMERCE-001, ARCH-062-MCP-001 |
 
 ## Architecture definition review
 Inspected existing suffix checks and trusted session flow; official sources separate storefront from Admin identity. No new domain discovery or storage needed. Existing ARCH-061 adoption provides selected-shop snapshot. No unresolved architectural decision is delegated to implementation.
@@ -57,3 +57,5 @@ Dependency frontier — 2026-11-06: ARCH-062-BACKGROUND-001 is Ready/unclaimed f
 This is governance reconciliation only: no implementation tests, task launches, active claims, new completion decisions, merges or deployments. Existing historical review text is preserved; current task YAML and latest explicit completion records take precedence over historical pending text. Background mirror was reconciled from its canonical task worktree. Shopify/Commerce/MCP definitions remain unmaterialised: launcher reports expected parent paths, but those worktrees are absent; their local definitions are dependency-ready without any branch/worktree/publication claim. No publication is claimed by this local update.
 
 Completion frontier — 2026-11-06: Commerce and Background are Complete. Live published task branches show Shopify in Review and MCP In Progress. System Test remains Pending and manually gated; no sibling claim or attempt is changed.
+
+Current completion frontier — 2026-11-06: all ARCH-062 implementation prerequisites are Complete. SYSTEM-TEST-001 is Ready/unclaimed at Attempt 0; terminal manual execution and rollout gates remain in force. Earlier frontier notes are historical.
