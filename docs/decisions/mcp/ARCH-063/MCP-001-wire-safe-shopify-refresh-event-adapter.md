@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -97,7 +97,7 @@ Use launcher-resolved isolated/synchronized task worktrees when execution reques
 
 ### Status
 
-Review — Attempt 1; developer self-review passed. Explicit developer completion pending.
+Complete — Attempt 1 accepted and explicitly developer-completed on 2026-11-06.
 
 ### Files Changed
 package.json, package-lock.json, src/runtime/prisma.ts, tests/unit/connections/shopify-session-coordination.test.ts.
@@ -149,3 +149,9 @@ Task metadata/dependency/path checks only.
 Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
 ### Follow-up
 None
+
+## Developer Completion Decision
+2026-11-06: Developer explicitly invoked `/moda_developer_update ARCH-063-MCP-001 complete`. Accepted Attempt 1 remains unchanged. Passing self-review is durable in parent commit 5f5ea8338; implementation 7ab689b3c3a907efb54dbcc99c36042a7cf5db48 matches origin/task/ARCH-063-MCP-001 and worktree is clean. Required work and validation are satisfied. Status complete; executor and claimed_at remain null. Neither main branch merged or pushed.
+
+### Dependency-frontier reconciliation
+ARCH-063-SYSTEM-TEST-001 remains Pending and manually gated: COMMERCE-001 Ready, SHOPIFY-001 In Progress and COMMERCE-002 Review are not Complete. BACKGROUND-001 and SHARED-002 are Complete. No downstream task promoted or started.
