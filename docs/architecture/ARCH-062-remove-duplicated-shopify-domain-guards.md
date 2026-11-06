@@ -4,7 +4,7 @@ title: Remove duplicated Shopify domain guards on trusted integrations
 status: agreed
 coordinator: moda_architect
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # ARCH-062: Trusted integration identity and custom storefront domains
 
@@ -42,10 +42,12 @@ No blanket search/replace of every myshopify string. Leave SDK internals, docume
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
 | ARCH-062-SHOPIFY-001 | shopify | Pending | ARCH-061-SHOPIFY-001 |
-| ARCH-062-BACKGROUND-001 | background | Pending | ARCH-061-BACKGROUND-001 |
+| ARCH-062-BACKGROUND-001 | background | Ready | ARCH-061-BACKGROUND-001 |
 | ARCH-062-COMMERCE-001 | commerce | Pending | ARCH-061-COMMERCE-001 |
 | ARCH-062-MCP-001 | mcp | Pending | ARCH-061-MCP-001 |
 | ARCH-062-SYSTEM-TEST-001 | system-test | Pending | ARCH-062-SHOPIFY-001, ARCH-062-BACKGROUND-001, ARCH-062-COMMERCE-001, ARCH-062-MCP-001 |
 
 ## Architecture definition review
 Inspected existing suffix checks and trusted session flow; official sources separate storefront from Admin identity. No new domain discovery or storage needed. Existing ARCH-061 adoption provides selected-shop snapshot. No unresolved architectural decision is delegated to implementation.
+
+Dependency frontier — 2026-11-06: ARCH-062-BACKGROUND-001 is Ready/unclaimed following explicit completion of ARCH-061-BACKGROUND-001. Other task statuses remain unchanged.

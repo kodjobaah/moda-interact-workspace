@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-061-BACKGROUND-001"]
 enables: ["ARCH-062-SYSTEM-TEST-001"]
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Remove consent provider domain suffix guard
 
@@ -131,3 +131,8 @@ Definition metadata/path validation only.
 Task is repository-owned and gated by its ARCH-061 adoption prerequisite.
 ### Follow-up
 None
+
+
+## Architect Dependency Reconciliation — 2026-11-06
+
+ARCH-061-BACKGROUND-001 Attempt 1 is explicitly developer-completed after passing review `6f522798a`, implementation `3fed264`. All explicit prerequisites are now Complete. Promoted from Pending to Ready; Attempt 0, executor null and claimed_at null remain unchanged. This is dependency eligibility only; normal preparation and explicit execution authorization remain required.

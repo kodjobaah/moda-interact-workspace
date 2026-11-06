@@ -4,7 +4,7 @@ title: Shopify offline token refresh coordination
 status: agreed
 coordinator: moda_architect
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Shopify offline token refresh coordination
 
@@ -16,11 +16,11 @@ Revision 1 was replaced before implementation. Revision 2 below is the sole norm
 |---|---|---|---|
 | ARCH-061-SHARED-001 | shared | Complete | - |
 | ARCH-061-SHARED-002 | shared | Complete | ARCH-061-SHARED-001 |
-| ARCH-061-SHOPIFY-001 | shopify | Ready | ARCH-061-SHARED-002 |
-| ARCH-061-BACKGROUND-001 | background | Pending | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
-| ARCH-061-COMMERCE-001 | commerce | Pending | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
-| ARCH-061-MCP-001 | mcp | Pending | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
-| ARCH-061-SYSTEM-TEST-001 | system-test | Pending | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001, ARCH-061-BACKGROUND-001, ARCH-061-COMMERCE-001, ARCH-061-MCP-001 |
+| ARCH-061-SHOPIFY-001 | shopify | Complete | ARCH-061-SHARED-002 |
+| ARCH-061-BACKGROUND-001 | background | Complete | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
+| ARCH-061-COMMERCE-001 | commerce | Complete | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
+| ARCH-061-MCP-001 | mcp | Complete | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001 |
+| ARCH-061-SYSTEM-TEST-001 | system-test | Ready | ARCH-061-SHARED-002, ARCH-061-SHOPIFY-001, ARCH-061-BACKGROUND-001, ARCH-061-COMMERCE-001, ARCH-061-MCP-001 |
 
 
 ## Revision 2 — binding implementation contract (2026-11-05)
@@ -105,3 +105,5 @@ Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOff
 ## Shopify Completion / Consumer Frontier — 6 November 2026
 
 SHOPIFY-001 Attempt 2 is explicitly developer-completed after passing review `e1310a6aa`, source `17fb986`. Shared implementation/publication prerequisites are Complete; exact published package is 5.2.0. BACKGROUND-001, COMMERCE-001 and MCP-001 are Ready/unclaimed under their existing developer execution/completion modes. SYSTEM-TEST-001 remains Pending on all three consumer completions and retains manual terminal gates. No consumer execution, deployment, main merge or complete-architecture acceptance is implied.
+
+Completion frontier — 2026-11-06: all ARCH-061 implementation prerequisites are Complete. SYSTEM-TEST-001 is dependency-ready and remains manually gated; no execution or rollout is implied.

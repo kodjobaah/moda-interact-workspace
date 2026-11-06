@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -139,7 +139,7 @@ Attempt 1 is implemented and reviewed in the canonical isolated task worktrees r
 
 ### Status
 
-Developer Self-Review Passed / Accepted — Attempt 1 reviewed on 2026-11-06. Explicit developer completion is pending; status remains Review.
+Complete — Attempt 1 explicitly developer-completed on 2026-11-06 after passing review `6f522798a`.
 
 ### Files Changed
 
@@ -245,3 +245,10 @@ SHOPIFY-001 Attempt 2 is explicitly developer-completed after passing review `e1
 - Independent validation: `node node_modules/vitest/vitest.mjs run tests/unit/services/shopify-session.service.test.ts tests/unit/providers/shopify-discount.provider.test.ts tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts tests/unit/services/abandoned-checkout-lookup.service.test.ts` passed all 72 tests in 5 files (exit 0; `/tmp/arch061-background-review-unit.log`). `node node_modules/.bin/tsc --noEmit` passed (exit 0; `/tmp/arch061-background-review-types.log`). Both used installed Node 24.19.0 from the canonical implementation worktree. `git diff --check HEAD^` passed.
 - Submitted evidence: reviewed the recorded build log `/tmp/arch-061-background-build.log` and developer-reported disposable PostgreSQL result (3 passed). The PostgreSQL test source uses independent Prisma clients, observes the advisory-lock waiter, checks one refresh and durable pair visibility, rejects inactive selected Shops before OAuth, and checks safe failure canaries/rollback. This review does not claim an independent PostgreSQL rerun or architecture-wide system validation.
 - No material assigned-agent assistance was reported. No required task-owned item is known incomplete; no implementation correction or scope waiver is requested.
+
+
+## Explicit Developer Completion Decision — 2026-11-06
+
+The developer explicitly invoked `/moda_developer_update ARCH-061-BACKGROUND-001 complete`. Accepted Attempt 1 is now Complete; executor and claimed_at remain null and the attempt is unchanged. Durable passing review is parent `6f522798a`; implementation `3fed264d9d8c15fe32eb82413f6aa81a2f8b14cc` remains clean and matches the live published task branch. No required task-owned item is known incomplete. Prior review notes retain their historical meaning; this decision supersedes the pending-completion state.
+
+Dependency reconciliation: synchronized existing explicit completion records for COMMERCE-001 from parent `fd28311508d30d777e66893da514868dd384918e` and MCP-001 from parent `38b94f3cb8de1b07895d1d78fcd40ff664e0f78c`. All five SYSTEM-TEST-001 prerequisites are Complete, so it becomes Ready at Attempt 0 with no claim, subject to explicit manual execution authorization. ARCH-062-BACKGROUND-001 also becomes Ready at Attempt 0 because its sole prerequisite is this task. No downstream execution, deployment, main merge or gitlink change is authorized by this reconciliation.

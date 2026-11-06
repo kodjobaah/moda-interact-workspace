@@ -1904,3 +1904,8 @@ Attempt 2 accepted on implementation `64d1be0`; task Complete with claim cleared
 `ARCH-055-API-009` is architect-accepted Complete at Attempt 2. Its dedicated readiness client applies a PostgreSQL-side 500 ms `statement_timeout`, and migrated PostgreSQL evidence confirms cancellation before Prisma settles. API-008 remains Complete and unchanged. The required DATABASE-001, BACKGROUND-001, SHOPIFY-001 and API-001 through API-008 prerequisites are Complete.
 
 `ARCH-055-SYSTEM-TEST-001` is promoted from Pending to Ready at Attempt 0 with no claim. It remains unstarted and requires its own normal task launch. This is the only newly eligible task in the ARCH-055 frontier.
+
+
+## ARCH-061 Background explicit completion — 2026-11-06
+
+ARCH-061-BACKGROUND-001 is Complete at Attempt 1 following review `6f522798a` and explicit developer decision, source `3fed264`. Shared, Shopify, Commerce and MCP prerequisites are also Complete in their published task records. ARCH-061-SYSTEM-TEST-001 is Ready/unclaimed with its manual execution gate retained. ARCH-062-BACKGROUND-001 is Ready/unclaimed at Attempt 0. No downstream execution, rollout or main merge occurred.
