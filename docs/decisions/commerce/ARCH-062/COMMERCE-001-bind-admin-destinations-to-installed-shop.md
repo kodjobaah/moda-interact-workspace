@@ -9,15 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-061-COMMERCE-001"]
 enables: ["ARCH-062-SYSTEM-TEST-001"]
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Bind admin destinations to installed shop
 
@@ -75,10 +75,10 @@ App authenticated profile myshopifyDomain is provider-owned integration identity
 No blanket search/replace of every myshopify string. Leave SDK internals, documentation/examples of actual Admin endpoints and Shopify-admin billing handle construction intact. Recovery summary display-only regex is not authentication: change only if necessary for correct display, with dedicated fixture; never replace provider endpoint with it. Partner API tokens are a different credential domain and outside scope. No schema/DNS/secret/infrastructure change. Compatible application rollout after each ARCH-061 owner adoption; preserve old stored identities. Do not change lock identity/refresh recovery. System test is terminal after accepted implementation and optional user manual checks. Definitions only, no deployment/claim. Existing generic logging suffices; no observability framework work.
 
 ## Work Items
-- [ ] Replace suffix validation with selected-shop/snapshot binding; port accepts selected shop identity, supplies endpoint+token same snapshot.
-- [ ] Replace endsWith suffix guard with exact resolved trusted integration origin and fixed API path binding; retain https/method/redirect/deadline limits.
-- [ ] Thread authorized call.turn.shopId and current coordinated snapshot endpoint into query transport; display domain not credential host.
-- [ ] Create focused test file tests/shopify-admin-domain-boundary.test.ts and cover task-specific/common acceptance matrix.
+- [x] Replace suffix validation with selected-shop/snapshot binding; port accepts selected shop identity, supplies endpoint+token same snapshot.
+- [x] Replace endsWith suffix guard with exact resolved trusted integration origin and fixed API path binding; retain https/method/redirect/deadline limits.
+- [x] Thread authorized call.turn.shopId and current coordinated snapshot endpoint into query transport; display domain not credential host.
+- [x] Create focused test file tests/shopify-admin-domain-boundary.test.ts and cover task-specific/common acceptance matrix.
 
 ## Interfaces / Contracts
 Reuse published ARCH-061 Node-only provider getSession(selectedShopId), server-only snapshot.shop/accessToken/scope and existing selected-shop auth. Update owning local ports to thread trusted endpoint, no new Shared wire contract. SDK auth remains install authority; primaryDomain is never credential destination.
@@ -90,38 +90,74 @@ Reuse published ARCH-061 Node-only provider getSession(selectedShopId), server-o
 - ARCH-062-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] All existing Admin query AST/variable/body limits still apply after suffix check removal.
-- [ ] Custom storefront display never becomes fetch host; exact trusted endpoint succeeds and mismatch rejects before network.
-- [ ] External/Woo transports and metadata-only Connections remain unchanged.
+- [x] All existing Admin query AST/variable/body limits still apply after suffix check removal.
+- [x] Custom storefront display never becomes fetch host; exact trusted endpoint succeeds and mismatch rejects before network.
+- [x] External/Woo transports and metadata-only Connections remain unchanged.
 
 ## Validation
-- [ ] Run `npx vitest run tests/shopify-admin-domain-boundary.test.ts` from owning repository; test file above is explicitly new if absent.
-- [ ] Run declared production build for application changes; App/Commerce/MCP also declared typecheck; Background uses its declared build; System Test uses npm run typecheck instead of build.
-- [ ] Verify no credentials reach override/custom/redirect origin, no provider secrets in errors/DTO/HTML/logs, and no unrelated domain checks removed.
+- [x] Run `npx vitest run tests/shopify-admin-domain-boundary.test.ts` from owning repository; test file above is explicitly new if absent.
+- [x] Run declared production build for application changes; App/Commerce/MCP also declared typecheck; Background uses its declared build; System Test uses npm run typecheck instead of build.
+- [x] Verify no credentials reach override/custom/redirect origin, no provider secrets in errors/DTO/HTML/logs, and no unrelated domain checks removed.
 
 ## Stop Condition
 Finish defined work/acceptance/validation, submit Completion Report and STOP. Explicit developer completion required; no automatic execution of enabled tasks.
 
 ## Implementation Notes
-No implementation/claim from this definition. Use normal launcher isolated worktrees when requested. Existing paths verified; new test file explicitly named. Actual install integration domain remains SDK-established and selected-shop bound, not inferred by a new parser. Return demonstrated contract/schema incompatibility instead of widening scope.
+Attempt 1 was implemented by `moda_commerce` in the canonical Commerce implementation worktree. Implementation commits `ee4ca8a0f631d66e58cc48e7d858b732546e4790` and `f7f9385` are published on `task/ARCH-062-COMMERCE-001`. The latter aligns the existing Shared 5.2.0 manifest requirement with package-lock.json so clean installs resolve the required provider API.
 
 ## Completion Report
+
 ### Status
-Not Started
+
+Complete — Attempt 1 passed developer self-review, followed by the developer's explicit completion decision on 2026-11-06.
+
 ### Files Changed
-None
+- `package-lock.json`
+- `src/commerce/query/admin.ts`
+- `src/commerce/preview/local-policy-providers.ts`
+- `src/commerce/preview/local-provider-composition.ts`
+- `tests/shopify-admin-domain-boundary.test.ts`
+- `tests/shopify-session-coordination.test.ts`
+
 ### Work Completed
-None
+- Replaced suffix-based Admin endpoint admission with a selected Shop ID lookup through the ARCH-061 Shared session provider. The access token and trusted `snapshot.shop` endpoint come from the same server-only snapshot; display-domain equality is not used to select the Admin destination.
+- Bound production Admin transport to the exact HTTPS origin from the trusted snapshot and fixed GraphQL API path/version, POST method and `redirect: 'error'`; it rejects credentials, arbitrary ports, path/query/hash changes and origin overrides before fetch.
+- Preserved existing non-Admin display-domain checks, WooCommerce/external transport behavior, response/version checks, and metadata-only Connections status behavior.
+- Corrected package-lock.json from Shared 5.1.0 to the already-declared 5.2.0 dependency so a clean install includes the coordinated provider API.
+
 ### Validation Results
-Definition only; runtime tests not run.
+- PASS: `npx vitest run tests/shopify-admin-domain-boundary.test.ts` (1 file, 6 tests).
+- PASS: `npx vitest run tests/shopify-admin-domain-boundary.test.ts tests/shopify-session-coordination.test.ts tests/admin-graphql-compiler.test.ts tests/shopify-admin-authoring-validation.test.ts` (4 files, 36 tests), including existing compiler connection-bound and undeclared-variable checks.
+- PASS: `npm run typecheck`.
+- PASS: `npm run build`; Next.js completed route generation and optimization. Existing Nunjucks dynamic-dependency warning remains non-fatal.
+- PASS: `npm ci --dry-run --ignore-scripts --no-audit --no-fund` after lock correction; npm accepted the manifest/lock pair. It reports existing peer-dependency and Node engine warnings (runtime was Node 24.21.0; package engine declares 24.19.0).
+- PASS: targeted suffix-guard search found no `validShopDomain` or `.myshopify.com` suffix gate remaining in the three task-owned Admin execution files; `git diff --check` passed.
+- Implementation HEAD and `origin/task/ARCH-062-COMMERCE-001` both equal `f7f9385` after publishing; implementation worktree is clean.
+
 ### Deviations
-None
+- Added a narrowly scoped lockfile correction after independent review found the existing lock pinned Shared 5.1.0 while package.json already required 5.2.0. No dependency manifest version was changed.
+
 ### Assumptions
-ARCH-061 prerequisite provides selected-shop snapshot with trusted endpoint.
+The published ARCH-061 Shared 5.2.0 provider resolves the selected Shop ID to the existing SDK-established integration Session; its `shop` field is the trusted Admin endpoint. The clean-install lock now resolves that same 5.2.0 package.
+
 ### Unresolved Issues
-None blocking definition.
+No blocking issue in the Commerce-owned scope. npm reports existing peer/engine warnings, and the build reports the existing Nunjucks dynamic-dependency warning; all required checks passed.
+
 ### Architectural Concerns
-No new endpoint discovery, schema or permission widening authorized.
+The required scope is Commerce-only; this task does not validate Shopify App SDK lifecycle behavior or the cross-service system-test matrix.
+
+## Developer Self-Review
+### Attempt 1
+- Result: Accepted; scoped destination-binding criteria and required validation passed.
+- Implementation: `f7f9385` (including specialist commit `ee4ca8a0f631d66e58cc48e7d858b732546e4790`), pushed to `origin/task/ARCH-062-COMMERCE-001`.
+- Material assistance: `moda_commerce` implemented and published the source/test changes; the developer independently reviewed the diff, corrected the lockfile mismatch, and reran focused tests, typecheck and build.
+- Decision: Accepted for the developer-owned completion workflow. The Architect Review section remains unchanged and pending.
+
+## Developer Completion Decision
+- Decision: Complete Attempt 1 after the durable passing self-review.
+- Authority: Explicit developer completion requested by the user; no merge to `main` was required or performed.
+- Architect review: The existing Architect Review section remains pending and unchanged.
+- Downstream: `ARCH-062-SYSTEM-TEST-001` was not started.
 
 ## Architect Review
 ### Review Status
@@ -136,3 +172,13 @@ Definition metadata/path validation only.
 Task is repository-owned and gated by its ARCH-061 adoption prerequisite.
 ### Follow-up
 None
+
+## Dependency frontier reconciliation — 2026-11-06
+Architect coordination only: the explicit ARCH-061 prerequisite is Complete with a durable developer completion decision in its canonical task record. Promoted Pending -> Ready; executor/claimed_at remain null and attempt remains 0. No execution, acceptance or completion decision occurred.
+
+
+## Completion Reconciliation — 2026-11-06
+
+The repeated explicit completion request was reconciled idempotently. Attempt 1 is already Complete under the durable Developer Self-Review and Developer Completion Decision in parent `8ff2bb19104366388be18dca5bd991cdbbfd8fb0`. Implementation `f7f93854b5fd8edb3224e4d34911079b53e6c3be` is clean and matches the live remote task branch. No known required item is incomplete. Status, attempt and execution/completion ownership are unchanged; no duplicate attempt or implementation review is created.
+
+Downstream ARCH-062-SYSTEM-TEST-001 remains Pending, unclaimed at Attempt 0: Commerce and Background are Complete, but Shopify is Review (published parent `be3833f0ad7da8ede467bb882aa1a84efb5d4a7f`) and MCP is In Progress (published parent `5068153166c905f0a422fd2a5bacd56104cdbdca`). Background completion is confirmed on published parent `6d8c9d6eec065dbd2e923762cdd1d923b6039650`. These live task-branch records take precedence over stale local Ready summaries. No active sibling task state is changed. System validation retains its explicit manual execution gate after prerequisites complete. No main merge, gitlink update, downstream execution or deployment occurred.
