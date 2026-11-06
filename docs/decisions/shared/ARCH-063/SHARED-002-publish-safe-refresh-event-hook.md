@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: blocked
+status: review
 priority: 50
-executor: codex
-claimed_at: 2026-11-06T16:30:44Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-063-SHARED-001"]
 enables: ["ARCH-063-SHOPIFY-001", "ARCH-063-BACKGROUND-001", "ARCH-063-COMMERCE-002", "ARCH-063-MCP-001", "ARCH-063-SYSTEM-TEST-001"]
@@ -67,7 +67,7 @@ SDK-managed refresh/token exchange is not observable solely from Shared getSessi
 Shared implementation extends existing API compatibly; publication chooses next available approved semver and records exact version before consumer pins. No forced version guess or unpublished sibling import. Commerce UI correction is independent and Ready now; it uses existing accepted ARCH-060/061/062 contracts, does not wait for log publication. Shared logging implementation is also independently Ready. Consumer event wiring depends on Shared publication. App wiring includes metadata-readiness correction. System Test is terminal on all fixes; manually invoked after optional user exercise. Compatible rollout, no schema/credential/env or Render topology change. Logging absent in old binaries is expected until owning consumer deployed; do not assert deployed observability from local code. No new metric/span framework. Metadata reads and tooling never expose provider secrets.
 
 ## Work Items
-- [ ] Publish accepted compatible version, record exact immutable receipt/exports; no implementation revalidation.
+- [x] Publish accepted compatible version, record exact immutable receipt/exports; no implementation revalidation.
 
 ## Interfaces / Contracts
 Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published optional Shared onEvent hook and exact frozen event schema above. Each consumer owns safe logger forwarding; provider/runtime credentials stay server-only. Exact version recorded by SHARED-002 before consumer pins.
@@ -83,10 +83,10 @@ Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published o
 - ARCH-063-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Prerequisite Complete/accepted, exact approved version visible in registry with event type/export; metadata-only release diff.
+- [x] Prerequisite Complete/accepted, exact approved version visible in registry with event type/export; metadata-only release diff.
 
 ## Validation
-- [ ] Verify accepted Complete prerequisite, approved version, successful release and exact registry visibility; do not rerun implementation tests/lint/build/typecheck.
+- [x] Verify accepted Complete prerequisite, approved version, successful release and exact registry visibility; do not rerun implementation tests/lint/build/typecheck.
 - [x] Confirm release-only diff.
 
 ## Stop Condition
@@ -101,7 +101,7 @@ Use launcher-resolved isolated/synchronized task worktrees when execution reques
 
 ## Completion Report
 ### Status
-Publication command succeeded; registry metadata visible; awaiting public tarball propagation before review submission.
+Ready for Review — publication verified; Accepted; explicit developer completion pending.
 ### Files Changed
 - package.json: version 5.2.0 -> 5.3.0
 - package-lock.json: root/package version 5.2.0 -> 5.3.0
@@ -113,7 +113,7 @@ Reused exact accepted SHARED-001 build output rather than rerunning implementati
 - `npm pack --ignore-scripts --json`: PASS, 134 files. Inspected actual archive manifest/version, `./shopify/node` JavaScript/declaration paths, exported ShopifyOfflineRefreshEvent and optional onEvent declaration, plus runtime committed event.
 - `npm publish ./modainteract-moda-interact-shared-5.3.0.tgz --access public --ignore-scripts --registry https://registry.npmjs.org/`: SUCCESS, npm printed `+ @modainteract/moda-interact-shared@5.3.0` and advised processing may take a few minutes.
 - Initial exact-version npm registry reads returned E404 during processing. At 2026-11-06T16:34:45Z uncached exact-version registry metadata became visible with matching immutable integrity and exports.
-- Public registry tarball download still returned HTTP 404 in bounded follow-up checks; release consumability not yet confirmed. Do not republish; recheck read-only after propagation.
+- Initial public tarball checks returned HTTP 404. Subsequent reconciliation confirmed HTTP 200 for canonical and encoded paths; downloaded 307845-byte archive SHA1/SHA512 match immutable receipt. All 134 files, exact 5.3.0 version, Node-only export, event type, optional hook and three runtime event names verified.
 - `git diff` against prepared implementation baseline: package.json/package-lock.json only, three version-line replacements; no runtime source changes.
 
 Immutable release receipt:
@@ -127,11 +127,11 @@ Immutable release receipt:
 - local exact archive evidence: /private/tmp/arch063-shared002-release-5.3.0.tgz
 - exact registry receipt: /private/tmp/arch063-shared002-full-registry.json
 ### Deviations
-None. Registry processing delay recorded explicitly; required consumability validation remains pending.
+None. Initial registry distribution delay resolved by read-only verification.
 ### Assumptions
 Consumer deployment and version pinning remain independently owned tasks after explicit developer completion.
 ### Unresolved Issues
-Public tarball propagation pending (HTTP 404); metadata and publication succeeded. No repeated publication attempted.
+None. Public tarball now available and verified; no repeated publication attempted.
 ### Architectural Concerns
 Do not promote consumer dependencies while task remains blocked or review awaiting explicit completion.
 ### Git / VCS
@@ -159,21 +159,24 @@ Implementation release metadata commit: 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be
 
 ## Architect Review
 ### Review Status
-Blocked — registry distribution artifact propagation.
+Accepted — explicit developer completion pending.
 ### Review Notes
 2026-11-06 moda_architect reviewed actual release commit 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be: package.json/package-lock.json version changes only, 5.2.0 to approved compatible additive minor 5.3.0. Accepted prerequisite ARCH-063-SHARED-001 is Complete and included in release source. No runtime redesign or implementation validation rerun occurred. Reuse of byte-identical accepted build artifacts was approved; exact archive inspected for optional onEvent, event type and runtime lifecycle emission.
 
-npm accepted publication and exact registry metadata is visible with matching immutable archive integrity/shasum. Public dist.tarball remains HTTP 404 after bounded checks, so package consumability is not yet established. This is an external distribution-state blocker, not a source correction. Do not republish 5.3.0 or bump another version to bypass propagation. No final acceptance or completion until artifact availability is confirmed.
+Registry distribution blocker resolved: exact public tarball now HTTP 200 and immutable download hashes match registry receipt and developer-supplied npm publication email (2026-11-06T16:34:35.651Z). Release Accepted; completion remains developer-controlled.
 ### Reviewed Files
 - package.json and package-lock.json release diff.
 - Current Completion Report and /private/tmp/arch063-shared002-full-registry.json registry receipt.
 - Launcher physical worktree, synchronization, dependency and durable claim evidence.
 ### Validation Reviewed
-Release-only validation: prerequisite Accepted/Complete, approved available version, accepted-source equality, accepted build artifact byte equality, exact archive export inspection, successful npm publication, exact registry metadata/integrity match, published Git hash. Public archive download remains unavailable (HTTP 404). No tests/lint/typecheck/build rerun.
+Release-only validation: prerequisite Accepted/Complete, approved available version, accepted-source equality, accepted build artifact byte equality, exact archive export inspection, successful npm publication, exact registry metadata/integrity match, published Git hash. Public archive download now passes SHA1/SHA512 integrity and required export/content verification. No tests/lint/typecheck/build rerun.
 ### Architecture Conformance
 Release scope conforms; safe export remains Node-only. Canonical isolated task worktrees preserved. Developer completion authority retained. Consumers and terminal/manual-gated System Test remain Pending because publication task is not Complete.
 ### Follow-up
-Once registry distribution settles, perform a read-only exact tarball download and integrity/export verification. Record evidence and move the same Attempt 1 to review/Accepted if successful; no code changes, repeat publication or revalidation needed. Explicit developer completion remains required afterward.
+Explicit developer completion required via `/moda_developer_update ARCH-063-SHARED-002 complete`. Consumers remain Pending until actual completion; no follow-on execution.
 
 ## Developer Reconciliation — External Distribution Still Blocked
 2026-11-06T16:39:43.868938+00:00 — Requested `/moda_developer_update ARCH-063-SHARED-002` reconciliation performed. Fresh GET of exact registry dist.tarball again returned HTTP 404. Exact version metadata remains visible at 5.3.0 with unchanged SHA-512 integrity and shasum 032047617e506862c9c4b6b0cc183b752be46b6b. Therefore downloaded archive integrity/export checks cannot yet run, and no passing review is fabricated. Both canonical worktrees are clean; release HEAD/remote match 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be, prior report HEAD/remote match a96f110d9f777a9ba2f442d67035134ad462ec4f. Attempt 1, configured execution/completion modes and blocked status preserved. Existing exact local archive inspection remains valid; package consumability is the sole external blocker. No republish, new version, implementation validation rerun, main merge or consumer promotion. Resume only read-only artifact availability/integrity/export confirmation when registry distribution changes.
+
+## Developer Self-Review — Accepted
+2026-11-06T16:42:25.161548+00:00 — Explicit reconciliation request reviewed existing agent release without transferring execution mode. Fresh canonical and percent-encoded public tarball GETs returned HTTP 200 (307845 bytes), with 5.2.0 control also HTTP 200. Download SHA1 032047617e506862c9c4b6b0cc183b752be46b6b matches developer-supplied npm email; SHA512 matches immutable receipt above. Inspected downloaded archive: 134 files, package version 5.3.0, ./shopify/node export paths, ShopifyOfflineRefreshEvent, optional onEvent and started/committed/failed runtime event strings. Clean release HEAD equals remote 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be; prior report HEAD equals remote 23de38ca128fcbbd942d21ba32dbf7fe0f2560e9. All release criteria satisfied; same Attempt 1 moved to review with executor/claimed_at null. No republish, new version, build/test rerun or main merge. Explicit developer completion pending.
