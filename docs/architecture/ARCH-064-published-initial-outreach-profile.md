@@ -40,7 +40,7 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 | ARCH-064-DATABASE-001 | database | Complete | - |
 | ARCH-064-SHARED-001 | shared | Complete | - |
 | ARCH-064-SHARED-002 | shared | Complete | ARCH-064-SHARED-001 |
-| ARCH-064-COMMERCE-001 | commerce | Blocked (Shared output compatibility) | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
+| ARCH-064-COMMERCE-001 | commerce | Ready (contract blocker resolved) | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
 | ARCH-064-MCP-001 | mcp | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
 | ARCH-064-BACKGROUND-001 | background | Pending | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
 | ARCH-064-SYSTEM-TEST-001 | system-test | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-064-BACKGROUND-001 |
@@ -60,3 +60,5 @@ Any release containing initial_outreach behavior/purpose members requires SUPER_
 
 ## Purpose output contract correction — 2026-11-06
 Commerce actual default outputs cannot satisfy original outputSchema:DetailsSchemaSchema choice. That strict subset rejects discount union outcomes and product nullable objects/fixed formats/patterns/128-item bounded identifiers. Do not alter tool result semantics or fabricate a lossy local projection. Shared must own a narrowly bounded purpose output schema validator supporting existing canonical default results while retaining finite schema/result budgets and rejecting unsupported constructs. ARCH-064-SHARED-003 defines this correction; ARCH-064-SHARED-004 publishes it. Commerce remains Blocked on that release and then pins/tests defaults. No existing accepted history overwritten; no consumer execution auto-start.
+
+2026-11-06: SHARED-004 Complete with public5.5.0; canonical COMMERCE-001 returned Ready at prior Attempt1, claim cleared, exact next-attempt adoption/default-validation correction appended. No implementation auto-start. MCP/Background/System Test remain gated.

@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: blocked
+status: ready
 priority: 50
-executor: codex
-claimed_at: 2026-11-06T19:47:40Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-064-DATABASE-001", "ARCH-064-SHARED-002", "ARCH-059-COMMERCE-001", "ARCH-064-SHARED-004"]
 enables: ["ARCH-064-MCP-001", "ARCH-064-BACKGROUND-001", "ARCH-064-SYSTEM-TEST-001"]
@@ -173,3 +173,15 @@ ARCH-064-SHARED-003 implements bounded canonical output compatibility; ARCH-064-
 
 ## Purpose publication authority and underlying tool edits
 Any release containing initial_outreach behavior/purpose members requires SUPER_ADMIN at publish AND activate/rollback, checked server-side in lifecycle services, not only Feature editor. Global ADMIN may retain existing rights to edit unrelated/shared tool drafts, but cannot publish/activate a new outreach snapshot or repoint its revisions through another Feature workflow. Existing immutable release references mean editing a draft never changes active outreach. Super Admin publication reviews selected exact revision IDs and behavior as one complete snapshot; ordinary release services cannot silently copy/advance outreach members to latest revisions. For a release that preserves outreach unchanged, activation still requires SUPER_ADMIN because the pointer controls this purpose. No bypass via setup command, generic release action, development role field or forged client role. Existing authenticated development bypass policy remains explicit and may not impersonate SUPER_ADMIN for production mutations. Add ADMIN direct lifecycle publish/activate/rollback tests plus underlying draft edit test proving active pinned profile unchanged. Keep existing audit reason/actor/operationId and immutable snapshot evidence; no new permission granted to arbitrary tools.
+
+## Architect Dependency Unblocking — 2026-11-06
+SHARED-004 Attempt1 explicitly developer-completed at5634042d8e52943adcf0dbac0ff929ddf62f4407, after verified public5.5.0 corrected compiler/profile/manifest/grant exports. External Shared contract blocker resolved. Return this same task to Ready with Attempt1 preserved and executor/claimed_at null; next canonical launcher claim increments exactly once. Preserve historical blocked review and partial source5f976119901c271173e3c32152a11d00377f8449.
+
+### Next Attempt Correction Contract
+- Pin published @modainteract/moda-interact-shared@5.5.0 in Commerce and lockfile.
+- Replace local Details-only result-schema assumption with canonical validate/compileCommercePurposeOutputSchema export where required, retaining single Shared implementation and no lossy projection.
+- Validate actual default four policy descriptors and complete output values through real publication/profile validation; default seed + publication must succeed, preserving canonical ownership/IDs and edits.
+- Recheck supported fifth read addition/removal, empty/unsupported/mutating rejection, role/direct lifecycle guards and immutable old snapshot behavior, focused owner tests/typecheck.
+- Record actual changed files/evidence on same branches and return review; no arbitrary schema widening, package republish, live activation/migration or downstream work.
+
+Next invocation: `/moda-task ARCH-064-COMMERCE-001`. No implementation or new claim performed by this unblocking.
