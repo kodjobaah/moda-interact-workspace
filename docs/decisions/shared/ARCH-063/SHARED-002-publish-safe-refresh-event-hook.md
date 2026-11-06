@@ -159,14 +159,18 @@ Implementation release metadata commit: 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be
 
 ## Architect Review
 ### Review Status
-Pending
+Blocked — registry distribution artifact propagation.
 ### Review Notes
-Definition source audit completed; implementation not reviewed. Historical task acceptance preserved.
+2026-11-06 moda_architect reviewed actual release commit 491e943f5efe1aa91c77fd8c1f7e5b01a2e976be: package.json/package-lock.json version changes only, 5.2.0 to approved compatible additive minor 5.3.0. Accepted prerequisite ARCH-063-SHARED-001 is Complete and included in release source. No runtime redesign or implementation validation rerun occurred. Reuse of byte-identical accepted build artifacts was approved; exact archive inspected for optional onEvent, event type and runtime lifecycle emission.
+
+npm accepted publication and exact registry metadata is visible with matching immutable archive integrity/shasum. Public dist.tarball remains HTTP 404 after bounded checks, so package consumability is not yet established. This is an external distribution-state blocker, not a source correction. Do not republish 5.3.0 or bump another version to bypass propagation. No final acceptance or completion until artifact availability is confirmed.
 ### Reviewed Files
-Task touchpoints above; canonical MCP ARCH-061 reader inspected separately from stale shared checkout.
+- package.json and package-lock.json release diff.
+- Current Completion Report and /private/tmp/arch063-shared002-full-registry.json registry receipt.
+- Launcher physical worktree, synchronization, dependency and durable claim evidence.
 ### Validation Reviewed
-Task metadata/dependency/path checks only.
+Release-only validation: prerequisite Accepted/Complete, approved available version, accepted-source equality, accepted build artifact byte equality, exact archive export inspection, successful npm publication, exact registry metadata/integrity match, published Git hash. Public archive download remains unavailable (HTTP 404). No tests/lint/typecheck/build rerun.
 ### Architecture Conformance
-Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
+Release scope conforms; safe export remains Node-only. Canonical isolated task worktrees preserved. Developer completion authority retained. Consumers and terminal/manual-gated System Test remain Pending because publication task is not Complete.
 ### Follow-up
-None
+Once registry distribution settles, perform a read-only exact tarball download and integrity/export verification. Record evidence and move the same Attempt 1 to review/Accepted if successful; no code changes, repeat publication or revalidation needed. Explicit developer completion remains required afterward.

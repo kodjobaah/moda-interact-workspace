@@ -37,7 +37,7 @@ Shared implementation extends existing API compatibly; publication chooses next 
 |---|---|---|---|
 | ARCH-063-COMMERCE-001 | commerce | Ready | - |
 | ARCH-063-SHARED-001 | shared | Complete | - |
-| ARCH-063-SHARED-002 | shared | Ready | ARCH-063-SHARED-001 |
+| ARCH-063-SHARED-002 | shared | Blocked (registry tarball propagation) | ARCH-063-SHARED-001 |
 | ARCH-063-SHOPIFY-001 | shopify | Pending | ARCH-063-SHARED-002 |
 | ARCH-063-BACKGROUND-001 | background | Pending | ARCH-063-SHARED-002 |
 | ARCH-063-COMMERCE-002 | commerce | Pending | ARCH-063-SHARED-002 |
@@ -49,3 +49,5 @@ ARCH-060 expired-status rule and availability-only link tests require Commerce c
 
 ## Change History
 - 2026-11-06: Shared safe refresh hook Attempt 1 accepted and explicitly developer-completed; ARCH-063-SHARED-002 publication is Ready. Consumers remain gated by publication; System Test stays terminal/manual-gated. Architecture remains Agreed, not Implemented.
+
+- 2026-11-06: SHARED-002 release 5.3.0 accepted by npm; exact registry metadata/integrity verified. Public archive propagation remains blocked (HTTP 404); no consumer promotion or duplicate publication.
