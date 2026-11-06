@@ -259,3 +259,22 @@ Exercise the installed public SDK authentication/refresh flow with controlled fe
 Reviewed implementation `39d2f917a074173eec99214a9d71689952d58dfc`, the facade/transport/wrapper, storage guard and test sources, and the installed SDK refresh/token-exchange/createSession implementations. Independently ran `vitest run tests/unit/shopify-offline-coordination.test.ts`: **10 passed**, exit 0; local log `/tmp/arch061-shopify-review.log`. The green unit callbacks do not replace actual SDK coverage. Submitted typecheck/build, 82-test extra set and two PostgreSQL cases were reviewed as reported evidence, not independently rerun. No Docker/live Shopify run was performed.
 
 Preserve the published implementation/report and dedicated worktrees. Reclaim through the normal developer workflow, implement the safe correction, add actual SDK regression/race evidence and resubmit. No implementation edit, new claim, attempt increment, package change, main merge, deployment or downstream promotion occurs in this review. Explicit completion remains unavailable until a passing review is durable.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 2 (2026-11-06)
+
+**Review passed; the prior P1 SDK Session compatibility finding is resolved.** Reviewed implementation `17fb986a8f0635ea771327261d84b548d06d36cb`, matching its pushed task branch. Status Review, executor/claimed_at null, Attempt 2 unchanged. Developer execution/completion modes are preserved; explicit `/moda_developer_update ARCH-061-SHOPIFY-001 complete` remains required. No downstream dependency is promoted by review alone.
+
+### Correction review
+
+The storage guard no longer depends on the JavaScript identity of a loaded Session. It captures the current persisted credential-pair fingerprint under the binding and records replacement pair fingerprints from the bounded same-host OAuth response. A newly constructed SDK Session may persist the corresponding replacement; shop and actual Session ID checks remain mandatory, the stored fingerprint must still match current scoped state, and successful writes advance state and clear pending provenance. Stale/unbound/foreign stores remain denied. The correction changes four files, retaining the public wrapper/ALS/transaction boundary.
+
+Inspected the revised separate-client PostgreSQL regression source: it installs through public `sdk.authenticate.admin`, observes the actual generated Session ID, expires the stored row and refreshes through public `sdk.unauthenticated.admin`. It asserts the SDK returns a newly constructed Session, atomically commits the pair and serializes the independent Shared read. The second case covers actual SDK refresh, concurrent uninstall and SDK reinstall exchange under the domain gate. This replaces the earlier hand-mutated callback evidence rather than relabelling it as real SDK execution.
+
+### Validation and limits
+
+Independently ran the focused unit/coordination/storage three-file set: **14 tests passed**, exit 0; local evidence `/tmp/arch061-shopify-attempt2-review.log`. Independently checked correction whitespace and implementation task-ref equality. Inspected the actual SDK callsites used by the new integration tests and the source changes.
+
+Reviewed submitted Attempt 2 typecheck/build, additional lifecycle/privacy regression results and the recorded **two passing PostgreSQL cases** using separate clients with owned Testcontainers cleanup. Those checks and Docker execution were not independently repeated by this review. No live Shopify/provider or consumer rollout proof is implied. Source retains no raw SDK auth/storage escape and the earlier broad implementation review remains applicable outside the corrected provenance path.
+
+Canonical dedicated worktree/branch, preparation/claim, publication and validation evidence are recorded in the Completion Report. Implementation/parent worktrees were clean before this review update. Only the parent task record is published here; no source change, attempt/claim creation, gitlink/main merge, package publication, deployment or downstream execution occurs. Explicit developer completion and terminal cross-service proof remain separately gated.
