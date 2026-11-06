@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -94,6 +94,8 @@ Exact purpose profile/membership/behavior schemas and draft/release join models 
 Submit completed scoped report for authorized review and STOP. Explicit developer completion required. No enabled follow-on task auto-start; terminal System Test manually invoked after accepted dependencies.
 
 ## Implementation Notes
+Frontier reconciliation (2026-11-06): canonical launcher route for ARCH-064-SHARED-001 reports Complete; this sole dependency is satisfied. Publication is Ready at unchanged Attempt 0, unclaimed. No release automatically started; prerequisite canonical task worktree is authoritative over older branch snapshots.
+
 No execution from definition. Use normal launcher-isolated/synchronized task worktrees when requested. Exact architecture choices above are binding; report demonstrated incompatibility instead of selecting new schema/identity/authorization design. Preserve historical task status and unrelated edits.
 
 ## Completion Report

@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -99,7 +99,7 @@ No execution from definition. Use normal launcher-isolated/synchronized task wor
 
 ## Completion Report
 ### Status
-Ready for Review
+Complete — Accepted and explicitly developer-completed
 ### Files Changed
 - prisma/schema.prisma: two exact purpose membership joins and four inverse relations.
 - prisma/migrations/20261106192000_arch064_purpose_capability_membership/migration.sql: additive tables, keys/checks/indexes/Restrict FKs and existing immutable trigger.
@@ -138,7 +138,7 @@ Parent report commit follows this edit, matching task branch; submodule gitlink 
 
 ## Architect Review
 ### Review Status
-Accepted — explicit developer completion pending.
+Accepted — explicitly developer-completed.
 ### Review Notes
 2026-11-06 moda_architect inspected actual schema, migration and fixture at b161a0fa251031737fdc05f4ddbfcb265742af71 plus report 7455d6b9ab2286a144dd5a8bba85a90c60b59c2b. Two joins implement exact draft/release purpose membership without capability ownership duplication. Same-release composite FKs bind immutable Feature and Capability snapshots, positions are nonnegative/unique, Restrict relationships preserve references, existing immutable row guard blocks release-purpose rewrite/delete. No copied schemas/revisions or merchant entitlement introduced. Generated DDL identifier mismatch found during implementation was corrected and validated; no outstanding correction.
 ### Reviewed Files
@@ -156,3 +156,6 @@ Task remains review at Attempt 1 with completion_mode developer. Explicit comple
 
 ## Purpose publication authority and underlying tool edits
 Any release containing initial_outreach behavior/purpose members requires SUPER_ADMIN at publish AND activate/rollback, checked server-side in lifecycle services, not only Feature editor. Global ADMIN may retain existing rights to edit unrelated/shared tool drafts, but cannot publish/activate a new outreach snapshot or repoint its revisions through another Feature workflow. Existing immutable release references mean editing a draft never changes active outreach. Super Admin publication reviews selected exact revision IDs and behavior as one complete snapshot; ordinary release services cannot silently copy/advance outreach members to latest revisions. For a release that preserves outreach unchanged, activation still requires SUPER_ADMIN because the pointer controls this purpose. No bypass via setup command, generic release action, development role field or forged client role. Existing authenticated development bypass policy remains explicit and may not impersonate SUPER_ADMIN for production mutations. Add ADMIN direct lifecycle publish/activate/rollback tests plus underlying draft edit test proving active pinned profile unchanged. Keep existing audit reason/actor/operationId and immutable snapshot evidence; no new permission granted to arbitrary tools.
+
+## Developer Completion Decision
+2026-11-06T19:21:16.392031+00:00 — Developer explicitly invoked `/moda_developer_update ARCH-064-DATABASE-001 complete`. Verified durable Accepted parent review e533f0643331fdb2402c9a602032d11a8503a6c8 and published implementation b161a0fa251031737fdc05f4ddbfcb265742af71 match clean canonical worktrees/remotes; all required Work Items/Acceptance Criteria/Validation satisfied. Completed unchanged Attempt 1; executor/claimed_at remain null, modes preserved. No live migration, main merge, gitlink update or follow-on execution. Canonical route inspection also finds concurrent ARCH-064-SHARED-001 Complete; promote unclaimed SHARED-002 publication to Ready. Commerce/MCP/Background/System Test remain Pending on incomplete dependencies; System Test terminal/manual-gated.
