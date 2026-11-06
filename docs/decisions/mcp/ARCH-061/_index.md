@@ -12,10 +12,4 @@ Revision 2 fixes exact Shared API/SQL/budgets, SDK wrapper/storage/transport int
 
 Selected-shop revision: consumer APIs take commerce.Shop ID; trusted stored integration/session supplies refresh host and actual session ID. Existing SDK domain rules retained; no new domain regex or alias remapping.
 
-## Completion — 6 November 2026
-
-MCP-001 Attempt 1 is explicitly developer-completed after passing scoped review
-`7f61bde93`, implementation `c9ca303`. Claim cleared; full-suite discount/fixture
-failures remain documented under the accepted bounded scope disposition.
-SYSTEM-TEST-001 remains Pending on Background and Commerce completion and its
-manual execution gates. No deployment or main merge is authorized by completion.
+Completion frontier — 2026-11-06: all ARCH-061 implementation prerequisites are Complete. SYSTEM-TEST-001 is dependency-ready and remains manually gated; no execution or rollout is implied.

@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-061-SHARED-002", "ARCH-061-SHOPIFY-001"]
 enables: ["ARCH-061-SYSTEM-TEST-001"]
 created: 2026-11-05
@@ -47,9 +47,9 @@ Central token service, agent tools, sibling imports, credential UI, schema chang
 The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Use the binding revision public-wrapper/ALS/lifecycle gate architecture; do not choose a different synchronization mechanism.
 
 ## Work Items
-- [ ] Compose published factory with service-owned Prisma and OAuth resolver; remove duplicate refresh implementation.
-- [ ] Preserve existing getShopifyAccessToken callers while mapping safe failures and cancellation.
-- [ ] Test separate-client race, expiry and domain behavior without raw response logs.
+- [x] Compose published factory with service-owned Prisma and OAuth resolver; remove duplicate refresh implementation.
+- [x] Preserve existing getShopifyAccessToken callers while mapping safe failures and cancellation.
+- [x] Test separate-client race, expiry and domain behavior without raw response logs.
 
 ## Interfaces / Contracts
 Shared Node-only factory and structural transaction interface/error categories defined by SHARED-001 and published by SHARED-002. Consumers inject local client/config/fetch and translate errors. No sibling source imports; no browser exports or raw token DTOs. App owns all SDK/lifecycle mutation entrypoints.
@@ -62,14 +62,14 @@ Shared Node-only factory and structural transaction interface/error categories d
 - ARCH-061-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Compose published factory with service-owned Prisma and OAuth resolver; remove duplicate refresh implementation.
-- [ ] Preserve existing getShopifyAccessToken callers while mapping safe failures and cancellation.
-- [ ] Test separate-client race, expiry and domain behavior without raw response logs.
-- [ ] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
+- [x] Compose published factory with service-owned Prisma and OAuth resolver; remove duplicate refresh implementation.
+- [x] Preserve existing getShopifyAccessToken callers while mapping safe failures and cancellation.
+- [x] Test separate-client race, expiry and domain behavior without raw response logs.
+- [x] Relevant Background matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
 
 ## Validation
-- [ ] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
-- [ ] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
+- [x] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
+- [x] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
 
 ## Stop Condition
 Submit completed report for authorized review and STOP after scoped criteria/validation. Explicit developer completion required. Do not start enabled tasks; system validation is terminal/manually invoked.
@@ -126,46 +126,86 @@ NEW paths below are to be created RELATIVE TO THIS TASK REPOSITORY. Existing ful
 | moda-interact-background/src/services/abandoned-checkout-lookup.service.ts | lookup token caller | Propagate existing signal into helper option; preserve lookup/admission logic. |
 
 ### Task-specific deterministic assertions
-- [ ] Existing helper callers return same data behavior with Shared provider; two service client instances produce one normal refresh.
-- [ ] Force provider error with token canary -> bounded fixed code; no raw body/client secret/token in logger capture.
-- [ ] Catalogue scope-only query makes zero OAuth calls even expired access.
+- [x] Existing helper callers return same data behavior with Shared provider; two service client instances produce one normal refresh.
+- [x] Force provider error with token canary -> bounded fixed code; no raw body/client secret/token in logger capture.
+- [x] Catalogue scope-only query makes zero OAuth calls even expired access.
 
 Create the new focused test paths listed in this exact command where absent; preserve existing test files. Required focused command: `npx vitest run tests/unit/services/shopify-session.service.test.ts tests/integration/shopify-session-coordination.test.ts`. Run declared `npm run build`; App/Commerce/MCP additionally `npm run typecheck`; System Test uses `npm run typecheck` only.
 
 ## Implementation Notes
-No execution started. Use launcher isolated/synchronized task worktrees when requested. Use the installed SDK surfaces and official recovery policy identified in revision 2. Node recovery uses workspace bootstrap. No new schema or alternative lock primitive is authorized. Publication is release mechanics only.
+Attempt 1 is implemented and reviewed in the canonical isolated task worktrees recorded below. Use the installed SDK surfaces and official recovery policy identified in revision 2. Node recovery uses workspace bootstrap. No new schema or alternative lock primitive is authorized. Publication is release mechanics only.
 
 ## Completion Report
+
 ### Status
-Not Started
+
+Complete — Attempt 1 explicitly developer-completed on 2026-11-06 after passing review `6f522798a`.
+
 ### Files Changed
-None
+
+- `package.json`, `package-lock.json`: pin the published `@modainteract/moda-interact-shared` dependency to 5.2.0.
+- `src/services/shopify-session.service.ts`: compose the Shared provider once with this service's Prisma client, read `shopify.oauth` through the existing configuration consumer, resolve domain-only callers to one active stored Shopify Shop, and delegate token reads to Shared.
+- `src/services/shopify.service.ts`: preserve the domain-only internal lookup through the exact active-Shop resolver.
+- `src/providers/shopify-discount.provider.ts`, `src/services/shopify-discount-catalogue.service.ts`: pass selected Shop ID to the provider while retaining scope-only lookup through the actual offline session ID, without token refresh.
+- `src/providers/shopify-whatsapp-consent.provider.ts`, `src/services/shopify-whatsapp-consent.service.ts`: pass the already selected Shop ID and cancellation signal through the injected token reader.
+- `src/services/abandoned-checkout-lookup.service.ts`: pass the selected Shop ID and supplied cancellation signal to token acquisition and Shopify requests.
+- `tests/unit/services/shopify-session.service.test.ts`: cover Shared-provider composition, per-refresh configuration reads, exact domain mapping and closed failures for missing/ambiguous Shops.
+- `tests/integration/shopify-session-coordination.test.ts`: cover separate-client refresh coordination, selected-Shop rejection, and provider-failure canaries against disposable PostgreSQL.
+- Updated provider/catalogue unit tests for selected-Shop identity, cancellation, persisted offline session ID, and expired-token scope-only behavior.
+
 ### Work Completed
-None
+
+- Replaced the local unlocked refresh implementation with the published Shared Node provider. No sibling source import, schema change, token cache, or service-owned refresh logic remains.
+- All selected-Shop consumers use `shopId`; the remaining domain-only internal consumer resolves exactly one active SHOPIFY Shop by its stored domain and fails closed on none, ambiguity or persistence failure.
+- Preserved discount and WhatsApp consent behavior. Cancellation signals propagate through token acquisition where callers provide them.
+- The discount catalogue reads scope metadata using the actual persisted offline session ID and does not invoke OAuth, including when access has expired.
+- Provider error canaries resolve to Shared's fixed error and are absent from the error/stack and logger capture.
+- No change was needed to the architect-owned integration matrix or review section.
+
 ### Validation Results
-Definition only.
+
+- `npx vitest run tests/unit/services/shopify-session.service.test.ts tests/integration/shopify-session-coordination.test.ts` — 3 unit tests passed; the PostgreSQL file is activated by the repository disposable-integration runner.
+- `node scripts/test-integration.mjs tests/integration/shopify-session-coordination.test.ts` — 3 disposable PostgreSQL tests passed: two independent Prisma clients perform one coordinated normal refresh; inactive selected Shop is rejected before OAuth; provider error and secret/token canaries remain absent from diagnostics and logs. Runner-owned disposable infrastructure completed cleanup.
+- Focused regressions: `npx vitest run tests/unit/services/shopify-session.service.test.ts tests/integration/shopify-session-coordination.test.ts tests/unit/providers/shopify-discount.provider.test.ts tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts tests/unit/services/abandoned-checkout-lookup.service.test.ts` — 72 tests passed across 5 files (PostgreSQL file not enabled in this non-disposable invocation).
+- `npm run build` — passed (Prisma Client generation and TypeScript compilation; exit 0).
+- `git diff --check` — passed.
+- Dependency evidence: installed package resolves to the published Shared 5.2.0 export `@modainteract/moda-interact-shared/shopify/node`.
+- Worktree evidence from developer preparation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-BACKGROUND-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-BACKGROUND-001`; both use `task/ARCH-061-BACKGROUND-001`. Preparation passed the declared dependency gate, synchronized current `origin/main`, initialized recursive submodules at recorded commits (Background database submodule `bd2d09066a8eb178a56f48fbbf88df637c411059`), and durably pushed the Attempt 1 parent claim (`961ed4d383f2273c0b36a5d52b0f27214cd0c688`).
+
 ### Deviations
-None
+
+- The required PostgreSQL test is run through `scripts/test-integration.mjs`, which supplies disposable PostgreSQL and enables integration tests; plain Vitest does not run its database scenarios. No implementation contract was changed.
+
 ### Assumptions
-Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2.
+
+- Existing authorization at each caller establishes tenant access before the selected-Shop ID reaches this service. The token provider is not an authorization API.
+- Existing Shop.domain and Session.shop values represent the stored Shopify integration domain, per the binding revision's selected-Shop contract.
+
 ### Unresolved Issues
-None blocking architecture definition. Revision-1 feasibility questions are superseded by binding revision 2 decisions.
+
+None identified within this task's Background scope. Parent architecture rows owned by App, Commerce, MCP, Shared or other repositories are outside this implementation task.
+
 ### Architectural Concerns
-Implement binding revision 2 exactly; report actual incompatibility with evidence instead of selecting alternate architecture.
+
+None. The service uses the published Shared contract; no cross-repository gap was found.
+
+### Developer Self-Review — Passed
+
+Attempt 1 implementation and all task-owned acceptance criteria were reviewed against the binding revision 2 contract. Focused unit tests, disposable PostgreSQL coordination/provider-failure scenarios, Background build and diff checks passed. No task-owned required item remains incomplete. Completion mode is developer, so this review submission does not decide completion; explicit developer completion remains pending architect review.
 
 ## Architect Review
 ### Review Status
-Pending
+Passed / Accepted — Attempt 1; explicit developer completion pending.
 ### Review Notes
-Definition only.
+No blocking task-owned issue identified. Reviewed the actual implementation diff against its synchronized baseline, rather than inferring behavior from the commit message.
 ### Reviewed Files
-None
+All 14 files changed by implementation `3fed264d9d8c15fe32eb82413f6aa81a2f8b14cc`, including package/lock, service composition, selected-Shop callers, catalogue metadata lookup and focused tests; existing OAuth configuration consumer and disposable runner inspected read-only.
 ### Validation Reviewed
-None
+Independent focused unit run: 72 tests across 5 files passed, exit 0. Independent `node node_modules/.bin/tsc --noEmit`: passed, exit 0. Implementation diff whitespace check passed. Reviewed the recorded successful build and the developer-reported three-case disposable PostgreSQL run against its test source; the PostgreSQL suite was not independently rerun in this review.
 ### Architecture Conformance
-Pending implementation.
+Shared 5.2.0 owns refresh/locking/persistence and safe failure taxonomy. Background composes its local Prisma/configuration/fetch, retains selected-Shop authorization at callers, forwards supplied cancellation, and removes the bespoke refresh path. The metadata-only catalogue resolves the actual stored offline Session ID without acquiring a token or refreshing. No sibling source import, schema change or alternate synchronization primitive was introduced.
 ### Follow-up
-None
+Explicit `/moda_developer_update ARCH-061-BACKGROUND-001 complete` remains required. System validation and rollout stay under their separate task/manual gates.
 
 ### Architecture definition review — 2026-11-05 revision 2
 Definition reviewed against installed SDK control flow and current repository reads/writes. Public authenticate/unauthenticated wrapper + ALS storage and runtime setAbstractFetchFunc are the selected integration; no fictional SDK hook. Session row plus stable per-shop lifecycle advisory gate is selected for demonstrated deletion/recreation. Provider lost-response recovery is grounded in official Shopify August 28, 2026 policy. No implementation reviewed and no lifecycle status changed.
@@ -193,3 +233,22 @@ Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOff
 ## Architect Dependency Reconciliation — 2026-11-06
 
 SHOPIFY-001 Attempt 2 is explicitly developer-completed after passing review `e1310a6aa`, implementation `17fb986`. SHARED-002 is also Complete (published Shared 5.2.0). All explicit prerequisites are satisfied. Promoted to Ready, executor/claimed_at null, existing attempt unchanged. Normal developer preparation, accepted-source integration and task validation gates apply; no claim, execution or rollout is started by this update.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 1 (2026-11-06)
+
+- Decision: scoped review passes; keep `status: review`, `executor: null`, `claimed_at: null`, and Attempt 1 unchanged. Explicit developer completion is pending.
+- Implementation: `3fed264d9d8c15fe32eb82413f6aa81a2f8b14cc` on `task/ARCH-061-BACKGROUND-001`, compared with baseline `0225d97`. Live remote branch verification matched that exact source commit; implementation worktree was clean.
+- Parent branch: pre-review source `15c813997e599669499b9455acd18ceaed149d86`, verified equal to the live remote task branch with a clean worktree. This review publishes only the current task document; no gitlink, main merge or deployment is included.
+- Physical isolation verified: launcher-resolved parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-BACKGROUND-001` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-BACKGROUND-001`, both on the canonical task branch. Start-of-attempt synchronization/submodule evidence is recorded in the Completion Report. Review did not switch a shared checkout or reuse another task worktree.
+- Prerequisites: SHARED-002 and SHOPIFY-001 are Complete in the task branch. No dependency-frontier promotion is performed while this task awaits explicit completion.
+- Independent validation: `node node_modules/vitest/vitest.mjs run tests/unit/services/shopify-session.service.test.ts tests/unit/providers/shopify-discount.provider.test.ts tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts tests/unit/services/abandoned-checkout-lookup.service.test.ts` passed all 72 tests in 5 files (exit 0; `/tmp/arch061-background-review-unit.log`). `node node_modules/.bin/tsc --noEmit` passed (exit 0; `/tmp/arch061-background-review-types.log`). Both used installed Node 24.19.0 from the canonical implementation worktree. `git diff --check HEAD^` passed.
+- Submitted evidence: reviewed the recorded build log `/tmp/arch-061-background-build.log` and developer-reported disposable PostgreSQL result (3 passed). The PostgreSQL test source uses independent Prisma clients, observes the advisory-lock waiter, checks one refresh and durable pair visibility, rejects inactive selected Shops before OAuth, and checks safe failure canaries/rollback. This review does not claim an independent PostgreSQL rerun or architecture-wide system validation.
+- No material assigned-agent assistance was reported. No required task-owned item is known incomplete; no implementation correction or scope waiver is requested.
+
+
+## Explicit Developer Completion Decision — 2026-11-06
+
+The developer explicitly invoked `/moda_developer_update ARCH-061-BACKGROUND-001 complete`. Accepted Attempt 1 is now Complete; executor and claimed_at remain null and the attempt is unchanged. Durable passing review is parent `6f522798a`; implementation `3fed264d9d8c15fe32eb82413f6aa81a2f8b14cc` remains clean and matches the live published task branch. No required task-owned item is known incomplete. Prior review notes retain their historical meaning; this decision supersedes the pending-completion state.
+
+Dependency reconciliation: synchronized existing explicit completion records for COMMERCE-001 from parent `fd28311508d30d777e66893da514868dd384918e` and MCP-001 from parent `38b94f3cb8de1b07895d1d78fcd40ff664e0f78c`. All five SYSTEM-TEST-001 prerequisites are Complete, so it becomes Ready at Attempt 0 with no claim, subject to explicit manual execution authorization. ARCH-062-BACKGROUND-001 also becomes Ready at Attempt 0 because its sole prerequisite is this task. No downstream execution, deployment, main merge or gitlink change is authorized by this reconciliation.
