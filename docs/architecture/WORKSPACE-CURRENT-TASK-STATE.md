@@ -1949,3 +1949,7 @@ ARCH-064-COMMERCE-001 task-branch reconciliation: Ready at prior Attempt1 after 
 ## ARCH-064 — MCP completion frontier
 
 2026-11-06: MCP001 Attempt1 Complete after Accepted4963baa source and explicit developer completion. Background001 newly Ready/unclaimed; Commerce002 reader correction remains Ready. Terminal/manual-gated System Test Pending on Background/Commerce002. No main/live/follow-on execution or integrated completion claim.
+
+## ARCH-064 — Background completion frontier
+
+2026-11-06: Background001 Attempt1 Complete after Acceptedb682a6e source review and explicit developer completion. Canonical Commerce002 concurrently review, preserved untouched. System Test Pending on explicit Commerce002 dependency and terminal/manual-gated. No newly Ready task/main/live/follow-on execution or integrated completion claim.
