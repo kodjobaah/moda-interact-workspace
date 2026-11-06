@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-11-06T01:37:23Z
+attempt: 2
 depends_on: []
 enables: ["ARCH-061-SHARED-002"]
 created: 2026-11-05
@@ -138,7 +138,7 @@ No execution started. Use launcher isolated/synchronized task worktrees when req
 
 ### Status
 
-Changes Requested — Attempt 1 remains Ready/unclaimed after developer-update recheck on 2026-11-06. Implementation is published, but both source corrections and the completed validation report remain outstanding.
+In Progress — Attempt 2 claimed by developer at 2026-11-06T01:37:23Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
