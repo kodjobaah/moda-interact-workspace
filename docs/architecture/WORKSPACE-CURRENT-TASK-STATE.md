@@ -1914,3 +1914,8 @@ ARCH-061-BACKGROUND-001 is Complete at Attempt 1 following review `6f522798a` an
 ## ARCH-062 Commerce completion reconciliation — 2026-11-06
 
 ARCH-062-COMMERCE-001 remains Complete at Attempt 1, accepted implementation `f7f9385`, durable completion parent `8ff2bb191`. Repeated explicit completion is idempotent. Background is also Complete; Shopify is Review and MCP In Progress on their published task branches. ARCH-062-SYSTEM-TEST-001 remains Pending/unclaimed with its manual gate retained. No main merge or rollout occurred.
+
+
+## ARCH-062 Shopify explicit completion — 2026-11-06
+
+ARCH-062-SHOPIFY-001 is Complete at Attempt 2 after durable passing review `f7e72526a` and explicit developer decision, implementation `249de4e`. Background, Commerce and MCP are also explicitly Complete on their published task branches. ARCH-062-SYSTEM-TEST-001 becomes Ready, Attempt 0, executor/claimed_at null, and remains manually gated. No test execution, deployment, gitlink update or main merge occurred.

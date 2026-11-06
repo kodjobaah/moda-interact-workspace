@@ -41,11 +41,11 @@ No blanket search/replace of every myshopify string. Leave SDK internals, docume
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-062-SHOPIFY-001 | shopify | Ready | ARCH-061-SHOPIFY-001 |
+| ARCH-062-SHOPIFY-001 | shopify | Complete | ARCH-061-SHOPIFY-001 |
 | ARCH-062-BACKGROUND-001 | background | Complete | ARCH-061-BACKGROUND-001 |
 | ARCH-062-COMMERCE-001 | commerce | Complete | ARCH-061-COMMERCE-001 |
 | ARCH-062-MCP-001 | mcp | Complete | ARCH-061-MCP-001 |
-| ARCH-062-SYSTEM-TEST-001 | system-test | Pending | ARCH-062-SHOPIFY-001, ARCH-062-BACKGROUND-001, ARCH-062-COMMERCE-001, ARCH-062-MCP-001 |
+| ARCH-062-SYSTEM-TEST-001 | system-test | Ready | ARCH-062-SHOPIFY-001, ARCH-062-BACKGROUND-001, ARCH-062-COMMERCE-001, ARCH-062-MCP-001 |
 
 ## Architecture definition review
 Inspected existing suffix checks and trusted session flow; official sources separate storefront from Admin identity. No new domain discovery or storage needed. Existing ARCH-061 adoption provides selected-shop snapshot. No unresolved architectural decision is delegated to implementation.
@@ -56,13 +56,6 @@ Dependency frontier — 6 November 2026: ARCH-062-MCP-001 is Ready/unclaimed aft
 
 ## MCP Completion / Current Dependency Frontier — 6 November 2026
 
-MCP-001 Attempt 1 is explicitly developer-completed following passing scoped
-review `a7e085a23`, implementation `d0a8de3`. Fetched published parent
-records show Background Complete (`6d8c9d6ee`), Commerce Complete
-(`1bcf42b25`), and Shopify Ready after Changes Requested (`d812181a6`).
-These records supersede the older readiness summaries above; no sibling
-lifecycle is changed here.
+Completion frontier — 2026-11-06: Commerce and Background are Complete. Live published task branches show Shopify in Review and MCP In Progress. System Test remains Pending and manually gated; no sibling claim or attempt is changed.
 
-SYSTEM-TEST-001 remains Pending solely on Shopify completion. Terminal/manual
-execution and cutover gates remain unchanged; no system run, deployment,
-main merge, gitlink update or architecture-wide completion is implied.
+Current completion frontier — 2026-11-06: all ARCH-062 implementation prerequisites are Complete. SYSTEM-TEST-001 is Ready/unclaimed at Attempt 0; terminal manual execution and rollout gates remain in force. Earlier frontier notes are historical.

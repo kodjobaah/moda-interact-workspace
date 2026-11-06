@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -136,12 +136,12 @@ Task is repository-owned and gated by its ARCH-061 adoption prerequisite.
 ### Follow-up
 None
 
-## Dependency Reconciliation — 6 November 2026
 
-MCP-001 Attempt 1 is explicitly developer-completed after accepted scoped
-review `a7e085a23`, source `d0a8de3`. Fetched published Background
-(`6d8c9d6ee`) and Commerce (`1bcf42b25`) records are Complete.
-Shopify is Ready after Changes Requested (`d812181a6`), not Complete.
-This task remains Pending solely on Shopify completion, attempt 0,
-executor/claimed_at null. No promotion, claim, execution or cutover is
-authorized by this reconciliation; manual terminal gates remain unchanged.
+## Dependency Frontier Reconciliation — 2026-11-06
+
+ARCH-062-COMMERCE-001 and BACKGROUND-001 are explicitly developer-completed. Current published task records show SHOPIFY-001 in Review and MCP-001 In Progress; therefore this task remains Pending, Attempt 0, executor/claimed_at null. No claim or test run is authorized. After all prerequisites complete, terminal system validation still requires explicit developer invocation. Source task-branch evidence is recorded in the Commerce completion reconciliation.
+
+
+## Architect Dependency Reconciliation — 2026-11-06
+
+All four explicit prerequisites are Complete. Shopify Attempt 2 is explicitly developer-completed after passing review `f7e72526a`, source `249de4e`; Background, Commerce and MCP completion records are synchronized from their published task branches (source parent references recorded in Shopify's completion decision). Promote Pending -> Ready, with Attempt 0, executor null and claimed_at null unchanged. This supersedes older dependency snapshots only. The terminal manual execution gate remains: no claim, system test, cutover, rollout or deployment is authorized by readiness.
