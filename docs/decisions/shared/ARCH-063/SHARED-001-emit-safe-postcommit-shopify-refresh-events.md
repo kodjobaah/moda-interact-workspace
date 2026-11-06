@@ -164,14 +164,20 @@ Merged to workspace main: no
 
 ## Architect Review
 ### Review Status
-Pending
+Blocked — local implementation review passed; publication authorization outstanding.
 ### Review Notes
-Definition source audit completed; implementation not reviewed. Historical task acceptance preserved.
+2026-11-06 moda_architect inspected actual implementation commit 4097eb3662c11bf97989cd1012da914973ec7592 and focused test changes. No implementation corrections identified. Optional observer preserves caller behavior and transaction/lock flow; committed emission follows awaited interactive transaction resolution. Event payload uses an explicit frozen field allowlist, fresh UUID, trusted resolved Shop identity and bounded monotonic duration. Errors/body/credentials are excluded, and synchronous throws/asynchronous rejections are isolated. Existing valid credential reuse and lock waiters do not emit attempts. Cancellation, remote uncertainty and commit failure produce one terminal event after started.
+
+Local technical review passes. Final acceptance/submission remains blocked solely because automatic approval review rejected implementation publication. No publication retry, main integration, package release or dependent execution is authorized by this review.
 ### Reviewed Files
-Task touchpoints above; canonical MCP ARCH-061 reader inspected separately from stale shared checkout.
+- src/shopify/offline-token-provider.ts
+- src/shopify/node.ts
+- src/shopify/offline-token-provider.test.ts
+- src/shopify/offline-token-provider.postgres.test.ts
+- Current task Completion Report and launcher preparation packet.
 ### Validation Reviewed
-Task metadata/dependency/path checks only.
+Reviewed evidence: unit 20/20; disposable PostgreSQL 1/1 without skips and successful cleanup; typecheck; ESM/declaration build; diff whitespace check. Inspected assertions for actual deferred-constraint COMMIT failure, independent-client postcommit visibility, concurrency single event pair, secret canaries, hook failure isolation and timing assertions outside swallowed observer callbacks. No redundant validation rerun required.
 ### Architecture Conformance
-Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
+Conforms to bounded Shared hook contract and compatible rollout. Node-only export correctly resides in node.ts; browser-safe index retained. Physical worktrees and startup synchronization match canonical launcher packet. Developer completion authority retained. ARCH-063-SHARED-002 remains Pending until this task is published, accepted and explicitly completed by developer.
 ### Follow-up
-None
+Obtain explicit authorization to push implementation source/tests and parent task/report to their configured remotes. Then publish the already reviewed commits, reconcile publication evidence and final acceptance without source churn. Preserve completion_mode developer and do not complete or start enabled tasks implicitly.
