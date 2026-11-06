@@ -6,4 +6,11 @@ Architecture: ../../../architecture/ARCH-062-remove-duplicated-shopify-domain-gu
 |---|---|---|
 | ARCH-062-SYSTEM-TEST-001 | Pending | ["ARCH-062-SHOPIFY-001", "ARCH-062-BACKGROUND-001", "ARCH-062-COMMERCE-001", "ARCH-062-MCP-001"] |
 
-Reconciled 2026-11-06 from canonical task metadata and explicit prerequisite completion records. No new claim/attempt/completion; System Test remains terminal.
+Developer definitions only, unclaimed.
+
+## Dependency Frontier — 6 November 2026
+
+BACKGROUND-001 is Complete (accepted review `86b9f84f0`, completion
+`401c1ac3a`, source `f040512`). SYSTEM-TEST-001 remains Pending while
+SHOPIFY-001, COMMERCE-001 and MCP-001 are In Progress on their published
+task branches. No execution or cutover starts; manual gates remain in force.
