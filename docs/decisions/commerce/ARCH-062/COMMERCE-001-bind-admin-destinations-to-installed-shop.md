@@ -106,7 +106,9 @@ Finish defined work/acceptance/validation, submit Completion Report and STOP. Ex
 No implementation/claim from this definition. Use normal launcher isolated worktrees when requested. Existing paths verified; new test file explicitly named. Actual install integration domain remains SDK-established and selected-shop bound, not inferred by a new parser. Return demonstrated contract/schema incompatibility instead of widening scope.
 
 ## Completion Report
+
 ### Status
+
 Not Started
 ### Files Changed
 None
