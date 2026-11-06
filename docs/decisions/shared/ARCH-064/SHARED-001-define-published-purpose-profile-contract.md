@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T19:00:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: ["ARCH-064-SHARED-002"]
@@ -70,8 +70,8 @@ SUPER_ADMIN edits membership and behavior, publishes/activates release, then new
 Compatible staged rollout: Database additive migration, Shared accepted implementation then publication; Commerce UI/seed/staged complete release (do not activate against old consumer), MCP support, Background consumer after existing ARCH-059 Background adoption; operator pauses affected attempts and drains pinned legacy sessions via separately recorded operational procedure, activates complete profile release and resumes only after smoke verification. No procedure or deployment is claimed executed by these definitions. New runtime with missing profile fails closed. Previous runtime/release pairing is rollback unit; do not restore hardcoded fallback in new code. No schema destruction, queue deletion, new ingress/topology/secret requirement. No Gateway task identified. Reuse existing structured lifecycle diagnostics with release/purpose/capability IDs, no secrets or raw prompts/customer payloads. Terminal System Test after accepted dependencies and optional user exercise. No implementation auto-launch.
 
 ## Work Items
-- [ ] Add exact purpose/profile schema and optional backward-readable manifest field; new outreach requires present profile.
-- [ ] Use profile subset schemas/identity, no static name ceiling for supported read tools.
+- [x] Add exact purpose/profile schema and optional backward-readable manifest field; new outreach requires present profile.
+- [x] Use profile subset schemas/identity, no static name ceiling for supported read tools.
 
 ## Interfaces / Contracts
 Exact purpose profile/membership/behavior schemas and draft/release join models above; Shared publication prerequisite gates consumers. Initial Outreach is governance Feature, checkout_recovery remains admission, referenced owner-feature eligibility remains required.
@@ -83,11 +83,11 @@ None
 - ARCH-064-SHARED-002
 
 ## Acceptance Criteria
-- [ ] Profiles validate purpose, ordered same-release identities, safe input/output schemas and bounds; old conversation payloads remain compatible.
+- [x] Profiles validate purpose, ordered same-release identities, safe input/output schemas and bounds; old conversation payloads remain compatible.
 
 ## Validation
-- [ ] Run declared focused owner tests for each task assertion; add deterministic unit/integration fixtures for same-release/tenant/role/purpose/immutability constraints and the supported fifth-tool case.
-- [ ] Run declared typecheck/build appropriate to owner (Database schema/migration/constraint tests; Background build; System Test harness/syntax instead of app build). Record exact commands/results and no secrets in diagnostics.
+- [x] Run declared focused owner tests for each task assertion; add deterministic unit/integration fixtures for same-release/tenant/role/purpose/immutability constraints and the supported fifth-tool case.
+- [x] Run declared typecheck/build appropriate to owner (Database schema/migration/constraint tests; Background build; System Test harness/syntax instead of app build). Record exact commands/results and no secrets in diagnostics.
 
 ## Stop Condition
 Submit completed scoped report for authorized review and STOP. Explicit developer completion required. No enabled follow-on task auto-start; terminal System Test manually invoked after accepted dependencies.
@@ -99,21 +99,42 @@ No execution from definition. Use normal launcher-isolated/synchronized task wor
 
 ### Status
 
-In Progress — Attempt 1; developer-authorized implementation assistance.
+Ready for Review — Attempt 1. Local implementation/self-review passed; explicit developer completion pending.
+
 ### Files Changed
-None
+src/commerce/definitions.ts; src/commerce/schemas.ts; src/commerce/selection.ts; src/commerce/runner/types.ts; src/commerce/runner/preflight.ts; src/commerce/runner/tool-policy.ts; src/commerce/runner/tool-execution.ts; src/commerce/purpose-profile.test.ts.
+
 ### Work Completed
-None
+Exported execution-purpose/profile schemas and types: 1–32 members, unique names/capabilities, strictly increasing nonnegative positions, 32768 UTF-8 byte behavior limit, explicit PROFILE_EMPTY, bounded subset schemas and deeply frozen parsed snapshots. Optional purposeProfile preserves legacy manifest/grant parsing; canonical full-profile comparison binds purpose, behavior, ordered IDs and schemas. Manifest validates same-release capability/tool/revision/name/input identities.
+
+Trusted runner executionPurpose requires matching outreach profile and fails closed when missing. Generic conversations remain unchanged. Preflight composes profile behavior after host invariants only for explicit trusted purpose. Existing graph resolver delegates to tool-policy; changed that actual policy rather than duplicating logic in the graph node. It intersects existing authorized registered tools with profile members, retains published position order, checks membership again at call time and validates successful output against profile subset schema. A fifth registered read-tool fixture executes without adding a tool-name ceiling; removal denies subsequent call.
+
 ### Validation Results
-Definition only.
-### Deviations
-None
-### Assumptions
-Existing publication and supported read operation registry remain canonical.
-### Unresolved Issues
-None blocking definition.
-### Architectural Concerns
-Do not widen permissions or generic result evidence authority.
+- `npm run typecheck`: passed.
+- `npx tsx --test src/commerce/purpose-profile.test.ts src/commerce/selection.test.ts src/commerce/runner/runner.test.ts`: 63 passed.
+- `npm run build`: ESM and declarations passed.
+- `npm run validate:commerce-entrypoints`: passed.
+- `git diff --check`: passed.
+Tests cover profile bounds/order/deep immutability, malformed schemas/output, same-release identities, full behavior binding, fifth tool, member removal, grant-order independence, missing-profile denial and legacy compatibility. Tenant/role/database constraints belong to downstream owners; no cross-service integration or deployed execution is claimed here.
+
+### Deviations / Assistance
+Material moda_shared assistance implemented source/tests under explicit developer authorization; root retained lifecycle/publication. Launcher prepared/synchronized worktrees and set developer Attempt 1 before report-format validation failed; normalized report and published claim f7ddfa682 without another claim/increment. Supporting canonical schemas/selection and delegated runner policy/preflight/execution/types were necessary to bind/enforce the contract; no consumer repository edits.
+
+### Boundaries / Unresolved Issues
+Existing descriptors have no output-schema/read-only metadata: bounded output schema is canonically bound in profile/grant and runtime-validated; publication producers own authoritative compiled output and read-only eligibility. Membership never registers a tool or bypasses existing authorization. Generic budgets and existing 262144-byte result envelope remain unchanged; Background owns stricter outreach budgets. No extra hash mechanism, schema, dependency or package-version change. Package remains 5.3.0; SHARED-002 must publish the new contract before consumers pin it. No blocking scoped implementation issues.
+
+### Git / VCS
+Task branch: task/ARCH-064-SHARED-001.
+Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-064-SHARED-001.
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-064-SHARED-001.
+Both worktrees use task/ARCH-064-SHARED-001, prepared/synchronized by launcher before Attempt 1. Shared/default checkouts were not switched for task implementation; no other task worktree reused.
+Implementation d478b057942da3185713eb348f48d5205b773539 pushed to origin/task/ARCH-064-SHARED-001.
+Parent claim f7ddfa682 pushed; this report is committed/pushed on matching parent task branch, exact report commit available in Git history.
+Submodule gitlink staged: no. Main merged/pushed: no. Package published: no.
+
+## Developer Self-Review - Passed
+Attempt 1 scoped Shared contract and enforcement pass focused tests, declared typecheck/build and entrypoint validation. Existing authorization and generic compatibility remain; rollout/publication stays gated on follow-on tasks. Explicit `/moda_developer_update ARCH-064-SHARED-001 complete` is pending.
 
 ## Architect Review
 ### Review Status
