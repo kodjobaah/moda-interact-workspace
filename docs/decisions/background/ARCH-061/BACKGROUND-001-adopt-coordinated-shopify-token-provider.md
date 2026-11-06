@@ -133,13 +133,13 @@ NEW paths below are to be created RELATIVE TO THIS TASK REPOSITORY. Existing ful
 Create the new focused test paths listed in this exact command where absent; preserve existing test files. Required focused command: `npx vitest run tests/unit/services/shopify-session.service.test.ts tests/integration/shopify-session-coordination.test.ts`. Run declared `npm run build`; App/Commerce/MCP additionally `npm run typecheck`; System Test uses `npm run typecheck` only.
 
 ## Implementation Notes
-No execution started. Use launcher isolated/synchronized task worktrees when requested. Use the installed SDK surfaces and official recovery policy identified in revision 2. Node recovery uses workspace bootstrap. No new schema or alternative lock primitive is authorized. Publication is release mechanics only.
+Attempt 1 is implemented and reviewed in the canonical isolated task worktrees recorded below. Use the installed SDK surfaces and official recovery policy identified in revision 2. Node recovery uses workspace bootstrap. No new schema or alternative lock primitive is authorized. Publication is release mechanics only.
 
 ## Completion Report
 
 ### Status
 
-Ready for Review — Developer Attempt 1 implementation and self-review passed; awaiting moda_architect review.
+Developer Self-Review Passed / Accepted — Attempt 1 reviewed on 2026-11-06. Explicit developer completion is pending; status remains Review.
 
 ### Files Changed
 
@@ -195,17 +195,17 @@ Attempt 1 implementation and all task-owned acceptance criteria were reviewed ag
 
 ## Architect Review
 ### Review Status
-Pending
+Passed / Accepted — Attempt 1; explicit developer completion pending.
 ### Review Notes
-Definition only.
+No blocking task-owned issue identified. Reviewed the actual implementation diff against its synchronized baseline, rather than inferring behavior from the commit message.
 ### Reviewed Files
-None
+All 14 files changed by implementation `3fed264d9d8c15fe32eb82413f6aa81a2f8b14cc`, including package/lock, service composition, selected-Shop callers, catalogue metadata lookup and focused tests; existing OAuth configuration consumer and disposable runner inspected read-only.
 ### Validation Reviewed
-None
+Independent focused unit run: 72 tests across 5 files passed, exit 0. Independent `node node_modules/.bin/tsc --noEmit`: passed, exit 0. Implementation diff whitespace check passed. Reviewed the recorded successful build and the developer-reported three-case disposable PostgreSQL run against its test source; the PostgreSQL suite was not independently rerun in this review.
 ### Architecture Conformance
-Pending implementation.
+Shared 5.2.0 owns refresh/locking/persistence and safe failure taxonomy. Background composes its local Prisma/configuration/fetch, retains selected-Shop authorization at callers, forwards supplied cancellation, and removes the bespoke refresh path. The metadata-only catalogue resolves the actual stored offline Session ID without acquiring a token or refreshing. No sibling source import, schema change or alternate synchronization primitive was introduced.
 ### Follow-up
-None
+Explicit `/moda_developer_update ARCH-061-BACKGROUND-001 complete` remains required. System validation and rollout stay under their separate task/manual gates.
 
 ### Architecture definition review — 2026-11-05 revision 2
 Definition reviewed against installed SDK control flow and current repository reads/writes. Public authenticate/unauthenticated wrapper + ALS storage and runtime setAbstractFetchFunc are the selected integration; no fictional SDK hook. Session row plus stable per-shop lifecycle advisory gate is selected for demonstrated deletion/recreation. Provider lost-response recovery is grounded in official Shopify August 28, 2026 policy. No implementation reviewed and no lifecycle status changed.
@@ -233,3 +233,15 @@ Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOff
 ## Architect Dependency Reconciliation — 2026-11-06
 
 SHOPIFY-001 Attempt 2 is explicitly developer-completed after passing review `e1310a6aa`, implementation `17fb986`. SHARED-002 is also Complete (published Shared 5.2.0). All explicit prerequisites are satisfied. Promoted to Ready, executor/claimed_at null, existing attempt unchanged. Normal developer preparation, accepted-source integration and task validation gates apply; no claim, execution or rollout is started by this update.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 1 (2026-11-06)
+
+- Decision: scoped review passes; keep `status: review`, `executor: null`, `claimed_at: null`, and Attempt 1 unchanged. Explicit developer completion is pending.
+- Implementation: `3fed264d9d8c15fe32eb82413f6aa81a2f8b14cc` on `task/ARCH-061-BACKGROUND-001`, compared with baseline `0225d97`. Live remote branch verification matched that exact source commit; implementation worktree was clean.
+- Parent branch: pre-review source `15c813997e599669499b9455acd18ceaed149d86`, verified equal to the live remote task branch with a clean worktree. This review publishes only the current task document; no gitlink, main merge or deployment is included.
+- Physical isolation verified: launcher-resolved parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-061-BACKGROUND-001` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-061-BACKGROUND-001`, both on the canonical task branch. Start-of-attempt synchronization/submodule evidence is recorded in the Completion Report. Review did not switch a shared checkout or reuse another task worktree.
+- Prerequisites: SHARED-002 and SHOPIFY-001 are Complete in the task branch. No dependency-frontier promotion is performed while this task awaits explicit completion.
+- Independent validation: `node node_modules/vitest/vitest.mjs run tests/unit/services/shopify-session.service.test.ts tests/unit/providers/shopify-discount.provider.test.ts tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-discount-catalogue.service.test.ts tests/unit/services/abandoned-checkout-lookup.service.test.ts` passed all 72 tests in 5 files (exit 0; `/tmp/arch061-background-review-unit.log`). `node node_modules/.bin/tsc --noEmit` passed (exit 0; `/tmp/arch061-background-review-types.log`). Both used installed Node 24.19.0 from the canonical implementation worktree. `git diff --check HEAD^` passed.
+- Submitted evidence: reviewed the recorded build log `/tmp/arch-061-background-build.log` and developer-reported disposable PostgreSQL result (3 passed). The PostgreSQL test source uses independent Prisma clients, observes the advisory-lock waiter, checks one refresh and durable pair visibility, rejects inactive selected Shops before OAuth, and checks safe failure canaries/rollback. This review does not claim an independent PostgreSQL rerun or architecture-wide system validation.
+- No material assigned-agent assistance was reported. No required task-owned item is known incomplete; no implementation correction or scope waiver is requested.
