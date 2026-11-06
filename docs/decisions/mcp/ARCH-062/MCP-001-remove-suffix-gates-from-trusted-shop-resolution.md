@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T13:14:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-061-MCP-001"]
 enables: ["ARCH-062-SYSTEM-TEST-001"]
@@ -111,7 +111,7 @@ Attempt 1 implements the selected-shop snapshot boundary in the launcher-resolve
 
 ### Status
 
-In Progress — Attempt 1 implementation and required validation finished; ready for authorized developer reconciliation/review. Implementation commit `d0a8de3` is pushed to MCP `task/ARCH-062-MCP-001`; this report is published on the matching parent task branch under explicit developer authorization. No passing review or completion decision is claimed.
+Developer Self-Review Passed / Accepted — Attempt 1. Task status Review; executor/claimed_at cleared and attempt unchanged. Explicit developer completion remains pending. Implementation commit `d0a8de3` is pushed to MCP `task/ARCH-062-MCP-001`; this report is published on the matching parent task branch under explicit developer authorization. The scoped passing review is recorded below; no completion decision is claimed.
 
 ### Files Changed
 
@@ -177,7 +177,7 @@ Official Shopify [Shop 2026-07 reference](https://shopify.dev/docs/api/admin-gra
 
 ### Unresolved Issues
 
-No task-owned implementation issue remains. Authorized developer review and explicit developer completion remain pending. ARCH-062-SYSTEM-TEST-001 was not started/promoted.
+No task-owned implementation issue remains. Scoped developer review passed; explicit developer completion remains pending. ARCH-062-SYSTEM-TEST-001 was not started/promoted.
 
 ### Architectural Concerns
 
@@ -210,4 +210,54 @@ preparation and source/validation gates still apply.
 
 ## Publication — 6 November 2026
 
-The developer explicitly authorized committing and pushing both task branches. Implementation `d0a8de3` contains the source, tests and documentation described above. The matching parent branch publishes this report. Task remains `in_progress`, Attempt 1, pending authorized review; no acceptance/completion, downstream promotion, main merge, deployment or gitlink update is implied.
+The developer explicitly authorized committing and pushing both task branches. Implementation `d0a8de3` contains the source, tests and documentation described above. The matching parent branch publishes this report. At that publication, task remained `in_progress`, Attempt 1, pending authorized review; no acceptance/completion, downstream promotion, main merge, deployment or gitlink update was implied.
+
+## Developer Self-Review Passed / Accepted — Attempt 1 (6 November 2026)
+
+**Scoped review accepted; no actionable finding.** Reviewed published implementation
+`d0a8de3a26244aeaa184a58f3def613891fca5d3` against parent
+`bdd69ca353fac6d84b86060c4715b4d187581e58`, all twelve changed files,
+the current task contract and its acceptance/validation requirements. This
+developer-as-architect review supersedes the definition-only Pending review
+for this implementation; its historical text is preserved.
+
+### Source and contract review
+
+The three identified suffix gates are removed without changing Woo validation
+branches, selected tenant/platform/status or plan/Feature authorization.
+Credential acquisition takes only the trusted selected Shop ID; the local port
+carries endpoint, Shop ID, token and scope from the same Shared snapshot.
+The provider rechecks snapshot identity, binds the fixed HTTPS Admin URL to the
+exact snapshot host/origin with no credentials/port/path/query/hash override,
+and keeps redirect:error, read-only query admission, scope preflight, API
+version/response bounds and cancellation. No domain discovery, alias mapping,
+new Shared contract, token cache, schema or refresh-lock/recovery change was
+introduced.
+
+Reviewed fixture changes for the new port shape. The positive custom-storefront
+test injects a legitimate installation snapshot and proves local transport
+authority; it does not prove a persisted custom-domain alias. The negative
+mapping probe exercises the actual published Shared provider with injected
+database state and denies missing association before OAuth/GraphQL IO. These
+limits are accurately recorded rather than presented as live SDK or
+cross-service proof.
+
+### Review validation
+
+- Reran `npx tsx --test tests/unit/connections/shopify-domain-boundary.test.ts tests/unit/connections/resolver.test.ts tests/unit/connections/shopify/session-reader.test.ts tests/unit/connections/shopify/provider.test.ts`: **60 passed, 0 failed/skipped**, exit 0. Includes the required 26-test boundary file. Receipt: `/tmp/arch062-mcp-review.log`.
+- Reviewed submitted full-unit receipt: **400 passed, 0 failed/skipped**. Reviewed typecheck, build and lint receipts; no source change since their reported passing runs. These broader checks were not repeated during review.
+- Verified `git diff --check`, clean implementation and parent worktrees before this record, and zero ahead/behind counts against fetched matching remote task branches.
+- Verified dedicated mirrored physical worktree registrations for this task. Start-of-attempt dependency/synchronization/submodule evidence remains the launcher packet recorded above, not a repeated startup claim.
+
+### Decision and lifecycle
+
+Preserve developer execution/completion modes and Attempt 1. Set status Review,
+executor null and claimed_at null. Material implementation assistance remains
+recorded in the Completion Report; execution ownership is unchanged. The
+implementation branch is already committed/pushed; this task-owned review/report
+is committed/pushed on the matching parent branch.
+
+Explicit `/moda_developer_update ARCH-062-MCP-001 complete` is still required.
+No completion or downstream promotion is made by this review. No code edit,
+test-infrastructure deployment, main merge, gitlink change, new attempt or
+enabled system-test execution occurred.
