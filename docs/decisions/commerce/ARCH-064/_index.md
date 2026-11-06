@@ -13,3 +13,7 @@ Commerce Attempt1 preserved; next authorized claim adopts5.5.0 and completes rea
 COMMERCE-001 Attempt2 Accepted after real-default publication/output validation using Shared5.5.0; explicit developer completion pending.
 
 COMMERCE001 Attempt2 explicitly developer-completed; historical blocked Attempt1 preserved.
+
+| ARCH-064-COMMERCE-002 | Ready | ARCH-064-COMMERCE-001, ARCH-064-DATABASE-001, ARCH-064-SHARED-004 |
+
+Newly demonstrated production reader correction; no execution launched.

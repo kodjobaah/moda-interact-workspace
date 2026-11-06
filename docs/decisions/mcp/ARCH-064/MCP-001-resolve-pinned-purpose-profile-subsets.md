@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 50
-executor: codex
-claimed_at: 2026-11-06T21:14:04Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-064-DATABASE-001", "ARCH-064-SHARED-002", "ARCH-064-COMMERCE-001", "ARCH-059-MCP-001"]
 enables: ["ARCH-064-BACKGROUND-001", "ARCH-064-SYSTEM-TEST-001"]
@@ -154,17 +154,19 @@ Implementation4963baa915295a3deec2b470b73d7f61247d2f53 pushed/remote verified, c
 
 ## Architect Review
 ### Review Status
-Pending
+Accepted — explicit developer completion pending.
 ### Review Notes
-Definition inspected against single-owner schema, role model and selector/graph code; no implementation reviewed.
+Inspected actual4963baa915295a3deec2b470b73d7f61247d2f53 implementation/reportc66e0b09df40d9052b47e71fe9f9a410956fb908. Trusted private purpose is recognized by Shared schema; stateless purpose calls require existing Shared-validated pinned releaseId, preventing fresh active snapshot from accepting stale calls. Immutable same-release whole profile validates before entitlement intersection; ordinary owner-feature/plan/provider and checkout_recovery admission preserved. Governance Feature identity never grants tools. Purpose-facing names match immutable revision/profile while generic aliases unchanged. Calls re-read permissions/release and compare exact identities/profile before provider I/O. Canonical Shared5.5 output compiler validates mapped GraphQL values separately from transport facts; no name ceiling or local validator fork.
 ### Reviewed Files
-Verified touchpoints above.
+Capability purpose/resolver/manifest/Prisma reader/records; authentication/service/snapshot/execution ports; runtime registry/service adapter; focused purpose protocol/query-shape tests and README; package/lock and accepted nested database pin.
 ### Validation Reviewed
-Metadata/dependency/path checks only.
+Final46 targeted fixtures passed, including real production GraphQL fifth executor, separate HTTP list/call pin/missing/stale/cross-shop/revoked denial, actual four default custom-name descriptors and generated Prisma.CommerceReleaseInclude proof. Declared typecheck/build/lint/diff checks passed. Earlier full unit408/410 had two missing ignored schema-artifact ENOENT cases; exact pinned hash-verifying installer applied and both cases rerun/pass within final46. No live provider/database mutation. Read actual nested feature.purposeMembers projection against accepted generated schema.
 ### Architecture Conformance
-Single owning repository; shared contract publication separated; terminal integrated test.
+Scoped MCP contract conforms. Dependency pin accepted database379d563 and Shared5.5; parent workspace gitlink untouched. Service policy metadata projection derives schemas, runtime validation remains canonical Shared. Canonical isolation/start synchronization/durable mirrored publication verified. No main/live migration/activation/downstream implementation.
+
+Residual cross-repository issue: accepted Commerce publication-storage.ts:108 uses nonexistent direct release.purposeMemberships; actual DB exposes nested ReleaseFeature.purposeMembers. ARCH-064-COMMERCE-002 Ready correction defined, System Test explicitly depends on it. MCP owns/fixes only its own typed reader. Acceptance here does not claim integrated runtime/deployment complete.
 ### Follow-up
-None
+Explicit completion: `/moda_developer_update ARCH-064-MCP-001 complete`. Commerce002 remains Ready for separately authorized execution. Background/System Test remain gated until their required dependencies Complete; no automatic follow-on work.
 
 
 ## Purpose publication authority and underlying tool edits
