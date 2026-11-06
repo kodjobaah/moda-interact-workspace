@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
 executor: codex
 claimed_at: 2026-11-06T20:48:20Z
@@ -76,7 +76,7 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 - [x] Hide/deny initial_outreach for ADMIN; SUPER_ADMIN only membership and behavior services with expected versions.
 - [x] Implement draft reference joins, atomic version/audit/idempotency; no duplicate Tool/Capability.
 - [x] Show Initial Outreach behavior and Attach existing capability/reorder/remove controls.
-- [ ] Snapshot behavior/purpose joins with validated same-release members; immutable staged publish/activation.
+- [x] Snapshot behavior/purpose joins with validated same-release members; immutable staged publish/activation.
 - [x] Seed first profile only with existing four references; preserve later edits.
 
 ## Interfaces / Contracts
@@ -93,12 +93,12 @@ Exact purpose profile/membership/behavior schemas and draft/release join models 
 - ARCH-064-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] SUPER_ADMIN fifth supported read tool addition/removal visible in published snapshot; ADMIN list/detail/direct-action denied.
-- [ ] Default seed repeats no changes, owns no cloned capabilities; unsupported/mutating tool/empty profile publication rejected.
+- [x] SUPER_ADMIN fifth supported read tool addition/removal visible in published snapshot; ADMIN list/detail/direct-action denied.
+- [x] Default seed repeats no changes, owns no cloned capabilities; unsupported/mutating tool/empty profile publication rejected.
 
 ## Validation
-- [ ] Run declared focused owner tests for each task assertion; add deterministic unit/integration fixtures for same-release/tenant/role/purpose/immutability constraints and the supported fifth-tool case.
-- [ ] Run declared typecheck/build appropriate to owner (Database schema/migration/constraint tests; Background build; System Test harness/syntax instead of app build). Record exact commands/results and no secrets in diagnostics.
+- [x] Run declared focused owner tests for each task assertion; add deterministic unit/integration fixtures for same-release/tenant/role/purpose/immutability constraints and the supported fifth-tool case.
+- [x] Run declared typecheck/build appropriate to owner (Database schema/migration/constraint tests; Background build; System Test harness/syntax instead of app build). Record exact commands/results and no secrets in diagnostics.
 
 ## Stop Condition
 Submit completed scoped report for authorized review and STOP. Explicit developer completion required. No enabled follow-on task auto-start; terminal System Test manually invoked after accepted dependencies.
@@ -111,6 +111,43 @@ Dependency reconciliation (2026-11-06): canonical routes confirm ARCH-064-DATABA
 No execution from definition. Use normal launcher-isolated/synchronized task worktrees when requested. Exact architecture choices above are binding; report demonstrated incompatibility instead of selecting new schema/identity/authorization design. Preserve historical task status and unrelated edits.
 
 ## Completion Report
+### Status
+Ready for Review — Attempt2 correction complete; explicit developer completion remains required.
+### Files Changed
+Attempt2 only: package.json/package-lock.json (published Shared5.5.0), src/commerce/publication/purpose-profile.ts, tests/initial-outreach-publication.test.ts. Prior validated authoring/UI/seed/lifecycle work retained unchanged.
+### Work Completed
+Adopted corrected published Shared5.5.0 and canonical compileCommercePurposeOutputSchema in the existing read-only admission/publication helper. Complete producer schemas retained without projection or local widening. Existing canonical profile schema now validates real default four descriptors. Real seed invokes production first-only seeding, feeds canonical IDs/order/behavior to lifecycle publication, validates full nonempty discount options/details and product search/get values through both canonical purpose compiler and unchanged CommerceToolOutputs. Actual supported compiled read-only GraphQL fifth is added/removed in subsequent immutable releases. Role, direct lifecycle, immutable old snapshot, empty/unsupported/mutating rejection and seed edit preservation remain enforced.
+### Validation Results
+- Published `@modainteract/moda-interact-shared@5.5.0` installed exact registry/integrity lock; only one dependency changed. Existing peer/audit warnings unchanged; no unrelated dependency work.
+- `node node_modules/vitest/vitest.mjs run tests/initial-outreach-publication.test.ts tests/commerce-lifecycle.test.ts tests/publication-storage-release-delta.test.ts`: PASS 3 files/39 tests, zero skips/failures. Real seeded default profile + complete output values and fifth read add/remove included.
+- `node node_modules/vitest/vitest.mjs run tests/initial-outreach-authoring.test.ts tests/feature-authoring.test.ts tests/feature-configuration-screen.test.tsx tests/initial-outreach-seed.test.ts tests/system-commerce-tool-sync.test.ts`: PASS 5 files/42 tests.
+- `node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json`: PASS exit0. Exact workspace bootstrap-resolved Node used, no alternate runtime selection. No production source changes after compiler pass.
+- `git diff --check`: PASS.
+### Correction Contract Disposition
+- Published5.5.0 pin: implemented package+lock.
+- Canonical output validator/compiler: implemented purpose-profile.ts; one Shared implementation, unchanged schema/results.
+- Real default four seed/publication and complete values: implemented focused production descriptor/seed fixture, passes.
+- Supported fifth, roles, immutable snapshot, empty/unsupported rejection: rechecked in39-test publication and42-test authoring/seed runs.
+- Same branches/report and review return: implemented; no new claim or enabled task execution.
+### Deviations
+None. Known shipping descriptor remains outside canonical supported subset and is not misrepresented as supported; fifth acceptance uses actual compiler-validated read-only GraphQL. No arbitrary operation admission.
+### Assumptions
+No deployed rollout/activation implied. Canonical output compiler validates generic bounded structure; existing owning validators and owner-feature/tenant/permission controls remain authoritative.
+### Unresolved Issues
+None. Historical Shared5.4 default-output blocker resolved by accepted/published5.5.0; prior blocked record preserved below.
+### Architectural Concerns
+None newly introduced. No Shared source duplication, live migration/activation, main integration or downstream consumer implementation.
+### Git / VCS — Attempt2
+- Task branch unchanged: task/ARCH-064-COMMERCE-001.
+- Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+- Parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-064-COMMERCE-001; implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-064-COMMERCE-001.
+- Both exact task worktrees reused; no shared checkout mutation or another task worktree reuse.
+- Launcher parent/implementation remote-task fast-forward not-needed; origin/main already-current. Recursive sync/update passed; database379d563f6b9ee070305e284615dddbc0b97afeb0 ready.
+- Attempt2 claim80bc2ece9fb9a3f0a58c72074fa007f627094f31 committed/pushed by launcher; not repeated.
+- Implementation correction bef213b (full hash in task history), pushed matching branch. Parent current report commit follows this edit and is pushed to same branch.
+- No main merge, gitlink staging, live setup/migration/activation or follow-on execution.
+
+### Historical Attempt1 Report
 ### Status
 Blocked — scoped implementation published; default purpose output schemas incompatible with published Shared 5.4.0 profile subset.
 ### Files Changed
