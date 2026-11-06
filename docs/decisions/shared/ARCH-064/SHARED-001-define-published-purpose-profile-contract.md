@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -99,7 +99,7 @@ No execution from definition. Use normal launcher-isolated/synchronized task wor
 
 ### Status
 
-Ready for Review — Attempt 1. Local implementation/self-review passed; explicit developer completion pending.
+Complete — Attempt 1 explicitly developer-completed on 2026-11-06.
 
 ### Files Changed
 src/commerce/definitions.ts; src/commerce/schemas.ts; src/commerce/selection.ts; src/commerce/runner/types.ts; src/commerce/runner/preflight.ts; src/commerce/runner/tool-policy.ts; src/commerce/runner/tool-execution.ts; src/commerce/purpose-profile.test.ts.
@@ -153,3 +153,9 @@ None
 
 ## Purpose publication authority and underlying tool edits
 Any release containing initial_outreach behavior/purpose members requires SUPER_ADMIN at publish AND activate/rollback, checked server-side in lifecycle services, not only Feature editor. Global ADMIN may retain existing rights to edit unrelated/shared tool drafts, but cannot publish/activate a new outreach snapshot or repoint its revisions through another Feature workflow. Existing immutable release references mean editing a draft never changes active outreach. Super Admin publication reviews selected exact revision IDs and behavior as one complete snapshot; ordinary release services cannot silently copy/advance outreach members to latest revisions. For a release that preserves outreach unchanged, activation still requires SUPER_ADMIN because the pointer controls this purpose. No bypass via setup command, generic release action, development role field or forged client role. Existing authenticated development bypass policy remains explicit and may not impersonate SUPER_ADMIN for production mutations. Add ADMIN direct lifecycle publish/activate/rollback tests plus underlying draft edit test proving active pinned profile unchanged. Keep existing audit reason/actor/operationId and immutable snapshot evidence; no new permission granted to arbitrary tools.
+
+## Developer Completion Decision
+2026-11-06: Developer explicitly invoked `/moda_developer_update ARCH-064-SHARED-001 complete`. Accepted Attempt 1 unchanged; executor and claimed_at remain null. Passing self-review is durable in parent 180aced326f83a19a8b4dff1c616c346101b87e4. Implementation d478b057942da3185713eb348f48d5205b773539 matches origin/task/ARCH-064-SHARED-001; both canonical worktrees clean at verification. Required scoped work and validation satisfied. Neither main branch merged/pushed; package publication remains separate.
+
+### Dependency-frontier reconciliation
+ARCH-064-SHARED-002 has only SHARED-001 as explicit dependency and becomes Ready, unchanged Attempt 0, executor/claimed_at null. No claim or automatic execution. Commerce/MCP/Background remain gated by publication and their other dependencies; terminal System Test remains Pending/manual-gated.
