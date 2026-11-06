@@ -158,3 +158,20 @@ None
 Definition reviewed against installed SDK control flow and current repository reads/writes. Public authenticate/unauthenticated wrapper + ALS storage and runtime setAbstractFetchFunc are the selected integration; no fictional SDK hook. Session row plus stable per-shop lifecycle advisory gate is selected for demonstrated deletion/recreation. Provider lost-response recovery is grounded in official Shopify August 28, 2026 policy. No implementation reviewed and no lifecycle status changed.
 
 Publication exports the selected-Shop-ID API defined by revised SHARED-001. Do not publish the superseded host-argument API.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 1 (2026-11-06)
+
+**Review passed; no actionable findings.** Reconciled this release-only task against accepted/completed SHARED-001, publication receipt, exact registry metadata and published tarball. Status Review, executor/claimed_at null, Attempt 1 unchanged; developer execution/completion modes preserved. Explicit `/moda_developer_update ARCH-061-SHARED-002 complete` remains required. No downstream task is promoted by this passing review alone.
+
+### Independently verified
+
+- Prerequisite SHARED-001 task frontmatter is Complete with its explicit developer completion record. Accepted source is incorporated through implementation merge `f083916`.
+- Implementation HEAD and its task remote both equal `64737fa90cea1a64471277fc77fdd84704b7cf45`. Diff against `f083916` changes only `package.json` and `package-lock.json`; no runtime/test/export-map changes. Canonical dedicated implementation and parent worktrees were clean before review documentation.
+- Read exact registry metadata for `@modainteract/moda-interact-shared@5.2.0`: version 5.2.0, `./shopify/node` maps to `./dist/shopify/node.js` and `./dist/shopify/node.d.ts`, and integrity matches the recorded `sha512-Px1+BwZOIyb/0jDd3euBEGbJZwgNX5B9Hcpbyonr/SqBMXmRhkIwSd1fX0V3/VuSl1PqmZt+pov3Xfk5SPXOHQ==` receipt. Local review metadata `/tmp/arch061-shared002-registry-review.json`.
+- Downloaded the exact registry tarball to `/tmp` using npm pack with scripts disabled. Independently computed its SHA-512 integrity and matched registry/report values; inspected its package manifest/version and presence of both Node JavaScript/declaration entrypoint files. No installation, lifecycle execution or republishing was performed. Download metadata `/tmp/arch061-shared002-pack-review.json`.
+- Source whitespace check passed. No prerequisite unit/integration tests, lint/typecheck/build were rerun, in accordance with the release-only validation boundary. This review verifies publication evidence, not consumer SDK integration or live Shopify behavior.
+
+### Ownership and follow-up
+
+Prepared worktree/synchronization/claim repair and metadata-only publication evidence remain in the Completion Report; no new claim or attempt was created. Only this parent task review is committed/pushed. No implementation change, package publication, gitlink/main merge, consumer execution, deployment or cutover occurs. The developer retains final completion and integration authority. Downstream ARCH-061 tasks remain gated until explicit completion and their own prerequisites/manual requirements are satisfied.
