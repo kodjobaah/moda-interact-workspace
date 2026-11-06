@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-11-06T13:22:57Z
+attempt: 1
 depends_on: ["ARCH-061-COMMERCE-001"]
 enables: ["ARCH-062-SYSTEM-TEST-001"]
 created: 2026-11-05
@@ -109,7 +109,8 @@ No implementation/claim from this definition. Use normal launcher isolated workt
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-11-06T13:22:57Z. Attempt 0 review history is preserved below.
+
 ### Files Changed
 None
 ### Work Completed
