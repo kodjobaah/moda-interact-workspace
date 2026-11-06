@@ -38,8 +38,8 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
 | ARCH-064-DATABASE-001 | database | Ready | - |
-| ARCH-064-SHARED-001 | shared | Ready | - |
-| ARCH-064-SHARED-002 | shared | Pending | ARCH-064-SHARED-001 |
+| ARCH-064-SHARED-001 | shared | Complete | - |
+| ARCH-064-SHARED-002 | shared | Ready | ARCH-064-SHARED-001 |
 | ARCH-064-COMMERCE-001 | commerce | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
 | ARCH-064-MCP-001 | mcp | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
 | ARCH-064-BACKGROUND-001 | background | Pending | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
@@ -51,3 +51,5 @@ Current single-owner capability relation cannot attach one capability to a secon
 
 ## Purpose publication authority and underlying tool edits
 Any release containing initial_outreach behavior/purpose members requires SUPER_ADMIN at publish AND activate/rollback, checked server-side in lifecycle services, not only Feature editor. Global ADMIN may retain existing rights to edit unrelated/shared tool drafts, but cannot publish/activate a new outreach snapshot or repoint its revisions through another Feature workflow. Existing immutable release references mean editing a draft never changes active outreach. Super Admin publication reviews selected exact revision IDs and behavior as one complete snapshot; ordinary release services cannot silently copy/advance outreach members to latest revisions. For a release that preserves outreach unchanged, activation still requires SUPER_ADMIN because the pointer controls this purpose. No bypass via setup command, generic release action, development role field or forged client role. Existing authenticated development bypass policy remains explicit and may not impersonate SUPER_ADMIN for production mutations. Add ADMIN direct lifecycle publish/activate/rollback tests plus underlying draft edit test proving active pinned profile unchanged. Keep existing audit reason/actor/operationId and immutable snapshot evidence; no new permission granted to arbitrary tools.
+
+2026-11-06 explicit developer completion: SHARED-001 Attempt 1 Complete, implementation d478b05 and passing review 180aced32 verified published. SHARED-002 becomes Ready/unclaimed at unchanged Attempt 0. Downstream consumers remain publication-gated; System Test remains Pending/manual-gated. No enabled task started or package published.
