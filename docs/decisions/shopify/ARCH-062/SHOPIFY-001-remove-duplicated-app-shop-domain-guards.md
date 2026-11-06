@@ -106,21 +106,37 @@ Finish defined work/acceptance/validation, submit Completion Report and STOP. Ex
 No implementation/claim from this definition. Use normal launcher isolated worktrees when requested. Existing paths verified; new test file explicitly named. Actual install integration domain remains SDK-established and selected-shop bound, not inferred by a new parser. Return demonstrated contract/schema incompatibility instead of widening scope.
 
 ## Completion Report
+
 ### Status
+
 Not Started
+
 ### Files Changed
+
 None
+
 ### Work Completed
+
 None
+
 ### Validation Results
+
 Definition only; runtime tests not run.
+
 ### Deviations
+
 None
+
 ### Assumptions
+
 ARCH-061 prerequisite provides selected-shop snapshot with trusted endpoint.
+
 ### Unresolved Issues
+
 None blocking definition.
+
 ### Architectural Concerns
+
 No new endpoint discovery, schema or permission widening authorized.
 
 ## Architect Review
