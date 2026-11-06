@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on: ["ARCH-061-SHARED-002"]
 enables: ["ARCH-061-BACKGROUND-001", "ARCH-061-COMMERCE-001", "ARCH-061-MCP-001", "ARCH-061-SYSTEM-TEST-001"]
 created: 2026-11-05
@@ -47,9 +47,9 @@ Central token service, agent tools, sibling imports, credential UI, schema chang
 The entire parent architecture runtime/bounds/SDK/lifecycle/ambiguity matrix is normative. Factory accepts each service's local Prisma client at composition. Lock before read/decision/remote refresh; write-only locking is insufficient. No exactly-once remote guarantee across crash. Use the binding revision public-wrapper/ALS/lifecycle gate architecture; do not choose a different synchronization mechanism.
 
 ## Work Items
-- [ ] Inventory every SDK/custom offline writer and prove supported coordinated read-through-refresh scope. Storage-write-only adapter is forbidden.
-- [ ] Implement App lifecycle ordering with the fixed advisory gate then row-lock order and canonical identity checks from revision 2.
-- [ ] Prove SDK/Background-style client simultaneous refresh yields one normal remote call; stale store cannot overwrite new pair.
+- [x] Inventory every SDK/custom offline writer and prove supported coordinated read-through-refresh scope. Storage-write-only adapter is forbidden.
+- [x] Implement App lifecycle ordering with the fixed advisory gate then row-lock order and canonical identity checks from revision 2.
+- [x] Prove SDK/Background-style client simultaneous refresh yields one normal remote call; stale store cannot overwrite new pair.
 
 ## Interfaces / Contracts
 Shared Node-only factory and structural transaction interface/error categories defined by SHARED-001 and published by SHARED-002. Consumers inject local client/config/fetch and translate errors. No sibling source imports; no browser exports or raw token DTOs. App owns all SDK/lifecycle mutation entrypoints.
@@ -64,14 +64,14 @@ Shared Node-only factory and structural transaction interface/error categories d
 - ARCH-061-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Inventory every SDK/custom offline writer and prove supported coordinated read-through-refresh scope. Storage-write-only adapter is forbidden.
-- [ ] Implement App lifecycle ordering with the fixed advisory gate then row-lock order and canonical identity checks from revision 2.
-- [ ] Prove SDK/Background-style client simultaneous refresh yields one normal remote call; stale store cannot overwrite new pair.
-- [ ] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
+- [x] Inventory every SDK/custom offline writer and prove supported coordinated read-through-refresh scope. Storage-write-only adapter is forbidden.
+- [x] Implement App lifecycle ordering with the fixed advisory gate then row-lock order and canonical identity checks from revision 2.
+- [x] Prove SDK/Background-style client simultaneous refresh yields one normal remote call; stale store cannot overwrite new pair.
+- [x] Relevant parent matrix rows pass; no uncoordinated bypass, stale pair overwrite or secret emission.
 
 ## Validation
-- [ ] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
-- [ ] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
+- [x] Inspect package.json and run declared focused unit/integration tests for task-owned matrix rows, including disposable PostgreSQL separate-client races; record exact commands. Run declared typecheck/build appropriate to deployable changes.
+- [x] Record boundary/gap evidence honestly; never infer SDK coordination from helper-only tests.
 
 ## Stop Condition
 Submit completed report for authorized review and STOP after scoped criteria/validation. Explicit developer completion required. Do not start enabled tasks; system validation is terminal/manually invoked.
@@ -148,21 +148,45 @@ No execution started. Use launcher isolated/synchronized task worktrees when req
 
 ### Status
 
-Ready — ARCH-061-SHARED-002 is Complete; this task remains unclaimed at Attempt 0.
+Review — Attempt 2 submitted for architect review on 2026-11-06. Attempt 1 review history is preserved below.
+
 ### Files Changed
-None
+`package.json`, `package-lock.json`; `app/shopify.server.js`; new `app/services/shopify-offline-coordination.server.ts` and `app/services/shopify-session-storage.server.ts` with their focused tests; `app/services/shop/shop.service.ts`; `app/services/observability/shopify-runtime-observability.server.ts`; `app/routes/webhooks/app/scopes-update/route.jsx`; `app/routes/webhooks/shop/redact/route.jsx`; `tests/helpers/shopify-lifecycle-postgres.ts`; new `tests/unit/shopify-offline-coordination.test.ts` and `tests/integration/shopify-offline-coordination.test.ts`; updated `tests/unit/routes/scopes-update.test.jsx`, `tests/unit/services/shop.service.test.ts`, and `tests/unit/server-error-privacy.test.ts`.
 ### Work Completed
-None
+- Upgraded App to the published `@modainteract/moda-interact-shared` 5.2.0 Node export and composed its provider with the App Prisma client and the existing App OAuth configuration service.
+- Replaced raw SDK session storage exposure with a public `SessionStorage` adapter. Offline reads/writes use the authentication transaction binding; direct writes are denied. For an existing row, storage tracks its current credential fingerprint and accepts a replacement pair only when the bounded OAuth response in that same binding supplied it; each successful write advances the accepted fingerprint, rejecting stale stores. Shop and actual persisted Session ID checks remain mandatory. The SDK facade wraps public admin, webhook and unauthenticated-admin entrypoints and exports no raw authentication or storage escape.
+- Installed the SDK public abstract-fetch adapter. OAuth refresh traffic requires the bound stored integration host and POST method, rejects redirects, limits streamed response size to 16 KiB, applies an 8-second network budget, and maps rejected versus ambiguous post-dispatch failures to fixed Shared error categories. Other SDK transport and callback work is bounded to 15 seconds. SDK diagnostic messages are wholly omitted during coordinated authentication.
+- Applied the same Shared domain advisory gate before the existing Shop lifecycle lock and actual Session row lock where applicable. Uninstall, scopes-update, and shop-redact persistence reuse the gate-bound transaction. Scope/readiness checks remain metadata-only and do not refresh tokens.
+- Audited production paths: raw SDK `authenticate.admin`, `authenticate.webhook`, and `unauthenticated.admin` invocation exists only inside the facade wrappers; offline Session write/delete paths are the coordinated storage adapter and the gated uninstall/scopes/redaction lifecycle transactions. The default SDK storage/auth object is not exported.
+- Added App unit assertions for redirect commit versus failure rollback, mismatched Session identity, missing binding, stale Session rejection (including an older credential pair after a successful replacement in the same binding), safe error categories, transport bounds, and raw SDK export policy. The PostgreSQL regressions now install through `sdk.authenticate.admin`, read the SDK-generated persisted Session ID, expire that row, and invoke the installed public `sdk.unauthenticated.admin` refresh. They prove the newly constructed SDK Session atomically commits both tokens while an independent Shared client waits on the same gate, and preserve the SDK-refresh/uninstall/reinstall ordering test.
 ### Validation Results
-Definition only.
+- `npm run typecheck` — passed after the Attempt 2 correction.
+- `npm run build` — passed after the Attempt 2 correction. Vite emitted dependency annotation, external Prisma browser-entry, and large client-chunk warnings; no build errors.
+- Required focused command `npx vitest run tests/unit/shopify-offline-coordination.test.ts tests/integration/shopify-offline-coordination.test.ts` — 11 passed; the two PostgreSQL cases are flag-gated and skipped in this unflagged invocation.
+- Disposable PostgreSQL command `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_SHOPIFY_LIFECYCLE_POSTGRES=1 npx vitest run tests/integration/shopify-offline-coordination.test.ts` — 2 passed. Both cases use real SDK auth/refresh and separate Prisma clients; Testcontainers stopped the owned fixture container after the run.
+- Additional focused coordination/session-storage test command — 14 passed across 3 files.
+- Additional focused command covering coordination/storage service tests, privacy diagnostics, ShopService, and scopes-update route — 82 passed; 2 flag-gated PostgreSQL cases skipped.
+- `git diff --check` — passed.
 ### Deviations
-None
+Attempt 2 replaces the identity-only guard with a credential-pair provenance protocol tied to the actual bounded OAuth response and transaction binding, as required by the review. The first PostgreSQL run exposed a test helper trying to enumerate offline Sessions outside a binding; it now reads the SDK-generated persisted ID through the independent observer client. The corrected PostgreSQL run passed using the Colima endpoint and socket override shown above.
 ### Assumptions
-Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2.
+Same canonical PostgreSQL database; exact identity, lifecycle lock, SDK wrappers and provider recovery are fixed by binding revision 2. No schema changes or service-side OAuth configuration changes were made.
 ### Unresolved Issues
-None blocking architecture definition. Revision-1 feasibility questions are superseded by binding revision 2 decisions.
+None identified in the scoped implementation or validation. Attempt 2 is awaiting architect review; `completion_mode: developer` is preserved and explicit developer completion remains pending.
 ### Architectural Concerns
-Implement binding revision 2 exactly; report actual incompatibility with evidence instead of selecting alternate architecture.
+Architect review remains pending. No architect review decision has been made by the developer implementation.
+
+## Developer Self-Review
+### Review Status
+Passed — Attempt 2 self-review. The Attempt 1 P1 is corrected and the report reconciled against every Work Item and Acceptance Criterion. Attempt 2 implementation/report are published for architect review. `completion_mode: developer` is preserved; explicit developer completion remains pending. No architect acceptance decision has been made by this agent.
+### Reviewed Files
+All files listed under Completion Report → Files Changed, including the coordinated SessionStorage, Shopify facade/transport, lifecycle routes and services, and focused test fixtures.
+### Validation Reviewed
+`npm run typecheck`; `npm run build`; required focused Vitest command (11 passed, 2 PostgreSQL tests skipped in unflagged mode); focused coordination/session-storage service tests (14 passed); disposable PostgreSQL independent-client real SDK refresh and uninstall/reinstall race tests (2 passed); `git diff --check`.
+### Self-Review Findings
+The credential provenance guard now admits the replacement Session constructed by the installed SDK only when its shop/Session identity is bound and its credential pair came from the bounded OAuth response in that transaction. The accepted credential fingerprint advances after each successful store, so an older pair cannot overwrite the committed replacement. Real PostgreSQL SDK refresh, Shared-client serialization, stale-store, and uninstall/reinstall checks pass. The only raw SDK public auth calls are invoked inside the facade wrappers; the facade exports wrapped auth functions and coordinated storage.
+### Decision
+Submit Attempt 2 for `moda_architect` review. Do not mark complete until the developer explicitly requests completion after architect review.
 
 ## Architect Review
 ### Review Status
@@ -199,3 +223,65 @@ Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
+
+## Developer Self-Review — Attempt 2
+
+### Review Outcome
+Passed. The architect's Attempt 1 P1 is addressed. Attempt 2 has been submitted for architect review; the task remains developer-controlled and is not complete.
+
+### Finding-to-Evidence Reconciliation
+- Fresh SDK Session rejected by identity-only provenance: replaced with same-binding OAuth response credential provenance plus bound shop/actual Session ID checks; the current persisted credential fingerprint advances on write.
+- Stale credential overwrite: unit coverage rejects the earlier pair after a fresh pair is stored in the same binding; the PostgreSQL integration also rejects a stale Session from a later binding.
+- Actual SDK compatibility: PostgreSQL tests perform public `sdk.authenticate.admin` bootstrap, obtain the ID from the Session row actually persisted by the SDK, expire it, and run public `sdk.unauthenticated.admin` refresh through the composed real storage adapter. Authentication succeeds and both access and refresh tokens are persisted.
+- Concurrency/lifecycle: a separate Shared Prisma client waits on the same advisory gate while the actual SDK refresh is held; the refresh issues one request and Shared observes its committed token. The second PostgreSQL case retains SDK refresh, uninstall, and actual SDK reinstall ordering.
+- Foreign and unbound writes remain denied by the existing focused assertions.
+
+### Decision
+Submit Attempt 2 to `moda_architect`. Preserve Attempt 1 review history and `completion_mode: developer`; wait for architect review and an explicit developer completion request before marking complete.
+
+
+## Developer Self-Review - Changes Requested — Attempt 1 (2026-11-06)
+
+**Review fails: actual installed SDK refresh Sessions are rejected by the storage guard.** Status Ready, executor/claimed_at null, Attempt 1 unchanged; developer execution/completion modes preserved. Earlier implementer self-review does not establish acceptance against this finding.
+
+### P1 — Support freshly constructed SDK refresh/exchange Sessions safely
+
+`app/services/shopify-session-storage.server.ts:165-166` requires `binding.loadedOfflineSessions.has(session)` for every existing-row update. The installed Shopify React Router helper `helpers/ensure-offline-token-is-not-expired.mjs` calls `api.auth.refreshToken`, obtains its returned Session and passes it to `storeSession`. The installed Shopify API `auth/oauth/refresh-token.mjs` constructs that result through `createSession`, whose public implementation returns `new Session`. It is therefore a different object from the one returned by storage.loadSession, even for the same legitimate shop/session identity while the coordination gate is held. The WeakSet test rejects the normal SDK refresh and token-exchange path with SESSION_IDENTITY_CONFLICT after possible remote rotation; authentication cannot reliably persist the new pair.
+
+Replace JavaScript object-identity provenance with a safe coordinated protocol that permits a newly constructed Session from an actual scoped SDK refresh/exchange while still rejecting a stale store and mismatched shop/actual session ID. Preserve existing public SDK wrappers, transaction-bound storage, same gate/row authority and no uncoordinated writes. Do not weaken identity checks merely to make the write succeed.
+
+### Required actual SDK regression
+
+Exercise the installed public SDK authentication/refresh flow with controlled fetch and real SessionStorage composition. Verify the newly constructed refreshed Session is accepted under its correct binding, both tokens commit atomically, authentication succeeds, and stale/foreign/unbound stores remain denied. Extend the separate-client PostgreSQL race to include that actual SDK call, preserving exactly one normal remote refresh and uninstall/reinstall ordering. The current PostgreSQL callback at `tests/integration/shopify-offline-coordination.test.ts:85-91` manually loads a Session, changes its properties through installRefresh and stores that same object; it cannot expose this compatibility failure and must not be labelled proof of the installed SDK refresh path.
+
+### Review evidence
+
+Reviewed implementation `39d2f917a074173eec99214a9d71689952d58dfc`, the facade/transport/wrapper, storage guard and test sources, and the installed SDK refresh/token-exchange/createSession implementations. Independently ran `vitest run tests/unit/shopify-offline-coordination.test.ts`: **10 passed**, exit 0; local log `/tmp/arch061-shopify-review.log`. The green unit callbacks do not replace actual SDK coverage. Submitted typecheck/build, 82-test extra set and two PostgreSQL cases were reviewed as reported evidence, not independently rerun. No Docker/live Shopify run was performed.
+
+Preserve the published implementation/report and dedicated worktrees. Reclaim through the normal developer workflow, implement the safe correction, add actual SDK regression/race evidence and resubmit. No implementation edit, new claim, attempt increment, package change, main merge, deployment or downstream promotion occurs in this review. Explicit completion remains unavailable until a passing review is durable.
+
+
+## Developer Self-Review Passed / Accepted — Attempt 2 (2026-11-06)
+
+**Review passed; the prior P1 SDK Session compatibility finding is resolved.** Reviewed implementation `17fb986a8f0635ea771327261d84b548d06d36cb`, matching its pushed task branch. Status Review, executor/claimed_at null, Attempt 2 unchanged. Developer execution/completion modes are preserved; explicit `/moda_developer_update ARCH-061-SHOPIFY-001 complete` remains required. No downstream dependency is promoted by review alone.
+
+### Correction review
+
+The storage guard no longer depends on the JavaScript identity of a loaded Session. It captures the current persisted credential-pair fingerprint under the binding and records replacement pair fingerprints from the bounded same-host OAuth response. A newly constructed SDK Session may persist the corresponding replacement; shop and actual Session ID checks remain mandatory, the stored fingerprint must still match current scoped state, and successful writes advance state and clear pending provenance. Stale/unbound/foreign stores remain denied. The correction changes four files, retaining the public wrapper/ALS/transaction boundary.
+
+Inspected the revised separate-client PostgreSQL regression source: it installs through public `sdk.authenticate.admin`, observes the actual generated Session ID, expires the stored row and refreshes through public `sdk.unauthenticated.admin`. It asserts the SDK returns a newly constructed Session, atomically commits the pair and serializes the independent Shared read. The second case covers actual SDK refresh, concurrent uninstall and SDK reinstall exchange under the domain gate. This replaces the earlier hand-mutated callback evidence rather than relabelling it as real SDK execution.
+
+### Validation and limits
+
+Independently ran the focused unit/coordination/storage three-file set: **14 tests passed**, exit 0; local evidence `/tmp/arch061-shopify-attempt2-review.log`. Independently checked correction whitespace and implementation task-ref equality. Inspected the actual SDK callsites used by the new integration tests and the source changes.
+
+Reviewed submitted Attempt 2 typecheck/build, additional lifecycle/privacy regression results and the recorded **two passing PostgreSQL cases** using separate clients with owned Testcontainers cleanup. Those checks and Docker execution were not independently repeated by this review. No live Shopify/provider or consumer rollout proof is implied. Source retains no raw SDK auth/storage escape and the earlier broad implementation review remains applicable outside the corrected provenance path.
+
+Canonical dedicated worktree/branch, preparation/claim, publication and validation evidence are recorded in the Completion Report. Implementation/parent worktrees were clean before this review update. Only the parent task record is published here; no source change, attempt/claim creation, gitlink/main merge, package publication, deployment or downstream execution occurs. Explicit developer completion and terminal cross-service proof remain separately gated.
+
+
+## Explicit Developer Completion Decision — Attempt 2 (2026-11-06)
+
+The developer explicitly invoked `/moda_developer_update ARCH-061-SHOPIFY-001 complete`. **Complete.** Passing review `e1310a6aa` is durable; implementation `17fb986a8f0635ea771327261d84b548d06d36cb` is committed/pushed and equals its task remote, with a clean implementation worktree. No required correction remains under the reviewed task scope. Developer execution/completion modes are preserved; executor/claimed_at remain null and Attempt 2 is unchanged. Historical pending-completion statements are superseded by this explicit decision.
+
+SHARED-002 is Complete. BACKGROUND-001, COMMERCE-001 and MCP-001 now have all explicit prerequisites Complete and become Ready, unclaimed; SYSTEM-TEST-001 remains Pending on those three consumers and its manual terminal execution requirements. No implementation, package publication, main merge, gitlink update, deployment or downstream execution is performed by completion.

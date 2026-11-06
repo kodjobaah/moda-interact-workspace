@@ -100,3 +100,8 @@ Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
+
+
+## Shopify Completion / Consumer Frontier — 6 November 2026
+
+SHOPIFY-001 Attempt 2 is explicitly developer-completed after passing review `e1310a6aa`, source `17fb986`. Shared implementation/publication prerequisites are Complete; exact published package is 5.2.0. BACKGROUND-001, COMMERCE-001 and MCP-001 are Ready/unclaimed under their existing developer execution/completion modes. SYSTEM-TEST-001 remains Pending on all three consumer completions and retains manual terminal gates. No consumer execution, deployment, main merge or complete-architecture acceptance is implied.

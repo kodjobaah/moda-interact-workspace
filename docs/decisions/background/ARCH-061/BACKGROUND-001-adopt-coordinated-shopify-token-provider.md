@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-061-SHARED-002", "ARCH-061-SHOPIFY-001"]
 enables: ["ARCH-061-SYSTEM-TEST-001"]
 created: 2026-11-05
-updated: 2026-11-05
+updated: 2026-11-06
 ---
 # Adopt coordinated shopify token provider
 
@@ -188,3 +188,8 @@ Commerce createStudioLocalProviderExecution uses call.turn.shopId after existing
 Replace invalid-domain/regex/canonical-format fixtures with: unknown selected Shop ID -> no OAuth; wrong provider -> no OAuth; inactive selected Shop -> no OAuth; foreign Session.shop or mismatched selected-shop association -> denial/no OAuth; multiple offline rows -> explicit conflict, no arbitrary selection; existing legitimate stored SDK Session.id -> preserved/used for lock and update; bootstrap SDK-generated ID -> accepted only in authentic SDK flow; custom storefront/browser host cannot choose refresh origin; two services and App resolving same stored integration acquire same gate. Existing Shopify domain acceptance tests remain unchanged.
 
 Bootstrap context type is `SdkInstallationSessionContext={transaction:ShopifyOfflineTransaction;shopId:null;shop:string;sessionId:string|null;signal:AbortSignal}` until existing Shop/session association is established by SDK install. Consumer LockedSessionContext always has non-null selected Shop ID and actual existing Session ID. Bootstrap is App-only and never a domain overload of getAccessToken/getSession.
+
+
+## Architect Dependency Reconciliation — 2026-11-06
+
+SHOPIFY-001 Attempt 2 is explicitly developer-completed after passing review `e1310a6aa`, implementation `17fb986`. SHARED-002 is also Complete (published Shared 5.2.0). All explicit prerequisites are satisfied. Promoted to Ready, executor/claimed_at null, existing attempt unchanged. Normal developer preparation, accepted-source integration and task validation gates apply; no claim, execution or rollout is started by this update.
