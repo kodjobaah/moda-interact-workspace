@@ -36,8 +36,8 @@ Shared implementation extends existing API compatibly; publication chooses next 
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
 | ARCH-063-COMMERCE-001 | commerce | Ready | - |
-| ARCH-063-SHARED-001 | shared | Review (Accepted; developer completion pending) | - |
-| ARCH-063-SHARED-002 | shared | Pending | ARCH-063-SHARED-001 |
+| ARCH-063-SHARED-001 | shared | Complete | - |
+| ARCH-063-SHARED-002 | shared | Ready | ARCH-063-SHARED-001 |
 | ARCH-063-SHOPIFY-001 | shopify | Pending | ARCH-063-SHARED-002 |
 | ARCH-063-BACKGROUND-001 | background | Pending | ARCH-063-SHARED-002 |
 | ARCH-063-COMMERCE-002 | commerce | Pending | ARCH-063-SHARED-002 |
@@ -46,3 +46,6 @@ Shared implementation extends existing API compatibly; publication chooses next 
 
 ## Audit disposition
 ARCH-060 expired-status rule and availability-only link tests require Commerce correction. ARCH-061 coordinated helper is retained; safe semantic events added separately. ARCH-062 domain-boundary work is not reopened. Completed historical tasks keep status/review history; follow-up references identify this scoped correction. No deployment or completion is implied.
+
+## Change History
+- 2026-11-06: Shared safe refresh hook Attempt 1 accepted and explicitly developer-completed; ARCH-063-SHARED-002 publication is Ready. Consumers remain gated by publication; System Test stays terminal/manual-gated. Architecture remains Agreed, not Implemented.

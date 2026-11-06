@@ -1919,3 +1919,7 @@ ARCH-062-COMMERCE-001 remains Complete at Attempt 1, accepted implementation `f7
 ## ARCH-062 Shopify explicit completion — 2026-11-06
 
 ARCH-062-SHOPIFY-001 is Complete at Attempt 2 after durable passing review `f7e72526a` and explicit developer decision, implementation `249de4e`. Background, Commerce and MCP are also explicitly Complete on their published task branches. ARCH-062-SYSTEM-TEST-001 becomes Ready, Attempt 0, executor/claimed_at null, and remains manually gated. No test execution, deployment, gitlink update or main merge occurred.
+
+## ARCH-063 — 6 November 2026 frontier
+
+ARCH-063-SHARED-001 Attempt 1 is Complete after architect Accepted review and explicit developer completion. Implementation task branch: 4097eb3662c11bf97989cd1012da914973ec7592. ARCH-063-SHARED-002 publication is Ready (developer execution, unclaimed Attempt 0). ARCH-063-COMMERCE-001 remains independently Ready; publication consumers and terminal/manual-gated System Test remain Pending. Individual task YAML remains authoritative; no task or release auto-started and no main integration performed.
