@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: blocked
 priority: 50
 executor: codex
 claimed_at: 2026-11-06T19:47:40Z
@@ -73,11 +73,11 @@ SUPER_ADMIN edits membership and behavior, publishes/activates release, then new
 Compatible staged rollout: Database additive migration, Shared accepted implementation then publication; Commerce UI/seed/staged complete release (do not activate against old consumer), MCP support, Background consumer after existing ARCH-059 Background adoption; operator pauses affected attempts and drains pinned legacy sessions via separately recorded operational procedure, activates complete profile release and resumes only after smoke verification. No procedure or deployment is claimed executed by these definitions. New runtime with missing profile fails closed. Previous runtime/release pairing is rollback unit; do not restore hardcoded fallback in new code. No schema destruction, queue deletion, new ingress/topology/secret requirement. No Gateway task identified. Reuse existing structured lifecycle diagnostics with release/purpose/capability IDs, no secrets or raw prompts/customer payloads. Terminal System Test after accepted dependencies and optional user exercise. No implementation auto-launch.
 
 ## Work Items
-- [ ] Hide/deny initial_outreach for ADMIN; SUPER_ADMIN only membership and behavior services with expected versions.
-- [ ] Implement draft reference joins, atomic version/audit/idempotency; no duplicate Tool/Capability.
-- [ ] Show Initial Outreach behavior and Attach existing capability/reorder/remove controls.
+- [x] Hide/deny initial_outreach for ADMIN; SUPER_ADMIN only membership and behavior services with expected versions.
+- [x] Implement draft reference joins, atomic version/audit/idempotency; no duplicate Tool/Capability.
+- [x] Show Initial Outreach behavior and Attach existing capability/reorder/remove controls.
 - [ ] Snapshot behavior/purpose joins with validated same-release members; immutable staged publish/activation.
-- [ ] Seed first profile only with existing four references; preserve later edits.
+- [x] Seed first profile only with existing four references; preserve later edits.
 
 ## Interfaces / Contracts
 Exact purpose profile/membership/behavior schemas and draft/release join models above; Shared publication prerequisite gates consumers. Initial Outreach is governance Feature, checkout_recovery remains admission, referenced owner-feature eligibility remains required.
@@ -112,21 +112,49 @@ No execution from definition. Use normal launcher-isolated/synchronized task wor
 
 ## Completion Report
 ### Status
-Not Started
+Blocked — scoped implementation published; default purpose output schemas incompatible with published Shared 5.4.0 profile subset.
 ### Files Changed
-None
+- package.json/package-lock.json: published Shared 5.4.0 pin.
+- src/studio/features/{contracts,persistence,services,feature-configuration-screen}.ts(x); src/studio/server-actions.ts.
+- src/commerce/integration/studio/services.ts: alternate feature list/detail visibility.
+- src/commerce/publication/{ports,lifecycle,purpose-profile}.ts and integration/backend/publication-storage.ts.
+- src/commerce/integration/backend.ts: server dev-auth environment/exact development identity guard.
+- src/commerce/bootstrap/{system-commerce-tool-sync,system-product-release}.ts.
+- Focused feature UI, purpose authoring/publication/seed, publication storage and system sync fixtures.
 ### Work Completed
-None
+Super Admin-only trusted feature list/detail/behavior/member services, persisted role checks, ordered canonical reference membership mutation with shared config CAS/advisory lock/audit/idempotency; ADMIN/forged client fields cannot grant role. Ordinary purpose-owned capability creation denied, existing canonical ownership retained in DTO and database. Attach choices/mutations reuse publication read validator. Initial Outreach uses existing behavior editor with attach/reorder/remove controls and conflict/unknown recovery, without duplicating capabilities.
+
+Complete release snapshot loads/writes same-release purpose references and immutable exact revision IDs; lifecycle validates published Shared profile/read-only operations and rejects empty/foreign/unsupported profiles. Existing Super Admin publish/activate/rollback role path retained; production development impersonation guarded. Draft changes do not mutate old releases; setup cannot silently advance purpose-pinned revisions. First-only atomic seed reuses existing four canonical references and original trusted prompt, preserving later empty/edited profile.
+
+Supported bounded Admin GraphQL fifth-read addition/removal tested. Real default policy schemas fail published DetailsSchema subset, so default profile publication stays fail-closed; no local schema widening/projection added. No live setup/migration/activation or consumer implementation performed.
 ### Validation Results
-Definition only.
+- Published package install and `npm run prisma:generate`: PASS. npm audit reported 35 existing dependency issues (18 moderate,16 high,1 critical); no broad remediation/lock churn.
+- `vitest run tests/initial-outreach-authoring.test.ts tests/feature-authoring.test.ts tests/feature-configuration-screen.test.tsx tests/feature-configuration-page.test.tsx`: PASS 4 files/29 tests. Trusted ADMIN/bypass denial, forged fields, canonical attach/order/CAS/replay and ordinary/UI regressions.
+- `vitest run tests/initial-outreach-seed.test.ts tests/system-commerce-tool-sync.test.ts`: PASS 2 files/18 tests. First-only/default order/no clones, edited empty profile preservation, missing refs atomic conflict, setup repoint guard and role checks.
+- Publication/lifecycle/storage focused tests: PASS 3 files/38 tests, including bounded fifth GraphQL, removal, immutable pinned behavior/revision, ADMIN/forged lifecycle, empty/foreign/unsupported rejection.
+- Production `tsc --noEmit -p tsconfig.build.json`: PASS after correcting owner DTO string narrowing. No UI routes/schema changes; local generated client used. Tests executed with exact workspace-bootstrap-resolved Node, no alternate runtime selection.
+- `git diff --check`: PASS.
+- Default operation output schema compatibility: FAIL (architectural Shared contract gap below), not treated as passing acceptance. Required snapshot/default acceptance and complete focused acceptance remain unchecked.
 ### Deviations
-None
+Task cannot finish default profile publication under current published Shared5.4.0 contract. Preserved valid prerequisite/UI/seed/lifecycle work rather than introduce incompatible local schema or silently change output. Exact fixture compiler is reused for genuinely supported bounded GraphQL fifth tool; no fake policy schema.
 ### Assumptions
-Existing publication and supported read operation registry remain canonical.
+Initial Outreach is governance only; existing checkout_recovery/owner-feature/plan admission unchanged. Runtime consumers independently owned; no rollout/deployed-state claim.
 ### Unresolved Issues
-None blocking definition.
+Published CommercePurposeProfileSchema uses DetailsSchemaSchema for outputSchema. Existing registered default policy descriptors are not accepted by that bounded subset: discounts.getOptions/getDetails root `/anyOf`; products.search `/properties/products/items/properties/url/format`, `unitPrice/pattern`, `categoryIds/maxItems=128`, `collectionIds/maxItems=128`, nested saleEvidence observedAt format/pattern; products.get equivalent under `/properties/product` plus nullable object. All four `DetailsSchemaSchema.safeParse` fail; profile reports capabilities[i].outputSchema -> bounded INVALID_DEFINITION. No existing canonical compatible projection found. Diagnostic local receipt /private/tmp/arch064-purpose-schemas.jsonl. Owning Shared correction/approved published contract or canonical bounded projection required before default publication acceptance.
 ### Architectural Concerns
-Do not widen permissions or generic result evidence authority.
+Return contract gap to moda_architect; do not loosen validation, fabricate a compatible schema, change canonical tool outputs or implement downstream runtime workaround in Commerce.
+### Git / VCS
+Task branch: task/ARCH-064-COMMERCE-001
+Physical worktree isolation:
+- canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+- parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-064-COMMERCE-001
+- implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-064-COMMERCE-001
+- shared/default checkout mutated or another task path reused: no
+Start synchronization from prepared packet:
+- parent and implementation task fast-forward: not-needed; origin/main already-current
+- recursive submodule sync/update passed; database379d563f6b9ee070305e284615dddbc0b97afeb0; ready
+- Attempt1 claim73976cbc085e9876d9d6cff533a551639b8a2e11 pushed
+Implementation commit5f97611 (full hash in task history), published matching task branch. Parent report commit follows this edit; no gitlink staged, no main merges.
 
 ## Architect Review
 ### Review Status
