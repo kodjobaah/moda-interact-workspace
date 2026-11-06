@@ -41,10 +41,10 @@ No blanket search/replace of every myshopify string. Leave SDK internals, docume
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-062-SHOPIFY-001 | shopify | Review | ARCH-061-SHOPIFY-001 |
+| ARCH-062-SHOPIFY-001 | shopify | Ready | ARCH-061-SHOPIFY-001 |
 | ARCH-062-BACKGROUND-001 | background | Complete | ARCH-061-BACKGROUND-001 |
 | ARCH-062-COMMERCE-001 | commerce | Complete | ARCH-061-COMMERCE-001 |
-| ARCH-062-MCP-001 | mcp | In Progress | ARCH-061-MCP-001 |
+| ARCH-062-MCP-001 | mcp | Complete | ARCH-061-MCP-001 |
 | ARCH-062-SYSTEM-TEST-001 | system-test | Pending | ARCH-062-SHOPIFY-001, ARCH-062-BACKGROUND-001, ARCH-062-COMMERCE-001, ARCH-062-MCP-001 |
 
 ## Architecture definition review
@@ -52,8 +52,17 @@ Inspected existing suffix checks and trusted session flow; official sources sepa
 
 Dependency frontier — 2026-11-06: ARCH-062-BACKGROUND-001 is Ready/unclaimed following explicit completion of ARCH-061-BACKGROUND-001. Other task statuses remain unchanged.
 
-## Completion/frontier reconciliation — 6 November 2026
+Dependency frontier — 6 November 2026: ARCH-062-MCP-001 is Ready/unclaimed after canonical ARCH-061-MCP-001 completion `38b94f3cb`. No enabled task execution or deployment is authorized by this correction.
 
-This is governance reconciliation only: no implementation tests, task launches, active claims, new completion decisions, merges or deployments. Existing historical review text is preserved; current task YAML and latest explicit completion records take precedence over historical pending text. Background mirror was reconciled from its canonical task worktree. Shopify/Commerce/MCP definitions remain unmaterialised: launcher reports expected parent paths, but those worktrees are absent; their local definitions are dependency-ready without any branch/worktree/publication claim. No publication is claimed by this local update.
+## MCP Completion / Current Dependency Frontier — 6 November 2026
 
-Completion frontier — 2026-11-06: Commerce and Background are Complete. Live published task branches show Shopify in Review and MCP In Progress. System Test remains Pending and manually gated; no sibling claim or attempt is changed.
+MCP-001 Attempt 1 is explicitly developer-completed following passing scoped
+review `a7e085a23`, implementation `d0a8de3`. Fetched published parent
+records show Background Complete (`6d8c9d6ee`), Commerce Complete
+(`1bcf42b25`), and Shopify Ready after Changes Requested (`d812181a6`).
+These records supersede the older readiness summaries above; no sibling
+lifecycle is changed here.
+
+SYSTEM-TEST-001 remains Pending solely on Shopify completion. Terminal/manual
+execution and cutover gates remain unchanged; no system run, deployment,
+main merge, gitlink update or architecture-wide completion is implied.

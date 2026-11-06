@@ -136,7 +136,12 @@ Task is repository-owned and gated by its ARCH-061 adoption prerequisite.
 ### Follow-up
 None
 
+## Dependency Reconciliation — 6 November 2026
 
-## Dependency Frontier Reconciliation — 2026-11-06
-
-ARCH-062-COMMERCE-001 and BACKGROUND-001 are explicitly developer-completed. Current published task records show SHOPIFY-001 in Review and MCP-001 In Progress; therefore this task remains Pending, Attempt 0, executor/claimed_at null. No claim or test run is authorized. After all prerequisites complete, terminal system validation still requires explicit developer invocation. Source task-branch evidence is recorded in the Commerce completion reconciliation.
+MCP-001 Attempt 1 is explicitly developer-completed after accepted scoped
+review `a7e085a23`, source `d0a8de3`. Fetched published Background
+(`6d8c9d6ee`) and Commerce (`1bcf42b25`) records are Complete.
+Shopify is Ready after Changes Requested (`d812181a6`), not Complete.
+This task remains Pending solely on Shopify completion, attempt 0,
+executor/claimed_at null. No promotion, claim, execution or cutover is
+authorized by this reconciliation; manual terminal gates remain unchanged.
