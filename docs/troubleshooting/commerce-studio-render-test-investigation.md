@@ -16,6 +16,7 @@ This is an investigation record, not an architecture task specification. Propose
 | CS04 | Merchant Knowledge denied | Commerce disabled-feature handling verified; Background pending | The precise authorization decision is understood; authorized preview calls work and unauthorized calls remain denied. |
 | CS05 | Unsupported Shopify brand integration | Open | App configuration can be released and brand acquisition uses a verified supported source with an explicit fallback. |
 | CS06 | Category resolution and search sequencing | Open | Trace the resolver outcome and demonstrate that suitable category candidates are used in product search, with an explicit fallback when no suitable candidate is available. |
+| CS07 | Shop voice and relevant alternatives after no match | Guidance updated; deployed verification pending | The assistant speaks for the shop, investigates relevant substitutes, inspects permitted offers and gives a verified recommendation or a focused clarification. |
 
 ## Working method
 
@@ -270,3 +271,11 @@ This proves category resolution was invoked but no category was passed into prod
 ### Verification and closure
 
 Use a populated shop with products assigned to known taxonomy categories. For a category-resolvable request, record the resolver outcome and verify that the ensuing search uses an appropriate returned category. Separately test no candidates, an unavailable resolver, and products without assigned categories so category filtering does not conceal otherwise discoverable products. Preserve tenant authorization and distinguish reference categories from actual inventory. Close only after recording the deployed trace and a grounded final reply; unit tests or tool status `OK` alone are insufficient.
+
+## CS07 Shop voice and alternatives after no match
+
+Conversation `a4a8c012-ae73-45b6-a8bf-77b99ea7b80c` on 7 November 2026 acknowledged snowboards/accessories but replied in third person (“this store”) to a shirt request and ended with a generic anything-else question. The screenshot does not establish whether discount tools ran; tool-call logs were requested.
+
+Required behavior: represent the shop using we/our; investigate relevant alternatives after a missing product match, use authorised discount options/details and existing eligibility checks, and prefer a relevant alternative with a verified applicable permitted promotion. Never invent similarity or promote unrelated goods solely because they are discounted. If no relevant substitute exists, explain the limitation and ask a focused question before changing categories. Missing storefront URLs do not prove online purchasability. Respect existing structured selections, host composition, merchant permissions and budgets.
+
+Touch points: Commerce `src/commerce/preview/product-discovery-instructions.ts` and `service.ts`; the product Feature behaviour and response contract in `src/commerce/bootstrap/system-product-response.ts`; Background `src/commerce/product-discovery-instructions.ts`, `host.ts` and recommendation verification/composition. Host guidance was updated in both services; no merchant credentials, discount policy or published Feature configuration was changed. Guidance is model-directed, not a deterministic enforcement of tool sequencing. Test a populated shop with (1) a relevant promoted substitute, (2) relevant products without an eligible promotion, (3) only unrelated products, and (4) no products. Record calls, final selections and customer reply before closing.
