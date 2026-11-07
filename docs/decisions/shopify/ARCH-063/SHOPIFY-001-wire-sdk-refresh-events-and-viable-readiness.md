@@ -7,7 +7,7 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -97,6 +97,8 @@ Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published o
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
 
 ## Implementation Notes
+Execution ownership amendment (2026-11-07): developer explicitly requested agent implementation through `/moda-task ARCH-063-SHOPIFY-001` and authorized synchronization plus checkpoint/commit/push of already-started task-owned implementation, claim and report. Preserve eight uncommitted source files by explicit WIP checkpoint before canonical preparation; delegate to moda_app, completion_mode developer retained. Prior Attempt1 review/corrections binding; no claim/attempt increment here.
+
 Dependency reconciliation (2026-11-06): ARCH-063-SHARED-002 is Accepted and explicitly developer-completed; published package @modainteract/moda-interact-shared@5.3.0 has verified downloadable immutable archive and Node hook exports. Task is Ready at unchanged Attempt 0, unclaimed. No automatic execution.
 
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
