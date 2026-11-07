@@ -13,7 +13,7 @@ This is an investigation record, not an architecture task specification. Propose
 | CS01 | Shopify offline token refresh | Configuration corrected; expiry verification pending | Refresh after access-token expiry succeeds without manual login and the resulting token permits a product read. |
 | CS02 | Required referral after failed tools | Open | A definitive failed tool produces a valid store-referral response instead of a failed conversation. |
 | CS03 | Repeated product searches and empty results | Open | Search results are explained by provider data and filters, and the agent reaches a grounded answer within an agreed bounded number of calls. |
-| CS04 | Merchant Knowledge denied | Open | The precise authorization decision is understood; authorized preview calls work and unauthorized calls remain denied. |
+| CS04 | Merchant Knowledge denied | Disabled-feature handling implemented; deployment verification pending | The precise authorization decision is understood; authorized preview calls work and unauthorized calls remain denied. |
 | CS05 | Unsupported Shopify brand integration | Open | App configuration can be released and brand acquisition uses a verified supported source with an explicit fallback. |
 
 ## Working method
@@ -104,11 +104,27 @@ Use known available, unavailable and absent products, a catalogue browse, catego
 
 ### Confirmed evidence
 
-`merchant_knowledge_lookup` returned `DENIED`, nonretryable, in the 12:55 test conversation. The exact authorization reason has not been established. Selecting a Feature in Studio alone is not proof that every underlying authorization requirement is met.
+`merchant_knowledge_lookup` returned `DENIED`, nonretryable, in the 12:55 test conversation. The exact authorization reason was subsequently verified against Render test: the subscription is ACTIVE, its Free plan enables the active `merchant_knowledge` feature, and that Feature uses `MERCHANT_OPT_IN`. The shop has no `ShopFeaturePreference` row for that Feature. Commerce and MCP both treat a missing preference as disabled and return `DENIED` before embedding or retrieval. Selecting a Feature in Studio does not create merchant consent or override that gate.
+
+The same read-only investigation found zero `MerchantKnowledgeSource` rows for this shop. Enabling the preference would remove this denial gate but would not create knowledge content.
+
+Merchant action: Shopify embedded Moda app → Recovery settings → conversation Feature preferences → enable Merchant Knowledge and save. Add an allowed knowledge source in the Merchant Knowledge section and wait for processing before expecting retrieval results. No preference or source was changed by this investigation.
+
+Verified touch points: Commerce `src/commerce/merchant-knowledge/entitlement.ts` (`if (!preference?.enabled)`), MCP `src/execution/merchant-knowledge/entitlement.ts`, Shopify app `app/services/merchant-knowledge/merchant-knowledge.server.ts` activation reader, and Recovery Settings `FeaturePreferences` / `MerchantKnowledgeSection` components. The entitlement operation currently collapses all denial gates to a generic result; a bounded missing-opt-in reason would improve diagnostics without bypassing consent.
 
 ### Investigation and touch points
 
 Trace the selected Feature/capability binding, preview grant and manifest, local definition executor, Merchant Knowledge authorization checks and the selected shop's knowledge-source state. Compare the published MCP execution path. Distinguish permission denial from missing or unready knowledge data; preserve explicit authorization checks.
+
+### Disabled feature handling
+
+The user clarified that Merchant Knowledge is optional and disabled shops must continue their conversations. The selected-tool model discovery was offering Merchant Knowledge even when its lookup would reject the missing opt-in.
+
+Correction: Studio's production preview availability callback consults the current entitlement before offering the knowledge tool. Background removes that tool from its model-available set when there is no enabled shop preference for the active Feature. Other tools remain available. Fixture simulations retain their configured tool set. Neither path grants access or changes merchant preferences; Commerce/MCP execution-time checks and Shared's referral validation remain intact. Actual operational failures and unauthorized calls are not converted into fabricated knowledge matches.
+
+Implemented and pushed: Commerce `3a586c2`, Background `fc41208`. Validation: 39 Commerce focused tests and 6 Background focused tests passed; lint and production type checks passed in both repositories. Background dependencies were restored to the existing lockfile (Shared 5.5.0); no dependency manifest change.
+
+Verify on Render test that this shop receives product tools without `merchant_knowledge_lookup`, can finish a product conversation, and makes no knowledge embedding/retrieval calls. Then verify an enabled shop still receives and can use the tool.
 
 ### Verification
 
