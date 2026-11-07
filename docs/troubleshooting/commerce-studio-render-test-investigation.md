@@ -10,7 +10,7 @@ This is an investigation record, not an architecture task specification. Propose
 
 | ID | Issue | Status | Completion criterion |
 | --- | --- | --- | --- |
-| CS01 | Shopify offline token refresh | Next | Refresh after access-token expiry succeeds without manual login and the resulting token permits a product read. |
+| CS01 | Shopify offline token refresh | Configuration corrected; expiry verification pending | Refresh after access-token expiry succeeds without manual login and the resulting token permits a product read. |
 | CS02 | Required referral after failed tools | Open | A definitive failed tool produces a valid store-referral response instead of a failed conversation. |
 | CS03 | Repeated product searches and empty results | Open | Search results are explained by provider data and filters, and the agent reaches a grounded answer within an agreed bounded number of calls. |
 | CS04 | Merchant Knowledge denied | Open | The precise authorization decision is understood; authorized preview calls work and unauthorized calls remain denied. |
@@ -171,4 +171,22 @@ Append one entry per completed investigation:
 - Render test reproduction and observed outcome:
 - Remaining limitations or follow-up:
 
-No issue is closed yet. Next action: CS01 credential-identity and refresh-request trace.
+### CS01 configuration correction on 7 November 2026
+
+Confirmed cause of the reproduced client-authentication rejection: TEST `shopify.oauth` revision 2 contained a different secret from the currently accepted secret for the same named Moda client ID. Equality checks confirmed that the client ID matched the named app rather than the separate template app.
+
+A deliberately invalid refresh token was used to compare authentication without consuming the real session token. The database secret received HTTP 400 `invalid_request`, classified `INVALID_CLIENT_CREDENTIALS`; the current shell secret received HTTP 401 `invalid_grant`. Both JSON and form requests with the old database credentials received the client-credential rejection. This points to the stored secret rather than the request encoding for that reproduced failure.
+
+The user explicitly approved updating TEST configuration. Applied encrypted revision 3 with the existing client ID and verified current secret, compare-and-set on revision 2, and a redacted configuration audit attributed to `operator:codex-user-approved`. No source-code change or production configuration change was needed.
+
+Post-update checks:
+
+- Shared's production OAuth reader reads revision 3 and the preserved client ID and corrected secret match the verified source.
+- The same deliberately invalid-token probe now receives HTTP 401 `invalid_grant`, getting past the earlier client-credential rejection.
+- Shared's production `getSession` returned the current offline session without a refresh because it was still valid.
+- The production product-search GraphQL document returned HTTP 200 with zero GraphQL errors and zero variants for `product_status:ACTIVE`. Zero variants is a CS03 observation, not a token-refresh failure.
+- Current stored access expiry: 7 November 2026 at 17:10:56 UTC. Shared's 320-second refresh window begins at approximately 17:05:37 UTC, also London time on this date.
+
+Remaining CS01 verification: after approximately 17:06, request the session through a real consumer without manually opening Shopify, observe `shopify.offline_refresh.committed`, confirm the rotated pair and expiries persisted, and perform an authorized product read. Check other consumer deployments separately. The existing Shopify app captures OAuth configuration at process startup, so a process started before the correction can retain its old SDK secret until restarted; Shared refresh readers resolve credentials on demand. Do not mark CS01 closed until the expiry-path check passes.
+
+No issue is closed yet. Next action: CS01 automatic refresh verification once the refresh window opens.
