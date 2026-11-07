@@ -220,3 +220,15 @@ Conversation `5e237c06-58fc-4807-8148-5885a473e692` confirms the Commerce local-
 - Three product searches each returned zero provider rows, zero normalization or availability rejections, and `hasMore: false`. This remains CS03; it is not a failed token refresh or a disabled-knowledge failure.
 
 CS01 is verified for Commerce local preview. MCP and Background expiry-path verification remains separate. CS04 is verified for a disabled shop in Commerce; Background deployment verification and the enabled-shop path remain to be exercised. CS02's general failed-tool referral handling is still open: this successful run avoided the failure rather than proving recovery from a genuine failed tool.
+
+
+### CS03 direct catalogue checks after the successful refresh
+
+Read-only checks used the existing production GraphQL documents against the selected TEST shop, without changing its catalogue or session expiry:
+
+- `productVariants` with no search filter: zero rows, no next page, HTTP 200 and no GraphQL errors.
+- `productVariants` with `product_status:ACTIVE`, `product_status:active`, or controlled search `shirt`: zero rows in each case.
+- `status:active` on `productVariants` returned an invalid-field search warning; it is not a replacement for the existing `product_status` filter.
+- Direct `products` listing with no search filter: zero rows and no next page. The same listing with `status:active` also returned zero rows.
+
+This rules out Commerce normalization and availability filtering as the cause of the observed zero rows, and shows that removing the current status filter does not recover products. The API reports an empty catalogue for this app/store context. Confirmation from the merchant's Shopify Admin Products view for this exact shop remains pending; do not add products or change scopes without establishing that discrepancy, if any. Repeated searching of an exhausted empty catalogue remains a separate efficiency issue.
