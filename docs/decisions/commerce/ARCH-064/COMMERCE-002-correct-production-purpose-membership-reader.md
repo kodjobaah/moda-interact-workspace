@@ -17,7 +17,7 @@ attempt: 1
 depends_on: ["ARCH-064-COMMERCE-001", "ARCH-064-DATABASE-001", "ARCH-064-SHARED-004"]
 enables: ["ARCH-064-SYSTEM-TEST-001"]
 created: 2026-11-06
-updated: 2026-11-06
+updated: 2026-11-07
 ---
 # Correct production purpose membership reader
 
@@ -113,14 +113,14 @@ Submodule gitlink staged: no. Neither main branch merged/pushed. No enabled task
 
 ## Architect Review
 ### Review Status
-Pending
+Accepted — Attempt 1, 2026-11-07, under explicit developer authorization.
 ### Review Notes
-Exact source/schema mismatch verified; no implementation launched.
+Reviewed actual implementation 92edcff3b3c344a8031cda18b452968a0161095c, complete task contract and focused test diff against accepted Database379d563. Generated Prisma include uses CommerceReleaseFeature.purposeMembers; no nonexistent direct release relation remains. Projection validates release/feature/capability identities and deterministic positions, preserves immutable behavior/revisions, and never consults draft membership for release links. Reader-shaped write/read/no-op/read, missing-link PROFILE_EMPTY and foreign-identity tests substantiate all scoped criteria. Ordinary release tests remain passing. No required scoped item remains incomplete.
 ### Reviewed Files
-Commerce bef213b publication-storage.ts:108; DB379d563 schema CommerceRelease and CommerceReleaseFeature/Capability relations.
+src/commerce/integration/backend/publication-storage.ts; tests/publication-storage-release-delta.test.ts; tests/publication-storage-audit-delta.test.ts; accepted database/prisma/schema.prisma relation definitions.
 ### Validation Reviewed
-Source/schema evidence only.
+Recorded npm run prisma:generate, four focused suites (17 tests), npm run typecheck:build, targeted ESLint and git diff --check passed on unchanged implementation. Both canonical worktrees clean; implementation and report match their published task refs. No redundant rerun required. Real SQL/deployed integration not asserted; generated relation proof plus production-shaped fixtures suffice for bounded adapter correction.
 ### Architecture Conformance
-Bounded owning-repository production adapter correction; historical acceptance retained.
+Pass. Existing schema and immutable same-release identities retained; no new relations, copied definitions, permissions, dependencies or cross-repository implementation. Dedicated worktree/synchronization/claim evidence verified. Historical COMMERCE-001 acceptance preserved.
 ### Follow-up
-None
+Record explicit authorized developer completion and reconcile dependency frontier; terminal system validation remains manually gated.
