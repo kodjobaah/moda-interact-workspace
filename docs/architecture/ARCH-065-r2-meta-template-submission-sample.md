@@ -38,9 +38,11 @@ Exact packaged JPEG hash/dimensions/size pass; modified bytes, HTML/PNG/empty/ov
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-065-BACKGROUND-001 | background | Ready | - |
-| ARCH-065-BACKGROUND-002 | background | Pending | ARCH-065-BACKGROUND-001 |
+| ARCH-065-BACKGROUND-001 | background | Complete | - |
+| ARCH-065-BACKGROUND-002 | background | Ready | ARCH-065-BACKGROUND-001 |
 | ARCH-065-SYSTEM-TEST-001 | system-test | Pending | ARCH-065-BACKGROUND-001, ARCH-065-BACKGROUND-002 |
 
 ## Definition review
 Source bytes inspected and hashed; existing public-media configuration/transport/guarded primitive reused. Dimension-specific guard needs explicit safe parameter, not copied R2 engine. No Admin/Shared/Database/Gateway task required for existing infrastructure. No implementation, upload or deployment performed.
+
+2026-11-07: BACKGROUND-001 Attempt 1 explicitly developer-completed after durable passing review eca856769; implementation f914bcc published. BACKGROUND-002 becomes Ready/unclaimed; System Test remains Pending/manual-gated on provisioning. No live readiness, upload or deployment claimed.
