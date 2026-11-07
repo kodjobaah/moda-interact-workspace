@@ -1927,3 +1927,29 @@ ARCH-063-SHARED-001 Attempt 1 is Complete after architect Accepted review and ex
 ## ARCH-063 — Shared release completion
 
 2026-11-06: ARCH-063-SHARED-002 Attempt 1 explicitly developer-completed after Accepted review and public 5.3.0 archive/hash/export verification. Newly Ready, unclaimed: ARCH-063-SHOPIFY-001, ARCH-063-BACKGROUND-001, ARCH-063-COMMERCE-002, ARCH-063-MCP-001. ARCH-063-COMMERCE-001 remains Ready. ARCH-063-SYSTEM-TEST-001 remains Pending on incomplete implementation dependencies and terminal/manual-gated. No implementation/release auto-started and no main integration performed.
+
+## ARCH-063 — Commerce refresh wiring completion
+
+2026-11-06: COMMERCE-002 Attempt 1 explicitly developer-completed after Accepted review of published 4b2abdde15c6612b96f95fd3ec23dcf3a4c3dc2a. Canonical route snapshots: SHARED-001/002, BACKGROUND-001 and MCP-001 Complete; SHOPIFY-001 In Progress; COMMERCE-001 Ready. No concurrent task records modified. SYSTEM-TEST-001 remains Pending on COMMERCE-001/SHOPIFY-001 and terminal/manual-gated. No task newly unblocked, no main integration or follow-on execution.
+
+## ARCH-064 — Purpose release completion frontier
+
+2026-11-06: SHARED-002 Attempt 1 explicitly developer-completed after Accepted 5.4.0 release review. DATABASE-001 and SHARED-001 Complete; canonical ARCH-059 Commerce/MCP/Background prerequisites Complete. ARCH-064-COMMERCE-001 newly Ready/unclaimed; MCP-001, BACKGROUND-001 and terminal/manual-gated SYSTEM-TEST-001 remain Pending on incomplete dependencies. No repeat release/main integration/live changes or follow-on execution.
+
+## ARCH-064 — Purpose-output correction completion
+
+2026-11-06: SHARED-003 Attempt1 explicitly developer-completed after Accepted review and69 focused tests/typecheck/build. SHARED-004 publication newly Ready/unclaimed; Commerce remains Blocked until published correction and own integration validation. No package release/main/follow-on execution.
+
+ARCH-064-COMMERCE-001 task-branch reconciliation: Ready at prior Attempt1 after SHARED-004 Complete/public5.5.0; same-task correction contract preserved. Current main rollup retained; no other task claim/status changed.
+
+## ARCH-064 — Commerce Attempt2 completion frontier
+
+2026-11-06: Commerce001 Attempt2 Complete after Accepted review ofbef213b650b80864fd135dff98c92ae8694ca298. MCP001 newly Ready/unclaimed (DATABASE/Shared/ARCH059 prerequisites Complete). Background remains Pending on MCP; terminal/manual-gated System Test Pending on MCP/Background. No live activation/migration/main/follow-on execution.
+
+## ARCH-064 — MCP completion frontier
+
+2026-11-06: MCP001 Attempt1 Complete after Accepted4963baa source and explicit developer completion. Background001 newly Ready/unclaimed; Commerce002 reader correction remains Ready. Terminal/manual-gated System Test Pending on Background/Commerce002. No main/live/follow-on execution or integrated completion claim.
+
+## ARCH-064 — Background completion frontier
+
+2026-11-06: Background001 Attempt1 Complete after Acceptedb682a6e source review and explicit developer completion. Canonical Commerce002 concurrently review, preserved untouched. System Test Pending on explicit Commerce002 dependency and terminal/manual-gated. No newly Ready task/main/live/follow-on execution or integrated completion claim.

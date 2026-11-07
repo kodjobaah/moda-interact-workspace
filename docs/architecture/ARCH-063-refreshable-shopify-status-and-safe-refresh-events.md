@@ -35,13 +35,13 @@ Shared implementation extends existing API compatibly; publication chooses next 
 ## Tasks
 | Task | Owner | Status | Dependencies |
 |---|---|---|---|
-| ARCH-063-COMMERCE-001 | commerce | Ready | - |
+| ARCH-063-COMMERCE-001 | commerce | Complete | - |
 | ARCH-063-SHARED-001 | shared | Complete | - |
 | ARCH-063-SHARED-002 | shared | Complete | ARCH-063-SHARED-001 |
 | ARCH-063-SHOPIFY-001 | shopify | Ready | ARCH-063-SHARED-002 |
 | ARCH-063-BACKGROUND-001 | background | Ready | ARCH-063-SHARED-002 |
 | ARCH-063-COMMERCE-002 | commerce | Ready | ARCH-063-SHARED-002 |
-| ARCH-063-MCP-001 | mcp | Ready | ARCH-063-SHARED-002 |
+| ARCH-063-MCP-001 | mcp | Complete | ARCH-063-SHARED-002 |
 | ARCH-063-SYSTEM-TEST-001 | system-test | Pending | ARCH-063-COMMERCE-001, ARCH-063-SHARED-002, ARCH-063-SHOPIFY-001, ARCH-063-BACKGROUND-001, ARCH-063-COMMERCE-002, ARCH-063-MCP-001 |
 
 ## Audit disposition
@@ -55,5 +55,7 @@ ARCH-060 expired-status rule and availability-only link tests require Commerce c
 2026-11-06 reconciliation: SHARED-002 5.3.0 public tarball download/hash/export verification passed; Accepted at review, pending explicit developer completion. Consumers remain gated.
 
 2026-11-06 explicit developer completion: SHARED-002 Attempt 1 Complete, verified release 5.3.0. SHOPIFY-001, BACKGROUND-001, COMMERCE-002 and MCP-001 newly Ready; COMMERCE-001 remains independently Ready. SYSTEM-TEST-001 remains Pending/manual-gated; no work auto-started.
+
+2026-11-06: MCP-001 Attempt 1 explicitly developer-completed; published implementation 7ab689b. System Test remains Pending/manual-gated on COMMERCE-001, SHOPIFY-001 and COMMERCE-002. No downstream work started.
 
 2026-11-07: SHOPIFY001 developer Attempt1 reviewed, Changes Requested and returned Ready (claim cleared, attempt unchanged).55 focused tests pass; three SDK lifecycle/bounded-intent gaps and unpublished developer source prevent acceptance. System Test remains gated; no source implementation or deployment performed by review.

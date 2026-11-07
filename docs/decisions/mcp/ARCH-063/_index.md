@@ -4,6 +4,6 @@ Architecture: ../../../architecture/ARCH-063-refreshable-shopify-status-and-safe
 
 | Task | Status | Dependencies |
 |---|---|---|
-| ARCH-063-MCP-001 | Ready | ARCH-063-SHARED-002 |
+| ARCH-063-MCP-001 | Complete | ARCH-063-SHARED-002 |
 
-Developer definitions only; unclaimed.
+Attempt 1 explicitly developer-completed on 2026-11-06.
