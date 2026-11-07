@@ -9,15 +9,15 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 50
-executor: developer
-claimed_at: 2026-11-06T17:06:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-063-SHARED-002"]
 enables: ["ARCH-063-SYSTEM-TEST-001"]
 created: 2026-11-06
-updated: 2026-11-06
+updated: 2026-11-07
 ---
 # Wire sdk refresh events and viable readiness
 
@@ -102,25 +102,27 @@ Dependency reconciliation (2026-11-06): ARCH-063-SHARED-002 is Accepted and expl
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
 ## Completion Report
-
 ### Status
-
-In Progress — Attempt 1 claimed by developer at 2026-11-06T17:06:52Z. Attempt 0 review history is preserved below.
-
+Developer Self-Review — Changes Requested (2026-11-07). Attempt1 reviewed, unchanged; claim cleared and task Ready for canonical next attempt. No source edited or published during review.
 ### Files Changed
-None
+Eight uncommitted developer files: app/services/observability/shopify-runtime-observability.server.ts; app/services/shop/shop.service.ts; app/services/shopify-offline-coordination.server.test.ts; app/services/shopify-offline-coordination.server.ts; app/services/shopify-session-storage.server.ts; package.json/package-lock.json; tests/unit/services/shop.service.test.ts.
 ### Work Completed
-None
+Actual draft wires Shared hook/safe logger, tracks SDK refresh dispatch/store state and outer transaction outcomes, and corrects readiness320000ms/future-refresh logic. SDK event lifecycle and bounded intent parsing still need corrections below. No accepted implementation commit exists; HEADf14509f8c4feefe317b3dabb2a582f0dc9f688a2 is baseline and remote task implementation branch lookup returned no ref.
 ### Validation Results
-Definition only.
+- `npx vitest run app/services/shopify-offline-coordination.server.test.ts tests/unit/services/shop.service.test.ts`: PASS2 files55/55.
+- Read-only actual diff reviewed by moda_architect with moda_app assistance; existing tests do not cover the three concrete gaps below.
+- Initial cache write EPERM resolved by authorized test execution; no source changes.
+- Broad typecheck/build not repeated because concrete correctness/publication requirements already fail. Required deployment-change validation must be recorded after correction before passing review.
 ### Deviations
-None
+Review-only request; uncommitted developer source left untouched, no unauthorized source commit/push.
 ### Assumptions
-Existing accepted coordinator and metadata integration remain available at owner task baseline.
+No deployed-state/provider behavior inferred from local unit fixtures.
 ### Unresolved Issues
-None blocking definition.
+Three SDK lifecycle/boundedness corrections plus committed/pushed implementation and final required validation remain before passing review.
 ### Architectural Concerns
-Return actual incompatible contract evidence before widening scope.
+Telemetry must not change refresh deadlines or claim successful remote outcome on ambiguous persistence. Preserve developer execution ownership and exact safe event contract.
+### Git / VCS
+Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace; parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-063-SHOPIFY-001; implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-063-SHOPIFY-001. Both branches task/ARCH-063-SHOPIFY-001. Parent clean before reconciliation; implementation eight task-owned uncommitted files. Review made no shared checkout/source/gitlink/main changes. No new claim/attempt increment or execution mode conversion. Parent review publication only; implementation not published.
 
 ## Architect Review
 ### Review Status
@@ -135,3 +137,13 @@ Task metadata/dependency/path checks only.
 Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
 ### Follow-up
 None
+
+## Developer Self-Review — Changes Requested (Attempt1, 2026-11-07)
+Actual source reviewed, not inferred from commit messages. Existing focused55 tests pass but omit binding edge cases. Required corrections:
+
+1. **One terminal per started SDK attempt** — shopify-offline-coordination.server.ts:247–255 overwrites binding/sdk closure single sdkRefreshAttempt on every dispatch; lines371–382 emit a terminal only for latest attempt. Track each actual attempt or explicitly terminate/reject a second dispatch safely so every started operationId gets exactly one terminal after correct transaction outcome. Add two-refresh-dispatch fixture in one authenticated callback; assert both operationIds have one terminal and commit failure emits no committed.
+2. **Accepted remote outcome with deadline/commit ambiguity is UNKNOWN** — sdkRefreshFailure at lines164–171 checks DEADLINE before tokenOutcome succeeded/unknown, emitting CANCELLED/DEADLINE after remote acceptance. Preserve caller error behavior but map telemetry after accepted/unknown remote refresh to UNKNOWN/REFRESH_OUTCOME_UNKNOWN, never committed. Add accepted-response then outer deadline/rollback test and assert exact terminal code/outcome.
+3. **Bound OAuth intent parsing** — isRefreshTokenGrant lines129–143 reads Request.clone().text() without byte/deadline bounds before dispatch. Use bounded abort-aware intent inspection (including string/URLSearchParams limits), do not consume original request, recheck cancellation/deadline before emitting started/network dispatch. Add oversized/never-ending or aborting streaming request fixture; prove bounded settlement, no premature dispatch/start and no secret/body logging.
+4. **Durable implementation/validation evidence** — after corrections, run focused tests plus declared appropriate typecheck/build; commit/push reviewed task-owned source on matching implementation branch through developer-authorized publication, then reconcile exact hashes/report. Current eight source files are uncommitted and no remote task implementation ref exists, so passing review cannot be recorded. This review did not authorize/publish developer source.
+
+State transition: in_progress -> Ready, executor/claimed_at null, Attempt1 preserved. Next canonical developer claim increments once via `/moda_developer_create ARCH-063-SHOPIFY-001`; do not convert execution mode or claim within review. No main/live/provider/deployment action performed.

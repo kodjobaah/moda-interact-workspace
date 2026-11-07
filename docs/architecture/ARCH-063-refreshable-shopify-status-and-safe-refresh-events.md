@@ -55,3 +55,5 @@ ARCH-060 expired-status rule and availability-only link tests require Commerce c
 2026-11-06 reconciliation: SHARED-002 5.3.0 public tarball download/hash/export verification passed; Accepted at review, pending explicit developer completion. Consumers remain gated.
 
 2026-11-06 explicit developer completion: SHARED-002 Attempt 1 Complete, verified release 5.3.0. SHOPIFY-001, BACKGROUND-001, COMMERCE-002 and MCP-001 newly Ready; COMMERCE-001 remains independently Ready. SYSTEM-TEST-001 remains Pending/manual-gated; no work auto-started.
+
+2026-11-07: SHOPIFY001 developer Attempt1 reviewed, Changes Requested and returned Ready (claim cleared, attempt unchanged).55 focused tests pass; three SDK lifecycle/bounded-intent gaps and unpublished developer source prevent acceptance. System Test remains gated; no source implementation or deployment performed by review.
