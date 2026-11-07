@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -107,7 +107,7 @@ Definition only, no upload/claim started. Use normal launcher isolated/synchroni
 ## Completion Report
 
 ### Status
-Review — Attempt 1 developer self-review passed on 2026-11-07; explicit developer completion pending.
+Complete — Attempt 1 passed developer self-review and explicitly developer-completed on 2026-11-07.
 
 ### Files Changed
 18 task-owned paths recorded in f914bcc: fixed JPEG; sample-asset.ts, sample-source.ts, provision-sample.ts; image-header-sample.ts; existing r2-writer.ts; compiled provision/package/smoke scripts; tsconfig.provision.json; package.json, Dockerfile, .gitignore; focused sample/source/provision/Meta/R2 tests. No site, schema or lockfile changes.
@@ -160,3 +160,9 @@ Definition metadata/path/hash evidence only.
 Background owns runtime/artifact/provision; no duplicate generic R2 runtime or merchant sample substitution.
 ### Follow-up
 None
+
+## Developer Completion Decision
+2026-11-07: Developer explicitly invoked `/moda_developer_update ARCH-065-BACKGROUND-001 complete`. Durable passing review eca856769d45c547ff824e25ff293ba358532dc8 verified. Implementation f914bcc7e7b9b04a31ae77cbcd48bb97df9cdc07 matches its published task ref; both canonical worktrees clean at verification. All scoped requirements satisfied within recorded local validation limits. Accepted Attempt 1 unchanged; executor/claimed_at remain null. No main merge/push or live provisioning.
+
+### Dependency-frontier reconciliation
+BACKGROUND-002 becomes Ready at unchanged Attempt 0, unclaimed, because its sole explicit dependency is Complete. SYSTEM-TEST-001 remains Pending/manual-gated until BACKGROUND-002 provisioning is Complete. No enabled task started, upload performed or deployment readiness asserted.
