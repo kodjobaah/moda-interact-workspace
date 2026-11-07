@@ -1953,3 +1953,7 @@ ARCH-064-COMMERCE-001 task-branch reconciliation: Ready at prior Attempt1 after 
 ## ARCH-064 — Background completion frontier
 
 2026-11-06: Background001 Attempt1 Complete after Acceptedb682a6e source review and explicit developer completion. Canonical Commerce002 concurrently review, preserved untouched. System Test Pending on explicit Commerce002 dependency and terminal/manual-gated. No newly Ready task/main/live/follow-on execution or integrated completion claim.
+
+## ARCH-063 — Shopify completion frontier
+
+2026-11-07: Shopify001 Attempt2 Complete after Accepted source44c4846 and explicit developer completion. Canonical Commerce001/002, Shared002, Background001 and MCP001 Complete. SystemTest001 newly Ready/dependency-ready at Attempt0/unclaimed, terminal/manual-gated. No main/live/test/deployment execution or architecture Implemented claim.

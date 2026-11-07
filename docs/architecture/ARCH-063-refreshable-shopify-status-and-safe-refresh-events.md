@@ -61,3 +61,5 @@ ARCH-060 expired-status rule and availability-only link tests require Commerce c
 2026-11-07: SHOPIFY001 developer Attempt1 reviewed, Changes Requested and returned Ready (claim cleared, attempt unchanged).55 focused tests pass; three SDK lifecycle/bounded-intent gaps and unpublished developer source prevent acceptance. System Test remains gated; no source implementation or deployment performed by review.
 
 2026-11-07: SHOPIFY001 Attempt2 Accepted after SDK multi-dispatch/UNKNOWN deadline/bounded intent corrections,63 focused tests/typecheck/full build passed. Explicit developer completion pending; terminal System Test remains gated, no live/deployed completion claimed.
+
+2026-11-07 explicit completion: Shopify001 Attempt2 Complete. Canonical all other explicit SystemTest prerequisites Complete; SystemTest001 now Ready at Attempt0/unclaimed/manual-gated. Architecture remains awaiting integrated validation, no Implemented/deployment claim or automatic execution.
