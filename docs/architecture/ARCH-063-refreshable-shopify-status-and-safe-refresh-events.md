@@ -59,3 +59,5 @@ ARCH-060 expired-status rule and availability-only link tests require Commerce c
 2026-11-06: MCP-001 Attempt 1 explicitly developer-completed; published implementation 7ab689b. System Test remains Pending/manual-gated on COMMERCE-001, SHOPIFY-001 and COMMERCE-002. No downstream work started.
 
 2026-11-07: SHOPIFY001 developer Attempt1 reviewed, Changes Requested and returned Ready (claim cleared, attempt unchanged).55 focused tests pass; three SDK lifecycle/bounded-intent gaps and unpublished developer source prevent acceptance. System Test remains gated; no source implementation or deployment performed by review.
+
+2026-11-07: SHOPIFY001 Attempt2 Accepted after SDK multi-dispatch/UNKNOWN deadline/bounded intent corrections,63 focused tests/typecheck/full build passed. Explicit developer completion pending; terminal System Test remains gated, no live/deployed completion claimed.

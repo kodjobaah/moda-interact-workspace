@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 50
-executor: codex
-claimed_at: 2026-11-07T01:29:43Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-063-SHARED-002"]
 enables: ["ARCH-063-SYSTEM-TEST-001"]
@@ -149,17 +149,17 @@ None introduced; exact public Shared hook/shape reused, no generic logger fork, 
 
 ## Architect Review
 ### Review Status
-Pending
+Accepted — Attempt2; explicit developer completion pending.
 ### Review Notes
-Definition source audit completed; implementation not reviewed. Historical task acceptance preserved.
+2026-11-07 inspected source44c484670159d7ec37f2041429a5a8ec0c426d69 and reportddb8ce47bb90dbcf2b4edd2bb2e0f464947381be. Existing developer work preserved by authorized checkpoint007de29; canonical Attempt2 fixes all three binding prior findings. Each dispatched SDK refresh retains independent safe attempt/outcome/fingerprint-persistence state outside ALS and receives one post-transaction terminal. Remote accepted/unknown outcome takes UNKNOWN precedence over deadline while caller error unchanged. Intent inspection bounded16KiB and abort-raced for Request clone streams; original body unconsumed, tee cancel not awaited and binding/signal checked before start/dispatch. No outstanding source correction.
 ### Reviewed Files
-Task touchpoints above; canonical MCP ARCH-061 reader inspected separately from stale shared checkout.
+shopify-offline-coordination.server.ts/test, shopify-session-storage.server.ts, shop/shop.service.ts/test, observability/shopify-runtime-observability.server.ts, package/lock and report.
 ### Validation Reviewed
-Task metadata/dependency/path checks only.
+Focused coordination/readiness63/63, strengthened coordination16/16, adjacent storage1/1, declared typecheck and full React Router client+SSR build passed. Read fixtures for distinct two-dispatch pairs (unsaved UNKNOWN/saved COMMITTED), rollback no committed, actual15s deadline after accepted remote response (caller DEADLINE/telemetry UNKNOWN), oversized string/form/Request and stalled stream bounded no dispatch. Existing redirect/token-exchange/Shared delegation/hook safety/readiness320000/future-refresh cases pass. Build warnings disclosed, no live provider/deploy tests claimed.
 ### Architecture Conformance
-Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
+Conforms to safe process-local lifecycle contract and metadata readiness. Shared logger explicit safe fields, no raw body/token/error telemetry. Existing lock/SDK/caller mechanics retained. Canonical isolated worktrees/start synchronization/durable claim evidence verified; launcher post-main-sync database checkout mismatch recovered to exact recorded379d563 without source loss. No main/live migration/deploy/follow-on execution. Historical developer Attempt1 review/ownership retained; explicit authorized agent takeover only at Attempt2.
 ### Follow-up
-None
+Explicit completion: `/moda_developer_update ARCH-063-SHOPIFY-001 complete`. System Test remains terminal/manual-gated until all actual dependencies Complete; no integrated runtime/deployment completion claimed.
 
 ## Developer Self-Review — Changes Requested (Attempt1, 2026-11-07)
 Actual source reviewed, not inferred from commit messages. Existing focused55 tests pass but omit binding edge cases. Required corrections:
