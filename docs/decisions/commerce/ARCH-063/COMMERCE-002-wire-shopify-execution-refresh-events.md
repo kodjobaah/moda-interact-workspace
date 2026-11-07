@@ -7,13 +7,13 @@ domain: commerce
 repository: moda-interact-commerce
 assigned_agent: moda_commerce
 coordinator: moda_architect
-execution_mode: agent
+execution_mode: developer
 completion_mode: developer
-status: complete
+status: ready
 priority: 50
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 0
 depends_on: ["ARCH-063-SHARED-002"]
 enables: ["ARCH-063-SYSTEM-TEST-001"]
 created: 2026-11-06
@@ -68,8 +68,8 @@ SDK-managed refresh/token exchange is not observable solely from Shared getSessi
 Shared implementation extends existing API compatibly; publication chooses next available approved semver and records exact version before consumer pins. No forced version guess or unpublished sibling import. Commerce UI correction is independent and Ready now; it uses existing accepted ARCH-060/061/062 contracts, does not wait for log publication. Shared logging implementation is also independently Ready. Consumer event wiring depends on Shared publication. App wiring includes metadata-readiness correction. System Test is terminal on all fixes; manually invoked after optional user exercise. Compatible rollout, no schema/credential/env or Render topology change. Logging absent in old binaries is expected until owning consumer deployed; do not assert deployed observability from local code. No new metric/span framework. Metadata reads and tooling never expose provider secrets.
 
 ## Work Items
-- [x] Pass safe event adapter using existing Shared logger.
-- [x] Pass same adapter; one factory execution path logs once, no status events.
+- [ ] Pass safe event adapter using existing Shared logger.
+- [ ] Pass same adapter; one factory execution path logs once, no status events.
 
 ## Interfaces / Contracts
 Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published optional Shared onEvent hook and exact frozen event schema above. Each consumer owns safe logger forwarding; provider/runtime credentials stay server-only. Exact version recorded by SHARED-002 before consumer pins.
@@ -81,82 +81,49 @@ Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published o
 - ARCH-063-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [x] Actual expired execution logs started/committed with selected shop ID and refreshed expiry; metadata render logs no refresh.
-- [x] Injected commit/network failure emits failed only; secret canaries absent.
+- [ ] Actual expired execution logs started/committed with selected shop ID and refreshed expiry; metadata render logs no refresh.
+- [ ] Injected commit/network failure emits failed only; secret canaries absent.
 
 ## Validation
-- [x] Run focused command `npx vitest run tests/shopify-session-coordination.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
-- [x] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
+- [ ] Run focused command `npx vitest run tests/shopify-session-coordination.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
+- [ ] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
 
 ## Stop Condition
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
 
 ## Implementation Notes
-Execution ownership amendment (2026-11-06): developer explicitly requested `/moda-task ARCH-063-COMMERCE-002` implementation and authorized synchronization plus task claim/source/review publication. Delegate to moda_commerce via canonical agent preparation; retain completion_mode developer. Scope remains execution event wiring only; COMMERCE-001 metadata/UI changes excluded. No attempt or dependency change.
-
 Dependency reconciliation (2026-11-06): ARCH-063-SHARED-002 is Accepted and explicitly developer-completed; published package @modainteract/moda-interact-shared@5.3.0 has verified downloadable immutable archive and Node hook exports. Task is Ready at unchanged Attempt 0, unclaimed. No automatic execution.
 
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
 ## Completion Report
 ### Status
-Complete — Accepted and explicitly developer-completed
+Not Started
 ### Files Changed
-- package.json and package-lock.json: exact published Shared 5.3.0 pin.
-- src/commerce/preview/shopify-refresh-events.ts: domain semantic logger adapter.
-- src/commerce/preview/local-provider-composition.ts and local-policy-providers.ts: hook wiring.
-- tests/shopify-refresh-events.test.ts: real published-provider composition fixtures.
+None
 ### Work Completed
-Primary and fallback factories pass one safe observer to the published Shared provider. Adapter uses existing Shared logging implementation with canonical Commerce identity and factory environment. Explicit field allowlist excludes domain, session ID, credentials, scopes and errors. Started/committed use info; failed uses warn. Primary passes its provider into fallback registrations, so no duplicate observer/provider is created. Metadata/status paths unchanged; no COMMERCE-001 work. Existing refresh coordination, authorization, provider calls and caller errors preserved.
+None
 ### Validation Results
-- `npx vitest run tests/shopify-session-coordination.test.ts tests/shopify-refresh-events.test.ts`: PASS 2 files, 10 tests, no skips. Real published provider through both factory paths verifies actual expired refresh, persisted expiry, one safe pair, metadata/reuse silence, commit/network UNKNOWN failure without committed, secret canary absence.
-- `npm run prisma:generate`: PASS using recorded nested database schema; generated local client only. Initial fresh-install focused collection needed this generation, then passed.
-- `npm run typecheck:build`: PASS (schema sync, Next route typegen, production TypeScript).
-- Focused strengthened logging-envelope assertions: PASS 1 file, 6 tests; canonical service/environment and exact safe field keys. Used exact previously bootstrap-resolved Node executable with architect approval after redundant bootstrap delay; no runtime selection/PATH change.
-- `git diff --check`: PASS.
-- Published package install via `npm install @modainteract/moda-interact-shared@5.3.0 --save-exact --ignore-scripts` succeeded. npm reported 35 audit issues (18 moderate,16 high,1 critical); no unrelated dependency remediation attempted. Peer/deprecation warnings recorded; lock diff limited to Shared version/registry integrity.
+Definition only.
 ### Deviations
-Added a separate focused real-provider fixture because existing coordination test mocks Shared factory. No duplicate Shared mechanism. Consumer test uses mocked local persistence/network and production composition/policy adapter/Shared provider/logger; no live provider calls. Shared postcommit/PostgreSQL behavior already validated by accepted SHARED-001; no cross-repository rerun.
+None
 ### Assumptions
-Refresh logs are best effort process-local diagnostics; no deployment state inferred from local checks. Definition dispatch layer is mocked solely to reach registered policy execution in primary factory fixture.
+Existing accepted coordinator and metadata integration remain available at owner task baseline.
 ### Unresolved Issues
-None.
+None blocking definition.
 ### Architectural Concerns
-None. No cross-repository code, database schema, UI/metadata or deployment changes.
-### Git / VCS
-Task branch: task/ARCH-063-COMMERCE-002
-Physical worktree isolation:
-- canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
-- parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-063-COMMERCE-002
-- implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-063-COMMERCE-002
-- parent and implementation branches: task/ARCH-063-COMMERCE-002
-- shared workspace/source checkout switched or mutated: no
-- another task worktree reused: no
-Start-of-attempt synchronization (launcher packet):
-- parent/implementation remote task fast-forward: not-needed
-- parent/implementation origin/main incorporated: already-current
-- recursive submodule sync/update: passed; database bd2d09066a8eb178a56f48fbbf88df637c411059; status ready
-- Attempt 1 claim f9e4a608b92fd6012db3c9dbb082521d869fa2ff pushed
-Implementation commit: 4b2abdd (full hash in task history); pushed to origin/task/ARCH-063-COMMERCE-002.
-Parent report commit follows this edit on matching task branch. Submodule gitlink staged: no. Main merges: none.
+Return actual incompatible contract evidence before widening scope.
 
 ## Architect Review
 ### Review Status
-Accepted — explicitly developer-completed.
+Pending
 ### Review Notes
-2026-11-06 moda_architect inspected actual implementation 4b2abdde15c6612b96f95fd3ec23dcf3a4c3dc2a and report 8c667804512d4c4af1e40e233273abd1a062ed7a. Both factory paths wire published Shared 5.3.0 hook through one small semantic adapter using Shared logging. Explicit field projection preserves safe correlation/outcome metadata without error, body, domain, session or credentials. Started/committed log info and failed logs warn. Primary provider injection prevents duplicate fallback construction; no metadata refresh/event path introduced. No implementation corrections required.
+Definition source audit completed; implementation not reviewed. Historical task acceptance preserved.
 ### Reviewed Files
-- src/commerce/preview/shopify-refresh-events.ts
-- src/commerce/preview/local-provider-composition.ts
-- src/commerce/preview/local-policy-providers.ts
-- tests/shopify-refresh-events.test.ts
-- package.json/package-lock.json and task Completion Report.
+Task touchpoints above; canonical MCP ARCH-061 reader inspected separately from stale shared checkout.
 ### Validation Reviewed
-Focused 10/10 and strengthened envelope fixture 6/6 passed, production typecheck:build passed, Prisma generation and whitespace validation passed. Inspected real published-provider fixtures through both composition paths for metadata/reuse silence, committed expiry and selected Shop correlation, network/commit UNKNOWN failures with no committed event and secret-canary exclusion. Accepted Shared PostgreSQL fixtures already cover actual database postcommit/concurrency mechanics; consumer did not duplicate cross-repository validation.
+Task metadata/dependency/path checks only.
 ### Architecture Conformance
-Conforms to ARCH-063 bounded Commerce consumer wiring; consumes exact published package and canonical Shared logger. No generic logger fork, lock changes, UI/status scope crossover into COMMERCE-001, schema, deployment or gitlink changes. Canonical launcher worktrees/start synchronization/database submodule evidence verified. Local results make no deployed-state claim.
+Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
 ### Follow-up
-Task remains review under completion_mode developer. Explicit completion: `/moda_developer_update ARCH-063-COMMERCE-002 complete`. System Test remains Pending on incomplete dependencies/manual-gated; no follow-on work starts automatically.
-
-## Developer Completion Decision
-2026-11-06T17:45:51.565637+00:00 — Developer explicitly invoked `/moda_developer_update ARCH-063-COMMERCE-002 complete`. Verified durable Accepted review at parent 8d7b58a1ca2dc0007c2d6829ded116642f20ac2c and clean published implementation 4b2abdde15c6612b96f95fd3ec23dcf3a4c3dc2a; remote hashes match. Required Work Items/Acceptance Criteria/Validation complete. Completed unchanged Attempt 1 with executor/claimed_at null and execution/completion modes preserved. No main merge, gitlink change or follow-on execution. Canonical route reconciliation preserves concurrent BACKGROUND-001/MCP-001 Complete and SHOPIFY-001 In Progress; COMMERCE-001 Ready. System Test remains Pending on incomplete COMMERCE-001 and SHOPIFY-001, terminal/manual-gated.
+None
