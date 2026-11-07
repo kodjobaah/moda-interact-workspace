@@ -15,6 +15,7 @@ This is an investigation record, not an architecture task specification. Propose
 | CS03 | Repeated product searches and empty results | Open | Search results are explained by provider data and filters, and the agent reaches a grounded answer within an agreed bounded number of calls. |
 | CS04 | Merchant Knowledge denied | Commerce disabled-feature handling verified; Background pending | The precise authorization decision is understood; authorized preview calls work and unauthorized calls remain denied. |
 | CS05 | Unsupported Shopify brand integration | Open | App configuration can be released and brand acquisition uses a verified supported source with an explicit fallback. |
+| CS06 | Category resolution and search sequencing | Open | Trace the resolver outcome and demonstrate that suitable category candidates are used in product search, with an explicit fallback when no suitable candidate is available. |
 
 ## Working method
 
@@ -244,3 +245,28 @@ New store `test-product-zirvrtqn.myshopify.com`, shop `cmw6r87x50000poedub9gyi72
 Direct authenticated read-only checks confirmed the correct Shopify domain: unfiltered variants returned 20 rows with more pages (18 ACTIVE, one DRAFT, one ARCHIVED); `product_status:ACTIVE` returned zero; `product_status:active` returned 20 ACTIVE rows with more pages. The earlier conclusion that the uppercase filter was valid based on documentation was insufficient: live evidence confirms a casing defect. Commerce 938834b and MCP faab2dd correct the filter to lowercase.
 
 The product listing returned 17 products (15 ACTIVE, one DRAFT, one ARCHIVED), all with null onlineStoreUrl. Discovery adapters previously dropped these. The correction retains ACTIVE products with explicit url=null across text, browse, category and exact reads; unsafe non-null URLs and inactive products remain excluded. Shared already permits null product URLs, so no package release is required. Background's existing recommendation validation requires a non-null verified URL; guidance distinguishes catalogue existence from online purchase readiness. Deployed model behavior remains to be verified.
+
+## CS06 Category resolution and search sequencing
+
+### Confirmed evidence
+
+Render test run `581877aa-8425-41ea-a06b-ad9af8bdd9a9`, conversation `0413738e-4894-4373-9806-f1a9f8c359d1`, shop `cmw6r87x50000poedub9gyi72`, on 7 November 2026:
+
+1. The model called `commerce_search_products` without a category.
+2. It called `commerce_resolve_product_categories`; the tool completed with status `OK`.
+3. It repeated the identical text search: the fingerprint was unchanged and `categoryPresent` remained false.
+4. It issued a broader browse, also without a category.
+
+This proves category resolution was invoked but no category was passed into product search. It does not prove that useful candidates were returned: `OK` can contain `CANDIDATES`, `NO_CANDIDATES` or a structured `UNAVAILABLE` outcome. Do not describe this as the resolver never running or assume the model ignored valid candidates without inspecting the outcome.
+
+### Investigation and touch points
+
+- Trace the vector lookup outcome, candidate count and bounded category identifiers, with conversation/run correlation and no raw query text or embedding vectors.
+- Inspect Commerce `src/commerce/preview/product-reads/taxonomy.ts`, category registration in `registrations.ts`, and the structured result passed back to the model.
+- Inspect `src/commerce/bootstrap/system-product-tools.ts`, the published Feature behaviour, trusted product-discovery instructions and runner tool selection. Determine why the second search repeated the original arguments.
+- Compare MCP's category-resolution and product-search execution paths, and Background's trusted instructions, before deciding whether the same correction is required there.
+- Establish whether category-first sequencing must be enforced by orchestration or remains model-directed. This decision is still open; the recent missing-URL and status-casing fixes do not implement it.
+
+### Verification and closure
+
+Use a populated shop with products assigned to known taxonomy categories. For a category-resolvable request, record the resolver outcome and verify that the ensuing search uses an appropriate returned category. Separately test no candidates, an unavailable resolver, and products without assigned categories so category filtering does not conceal otherwise discoverable products. Preserve tenant authorization and distinguish reference categories from actual inventory. Close only after recording the deployed trace and a grounded final reply; unit tests or tool status `OK` alone are insufficient.
