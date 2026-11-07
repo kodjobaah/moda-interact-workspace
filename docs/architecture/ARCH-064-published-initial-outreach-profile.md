@@ -43,7 +43,7 @@ Compatible staged rollout: Database additive migration, Shared accepted implemen
 | ARCH-064-COMMERCE-001 | commerce | Ready | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-059-COMMERCE-001 |
 | ARCH-064-MCP-001 | mcp | Complete | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-059-MCP-001 |
 | ARCH-064-BACKGROUND-001 | background | Ready | ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-059-BACKGROUND-001 |
-| ARCH-064-SYSTEM-TEST-001 | system-test | Pending | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-064-BACKGROUND-001 |
+| ARCH-064-SYSTEM-TEST-001 | system-test | Ready (manual-gated) | ARCH-064-DATABASE-001, ARCH-064-SHARED-002, ARCH-064-COMMERCE-001, ARCH-064-MCP-001, ARCH-064-BACKGROUND-001 |
 
 ## Definition review
 Current single-owner capability relation cannot attach one capability to a second Feature directly. Purpose reference joins preserve ownership and immutable release membership. Selector schema union and graph switches require explicit extension, not only Set deletion. Current ARCH-059 Background adoption is not Complete and remains explicit dependency before this removal task. No implementation or deployment claimed.
@@ -79,3 +79,5 @@ MCP generated-Prisma review confirmed accepted Commerce publication-storage.ts:1
 2026-11-06: MCP001 Attempt1 Accepted after trusted purpose/release pin, same-release/entitlement subset and actual fifth HTTP execution validation. Explicit developer completion pending. Commerce002 production reader correction remains Ready; no integrated completion/deployment claim.
 
 2026-11-06 explicit completion: MCP001 Attempt1 Complete; canonical Background prerequisites all Complete, Background001 Ready/unclaimed. Commerce002 production reader correction remains Ready and System Test dependency; System Test remains Pending/manual-gated. No integrated runtime/deployment completion or automatic execution claimed.
+
+2026-11-07: COMMERCE-002 Attempt 1 architect Accepted and explicitly developer-completed (92edcff). All explicit terminal System Test dependencies Complete; System Test dependency-ready, manual-gated, unclaimed. No integrated runtime/deployment result asserted.

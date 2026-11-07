@@ -14,6 +14,6 @@ COMMERCE-001 Attempt2 Accepted after real-default publication/output validation 
 
 COMMERCE001 Attempt2 explicitly developer-completed; historical blocked Attempt1 preserved.
 
-| ARCH-064-COMMERCE-002 | Ready | ARCH-064-COMMERCE-001, ARCH-064-DATABASE-001, ARCH-064-SHARED-004 |
+| ARCH-064-COMMERCE-002 | Complete | ARCH-064-COMMERCE-001, ARCH-064-DATABASE-001, ARCH-064-SHARED-004 |
 
-Newly demonstrated production reader correction; no execution launched.
+COMMERCE-002 Attempt 1 architect Accepted and explicitly developer-completed on 2026-11-07; implementation 92edcff.

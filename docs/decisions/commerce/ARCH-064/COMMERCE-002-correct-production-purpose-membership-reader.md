@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: review
+status: complete
 priority: 30
-executor: codex
-claimed_at: 2026-11-06T21:57:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-064-COMMERCE-001", "ARCH-064-DATABASE-001", "ARCH-064-SHARED-004"]
 enables: ["ARCH-064-SYSTEM-TEST-001"]
@@ -72,7 +72,7 @@ MCP reader independently fixed its own analogous shape with a generated Prisma.C
 ## Completion Report
 
 ### Status
-Ready for Review — Attempt 1. Implementation and required local validation passed; architect review and explicit developer completion pending.
+Complete — Attempt 1 architect Accepted and explicitly developer-completed on 2026-11-07.
 
 ### Files Changed
 - src/commerce/integration/backend/publication-storage.ts
@@ -124,3 +124,9 @@ Recorded npm run prisma:generate, four focused suites (17 tests), npm run typech
 Pass. Existing schema and immutable same-release identities retained; no new relations, copied definitions, permissions, dependencies or cross-repository implementation. Dedicated worktree/synchronization/claim evidence verified. Historical COMMERCE-001 acceptance preserved.
 ### Follow-up
 Record explicit authorized developer completion and reconcile dependency frontier; terminal system validation remains manually gated.
+
+## Developer Completion Decision
+2026-11-07: Developer explicitly authorized architect review and completion if passing. Passing architect review is durably committed immediately before this decision. Accepted Attempt 1 unchanged; status Complete, executor/claimed_at null. Implementation 92edcff3b3c344a8031cda18b452968a0161095c is published; all required scoped criteria satisfied. No main merge/push.
+
+### Dependency-frontier reconciliation
+All explicit ARCH-064-SYSTEM-TEST-001 dependencies are Complete: DATABASE-001, SHARED-002, COMMERCE-001, MCP-001, BACKGROUND-001 and this correction. System Test becomes Ready/dependency-ready but remains strictly manual-gated. No claim, execution, deployment or live validation authorized/performed by reconciliation.
