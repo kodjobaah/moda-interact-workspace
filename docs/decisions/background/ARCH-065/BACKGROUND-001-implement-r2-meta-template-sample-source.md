@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-07T03:00:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: ["ARCH-065-BACKGROUND-002", "ARCH-065-SYSTEM-TEST-001"]
@@ -77,8 +77,8 @@ Compatible rollout: accept implementation/artifact, run asset provision+public v
 Exact packaged JPEG hash/dimensions/size pass; modified bytes, HTML/PNG/empty/oversize/MIME mismatch reject before Meta network. Public404/redirect/private DNS/unavailable origin/timeout fail with bounded safe classification, website request count always0. Valid R2 sample produces existing Meta session+bytes upload+trusted WeakSet handle; forged handle/string/URL rejected. NONE/TEXT/unsupported headers perform zero sample fetch/Meta sample upload. WABA/token/app admission unchanged. R2 identical HEAD yields zero PUT, absent yields one conditional PUT then HEAD+public verify, collision/concurrent conditional conflict uses existing safe recheck no overwrite. Secret/error/Meta-handle canaries absent from receipts/logs. Worker startup/import performs zero config/network I/O. Clean packaged artifact provision plan works without sibling site source. System test uses real composition with disposable mock R2 public HTTP and mock Meta; live Meta submission is not required or performed by definition.
 
 ## Work Items
-- [ ] Create exact NEW assets/meta-template-samples/v1/<fixedhash>.jpeg, sample-asset.ts, sample-source.ts and scripts/provision-meta-template-sample.ts; implement contract above.
-- [ ] Add unit/image-header-sample, existing R2 writer, package smoke and full mock source->Meta tests with zero website calls.
+- [x] Create exact NEW assets/meta-template-samples/v1/<fixedhash>.jpeg, sample-asset.ts, sample-source.ts and scripts/provision-meta-template-sample.ts; implement contract above.
+- [x] Add unit/image-header-sample, existing R2 writer, package smoke and full mock source->Meta tests with zero website calls.
 
 ## Interfaces / Contracts
 Fixed code-owned version1 asset metadata above; existing shopBrand.publicMedia public origin/bucket and existing R2 credential config, injected source.read, guarded R2 transport and opaque WeakSet Meta handle. No new cross-service wire package or persisted configuration key.
@@ -91,12 +91,12 @@ None
 - ARCH-065-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Create exact NEW assets/meta-template-samples/v1/<fixedhash>.jpeg, sample-asset.ts, sample-source.ts and scripts/provision-meta-template-sample.ts; implement contract above.
-- [ ] Add unit/image-header-sample, existing R2 writer, package smoke and full mock source->Meta tests with zero website calls.
+- [x] Create exact NEW assets/meta-template-samples/v1/<fixedhash>.jpeg, sample-asset.ts, sample-source.ts and scripts/provision-meta-template-sample.ts; implement contract above.
+- [x] Add unit/image-header-sample, existing R2 writer, package smoke and full mock source->Meta tests with zero website calls.
 
 ## Validation
-- [ ] Background: npx vitest run tests/unit/services/meta-template-management/image-header-sample.test.ts tests/unit/services/shop-brand-media/r2-writer.test.ts plus NEW tests/unit/services/meta-template-management/sample-source.test.ts and provision-sample.test.ts; run npm run build and clean-artifact package smoke. System Test: node --test test/arch065-meta-template-sample.test.js and npm run typecheck.
-- [ ] Capture source/R2/Meta calls and assert deterministic matrix, zero website requests, safe failures and credential/handle canaries absent.
+- [x] Background: npx vitest run tests/unit/services/meta-template-management/image-header-sample.test.ts tests/unit/services/shop-brand-media/r2-writer.test.ts plus NEW tests/unit/services/meta-template-management/sample-source.test.ts and provision-sample.test.ts; run npm run build and clean-artifact package smoke. System Test: node --test test/arch065-meta-template-sample.test.js and npm run typecheck.
+- [x] Capture source/R2/Meta calls and assert deterministic matrix, zero website requests, safe failures and credential/handle canaries absent.
 
 ## Stop Condition
 Finish scoped work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. No enabled execution automatic; System Test terminal/manually invoked.
@@ -107,22 +107,36 @@ Definition only, no upload/claim started. Use normal launcher isolated/synchroni
 ## Completion Report
 
 ### Status
+Ready for Review — Attempt 1. Implementation/local validation passed; authorized review and explicit developer completion pending.
 
-In Progress — Attempt 1; developer-authorized implementation and publication.
 ### Files Changed
-None
+18 task-owned paths recorded in f914bcc: fixed JPEG; sample-asset.ts, sample-source.ts, provision-sample.ts; image-header-sample.ts; existing r2-writer.ts; compiled provision/package/smoke scripts; tsconfig.provision.json; package.json, Dockerfile, .gitignore; focused sample/source/provision/Meta/R2 tests. No site, schema or lockfile changes.
+
 ### Work Completed
-None
+Copied exact 28251-byte 505x757 JPEG with frozen SHA256 14af14ebb7b71df4b0a32d31ba7d8df82a7d18f47e56143a4bc0b5ea46587717. Runtime source resolves existing public-media configuration per read and fetches only the fixed HTTPS origin/key using safe fetch (5MB, no redirects). Integrity/MIME/signature checks precede Meta calls; website/bundled/merchant runtime fallback absent. Existing WABA/app admission, non-image paths and WeakSet trusted-handle boundary retained.
+
+Uploader retains finite10s/30s request deadlines through bounded8192-byte success and4096-byte failure body parsing with cancellation/reader cleanup. Safe source/provider classifications retained. Reused immutable R2 transport with optional bounded expectedDimensions; brand defaults1125x600 unchanged; client.destroy close added. Plan/apply/verify CLI validates current deployment identity, requires production-apply confirmation, reuses existing public bucket/R2 config, guards writes with exact key/conditional immutable semantics and verifies public bytes.15s R2 operation and60s total bounds include cleanup; receipts are bounded and credential-free. Transport/local DB cleanup retained. Build packages JPEG with worker/compiled CLI; Dockerfile includes new build inputs.
+
 ### Validation Results
-Definition only.
-### Deviations
-None
-### Assumptions
-Existing public-media bucket/origin and credential sources can be provisioned with current authorized runtime configuration; verify in provisioning task.
-### Unresolved Issues
-No implementation-blocking design question. Live object/bucket readiness not yet verified or claimed.
-### Architectural Concerns
-Return actual infrastructure access/config gap rather than inventing new storage.
+- `npx vitest run tests/unit/services/meta-template-management/image-header-sample.test.ts tests/unit/services/shop-brand-media/r2-writer.test.ts tests/unit/services/meta-template-management/sample-source.test.ts tests/unit/services/meta-template-management/provision-sample.test.ts tests/unit/services/meta-template-management/meta-management.test.ts`: 73 passed.
+- `npm run build`: passed, worker and compiled CLI.
+- `npm run test:meta-sample:artifact`: passed from clean temporary compiled artifact without sibling site source/live credentials.
+- Targeted ESLint on changed production modules/scripts: passed.
+- `git -c core.fsmonitor=false diff --check`: passed.
+Fixtures cover exact metadata/integrity, tamper/MIME/size rejection,404/redirect/private DNS,429/503,stalled success/failure bodies/body cap/cancellation, opaque handle trust, non-image skip, conditional writes/idempotency/collision, public tamper, operation/total deadlines, environment/production gates and safe receipts. No website request occurs in new source flow.
+
+### Deviations / Assistance
+Material moda_background agent assistance implemented source/tests under explicit developer authorization; root handled publication/report. Launcher synchronized canonical worktrees then set Attempt1 before report-format failure; normalized report and published claim02103b675 without incrementing. Added Dockerfile inputs and .gitignore/compiled CLI configuration as necessary artifact packaging. Git fsmonitor IPC warning worked around per-command with core.fsmonitor=false; no global configuration changed.
+
+### Validation Limits / Unresolved Issues
+No live R2 provisioning/readiness, Meta submission, deployment, Docker build or terminal System Test claimed. Docker packaging checked statically plus clean compiled artifact smoke. Follow-on provisioning must verify intended destination before worker rollout. No scoped implementation blocker remains.
+
+### Git / VCS
+Task branch: task/ARCH-065-BACKGROUND-001.
+Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-065-BACKGROUND-001.
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-065-BACKGROUND-001.
+Both dedicated worktrees use matching task branch; shared/default checkout not switched for task work, no other task worktree reused. Launcher synchronized before Attempt1; implementation baseline ada7a5450914175220ffa8d32f2c3f3924df57a0; recursive database pinned379d563f6b9ee070305e284615dddbc0b97afeb0. Claim02103b6750734f05267005564439bac3b871a319 published. Implementation f914bcc7e7b9b04a31ae77cbcd48bb97df9cdc07 pushed origin/task/ARCH-065-BACKGROUND-001. Report committed/pushed on matching parent branch, exact commit available in Git history. No submodule gitlink staged, main merge/push, enabled-task execution or live upload.
 
 ## Architect Review
 ### Review Status
