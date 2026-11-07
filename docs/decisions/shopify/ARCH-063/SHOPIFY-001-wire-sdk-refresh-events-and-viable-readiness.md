@@ -7,17 +7,17 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on: ["ARCH-063-SHARED-002"]
 enables: ["ARCH-063-SYSTEM-TEST-001"]
 created: 2026-11-06
-updated: 2026-11-06
+updated: 2026-11-07
 ---
 # Wire sdk refresh events and viable readiness
 
@@ -70,10 +70,10 @@ SDK-managed refresh/token exchange is not observable solely from Shared getSessi
 Shared implementation extends existing API compatibly; publication chooses next available approved semver and records exact version before consumer pins. No forced version guess or unpublished sibling import. Commerce UI correction is independent and Ready now; it uses existing accepted ARCH-060/061/062 contracts, does not wait for log publication. Shared logging implementation is also independently Ready. Consumer event wiring depends on Shared publication. App wiring includes metadata-readiness correction. System Test is terminal on all fixes; manually invoked after optional user exercise. Compatible rollout, no schema/credential/env or Render topology change. Logging absent in old binaries is expected until owning consumer deployed; do not assert deployed observability from local code. No new metric/span framework. Metadata reads and tooling never expose provider secrets.
 
 ## Work Items
-- [ ] Wire Shared hook to safe service adapter; emit SDK refresh lifecycle from ALS at outer commit, not storeSession.
-- [ ] Expose scoped persisted-pair state to outer wrapper without logging tokens or declaring success.
-- [ ] Require future refresh expiry for expired access; preserve metadata-only admission.
-- [ ] Add semantic refresh-event forwarding without raw SDK/provider error/body.
+- [x] Wire Shared hook to safe service adapter; emit SDK refresh lifecycle from ALS at outer commit, not storeSession.
+- [x] Expose scoped persisted-pair state to outer wrapper without logging tokens or declaring success.
+- [x] Require future refresh expiry for expired access; preserve metadata-only admission.
+- [x] Add semantic refresh-event forwarding without raw SDK/provider error/body.
 
 ## Interfaces / Contracts
 Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published optional Shared onEvent hook and exact frozen event schema above. Each consumer owns safe logger forwarding; provider/runtime credentials stay server-only. Exact version recorded by SHARED-002 before consumer pins.
@@ -85,50 +85,91 @@ Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published o
 - ARCH-063-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] SDK refresh start then successful store but commit rollback ->failed UNKNOWN only; redirect-success commit ->committed.
-- [ ] Token exchange is not refresh; Shared-delegated refresh not double logged.
-- [ ] Expired refresh present but expiry past/missing ->readiness false; valid refresh future ->true; zero refresh calls for readiness.
+- [x] SDK refresh start then successful store but commit rollback ->failed UNKNOWN only; redirect-success commit ->committed.
+- [x] Token exchange is not refresh; Shared-delegated refresh not double logged.
+- [x] Expired refresh present but expiry past/missing ->readiness false; valid refresh future ->true; zero refresh calls for readiness.
 
 ## Validation
-- [ ] Run focused command `npx vitest run app/services/shopify-offline-coordination.server.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
-- [ ] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
+- [x] Run focused command `npx vitest run app/services/shopify-offline-coordination.server.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
+- [x] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
 
 ## Stop Condition
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
 
 ## Implementation Notes
+Execution ownership amendment (2026-11-07): developer explicitly requested agent implementation through `/moda-task ARCH-063-SHOPIFY-001` and authorized synchronization plus checkpoint/commit/push of already-started task-owned implementation, claim and report. Preserve eight uncommitted source files by explicit WIP checkpoint before canonical preparation; delegate to moda_app, completion_mode developer retained. Prior Attempt1 review/corrections binding; no claim/attempt increment here.
+
 Dependency reconciliation (2026-11-06): ARCH-063-SHARED-002 is Accepted and explicitly developer-completed; published package @modainteract/moda-interact-shared@5.3.0 has verified downloadable immutable archive and Node hook exports. Task is Ready at unchanged Attempt 0, unclaimed. No automatic execution.
 
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
 ## Completion Report
 ### Status
-Not Started
+Complete — Attempt2 Accepted and explicitly developer-completed — Attempt2; prior developer work retained and authorized checkpoint published.
 ### Files Changed
-None
+- app/services/shopify-offline-coordination.server.ts and its focused test
+- app/services/shopify-session-storage.server.ts
+- Retained authorized checkpoint: observability/shopify-runtime-observability.server.ts, shop/shop.service.ts, tests/unit/services/shop.service.test.ts and package/lock Shared5.3.0 pin.
 ### Work Completed
-None
+Shared hook forwards exact safe fields through existing logger. SDK refresh intent is recognized only for refresh_token grants; each actual dispatch receives fresh UUID, trusted Shop ID/null, monotonic bounded duration and one terminal after outer transaction outcome. Per-attempt remote outcome and persisted-pair fingerprint survive ALS abort via safe metadata references. Unsaved earlier rotated pairs cannot report committed; successful store/redirect emits committed only after outer commit; rollback/accepted remote deadline emits UNKNOWN. Original token exchange and lock/SDK behavior retained, no duplicate Shared-owned refresh events. Intent inspection capped16KiB for strings/forms/Request clone streams, raced against abort with nonblocking clone cancellation and predispatch binding/signal recheck; original Request untouched by inspection. Readiness remains metadata-only with320000ms strict boundary/future refresh expiry.
+
+### Required Corrections — Disposition
+1. implemented: single overwritten attempt slot replaced by per-dispatch metadata and fingerprint persistence association. Two distinct rotations fixture verifies one terminal per operationId, unsaved pair UNKNOWN/saved pair COMMITTED, rollback no committed.
+2. implemented: accepted/unknown remote precedence retained across ALS exit; caller errors unchanged. Actual outer15s fake-timer deadline fixture expects caller DEADLINE and telemetry UNKNOWN/REFRESH_OUTCOME_UNKNOWN, same operationId; accepted abort race covered.
+3. implemented: bounded abort-aware intent reader, no await on tee cancellation, no original body consumption, cancellation recheck before start/dispatch. Oversized string/form/Request and stalled-stream abort settle without native dispatch/start or body logging.
+4. implemented: existing8 source files checkpoint007de29b1f82abcf9f8bf8feb0bae32c51f5567c published; prepared Attempt2 corrections committed/pushed44c484670159d7ec37f2041429a5a8ec0c426d69; exact remote verified.
 ### Validation Results
-Definition only.
+- `npx vitest run app/services/shopify-offline-coordination.server.test.ts tests/unit/services/shop.service.test.ts`: PASS63/63,2 files.
+- Strengthened changed coordination fixture rerun: PASS16/16, including distinct multi-dispatch pair association and actual deadline.
+- Adjacent `vitest run app/services/shopify-session-storage.server.test.ts`: PASS1/1.
+- `npm run typecheck`: PASS (React Router typegen/tsc).
+- `npm run build`: PASS Prisma generation plus client and SSR build. Warnings: browser Prisma externalization, upstream Zod pure annotations, empty route chunks and chunk-size warning; build exit0. No source workaround or unrelated changes.
+- `git diff --check`: PASS. Vitest initially required cache write escalation; same focused command then passed. Canonical bootstrap resolved Node24.19.0; exact returned runtime reused for focused test invocation.
+- Accepted Shared postcommit/PostgreSQL fixtures remain owning Shared evidence; no cross-repository repetition or live DB/provider/model operation.
 ### Deviations
-None
+None in behavior. Three original review findings corrected within same task; first authorized8-file work checkpoint retained, then launcher origin/main synchronization included current nested Database379d563 and architect exact submodule materialization correction. No parent gitlink staged.
 ### Assumptions
-Existing accepted coordinator and metadata integration remain available at owner task baseline.
+SDK events are process-local best-effort; process death can leave started without terminal. Validity/readiness is credential viability, not provider health. Request intent inspection does not change grant request payload.
 ### Unresolved Issues
-None blocking definition.
+None.
 ### Architectural Concerns
-Return actual incompatible contract evidence before widening scope.
+None introduced; exact public Shared hook/shape reused, no generic logger fork, schema/deployment/credential change.
+### Git / VCS
+- task branch: task/ARCH-063-SHOPIFY-001
+- canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+- parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-063-SHOPIFY-001
+- implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-063-SHOPIFY-001
+- both task branches reused correctly; shared/default checkout switched/mutated: no; another task path reused: no
+- prepared synchronization: parent/implementation fast-forwards not-needed, origin/main already-current after launcher synchronization; implementation baselinecb490727ecc7d7b4eaf7236acc86d20bf987ec2b
+- submodule sync/update passed, recorded Database379d563f6b9ee070305e284615dddbc0b97afeb0, exact commit materialized; no parent gitlink staged
+- Attempt2 durable claim1ea2b061b00025fe2a7efea54f249918224bd9d5 pushed
+- implementation44c484670159d7ec37f2041429a5a8ec0c426d69 pushed/remote verified; implementation tree clean
+- parent report commit follows this edit on matching branch, pushed before return
+- main merges/pushes: none; live migration/activation/provider/customer operations: none
 
 ## Architect Review
 ### Review Status
-Pending
+Accepted — Attempt2 explicitly developer-completed.
 ### Review Notes
-Definition source audit completed; implementation not reviewed. Historical task acceptance preserved.
+2026-11-07 inspected source44c484670159d7ec37f2041429a5a8ec0c426d69 and reportddb8ce47bb90dbcf2b4edd2bb2e0f464947381be. Existing developer work preserved by authorized checkpoint007de29; canonical Attempt2 fixes all three binding prior findings. Each dispatched SDK refresh retains independent safe attempt/outcome/fingerprint-persistence state outside ALS and receives one post-transaction terminal. Remote accepted/unknown outcome takes UNKNOWN precedence over deadline while caller error unchanged. Intent inspection bounded16KiB and abort-raced for Request clone streams; original body unconsumed, tee cancel not awaited and binding/signal checked before start/dispatch. No outstanding source correction.
 ### Reviewed Files
-Task touchpoints above; canonical MCP ARCH-061 reader inspected separately from stale shared checkout.
+shopify-offline-coordination.server.ts/test, shopify-session-storage.server.ts, shop/shop.service.ts/test, observability/shopify-runtime-observability.server.ts, package/lock and report.
 ### Validation Reviewed
-Task metadata/dependency/path checks only.
+Focused coordination/readiness63/63, strengthened coordination16/16, adjacent storage1/1, declared typecheck and full React Router client+SSR build passed. Read fixtures for distinct two-dispatch pairs (unsaved UNKNOWN/saved COMMITTED), rollback no committed, actual15s deadline after accepted remote response (caller DEADLINE/telemetry UNKNOWN), oversized string/form/Request and stalled stream bounded no dispatch. Existing redirect/token-exchange/Shared delegation/hook safety/readiness320000/future-refresh cases pass. Build warnings disclosed, no live provider/deploy tests claimed.
 ### Architecture Conformance
-Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
+Conforms to safe process-local lifecycle contract and metadata readiness. Shared logger explicit safe fields, no raw body/token/error telemetry. Existing lock/SDK/caller mechanics retained. Canonical isolated worktrees/start synchronization/durable claim evidence verified; launcher post-main-sync database checkout mismatch recovered to exact recorded379d563 without source loss. No main/live migration/deploy/follow-on execution. Historical developer Attempt1 review/ownership retained; explicit authorized agent takeover only at Attempt2.
 ### Follow-up
-None
+Explicit completion: `/moda_developer_update ARCH-063-SHOPIFY-001 complete`. System Test remains terminal/manual-gated until all actual dependencies Complete; no integrated runtime/deployment completion claimed.
+
+## Developer Self-Review — Changes Requested (Attempt1, 2026-11-07)
+Actual source reviewed, not inferred from commit messages. Existing focused55 tests pass but omit binding edge cases. Required corrections:
+
+1. **One terminal per started SDK attempt** — shopify-offline-coordination.server.ts:247–255 overwrites binding/sdk closure single sdkRefreshAttempt on every dispatch; lines371–382 emit a terminal only for latest attempt. Track each actual attempt or explicitly terminate/reject a second dispatch safely so every started operationId gets exactly one terminal after correct transaction outcome. Add two-refresh-dispatch fixture in one authenticated callback; assert both operationIds have one terminal and commit failure emits no committed.
+2. **Accepted remote outcome with deadline/commit ambiguity is UNKNOWN** — sdkRefreshFailure at lines164–171 checks DEADLINE before tokenOutcome succeeded/unknown, emitting CANCELLED/DEADLINE after remote acceptance. Preserve caller error behavior but map telemetry after accepted/unknown remote refresh to UNKNOWN/REFRESH_OUTCOME_UNKNOWN, never committed. Add accepted-response then outer deadline/rollback test and assert exact terminal code/outcome.
+3. **Bound OAuth intent parsing** — isRefreshTokenGrant lines129–143 reads Request.clone().text() without byte/deadline bounds before dispatch. Use bounded abort-aware intent inspection (including string/URLSearchParams limits), do not consume original request, recheck cancellation/deadline before emitting started/network dispatch. Add oversized/never-ending or aborting streaming request fixture; prove bounded settlement, no premature dispatch/start and no secret/body logging.
+4. **Durable implementation/validation evidence** — after corrections, run focused tests plus declared appropriate typecheck/build; commit/push reviewed task-owned source on matching implementation branch through developer-authorized publication, then reconcile exact hashes/report. Current eight source files are uncommitted and no remote task implementation ref exists, so passing review cannot be recorded. This review did not authorize/publish developer source.
+
+State transition: in_progress -> Ready, executor/claimed_at null, Attempt1 preserved. Next canonical developer claim increments once via `/moda_developer_create ARCH-063-SHOPIFY-001`; do not convert execution mode or claim within review. No main/live/provider/deployment action performed.
+
+## Developer Completion Decision — Attempt2
+2026-11-07T01:38:55.131241+00:00 — Explicit `/moda_developer_update ARCH-063-SHOPIFY-001 complete` received. Durable Acceptedeba98f8932179752aef06ceb983c3c3314e03daf and source44c484670159d7ec37f2041429a5a8ec0c426d69 match clean canonical worktrees/remotes; all required scoped criteria/validation satisfied. Complete unchanged Attempt2, claim cleared, modes and historical developer work/review preserved. Canonical Commerce001/002, Shared002, Background001 and MCP001 Complete; SystemTest001 dependency-ready and Ready at unchanged Attempt0/unclaimed, terminal/manual-gated. No test auto-run, main/live/deploy/follow-on operation or architecture Implemented claim.

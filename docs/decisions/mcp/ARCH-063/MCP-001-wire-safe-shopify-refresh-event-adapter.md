@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-063-SHARED-002"]
 enables: ["ARCH-063-SYSTEM-TEST-001"]
 created: 2026-11-06
@@ -67,7 +67,7 @@ SDK-managed refresh/token exchange is not observable solely from Shared getSessi
 Shared implementation extends existing API compatibly; publication chooses next available approved semver and records exact version before consumer pins. No forced version guess or unpublished sibling import. Commerce UI correction is independent and Ready now; it uses existing accepted ARCH-060/061/062 contracts, does not wait for log publication. Shared logging implementation is also independently Ready. Consumer event wiring depends on Shared publication. App wiring includes metadata-readiness correction. System Test is terminal on all fixes; manually invoked after optional user exercise. Compatible rollout, no schema/credential/env or Render topology change. Logging absent in old binaries is expected until owning consumer deployed; do not assert deployed observability from local code. No new metric/span framework. Metadata reads and tooling never expose provider secrets.
 
 ## Work Items
-- [ ] Wire published hook at actual local-client factory, preserve selected shop context and typed errors.
+- [x] Wire published hook at actual local-client factory, preserve selected shop context and typed errors.
 
 ## Interfaces / Contracts
 Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published optional Shared onEvent hook and exact frozen event schema above. Each consumer owns safe logger forwarding; provider/runtime credentials stay server-only. Exact version recorded by SHARED-002 before consumer pins.
@@ -79,11 +79,11 @@ Commerce-local REFRESHABLE DTO/predicate and selector metadata, plus published o
 - ARCH-063-SYSTEM-TEST-001
 
 ## Acceptance Criteria
-- [ ] Canonical reader calls Shared getSession without expiry pre-rejection; event adapter receives one refresh lifecycle; scope/tenant/cancellation behavior retained.
+- [x] Canonical reader calls Shared getSession without expiry pre-rejection; event adapter receives one refresh lifecycle; scope/tenant/cancellation behavior retained.
 
 ## Validation
-- [ ] Run focused command `npx tsx --test tests/unit/connections/shopify-session-coordination.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
-- [ ] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
+- [x] Run focused command `npx tsx --test tests/unit/connections/shopify-session-coordination.test.ts`; explicitly create additional focused fixture files where required. Shared also runs disposable PostgreSQL offline-token-provider.postgres.test.ts postcommit/concurrency fixtures.
+- [x] Run owning declared typecheck/build appropriate to deployable change (Background build; System Test typecheck only); record exact commands. Capture event payloads with secret canaries and test hook failure isolation.
 
 ## Stop Condition
 Complete defined work/criteria/validation, submit report for authorized review and STOP. Explicit developer completion required. System Test terminal/manually invoked; no enabled work auto-start.
@@ -94,22 +94,47 @@ Dependency reconciliation (2026-11-06): ARCH-063-SHARED-002 is Accepted and expl
 Use launcher-resolved isolated/synchronized task worktrees when execution requested. No implementation from definition. Preserve accepted locking/domain/SDK identities. Task-specific assertions are binding; no architecture selection delegated. Service logger uses published Shared logging, never raw provider/Prisma Error.
 
 ## Completion Report
+
 ### Status
-Not Started
+
+Complete — Attempt 1 accepted and explicitly developer-completed on 2026-11-06.
+
 ### Files Changed
-None
+package.json, package-lock.json, src/runtime/prisma.ts, tests/unit/connections/shopify-session-coordination.test.ts.
+
 ### Work Completed
-None
+Pinned published Shared 5.3.0. The actual local-client factory installs an environment-scoped Shared logger hook forwarding exactly event, operationId, shopId, source, durationMs, outcome and reasonCode. Failed events use warn; started/committed use info. No raw errors or credentials are attached. Existing selected-shop reader, typed errors, tenant checks and automatic refresh coordination are retained.
+
 ### Validation Results
-Definition only.
+- `npx tsx --test tests/unit/connections/shopify-session-coordination.test.ts`: 16 passed.
+- `npm run build`: passed, including Prisma generation.
+- `npm run typecheck`: initially found optional test-hook typing; corrected. Final `./node_modules/.bin/tsc --noEmit -p tsconfig.json`: passed.
+- Final `./node_modules/.bin/tsx --test tests/unit/connections/shopify-session-coordination.test.ts`: 16 passed, including frozen bounded lifecycle payload, secret canaries and throwing hook isolation.
+- `git diff --check`: passed.
+- Shared PostgreSQL fixtures belong to the accepted Shared dependency; not rerun in MCP.
+
 ### Deviations
-None
-### Assumptions
-Existing accepted coordinator and metadata integration remain available at owner task baseline.
+Normalized task report blank lines required by launcher. Initial validation attempted before installation finished could not locate tsx/Prisma; successful reruns above supersede it.
+
+### Assistance
+Implementation assistance explicitly authorized by developer in this chat; execution ownership remains developer. No subagents used.
+
 ### Unresolved Issues
-None blocking definition.
-### Architectural Concerns
-Return actual incompatible contract evidence before widening scope.
+None. Local validation does not assert deployed observability.
+
+### Git / VCS
+Task branch: task/ARCH-063-MCP-001.
+Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-063-MCP-001.
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-063-MCP-001.
+Both physical worktrees use task/ARCH-063-MCP-001. Shared checkouts were not switched or used for implementation; no other task worktree reused.
+Launcher prepared/synchronized worktrees in initial attempt; implementation origin/main is an ancestor of HEAD. Parent task branch was published and contains the durable developer Attempt 1 claim. No new claim or attempt increment on resume.
+Implementation commit: 7ab689b; remote origin/task/ARCH-063-MCP-001.
+Parent report is committed/pushed separately on matching task branch; its exact commit is available in Git history.
+No submodule gitlink staged. Neither branch merged to main.
+
+## Developer Self-Review - Passed
+Attempt 1 accepted for developer review: defined MCP work and acceptance criteria satisfied by factory wiring, published dependency pin and focused validation. Exactly one lifecycle is observed in the refresh fixture; original scope, tenant and cancellation cases pass. Explicit `/moda_developer_update ARCH-063-MCP-001 complete` is pending under completion_mode: developer.
 
 ## Architect Review
 ### Review Status
@@ -124,3 +149,9 @@ Task metadata/dependency/path checks only.
 Single repository ownership; shared release gate explicit; independent Commerce correction not blocked on logging.
 ### Follow-up
 None
+
+## Developer Completion Decision
+2026-11-06: Developer explicitly invoked `/moda_developer_update ARCH-063-MCP-001 complete`. Accepted Attempt 1 remains unchanged. Passing self-review is durable in parent commit 5f5ea8338; implementation 7ab689b3c3a907efb54dbcc99c36042a7cf5db48 matches origin/task/ARCH-063-MCP-001 and worktree is clean. Required work and validation are satisfied. Status complete; executor and claimed_at remain null. Neither main branch merged or pushed.
+
+### Dependency-frontier reconciliation
+ARCH-063-SYSTEM-TEST-001 remains Pending and manually gated: COMMERCE-001 Ready, SHOPIFY-001 In Progress and COMMERCE-002 Review are not Complete. BACKGROUND-001 and SHARED-002 are Complete. No downstream task promoted or started.
