@@ -10,10 +10,10 @@ This is an investigation record, not an architecture task specification. Propose
 
 | ID | Issue | Status | Completion criterion |
 | --- | --- | --- | --- |
-| CS01 | Shopify offline token refresh | Configuration corrected; expiry verification pending | Refresh after access-token expiry succeeds without manual login and the resulting token permits a product read. |
+| CS01 | Shopify offline token refresh | Commerce expiry-path verified; other consumers pending | Refresh after access-token expiry succeeds without manual login and the resulting token permits a product read. |
 | CS02 | Required referral after failed tools | Open | A definitive failed tool produces a valid store-referral response instead of a failed conversation. |
 | CS03 | Repeated product searches and empty results | Open | Search results are explained by provider data and filters, and the agent reaches a grounded answer within an agreed bounded number of calls. |
-| CS04 | Merchant Knowledge denied | Disabled-feature handling implemented; deployment verification pending | The precise authorization decision is understood; authorized preview calls work and unauthorized calls remain denied. |
+| CS04 | Merchant Knowledge denied | Commerce disabled-feature handling verified; Background pending | The precise authorization decision is understood; authorized preview calls work and unauthorized calls remain denied. |
 | CS05 | Unsupported Shopify brand integration | Open | App configuration can be released and brand acquisition uses a verified supported source with an explicit fallback. |
 
 ## Working method
@@ -206,3 +206,17 @@ Post-update checks:
 Remaining CS01 verification: after approximately 17:06, request the session through a real consumer without manually opening Shopify, observe `shopify.offline_refresh.committed`, confirm the rotated pair and expiries persisted, and perform an authorized product read. Check other consumer deployments separately. The existing Shopify app captures OAuth configuration at process startup, so a process started before the correction can retain its old SDK secret until restarted; Shared refresh readers resolve credentials on demand. Do not mark CS01 closed until the expiry-path check passes.
 
 No issue is closed yet. Next action: CS01 automatic refresh verification once the refresh window opens.
+
+
+### Render test verification at 17 10 on 7 November 2026
+
+Conversation `5e237c06-58fc-4807-8148-5885a473e692` confirms the Commerce local-preview path:
+
+- At 17:10:57.939 UTC, `shopify.offline_refresh.started`, source `SHARED`.
+- At 17:10:58.276 UTC, the same operation `e6d35b54-93cd-4f0b-bc0b-0f14057b7a43` emitted `shopify.offline_refresh.committed`, outcome `COMMITTED`, duration 338 ms.
+- Product search immediately afterward returned `OK`. This verifies the automatic refresh and persistence path with the corrected credentials; no manual-expiry manipulation was performed.
+- Each model invocation offered the six product/shipping/discount/taxonomy tools, excluding `merchant_knowledge_lookup` for the shop without opt-in. No knowledge lookup denial occurred.
+- `commerce.turn.completed` at 17:11:15.992 UTC: four model steps, five remote calls, duration 26,381 ms.
+- Three product searches each returned zero provider rows, zero normalization or availability rejections, and `hasMore: false`. This remains CS03; it is not a failed token refresh or a disabled-knowledge failure.
+
+CS01 is verified for Commerce local preview. MCP and Background expiry-path verification remains separate. CS04 is verified for a disabled shop in Commerce; Background deployment verification and the enabled-shop path remain to be exercised. CS02's general failed-tool referral handling is still open: this successful run avoided the failure rather than proving recovery from a genuine failed tool.
