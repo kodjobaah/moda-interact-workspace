@@ -7,3 +7,9 @@ Architecture: ../../../architecture/ARCH-063-refreshable-shopify-status-and-safe
 | ARCH-063-SHOPIFY-001 | Ready | ARCH-063-SHARED-002 |
 
 Developer definitions only; unclaimed.
+
+2026-11-07: SHOPIFY001 Attempt1 Developer Self-Review Changes Requested; task Ready, claim cleared.55 focused tests pass but SDK multi-attempt/ambiguity/bounded-intent corrections and source publication required.
+
+2026-11-07: SHOPIFY001 Attempt2 Accepted at review, explicit developer completion pending. Prior Attempt1 changes-requested history preserved and resolved.
+
+2026-11-07: Shopify001 Attempt2 explicitly developer-completed; terminal SystemTest001 Ready/manual-gated.
