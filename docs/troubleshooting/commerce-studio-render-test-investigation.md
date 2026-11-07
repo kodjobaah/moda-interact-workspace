@@ -236,3 +236,11 @@ This rules out Commerce normalization and availability filtering as the cause of
 ### CS03 bounded discovery guidance
 
 Commerce preview and Background now supply trusted host guidance to reuse current-turn successful results, avoid equivalent empty retries, and allow at most one broader search when needed. An empty filtered result must not be presented as proof that the whole catalogue is empty. An exhausted broader browse ends discovery; discount/shipping calls are not needed merely to establish product existence. Existing authorization, provider-error and referral behavior remains in force. This is model guidance, not a deterministic runner call cap; deployed model verification remains pending.
+
+### CS03 populated-store verification (19:28 run)
+
+New store `test-product-zirvrtqn.myshopify.com`, shop `cmw6r87x50000poedub9gyi72`, conversation `0413738e-4894-4373-9806-f1a9f8c359d1`, run `581877aa-8425-41ea-a06b-ad9af8bdd9a9`: two identical text searches and one broad browse returned providerItems=0, with no local filtering. Category resolution was called between text searches, but neither subsequent search supplied a category. Tool status OK alone does not establish that category candidates were returned. Category sequencing/result diagnostics remain open.
+
+Direct authenticated read-only checks confirmed the correct Shopify domain: unfiltered variants returned 20 rows with more pages (18 ACTIVE, one DRAFT, one ARCHIVED); `product_status:ACTIVE` returned zero; `product_status:active` returned 20 ACTIVE rows with more pages. The earlier conclusion that the uppercase filter was valid based on documentation was insufficient: live evidence confirms a casing defect. Commerce 938834b and MCP faab2dd correct the filter to lowercase.
+
+The product listing returned 17 products (15 ACTIVE, one DRAFT, one ARCHIVED), all with null onlineStoreUrl. Discovery adapters previously dropped these. The correction retains ACTIVE products with explicit url=null across text, browse, category and exact reads; unsafe non-null URLs and inactive products remain excluded. Shared already permits null product URLs, so no package release is required. Background's existing recommendation validation requires a non-null verified URL; guidance distinguishes catalogue existence from online purchase readiness. Deployed model behavior remains to be verified.
