@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -44,7 +44,7 @@ Definition only. Do not claim or implement until explicit dependency tasks are C
 ## Completion Report
 
 ### Status
-Review — Attempt1 developer self-review Passed; explicit developer completion pending.
+Complete — accepted Attempt1 explicitly developer-completed on 2026-11-08.
 
 ### Files Changed
 12 task-owned paths in fd53bb5: exact Shared package/lock pin; Woo direct-product-reader; Shopify core/executor; MCP execution/ports/service request correlation; existing reader/core/service regression tests; new product-options.test.ts. No Shared/service sibling/schema edits.
@@ -81,3 +81,9 @@ Scoped review passes: exact Shared5.6.0/integrity pinned, native parent options 
 Validation reviewed:72-pass scoped run plus final service12/native8 targeted checks, declared typecheck/lint/build, diff check, local pinned schema and all4 official Admin2026-07 query validations passed. read_products and API version unchanged; existing featuredImage warning remains. Pinned schema SHA2562b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b recorded. No relevant changes after these checks justify redundant rerun. No live merchant/provider or deployment result asserted.
 
 No outstanding scoped correction found. Accepted Attempt1 unchanged; status review, executor/claimed_at null, completion_mode developer retained. Explicit `/moda_developer_update ARCH-066-MCP-001 complete` pending. No downstream promotion, enabled execution, additional npm publication or main merge/push.
+
+## Developer Completion Decision - 2026-11-08
+Developer explicitly invoked `/moda_developer_update ARCH-066-MCP-001 complete`. Durable passing review45316cecf043254acbe425cf696f1a336918bf01 verified published. Implementation fd53bb52acaf6426b1a1e1793b8d4fc8ae54c2a4 matches published task ref; both canonical worktrees clean. All scoped requirements satisfied with recorded local validation limits. Status Complete, accepted Attempt1 unchanged, executor/claimed_at null. No new provider execution, deployment or main merge/push.
+
+### Dependency-frontier reconciliation
+COMMERCE-001 depends only on SHARED-003 and MCP-001, now Complete: promote to Ready at unchanged Attempt0/unclaimed. BACKGROUND-001 remains Pending because DATABASE-001 is Ready, not Complete. Terminal System Test remains Pending/manual-gated on Background/Commerce completion. No enabled task started; readiness records published on completion branch.
