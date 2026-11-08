@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: blocked
 priority: 50
-executor: codex
-claimed_at: 2026-11-08T18:36:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-066-SHARED-005", "ARCH-066-MCP-001"]
 enables: ["ARCH-066-COMMERCE-002", "ARCH-066-SYSTEM-TEST-001"]
@@ -49,11 +49,45 @@ Definition only. Do not claim or implement until explicit dependency tasks are C
 
 ### Status
 
-Ready — Attempt 0, unclaimed; explicit dependency gate satisfied after SHARED-005 completion.
+Blocked — Attempt 1. Partial provider work only; not Ready for Review, not Accepted and not Complete. All acceptance checkboxes remain unchecked.
 
-### Implementation evidence
+### Files Changed
 
-Status: Not started. Attempt: 0. Implementation commit: none. Validation evidence: none. Remaining work: all unchecked acceptance criteria. Document isolated worktree, package, test and deployment evidence when implemented; do not mark Complete merely from source inspection.
+Implementation `ac44a5a`: package.json, package-lock.json, src/commerce/preview/product-reads/{shopify-core,registrations}.ts, tests/arch066-provider-facts.test.ts. Parent: this task report only.
+
+### Work Completed
+
+Pinned exact accepted Shared5.7.0, matching integrity `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==`. Added native Shopify description/options/selected-option query projection and Woo description/short_description/attribute allowlists using published Shared normalization. Preserved parent facts and exact selected variant attributes. Added native identity, absent-product and parent-mismatch handling and focused fixture checks. No descriptors/releases were published or activated; these partial provider changes are not rollout-ready with active old strict descriptors.
+
+### Validation Results
+
+- `npx vitest run tests/arch066-provider-facts.test.ts tests/local-product-query-contracts.test.ts tests/local-product-woocommerce.test.ts tests/local-product-search-diagnostics.test.ts`: PASS, 4 files /20 tests, including pinned Shopify query validation and Woo HTML/native attribute fixtures.
+- `npm run typecheck:build`: PASS after incomplete integration was removed; production types only. `npx prisma generate --schema database/prisma/schema.prisma` passed for the recorded nested schema.
+- `npx eslint src/commerce/preview/product-reads/shopify-core.ts src/commerce/preview/product-reads/registrations.ts tests/arch066-provider-facts.test.ts`: PASS.
+- `git diff --check`: PASS.
+- Direct installed public-artifact check: `Object.keys(CommerceAnswerPresentationSelectionSchema.shape)` returns only productOptionSelections,responseDisposition,shippingInformationSelection. `safeParse({productDetailSelections:[{productId:'1',variantId:null}]})` returns success:false. `CommerceResponseDispositionSchema.options` returns STANDARD,OUT_OF_SCOPE_REDIRECT,SHIPPING_INFORMATION_UNVERIFIED,PRODUCT_OPTIONS; `safeParse('PRODUCT_DETAILS')` returns success:false. Both JS runtime and declarations prove the gap; initial integration compiler also reported TS2551 missing productDetailSelections. No consumer schema fork introduced.
+- Provider schema artifact: Admin2026-07 from @shopify/dev-mcp1.15.4, SHA256 `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`.
+- Existing nested database schema used at `039778a4a472db7d09e6b077bb8c8d7c82a58129`; no database migration/pin change made or needed for retained provider work.
+
+### Unresolved Issues / Architectural Concerns
+
+Normative consumer contract requires public productDetailSelections and PRODUCT_DETAILS in the default profile/response schema. Exact accepted5.7.0 exports the generic product facts renderer but omits those selection fields in its public commerce response schema. Adding a local field/schema would violate Shared ownership. Required owning Shared correction and accepted immutable publication must precede further consumer integration; architect must supply the new exact pin/integrity and reclaim path. Do not republish5.7.0 or weaken this acceptance contract.
+
+Unfinished: atomic reference persistence, verified presentation/wrapper host integration, complete recommendation/shipping verification parity, final-text UI, immutable schema/profile sync, full multi-turn/storage/parity fixtures. Unfinished integration experiments were removed from published code; local recovery patch `/tmp/ARCH-066-COMMERCE-001-consumer-WIP.patch` is not completion evidence.
+
+Developer live validation remains pending after implementation and schema correction: `npm run commerce:sync-tools -- --environment=test --dry-run`, then `npm run commerce:sync-tools -- --environment=test --apply`, then repeat unchanged dry-run/apply idempotence receipt under matching TEST configuration. Exact deployed/shared-environment execution needs explicit authorization under live-validation policy; none was attempted. No real provider/WhatsApp message, deployment or LIVE activation performed. Full existing lifecycle/storage and new parity checks remain pending, not passing by inference from the focused provider tests.
+
+### Physical worktree / synchronization evidence
+
+Canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+Parent: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-COMMERCE-001
+Implementation: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-COMMERCE-001
+Both branches: task/ARCH-066-COMMERCE-001. Shared workspace and implementation checkouts switched/mutated for implementation: no. Another task worktree reused: no.
+Launcher packet: prepared_execution true, dependency_gate passed; SHARED-005 and MCP-001 Complete. Parent reused /implementation created; both remote fast-forwards not-needed and origin/main already-current. Recursive implementation submodule sync/update passed, status ready; database `039778a4a472db7d09e6b077bb8c8d7c82a58129`. Attempt1 claim committed/pushed `c679b2b9be2e43e2728a451731ca15e5e3bda6ef`.
+
+### Deviations / Assumptions
+
+Stopped at a proven missing Shared public contract rather than silently creating a consumer fork. Retained only independently tested partial provider/pin work; acceptance remains incomplete and requires architect dependency disposition. No final completion decision requested or recorded.
 
 ## Release / Dependency Handoff - 2026-11-08
 SHARED-003 accepted Attempt1 explicitly Complete. Pin @modainteract/moda-interact-shared exactly5.6.0; dist.integrity sha512-tDuW+C8MdteWMJWwmuFI2cTAugMejOJwTk0KkemBMwpN/lL92WPI8CX/A5dDa2nhG0RYiIeHSR490WPCrTz42w==. Downloadable archive and isolated public-import/browser checks verified in release record. Remain Pending until other explicit dependencies Complete. No claim or execution performed.
