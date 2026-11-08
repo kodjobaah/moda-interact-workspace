@@ -28,3 +28,10 @@ Canonical007 uniquely standalone; concurrent product-detail correction active009
 | ARCH-066-SHARED-008 | Superseded — do not publish | withdrawn checkout-led scope |
 
 Explicit developer withdrawal supersedes historical standalone readiness/acceptance text; no successful completion or release implied.009/010 independent product-detail work unchanged.
+
+## Frozen outreach compatibility correction — 2026-11-08
+| Task | Status | Dependencies |
+|---|---|---|
+| SHARED-011 | Ready, Attempt0/unclaimed | SHARED-010 Complete |
+| SHARED-012 | Pending, Attempt0/unclaimed | SHARED-010, SHARED-011 |
+Positive5.8.0 saved brand alt/dimension bindings refused; preserve semantic caps and strict host/Shared boundary.007/008 standalone scope remains withdrawn, no standalone package release. Definitions only, no implementation worktree/claim/release or consumer execution.
