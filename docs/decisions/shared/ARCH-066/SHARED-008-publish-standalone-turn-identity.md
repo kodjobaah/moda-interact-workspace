@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: pending
+status: superseded
 priority: 30
 executor: null
 claimed_at: null
@@ -94,3 +94,6 @@ No execution claimed.
 Shared-first identity then publication/MCP before Background adoption.
 ### Follow-up
 None
+
+## Scope Withdrawal — 2026-11-08
+Developer explicitly selected checkout-led production scope and withdrew standalone identity/admission chain. Superseded at unchanged Attempt0, no claim or implementation. SHARED008 publication expressly prohibited; no npm publish/version selection. MCP002 no longer a dependency for recovery-linked Background acceptance. Historical definition retained only; no source rollback or alteration of immutable published artifacts.

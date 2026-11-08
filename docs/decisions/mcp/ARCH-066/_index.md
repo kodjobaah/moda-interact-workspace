@@ -12,10 +12,4 @@ MCP-001 accepted Attempt1 explicitly developer-completed on 2026-11-08.
 
 2026-11-08 completion: COMMERCE-001 newly Ready/unclaimed; BACKGROUND-001 remains Pending on Database.
 
-## Standalone prerequisite correction
-
-| Task | Status | Dependencies |
-|---|---|---|
-| ARCH-066-MCP-002 | Pending | ARCH-066-SHARED-008 |
-
-Definitions only; no execution started.
+| ARCH-066-MCP-002 | Superseded (standalone scope withdrawn) | no execution |
