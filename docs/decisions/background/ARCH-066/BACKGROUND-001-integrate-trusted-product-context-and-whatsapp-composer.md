@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -60,3 +60,7 @@ Pending scope now includes generic descriptions/attributes and therefore depends
 - [ ] Read brand from Shop.brand.brandName; locale from existing committed conversation policy; trusted checkout variables remain production host-owned. No title/domain-derived brand or new fallback contact.
 - [ ] Persist context only after presentation success, before handing final body to existing delivery orchestration, using dedicated short transaction. DB SKIPPED log does not create additional send or override send fence. Assert current version again at existing delivery gate.
 - [ ] Add tests src/commerce/product-context-repository.test.ts and presentation.test.ts using disposable Postgres for actual row-lock/CAS race (in-memory mocks insufficient for lock claim), plus host/wrapper integration tests proving no double-wrap, final-body moderation and same-version replay. Record migration commit/hash, artifact integrity and exact commands.
+
+## Release dependency reconciliation — 2026-11-08
+
+SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainteract/moda-interact-shared@5.7.0` and integrity `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==` (source `09e249c5717c8866996624f8855a7d649dfd2c43`). Use this exact artifact and canonical consumer contract; never guess/latest/ranges. Remaining explicit blockers: None; every explicit prerequisite is Complete. Status Ready, unchanged Attempt0/unclaimed. No implementation, deployment or task claim is started by reconciliation.
