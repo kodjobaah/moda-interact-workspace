@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
 executor: codex
 claimed_at: 2026-11-08T21:29:19Z
@@ -35,10 +35,10 @@ Standalone production identity,007/008/MCP002 resurrection, provider calls/media
 ## Requirements
 Preserve all existing supported semantic keys and exact caps, required-vs-fallback distinction, positive safe bounded dimensions, prepared body/header/button fields and binding fingerprints. Missing/wrong-type/unsafe mandatory brand values fail closed; same-shop READY R2 media only, no original URL fallback. Valid body media bindings must work without an IMAGE header. Legacy ordinary shop.name/category inputs and no-brand templates retain behavior; no merchandise-specific keys. Preserve evaluator contracts, public009 product-details correction and all existing exports. Inspect invalid-URL validation throwing observed during Background fixtures; if directly reproduced in public renderer/schema, return typed INVALID_REQUEST instead of throwing for malformed input, with focused regression; do not widen trust.
 ## Work Items
-- [ ] Reproduce valid alt/dimension/body-media incompatibility and mandatory-brand distinction using exact published5.8.0 entrypoint.
-- [ ] Define minimal strict optional prepared brand/media data with explicit host/Shared boundaries and preserve prior no-brand input compatibility.
-- [ ] Implement deterministic supported bindings and fail-closed validation; no service-local imports or side effects.
-- [ ] Add positive/negative compatibility goldens and exact full text/parameter/provenance checks.
+- [x] Reproduce valid alt/dimension/body-media incompatibility and mandatory-brand distinction using exact published5.8.0 entrypoint.
+- [x] Define minimal strict optional prepared brand/media data with explicit host/Shared boundaries and preserve prior no-brand input compatibility.
+- [x] Implement deterministic supported bindings and fail-closed validation; no service-local imports or side effects.
+- [x] Add positive/negative compatibility goldens and exact full text/parameter/provenance checks.
 ## Interfaces / Contracts
 @modainteract/moda-interact-shared/commerce/outreach; InitialOutreachRenderInputSchema, renderInitialOutreachPreview, existing frozen SemanticKeySchema and strict ready-media contract. Extend documented data contract explicitly; do not pretend existing5.8 supports new inputs.
 ## Dependencies
@@ -46,36 +46,72 @@ ARCH-066-SHARED-010 Complete, immutable5.8.0 source/exports. No dependency on bl
 ## Enables
 ARCH-066-SHARED-012; consumer correction remains on original BACKGROUND002 after corrected publication.
 ## Acceptance Criteria
-- [ ] Valid saved logoAltText, squareLogoAltText, logoWidth/logoHeight bindings render exact expected parameters in INITIAL without copying Background algorithms.
-- [ ] Mandatory saved brandName cannot be satisfied by generic shop.name fallback; missing/invalid values refuse.
-- [ ] Authorized READY same-shop logo/square/cover URL body bindings preserve valid behavior; missing/wrong-shop/wrong-role/raw-original media refuses.
-- [ ] Existing nonbrand inputs, image/TEXT fallback, approved registration/binding integrity, provider parameter encoding and full-body bounds remain compatible.
-- [ ] Public runtime and declaration imports include corrected strict inputs; malformed input never weakens validation or leaks secrets.
+- [x] Valid saved logoAltText, squareLogoAltText, logoWidth/logoHeight bindings render exact expected parameters in INITIAL without copying Background algorithms.
+- [x] Mandatory saved brandName cannot be satisfied by generic shop.name fallback; missing/invalid values refuse.
+- [x] Authorized READY same-shop logo/square/cover URL body bindings preserve valid behavior; missing/wrong-shop/wrong-role/raw-original media refuses.
+- [x] Existing nonbrand inputs, image/TEXT fallback, approved registration/binding integrity, provider parameter encoding and full-body bounds remain compatible.
+- [x] Public runtime and declaration imports include corrected strict inputs; malformed input never weakens validation or leaks secrets.
 ## Validation
-- [ ] Focused outreach renderer/schema compatibility tests, including positive existing Background binding cases and negative tenant/type/value cases.
-- [ ] Existing outreach evaluator/render regressions, typecheck and production build per repository scripts.
-- [ ] Package public JS/declaration import smoke; record exact commands/results. No live calls.
+- [x] Focused outreach renderer/schema compatibility tests, including positive existing Background binding cases and negative tenant/type/value cases.
+- [x] Existing outreach evaluator/render regressions, typecheck and production build per repository scripts.
+- [x] Package public JS/declaration import smoke; record exact commands/results. No live calls.
 ## Stop Condition
 After defined work/acceptance/required validation is complete, publish Completion Report at review and return control to moda_architect. Stop; no enabled task, release or consumer execution implicit.
 ## Implementation Notes
 Exact initial evidence: Shared src/commerce/outreach/variables.ts switch afterbrandName/3URLs falls through; template-contracts.ts includes the4unimplemented fields. Background src/services/recovery-template-preparation/recovery-template-brand.ts supports saved type/cap semantics. Reuse approved Shared logger only if logging changes. If more contract work is required, return precise gap rather than expand scope. Use canonical launcher dedicated worktrees when execution is explicitly invoked; definition only now.
 ## Completion Report
 ### Status
-Not Started
+Ready for Review — exact prepared brand/media correction implemented, validated and published on task branches.
 ### Files Changed
-None
+src/commerce/outreach/template-contracts.ts; variables.ts; render.ts; contracts.ts; index.ts; render.test.ts; contracts.test.ts; test-fixtures.ts; README.md; scripts/validate-commerce-outreach.mjs.
 ### Work Completed
-None
+Implemented exact normative schemas PreparedOutreachBrandSchema, PreparedOutreachBrandMediaSchema and PreparedOutreachBrandMediaItemSchema with inferred public types. Optional top-level preparedBrand/preparedBrandMedia preserve schemaVersion1 and no-brand input compatibility. Nested keys required, strict objects, nullable unavailable fields, 200 UTF16 text cap and integer dimensions1..10000 unchanged from normative contract.
+
+Resolver now reads saved brandName/alt/square-alt and numeric width/height only from preparedBrand; every emitted text follows existing boundedText checks. Mandatory brandName never uses variables.shopName; ordinary shop.name remains unchanged. Fixed BODY URL slots use preparedBrandMedia independently of headerMedia, preserving exact validated parsed URL. Existing IMAGE CHECKOUT_PRODUCT/header/textFallback/frozen assignment rules remain unchanged; no header or raw original URL fallback is synthesized.
+
+Complete structural validation runs first. Supplied preparedBrand tenant mismatch refuses IDENTITY_MISMATCH; all nonnull brand-media entries are validated for matching tenant/key-role and no fragment/dotted hostname before assignment/fallback, even when unused. Shape/type/status/kind/URL failures refuse INVALID_REQUEST; missing bound brand text/dimensions refuse BINDING_VALUE_UNAVAILABLE; missing role media refuses MEDIA_NOT_READY. Existing HTTPS refinement made total with URL.canParse; malformed renderer input returns typed refusal, not thrown URL error. No network/provider/database operation, arbitrary callback, service import or alternative renderer.
+
+Exact frozen goldens preserve mandatory INITIAL shop.name/one checkout.itemsSummary per architect fixture reconciliation, then requested five saved-brand or three media subsequences; full7/5ordered parameters, complete body/provenance/button bytes asserted. Existing no-brand/body4096/4097/IMAGE-TEXT fallback/registration/hash/locale/all INITIAL offer-purpose regressions retained.
 ### Validation Results
-Not run; definition only.
+- Published5.8.0 isolated public ESM reproduction (installed exact registry package): valid required INITIAL templates produced BINDING_VALUE_UNAVAILABLE for logoAltText/squareLogoAltText/logoWidth/logoHeight, incorrectly rendered generic Merchant for mandatory shopBrand.brandName, BODY logoUrl refused MEDIA_NOT_READY without header, malformed checkoutURL THREW. Receipt: /private/tmp/arch066-shared011-reproduction.log. First fixture attempt was rejected DEFINITION_UNAVAILABLE due missing mandatory bindings; corrected reproduction preserves them and is the authoritative evidence.
+- `npx tsx --test src/commerce/outreach/*.test.ts`: PASS 79/79, zero skips/failures. Prior required run78/79; all normative reconciled brand/media/evaluator/render cases passed, sole extra whitespaceURL assertion expected raw rather than existing parsed normalized URL. Test-only assertion corrected; production source unchanged.
+- `npm run typecheck`: PASS.
+- `npm run build`: PASS ESM and declarations for final production source.
+- `npm run validate:commerce-outreach`: PASS local pack installed in disposable consumer; all package export targets, public runtime and declaration imports for new schemas/types, positive saved-brand render/ordered parameters/fingerprint, evaluator/product APIs and malformedURL typed refusal verified. No source/internal-dist consumer imports. Temporary smoke project removed by existing script.
+- `git diff --check`: PASS.
+- Fixtures cover saved five fields, three BODY media with no header and CHECKOUT_PRODUCT header, mandatory-vs-generic distinction, missing/null values, unused wrongtenant/role, malformed/HTTP/credential/oversized URLs, raw/original/unknown/missingkeys, fragments including empty fragment, undotted hostnames, text200/201 UTF16 including astral characters/unpaired surrogate/controls/braces, dimensionbounds/types, legacy no-brand, fallback/hash/locale and4096/4097limits.
 ### Deviations
-None
+Only architect-approved fixture reconciliation ff55693ad: original brand/media-only fixtures conflicted with preserved INITIAL shop.name/itemsSummary requirements. Required bindings retained; requested vectors remain exact contiguous subsequences with complete arrays/body/provenance assertions. No selection/runtime policy weakening. Existing Zod https parsing normalizes surrounding URL whitespace; resolver emits exact validated parsed URL without further rewriting, and regression compares against parsed value while preserving existing schema semantics. No field layout/enum/version/export-map/lockfile/buildtool changes.
+### Consumer Handoff
+BACKGROUND-002/COMMERCE-002 populate preparedBrand from existing same-shop saved columns: brandName, logoAltText, logoWidth, logoHeight, squareLogoAltText; unavailable columns null. Never substitute generic shopName for mandatory saved brandName. Authorized ready R2 derivatives populate logo/squareLogo/coverImage slots with matching LOGO/SQUARE_LOGO/COVER_IMAGE roles and trusted shopId. Existing independent IMAGE header remains headerMedia, including CHECKOUT_PRODUCT. Hosts retain database/media ownership/authorization and resolve configured derivatives; Shared validates deterministic supplied shape/identity/roles/caps and frozen rendering only. Consumers adopt exact accepted immutable SHARED-012 artifact after separate publication. Background remaining72 failures still require original same-task investigation/revalidation; these goldens do not waive them.
 ### Assumptions
-Hosts supply authorized saved data; Shared verifies deterministic structure/caps and tenant/media binding.
+Trusted hosts authorize saved same-shop brand data and READY R2 derivatives; URL hostname is never proof of ownership. No original URL fallback or callback.
 ### Unresolved Issues
-Published5.8.0 cannot preserve named valid bindings; BACKGROUND002 cannot be Accepted until corrected artifact is available and its same-task checks pass.
+None scoped. Consumer adoption/publication/deployment remain separate.
 ### Architectural Concerns
-No standalone scope or live send authorization follows from rendering.
+No standalone resurrection, checkout/offer-policy redesign, new table, credit/consent/send/admission change, live call, publication or main integration.
+### Git / VCS
+Task branch: task/ARCH-066-SHARED-011.
+
+Prepared physical isolation:
+- canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+- parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-SHARED-011
+- parent branch: task/ARCH-066-SHARED-011
+- implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-SHARED-011
+- implementation branch: task/ARCH-066-SHARED-011
+- shared/default checkout switched/mutated for task implementation: no
+- another task worktree reused: no
+
+Prepared synchronization:
+- parent remote task branch fast-forwarded: not-needed
+- parent origin/main incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation origin/main incorporated: already-current
+- recursive submodule sync/update: passed; noentries; ready
+- Attempt1 claim e15f6947209feb0b1256fb6ca199b8e9cc74b9d3 pushed; no duplicate claim
+
+Implementation 6c8bbe194337c7c2afb141047d24aeeeb23c48ca pushed to origin/task/ARCH-066-SHARED-011; implementation tree clean. Parent report committed/pushed on matching task branch after this edit; exact report commit available in Git history. Registry immutable5.8.0 remains unchanged; no package publication in011. Submodule gitlink staged: no. Main branches merged/pushed: no. Package version changed/published: no. Consumers modified: no. Enabled task started: no.
+
 ## Architect Review
 ### Review Status
 Pending
