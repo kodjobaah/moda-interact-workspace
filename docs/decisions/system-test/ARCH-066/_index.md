@@ -8,3 +8,6 @@ Architecture: [decisions](../../../architecture/ARCH-066-conversation-product-co
 | [ARCH-066-SYSTEM-TEST-002](SYSTEM-TEST-002-verify-initial-outreach-preview-live-parity.md) | pending | ARCH-066-COMMERCE-002, ARCH-066-BACKGROUND-002 |
 
 Definitions amended; no task claimed or implementation accepted by this review. Completed5.6.0 baseline is preserved; pending consumers require new SHARED-005 artifact.
+
+## Current dependency frontier — 2026-11-08
+SYSTEM-TEST001 Ready, dependency-complete on BACKGROUND001/COMMERCE001; remains manual-gated/unclaimed. SYSTEM-TEST002 Pending on COMMERCE002/BACKGROUND002. No system test executed.
