@@ -7,7 +7,7 @@ domain: commerce
 repository: moda-interact-commerce
 assigned_agent: moda_commerce
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -43,7 +43,7 @@ Implement only the owned work below. Read `docs/architecture/ARCH-066-conversati
 - [ ] Existing preview/storage/purge/activity/lifecycle tests, new parity tests, production typecheck and scoped lint pass. Update `src/commerce/bootstrap/system-product-tools.ts`, its canonical product/shipping output-schema projections, the default conversational profile response details schema and the existing `scripts/sync-system-commerce-tools.mjs` publication path to include optional productOptionSelections and additive option outputs. Create new immutable revisions via the existing deterministic sync; never mutate published revisions or widen arbitrary unknown fields. Keep unchanged content idempotent; changed content receives the normal next revision/release. Record TEST dry-run/apply receipt and repeat unchanged sync proof. Existing active releases keep their old schema until the new release is activated. No live rollout in this task. Product option support is not accepted until the real default profile compiles and the published tool descriptors accept actual size outputs.
 
 ## Execution boundary
-Definition only. Do not claim or implement until explicit dependency tasks are Complete. Use the canonical launcher-resolved parent and implementation task worktrees; execution_mode and completion_mode are developer. Do not change unrelated work or another repository. Record exact Shared package version/integrity, database migration and provider schema artifact used. No production customer messages, Meta registrations or live mutations are authorized by this task.
+Definition only. Do not claim or implement until explicit dependency tasks are Complete. Use the canonical launcher-resolved parent and implementation task worktrees; execution_mode is agent; completion_mode remains developer. Do not change unrelated work or another repository. Record exact Shared package version/integrity, database migration and provider schema artifact used. No production customer messages, Meta registrations or live mutations are authorized by this task.
 
 ## Completion Report
 Status: Not started. Attempt: 0. Implementation commit: none. Validation evidence: none. Remaining work: all unchecked acceptance criteria. Document isolated worktree, package, test and deployment evidence when implemented; do not mark Complete merely from source inspection.
@@ -53,3 +53,6 @@ SHARED-003 accepted Attempt1 explicitly Complete. Pin @modainteract/moda-interac
 
 ## Dependency Reconciliation - 2026-11-08
 SHARED-003 and MCP-001 accepted/explicitly Complete. All explicit dependencies satisfied; Ready at unchanged Attempt0, executor/claimed_at null, no execution. Shared remains exact5.6.0; MCP implementation fd53bb52acaf6426b1a1e1793b8d4fc8ae54c2a4 published.
+
+## Execution Ownership Amendment - 2026-11-08
+The developer explicitly authorized moda_architect to resolve the launcher mode mismatch and hand implementation to moda_commerce. Change execution_mode from developer to agent; preserve completion_mode developer and the explicit developer completion gate. Task scope, dependencies, assigned_agent, Ready status and Attempt 0 are unchanged. The canonical launcher must prepare and durably claim the agent attempt before implementation. No implementation or claim is performed by this amendment.
