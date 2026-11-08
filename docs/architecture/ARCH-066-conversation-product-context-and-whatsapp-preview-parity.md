@@ -77,3 +77,6 @@ Only SHARED-001 starts Ready. All others remain Pending until explicit prerequis
 System test must prove three-turn behavior and byte-identical composed bodies for identical facts/locale/wrapper/context, hard authorization failures, soft lookup correction, missing options, token truncation, snapshot compatibility, storage limits/purge and replay. Real-model Render TEST smoke is supplemental evidence, not a replacement for deterministic fixtures. No production deploy or real message send is authorized by task creation.
 
 Release handoff: Shared version/integrity pending; database migration/commit pending; consumer commits pending; parity artifact pending. This architecture does not claim complete test-to-delivery equivalence for production-only moderation/window/billing checks; Studio must identify those as not evaluated.
+
+## Dependency frontier - 2026-11-08
+SHARED-001 accepted Attempt2 explicitly developer-completed, source c3f9f07 and review5bd56f332 published. SHARED-002 and DATABASE-001 now Ready/unclaimed. SHARED-003 remains Pending on SHARED-002; consumers and terminal System Test remain gated. No package publication, migration, deployment or enabled execution performed.
