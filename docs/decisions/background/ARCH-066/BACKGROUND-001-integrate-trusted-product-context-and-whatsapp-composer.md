@@ -9,12 +9,12 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: blocked
+status: ready
 priority: 50
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ["ARCH-066-DATABASE-001", "ARCH-066-SHARED-005", "ARCH-066-MCP-001", "ARCH-066-SHARED-008", "ARCH-066-MCP-002"]
+depends_on: ["ARCH-066-DATABASE-001", "ARCH-066-SHARED-005", "ARCH-066-MCP-001", "ARCH-066-SHARED-010"]
 enables: ["ARCH-066-BACKGROUND-002", "ARCH-066-SYSTEM-TEST-001"]
 created: 2026-11-08
 updated: 2026-11-08
@@ -85,7 +85,7 @@ SHARED-003 accepted Attempt1 explicitly Complete. Pin @modainteract/moda-interac
 Pending scope now includes generic descriptions/attributes and therefore depends on SHARED-005, not the original5.6.0 release. Pin exactly the version/integrity recorded by SHARED-005 after acceptance. Earlier5.6.0 handoff is historical and must not satisfy this amended task. No attempt/claim started; MCP readiness returns to Pending until new prerequisite is Complete. Implement [consumer contract](../../../architecture/ARCH-066-consumer-contract.md) as normative.
 
 ## Deterministic implementation checklist
-- [ ] Apply consumer contract C/D in order. product-context-repository.ts implements exact read/write signatures and lock/CAS/idempotency algorithm; fixtures cover recovery-linked and standalone identity, expiry, same-version conflict and out-of-order turns.
+- [ ] Apply consumer contract C/D in order. product-context-repository.ts implements exact read/write signatures and lock/CAS/idempotency algorithm; fixtures cover recovery-linked identity, missing-recovery rejection, expiry, same-version conflict and out-of-order turns.
 - [ ] host.ts passes context/platform into runner and passes successful context metadata to presentation.ts. Presentation helper validates both old/new selection details, performs counted fresh exact reads, builds published presentation schema and never trusts model-supplied facts.
 - [ ] Existing wrapper service/service.ts and compose-ai-outbound.ts remain the one persisted AI composition boundary. Pass envelope+verified projection through existing pipeline; call Shared composer once inside wrapper application handling, preserving applicationKey/replay. Remove only migrated pure duplicates; keep MANUAL semantics and historical records.
 - [ ] Read brand from Shop.brand.brandName; locale from existing committed conversation policy; trusted checkout variables remain production host-owned. No title/domain-derived brand or new fallback contact.
@@ -112,3 +112,22 @@ Actual disposable PostgreSQL6/6 including observed pg_stat_activity row-lock wai
 Partial code preserves canonical owner/version lock/CAS, Shared validation/UTF8+SQL storage bounds, post-composition context timing/send recheck, single durable wrapper application/replay/moderation, fresh counted facts and existing send/billing/consent fences. Shared pure duplicates delegated; no copied generic logger/validator. Exact5.7 artifact and accepted cache migration pin recorded. No live provider/model/customer/Meta/main/activation/schema edits.
 ### Follow-up
 New architect definitions SHARED007 Ready (canonical standalone identity/admission scope), SHARED008 Pending publication, MCP002 Pending private standalone verification. Background remains Blocked on published contract/private ingress gates, same Attempt1/history/branches retained, claim cleared. After gates Complete, reclaim same task to adopt corrected package and implement existing canonical standalone loader/router/general budget/context path with explicit owner/customer/consent fixtures; never fabricate recovery/checkout facts. No follow-on implementation launched. System Tests remain terminal/manual-gated.
+
+## Checkout-led scope amendment — 2026-11-08
+
+This amendment supersedes earlier standalone-production-conversation requirements, including consumer contract C1 and the standalone prerequisite reported by BACKGROUND-001. It preserves historical reports, attempts and acceptance evidence; it does not accept, complete, reclaim or start any task.
+
+- Every production conversation in this scope originates from a real abandoned checkout/CheckoutRecovery. Initial outreach uses that checkout; subsequent CommerceAgent turns retain the same recovery identity even when discussing other products. No independent customer-start conversation, new admission/recipient/consent policy or fabricated recovery ID is required.
+- Background resolves the current conversation's real CheckoutRecovery and its shop/customer through existing routing. Missing recovery or conflicting tenant/owner fails closed before model/provider I/O under existing admission rules. Preserve current consent/window/billing/outbox fences. Conversation.shopId, when populated, must agree with recovery ownership; it is not an alternate admission route.
+- Studio conversational preview remains an isolated, explicitly synthetic test using its existing preview identity. Do not persist a fake production recovery/customer, weaken live MCP authorization, or add a production standalone route to accommodate preview. Initial-outreach testing remains COMMERCE-002: select an existing same-shop checkout recovery and verify its items using live product reads. Synthetic conversational preview must not claim production admission was evaluated.
+- Retain generic product references, fresh authorized fact verification, shared WhatsApp composition, budgets, wrapper provenance, storage fencing and parity requirements. These apply to any merchant goods. No new table/schema is needed for standalone admission. Keep the existing ARCH-066 reference-context table and its recovery-linked owner checks.
+- SHARED-007/008 and MCP-002 standalone support is withdrawn from the required acceptance/dependency path for this checkout-led scope. Any existing work is subject to review for removal of unused standalone-only identity/admission branches; do not remove existing supported recovery behaviour or rewrite immutable published artifacts. This does not withdraw SHARED-009/010's independent productDetailSelections/PRODUCT_DETAILS compatibility correction and immutable publication. Consumers must wait for that accepted correction when using those fields; do not locally fork Shared schemas.
+
+### Mandatory review corrections
+
+Review BACKGROUND-001 and COMMERCE-001 against this amendment before acceptance. Inspect the actual implementation and require corrections on their same task branches: remove newly introduced standalone-only routing/budget/authorization code that has no checkout-led or isolated-preview caller; retain real recovery ownership rejection; confirm product-context persistence and verified WhatsApp body composition; prove missing recovery is rejected and a later product question retains the original recovery. For Commerce also prove synthetic preview stays isolated, real-checkout outreach preview remains separate, and no fabricated production records or weakened grants were added. Preserve and re-run relevant existing tests after corrections; report exact files, package pin/integrity, call order and final body evidence. A historical standalone blocker alone is no longer grounds to reject recovery-linked behaviour. Other genuine blockers, unfinished acceptance work and manual system-test gates remain in force. Do not declare acceptance from partial provider tests.
+
+## Architect Checkout-Led Unblocking — 2026-11-08
+Developer explicitly withdrew standalone production objective and superseded SHARED007/008/MCP002. Authorized task-owned checkout-led amendment above adopted unchanged. Standalone missing-recovery behavior is now required fail-closed, not an architectural blocker. Remove withdrawn standalone prerequisites from acceptance/dependency path; retain independent product-detail correction SHARED010 (canonical Complete), no guessing package pin or source schema fork. Ready at prior Attempt1, claim remains null; historical blocked report preserved, no new claim/source edits/acceptance/completion.
+
+Next authorized same-task review/rework must inspect actual code for unused standalone-only routing/budget/auth branches and remove only those with no checkout-led/isolated-preview caller, preserve real recovery owner/consent/send fences, verify product references/fresh facts/composer/replay/CAS and later product question retaining original recovery, exact accepted product-detail artifact pin and relevant tests. Full-lint baseline issue and any genuine unfinished integration requirement remain honestly recorded; scope withdrawal alone is not passing acceptance. No Shared008 publication, main/live/customer/follow-on execution.
