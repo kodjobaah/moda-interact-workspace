@@ -43,7 +43,7 @@ Implement [the complete outreach contract](../../../architecture/ARCH-066-initia
 - [x] Package typecheck/build, focused tests, `validate:commerce-outreach`, pack public import/declaration check and diff check. Record unavailable checks candidly; no claimed publication.
 
 ## Execution / completion
-Attempt 2 implements both Attempt 1 review corrections and is submitted for developer reconciliation/review. Explicit developer completion remains required. Preserve unrelated edits; Shared owns no service repository edits. SHARED-005 publishes accepted source. No production send/deploy authorized.
+Attempt 2 passes developer self-review, including both Attempt 1 corrections. Explicit developer completion remains required. Preserve unrelated edits; Shared owns no service repository edits. SHARED-005 publishes accepted source. No production send/deploy authorized.
 
 Generic product payload validation uses accepted SHARED-006 implementation as source prerequisite; no competing schema edits. Source subtree ordering is006 then004, followed by005 publication.
 
@@ -55,7 +55,7 @@ ARCH-066-SHARED-006 is Complete at accepted Attempt 1, recorded and pushed in pa
 
 ### Status
 
-Ready for Review — Attempt 2. Both requested corrections implemented and validated; formal developer reconciliation/acceptance and explicit completion pending.
+Passed / Accepted — Attempt 2. Both required corrections pass developer self-review. Status remains Review pending explicit developer completion.
 
 ### Preparation
 
@@ -63,9 +63,9 @@ Canonical launcher synchronized dedicated parent and implementation task worktre
 
 ### Implementation / source evidence
 
-Implementation `2a31e9cd7202833bd4a35242e3999fed191a7289` is pushed to `origin/task/ARCH-066-SHARED-004`; local HEAD equals the remote tracking ref and the implementation worktree is clean. Source baseline `b8743a2` already contains accepted SHARED-006 `2bc7f02c16840a41154f2135a26f9ba52c71fad7` (ancestry verified). No competing generic product schemas, consumer changes or package version bump. Source package remains 5.6.0; this local packed artifact has not been published. SHARED-005 owns the immutable release.
+Current Attempt 2 implementation `987a05dd06e79aa465d11fce8a4d4fe8b8d52703` is pushed to `origin/task/ARCH-066-SHARED-004`; local HEAD equals the published ref and the implementation worktree is clean. Original Attempt 1 implementation `2a31e9cd7202833bd4a35242e3999fed191a7289` remains its ancestor; historical review evidence is preserved below. Source baseline `b8743a2` already contains accepted SHARED-006 `2bc7f02c16840a41154f2135a26f9ba52c71fad7` (ancestry verified). No competing generic product schemas, consumer changes or package version bump. Source package remains 5.6.0; this local packed artifact has not been published. SHARED-005 owns the immutable release.
 
-28 task-owned files changed: package export/script and tsup entry; new `scripts/validate-commerce-outreach.mjs`; the outreach contracts/evaluator/reconciliation/selection/renderer and extracted pure eligibility, combinations, money, instructions, template bindings/summary/initial-slot/variable helpers; focused fixtures/tests and source-relocation README. Background source reference `d7e78bdb5e75248b9a15e2c84d07dcdc89027c19` was inspected read-only. No service repository was edited. Existing source algorithms are retained under Shared-local imports; model/tool services are replaced with injected ports. The deliberate checkout-only amendment excludes alternative-product search/promotion and rejects unexpected choices with OUTSIDE_CHECKOUT. Host recovery/admission identity and write/send fences remain outside Shared.
+Initial implementation changed 28 task-owned files; Attempt 2 adds the internal sendable-offer helper and corrects the seven files recorded below. Initial file scope: package export/script and tsup entry; new `scripts/validate-commerce-outreach.mjs`; the outreach contracts/evaluator/reconciliation/selection/renderer and extracted pure eligibility, combinations, money, instructions, template bindings/summary/initial-slot/variable helpers; focused fixtures/tests and source-relocation README. Background source reference `d7e78bdb5e75248b9a15e2c84d07dcdc89027c19` was inspected read-only. No service repository was edited. Existing source algorithms are retained under Shared-local imports; model/tool services are replaced with injected ports. The deliberate checkout-only amendment excludes alternative-product search/promotion and rejects unexpected choices with OUTSIDE_CHECKOUT. Host recovery/admission identity and write/send fences remain outside Shared.
 
 ### Acceptance / implementation review report
 
@@ -82,7 +82,7 @@ Implementation `2a31e9cd7202833bd4a35242e3999fed191a7289` is pushed to `origin/t
 Node 24.19.0 from canonical workspace bootstrap; `npm ci --ignore-scripts` installed the existing lockfile with no dependency/version edits.
 
 - `npm run typecheck`: passed after final source changes.
-- `npx tsx --test src/commerce/outreach/*.test.ts src/commerce/product-facts.test.ts src/commerce/product-context.test.ts src/commerce/presentation/facts.test.ts src/commerce/presentation/presentation.test.ts src/commerce/runner/runner.test.ts`: **156 passed, 0 failed, 0 skipped**. Includes all new contract/reconciliation/assignment/offer/evaluation/render goldens and affected existing compatibility tests.
+- `node --import tsx --test src/commerce/outreach/*.test.ts src/commerce/product-facts.test.ts src/commerce/product-context.test.ts src/commerce/presentation/facts.test.ts src/commerce/presentation/presentation.test.ts src/commerce/runner/runner.test.ts`: **171 passed, 0 failed, 0 skipped**, confirmed again during Attempt 2 review. Includes all new contract/reconciliation/assignment/offer/evaluation/render goldens and affected existing compatibility tests.
 - `npm run build`: ESM plus declarations passed for final runtime source.
 - `npm run validate:commerce-entrypoints`: passed; existing commerce/runner clean-process imports and R1/R2 regressions retained.
 - `npm run validate:commerce-presentation`: passed in Node and browser-like bundled context, with no new browser export dependency on server globals.
@@ -146,3 +146,21 @@ Seven task-owned source/test files changed: evaluate.ts/evaluate.test.ts, render
 Launcher reused the canonical parent and implementation worktrees on task/ARCH-066-SHARED-004. Parent before claim `dd4a1ad8457f4436b151a3520fff239fbcd209b6`, implementation before correction `2a31e9cd7202833bd4a35242e3999fed191a7289`; both remote fast-forwards not needed and current origin/main already incorporated. Recursive submodule sync/update passed with no entries. Dependency gate 001/002/006 passed. Claim `36ced1dba256b347234ce57b7890ba0de40c9a2d` durably incremented 1 to 2 exactly once under executor developer at 2026-11-08T17:31:41Z. No shared checkout switching, unrelated worktree reuse, feature gitlink staging, main merge/push or force push.
 
 This updated report is the Attempt 2 review submission, not fabricated architect acceptance. Both requested corrections are implemented with no known outstanding scoped correction at submission. Status Review, Attempt 2 unchanged, executor/claimed_at null; execution/completion modes remain developer. Formal `/moda_developer_update ARCH-066-SHARED-004` review and subsequent explicit completion remain pending. SHARED-005 stays Pending until completion; no downstream claim or package release.
+
+## Developer Self-Review — Passed / Accepted Attempt 2
+
+2026-11-08: Reconciled the full current task, normative contract, complete Attempt 1 Changes Requested review, seven-file correction diff, new regression assertions and original host sendable-method projection. Reviewed implementation `987a05dd06e79aa465d11fce8a4d4fe8b8d52703` matches local HEAD, origin tracking ref and directly verified published remote task ref. Parent correction submission `5dc6f9952e22fc4e10e0a5890ce1c200ba75577f` matches its published tracking ref. Both canonical worktrees were clean before this review record. No source edits or new attempt were made during review; original accepted dependency ancestry, isolated worktrees, synchronization/claim evidence and no-subagent assistance remain as recorded above.
+
+### Correction review disposition
+
+1. **Accepted: actual ready-return fence.** The final check now follows fingerprint/result assembly, evaluatedAt capture, output byte/schema validation and the COMPLETE host callback. No further callback runs before ready is returned. The check captures the clock once and checks the shared signal after the clock callback, so cancellation during that callback also refuses. Five deterministic regressions explicitly assert expiry during evaluatedAt capture, expiry/cancellation in COMPLETE, cancellation during the final clock callback and a valid just-before-expiry result. They also retain the original signal, bounded activity, two NONE reads and no model/offer calls. Both independently reproduced Attempt 1 failures are addressed by source changes and behavioral assertions.
+
+2. **Accepted: stable sendable offer projection.** The new internal helper groups members by CODE/AUTOMATIC, chooses the largest group with first-observed-method ties, and preserves member order, matching the existing Background algorithm. Render purpose/count and code/description resolution consume that same projection. Comma-joined descriptions preserve the host's original output. Nine fixed goldens assert exact purpose, body/button parameters and text for both mixed tie orders, each larger mixed group and homogeneous single/multiple groups; the original evaluation remains unchanged. The additional mixed-selection test verifies all three original selected offers remain supported and receive final detail revalidation. Eligibility, evidence, public result shapes and the no-alternative-products restriction remain intact.
+
+### Validation / acceptance limits
+
+Fresh review run: `node --import tsx --test src/commerce/outreach/*.test.ts src/commerce/product-facts.test.ts src/commerce/product-context.test.ts src/commerce/presentation/facts.test.ts src/commerce/presentation/presentation.test.ts src/commerce/runner/runner.test.ts` passed **171/171**, no failures/skips. `npm run typecheck` and `git diff --check` passed. Recorded final-source ESM/declaration build, commerce/runner entrypoint checks, browser-like presentation check and isolated installed-tarball public JS/declaration evaluation/render smoke remain applicable to this exact unchanged source and were reconciled; no redundant build or package installation was needed. Lint is explicitly unavailable because the package declares no lint script/dependency; it is not claimed passed and this task introduces no new lint regression.
+
+No outstanding scoped correction or incomplete required acceptance item was found. Review does not claim live provider/model validation, consumer integration/deployment or npm publication; SHARED-005 still owns the combined immutable release. Historical Attempt 1 Changes Requested and Attempt 2 correction reports are retained, and no Architect Review section is fabricated or modified.
+
+Status remains Review, executor/claimed_at null and accepted Attempt 2 unchanged, with completion_mode developer. Passing review and current Completion Report are published on the parent task branch. Explicit `/moda_developer_update ARCH-066-SHARED-004 complete` is pending; SHARED-005 remains Pending until completion/frontier reconciliation. No downstream task was promoted/claimed, no implementation gitlink staged and neither task branch was merged or pushed into main.
