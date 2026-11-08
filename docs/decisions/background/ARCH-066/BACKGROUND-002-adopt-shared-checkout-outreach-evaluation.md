@@ -14,8 +14,8 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-066-SHARED-003"]
-enables: ["ARCH-066-COMMERCE-002"]
+depends_on: ["ARCH-066-SHARED-005", "ARCH-066-BACKGROUND-001"]
+enables: ["ARCH-066-SYSTEM-TEST-002", "ARCH-066-COMMERCE-002"]
 created: 2026-11-08
 updated: 2026-11-08
 ---
@@ -26,7 +26,7 @@ Read ARCH-066 and its two sequence diagrams. This task is definition only; imple
 
 Own Background only. Touch `src/services/recovery-offers/{initial-outreach-agent-context,initial-outreach-offer-selection,current-outreach-offer-revalidation}.service.ts`, `src/services/recovery-pricing/checkout-price-reconciliation.service.ts`, `src/agents/initial-outreach-offer.*`, `src/services/recovery-template-integration/automated-recovery-template.service.ts`, related Woo outreach adapters, package/lockfile and scoped tests.
 
-Adopt exact SHARED-003 release containing SHARED-004 exports. Replace duplicated pure decisions/rendering with Shared delegates. Keep trusted checkout/attempt ownership, generation/fingerprint, policy/instructions and credential reads in Background. Adapt existing exact product reader into shared ports; ensure every checkout product/variant receives live verification even when recoveryOfferMode=NONE (currently price reconciliation is skipped in this mode). Preserve historical/current amounts distinctly. No unrelated catalogue recommendations for initial outreach.
+Adopt exact version/integrity recorded by SHARED-005. Shared5.6.0 does not contain this export. Replace duplicated pure decisions/rendering with Shared delegates. Keep trusted checkout/attempt ownership, generation/fingerprint, policy/instructions and credential reads in Background. Adapt existing exact product reader into shared ports; ensure every checkout product/variant receives live verification even when recoveryOfferMode=NONE (currently price reconciliation is skipped in this mode). Preserve historical/current amounts distinctly. No unrelated catalogue recommendations for initial outreach.
 
 Keep existing current-offer admission revalidation/token, transaction fences, recovery eligibility, credit reservation/settlement, outbox, moderation, Meta send and support notices in their existing production host. Shared preview result never substitutes for send admission. Use existing fallback policy only; never reinterpret a refused preview as an authorized message. Preserve existing no-offer production behavior when live verified products and configured policy permit it. Delete duplicate pure implementations after all callers delegate; maintain public entry points where callers need them.
 
@@ -34,3 +34,13 @@ Acceptance: unchanged existing initial outreach regressions, both provider fixtu
 
 ## Completion report
 Not started. Record implementation commit, scoped checks and parity evidence before completion. No production deployment or real message sending authorized.
+
+## Normative review correction
+[Outreach contract](../../../architecture/ARCH-066-initial-outreach-contract.md) is mandatory. Use evaluateInitialOutreach and shared frozen-template rendering; no duplicated algorithm or arbitrary render callback. Preserve historical/current prices and checkout-only restriction. Production ALTERNATIVE_PRODUCT_PROMOTION is explicitly refused for this initial path; preserve historical receipt parsing and conversational recommendations. Ready media only in Studio; IMAGE unavailable selects approved TEXT fallback or refuses.
+
+## Deterministic implementation checklist
+- [ ] Apply outreach contract1–7 and consumer contract A/E. Keep production facade inputs/real attempt metadata, but map to shared evaluation input; decorate validated decision afterward. No fake attempt in Shared/Studio.
+- [ ] Replace initial-outreach-offer graph pure logic and checkout price arithmetic with Shared delegates; context builder no longer skips current product observation in NONE. Existing admission revalidator remains production host and revalidates before sending; no shared result treated as admissionToken.
+- [ ] Map old ALTERNATIVE_PRODUCT_PROMOTION to explicit initial-path refusal OUTSIDE_CHECKOUT, preserving previousPromise historical parsing and conversational graph. Include regression showing an offer on a non-checkout item cannot enter new initial message.
+- [ ] Template preparer resolves repository/WABA/media outside shared rendering. Production may prepare derivative in existing media owner; pass ready frozen projection/variables to same shared renderer, retain binding fingerprints/assignment validation and send-fields shape.
+- [ ] Tests prove price/quantity/offer mappings, NONE two exact reads, changed facts refused, credit/consent/admission/replay unchanged and prepared body equals Studio fixture. Existing fallback service may decide later production action but must not transform a shared identity/denial refusal into a permitted send.

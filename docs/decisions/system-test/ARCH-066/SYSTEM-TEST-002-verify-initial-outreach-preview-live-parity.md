@@ -34,3 +34,12 @@ Record pinned commits/package integrity, fixture hashes, commands, run IDs and e
 
 ## Completion report
 Not started. Record implementation commit, scoped checks and parity evidence before completion. No production deployment or real message sending authorized.
+
+## Review corrections
+Use the normative outreach contract and new SHARED-005 exact artifact. Assert ordered initial/revalidation product calls (NONE exactly two per distinct pair), zero model/offer calls for NONE, checkout-only rejection of alternative-product promotion, changed-fact refusal and READY-media/TEXT fallback parity. Exercise actual app/api/studio/preview/initial-outreach routes including list, start, status and cancel, status codes and tenant ownership. Fixture model responses and observed clock fixed; no stochastic wording comparisons. Preserve production admission regression tests separately.
+
+## Deterministic implementation checklist
+- [ ] Register arch066-initial-outreach-preview in existing scenario catalogue and package script test:arch066:outreach using existing harness. Pin Shared005/database/Background/Commerce commits and record commands.
+- [ ] Run all contract7 cases through both platform fixtures and actual Studio routes/Background host. NONE ready call trace exactly two get_product per distinct pair, checkout duplicate quantities unchanged, zero model/offer/search. FIXED/AI scripted offer decisions use bounded ports; current-facts change refuses before rendered ready.
+- [ ] Seed ready R2 IMAGE projection, missing IMAGE with approved TEXT fallback, and missing both assignments; compare provenance/full params/header/body with Background same explicit inputs. No media generation or Meta requests from Studio.
+- [ ] Persist machine-readable PASS/FAIL artifacts and exact text/parameter equality; tests assert zero forbidden writes and actual emulator delivery fences. Required skipped scenario blocks completion; screenshots/unit-only evidence insufficient.

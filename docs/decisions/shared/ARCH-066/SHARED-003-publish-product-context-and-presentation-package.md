@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on: ["ARCH-066-SHARED-001", "ARCH-066-SHARED-002"]
-enables: ["ARCH-066-MCP-001", "ARCH-066-BACKGROUND-001", "ARCH-066-COMMERCE-001"]
+enables: ["ARCH-066-SHARED-006"]
 created: 2026-11-08
 updated: 2026-11-08
 ---
@@ -81,3 +81,6 @@ MCP-001 sole dependency SHARED-003 now Complete: Ready at unchanged Attempt0/unc
 ## Post-publication scope reconciliation — 2026-11-08
 
 The later SHARED-004 outreach-preview amendment is not part of accepted Attempt1 or immutable5.6.0. It must not be added retroactively to this completed publication's dependencies or release criteria. A separately defined publication gate is required after SHARED-004 acceptance; its version/integrity are not yet selected. BACKGROUND-002 and outreach-preview consumers remain held pending that gate even where their older dependency text names SHARED-003. No mutable republish or reopening of this accepted history is authorized.
+
+## Additive consumer scope amendment
+Completed publication/release evidence remains unchanged. New generic-facts work is SHARED-006; amended consumers depend on SHARED-005. Only inverse dependency metadata changes here;5.6.0 is not reopened or republished. Historical frontier above predates this amendment.

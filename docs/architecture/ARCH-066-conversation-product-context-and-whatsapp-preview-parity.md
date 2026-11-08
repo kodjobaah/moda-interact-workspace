@@ -1,6 +1,14 @@
 # ARCH-066 — Conversation product context and final WhatsApp preview parity
 
-Date: 2026-11-08. State: Defined; implementation not started. Coordinator: moda_architect.
+Date: 2026-11-08. State: Partially implemented; current task-record summary below. Coordinator: moda_architect.
+
+## Current authoritative amendment — 2026-11-08
+
+Read [consumer and acceptance contract](ARCH-066-consumer-contract.md) and [initial outreach contract](ARCH-066-initial-outreach-contract.md) before any pending implementation. They supersede earlier pending-task prose where inconsistent; completed attempt/release evidence stays historical and unchanged.
+
+There are14 tasks. Recorded Complete: SHARED-001/002/003 (original5.6.0). DATABASE-001 remains Ready. MCP-001 returns Pending because amended generic-facts scope requires new SHARED-005. Other consumers/system tasks remain Pending/unclaimed. SHARED-006 adds generic facts -> SHARED-004 outreach -> SHARED-005 combined immutable publication -> MCP/consumers. SHARED-005 records actual version/integrity on acceptance;5.6.0 is not retroactively changed. Dependency readiness is not a task claim.
+
+Generic descriptions/attributes requested earlier are now explicitly owned by SHARED-006, and pending provider adapters/bootstrap/profile/hosts/tests consume them. Old options/PRODUCT_OPTIONS APIs remain available; new PRODUCT_DETAILS/productFacts are additive. Original decisions1–6 below describe accepted options-only baseline; amendments define the pending generic/outreach expansion. Domain indexes show current frontmatter; historical frontier notes below do not override this summary.
 
 ## Outcome
 Commerce Studio must exercise the same product/option contracts, runner recovery and pure response composition as Background. A Studio assistant bubble defaults to the final conversational WhatsApp body after prepared-wrapper composition, with raw agent output available separately. Studio remains read-only and never sends, bills, moderates for admission or registers a Meta template.
@@ -85,7 +93,7 @@ SHARED-001 accepted Attempt2 explicitly developer-completed, source c3f9f07 and 
 See [Background and Studio sequence diagrams](ARCH-066-background-and-studio-sequences.md). Studio must support separate checkout-scoped initial-outreach tests and subsequent CommerceAgent conversations. The initial-outreach preview branch is an additional required workstream: current ARCH-066 tasks cover conversational parity and do not yet define its implementation. Do not treat the existing checkout-preview exclusion as satisfying this requirement. Production initial-outreach template and delivery contracts remain unchanged.
 
 ## Initial outreach preview implementation tasks
-The earlier checkout-preview exclusion is superseded by SHARED-004, BACKGROUND-002, COMMERCE-002 and SYSTEM-TEST-002. These tasks require live exact checkout product/variant reads, even without an offer; checkout quantities and historical prices remain separate from current facts. No unrelated catalogue products. SHARED-003 is an already completed immutable5.6.0 release and does not include SHARED-004. A new publication gate after SHARED-004 acceptance is required; it is not yet defined or versioned. Studio uses existing same-shop CheckoutRecovery records without creating an outreach attempt. Both execution purposes are tested separately.
+The earlier checkout-preview exclusion is superseded by SHARED-004, BACKGROUND-002, COMMERCE-002 and SYSTEM-TEST-002. These tasks require live exact checkout product/variant reads, even without an offer; checkout quantities and historical prices remain separate from current facts. No unrelated catalogue products. SHARED-003 is an already completed immutable5.6.0 release and does not include SHARED-004. SHARED-005 now defines the separate publication gate after SHARED-004; its actual immutable version/integrity is recorded only when published. Studio uses existing same-shop CheckoutRecovery records without creating an outreach attempt. Both execution purposes are tested separately.
 
 2026-11-08: SHARED-002 accepted Attempt1 explicitly developer-completed; implementation7255db5 and passing review60836eb38 verified published. SHARED-003 now Ready/unclaimed because both Shared implementation dependencies Complete. Consumers remain publication-gated. No npm publication, deployment or automatic execution.
 
@@ -99,3 +107,9 @@ Shared5.6.0 published/downloaded and isolated public-import/browser smoke verifi
 The completed SHARED-002/SHARED-003 Attempt1 records and immutable5.6.0 handoff are preserved. Exact5.6.0 pins in MCP-001, BACKGROUND-001 and COMMERCE-001 apply to their original conversational scope, not the later initial-outreach export. SHARED-004 remains a separate Pending definition with prerequisites SHARED-001/002; the index must not add a self-dependency. Its older Enables reference to completed SHARED-003 is historical planning, not authorization to reopen or republish5.6.0.
 
 BACKGROUND-002's instruction to adopt a SHARED-003 release containing SHARED-004 cannot currently be satisfied. Treat it and dependent COMMERCE-002/SYSTEM-TEST-002 as held for a separately scoped, accepted and published Shared outreach release; do not infer readiness from SHARED-003 Complete. Before execution the architect must define that bounded publication gate, select a new immutable version, update consumer dependencies/pins and reconcile eligibility. This merge does not invent a publication task, choose its version, start work, or promote terminal/manual-gated system validation. Original completed release evidence is unchanged.
+
+## Outreach amendment authority
+The explicit [outreach contract](ARCH-066-initial-outreach-contract.md) and SHARED-005 resolve the historical publication gap noted above. Original accepted release history is preserved. Task authors must not infer outreach readiness from SHARED-003 completion.
+
+## Remaining-task review authority
+All pending tasks now cite deterministic contracts, owned code/test touch points and explicit artifact gates. Review results and limitations are recorded in [definition review](ARCH-066-definition-review.md). Implementation correctness/production readiness still requires code and integration acceptance; documentation validation does not establish it.

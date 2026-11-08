@@ -14,25 +14,35 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-066-SHARED-001", "ARCH-066-SHARED-002"]
-enables: ["ARCH-066-SHARED-003"]
+depends_on: ["ARCH-066-SHARED-001", "ARCH-066-SHARED-002", "ARCH-066-SHARED-006"]
+enables: ["ARCH-066-SHARED-005"]
 created: 2026-11-08
 updated: 2026-11-08
 ---
 # Extract read-only checkout outreach evaluation and rendering
 
-## Scope and exact work
-Read ARCH-066 and its two sequence diagrams. This task is definition only; implement only after dependencies complete, in canonical task worktrees. You are not alone in the codebase; preserve unrelated edits. No merchandise-specific assumptions or new per-category schema.
+## Normative contract
+Implement [the complete outreach contract](../../../architecture/ARCH-066-initial-outreach-contract.md), sections1–7. It fixes exported schemas/signatures, strict input/result shapes, source relocation, ordered live reads, error mapping, offer behavior, rendering and tests. It overrides the earlier shell definition. No architecture choices are delegated to the implementor.
 
-Own Shared only: NEW `src/commerce/outreach/{contracts,evaluate,render,index}.ts`, package export `./commerce/outreach`, export/build tests and lockfile if needed. Port the reusable read-only decisions from Background `src/agents/initial-outreach-offer.{types,graph,eligibility,combinations,instructions}.ts`, `initial-outreach-offer-product-target.ts`, and pure initial-template parameter/rendering helpers called by `src/services/recovery-template-integration/automated-recovery-template.service.ts`. Do not import Background or copy DB/send orchestration.
+## Owned files and work
+- NEW `src/commerce/outreach/{contracts,evaluate,reconcile,selection,render,index}.ts` and matching `.test.ts` files; public package export `./commerce/outreach` and build/export checks. Internal pure helpers may be split under this directory only.
+- Port sources listed in contract section3, including actual pure template helpers in `recovery-template-preparation`, not the service facade. Export evaluateInitialOutreach with preview alias; one implementation for production/preview.
+- All public payloads use strict Zod and inferred types. Replace source z.custom placeholders for nested price/eligibility/combination data with actual field validators; canonical money/product/tool/offer schemas reused.
+- Live exact product reads before selection and revalidation after selection, including NONE; sequential first-occurrence order, duplicate reuse, no catalogue search. Preserve checkout quantity and historical price. Existing production fingerprint/admission IDs stay host-owned.
+- NONE uses zero model/offer calls. Existing bounded checkout-offer graph/eligibility/combination rules apply otherwise. New checkout-only schema rejects alternative-product choices; historical parsing stays host-owned.
+- Render frozen approved initial template bindings using the same checkout summary/selection/parameter algorithms in both hosts. Prepared media and catalogue inputs only; no upload/DB/send orchestration. No conversation wrapper substitution.
+- Add `scripts/validate-commerce-outreach.mjs`, registered as `validate:commerce-outreach`; import all four public schemas, evaluator and renderer from packed public JS/declarations. This task builds/packs locally but does not publish.
 
-Export `evaluateInitialOutreachPreview(input,ports)` and `renderInitialOutreachPreview(input)`. Zod input is strict schemaVersion=1, server-resolved shopId/platform/environment, pinned profile/instruction revisions, checkout currency/URL and ordered lines {lineKey,productId,variantId,quantity,checkoutUnitPrice}; 1..100 lines, positive safe integer quantity, existing native ID/money/URL validators. Preserve checkout quantities and historical prices separately from current product facts. No customer phone/email required. Existing production adapter supplies trusted recovery/attempt identities separately; preview uses run identity only and never produces a send-admission token.
+## Required acceptance evidence
+- [ ] Strict schema fixtures and all closed refusal reasons from contract section5; malformed nested payload rejected before use.
+- [ ] Ordered port-call spy: ready NONE reads each distinct checkout pair exactly twice, never model/offer/search; duplicate lines retain their quantities/order.
+- [ ] Changed-price/current-facts, currency, missing product, wrong parent/tenant, revoked access, cancellation, deadline and exhausted-budget tests.
+- [ ] Existing checkout-offer goldens preserved except explicit checkout-only restriction; no stale checkout price used as live evidence.
+- [ ] Both-provider fixtures for clothing/nail varnish/trees/custom label; identical code path and no merchandise enum.
+- [ ] Exact prepared-template parameter/body/header goldens, no-ready-image TEXT fallback, missing approved template/locale, escaped/control/Unicode/4096 boundaries.
+- [ ] Package typecheck/build, focused tests, `validate:commerce-outreach`, pack public import/declaration check and diff check. Record unavailable checks candidly; no claimed publication.
 
-Ports supply abort signal, exact authorized product reader, existing bounded model invoker/selector, resolved recovery policy, offer reader, clock and logger. Reuse current outreach eligibility/combinations/price reconciliation semantics; no alternate discount algorithm. Exact-read every distinct checkout product+variant at run start, including policy NONE; deduplicate reads but preserve line order/quantity. No catalogue search, replacement products or products outside checkout. Never guess missing IDs by title. Missing identity, deleted product, wrong parent/shop/provider or unavailable read yields structured line limitation and refuses a ready preview. No historical-price fallback labelled current. Recheck selected product/offer facts before rendering; recheck failure refuses. Current totals are merchandise totals only; never invent taxes/shipping or overwrite checkout totals.
+## Execution / completion
+Definition review only. Pending, Attempt0/unclaimed preserved; no implementation started. Complete prerequisites before canonical task launch. Preserve unrelated edits; Shared owns no service repository edits. SHARED-005 publishes accepted source. No production send/deploy authorized.
 
-Rendering uses the existing approved initial template contract, chosen locale/header and validated parameters; do not use MODA_CONVERSATION_WRAPPER. Preserve current escaping, parameter limits, offer terms and fallback classification. Return {kind:ready|refused,reasonCode,lineDiagnostics,productObservations,offerDecision,templateProvenance,parameters,headerPreview,renderedText,toolActivity}; all outputs bounded using existing contracts; no secrets/provider bodies. Same explicit observations/model decision/template inputs produce identical production/preview parameters and text. Missing template/locale/required parameter refuses. Header preview uses existing configured media reference; never upload/register with Meta. If a pure helper cannot be moved without changing behavior, preserve it behind an injected port and prove identical fixtures; no service imports.
-
-Acceptance: both platforms, duplicate lines, variants, changed current price, NONE/FIXED/AI policies, eligible/ineligible/no offer, missing/deleted/foreign product, provider outage, malformed template, locale/header and Unicode bounds. Existing outreach golden decisions/rendering must remain identical except the explicitly required always-live product reads. No billing/delivery side effects.
-
-## Completion report
-Not started. Record implementation commit, scoped checks and parity evidence before completion. No production deployment or real message sending authorized.
+Generic product payload validation uses accepted SHARED-006 implementation as source prerequisite; no competing schema edits. Source subtree ordering is006 then004, followed by005 publication.

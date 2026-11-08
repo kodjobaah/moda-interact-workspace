@@ -9,12 +9,12 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: pending
 priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-066-SHARED-003"]
+depends_on: ["ARCH-066-SHARED-005"]
 enables: ["ARCH-066-BACKGROUND-001", "ARCH-066-COMMERCE-001"]
 created: 2026-11-08
 updated: 2026-11-08
@@ -46,3 +46,12 @@ Status: Not started. Attempt: 0. Implementation commit: none. Validation evidenc
 
 ## Release / Dependency Handoff - 2026-11-08
 SHARED-003 accepted Attempt1 explicitly Complete. Pin @modainteract/moda-interact-shared exactly5.6.0; dist.integrity sha512-tDuW+C8MdteWMJWwmuFI2cTAugMejOJwTk0KkemBMwpN/lL92WPI8CX/A5dDa2nhG0RYiIeHSR490WPCrTz42w==. Downloadable archive and isolated public-import/browser checks verified in release record. Sole dependency satisfied: Ready at unchanged Attempt0, unclaimed. No claim or execution performed.
+
+## Current additive-release gate (supersedes earlier consumer pin)
+Pending scope now includes generic descriptions/attributes and therefore depends on SHARED-005, not the original5.6.0 release. Pin exactly the version/integrity recorded by SHARED-005 after acceptance. Earlier5.6.0 handoff is historical and must not satisfy this amended task. No attempt/claim started; MCP readiness returns to Pending until new prerequisite is Complete. Implement [consumer contract](../../../architecture/ARCH-066-consumer-contract.md) as normative.
+
+## Deterministic implementation checklist
+- [ ] Implement consumer contract B exactly. In src/execution/policy/shopify-core.ts extend productFields and SEARCH_DOCUMENT/CATEGORY_SEARCH_DOCUMENT/GET_PRODUCT_DOCUMENT/GET_VARIANT_DOCUMENT selections and each normalization branch, not just exact-get. Variant nodes include native selectedOptions; parent fields include description/options. Validate each document against existing pinned schema; no scope/version change.
+- [ ] src/connections/woocommerce/direct-product-reader.ts: extend simple/variable parent and variation allowed fields and projection; same-parent facts only. Retain existing pagination and read restrictions. Missing optional fields normalize explicitly; malformed required identity remains error.
+- [ ] Add table-driven tests tests/unit/execution/policy/arch066-product-facts.test.ts and tests/unit/connections/woocommerce/arch066-product-facts.test.ts covering all mapping rows, empty/partial/legacy/malformed values, bounded HTML, exact parent/variant and foreign-ID rejection. Same canonical expected JSON fixtures for each provider.
+- [ ] Pin SHARED-005 artifact, record installed version/integrity and pinned query artifact checksum. Run existing package typecheck/build scripts and scoped unit tests; use declared scripts from package.json, do not claim nonexistent lint command passed. No new endpoint, auth scope or live provider mutation.

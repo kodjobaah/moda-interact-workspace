@@ -45,3 +45,10 @@ Definition only. Do not claim or implement until explicit dependency tasks are C
 
 ## Completion Report
 Status: Not started. Attempt: 0. Implementation commit: none. Validation evidence: none. Remaining work: all unchecked acceptance criteria. Document isolated worktree, package, test and deployment evidence when implemented; do not mark Complete merely from source inspection.
+
+## Deterministic implementation checklist
+- [ ] Implement consumer contract E with registered scenario arch066-product-context-whatsapp-parity in src/scenario-catalogue.js/catalogue/scenarios.json and package script test:arch066:conversation using existing harness entrypoint. Record actual invocation; no invented independent test runner.
+- [ ] Fixed fixture sequence per provider: discovery returns two same-title distinct IDs -> yes asks clarification with no inferred selection -> explicit ID/detail selection -> exactly one presentation-verification exact read -> expected current facts. Also one stale-ID NOT_FOUND then corrected search path; scripted hard DENIED remains referral.
+- [ ] Repeat on Size, Shade/Volume, Species/Height/Pot size and custom label with description/attributes present/absent/partial. Assert exact labels/units and no claims unsupported by fixtures. No sizing-only pass criterion.
+- [ ] Pin new SHARED-005, actual database migration and consumers; concurrent inbound versions run against real disposable DB/Redis. Compare exact composed UTF8 text with identical synthetic variables/provenance; separately assert final moderation/outbox emulator, not just model output.
+- [ ] Record machine-readable per-case assertions, fixture hashes, calls/counts, diagnostics/stage, reference revision, artifact integrity, final body hash and emulator message hash. All required cases pass; skipped required integration case blocks completion. No live provider or customer send needed.
