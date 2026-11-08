@@ -139,3 +139,6 @@ Dependency handoff2026-11-08: canonical Background001 Complete atb9470dd27/Accep
 
 ## Frozen outreach compatibility gap — 2026-11-08
 BACKGROUND002 adoption proves published5.8.0 enumerates valid savedbrand alt/dimension semantic keys but resolver refuses them; existing supported production frozen bindings cannot be silently removed. SHARED011 Ready defines bounded strict data/resolver compatibility; SHARED012 Pending immutable correction publication. BACKGROUND002 remains Blocked until corrected artifact adoption and same-task review. No generic local renderer workaround/unsupported internal import, no main/release/live/follow-on execution. Checkout-led scope remains controlling: production retains real recovery, standalone007/008/MCP002 withdrawn; this correction does not resurrect them.
+
+## SHARED012 publication handoff — 2026-11-08
+SHARED011 explicitly Complete at Accepted Attempt1, source6c8bbe194337c7c2afb141047d24aeeeb23c48ca, review750d5119/decision9eb1af515. Exact completed prerequisite record materialized here;010Complete preserved.012Ready Attempt0/unclaimed, release-only scope/developer completion. No implementation worktree/claim/npm publication created by reconciliation. Background002 remains Blocked pending exact accepted corrected artifact and its72unresolvedfailures; no consumer/main/live/follow-on execution or standalone resurrection.
