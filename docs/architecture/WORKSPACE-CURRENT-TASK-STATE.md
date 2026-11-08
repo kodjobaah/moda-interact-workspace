@@ -1935,3 +1935,6 @@ ARCH-063-SHARED-001 Attempt 1 is Complete after architect Accepted review and ex
 ## ARCH-066 — Background standalone prerequisite blocker
 
 2026-11-08: BACKGROUND001 Attempt1 partial source4664ea89 validated/published, Blocked (not Accepted) on Shared5.7 required recovery identity + private MCP admission/Background loader budget gap. SHARED007 Ready; SHARED008/MCP002 Pending, definitions only. Background depends on correction publication/private verification, no fake recovery. Full lint residual untouched consent-provider.ts:151 no-control-regex; scoped lint/build/tests passed. Terminal System Tests remain Pending/manual-gated; no live/main/follow-on execution.
+
+## ARCH-066 — Checkout-led Background review
+2026-11-08: BACKGROUND001 Attempt2 Accepted/Review, final implementation44e92f8b, developer completion pending/claim cleared. Shared010 Complete66c53156 verified; exact5.8.0 adopted. Historical standalone blocker withdrawn;007/008/MCP002 Superseded per authorized0ddcbfb disposition, no standalone publication. No downstream promotion before Background Complete; terminal System Tests retain manual gates. Full lint existing untouched consent151 remains; scoped lint/build/required tests passed. Concurrent task states unchanged; no main/live/follow-on execution.
