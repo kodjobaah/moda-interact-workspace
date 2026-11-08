@@ -1931,3 +1931,13 @@ ARCH-063-SHARED-001 Attempt 1 is Complete after architect Accepted review and ex
 ## ARCH-066 — Database completion frontier
 
 2026-11-08: DATABASE001 Attempt1 explicitly completed after Acceptedb7f58d5 schema/migration/full-history fresh+upgrade review. Background001 Pending on Shared005; Shared004 Ready/Shared005 Pending; MCP001 Complete. Concurrent Commerce001 Ready preserved (pending Shared005 dependency consistency reported). No newly Ready task; System Tests Pending/manual-gated, no live migration/backfill/main/follow-on execution.
+
+## ARCH-066 — Background standalone prerequisite blocker
+
+2026-11-08: BACKGROUND001 Attempt1 partial source4664ea89 validated/published, Blocked (not Accepted) on Shared5.7 required recovery identity + private MCP admission/Background loader budget gap. SHARED007 Ready; SHARED008/MCP002 Pending, definitions only. Background depends on correction publication/private verification, no fake recovery. Full lint residual untouched consent-provider.ts:151 no-control-regex; scoped lint/build/tests passed. Terminal System Tests remain Pending/manual-gated; no live/main/follow-on execution.
+
+## ARCH-066 — Checkout-led Background review
+2026-11-08: BACKGROUND001 Attempt2 Accepted/Review, final implementation44e92f8b, developer completion pending/claim cleared. Shared010 Complete66c53156 verified; exact5.8.0 adopted. Historical standalone blocker withdrawn;007/008/MCP002 Superseded per authorized0ddcbfb disposition, no standalone publication. No downstream promotion before Background Complete; terminal System Tests retain manual gates. Full lint existing untouched consent151 remains; scoped lint/build/required tests passed. Concurrent task states unchanged; no main/live/follow-on execution.
+
+## Background explicit completion frontier — 2026-11-08
+BACKGROUND001 explicitly developer-completed, Accepted Attempt2 preserved, final source44e92f8b/accepted review344b8815 verified clean/published. BACKGROUND002 newly Ready Attempt0/unclaimed with developer execution/completion; no claim or follow-on execution. Canonical COMMERCE001 remains Review, so SystemTest001 Pending, terminal/manual-gated; other concurrent states preserved.007/008/MCP002 remain Superseded/no standalone release. Full-lint consent151 unchanged limitation remains explicit; no main/live migration/release/integrated completion.

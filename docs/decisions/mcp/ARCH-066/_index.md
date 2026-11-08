@@ -11,3 +11,11 @@ MCP-001 accepted Attempt1 explicitly developer-completed on 2026-11-08.
 2026-11-08: SHARED-003 Complete; MCP-001 Ready/unclaimed. Exact Shared pin5.6.0/integrity in task handoff.
 
 2026-11-08 completion: COMMERCE-001 newly Ready/unclaimed; BACKGROUND-001 remains Pending on Database.
+
+## Standalone prerequisite correction
+
+| Task | Status | Dependencies |
+|---|---|---|
+| ARCH-066-MCP-002 | Pending | ARCH-066-SHARED-008 |
+
+Definitions only; no execution started.
