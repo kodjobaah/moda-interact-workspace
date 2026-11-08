@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-11-08T16:29:53Z
+attempt: 1
 depends_on: ["ARCH-066-SHARED-003"]
 enables: ["ARCH-066-SHARED-004", "ARCH-066-SHARED-005"]
 created: 2026-11-08
@@ -72,4 +72,4 @@ Canonical resolver verifies sole explicit dependency ARCH-066-SHARED-003 Complet
 
 ### Status
 
-Not Started — dependency-ready; authorized execution preparation pending.
+In Progress — Attempt 1 claimed by developer at 2026-11-08T16:29:53Z. Attempt 0 review history is preserved below.
