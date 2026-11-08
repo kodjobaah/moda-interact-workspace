@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: review
+status: superseded
 priority: 30
 executor: null
 claimed_at: null
@@ -130,3 +130,24 @@ turn-identity.ts, schemas/definitions/selection, runner preflight/tool-policy/ob
 Conforms to bounded Shared standalone correction, no service/MCP/Background/live/source duplication or package publication. Canonical isolated worktrees/preparation/claim/publication evidence verified. Concurrent coordinator resolved ID collision by retiring unclaimed old product-detail007 and moving that task to active009; current007 unique standalone,009/010 claims/source untouched. No reset/rebase/main/consumer/release execution.
 ### Follow-up
 Explicit completion: `/moda_developer_update ARCH-066-SHARED-007 complete`. Existing SHARED008 standalone publication and MCP002 consumer correction remain gated, materialize exact definitions from Background39d66aab when needed. Background remains Blocked until corrected artifact/private admission and actual standalone host integration. No enabled task auto-start or integrated/deployed completion claim.
+
+## Checkout-led scope amendment — 2026-11-08
+
+This amendment supersedes earlier standalone-production-conversation requirements, including consumer contract C1 and the standalone prerequisite reported by BACKGROUND-001. It preserves historical reports, attempts and acceptance evidence; it does not accept, complete, reclaim or start any task.
+
+- Every production conversation in this scope originates from a real abandoned checkout/CheckoutRecovery. Initial outreach uses that checkout; subsequent CommerceAgent turns retain the same recovery identity even when discussing other products. No independent customer-start conversation, new admission/recipient/consent policy or fabricated recovery ID is required.
+- Background resolves the current conversation's real CheckoutRecovery and its shop/customer through existing routing. Missing recovery or conflicting tenant/owner fails closed before model/provider I/O under existing admission rules. Preserve current consent/window/billing/outbox fences. Conversation.shopId, when populated, must agree with recovery ownership; it is not an alternate admission route.
+- Studio conversational preview remains an isolated, explicitly synthetic test using its existing preview identity. Do not persist a fake production recovery/customer, weaken live MCP authorization, or add a production standalone route to accommodate preview. Initial-outreach testing remains COMMERCE-002: select an existing same-shop checkout recovery and verify its items using live product reads. Synthetic conversational preview must not claim production admission was evaluated.
+- Retain generic product references, fresh authorized fact verification, shared WhatsApp composition, budgets, wrapper provenance, storage fencing and parity requirements. These apply to any merchant goods. No new table/schema is needed for standalone admission. Keep the existing ARCH-066 reference-context table and its recovery-linked owner checks.
+- SHARED-007/008 and MCP-002 standalone support is withdrawn from the required acceptance/dependency path for this checkout-led scope. Any existing work is subject to review for removal of unused standalone-only identity/admission branches; do not remove existing supported recovery behaviour or rewrite immutable published artifacts. This does not withdraw SHARED-009/010's independent productDetailSelections/PRODUCT_DETAILS compatibility correction and immutable publication. Consumers must wait for that accepted correction when using those fields; do not locally fork Shared schemas.
+
+### Mandatory review corrections
+
+Review BACKGROUND-001 and COMMERCE-001 against this amendment before acceptance. Inspect the actual implementation and require corrections on their same task branches: remove newly introduced standalone-only routing/budget/authorization code that has no checkout-led or isolated-preview caller; retain real recovery ownership rejection; confirm product-context persistence and verified WhatsApp body composition; prove missing recovery is rejected and a later product question retains the original recovery. For Commerce also prove synthetic preview stays isolated, real-checkout outreach preview remains separate, and no fabricated production records or weakened grants were added. Preserve and re-run relevant existing tests after corrections; report exact files, package pin/integrity, call order and final body evidence. A historical standalone blocker alone is no longer grounds to reject recovery-linked behaviour. Other genuine blockers, unfinished acceptance work and manual system-test gates remain in force. Do not declare acceptance from partial provider tests.
+
+### Review disposition for this correction task
+
+The standalone-production objective above is superseded by the checkout-led amendment. No new standalone identity/admission implementation is required by ARCH-066. At review, assess any partial changes for unused scope and preserve the published recovery contract. Record a scope-withdrawal disposition rather than claiming implementation completion. Do not publish a standalone package merely to unblock BACKGROUND-001. Existing claim/status/history are preserved pending review.
+
+## Explicit Developer Scope-Withdrawal Decision — 2026-11-08
+Developer explicitly directed: follow checkout-led amendment, record ARCH-066-SHARED-007 superseded and do not publish SHARED-008. Status superseded (valid project lifecycle value), unchanged Attempt1, executor/claimed_at null. This is withdrawal of the standalone-production objective, not successful implementation completion. Historical Accepted technical review/sourceb10fe65779839c46bfbc31aaae88421f1e7b908d retained for audit; no source rollback/main merge/package publication performed. Unpublished standalone-only source must not enter release merely to unblock Background. Existing immutable published recovery artifacts and independent product-detail009/010 remain untouched. SHARED008/MCP002 standalone definitions retired as superseded, no claims or execution.

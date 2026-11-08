@@ -21,6 +21,10 @@ Definitions amended; no task claimed or implementation accepted by this review. 
 
 | Task | Status | Dependencies |
 |---|---|---|
-| ARCH-066-SHARED-007 | Review (Accepted; developer completion pending) | ARCH-066-SHARED-005 |
+| ARCH-066-SHARED-007 | Superseded (scope withdrawn) | ARCH-066-SHARED-005 |
 
 Canonical007 uniquely standalone; concurrent product-detail correction active009/010 preserved.
+
+| ARCH-066-SHARED-008 | Superseded — do not publish | withdrawn checkout-led scope |
+
+Explicit developer withdrawal supersedes historical standalone readiness/acceptance text; no successful completion or release implied.009/010 independent product-detail work unchanged.
