@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-066-SHARED-003"]
 enables: ["ARCH-066-SHARED-004", "ARCH-066-SHARED-005"]
 created: 2026-11-08
@@ -55,12 +55,57 @@ Render PRODUCT_DETAILS as plain text per product: title, nonempty merchant descr
 Retain normalized canonical products at runner/tool-execution boundary before profile validation, model history/evidence/context updates, as accepted001 does for options. Malformed mandatory original product fields remain fatal; bounded malformed new optional fields normalize to PARTIAL without mutating original provider objects. No new grant/feature key/schema version.
 
 ## Required acceptance evidence
-- [ ] Legacy5.6.0 product/options/context/presentation fixtures still parse and render identically.
-- [ ] HTML/entity/control/Unicode/bounds, exact label merge/dedup, missing/partial/new facts, no inference fixtures.
-- [ ] Both platform mappings use one canonical helper contract; clothing/nail varnish/trees/custom label fixtures use same schemas/renderer.
-- [ ] Runner-boundary test captures actual normalized next-model payload/evidence, not only helper output.
-- [ ] New disposition/invalid combinations, exact-ID selector, localized output and complete wrapper candidate bounds.
-- [ ] Typecheck, focused tests, build, existing entrypoint/presentation validators and pack public-import checks. Record actual scripts and unavailable lint honestly. SHARED-005 publishes accepted source, not this task.
+- [x] Legacy5.6.0 product/options/context/presentation fixtures still parse and render identically.
+- [x] HTML/entity/control/Unicode/bounds, exact label merge/dedup, missing/partial/new facts, no inference fixtures.
+- [x] Both platform mappings use one canonical helper contract; clothing/nail varnish/trees/custom label fixtures use same schemas/renderer.
+- [x] Runner-boundary test captures actual normalized next-model payload/evidence, not only helper output.
+- [x] New disposition/invalid combinations, exact-ID selector, localized output and complete wrapper candidate bounds.
+- [x] Typecheck, focused tests, build, existing entrypoint/presentation validators and pack public-import checks. Record actual scripts and unavailable lint honestly. SHARED-005 publishes accepted source, not this task.
 
 ## Execution record
 Pending, Attempt0/unclaimed. Definitions only; preserve unrelated work. No completed task reopened or immutable version changed.
+
+## Dependency Reconciliation - 2026-11-08
+Canonical resolver verifies sole explicit dependency ARCH-066-SHARED-003 Complete. Correct stale Pending to Ready, Attempt0 unchanged/unclaimed, before authorized developer preparation. No source work or claim performed by reconciliation.
+
+## Completion Report
+
+### Status
+Complete — accepted Attempt1 explicitly developer-completed on 2026-11-08.
+
+### Files / Work Completed
+14 task-owned paths in2bc7f02: package/lock parser pin; commerce index/schemas/new product-facts helper/tests; presentation schema/compose/index/new facts/messages/tests; presentation and runner regression tests. Strict description/attribute schemas use inferred types and status invariants; tolerant normalization preserves absent legacy fields and bounded malformed new data as PARTIAL. Description format explicit; exact parse5@8.0.1 parseFragment skips executable subtrees, ignores attributes/URLs/comments, decodes entities and handles text/block/br boundaries. UTF8 raw65536 cap, Unicode codepoint4096 text/128 labels, control omission and collection bounds preserved without factual-label truncation.
+
+Attributes merge exact names/values in provider order, no merchant enums/aliases/inference. Exact-ID selector yields typed limitations; verified legacy missing facts project unknown PARTIAL empty. Optional default-empty productFacts/PRODUCT_DETAILS path rejects empty/mixed presentations; generic localized renderer emits deduplicated supplied lines/selected options, truthful missing/partial labels in20 locales and existing complete candidates/wrapper/referral precedence. Existing options semantics/goldens retained. Existing parsed runner boundary already consumes normalized schema data; actual search/get next-model/evidence tests verify new optional-field normalization and fatal malformed mandatory fields.
+
+### Validation Results
+- `npm run typecheck`: passed.
+- `npx tsx --test src/commerce/product-facts.test.ts src/commerce/product-context.test.ts src/commerce/presentation/facts.test.ts src/commerce/presentation/presentation.test.ts src/commerce/runner/runner.test.ts src/commerce/selection.test.ts src/commerce/response.test.ts src/commerce/product-discovery-contracts.test.ts src/commerce/product-discovery-projection.test.ts src/commerce/runner/built-in-tools.test.ts`:158 total,157 passed,1 existing consumer-projector skip,0 failed.
+- `npm run build`: ESM/declarations passed.
+- `npm run validate:commerce-entrypoints`: passed.
+- `npm run validate:commerce-presentation`: Node/browser-like checks passed with parser dependency.
+- `npm pack --ignore-scripts` and extracted-package public commerce/presentation import smoke: passed.
+- `git diff --check`: passed.
+- Lint unavailable: no declared package lint script/dependency; not represented as passed.
+Tests cover HTML/entities/skipped subtrees/controls/Unicode/byte bounds, exact merge/dedup/status/unknowns, generic Size/Shade/Volume/Species/Height/Pot size/custom labels, all locales, selector/refusal/mixed-disposition and wrapper/candidate boundaries, existing5.6.0 goldens and runner normalization boundary.
+
+### Package / Assistance / Limits
+parse5 pinned exactly8.0.1, lock integrity sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==. Source package remains5.6.0; no new npm publication/integrity claimed. SHARED-005 owns combined accepted release. No provider-native mapping, service source, schema migration/provider artifact or deployment changed. Material moda_shared assistance implemented source/tests; root reviewed normalizers/rendering and handled publication. Initial HTML fixture exposed double br boundary; corrected before final tests. No live provider/customer/message mutation.
+
+### Git / VCS
+Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace; parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-SHARED-006; implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-SHARED-006; matching task/ARCH-066-SHARED-006 branches. Stale Pending readiness reconciled only after canonical dependency003 verified Complete, commit34de863f3. Launcher prepared_execution true, dependency gate passed; parent reused, implementation created at95a7382977efe8c7c14580cfe4a11f885094eba2; both remote FF not-needed/main already-current; recursive submodules sync/update passed with no entries. Durable claim460b7808adb5657768efff2acc209d7e7f19b84d Attempt1 developer at2026-11-08T16:29:53Z pushed. Implementation2bc7f02 pushed matching task ref; parent report published separately exact SHA in Git history. No shared checkout switch, another task worktree reuse, gitlink staging or main merge/push. No enabled task started.
+
+## Developer Self-Review - Passed / Accepted Attempt 1
+2026-11-08: Reconciled complete task and normative consumer A–C/E contract, actual normalizers/strict schemas, exact-ID selector, presentation schema/composer/renderer and runner-boundary regression evidence. Implementation2bc7f02c16840a41154f2135a26f9ba52c71fad7 and parent cfc09999c7ea04af041aed7769372f055c203db1 match published task refs; both canonical worktrees clean. Recorded prepared packet isolation/synchronization/dependency/claim and material assigned-agent assistance retained.
+
+Scoped review passes: exact parse5@8.0.1/lock integrity, explicit HTML/plain format,65536 UTF8 input cap, excluded script/style/template/noscript/attributes/comments, entity decoding, block/br handling and Unicode-safe4096 codepoint clipping with PARTIAL. Attribute exact-name merge/value dedup/order and16/64/128 bounds retain factual labels; strict statuses reject contradictions. Legacy missing optional fields stay absent/unknown. Exact product/variant selector returns limitations and projects unknown verified facts PARTIAL empty. PRODUCT_DETAILS requires nonempty facts and rejects simultaneous options/recommendations; renderer localized across20 locales with supplied description/labels, deduplicated selected lines and truthful unavailable/incomplete text, retaining candidate/wrapper/referral semantics. No merchandise enum/inference or options contract replacement.
+
+Validation reviewed:157 pass/1 existing consumer-projector skip/0fail; declared typecheck, ESM/declaration build, commerce entrypoint/presentation Node+browser checks, packed public-import smoke and diff check passed after final edits. Existing parsed runner boundary retains transformed new fields; search/get model/evidence fixtures assert this, mandatory malformed fields remain fatal. No relevant source change requires rerunning successful checks. Lint disposition: no declared script/dependency exists, unavailable retained honestly rather than claimed passed; no unrelated tooling required for scoped acceptance. Existing skip likewise explicit.
+
+No outstanding scoped correction found. Provider-native mappings/consumer activation and combined immutable release remain downstream work; no npm publication, migration/provider artifact or deployment asserted here. Accepted Attempt1 unchanged; status review, executor/claimed_at null, completion_mode developer preserved. Explicit `/moda_developer_update ARCH-066-SHARED-006 complete` pending. No downstream promotion, enabled execution or main merge/push.
+
+## Developer Completion Decision - 2026-11-08
+Developer explicitly invoked `/moda_developer_update ARCH-066-SHARED-006 complete`. Durable passing review55ad2ed2d29c42ad34202e29a0eeec14c04586a3 verified published. Implementation2bc7f02c16840a41154f2135a26f9ba52c71fad7 matches published task ref; both canonical worktrees clean. No required scoped correction remains; lint unavailable and existing skip dispositions retained. Status Complete, accepted Attempt1 unchanged, executor/claimed_at null. No package publication, deployment or main merge/push.
+
+### Dependency-frontier reconciliation
+SHARED-004 dependencies001,002,006 now Complete: Ready at unchanged Attempt0/unclaimed. SHARED-005 remains Pending on SHARED-004. Consumers remain gated by combined SHARED-005 artifact; no enabled work started. Accepted006 source must be incorporated by004 before implementing its generic product payload contract.
