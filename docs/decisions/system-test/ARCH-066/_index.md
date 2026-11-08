@@ -7,3 +7,4 @@ Definitions only; no execution claims, implementation worktrees or completion ev
 | Task | Status | Dependencies |
 |---|---|---|
 | [ARCH-066-SYSTEM-TEST-001](SYSTEM-TEST-001-verify-multiturn-product-and-whatsapp-parity.md) | Pending | ARCH-066-BACKGROUND-001, ARCH-066-COMMERCE-001 |
+| [ARCH-066-SYSTEM-TEST-002](SYSTEM-TEST-002-verify-initial-outreach-preview-live-parity.md) | Pending | ARCH-066-COMMERCE-002, ARCH-066-BACKGROUND-002 |

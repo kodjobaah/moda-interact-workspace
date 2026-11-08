@@ -80,3 +80,9 @@ Release handoff: Shared version/integrity pending; database migration/commit pen
 
 ## Dependency frontier - 2026-11-08
 SHARED-001 accepted Attempt2 explicitly developer-completed, source c3f9f07 and review5bd56f332 published. SHARED-002 and DATABASE-001 now Ready/unclaimed. SHARED-003 remains Pending on SHARED-002; consumers and terminal System Test remain gated. No package publication, migration, deployment or enabled execution performed.
+
+## Two execution purposes and Studio testing
+See [Background and Studio sequence diagrams](ARCH-066-background-and-studio-sequences.md). Studio must support separate checkout-scoped initial-outreach tests and subsequent CommerceAgent conversations. The initial-outreach preview branch is an additional required workstream: current ARCH-066 tasks cover conversational parity and do not yet define its implementation. Do not treat the existing checkout-preview exclusion as satisfying this requirement. Production initial-outreach template and delivery contracts remain unchanged.
+
+## Initial outreach preview implementation tasks
+The earlier checkout-preview exclusion is superseded by SHARED-004, BACKGROUND-002, COMMERCE-002 and SYSTEM-TEST-002. These tasks require live exact checkout product/variant reads, even without an offer; checkout quantities and historical prices remain separate from current facts. No unrelated catalogue products. Shared publication SHARED-003 now depends on SHARED-004. Studio uses existing same-shop CheckoutRecovery records without creating an outreach attempt. Both execution purposes are tested separately.

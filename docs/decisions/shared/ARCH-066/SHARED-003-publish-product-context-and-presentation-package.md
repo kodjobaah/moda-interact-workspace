@@ -14,8 +14,8 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-066-SHARED-001", "ARCH-066-SHARED-002"]
-enables: ["ARCH-066-MCP-001", "ARCH-066-BACKGROUND-001", "ARCH-066-COMMERCE-001"]
+depends_on: ["ARCH-066-SHARED-004", "ARCH-066-SHARED-001", "ARCH-066-SHARED-002"]
+enables: ["ARCH-066-BACKGROUND-002", "ARCH-066-MCP-001", "ARCH-066-BACKGROUND-001", "ARCH-066-COMMERCE-001"]
 created: 2026-11-08
 updated: 2026-11-08
 ---
@@ -40,3 +40,5 @@ Definition only. Do not claim or implement until explicit dependency tasks are C
 
 ## Completion Report
 Status: Not started. Attempt: 0. Implementation commit: none. Validation evidence: none. Remaining work: all unchecked acceptance criteria. Document isolated worktree, package, test and deployment evidence when implemented; do not mark Complete merely from source inspection.
+
+Publication must include the SHARED-004 `./commerce/outreach` export and its Zod contracts; smoke-test the installed export before releasing.

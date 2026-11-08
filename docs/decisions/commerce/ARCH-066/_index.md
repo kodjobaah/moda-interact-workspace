@@ -7,3 +7,4 @@ Definitions only; no execution claims, implementation worktrees or completion ev
 | Task | Status | Dependencies |
 |---|---|---|
 | [ARCH-066-COMMERCE-001](COMMERCE-001-preview-verified-product-details-and-final-whatsapp-message.md) | Pending | ARCH-066-SHARED-003, ARCH-066-MCP-001 |
+| [ARCH-066-COMMERCE-002](COMMERCE-002-test-checkout-outreach-with-live-products.md) | Pending | ARCH-066-COMMERCE-001, ARCH-066-BACKGROUND-002 |
