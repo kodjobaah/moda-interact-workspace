@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -48,3 +48,6 @@ Not started. Record implementation commit, scoped checks and parity evidence bef
 ## Release dependency reconciliation — 2026-11-08
 
 SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainteract/moda-interact-shared@5.7.0` and integrity `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==` (source `09e249c5717c8866996624f8855a7d649dfd2c43`). Use this exact artifact and canonical consumer contract; never guess/latest/ranges. Remaining explicit blockers: ARCH-066-BACKGROUND-001. Status Pending, unchanged Attempt0/unclaimed. No implementation, deployment or task claim is started by reconciliation.
+
+## Dependency frontier — 2026-11-08
+BACKGROUND001 explicitly Complete at Accepted Attempt2; Shared005 Complete immutable5.7.0 lineage retained (current corrected artifact5.8.0 available through accepted010). Both explicit prerequisites satisfied. Ready, unchanged Attempt0/unclaimed, execution/completion developer retained. This promotion does not execute or amend implementation scope; use `/moda_developer_create ARCH-066-BACKGROUND-002` when ready. No standalone publication or main/live action.
