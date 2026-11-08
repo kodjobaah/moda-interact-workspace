@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -46,7 +46,7 @@ Definition only. Do not claim or implement until explicit dependency tasks are C
 ## Completion Report
 
 ### Status
-Review — Attempt1 developer self-review Passed; explicit developer completion pending.
+Complete — accepted Attempt1 explicitly developer-completed on 2026-11-08.
 
 ### Files Changed
 21 task-owned paths: new src/commerce/presentation/ pure modules/catalogue/fixtures/tests; package.json subpath/script; tsup.config.ts build entry; additive src/commerce/schemas.ts presentation selections; scripts/validate-commerce-presentation.mjs. No consumer source, dependency lock or version changes.
@@ -85,3 +85,9 @@ Scoped review passes: pure browser-safe export has no service I/O/send authority
 Recorded final validation after semantic edits:129 passed/1 existing consumer-environment skip/0 failed, declared typecheck, ESM/declaration build and both commerce validators passed, including real browser-target bundle/VM without Node globals. Final whitespace-only cleanup has no semantic effect and aggregate diff check passes; no redundant rerun required. Lint disposition: no declared script or ESLint dependency exists in this package, so unavailable is retained rather than claimed passed; no new regression/unrelated toolchain change required for scoped acceptance. Existing skip likewise retained explicitly.
 
 No required scoped code correction remains. Consumer migration must still adopt the published export and remove duplicated pure Background code; this task does not claim consumer parity in deployment, moderation/window/billing evaluation, npm publication, migration or provider artifact changes. Package remains5.5.0; publication integrity belongs to SHARED-003. Historical reports retained. Status review, executor/claimed_at null, accepted Attempt1 unchanged, completion_mode developer preserved. Explicit `/moda_developer_update ARCH-066-SHARED-002 complete` is pending. No downstream promotion, enabled execution or main merge/push.
+
+## Developer Completion Decision - 2026-11-08
+Developer explicitly invoked `/moda_developer_update ARCH-066-SHARED-002 complete`. Passing review60836eb3811d77f68993a8081e3d0f7afecc66ad is durable/published. Implementation7255db58ee1231e209c75c1466255787426d2e5a matches published task ref; both canonical worktrees clean at verification. No required scoped correction remains; lint unavailable and existing skip dispositions retained. Status Complete, accepted Attempt1 unchanged, executor/claimed_at null. No source change, package publication or main merge/push.
+
+### Dependency-frontier reconciliation
+SHARED-003 explicit dependencies SHARED-001 and SHARED-002 now Complete; promote to Ready at unchanged Attempt0, unclaimed. Consumers remain publication-gated; terminal System Test remains manually gated on its explicit dependencies. No enabled task started. Readiness records published on completion branch without implying main integration.
