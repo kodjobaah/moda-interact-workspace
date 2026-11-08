@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -52,3 +52,6 @@ Status: Not started. Attempt: 0. Implementation commit: none. Validation evidenc
 - [ ] Repeat on Size, Shade/Volume, Species/Height/Pot size and custom label with description/attributes present/absent/partial. Assert exact labels/units and no claims unsupported by fixtures. No sizing-only pass criterion.
 - [ ] Pin new SHARED-005, actual database migration and consumers; concurrent inbound versions run against real disposable DB/Redis. Compare exact composed UTF8 text with identical synthetic variables/provenance; separately assert final moderation/outbox emulator, not just model output.
 - [ ] Record machine-readable per-case assertions, fixture hashes, calls/counts, diagnostics/stage, reference revision, artifact integrity, final body hash and emulator message hash. All required cases pass; skipped required integration case blocks completion. No live provider or customer send needed.
+
+## Dependency readiness reconciliation — 2026-11-08
+Explicit prerequisites now Complete: BACKGROUND001 accepted/developer-completed Attempt2 and COMMERCE001 accepted/developer-completed Attempt3 (completion702b2e70e). Exact authoritative task records carried with this parent branch. Pending→Ready, attempt0 unchanged, executor/claimed_at null. Developer/manual execution gate remains: no claim, implementation worktree, test run or completion is authorized by readiness reconciliation. Use normal developer preparation only when developer invokes it. Terminal system validation remains distinct from local Commerce fixtures.
