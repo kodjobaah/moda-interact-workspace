@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -47,7 +47,7 @@ Definition only. Do not claim or implement until explicit dependency tasks are C
 ## Completion Report
 
 ### Status
-Ready for Review — Attempt1. Implementation and available declared validation passed; lint capability gap below. Acceptance/completion pending; no follow-on task started.
+Changes Requested — Attempt1 reviewed; Ready for corrective attempt. No new attempt claimed.
 
 ### Files Changed
 14 task-owned source/test paths in implementation ce24e4550c0a7b2e93c1311437ac35a2d605ffae: commerce schemas/index/new product-context module/tests; runner types, preflight, result assembly, instructions, execution, model route, diagnostics/messages, invoke-model and runner tests. No consumer, package/lock/schema/provider artifact edits.
@@ -77,3 +77,14 @@ Canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
 Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-SHARED-001.
 Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-SHARED-001.
 Both branches task/ARCH-066-SHARED-001; launcher synchronized before Attempt1. Implementation baseline06c8fce5c06efee758670f69fb4865c5e2f21b1f. Shared checkouts not switched for task implementation; no other task worktree reused. Claim58fc57cb8 pushed. Implementation ce24e4550c0a7b2e93c1311437ac35a2d605ffae pushed origin/task/ARCH-066-SHARED-001. Parent report committed/pushed matching branch, exact commit available in Git history. No submodule gitlink staged; no main merge/push; no enabled task execution.
+
+## Developer Self-Review - Changes Requested
+2026-11-08: Reviewed actual published implementation ce24e4550c0a7b2e93c1311437ac35a2d605ffae, task contract, product-context reducer, product option transforms, preflight, model projection, result assembly and tool-execution path. Both canonical worktrees clean; implementation and parent1068edae0 match published task refs. Existing 127-pass/1-skip, typecheck/build/entrypoint evidence remains valid for tested cases but does not prove the boundary below.
+
+### Required Corrections
+1. **Propagate normalized product outputs to the model.** In runner/tool-execution.ts, canonical product validation calls CommerceProductSchema.safeParse only to test success, then pushes the original result into runtimeMessages. The product options/selectedOptions schemas transform malformed/control/overlong labels and contradictory status into bounded safe output, but those parsed values are discarded. As a result, source options with status AVAILABLE and invalid labels can pass validation while the model receives raw labels/status rather than sanitized PARTIAL data. Replace canonical product payloads with parsed schema output before evidence/model history/context-update consumption; preserve other validated envelope fields. Review the existing built-in output validation for the same transform-discard pattern.
+2. Add runner-level regression: canonical successful search/get returns options with controls/overlong labels/contradictory status and oversized option collections; capture the next model invocation and prove only bounded normalized product data arrives, truthful PARTIAL status is retained and selected options are normalized. Assert legacy products remain compatible and malformed non-option result fields still fail as host-invalid output. A standalone schema-normalizer test is insufficient.
+3. Re-run affected runner/product contracts plus declared typecheck/build/commerce-entrypoint checks after correction. Keep lint unavailable explicitly documented because package has no lint script/dependency; do not claim passing lint or add unrelated tooling.
+
+### Transition
+Status ready; executor/claimed_at null; reviewed Attempt1 unchanged. Next `/moda_developer_create ARCH-066-SHARED-001` claims Attempt2 exactly once. Historical implementation/report/validation retained. No passing review/completion or downstream dependency promotion. Assigned-agent assistance, isolated worktree and publication evidence remain as recorded above. No source fixes made during this review; no main merge/push.
