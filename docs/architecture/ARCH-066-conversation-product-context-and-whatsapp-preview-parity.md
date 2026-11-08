@@ -154,3 +154,13 @@ Review BACKGROUND-001 and COMMERCE-001 against this amendment before acceptance.
 ### Pull reconciliation — 2026-11-08
 
 The checkout-led requirements above are preserved as scope history. Later published Accepted reviews/completion decisions and immutable release evidence in this file remain authoritative; the earlier requirement to review before acceptance does not reopen those accepted attempts. Current required product-detail correction artifact is the accepted SHARED-010 release (5.8.0); earlier5.7.0 handoff text remains historical. No lifecycle decision, execution or new release is authorized by this pull reconciliation. Terminal system-test execution remains manually gated.
+
+## Frozen outreach compatibility gap — 2026-11-08
+BACKGROUND002 adoption proves published5.8.0 enumerates valid savedbrand alt/dimension semantic keys but resolver refuses them; existing supported production frozen bindings cannot be silently removed. SHARED011 Ready defines bounded strict data/resolver compatibility; SHARED012 Pending immutable correction publication. BACKGROUND002 remains Blocked until corrected artifact adoption and same-task review. No generic local renderer workaround/unsupported internal import, no main/release/live/follow-on execution. Checkout-led scope remains controlling: production retains real recovery, standalone007/008/MCP002 withdrawn; this correction does not resurrect them.
+
+## SHARED012 publication handoff — 2026-11-08
+SHARED011 explicitly Complete at Accepted Attempt1, source6c8bbe194337c7c2afb141047d24aeeeb23c48ca, review750d5119/decision9eb1af515. Exact completed prerequisite record materialized here;010Complete preserved.012Ready Attempt0/unclaimed, release-only scope/developer completion. No implementation worktree/claim/npm publication created by reconciliation. Background002 remains Blocked pending exact accepted corrected artifact and its72unresolvedfailures; no consumer/main/live/follow-on execution or standalone resurrection.
+
+### Pull reconciliation — frozen outreach correction
+
+Preserve the checkout-led scope and all accepted historical releases. The product-detail correction remains immutable5.8.0; frozen outreach binding compatibility requires the separate SHARED-012 publication gate after accepted SHARED-011. In this merged snapshot SHARED-012 is Ready at Attempt0, not accepted or published; no new version/integrity or consumer readiness is inferred. BACKGROUND-002 remains Blocked until corrected artifact adoption and its remaining validation are resolved. Earlier pending/ready frontier entries are dated history; terminal system tests remain manually gated.
