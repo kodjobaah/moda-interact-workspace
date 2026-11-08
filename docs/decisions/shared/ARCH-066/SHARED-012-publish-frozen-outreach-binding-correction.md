@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 20
-executor: codex
-claimed_at: 2026-11-08T22:28:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-066-SHARED-010", "ARCH-066-SHARED-011"]
 enables: ["ARCH-066-BACKGROUND-002", "ARCH-066-COMMERCE-002"]
@@ -138,3 +138,17 @@ SHARED010 Complete and SHARED011 explicitly Complete after Accepted Attempt1/sou
 ## Architect exact-source composition amendment — 2026-11-08
 Release depends on both010and011. Prepared012source0dc2947684bbd42ce69d0bae6cb300c957639848 matches accepted0116c8bbe19 but lacks accepted009/010 productDetailSelections/public selection validator from010carry8e768ba. Reusing011dist alone would regress immutable5.8.0 and is prohibited. Exact accepted009source16e3b35 and010carry8e768ba are byte-identical forsrc/scripts/tsup; carry changes only schemas.ts,selection.ts,answer-presentation-selection.test.ts and scripts/validate-commerce-entrypoints.mjs, disjoint from011outreach correction. Repository owner may cherry-pick exact8e768ba into current012task branch, without semantic edits/conflict resolution/refactor, and verify byte parity of those4files plus unchanged011outreach paths. If conflict/new semantic resolution is required, stop and return toarchitect. This is reuse/composition of already accepted prerequisites, not feature implementation or main integration.
 No accepted build artifact contains this exact composite, so copying/relabeling011dist is invalid. Explicitly authorize one required distributable composition build via existing packaging/prepack lifecycle after exactsourcecarry/versionmetadata, solely to produce release archive. Do not rerun unit/integration/lint/typecheck as feature validation; do not rerun build merely for revalidation. Record exactcompositesourcecommit, acceptedsourcefile parity, build/pack command, selectedversion5.9.0 subject to registryunusedcheck, archivehash/integrity and public old+new export smoke before publication. Metadata-only criterion is evaluated against this approved composite; no sourcechanges beyond exactacceptedcarry allowed. No standalone/consumer/main/live/follow-on action.
+
+## Architect Review — Attempt1 (2026-11-08)
+### Review Status
+Accepted. Status review, Attempt1 unchanged, executor/claimed_at cleared. Explicit developer completion pending via `/moda_developer_update ARCH-066-SHARED-012 complete`.
+### Review Notes
+Independently reviewed source/metadata b65e04f7b702e4bae7f9cb354d55a23681b677cc and reportb5bb592d2159cd7e0d9b88768b78918719351f21, published on canonical matching branches/clean worktrees. Registry5.9.0 published once, exact tarball downloadable. Architect independently downloaded public tarball after report:443414bytes, SHA25685db53341118da7f47869bec64ac886417bdb1a2e9793a0e28cfd5192030928c and registry SHA512 integrity match reviewed/import-smoked archive. No metadata-only availability acceptance or republish.
+### Reviewed Files
+package/lock metadata; accepted009fourfile carry and accepted011tenfile outreach/script composition; required packaging command/archive145file manifest; installed public runtime/declaration import receipt, registrymetadata/publish/download logs and task report. Source parity independently verified against010carry8e768ba and0116c8bbe19. Metadata commit changes only3versionlines after exact accepted composition.
+### Validation Reviewed
+010/011 Complete before release; unused5.9.0 chosen under taskrule. Clean disjoint accepted-source carry authorized before execution by79c6a72e1, no conflicts/new semantic resolution. Required one existing prepack ESM/DTS distributable build justified because011dist lacked010features; no standalone build revalidation/tests/lint/typecheck reruns. Public import-only runtime/declaration checks preserve productDetailSelections/verifyCommerceAnswerPresentationSelection/presentation plus corrected3preparedBrand/media schemas/types/render. Actual npm publish exit0 and registry/download integrity verified after bounded processing404cleared. Existing immutable5.8retained. Publication does not certify consumer behavior.
+### Architecture Conformance
+Conforms to release-only scope including explicit accepted-source composition amendment. Prepared packet proves exact dedicated parent/implementation sibling worktrees, mirrored branch, startup remote/main synchronization, submodules ready/noentries and pushed Attempt1claim48f972ed. No parent gitlink/main merge, implementation refactor, standalone release, consumer/live/follow-on execution. Registry version5.9.0 remains exact accepted source/artifact, no latest/range consumer inference.
+### Follow-up
+Explicit developer completion required before dependency promotions. Background002 remains Blocked on012 plus its72unresolvedfailures; same-task rework must adopt exact5.9.0 and preserve remaining validation/credit/consent/admission/send gates. Commerce/System Test readiness must follow actual other prerequisites/manual gates, not this review alone. No consumer execution implicit.
