@@ -18,3 +18,6 @@ Commerce001 Blocked: implementation4c17318/reporta8ed45ff6 pushed;145 local test
 
 ### Accepted Commerce Attempt3 frontier — 2026-11-08
 Commerce001 implementation4723e6f/reportde12408f5 accepted after actual standalone TEST immutable upgrade/default-profile/descriptor/idempotence proof. Task remains Review for explicit developer completion (completion_mode developer), not Complete. Shared009/010 remain Complete; no dependant promoted, protected-main merge, live activation or terminal system-test execution. Prior blocked/in-progress entries above are historical.
+
+### Explicit developer completion frontier — 2026-11-08
+COMMERCE001 Complete at accepted Attempt3 by explicit developer decision; Shared009/010 and BACKGROUND001 Complete. BACKGROUND002 remains Ready; COMMERCE002 remains Pending until BACKGROUND002 Complete. SYSTEM-TEST001 becomes dependency-ready/Ready but remains manual-gated and unclaimed; SYSTEM-TEST002 remains Pending. No implementation, live activation, main integration or system-test execution started. Earlier Review/blocked frontier records are historical.
