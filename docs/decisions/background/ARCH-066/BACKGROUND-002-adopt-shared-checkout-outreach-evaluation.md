@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: blocked
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -98,3 +98,18 @@ Compiler/scoped lint/diffcheck pass. Evaluator/selection/current admission38pass
 Canonical prepared Attempt1 packet records dedicated sibling parent/implementation, remote/main synchronization, exact recursive databaseb7f58d5, pushed claim5eb9ccd8. Source/report published on mirrored task branches, parent gitlink not staged. Checkout-led production recovery scope retained;007/008/MCP002 withdrawal not resurrected. Current blocker and residual failures prevent conformance/acceptance; architecture remains In Progress. No main/live/deploy/release/consumer execution.
 ### Follow-up
 SHARED011 Ready/unclaimed defines strict supported frozen-brand/media compatibility; SHARED012 Pending separate immutable publication. Both definitions materialized in canonical parent branches only; no implementation worktrees or claims created.012 added as explicit Background dependency, with no dependency on blocked consumer/system test. After corrected artifact is Complete, re-gate this SAME task for rework, adopt exact published pin and fix/test remaining72failures as appropriate without deleting safety assertions. Require full actual production NONE2reads/no model/offer and existing configured nooffer behavior; generation/current-facts change and selected-offer expiry between evaluation/admission; both providers; replay/credit/outbox/moderation/send fences; strictbrand/media/URL binding compatibility; identical frozen parameters/fullbody/provenance with Studio fixture. Preserve historical result parsing/FOLLOW_UP. Current partial source remains reviewable but cannot be Accepted or completed. Commerce002/SystemTest002 remain gated/manual; no follow-on execution.
+
+## Architect Dependency Unblocking Review — 2026-11-08
+### Review Status
+Changes Requested — dependency corrected; Ready for same-task rework, not Accepted. Prior Attempt1 preserved, executor/claimed_at null. Next authorized canonical claim alone creates Attempt2.
+### Review Notes
+SHARED012 now explicitly Complete at Accepted Attempt1 with public downloadable immutable5.9.0; release/source/integrity evidence in exact materialized dependency record. Existing001/005 prerequisites also Complete. Missing frozen brand capability no longer prevents correction, but published partial source8be7e962 and historical72failingtests remain unaccepted. No failures waived by Shared goldens/publication.
+### Required Same-Task Corrections
+- [ ] Retain original branch/source/history and every unfinished original Work Item/Acceptance Criterion. Pin exactly @modainteract/moda-interact-shared5.9.0, integritysha512-mGjw3KY2iLCGXGS5K7ZjHrsHM6mbooi5Qmcl08zXWlZxLjaL38HY74EUGqMdT79VPGQ1EBsKNnfH9RTI+hY1GA==; never downgrade/range/latest or duplicate Shared internals.
+- [ ] Populate strict preparedBrand from same-shop saved brandName/logoAltText/logoWidth/logoHeight/squareLogoAltText, unavailable fields null. Populate preparedBrandMedia fixedlogo/squareLogo/coverImage slots with authorized READY R2 derivatives/roles. Keep IMAGE/CHECKOUT_PRODUCT headerMedia independent; no genericname mandatory fallback/raw original URL or fake ready evidence. Preserve mandatory INITIAL shop.name and onecheckout.itemsSummary in valid frozen goldens.
+- [ ] Investigate all prior72failures (graph16/16,image1/9,preparer12/29,fallback11/19,coordinator32/55). Update intentionally obsolete expectations only with preserved safety coverage; do not delete/skip assertions or relabel all failures baseline. Verify strict URL/refusal and current provider/native-ID facts, price/quantity mapping and historical/current distinction.
+- [ ] Prove actual production NONE facade performs exactly required two live reads per distinct pair without model/offer calls and retains permitted existing configured no-offer path; reject noncheckout alternative offers while preserving historical result parsing/conversational/FOLLOW_UP behavior.
+- [ ] Prove checkout generation/fingerprint and changed-current-facts refusal; selected-offer expiry between selection/admission; real attempt identity, consent/moderation/credit/outbox/replay/send fences. Shared evaluation/rendering never becomes admissionToken or authorized fallback on identity/denial/stale facts. Finish original pure-delegation scope without service-local forks.
+- [ ] Run required both-provider caller/regression suites, compiler/build/scopedlint and exact same frozen input fullbody/parameters/provenance parity for Studio handoff. Record current full counts/no hidden skipped safety cases. Known untouched consent-provider151 full-lint limitation must remain honestly distinguished from current regressions.
+### Architecture Conformance / Follow-up
+Ready permits correction only; no source edits/claim/acceptance/completion occur in this reconciliation. Preserve checkout-led withdrawal, no standalone007/008/MCP002 resurrection. Commerce002/SystemTest002 remain gated by original incomplete consumer work/manual checkpoints; no follow-on/main/npm/live execution. Invoke `/moda-task ARCH-066-BACKGROUND-002` for next authorized agent attempt.
