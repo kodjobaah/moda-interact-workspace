@@ -16,3 +16,6 @@ Definitions amended; no task claimed or implementation accepted by this review. 
 2026-11-08: SHARED-006 accepted Attempt1 explicitly Complete; SHARED-004 newly Ready/unclaimed; SHARED-005 remains Pending. No publication or automatic execution.
 
 2026-11-08: SHARED-005 explicitly Complete at accepted Attempt1 (verified5.7.0). BACKGROUND-001 and COMMERCE-001 Ready/Attempt0/unclaimed; later consumers and system tests retain remaining dependency/manual gates. No task started.
+
+## Shared correction frontier — 2026-11-08
+SHARED009 Complete at accepted source16e3b35; SHARED010 Complete at release5.8.0 (exact integrity in release task), acceptance66c531568. Commerce001 in_progress Attempt2, durable claim889a118de6fd4436e66ff7454566e5eddc34eadb. Completion remains developer; other task histories/manual system gates unchanged.
