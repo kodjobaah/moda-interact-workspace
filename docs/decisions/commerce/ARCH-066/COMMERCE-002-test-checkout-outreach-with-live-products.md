@@ -9,12 +9,12 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002"]
+depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-SHARED-012"]
 enables: ["ARCH-066-SYSTEM-TEST-002"]
 created: 2026-11-08
 updated: 2026-11-08
@@ -57,3 +57,7 @@ Checkout reader maps CheckoutRecovery.id/shopId/platform/generation/currency/lin
 ## Release dependency reconciliation — 2026-11-08
 
 SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainteract/moda-interact-shared@5.7.0` and integrity `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==` (source `09e249c5717c8866996624f8855a7d649dfd2c43`). Use this exact artifact and canonical consumer contract; never guess/latest/ranges. Remaining explicit blockers: ARCH-066-COMMERCE-001 and ARCH-066-BACKGROUND-002. Status Pending, unchanged Attempt0/unclaimed. No implementation, deployment or task claim is started by reconciliation.
+
+## Corrected publication / readiness handoff — 2026-11-08
+All explicit prerequisites Complete: Shared005/012, Commerce001 canonical remote181bd35f at Attempt3, Background002 AcceptedAttempt2 explicitly completed. Ready at unchanged Attempt0/unclaimed; execution/completion developer retained. Use `/moda_developer_create ARCH-066-COMMERCE-002` when ready; no execution occurs here.
+Current corrected consumer pin is exactly @modainteract/moda-interact-shared5.9.0, integritysha512-mGjw3KY2iLCGXGS5K7ZjHrsHM6mbooi5Qmcl08zXWlZxLjaL38HY74EUGqMdT79VPGQ1EBsKNnfH9RTI+hY1GA==, superseding historical0055.7pin. Complete012explicitly added as correction publication prerequisite. Existing initial-outreach contract requires strict preparedBrand five same-shop savedcolumns/nulls and fixed authorized READY logo/squareLogo/coverImage media slots; IMAGE/CHECKOUT_PRODUCT header independent, no genericname/rawURL fallback. Reuse recorded Background002 full same-input frozen body/parameters/provenance fixture for independently reviewed Studio parity. No source copy from service/internalShared imports, real send/media mutation or implicit acceptance. Preserve checkout-led/isolated synthetic preview boundaries and real same-shop checkout outreach; system tests remain terminal/manual-gated.
