@@ -44,3 +44,7 @@ Not started. Record implementation commit, scoped checks and parity evidence bef
 - [ ] Map old ALTERNATIVE_PRODUCT_PROMOTION to explicit initial-path refusal OUTSIDE_CHECKOUT, preserving previousPromise historical parsing and conversational graph. Include regression showing an offer on a non-checkout item cannot enter new initial message.
 - [ ] Template preparer resolves repository/WABA/media outside shared rendering. Production may prepare derivative in existing media owner; pass ready frozen projection/variables to same shared renderer, retain binding fingerprints/assignment validation and send-fields shape.
 - [ ] Tests prove price/quantity/offer mappings, NONE two exact reads, changed facts refused, credit/consent/admission/replay unchanged and prepared body equals Studio fixture. Existing fallback service may decide later production action but must not transform a shared identity/denial refusal into a permitted send.
+
+## Release dependency reconciliation — 2026-11-08
+
+SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainteract/moda-interact-shared@5.7.0` and integrity `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==` (source `09e249c5717c8866996624f8855a7d649dfd2c43`). Use this exact artifact and canonical consumer contract; never guess/latest/ranges. Remaining explicit blockers: ARCH-066-BACKGROUND-001. Status Pending, unchanged Attempt0/unclaimed. No implementation, deployment or task claim is started by reconciliation.
