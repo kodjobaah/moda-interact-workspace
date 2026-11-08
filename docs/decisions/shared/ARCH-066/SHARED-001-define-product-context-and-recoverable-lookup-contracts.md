@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-11-08T12:57:24Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables: ["ARCH-066-SHARED-002", "ARCH-066-DATABASE-001", "ARCH-066-SHARED-003"]
@@ -48,7 +48,7 @@ Definition only. Do not claim or implement until explicit dependency tasks are C
 
 ### Status
 
-In Progress — Attempt2; implementing all recorded review corrections.
+Ready for Review — Attempt2; all recorded corrections implemented and available validation passed. Explicit acceptance/completion pending.
 
 ### Files Changed
 14 task-owned source/test paths in implementation ce24e4550c0a7b2e93c1311437ac35a2d605ffae: commerce schemas/index/new product-context module/tests; runner types, preflight, result assembly, instructions, execution, model route, diagnostics/messages, invoke-model and runner tests. No consumer, package/lock/schema/provider artifact edits.
@@ -89,3 +89,23 @@ Both branches task/ARCH-066-SHARED-001; launcher synchronized before Attempt1. I
 
 ### Transition
 Status ready; executor/claimed_at null; reviewed Attempt1 unchanged. Next `/moda_developer_create ARCH-066-SHARED-001` claims Attempt2 exactly once. Historical implementation/report/validation retained. No passing review/completion or downstream dependency promotion. Assigned-agent assistance, isolated worktree and publication evidence remain as recorded above. No source fixes made during this review; no main merge/push.
+
+## Attempt 2 Correction Report - 2026-11-08
+
+### Review Read / Scope
+Read the complete synchronized task, normative architecture and latest Developer Self-Review Changes Requested before implementation. No separate Architect Review section was present in synchronized task/architecture or primary task record. Developer confirmed the requested reviews as intended correction set. Preserved all historical review/Attempt1 evidence; did not fabricate or modify architect acceptance.
+
+### Correction Disposition
+1. **Implemented:** runner/tool-execution.ts retains parsed built-in output and replaces canonical search/get product fields with parsed normalized values before purpose-schema checks, evidence, model history and successful context-update consumption. Other validated envelope/payload fields retained; nullable detail and existing search max20 maintained. Late validation-only discard removed.
+2. **Implemented:** six runner.test.ts regressions capture the next model invocation and evidence callback. Tests prove controls/overlong labels/oversized collections produce bounded normalized PARTIAL data; selected options normalized; contradictory NOT_PROVIDED becomes PARTIAL; legacy absent option fields preserved; malformed mandatory non-option product fields fail as host-invalid result.
+3. **Implemented:** required affected validations rerun after source correction:
+- `npm run typecheck`: passed.
+- `npx tsx --test src/commerce/product-context.test.ts src/commerce/runner/runner.test.ts src/commerce/selection.test.ts src/commerce/response.test.ts src/commerce/product-discovery-contracts.test.ts src/commerce/product-discovery-projection.test.ts src/commerce/runner/built-in-tools.test.ts`:134 total,133 passed,1 existing consumer-environment skip,0 failed.
+- `npm run build`: ESM/declarations passed.
+- `npm run validate:commerce-entrypoints`: passed.
+- `git diff --check`: passed.
+- Lint remains unavailable (no package lint script or ESLint dependency); not claimed passed and no unrelated tooling added.
+
+### Files / VCS / Assistance
+Only src/commerce/runner/tool-execution.ts and src/commerce/runner/runner.test.ts changed in correction commit c3f9f07, pushed origin/task/ARCH-066-SHARED-001. Material moda_shared implementation/test assistance retained under developer execution ownership; root reviewed correction and handled publication/report. No consumer/version/dependency/publication changes.
+Same canonical parent and implementation worktrees reused on task/ARCH-066-SHARED-001. Launcher synchronized both before Attempt2, then report-format failure occurred after setting claim; normalized report and published claim83d1d1487 without another attempt increment. No unrelated edits or shared-checkout switching; no main merge/push or submodule gitlink staging. This report is published on matching parent task branch. No enabled task started; review/completion remains pending at unchanged Attempt2.
