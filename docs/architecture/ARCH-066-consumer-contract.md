@@ -71,3 +71,14 @@ Every pending task must list its owned paths, contract sections, accepted artifa
 ## G. Deployment and version compatibility gate
 
 Additive optional fields preserve old data parsing by new consumers; they do not prove that an old strict output schema accepts newly emitted fields. No rolling-deployment compatibility claim follows automatically. Pending tasks validate in a disposable environment with matching published descriptors, new Shared artifact and all updated consumers. No production deployment/activation is authorized here. Before a later production rollout, deploy readers/hosts that accept new optional fields first, verify MCP and default profile compiled schemas, and activate matching new immutable descriptors/profile together under the existing publication mechanism; never mutate old published output schemas or widen unknown properties. If a provider runtime cannot honor the active old descriptor, keep that release inactive until the coordinated rollout gate is satisfied. System tests must demonstrate old stored products/context still load and new active descriptor/profile passes actual current outputs. Version/activation mismatch is a typed validation refusal, not fabricated empty catalogue data.
+
+### SHARED-005 immutable outreach artifact — published and download-verified
+
+Exact consumer pin: `@modainteract/moda-interact-shared@5.7.0`.
+
+- dist.integrity: `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==`
+- Tarball SHA256: `c14d0195981acb2a31287b6e026322225dd34d29c0b60bd59c44a0141314936d`
+- Release source commit: `09e249c5717c8866996624f8855a7d649dfd2c43`; accepted outreach source `987a05dd06e79aa465d11fce8a4d4fe8b8d52703`, including accepted generic product facts and original5.6.0 ancestry.
+- Registry tarball: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-5.7.0.tgz
+
+Published once on2026-11-08, then registry metadata/download hashes and isolated installed-artifact public JS/declaration/evaluation/frozen-render/generic-facts checks passed. Prior34 public export definitions remain intact. This record supersedes the earlier version/integrity-pending selection text. SHARED-005 remains Review at Attempt1 pending developer acceptance and explicit completion; consumer dependency gates remain in force. Consumers must pin this exact artifact after the gate completes; no latest/range inference, package republish, consumer rollout or real message delivery is implied.
