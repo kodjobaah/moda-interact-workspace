@@ -128,3 +128,9 @@ Published once on2026-11-08, then registry metadata/download hashes and isolated
 ### 2026-11-08 — Accepted release completion frontier
 
 SHARED-005 is explicitly Complete at accepted Attempt1 after passing review `a2590514fd2d75db56391015ef5460feaefdb0f5`. The exact accepted consumer artifact is Shared5.7.0 with the integrity/SHA256/source recorded above. BACKGROUND-001 and COMMERCE-001 have all explicit prerequisites Complete and are Ready, Attempt0/unclaimed. Historical DATABASE-001/MCP-001 Complete records are preserved; no new MCP scope acceptance is inferred. BACKGROUND-002 waits for BACKGROUND-001; COMMERCE-002 waits for COMMERCE-001/BACKGROUND-002; system tests retain consumer dependency and manual gates. Consumer execution remains a separate claim; no rollout or production send occurs here.
+
+## Explicit checkout-led withdrawal disposition — 2026-11-08
+Developer confirmed production turns retain real CheckoutRecovery, synthetic Studio preview remains isolated. SHARED007 Superseded at Attempt1, SHARED008/MCP002 Superseded unclaimed; do not publish standalone package. Historical technical reviews retained, no successful implementation completion claimed.009/010 product-detail correction unaffected. Background/Commerce require same-task checkout-led source review and real recovery ownership, verified reference/composition tests; standalone blocker/dependencies withdrawn, other genuine gaps/System Test manual gates remain. No source rollback/main/live/follow-on execution.
+
+
+Dependency handoff2026-11-08: canonical Background001 Complete atb9470dd27/AcceptedAttempt2; Background002 Ready Attempt0/unclaimed, developer execution/completion. No standalone release/main/live/follow-on action.
