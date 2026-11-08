@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -36,14 +36,14 @@ Implement [the complete outreach contract](../../../architecture/ARCH-066-initia
 ## Required acceptance evidence
 - [x] Strict schema fixtures and all closed refusal reasons from contract section5; malformed nested payload rejected before use.
 - [x] Ordered port-call spy: ready NONE reads each distinct checkout pair exactly twice, never model/offer/search; duplicate lines retain their quantities/order.
-- [x] Changed-price/current-facts, currency, missing product, wrong parent/tenant, revoked access, cancellation, deadline and exhausted-budget tests.
-- [x] Existing checkout-offer goldens preserved except explicit checkout-only restriction; no stale checkout price used as live evidence.
+- [ ] Changed-price/current-facts, currency, missing product, wrong parent/tenant, revoked access, cancellation, deadline and exhausted-budget tests. Final-return cancellation/deadline regression missing; see review correction 1.
+- [ ] Existing checkout-offer goldens preserved except explicit checkout-only restriction; no stale checkout price used as live evidence. Mixed-method sendable offer projection regresses; see review correction 2.
 - [x] Both-provider fixtures for clothing/nail varnish/trees/custom label; identical code path and no merchandise enum.
 - [x] Exact prepared-template parameter/body/header goldens, no-ready-image TEXT fallback, missing approved template/locale, escaped/control/Unicode/4096 boundaries.
 - [x] Package typecheck/build, focused tests, `validate:commerce-outreach`, pack public import/declaration check and diff check. Record unavailable checks candidly; no claimed publication.
 
 ## Execution / completion
-Attempt 1 implemented and submitted for developer reconciliation/review. Explicit developer completion remains required. Preserve unrelated edits; Shared owns no service repository edits. SHARED-005 publishes accepted source. No production send/deploy authorized.
+Attempt 1 implementation reviewed with Changes Requested. Required corrections below must be implemented and reviewed before explicit developer completion. Preserve unrelated edits; Shared owns no service repository edits. SHARED-005 publishes accepted source. No production send/deploy authorized.
 
 Generic product payload validation uses accepted SHARED-006 implementation as source prerequisite; no competing schema edits. Source subtree ordering is006 then004, followed by005 publication.
 
@@ -55,7 +55,7 @@ ARCH-066-SHARED-006 is Complete at accepted Attempt 1, recorded and pushed in pa
 
 ### Status
 
-Ready for Review — Attempt 1. Implementation and report published; developer acceptance/completion pending.
+Changes Requested — reviewed Attempt 1 unchanged. Two source corrections and regression tests are required before acceptance; next developer claim creates Attempt 2.
 
 ### Preparation
 
@@ -95,3 +95,21 @@ Node 24.19.0 from canonical workspace bootstrap; `npm ci --ignore-scripts` insta
 Canonical dedicated parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-SHARED-004` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-SHARED-004` were used on mirrored `task/ARCH-066-SHARED-004` branches. Deterministic developer preparation fetched/synchronized parent and implementation, verified the completed 001/002/006 dependency gate and recursive submodules, then set Attempt 1. Report-format repair and durable claim `3340bc39b` retained that same attempt. Current primary checkout was used only as canonical routing/read-only source reference. No subagent assistance was used in this attempt; the Codex root adopted moda_shared implementation scope under the developer's explicit implementation/publication authorization.
 
 Implementation publication succeeded; this parent record is the corresponding review submission. No task branch was merged into main, no main push or feature gitlink staging, and no package release, migration, deployment or production message occurred. No known scoped acceptance item remains incomplete at submission. Formal `/moda_developer_update ARCH-066-SHARED-004` reconciliation/acceptance and subsequent explicit completion are pending; no passing Architect Review is fabricated here. Attempt stays 1, executor/claimed_at cleared for review. SHARED-005 remains Pending until this task is accepted and explicitly completed; no downstream task is claimed.
+
+## Developer Self-Review - Changes Requested — Attempt 1
+
+2026-11-08: Reconciled the complete task/contract, actual implementation diff and key evaluation/rendering boundaries, existing Background sendable-offer preparation and claimed validation. Implementation `2a31e9cd7202833bd4a35242e3999fed191a7289` equals the published origin task ref (verified directly with ls-remote). Parent submission `e1e4e459012fda729c29cf16f4cb6f6d6343a403` equals its tracking ref. Both canonical worktrees were clean before this review record. Dedicated worktrees, synchronization/claim repair, source ancestry and absence of subagent assistance remain as recorded above. No implementation source was changed during review.
+
+Existing validation is real but insufficient for acceptance: a fresh `node --import tsx --test src/commerce/outreach/*.test.ts` run passed **57/57** tests, while the two independent boundary reproductions below expose missing cases. Initial `npx tsx --test` review invocation could not open its IPC socket under local filesystem restrictions; Node's supported import-loader invocation ran the same tests successfully. Previous 156-pass focused compatibility, typecheck/build/public entrypoint/packed-artifact evidence remains recorded; it does not cover these defects. Lint remains unavailable and is not claimed passed.
+
+### Required corrections
+
+1. **[P1] Recheck cancellation and deadline at the actual ready-return boundary.** In `src/commerce/outreach/evaluate.ts:263–270`, the last check runs before fingerprint/result assembly, evaluatedAt capture, byte/schema validation and the final COMPLETE log callback. No check follows those operations. A deterministic NONE reproduction using existing fixture/ports counted 26 clock reads, then advanced the clock to run expiry on read 26 (the result's evaluatedAt capture). It returned `{kind:"ready",evaluatedAt:"2026-11-08T17:00:01.000Z"}` at the exact expiry `2026-11-08T17:00:01.000Z`. A second reproduction aborted the shared signal in the final COMPLETE log callback; it returned ready with `signal.aborted === true`. This violates the contract that cancellation/deadline wins over later completion. Add a final fence after all result construction/validation and any externally supplied callback before returning ready; route expiry/cancellation through the typed refusal path. Add deterministic tests for expiry crossing during finalization/evaluatedAt capture, cancellation during finalization/COMPLETE callback, and a just-before-expiry valid result. Assert no ready result at or after expiry or with an aborted signal. Reuse the original signal and preserve bounded activity; do not add retries or budgets.
+
+2. **[P2] Preserve mixed-method checkout offer presentation before rendering.** In `src/commerce/outreach/render.ts:13–24`, any CODE member chooses CODE_OFFER, but offerCount includes all members. `variables.ts:50–60` then requires either exactly one member or all members to be CODE and joins all descriptions. The evaluator/combination contract permits compatible CODE plus AUTOMATIC members. Existing Background `automated-recovery-template.service.ts:443–468` deterministically groups by method, selects the largest sendable method group (stable first-occurrence tie), and derives presentation/codes/description from that group; the template preparer uses the code count. Reproducing a valid ordered supported CODE+AUTOMATIC decision with an approved single-code frozen template returns NO_APPROVED_ASSIGNMENT in Shared because two total members demand offer.codes, although the source algorithm selects the first CODE singleton and supplies offer.code. With a multi-code binding, the all-CODE variable check also rejects a mixed set. Relocate/reuse that existing deterministic sendable-method projection in the Shared rendering path, consistently deriving purpose, binding count, codes and description from the same selected group without mutating evaluation evidence or inventing terms. Add goldens for one CODE plus one AUTOMATIC in both orders, larger CODE and larger AUTOMATIC groups, homogeneous single/multiple CODE, and automatic-only groups. Verify exact parameters, text and purpose against the existing host algorithm. Keep eligibility/revalidation on the original selected evidence and preserve the intentional no-alternative-products amendment.
+
+### Required validation / transition
+
+Both findings require source and regression-test changes; a no-source-change revalidation is not a corrected attempt. Rerun focused outreach plus affected product/presentation/runner compatibility tests, package typecheck/build, existing commerce-entrypoint/browser presentation checks, packed public JS/declaration smoke and diff check after correction. Record each correction separately as implemented or concretely blocked. Do not edit an Architect Review section or fabricate acceptance.
+
+Transition to Ready, executor/claimed_at null, reviewed Attempt 1 unchanged; execution_mode/completion_mode developer retained. The next canonical developer preparation claims Attempt 2 once. No passing review or completion is recorded. SHARED-005 remains Pending, and no downstream task is promoted or claimed. This parent review record is committed/pushed on task/ARCH-066-SHARED-004; implementation remains published unchanged. No package publication, service modification, main merge or main push.
