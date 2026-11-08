@@ -20,5 +20,5 @@ Definitions amended; no task claimed or implementation accepted by this review. 
 ## Product detail selection correction
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| ARCH-066-SHARED-009 | Complete public model selection contract | In Progress | ARCH-066-SHARED-005 |
+| ARCH-066-SHARED-009 | Complete public model selection contract | Complete | ARCH-066-SHARED-005 |
 | ARCH-066-SHARED-010 | Publish accepted immutable correction | Pending | ARCH-066-SHARED-005, ARCH-066-SHARED-009 |
