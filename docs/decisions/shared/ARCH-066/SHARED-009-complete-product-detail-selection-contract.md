@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: codex
-claimed_at: 2026-11-08T18:52:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-066-SHARED-005"]
 enables: ["ARCH-066-SHARED-010"]
@@ -40,9 +40,9 @@ Package publication, version change, provider adapters, deployment or message de
 Add optional productDetailSelections max3 unique exact productId/variantId pairs and additive PRODUCT_DETAILS disposition to exported model-facing contract. Preserve existing productOptionSelections and PRODUCT_OPTIONS semantics. Both nonempty selections refuse INVALID_SELECTION using canonical verifier; no silent precedence. Align model/runner/public schema projection and inferred types with existing generic verifier/composer. Legacy envelopes remain valid; unknown fields remain rejected. Do not fork schemas or normalize arbitrary facts from model output. Bound identities using existing schemas. No new merchandise enums.
 
 ## Work Items
-- [ ] Complete public schema, inferred types and exports/projections.
-- [ ] Enforce exact-ID cardinality, duplicate and mixed selection refusal.
-- [ ] Add legacy and generic selection regression fixtures.
+- [x] Complete public schema, inferred types and exports/projections.
+- [x] Enforce exact-ID cardinality, duplicate and mixed selection refusal.
+- [x] Add legacy and generic selection regression fixtures.
 
 ## Interfaces / Contracts
 @modainteract/moda-interact-shared/commerce and /commerce/presentation; accepted5.7.0 facts and options contracts. Consumer contract sections A–C/E controls.
@@ -54,14 +54,14 @@ ARCH-066-SHARED-005 (Complete).
 ARCH-066-SHARED-010 publication; later Commerce001.
 
 ## Acceptance Criteria
-- [ ] Public JS/declarations accept valid detail selection and PRODUCT_DETAILS.
-- [ ] Duplicate/mixed/oversized/wrong identity selection refuses deterministically; legacy options unchanged.
-- [ ] Default strict schema projections and runner responses can carry new field without unknown-key widening.
-- [ ] Focused regression checks and package validators pass.
+- [x] Public JS/declarations accept valid detail selection and PRODUCT_DETAILS.
+- [x] Duplicate/mixed/oversized/wrong identity selection refuses deterministically; legacy options unchanged.
+- [x] Default strict schema projections and runner responses can carry new field without unknown-key widening.
+- [x] Focused regression checks and package validators pass.
 
 ## Validation
-- [ ] Inspect declared package scripts; run typecheck, build, focused schema/selection/runner/presentation tests and existing commerce entrypoint/presentation validators.
-- [ ] Pack public-import smoke proves model-facing selection plus verified facts composition; inspect diff check.
+- [x] Inspect declared package scripts; run typecheck, build, focused schema/selection/runner/presentation tests and existing commerce entrypoint/presentation validators.
+- [x] Pack public-import smoke proves model-facing selection plus verified facts composition; inspect diff check.
 
 ## Stop Condition
 Push implementation and task report; set review and stop for architect acceptance. No publication here.
@@ -71,21 +71,23 @@ Use canonical launcher isolation and preparation. Exact accepted5.7.0 ancestry m
 
 ## Completion Report
 ### Status
-Not Started
+Ready for Review — Attempt1. No publication or version change.
 ### Files Changed
-None
+src/commerce/schemas.ts; src/commerce/selection.ts; src/commerce/answer-presentation-selection.test.ts; scripts/validate-commerce-entrypoints.mjs.
 ### Work Completed
-None
+Added PRODUCT_DETAILS to public response disposition and optional strict productDetailSelections (max3 exact bounded identities, duplicate pairs rejected). Existing option selection semantics unchanged. Public inferred types and wildcard exports include new field and verifyCommerceAnswerPresentationSelection. The pure canonical verifier rejects both nonempty option/detail selections as INVALID_SELECTION; callers must use it before fresh host verification. Schema remains plain strictObject with shape projection compatibility. Host grants/currentness/budgets remain consumer-owned, not granted by model selection. Existing verifyCommerceProductFacts and composer remain canonical generic facts path.
 ### Validation Results
-Pending
+Declared scripts inspected. Typecheck passed; initial 95 focused schema/response/selection/runner/presentation checks passed; added JSON authoring projection regression passed (4 selection tests total). Production ESM/declaration build and commerce entrypoint/presentation Node/browser validators passed. npm pack --ignore-scripts and extracted-package public entrypoint smoke passed using locked dependency linkage; local tarball is validation only, not immutable published5.7.0. JSON projection uses z.toJSONSchema io output/unrepresentable any (Commerce projector engine), verifies strict identity fields/maxItems/enum, no arbitrary fields. Test type narrowing corrected before final typecheck. No lint script declared; not represented as passed. Diff check passed.
 ### Deviations
-None
+None. Canonical verifier owns mixed-selection refusal because schema shape consumers require composable strict fields; runtime uniqueness remains in detail array schema and canonical verifier. JSON schema cannot express custom uniqueness of pairs: hosts must invoke verifier, never rely on generated JSON alone.
 ### Assumptions
-None
+Additive consumer adoption only after separate immutable publication; old envelopes remain valid. No rollout compatibility or delivery approval inferred.
 ### Unresolved Issues
-None
+None in bounded correction. Separate publication010 remains required before Commerce integration.
 ### Architectural Concerns
-None
+None. No consumer schemas forked.
+### Git / VCS
+Task branch task/ARCH-066-SHARED-009. Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace; parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-SHARED-009; implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-SHARED-009. Both matching branches; shared workspace/implementation switched or mutated for task work: no; another task worktree reused: no. Launcher preparation dependency gate passed SHARED005 Complete; parent reused/implementation created; both remote FF not-needed and main already-current. Recursive sync/update passed, submodules ready with no entries. Claim80e43ec54e8fa004fa7f4c9b820ded834b4acc73 pushed Attempt1 codex. Implementation16e3b35; report exact SHA in task branch history; pushed to matching origin/task refs. No gitlink staged, main merged/pushed, or immutable release overwritten.
 
 ## Architect Review
 ### Review Status
