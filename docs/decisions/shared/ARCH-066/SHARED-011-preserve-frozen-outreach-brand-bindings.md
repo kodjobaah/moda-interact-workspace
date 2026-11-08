@@ -55,6 +55,8 @@ ARCH-066-SHARED-012; consumer correction remains on original BACKGROUND002 after
 - [ ] Focused outreach renderer/schema compatibility tests, including positive existing Background binding cases and negative tenant/type/value cases.
 - [ ] Existing outreach evaluator/render regressions, typecheck and production build per repository scripts.
 - [ ] Package public JS/declaration import smoke; record exact commands/results. No live calls.
+## Stop Condition
+After defined work/acceptance/required validation is complete, publish Completion Report at review and return control to moda_architect. Stop; no enabled task, release or consumer execution implicit.
 ## Implementation Notes
 Exact initial evidence: Shared src/commerce/outreach/variables.ts switch afterbrandName/3URLs falls through; template-contracts.ts includes the4unimplemented fields. Background src/services/recovery-template-preparation/recovery-template-brand.ts supports saved type/cap semantics. Reuse approved Shared logger only if logging changes. If more contract work is required, return precise gap rather than expand scope. Use canonical launcher dedicated worktrees when execution is explicitly invoked; definition only now.
 ## Completion Report
