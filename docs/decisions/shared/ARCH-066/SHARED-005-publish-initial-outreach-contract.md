@@ -44,3 +44,9 @@ SHARED-004 is explicitly Complete at accepted Attempt 2 (passing review `30278f9
 ### Status
 
 In Progress — Attempt 1 claimed by developer at 2026-11-08T17:59:28Z. Attempt 0 review history is preserved below.
+
+## Release selection — Attempt 1
+
+Selected exact version: `@modainteract/moda-interact-shared@5.7.0`. Registry inspection on 2026-11-08 listed existing 5.x versions 5.0.0, 5.1.0, 5.2.0, 5.3.0, 5.4.0, 5.5.0 and 5.6.0, with latest 5.6.0; 5.7.0 is unused and greater than the accepted baseline. npm publishing identity is available. This is the selected outreach pin; publication/download verification and integrity recording are still in progress, and consumers remain gated.
+
+Accepted source ancestry verified: outreach/fence/group correction `987a05dd06e79aa465d11fce8a4d4fe8b8d52703`, generic facts `2bc7f02c16840a41154f2135a26f9ba52c71fad7`, original001 `c3f9f07cfcf9ff60817f89d5c3d2aaca2dddfbf7`, original002 `7255db58ee1231e209c75c1466255787426d2e5a`, and 5.6.0 release `14c8412cddb2042878b91a17a0043586254aebd6`. Release baseline `8d79ccfbe4b8e06bb2addc62dd092078908198c6` has no src/ differences from accepted outreach source. No feature implementation is part of this task.
