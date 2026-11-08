@@ -14,8 +14,8 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-066-SHARED-003", "ARCH-066-MCP-001"]
-enables: ["ARCH-066-SYSTEM-TEST-001"]
+depends_on: ["ARCH-066-SHARED-005", "ARCH-066-MCP-001"]
+enables: ["ARCH-066-COMMERCE-002", "ARCH-066-SYSTEM-TEST-001"]
 created: 2026-11-08
 updated: 2026-11-08
 ---

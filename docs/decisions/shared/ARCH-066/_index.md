@@ -1,11 +1,14 @@
 # ARCH-066 shared tasks
 
-Architecture: [contract decisions](../../../architecture/ARCH-066-conversation-product-context-and-whatsapp-preview-parity.md).
-
-SHARED-001 accepted Attempt2 and SHARED-002 accepted Attempt1 explicitly developer-completed. SHARED-003 accepted Attempt1 Complete; exact5.6.0 published and verified.
+Architecture: [decisions](../../../architecture/ARCH-066-conversation-product-context-and-whatsapp-preview-parity.md). Normative amendments: [consumer contract](../../../architecture/ARCH-066-consumer-contract.md), [outreach contract](../../../architecture/ARCH-066-initial-outreach-contract.md).
 
 | Task | Status | Dependencies |
 |---|---|---|
-| [ARCH-066-SHARED-001](SHARED-001-define-product-context-and-recoverable-lookup-contracts.md) | Complete | None |
-| [ARCH-066-SHARED-002](SHARED-002-extract-pure-whatsapp-response-composition.md) | Complete | ARCH-066-SHARED-001 |
-| [ARCH-066-SHARED-003](SHARED-003-publish-product-context-and-presentation-package.md) | Complete | ARCH-066-SHARED-001, ARCH-066-SHARED-002 |
+| [ARCH-066-SHARED-001](SHARED-001-define-product-context-and-recoverable-lookup-contracts.md) | complete | None |
+| [ARCH-066-SHARED-002](SHARED-002-extract-pure-whatsapp-response-composition.md) | complete | ARCH-066-SHARED-001 |
+| [ARCH-066-SHARED-003](SHARED-003-publish-product-context-and-presentation-package.md) | complete | ARCH-066-SHARED-001, ARCH-066-SHARED-002 |
+| [ARCH-066-SHARED-004](SHARED-004-extract-read-only-initial-outreach-preview.md) | pending | ARCH-066-SHARED-001, ARCH-066-SHARED-002, ARCH-066-SHARED-006 |
+| [ARCH-066-SHARED-005](SHARED-005-publish-initial-outreach-contract.md) | pending | ARCH-066-SHARED-004, ARCH-066-SHARED-006 |
+| [ARCH-066-SHARED-006](SHARED-006-add-generic-merchant-product-facts.md) | pending | ARCH-066-SHARED-003 |
+
+Definitions amended; no task claimed or implementation accepted by this review. Completed5.6.0 baseline is preserved; pending consumers require new SHARED-005 artifact.

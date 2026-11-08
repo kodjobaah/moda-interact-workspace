@@ -14,8 +14,8 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-066-DATABASE-001", "ARCH-066-SHARED-003", "ARCH-066-MCP-001"]
-enables: ["ARCH-066-SYSTEM-TEST-001"]
+depends_on: ["ARCH-066-DATABASE-001", "ARCH-066-SHARED-005", "ARCH-066-MCP-001"]
+enables: ["ARCH-066-BACKGROUND-002", "ARCH-066-SYSTEM-TEST-001"]
 created: 2026-11-08
 updated: 2026-11-08
 ---
@@ -49,3 +49,14 @@ Status: Not started. Attempt: 0. Implementation commit: none. Validation evidenc
 
 ## Release / Dependency Handoff - 2026-11-08
 SHARED-003 accepted Attempt1 explicitly Complete. Pin @modainteract/moda-interact-shared exactly5.6.0; dist.integrity sha512-tDuW+C8MdteWMJWwmuFI2cTAugMejOJwTk0KkemBMwpN/lL92WPI8CX/A5dDa2nhG0RYiIeHSR490WPCrTz42w==. Downloadable archive and isolated public-import/browser checks verified in release record. Remain Pending until other explicit dependencies Complete. No claim or execution performed.
+
+## Current additive-release gate (supersedes earlier consumer pin)
+Pending scope now includes generic descriptions/attributes and therefore depends on SHARED-005, not the original5.6.0 release. Pin exactly the version/integrity recorded by SHARED-005 after acceptance. Earlier5.6.0 handoff is historical and must not satisfy this amended task. No attempt/claim started; MCP readiness returns to Pending until new prerequisite is Complete. Implement [consumer contract](../../../architecture/ARCH-066-consumer-contract.md) as normative.
+
+## Deterministic implementation checklist
+- [ ] Apply consumer contract C/D in order. product-context-repository.ts implements exact read/write signatures and lock/CAS/idempotency algorithm; fixtures cover recovery-linked and standalone identity, expiry, same-version conflict and out-of-order turns.
+- [ ] host.ts passes context/platform into runner and passes successful context metadata to presentation.ts. Presentation helper validates both old/new selection details, performs counted fresh exact reads, builds published presentation schema and never trusts model-supplied facts.
+- [ ] Existing wrapper service/service.ts and compose-ai-outbound.ts remain the one persisted AI composition boundary. Pass envelope+verified projection through existing pipeline; call Shared composer once inside wrapper application handling, preserving applicationKey/replay. Remove only migrated pure duplicates; keep MANUAL semantics and historical records.
+- [ ] Read brand from Shop.brand.brandName; locale from existing committed conversation policy; trusted checkout variables remain production host-owned. No title/domain-derived brand or new fallback contact.
+- [ ] Persist context only after presentation success, before handing final body to existing delivery orchestration, using dedicated short transaction. DB SKIPPED log does not create additional send or override send fence. Assert current version again at existing delivery gate.
+- [ ] Add tests src/commerce/product-context-repository.test.ts and presentation.test.ts using disposable Postgres for actual row-lock/CAS race (in-memory mocks insufficient for lock claim), plus host/wrapper integration tests proving no double-wrap, final-body moderation and same-version replay. Record migration commit/hash, artifact integrity and exact commands.

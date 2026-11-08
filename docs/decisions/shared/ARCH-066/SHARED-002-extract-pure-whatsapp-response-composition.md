@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on: ["ARCH-066-SHARED-001"]
-enables: ["ARCH-066-SHARED-003"]
+enables: ["ARCH-066-SHARED-004", "ARCH-066-SHARED-003"]
 created: 2026-11-08
 updated: 2026-11-08
 ---

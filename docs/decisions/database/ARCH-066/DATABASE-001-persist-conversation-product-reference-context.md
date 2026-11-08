@@ -32,6 +32,48 @@ Decision 6: model CommerceConversationProductContext in whatsapp schema with con
 - Migration adds new table only, without backfill or deleting conversations. Ownership invariant: Background resolves canonical tenant from standalone shopId or checkoutRecovery.shopId; SQL service transactions must verify that invariant (specified in Background task). No fake FK to model-returned IDs.
 - Row is disposable reference cache, not evidence, inventory, consent or a grant. No tokens, prices, raw tool results or customer text in references. Expired rows are ignored/removed lazily; Conversation cascade handles deletion. No new scheduled cleanup worker.
 
+## Prisma implementation block
+
+Add this model to prisma/schema.prisma and preserve all existing fields on the related models:
+
+```prisma
+model CommerceConversationProductContext {
+  conversationId       String       @id
+  conversation         Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  shopId               String
+  shop                 Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  schemaVersion        Int          @default(1)
+  revision             Int          @default(1)
+  sourceInboundVersion Int
+  references           Json         @db.JsonB
+  expiresAt            DateTime     @db.Timestamptz(3)
+  createdAt            DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime     @updatedAt @db.Timestamptz(3)
+
+  @@index([shopId, expiresAt], map: "CommerceConversationProductContext_shopId_expiresAt_idx")
+  @@schema("whatsapp")
+}
+```
+
+```prisma
+// Add inside existing Conversation:
+commerceProductContext CommerceConversationProductContext?
+// Add inside existing Shop:
+commerceProductContexts CommerceConversationProductContext[]
+```
+
+Append migration constraints after generated CREATE TABLE:
+
+```sql
+ALTER TABLE "whatsapp"."CommerceConversationProductContext"
+  ADD CONSTRAINT "CommerceConversationProductContext_schemaVersion_check" CHECK ("schemaVersion" = 1),
+  ADD CONSTRAINT "CommerceConversationProductContext_revision_check" CHECK ("revision" >= 1),
+  ADD CONSTRAINT "CommerceConversationProductContext_sourceInboundVersion_check" CHECK ("sourceInboundVersion" >= 0),
+  ADD CONSTRAINT "CommerceConversationProductContext_references_bytes_check" CHECK (pg_column_size("references") <= 32768);
+```
+
+references holds the entire Shared context object, not only its nested array; its shopId/conversationId/schemaVersion must match row columns. Shared serialized UTF8 bound and PostgreSQL storage bound both apply. JSON updatedAt is observation time; row updatedAt is persistence time. Foreign keys prove existence, while canonical Conversation/CheckoutRecovery ownership is checked under the Background transaction lock; do not use nullable Conversation.shopId as a composite FK. No merchandise facts or outreach preview records in this table.
+
 ## Acceptance / validation
 - [ ] Fresh migration and upgrade with existing conversations succeed; old conversations have no new row and remain valid.
 - [ ] FK/cascade/check/unique/index tests pass; rollback guidance is drop new table after rolling services back, no unrelated reset.
@@ -45,3 +87,9 @@ Status: Not started. Attempt: 0. Implementation commit: none. Validation evidenc
 
 ## Dependency Reconciliation - 2026-11-08
 SHARED-001 accepted Attempt2 explicitly developer-completed; sole explicit dependency satisfied. Ready at unchanged Attempt0, executor/claimed_at null; no claim or execution. Accepted Shared source c3f9f07cfcf9ff60817f89d5c3d2aaca2dddfbf7 published on task/ARCH-066-SHARED-001; separate publication still gated on SHARED-002.
+
+## Deterministic implementation checklist
+- [ ] Exact Prisma model/backrelations and SQL above; consumer contract D fixes JSON contents, canonical equality, ownership and version-fence responsibility. No extra columns/tables/enums for merchandise or outreach.
+- [ ] Migration contains only new table/index/constraints/FKs; do not rewrite applied migrations. Generate Prisma client/schema ERD using repository scripts. Verify PostgreSQL namespace whatsapp with cross-schema Shop FK to commerce, not assumed same schema.
+- [ ] Disposable Postgres checks: second row same conversation fails PK; nonexistent conversation/shop fail FK; deleting Conversation and deleting Shop cascade context; schemaVersion2/revision0/sourceInboundVersion-1 fail; oversized JSON fails storage CHECK; valid old Conversation remains with no context row.
+- [ ] Record SQL migration filename/SHA256/database commit, schema validate/generate and exact test commands. No Render mutation, no dropping cache before consumer rollback; no application-level SQL lock logic in Database repository.
