@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 20
-executor: codex
-claimed_at: 2026-11-08T21:29:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-066-SHARED-010"]
 enables: ["ARCH-066-SHARED-012"]
@@ -210,3 +210,17 @@ Launcher stopped on the pre-existing task-only uncommitted normative append abov
 
 ## Architect fixture reconciliation — 2026-11-08
 The exact fixture vectors above conflict with preserved existing approved INITIAL selection: BODY must contain shop.name and exactly one checkout.itemsSummary. Four new brand/media-only fixtures were correctly refused DEFINITION_UNAVAILABLE before variable resolution; runtime policy must not be weakened. Architect resolves only this fixture contradiction under authorized task governance. Use valid rehashed frozen templates retaining these two mandatory BODY bindings, followed by the exact ordered five saved-brand or three media bindings requested above. Assert full complete parameter array, full renderedText/body bytes and provenance, with the requested brand/media vectors as exact ordered contiguous subsequences. One-field boundary/missing-value fixtures likewise retain mandatory bindings. CHECKOUT_PRODUCT header remains independent. Repeat published5.8 reproduction with these valid templates so a definition refusal is not misreported as missing resolver behavior. Exact schema layout/limits/refusal order, all other goldens, existing selection/hash rules and task scope remain unchanged. This reconciliation is not a new claim or implementation acceptance; Attempt1/history retained.
+
+## Architect Review — Attempt1 (2026-11-08)
+### Review Status
+Accepted. Status remains review, unchanged Attempt1, executor/claimed_at cleared. Explicit developer completion pending via `/moda_developer_update ARCH-066-SHARED-011 complete`.
+### Review Notes
+Independently reviewed implementation6c8bbe194337c7c2afb141047d24aeeeb23c48ca and report134379e614b89613dc71f1bd8935dcc0e3902d87, both published/clean on mirrored canonical branches. Exact three strict exported schemas/types and optional preparedBrand/preparedBrandMedia match normative layout/limits. Mandatory savedbrand fields cannot borrow generic name; four missing bindings now render correctly. Fixed-role BODY media stays independent of IMAGE/CHECKOUT_PRODUCT header, validates supplied tenant/role even unused before assignment/fallback and rejects fragments/undotted hosts. Existing HTTPS refinement is total; malformed input refuses without throwing. Shared remains pure, host authorization/media resolution remain outside. No generic dictionary, callback, service import or parallel renderer.
+### Reviewed Files
+Outreach template-contracts/variables/render/contracts/index, tests and fixture helpers, README, installed public validation script. Reviewed exact saved-field/body-media full parameter arrays/body/provenance/button goldens, missing/null/type/UTF16/dimension and tenant-role/URL negative fixtures. Existing INITIAL approved selection, hashes, one checkout.itemsSummary/shop.name requirements and offer purposes preserved.
+### Validation Reviewed
+Required outreach suite79/79, zero skips/failures; declared typecheck; ESM/declaration production build; installed local-pack public JS and declaration smoke all pass. New three runtime schemas/types resolve through public outreach export, positive full7brand parameters/hash and legacy evaluator/product imports verified. Valid published5.8 reproduction proves four missing bindings, wrong generic-name fallback, unavailable BODY media and malformedURL throw. Initial invalid5brand-only fixtures were reconciled by explicit architectff55693, preserving mandatory bindings/full7or5arrays; no runtime policy weakening. Existing Zod normalization precedes exact validated URL-byte emission. diffcheck passes; no package/version/lockfile/export-map/buildtool change.
+### Architecture Conformance
+Conforms to exact preserved pre-existing normative amendment81d2842ef and fixture reconciliation. Prepared packet establishes primary root, exact sibling parent/implementation matching task branches, remote/main sync and recursive submodules ready/noentries; pushed Attempt1 claime15f6947. Source/report independently remote verified; parent gitlink unchanged. Registry5.8.0 remains immutable/unfixed; accepted source is not a published correction. No standalone007/008/MCP002 resurrection, release, consumer change, main/live/follow-on execution.
+### Follow-up
+SHARED012 remains Pending until explicit011completion, then separate immutable corrected publication. Background002 stays Blocked on012 and its unresolved same-task72failures; this Shared acceptance does not waive or certify consumer/admission/credit/send/Studio integration. Consumers populate exact saved columns/nulls and authorized ready fixed-role derivatives, keep headerMedia independent, then adopt only exact accepted012artifact. Terminal system/manual gates remain. No dependency promotion from Accepted review alone.
