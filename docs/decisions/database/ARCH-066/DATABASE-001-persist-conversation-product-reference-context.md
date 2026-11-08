@@ -7,7 +7,7 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -93,3 +93,6 @@ SHARED-001 accepted Attempt2 explicitly developer-completed; sole explicit depen
 - [ ] Migration contains only new table/index/constraints/FKs; do not rewrite applied migrations. Generate Prisma client/schema ERD using repository scripts. Verify PostgreSQL namespace whatsapp with cross-schema Shop FK to commerce, not assumed same schema.
 - [ ] Disposable Postgres checks: second row same conversation fails PK; nonexistent conversation/shop fail FK; deleting Conversation and deleting Shop cascade context; schemaVersion2/revision0/sourceInboundVersion-1 fail; oversized JSON fails storage CHECK; valid old Conversation remains with no context row.
 - [ ] Record SQL migration filename/SHA256/database commit, schema validate/generate and exact test commands. No Render mutation, no dropping cache before consumer rollback; no application-level SQL lock logic in Database repository.
+
+## Execution Ownership Amendment — 2026-11-08
+Developer explicitly requested agent continuation through `/moda-task ARCH-066-DATABASE-001` and authorized synchronization plus task claim/source/review publication. No active claim exists (Ready, Attempt0); canonical implementation worktree absent, so no source edits to checkpoint. Delegate to moda_database through canonical preparation; completion_mode developer retained. Exact schema/constraint scope unchanged; no live migration/main/follow-on.
