@@ -136,3 +136,6 @@ Developer confirmed production turns retain real CheckoutRecovery, synthetic Stu
 
 
 Dependency handoff2026-11-08: canonical Background001 Complete atb9470dd27/AcceptedAttempt2; Background002 Ready Attempt0/unclaimed, developer execution/completion. No standalone release/main/live/follow-on action.
+
+## Initial outreach Shared compatibility blocker — 2026-11-08
+BACKGROUND002 Attempt1 is Blocked, not Accepted: exact5.8.0 SemanticKeySchema advertises shopBrand.logoAltText/logoWidth/logoHeight/squareLogoAltText, but public frozen renderer refuses all4positive valid saved-value fixtures. Shared011 Ready defines bounded strict prepared-brand/media compatibility; Shared012 Pending publishes accepted correction. Original Background002 then adopts corrected artifact/revalidates same task, no duplicate local renderer/internal import. Unaffected evaluator/selection/admission38 and supported parity/generation7 pass; compiler passed, broader unresolved regressions remain explicitly recorded in task report. Commerce002/SystemTest002 remain gated; no follow-on/main/live/release or integrated completion. Checkout-led withdrawal controls,007/008/MCP002 remain superseded.
