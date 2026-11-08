@@ -47,5 +47,6 @@ Definition review only. Pending, Attempt0/unclaimed preserved; no implementation
 
 Generic product payload validation uses accepted SHARED-006 implementation as source prerequisite; no competing schema edits. Source subtree ordering is006 then004, followed by005 publication.
 
-## Dependency Reconciliation - 2026-11-08
-SHARED-001, SHARED-002 and SHARED-006 accepted/explicitly Complete. Ready at unchanged Attempt0, executor/claimed_at null; no execution. Accepted generic-facts source2bc7f02c16840a41154f2135a26f9ba52c71fad7 must be incorporated before outreach work. SHARED-005 remains separately gated on this task.
+## Dependency frontier reconciliation — 2026-11-08
+
+ARCH-066-SHARED-006 is Complete at accepted Attempt 1, recorded and pushed in parent task commit `918e45713ff5ca80d7832ca46480ddb2514894a1`, with accepted implementation `2bc7f02c16840a41154f2135a26f9ba52c71fad7`. Together with completed SHARED-001 and SHARED-002, all explicit dependencies are satisfied. This task is Ready, unclaimed at Attempt 0; this reconciliation does not start implementation. SHARED-005 remains Pending until SHARED-004 completes.
