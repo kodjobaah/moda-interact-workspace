@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -31,6 +31,16 @@ Release package metadata/lockfile and immutable npm artifact from accepted SHARE
 - [ ] Record npm version/dist.integrity, tarball SHA256, source commit, commands and installed-artifact smoke evidence. Publication acceptance requires downloadable artifact verification; do not repeat publish during propagation delay.
 
 ## Completion
-Pending, Attempt0/unclaimed. No automatic publication or execution authorized by this definition. BACKGROUND-002 and COMMERCE-002 depend explicitly on this gate. No consumer rollout or real messages.
+Ready, Attempt0/unclaimed. No automatic publication or execution authorized by this definition. BACKGROUND-002 and COMMERCE-002 depend explicitly on this gate. No consumer rollout or real messages.
 
 Additional gate: pack/install smoke must include generic description/attribute schemas and verifyCommerceProductFacts/PRODUCT_DETAILS together with outreach. Original5.6.0 public imports/goldens remain compatible. Every pending MCP/Background/Commerce task pins this one recorded artifact after publication.
+
+## Dependency readiness — 2026-11-08
+
+SHARED-004 is explicitly Complete at accepted Attempt 2 (passing review `30278f91b64177eb5070034fe1b2eb7e25c15bca`, accepted source `987a05dd06e79aa465d11fce8a4d4fe8b8d52703`). SHARED-006 is Complete at accepted Attempt 1, source `2bc7f02c16840a41154f2135a26f9ba52c71fad7`, contained in the accepted outreach source. Both explicit dependencies are satisfied. Ready, unclaimed at Attempt 0; no release/version selection or package publication is performed by readiness reconciliation.
+
+## Completion Report
+
+### Status
+
+Ready — Attempt 0, unclaimed. Dependency gate satisfied; canonical preparation and publication attempt have not started.

@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -43,7 +43,7 @@ Implement [the complete outreach contract](../../../architecture/ARCH-066-initia
 - [x] Package typecheck/build, focused tests, `validate:commerce-outreach`, pack public import/declaration check and diff check. Record unavailable checks candidly; no claimed publication.
 
 ## Execution / completion
-Attempt 2 passes developer self-review, including both Attempt 1 corrections. Explicit developer completion remains required. Preserve unrelated edits; Shared owns no service repository edits. SHARED-005 publishes accepted source. No production send/deploy authorized.
+Attempt 2 passes developer self-review, including both Attempt 1 corrections, and is explicitly completed by the developer. Preserve unrelated edits; Shared owns no service repository edits. SHARED-005 publishes accepted source. No production send/deploy authorized.
 
 Generic product payload validation uses accepted SHARED-006 implementation as source prerequisite; no competing schema edits. Source subtree ordering is006 then004, followed by005 publication.
 
@@ -55,7 +55,7 @@ ARCH-066-SHARED-006 is Complete at accepted Attempt 1, recorded and pushed in pa
 
 ### Status
 
-Passed / Accepted — Attempt 2. Both required corrections pass developer self-review. Status remains Review pending explicit developer completion.
+Complete — accepted Attempt 2. Explicit developer completion recorded 2026-11-08; passing review and implementation are published.
 
 ### Preparation
 
@@ -164,3 +164,13 @@ Fresh review run: `node --import tsx --test src/commerce/outreach/*.test.ts src/
 No outstanding scoped correction or incomplete required acceptance item was found. Review does not claim live provider/model validation, consumer integration/deployment or npm publication; SHARED-005 still owns the combined immutable release. Historical Attempt 1 Changes Requested and Attempt 2 correction reports are retained, and no Architect Review section is fabricated or modified.
 
 Status remains Review, executor/claimed_at null and accepted Attempt 2 unchanged, with completion_mode developer. Passing review and current Completion Report are published on the parent task branch. Explicit `/moda_developer_update ARCH-066-SHARED-004 complete` is pending; SHARED-005 remains Pending until completion/frontier reconciliation. No downstream task was promoted/claimed, no implementation gitlink staged and neither task branch was merged or pushed into main.
+
+## Developer Completion Decision — 2026-11-08
+
+Developer explicitly invoked `/moda_developer_update ARCH-066-SHARED-004 complete`. Passing Attempt 2 review `30278f91b64177eb5070034fe1b2eb7e25c15bca` is durable and published. Accepted implementation `987a05dd06e79aa465d11fce8a4d4fe8b8d52703` matches implementation HEAD and the published task ref; both canonical worktrees were clean at completion verification. All required acceptance items are checked, both Attempt 1 corrections are accepted, and no outstanding scoped correction remains. Recorded 171-pass validation, typecheck/build/public artifact evidence and explicit lint-unavailable disposition are retained; no source change requires rerunning tests.
+
+Status Complete, executor/claimed_at null, accepted Attempt 2 unchanged. Historical Attempt 1 Changes Requested and Attempt 2 correction/review evidence remain intact. No package publication, consumer rollout, migration, deployment, feature gitlink update or main merge/push is part of this completion.
+
+### Dependency-frontier reconciliation
+
+SHARED-005 explicitly depends on SHARED-004 and SHARED-006, both now Complete; promote it to Ready, unclaimed at Attempt 0. Accepted outreach source is `987a05dd06e79aa465d11fce8a4d4fe8b8d52703`, containing accepted generic product source `2bc7f02c16840a41154f2135a26f9ba52c71fad7`. Publication remains SHARED-005's responsibility, subject to its immutable version/integrity and installed-artifact gates. Its existing canonical parent record is reconciled as well as this completion branch so the next launch sees Ready. No downstream task is claimed. Pending MCP/Background/Commerce consumers remain gated on the exact future SHARED-005 artifact; historical completed tasks are not regressed.
