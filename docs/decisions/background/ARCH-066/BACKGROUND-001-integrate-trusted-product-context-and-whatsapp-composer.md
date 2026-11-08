@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -196,3 +196,6 @@ Final actual Shared-runner/loopback host76/76; focused new acceptance3/3; identi
 Conforms to controlling checkout-led amendment and Shared-first/runtime ownership. Exact release dependency010 Complete66c53156 and published5.8.0 integrity match lock; accepted databaseb7f58d5/migration hash retained. Prepared packet proves canonical primary root, dedicated sibling parent/implementation matching branches, startup remote/main sync and recursive database submodule preparation; durable Attempt2 claim966783ac pushed. Source and report published independently on matching task branches. Historical Attempt1/blocker and withdrawal preserved; no007/008/MCP002 resurrection, standalone publication, source rollback, main/gitlink integration, live migration/customer/provider send/deployment or follow-on execution.
 ### Follow-up
 Developer completion is required before any dependant promotion. BACKGROUND002 remains gated on Background001 Complete; terminal System Tests retain implementation and manual-validation gates. Full-lint residual remains explicit unrelated work, not a regression or task acceptance blocker. Architecture remains In Progress; integrated deployed runtime and final system parity are not claimed by these repository fixtures.
+
+## Developer Completion Decision — 2026-11-08
+Developer explicitly invoked `/moda_developer_update ARCH-066-BACKGROUND-001 complete`. Durable Accepted Attempt2 review344b8815043259f98e8eff83631a770aff481fb3 and final implementation44e92f8b0d4c633055e2a639a2d768b18599ea38 independently verified clean/published on matching canonical task branches. Complete at unchanged Attempt2; executor/claimed_at remain null. Named scenario/parity acceptance is satisfied; architect's explicit unchanged consent-provider151 full-lint limitation remains, never claimed passing. Checkout-led withdrawal/immutable release and historical attempts preserved. No main/gitlink/live/release/follow-on execution. BACKGROUND002 now eligible Ready on Complete001/Shared005; Commerce001 remains canonical Review, so SystemTest001 remains Pending/manual-gated.

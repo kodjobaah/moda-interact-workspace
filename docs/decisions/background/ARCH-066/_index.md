@@ -4,8 +4,8 @@ Architecture: [decisions](../../../architecture/ARCH-066-conversation-product-co
 
 | Task | Status | Dependencies |
 |---|---|---|
-| [ARCH-066-BACKGROUND-001](BACKGROUND-001-integrate-trusted-product-context-and-whatsapp-composer.md) | review (Accepted Attempt2; developer completion pending) | ARCH-066-DATABASE-001, ARCH-066-SHARED-005, ARCH-066-MCP-001, ARCH-066-SHARED-010 |
-| [ARCH-066-BACKGROUND-002](BACKGROUND-002-adopt-shared-checkout-outreach-evaluation.md) | pending | ARCH-066-SHARED-005, ARCH-066-BACKGROUND-001 |
+| [ARCH-066-BACKGROUND-001](BACKGROUND-001-integrate-trusted-product-context-and-whatsapp-composer.md) | complete (Accepted Attempt2; explicitly developer-completed) | ARCH-066-DATABASE-001, ARCH-066-SHARED-005, ARCH-066-MCP-001, ARCH-066-SHARED-010 |
+| [ARCH-066-BACKGROUND-002](BACKGROUND-002-adopt-shared-checkout-outreach-evaluation.md) | ready | ARCH-066-SHARED-005, ARCH-066-BACKGROUND-001 |
 
 Definitions amended; no task claimed or implementation accepted by this review. Completed5.6.0 baseline is preserved; pending consumers require new SHARED-005 artifact.
 
