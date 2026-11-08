@@ -89,3 +89,6 @@ SHARED-005 is explicitly Complete at accepted Attempt1 after passing review `a25
 
 ## Controlling checkout-led scope amendment — 2026-11-08
 Developer explicitly withdrew independent standalone production conversations. This overrides C1 standalone admission language: production owner must be real CheckoutRecovery.shopId/customer; optional Conversation.shopId must agree, missing/mismatched recovery denies before model/provider. Subsequent product discussion retains same recovery identity. Isolated synthetic Studio preview may use existing preview identity only, never fabricated production records or weakened live grants. All generic reference/fresh facts/composer/CAS/send-fence/byte-parity rules remain. SHARED007/008/MCP002 standalone objectives superseded, no standalone publication. Independent009/010 productDetailSelections/PRODUCT_DETAILS correction remains required; inspect actual Background/Commerce on same task branches for unused standalone-only code and checkout-led acceptance before review, preserve historical reports and immutable artifacts.
+
+
+Dependency handoff2026-11-08: canonical Background001 Complete atb9470dd27/AcceptedAttempt2; Background002 Ready Attempt0/unclaimed, developer execution/completion. No standalone release/main/live/follow-on action.
