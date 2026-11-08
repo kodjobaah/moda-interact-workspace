@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 1
+executor: codex
+claimed_at: 2026-11-08T22:53:43Z
+attempt: 2
 depends_on: ["ARCH-066-SHARED-005", "ARCH-066-BACKGROUND-001", "ARCH-066-SHARED-012"]
 enables: ["ARCH-066-SYSTEM-TEST-002", "ARCH-066-COMMERCE-002"]
 created: 2026-11-08
