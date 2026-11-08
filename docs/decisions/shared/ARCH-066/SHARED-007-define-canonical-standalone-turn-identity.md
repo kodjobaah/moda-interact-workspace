@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 30
-executor: codex
-claimed_at: 2026-11-08T18:53:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ['ARCH-066-SHARED-005']
 enables: ['ARCH-066-SHARED-008']
@@ -117,14 +117,16 @@ Implementation b10fe65779839c46bfbc31aaae88421f1e7b908d pushed to origin/task/AR
 
 ## Architect Review
 ### Review Status
-Pending
+Accepted — explicit developer completion pending.
 ### Review Notes
-Source-level prerequisite gap documented, no execution.
+Inspected actualb10fe65779839c46bfbc31aaae88421f1e7b908d and report10fb6a8ca0381d3ac5bb0a8dff41830acdab2dc0. Strict canonical legacy/RECOVERY/STANDALONE identity/assertions represent real standalone without invented recovery. Legacy omitted-scope recovery parsed bytes remain unchanged; explicit RECOVERY requires/binds recoveryId, standalone forbids own recovery field even null/undefined. No actor/signature field invented where existing Shared has none; host authentication/consent/version authority explicit.
+
+Scoped grants bind scope/shop/conversation/version/expiry, old unscoped grants recovery-only. Immutable descriptor/grant allowedConversationScopes markers must exactly match and explicitly include standalone; absence is recovery-only. Runner list/call filters and existing authorization remain mandatory, standalone recovery-outreach purpose denied. No generic name inference, fake checkout facts or identity-derived permission. Existing grant expiry gap closed with injected runner clock; compatibility/migration limits documented. No outstanding correction.
 ### Reviewed Files
-Shared5.7 turn type; Background live-budget/router/worker/context helper.
+turn-identity.ts, schemas/definitions/selection, runner preflight/tool-policy/observability, focused standalone/assertion/runner tests, README migration and public entrypoint script.
 ### Validation Reviewed
-No execution claimed.
+92 focused tests and final6 standalone fixtures passed, declared typecheck/full ESM+DTS build/public clean-process commerce+runner imports/diff checks passed. Recovery compatibility/HMAC bytes, strict missing/mixed identity, scope/tenant/recovery/version/expiry tamper, descriptor/grant marker equality, complete safe standalone read/current revocation and standalone outreach denial covered. Actor auth and current persisted owner/version remain service responsibilities.
 ### Architecture Conformance
-Shared-first identity then publication/MCP before Background adoption.
+Conforms to bounded Shared standalone correction, no service/MCP/Background/live/source duplication or package publication. Canonical isolated worktrees/preparation/claim/publication evidence verified. Concurrent coordinator resolved ID collision by retiring unclaimed old product-detail007 and moving that task to active009; current007 unique standalone,009/010 claims/source untouched. No reset/rebase/main/consumer/release execution.
 ### Follow-up
-None
+Explicit completion: `/moda_developer_update ARCH-066-SHARED-007 complete`. Existing SHARED008 standalone publication and MCP002 consumer correction remain gated, materialize exact definitions from Background39d66aab when needed. Background remains Blocked until corrected artifact/private admission and actual standalone host integration. No enabled task auto-start or integrated/deployed completion claim.
