@@ -84,7 +84,7 @@ Only SHARED-001 starts Ready. All others remain Pending until explicit prerequis
 
 System test must prove three-turn behavior and byte-identical composed bodies for identical facts/locale/wrapper/context, hard authorization failures, soft lookup correction, missing options, token truncation, snapshot compatibility, storage limits/purge and replay. Real-model Render TEST smoke is supplemental evidence, not a replacement for deterministic fixtures. No production deploy or real message send is authorized by task creation.
 
-Release handoff: Shared version/integrity pending; database migration/commit pending; consumer commits pending; parity artifact pending. This architecture does not claim complete test-to-delivery equivalence for production-only moderation/window/billing checks; Studio must identify those as not evaluated.
+Release handoff: Shared5.7.0 published/download-verified (exact integrity below), SHARED-005 review/completion pending; database migration/commit pending; consumer commits pending; parity artifact pending. This architecture does not claim complete test-to-delivery equivalence for production-only moderation/window/billing checks; Studio must identify those as not evaluated.
 
 ## Dependency frontier - 2026-11-08
 SHARED-001 accepted Attempt2 explicitly developer-completed, source c3f9f07 and review5bd56f332 published. SHARED-002 and DATABASE-001 now Ready/unclaimed. SHARED-003 remains Pending on SHARED-002; consumers and terminal System Test remain gated. No package publication, migration, deployment or enabled execution performed.
@@ -106,6 +106,25 @@ Shared5.6.0 published/downloaded and isolated public-import/browser smoke verifi
 
 2026-11-08: SHARED-006 accepted Attempt1 explicitly Complete (source2bc7f02, passing review55ad2ed2d). SHARED-004 dependencies all Complete, now Ready/unclaimed. SHARED-005 remains Pending on004; consumers remain combined-release gated. No source publication/deployment or enabled task execution.
 
-### 2026-11-08 — Outreach source completion frontier
+2026-11-08: DATABASE001 Attempt1 Accepted at review after exact cache schema, full-history fresh/upgrade row-preservation/constraint tests and Prisma generation. MigrationSHA2563e99659d71c8e1d5933a95ad933a10bffea03bd25395795cc8de704f27ff686a; explicit developer completion pending. No live migration/service/deployment or integrated completion claimed.
 
-SHARED-004 is explicitly Complete at accepted Attempt 2 after passing review `30278f91b64177eb5070034fe1b2eb7e25c15bca`; accepted source `987a05dd06e79aa465d11fce8a4d4fe8b8d52703` includes SHARED-006. SHARED-005 is Ready, unclaimed at Attempt 0 because both explicit dependencies are Complete. It owns selecting/recording the exact next immutable package version/integrity and installed-artifact acceptance. Pending consumers remain gated on that release; no package publish, consumer rollout or main merge is implied by source-task completion.
+2026-11-08 explicit completion: DATABASE001 Attempt1 Complete, sourceb7f58d5/migrationSHA2563e99659d71c8e1d5933a95ad933a10bffea03bd25395795cc8de704f27ff686a. Canonical Background001 Pending on Shared005; Shared004 Ready and Shared005 Pending, MCP001 Complete. No newly Ready task from DB completion; concurrent Commerce001 Ready record preserved, dependency consistency requires owner reconciliation before execution. Terminal System Tests remain gated; no live migration/backfill/main/integrated completion.
+
+### SHARED-005 selected outreach release — 2026-11-08
+
+Exact selected pin: `@modainteract/moda-interact-shared@5.7.0`, verified unused after inspecting all published 5.x versions (highest 5.6.0). Accepted outreach source `987a05dd06e79aa465d11fce8a4d4fe8b8d52703` includes generic product facts and accepted 5.6.0 ancestry. Publication/download verification and exact integrity recording remain in progress under SHARED-005 Attempt 1. Consumers remain gated; no rollout is authorized by this version-selection record.
+
+### SHARED-005 immutable outreach artifact — published and download-verified
+
+Exact consumer pin: `@modainteract/moda-interact-shared@5.7.0`.
+
+- dist.integrity: `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==`
+- Tarball SHA256: `c14d0195981acb2a31287b6e026322225dd34d29c0b60bd59c44a0141314936d`
+- Release source commit: `09e249c5717c8866996624f8855a7d649dfd2c43`; accepted outreach source `987a05dd06e79aa465d11fce8a4d4fe8b8d52703`, including accepted generic product facts and original5.6.0 ancestry.
+- Registry tarball: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-5.7.0.tgz
+
+Published once on2026-11-08, then registry metadata/download hashes and isolated installed-artifact public JS/declaration/evaluation/frozen-render/generic-facts checks passed. Prior34 public export definitions remain intact. This record supersedes the earlier version/integrity-pending selection text. SHARED-005 remains Review at Attempt1 pending developer acceptance and explicit completion; consumer dependency gates remain in force. Consumers must pin this exact artifact after the gate completes; no latest/range inference, package republish, consumer rollout or real message delivery is implied.
+
+### 2026-11-08 — Accepted release completion frontier
+
+SHARED-005 is explicitly Complete at accepted Attempt1 after passing review `a2590514fd2d75db56391015ef5460feaefdb0f5`. The exact accepted consumer artifact is Shared5.7.0 with the integrity/SHA256/source recorded above. BACKGROUND-001 and COMMERCE-001 have all explicit prerequisites Complete and are Ready, Attempt0/unclaimed. Historical DATABASE-001/MCP-001 Complete records are preserved; no new MCP scope acceptance is inferred. BACKGROUND-002 waits for BACKGROUND-001; COMMERCE-002 waits for COMMERCE-001/BACKGROUND-002; system tests retain consumer dependency and manual gates. Consumer execution remains a separate claim; no rollout or production send occurs here.
