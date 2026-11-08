@@ -4,7 +4,7 @@ Architecture: [decisions](../../../architecture/ARCH-066-conversation-product-co
 
 | Task | Status | Dependencies |
 |---|---|---|
-| [ARCH-066-COMMERCE-001](COMMERCE-001-preview-verified-product-details-and-final-whatsapp-message.md) | Ready | ARCH-066-SHARED-003, ARCH-066-MCP-001 |
+| [ARCH-066-COMMERCE-001](COMMERCE-001-preview-verified-product-details-and-final-whatsapp-message.md) | Complete, Attempt3 | ARCH-066-SHARED-010, ARCH-066-MCP-001 |
 
 2026-11-08: SHARED-003 and MCP-001 Complete; COMMERCE-001 Ready/unclaimed, no automatic execution.
 
@@ -23,3 +23,5 @@ Commerce001 implementation4723e6f/reportde12408f5 accepted after actual standalo
 COMMERCE001 Complete at accepted Attempt3 by explicit developer decision; Shared009/010 and BACKGROUND001 Complete. BACKGROUND002 remains Ready; COMMERCE002 remains Pending until BACKGROUND002 Complete. SYSTEM-TEST001 becomes dependency-ready/Ready but remains manual-gated and unclaimed; SYSTEM-TEST002 remains Pending. No implementation, live activation, main integration or system-test execution started. Earlier Review/blocked frontier records are historical.
 
 2026-11-08: canonical Commerce001 CompleteAttempt3 preserved (remote181bd35f); Commerce002 ReadyAttempt0/unclaimed after Background002Complete/Shared012Complete, exact5.9pin. Developer execution retained, no claim.
+
+| [ARCH-066-COMMERCE-002](COMMERCE-002-test-checkout-outreach-with-live-products.md) | Ready, Attempt0/unclaimed | ARCH-066-SHARED-005, ARCH-066-COMMERCE-001, ARCH-066-BACKGROUND-002, ARCH-066-SHARED-012 |
