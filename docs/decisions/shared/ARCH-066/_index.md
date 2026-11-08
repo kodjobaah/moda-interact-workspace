@@ -16,3 +16,12 @@ Definitions amended; no task claimed or implementation accepted by this review. 
 2026-11-08: SHARED-006 accepted Attempt1 explicitly Complete; SHARED-004 newly Ready/unclaimed; SHARED-005 remains Pending. No publication or automatic execution.
 
 2026-11-08: SHARED-005 explicitly Complete at accepted Attempt1 (verified5.7.0). BACKGROUND-001 and COMMERCE-001 Ready/Attempt0/unclaimed; later consumers and system tests retain remaining dependency/manual gates. No task started.
+
+## Standalone prerequisite correction
+
+| Task | Status | Dependencies |
+|---|---|---|
+| ARCH-066-SHARED-007 | Ready | ARCH-066-SHARED-005 |
+| ARCH-066-SHARED-008 | Pending | ARCH-066-SHARED-007 |
+
+Definitions only; no execution started.

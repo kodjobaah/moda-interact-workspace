@@ -14,7 +14,7 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ["ARCH-066-DATABASE-001", "ARCH-066-SHARED-005", "ARCH-066-MCP-001"]
+depends_on: ["ARCH-066-DATABASE-001", "ARCH-066-SHARED-005", "ARCH-066-MCP-001", "ARCH-066-SHARED-008", "ARCH-066-MCP-002"]
 enables: ["ARCH-066-BACKGROUND-002", "ARCH-066-SYSTEM-TEST-001"]
 created: 2026-11-08
 updated: 2026-11-08
@@ -98,3 +98,17 @@ SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainter
 
 ## Execution Ownership Amendment — 2026-11-08
 Developer explicitly requested `/moda-task ARCH-066-BACKGROUND-001` agent implementation and authorized sync plus claim/source/review publication. Canonical explicit dependencies all Complete, Ready Attempt0/unclaimed; implementation worktree absent, no existing source edits to checkpoint. Delegate to moda_background through canonical preparation; completion_mode developer retained and exact consumer contract unchanged. No live/customer/Meta/main/follow-on execution.
+
+## Architect Review — Attempt1 (2026-11-08)
+### Review Status
+Blocked — canonical standalone identity/private admission prerequisite missing; not Accepted.
+### Review Notes
+Inspected published partial source4664ea89daad920a2704dc9f0db11a201910a939 and reportdce85f846776d413afdf47b1c726369493152f80. Valid cache/verified presentation/shared-composer integration retained; no fake recovery or unsafe fallback. Actual standalone conversational execution cannot satisfy normative C1 under published5.7: CommerceTurnIdentitySchema.checkoutRecoveryId required string; live-budget.ts input/output recoveryId required; whatsapp-conversation-routing.service.ts:175–176 denies non-recovery CONTEXT_REQUIRED; whatsapp.worker.ts:256–298 derives tenant/recipient/context solely from recovery and requires it; recovery-agent-context.service.ts:108+ named standalone helper still loads recovery. Existing canonical Conversation.shop/customer relations alone do not supply a valid Shared turn/assertion/budget contract. Acceptance remains incomplete, no integrated runtime completion claimed.
+### Reviewed Files
+product-context-repository.ts and actual PostgreSQL fixture; presentation.ts and golden/delegate tests; host/history and wrapper/processor composition paths; package/DB pin; precise Shared/worker/router/budget/helper evidence. Read normative consumer C/D and actual production code.
+### Validation Reviewed
+Actual disposable PostgreSQL6/6 including observed pg_stat_activity row-lock wait/inbound advancement, competing inserts, canonical equality/no TTL extension, revision CAS, ownership/expiry/bounds passed. Host73/73, recommendations201, presentation10, wrapper110/final76, moderation/billing/processor204 passed. Build (Prisma/both TypeScript projects/template artifact) and changed-scope lint passed. Full lint fails one untouched baseline-identical src/providers/shopify-whatsapp-consent.provider.ts:151 no-control-regex; not silently fixed or claimed passed. Real Shared runner/loopback fresh-facts verification uses2reads without discount/purchaseURL gating. Unit evidence does not prove absent standalone pipeline.
+### Architecture Conformance
+Partial code preserves canonical owner/version lock/CAS, Shared validation/UTF8+SQL storage bounds, post-composition context timing/send recheck, single durable wrapper application/replay/moderation, fresh counted facts and existing send/billing/consent fences. Shared pure duplicates delegated; no copied generic logger/validator. Exact5.7 artifact and accepted cache migration pin recorded. No live provider/model/customer/Meta/main/activation/schema edits.
+### Follow-up
+New architect definitions SHARED007 Ready (canonical standalone identity/admission scope), SHARED008 Pending publication, MCP002 Pending private standalone verification. Background remains Blocked on published contract/private ingress gates, same Attempt1/history/branches retained, claim cleared. After gates Complete, reclaim same task to adopt corrected package and implement existing canonical standalone loader/router/general budget/context path with explicit owner/customer/consent fixtures; never fabricate recovery/checkout facts. No follow-on implementation launched. System Tests remain terminal/manual-gated.
