@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -100,3 +100,6 @@ None
 Pending
 ### Follow-up
 Consumer pin amendment after accepted artifact.
+
+## Accepted source handoff
+009 Complete at accepted Attempt1; implementation16e3b357c982975820cdeafd036bf63a6cefae36. Release must carry this exact accepted source; source edits are prohibited.
