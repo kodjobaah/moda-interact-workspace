@@ -147,3 +147,6 @@ Review BACKGROUND-001 and COMMERCE-001 against this amendment before acceptance.
 
 ### Shared correction release — 2026-11-08
 SHARED009 and010 Complete; exact Shared5.8.0 and integrity recorded in010 now supersede old consumer pins. Commerce001 Ready for correction Attempt2, retaining developer completion authority; no deployment or system-test execution implied.
+
+### Accepted Commerce Attempt3 frontier — 2026-11-08
+Commerce001 implementation4723e6f/reportde12408f5 accepted after actual standalone TEST immutable upgrade/default-profile/descriptor/idempotence proof. Task remains Review for explicit developer completion (completion_mode developer), not Complete. Shared009/010 remain Complete; no dependant promoted, protected-main merge, live activation or terminal system-test execution. Prior blocked/in-progress entries above are historical.
