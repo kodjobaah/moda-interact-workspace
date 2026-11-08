@@ -48,7 +48,7 @@ Definition only. Do not claim or implement until explicit dependency tasks are C
 
 ### Status
 
-Ready for Review — Attempt2; all recorded corrections implemented and available validation passed. Explicit acceptance/completion pending.
+Review — Attempt2 developer self-review Passed; explicit developer completion pending.
 
 ### Files Changed
 14 task-owned source/test paths in implementation ce24e4550c0a7b2e93c1311437ac35a2d605ffae: commerce schemas/index/new product-context module/tests; runner types, preflight, result assembly, instructions, execution, model route, diagnostics/messages, invoke-model and runner tests. No consumer, package/lock/schema/provider artifact edits.
@@ -109,3 +109,13 @@ Read the complete synchronized task, normative architecture and latest Developer
 ### Files / VCS / Assistance
 Only src/commerce/runner/tool-execution.ts and src/commerce/runner/runner.test.ts changed in correction commit c3f9f07, pushed origin/task/ARCH-066-SHARED-001. Material moda_shared implementation/test assistance retained under developer execution ownership; root reviewed correction and handled publication/report. No consumer/version/dependency/publication changes.
 Same canonical parent and implementation worktrees reused on task/ARCH-066-SHARED-001. Launcher synchronized both before Attempt2, then report-format failure occurred after setting claim; normalized report and published claim83d1d1487 without another attempt increment. No unrelated edits or shared-checkout switching; no main merge/push or submodule gitlink staging. This report is published on matching parent task branch. No enabled task started; review/completion remains pending at unchanged Attempt2.
+
+## Developer Self-Review - Passed / Accepted Attempt 2
+2026-11-08: Reconciled full task and normative architecture, historical Attempt1 Changes Requested, complete Attempt2 correction diff and regression assertions. Implementation c3f9f07cfcf9ff60817f89d5c3d2aaca2dddfbf7 matches origin/task/ARCH-066-SHARED-001; parent f20decba0566453bd3b0b086794759798b3b4e26 matches published report. Both canonical worktrees clean; isolation, synchronization, claim and material assistance retained in preceding reports. No new attempt or source edits during this review.
+
+All three requested corrections pass review:
+1. Parsed built-in outputs retained; canonical search/get payloads replaced with parsed products before purpose validation, authorization continuation, evidence, model history and context updates. Existing max20 search and nullable detail preserved; validated envelope fields retained.
+2. Six runner-boundary tests capture actual subsequent model invocation and evidence callback, proving truthful bounded PARTIAL/selected option normalization, no mutation of original provider object, legacy absence compatibility, context reference update and fatal malformed mandatory fields.
+3. Recorded final checks after correction:133 passes/1 existing consumer-environment skip/0 failures; package typecheck, ESM/declaration build, commerce-entrypoint validation and diff check passed. No relevant source change after those checks, so no redundant rerun. Lint disposition: package has no declared lint script/dependency; record unavailable rather than passed. This tooling absence is not a newly introduced regression and no unrelated tooling change is required for scoped acceptance; existing skip is likewise explicitly retained.
+
+No outstanding scoped code correction found. No npm publication, migration, consumer rollout, live model/provider validation or main merge is claimed. Source package remains5.5.0; follow-on publication owns immutable release integrity. Historical reviews preserved. Status review, executor/claimed_at null, accepted Attempt2 unchanged, completion_mode developer retained. Explicit `/moda_developer_update ARCH-066-SHARED-001 complete` is pending; downstream tasks remain gated until completion/frontier reconciliation.
