@@ -52,6 +52,8 @@ Original BACKGROUND002 and COMMERCE002 consumer tasks after actual Complete publ
 - [ ] Prerequisites Complete/Accepted and exact version available/unused before publication.
 - [ ] Publication succeeds, exact metadata/archive hashes and public imports verified.
 - [ ] Release-only source parity verified. No implementation tests/lint/typecheck/build reruns.
+## Stop Condition
+After defined work/acceptance/required validation is complete, publish Completion Report at review and return control to moda_architect. Stop; no enabled task, release or consumer execution implicit.
 ## Implementation Notes
 Definition only; do not create implementation worktree, claim or release now. Publication lifecycle needed to package distributables is distinct from implementation revalidation.
 ## Completion Report
