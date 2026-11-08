@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -71,3 +71,6 @@ Pending scope now includes generic descriptions/attributes and therefore depends
 ## Release dependency reconciliation — 2026-11-08
 
 SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainteract/moda-interact-shared@5.7.0` and integrity `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==` (source `09e249c5717c8866996624f8855a7d649dfd2c43`). Use this exact artifact and canonical consumer contract; never guess/latest/ranges. Remaining explicit blockers: None; every explicit prerequisite is Complete. Status Ready, unchanged Attempt0/unclaimed. No implementation, deployment or task claim is started by reconciliation.
+
+## Execution Ownership Amendment — 2026-11-08
+Developer explicitly requested `/moda-task ARCH-066-BACKGROUND-001` agent implementation and authorized sync plus claim/source/review publication. Canonical explicit dependencies all Complete, Ready Attempt0/unclaimed; implementation worktree absent, no existing source edits to checkpoint. Delegate to moda_background through canonical preparation; completion_mode developer retained and exact consumer contract unchanged. No live/customer/Meta/main/follow-on execution.
