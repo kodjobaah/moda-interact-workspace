@@ -19,3 +19,6 @@ Definitions amended; no task claimed or implementation accepted by this review. 
 
 ## Shared correction frontier — 2026-11-08
 SHARED009 Complete at accepted source16e3b35; SHARED010 Complete at release5.8.0 (exact integrity in release task), acceptance66c531568. Commerce001 in_progress Attempt2, durable claim889a118de6fd4436e66ff7454566e5eddc34eadb. Completion remains developer; other task histories/manual system gates unchanged.
+
+### Attempt2 publication result
+Commerce001 Blocked: implementation4c17318/reporta8ed45ff6 pushed;145 local tests/typecheck/scoped lint pass. Verified TEST deployment configuration/actor and immutable sync/idempotence receipts outstanding. Shared009/010 remain Complete. No consumer completion or downstream promotion.
