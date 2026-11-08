@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-11-08T17:59:28Z
+attempt: 1
 depends_on: ["ARCH-066-SHARED-004", "ARCH-066-SHARED-006"]
 enables: ["ARCH-066-MCP-001", "ARCH-066-BACKGROUND-001", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-COMMERCE-002"]
 created: 2026-11-08
@@ -43,4 +43,4 @@ SHARED-004 is explicitly Complete at accepted Attempt 2 (passing review `30278f9
 
 ### Status
 
-Ready — Attempt 0, unclaimed. Dependency gate satisfied; canonical preparation and publication attempt have not started.
+In Progress — Attempt 1 claimed by developer at 2026-11-08T17:59:28Z. Attempt 0 review history is preserved below.
