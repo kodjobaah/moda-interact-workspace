@@ -102,14 +102,4 @@ Shared5.6.0 published/downloaded and isolated public-import/browser smoke verifi
 
 2026-11-08: SHARED-003 accepted Attempt1 explicitly Complete, exact5.6.0 immutable release verified. MCP-001 becomes Ready/unclaimed. DATABASE-001 remains Ready; BACKGROUND-001 and COMMERCE-001 remain Pending on their other explicit dependencies. Terminal System Test remains Pending/manual-gated. No consumer execution/deployment or automatic task start.
 
-## Merge reconciliation and outreach publication gap — 2026-11-08
-
-The completed SHARED-002/SHARED-003 Attempt1 records and immutable5.6.0 handoff are preserved. Exact5.6.0 pins in MCP-001, BACKGROUND-001 and COMMERCE-001 apply to their original conversational scope, not the later initial-outreach export. SHARED-004 remains a separate Pending definition with prerequisites SHARED-001/002; the index must not add a self-dependency. Its older Enables reference to completed SHARED-003 is historical planning, not authorization to reopen or republish5.6.0.
-
-BACKGROUND-002's instruction to adopt a SHARED-003 release containing SHARED-004 cannot currently be satisfied. Treat it and dependent COMMERCE-002/SYSTEM-TEST-002 as held for a separately scoped, accepted and published Shared outreach release; do not infer readiness from SHARED-003 Complete. Before execution the architect must define that bounded publication gate, select a new immutable version, update consumer dependencies/pins and reconcile eligibility. This merge does not invent a publication task, choose its version, start work, or promote terminal/manual-gated system validation. Original completed release evidence is unchanged.
-
-## Outreach amendment authority
-The explicit [outreach contract](ARCH-066-initial-outreach-contract.md) and SHARED-005 resolve the historical publication gap noted above. Original accepted release history is preserved. Task authors must not infer outreach readiness from SHARED-003 completion.
-
-## Remaining-task review authority
-All pending tasks now cite deterministic contracts, owned code/test touch points and explicit artifact gates. Review results and limitations are recorded in [definition review](ARCH-066-definition-review.md). Implementation correctness/production readiness still requires code and integration acceptance; documentation validation does not establish it.
+2026-11-08: MCP-001 accepted Attempt1 explicitly Complete, implementation fd53bb5 and passing review45316cecf verified published. COMMERCE-001 newly Ready/unclaimed. BACKGROUND-001 remains Pending on DATABASE-001 (Ready); terminal System Test remains Pending/manual-gated. No downstream execution or deployment.

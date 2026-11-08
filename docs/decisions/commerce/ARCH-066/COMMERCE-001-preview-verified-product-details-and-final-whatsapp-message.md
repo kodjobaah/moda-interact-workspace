@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -51,14 +51,5 @@ Status: Not started. Attempt: 0. Implementation commit: none. Validation evidenc
 ## Release / Dependency Handoff - 2026-11-08
 SHARED-003 accepted Attempt1 explicitly Complete. Pin @modainteract/moda-interact-shared exactly5.6.0; dist.integrity sha512-tDuW+C8MdteWMJWwmuFI2cTAugMejOJwTk0KkemBMwpN/lL92WPI8CX/A5dDa2nhG0RYiIeHSR490WPCrTz42w==. Downloadable archive and isolated public-import/browser checks verified in release record. Remain Pending until other explicit dependencies Complete. No claim or execution performed.
 
-## Current additive-release gate (supersedes earlier consumer pin)
-Pending scope now includes generic descriptions/attributes and therefore depends on SHARED-005, not the original5.6.0 release. Pin exactly the version/integrity recorded by SHARED-005 after acceptance. Earlier5.6.0 handoff is historical and must not satisfy this amended task. No attempt/claim started; MCP readiness returns to Pending until new prerequisite is Complete. Implement [consumer contract](../../../architecture/ARCH-066-consumer-contract.md) as normative.
-
-## Deterministic implementation checklist
-- [ ] Apply consumer contract B/C; actual Studio files are src/studio/test-conversations/{test-conversations-screen,test-conversation-drawer,conversation-panel,tool-activity-panel}.tsx and contracts/client/test-conversation-view-types/tool-activity.ts. Integration runtime source is src/commerce/integration/preview/model-runtime.ts and adapters.ts, not a new parallel runtime.ts.
-- [ ] Update provider reads, ports/registrations, canonical bootstrap schemas/default response-details profile for description/attributes/options/selectedOptions, productDetailSelections plus existing productOptionSelections. Shared PUBLIC exports only; pin SHARED-005 artifact.
-- [ ] Extend src/commerce/preview/{types,service,store,redis-store}.ts and associated Zod contracts together. completeRun gains optional productContextUpdate; atomic in-memory/Lua history+context+language+composed result update with existing owner fencing. Count bytes in capacity/retention; purge covers new data; no policy reset or separate unbounded history cache.
-- [ ] New presentation.ts enforces same counted revalidation as Background; calls shown under PRESENTATION_VERIFY and share remaining per-turn budget/deadline. Failure stores typed FAILED diagnostic, not a completed raw-text answer. Shared composer invoked once after validated wrapper reader.
-- [ ] Existing conversation POST/GET/run/cancel API shapes remain backward-compatible via optional result field only. Never let request body choose tenant/environment. Preserve current role/session checks, mode labels and no production writes.
-- [ ] Add tests/arch066-product-facts-preview.test.ts, tests/arch066-context-store.test.ts and tests/arch066-whatsapp-preview.test.ts; test real Redis completion owner conflict/cancel/purge plus legacy records. Test UI default final body/expandable raw reply/refusal, no dangerouslySetInnerHTML. Existing lifecycle/tool activity tests pass.
-- [ ] Production typecheck/build, focused tests, scoped declared lint; TEST sync dry-run/apply/unchanged repeat receipts with exact revision IDs. Production activation/deployment remains outside task.
+## Dependency Reconciliation - 2026-11-08
+SHARED-003 and MCP-001 accepted/explicitly Complete. All explicit dependencies satisfied; Ready at unchanged Attempt0, executor/claimed_at null, no execution. Shared remains exact5.6.0; MCP implementation fd53bb52acaf6426b1a1e1793b8d4fc8ae54c2a4 published.

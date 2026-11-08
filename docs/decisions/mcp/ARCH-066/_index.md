@@ -1,9 +1,13 @@
 # ARCH-066 mcp tasks
 
-Architecture: [decisions](../../../architecture/ARCH-066-conversation-product-context-and-whatsapp-preview-parity.md). Normative amendments: [consumer contract](../../../architecture/ARCH-066-consumer-contract.md), [outreach contract](../../../architecture/ARCH-066-initial-outreach-contract.md).
+Architecture: [contract decisions](../../../architecture/ARCH-066-conversation-product-context-and-whatsapp-preview-parity.md).
+
+MCP-001 accepted Attempt1 explicitly developer-completed on 2026-11-08.
 
 | Task | Status | Dependencies |
 |---|---|---|
-| [ARCH-066-MCP-001](MCP-001-expose-provider-options-and-native-id-diagnostics.md) | pending | ARCH-066-SHARED-005 |
+| [ARCH-066-MCP-001](MCP-001-expose-provider-options-and-native-id-diagnostics.md) | Complete | ARCH-066-SHARED-003 |
 
-Definitions amended; no task claimed or implementation accepted by this review. Completed5.6.0 baseline is preserved; pending consumers require new SHARED-005 artifact.
+2026-11-08: SHARED-003 Complete; MCP-001 Ready/unclaimed. Exact Shared pin5.6.0/integrity in task handoff.
+
+2026-11-08 completion: COMMERCE-001 newly Ready/unclaimed; BACKGROUND-001 remains Pending on Database.
