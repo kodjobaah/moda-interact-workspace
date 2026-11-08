@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: blocked
 priority: 50
-executor: codex
-claimed_at: 2026-11-08T18:29:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-066-DATABASE-001", "ARCH-066-SHARED-005", "ARCH-066-MCP-001"]
 enables: ["ARCH-066-BACKGROUND-002", "ARCH-066-SYSTEM-TEST-001"]
@@ -48,11 +48,35 @@ Definition only. Do not claim or implement until explicit dependency tasks are C
 
 ### Status
 
-Ready — Attempt 0, unclaimed; explicit dependency gate satisfied after SHARED-005 completion.
+Blocked — Attempt 1 implementation published; standalone host execution cannot satisfy the normative contract with the published required recovery identity. Unaffected recovery-linked context, fresh facts and shared composition work is implemented and validated. Awaiting moda_architect disposition; no acceptance or completion decision made by moda_background.
 
-### Implementation evidence
+### Implementation and artifacts
 
-Status: Not started. Attempt: 0. Implementation commit: none. Validation evidence: none. Remaining work: all unchecked acceptance criteria. Document isolated worktree, package, test and deployment evidence when implemented; do not mark Complete merely from source inspection.
+- Implementation commit: `4664ea89daad920a2704dc9f0db11a201910a939`, pushed to `moda-interact-background` branch `task/ARCH-066-BACKGROUND-001`.
+- Exact Shared package: `@modainteract/moda-interact-shared@5.7.0`; lock integrity `sha512-2/Ew2Blo83eY/LKthULJh84kHoJfq701e3RCpjPEQNXYnSai6IEQO08n4QNct1QzwWGyNxf9M2lokLlCHKyoXg==`. Canonical provider output, product reference and presentation schemas are imported from this immutable artifact; no local substitute schema or package edits.
+- Database submodule pinned to accepted `b7f58d5a93e41d54b2fd92a5d483aec4c2c5b595`. Migration `20261108173000_arch066_conversation_product_context/migration.sql` SHA256 `3e99659d71c8e1d5933a95ad933a10bffea03bd25395795cc8de704f27ff686a`.
+- `product-context-repository.ts`: canonical recovery/standalone owner validation, exact Conversation row lock, inbound version fencing, canonical equal-version idempotency without TTL extension, revision CAS, competing-insert conflict, UTF8 and PostgreSQL storage bounds, expiry and safe cache-failure logging.
+- `host.ts`, `presentation.ts`, agent types and observation timestamp: typed reference context is separate from moderated history, passed to Shared runner; fresh exact authorized product reads share runner usage/deadline, feed canonical fact verifiers and return strict presentation/update metadata. Factual details bypass purchase/discount/URL recommendation authority. Canonical owner conflict and unsupported standalone fail before model/provider work.
+- Recommendation and wrapper pure modules delegate to Shared. Wrapper service owns the single Shared composer invocation inside existing applicationKey/replay handling; persisted replay skips recomposition/context writes. Processor writes references only after successful composition and repeats control/inbound fences before existing moderated delivery. HUMAN/manual, outbox/billing and initial template paths retain their boundaries.
+
+### Validation
+
+- `npm run build`: passed (Prisma client generation, both TypeScript projects and existing template packaging).
+- `npm run test:commerce-host`: final 73/73 passed, using actual Shared runner and loopback MCP. New cases prove canonical-owner rejection, standalone fail-closed, fresh product detail reads, no recommendation/discount authority and no required purchase URL for factual answers.
+- `npm run test:commerce-recommendations`: 20 files / 201 passed, including recommendations/shipping/discount, host diagnostics, MCP/evidence and existing initial-outreach regressions. Old fixture provider IDs were made canonical; forged-input assertion now checks the published runner's safe referral and zero provider I/O rather than obsolete fatal-input behavior.
+- `vitest run src/commerce/presentation.test.ts`: final 10/10 passed; canonical selection validation, exact pair authorization/freshness, refusal priority, ambiguity/mixed selection rejection, missing-fact limitation and Shared composer golden/boundary fixtures. Migrated render/shipping regression plus helper: 15 passed.
+- `node scripts/test-arch066-product-context-postgres.mjs` (exposed as `npm run test:arch066-product-context:postgres`): disposable PostgreSQL fixture 6/6 passed. Exact accepted migration applied only to isolated fixture parent-key tables; actual observed row-lock wait and inbound-version race, concurrent insertion, canonical equality/unchanged expiry, CAS, ownership, malformed/expired/oversize data and technical failures exercised. Fixture container removed; no shared/live database migration.
+- Wrapper + processor + HUMAN focused suite: 6 files / 110 passed. Final affected adapter/processor assertions: 76 passed, including immutable provenance, replay/no update, refused composition/no write, STALE/CONFLICT suppression, SKIPPED behavior and post-write inbound fence suppression.
+- `vitest run tests/unit/services/conversation-moderation tests/unit/services/recovery-billing.service.test.ts tests/unit/services/recovery-billing tests/unit/services/conversation-turn-processor.service.test.ts`: 16 files / 204 passed.
+- `npm run lint`: fails with exactly one existing error in untouched `src/providers/shopify-whatsapp-consent.provider.ts:151` (`no-control-regex`). File diff against launcher implementation baseline `7c162e5b28cedc7c185421b55db6dc4bdd6c3013` is empty. No corresponding baseline ID exists in `docs/development-baseline.md`; this is reported as an observed existing failure, not claimed as a documented exemption. ESLint across all changed source/test/script scopes passed. `git diff --check` passed.
+
+### Unresolved standalone prerequisite
+
+Published Shared5.7.0 `dist/response-DFDEw4K0.d.ts:65–72` requires `CommerceTurnIdentitySchema.checkoutRecoveryId` as a string; runner/MCP assertion identity therefore cannot express a truly standalone conversation. Background `src/commerce/live-budget.ts:9,78–83` likewise requires recoveryId; `whatsapp-conversation-routing.service.ts:175–176` returns CONTEXT_REQUIRED without recovery; `whatsapp.worker.ts:256–298` derives ownership/recipient from recovery and requires it; `recovery-agent-context.service.ts:108` named standalone helper still loads a supplied recovery. Existing canonical Conversation shop/customer relations do not resolve this cross-service identity/admission contract. No fabricated recovery IDs, customer facts or new recipient/consent policy were introduced. Required correction: architect-owned additive standalone Shared identity/assertion contract and release, MCP authorization consumption, then bounded Background admission/budget/context integration. Standalone execution acceptance remains unmet; no main merge, deployment, live provider/model call, customer/Meta send or follow-on execution.
+
+### Prepared execution provenance
+
+Launcher packet `/private/tmp/arch066-background001-prepared.json`: primary root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-BACKGROUND-001` reused; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-BACKGROUND-001` created. Mirrored branch `task/ARCH-066-BACKGROUND-001`; parent baseline `678d0cdc5380e78a87c5b05148138a2f6f3d756b`, implementation baseline `7c162e5b28cedc7c185421b55db6dc4bdd6c3013`. Both startup fast-forwards not-needed/main already-current; recursive submodule sync/update passed at database `039778a4a472db7d09e6b077bb8c8d7c82a58129`. Dependency gate all Complete. Claim `4dfeb84d02baca22436da26a5c278cd82bb19cf5`, executor codex at `2026-11-08T18:29:15Z`; Attempt1 unchanged, active claim cleared on blocked return. Source and assigned report only published; parent implementation gitlink not staged.
 
 ## Release / Dependency Handoff - 2026-11-08
 SHARED-003 accepted Attempt1 explicitly Complete. Pin @modainteract/moda-interact-shared exactly5.6.0; dist.integrity sha512-tDuW+C8MdteWMJWwmuFI2cTAugMejOJwTk0KkemBMwpN/lL92WPI8CX/A5dDa2nhG0RYiIeHSR490WPCrTz42w==. Downloadable archive and isolated public-import/browser checks verified in release record. Remain Pending until other explicit dependencies Complete. No claim or execution performed.
