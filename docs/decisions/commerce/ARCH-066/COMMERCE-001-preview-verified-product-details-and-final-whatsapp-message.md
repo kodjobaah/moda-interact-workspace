@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 2
+executor: codex
+claimed_at: 2026-11-08T19:41:20Z
+attempt: 3
 depends_on: ["ARCH-066-SHARED-010", "ARCH-066-MCP-001"]
 enables: ["ARCH-066-COMMERCE-002", "ARCH-066-SYSTEM-TEST-001"]
 created: 2026-11-08
