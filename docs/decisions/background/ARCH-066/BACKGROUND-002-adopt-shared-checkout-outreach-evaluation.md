@@ -7,7 +7,7 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -51,3 +51,6 @@ SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainter
 
 ## Dependency frontier — 2026-11-08
 BACKGROUND001 explicitly Complete at Accepted Attempt2; Shared005 Complete immutable5.7.0 lineage retained (current corrected artifact5.8.0 available through accepted010). Both explicit prerequisites satisfied. Ready, unchanged Attempt0/unclaimed, execution/completion developer retained. This promotion does not execute or amend implementation scope; use `/moda_developer_create ARCH-066-BACKGROUND-002` when ready. No standalone publication or main/live action.
+
+## Execution ownership amendment — 2026-11-08
+Developer explicitly invoked moda-task agent implementation and authorized synchronization/claim/source/report publication. Ready Attempt0/unclaimed with Complete001/005; agent execution is authorized, completion remains developer. Preserve checkout-led withdrawal and real checkout/send ownership. Use the exact accepted5.8.0 artifact/integrity already adopted by completed BACKGROUND001 and published by SHARED010; it includes accepted005 outreach exports, so do not downgrade the prerequisite implementation to5.7.0 or mutate published code. No live/main/standalone/follow-on execution.
