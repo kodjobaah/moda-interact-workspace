@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: blocked
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -123,3 +123,8 @@ Repository owner implements/validates/pushes both task branches and submits revi
 Review Status: Blocked, not Accepted. Independently inspected actual implementation4c17318: Shared selection/fact composer imports and exact5.8 pin, host post-run verification/policy/read budget, current-deployment wrapper reader, fenced memory/Redis context finalization, UI final/raw separation, recommendation promotion/cardinality/compatible-subset paths and task reporta8ed45ff6. Review identified cancellation-finalize race during implementation; owner corrected it atomically in both stores and added real Redis race coverage before final submission. Recorded145 tests/typecheck/scoped lint/diff check pass; these do not establish deployed default-profile/descriptor acceptance.
 
 Required TEST immutable schema/default-profile dry-run/apply and unchanged-repeat receipts are absent. First authorized dry-run refused ENVIRONMENT_MISMATCH before database mutation. Await operator-loaded verified TEST configuration (DEPLOYMENT_ENVIRONMENT_NAME=test tied to actual TEST database) and active SUPER_ADMIN COMMERCE_SYSTEM_TOOL_ACTOR_EMAIL. Never relabel the currently unknown DATABASE_URL. User already authorized the exact commands; no further command permission is needed once verified configuration is supplied. After receipts, complete the remaining acceptance/parity review; no Accepted/Complete or live-rollout assertion is made now. completion_mode developer preserved.
+
+### Standalone TEST validation amendment — 2026-11-08
+Developer explicitly authorized finding or preparing a standalone test environment and using it. Existing Commerce scripts/run-system-commerce-tool-sync-postgres.mjs provides local Unix-Docker invocation-labelled ephemeral pgvector17 database, clean environment whitelist and accepted Prisma migrate deploy. Extend only this existing harness as necessary with task-specific CLI proof mode: seed active local SUPER_ADMIN and required feature, invoke actual authorized dry-run/apply/unchanged repeats against isolated verified TEST database, assert immutable revision/default-profile compilation and no-op receipts, cleanup only invocation-labelled resources. No deployment, unknown DATABASE_URL reuse/relabel or LIVE activation. This dedicated local TEST satisfies task validation environment requirement; no hosted service gate is added.
+
+Architect Changes Requested: finish these remaining validation receipts on same task branch; preserve existing implementation4c17318 and local145-test evidence. Status Ready, Attempt2 unchanged/unclaimed; next canonical preparation claims Attempt3. No unrelated service source edits or generic full stack work. Report exact harness/receipts/resource cleanup and submit review only once required acceptance is satisfied; completion_mode developer remains.
