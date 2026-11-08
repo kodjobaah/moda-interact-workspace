@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-11-08T17:31:41Z
+attempt: 2
 depends_on: ["ARCH-066-SHARED-001", "ARCH-066-SHARED-002", "ARCH-066-SHARED-006"]
 enables: ["ARCH-066-SHARED-005"]
 created: 2026-11-08
@@ -55,7 +55,7 @@ ARCH-066-SHARED-006 is Complete at accepted Attempt 1, recorded and pushed in pa
 
 ### Status
 
-Changes Requested — reviewed Attempt 1 unchanged. Two source corrections and regression tests are required before acceptance; next developer claim creates Attempt 2.
+In Progress — Attempt 2 claimed by developer at 2026-11-08T17:31:41Z. Attempt 1 review history is preserved below.
 
 ### Preparation
 
