@@ -1941,3 +1941,9 @@ ARCH-063-SHARED-001 Attempt 1 is Complete after architect Accepted review and ex
 
 ## Background explicit completion frontier — 2026-11-08
 BACKGROUND001 explicitly developer-completed, Accepted Attempt2 preserved, final source44e92f8b/accepted review344b8815 verified clean/published. BACKGROUND002 newly Ready Attempt0/unclaimed with developer execution/completion; no claim or follow-on execution. Canonical COMMERCE001 remains Review, so SystemTest001 Pending, terminal/manual-gated; other concurrent states preserved.007/008/MCP002 remain Superseded/no standalone release. Full-lint consent151 unchanged limitation remains explicit; no main/live migration/release/integrated completion.
+
+## Frozen binding correction review — 2026-11-08
+SHARED011 Attempt1 Accepted/Review, explicit developer completion pending/claim cleared. Source6c8bbe194337c7c2afb141047d24aeeeb23c48ca and report134379e6 verified published/clean. Exact strict preparedBrand/preparedBrandMedia, five savedfields and three independent ready BODY media roles, totalURL/fail-closed tenant semantics validated79/79+typecheck/build/installedpublicJS/types. INITIAL mandatory binding fixture contradiction resolved without runtime policy changes. Registry5.8 remains unchanged;012Pending. Background002 remains Blocked on012 and residual72failures; no consumer/system-test promotion or integrated completion. Checkout-led withdrawal/no standalone release/main/live/follow-on retained.
+
+## Prepared-brand explicit completion frontier — 2026-11-08
+SHARED011 explicitly Complete at Accepted Attempt1, claim cleared; published clean source6c8bbe19/review750d5119 verified. SHARED012 newly Ready, Attempt0/unclaimed; publication-only task, not executed. Background002 remains Blocked on012 plus original72unresolvedfailures; no automatic consumer/system-test promotion. Other concurrent task states preserved; checkout-led withdrawal and no standalone release/main/live/follow-on retained.

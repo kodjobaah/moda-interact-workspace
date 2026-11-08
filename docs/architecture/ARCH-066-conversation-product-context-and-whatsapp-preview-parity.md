@@ -136,3 +136,12 @@ Developer confirmed production turns retain real CheckoutRecovery, synthetic Stu
 
 
 Dependency handoff2026-11-08: canonical Background001 Complete atb9470dd27/AcceptedAttempt2; Background002 Ready Attempt0/unclaimed, developer execution/completion. No standalone release/main/live/follow-on action.
+
+## Frozen outreach compatibility gap — 2026-11-08
+BACKGROUND002 adoption proves published5.8.0 enumerates valid savedbrand alt/dimension semantic keys but resolver refuses them; existing supported production frozen bindings cannot be silently removed. SHARED011 Ready defines bounded strict data/resolver compatibility; SHARED012 Pending immutable correction publication. BACKGROUND002 remains Blocked until corrected artifact adoption and same-task review. No generic local renderer workaround/unsupported internal import, no main/release/live/follow-on execution. Checkout-led scope remains controlling: production retains real recovery, standalone007/008/MCP002 withdrawn; this correction does not resurrect them.
+
+## Frozen binding correction review — 2026-11-08
+SHARED011 Attempt1 Accepted/Review, explicit developer completion pending/claim cleared. Source6c8bbe194337c7c2afb141047d24aeeeb23c48ca and report134379e6 verified published/clean. Exact strict preparedBrand/preparedBrandMedia, five savedfields and three independent ready BODY media roles, totalURL/fail-closed tenant semantics validated79/79+typecheck/build/installedpublicJS/types. INITIAL mandatory binding fixture contradiction resolved without runtime policy changes. Registry5.8 remains unchanged;012Pending. Background002 remains Blocked on012 and residual72failures; no consumer/system-test promotion or integrated completion. Checkout-led withdrawal/no standalone release/main/live/follow-on retained.
+
+## Prepared-brand explicit completion frontier — 2026-11-08
+SHARED011 explicitly Complete at Accepted Attempt1, claim cleared; published clean source6c8bbe19/review750d5119 verified. SHARED012 newly Ready, Attempt0/unclaimed; publication-only task, not executed. Background002 remains Blocked on012 plus original72unresolvedfailures; no automatic consumer/system-test promotion. Other concurrent task states preserved; checkout-led withdrawal and no standalone release/main/live/follow-on retained.
