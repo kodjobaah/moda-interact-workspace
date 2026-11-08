@@ -9,12 +9,12 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: blocked
+status: ready
 priority: 50
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ["ARCH-066-SHARED-005", "ARCH-066-MCP-001"]
+depends_on: ["ARCH-066-SHARED-010", "ARCH-066-MCP-001"]
 enables: ["ARCH-066-COMMERCE-002", "ARCH-066-SYSTEM-TEST-001"]
 created: 2026-11-08
 updated: 2026-11-08
@@ -102,3 +102,31 @@ SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainter
 ### Execution ownership amendment — 2026-11-08
 
 The developer explicitly authorized moda_architect to resolve synchronization and hand this task to moda_commerce for implementation, validation and publication. Agent execution is restored after mainline synchronization; explicit developer completion authority remains unchanged. Scope and dependency gates are unchanged.
+
+## Checkout-led scope amendment — 2026-11-08
+
+This amendment supersedes earlier standalone-production-conversation requirements, including consumer contract C1 and the standalone prerequisite reported by BACKGROUND-001. It preserves historical reports, attempts and acceptance evidence; it does not accept, complete, reclaim or start any task.
+
+- Every production conversation in this scope originates from a real abandoned checkout/CheckoutRecovery. Initial outreach uses that checkout; subsequent CommerceAgent turns retain the same recovery identity even when discussing other products. No independent customer-start conversation, new admission/recipient/consent policy or fabricated recovery ID is required.
+- Background resolves the current conversation's real CheckoutRecovery and its shop/customer through existing routing. Missing recovery or conflicting tenant/owner fails closed before model/provider I/O under existing admission rules. Preserve current consent/window/billing/outbox fences. Conversation.shopId, when populated, must agree with recovery ownership; it is not an alternate admission route.
+- Studio conversational preview remains an isolated, explicitly synthetic test using its existing preview identity. Do not persist a fake production recovery/customer, weaken live MCP authorization, or add a production standalone route to accommodate preview. Initial-outreach testing remains COMMERCE-002: select an existing same-shop checkout recovery and verify its items using live product reads. Synthetic conversational preview must not claim production admission was evaluated.
+- Retain generic product references, fresh authorized fact verification, shared WhatsApp composition, budgets, wrapper provenance, storage fencing and parity requirements. These apply to any merchant goods. No new table/schema is needed for standalone admission. Keep the existing ARCH-066 reference-context table and its recovery-linked owner checks.
+- SHARED-007/008 and MCP-002 standalone support is withdrawn from the required acceptance/dependency path for this checkout-led scope. Any existing work is subject to review for removal of unused standalone-only identity/admission branches; do not remove existing supported recovery behaviour or rewrite immutable published artifacts. This does not withdraw SHARED-009/010's independent productDetailSelections/PRODUCT_DETAILS compatibility correction and immutable publication. Consumers must wait for that accepted correction when using those fields; do not locally fork Shared schemas.
+
+### Mandatory review corrections
+
+Review BACKGROUND-001 and COMMERCE-001 against this amendment before acceptance. Inspect the actual implementation and require corrections on their same task branches: remove newly introduced standalone-only routing/budget/authorization code that has no checkout-led or isolated-preview caller; retain real recovery ownership rejection; confirm product-context persistence and verified WhatsApp body composition; prove missing recovery is rejected and a later product question retains the original recovery. For Commerce also prove synthetic preview stays isolated, real-checkout outreach preview remains separate, and no fabricated production records or weakened grants were added. Preserve and re-run relevant existing tests after corrections; report exact files, package pin/integrity, call order and final body evidence. A historical standalone blocker alone is no longer grounds to reject recovery-linked behaviour. Other genuine blockers, unfinished acceptance work and manual system-test gates remain in force. Do not declare acceptance from partial provider tests.
+
+## Architect Review
+### Review Status
+Changes Requested — reclaim same task at Attempt2 after shared blocker resolved.
+### Review Notes
+SHARED009 accepted correction and SHARED010 accepted immutable publication Complete. Use exact @modainteract/moda-interact-shared5.8.0, integrity sha512-LS6Tj4Jwsupe0qvsjcfrbt4vhGJkxfHm70bQvSbBdeOKpwsOpCoHRKvmyI4Tg4/lBDxH5QTSEF9fbGLjDnIifw==. This supersedes all earlier5.6/5.7 consumer pins. Preserve Attempt1 partial provider changes/history. Complete all unchecked original work and normative consumer contract A–C/E plus checkout-led amendment above. Use published verifyCommerceAnswerPresentationSelection before host verification; refuse mixed detail/option selections canonically. Implement atomic fenced context persistence, fresh budgeted fact/recommendation/shipping verification, wrapper provenance/refusal, final WhatsApp UI, strict descriptors/default profile publication and complete parity/lifecycle tests. Preserve synthetic preview isolation, no fake production records or standalone-only admission branches. Exact TEST dry-run/apply plus unchanged repeats are explicitly authorized by user; no LIVE activation.
+### Reviewed Files
+Attempt1 partial provider source/report, Shared009/010 source/release evidence.
+### Validation Reviewed
+Attempt1 focused provider tests; broader original required checks remain pending for Attempt2.
+### Architecture Conformance
+Scope unchanged except resolved dependency/pin; compatible checkout-led amendment preserved after review. completion_mode developer remains unchanged.
+### Follow-up
+Repository owner implements/validates/pushes both task branches and submits review; no self-completion.
