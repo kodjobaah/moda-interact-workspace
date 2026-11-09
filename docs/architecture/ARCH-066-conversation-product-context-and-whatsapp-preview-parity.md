@@ -175,3 +175,10 @@ Commerce initial outreach remains blocked until a least-privilege public configu
 
 
 2026-11-09 completionfrontier: COMMERCE003CompleteAcceptedAttempt1 atb7fb1c0fa, source6f01c096cleanpublished. COMMERCE002Ready for SAME-taskrework, priorAttempt1/claimnull, originalHOST/lifecyclechecklistmandatory/noacceptance; all explicitdepsComplete. SystemTest002remainsgated002; withdrawn senderchain/currentconcurrentstatespreserved. No claim/source/tests/live/main/follow-onexecution.
+
+
+## Commerce initial outreach host rework review — 2026-11-09
+COMMERCE002 Accepted at ReviewAttempt2, explicitdevelopercompletionpending. Source40b59e777db5b85d8f3444da1abe07170e70496f clean/published after normalmain→task resolution87c835 preserving003exact5.10Studio source and prior002history. Realdefaultfactory now wires trusted actor/shop/currentimmutablepurposeprofile/model/instructions/policy/locale/brandREADYmedia, localcredential-backed and isolatedMCP reads, Redis reservations/fences and boundedcancel/deadline/overflow. CurrentWoo pricecurrency derives from authenticated existing currentcurrencyendpoint, never checkoutpresentmentcurrency.19prior003proofs retained; final11files74PASS/no skips, compiler/scopedlintpass, exactunchangedAdminpurgeLua realRedisproof additionalPASS. Tests use actualHTTP/defaultfactory/registeredadapters with externalIOmocked; no liveprovider/customer effects or deployment verified. Shared5.10publicrenderer/purposehelpers retained, production validation and withdrawn senderchain unchanged. SystemTest002 staysgated until explicit002Complete; architecture remainsInProgress and terminalmanualsystemvalidation separate.
+
+
+2026-11-09 explicitCommerce002completionfrontier: COMMERCE002CompleteAcceptedAttempt2/claimnull source40b59e7/reviewbffd7e9verifiedcleanpublished. SystemTest002ReadyAttempt0/unclaimed, execution/completiondeveloper and manualcheckpoint preserved; SystemTest001alreadyReadyunchanged. Latest5.10Studio-only/parityamendment controls, Background5.9productionfencesretain. No tests/main/live/npm/follow-onexecution; architectureInProgress/manualterminalvalidationremaining.
