@@ -1046,3 +1046,9 @@ Proposed, pre-production and **29 portable, defined-but-not-materialised tasks**
 The 2026-10-29 checkout-lifecycle amendment replaces the earlier one-recovery-per-checkout rule. Background tasks `001`–`011` are Complete. The terminal `SYSTEM-TEST-001` remains Pending and depends on returning-consent task `ARCH-046-WOOCOMMERCE-003` (Ready). Raw exception logging in BG010 and BG011 is accepted for non-live testing only and must be bounded before live activation. No live WooCommerce outbound activation is authorised.
 
 [Architecture](ARCH-048-woocommerce-checkout-recovery-pipeline.md) · [Background task index](../decisions/background/ARCH-048/_index.md) · [System-test task index](../decisions/system-test/ARCH-048/_index.md)
+
+## ARCH-068 — Optional conversation product images (2026-11-09)
+
+Nine agent-executed task definitions, not started. Shared owns the binding, delivery plan and reusable Node media preparation; Admin owns authoring and initialization; Commerce and Background consume the same contracts. One nullable outbound JSONB column freezes retries. Initial outreach and approved follow-up templates retain their existing paths.
+
+[Architecture and exact contracts](ARCH-068-optional-conversation-product-image.md)

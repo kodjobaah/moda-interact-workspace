@@ -155,3 +155,15 @@ Explicit developer completion required before dependency promotions. Background0
 
 ## Developer Completion Decision — 2026-11-08
 Developer explicitly invoked `/moda_developer_update ARCH-066-SHARED-012 complete`. Accepted Attempt1review47c65a6f2689e187730a4e19282023e29e1ffa23 and sourceb65e04f7b702e4bae7f9cb354d55a23681b677cc verified clean/published; exact public5.9.0 download/integrity evidence retained without rerunning validation or npm publication. Complete at unchanged Attempt1, executor/claimed_at remain null. Background002 returns Ready for original same-task correction only, unchanged Attempt1/unclaimed; residual72failures and original acceptance remain required, not waived. No main/live/follow-on execution.
+
+
+## Reconciliation against Shared main — 2026-11-09
+Fetched origin. Compared accepted task tip b65e04f7b702e4bae7f9cb354d55a23681b677cc with origin/main ddfa3a5c73dafc2a11f363a87701cf5f179da237 (package5.11.0). Conclusion: no missing SHARED-012 functional correction identified; no merge/cherry-pick/republication required.
+
+- Task tip is not an ancestor of main: release branch history was not merged. This is a history distinction, not evidence of missing behavior.
+- The012carry over011 comprised schemas.ts, selection.ts, answer-presentation-selection.test.ts and scripts/validate-commerce-entrypoints.mjs plus package metadata. Selection verifier, selection tests and entrypoint smoke are byte-identical on main. schemas.ts retains the same PRODUCT_DETAILS and bounded unique productDetailSelections; subsequent067 changes only add stock in this comparison. Main carries product-detail selection via869f830.
+- Outreach contracts.ts, contracts.test.ts, render.test.ts and test-fixtures.ts are byte-identical to012. Prepared brand/media runtime schemas and regression fixtures are retained. Public prepared brand/media exports remain present; later Studio exports are additive.
+- Later015 extraction moves the same prepared-brand shop/media checks to validatePreparedAssets, component text substitution to component-render.ts, and parameter construction to prepareStoredComponents. Production prepareFrozenComponents retains approval/hash/category gates before shared construction; prepared variable resolver retains its implementation and uses a narrower structural input type. Existing012regression tests are retained unchanged.
+- Release5.9.0 metadata is intentionally superseded by5.10.0 and then5.11.0. Do not restore older package.json/lock version lines or publish5.9.0 again.
+
+Evidence: Git blob/diff comparison against freshly fetched refs and inspection of extracted rendering/parameter helpers. No implementation changes or runtime test reruns in this reconciliation; this does not certify deployed consumers or replace system tests. Task remains Complete; current main is functionally reconciled with012scope.
