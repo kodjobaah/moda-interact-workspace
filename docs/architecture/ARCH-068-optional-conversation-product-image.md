@@ -1,7 +1,7 @@
 ---
 id: ARCH-068
 title: Optional verified product images in service-window conversation replies
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-11-09
 updated: 2026-11-09
@@ -192,3 +192,10 @@ SHARED-001 owns changes to Shared source only. SHARED-002 can read Background so
 SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,scenario.js,assertions.js}` and `test/conversation-product-image.test.js`; wires the existing package.json test command using the repository's existing test runner and documents launch in README.md. Reuse `src/whatsapp-emulator.js`, `src/harness/aimock/runtime.js`, `src/harness/environment.js` for transport/model/environment control; extend them only where IMAGE payload capture is missing. Fixtures use the same compiled wrapper, product bytes, public origin and scripted envelope for both hosts; assert complete plan equality, media omission, one provider call, body preservation and legacy behavior. Add the mandatory failure/race cases above. Tests use disposable local infrastructure/provider emulator; launching real infrastructure or sending real WhatsApp messages requires separate explicit user authorization. Do not mark blocked merely because optional live infrastructure was not authorized when local acceptance can run.
 
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
+
+## Database accepted/completed frontier — 2026-11-09
+DATABASE001 Complete at independently Accepted Attempt1, implementation75669477; exact nullable JSONB schema/DDL and fresh/upgrade/old-writer TEXT+IMAGE evidence pass. SHARED003 remains Pending; BACKGROUND001 remains Pending on that publication (Database prerequisite satisfied). SYSTEM-TEST001 remains Pending/manual-gated on unfinished consumers. No readiness promotion, task execution, migration deployment, activation or architectureImplemented claim.
+
+## Accepted source frontier reconciliation — 2026-11-09
+
+This integration preserves the original scope and coherence contract alongside published acceptance history. SHARED-001 Complete at Accepted Attempt1, source0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822; SHARED-002 Ready at Attempt0/unclaimed on that exact source prerequisite. DATABASE-001 Complete at Accepted Attempt1, source75669477b9048104758e8f1e897abecef13bf059. SHARED-003 remains Pending; no new npm version, integrity, deployment, migration application, wrapper activation or actual WhatsApp send is asserted. BACKGROUND-001 remains publication-gated and terminal system validation remains Pending/manual-gated. Main documentation integration does not update any implementation gitlink or start a task.
