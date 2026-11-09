@@ -54,8 +54,8 @@ SHARED001 owns the pure public stock/count/reference/fact/composition APIs and S
 | ARCH-067-SHARED-002 | moda_shared | Complete / Accepted Attempt1 | ARCH-067-SHARED-001 |
 | ARCH-067-COMMERCE-001 | moda_commerce | Complete / Accepted Attempt1 | ARCH-067-SHARED-002 |
 | ARCH-067-MCP-001 | moda_mcp | Complete / Accepted Attempt1 | ARCH-067-SHARED-002 |
-| ARCH-067-BACKGROUND-001 | moda_background | Ready / Attempt0 unclaimed | ARCH-067-SHARED-002, ARCH-067-MCP-001 |
-| ARCH-067-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-067-COMMERCE-001, ARCH-067-BACKGROUND-001, ARCH-067-MCP-001 |
+| ARCH-067-BACKGROUND-001 | moda_background | Complete / Accepted Attempt2 | ARCH-067-SHARED-002, ARCH-067-MCP-001 |
+| ARCH-067-SYSTEM-TEST-001 | moda_system_test | Ready / dependency-ready; manual-gated; Attempt0 unclaimed | ARCH-067-COMMERCE-001, ARCH-067-BACKGROUND-001, ARCH-067-MCP-001 |
 
 Terminal systemvalidation remains developer-manual-gated after all actual prerequisitesComplete; no automaticconsumer/system execution or architectureImplemented claim. Existing publishedwire/contracts and persistedv1JSON require compatible reader-first rollout, no schema migration.
 
@@ -84,3 +84,5 @@ SHARED002AcceptedReviewAttempt1, explicitdevelopercompletionpending; public5.11.
 
 ## Reconciled consumer frontier — 2026-11-09
 MCP001 Complete1ecd2038e; COMMERCE001 Complete72ef2d55f; Shared002 Complete5.11.0. BACKGROUND001 Ready at Attempt0/unclaimed. SYSTEM-TEST001 remains Pending on Background001/manual-gated. No implementation/deployment/gate enablement or architectureImplemented claim.
+
+2026-11-09 Background explicit completion frontier: BACKGROUND001 Complete / Accepted Attempt2, sourceee342a14b3e5311fc34b2898b8ec65226aa30647, passingreviewb9507041b. Commerce001/MCP001 independently Complete. SYSTEM-TEST001 Ready/dependency-ready at unchanged Attempt0, no executor/claim; developer manual gate retained. Architecture remains in_progress until terminal evidence. Reader-first deployment and default-false context emission gate remain mandatory. No system execution, deployment, main integration or operational gate enabled.
