@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: codex
-claimed_at: 2026-11-09T22:40:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ['ARCH-068-SHARED-001', 'ARCH-068-SHARED-002']
 enables: ["ARCH-068-ADMIN-001", "ARCH-068-BACKGROUND-001", "ARCH-068-COMMERCE-001"]
@@ -31,11 +31,11 @@ Publication only. Require SHARED-001/002 Complete/Accepted and record their exac
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
-- [ ] Verify both implementation prerequisites are Complete/Accepted and identify their exact accepted source/build provenance.
-- [ ] Select an unused release version and apply only authorized release metadata.
-- [ ] Pack/publish accepted artifacts using approved release mechanics without implementation revalidation.
-- [ ] Verify the exact registry version and downloaded tarball hash/SRI; verify installed JS/declaration exports and legacy entrypoints.
-- [ ] Push release changes and the publication receipt on mirrored task branches; stop for architect review.
+- [x] Verify both implementation prerequisites are Complete/Accepted and identify their exact accepted source/build provenance.
+- [x] Select an unused release version and apply only authorized release metadata.
+- [x] Pack/publish accepted artifacts using approved release mechanics without implementation revalidation.
+- [x] Verify the exact registry version and downloaded tarball hash/SRI; verify installed JS/declaration exports and legacy entrypoints.
+- [x] Push release changes and the publication receipt on mirrored task branches; stop for architect review.
 
 ## Dependencies
 ARCH-068-SHARED-001 and ARCH-068-SHARED-002 — both Complete / Accepted Attempt1.
@@ -44,12 +44,12 @@ ARCH-068-SHARED-001 and ARCH-068-SHARED-002 — both Complete / Accepted Attempt
 Both accepted capabilities are included in the released artifact. Exact version, archive SHA256/SRI, registry availability, runtime/declaration imports, browser/Node separation and consumer install coordinates are recorded. Source changes are limited to release metadata. No consumer implementation, deployment or activation occurs.
 
 ## Validation
-- [ ] Both implementation prerequisites are Complete/Accepted before release.
-- [ ] Approved unused version and accepted source/build artifacts identified.
-- [ ] Publication succeeds and exact version is available at the intended registry.
-- [ ] Downloaded archive SHA256/SRI matches the reviewed release artifact.
-- [ ] Installed public runtime/declaration export checks pass, including legacy exports.
-- [ ] No unauthorized implementation source changed; do not rerun unit/integration tests, lint, typecheck or production build merely to revalidate accepted code. A package command's required artifact-packaging lifecycle is release mechanics, not a discretionary implementation rerun.
+- [x] Both implementation prerequisites are Complete/Accepted before release.
+- [x] Approved unused version and accepted source/build artifacts identified.
+- [x] Publication succeeds and exact version is available at the intended registry.
+- [x] Downloaded archive SHA256/SRI matches the reviewed release artifact.
+- [x] Installed public runtime/declaration export checks pass, including legacy exports.
+- [x] No unauthorized implementation source changed; do not rerun unit/integration tests, lint, typecheck or production build merely to revalidate accepted code. A package command's required artifact-packaging lifecycle is release mechanics, not a discretionary implementation rerun.
 
 ## Out of Scope
 No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write, unrelated cleanup, budget increase, production mutation or automatic live initializer.
@@ -58,7 +58,92 @@ No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
-Not started. Record changed paths, exact source SHA, isolated worktree/preparation evidence, tests with counts, public package version/integrity where consumed, dependency evidence, and any remaining risks.
+
+Ready for Review — Attempt 1. Publication and installed-artifact checks completed; architect review and completion are pending.
+
+### Accepted source and release scope
+
+Both prerequisites are Complete / independently Accepted Attempt 1 in the prepared parent record. SHARED001 accepted source `0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822` is an ancestor of combined SHARED002 source `8f8a298de90803671b789ba0ef2fe03058a8023e`. Prepared release baseline `f9e565a23c8043966f5d8da2a4be009d2a844085` contains that source; no differences from accepted source exist in src/, scripts/, tsup.config.ts or pre-release package/dependency metadata. The existing accepted build configuration was used unchanged.
+
+Registry inventory contained releases through 5.11.1 with latest=5.11.1; 5.12.0 was unused. README release policy requires a minor increment for an additive capability/export, so selected **@modainteract/moda-interact-shared@5.12.0**. Publishing identity was verified. Only package.json and package-lock.json root version values changed; no implementation, dependency graph, consumer source or validation helper changed.
+
+### Immutable public publication receipt
+
+- Release source commit: `12d0b85aaeefba4dfc46bb12637004f19d462b19`, pushed on implementation `task/ARCH-068-SHARED-003`.
+- Exact consumer pin: `@modainteract/moda-interact-shared@5.12.0`; use this version and recorded integrity, never latest/ranges or sibling source.
+- Registry: https://registry.npmjs.org/ ; public access, latest tag.
+- Tarball: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-5.12.0.tgz
+- Archive SHA256: `e4416c765079a6c8c8ca04894e87e3822c3af0acf19428a5d3f542effe697393`.
+- Archive/registry SRI: `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==`.
+- npm SHA1: `e7768931e522ec7cf1f3d4213af04b5ce97814b7`; packed bytes 494518; files 153.
+- Local reviewed upload and downloaded public tarball are byte-identical; independently computed SHA256/SHA512 and registry dist.integrity agree.
+
+`npm version 5.12.0 --no-git-tag-version --ignore-scripts` updated version metadata. `npm ci --no-audit --no-fund` installed locked packaging tooling. `npm pack --json --pack-destination /tmp` ran the required prepack build once (ESM/declarations) and created the reviewed archive. `npm publish /tmp/modainteract-moda-interact-shared-5.12.0.tgz --access public --tag latest --ignore-scripts` succeeded exactly once, reporting `+ @modainteract/moda-interact-shared@5.12.0`. Initial registry reads returned 404 while npm processed the upload; only read-only availability checks followed, with no second publication.
+
+### Installed public artifact validation
+
+The upload and actual downloaded archive were separately installed in fresh isolated temporary consumers using ordinary npm installation. Both checks passed:
+
+- All 33 JavaScript public entrypoints import successfully; all 3 exported JSON fixtures parse. All 36 public export entries have their declared target files present in the archive. All 35 prior 5.11.1 export definitions are identical, with only the accepted Node presentation entrypoint added.
+- Binding, prepared image, delivery plan, pair, verified provenance and image-source schema imports expose parse methods; selector, plan builder and digest imports are functions. Built plan preserves the complete text body.
+- Public Node coordinator and all extracted fetch/transform/network/writer/probe functions import successfully; missing-configuration smoke returns OMITTED/CONFIGURATION_UNAVAILABLE without provider I/O.
+- A consumer TypeScript declaration-resolution check imports every JavaScript entrypoint and the named conversation binding/plan/image/source and Node preparation/input/dependency/credential types through public package exports. This is installed-declaration validation, not repository source typecheck.
+- Installed browser presentation bundle executes in a browser-like VM; dependency graph excludes Node builtins, sharp, AWS, Prisma, logging, observability and LangChain. Node preparer is absent from the browser namespace.
+- Packaging lifecycle passed. Implementation unit/integration tests, lint and repository source typecheck were not rerun for publication. `git diff --check` passed. No source redesign or unresolved source conflict.
+
+Temporary evidence: /tmp/arch068-shared003-pack.json, /tmp/arch068-shared003-pack.log, /tmp/arch068-shared003-receipt.json, /tmp/arch068-shared003-publish.log, /tmp/arch068-shared003-registry.json, /tmp/arch068-shared003-local-smoke.log and /tmp/arch068-shared003-downloaded-smoke.log. Artifact smoke checks were generated only in temporary consumers; no repository implementation helper was changed.
+
+### Engine and runtime dependency handoff
+
+Package metadata declares no top-level engines constraint; this release does not invent one. Packaging and both installed-consumer checks ran with workspace Node24.19.0/npm11.17.0. Node media runtime dependencies remain exactly @aws-sdk/client-s3 3.1143.0 (declares Node>=20.0.0) and sharp0.35.4 (declares Node>=20.9.0); sharp's platform-specific native packages resolve through its ordinary optional dependency mechanism. Browser callers use /commerce/presentation, server preparation uses /commerce/presentation/node. Full unchanged public runtime dependency metadata:
+
+```json
+{
+  "@aws-sdk/client-s3": "3.1143.0",
+  "@langchain/core": "1.2.13",
+  "@langchain/langgraph": "1.4.15",
+  "@langchain/openrouter": "0.4.15",
+  "@opentelemetry/api": "^1.9.0",
+  "@opentelemetry/api-logs": "0.221.0",
+  "@opentelemetry/context-async-hooks": "^2.10.0",
+  "@opentelemetry/exporter-logs-otlp-http": "0.221.0",
+  "@opentelemetry/exporter-metrics-otlp-http": "0.221.0",
+  "@opentelemetry/exporter-trace-otlp-http": "0.221.0",
+  "@opentelemetry/instrumentation-http": "0.221.0",
+  "@opentelemetry/instrumentation-undici": "0.31.0",
+  "@opentelemetry/resources": "^2.10.0",
+  "@opentelemetry/sdk-logs": "0.221.0",
+  "@opentelemetry/sdk-metrics": "^2.10.0",
+  "@opentelemetry/sdk-node": "0.221.0",
+  "@opentelemetry/sdk-trace-base": "^2.10.0",
+  "@prisma/instrumentation": "^6.19.3",
+  "bullmq-otel": "^2.0.1",
+  "intl-messageformat": "^10.7.18",
+  "libphonenumber-js": "1.12.30",
+  "parse5": "8.0.1",
+  "semver": "7.8.5",
+  "sharp": "0.35.4",
+  "winston": "3.19.0",
+  "winston-loki": "6.1.7",
+  "zod": "^4.0.0"
+}
+```
+
+### Git / VCS and physical isolation
+
+Task branch in both repositories: `task/ARCH-068-SHARED-003`.
+
+- Canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+- Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-068-SHARED-003; reused. Parent remote task fast-forward not-needed; origin/main incorporated yes, preclaim head59e4902af7aa9c1245d7abeca2738b606b7c9074.
+- Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-068-SHARED-003; created at f9e565a23c8043966f5d8da2a4be009d2a844085. Remote task fast-forward not-needed; origin/main already-current.
+- Launcher recursive submodule sync/update passed; status ready, no entries.
+- Durable claim a1f22623f62b8f7561d12013b3897c124450c76b, pushed; executor codex, Attempt1, claimed2026-11-09T22:40:26Z. No duplicate claim or attempt increment.
+- Shared/default workspace and implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+- Implementation release commit above is committed/pushed and clean. This matching parent task-only report is committed/pushed on its task branch; final commit identity is provided in the execution response. No gitlink staged, other task/index/architecture changed, main merge/push or force-push.
+
+### Remaining handoff
+
+No unresolved release issue remains. No subagent assistance was used in this publication task. Consumers remain Pending until moda_architect accepts/completes this publication and reconciles their readiness with the exact version/SRI above. No consumer edits, deployment, migration, activation, initializer, R2 operation, provider call or real message occurred. This report submits Review; it does not record architect acceptance or self-completion.
 
 ## Architect Review
 Not reviewed.
