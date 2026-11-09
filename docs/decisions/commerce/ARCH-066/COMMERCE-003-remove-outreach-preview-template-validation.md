@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 1
 depends_on: ["ARCH-066-SHARED-016"]
-enables: []
+enables: ["ARCH-066-COMMERCE-002"]
 created: 2026-11-09
 updated: 2026-11-09
 ---
@@ -194,3 +194,18 @@ SHARED016 explicitly CompleteAcceptedAttempt1; exact public artifact5.10.0 integ
 
 ## Architect explicit source-composition amendment — 2026-11-09
 Prepared canonical implementation baseline64cdb570940c72097bb3eb9097e159afc1472643 does not contain the published partial002source078f67a2187ba4701e2fbbf49fa2185837ae9bf7. Developer explicitly authorizes continuing this correction and preserving that published implementation. Repository owner may carry the ENTIRE exact078f67commit onto this isolated003task branch by normal non-forced cherry-pick, recording resulting commit and original provenance; do not cherry-pick selected unreviewed files silently, rewrite history, merge/push main or label002Accepted. This bounded integration satisfies availability for003source work and supersedes the earlier wait-for-canonical-baseline clause only for this exact published commit. Required003checks run on the actual composed task tree. No unfinished002real-host/lifecycle scope is transferred: if factory absent, explicit precise host-unavailable remains, never default simulation/live success. Stored-template→actual installed Shared renderer path must execute in003service tests; all other current acceptance/reuse and production safety requirements remain.
+
+
+## Architect Review
+### Review Status
+Accepted
+### Review Notes
+Reviewed actual correction6f01c09630e05950fc3c4362259f0d4c107f0dfc/report511ed6025014a250e414053f518f0551a09d7331 and exact partial002wholecarry378a758. Independently verified clean canonical implementation and remote source hash. Prepared isolated parent/implementation paths, synchronization and database submodule packet conform. Explicit composition amendment authorizes whole prior partialsource only;002was never treatedAccepted.
+### Reviewed Files
+template-reader.ts; presentation.ts; ports.ts; service.ts; contracts.ts; initial-outreach HTTP/runtime; UIpanel; exactpackage/lock5.10.0; reader/service/UI/fixtures and retained storetests.
+### Validation Reviewed
+Initial4files17testsPASS/no skips including realRedis, then bounded impactedreader4/4 and preview11/11 for2added assertions (19unique total). Actual commands exited0. Production TypeScriptexit0; changed-source and newreaderESLintexit0. Actual storedreader→service→installedShared renderer executes bothproviderNONE2reads, identical fullbody/currentvshistoricalfacts, declined/disabled/stalehashmetadata ignored, forbid sender/Meta calls; locale priority/dedup/ambiguity/missing/malformedcontent; missingselectedpurposeCONFIGURATION and unresolvedplaceholderBINDINGS_INVALID; actualHTTPauth/Origin/tenant and precise defaultHOST_UNAVAILABLE; UIvalidationNOT_EVALUATED label/type; realRedis retention/fences preserved. Exact5.10.0 integrity matches016. No additional broad checks required.
+### Architecture Conformance
+Strict storedcontent query selects only ID/components/bindings/locale, never sender/WABA/approval/hash/category predicates. Freeze3purpose candidates, select afterready evaluation through existing publicselectSendableOutreachOffer/purposeFor; thin presentation calls publicStudio renderer once, no copied classification/substitution/brand/limit mechanics. Same-shop/media/auth/64KiB/fencing safety retained; production sending checks untouched. No Shared/Admin/Backgroundsource, livecustomer/providerwrite, main or release.
+### Follow-up
+Accepted scoped003atReviewAttempt1, claimclear; explicit developercompletionpending via /moda_developer_update ARCH-066-COMMERCE-003 complete. COMMERCE002 staysBlockedAttempt1, gains003dependency and explicit original realhost/lifecycle rework checklist; no promotion or fullpreviewacceptance. DefaultHOST_UNAVAILABLE remains honest002factorygap, not sender prerequisite or successful simulation. Withdrawn sender tasks remainwithdrawn.

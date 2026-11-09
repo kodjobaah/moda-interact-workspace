@@ -179,3 +179,7 @@ SHARED016 Accepted at ReviewAttempt1; explicit developer completion pending/clai
 
 
 2026-11-09 Commerce003 composition: canonical baseline64cdb lacks published partial002078f67. Explicit whole-commit source-owner carry authorized in003task worktree, preserve partial provenance/notAccepted; fresh003validation required. No transfer of unfinished002factory/lifecycle acceptance, no main integration/production weakening. This is source composition for the bounded preview-template correction only.
+
+
+## Commerce stored-template correction review — 2026-11-09
+COMMERCE003AcceptedReviewAttempt1, explicit developercompletionpending; source6f01c09630e05950fc3c4362259f0d4c107f0dfc clean/remotelypublished atop exact prior partial002carry378a758. ExactShared5.10.0 publicStudio renderer/purposehelpers used with strict storedcontent/locale/ambiguity query and no sender/approval/hash checks.19unique focused tests including realRedis/auth/UI/reader→service→installedrenderer/bothplatform2reads, compiler/scopedlint pass. Realhostfactory stillHOST_UNAVAILABLE; full002host/lifecycle acceptance remains unfinished, not accepted. COMMERCE002BlockedAttempt1 gains003dependency until correction explicitlyComplete, then same-task rework only. Sender013/014/Admin001withdrawal and production validation remain; no live/main/customer effects/systemexecution.
