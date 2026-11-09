@@ -1,7 +1,7 @@
 ---
 id: ARCH-068
 title: Optional verified product images in service-window conversation replies
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-11-09
 updated: 2026-11-09

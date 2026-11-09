@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -58,7 +58,14 @@ No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
-Not started. Record changed paths, exact source SHA, isolated worktree/preparation evidence, tests with counts, public package version/integrity where consumed, dependency evidence, and any remaining risks.
+
+### Status
+
+Ready — Attempt 0 unclaimed, prerequisite Complete; no implementation started.
+
+### Implementation evidence
+
+Not started. Normal deterministic preparation must claim the future attempt.
 
 ## Architect Review
 Not reviewed.
@@ -116,3 +123,11 @@ SHARED-001 owns changes to Shared source only. SHARED-002 can read Background so
 SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,scenario.js,assertions.js}` and `test/conversation-product-image.test.js`; wires the existing package.json test command using the repository's existing test runner and documents launch in README.md. Reuse `src/whatsapp-emulator.js`, `src/harness/aimock/runtime.js`, `src/harness/environment.js` for transport/model/environment control; extend them only where IMAGE payload capture is missing. Fixtures use the same compiled wrapper, product bytes, public origin and scripted envelope for both hosts; assert complete plan equality, media omission, one provider call, body preservation and legacy behavior. Add the mandatory failure/race cases above. Tests use disposable local infrastructure/provider emulator; launching real infrastructure or sending real WhatsApp messages requires separate explicit user authorization. Do not mark blocked merely because optional live infrastructure was not authorized when local acceptance can run.
 
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
+
+## Accepted prerequisite handoff — 2026-11-09
+
+SHARED001 independently Accepted by moda_architect and explicitly completed at Attempt1. Exact accepted moda-interact-shared source0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822 on task/ARCH-068-SHARED-001, baseline608e60b8758de809ace2c6f89755e1c357616278. The canonical completed task record is synchronized in this parent branch. Ready at unchanged Attempt0, executor/claimed_at null; no implementation worktree/claim or automatic execution.
+
+This is a SOURCE dependency, not a new npm publication. Do not assume current unmerged main contains these APIs. Future implementation must carry the exact accepted contract source into its own task branch using normal authorized dependency integration, preserve its schemas/legacy hashes/AGENT behavior, and perform only the owned Node extraction. No main merge, invented release version/integrity, duplicate pipeline or premature consumer activation. SHARED003 retains publication ownership after002 completion.
+
+Readiness synchronized into this canonical parent from completion967afb246. The completed SHARED001 record is present for branch-local dependency gating; no implementation worktree or claim created.
