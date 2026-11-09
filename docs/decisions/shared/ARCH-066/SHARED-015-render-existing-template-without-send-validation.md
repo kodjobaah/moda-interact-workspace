@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -223,3 +223,7 @@ It must not implement its own no-offer/code/automatic mapping. Shared owns reusa
 5. Review removes replaced duplicate code and verifies old production golden bytes remain unchanged. Merely naming a file “shared” or passing tests against copied helper code is insufficient.
 
 No new standalone service, database table, sender projection or UI component in Shared is introduced. Existing Background consumers use the same common code through their existing production renderer; no Background package change is part of these tasks.
+
+
+## Architect eligibility reconciliation — 2026-11-09
+Sole explicit prerequisite SHARED012 is CompleteAcceptedAttempt1, canonical remote4b5ff8d7f1b45516357152baa49f0a81d710ad69. Pending was stale eligibility; promoted Ready unchangedAttempt0/unclaimed. Exact latest normative code/reuse amendments govern execution. No sender projection chain dependency is introduced. Developer explicitly invoked015 implementation/sync/claim/source/report publication; canonical prepare alone owns the next claim.
