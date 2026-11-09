@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 20
-executor: codex
-claimed_at: 2026-11-09T13:56:31Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-067-SHARED-002", "ARCH-067-MCP-001"]
 created: 2026-11-09
@@ -36,7 +36,7 @@ No inventory mutation, new database table, token-refresh redesign, new template 
 
 ### Status
 
-Ready for Review — Attempt 2, R1 implemented with source and regression-test corrections. Implementation `ee342a14b3e5311fc34b2898b8ec65226aa30647` is committed/pushed; no architect acceptance decision has been made by this repository agent. Execution_mode agent and completion_mode developer remain unchanged.
+Passed / Accepted — reviewed Attempt 2. R1 is resolved. Status remains Review pending explicit developer completion; attempt 2 unchanged, executor/claimed_at null, execution_mode agent and completion_mode developer preserved.
 
 ### Review correction R1 — implemented
 
@@ -201,3 +201,28 @@ Fresh focused command `npx vitest run src/commerce/product-context-write.test.ts
 ### Decision
 
 Changes Requested; no passing acceptance or completion decision. Attempt1 unchanged; status Ready; executor and claimed_at null. The next authorized execution claim creates Attempt2 exactly once on the same canonical branch/worktrees. No source implementation was changed, no downstream task promoted, no architecture/index altered, and no main merge/push, feature gitlink update, package publication, deployment or gate enablement occurred. The separate Architect Review placeholder is preserved; this developer review is the durable correction contract for the next attempt.
+
+## Developer Self-Review — Passed / Accepted, Attempt 2
+
+2026-11-09: The developer explicitly invoked `/moda_developer_update ARCH-067-BACKGROUND-001` to review the submitted correction. This authorized developer-as-architect review preserves agent execution ownership; it does not create a claim, increment the attempt or decide explicit developer completion. Read the task, normative requirements, full Attempt1 Changes Requested record and Attempt2 report, original implementation and eleven-path correction, final permit/delivery/repository paths and regression cases.
+
+### R1 disposition — accepted
+
+1. **Premature mutation removed.** The processor now constructs and forwards a proposal only after successful verified composition. Its early repository write/injection and the superseded prepared-reply write option are removed. Refused composition, stale inbound before handoff and replayed wrapper applications do not propose a context mutation.
+2. **Correct final boundary.** Delivery performs existing admission/whole-message moderation/current-allowance checks before passing the exact composed body and proposed context to the recovery fence. Context is scoped to AGENT/TEXT with expected inbound version/body; missing recovery ownership fails closed. Existing Shop→Conversation→message locks, control revision/AI ownership, tenant/recovery identity, STOP/reachability, customer window, durable eligibility and initial-outreach checks remain intact. Context commits only inside the same transaction that grants the final message permit, after eligibility succeeds.
+3. **Atomic failure and bounds.** The database-only participant validates the public Shared context, platform/shop/conversation/version, original 24-hour/32768-byte limits, exact pending AGENT message/body/dispatch key, sourceInboundVersion and revision-CAS. A context rejection throws through the transaction; its catch converts to suppression only after both permit/context roll back. It does not restore stale data over another writer or hold SQL locks across provider/model/network I/O. Bound SQL values and existing schema/storage are retained; no new database table/migration or resource cap.
+4. **Required regression proof accepted.** Fresh independent `npm run test:arch066-product-context:postgres` passed **11/11** (two suites), exit0, using only the disposable fixture. Rejected moderation, takeover during preparation, new inbound and context/source conflict preserve the full previous A row including presentation/revision, leave no durable permit, and never invoke the provider. The conflict after permit update proves rollback. Successful B admission stores exact context/body at revision2; an injected unknown provider outcome followed by changed proposed text/context preserves B/body/permit and provider count1. Orchestration tests retain rendered native ordering, no proposal on refusal/stale inbound/replay, and duplicate-admission guards before model execution. The stale historical SQL fixture matcher was narrowly repaired to exercise the unchanged human claim-key integrity assertion.
+
+No further required owned correction was found. The original exact Shared5.11.0 public stock/reference contract, native render receipts, fresh stock facts/composer, model reference propagation, legacy reader support and literal-true/default-false persistence gate remain valid. Provider-specific unavailable reasons remain at MCP; the host does not invent unavailable reason details absent from the wire. No new shared contract, generic normalization/logger/runtime or permission expansion was introduced.
+
+### Validation, publication and practical limits
+
+Source `ee342a14b3e5311fc34b2898b8ec65226aa30647` and submitted parent report `d2e383c050b6a39aaf01c3bbcf767ed302cafc87` matched local HEAD/tracking refs and directly queried remote task branches. Both canonical task worktrees were clean before review. Exact published Shared5.11.0 version/integrity and diff checks passed. Dedicated worktree/synchronization/claim/submodule evidence is consistent; no source change, new claim, subagent assistance or package publication occurred in review.
+
+The fresh database review receipt is /tmp/arch067-bg-r2-review-postgres.log. Final-source240 affected regression tests (10 opt-in DB skips covered by the real SQL run),78 host cases, final type checking, changed-path lint and production build were reconciled; no source changed, so redundant full regressions/build were unnecessary. The pre-existing full-lint no-control-regex error in untouched src/providers/shopify-whatsapp-consent.provider.ts:151 is disclosed and remains outside this correction; no changed-file lint error remains. Acceptance is bounded source/contract validation, not a claim of live cross-host system parity or successful provider delivery after an unknown outcome.
+
+### Decision and completion gate
+
+Passed / Accepted Attempt2; R1 closed by this authorized developer review. Status Review, executor/claimed_at null, attempt2 unchanged, execution_mode agent and completion_mode developer retained. Explicit `/moda_developer_update ARCH-067-BACKGROUND-001 complete` remains required. This acceptance and current Completion Report are committed/pushed; historical Attempt1 findings and the separate Architect Review placeholder are preserved, not rewritten as another actor's decision.
+
+No downstream promotion/claim, main merge/push, feature gitlink update, migration, package release, deployment, real message or operational gate enablement. Keep COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED absent/false until both readers are deployed with the manual terminal receipt; Background/Studio readers must precede the MCP stock writer. Terminal system validation remains separately owned/manual-gated after actual dependency completion.
