@@ -43,9 +43,9 @@ Four valid saved-brand bindings fail under immutable5.8.0; correction and public
 | SHARED-012 | Complete, Accepted Attempt1 | SHARED-010, SHARED-011 |
 Positive5.8.0 saved brand alt/dimension bindings refused; preserve semantic caps and strict host/Shared boundary.007/008 standalone scope remains withdrawn, no standalone package release. Definitions only, no implementation worktree/claim/release or consumer execution.
 
-- [SHARED-015 — SHARED-015-render-existing-template-without-send-validation](SHARED-015-render-existing-template-without-send-validation.md): Review/Accepted Attempt1; explicit developer completion pending; SHARED016 remains Pending.
+- [SHARED-015 — SHARED-015-render-existing-template-without-send-validation](SHARED-015-render-existing-template-without-send-validation.md): Complete/Accepted Attempt1; explicit developer decision recorded.
 
-- [SHARED-016 — SHARED-016-publish-studio-template-renderer](SHARED-016-publish-studio-template-renderer.md): Pending; preview-only template validation removal; no execution.
+- [SHARED-016 — SHARED-016-publish-studio-template-renderer](SHARED-016-publish-studio-template-renderer.md): Ready; publication only, SHARED015Complete; Attempt0/unclaimed.
 
 - ARCH-066-SHARED-013: **Withdrawn** (blocked, Attempt0/unclaimed). Sender projection is outside Studio scope; no execution.
 
