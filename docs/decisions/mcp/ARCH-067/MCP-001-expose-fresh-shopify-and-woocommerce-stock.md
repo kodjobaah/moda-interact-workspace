@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 20
-executor: codex
-claimed_at: 2026-11-09T07:05:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-067-SHARED-002"]
 created: 2026-11-09
@@ -36,7 +36,7 @@ No inventory mutation, new database table, token-refresh redesign, new template 
 
 ### Status
 
-Ready for Review — Attempt 1. Implementation and validation evidence are published on mirrored task/ARCH-067-MCP-001 branches. Execution remains agent/codex; completion_mode developer retained. Architect acceptance and explicit completion have not occurred.
+Passed / Accepted — reviewed Attempt 1. Developer-as-architect review accepted the agent implementation under explicit /moda_developer_update invocation. Status remains Review pending explicit developer completion; execution_mode agent and completion_mode developer are retained, executor/claimed_at cleared.
 
 ### Implementation / source
 
@@ -94,3 +94,25 @@ SHARED002explicitlyCompleteAcceptedAttempt1; import ONLY exact @modainteract/mod
 No deployment occursbytaskclaim/Complete. Newreadersacceptlegacystock, oldstrictreadersrejectnewfield; upgradeBackground/Studio Sharedreaders beforedeployingMCPstockwriter, localStudio reader/writer upgrade together. Keep COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED absent/falseuntilbothreadersdeployed, literaltrueonlyaftermanualoperationalgate interminalsystemreceipt. MCPsourcecanbeimplemented/acceptedbeforeBackgrounddependentcode; deploymentsequence remainsreader-first, no taskdependencycycle. No inventory/providerwrite, main/live/rollout/gateenablement authorized here.
 
 Ready unchangedAttempt0/unclaimed; soleprerequisiteComplete. Canonicalprepareownsfutureclaim, no executionhere.
+
+## Developer Self-Review — Passed / Accepted Attempt 1
+
+2026-11-09: The developer explicitly invoked `/moda_developer_update ARCH-067-MCP-001` to reconcile/review this submitted agent-executed task. This is an authorized developer-as-architect review of the existing agent submission; it does not take over execution ownership, create a new claim or increment the attempt. Reviewed the complete task and normative ARCH-067 contract/ownership/strict-reader amendments, seven-file source/test diff, published dependency handoff, provider/parser/normalizer and output-rendering paths, regression assertions and compatibility evidence.
+
+Implementation `9b5fa5680905930e65c89a0a6bf3e7b3546ef633` matches local HEAD, origin tracking ref and directly verified remote task ref. Parent report `9ab6f5ab3a6ad756eb0a30ddcb02a067dd367c9c` matches its tracking ref; both canonical worktrees were clean before this review record. No source edit, synchronization rerun, claim, attempt increment or package publication was performed during review. Recorded isolated worktrees, exact database gitlink, deterministic synchronization/claim evidence and no-subagent assistance remain valid.
+
+### Acceptance disposition
+
+1. **Shared/public dependency accepted.** Package and lock pin exact5.11.0, with `sha512-VwVUszfUz0Bgs0alcnjJYK0m5bY7Jt9Nb/LuPRPgrWqk/JCFYqrWbzf7rnsXP2Z8EWlf4yfojbibnOQ4/9YyOg==` matching the architect's immutable release handoff. Generic quantity validation comes from the published normalizeCommerceStockQuantity helper; no sibling source/internal-dist import or competing shared validator was added. Required parse5/entities lock additions are attributable to that accepted dependency.
+2. **Shopify mapping accepted.** All four fixed query/parser paths admit inventoryQuantity and inventoryItem.tracked. Exact tracking false yields NOT_TRACKED; tracked true and normalized safe integer yields KNOWN/VARIANT; missing/invalid observations yield UNAVAILABLE with bounded reasons. Product-only first:1 reads now request pageInfo without increasing the request/item budget and suppress first-variant inventory unless a sole variant is proven; known stock remains explicitly VARIANT, never a product-wide total. Parent/variant/tenant fences are retained. Pinned2026-07 schema/read-only guard and field/resource limits remain unchanged; existing inventory permissions are neither expanded nor bypassed.
+3. **Woo mapping accepted.** Existing product/variation read allowlists add manage_stock alongside stock_quantity. Simple/variation known counts have PRODUCT/VARIANT scope respectively; parent-managed variations and variable parents remain unavailable, without sums or borrowed parent counts. False tracking, known zero, missing/decimal/unsafe input and negative normalization remain distinct. Returning the native variable parent with UNAVAILABLE stock is consistent with the architecture and does not invent an exact variation selection. Existing credential/grant/SSRF/redirect/identity controls and SHIPPING projections are retained.
+4. **Published wire/schema compatibility accepted.** New adapters emit stock while built public Shared readers still accept legacy omission. Canonical get/search stock descriptors equal the public stock schema. Six published get/search envelope cases retain KNOWN zero, NOT_TRACKED and UNAVAILABLE after JSON serialization and public result/output parsing; template-only normalization neither strips the wire field nor adds quantity/scope to non-KNOWN stock. This proves the response contract for upgraded Background readers, not compatibility with old strict readers.
+5. **Diagnostics/ownership accepted.** Shared logger/event family is reused for bounded native identity, request/shop/recovery correlation, stock status/scope and the closed provider reason enum. Tests confirm raw count/canary text is absent and rejected parent/tenant reads emit no successful observation. MCP has no persisted conversation-reference state: its context-reference/presentation counts are explicitly null rather than fabricated. Actual host final-verification counts remain owned by Background/Commerce under the architecture clarification; no cross-service context payload or competing telemetry runtime was invented.
+
+### Validation and limits
+
+Fresh review command `node --import tsx --test tests/unit/execution/policy/product-stock.test.ts tests/unit/connections/woocommerce/direct-product-reader.test.ts tests/unit/execution/policy/product-search-composition.test.ts tests/unit/execution/policy/product-options.test.ts tests/unit/execution/policy/shopify-core.test.ts` passed **103/103**, 0 failed/skipped. Exact version/integrity and diff checks passed. Recorded final-source474/474 unit tests, typecheck, lint(max-warnings0), production build and all four pinned Shopify query validations were reconciled against this unchanged source; no redundant full-suite/build rerun was needed. The existing deprecated featuredImage warning remains outside this bounded change. No deployment, live merchant call, Docker/system run or end-to-end Background/Studio parity is claimed.
+
+No outstanding owned correction or incomplete required scoped acceptance item was found. Passing source review does not authorize deploying a stock writer before Background/Studio readers. Keep COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED absent/false until both readers are deployed and the manual operational gate is recorded; no flag or rollout change occurs here. Background-dependent code and terminal system evidence remain separately owned follow-ons.
+
+Status remains Review; reviewed/accepted Attempt1 unchanged; executor/claimed_at null; execution_mode agent and completion_mode developer retained. This developer review record and updated Completion Report are committed/pushed; the separate Architect Review placeholder is preserved rather than fabricating another actor's decision. Explicit `/moda_developer_update ARCH-067-MCP-001 complete` remains pending. No downstream task is promoted/claimed, no main merge/push or feature gitlink update, and no private package publication/deployment is performed by this review.
