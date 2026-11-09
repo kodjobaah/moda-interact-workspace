@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -123,3 +123,7 @@ Full registry version list established5.9.0 highest5.x and5.10.0 unused before p
 Release-only metadata scope conforms; exact accepted composition preserved, no feature/consumer/main/live changes. New APIs consumed only through public entrypoints in separate consumer task. No sender projection dependency introduced.
 ### Follow-up
 Accepted at Review unchangedAttempt1, executor/claimed_atnull; explicit developer completion pending via /moda_developer_update ARCH-066-SHARED-016 complete. COMMERCE003 remains gated until016actuallyComplete; no implicit consumer claim or integrated acceptance.
+
+
+## Explicit developer completion decision — 2026-11-09
+Developer invoked /moda_developer_update ARCH-066-SHARED-016 complete. Durable Accepted5b35cdaf4ed1f0f9f5721d9ea4a6bb08f18bcd4a and release-source80bb605f9c6fd026e82b1dd207a1de2874d221b6 remain clean/remotely published. Verified immutable5.10.0 registry/archive/import evidence retained without reruns. Complete unchangedAttempt1/executorclaimed_atnull. Commerce003 sole dependency satisfied; exact existing definition ReadyAttempt0/unclaimed. No npm/tests/main/live/consumerexecution. Earlier completion-pending notes historical.

@@ -173,3 +173,6 @@ Commerce initial outreach remains blocked until a least-privilege public configu
 
 ## Studio renderer publication review — 2026-11-09
 SHARED016 Accepted at ReviewAttempt1; explicit developer completion pending/claimclear. Public immutable5.10.0 source80bb605f9c6fd026e82b1dd207a1de2874d221b6 changes versionmetadata only; exact accepted015source/dist retained. Registry downloadable447293byte archiveSHA256711fe20dfe54f6516e67eab0f6616e7799d4f9d567c93d90819e4eb974f4ac2d/integrity/publicJS+declaration imports verified, including Studio renderer/schema/type/purpose/classifier and retained production exports. No implementation tests/build revalidation or consumer work. COMMERCE003 remains pending016Complete; sender-chain withdrawal and all concurrent/manual system gates preserved.
+
+
+2026-11-09 explicit release completion frontier: SHARED016CompleteAcceptedAttempt1 claimnull; public5.10.0/source80bb605f/review5b35cdaf verified. COMMERCE003ReadyAttempt0/unclaimed, exact existing definition canonicalparent-only; no consumerexecution. Commerce002remainsBlockedAttempt1 with unfinished host/lifecycle criteria; withdrawn senderchain and production validation/concurrent system/manual gates preserved. No tests/npm/main/live actions.

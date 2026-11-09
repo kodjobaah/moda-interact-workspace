@@ -50,4 +50,4 @@ Configured sender public identity correction (2026-11-09):
 - ARCH-066-SHARED-014: pending; depends on ARCH-066-SHARED-012, ARCH-066-SHARED-013.
 
 
-SHARED016 Review/AcceptedAttempt1: immutable5.10.0 downloaded/integrity/publicruntime+declarations verified; developer completion pending. COMMERCE003 remains gated until actual016Complete.
+SHARED016 Complete/AcceptedAttempt1: immutable5.10.0 downloaded/integrity/publicruntime+declarations verified; explicit developer completion recorded. COMMERCE003ReadyAttempt0/unclaimed.
