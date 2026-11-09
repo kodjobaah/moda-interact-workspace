@@ -1,7 +1,7 @@
 ---
 id: ARCH-068
 title: Optional verified product images in service-window conversation replies
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-11-09
 updated: 2026-11-09
@@ -192,3 +192,7 @@ SHARED-001 owns changes to Shared source only. SHARED-002 can read Background so
 SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,scenario.js,assertions.js}` and `test/conversation-product-image.test.js`; wires the existing package.json test command using the repository's existing test runner and documents launch in README.md. Reuse `src/whatsapp-emulator.js`, `src/harness/aimock/runtime.js`, `src/harness/environment.js` for transport/model/environment control; extend them only where IMAGE payload capture is missing. Fixtures use the same compiled wrapper, product bytes, public origin and scripted envelope for both hosts; assert complete plan equality, media omission, one provider call, body preservation and legacy behavior. Add the mandatory failure/race cases above. Tests use disposable local infrastructure/provider emulator; launching real infrastructure or sending real WhatsApp messages requires separate explicit user authorization. Do not mark blocked merely because optional live infrastructure was not authorized when local acceptance can run.
 
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
+
+## Accepted contract frontier — 2026-11-09
+
+SHARED001 independently Accepted by moda_architect / Complete at Attempt1 under explicit developer completion authority, source0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822. SHARED002 Ready at unchanged Attempt0/unclaimed; exact accepted source handoff required, no assumption of main integration. SHARED003 and consumers retain explicit dependency gates. No Node extraction, package publication, database completion, rollout or initializer activation is claimed by this transition. Architecture remains in_progress; terminal system validation and deployment/readiness receipts remain required.
