@@ -195,3 +195,8 @@ Script `--apply` is opt-in and a separate operator action. Implementation comple
 
 ## Database accepted/completed frontier — 2026-11-09
 DATABASE001 Complete at independently Accepted Attempt1, implementation75669477; exact nullable JSONB schema/DDL and fresh/upgrade/old-writer TEXT+IMAGE evidence pass. SHARED003 remains Pending; BACKGROUND001 remains Pending on that publication (Database prerequisite satisfied). SYSTEM-TEST001 remains Pending/manual-gated on unfinished consumers. No readiness promotion, task execution, migration deployment, activation or architectureImplemented claim.
+
+## Shared Node accepted/completed frontier — 2026-11-09
+SHARED001 and SHARED002 are Complete / independently Accepted Attempt1. Combined accepted Shared source `8f8a298de90803671b789ba0ef2fe03058a8023e` includes pure contract source `0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822`. Node extraction preserves original Background behavior; cancellation plumbing does not change golden encoded outputs. Optional absolute deadlineAt supplements the documented host child-signal contract; it retains the original turn deadline and subtracts the1000ms margin, capped5000ms.
+
+SHARED003 is Ready, agent/automatic, Attempt0 unclaimed, explicitly depending on both accepted implementation tasks and restricted to release mechanics. ADMIN001, COMMERCE001 and BACKGROUND001 remain Pending until publication; DATABASE001 is already Complete. ADMIN002 remains Pending on its consumers/editor; SYSTEM-TEST001 remains Pending and manual-gated. Architecture remains In Progress. Readiness is not a claim, release, main integration, deployment, activation or live operation.
