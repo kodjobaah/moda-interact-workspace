@@ -42,3 +42,9 @@ Four valid saved-brand bindings fail under immutable5.8.0; correction and public
 | SHARED-011 | Complete, Accepted Attempt1 | SHARED-010 Complete |
 | SHARED-012 | Complete, Accepted Attempt1 | SHARED-010, SHARED-011 |
 Positive5.8.0 saved brand alt/dimension bindings refused; preserve semantic caps and strict host/Shared boundary.007/008 standalone scope remains withdrawn, no standalone package release. Definitions only, no implementation worktree/claim/release or consumer execution.
+
+
+Configured sender public identity correction (2026-11-09):
+
+- ARCH-066-SHARED-013: ready; depends on ARCH-066-SHARED-012.
+- ARCH-066-SHARED-014: pending; depends on ARCH-066-SHARED-012, ARCH-066-SHARED-013.

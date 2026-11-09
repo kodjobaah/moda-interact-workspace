@@ -159,3 +159,13 @@ Preserve the checkout-led scope and all accepted historical releases. The produc
 
 ## Commerce outreach executable handoff — 2026-11-08
 Background002 explicitly CompleteAcceptedAttempt2 at35a0e227f (source0a601031/review806d17ad); canonical Commerce001CompleteAttempt3 remote181bd35f and Shared005/012Complete verified. Exact completed dependency records materialized here. Commerce002ReadyAttempt0/unclaimed, execution/completion developer retained; exact5.9.0 pin/strict brand/media mapping and common frozen fixture handoff in task. No implementation worktree/claim/execution. SystemTest001 alreadyReady/manual-gated, SystemTest002Pending on Commerce002; no main/live/npm/follow-on action.
+
+
+### 2026-11-09 configured sender public identity boundary
+Commerce initial outreach remains blocked until a least-privilege public configured WABA projection exists. Never decrypt messaging.sender in Commerce or infer configured identity from template assignment. SHARED013 defines the strict public schema; SHARED014 publishes it; ADMIN001 atomically derives messaging.senderIdentity beside sender secret mutation with a current-active source-version fence. COMMERCE002 then consumes the published projection and metadata without secret values. No database/infrastructure change or live backfill is authorized.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-066-SHARED-013 | moda_shared | Ready | ARCH-066-SHARED-012 |
+| ARCH-066-SHARED-014 | moda_shared | Pending | ARCH-066-SHARED-012, ARCH-066-SHARED-013 |
+| ARCH-066-ADMIN-001 | moda_admin | Pending | ARCH-066-SHARED-014 |
