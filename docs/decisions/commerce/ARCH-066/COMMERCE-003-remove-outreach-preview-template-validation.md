@@ -44,3 +44,119 @@ Definition only. Preserve unrelated work; you are not alone in the codebase. Use
 
 ## Completion Report
 Not started. No implementation or validation performed.
+
+## Code-level amendment — 2026-11-09
+
+### 1. Exact removals from the existing partial implementation
+
+Remove this entire unused port from `src/commerce/preview/initial-outreach/ports.ts`:
+```typescript
+export interface InitialOutreachSenderIdentityPort {
+  read(environment:string):Promise<{businessAccountId:string;sourceVersion:number}|null>;
+}
+```
+Remove OutreachConfigurationError (whose reasonCode is SENDER_UNAVAILABLE) and the unconditional `throw new OutreachConfigurationError()` from `lib/preview/initial-outreach-runtime.ts`. Do not replace them with dummy sending credentials or a stub that claims live readiness. COMMERCE002 still owns construction of the real host factory; after this correction its factory has no sender prerequisite. If that factory is not implemented, report the outstanding002 work explicitly and do not accept a success-returning simulation as completion. Keep test injection confined to tests.
+
+Remove any preview-only reads/imports for messaging.sender/messaging.senderIdentity, source-version checks, selectRecoveryAssignment and production renderInitialOutreachPreview. Do not edit Background callers or remove production Shared exports.
+
+### 2. Replace the presentation adapter exactly
+
+Replace `src/commerce/preview/initial-outreach/presentation.ts` with:
+```typescript
+import {
+  renderStudioInitialOutreachPreview,
+  type InitialOutreachEvaluationResult,
+  type StudioInitialOutreachRenderInput,
+} from '@modainteract/moda-interact-shared/commerce/outreach';
+export function renderFrozenOutreach(
+  evaluation: Extract<InitialOutreachEvaluationResult,{kind:'ready'}>,
+  frozen: Omit<StudioInitialOutreachRenderInput,'schemaVersion'|'evaluation'>,
+) {
+  return renderStudioInitialOutreachPreview({schemaVersion:1,evaluation,...frozen});
+}
+```
+In ports.ts replace imported InitialOutreachRenderInput with StudioInitialOutreachRenderInput and change `presentation: Omit<InitialOutreachRenderInput,'schemaVersion'|'evaluation'>` accordingly. In contracts.ts replace InitialOutreachRenderResultSchema import/use with StudioInitialOutreachRenderResultSchema. Preserve 64KiB result cap, existing ready/refused envelope, run ownership and productionChecks NOT_EVALUATED.
+
+### 3. Exact stored content query and mapping
+
+NEW template-reader.ts reads the existing assigned variant relation, not Meta and not localeAst compilation. The host supplies shopId plus evaluated purpose and ordered languageTags from its existing resolved language context. Preserve order; deduplicate tags without sorting. For each tag run:
+```typescript
+const rows = await db.whatsAppTemplateVariant.findMany({
+  where: {shopId, purpose, languageTag},
+  orderBy: {id:'asc'},
+  take: 2,
+  select: {
+    id:true,
+    metaRegistration: {
+      select: {
+        componentsSnapshot:true,
+        parameterBindingsSnapshot:true,
+        locale: {select:{id:true, languageTag:true}},
+      },
+    },
+  },
+});
+```
+No predicate/select of providerAccountId, approval/status, enabled, drift/hash/category or current sender is added. Stop on first nonempty language tier: >1 rows => AMBIGUOUS_TEMPLATE; one row without registration/content => TEMPLATE_UNAVAILABLE (the relation supplies existing content, not proof of approval). No rows across all tiers => TEMPLATE_UNAVAILABLE. Do not fall through a conflicting/missing-content tier to another language. Map exactly:
+```typescript
+const template = StudioOutreachTemplateSchema.parse({
+  templateId: row.id,
+  localeId: row.metaRegistration.locale.id,
+  languageTag: row.metaRegistration.locale.languageTag,
+  components: row.metaRegistration.componentsSnapshot,
+  bindings: row.metaRegistration.parameterBindingsSnapshot,
+});
+```
+Catch schema failure as TEMPLATE_CONTENT_UNRENDERABLE; never invent/repair or rehash content. Expose local reader error with fixed reasonCode and map to CONFIGURATION refusal through the existing HTTP/service error path; no raw DB/template body logs. Shop authorization occurs before reader call. This query deliberately does not check Meta approval; it only locates stored content for rendering.
+
+### 4. When content is selected
+
+Evaluation determines no-offer/code/automatic purpose, so do not guess from policy before evaluation. Freeze read-only template candidates for all three purposes using the query above during host.freeze; this is a bounded map of at most three successful templates plus typed per-purpose absence/ambiguity. Freeze same languageTags, brand/media/variables and source IDs with the run. After ready evaluation use existing public selectSendableOutreachOffer, then the public Shared purposeFor('INITIAL', sendable.presentation) helper (no local mapping); no provider call or template reread at render time. Add a local `FrozenInitialPresentation` strict interface `{templates: Record<InitialPurpose, StudioOutreachTemplate|null>, templateErrors: Partial<Record<InitialPurpose, 'TEMPLATE_UNAVAILABLE'|'AMBIGUOUS_TEMPLATE'|'TEMPLATE_CONTENT_UNRENDERABLE'>>, variables, headerMedia, preparedBrand?, preparedBrandMedia?}` where variables/media types are indexed from StudioInitialOutreachRenderInput. Pass only selected template and these variables/assets to renderFrozenOutreach. Missing selected purpose returns its fixed refusal, no arbitrary template fallback. Hash frozen map for run replay identity only; do not compare it to any saved registration hash. Update service.ts/ports.ts and fixture hosts together. Partial host dependencies still belong to002; no new sender tasks.
+
+### 5. UI and tests
+
+Replace accesses to rendering.templateProvenance (not present in Studio result) with rendering.templateId/localeId. Display exact ready text/parameters/header plus “Template validation not evaluated. No message sent.” Do not display an approval/readiness badge. Keep mode LIVE_READ_ONLY/SIMULATION and productionChecks labels.
+
+Reader fixture verifies exact query predicate/select, locale priority and ambiguity; a supplied declined/disabled/stale-hash registration renders because none of those fields is selected or evaluated. Spies throw on sender/Meta access and must never fire. Missing content/placeholder is shown as render/configuration failure. Rerun all tests specified above and add result-schema/UI assertions for the new result type. No implementation can be accepted merely by deleting the sender stub; the selected stored-content→Shared renderer path must actually execute in service tests.
+
+
+## Mandatory shared-component ownership and reuse — 2026-11-09
+
+This section controls earlier ambiguous wording. Shared means implementation in the published `@modainteract/moda-interact-shared` package, consumed through its public entrypoints. A helper placed only in Commerce or duplicated between services does not meet this requirement.
+
+| Responsibility | Sole implementation owner | Consumers |
+|---|---|---|
+| Preview template/input/result Zod schemas and inferred types | Shared outreach/template-contracts.ts, public outreach exports | Commerce; Shared tests |
+| Placeholder-to-parameter construction | Shared outreach/bindings.ts prepareStoredComponents | Both Shared production and Studio renderer entrypoints |
+| Header/body/footer text substitution and length handling | Shared outreach/component-render.ts renderStoredComponentText | Both Shared renderer entrypoints |
+| Variable/brand/media resolution | Existing Shared PreparedVariableResolver | Both Shared renderer entrypoints |
+| Offer presentation classification and INITIAL purpose mapping | Existing Shared selectSendableOutreachOffer and purposeFor | Both Shared renderer paths; Commerce host selecting frozen content |
+| Production registration/approval/hash/sender validation | Existing Shared production entrypoint and Background sending pipeline | Production only; never Studio renderer |
+| Database query, selected-shop authorisation, credentials, preview lifecycle/storage and UI | Commerce | Studio only; these are host adapters, not Shared business logic |
+
+### Exact public API addition in SHARED-015
+
+Add to `src/commerce/outreach/index.ts`:
+```typescript
+export { selectSendableOutreachOffer } from './sendable-offer.js';
+export type { SendableOutreachOffer } from './sendable-offer.js';
+export { purposeFor } from './selection.js';
+```
+These export the existing implementations; do not create wrappers, a second classifier or a copied purpose switch. Preserve the exact existing function signatures and inferred return type. Verify SendableOutreachOffer is the existing exported type; if declaration emission requires an existing referenced type, expose that type additively without changing its shape.
+
+COMMERCE-003 imports those helpers from the public outreach entrypoint and uses:
+```typescript
+const sendable = selectSendableOutreachOffer(evaluation.offerDecision);
+const purpose = purposeFor('INITIAL', sendable.presentation);
+```
+It must not implement its own no-offer/code/automatic mapping. Shared owns reusable semantic decisions; Commerce freezes/selects existing database content using the resolved purpose. The Commerce presentation adapter delegates once and contains no substitution, brand resolution, template approval, hash validation or message-length algorithm.
+
+### Required proof before acceptance
+
+1. Inspect real call sites: production prepareFrozenComponents and renderInitialOutreachPreview delegate to the same Shared prepareStoredComponents/renderStoredComponentText used by renderStudioInitialOutreachPreview. No parallel replacement bodies remain.
+2. Shared tests exercise both entrypoints using identical content/variables and assert exact parameters/full text. Production validation still refuses invalid production metadata; Studio does not consume that metadata.
+3. Commerce tests invoke the actual installed published renderer and purpose helpers; do not mock them in the parity acceptance test. Mock only host I/O, clocks and external provider/model boundaries. Assert no service-local rendering/classification algorithm or cross-repository source/internal-dist import.
+4. SHARED-016 installed-artifact JS/declaration smoke includes the new purpose/classification exports as well as the Studio schemas/renderer. Record the exact accepted package version/integrity in Commerce's report.
+5. Review removes replaced duplicate code and verifies old production golden bytes remain unchanged. Merely naming a file “shared” or passing tests against copied helper code is insufficient.
+
+No new standalone service, database table, sender projection or UI component in Shared is introduced. Existing Background consumers use the same common code through their existing production renderer; no Background package change is part of these tasks.
