@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-09T05:02:52Z
+attempt: 1
 depends_on: []
 created: 2026-11-09
 updated: 2026-11-09
