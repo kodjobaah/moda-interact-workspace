@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: blocked
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -125,3 +125,8 @@ User withdrew configured-sender projection and template-validation requirements 
 ## Architect correction integration / remaining rework contract — 2026-11-09
 COMMERCE003source6f01c09630e05950fc3c4362259f0d4c107f0dfc (wholepartialcarry378a758 from078f67) corrects stored-template rendering using exact publicShared5.10.0. Sendersecret/projection/WABA/approval/hash gates are removed only from Studio; historical sender dependencies remain withdrawn. This correction is AcceptedReview, explicit003completionpending. Add003dependency; keep002BlockedAttempt1/unclaimed until003Complete and architect readiness reconciliation. Do not accept/complete002 from003success.
 Remaining SAME002scope: construct genuine current server profile/policy/environment/locale/brand/authorized-ready-media/localandisolatedMCP evaluator host factory (currently preciseHOST_UNAVAILABLE), tool activity and true production read-only mode; original bothplatform/currentvshistorical/offer/refusal/bounds/no-sideeffect scenarios; full cancellation/deadline/overflow/owner/capacity/Adminpurge lifecycle proof. Existing injected SIMULATION fixtures prove bounded mechanics, never live readiness. Preserve current sourcecorrection/publichelpers without copying renderer/classifier or restoring sender gates. Status/attempt/history unchanged; no consumerimplementation begins here.
+
+
+## Architect same-task rework readiness — 2026-11-09
+COMMERCE003explicitlyCompleteAcceptedAttempt1, acceptedsource6f01c09630e05950fc3c4362259f0d4c107f0dfc exactShared5.10.0. Other explicit dependenciesComplete: Shared005/012Attempt1,Commerce001Attempt3,Background002Attempt2. Architectural correction gate cleared; Ready for SAME002rework, preserveAttempt1/history/claimnull. No acceptance or newclaim; next canonicalprepare increments once.
+Latest remaining rework contract above is mandatory: real server-owned profile/policy/environment/locale/brand/authorizedready-media/localandisolatedMCP hostfactory, tool activity, exact live-read-only evaluator/template integration and full original refusal/offer/price/side-effect/cancel/deadline/overflow/fence/capacity/Adminpurge acceptance. CurrentHOST_UNAVAILABLE is unfinishedwork, not successfulreadiness. Preserve accepted003template correction/publichelpers and exact5.10integrity; no senderprojection/gates/productionvalidation changes. User must separately invoke /moda-task ARCH-066-COMMERCE-002; no implementationstarts here. EarlierBlockedstatus/remainblockeduntil003Complete prose is historical, not waivedacceptance.
