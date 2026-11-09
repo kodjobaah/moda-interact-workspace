@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
 executor: codex
 claimed_at: 2026-11-09T01:35:53Z
@@ -60,7 +60,22 @@ Positive preview fixture renders existing components with no Meta/sender metadat
 Definition only. Preserve unrelated work; you are not alone in the codebase. Use canonical launcher task worktrees and mirrored task branches. Record exact source, commands/results and package integrity; submit for review, stop and retain developer completion authority. No main merge/push, deployment, real customer send, Meta call, database mutation in a hosted environment or follow-on task execution is authorized. No acceptance from tests against injected simulation alone.
 
 ## Completion Report
-Not started. No implementation or validation performed.
+Ready for Review — implementation committed/pushed as `a19519e460516cfbc95dbe817bae9598e2b4ac6d` on mirrored `task/ARCH-066-SHARED-015`. Developer completion authority retained.
+
+Implemented exact code-level and shared-component amendments. Strict Studio template/input/result schemas and inferred types, existing Component/FrozenBindings schemas, Studio renderer and existing purpose/classifier/type are public outreach exports. No production input widening. Parameter construction moved once into `bindings.ts:prepareStoredComponents`; text substitution/limits live once in internal `component-render.ts:renderStoredComponentText`. Both render entrypoints delegate to these and the existing resolver. Shared asset validation preserves branch order and tenant/role/URL reasons. Studio performs no registration/approval/WABA/sender/hash/category selection or fallback and marks ready results NOT_EVALUATED; strict schemas reject such extra metadata.
+
+Production check checklist: `selection.ts:selectRecoveryAssignment` retains eligibility, assignment, provider approval, sender/WABA, definition/locale and drift validation. `bindings.ts:prepareFrozenComponents` retains every pre-construction statement including frozen IMAGE-role structure, admin digest/submitted/locale hash equality and MARKETING category, then delegates common construction. `render.ts:renderInitialOutreachPreview` retains selection/provenance/fallback/result parsing. Studio calls neither production selection nor production preparation. Real module spy proves zero Studio calls and positively intercepts production; old production golden fixtures all pass.
+
+Accepted prerequisite source preserved: baseline `0dc2947684bbd42ce69d0bae6cb300c957639848` already contained accepted011; exact accepted009 carry `8e768ba0845aec366ad13a389f69811b0d9d8452` cherry-picked without conflicts as `869f830` (only schemas.ts, selection.ts, answer-presentation-selection.test.ts and validate-commerce-entrypoints.mjs). Those four files byte-match published5.9 composite `b65e04f7b702e4bae7f9cb354d55a23681b677cc`; accepted011 brand/media implementation remains intact. Package/lock version metadata unchanged at baseline5.7.0; this is a local validation archive, not a release or registry update.
+
+Validated source artifact retained for separately gated016: `/private/tmp/modainteract-moda-interact-shared-5.7.0.tgz`, SHA256`205523f32ba787fa9edb871caae5b0f75e204e8ef3cfb7991b686110535e0ecd`, integrity`sha512-wtMQc8AqxmurooHCWSkGyRhO1Y8a7GmLZnlzb/h2KB6ktDs21Usi0s17h6BOGK6VE6lBOEojqNM8Hcpct00NiA==`, 447295bytes/145files. Created from the same a19519e4 source and required successful ESM+DTS build with `npm pack --ignore-scripts --json --pack-destination /private/tmp`; no second build. Exact receipt `/private/tmp/arch066-shared015-pack.json`; built `dist` retained in canonical implementation worktree for byte-identical reuse after source parity verification.
+
+Validation all passed: `npx tsx --test src/commerce/outreach/*.test.ts`94/94; `npm run typecheck`; `npm run build` ESM+DTS; `npm run validate:commerce-outreach` installed public runtime/declaration imports and exact Studio/production parameter/text parity. New fixtures cover strict metadata rejection, production invalid approval/category/hash refusals, missing bindings/values, independent ready IMAGE and brand BODY media, unused foreign/mismatched assets, malformed URL, exact BODY4096/4097 with header/footer, and real selection spy positive control. Logs `/private/tmp/arch066-shared015-{tests,typecheck,build,public}.log`. No provider/model/network/database calls occur in renderers; tests use real local implementations.
+
+Deviations: inferred schema button tuple is mutable while existing provider output tuple is readonly; common text helper accepts the structurally read-only inferred union, no cast or provider output change. Studio safeParse is wrapped like production to preserve typed INVALID_REQUEST for throwing refinements. Node experimental module mocks are scoped to a test subprocess; no runtime injection seam added. Initial compiler/test tuple inference failures were corrected and final full required chain passed. No architectural issues remain. Background002 residual72 failures are not waived; no consumer changes or follow-on executed.
+
+Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-SHARED-015`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-SHARED-015`; both `task/ARCH-066-SHARED-015`. Shared/reference checkouts not mutated/switched; no other task worktree reused. Prepared parent reused baselinee61114382fb00bf936f424fdc2f6bfeeb10d9381, implementation created baseline0dc2947684bbd42ce69d0bae6cb300c957639848. Remote task fast-forward not-needed and origin/main already-current in both. Recursive submodule sync/update passed, no recorded entries, ready. Launcher claimed Attempt1 codex at2026-11-09T01:35:53Z, claimfb12f6a63dd46519b99fadd85029c7bf87d90370 durably pushed. Dependency012 gate passed; startup/claim not repeated. No main merge/push, parent gitlink, release/version, consumer, activation or live actions.
+
 
 ## Code-level amendment — 2026-11-09
 
