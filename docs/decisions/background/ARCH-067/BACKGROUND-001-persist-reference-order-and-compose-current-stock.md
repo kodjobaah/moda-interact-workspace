@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -36,7 +36,7 @@ No inventory mutation, new database table, token-refresh redesign, new template 
 
 ### Status
 
-Passed / Accepted — reviewed Attempt 2. R1 is resolved. Status remains Review pending explicit developer completion; attempt 2 unchanged, executor/claimed_at null, execution_mode agent and completion_mode developer preserved.
+Complete — explicitly completed by the developer on 2026-11-09, accepted Attempt 2 unchanged. Durable passing review b9507041b and published implementation ee342a14b3e5311fc34b2898b8ec65226aa30647 remain authoritative; executor/claimed_at null.
 
 ### Review correction R1 — implemented
 
@@ -226,3 +226,11 @@ The fresh database review receipt is /tmp/arch067-bg-r2-review-postgres.log. Fin
 Passed / Accepted Attempt2; R1 closed by this authorized developer review. Status Review, executor/claimed_at null, attempt2 unchanged, execution_mode agent and completion_mode developer retained. Explicit `/moda_developer_update ARCH-067-BACKGROUND-001 complete` remains required. This acceptance and current Completion Report are committed/pushed; historical Attempt1 findings and the separate Architect Review placeholder are preserved, not rewritten as another actor's decision.
 
 No downstream promotion/claim, main merge/push, feature gitlink update, migration, package release, deployment, real message or operational gate enablement. Keep COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED absent/false until both readers are deployed with the manual terminal receipt; Background/Studio readers must precede the MCP stock writer. Terminal system validation remains separately owned/manual-gated after actual dependency completion.
+
+## Developer Completion Decision — 2026-11-09
+
+The developer explicitly invoked `/moda_developer_update ARCH-067-BACKGROUND-001 complete`. Complete at accepted Attempt2, unchanged; executor/claimed_at null; execution_mode agent/completion_mode developer preserved. Passing review b9507041b closed R1 and found no remaining required owned correction. Clean source ee342a14b3e5311fc34b2898b8ec65226aa30647 was directly verified against the published remote task ref. No source change or repeated validation was needed for this governance transition. The disclosed unrelated full-lint baseline limitation remains recorded.
+
+ARCH-067-COMMERCE-001 and ARCH-067-MCP-001 are independently Complete. This completion clears all explicit prerequisites for ARCH-067-SYSTEM-TEST-001: Ready/dependency-ready, Attempt0 unclaimed, manual developer execution gate retained. Completion snapshots and the exact Shared5.11.0 handoff are synchronized into its canonical parent task branch before future execution. No system implementation worktree/claim/test run is initiated by completion.
+
+Architecture remains in progress pending terminal system validation and operational receipts. Reader-first deployment and default-false COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED remain binding; source completion is not deployment/gate approval. No main merge/push, feature gitlink update, package publication, migration, deployment or live message.
