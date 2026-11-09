@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: codex
 claimed_at: 2026-11-09T21:44:22Z
@@ -39,11 +39,11 @@ Preparation budget is min(5000ms, remaining turn deadline minus1000ms); <=0 mean
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
-- [ ] Verify dependencies and current owned source against binding touch points.
-- [ ] Implement every requirement in the owned scope and binding contract.
-- [ ] Add deterministic success/failure/compatibility tests specified above.
-- [ ] Run declared repository validation and record exact evidence.
-- [ ] Publish implementation and parent report on mirrored task branches for review.
+- [x] Verify dependencies and current owned source against binding touch points.
+- [x] Implement every requirement in the owned scope and binding contract.
+- [x] Add deterministic success/failure/compatibility tests specified above.
+- [x] Run declared repository validation and record exact evidence.
+- [x] Publish implementation and parent report on mirrored task branches for review.
 
 ## Dependencies
 ARCH-068-SHARED-001
@@ -61,11 +61,76 @@ Execution is owned by the assigned agent, not a human developer. Use /moda-task 
 
 ### Status
 
-Ready — Attempt 0 unclaimed, prerequisite Complete; no implementation started.
+Ready for Review — Attempt1 implemented and published by moda_shared/codex. No architect acceptance/completion decision is made by this implementation agent; execution_mode agent/completion_mode automatic remain unchanged.
 
-### Implementation evidence
+### Accepted dependency and extraction provenance
 
-Not started. Normal deterministic preparation must claim the future attempt.
+Accepted SHARED001 source0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822 is already an ancestor of the prepared implementation baseline df87e770a56db61617f1d9c2fd9397005add692d, verified through Git ancestry. The pure contract/browser implementation is retained without modification. No assumption of missing main integration, copied contract or extra integration merge was needed.
+
+Immutable Background extraction source **db32bdf1e69944b0a15f7c76400f222f00244be4**. Every source file was read with git show at that commit, not a mutable working copy. Source path/file SHA256/moved-symbol map is committed in src/commerce/presentation/node/EXTRACTION.md. Before original-regression execution, the eight relevant current Background files matched that immutable source. Its sharp0.35.4/@aws-sdk/client-s3 3.1143.0 exact versions and applicable sharp native-package lock versions match the new Shared dependencies.
+
+Relocated symbols: createSafeImageFetcher and pinned HTTPS/DNS/stream ports; normalizeIpAddress/isPublicIpAddress/resolveAllDnsAnswers/resolveAndValidateDestination/addressesMatch/createPinnedLookup and original network error types/codes; verifyEncodedBrandImage; assertSelfContainedSvg/createShopBrandImageTransformer; createOutreachProductImageTransformer; createBrandR2S3Transport/BrandR2Transport/sanitizeR2ProviderMessage/putGuardedImmutableR2Object/cache-control/bucket validation; createShopBrandPublicMediaProbe; transitive generic media constants/errors/image/fetch/transform/probe ports. Compatibility names/error codes are retained. Host acquisition policy constants, configuration lookup/credential loading, brand/outreach key adapters, domain normalizers, source generations, recovery/attempt/recipient fences and orchestration stay Background.
+
+The product preset has optional AbortSignal plumbing around Sharp metadata/encoding and cancellation checks; its encoder operations remain unchanged. Product1125×600 JPEG contain/white padding, rotate/sRGB/metadata stripping, quality ladder86/76/66/56/46, 1MiB quality target and strict<5MiB bound match original. Brand presets remain unchanged. No intentional byte change: four fixed source golden outputs match original encoded SHA256, size, MIME and dimensions. The golden was generated from temporary modules populated with the immutable ORIGINAL source, using the same pinned native dependency versions; the temporary originals were removed. Expectations were not regenerated from the Shared implementation.
+
+### Final behavior
+
+Public Node entrypoint @modainteract/moda-interact-shared/commerce/presentation/node exports prepareConversationProductImage and relocated compatibility primitives/types. Browser presentation never imports/exports it. The coordinator is thin: same safe source fetch → same product preset → conversation content-addressed key → same immutable conditional PUT/HEAD → same byte/hash public probe (redirects disabled). Keys exactly hash trusted shopId, stableJson native pair and encoded bytes; no source URL/credential enters the key or returned metadata. It does not use the brand preset, historical object identity, source URL fallback or fabricated outreach attempt.
+
+Input is a trusted internal SOURCE result and host-validated public origin/bucket/R2 credentials, child signal, optional original absolute deadlineAt. Config lookup/loading remains host-owned. Missing/invalid configuration and exhausted/pre-aborted budget skip I/O. Deadline budget is min5000ms/remaining turn minus1000ms; absent deadlineAt requires the host child signal already bounded to remaining turn, while Shared still caps5000ms. Single child signal covers all awaits; noncooperative injected ports are raced, native product metadata/encoder work is destroyed on abort, clock checked between stages AND after transport construction. Factory-created transports close in finally on success/failure/cancellation. No network/model/provider send occurs inside any database transaction (there is no database dependency here).
+
+Results are READY with validated prepared-image metadata, or OMITTED with only closed reason/stage/bounded duration. Failures map to CONFIGURATION_UNAVAILABLE, UNSAFE_IMAGE_SOURCE, SOURCE_UNAVAILABLE, IMAGE_TRANSFORM_FAILED, R2_UNAVAILABLE, PUBLIC_IMAGE_UNAVAILABLE or MEDIA_DEADLINE. No config, source/query URL, raw bytes/body or provider error text is logged/returned by the coordinator. Existing bounded sanitizer remains available for legacy media consumers. No added retry loop or model-tool budget usage; relocated SDK/immutable writer retain their original behavior. Identical HEAD is reuse, conflicting object is never overwritten. Optional media failure preserves valid text through the pure plan contract; it never authorizes an extra send after admission.
+
+### Actual changed paths (17)
+
+- package.json: explicit Node export, validator command, exact existing AWS S3/sharp runtime dependencies. Version remains5.11.1; no release/publication.
+- package-lock.json:54 added package entries for required dependencies; no existing package version changed or removed. Production/dev role metadata updates follow the new dependency graph, without unrelated refresh.
+- tsup.config.ts: Node ESM/declaration entrypoint.
+- scripts/validate-conversation-product-image-node.mjs: built public function imports, no-I/O omission smoke and browser bundle/VM isolation from Node/sharp/AWS/Prisma/logging/observability/LangChain.
+- src/commerce/presentation/node/index.ts: Node-only public barrel.
+- src/commerce/presentation/node/contracts.ts: extracted transitive generic media ports/constants/error/sanitizer; structural credential type only.
+- src/commerce/presentation/node/network-policy.ts: relocated generic DNS/IP/pinning security and error types, preserving original restrictions.
+- src/commerce/presentation/node/safe-fetch.ts: relocated pinned HTTPS fetch, redirects, source size/encoding/deadline/peer checks.
+- src/commerce/presentation/node/metadata-verifier.ts: relocated independent encoded-byte/metadata verification.
+- src/commerce/presentation/node/image-transformer.ts: relocated SVG security and existing brand presets.
+- src/commerce/presentation/node/product-image-transformer.ts: relocated original sole product preset with optional cancellation only.
+- src/commerce/presentation/node/r2-writer.ts: relocated generic S3/immutable writer and sanitization, excluding host brand key adapter/config loader; exposes existing bucket check as isValidMediaBucket.
+- src/commerce/presentation/node/public-probe.ts: relocated encoded bytes/type/hash public verification.
+- src/commerce/presentation/node/product-image.ts: new conversation key predicate/builder and thin injectable preparation coordinator/types.
+- src/commerce/presentation/node/media.test.ts: deterministic golden/security/immutable/race/config/omission/budget/abort/default-adapter integration cases.
+- src/commerce/presentation/node/transform-golden.json: fixed SVG and four immutable original product/brand receipts.
+- src/commerce/presentation/node/EXTRACTION.md: exact original source fingerprints and moved symbols, retained host ownership, API/deadline and compatibility migration instructions.
+
+No sibling runtime or committed test source imports. Background implementation bodies are deliberately unchanged until its separately owned BACKGROUND001 adoption after publication; that task must replace generic bodies with published Shared imports/compatibility re-exports and retain its host/domain adapters. This extraction does not claim deployed consumer adoption or authorize a parallel pipeline.
+
+### Validation
+
+Canonical bootstrap Node24.19.0/npm11.17.0. No live R2/provider/Meta request, new infrastructure, application database, bucket/ACL operation, migration, publication or deployment. All source/probe/S3 ports are fixtures for execution tests.
+
+- Final `node --import tsx --test src/commerce/presentation/node/media.test.ts`: **10 passed**, no fail/skip. Four original golden transforms; DNS/private/metadata/mapped IPv6/redirect/rebinding/peer protection; 10MiB inherited source policy with lower injected byte limits and encoding refusal; no-redirect probe; exact content key; immutable reuse/collision/409/412 races; public hash/type mismatch; config/budget no-I/O; closed omissions/privacy; abort at every stage including noncooperative ports; real relocated product preset/probe; native abort; injected-clock and slow-factory budget rejection before storage I/O; owned transport close.
+- Declared full `npm test`: **670 passed, 0 failed, 3 existing opt-in skips** (673 cases). Final small clock check after factory construction and its additional focused case were then validated by final10 focused tests/types/build/public checks; unrelated full suite was not redundantly repeated.
+- Required existing Background media baseline: Vitest read-only execution of shop-brand-media/safe-fetch.test.ts, image-transformer.test.ts, r2-writer.test.ts and recovery-product-media/product-image-transformer.test.ts, product-r2-writer.test.ts: **41 passed**, five files. Invoked existing Background Vitest with its root from this task's execution shell; no Background tracked source/config was edited. This baseline plus the Shared golden/port tests proves preservation; it is not a claim that Background has migrated to the new public package.
+- Final `npm run typecheck`: passed, explicit exit0.
+- Final `npm run build`: ESM/DTS passed, explicit exit0.
+- Final `npm run validate:conversation-product-image-node`: passed, explicit exit0, new public Node runtime exports and browser isolation/VM execution with no provider I/O.
+- Temporary public consumer imported Node preparation input/result/dependencies, credential/fetch/transform/probe/transport types and pure SOURCE through package exports against built declarations with NodeNext tsc: passed, exit0. Temporary fixture removed.
+- Accepted source ancestry, original file equality, sharp/native lock compatibility and git diff/staged checks passed. No declared lint script exists; none invented. No unresolved source conflict or validation failure remains.
+
+Local receipts: /tmp/arch068-shared002-golden-generation.log, /tmp/arch068-shared002-original-regressions.log, /tmp/arch068-shared002-all-tests.log, /tmp/arch068-shared002-final-focused.log, /tmp/arch068-shared002-final-types.log, /tmp/arch068-shared002-final-build.log, /tmp/arch068-shared002-final-public.log and /tmp/arch068-shared002-declarations.log. Logs are local execution evidence; source provenance/golden/validator are committed for reproduction.
+
+### Git / VCS and isolated preparation
+
+Task branch task/ARCH-068-SHARED-002 in both repositories. Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace; reused parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-068-SHARED-002; created implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-068-SHARED-002. No shared/default checkout switched for implementation, other task worktree reused or subagent assistance.
+
+Launcher dependency gate passed SHARED001 Complete. Parent remote task fast-forwarded yes and origin/main incorporated yes; implementation remote FF not needed, origin/main already current. Recursive submodule sync/update passed with no entries. Parent preclaim6c55cc5e1a170437b60473f8a2820fd38187d286; implementation baseline df87e770a56db61617f1d9c2fd9397005add692d. Durable codex Attempt1 claim at2026-11-09T21:44:22Z, parent94e355ee0ddee92a54d3fcb387f22dff4855223f, committed/pushed by launcher.
+
+Implementation moda-interact-shared **8f8a298de90803671b789ba0ef2fe03058a8023e**, committed/pushed to origin/task/ARCH-068-SHARED-002, clean. This matching parent report is committed/pushed on its task branch. No gitlink staged, main merge/push/force-push, registry publication or downstream promotion.
+
+### Review / compatibility handoff
+
+Complete Architect Review read before source inspection: Not reviewed, no Changes Requested correction list; preserved. All owned requirements are implemented and submitted for review, with the symbol/source map and byte invariants above. Host readiness, credential readers, actual image sending/admission/persisted plan, initializer and consumer re-exports remain their named tasks. SHARED003 owns version selection, immutable package publication/archive/integrity and public installed-consumer evidence after this prerequisite is actually Complete. No guessed release version/integrity or consumer dependency update here. Browser-only consumers remain free of Node media dependencies.
+
+No operational wrapper binding activation, rollout, public-object migration/deletion/cleanup, new bucket/credentials/ACL, database write or real message occurred. Architecture/index/downstream task records are not changed by this implementation agent. Return to moda_architect; no architect acceptance or completion inferred from these tests.
 
 ## Architect Review
 Not reviewed.
