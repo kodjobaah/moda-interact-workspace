@@ -9,13 +9,13 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: ready
+status: blocked
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: ['ARCH-066-SHARED-012']
-enables: ['ARCH-066-SHARED-014']
+enables: []
 created: 2026-11-09
 updated: 2026-11-09
 ---
@@ -97,3 +97,9 @@ None
 Pending
 ### Follow-up
 None
+
+## User-directed withdrawal — 2026-11-09
+
+WITHDRAWN. The user explicitly removed template/WABA validation from Studio initial-outreach preview. A configured-sender identity projection is therefore outside the requested scope. Do not claim, implement, publish a package, or execute follow-on work under this task. Historical definition/publication evidence above is retained, not accepted or completed. Lifecycle status is blocked to prevent launcher execution using existing supported statuses; this is a scope withdrawal, not a technical blocker awaiting repair. Attempt0 and null claim remain unchanged. Reopening requires explicit user instruction and a new architectural disposition.
+
+SHARED-013, SHARED-014 and ADMIN-001 are removed from the Studio dependency path. Replacement preview-only renderer/adoption definitions are SHARED-015 → SHARED-016 → COMMERCE-003. Existing Background production send checks remain unchanged. No source changes, release, deployment or live configuration mutation follows from this withdrawal.
