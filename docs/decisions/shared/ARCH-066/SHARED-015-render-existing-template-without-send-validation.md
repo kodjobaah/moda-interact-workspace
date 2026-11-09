@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 20
-executor: codex
-claimed_at: 2026-11-09T01:35:53Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-066-SHARED-012"]
 enables: ["ARCH-066-SHARED-016"]
@@ -242,3 +242,18 @@ No new standalone service, database table, sender projection or UI component in 
 
 ## Architect eligibility reconciliation — 2026-11-09
 Sole explicit prerequisite SHARED012 is CompleteAcceptedAttempt1, canonical remote4b5ff8d7f1b45516357152baa49f0a81d710ad69. Pending was stale eligibility; promoted Ready unchangedAttempt0/unclaimed. Exact latest normative code/reuse amendments govern execution. No sender projection chain dependency is introduced. Developer explicitly invoked015 implementation/sync/claim/source/report publication; canonical prepare alone owns the next claim.
+
+
+## Architect Review
+### Review Status
+Accepted
+### Review Notes
+Reviewed actual sourcea19519e460516cfbc95dbe817bae9598e2b4ac6d and CompletionReport6593e47e5dade12e6e14cfddca4adbd780c0f347. Independently verified source remote hash and clean canonical implementation worktree. Prepared physical parent/implementation isolation, synchronization and recursive submodule packet conforms. Exact accepted009carry869f830 plus baseline011 retains5.9 composition without release metadata changes.
+### Reviewed Files
+bindings.ts, component-render.ts, render.ts, variables.ts, template-contracts.ts, template-types.ts, index.ts, studio-render.test.ts, README.md and scripts/validate-commerce-outreach.mjs.
+### Validation Reviewed
+Required outreach94/94 passed; typecheck; ESM/DTS production build; installed public JS/declaration smoke covering strict Studio schemas/types/renderer and existing purpose/classifier exports. Actual Node mock.module spy proves zero Studio selection calls with production positive-control interception; no conditional/static fallback remains. Exact body4096 accepted/4097 MESSAGE_TOO_LARGE, strict extra metadata/malformedURL refusal, production approval/category/hash refusal, ready IMAGE and same-shop brand/media checks, old production golden parity retained. gitdiffcheck clean; package/lock metadata unchanged. No repeated broader tests required.
+### Architecture Conformance
+Production selectRecoveryAssignment and prepareFrozenComponents retain registration/approval/category/hash/fingerprint checks before common construction. Both renderers call one prepareStoredComponents, one renderStoredComponentText and existing PreparedVariableResolver; no duplicate classification/substitution algorithm or service/internal imports. Studio consumes no send-readiness metadata, returns templateValidationNOT_EVALUATED, preserves structural/value/asset limits and refuses missing image without automatic fallback. Internal readonly-compatible helper typing is a compile-only adaptation preserving existing provider parameter shape; no public production input widening. No network/database/model/source-main/consumer/release work.
+### Follow-up
+Accepted at Review unchangedAttempt1, claim cleared. Explicit developer completion pending via /moda_developer_update ARCH-066-SHARED-015 complete. SHARED016 remains Pending until015 actually Complete. Preserve retained built dist/local pack receipt and source provenance for separate release-only016; no publication started here. No implication of integrated Commerce acceptance/system-test execution.
