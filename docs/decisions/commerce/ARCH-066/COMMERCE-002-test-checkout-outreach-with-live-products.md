@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: blocked
 priority: 50
 executor: codex
 claimed_at: 2026-11-09T00:11:19Z
@@ -37,7 +37,39 @@ Read active initial-outreach template/header/media using existing read-only temp
 Acceptance: Super Admin only including direct endpoint calls, cross-tenant checkout refused before provider I/O, exact live reads including NONE policy, stale/deleted/foreign variant refusal, price/offer changes, duplicate line preservation, no unrelated products, idempotency/cancel/capacity/purge, rendering parity with Background fixtures and side-effect spies. Update existing documentation and scoped UI/service tests; typecheck/lint pass.
 
 ## Completion report
-Not started. Record implementation commit, scoped checks and parity evidence before completion. No production deployment or real message sending authorized.
+### Status
+Blocked — partial source/route/UI/service/storage foundation published; genuine runtime composition unavailable pending canonical public configured-sender projection.
+### Files changed / implemented foundation
+- Exact public Shared5.9.0 package/lock pin, requested integrity verified in lock.
+- New initial-outreach contracts/checkout-reader/ports/presentation/service. Shared normative input/result/render types and evaluator/frozen renderer imported from public subpath; no copied evaluation/render algorithm.
+- Actual list/start/status/cancel Next route handlers and HTTP/runtime modules, explicit Origin enforcement on both POSTs, genuine Super Admin/bypass denial and current selected-shop authorization. Strict body only requestIdUUID+checkoutRecoveryId; query shopId is an untrusted selector resolved server-side.
+- In-memory and Redis existing coordinator extensions with distinct INITIAL_OUTREACH run kind and shared slots/quotas/idempotency/owner fencing. Physical Redis records use existing managed toolTests inventory so existing Admin purge enumeration does not orphan records; no new Admin edits.
+- Separate Initial outreach UI mode/panel, same-shop keyed state reset, full typed result and final body/provenance/parameters display, explicit Simulation and NOT_EVALUATED labels. Ordinary conversation bundle loader rejects server-marked purpose composition, including mixed initial+ordinary selection; initial feature removed from conversational feature choices.
+### Validation actually executed
+- `node node_modules/vitest/vitest.mjs run tests/feature-preview-composition.test.ts tests/arch066-initial-outreach-preview.test.ts tests/arch066-initial-outreach-store.test.ts tests/arch066-initial-outreach-ui.test.tsx`: PASS4files25tests, zero skips/failures. Actual handlers test401/403 including bypass, same-origin rejection, selected-shop denial, strict request202/409; reader cursor/native IDs/lineKey/refingerprint; injected service both-provider NONE2reads and duplicate preservation, full frozen body/parity facts, source-change refusal. Real disposable local Redis2client replay/conflict/quota/cancel flag/stale-owner/lease TTL/inventory tests ran (not skipped), cleanup completed.
+- `node node_modules/vitest/vitest.mjs run tests/arch066-initial-outreach-ui.test.tsx tests/test-conversations-screen.test.tsx tests/preview-store.test.ts tests/preview-redis-lua.test.ts`: PASS4files49tests; old conversational/store regressions preserved.
+- Final keyed-shop panel rerun: PASS1file2tests after actual lint correction (no synchronous state reset in effect).
+- `node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json`: final PASSexit0, logempty.
+- Focused ESLint on all new initial-outreach runtime/route/UI source: final PASSexit0/logempty. Full repository lint not claimed.
+- `git diff --check`: PASS. Published dependency install and Prisma generation succeeded; existing npm audit35 dependency issues noted, no unrelated remediation.
+- All Node checks used exact canonical bootstrap-resolved runtime; no live provider/model/Meta/database environment validation performed.
+### Parity evidence and limits
+Test-only frozen inputs reproduce Background source0a601031 `tests/unit/services/recovery-template-integration/arch066-production-none.test.ts`: both platforms, duplicate pair quantities2+1, historical12.50/current12.00GBP, subtotal36.00, saved brand and approved no-offer projection. Actual Shared evaluation/render via injected Studio service yields full exact body `Saved Merchant saved 2 × Live shirt (Blue) and 1 × Live shirt (Blue) for Test customer. Continue https://shop.example/checkout` and expected provenance fields. No Background runtime imports. This is deterministic same-input fixture evidence, NOT real provider validation, independently executed Background production test, or complete parameters/header/media parity acceptance.
+### Architectural blocker / unresolved implementation
+Default `getInitialOutreachPreviewService` deliberately returns503 CONFIGURATION/SENDER_UNAVAILABLE. There is NO production outreach host factory yet: real active profile/policy/instruction/model resolution, credential-backed local/MCP tool integration, trusted sender/catalogue/template selection, approved ready media/saved-brand projection composition and full template revision handling remain UNIMPLEMENTED. Test injection is explicit Simulation; it is not a live fallback.
+
+Exact blocker: currently configured WABA exists only in secret `messaging.sender`. Admin `src/lib/admin/platform-configuration/secrets-contracts.ts` declares secret payload accessToken,phoneNumberId,businessAccountId. Background service decrypts the whole sealed payload with canonical AAD before returning identity; Commerce existing configuration allowlist has no public sender projection. WABA cannot be inferred from saved template variants. Architect explicitly prohibited new Commerce sending-credential decrypt access, and is defining Shared013/014 contract/publication plus Admin001 atomic public-projection writer with source-version fencing. No correction task implementation or unapproved correction branch publication performed here.
+
+Other required acceptance remains pending: complete genuine host composition and template/media parity; full actual provider-adapter side-effect-spy matrix; UI/route positive production readiness; comprehensive cancel/deadline terminal lifecycle, result-overflow paths and exact Admin purge execution; all stale/deleted/foreign/price/offer/native bound matrices. Existing store tests prove cancel flag/owner fencing/TTL only, not complete service cancellation acceptance. Historical test title implying cancellation was corrected. No task checklist marked complete merely for foundation tests.
+### Safety / deviations
+Blocked partial implementation retained rather than infer sender from assignment, decrypt unrelated secrets, add arbitrary renderer callback, fabricate production identity, claim sending eligibility or invoke real provider/model calls. No recovery/attempt/customer/credit/outbox/template/media mutations added. No live setup/migration, Meta upload/register/send, activation, deployment, package release or follow-on task execution.
+### Git / VCS
+Task branch task/ARCH-066-COMMERCE-002 in both repositories.
+Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace.
+Parent worktree /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-COMMERCE-002; implementation worktree /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-COMMERCE-002. No shared/default checkout or another task path mutated.
+Launcher Attempt1 claim48855cc8dfbbab31a4636bf952bd94413be23e4b pushed2026-11-09T00:11:19Z; dependencies passed. Parent reused/implementation created; remote task fast-forward not-needed, origin/main already-current both. Recursive sync/update passed, database039778a4a472db7d09e6b077bb8c8d7c82a58129 ready.
+Implementation078f67a2187ba4701e2fbbf49fa2185837ae9bf7 committed/pushed and remote hash verified. Parent report commit follows this edit on same task branch. No gitlink staged/main merge. Completion mode developer preserved; no Accepted/Complete claim.
+
 
 ## Normative review correction
 [Outreach contract](../../../architecture/ARCH-066-initial-outreach-contract.md) is mandatory. Use evaluateInitialOutreach and shared frozen-template rendering; no duplicated algorithm or arbitrary render callback. Preserve historical/current prices and checkout-only restriction. Production ALTERNATIVE_PRODUCT_PROMOTION is explicitly refused for this initial path; preserve historical receipt parsing and conversational recommendations. Ready media only in Studio; IMAGE unavailable selects approved TEXT fallback or refuses.
