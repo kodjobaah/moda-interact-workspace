@@ -9,13 +9,13 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-066-SHARED-016"]
-enables: []
+enables: ["ARCH-066-COMMERCE-002"]
 created: 2026-11-09
 updated: 2026-11-09
 ---
@@ -43,7 +43,33 @@ At review, architect removes SHARED014 and ADMIN001 sender prerequisites from CO
 Definition only. Preserve unrelated work; you are not alone in the codebase. Use canonical launcher task worktrees and mirrored task branches. Record exact source, commands/results and package integrity; submit for review, stop and retain developer completion authority. No main merge/push, deployment, real customer send, Meta call, database mutation in a hosted environment or follow-on task execution is authorized. No acceptance from tests against injected simulation alone.
 
 ## Completion Report
-Not started. No implementation or validation performed.
+Status: Ready for Review. Attempt 1; developer completion authority retained. No Architect Review or completion decision made by the repository agent.
+
+### Implemented acceptance matrix
+- Exact public Shared 5.10.0 is pinned in package.json and package-lock.json, registry resolved with integrity `sha512-cdXKp0YLPg/yFN5acZNpdZbDfzFqY1MV45rFHh1+Q1e8Wf3VFuR1Ylgr8icorCj9h8pE3CTFTheUuxCEMKCfFw==`. Installed runtime renderer, classifier and purpose helper are exercised without mocks; Prisma generation succeeded.
+- `template-reader.ts` implements the prescribed selected-shop/purpose/language query, ordered deduplication, first-nonempty-tier ambiguity/missing-content refusal and strict public Studio schema mapping. Existing relation/query reference inspected before implementation: Background `src/services/recovery-template-preparation/recovery-template-repository.ts`, `PrismaRecoveryTemplateRepository.readCatalogue`; no Background import or write. Host-provided locale order remains authoritative. No production status/approval/enabled/hash/category/sender fields are selected or checked.
+- `ports.ts` freezes three purpose templates and typed per-purpose errors, variables/brand/media using public types. `service.ts` selects the frozen template only after ready evaluation through public selectSendableOutreachOffer/purposeFor; missing selected content returns local CONFIGURATION/TEMPLATE_UNAVAILABLE with rendering null. The frozen map contributes only to replay fingerprinting.
+- `presentation.ts` delegates directly once to renderStudioInitialOutreachPreview. `contracts.ts` consumes Studio result schema; existing bounded result envelope is retained. No local rendering, offer-classification, hash-validation or approval algorithm was introduced.
+- Runtime removes the sender identity port and SENDER_UNAVAILABLE stub. Actual default HTTP reports precise CONFIGURATION/HOST_UNAVAILABLE for the still-unimplemented COMMERCE002 real-host factory, never a sender prerequisite or simulation success. HTTP preserves authentication, genuine SUPER_ADMIN, tenant and Origin guards.
+- UI shows source template/locale, full rendered text/parameters/header and exact label “Template validation not evaluated. No message sent.” It preserves mode and NOT_EVALUATED production checks.
+- Tests exercise the actual stored reader through service evaluation/rendering for SHOPIFY and WOOCOMMERCE: two product reads under NONE, exact existing Background golden body, immutable replay, non-approved/disabled/stale metadata ignored, throwing sender/Meta access spies unused. Reader tests cover exact query/locale precedence/ambiguity/invalid content. Missing selected purpose returns CONFIGURATION; an unresolved stored placeholder reaches the installed renderer and refuses BINDINGS_INVALID. Actual HTTP default HOST_UNAVAILABLE, auth/CSRF/tenant, UI and real Redis state-store checks pass.
+
+### Source and preparation evidence
+Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-066-COMMERCE-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-066-COMMERCE-003`; mirrored branch `task/ARCH-066-COMMERCE-003`.
+Launcher prepared/claimed Attempt1 codex at 2026-11-09T02:29:13Z, durable claim 001b6ccff98d7278bbb3f68b45fececfe4f3624f. Parent reused at b2fd2dfb36d9b910018949963f0cc2f074da8d2d; implementation created at 64cdb570940c72097bb3eb9097e159afc1472643; current main synchronization already satisfied by launcher; recursive database recorded revision 039778a4a472db7d09e6b077bb8c8d7c82a58129 ready. Startup/claim was not repeated.
+Under the explicit architect source-composition amendment, the ENTIRE published partial COMMERCE002 source commit 078f67a2187ba4701e2fbbf49fa2185837ae9bf7 was carried normally as 378a758. This preserves provenance and does not label that blocked work Accepted. Correction source commit: 6f01c09 (full hash available on published task branch); no main merge or parent implementation gitlink staging.
+Changed files: package.json/lock; lib/preview/initial-outreach-{runtime,http}.ts; src/commerce/preview/initial-outreach/{contracts,ports,presentation,service,template-reader}.ts; src/studio/test-conversations/initial-outreach-preview-panel.tsx; tests/arch066-initial-outreach-{preview,template-reader,ui}.test.* and tests/fixtures/arch066-outreach.ts.
+
+### Validation actually executed
+Environment used the workspace-bootstrap-resolved Node24.19.0 executable; no replacement runtime selected.
+- `npm install @modainteract/moda-interact-shared@5.10.0 --save-exact --ignore-scripts`: exit0; `npm run prisma:generate`: exit0. Existing dependency peer/deprecation/audit notices were not changed through an audit fix.
+- `node node_modules/vitest/vitest.mjs run tests/arch066-initial-outreach-preview.test.ts tests/arch066-initial-outreach-store.test.ts tests/arch066-initial-outreach-ui.test.tsx tests/arch066-initial-outreach-template-reader.test.ts`: exit0, 4 files/17 tests passed, no skipped tests; actual disposable Redis Unix-socket fixture executed. Receipt `/private/tmp/arch066-commerce003-tests.log`.
+- After adding explicit unresolved-placeholder assertion, impacted reader file rerun only: exit0,4 tests passed (`/private/tmp/arch066-commerce003-placeholder.log`). After adding actual default HTTP assertion, impacted preview file rerun only: exit0,11 tests passed (`/private/tmp/arch066-commerce003-http.log`). Final unique focused cases:19; no runtime changes after the passing four-file run.
+- `node node_modules/typescript/bin/tsc --noEmit -p tsconfig.build.json`: exit0 (`/private/tmp/arch066-commerce003-tsc.log`). Changed tracked production TypeScript/TSX files through repository ESLint: exit0; new template-reader.ts separately through ESLint: exit0 (`/private/tmp/arch066-commerce003-lint.log`). `git diff --check`: passed.
+
+### Remaining boundaries and limitations
+COMMERCE003 removes only the sender/template-validation prerequisite and proves stored-content-to-public-renderer composition. COMMERCE002 remains incomplete: genuine runtime construction combining persisted profile/policy/brand/media, credential-backed local/MCP provider catalogue/evaluator ports and complete lifecycle acceptance remains its responsibility. Default service intentionally refuses HOST_UNAVAILABLE. Tests here inject isolated host I/O; they do not prove a live credential-backed host, all002 cancellation/deadline/retention scenarios, or production preview availability. No live provider/model/Meta calls, hosted database mutation, customer send, sender credential/projection access, deployment, package publication, main merge or follow-on execution occurred. Existing production renderer/sending validation is unchanged. Withdrawn sender tasks remain withdrawn, not completed by this correction.
+
 
 ## Code-level amendment — 2026-11-09
 
@@ -164,3 +190,26 @@ No new standalone service, database table, sender projection or UI component in 
 
 ## Architect readiness handoff — 2026-11-09
 SHARED016 explicitly CompleteAcceptedAttempt1; exact public artifact5.10.0 integrity sha512-cdXKp0YLPg/yFN5acZNpdZbDfzFqY1MV45rFHh1+Q1e8Wf3VFuR1Ylgr8icorCj9h8pE3CTFTheUuxCEMKCfFw==; downloadedSHA256711fe20dfe54f6516e67eab0f6616e7799d4f9d567c93d90819e4eb974f4ac2d. Adopt exact version/integrity, never range/latest/sibling source. Ready unchangedAttempt0/unclaimed; canonical prepare owns future claim. Existing latest code-level/reuse amendments control. COMMERCE002 remains BlockedAttempt1 with unfinished real-host/lifecycle requirements; correction does not imply full preview completion. Withdrawn sender013/014/Admin001 remain withdrawn; production validation unchanged.
+
+
+## Architect explicit source-composition amendment — 2026-11-09
+Prepared canonical implementation baseline64cdb570940c72097bb3eb9097e159afc1472643 does not contain the published partial002source078f67a2187ba4701e2fbbf49fa2185837ae9bf7. Developer explicitly authorizes continuing this correction and preserving that published implementation. Repository owner may carry the ENTIRE exact078f67commit onto this isolated003task branch by normal non-forced cherry-pick, recording resulting commit and original provenance; do not cherry-pick selected unreviewed files silently, rewrite history, merge/push main or label002Accepted. This bounded integration satisfies availability for003source work and supersedes the earlier wait-for-canonical-baseline clause only for this exact published commit. Required003checks run on the actual composed task tree. No unfinished002real-host/lifecycle scope is transferred: if factory absent, explicit precise host-unavailable remains, never default simulation/live success. Stored-template→actual installed Shared renderer path must execute in003service tests; all other current acceptance/reuse and production safety requirements remain.
+
+
+## Architect Review
+### Review Status
+Accepted
+### Review Notes
+Reviewed actual correction6f01c09630e05950fc3c4362259f0d4c107f0dfc/report511ed6025014a250e414053f518f0551a09d7331 and exact partial002wholecarry378a758. Independently verified clean canonical implementation and remote source hash. Prepared isolated parent/implementation paths, synchronization and database submodule packet conform. Explicit composition amendment authorizes whole prior partialsource only;002was never treatedAccepted.
+### Reviewed Files
+template-reader.ts; presentation.ts; ports.ts; service.ts; contracts.ts; initial-outreach HTTP/runtime; UIpanel; exactpackage/lock5.10.0; reader/service/UI/fixtures and retained storetests.
+### Validation Reviewed
+Initial4files17testsPASS/no skips including realRedis, then bounded impactedreader4/4 and preview11/11 for2added assertions (19unique total). Actual commands exited0. Production TypeScriptexit0; changed-source and newreaderESLintexit0. Actual storedreader→service→installedShared renderer executes bothproviderNONE2reads, identical fullbody/currentvshistoricalfacts, declined/disabled/stalehashmetadata ignored, forbid sender/Meta calls; locale priority/dedup/ambiguity/missing/malformedcontent; missingselectedpurposeCONFIGURATION and unresolvedplaceholderBINDINGS_INVALID; actualHTTPauth/Origin/tenant and precise defaultHOST_UNAVAILABLE; UIvalidationNOT_EVALUATED label/type; realRedis retention/fences preserved. Exact5.10.0 integrity matches016. No additional broad checks required.
+### Architecture Conformance
+Strict storedcontent query selects only ID/components/bindings/locale, never sender/WABA/approval/hash/category predicates. Freeze3purpose candidates, select afterready evaluation through existing publicselectSendableOutreachOffer/purposeFor; thin presentation calls publicStudio renderer once, no copied classification/substitution/brand/limit mechanics. Same-shop/media/auth/64KiB/fencing safety retained; production sending checks untouched. No Shared/Admin/Backgroundsource, livecustomer/providerwrite, main or release.
+### Follow-up
+Accepted scoped003atReviewAttempt1, claimclear; explicit developercompletionpending via /moda_developer_update ARCH-066-COMMERCE-003 complete. COMMERCE002 staysBlockedAttempt1, gains003dependency and explicit original realhost/lifecycle rework checklist; no promotion or fullpreviewacceptance. DefaultHOST_UNAVAILABLE remains honest002factorygap, not sender prerequisite or successful simulation. Withdrawn sender tasks remainwithdrawn.
+
+
+## Explicit developer completion decision — 2026-11-09
+Developer invoked /moda_developer_update ARCH-066-COMMERCE-003 complete. Durable Accepted6cfdbaa0da934ec4612106dfdc102d46f472bb8b/source6f01c09630e05950fc3c4362259f0d4c107f0dfc independently verified clean/remotelypublished. Complete unchangedAttempt1, claimnull; no testsrerun. COMMERCE002all explicit prerequisites nowComplete, promoteReady for SAME-task rework at unchangedpriorAttempt1/unclaimed. This is eligibility only; genuineHOST/lifecycle checklist and historicalBlockedreview remain, no002acceptance/claim/implementation. Senderwithdrawal and production checks preserved.
