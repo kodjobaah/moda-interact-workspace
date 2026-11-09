@@ -52,9 +52,9 @@ SHARED001 owns the pure public stock/count/reference/fact/composition APIs and S
 |---|---|---|---|
 | ARCH-067-SHARED-001 | moda_shared | Complete / Accepted Attempt1 | None |
 | ARCH-067-SHARED-002 | moda_shared | Complete / Accepted Attempt1 | ARCH-067-SHARED-001 |
-| ARCH-067-COMMERCE-001 | moda_commerce | Ready / Attempt0 unclaimed | ARCH-067-SHARED-002 |
-| ARCH-067-MCP-001 | moda_mcp | Ready / Attempt0 unclaimed | ARCH-067-SHARED-002 |
-| ARCH-067-BACKGROUND-001 | moda_background | Pending | ARCH-067-SHARED-002, ARCH-067-MCP-001 |
+| ARCH-067-COMMERCE-001 | moda_commerce | Complete / Accepted Attempt1 | ARCH-067-SHARED-002 |
+| ARCH-067-MCP-001 | moda_mcp | Complete / Accepted Attempt1 | ARCH-067-SHARED-002 |
+| ARCH-067-BACKGROUND-001 | moda_background | Ready / Attempt0 unclaimed | ARCH-067-SHARED-002, ARCH-067-MCP-001 |
 | ARCH-067-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-067-COMMERCE-001, ARCH-067-BACKGROUND-001, ARCH-067-MCP-001 |
 
 Terminal systemvalidation remains developer-manual-gated after all actual prerequisitesComplete; no automaticconsumer/system execution or architectureImplemented claim. Existing publishedwire/contracts and persistedv1JSON require compatible reader-first rollout, no schema migration.
@@ -81,3 +81,8 @@ SHARED002AcceptedReviewAttempt1, explicitdevelopercompletionpending; public5.11.
 
 
 2026-11-09 explicitreleasecompletionfrontier: SHARED002CompleteAcceptedAttempt1, exact5.11.0receiptverified. Commerce001/MCP001ReadyAttempt0/unclaimed; Background001PendingMCP001; SystemTest001Pendingconsumerclosures/manualgate. No consumerexecution/deployment/gateenablement/tests/npm/main/live. Reader-firststock and defaultfalse referencegateuntilbothreadersremainmandatory.
+
+2026-11-09 MCP explicit completion frontier: MCP001 Complete / Accepted Attempt1 (source9b5fa5680905930e65c89a0a6bf3e7b3546ef633; passingreview1ba1545c80e48968f8e8dd6519e058d422a534c6). Commerce001 canonical task is Complete / Accepted Attempt1. Background001 Ready / Attempt0 unclaimed with both explicit dependencies Complete; SystemTest001 Pending Background001 and manual gate retained. Exact Shared5.11.0 and reader-first deployment/default-false emission requirements remain binding. Architecture remains in progress; no deployment or operational gate enabled.
+
+### MCP conditional completion frontier — 2026-11-09
+MCP001 Complete at independently Accepted Attempt1; implementation9b5fa568 public task refs verified. SHARED002 Complete unlocks BACKGROUND001 Ready/Attempt0/unclaimed. COMMERCE001 Complete72ef2d55f; SYSTEM-TEST001 Pending until BACKGROUND001 Complete, manual gate unchanged. No automatic task/rollout/gate activation. Earlier readiness/review records are historical.

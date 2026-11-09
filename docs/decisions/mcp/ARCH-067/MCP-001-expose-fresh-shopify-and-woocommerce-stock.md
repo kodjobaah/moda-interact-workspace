@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -36,7 +36,7 @@ No inventory mutation, new database table, token-refresh redesign, new template 
 
 ### Status
 
-Passed / Accepted — reviewed Attempt 1. Developer-as-architect review accepted the agent implementation under explicit /moda_developer_update invocation. Status remains Review pending explicit developer completion; execution_mode agent and completion_mode developer are retained, executor/claimed_at cleared.
+Complete — explicitly completed by the developer on 2026-11-09; accepted Attempt 1 unchanged. Passing review 1ba1545c80e48968f8e8dd6519e058d422a534c6 and published implementation 9b5fa5680905930e65c89a0a6bf3e7b3546ef633 remain authoritative.
 
 ### Implementation / source
 
@@ -86,7 +86,22 @@ The complete Architect Review was read before source inspection: outcome Not rev
 Reader-first sequencing remains mandatory: deploy Background and Studio readers supporting Shared5.11.0 stock before deploying the MCP stock writer; local Studio reader/writer upgrade together. Keep COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED absent/false until both reference readers are deployed, then enable only literaltrue under the manual terminal system receipt. This MCP source task does not introduce a stock flag or enable either host gate. Old strict readers reject additive stock, so source review/publication is not rollout approval. Background-dependent implementation and terminal/manual system evidence remain separately owned follow-ons; no deployment or end-to-end live parity is claimed here.
 
 ## Architect Review
-Status: Not reviewed.
+Status: Accepted — Attempt1,2026-11-09.
+
+### Review Notes
+Independent actual-source review of implementation9b5fa5680905930e65c89a0a6bf3e7b3546ef633 (seven owned paths), full task and ARCH067 normative requirements completed; not inferred from Commerce or prior self-review. All four Shopify query/parser paths include inventory tracking/count; sole-variant proof uses existing first1 budget and pageInfo, ambiguous product-only stock is unavailable and never a product total. Woo simple/variation, false tracking, variable parent/parent-managed mappings preserve exact scope; safe normalization comes only from public Shared. Availability remains independent. Existing parent/tenant/credential/read-only/scope/budget guards unchanged. Canonical wire uses strict Shared stock objects; template projection is separate and tests prove serialized get/search results retain stock. Bounded correlated diagnostic reason/status fields contain no quantity/raw provider/customer data; MCP truthfully has no persisted reference counts.
+
+### Reviewed Files
+package/lock; src/execution/policy/shopify-core.ts and shopify-core-executor.ts; src/connections/woocommerce/direct-product-reader.ts; actual product-stock and direct-product-reader unit tests.
+
+### Validation Reviewed
+Independent bounded command node --import tsx --test tests/unit/execution/policy/product-stock.test.ts tests/unit/connections/woocommerce/direct-product-reader.test.ts PASS65/65,0failed/skipped. Inspected assertions across all four query paths/count edges, parent/tenant denial, Woo allowlists/tracking, exact built public schema equality, JSON-serialized published envelopes and diagnostic canary. Existing final-source474unit/typecheck/lint(maxwarnings0)/build and pinned2026-07 document-validation evidence reconciled; no healthy full rerun required. Existing featuredImage deprecation remains outside bounded change.
+
+### Architecture Conformance
+Accepted. Exact public5.11.0/integrity matches handoff; no cross-repository source copy/generic quantity fork. Canonical dedicated worktrees, deterministic sync/recursive database379d563f/claim00aff857 evidence inspected. Both worktrees clean and exact remote task heads freshly verified: implementation9b5fa568 and parent1ba1545c8. No source/main/gitlink edits or deployed provider calls during review. Reader-first rollout and default-false reference gate remain mandatory; completion is not writer deployment permission.
+
+### Follow-up
+Conditional explicit developer completion applied below; Background001 becomes Ready only after this Complete record is published. Terminal system test remains manually gated after all consumers Complete.
 
 
 ## Architect exact publication handoff — 2026-11-09
@@ -116,3 +131,14 @@ Fresh review command `node --import tsx --test tests/unit/execution/policy/produ
 No outstanding owned correction or incomplete required scoped acceptance item was found. Passing source review does not authorize deploying a stock writer before Background/Studio readers. Keep COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED absent/false until both readers are deployed and the manual operational gate is recorded; no flag or rollout change occurs here. Background-dependent code and terminal system evidence remain separately owned follow-ons.
 
 Status remains Review; reviewed/accepted Attempt1 unchanged; executor/claimed_at null; execution_mode agent and completion_mode developer retained. This developer review record and updated Completion Report are committed/pushed; the separate Architect Review placeholder is preserved rather than fabricating another actor's decision. Explicit `/moda_developer_update ARCH-067-MCP-001 complete` remains pending. No downstream task is promoted/claimed, no main merge/push or feature gitlink update, and no private package publication/deployment is performed by this review.
+
+## Developer Completion Decision — 2026-11-09
+
+The developer explicitly invoked `/moda_developer_update ARCH-067-MCP-001 complete`. Accepted Attempt 1 is Complete; executor/claimed_at remain null and execution/completion modes are preserved. Durable passing review `1ba1545c80e48968f8e8dd6519e058d422a534c6` found no incomplete owned requirements. The clean implementation HEAD `9b5fa5680905930e65c89a0a6bf3e7b3546ef633` was verified against the remote task branch at completion. No source change or repeat validation was needed.
+
+Dependency frontier: Shared002 and Commerce001 are Complete; Background001 becomes Ready, Attempt0 unclaimed; SystemTest001 remains Pending on Background001 and retains its manual gate. Synchronize this completion and exact Shared5.11.0 receipt into the canonical Background parent before future execution. Reader-first deployment and default-false reference emission gate remain mandatory. No deployment, package publication, claim, main merge/push or feature gitlink update occurs.
+
+## Developer Completion Decision — 2026-11-09
+Developer explicitly requested independent moda_architect review and, if passing, Complete ARCH-067-MCP-001, push review/completion and reconcile downstream. Independent review passed above, no unresolved owned mandatory criterion. Complete at unchanged Attempt1, executor/claimed_at null, execution_mode agent/completion_mode developer preserved. Implementation9b5fa568 and report/review1ba1545c8 clean and durably published, physical isolation accepted. No source/rollout/gate/main/gitlink mutation.
+
+Frontier: SHARED002 and MCP001 Complete unlock BACKGROUND001 Pending→Ready, unchanged Attempt0/unclaimed. COMMERCE001 already Complete72ef2d55f. SYSTEM-TEST001 remains Pending on BACKGROUND001 and manual-gated; no execution/claim automatically started.
