@@ -193,6 +193,5 @@ SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,sce
 
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
 
-## Accepted contract frontier — 2026-11-09
-
-SHARED001 independently Accepted by moda_architect / Complete at Attempt1 under explicit developer completion authority, source0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822. SHARED002 Ready at unchanged Attempt0/unclaimed; exact accepted source handoff required, no assumption of main integration. SHARED003 and consumers retain explicit dependency gates. No Node extraction, package publication, database completion, rollout or initializer activation is claimed by this transition. Architecture remains in_progress; terminal system validation and deployment/readiness receipts remain required.
+## Database accepted/completed frontier — 2026-11-09
+DATABASE001 Complete at independently Accepted Attempt1, implementation75669477; exact nullable JSONB schema/DDL and fresh/upgrade/old-writer TEXT+IMAGE evidence pass. SHARED003 remains Pending; BACKGROUND001 remains Pending on that publication (Database prerequisite satisfied). SYSTEM-TEST001 remains Pending/manual-gated on unfinished consumers. No readiness promotion, task execution, migration deployment, activation or architectureImplemented claim.
