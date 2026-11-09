@@ -14,7 +14,7 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-SHARED-012"]
+depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-SHARED-012", "ARCH-066-COMMERCE-003"]
 enables: ["ARCH-066-SYSTEM-TEST-002"]
 created: 2026-11-08
 updated: 2026-11-09
@@ -120,3 +120,8 @@ Developer explicitly authorized publishing the three prepared definition branche
 ## Sender prerequisite withdrawal — 2026-11-09
 
 User withdrew configured-sender projection and template-validation requirements for Studio. SHARED013/014 and ADMIN001 are not prerequisites. Historical sender blocker is superseded; do not implement these withdrawn tasks. COMMERCE003 owns removal of the preview gates using SHARED016 preview-only rendering; retain all other unfinished acceptance and Blocked Attempt1 status until rework is reviewed. No Background production checks are changed. No task is accepted/completed by this amendment.
+
+
+## Architect correction integration / remaining rework contract — 2026-11-09
+COMMERCE003source6f01c09630e05950fc3c4362259f0d4c107f0dfc (wholepartialcarry378a758 from078f67) corrects stored-template rendering using exact publicShared5.10.0. Sendersecret/projection/WABA/approval/hash gates are removed only from Studio; historical sender dependencies remain withdrawn. This correction is AcceptedReview, explicit003completionpending. Add003dependency; keep002BlockedAttempt1/unclaimed until003Complete and architect readiness reconciliation. Do not accept/complete002 from003success.
+Remaining SAME002scope: construct genuine current server profile/policy/environment/locale/brand/authorized-ready-media/localandisolatedMCP evaluator host factory (currently preciseHOST_UNAVAILABLE), tool activity and true production read-only mode; original bothplatform/currentvshistorical/offer/refusal/bounds/no-sideeffect scenarios; full cancellation/deadline/overflow/owner/capacity/Adminpurge lifecycle proof. Existing injected SIMULATION fixtures prove bounded mechanics, never live readiness. Preserve current sourcecorrection/publichelpers without copying renderer/classifier or restoring sender gates. Status/attempt/history unchanged; no consumerimplementation begins here.
