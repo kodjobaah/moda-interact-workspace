@@ -11,10 +11,11 @@ execution_mode: agent
 completion_mode: developer
 status: review
 priority: 20
-executor: codex
-claimed_at: 2026-11-09T05:02:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
+enables: ["ARCH-067-SHARED-002"]
 created: 2026-11-09
 updated: 2026-11-09
 ---
@@ -62,3 +63,18 @@ Status: Not reviewed.
 Actual accepted5.10baseline generatedget_product/searchproducts descriptors compile with depth7/8; currentdescriptors differ ONLY by optionalstock and fail because exact normative Zoddiscriminatedunion emits oneOf/stringconst. This is task-introduced usability gap, not excusedbaseline. Bounded same-owner touchpoints additionally include src/commerce/purpose-output.ts, purpose-output.test.ts and an exactgeneratedacceptedbaseline testfixture ifneeded. Preserve canonical generatedrepresentation; do not lossyconvertoneOf toanyOf or change exactStockSchema.
 Support scalarconst (string,boolean,null,finite typednumber/safeinteger only; no object/arrayconst) and oneOf exactly-one-matchingbranch semantics. Preserve existinganyOf and reject mixedunionkeywords/unsupportedfields; preventconst/enum combinations bypassingconstraints. Keep ALL resource/securitylimits unchanged: depth8,256nodes,128properties,32KiBschema/result,4096implicitstring,128array,2..4unionbranches, code-ownedfixedpatterns/no callerregex/code. This is keywordcompatibility, not budgetincrease.
 Requiredproof: realgeneratedget/search descriptorscompile and validatefullproducts withKNOWNzero/positive/safe-max PRODUCT/VARIANT, NOT_TRACKED/UNAVAILABLE and legacyomittedstock; malformedstock/extra fields reject. OverlappingoneOf matchesreject; malformed/mixedconst/unions and hostiledepth/node/property/byte/patternlimitsreject. Comparecurrentdescriptor to actualaccepted5.10generatedbaseline plus EXACToptionalstockdelta; retain historicalauditedfixture unchanged aslegacyvalidatorvectors, do not erase unrelateddelta or fabricatebaseline. Record exact baselineproofreceipt /private/tmp/arch067-shared001-purpose-baseline.log. Rerun affectedpurpose/stock/context/runner/model tests, typecheck/finalbuild/publicJS+declarations, and retain acceptedfinalartifact provenance; no release/consumer/source-main changes.
+
+
+## Architect Review
+### Review Status
+Accepted
+### Review Notes
+Reviewed actual source467cc1abf5afc467f73861f9830430524022bacd/report4dd608776ab1a3ecb6fa4a1101dc40088c66d805. Independently verified canonicalsourceclean/remotehashmatched. Prepared parent/implementationisolation, Attempt1claim33488a386, sync/submodule/nodeps packet conforms; no sourceworkbyarchitect. Earlier Notreviewedplaceholder historical.
+### Reviewed Files
+schemas.ts; product-context.ts/tests; runner/instructions and invoke-model; modelserialization/runner tests; presentationfacts/messages/tests; purpose-output compiler/tests/exactacceptedbaselinefixture; installedpublicvalidationscript.
+### Validation Reviewed
+Finalexpanded168/168PASS; typecheck; finalESM+DTSbuild; cleanprocesspublicentrypoints, browserpresentation, installedpublicruntime/declarations includinggeneratedget/searchstockcompiler. Orderedpresentation[20,3] retainedagainstrecency[3,20], selectedOptionsarbitrarynames, ambiguity/identity/TTL/eviction, near-cap32768tail-eviction/wholepresentationinvalidation, nostockpersistence, modelrequestserialization; stockKNOWNzero/safemax/scopes/NOT_TRACKED/UNAVAILABLE/legacyomission, malformedcountnormalizer andlocalizedstockcomposition/lengthregressions. Actualacceptedbaseline get/searchcompiled(depth7/8); onlyoptionalstock introducedoneOf/constfailure. Narrowapprovedcorrection supports exact-one unions/scalarconst withallprior caps/fixedpatterns unchanged; oldhostilevectors/overlap/malformedkeywords andhistoricalfixtures retained. Realgeneratedschema/runtimepubliccompile verified, no source-onlyproof.
+### Architecture Conformance
+Exactoptionalstock schema andpurepublicquantitynormalizer; mandatoryverifiedstock+DateSchemaobservedAt, no modelquantityauthority. V1contextcaps20refs/3presented/24h/32768bytes/ownership retained, no category-specific/Englishordinalparser. ExistingSharedcomposition/WhatsAppwrapper used; purehelpersno competinglogger, providerdiagnostics/atomicreplycontextwritegate remainconsumer-owned. Publicwildcardexports/runtime/declarations validated; existingproductoutputs dynamicallygenerateadditivestock. No budgetincrease, migration/provider/inventorywrite, version/publication/consumer/main/live work.
+### Follow-up
+Accepted atReview unchangedAttempt1; claimcleared; explicitdevelopercompletionpending via /moda_developer_update ARCH-067-SHARED-001 complete. SHARED002remainsPendinguntilactual001Complete; no consumersunblocked. Retain finalvalidatedarchive /private/tmp/arch067-shared001-validated-5.10.0.tgz SHA25644a81c0468a0a6dd62c0df75a12fa5877038028435f897057874c0478eb138a8 and canonicaldist/sourceprovenance for separaterelease, notpublishedfeatureavailability. Reader-firststockdeployment and referencewritegatefalseuntilbothreaders required; terminalsystemreceipt ownsoperationalgate.

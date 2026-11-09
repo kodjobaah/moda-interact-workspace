@@ -50,7 +50,7 @@ SHARED001 owns the pure public stock/count/reference/fact/composition APIs and S
 ## Decisions / Tasks
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-067-SHARED-001 | moda_shared | In Progress | None |
+| ARCH-067-SHARED-001 | moda_shared | Review / Accepted, developer completion pending | None |
 | ARCH-067-SHARED-002 | moda_shared | Pending | ARCH-067-SHARED-001 |
 | ARCH-067-COMMERCE-001 | moda_commerce | Pending | ARCH-067-SHARED-002 |
 | ARCH-067-MCP-001 | moda_mcp | Pending | ARCH-067-SHARED-002 |
@@ -64,3 +64,10 @@ Terminal systemvalidation remains developer-manual-gated after all actual prereq
 Actual accepted5.10baseline generatedget_product/searchproducts descriptors compile with depth7/8; currentdescriptors differ ONLY by optionalstock and fail because exact normative Zoddiscriminatedunion emits oneOf/stringconst. This is task-introduced usability gap, not excusedbaseline. Bounded same-owner touchpoints additionally include src/commerce/purpose-output.ts, purpose-output.test.ts and an exactgeneratedacceptedbaseline testfixture ifneeded. Preserve canonical generatedrepresentation; do not lossyconvertoneOf toanyOf or change exactStockSchema.
 Support scalarconst (string,boolean,null,finite typednumber/safeinteger only; no object/arrayconst) and oneOf exactly-one-matchingbranch semantics. Preserve existinganyOf and reject mixedunionkeywords/unsupportedfields; preventconst/enum combinations bypassingconstraints. Keep ALL resource/securitylimits unchanged: depth8,256nodes,128properties,32KiBschema/result,4096implicitstring,128array,2..4unionbranches, code-ownedfixedpatterns/no callerregex/code. This is keywordcompatibility, not budgetincrease.
 Requiredproof: realgeneratedget/search descriptorscompile and validatefullproducts withKNOWNzero/positive/safe-max PRODUCT/VARIANT, NOT_TRACKED/UNAVAILABLE and legacyomittedstock; malformedstock/extra fields reject. OverlappingoneOf matchesreject; malformed/mixedconst/unions and hostiledepth/node/property/byte/patternlimitsreject. Comparecurrentdescriptor to actualaccepted5.10generatedbaseline plus EXACToptionalstockdelta; retain historicalauditedfixture unchanged aslegacyvalidatorvectors, do not erase unrelateddelta or fabricatebaseline. Record exact baselineproofreceipt /private/tmp/arch067-shared001-purpose-baseline.log. Rerun affectedpurpose/stock/context/runner/model tests, typecheck/finalbuild/publicJS+declarations, and retain acceptedfinalartifact provenance; no release/consumer/source-main changes.
+
+
+## Shared contract implementation review — 2026-11-09
+SHARED001AcceptedReviewAttempt1; explicitdevelopercompletionpending. Source467cc1abf5afc467f73861f9830430524022bacd clean/published.168targetedtests/typecheck/finalESM+DTS/cleanpublicentrypoints/browserpresentation/installedruntime+declarations pass. Canonicalpurposecompiler nowaccepts exactgeneratedstockoneOf/const with all previoussecurity/resourcecaps unchanged; historicalauditedfixtures retained, acceptedbaseline optionalstockdelta proven. Contextv1selectedoptions/presentation preservesorder/ownership/TTL/32768cap; near-cap deterministic tail eviction invalidateswholepresentation ifpairremoved. No release/consumers enabled; SHARED002Pendinguntil001Complete.
+
+### Explicit strict-reader rollout sequencing
+Optionalstock permits NEW readers to consume legacyoutputs; it does not make OLDstrict readers accept stock. Deploy Background/Studio readers using acceptedpublishedcontract before enabling/deploying MCPstockwriter; localStudio stockreader/writer upgrade together. Keep COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED false untilbothreference readersdeployed, thenenableonlyliteraltrue afteroperationalgate recordedinsystemreceipt. No separate stockflag or newinfrastructureintroduced; this clarifies existingreader-first compatible deployment sequence. No rollout or gateenablement occursinShared001.
