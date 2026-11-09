@@ -52,8 +52,8 @@ SHARED001 owns the pure public stock/count/reference/fact/composition APIs and S
 |---|---|---|---|
 | ARCH-067-SHARED-001 | moda_shared | Complete / Accepted Attempt1 | None |
 | ARCH-067-SHARED-002 | moda_shared | Complete / Accepted Attempt1 | ARCH-067-SHARED-001 |
-| ARCH-067-COMMERCE-001 | moda_commerce | Ready / Attempt0 unclaimed | ARCH-067-SHARED-002 |
-| ARCH-067-MCP-001 | moda_mcp | Ready / Attempt0 unclaimed | ARCH-067-SHARED-002 |
+| ARCH-067-COMMERCE-001 | moda_commerce | Complete / Accepted Attempt1 | ARCH-067-SHARED-002 |
+| ARCH-067-MCP-001 | moda_mcp | Review / Awaiting completion | ARCH-067-SHARED-002 |
 | ARCH-067-BACKGROUND-001 | moda_background | Pending | ARCH-067-SHARED-002, ARCH-067-MCP-001 |
 | ARCH-067-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-067-COMMERCE-001, ARCH-067-BACKGROUND-001, ARCH-067-MCP-001 |
 
@@ -81,3 +81,6 @@ SHARED002AcceptedReviewAttempt1, explicitdevelopercompletionpending; public5.11.
 
 
 2026-11-09 explicitreleasecompletionfrontier: SHARED002CompleteAcceptedAttempt1, exact5.11.0receiptverified. Commerce001/MCP001ReadyAttempt0/unclaimed; Background001PendingMCP001; SystemTest001Pendingconsumerclosures/manualgate. No consumerexecution/deployment/gateenablement/tests/npm/main/live. Reader-firststock and defaultfalse referencegateuntilbothreadersremainmandatory.
+
+## Commerce accepted/completed frontier — 2026-11-09
+COMMERCE001 accepted and explicitly developer-completed Attempt1 at implementationcb7d002/report71d4be67. Independent20focused checks pass; owner129-test/type/lint evidence inspected. MCP001 Review is not Complete; BACKGROUND001 remains Pending until MCP001 Complete; SYSTEM-TEST001 Pending on BACKGROUND001/MCP001 (Commerce prerequisite satisfied). No downstream promotion/execution, rollout/gate enablement or architectureImplemented claim. Reader-first/manual operational gate preserved.
