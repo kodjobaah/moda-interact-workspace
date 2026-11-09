@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
 executor: codex
 claimed_at: 2026-11-09T13:56:31Z
@@ -33,6 +33,70 @@ All owned requirements above and architecture contract are implemented and verif
 No inventory mutation, new database table, token-refresh redesign, new template approval/WABA validation, category sequencing redesign or budget increase.
 
 ## Completion Report
+
+### Status
+
+Ready for Review — Attempt 2, R1 implemented with source and regression-test corrections. Implementation `ee342a14b3e5311fc34b2898b8ec65226aa30647` is committed/pushed; no architect acceptance decision has been made by this repository agent. Execution_mode agent and completion_mode developer remain unchanged.
+
+### Review correction R1 — implemented
+
+The complete Developer Self-Review Changes Requested for Attempt1 was read, including all required source and regression proofs. The separate Architect Review is still Not reviewed and is preserved. The correction checklist was: remove premature context mutation; commit the exact rendered context with successful final admission; prove failed-turn preservation and admitted replay with real SQL; run affected regressions/types/lint/build; publish both task branches.
+
+**Final behavior:** The turn processor no longer writes product context. After successful Shared composition it carries the proposed snapshot and exact native rendered pairs through the existing outbound admission service. Whole-message moderation and current allowance execute before the final recovery send fence. That fence retains Shop→Conversation→message locking, captured control revision, AI/recovery ownership, inbound version, STOP/reachability, customer window, durable eligibility and initial-outreach protections. Only after those checks and successful message permit update does a database-only context participant run inside the SAME short transaction.
+
+The context participant rechecks canonical recovery/shop/platform/inbound identity and the exact pending AGENT/OUTBOUND body, deterministic dispatch key and admitted message. It uses the existing public Shared schema/canonical JSON and literal-true write gate, 24-hour freshness, JavaScript/JSONB32768-byte checks, locked context row, sourceInboundVersion, canonical equality and revision-CAS update. Invalid context, foreign identity, size/TTL/version/body mismatch or CAS conflict throws a typed local error; the enclosing transaction rolls back BOTH the permit and context before returning suppression. No old snapshot is blindly restored over a concurrent writer. The superseded repository prepared-reply option and early processor write injection were removed.
+
+The prepared body can exist before moderation, but it cannot replace remembered presentation/reference state until its final permit is admitted. Moderation refusal, takeover, new inbound or final context conflict retain the previous context/presentation AND revision. A successful admission atomically binds the exact moderated body and native presentation snapshot to the durable message permit. Provider HTTP occurs only AFTER commit. Already-admitted/unknown provider outcomes retain that body/context under existing duplicate/replay fences; they do not regenerate a stock answer or mutate the stored count.
+
+**Preserved scope:** exact Shared5.11.0 public dependency/integrity, canonical fresh stock verification/composition, native full/first/minimal presentation receipts, selectedOptions propagation, legacy v1 readers, default-off emission gate and initial checkout-led outreach. No provider read, model call, network request, new generic logger, table, migration, permission or budget increase occurs inside the permit transaction. No package release or deployment.
+
+### Attempt 2 actual changed paths (11)
+
+- src/services/conversation-turn-processor.service.ts: removes early cache transaction/injection and forwards only a proposed, successfully rendered context to final admission; refused/replayed compositions do not propose a write.
+- src/services/outbound-whatsapp-admission.service.ts: typed optional local context handoff.
+- src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts: carries context after moderation into the recovery fence with the exact composed content; fails closed if recovery ownership is missing.
+- src/services/recovery-conversation/outbound-send-fence.service.ts: scopes context to AGENT/TEXT with expected version/body; commits context in the existing permit transaction and converts typed failures to suppression only after rollback.
+- src/commerce/product-context-repository.ts: removes the earlier prepared-body option; adds the database-only admitted-context participant using existing schema/normalization/gate checks and bound SQL parameters.
+- src/commerce/product-context-admission.test.ts: five real PostgreSQL delivery/permit tests with fixed clock and scripted moderation/provider seams. Covers moderation block, takeover during preparation, inbound-version advance, source/CAS conflict after the permit update, successful B admission and unknown-provider replay. Actual eligibility locks/permit/context SQL execute against the disposable database, not a mocked transaction.
+- src/commerce/product-context-repository.test.ts: removes the superseded PENDING-body atomicity test; the stronger final-admission cases replace it while all existing owner/TTL/size/locking/CAS regressions remain.
+- scripts/test-arch066-product-context-postgres.mjs: extends only the isolated fixture's existing shop/recovery/conversation/message fields and read-policy tables; runs both real-SQL suites. No production migration/schema change.
+- tests/unit/services/conversation-turn-processor/ai-wrapper.cases.ts: replaces assertions permitting an early write/no send with deferred exact-pair/body handoff and no submission on changed inbound, refused composition or replay.
+- tests/unit/services/conversation-turn-processor.service.test.ts: removes the obsolete early repository injection from the fixture.
+- tests/unit/services/recovery-conversation/arch055-claim-key.test.ts: corrects its stale shop SQL matcher to the already-existing status+platform query so the persisted human claim-key integrity assertion is actually reached. No production shop query or integrity rule changed.
+
+The historical Attempt1 report below lists the original21 paths. Its accepted dependency/stock/composition/gate work is retained; its premature persistence description is superseded here, not treated as acceptance.
+
+### Validation — final correction
+
+Canonical workspace bootstrap supplied Node24.19.0/npm11.17.0. Exact public Shared5.11.0 integrity was rechecked and is unchanged: sha512-VwVUszfUz0Bgs0alcnjJYK0m5bY7Jt9Nb/LuPRPgrWqk/JCFYqrWbzf7rnsXP2Z8EWlf4yfojbibnOQ4/9YyOg==.
+
+- Affected commerce/context/presentation, processor, outbound delivery/admission, wrapper, initial-outreach permit, recovery-service and claim-key suites: **240 passed, 10 skipped**, 20 files. Skips are opt-in database cases; all11 real database cases execute separately below. Command: `npx vitest run src/commerce tests/unit/services/conversation-turn-processor.service.test.ts tests/unit/services/outbound-whatsapp-admission.service.test.ts tests/unit/services/outbound-whatsapp-admission tests/unit/services/recovery-conversation/arch055-claim-key.test.ts tests/unit/services/recovery-conversation/initial-outreach-permit.test.ts tests/unit/services/recovery-conversation/recovery-conversation-services.test.ts tests/unit/services/conversation-wrappers`.
+- `npm run test:arch066-product-context:postgres`: **11 passed**, two suites, real isolated PostgreSQL. Four rejected-turn cases compare the full saved A row, including presentation/revision, to its pre-turn value and prove no durable permit/provider call. The context conflict occurs after permit update and proves permit rollback. The admitted B case verifies revision2/exact context/body, then an unknown provider outcome followed by a replay proposing a different body/context; original B/body/permit are unchanged and provider invocation remains exactly once. Processor duplicate-admission/replay guards remain covered by the affected suite; no live MCP/model/Meta call.
+- `npm run test:commerce-host`: **78 passed**, including original scripted follow-up/current-stock/tenant/authority/recommendation/initial behavior. No host logic changed after this run; final edits only corrected test-adapter types and a body input bound.
+- `npx tsc --noEmit`: passed, explicit exit0.
+- ESLint over all11 changed source/test/harness paths: passed, explicit exit0.
+- `npm run build`: passed, explicit exit0, including pinned Prisma generation, production/provision TypeScript and sample packaging.
+- `git diff --check` and staged diff check: passed. Package/lock/database gitlink unchanged in Attempt2.
+
+Earlier in this attempt the broader regression run exposed the stale claim-key fixture matcher; it was corrected as described above and all240 cases passed. New fixture adapter type/lint issues were corrected; final compiler/lint/build exited0. These are resolved validation findings, not baseline exemptions. The separate pre-existing full-repository no-control-regex failure at src/providers/shopify-whatsapp-consent.provider.ts:151 remains byte-identical to Attempt1; required changed-path lint is clean. Full lint was not redundantly repeated without a change to that known file.
+
+Local receipts: /tmp/arch067-bg-r2-verified-tests.log, /tmp/arch067-bg-r2-verified-postgres.log, /tmp/arch067-bg-r2-host.log, /tmp/arch067-bg-r2-types-final.log, /tmp/arch067-bg-r2-lint-final.log and /tmp/arch067-bg-r2-build-final.log. The existing harness created/removed only its disposable fixture container; no shared development/test/production database was reset, seeded or modified.
+
+### Git / VCS and isolation — Attempt 2
+
+Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace; reused parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-067-BACKGROUND-001 and implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-067-BACKGROUND-001; both branches task/ARCH-067-BACKGROUND-001. No shared checkout switched, other task worktree reused, or subagent assistance.
+
+Launcher dependency gate passed both prerequisites Complete; both remote task fast-forwards not needed and origin/main already current. Recursive submodule sync/update passed with database b7f58d5a93e41d54b2fd92a5d483aec4c2c5b595 unchanged. Parent preclaim717dcb80600e37e5031afb460fafdd42399ce963; implementation baseline8374d721a30a6ae7ec78a4b588c82bb7cdc06a17. Attempt2 codex claim at2026-11-09T13:56:31Z, parentbc7b7382230f69e31ada1ec7d623c890d3ae829b, committed/pushed by launcher.
+
+Implementation correction ee342a14b3e5311fc34b2898b8ec65226aa30647 is committed/pushed to origin/task/ARCH-067-BACKGROUND-001 and the implementation worktree is clean. This matching parent report is committed/pushed on its task branch. No main merge/push, force push, feature gitlink staging, package publication, migration, deployment or real customer message.
+
+### Handoff
+
+R1 source and test corrections are implemented and returned for review. Keep COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED absent/false until both Background and Studio5.11.0 readers have deployment receipts and the terminal manual operational gate is recorded; deploy readers before the MCP stock writer. No rollout/gate enablement or terminal end-to-end parity is claimed. Downstream task/index/architecture state remains unchanged pending authorized review/completion. The previous Changes Requested record is preserved below; this implementation agent makes no acceptance/completion decision.
+
+## Attempt 1 implementation report — historical and superseded
+
+The persistence-boundary claims in this historical submission were rejected by R1 and are superseded by the Attempt 2 Completion Report above. Validation receipts below describe Attempt 1, not a passing review.
 
 ### Status
 
