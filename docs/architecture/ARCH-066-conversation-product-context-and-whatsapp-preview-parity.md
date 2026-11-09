@@ -161,10 +161,14 @@ Preserve the checkout-led scope and all accepted historical releases. The produc
 Background002 explicitly CompleteAcceptedAttempt2 at35a0e227f (source0a601031/review806d17ad); canonical Commerce001CompleteAttempt3 remote181bd35f and Shared005/012Complete verified. Exact completed dependency records materialized here. Commerce002ReadyAttempt0/unclaimed, execution/completion developer retained; exact5.9.0 pin/strict brand/media mapping and common frozen fixture handoff in task. No implementation worktree/claim/execution. SystemTest001 alreadyReady/manual-gated, SystemTest002Pending on Commerce002; no main/live/npm/follow-on action.
 
 
-### 2026-11-09 Commerce002 blocked public sender boundary
-Attempt1 implements isolated checkout reader/evaluator/store/HTTP/UI foundations, but production composition intentionally refuses503 CONFIGURATION/SENDER_UNAVAILABLE. No live read/approved template claim is accepted. The configured WABA currently exists only inside Admin-owned sealed messaging.sender with tokens; Commerce must not decrypt it or infer current identity from a saved template assignment. A public messaging.senderIdentity projection with same-environment/current-active source-version fence is required. Existing shopBrand.publicMedia is separately public and remains in Commerce reader scope.
+### 2026-11-09 configured sender public identity boundary
+Commerce initial outreach remains blocked until a least-privilege public configured WABA projection exists. Never decrypt messaging.sender in Commerce or infer configured identity from template assignment. SHARED013 defines the strict public schema; SHARED014 publishes it; ADMIN001 atomically derives messaging.senderIdentity beside sender secret mutation with a current-active source-version fence. COMMERCE002 then consumes the published projection and metadata without secret values. No database/infrastructure change or live backfill is authorized.
 
-Correction definitions are locally committed in canonical parent branches: ARCH-066-SHARED-013 strict public contract (Ready); ARCH-066-SHARED-014 publication (Pending013); ARCH-066-ADMIN-001 atomic derived projection writer (Pending014). They are not remotely published: automatic approval review rejected new correction-branch publication pending explicit authorization. No correction implementation began. Commerce002 remains Blocked, sameAttempt1; all original live adapter/template/media/authorization/lifecycle/parity requirements remain, not automatically satisfied by the correction. SYSTEM-TEST002 stays gated. No new DB schema/infrastructure/live mutation or standalone outreach scope is introduced.
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-066-SHARED-013 | moda_shared | Ready | ARCH-066-SHARED-012 |
+| ARCH-066-SHARED-014 | moda_shared | Pending | ARCH-066-SHARED-012, ARCH-066-SHARED-013 |
+| ARCH-066-ADMIN-001 | moda_admin | Pending | ARCH-066-SHARED-014 |
 
 
 2026-11-09 correction definition publication update: developer explicitly authorized the three prepared branches; SHARED013/014/ADMIN001 definitions are now remotely verified at201f3922e/af5e4bc6a/90e6bb38d respectively. This supersedes prior local-only publication limitation, not Commerce002 Blocked status or any implementation acceptance. SHARED013Ready;014/Admin001Pending. No claim or implementation started.
