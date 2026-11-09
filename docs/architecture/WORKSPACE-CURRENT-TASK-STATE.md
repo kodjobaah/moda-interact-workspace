@@ -1979,3 +1979,10 @@ COMMERCE002 Accepted at ReviewAttempt2, explicitdevelopercompletionpending. Sour
 
 
 2026-11-09 explicitCommerce002completionfrontier: COMMERCE002CompleteAcceptedAttempt2/claimnull source40b59e7/reviewbffd7e9verifiedcleanpublished. SystemTest002ReadyAttempt0/unclaimed, execution/completiondeveloper and manualcheckpoint preserved; SystemTest001alreadyReadyunchanged. Latest5.10Studio-only/parityamendment controls, Background5.9productionfencesretain. No tests/main/live/npm/follow-onexecution; architectureInProgress/manualterminalvalidationremaining.
+
+
+## ARCH-067 Shared stock/reference contract review — 2026-11-09
+SHARED001AcceptedReviewAttempt1, source467cc1a clean/published, explicitdevelopercompletionpending;168tests/typecheck/build/publicruntime+types/browser pass. Exactoptionalstock, canonicaloneOf/constcompiler unchangedbounds, v1orderedpresentation/options andfreshstockfacts/localizedcomposition implemented. SHARED002Pending; allconsumers/systemtasksremain gated. Reader-firstdeployment and defaultfalse referencewritegate mandatory; no release/live/main/follow-onexecution or architectureImplementedclaim.
+
+
+2026-11-09 ARCH067developercompletion: SHARED001CompleteAcceptedAttempt1/claimnull; SHARED002ReadyAttempt0unclaimed publication-only andcanonicalparentdefinitionmaterialized. AllconsumersPendingpublication; reader-firststock and defaultfalse referencewritegateuntilbothreaders mandatory. No tests/release/main/live/follow-onexecution; architectureInProgress.
