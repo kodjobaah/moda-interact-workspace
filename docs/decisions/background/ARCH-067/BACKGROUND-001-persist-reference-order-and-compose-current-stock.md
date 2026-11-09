@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: review
+status: ready
 priority: 20
-executor: codex
-claimed_at: 2026-11-09T12:28:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-067-SHARED-002", "ARCH-067-MCP-001"]
 created: 2026-11-09
@@ -36,7 +36,7 @@ No inventory mutation, new database table, token-refresh redesign, new template 
 
 ### Status
 
-Ready for Review — Attempt 1 implemented and published by codex. No architect acceptance decision has been made by this repository agent. Execution remains agent-owned and completion remains developer-controlled.
+Changes Requested — reviewed Attempt 1 on 2026-11-09. One required persistence-lifecycle correction remains; the implementation report below is preserved as submitted evidence and does not establish acceptance. Status Ready, executor/claimed_at null, attempt 1 unchanged.
 
 ### Implemented behavior and acceptance evidence
 
@@ -113,3 +113,27 @@ StillPendingunchangedAttempt0/unclaimed: MCP001notComplete. Publicationavailabil
 
 ## Dependency readiness reconciliation — 2026-11-09
 All explicit prerequisites Complete: SHARED002 accepted immutable5.11.0 and MCP001 independently Accepted/developer-completed Attempt1 (completion1ecd2038e). Exact current MCP completion record carried in this canonical parent branch. Pending→Ready at unchanged Attempt0, executor/claimed_at null; ownership/execution_mode agent/completion_mode developer unchanged. Read exact published5.11.0/integrity from handoff. No claim/implementation worktree or task execution initiated; normal deterministic preparation required on invocation. Reader-first deployment and literaltrue-only default-off reference-write gate remain mandatory and unexecuted.
+
+## Developer Self-Review — Changes Requested, Attempt 1
+
+2026-11-09: Explicit `/moda_developer_update ARCH-067-BACKGROUND-001` authorizes developer-as-architect review of this submitted agent implementation. Execution_mode agent and completion_mode developer are preserved; this review is not an execution takeover or a new claim. Reviewed the complete task/architecture requirements, 21-path implementation diff from b583f8154f8382748a73dfd039ab6c22806e307c, provider fact/presentation paths, persistence transaction, delivery/moderation ordering, tests, published package receipt and recorded validation/isolation evidence.
+
+### Publication and validation reconciliation
+
+Both dedicated task worktrees were clean before this review. Source8374d721a30a6ae7ec78a4b588c82bb7cdc06a17 and parent report799428b6d1195d7316f64360fe76c74aacc49dbb match their respective local HEAD/tracking refs and directly queried remote task refs. Exact Shared5.11.0 public pin/integrity, default-false literal gate, verified native render receipts and existing source/DB worktree isolation were reconciled. No subagent assistance or source change occurred during review.
+
+Fresh focused command `npx vitest run src/commerce/product-context-write.test.ts src/commerce/presentation-receipt.test.ts src/commerce/presentation.test.ts tests/unit/services/conversation-turn-processor.service.test.ts` passed **91/91**, no failures/skips; local receipt /tmp/arch067-bg-review-tests.log. Earlier312 regression tests,78 host cases,7 PostgreSQL cases,18 final receipt tests, type checking/build and changed-path lint remain relevant for unchanged source. The full-lint error in untouched Shopify consent code is accurately disclosed and is not the reason for Changes Requested. Passing existing tests do not cover the required failed-turn persistence invariant below.
+
+### R1 — [P1] Do not replace remembered presentation before final delivery eligibility succeeds
+
+**Evidence:** src/services/conversation-turn-processor.service.ts:641-645 commits product context/presentation and the PENDING composed message before the post-transaction control/inbound checks at652-658 and before sendPreparedText at662. The latter still performs admission revalidation, whole-message moderation at src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts:118-120 and final provider fence at122-128. Any of these can suppress delivery after the context transaction has committed; no rollback/restoration follows. The current test tests/unit/services/conversation-turn-processor/ai-wrapper.cases.ts:47-56 expressly expects a successful context write and then no send on an inbound race. Repository PostgreSQL tests establish that WRITTEN is durable, not a tentative update.
+
+**Impact:** With the reference gate true, a moderated/obsolete reply can replace the last successfully displayed ordered list even though that reply never reaches the customer. The next “first one”/option follow-up can target an unseen product. Even with the gate false, failed turns can replace the general reference snapshot. This contradicts the normative ARCH-067 requirement “Failed turns leave previous context/presentation unchanged.” Atomicity with a PENDING body alone does not meet that lifecycle guarantee.
+
+**Required source correction:** Coordinate persistence with the existing successful durable reply-admission/application boundary, retaining moderation, control/inbound version, tenant, message ownership, CAS and provider permit protections. For a turn refused or superseded before final admission, leave the prior reference/presentation snapshot and revision unchanged. Keep the exact chosen composed body and its native presentation pairs atomic at the successful boundary; do not solve this by holding a database transaction over a network send, blindly restoring an old context over a concurrent winner, introducing a new table/schema, or weakening moderation/send/replay fences. Preserve explicit behavior for already-admitted/unknown provider outcomes through the existing replay machinery rather than regenerating facts or text.
+
+**Required regression proof:** Add deterministic orchestration plus real-transaction coverage starting with a previously presented list A and proposing B. Demonstrate that (1) whole-message moderation refusal, (2) takeover/new inbound arriving during preparation, and (3) final pre-admission/version/CAS rejection leave A and its revision intact and do not send B. The existing race test must assert retained state, not only a call to write followed by no send. A successful eligible turn must durably store B with its exact composed stock body and rendered order once; replay must retain that body/context without an extra provider fact read or a changed stock count. Run affected processor/delivery/context/presentation tests, the isolated PostgreSQL transaction cases, type checking/build and changed-path lint. Keep the unrelated full-lint limitation explicit unless separately resolved within authorized scope.
+
+### Decision
+
+Changes Requested; no passing acceptance or completion decision. Attempt1 unchanged; status Ready; executor and claimed_at null. The next authorized execution claim creates Attempt2 exactly once on the same canonical branch/worktrees. No source implementation was changed, no downstream task promoted, no architecture/index altered, and no main merge/push, feature gitlink update, package publication, deployment or gate enablement occurred. The separate Architect Review placeholder is preserved; this developer review is the durable correction contract for the next attempt.
