@@ -199,3 +199,7 @@ Developer completion is required before any dependant promotion. BACKGROUND002 r
 
 ## Developer Completion Decision — 2026-11-08
 Developer explicitly invoked `/moda_developer_update ARCH-066-BACKGROUND-001 complete`. Durable Accepted Attempt2 review344b8815043259f98e8eff83631a770aff481fb3 and final implementation44e92f8b0d4c633055e2a639a2d768b18599ea38 independently verified clean/published on matching canonical task branches. Complete at unchanged Attempt2; executor/claimed_at remain null. Named scenario/parity acceptance is satisfied; architect's explicit unchanged consent-provider151 full-lint limitation remains, never claimed passing. Checkout-led withdrawal/immutable release and historical attempts preserved. No main/gitlink/live/release/follow-on execution. BACKGROUND002 now eligible Ready on Complete001/Shared005; Commerce001 remains canonical Review, so SystemTest001 remains Pending/manual-gated.
+
+### Pull reconciliation — 2026-11-08
+
+The checkout-led requirements above are preserved as scope history. Later published Accepted reviews/completion decisions and immutable release evidence in this file remain authoritative; the earlier requirement to review before acceptance does not reopen those accepted attempts. Current required product-detail correction artifact is the accepted SHARED-010 release (5.8.0); earlier5.7.0 handoff text remains historical. No lifecycle decision, execution or new release is authorized by this pull reconciliation. Terminal system-test execution remains manually gated.
