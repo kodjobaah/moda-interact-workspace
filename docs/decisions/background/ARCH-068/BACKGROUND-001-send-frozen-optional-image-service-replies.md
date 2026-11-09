@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -117,3 +117,7 @@ Script `--apply` is opt-in and a separate operator action. Implementation comple
 
 ## Database dependency reconciliation — 2026-11-09
 DATABASE001 Complete at independently Accepted Attempt1, implementation75669477. This prerequisite is satisfied; task remains Pending because SHARED003 publication is still Pending. No claim, attempt increment or implementation started. Deploy accepted migration before referencing the new field; accepted source does not imply deployment.
+
+## Accepted publication handoff — 2026-11-09
+SHARED003 is Complete / independently Accepted Attempt1. Install exactly `@modainteract/moda-interact-shared@5.12.0`, registry https://registry.npmjs.org/, SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==`, tarball SHA256 `e4416c765079a6c8c8ca04894e87e3822c3af0acf19428a5d3f542effe697393`. Release source `12d0b85aaeefba4dfc46bb12637004f19d462b19` includes both accepted Shared capabilities. Use browser-safe `/commerce/presentation` for contracts and Node-only `/commerce/presentation/node` for media preparation; no sibling source import or copied generic mechanics. Ready at unchanged Attempt0, executor/claimed_at null; no claim or implementation begins here.
+DATABASE001 is also Complete / Accepted Attempt1 (source75669477); both explicit dependencies are satisfied. Migration deployment remains a separate rollout prerequisite before runtime use.
