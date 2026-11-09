@@ -14,7 +14,7 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-SHARED-012", "ARCH-066-SHARED-014", "ARCH-066-ADMIN-001"]
+depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-SHARED-012"]
 enables: ["ARCH-066-SYSTEM-TEST-002"]
 created: 2026-11-08
 updated: 2026-11-09
@@ -115,3 +115,8 @@ SHARED013 strict public configured-sender schema → SHARED014 exact publication
 
 ## Correction definition publication reconciliation — 2026-11-09
 Developer explicitly authorized publishing the three prepared definition branches after the earlier automatic approval rejection. Normal pushes succeeded and exact remote hashes verified: SHARED013201f3922e06c59a3387e78b509821a562a9f4b25 (ReadyAttempt0/unclaimed), SHARED014af5e4bc6afa25fdc3d92147e2054f8e26a8e9c23 (PendingAttempt0/unclaimed), ADMIN00190e6bb38d7677a9f691ef0e85960921a9b362a05 (PendingAttempt0/unclaimed). Historical local-only/publication-blocked notes above are superseded only as to definition availability. No implementation worktree/claim/release/follow-on started. Commerce002 remains BlockedAttempt1, claim cleared; all outstanding live and lifecycle acceptance remains required. Next authorized execution entrypoint is /moda-task ARCH-066-SHARED-013.
+
+
+## Sender prerequisite withdrawal — 2026-11-09
+
+User withdrew configured-sender projection and template-validation requirements for Studio. SHARED013/014 and ADMIN001 are not prerequisites. Historical sender blocker is superseded; do not implement these withdrawn tasks. COMMERCE003 owns removal of the preview gates using SHARED016 preview-only rendering; retain all other unfinished acceptance and Blocked Attempt1 status until rework is reviewed. No Background production checks are changed. No task is accepted/completed by this amendment.
