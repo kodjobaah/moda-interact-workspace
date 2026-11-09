@@ -55,6 +55,5 @@ No deployment occursbytaskclaim/Complete. Newreadersacceptlegacystock, oldstrict
 
 StillPendingunchangedAttempt0/unclaimed: MCP001notComplete. Publicationavailability alone doesnotclearMCPdependency.
 
-## Dependency frontier reconciliation — 2026-11-09
-
-Shared002 Complete with exact published Shared5.11.0 receipt; MCP001 explicitly Complete, Accepted Attempt1, implementation9b5fa5680905930e65c89a0a6bf3e7b3546ef633. Both explicit dependencies are Complete. Ready, unchanged Attempt0, executor/claimed_at null. Earlier Pending handoff is historical. No implementation worktree or claim created by readiness. Import the exact published Shared5.11.0 handoff above. Deploy both upgraded readers before the MCP stock writer; preserve default-false context emission until the manual gate.
+## Dependency readiness reconciliation — 2026-11-09
+All explicit prerequisites Complete: SHARED002 accepted immutable5.11.0 and MCP001 independently Accepted/developer-completed Attempt1 (completion1ecd2038e). Exact current MCP completion record carried in this canonical parent branch. Pending→Ready at unchanged Attempt0, executor/claimed_at null; ownership/execution_mode agent/completion_mode developer unchanged. Read exact published5.11.0/integrity from handoff. No claim/implementation worktree or task execution initiated; normal deterministic preparation required on invocation. Reader-first deployment and literaltrue-only default-off reference-write gate remain mandatory and unexecuted.
