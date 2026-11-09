@@ -4,5 +4,5 @@
 
 | Task | Status | Dependencies |
 |---|---|---|
-| [ARCH-067-SHARED-001](SHARED-001-define-product-reference-and-stock-contract.md) | Ready | None |
+| [ARCH-067-SHARED-001](SHARED-001-define-product-reference-and-stock-contract.md) | In Progress, Attempt1 | None |
 | [ARCH-067-SHARED-002](SHARED-002-publish-reference-and-stock-contract.md) | Pending | ARCH-067-SHARED-001 |

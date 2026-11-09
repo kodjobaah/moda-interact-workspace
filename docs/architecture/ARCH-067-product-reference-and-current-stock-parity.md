@@ -1,3 +1,11 @@
+---
+id: ARCH-067
+title: Remember product identity and verify current stock
+status: in_progress
+coordinator: moda_architect
+created: 2026-11-09
+updated: 2026-11-09
+---
 # ARCH-067 — Remember product identity and verify current stock
 
 ## Binding decisions
@@ -34,3 +42,19 @@ Additive wire fields require Shared correction publication before consumers. Bot
 
 ## Test determinism and public dependencies
 Contract tests use scripted model replies with exact native pair selections, fixed clock and provider fixtures; do not assert success from nondeterministic live model phrasing. Add model request serialization assertions for the latest presentation order and selectedOptions. Optional manual model smoke is additional evidence only. Stock/reference normalization must live in Shared exported pure helpers `normalizeCommerceStockQuantity(value)` (safe integer -> max(0,value), otherwise null), with host provider-specific tracking/scope mapping only; do not duplicate generic count validation. Existing product result output contracts and persisted tool/release schemas must include the additive stock field; update generated bootstrap artifacts and verification fingerprints through their existing scripts, never directly patch database releases. No sync/apply command runs automatically. For schema equality tests compare the built public Shared schema used by both adapters.
+
+
+## Ownership and implementation clarification — 2026-11-09
+SHARED001 owns the pure public stock/count/reference/fact/composition APIs and Shared runner/modelrequest propagation. Actual instructions file is src/commerce/runner/instructions.ts, superseding the task shorthand instructions.ts. Generated producttool JSONschemas derive from CommerceProductSchema via existing generation; prove the built public output schema includes stock, do not invent a Sharedbootstrapgenerator. Provider-specific tracking/scope/diagnostic reason mapping belongs Commerce/MCP; Background/Commerce own finalverification lifecycle logging and atomic reply/context persistence. Shared purehelpers do not instantiate a competinglogger or persist stockauthority; hosts retain existing Sharedstructuredlogger/eventfamilies and correlation. No new telemetrysignal or infrastructuretopology is required: bounded fields extend existing domain diagnostics; no transport/gateway task. The explicitserverwritegate and deployment-order checklist remain consumer/system-test responsibilities, not enabled in Shared001.
+
+## Decisions / Tasks
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-067-SHARED-001 | moda_shared | In Progress | None |
+| ARCH-067-SHARED-002 | moda_shared | Pending | ARCH-067-SHARED-001 |
+| ARCH-067-COMMERCE-001 | moda_commerce | Pending | ARCH-067-SHARED-002 |
+| ARCH-067-MCP-001 | moda_mcp | Pending | ARCH-067-SHARED-002 |
+| ARCH-067-BACKGROUND-001 | moda_background | Pending | ARCH-067-SHARED-002, ARCH-067-MCP-001 |
+| ARCH-067-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-067-COMMERCE-001, ARCH-067-BACKGROUND-001, ARCH-067-MCP-001 |
+
+Terminal systemvalidation remains developer-manual-gated after all actual prerequisitesComplete; no automaticconsumer/system execution or architectureImplemented claim. Existing publishedwire/contracts and persistedv1JSON require compatible reader-first rollout, no schema migration.
