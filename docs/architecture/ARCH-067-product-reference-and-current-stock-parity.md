@@ -51,9 +51,9 @@ SHARED001 owns the pure public stock/count/reference/fact/composition APIs and S
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-067-SHARED-001 | moda_shared | Complete / Accepted Attempt1 | None |
-| ARCH-067-SHARED-002 | moda_shared | Review / Accepted Attempt1, developer completion pending | ARCH-067-SHARED-001 |
-| ARCH-067-COMMERCE-001 | moda_commerce | Pending | ARCH-067-SHARED-002 |
-| ARCH-067-MCP-001 | moda_mcp | Pending | ARCH-067-SHARED-002 |
+| ARCH-067-SHARED-002 | moda_shared | Complete / Accepted Attempt1 | ARCH-067-SHARED-001 |
+| ARCH-067-COMMERCE-001 | moda_commerce | Ready / Attempt0 unclaimed | ARCH-067-SHARED-002 |
+| ARCH-067-MCP-001 | moda_mcp | Ready / Attempt0 unclaimed | ARCH-067-SHARED-002 |
 | ARCH-067-BACKGROUND-001 | moda_background | Pending | ARCH-067-SHARED-002, ARCH-067-MCP-001 |
 | ARCH-067-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-067-COMMERCE-001, ARCH-067-BACKGROUND-001, ARCH-067-MCP-001 |
 
@@ -78,3 +78,6 @@ Optionalstock permits NEW readers to consume legacyoutputs; it does not make OLD
 
 ## Immutable stock/reference publication review — 2026-11-09
 SHARED002AcceptedReviewAttempt1, explicitdevelopercompletionpending; public5.11.0 exactrelease-source1ad0d7c47c0a9e1d3d12072b62e238aec1cc92fe versionmetadataonly. Accepted001source/dist reused140filesbyte-identical, no implementationreruns. Downloaded453336byte/145file archiveSHA25628db9055f58355fb9779b190beb0eccda356e20fd9a52cf0b753cd1564789309 andintegrity sha512-VwVUszfUz0Bgs0alcnjJYK0m5bY7Jt9Nb/LuPRPgrWqk/JCFYqrWbzf7rnsXP2Z8EWlf4yfojbibnOQ4/9YyOg== matchregistry/localreviewedbytes; installedpublicruntime/declaration imports verify stock/reference/canonicalcompiler andallpriorpublicexports. ConsumerstatusesremainPendinguntil002actuallyComplete. Publishedavailability isnot deploymentapproval: readersbeforeMCPstockwriter, referencewritegatefalseuntilbothreaders, no source/main/live/consumerexecution.
+
+
+2026-11-09 explicitreleasecompletionfrontier: SHARED002CompleteAcceptedAttempt1, exact5.11.0receiptverified. Commerce001/MCP001ReadyAttempt0/unclaimed; Background001PendingMCP001; SystemTest001Pendingconsumerclosures/manualgate. No consumerexecution/deployment/gateenablement/tests/npm/main/live. Reader-firststock and defaultfalse referencegateuntilbothreadersremainmandatory.
