@@ -4,4 +4,7 @@
 
 | Task | Status | Dependencies |
 |---|---|---|
-| [ARCH-067-COMMERCE-001](COMMERCE-001-retain-references-and-render-current-stock.md) | Pending | ARCH-067-SHARED-002 |
+| [ARCH-067-COMMERCE-001](COMMERCE-001-retain-references-and-render-current-stock.md) | Ready / Attempt0 unclaimed | ARCH-067-SHARED-002 |
+
+
+2026-11-09 exactpublicartifact5.11.0/integrityrecorded; reader-firstdeployment/referencegatefalse mandatory. Readyunclaimed; no execution.
