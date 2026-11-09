@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: codex
 claimed_at: 2026-11-09T20:42:01Z
@@ -72,11 +72,11 @@ Finish the partial responseStyle AGENT work in compose.ts: explicit `responseSty
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
-- [ ] Verify dependencies and current owned source against binding touch points.
-- [ ] Implement every requirement in the owned scope and binding contract.
-- [ ] Add deterministic success/failure/compatibility tests specified above.
-- [ ] Run declared repository validation and record exact evidence.
-- [ ] Publish implementation and parent report on mirrored task branches for review.
+- [x] Verify dependencies and current owned source against binding touch points.
+- [x] Implement every requirement in the owned scope and binding contract.
+- [x] Add deterministic success/failure/compatibility tests specified above.
+- [x] Run declared repository validation and record exact evidence.
+- [x] Publish implementation and parent report on mirrored task branches for review.
 
 ## Dependencies
 None; Ready for normal agent launch. No claim yet.
@@ -91,7 +91,52 @@ No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
-Not started. Record changed paths, exact source SHA, isolated worktree/preparation evidence, tests with counts, public package version/integrity where consumed, dependency evidence, and any remaining risks.
+
+### Status
+
+Ready for Review — Attempt1, implemented by moda_shared/codex. No architect acceptance/completion decision is made by this implementation agent; completion_mode automatic remains subject to authorized review.
+
+### Implementation and actual changed paths (7)
+
+- src/commerce/presentation/product-image.ts: exact strict binding, prepared JPEG, native pair, verified provenance envelope, SOURCE and TEXT/IMAGE plan schemas with exported z.infer types. Reuses CommerceProductSchema native validators, existing Zod and stableJson; no new native ID format or browser crypto dependency. Prepared media preserves width1125/height600/JPEG, lowercase SHA256/key shape and strict byteLength<5MiB.
+- Same file exports chooseConversationProductImageSource: strict max3 unique displayed/native verified pairs, required platform, exact envelope tenant/platform check BEFORE reading product fields/URLs, exact first pair only. Missing first product/image never substitutes another product/variant/logo/history/model URL. Invalid/non-HTTPS URL omits without network I/O. Provenance/schema mismatch uses PRODUCT_IMAGE_IDENTITY_INVALID; the host still owns authorization/fresh read provenance.
+- Same file exports buildConversationDeliveryPlan: validates wrapped body/control characters and binding first; present invalid binding throws PREPARED_INVALID. Exact precedence BINDING_DISABLED → NO_PRESENTED_PRODUCT → CAPTION_TOO_LONG → IMAGE_UNAVAILABLE → IMAGE_IDENTITY_MISMATCH → IMAGE success. Valid text is retained in full; no truncation, extra send or model call. 4096 UTF16 text bound and1024 Unicode-code-point image caption bound are distinct. Exact first pair/shop match is checked before any prepared URL is emitted. digestConversationDeliveryPlan hashes the complete validated plan through injected existing digest and stableJson.
+- src/commerce/presentation/wrapper-contracts.ts: optional structured productImage on PreparedWrapper, not an inline variable/token or Meta binding. Omission remains omission.
+- src/commerce/presentation/wrapper-projection.ts: permits only the single additional compiled key, validates strict binding, includes it in original immutable hash verification/returned projection, preserves legacy output/hashes without null/default materialization. Unknown/nonoptional/duplicate-shaped/model-URL binding refuses. No Admin authoring AST/compiler is copied into Shared; Admin consumes the exported binding schema in its own task.
+- src/commerce/presentation/wrapper-render.ts: direct runtime invocation also refuses an invalid present binding; valid optional media never changes existing body rendering or checkout/variable/control/bounds behavior.
+- src/commerce/presentation/compose.ts: explicit responseStyle AGENT uses one complete normalized envelope.replyText candidate across valid dispositions, after existing envelope/projection and selection validation. Exact selected detail/option pairs must match ordered verified facts; mixed/invalid/unobserved selections refuse. No deterministic fact substitution, prose-to-identity matching, body slicing or shortening model call. Legacy/omitted style keeps the old deterministic behavior. Host authorization/verification remains authoritative for recommendation projections, as before.
+- src/commerce/presentation/index.ts: browser-safe public schema/type/helper exports.
+- src/commerce/presentation/product-image.test.ts: strict shape/byte/key/hash checks; both platforms' variants and Woo simple identity; first-only/missing image/foreign provenance/duplicate pairs; exact first variant mismatch; omission precedence; Unicode1024/1025 and text4096/4097; full text/digest identity; legacy hash/projection and tampered binding; agent details/options/recommendations/policy dispositions; mixed/foreign selection/control refusal; foreign envelope getter test proves URL is never inspected before tenant/platform rejection.
+
+No package manifest/lock/version change, no Node media pipeline, dependency addition, provider/configuration lookup, application code or database change. Existing brand/outreach/initial Meta behavior is outside this pure contract task and unchanged. No sibling source/internal-dist imports. Current package metadata stays5.11.1; this task does NOT publish it or assert a new registry integrity receipt. SHARED-002 extraction and SHARED-003 immutable publication remain separate owned tasks.
+
+### Validation
+
+Canonical workspace bootstrap supplied Node24.19.0/npm11.17.0. npm ci --ignore-scripts installed the existing lock without tracked dependency changes. No live model/provider, public R2 write, Meta send, initializer or infrastructure was launched.
+
+- Declared `npm test`: **659 passed, 0 failed, 3 existing opt-in skips** (662 cases). Runs the complete Shared regression suite, including unrelated legacy contracts. It completed before the final two focused additions/pre-URL guard; that bounded final change was then revalidated below rather than redundantly rerunning all unrelated tests.
+- Final `node --import tsx --test src/commerce/presentation/*.test.ts`: **27 passed, 0 failed/skipped**, including the final provenance-before-URL test and all old presentation/fact tests. Existing legacy20-locale/60 golden output vectors remain byte-identical.
+- Final `npm run typecheck`: passed, exit0.
+- Final `npm run build`: passed, exit0; ESM and declaration outputs generated for public entrypoints.
+- Final `npm run validate:commerce-presentation`: passed, exit0; package self-import plus browser-like bundled execution. Bundle rejects Node/Prisma/logging/observability/LangChain imports in presentation.
+- Additional public smoke: all nine new named runtime exports present; delivery planning and provenance selection execute in a browser VM. A temporary public consumer imported all six schema-derived types and helpers against built declarations with NodeNext tsc: passed. Temporary fixture removed. The final guard changes no public shape/export; final build/browser validation were rerun afterward.
+- git diff --check and staged diff check: passed. Repository declares no lint script; none invented. No resource/security budget raised. Initial test fixture import/type narrowing was corrected before final checks; malformed URL parsing was hardened to omit instead of throw, and final provenance check order explicitly tested. No unresolved validation failure or source conflict remains.
+
+Local receipts: /tmp/arch068-shared001-all-tests.log, /tmp/arch068-shared001-verified-focused.log, /tmp/arch068-shared001-verified-types.log, /tmp/arch068-shared001-verified-build.log, /tmp/arch068-shared001-verified-public.log, /tmp/arch068-shared001-public-smoke.log, /tmp/arch068-shared001-declarations.log. These are local logs, not separately published artifacts.
+
+### Git / VCS and physical worktrees
+
+Task branch task/ARCH-068-SHARED-001 in both repositories. Canonical workspace /Users/kwadwoadomafriyie/project/moda-interact-workspace. Reused parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-068-SHARED-001; created implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-068-SHARED-001. No shared/default checkout switched for task implementation; no previous task worktree reused; no subagent assistance.
+
+Launcher dependency gate passed (no dependencies); both remote task fast-forwards not needed and origin/main already current. Recursive implementation submodule sync/update passed, no entries. Parent preclaimad865cdcb9d6e998ccebe949189259223f7efa38; implementation baseline608e60b8758de809ace2c6f89755e1c357616278. Durable codex Attempt1 claim at2026-11-09T20:42:01Z, parent113804306f81413ffe9e1c6f608942881d61e04c, committed/pushed by launcher.
+
+Implementation moda-interact-shared commit0b06467c37cbc4cd6ce67fcfa6e9c3fd7da66822 committed/pushed to origin/task/ARCH-068-SHARED-001; implementation worktree clean. This matching parent report is committed/pushed on its task branch. No submodule gitlink staged; no main merge/push/force-push. No package publication or host activation.
+
+### Review and downstream handoff
+
+Read complete Architect Review: Not reviewed; no Changes Requested list. Preserved that section and all coherence amendments. All owned Work Items are implemented and submitted for review; source/compatibility validation does not claim cross-host authorization, image preparation or final sending. Consumers must construct the provenance envelope from fresh authorized reads and retain exact displayed pair order associated with complete AGENT prose; Shared cannot authenticate a plain product object.
+
+SHARED-002 may consume these source contracts only after the prerequisite is actually Complete; SHARED-003 owns final publication/version/archive/integrity evidence. Consumers adopt the recorded public release and compatible readers before Admin activation. No downstream status/index/architecture change made by this repository agent. No production mutation, live initializer, deployment, R2/provider I/O or real message occurs here.
 
 ## Architect Review
 Not reviewed.
