@@ -7,7 +7,7 @@ domain: commerce
 repository: moda-interact-commerce
 assigned_agent: moda_commerce
 coordinator: moda_architect
-execution_mode: developer
+execution_mode: agent
 completion_mode: developer
 status: ready
 priority: 50
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-SHARED-012"]
 enables: ["ARCH-066-SYSTEM-TEST-002"]
 created: 2026-11-08
-updated: 2026-11-08
+updated: 2026-11-09
 ---
 # Test initial outreach using live checkout product data
 
@@ -61,3 +61,6 @@ SHARED-005 is Complete at accepted Attempt1, with accepted immutable `@modainter
 ## Corrected publication / readiness handoff — 2026-11-08
 All explicit prerequisites Complete: Shared005/012, Commerce001 canonical remote181bd35f at Attempt3, Background002 AcceptedAttempt2 explicitly completed. Ready at unchanged Attempt0/unclaimed; execution/completion developer retained. Use `/moda_developer_create ARCH-066-COMMERCE-002` when ready; no execution occurs here.
 Current corrected consumer pin is exactly @modainteract/moda-interact-shared5.9.0, integritysha512-mGjw3KY2iLCGXGS5K7ZjHrsHM6mbooi5Qmcl08zXWlZxLjaL38HY74EUGqMdT79VPGQ1EBsKNnfH9RTI+hY1GA==, superseding historical0055.7pin. Complete012explicitly added as correction publication prerequisite. Existing initial-outreach contract requires strict preparedBrand five same-shop savedcolumns/nulls and fixed authorized READY logo/squareLogo/coverImage media slots; IMAGE/CHECKOUT_PRODUCT header independent, no genericname/rawURL fallback. Reuse recorded Background002 full same-input frozen body/parameters/provenance fixture for independently reviewed Studio parity. No source copy from service/internalShared imports, real send/media mutation or implicit acceptance. Preserve checkout-led/isolated synthetic preview boundaries and real same-shop checkout outreach; system tests remain terminal/manual-gated.
+
+## Execution ownership amendment — 2026-11-09
+Developer explicitly invoked agent implementation via moda-task and authorized synchronization plus claim/source/report publication. Current canonical task is ReadyAttempt0/unclaimed and clean, all explicit prerequisites Complete per published handoff; no existing implementation edits to discard. Agent execution authorized, developer completion retained. Exact5.9.0 pin/current strict brand-media contract and original HTTP/owner/Redis/UI/no-side-effect acceptance remain governing. No production provider/model/customer/Meta mutation, deployment/activation, main or follow-on work authorized; configured read-only validation fixtures and local testports only. Canonical prepare owns new worktrees/claim, no manual attempt increment here.
