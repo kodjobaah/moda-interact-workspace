@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
 executor: codex
 claimed_at: 2026-11-09T05:02:52Z
@@ -33,10 +33,26 @@ All owned requirements above and architecture contract are implemented and verif
 No inventory mutation, new database table, token-refresh redesign, new template approval/WABA validation, category sequencing redesign or budget increase.
 
 ## Completion Report
-Status: Not started.
-Implementation SHA: Pending.
-Validation: Pending.
-Deployment/compatibility evidence: Pending.
+Status: Ready for Review. Implementation `467cc1abf5afc467f73861f9830430524022bacd` committed/pushed/remotely matched on task/ARCH-067-SHARED-001; clean implementation tree. No registry publication. Final validation chain exit0.
+
+Final build provenance: exact source above, final ESM+DTS build after near-cap and oneOf/const corrections; retained canonical dist and scripts-disabled local archive `/private/tmp/arch067-shared001-validated-5.10.0.tgz`, SHA256`44a81c0468a0a6dd62c0df75a12fa5877038028435f897057874c0478eb138a8`, integrity`sha512-XURWUjRFmBG6K5hGTltTBqcBQXfm3/h6giI5PLa8LbglWWSaDSXWXW0GdBkzMAcRoNOPwYmXSFdlE6wxj/MGrA==`, 453336bytes/145files. Pack receipt `/private/tmp/arch067-shared001-pack.json`. Package/lock metadata unchanged at5.10.0; archive is validation candidate only, not registry5.10.0 or a version selection for002. Later publication must verify source/dist byte parity and select its own unused version under its task; no build/test reruns authorized merely for release validation.
+
+Acceptance matrix:
+- Stock contract: schemas.ts exports exact optional product stock union/type and pure safe-integer normalizer (negative→0; malformed/decimal/unsafe→null); legacy products parse unchanged. Product outputs derive canonical JSON through existing Zod generation, no duplicate provider mapping or bootstrap script.
+- Reference contract: product-context.ts adds optional selectedOptions and ordered presentation under unchanged version1,32768bytes/20refs/24h/native-ID/ownership checks. Pair uniqueness/membership checked; record helper records exact supplied order/time, throws invalid pairs, applies existing deterministic tail eviction after insertion and invalidates whole presentation if any pair evicted. No prices/stock authority persisted. Context tests include20,3presentation vs3,20recency, arbitrary Height/Finish/Volume, ambiguity, TTL/eviction, and exact32760-byte insertion edge.
+- Model context: runner/instructions.ts explains ordinal latest successful presentation and stale option labels; invoke-model.ts includes presentation and selectedOptions. Real runner projection and OpenRouter serialization tests retain exact order/labels. Host owns recording only after successful composition and atomic reply persistence; Shared does not invent host state.
+- Verified facts/composition: presentation/facts.ts projects current provider stock and observedAt (existing DateSchema), omitted legacy stock→UNAVAILABLE, exact selection max3 unchanged. Existing deterministic WhatsApp composition/wrapper/body limits retained. All20supported locales distinguish known0/product vs selected variant/not tracked/unknown; attributes/descriptions/options still rendered. Tests assert exact known0body, locale catalogues, safe fallback and prior authorization/replay/checkout regressions.
+- Canonical output usability: amendment implemented in purpose-output.ts with bounded typed scalar const and exactly-one oneOf semantics, same depth8/nodes256/properties128/schema+result32KiB/string4096/array128/2..4branches. Mixedunion/constenum/unknownkeys/malformedscalar/nonfinite/unsafeconst rejected; no new regex/eval or lossy projection. Tests compile real generated get/search outputs and validate complete stock states/counts/legacy omissions plus hostile/overlapping branches. Historical purpose-output.fixtures.json untouched; new purpose-output.accepted015.fixtures.json generated from exact accepted015source a19519e4 serves baseline equality with sole optional stock delta. Baseline proof `/private/tmp/arch067-shared001-purpose-baseline.log`: accepted get/search true atdepth7/8, stock initially false dueoneOf/const, exact stripped-stock equality; bounded correction closes introduced gap.
+- Public contract: existing commerce/presentation wildcard exports expose additive types/functions; installed public runtime/declaration smoke imports stock/context/fact APIs, exercises record helper and generated-stock canonical compiler with0; built clean-process runner/Commerce and browser-safe presentation checks retained. No service source imports.
+
+Changed paths: src/commerce/schemas.ts; product-context.ts/.test.ts; runner/instructions.ts; runner/graph/nodes/invoke-model.ts; runner/runner.test.ts; model/openrouter-model-client.test.ts; presentation/facts.ts/.test.ts; presentation/fact-messages.ts; purpose-output.ts/.test.ts; purpose-output.accepted015.fixtures.json; scripts/validate-commerce-outreach.mjs. Existing public wildcard indices, composition wrappers, preflight context merge and OpenRouter request.context serializer already delegate correctly, so no duplicate bodies added.
+
+Validation: final affected product-context, presentation, runner, model, purpose-output/profile suite168/168 PASS; `npm run typecheck` PASS. Final `npm run build` ESM+DTS, `npm run validate:commerce-entrypoints`, `npm run validate:commerce-presentation`, and `npm run validate:commerce-outreach` installed public runtime/declarations all PASS, final command chain exited0. Logs `/private/tmp/arch067-shared001-final-tests.log`, `...-typecheck.log`, `...-build.log`, `...-entrypoints.log`, `...-presentation-public.log`, `...-installed-public.log`. Earlier test harness missing AbortSignal fixed; stock canonical compatibility gap escalated and resolved by exact architect amendment; initial157required tests were not used to waive it. No test failures waived.
+
+Compatibility/deviations: stock wire optional; new verified fact stock+observedAt canonical, no model quantity accepted. Context remains v1 and legacy JSON valid without rewrite. Actual instructions path runner/instructions.ts (task shorthand corrected). Shared has no owned generated bootstrap artifact script: existing canonical output generation directly includes stock, verified in built public smoke; hosts own persisted release/bootstrap fingerprints and diagnostics. Pure Shared helpers introduce no competing logger; provider-read/final-verification diagnostics, fresh deduplicated reads and rolling writer gate are consumer tasks. Readers must deploy before literaltrue COMMERCE_PRODUCT_REFERENCE_V2_WRITE_ENABLED writers; this task does not activate it or change host files. No deployment/stock mutation/database cleanup/reset/seed, consumer, release/version, main or follow-on work.
+
+Launcher evidence: canonical root /Users/kwadwoadomafriyie/project/moda-interact-workspace; parent /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-067-SHARED-001; implementation /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-067-SHARED-001; bothtask/ARCH-067-SHARED-001. Both created, remoteFFnot-needed/mainalready-current; parentbaselineb2ba305d8e6c75faa1a29446be6db87953fac57c, implementationbaseline5d253a339aec3104ec9c18adb79f93d58fad7b2b. Recursive sync/updatepassed, noentriesready; no dependencies gatepassed. Launcher claimAttempt1codex2026-11-09T05:02:52Z33488a38639cdbd0be133406a2a40d6a525d407e pushed; startup/claim not repeated. Not-reviewed preexisting review read in full, no ChangesRequested items. Shared/default/another-task checkout not mutated/reused. ArchitectReview untouched; developercompletion retained.
+
 
 ## Architect Review
 Status: Not reviewed.
