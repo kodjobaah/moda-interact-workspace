@@ -14,7 +14,7 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 1
-depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-SHARED-012"]
+depends_on: ["ARCH-066-SHARED-005", "ARCH-066-COMMERCE-001", "ARCH-066-BACKGROUND-002", "ARCH-066-SHARED-012", "ARCH-066-SHARED-014", "ARCH-066-ADMIN-001"]
 enables: ["ARCH-066-SYSTEM-TEST-002"]
 created: 2026-11-08
 updated: 2026-11-09
@@ -96,3 +96,18 @@ Current corrected consumer pin is exactly @modainteract/moda-interact-shared5.9.
 
 ## Execution ownership amendment — 2026-11-09
 Developer explicitly invoked agent implementation via moda-task and authorized synchronization plus claim/source/report publication. Current canonical task is ReadyAttempt0/unclaimed and clean, all explicit prerequisites Complete per published handoff; no existing implementation edits to discard. Agent execution authorized, developer completion retained. Exact5.9.0 pin/current strict brand-media contract and original HTTP/owner/Redis/UI/no-side-effect acceptance remain governing. No production provider/model/customer/Meta mutation, deployment/activation, main or follow-on work authorized; configured read-only validation fixtures and local testports only. Canonical prepare owns new worktrees/claim, no manual attempt increment here.
+
+
+## Architect Review
+### Review Status
+Blocked
+### Review Notes
+Reviewed actual implementation078f67a2187ba4701e2fbbf49fa2185837ae9bf7 and reporte6e2a911f. Physical task isolation/preparation packet conforms. Source is clean and remotely published. Current production runtime explicitly throws503 CONFIGURATION/SENDER_UNAVAILABLE; the positive host is injected SIMULATION, so the feature does not yet satisfy live preview acceptance. Do not grant Commerce sender-secret decryption or infer configured WABA from template assignment. Independently inspected Admin secret-service transaction198–238, sealed/disabled discriminator and numeric4..32 sender validator.
+### Reviewed Files
+lib/preview/initial-outreach-runtime.ts; initial-outreach-http.ts; actual collection/status/cancel routes; src/commerce/preview/initial-outreach/{service,contracts,ports,presentation,checkout-reader}.ts; preview store/Redis changes; tests/arch066-initial-outreach-preview.test.ts; separate UI and frozen fixture.
+### Validation Reviewed
+Focused4files25PASS; existing conversation/store4files49PASS; keyedUI2PASS. Real local Redis2client tests executed without skips. Final TypeScript and scoped ESLint exit0; no full repository lint or live provider verification claimed. Independently verified implementation remote hash and clean state. Exact Shared5.9.0 pinned; fixture both-platform NONE two reads/full frozen body/current versus historical facts preserved. Cancellation test title corrected: only source-change is proven there.
+### Architecture Conformance
+Partial repository-owned foundation conforms; required end-to-end capability remains absent. No Accepted/Complete disposition. Status Blocked at unchanged Attempt1, claim cleared; completion authority remains developer. Correction dependencies added, SYSTEM-TEST002 remains gated. Checkout-led withdrawals and concurrent task statuses preserved.
+### Follow-up
+SHARED013 strict public configured-sender schema → SHARED014 exact publication → ADMIN001 atomic projection writer/current-active source-version fence. Definitions are materialized and locally committed only; new correction-branch publication rejected by automatic approval review and awaits explicit authorization. No implementation of correction tasks began. After prerequisites Complete, return this SAME Commerce task to Ready for rework: consume published projection without secret values; complete production profile/policy/template/ready-media/local and isolated-MCP provider composition, tool activity and all original missing live/refusal/offer/price/side-effect matrices; prove complete cancellation/deadline/overflow/purge behavior. Never waive original unchecked criteria because dependency contracts exist.
