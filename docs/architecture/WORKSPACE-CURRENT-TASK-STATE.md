@@ -1971,4 +1971,15 @@ COMMERCE002 BlockedAttempt1: independently validated HTTP/UI/evaluator/store fou
 2026-11-09 correction definition publication update: developer explicitly authorized the three prepared branches; SHARED013/014/ADMIN001 definitions are now remotely verified at201f3922e/af5e4bc6a/90e6bb38d respectively. This supersedes prior local-only publication limitation, not Commerce002 Blocked status or any implementation acceptance. SHARED013Ready;014/Admin001Pending. No claim or implementation started.
 
 
-2026-11-09 completionfrontier: COMMERCE003CompleteAcceptedAttempt1 atb7fb1c0fa, source6f01c096cleanpublished. COMMERCE002Ready for SAME-taskrework, priorAttempt1/claimnull, originalHOST/lifecyclechecklistmandatory/noacceptance; all explicitdepsComplete. SystemTest002remainsgated002; withdrawn senderchain/currentconcurrentstatespreserved. No claim/source/tests/live/main/follow-onexecution.
+## Studio renderer publication review — 2026-11-09
+SHARED016 Accepted at ReviewAttempt1; explicit developer completion pending/claimclear. Public immutable5.10.0 source80bb605f9c6fd026e82b1dd207a1de2874d221b6 changes versionmetadata only; exact accepted015source/dist retained. Registry downloadable447293byte archiveSHA256711fe20dfe54f6516e67eab0f6616e7799d4f9d567c93d90819e4eb974f4ac2d/integrity/publicJS+declaration imports verified, including Studio renderer/schema/type/purpose/classifier and retained production exports. No implementation tests/build revalidation or consumer work. COMMERCE003 remains pending016Complete; sender-chain withdrawal and all concurrent/manual system gates preserved.
+
+
+2026-11-09 explicit release completion frontier: SHARED016CompleteAcceptedAttempt1 claimnull; public5.10.0/source80bb605f/review5b35cdaf verified. COMMERCE003ReadyAttempt0/unclaimed, exact existing definition canonicalparent-only; no consumerexecution. Commerce002remainsBlockedAttempt1 with unfinished host/lifecycle criteria; withdrawn senderchain and production validation/concurrent system/manual gates preserved. No tests/npm/main/live actions.
+
+
+## Commerce stored-template correction review — 2026-11-09
+COMMERCE003AcceptedReviewAttempt1, explicit developercompletionpending; source6f01c09630e05950fc3c4362259f0d4c107f0dfc clean/remotelypublished atop exact prior partial002carry378a758. ExactShared5.10.0 publicStudio renderer/purposehelpers used with strict storedcontent/locale/ambiguity query and no sender/approval/hash checks.19unique focused tests including realRedis/auth/UI/reader→service→installedrenderer/bothplatform2reads, compiler/scopedlint pass. Realhostfactory stillHOST_UNAVAILABLE; full002host/lifecycle acceptance remains unfinished, not accepted. COMMERCE002BlockedAttempt1 gains003dependency until correction explicitlyComplete, then same-task rework only. Sender013/014/Admin001withdrawal and production validation remain; no live/main/customer effects/systemexecution.
+
+
+2026-11-09 developercompletion: COMMERCE003CompleteAcceptedAttempt1; exactsource6f01c096/review6cfdbaa0cleanpublished. COMMERCE002all explicitdepsComplete, Ready for SAME-taskrework atunchangedAttempt1/unclaimed; originalHOST/lifecycle/refusal/sideeffectchecklist remains mandatory, no002acceptance/claim. SystemTest002remainsgated002; withdrawn senderchain/productionchecks/concurrentstatespreserved. No tests/npm/main/live/follow-onexecution.
