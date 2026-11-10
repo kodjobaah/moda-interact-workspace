@@ -1049,6 +1049,6 @@ The 2026-10-29 checkout-lifecycle amendment replaces the earlier one-recovery-pe
 
 ## ARCH-068 — Optional conversation product images (2026-11-09)
 
-Nine agent-executed task definitions, not started. Shared owns the binding, delivery plan and reusable Node media preparation; Admin owns authoring and initialization; Commerce and Background consume the same contracts. One nullable outbound JSONB column freezes retries. Initial outreach and approved follow-up templates retain their existing paths.
+Eight implementation/publication tasks independently Accepted/Complete; terminal SYSTEM-TEST001 Ready at Attempt0, unclaimed and manually launched. Architecture remains In Progress pending integrated validation. Shared owns the binding, delivery plan and reusable Node media preparation; Admin owns authoring and initialization; Commerce and Background consume the same contracts. One nullable outbound JSONB column freezes retries. Initial outreach and approved follow-up templates retain their existing paths. No deployed initializer or activation is implied.
 
 [Architecture and exact contracts](ARCH-068-optional-conversation-product-image.md)
