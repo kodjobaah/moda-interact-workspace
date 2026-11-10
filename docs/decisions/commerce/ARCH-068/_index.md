@@ -4,7 +4,7 @@
 
 | Task | Status | Dependencies |
 |---|---|---|
-| [ARCH-068-COMMERCE-001](COMMERCE-001-preview-optional-image-and-agent-text.md) | Ready / agent, automatic / Attempt0 unclaimed | ARCH-068-SHARED-003 |
+| [ARCH-068-COMMERCE-001](COMMERCE-001-preview-optional-image-and-agent-text.md) | Review / agent, automatic / Attempt1 / claim cleared | ARCH-068-SHARED-003 |
 
 Definitions only; no implementation/claim/deployment/initializer execution.
 
