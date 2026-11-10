@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ['ARCH-068-ADMIN-001', 'ARCH-068-COMMERCE-001', 'ARCH-068-BACKGROUND-001']
 enables: ["ARCH-068-SYSTEM-TEST-001"]
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-10
 ---
 # Initialize AI conversation wrapper safely
 
@@ -90,3 +90,14 @@ SHARED-001 owns changes to Shared source only. SHARED-002 can read Background so
 SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,scenario.js,assertions.js}` and `test/conversation-product-image.test.js`; wires the existing package.json test command using the repository's existing test runner and documents launch in README.md. Reuse `src/whatsapp-emulator.js`, `src/harness/aimock/runtime.js`, `src/harness/environment.js` for transport/model/environment control; extend them only where IMAGE payload capture is missing. Fixtures use the same compiled wrapper, product bytes, public origin and scripted envelope for both hosts; assert complete plan equality, media omission, one provider call, body preservation and legacy behavior. Add the mandatory failure/race cases above. Tests use disposable local infrastructure/provider emulator; launching real infrastructure or sending real WhatsApp messages requires separate explicit user authorization. Do not mark blocked merely because optional live infrastructure was not authorized when local acceptance can run.
 
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
+
+## Accepted prerequisites and readiness handoff — 2026-11-10
+Ready at unchanged Attempt0, executor/claimed_at null. All explicit prerequisites are Complete / independently Accepted Attempt1:
+
+- ADMIN001 source `31e24c04d532e364e4c4e4bf6eb959e51ec01c07`, durable completion `9be7c236d8d4798be6796b115d4b72011070589f`.
+- COMMERCE001 source `ee42e4e4894361138ea13aad4ce5e7213461d47e`, durable completion `69acccb6011e5f8c71da79f362127b77ac94da63`.
+- BACKGROUND001 source `383efdce24fb60888ff91bc260ff13b4b524b7dd`, durable completion `7af4b2852d8e917b3974530988c5ef9c6a499d6c`.
+
+Use the accepted Admin compiler/hash/eligibility source and published Shared exactly `5.12.0`, SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==`. Completion does not imply main integration: verify accepted Admin source containment when preparing implementation; no sibling imports or duplicated compiler are permitted. The public browser contract remains separate from Node media preparation.
+
+This handoff creates no implementation worktree or claim and does not run the initializer. Deployed Commerce/Background compatibility and fixture evidence remain required operator prerequisites before any apply/activation. SYSTEM-TEST001 remains Pending/manual-gated until this initializer task is Complete.

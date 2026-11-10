@@ -9,15 +9,15 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ['ARCH-068-SHARED-003', 'ARCH-068-DATABASE-001']
 enables: ["ARCH-068-ADMIN-002", "ARCH-068-SYSTEM-TEST-001"]
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-10
 ---
 # Deliver one frozen free-form text or image reply
 
@@ -37,11 +37,11 @@ Provider `sendWhatsAppImage({to,link,caption,replyToProviderMessageId?},signal?)
 The named exported schemas/APIs and exact JSON shapes in the binding contract are authoritative. Existing v1 template hashes/legacy records remain compatible. No clothing-specific fields/model image URL or Meta recovery contract extension.
 
 ## Work Items
-- [ ] Verify dependencies and current owned source against binding touch points.
-- [ ] Implement every requirement in the owned scope and binding contract.
-- [ ] Add deterministic success/failure/compatibility tests specified above.
-- [ ] Run declared repository validation and record exact evidence.
-- [ ] Publish implementation and parent report on mirrored task branches for review.
+- [x] Verify dependencies and current owned source against binding touch points.
+- [x] Implement every requirement in the owned scope and binding contract.
+- [x] Add deterministic success/failure/compatibility tests specified above.
+- [x] Run declared repository validation and record exact evidence.
+- [x] Publish implementation and parent report on mirrored task branches for review.
 
 ## Dependencies
 ARCH-068-SHARED-003, ARCH-068-DATABASE-001
@@ -56,10 +56,86 @@ No redesign of aspects 1 and 3, Meta submission/WABA validation, inventory write
 Execution is owned by the assigned agent, not a human developer. Use /moda-task with canonical isolated parent/implementation worktrees and mirrored task branches. Do not claim on authoring. Implement only this repository portion; use published Shared APIs. If an actual source conflict contradicts the exact binding contract, report it to the architect with path/symbol/evidence; do not invent a replacement architecture or leave a placeholder. No main merge/push, production mutation, real send or live initializer execution is part of this task.
 
 ## Completion Report
-Not started. Record changed paths, exact source SHA, isolated worktree/preparation evidence, tests with counts, public package version/integrity where consumed, dependency evidence, and any remaining risks.
+### Attempt 1 — Ready for Review (2026-11-10)
+
+Implementation: `383efdce24fb60888ff91bc260ff13b4b524b7dd`, committed and pushed to implementation `task/ARCH-068-BACKGROUND-001`; independently matched `git ls-remote` and clean implementation worktree. This repository-agent return awaits architect review; no acceptance/completion decision is made here.
+
+Implemented the original scope: AGENT answer prose and verified pair order survive wrapper composition; trusted REFER_TO_STORE contact/language normalization remains before the verified envelope is passed to the wrapper. Optional media uses the public Shared selector/preparer/builder, original deadline and bounded configuration wait. Complete validated plans bind wrapper response/application digests and replay. Atomic preparation scopes the locked outbound AGENT message to canonical tenant/conversation, writes body plus JSON, refuses plan replacement and legacy downgrade. General/recovery final fences compare body/plan and independent message/conversation/inbound/control/tenant/first-pair receipt, apply free-form window gates, and acquire the existing dispatch permit before one provider call. IMAGE cannot claim template privileges. Existing moderation, billing/caps, product-context atomic commit, provider unknown handling and legacy templates remain in their existing pipeline. Cancelled host signals do not dispatch or replace context.
+
+Generic fetch/DNS/TLS, byte verification, brand/product transforms, immutable PUT/HEAD and public probe bodies were replaced by published Shared reexports; Background retains configuration, orchestration, brand/outreach key predicates and final fences. No image byte/key/hash golden expectation was regenerated.
+
+Exact dependency: `@modainteract/moda-interact-shared@5.12.0`, lockfile SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==`; installed public registry artifact, no sibling imports. Prepared database gitlink `5329d5390d346042895219663f3a040ea54ae168` retained unchanged, generated Prisma client passed. Migration deployment remains a separate runtime rollout prerequisite; no deployment or activation occurred.
+
+Preparation reused the exact launcher packet paths: primary workspace `moda-interact-workspace`, parent `moda-interact-workspace-task-ARCH-068-BACKGROUND-001`, implementation `moda-interact-workspace.worktrees/ARCH-068-BACKGROUND-001`, both mirrored branch `task/ARCH-068-BACKGROUND-001`. Parent baseline `2e175c89e5cfd47c12f1e3412aceeb16973fb5c9` reused; implementation baseline `40a43b7e90bcac65ed2270f4e586d00bda0dd0dd` created; own-remote FF not needed, main synchronization passed, recursive database submodule initialized/ready. Dependencies SHARED003 and DATABASE001 Complete were launcher-verified. Claim `65d25169d01b08cda7b27ed8d3522cbed7d12d15`, codex at `2026-11-10T00:04:10Z`; Attempt 1 preserved, claim cleared on return.
+
+Validation:
+
+- Existing media/security/fixed-output compatibility: 14 files / 146 tests passed. Included unchanged brand/outreach fetch, transform, writer, processor and resolver behavior.
+- Final owned regression group: 49 files / 564 tests passed, covering wrappers/plan replay and both-platform IMAGE composition, processor signal cancellation, outbound admission/delivery, moderation, billing/credit, brand/outreach and template preparation. No deleted cases, skips or expected failures were introduced.
+- Declared `test:commerce-host` configuration: 78 tests passed. Preserves attacker-contact referral rejection/trusted locale fallback and proves grounded ANSWER prose with exact fresh selected product metadata. Prior deterministic ANSWER candidate-shrink assertions were adapted to the normative full-answer behavior; oversize full wrapper still refuses rather than silently shrinking facts.
+- Actual disposable PostgreSQL (`node scripts/test-integration.mjs tests/integration/arch068-conversation-image.integration.test.ts tests/integration/general-outbound-stop-fence.integration.test.ts`): 2 files / 19 tests passed. Sixteen new cases prove body/plan persistence, one image dispatch under concurrent sends, unknown-provider replay/no second text, current free-form window, receipt and cross-shop zero-write refusal, legacy IMAGE downgrade refusal, immutable/unknown-schema mismatch, recovery IMAGE control/inbound/window/tamper/pair gates and context committed once. Three existing STOP/Shop-lock ordering cases retained. Eligibility/moderation/provider boundaries are scripted; database locks, preparation, final permits and context persistence are real SQL. Existing billing suites supply the preserved caps/credit semantics; the new recovery final-permit fixture does not claim a live entitlement/billing integration.
+- Final focused IMAGE-kind guard: 5 tests passed, including missing plan and IMAGE-to-TEMPLATE mismatch denied before SQL.
+- Declared `npm run build` passed (exit 0), including Prisma generation, application/provision TypeScript and artifact packaging. Standalone compiler checks also passed.
+- All changed/new TypeScript scoped ESLint and `git diff --check` passed. Full `npm run lint` exits 1 solely on untouched `src/providers/shopify-whatsapp-consent.provider.ts:151:37` (`no-control-regex`, `\x00`), byte-identical to prepared baseline `40a43b7e90bcac65ed2270f4e586d00bda0dd0dd`. No task diagnostic remains; no baseline ID is invented.
+
+Evidence logs: `/private/tmp/arch068-background-media.log`, `arch068-background-regressions.log`, `arch068-background-host2.log`, `arch068-background-final-guard-db.log`, `arch068-background-kind-fence.log`, `arch068-background-final-build.log` and `.exit`, `arch068-background-final-lint.log` and `.exit`, `arch068-background-final-scoped-lint.log`. Final build exit 0; full lint exit 1 as stated above.
+
+No main merge, live provider/customer send, R2 live write, deployment, initializer activation, other implementation repository edit or follow-on execution occurred. Studio parity uses the same public Shared plan construction input/output in the wrapper fixtures; terminal cross-host system validation remains SYSTEM-TEST001-owned.
+
+Changed paths:
+```text
+package-lock.json
+package.json
+src/agents/types.ts
+src/commerce/host.ts
+src/integration/whatsapp/types.ts
+src/services/conversation-delivery-plan.ts
+src/services/conversation-product-media.ts
+src/services/conversation-turn-processor.service.ts
+src/services/conversation-wrappers/compose-ai-outbound.ts
+src/services/conversation-wrappers/contracts.ts
+src/services/conversation-wrappers/service.ts
+src/services/merchant-knowledge-network-policy.ts
+src/services/outbound-whatsapp-admission.service.ts
+src/services/outbound-whatsapp-admission/general-outbound-send-fence.service.ts
+src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts
+src/services/recovery-conversation/outbound-send-fence.service.ts
+src/services/recovery-product-media/product-image-transformer.ts
+src/services/shop-brand-media/contracts.ts
+src/services/shop-brand-media/image-transformer.ts
+src/services/shop-brand-media/metadata-verifier.ts
+src/services/shop-brand-media/public-probe.ts
+src/services/shop-brand-media/r2-writer.ts
+src/services/shop-brand-media/safe-fetch.ts
+src/services/whatsapp.service.ts
+tests/integration/arch068-conversation-image.integration.test.ts
+tests/integration/commerce/host-suites/recommendations.ts
+tests/unit/services/arch068-conversation-media.test.ts
+tests/unit/services/conversation-turn-processor.service.test.ts
+tests/unit/services/conversation-wrappers/service.test.ts
+tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts
+tests/unit/services/whatsapp.service.test.ts
+```
+
 
 ## Architect Review
-Not reviewed.
+### Review Status
+Accepted — Attempt 1, 2026-11-10. Automatic completion applied; executor and claimed_at remain null.
+
+### Review Notes
+Independently reviewed implementation `383efdce24fb60888ff91bc260ff13b4b524b7dd` and published report `427d2bbb9484bbc482b15020f09ab3893997a95e`. Actual source preserves grounded ANSWER prose, verified pair order and trusted referral normalization; uses published Shared media primitives without duplicate generic bodies; freezes validated complete plans in wrapper digests and scoped atomic preparation; and compares tenant/pair/message/inbound/control/body/plan under final locks before one provider dispatch. IMAGE retains service-window, moderation, eligibility/billing and context gates and cannot claim TEMPLATE privileges. Legacy null records and pending frozen plans cannot silently upgrade/downgrade; unknown provider outcome does not trigger a second text send.
+
+### Reviewed Files
+Host and processor; wrapper contracts/composition/service; conversation-product-media and conversation-delivery-plan; public admission/delivery; general and recovery final fences; WhatsApp image transport; compatibility media reexports; package lock; new durable DB, wrapper, processor and transport fixtures.
+
+### Validation Reviewed
+Inspected actual source diffs and recorded outputs: 564 tests/49 files, host78, real PostgreSQL19 (including concurrent dispatch, context-once, replay, tenant/control/window/plan refusals), focused kind guards5; build exit0, scoped lint exit0 and diff check pass. Existing media146 tests retain original golden behavior. Full lint exits1 solely for untouched consent-provider line151 control-regex diagnostic, verified identical to prepared baseline; this task introduces no lint diagnostic. No implementation validation was waived or represented as live-provider/system acceptance.
+
+### Architecture Conformance
+Conforms to binding ARCH-068 and repository ownership. Exact public Shared5.12.0 SRI and unchanged prepared database gitlink are recorded above. Physical isolation verified from prepared packet: primary `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-068-BACKGROUND-001`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-068-BACKGROUND-001`; both branch `task/ARCH-068-BACKGROUND-001`. Parent remote FF not-needed/main incorporated; implementation remote FF not-needed/main already-current; recursive database sync/update initialized exact5329d5390d346042895219663f3a040ea54ae168 and ready. Shared/default checkouts were not switched or mutated and no other task worktree was reused.
+
+### Follow-up
+No same-task correction remains. Admin001 and Commerce001 retain their independently published review states, not Complete; Admin002 remains Pending on those consumers and SystemTest001 remains Pending/manual-gated. Deploy the accepted database migration before runtime field use and both compatible consumers before wrapper activation. No deployment, activation, npm release, real send, main merge or follow-on execution is authorized by this acceptance.
 
 ## Existing Background reuse inventory — mandatory, not a second pipeline
 
@@ -114,3 +190,10 @@ SHARED-001 owns changes to Shared source only. SHARED-002 can read Background so
 SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,scenario.js,assertions.js}` and `test/conversation-product-image.test.js`; wires the existing package.json test command using the repository's existing test runner and documents launch in README.md. Reuse `src/whatsapp-emulator.js`, `src/harness/aimock/runtime.js`, `src/harness/environment.js` for transport/model/environment control; extend them only where IMAGE payload capture is missing. Fixtures use the same compiled wrapper, product bytes, public origin and scripted envelope for both hosts; assert complete plan equality, media omission, one provider call, body preservation and legacy behavior. Add the mandatory failure/race cases above. Tests use disposable local infrastructure/provider emulator; launching real infrastructure or sending real WhatsApp messages requires separate explicit user authorization. Do not mark blocked merely because optional live infrastructure was not authorized when local acceptance can run.
 
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
+
+## Database dependency reconciliation — 2026-11-09
+DATABASE001 Complete at independently Accepted Attempt1, implementation75669477. This prerequisite is satisfied; task remains Pending because SHARED003 publication is still Pending. No claim, attempt increment or implementation started. Deploy accepted migration before referencing the new field; accepted source does not imply deployment.
+
+## Accepted publication handoff — 2026-11-09
+SHARED003 is Complete / independently Accepted Attempt1. Install exactly `@modainteract/moda-interact-shared@5.12.0`, registry https://registry.npmjs.org/, SRI `sha512-RD3pGDVZHK8sRwbi91SpdouRDVkyf+4rhdB4eczaG48avsnEOQRhRccqzX2YI9KhXa1jXE4S2LHfz7D9DR5PEw==`, tarball SHA256 `e4416c765079a6c8c8ca04894e87e3822c3af0acf19428a5d3f542effe697393`. Release source `12d0b85aaeefba4dfc46bb12637004f19d462b19` includes both accepted Shared capabilities. Use browser-safe `/commerce/presentation` for contracts and Node-only `/commerce/presentation/node` for media preparation; no sibling source import or copied generic mechanics. Ready at unchanged Attempt0, executor/claimed_at null; no claim or implementation begins here.
+DATABASE001 is also Complete / Accepted Attempt1 (source75669477); both explicit dependencies are satisfied. Migration deployment remains a separate rollout prerequisite before runtime use.
