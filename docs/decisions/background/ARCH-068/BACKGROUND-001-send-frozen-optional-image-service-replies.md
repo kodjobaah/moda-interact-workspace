@@ -9,15 +9,15 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: codex
+claimed_at: 2026-11-10T00:04:10Z
+attempt: 1
 depends_on: ['ARCH-068-SHARED-003', 'ARCH-068-DATABASE-001']
 enables: ["ARCH-068-ADMIN-002", "ARCH-068-SYSTEM-TEST-001"]
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-10
 ---
 # Deliver one frozen free-form text or image reply
 
