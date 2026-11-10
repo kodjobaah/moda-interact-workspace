@@ -193,5 +193,11 @@ SYSTEM-TEST-001 creates `src/harness/conversation-product-image/{fixtures.js,sce
 
 Script `--apply` is opt-in and a separate operator action. Implementation completion does not activate a wrapper. Existing occupied slots are never replaced. Source contains no header logo or fixed product facts: only response.body and the optional structured binding. Existing all-language eligibility rules remain authoritative; obtain REVIEW_LANGUAGES from its existing export, not a copied locale list or hardcoded loop count. Tests assert the current count and exact coverage from that export.
 
-## Accepted consumers and initializer readiness — 2026-11-10
+## Earlier accepted consumers and initializer readiness — 2026-11-10
 ADMIN001 completion9be7c236, COMMERCE001 completion69acccb6 and BACKGROUND001 completion7af4b285 are durable, independently Accepted/Complete at Attempt1. All ADMIN002 explicit dependencies are Complete, so ADMIN002 is Ready at unchanged Attempt0 with no claim. SYSTEM-TEST001 remains Pending/manual-gated on ADMIN002. Current counts: Complete7, Ready1, Pending1. This current frontier supersedes earlier snapshots. Exact Shared5.12.0 version/SRI remains binding; task completion is not deployed compatibility or permission to apply/activate. No implementation, main merge/push, gitlink change, deployment or initializer/live execution occurred during reconciliation. Architecture remains In Progress.
+
+
+## Current initializer acceptance and terminal validation frontier — 2026-11-10
+ADMIN002 independently Accepted/Complete Attempt1, source40fc5b67e6a814020668a6d4ae25eaa7c0d5f17a. Strict explicit CLI, existing actor/environment checks, single SERIALIZABLE creation/activation, canonical structural locales and immutable/occupied/race/audit behavior conform. Independent7-unit/11-disposable-PostgreSQL tests and typecheck pass; submitted29 regressions, lint and production build evidence reviewed. CLI uses installed public Shared5.12.0 and existing local native-ESM loading; no shared/database/runtime contract changes.
+
+All eight implementation/publication tasks are Complete. SYSTEM-TEST001 Pending→Ready at unchanged Attempt0, unclaimed, with terminal manual launch/validation and separate real infrastructure/send authorization retained. Current counts: Complete8, Ready1, Pending0. This snapshot supersedes earlier frontier counts; architecture remains In Progress until integrated system-test acceptance. No main integration, deployed initialization, activation, migration or real messaging is asserted or executed.
